@@ -1,5 +1,8 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c11 -I./include
+CFLAGS = -Wall -Wextra -Werror -Wpedantic -Wconversion -Wshadow -Wcast-qual \
+         -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wstrict-aliasing=2 \
+         -Wnull-dereference -Wformat=2 -Wuninitialized -Wpointer-arith \
+         -Wunused -Wunused-parameter -Wwrite-strings -std=c11 -I./include
 LDFLAGS = -lm
 
 # Debug build flags

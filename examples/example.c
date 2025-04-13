@@ -3,7 +3,7 @@
 #include <string.h>
 #include "../include/agerun.h"
 
-int main() {
+int main(void) {
     printf("Agerun Example Application\n");
     printf("==========================\n\n");
     

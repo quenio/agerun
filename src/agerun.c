@@ -596,7 +596,7 @@ bool agerun_load_methods(void) {
             method->persist = persist_int != 0;
             
             // Read instructions with special handling for newlines
-            char c;
+            int c;  // Using int for fgetc return value
             int idx = 0;
             // Skip the rest of the line
             while ((c = fgetc(fp)) != '\n' && c != EOF);
@@ -610,10 +610,10 @@ bool agerun_load_methods(void) {
                         method->instructions[idx++] = '\\';
                     } else {
                         method->instructions[idx++] = '\\';
-                        method->instructions[idx++] = c;
+                        method->instructions[idx++] = (char)c;  // Explicit cast
                     }
                 } else {
-                    method->instructions[idx++] = c;
+                    method->instructions[idx++] = (char)c;  // Explicit cast
                 }
             }
             method->instructions[idx] = '\0';
