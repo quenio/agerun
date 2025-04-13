@@ -28,7 +28,11 @@
 *.x86_64
 *.hex
 example
-test_*
+# Don't ignore test source files, but ignore test executables
+tests/test_basics
+# Other test executables that might be generated
+tests/test_*
+!tests/*.c
 
 # Debug files
 *.dSYM/
