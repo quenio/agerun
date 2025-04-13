@@ -56,11 +56,7 @@ extern bool memory_set(void *memory, const char *key, void *value);
 
 // Forward declarations for internal functions
 static bool parse_and_execute_instruction(agent_t *agent, const char *message, const char *instruction);
-static char* parse_string_literal(const char *str, int *offset);
-static char* parse_identifier(const char *str, int *offset);
 static value_t evaluate_expression(agent_t *agent, const char *message, const char *expr, int *offset);
-static void skip_whitespace(const char *str, int *offset);
-static bool value_to_bool(value_t val);
 
 // Helper function to trim whitespace from a string
 static char* trim(char *str) {
@@ -93,64 +89,8 @@ static void free_value(value_t *value) {
     }
 }
 
-// Get a value from memory
-static value_t* memory_get(memory_dict_t *memory, const char *key) {
-    if (!memory || !key) {
-        return NULL;
-    }
-    
-    for (int i = 0; i < 256; i++) {
-        if (memory->entries[i].is_used && memory->entries[i].key && 
-            strcmp(memory->entries[i].key, key) == 0) {
-            return &memory->entries[i].value;
-        }
-    }
-    return NULL;
-}
 
-// Make a copy of a value
-static value_t copy_value(value_t src) {
-    value_t dest;
-    dest.type = src.type;
-    
-    switch (src.type) {
-        case VALUE_INT:
-            dest.data.int_value = src.data.int_value;
-            break;
-        case VALUE_DOUBLE:
-            dest.data.double_value = src.data.double_value;
-            break;
-        case VALUE_STRING:
-            if (src.data.string_value) {
-                dest.data.string_value = strdup(src.data.string_value);
-            } else {
-                dest.data.string_value = NULL;
-            }
-            break;
-    }
-    
-    return dest;
-}
 
-// Convert a value to a string representation
-static void value_to_string(value_t val, char *buffer, size_t buffer_size) {
-    switch (val.type) {
-        case VALUE_INT:
-            snprintf(buffer, buffer_size, "%lld", val.data.int_value);
-            break;
-        case VALUE_DOUBLE:
-            snprintf(buffer, buffer_size, "%f", val.data.double_value);
-            break;
-        case VALUE_STRING:
-            if (val.data.string_value) {
-                strncpy(buffer, val.data.string_value, buffer_size - 1);
-                buffer[buffer_size - 1] = '0';
-            } else {
-                strncpy(buffer, "", buffer_size);
-            }
-            break;
-    }
-}
 
 // Simplified evaluate an expression in the agent's context
 static value_t evaluate_expression(agent_t *agent, const char *message, const char *expr, int *offset) {
@@ -167,39 +107,6 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
 }
 
 
-// Parse a string literal from the input
-static char* parse_string_literal(const char *str, int *offset) {
-    (void)str; // Avoid unused parameter warning
-    (void)offset; // Avoid unused parameter warning
-    return strdup("");
-}
-
-// Parse an identifier from the input
-static char* parse_identifier(const char *str, int *offset) {
-    (void)str; // Avoid unused parameter warning
-    (void)offset; // Avoid unused parameter warning
-    return strdup("");
-}
-
-// Skip whitespace in the input
-static void skip_whitespace(const char *str, int *offset) {
-    (void)str; // Avoid unused parameter warning
-    (void)offset; // Avoid unused parameter warning
-}
-
-// Convert a value to a boolean
-static bool value_to_bool(value_t val) {
-    switch (val.type) {
-        case VALUE_INT:
-            return val.data.int_value != 0;
-        case VALUE_DOUBLE:
-            return val.data.double_value != 0.0;
-        case VALUE_STRING:
-            return val.data.string_value != NULL && strlen(val.data.string_value) > 0;
-        default:
-            return false;
-    }
-}
 
 // Main interpretation function for agent methods
 bool interpret_agent_method(agent_t *agent, const char *message, const char *instructions) {

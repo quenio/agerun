@@ -37,7 +37,7 @@ int main() {
         printf("Failed to initialize runtime\n");
         return 1;
     }
-    printf("Runtime initialized with initial agent ID: %ld\n\n", initial_agent);
+    printf("Runtime initialized with initial agent ID: %lld\n\n", initial_agent);
     
     // Process the __wake__ message sent to the initial agent
     printf("Processing initial __wake__ message...\n");
@@ -52,7 +52,7 @@ int main() {
         agerun_shutdown();
         return 1;
     }
-    printf("Counter agent created with ID: %ld\n\n", counter_id);
+    printf("Counter agent created with ID: %lld\n\n", counter_id);
     
     // Send some messages to the counter agent
     printf("Sending messages to counter agent...\n");
@@ -101,7 +101,7 @@ int main() {
         printf("Failed to initialize runtime\n");
         return 1;
     }
-    printf("Runtime initialized with initial agent ID: %ld\n", initial_agent);
+    printf("Runtime initialized with initial agent ID: %lld\n", initial_agent);
     
     // Check if the persistent counter agent was loaded
     printf("Checking if counter agent was restored...\n");
