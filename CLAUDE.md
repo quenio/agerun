@@ -83,22 +83,6 @@ When making changes, always follow these steps to ensure code quality:
    - Methods are stored in `agrun.methods`
    - Agents are stored in `agrun.agents` if persistent
 
-## Future Enhancements
-
-1. **Instruction Language Improvements**:
-   - Better error handling and reporting
-   - More comprehensive string operations
-   - Support for arrays and complex data structures
-
-2. **Runtime Improvements**:
-   - Multithreading support
-   - Better resource management
-   - Network support for distributed agents
-
-3. **Tools and Utilities**:
-   - CLI tool for managing agents
-   - Debugger for agent methods
-   - Visualization of agent relationships
 
 ## Debugging Tips
 
@@ -134,6 +118,7 @@ When making changes, always follow these steps to ensure code quality:
    - Maintain consistent function signatures throughout development
    - Provide complete implementations or appropriate stubs for all functions
    - Use proper type declarations and avoid implicit conversions
+   - Never add unused functions, and always remove them if found
 
 5. **Handle compiler warnings**:
    - Consider temporarily disabling -Werror during development if needed

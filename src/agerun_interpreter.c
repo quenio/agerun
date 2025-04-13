@@ -59,7 +59,6 @@ static bool parse_and_execute_instruction(agent_t *agent, const char *message, c
 static char* parse_string_literal(const char *str, int *offset);
 static char* parse_identifier(const char *str, int *offset);
 static value_t evaluate_expression(agent_t *agent, const char *message, const char *expr, int *offset);
-static value_t call_function(agent_t *agent, const char *message, const char *func_name, value_t *args, int arg_count);
 static void skip_whitespace(const char *str, int *offset);
 static bool value_to_bool(value_t val);
 
@@ -167,20 +166,6 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
     return result;
 }
 
-// Simplified call a built-in function
-static value_t call_function(agent_t *agent, const char *message, const char *func_name, value_t *args, int arg_count) {
-    (void)agent; // Avoid unused parameter warning
-    (void)message; // Avoid unused parameter warning
-    (void)func_name; // Avoid unused parameter warning
-    (void)args; // Avoid unused parameter warning
-    (void)arg_count; // Avoid unused parameter warning
-    
-    value_t result;
-    result.type = VALUE_INT;
-    result.data.int_value = 0;
-    
-    return result;
-}
 
 // Parse a string literal from the input
 static char* parse_string_literal(const char *str, int *offset) {
