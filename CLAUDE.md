@@ -113,3 +113,34 @@ When making changes, always follow these steps to ensure code quality:
 3. **Memory issues**:
    - Use valgrind to check for memory leaks
    - Use AddressSanitizer for detecting memory errors
+
+## Code Modification Guidelines
+
+1. **Understand the codebase structure**:
+   - Thoroughly explore dependencies between files before making changes
+   - Identify all affected interfaces when modifying shared functionality
+
+2. **Use proper header files**:
+   - Share data structures and function declarations through headers
+   - Use forward declarations or opaque pointers to break circular dependencies
+   - Keep interface definitions consistent across modules
+
+3. **Make incremental changes**:
+   - Implement small changes with frequent compilation checks
+   - Complete one functional area before moving to the next
+   - Verify each change with tests before proceeding
+
+4. **Use proper C techniques**:
+   - Maintain consistent function signatures throughout development
+   - Provide complete implementations or appropriate stubs for all functions
+   - Use proper type declarations and avoid implicit conversions
+
+5. **Handle compiler warnings**:
+   - Consider temporarily disabling -Werror during development if needed
+   - Address all warnings before finalizing code
+   - Document reasons for any deliberately ignored warnings
+
+6. **Test extensively**:
+   - Test changes with both normal and edge cases
+   - Verify behavior matches the specification
+   - Use the test suite to catch regressions

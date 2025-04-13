@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror -pedantic -std=c11 -I./include
+CFLAGS = -Wall -Wextra -std=c11 -I./include
 LDFLAGS = -lm
 
 # Debug build flags

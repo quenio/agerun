@@ -1,21 +1,25 @@
+/* Agerun Runtime System Implementation */
 #include "../include/agerun.h"
 #include "../include/agerun_interpreter.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <time.h>
 
-#define MAX_AGENTS 1000
-#define MAX_METHODS 100
-#define MAX_VERSIONS 50
-#define MAX_NAME_LENGTH 64
+/* Constants */
+#define MAX_AGENTS 1024
+#define MAX_METHODS 256
+#define MAX_VERSIONS_PER_METHOD 64
+#define MAX_METHOD_NAME_LENGTH 64
 #define MAX_MESSAGE_LENGTH 1024
-#define MAX_QUEUE_SIZE 100
-#define MAX_MEMORY_ENTRIES 100
-#define AGENT_PERSISTENCE_FILE "agrun.agents"
-#define METHOD_PERSISTENCE_FILE "agrun.methods"
+#define MAX_INSTRUCTIONS_LENGTH 16384
+#define MEMORY_SIZE 256
+#define QUEUE_SIZE 256
 
+/* Value Type Definitions */
 typedef enum {
     VALUE_INT,
     VALUE_DOUBLE,
@@ -31,88 +35,108 @@ typedef struct value_s {
     } data;
 } value_t;
 
-typedef struct {
-    char key[MAX_NAME_LENGTH];
+/* Memory Dictionary for Agent State */
+typedef struct memory_entry_s {
+    char *key;
     value_t value;
+    bool is_used;
 } memory_entry_t;
 
-typedef struct {
-    char messages[MAX_QUEUE_SIZE][MAX_MESSAGE_LENGTH];
-    int front;
-    int rear;
-    int size;
-} message_queue_t;
-
 typedef struct memory_dict_s {
-    memory_entry_t entries[MAX_MEMORY_ENTRIES];
+    memory_entry_t entries[MEMORY_SIZE];
     int count;
 } memory_dict_t;
 
+/* Message Queue for Agent Communication */
+typedef struct message_queue_s {
+    char messages[QUEUE_SIZE][MAX_MESSAGE_LENGTH];
+    int head;
+    int tail;
+    int size;
+} message_queue_t;
+
+/* Method Definition */
+typedef struct method_s {
+    char name[MAX_METHOD_NAME_LENGTH];
+    version_t version;
+    version_t previous_version;
+    bool backward_compatible;
+    bool persist;
+    char instructions[MAX_INSTRUCTIONS_LENGTH];
+} method_t;
+
+/* Agent Definition */
 typedef struct agent_s {
     agent_id_t id;
-    char method_name[MAX_NAME_LENGTH];
+    char method_name[MAX_METHOD_NAME_LENGTH];
     version_t method_version;
     bool is_active;
     bool is_persistent;
     message_queue_t queue;
     memory_dict_t memory;
-    memory_dict_t *context; /* Pointer to parent's memory */
+    memory_dict_t *context;
 } agent_t;
 
-typedef struct {
-    char name[MAX_NAME_LENGTH];
-    version_t version;
-    char *instructions;
-    version_t previous_version;
-    bool backward_compatible;
-    bool persist;
-} method_t;
-
+/* Global State */
 static agent_t agents[MAX_AGENTS];
-static method_t methods[MAX_METHODS][MAX_VERSIONS];
-static int method_count = 0;
-static int version_counts[MAX_METHODS] = {0};
+static method_t methods[MAX_METHODS][MAX_VERSIONS_PER_METHOD];
+static int method_counts[MAX_METHODS];
+static int method_name_count = 0;
 static agent_id_t next_agent_id = 1;
 static bool is_initialized = false;
 
-// Forward declarations for internal functions
-static agent_t* find_agent(agent_id_t id);
-static method_t* find_method(const char *name, version_t version);
-static value_t parse_value(const char *str);
+/* Forward Declarations */
+static bool init_memory_dict(memory_dict_t *dict);
+static value_t* memory_get(memory_dict_t *memory, const char *key);
 static void free_value(value_t *value);
+static bool init_message_queue(message_queue_t *queue);
 static bool queue_push(message_queue_t *queue, const char *message);
 static bool queue_pop(message_queue_t *queue, char *message);
-static bool memory_set(memory_dict_t *memory, const char *key, value_t value);
-static value_t* memory_get(memory_dict_t *memory, const char *key);
-static value_t* context_get(memory_dict_t *context, const char *key);
+static int find_method_idx(const char *name);
+static method_t* find_latest_method(const char *name);
+static method_t* find_method(const char *name, version_t version);
+static bool interpret_method(agent_t *agent, const char *message);
 
-
+/* Implementation */
 agent_id_t agerun_init(const char *method_name, version_t version) {
     if (is_initialized) {
-        return 0; // Already initialized
+        printf("Agerun already initialized\n");
+        return 0;
     }
     
-    // Initialize agent and method arrays
-    memset(agents, 0, sizeof(agents));
-    memset(methods, 0, sizeof(methods));
-    
-    // Load methods from file
-    agerun_load_methods();
-    
-    // Create the initial agent
-    agent_id_t initial_agent = agerun_create(method_name, version, NULL);
-    if (initial_agent == 0) {
-        return 0; // Failed to create initial agent
+    // Initialize all agents as inactive
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        agents[i].is_active = false;
     }
     
-    // Load persistent agents
-    agerun_load_agents();
-    
-    // Send __wake__ message to the initial agent
-    agerun_send(initial_agent, "__wake__");
+    // Initialize method counts
+    for (int i = 0; i < MAX_METHODS; i++) {
+        method_counts[i] = 0;
+    }
     
     is_initialized = true;
-    return initial_agent;
+    
+    // Load methods from file if available
+    if (!agerun_load_methods()) {
+        printf("Warning: Could not load methods from file\n");
+    }
+    
+    // Load agents from file if available
+    if (!agerun_load_agents()) {
+        printf("Warning: Could not load agents from file\n");
+    }
+    
+    // Create initial agent if method_name is provided
+    if (method_name != NULL) {
+        agent_id_t initial_agent = agerun_create(method_name, version, NULL);
+        if (initial_agent != 0) {
+            // Send wake message to initial agent
+            agerun_send(initial_agent, "__wake__");
+        }
+        return initial_agent;
+    }
+    
+    return 0;
 }
 
 void agerun_shutdown(void) {
@@ -120,35 +144,20 @@ void agerun_shutdown(void) {
         return;
     }
     
-    // Process all remaining messages
-    agerun_process_all_messages();
-    
-    // Send __sleep__ to all active agents
-    for (int i = 0; i < MAX_AGENTS; i++) {
-        if (agents[i].is_active) {
-            agerun_send(agents[i].id, "__sleep__");
-        }
-    }
-    
-    // Process sleep messages
-    agerun_process_all_messages();
-    
-    // Save persistent agents and methods
-    agerun_save_agents();
+    // Save methods to file
     agerun_save_methods();
     
-    // Free allocated memory
-    for (int i = 0; i < method_count; i++) {
-        for (int j = 0; j < version_counts[i]; j++) {
-            free(methods[i][j].instructions);
-        }
-    }
+    // Save persistent agents to file
+    agerun_save_agents();
     
+    // Clean up memory for all active agents
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (agents[i].is_active) {
-            for (int j = 0; j < agents[i].memory.count; j++) {
-                if (agents[i].memory.entries[j].value.type == VALUE_STRING) {
-                    free(agents[i].memory.entries[j].value.data.string_value);
+            // Free memory dictionary entries
+            for (int j = 0; j < MEMORY_SIZE; j++) {
+                if (agents[i].memory.entries[j].is_used && agents[i].memory.entries[j].key) {
+                    free(agents[i].memory.entries[j].key);
+                    free_value(&agents[i].memory.entries[j].value);
                 }
             }
         }
@@ -160,143 +169,161 @@ void agerun_shutdown(void) {
 version_t agerun_method(const char *name, const char *instructions, 
                         version_t previous_version, bool backward_compatible, 
                         bool persist) {
-    if (!name || !instructions) {
+    if (!is_initialized || !name || !instructions) {
         return 0;
     }
     
-    // Find or create method
-    int method_idx = -1;
-    for (int i = 0; i < method_count; i++) {
-        if (strcmp(methods[i][0].name, name) == 0) {
-            method_idx = i;
-            break;
+    // Find or create method entry
+    int method_idx = find_method_idx(name);
+    if (method_idx < 0) {
+        if (method_name_count >= MAX_METHODS) {
+            printf("Error: Maximum number of method types reached\n");
+            return 0;
         }
+        
+        method_idx = method_name_count++;
+        strncpy(methods[method_idx][0].name, name, MAX_METHOD_NAME_LENGTH - 1);
+        methods[method_idx][0].name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
     }
     
-    if (method_idx == -1) {
-        // New method
-        if (method_count >= MAX_METHODS) {
-            return 0; // Too many methods
-        }
-        method_idx = method_count++;
-    }
-    
-    // Check if previous version exists if specified
-    if (previous_version > 0) {
-        bool found = false;
-        for (int i = 0; i < version_counts[method_idx]; i++) {
-            if (methods[method_idx][i].version == previous_version) {
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
-            return 0; // Previous version not found
-        }
+    // Check if we've reached max versions for this method
+    if (method_counts[method_idx] >= MAX_VERSIONS_PER_METHOD) {
+        printf("Error: Maximum number of versions reached for method %s\n", name);
+        return 0;
     }
     
     // Create new version
-    int ver_idx = version_counts[method_idx]++;
-    if (ver_idx >= MAX_VERSIONS) {
-        version_counts[method_idx]--;
-        return 0; // Too many versions
-    }
+    int version_idx = method_counts[method_idx]++;
+    version_t new_version = previous_version + 1;
     
-    version_t new_version = (previous_version > 0) ? previous_version + 1 : 1;
-    
-    // Ensure unique version number
-    for (int i = 0; i < ver_idx; i++) {
-        if (methods[method_idx][i].version >= new_version) {
+    // Make sure the version is unique
+    for (int i = 0; i < version_idx; i++) {
+        if (methods[method_idx][i].version == new_version) {
             new_version = methods[method_idx][i].version + 1;
         }
     }
     
     // Initialize the new method version
-    strncpy(methods[method_idx][ver_idx].name, name, MAX_NAME_LENGTH - 1);
-    methods[method_idx][ver_idx].name[MAX_NAME_LENGTH - 1] = '\0';
-    methods[method_idx][ver_idx].version = new_version;
-    methods[method_idx][ver_idx].instructions = strdup(instructions);
-    methods[method_idx][ver_idx].previous_version = previous_version;
-    methods[method_idx][ver_idx].backward_compatible = backward_compatible;
-    methods[method_idx][ver_idx].persist = persist;
+    strncpy(methods[method_idx][version_idx].name, name, MAX_METHOD_NAME_LENGTH - 1);
+    methods[method_idx][version_idx].name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
+    methods[method_idx][version_idx].version = new_version;
+    methods[method_idx][version_idx].previous_version = previous_version;
+    methods[method_idx][version_idx].backward_compatible = backward_compatible;
+    methods[method_idx][version_idx].persist = persist;
+    strncpy(methods[method_idx][version_idx].instructions, instructions, MAX_INSTRUCTIONS_LENGTH - 1);
+    methods[method_idx][version_idx].instructions[MAX_INSTRUCTIONS_LENGTH - 1] = '\0';
+    
+    printf("Created method %s version %d\n", name, new_version);
     
     return new_version;
 }
 
 agent_id_t agerun_create(const char *method_name, version_t version, void *context) {
-    if (!method_name) {
+    if (!is_initialized || !method_name) {
         return 0;
     }
     
-    // Find the method
-    method_t *method = find_method(method_name, version);
-    if (!method) {
-        return 0; // Method not found
-    }
-    
-    // Find an empty slot for the new agent
-    int slot = -1;
+    // Find free slot for new agent
+    int agent_idx = -1;
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (!agents[i].is_active) {
-            slot = i;
+            agent_idx = i;
             break;
         }
     }
     
-    if (slot == -1) {
-        return 0; // No space for new agent
+    if (agent_idx < 0) {
+        printf("Error: Maximum number of agents reached\n");
+        return 0;
     }
     
-    // Initialize the agent
-    agent_id_t new_id = next_agent_id++;
-    agents[slot].id = new_id;
-    strncpy(agents[slot].method_name, method_name, MAX_NAME_LENGTH - 1);
-    agents[slot].method_name[MAX_NAME_LENGTH - 1] = '\0';
-    agents[slot].method_version = method->version;
-    agents[slot].is_active = true;
-    agents[slot].is_persistent = method->persist;
-    agents[slot].queue.front = 0;
-    agents[slot].queue.rear = 0;
-    agents[slot].queue.size = 0;
-    agents[slot].memory.count = 0;
-    agents[slot].context = (memory_dict_t*)context;
+    // Find method definition
+    method_t *method = NULL;
+    if (version == 0) {
+        // Use latest version
+        method = find_latest_method(method_name);
+    } else {
+        // Use specific version
+        method = find_method(method_name, version);
+    }
     
-    return new_id;
+    if (!method) {
+        printf("Error: Method %s%s%d not found\n", 
+               method_name, version ? " version " : "", version);
+        return 0;
+    }
+    
+    // Initialize agent structure
+    agents[agent_idx].id = next_agent_id++;
+    strncpy(agents[agent_idx].method_name, method_name, MAX_METHOD_NAME_LENGTH - 1);
+    agents[agent_idx].method_name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
+    agents[agent_idx].method_version = method->version;
+    agents[agent_idx].is_active = true;
+    agents[agent_idx].is_persistent = method->persist;
+    agents[agent_idx].context = (memory_dict_t *)context;
+    
+    init_memory_dict(&agents[agent_idx].memory);
+    init_message_queue(&agents[agent_idx].queue);
+    
+    printf("Created agent %lld using method %s version %d\n", 
+           agents[agent_idx].id, method_name, method->version);
+    
+    return agents[agent_idx].id;
 }
 
 bool agerun_destroy(agent_id_t agent_id) {
-    agent_t *agent = find_agent(agent_id);
-    if (!agent) {
+    if (!is_initialized || agent_id == 0) {
         return false;
     }
     
-    // Send __sleep__ message before destroying
-    agerun_send(agent_id, "__sleep__");
-    agerun_process_all_messages();
-    
-    // Free string values in memory
-    for (int i = 0; i < agent->memory.count; i++) {
-        if (agent->memory.entries[i].value.type == VALUE_STRING) {
-            free(agent->memory.entries[i].value.data.string_value);
+    // Find the agent
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (agents[i].is_active && agents[i].id == agent_id) {
+            // Send sleep message before destroying
+            agerun_send(agent_id, "__sleep__");
+            
+            // Process the sleep message
+            char message[MAX_MESSAGE_LENGTH];
+            if (queue_pop(&agents[i].queue, message)) {
+                interpret_method(&agents[i], message);
+            }
+            
+            // Free memory dictionary entries
+            for (int j = 0; j < MEMORY_SIZE; j++) {
+                if (agents[i].memory.entries[j].is_used && agents[i].memory.entries[j].key) {
+                    free(agents[i].memory.entries[j].key);
+                    free_value(&agents[i].memory.entries[j].value);
+                }
+            }
+            
+            agents[i].is_active = false;
+            printf("Destroyed agent %lld\n", agent_id);
+            return true;
         }
     }
     
-    // Mark as inactive
-    agent->is_active = false;
-    return true;
+    return false;
 }
 
 bool agerun_send(agent_id_t agent_id, const char *message) {
-    if (agent_id == 0 || !message) {
-        return true; // No-op for agent_id 0
+    if (!is_initialized || !message) {
+        return false;
     }
     
-    agent_t *agent = find_agent(agent_id);
-    if (!agent) {
-        return false; // Agent not found
+    // Special case: agent_id 0 is a no-op
+    if (agent_id == 0) {
+        return true;
     }
     
-    return queue_push(&agent->queue, message);
+    // Find the agent
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (agents[i].is_active && agents[i].id == agent_id) {
+            // Add message to queue
+            return queue_push(&agents[i].queue, message);
+        }
+    }
+    
+    return false;
 }
 
 bool agerun_process_next_message(void) {
@@ -317,77 +344,85 @@ bool agerun_process_next_message(void) {
 
 int agerun_process_all_messages(void) {
     int count = 0;
+    
     while (agerun_process_next_message()) {
         count++;
     }
+    
     return count;
 }
 
 bool agerun_agent_exists(agent_id_t agent_id) {
-    return find_agent(agent_id) != NULL;
+    if (!is_initialized) {
+        return false;
+    }
+    
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (agents[i].is_active && agents[i].id == agent_id) {
+            return true;
+        }
+    }
+    
+    return false;
 }
 
 int agerun_count_agents(void) {
+    if (!is_initialized) {
+        return 0;
+    }
+    
     int count = 0;
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (agents[i].is_active) {
             count++;
         }
     }
+    
     return count;
 }
 
 bool agerun_save_agents(void) {
-    FILE *fp = fopen(AGENT_PERSISTENCE_FILE, "wb");
-    if (!fp) {
+    if (!is_initialized) {
         return false;
     }
     
-    int persistent_count = 0;
+    // Simple placeholder implementation for now
+    FILE *fp = fopen("agrun.agents", "w");
+    if (!fp) {
+        printf("Error: Could not open agrun.agents for writing\n");
+        return false;
+    }
+    
+    // Count how many persistent agents we have
+    int count = 0;
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (agents[i].is_active && agents[i].is_persistent) {
-            persistent_count++;
+            count++;
         }
     }
     
-    // Write count of persistent agents
-    fwrite(&persistent_count, sizeof(int), 1, fp);
+    fprintf(fp, "%d\n", count);
     
-    // Write each persistent agent
+    // Save basic agent info
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (agents[i].is_active && agents[i].is_persistent) {
-            // Write agent basic info
-            fwrite(&agents[i].id, sizeof(agent_id_t), 1, fp);
-            fwrite(agents[i].method_name, sizeof(char), MAX_NAME_LENGTH, fp);
-            fwrite(&agents[i].method_version, sizeof(version_t), 1, fp);
+            fprintf(fp, "%lld %s %d\n", agents[i].id, agents[i].method_name, agents[i].method_version);
             
-            // Write message queue
-            fwrite(&agents[i].queue.size, sizeof(int), 1, fp);
-            int idx = agents[i].queue.front;
-            for (int j = 0; j < agents[i].queue.size; j++) {
-                fwrite(agents[i].queue.messages[idx], sizeof(char), MAX_MESSAGE_LENGTH, fp);
-                idx = (idx + 1) % MAX_QUEUE_SIZE;
-            }
-            
-            // Write memory dictionary
-            fwrite(&agents[i].memory.count, sizeof(int), 1, fp);
-            for (int j = 0; j < agents[i].memory.count; j++) {
-                memory_entry_t *entry = &agents[i].memory.entries[j];
-                fwrite(entry->key, sizeof(char), MAX_NAME_LENGTH, fp);
-                fwrite(&entry->value.type, sizeof(value_type_t), 1, fp);
-                
-                switch (entry->value.type) {
-                    case VALUE_INT:
-                        fwrite(&entry->value.data.int_value, sizeof(int64_t), 1, fp);
-                        break;
-                    case VALUE_DOUBLE:
-                        fwrite(&entry->value.data.double_value, sizeof(double), 1, fp);
-                        break;
-                    case VALUE_STRING: {
-                        size_t len = strlen(entry->value.data.string_value) + 1;
-                        fwrite(&len, sizeof(size_t), 1, fp);
-                        fwrite(entry->value.data.string_value, sizeof(char), len, fp);
-                        break;
+            // Save memory dictionary - for simplicity just save int and string values
+            fprintf(fp, "%d\n", agents[i].memory.count);
+            for (int j = 0; j < MEMORY_SIZE; j++) {
+                if (agents[i].memory.entries[j].is_used && agents[i].memory.entries[j].key) {
+                    fprintf(fp, "%s ", agents[i].memory.entries[j].key);
+                    
+                    value_t *val = &agents[i].memory.entries[j].value;
+                    if (val->type == VALUE_INT) {
+                        fprintf(fp, "int %lld\n", val->data.int_value);
+                    } else if (val->type == VALUE_DOUBLE) {
+                        fprintf(fp, "double %f\n", val->data.double_value);
+                    } else if (val->type == VALUE_STRING && val->data.string_value) {
+                        fprintf(fp, "string %s\n", val->data.string_value);
+                    } else {
+                        fprintf(fp, "unknown\n");
                     }
                 }
             }
@@ -399,133 +434,89 @@ bool agerun_save_agents(void) {
 }
 
 bool agerun_load_agents(void) {
-    FILE *fp = fopen(AGENT_PERSISTENCE_FILE, "rb");
-    if (!fp) {
-        return false; // File doesn't exist or can't be opened
-    }
-    
-    int persistent_count;
-    if (fread(&persistent_count, sizeof(int), 1, fp) != 1) {
-        fclose(fp);
+    if (!is_initialized) {
         return false;
     }
     
-    for (int i = 0; i < persistent_count; i++) {
+    FILE *fp = fopen("agrun.agents", "r");
+    if (!fp) {
+        // Not an error, might be first run
+        return true;
+    }
+    
+    int count = 0;
+    fscanf(fp, "%d", &count);
+    
+    for (int i = 0; i < count; i++) {
         agent_id_t id;
-        char method_name[MAX_NAME_LENGTH];
-        version_t method_version;
+        char method_name[MAX_METHOD_NAME_LENGTH];
+        version_t version;
         
-        // Read agent basic info
-        if (fread(&id, sizeof(agent_id_t), 1, fp) != 1 ||
-            fread(method_name, sizeof(char), MAX_NAME_LENGTH, fp) != MAX_NAME_LENGTH ||
-            fread(&method_version, sizeof(version_t), 1, fp) != 1) {
-            
+        if (fscanf(fp, "%lld %s %d", &id, method_name, &version) != 3) {
+            printf("Error: Malformed agent entry in agrun.agents\n");
             fclose(fp);
             return false;
         }
         
-        // Find an empty slot
-        int slot = -1;
+        // Create the agent
+        agent_id_t new_id = agerun_create(method_name, version, NULL);
+        if (new_id == 0) {
+            printf("Error: Could not recreate agent %lld\n", id);
+            continue;
+        }
+        
+        // Update the assigned ID to match the stored one
         for (int j = 0; j < MAX_AGENTS; j++) {
-            if (!agents[j].is_active) {
-                slot = j;
+            if (agents[j].is_active && agents[j].id == new_id) {
+                agents[j].id = id;
+                
+                // Read memory dictionary
+                int mem_count = 0;
+                fscanf(fp, "%d", &mem_count);
+                
+                for (int k = 0; k < mem_count; k++) {
+                    char key[256];
+                    char type[32];
+                    
+                    if (fscanf(fp, "%255s %31s", key, type) != 2) {
+                        printf("Error: Malformed memory entry in agrun.agents\n");
+                        break;
+                    }
+                    
+                    value_t value;
+                    if (strcmp(type, "int") == 0) {
+                        value.type = VALUE_INT;
+                        fscanf(fp, "%lld", &value.data.int_value);
+                    } else if (strcmp(type, "double") == 0) {
+                        value.type = VALUE_DOUBLE;
+                        fscanf(fp, "%lf", &value.data.double_value);
+                    } else if (strcmp(type, "string") == 0) {
+                        value.type = VALUE_STRING;
+                        char str[1024];
+                        fscanf(fp, "%1023s", str);
+                        value.data.string_value = strdup(str);
+                    } else {
+                        // Skip unknown type
+                        char line[1024];
+                        fgets(line, sizeof(line), fp);
+                        continue;
+                    }
+                    
+                    memory_set(&agents[j].memory, key, &value);
+                    
+                    if (value.type == VALUE_STRING && value.data.string_value) {
+                        free(value.data.string_value);
+                    }
+                }
+                
                 break;
             }
         }
         
-        if (slot == -1) {
-            fclose(fp);
-            return false; // No space for agent
-        }
-        
-        // Ensure we have an appropriate id for future agents
+        // Update next_agent_id if needed
         if (id >= next_agent_id) {
             next_agent_id = id + 1;
         }
-        
-        // Setup basic agent properties
-        agents[slot].id = id;
-        strncpy(agents[slot].method_name, method_name, MAX_NAME_LENGTH);
-        agents[slot].method_version = method_version;
-        agents[slot].is_active = true;
-        agents[slot].is_persistent = true;
-        agents[slot].context = NULL;
-        
-        // Read message queue
-        int queue_size;
-        if (fread(&queue_size, sizeof(int), 1, fp) != 1) {
-            fclose(fp);
-            return false;
-        }
-        
-        agents[slot].queue.front = 0;
-        agents[slot].queue.rear = queue_size % MAX_QUEUE_SIZE;
-        agents[slot].queue.size = queue_size;
-        
-        for (int j = 0; j < queue_size; j++) {
-            if (fread(agents[slot].queue.messages[j], sizeof(char), MAX_MESSAGE_LENGTH, fp) != MAX_MESSAGE_LENGTH) {
-                fclose(fp);
-                return false;
-            }
-        }
-        
-        // Read memory dictionary
-        int memory_count;
-        if (fread(&memory_count, sizeof(int), 1, fp) != 1) {
-            fclose(fp);
-            return false;
-        }
-        
-        agents[slot].memory.count = memory_count;
-        
-        for (int j = 0; j < memory_count; j++) {
-            memory_entry_t *entry = &agents[slot].memory.entries[j];
-            
-            if (fread(entry->key, sizeof(char), MAX_NAME_LENGTH, fp) != MAX_NAME_LENGTH ||
-                fread(&entry->value.type, sizeof(value_type_t), 1, fp) != 1) {
-                
-                fclose(fp);
-                return false;
-            }
-            
-            switch (entry->value.type) {
-                case VALUE_INT:
-                    if (fread(&entry->value.data.int_value, sizeof(int64_t), 1, fp) != 1) {
-                        fclose(fp);
-                        return false;
-                    }
-                    break;
-                case VALUE_DOUBLE:
-                    if (fread(&entry->value.data.double_value, sizeof(double), 1, fp) != 1) {
-                        fclose(fp);
-                        return false;
-                    }
-                    break;
-                case VALUE_STRING: {
-                    size_t len;
-                    if (fread(&len, sizeof(size_t), 1, fp) != 1) {
-                        fclose(fp);
-                        return false;
-                    }
-                    
-                    entry->value.data.string_value = (char*)malloc(len);
-                    if (!entry->value.data.string_value) {
-                        fclose(fp);
-                        return false;
-                    }
-                    
-                    if (fread(entry->value.data.string_value, sizeof(char), len, fp) != len) {
-                        free(entry->value.data.string_value);
-                        fclose(fp);
-                        return false;
-                    }
-                    break;
-                }
-            }
-        }
-        
-        // Send __wake__ message
-        agerun_send(id, "__wake__");
     }
     
     fclose(fp);
@@ -533,33 +524,39 @@ bool agerun_load_agents(void) {
 }
 
 bool agerun_save_methods(void) {
-    FILE *fp = fopen(METHOD_PERSISTENCE_FILE, "wb");
-    if (!fp) {
+    if (!is_initialized) {
         return false;
     }
     
-    // Write method count
-    fwrite(&method_count, sizeof(int), 1, fp);
+    // Simple placeholder implementation for now
+    FILE *fp = fopen("agrun.methods", "w");
+    if (!fp) {
+        printf("Error: Could not open agrun.methods for writing\n");
+        return false;
+    }
     
-    // Write version counts for each method
-    fwrite(version_counts, sizeof(int), MAX_METHODS, fp);
+    fprintf(fp, "%d\n", method_name_count);
     
-    // Write each method and version
-    for (int i = 0; i < method_count; i++) {
-        for (int j = 0; j < version_counts[i]; j++) {
+    for (int i = 0; i < method_name_count; i++) {
+        fprintf(fp, "%d\n", method_counts[i]);
+        
+        for (int j = 0; j < method_counts[i]; j++) {
             method_t *method = &methods[i][j];
+            fprintf(fp, "%s %d %d %d %d\n", 
+                   method->name, method->version, method->previous_version,
+                   method->backward_compatible ? 1 : 0, method->persist ? 1 : 0);
             
-            // Write fixed-size data
-            fwrite(method->name, sizeof(char), MAX_NAME_LENGTH, fp);
-            fwrite(&method->version, sizeof(version_t), 1, fp);
-            fwrite(&method->previous_version, sizeof(version_t), 1, fp);
-            fwrite(&method->backward_compatible, sizeof(bool), 1, fp);
-            fwrite(&method->persist, sizeof(bool), 1, fp);
-            
-            // Write instructions (variable length)
-            size_t len = strlen(method->instructions) + 1;
-            fwrite(&len, sizeof(size_t), 1, fp);
-            fwrite(method->instructions, sizeof(char), len, fp);
+            // Save instructions with special encoding for newlines
+            for (size_t k = 0; k < strlen(method->instructions); k++) {
+                if (method->instructions[k] == '\n') {
+                    fprintf(fp, "\\n");
+                } else if (method->instructions[k] == '\\') {
+                    fprintf(fp, "\\\\");
+                } else {
+                    fputc(method->instructions[k], fp);
+                }
+            }
+            fprintf(fp, "\n");
         }
     }
     
@@ -568,57 +565,58 @@ bool agerun_save_methods(void) {
 }
 
 bool agerun_load_methods(void) {
-    FILE *fp = fopen(METHOD_PERSISTENCE_FILE, "rb");
+    if (!is_initialized) {
+        return false;
+    }
+    
+    FILE *fp = fopen("agrun.methods", "r");
     if (!fp) {
-        return false; // File doesn't exist or can't be opened
+        // Not an error, might be first run
+        return true;
     }
     
-    // Read method count
-    if (fread(&method_count, sizeof(int), 1, fp) != 1) {
-        fclose(fp);
-        return false;
-    }
+    fscanf(fp, "%d", &method_name_count);
     
-    // Read version counts
-    if (fread(version_counts, sizeof(int), MAX_METHODS, fp) != MAX_METHODS) {
-        fclose(fp);
-        return false;
-    }
-    
-    // Read each method and version
-    for (int i = 0; i < method_count; i++) {
-        for (int j = 0; j < version_counts[i]; j++) {
+    for (int i = 0; i < method_name_count; i++) {
+        fscanf(fp, "%d", &method_counts[i]);
+        
+        for (int j = 0; j < method_counts[i]; j++) {
             method_t *method = &methods[i][j];
+            int backward_compatible_int, persist_int;
             
-            // Read fixed-size data
-            if (fread(method->name, sizeof(char), MAX_NAME_LENGTH, fp) != MAX_NAME_LENGTH ||
-                fread(&method->version, sizeof(version_t), 1, fp) != 1 ||
-                fread(&method->previous_version, sizeof(version_t), 1, fp) != 1 ||
-                fread(&method->backward_compatible, sizeof(bool), 1, fp) != 1 ||
-                fread(&method->persist, sizeof(bool), 1, fp) != 1) {
-                
+            if (fscanf(fp, "%s %d %d %d %d", 
+                      method->name, &method->version, &method->previous_version,
+                      &backward_compatible_int, &persist_int) != 5) {
+                printf("Error: Malformed method entry in agrun.methods\n");
                 fclose(fp);
                 return false;
             }
             
-            // Read instructions
-            size_t len;
-            if (fread(&len, sizeof(size_t), 1, fp) != 1) {
-                fclose(fp);
-                return false;
-            }
+            method->backward_compatible = backward_compatible_int != 0;
+            method->persist = persist_int != 0;
             
-            method->instructions = (char*)malloc(len);
-            if (!method->instructions) {
-                fclose(fp);
-                return false;
-            }
+            // Read instructions with special handling for newlines
+            char c;
+            int idx = 0;
+            // Skip the rest of the line
+            while ((c = fgetc(fp)) != '\n' && c != EOF);
             
-            if (fread(method->instructions, sizeof(char), len, fp) != len) {
-                free(method->instructions);
-                fclose(fp);
-                return false;
+            while ((c = fgetc(fp)) != '\n' && c != EOF && idx < MAX_INSTRUCTIONS_LENGTH - 1) {
+                if (c == '\\') {
+                    c = fgetc(fp);
+                    if (c == 'n') {
+                        method->instructions[idx++] = '\n';
+                    } else if (c == '\\') {
+                        method->instructions[idx++] = '\\';
+                    } else {
+                        method->instructions[idx++] = '\\';
+                        method->instructions[idx++] = c;
+                    }
+                } else {
+                    method->instructions[idx++] = c;
+                }
             }
+            method->instructions[idx] = '\0';
         }
     }
     
@@ -626,67 +624,163 @@ bool agerun_load_methods(void) {
     return true;
 }
 
-// Internal helper functions implementation
+static bool init_memory_dict(memory_dict_t *dict) {
+    if (!dict) {
+        return false;
+    }
+    
+    for (int i = 0; i < MEMORY_SIZE; i++) {
+        dict->entries[i].is_used = false;
+        dict->entries[i].key = NULL;
+    }
+    
+    dict->count = 0;
+    return true;
+}
 
-static agent_t* find_agent(agent_id_t id) {
-    for (int i = 0; i < MAX_AGENTS; i++) {
-        if (agents[i].is_active && agents[i].id == id) {
-            return &agents[i];
+bool memory_set(void *memory_ptr, const char *key, void *value_ptr) {
+    memory_dict_t *memory = (memory_dict_t *)memory_ptr;
+    value_t value = *(value_t *)value_ptr;
+    if (!memory || !key) {
+        return false;
+    }
+    
+    // First, check if key already exists using memory_get
+    value_t *existing = memory_get(memory, key);
+    if (existing) {
+        // Free old value if it's a string
+        free_value(existing);
+        
+        // Set new value
+        *existing = value;
+        if (value.type == VALUE_STRING && value.data.string_value) {
+            existing->data.string_value = strdup(value.data.string_value);
+        }
+        
+        return true;
+    }
+    
+    // Find empty slot
+    for (int i = 0; i < MEMORY_SIZE; i++) {
+        if (!memory->entries[i].is_used) {
+            memory->entries[i].is_used = true;
+            memory->entries[i].key = strdup(key);
+            memory->entries[i].value = value;
+            
+            if (value.type == VALUE_STRING && value.data.string_value) {
+                memory->entries[i].value.data.string_value = strdup(value.data.string_value);
+            }
+            
+            memory->count++;
+            return true;
         }
     }
+    
+    return false; // No space left
+}
+
+static void free_value(value_t *value) {
+    if (!value) return;
+    
+    if (value->type == VALUE_STRING && value->data.string_value) {
+        free(value->data.string_value);
+        value->data.string_value = NULL;
+    }
+}
+
+static bool init_message_queue(message_queue_t *queue) {
+    if (!queue) {
+        return false;
+    }
+    
+    queue->head = 0;
+    queue->tail = 0;
+    queue->size = 0;
+    
+    return true;
+}
+
+static bool queue_push(message_queue_t *queue, const char *message) {
+    if (!queue || !message || queue->size >= QUEUE_SIZE) {
+        return false;
+    }
+    
+    strncpy(queue->messages[queue->tail], message, MAX_MESSAGE_LENGTH - 1);
+    queue->messages[queue->tail][MAX_MESSAGE_LENGTH - 1] = '\0';
+    
+    queue->tail = (queue->tail + 1) % QUEUE_SIZE;
+    queue->size++;
+    
+    return true;
+}
+
+static bool queue_pop(message_queue_t *queue, char *message) {
+    if (!queue || !message || queue->size == 0) {
+        return false;
+    }
+    
+    strncpy(message, queue->messages[queue->head], MAX_MESSAGE_LENGTH);
+    
+    queue->head = (queue->head + 1) % QUEUE_SIZE;
+    queue->size--;
+    
+    return true;
+}
+
+static int find_method_idx(const char *name) {
+    for (int i = 0; i < method_name_count; i++) {
+        if (strcmp(methods[i][0].name, name) == 0) {
+            return i;
+        }
+    }
+    
+    return -1;
+}
+
+static method_t* find_latest_method(const char *name) {
+    int method_idx = find_method_idx(name);
+    if (method_idx < 0 || method_counts[method_idx] == 0) {
+        return NULL;
+    }
+    
+    // Find the most recent version
+    version_t latest_version = 0;
+    int latest_idx = -1;
+    
+    for (int i = 0; i < method_counts[method_idx]; i++) {
+        if (methods[method_idx][i].version > latest_version) {
+            latest_version = methods[method_idx][i].version;
+            latest_idx = i;
+        }
+    }
+    
+    if (latest_idx >= 0) {
+        return &methods[method_idx][latest_idx];
+    }
+    
     return NULL;
 }
 
 static method_t* find_method(const char *name, version_t version) {
-    int method_idx = -1;
-    
-    // Find the method by name
-    for (int i = 0; i < method_count; i++) {
-        if (strcmp(methods[i][0].name, name) == 0) {
-            method_idx = i;
-            break;
-        }
-    }
-    
-    if (method_idx == -1) {
-        return NULL; // Method not found
-    }
-    
-    // If version is 0, find the latest compatible version
-    if (version == 0) {
-        version_t latest_version = 0;
-        int latest_idx = -1;
-        
-        for (int i = 0; i < version_counts[method_idx]; i++) {
-            if (methods[method_idx][i].version > latest_version) {
-                latest_version = methods[method_idx][i].version;
-                latest_idx = i;
-            }
-        }
-        
-        if (latest_idx >= 0) {
-            return &methods[method_idx][latest_idx];
-        }
+    int method_idx = find_method_idx(name);
+    if (method_idx < 0) {
         return NULL;
     }
     
-    // Find the specified version
-    for (int i = 0; i < version_counts[method_idx]; i++) {
+    // Case 1: Exact version match
+    for (int i = 0; i < method_counts[method_idx]; i++) {
         if (methods[method_idx][i].version == version) {
             return &methods[method_idx][i];
         }
     }
     
-    // If not found, find the latest compatible version
+    // Case 2: Find compatible version
     version_t latest_compatible = 0;
     int latest_idx = -1;
     
-    for (int i = 0; i < version_counts[method_idx]; i++) {
-        if (methods[method_idx][i].version > version) {
-            continue; // Skip future versions
-        }
-        
+    for (int i = 0; i < method_counts[method_idx]; i++) {
         if (methods[method_idx][i].backward_compatible && 
+            methods[method_idx][i].version > version && 
             methods[method_idx][i].version > latest_compatible) {
             latest_compatible = methods[method_idx][i].version;
             latest_idx = i;
@@ -700,121 +794,36 @@ static method_t* find_method(const char *name, version_t version) {
     return NULL; // No compatible version found
 }
 
+static bool interpret_method(agent_t *agent, const char *message);
+
 static bool interpret_method(agent_t *agent, const char *message) {
     // Find the method
     method_t *method = find_method(agent->method_name, agent->method_version);
     if (!method) {
-        printf("Error: Method %s version %d not found for agent %ld\n", 
+        printf("Error: Method %s version %d not found for agent %lld\n", 
                agent->method_name, agent->method_version, agent->id);
         return false;
     }
     
-    printf("Agent %ld received message: %s\n", agent->id, message);
+    printf("Agent %lld received message: %s\n", agent->id, message);
     
     // Call the interpreter function with the method instructions
     return interpret_agent_method(agent, message, method->instructions);
 }
 
-static value_t parse_value(const char *str) {
-    value_t value;
-    char *endptr;
-    
-    // Try to parse as integer
-    int64_t int_val = strtoll(str, &endptr, 10);
-    if (*endptr == '\0') {
-        value.type = VALUE_INT;
-        value.data.int_value = int_val;
-        return value;
-    }
-    
-    // Try to parse as double
-    double double_val = strtod(str, &endptr);
-    if (*endptr == '\0') {
-        value.type = VALUE_DOUBLE;
-        value.data.double_value = double_val;
-        return value;
-    }
-    
-    // Treat as string
-    value.type = VALUE_STRING;
-    value.data.string_value = strdup(str);
-    return value;
-}
-
-static void free_value(value_t *value) {
-    if (value->type == VALUE_STRING && value->data.string_value) {
-        free(value->data.string_value);
-        value->data.string_value = NULL;
-    }
-}
-
-static bool queue_push(message_queue_t *queue, const char *message) {
-    if (queue->size >= MAX_QUEUE_SIZE) {
-        return false; // Queue is full
-    }
-    
-    strncpy(queue->messages[queue->rear], message, MAX_MESSAGE_LENGTH - 1);
-    queue->messages[queue->rear][MAX_MESSAGE_LENGTH - 1] = '\0';
-    
-    queue->rear = (queue->rear + 1) % MAX_QUEUE_SIZE;
-    queue->size++;
-    
-    return true;
-}
-
-static bool queue_pop(message_queue_t *queue, char *message) {
-    if (queue->size <= 0) {
-        return false; // Queue is empty
-    }
-    
-    strncpy(message, queue->messages[queue->front], MAX_MESSAGE_LENGTH);
-    
-    queue->front = (queue->front + 1) % MAX_QUEUE_SIZE;
-    queue->size--;
-    
-    return true;
-}
-
-static bool memory_set(memory_dict_t *memory, const char *key, value_t value) {
-    // Look for existing key
-    for (int i = 0; i < memory->count; i++) {
-        if (strcmp(memory->entries[i].key, key) == 0) {
-            // Free previous value if it was a string
-            free_value(&memory->entries[i].value);
-            
-            // Set new value
-            memory->entries[i].value = value;
-            return true;
-        }
-    }
-    
-    // Add new entry
-    if (memory->count >= MAX_MEMORY_ENTRIES) {
-        free_value(&value);
-        return false; // No space for new entry
-    }
-    
-    strncpy(memory->entries[memory->count].key, key, MAX_NAME_LENGTH - 1);
-    memory->entries[memory->count].key[MAX_NAME_LENGTH - 1] = '\0';
-    memory->entries[memory->count].value = value;
-    memory->count++;
-    
-    return true;
-}
 
 static value_t* memory_get(memory_dict_t *memory, const char *key) {
-    for (int i = 0; i < memory->count; i++) {
-        if (strcmp(memory->entries[i].key, key) == 0) {
+    if (!memory || !key) {
+        return NULL;
+    }
+    
+    for (int i = 0; i < MEMORY_SIZE; i++) {
+        if (memory->entries[i].is_used && memory->entries[i].key && 
+            strcmp(memory->entries[i].key, key) == 0) {
             return &memory->entries[i].value;
         }
     }
     return NULL;
 }
 
-static value_t* context_get(memory_dict_t *context, const char *key) {
-    if (!context) {
-        return NULL;
-    }
-    
-    return memory_get(context, key);
-}
+

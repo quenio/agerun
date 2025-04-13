@@ -107,4 +107,13 @@ bool agerun_save_methods(void);
  */
 bool agerun_load_methods(void);
 
+/**
+ * Set a value in memory
+ * @param memory Memory dictionary
+ * @param key Key to set
+ * @param value Value to set
+ * @return true if successful, false otherwise
+ */
+bool memory_set(void *memory, const char *key, void *value);
+
 #endif /* AGERUN_H */
