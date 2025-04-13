@@ -95,18 +95,43 @@ static void test_message_passing(void) {
 int main(void) {
     printf("Starting Agerun tests...\n");
     
-    // Initialize the runtime with a test method
-    agent_id_t initial_agent = agerun_init("test_init", 0);
-    if (initial_agent == 0) {
-        // If method doesn't exist, create it
-        version_t version = agerun_method("test_init", "send(0, \"Runtime initialized\")", 0, true, false);
-        assert(version > 0);
-        
-        // Try again
-        initial_agent = agerun_init("test_init", version);
+    // First initialize the runtime
+    agent_id_t initial_agent = agerun_init(NULL, 0);
+    if (initial_agent != 0) {
+        printf("Error: Unexpected agent created during initialization\n");
+        agerun_shutdown();
+        return 1;
     }
     
-    assert(initial_agent > 0);
+    // Now create our test method
+    version_t version = agerun_method("test_init", "send(0, \"Runtime initialized\")", 0, true, false);
+    if (version == 0) {
+        printf("Error: Failed to create test_init method\n");
+        agerun_shutdown();
+        return 1;
+    }
+    
+    // Create our initial agent
+    initial_agent = agerun_create("test_init", version, NULL);
+    if (initial_agent == 0) {
+        printf("Error: Failed to create initial agent\n");
+        agerun_shutdown();
+        return 1;
+    }
+    
+    // Send wake message to initial agent
+    if (!agerun_send(initial_agent, "__wake__")) {
+        printf("Error: Failed to send wake message\n");
+        agerun_shutdown();
+        return 1;
+    }
+    
+    // Process the message
+    if (agerun_process_next_message() == false) {
+        printf("Error: Failed to process message\n");
+        agerun_shutdown();
+        return 1;
+    }
     
     // Run tests
     test_method_creation();
