@@ -7,11 +7,22 @@ int main(void) {
     printf("Agerun Example Application\n");
     printf("==========================\n\n");
     
+    // Initialize the runtime
+    printf("Initializing runtime...\n");
+    agent_id_t initial_agent = agerun_init(NULL, 0);
+    if (initial_agent != 0) {
+        printf("Error: Unexpected agent created during initialization\n");
+        agerun_shutdown();
+        return 1;
+    }
+    printf("Runtime initialized successfully\n\n");
+    
     // Create a simple echo method
     printf("Creating echo method...\n");
     version_t echo_version = agerun_method("echo", "send(0, message)", 0, true, false);
     if (echo_version == 0) {
         printf("Failed to create echo method\n");
+        agerun_shutdown();
         return 1;
     }
     printf("Echo method created with version %d\n\n", echo_version);
@@ -26,18 +37,23 @@ int main(void) {
     version_t counter_version = agerun_method("counter", counter_code, 0, true, true);
     if (counter_version == 0) {
         printf("Failed to create counter method\n");
+        agerun_shutdown();
         return 1;
     }
     printf("Counter method created with version %d\n\n", counter_version);
     
-    // Initialize the runtime with the echo method
-    printf("Initializing runtime...\n");
-    agent_id_t initial_agent = agerun_init("echo", echo_version);
+    // Create the initial agent
+    printf("Creating initial agent...\n");
+    initial_agent = agerun_create("echo", echo_version, NULL);
     if (initial_agent == 0) {
-        printf("Failed to initialize runtime\n");
+        printf("Failed to create initial agent\n");
+        agerun_shutdown();
         return 1;
     }
-    printf("Runtime initialized with initial agent ID: %lld\n\n", initial_agent);
+    
+    // Send wake message to initial agent
+    agerun_send(initial_agent, "__wake__");
+    printf("Initial agent created with ID: %lld\n\n", initial_agent);
     
     // Process the __wake__ message sent to the initial agent
     printf("Processing initial __wake__ message...\n");
