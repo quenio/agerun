@@ -130,3 +130,5 @@ When making changes, always follow these steps to ensure code quality:
    - Test changes with both normal and edge cases
    - Verify behavior matches the specification
    - Use the test suite to catch regressions
+   - Create separate test files for new functionality rather than modifying implementation files
+   - Don't expose internal functions just for testing - create proper test interfaces
