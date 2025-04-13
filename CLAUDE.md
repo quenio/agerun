@@ -120,7 +120,8 @@ When making changes, always follow these steps to ensure code quality:
    - Use proper type declarations and avoid implicit conversions
    - Never add unused functions, and always remove them if found
 
-5. **Handle compiler warnings**:
+5. **Handle compiler warnings and errors**:
+   - All compilation warnings and errors must be fixed before committing files
    - Consider temporarily disabling -Werror during development if needed
    - Address all warnings before finalizing code
    - Document reasons for any deliberately ignored warnings
