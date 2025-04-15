@@ -1,5 +1,5 @@
-#ifndef AGERUN_INTERPRETER_H
-#define AGERUN_INTERPRETER_H
+#ifndef INTERPRETER_H
+#define INTERPRETER_H
 
 #include <stdbool.h>
 
@@ -15,4 +15,4 @@ struct agent_s;
  */
 bool interpret_agent_method(struct agent_s *agent, const char *message, const char *instructions);
 
-#endif /* AGERUN_INTERPRETER_H */
+#endif /* INTERPRETER_H */
