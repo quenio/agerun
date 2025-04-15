@@ -13,6 +13,6 @@ struct agent_s;
  * @param instructions The method instructions to execute
  * @return true if execution was successful, false otherwise
  */
-bool interpret_agent_method(struct agent_s *agent, const char *message, const char *instructions);
+bool ar_interpret_agent_method(struct agent_s *agent, const char *message, const char *instructions);
 
 #endif /* AGERUN_INTERPRETER_H */

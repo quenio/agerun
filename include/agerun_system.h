@@ -13,12 +13,12 @@ typedef int32_t version_t;
  * @param version Version of the method (0 for latest)
  * @return ID of the created initial agent, or 0 on failure
  */
-agent_id_t agerun_init(const char *method_name, version_t version);
+agent_id_t ar_init(const char *method_name, version_t version);
 
 /**
  * Shut down the Agerun runtime system
  */
-void agerun_shutdown(void);
+void ar_shutdown(void);
 
 /**
  * Define a new method with the given instructions
@@ -29,7 +29,7 @@ void agerun_shutdown(void);
  * @param persist Whether agents using this method should persist
  * @return New version number, or 0 on failure
  */
-version_t agerun_method(const char *name, const char *instructions, 
+version_t ar_method(const char *name, const char *instructions, 
                         version_t previous_version, bool backward_compatible, 
                         bool persist);
 
@@ -40,7 +40,7 @@ version_t agerun_method(const char *name, const char *instructions,
  * @param context Context dictionary (NULL for empty)
  * @return Unique agent ID, or 0 on failure
  */
-agent_id_t agerun_create(const char *method_name, version_t version, 
+agent_id_t ar_create(const char *method_name, version_t version, 
                          void *context);
 
 /**
@@ -48,7 +48,7 @@ agent_id_t agerun_create(const char *method_name, version_t version,
  * @param agent_id ID of the agent to destroy
  * @return true if successful, false otherwise
  */
-bool agerun_destroy(agent_id_t agent_id);
+bool ar_destroy(agent_id_t agent_id);
 
 /**
  * Send a message to an agent
@@ -56,56 +56,56 @@ bool agerun_destroy(agent_id_t agent_id);
  * @param message Message content
  * @return true if successful, false otherwise
  */
-bool agerun_send(agent_id_t agent_id, const char *message);
+bool ar_send(agent_id_t agent_id, const char *message);
 
 /**
  * Process the next pending message in the system
  * @return true if a message was processed, false if no messages
  */
-bool agerun_process_next_message(void);
+bool ar_process_next_message(void);
 
 /**
  * Process all pending messages in the system
  * @return Number of messages processed
  */
-int agerun_process_all_messages(void);
+int ar_process_all_messages(void);
 
 /**
  * Check if an agent exists
  * @param agent_id ID of the agent to check
  * @return true if the agent exists, false otherwise
  */
-bool agerun_agent_exists(agent_id_t agent_id);
+bool ar_agent_exists(agent_id_t agent_id);
 
 /**
  * Get the current number of active agents
  * @return Number of active agents
  */
-int agerun_count_agents(void);
+int ar_count_agents(void);
 
 /**
  * Save all persistent agents to disk
  * @return true if successful, false otherwise
  */
-bool agerun_save_agents(void);
+bool ar_save_agents(void);
 
 /**
  * Load all persistent agents from disk
  * @return true if successful, false otherwise
  */
-bool agerun_load_agents(void);
+bool ar_load_agents(void);
 
 /**
  * Save all method definitions to disk
  * @return true if successful, false otherwise
  */
-bool agerun_save_methods(void);
+bool ar_save_methods(void);
 
 /**
  * Load all method definitions from disk
  * @return true if successful, false otherwise
  */
-bool agerun_load_methods(void);
+bool ar_load_methods(void);
 
 /**
  * Set a value in memory
@@ -114,6 +114,6 @@ bool agerun_load_methods(void);
  * @param value Value to set
  * @return true if successful, false otherwise
  */
-bool memory_set(void *memory, const char *key, void *value);
+bool ar_memory_set(void *memory, const char *key, void *value);
 
 #endif /* AGERUN_SYSTEM_H */

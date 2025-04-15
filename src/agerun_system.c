@@ -98,7 +98,7 @@ static method_t* find_method(const char *name, version_t version);
 static bool interpret_method(agent_t *agent, const char *message);
 
 /* Implementation */
-agent_id_t agerun_init(const char *method_name, version_t version) {
+agent_id_t ar_init(const char *method_name, version_t version) {
     if (is_initialized) {
         printf("Agerun already initialized\n");
         return 0;
@@ -117,21 +117,21 @@ agent_id_t agerun_init(const char *method_name, version_t version) {
     is_initialized = true;
     
     // Load methods from file if available
-    if (!agerun_load_methods()) {
+    if (!ar_load_methods()) {
         printf("Warning: Could not load methods from file\n");
     }
     
     // Load agents from file if available
-    if (!agerun_load_agents()) {
+    if (!ar_load_agents()) {
         printf("Warning: Could not load agents from file\n");
     }
     
     // Create initial agent if method_name is provided
     if (method_name != NULL) {
-        agent_id_t initial_agent = agerun_create(method_name, version, NULL);
+        agent_id_t initial_agent = ar_create(method_name, version, NULL);
         if (initial_agent != 0) {
             // Send wake message to initial agent
-            agerun_send(initial_agent, "__wake__");
+            ar_send(initial_agent, "__wake__");
         }
         return initial_agent;
     }
@@ -139,16 +139,16 @@ agent_id_t agerun_init(const char *method_name, version_t version) {
     return 0;
 }
 
-void agerun_shutdown(void) {
+void ar_shutdown(void) {
     if (!is_initialized) {
         return;
     }
     
     // Save methods to file
-    agerun_save_methods();
+    ar_save_methods();
     
     // Save persistent agents to file
-    agerun_save_agents();
+    ar_save_agents();
     
     // Clean up memory for all active agents
     for (int i = 0; i < MAX_AGENTS; i++) {
@@ -166,7 +166,7 @@ void agerun_shutdown(void) {
     is_initialized = false;
 }
 
-version_t agerun_method(const char *name, const char *instructions, 
+version_t ar_method(const char *name, const char *instructions, 
                         version_t previous_version, bool backward_compatible, 
                         bool persist) {
     if (!is_initialized || !name || !instructions) {
@@ -218,7 +218,7 @@ version_t agerun_method(const char *name, const char *instructions,
     return new_version;
 }
 
-agent_id_t agerun_create(const char *method_name, version_t version, void *context) {
+agent_id_t ar_create(const char *method_name, version_t version, void *context) {
     if (!is_initialized || !method_name) {
         return 0;
     }
@@ -271,7 +271,7 @@ agent_id_t agerun_create(const char *method_name, version_t version, void *conte
     return agents[agent_idx].id;
 }
 
-bool agerun_destroy(agent_id_t agent_id) {
+bool ar_destroy(agent_id_t agent_id) {
     if (!is_initialized || agent_id == 0) {
         return false;
     }
@@ -280,7 +280,7 @@ bool agerun_destroy(agent_id_t agent_id) {
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (agents[i].is_active && agents[i].id == agent_id) {
             // Send sleep message before destroying
-            agerun_send(agent_id, "__sleep__");
+            ar_send(agent_id, "__sleep__");
             
             // Process the sleep message
             char message[MAX_MESSAGE_LENGTH];
@@ -305,7 +305,7 @@ bool agerun_destroy(agent_id_t agent_id) {
     return false;
 }
 
-bool agerun_send(agent_id_t agent_id, const char *message) {
+bool ar_send(agent_id_t agent_id, const char *message) {
     if (!is_initialized || !message) {
         return false;
     }
@@ -326,7 +326,7 @@ bool agerun_send(agent_id_t agent_id, const char *message) {
     return false;
 }
 
-bool agerun_process_next_message(void) {
+bool ar_process_next_message(void) {
     // Find an agent with a non-empty message queue
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (agents[i].is_active && agents[i].queue.size > 0) {
@@ -342,17 +342,17 @@ bool agerun_process_next_message(void) {
     return false; // No messages to process
 }
 
-int agerun_process_all_messages(void) {
+int ar_process_all_messages(void) {
     int count = 0;
     
-    while (agerun_process_next_message()) {
+    while (ar_process_next_message()) {
         count++;
     }
     
     return count;
 }
 
-bool agerun_agent_exists(agent_id_t agent_id) {
+bool ar_agent_exists(agent_id_t agent_id) {
     if (!is_initialized) {
         return false;
     }
@@ -366,7 +366,7 @@ bool agerun_agent_exists(agent_id_t agent_id) {
     return false;
 }
 
-int agerun_count_agents(void) {
+int ar_count_agents(void) {
     if (!is_initialized) {
         return 0;
     }
@@ -381,7 +381,7 @@ int agerun_count_agents(void) {
     return count;
 }
 
-bool agerun_save_agents(void) {
+bool ar_save_agents(void) {
     if (!is_initialized) {
         return false;
     }
@@ -433,7 +433,7 @@ bool agerun_save_agents(void) {
     return true;
 }
 
-bool agerun_load_agents(void) {
+bool ar_load_agents(void) {
     if (!is_initialized) {
         return false;
     }
@@ -459,7 +459,7 @@ bool agerun_load_agents(void) {
         }
         
         // Create the agent
-        agent_id_t new_id = agerun_create(method_name, version, NULL);
+        agent_id_t new_id = ar_create(method_name, version, NULL);
         if (new_id == 0) {
             printf("Error: Could not recreate agent %lld\n", id);
             continue;
@@ -502,7 +502,7 @@ bool agerun_load_agents(void) {
                         continue;
                     }
                     
-                    memory_set(&agents[j].memory, key, &value);
+                    ar_memory_set(&agents[j].memory, key, &value);
                     
                     if (value.type == VALUE_STRING && value.data.string_value) {
                         free(value.data.string_value);
@@ -523,7 +523,7 @@ bool agerun_load_agents(void) {
     return true;
 }
 
-bool agerun_save_methods(void) {
+bool ar_save_methods(void) {
     if (!is_initialized) {
         return false;
     }
@@ -564,7 +564,7 @@ bool agerun_save_methods(void) {
     return true;
 }
 
-bool agerun_load_methods(void) {
+bool ar_load_methods(void) {
     if (!is_initialized) {
         return false;
     }
@@ -638,7 +638,7 @@ static bool init_memory_dict(memory_dict_t *dict) {
     return true;
 }
 
-bool memory_set(void *memory_ptr, const char *key, void *value_ptr) {
+bool ar_memory_set(void *memory_ptr, const char *key, void *value_ptr) {
     memory_dict_t *memory = (memory_dict_t *)memory_ptr;
     value_t value = *(value_t *)value_ptr;
     if (!memory || !key) {
@@ -808,7 +808,7 @@ static bool interpret_method(agent_t *agent, const char *message) {
     printf("Agent %lld received message: %s\n", agent->id, message);
     
     // Call the interpreter function with the method instructions
-    return interpret_agent_method(agent, message, method->instructions);
+    return ar_interpret_agent_method(agent, message, method->instructions);
 }
 
 

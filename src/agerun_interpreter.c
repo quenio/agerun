@@ -49,11 +49,11 @@ typedef struct agent_s {
 } agent_t;
 
 // External function declarations
-extern bool agerun_send(agent_id_t agent_id, const char *message);
-extern agent_id_t agerun_create(const char *method_name, version_t version, void *context);
-extern bool agerun_destroy(agent_id_t agent_id);
-extern version_t agerun_method(const char *name, const char *instructions, version_t previous_version, bool backward_compatible, bool persist);
-extern bool memory_set(void *memory, const char *key, void *value);
+extern bool ar_send(agent_id_t agent_id, const char *message);
+extern agent_id_t ar_create(const char *method_name, version_t version, void *context);
+extern bool ar_destroy(agent_id_t agent_id);
+extern version_t ar_method(const char *name, const char *instructions, version_t previous_version, bool backward_compatible, bool persist);
+extern bool ar_memory_set(void *memory, const char *key, void *value);
 
 // Forward declarations for internal functions
 static bool parse_and_execute_instruction(agent_t *agent, const char *message, const char *instruction);
@@ -336,7 +336,7 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
                         
                         // Send the message
                         if (target_id > 0 && send_message) {
-                            agerun_send(target_id, send_message);
+                            ar_send(target_id, send_message);
                             
                             // Set result to success
                             result.type = VALUE_INT;
@@ -468,7 +468,7 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
 
 
 // Main interpretation function for agent methods
-bool interpret_agent_method(agent_t *agent, const char *message, const char *instructions) {
+bool ar_interpret_agent_method(agent_t *agent, const char *message, const char *instructions) {
     (void)agent; // Avoid unused parameter warning
     (void)message; // Avoid unused parameter warning
     
@@ -483,7 +483,7 @@ bool interpret_agent_method(agent_t *agent, const char *message, const char *ins
     bool result = true;
     
     while (instruction != NULL) {
-        instruction = trim(instruction);
+        instruction = ar_trim(instruction);
         
         // Skip empty lines and comments
         if (strlen(instruction) > 0 && instruction[0] != '#') {
@@ -503,7 +503,7 @@ bool interpret_agent_method(agent_t *agent, const char *message, const char *ins
 // Parse and execute a single instruction
 static bool parse_and_execute_instruction(agent_t *agent, const char *message, const char *instruction) {
     char *instr_copy = strdup(instruction);
-    char *instr_trimmed = trim(instr_copy);
+    char *instr_trimmed = ar_trim(instr_copy);
     bool result = true;
     
     // Check for assignment operation (key := value)
@@ -511,8 +511,8 @@ static bool parse_and_execute_instruction(agent_t *agent, const char *message, c
     if (assign_pos != NULL) {
         // Extract key and value parts
         *assign_pos = '0';
-        char *key = trim(instr_trimmed);
-        char *value_expr = trim(assign_pos + 2);
+        char *key = ar_trim(instr_trimmed);
+        char *value_expr = ar_trim(assign_pos + 2);
         
         // Direct key access - no need to check for memory["key"] syntax
         // as memory dictionary is implicit per the spec
@@ -522,7 +522,7 @@ static bool parse_and_execute_instruction(agent_t *agent, const char *message, c
         value_t value = evaluate_expression(agent, message, value_expr, &offset);
         
         // Store in agent's memory
-        memory_set(&agent->memory, key, &value);
+        ar_memory_set(&agent->memory, key, &value);
     }
     // Parse function call or other expression
     else {

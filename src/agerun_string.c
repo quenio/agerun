@@ -6,7 +6,7 @@
 /**
  * Helper function to trim whitespace from a string
  */
-char* trim(char *str) {
+char* ar_trim(char *str) {
     if (!str) return NULL;
     
     // Trim leading space

@@ -7,6 +7,6 @@
  * @param str The string to trim
  * @return Pointer to the trimmed string
  */
-char* trim(char *str);
+char* ar_trim(char *str);
 
 #endif /* AGERUN_STRING_H */
