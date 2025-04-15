@@ -46,7 +46,7 @@ Agerun is a lightweight, message-driven agent system where each agent is defined
 ### Basic Usage
 
 ```c
-#include <agerun.h>
+#include <system.h>
 #include <stdio.h>
 
 int main() {
