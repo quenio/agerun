@@ -28,11 +28,11 @@ When making changes, always follow these steps to ensure code quality:
 ## Project Structure
 
 - **/include**: Header files
-  - `agerun.h`: Public API
+  - `agerun_system.h`: Public API
   - `agerun_interpreter.h`: Interpreter interface
 
 - **/src**: Implementation files
-  - `agerun.c`: Core runtime implementation
+  - `agerun_system.c`: Core runtime implementation
   - `agerun_interpreter.c`: Instruction language interpreter
 
 - **/examples**: Example applications
@@ -49,7 +49,7 @@ When making changes, always follow these steps to ensure code quality:
    - Maximum line length of 100 characters
 
 2. **Naming Conventions**:
-   - Function names: `lowercase_with_underscores`
+   - Function names: `ar_lowercase_with_underscores` (with `ar_` prefix)
    - Variables: `lowercase_with_underscores`
    - Constants and macros: `UPPERCASE_WITH_UNDERSCORES`
    - Types: `lowercase_with_underscores_t` (with `_t` suffix)
@@ -80,8 +80,8 @@ When making changes, always follow these steps to ensure code quality:
    - Agent management (creation, destruction)
 
 3. **Persistence**:
-   - Methods are stored in `agrun.methods`
-   - Agents are stored in `agrun.agents` if persistent
+   - Methods are stored in `agerun.methods`
+   - Agents are stored in `agerun.agents` if persistent
 
 
 ## Debugging Tips
