@@ -1,5 +1,6 @@
-#include "../include/system.h"
-#include "../include/interpreter.h"
+#include "../include/agerun_system.h"
+#include "../include/agerun_interpreter.h"
+#include "../include/agerun_string.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,26 +59,6 @@ extern bool memory_set(void *memory, const char *key, void *value);
 static bool parse_and_execute_instruction(agent_t *agent, const char *message, const char *instruction);
 static value_t evaluate_expression(agent_t *agent, const char *message, const char *expr, int *offset);
 
-// Helper function to trim whitespace from a string
-static char* trim(char *str) {
-    if (!str) return NULL;
-    
-    // Trim leading space
-    char *start = str;
-    while(isspace((unsigned char)*start)) start++;
-    
-    if(*start == 0) // All spaces
-        return start;
-    
-    // Trim trailing space
-    char *end = start + strlen(start) - 1;
-    while(end > start && isspace((unsigned char)*end)) end--;
-    
-    // Write new null terminator
-    *(end + 1) = 0;
-    
-    return start;
-}
 
 // Free a value
 static void free_value(value_t *value) {

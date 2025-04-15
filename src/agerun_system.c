@@ -1,6 +1,6 @@
 /* Agerun Runtime System Implementation */
-#include "../include/system.h"
-#include "../include/interpreter.h"
+#include "../include/agerun_system.h"
+#include "../include/agerun_interpreter.h"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,5 +1,5 @@
-#ifndef AGERUN_H
-#define AGERUN_H
+#ifndef AGERUN_SYSTEM_H
+#define AGERUN_SYSTEM_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -116,4 +116,4 @@ bool agerun_load_methods(void);
  */
 bool memory_set(void *memory, const char *key, void *value);
 
-#endif /* AGERUN_H */
+#endif /* AGERUN_SYSTEM_H */
