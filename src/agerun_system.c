@@ -17,20 +17,10 @@
 #define MAX_METHOD_NAME_LENGTH 64
 #define MAX_MESSAGE_LENGTH 1024
 #define MAX_INSTRUCTIONS_LENGTH 16384
-#define MEMORY_SIZE 256
+// MEMORY_SIZE is now defined in agerun_data.h
 #define QUEUE_SIZE 256
 
-/* Memory Dictionary for Agent State */
-typedef struct memory_entry_s {
-    char *key;
-    data_t value;
-    bool is_used;
-} memory_entry_t;
-
-typedef struct memory_dict_s {
-    memory_entry_t entries[MEMORY_SIZE];
-    int count;
-} memory_dict_t;
+/* Memory Dictionary structure is now defined in agerun_data.h */
 
 /* Message Queue for Agent Communication */
 typedef struct message_queue_s {
@@ -71,8 +61,6 @@ static agent_id_t next_agent_id = 1;
 static bool is_initialized = false;
 
 /* Forward Declarations */
-static bool init_memory_dict(memory_dict_t *dict);
-static data_t* memory_get(memory_dict_t *memory, const char *key);
 static bool init_message_queue(message_queue_t *queue);
 static bool queue_push(message_queue_t *queue, const char *message);
 static bool queue_pop(message_queue_t *queue, char *message);
@@ -246,7 +234,7 @@ agent_id_t ar_create(const char *method_name, version_t version, void *context) 
     agents[agent_idx].is_persistent = method->persist;
     agents[agent_idx].context = (memory_dict_t *)context;
     
-    init_memory_dict(&agents[agent_idx].memory);
+    ar_init_memory_dict(&agents[agent_idx].memory);
     init_message_queue(&agents[agent_idx].queue);
     
     printf("Created agent %lld using method %s version %d\n", 
@@ -608,60 +596,7 @@ bool ar_load_methods(void) {
     return true;
 }
 
-static bool init_memory_dict(memory_dict_t *dict) {
-    if (!dict) {
-        return false;
-    }
-    
-    for (int i = 0; i < MEMORY_SIZE; i++) {
-        dict->entries[i].is_used = false;
-        dict->entries[i].key = NULL;
-    }
-    
-    dict->count = 0;
-    return true;
-}
-
-bool ar_memory_set(void *memory_ptr, const char *key, void *value_ptr) {
-    memory_dict_t *memory = (memory_dict_t *)memory_ptr;
-    data_t value = *(data_t *)value_ptr;
-    if (!memory || !key) {
-        return false;
-    }
-    
-    // First, check if key already exists using memory_get
-    data_t *existing = memory_get(memory, key);
-    if (existing) {
-        // Free old value if it's a string
-        ar_free_data(existing);
-        
-        // Set new value
-        *existing = value;
-        if (value.type == DATA_STRING && value.data.string_value) {
-            existing->data.string_value = strdup(value.data.string_value);
-        }
-        
-        return true;
-    }
-    
-    // Find empty slot
-    for (int i = 0; i < MEMORY_SIZE; i++) {
-        if (!memory->entries[i].is_used) {
-            memory->entries[i].is_used = true;
-            memory->entries[i].key = strdup(key);
-            memory->entries[i].value = value;
-            
-            if (value.type == DATA_STRING && value.data.string_value) {
-                memory->entries[i].value.data.string_value = strdup(value.data.string_value);
-            }
-            
-            memory->count++;
-            return true;
-        }
-    }
-    
-    return false; // No space left
-}
+// Memory functions are now defined in agerun_data.c
 
 // This function has been moved to agerun_value.c
 
@@ -789,18 +724,6 @@ static bool interpret_method(agent_t *agent, const char *message) {
 }
 
 
-static data_t* memory_get(memory_dict_t *memory, const char *key) {
-    if (!memory || !key) {
-        return NULL;
-    }
-    
-    for (int i = 0; i < MEMORY_SIZE; i++) {
-        if (memory->entries[i].is_used && memory->entries[i].key && 
-            strcmp(memory->entries[i].key, key) == 0) {
-            return &memory->entries[i].value;
-        }
-    }
-    return NULL;
-}
+// Memory functions are now defined in agerun_data.c
 
 

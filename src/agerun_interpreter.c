@@ -10,17 +10,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-/* Memory Dictionary for Agent State */
-typedef struct memory_entry_s {
-    char *key;
-    data_t value;
-    bool is_used;
-} memory_entry_t;
-
-typedef struct memory_dict_s {
-    memory_entry_t entries[256]; // Use same size as defined in agerun.c
-    int count;
-} memory_dict_t;
+/* Memory Dictionary structure is now defined in agerun_data.h */
 
 typedef struct agent_s {
     agent_id_t id;
