@@ -1,5 +1,5 @@
-#ifndef AGERUN_VALUE_H
-#define AGERUN_VALUE_H
+#ifndef AGERUN_DATA_H
+#define AGERUN_DATA_H
 
 #include <stdint.h>
 
@@ -30,4 +30,4 @@ typedef struct value_s {
  */
 void ar_free_value(value_t *value);
 
-#endif /* AGERUN_VALUE_H */
+#endif /* AGERUN_DATA_H */
