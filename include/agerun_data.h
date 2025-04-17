@@ -13,8 +13,12 @@
 typedef enum {
     DATA_INT,
     DATA_DOUBLE,
-    DATA_STRING
+    DATA_STRING,
+    DATA_DICT
 } data_type_t;
+
+/* Forward declaration */
+struct dict_s;
 
 /**
  * Data structure for storing various data types
@@ -25,6 +29,7 @@ typedef struct data_s {
         int64_t int_value;
         double double_value;
         char *string_value;
+        struct dict_s *dict_value;
     } data;
 } data_t;
 
@@ -74,5 +79,17 @@ bool ar_dict_init(dict_t *dict);
  * @return true if successful, false otherwise
  */
 bool ar_dict_set(void *dictionary, const char *key, void *value_ptr);
+
+/**
+ * Create a new empty dictionary
+ * @return Pointer to the new dictionary, or NULL on failure
+ */
+dict_t* ar_dict_create(void);
+
+/**
+ * Create a new dictionary data value
+ * @return Data value containing a dictionary
+ */
+data_t ar_data_create_dict(void);
 
 #endif /* AGERUN_DATA_H */

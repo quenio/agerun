@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* Forward declaration for recursive freeing */
+static void free_dict(dict_t *dict);
+
 /**
  * Free resources associated with a data structure
  * @param data Pointer to the data to free
@@ -12,7 +15,28 @@ void ar_free_data(data_t *data) {
     if (data->type == DATA_STRING && data->data.string_value) {
         free(data->data.string_value);
         data->data.string_value = NULL;
+    } else if (data->type == DATA_DICT && data->data.dict_value) {
+        free_dict(data->data.dict_value);
+        data->data.dict_value = NULL;
     }
+}
+
+/**
+ * Free all resources in a dictionary
+ * @param dict Dictionary to free
+ */
+static void free_dict(dict_t *dict) {
+    if (!dict) return;
+    
+    for (int i = 0; i < MEMORY_SIZE; i++) {
+        if (dict->entries[i].is_used && dict->entries[i].key) {
+            free(dict->entries[i].key);
+            ar_free_data(&dict->entries[i].value);
+        }
+    }
+    
+    /* Free the dictionary structure itself */
+    free(dict);
 }
 
 /**
@@ -101,4 +125,31 @@ bool ar_dict_set(void *dictionary, const char *key, void *value_ptr) {
     }
     
     return false; // No space left
+}
+
+/**
+ * Create a new empty dictionary
+ * @return Pointer to the new dictionary, or NULL on failure
+ */
+dict_t* ar_dict_create(void) {
+    dict_t *dict = (dict_t *)malloc(sizeof(dict_t));
+    if (!dict) return NULL;
+    
+    if (!ar_dict_init(dict)) {
+        free(dict);
+        return NULL;
+    }
+    
+    return dict;
+}
+
+/**
+ * Create a new dictionary data value
+ * @return Data value containing a dictionary
+ */
+data_t ar_data_create_dict(void) {
+    data_t data;
+    data.type = DATA_DICT;
+    data.data.dict_value = ar_dict_create();
+    return data;
 }
