@@ -1,6 +1,7 @@
 #include "../include/agerun_system.h"
 #include "../include/agerun_interpreter.h"
 #include "../include/agerun_string.h"
+#include "../include/agerun_value.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,22 +9,6 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdint.h>
-
-// Value Type Definitions
-typedef enum {
-    VALUE_INT,
-    VALUE_DOUBLE,
-    VALUE_STRING
-} value_type_t;
-
-typedef struct value_s {
-    value_type_t type;
-    union {
-        int64_t int_value;
-        double double_value;
-        char *string_value;
-    } data;
-} value_t;
 
 /* Memory Dictionary for Agent State */
 typedef struct memory_entry_s {
@@ -60,15 +45,7 @@ static bool parse_and_execute_instruction(agent_t *agent, const char *message, c
 static value_t evaluate_expression(agent_t *agent, const char *message, const char *expr, int *offset);
 
 
-// Free a value
-static void free_value(value_t *value) {
-    if (!value) return;
-    
-    if (value->type == VALUE_STRING && value->data.string_value) {
-        free(value->data.string_value);
-        value->data.string_value = NULL;
-    }
-}
+// This function has been moved to agerun_value.c
 
 
 
@@ -155,12 +132,12 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
             char temp[32];
             snprintf(temp, sizeof(temp), "%lld", key_val.data.int_value);
             key = strdup(temp);
-            free_value(&key_val);
+            ar_free_value(&key_val);
         } else if (key_val.type == VALUE_DOUBLE) {
             char temp[32];
             snprintf(temp, sizeof(temp), "%f", key_val.data.double_value);
             key = strdup(temp);
-            free_value(&key_val);
+            ar_free_value(&key_val);
         }
         
         if (key) {
@@ -403,7 +380,7 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
                 
                 // Free argument values
                 for (int i = 0; i < arg_count; i++) {
-                    free_value(&args[i]);
+                    ar_free_value(&args[i]);
                 }
             }
         }
@@ -459,7 +436,7 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
             }
         }
         
-        free_value(&right_val);
+        ar_free_value(&right_val);
     }
     
     return result;
@@ -528,7 +505,7 @@ static bool parse_and_execute_instruction(agent_t *agent, const char *message, c
     else {
         int offset = 0;
         value_t result_val = evaluate_expression(agent, message, instr_trimmed, &offset);
-        free_value(&result_val); // Discard the result
+        ar_free_value(&result_val); // Discard the result
     }
     
     free(instr_copy);

@@ -1,6 +1,7 @@
 /* Agerun Runtime System Implementation */
 #include "../include/agerun_system.h"
 #include "../include/agerun_interpreter.h"
+#include "../include/agerun_value.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,22 +19,6 @@
 #define MAX_INSTRUCTIONS_LENGTH 16384
 #define MEMORY_SIZE 256
 #define QUEUE_SIZE 256
-
-/* Value Type Definitions */
-typedef enum {
-    VALUE_INT,
-    VALUE_DOUBLE,
-    VALUE_STRING
-} value_type_t;
-
-typedef struct value_s {
-    value_type_t type;
-    union {
-        int64_t int_value;
-        double double_value;
-        char *string_value;
-    } data;
-} value_t;
 
 /* Memory Dictionary for Agent State */
 typedef struct memory_entry_s {
@@ -88,7 +73,6 @@ static bool is_initialized = false;
 /* Forward Declarations */
 static bool init_memory_dict(memory_dict_t *dict);
 static value_t* memory_get(memory_dict_t *memory, const char *key);
-static void free_value(value_t *value);
 static bool init_message_queue(message_queue_t *queue);
 static bool queue_push(message_queue_t *queue, const char *message);
 static bool queue_pop(message_queue_t *queue, char *message);
@@ -157,7 +141,7 @@ void ar_shutdown(void) {
             for (int j = 0; j < MEMORY_SIZE; j++) {
                 if (agents[i].memory.entries[j].is_used && agents[i].memory.entries[j].key) {
                     free(agents[i].memory.entries[j].key);
-                    free_value(&agents[i].memory.entries[j].value);
+                    ar_free_value(&agents[i].memory.entries[j].value);
                 }
             }
         }
@@ -292,7 +276,7 @@ bool ar_destroy(agent_id_t agent_id) {
             for (int j = 0; j < MEMORY_SIZE; j++) {
                 if (agents[i].memory.entries[j].is_used && agents[i].memory.entries[j].key) {
                     free(agents[i].memory.entries[j].key);
-                    free_value(&agents[i].memory.entries[j].value);
+                    ar_free_value(&agents[i].memory.entries[j].value);
                 }
             }
             
@@ -649,7 +633,7 @@ bool ar_memory_set(void *memory_ptr, const char *key, void *value_ptr) {
     value_t *existing = memory_get(memory, key);
     if (existing) {
         // Free old value if it's a string
-        free_value(existing);
+        ar_free_value(existing);
         
         // Set new value
         *existing = value;
@@ -679,14 +663,7 @@ bool ar_memory_set(void *memory_ptr, const char *key, void *value_ptr) {
     return false; // No space left
 }
 
-static void free_value(value_t *value) {
-    if (!value) return;
-    
-    if (value->type == VALUE_STRING && value->data.string_value) {
-        free(value->data.string_value);
-        value->data.string_value = NULL;
-    }
-}
+// This function has been moved to agerun_value.c
 
 static bool init_message_queue(message_queue_t *queue) {
     if (!queue) {
