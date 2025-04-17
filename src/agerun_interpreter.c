@@ -19,8 +19,8 @@ typedef struct agent_s {
     bool is_active;
     bool is_persistent;
     void *queue;
-    memory_dict_t memory;
-    memory_dict_t *context;
+    dict_t memory;
+    dict_t *context;
 } agent_t;
 
 // External function declarations
@@ -28,7 +28,7 @@ extern bool ar_send(agent_id_t agent_id, const char *message);
 extern agent_id_t ar_create(const char *method_name, version_t version, void *context);
 extern bool ar_destroy(agent_id_t agent_id);
 extern version_t ar_method(const char *name, const char *instructions, version_t previous_version, bool backward_compatible, bool persist);
-extern bool ar_memory_set(void *memory, const char *key, void *value);
+extern bool ar_dict_set(void *dictionary, const char *key, void *value);
 
 // Forward declarations for internal functions
 static bool parse_and_execute_instruction(agent_t *agent, const char *message, const char *instruction);
@@ -489,7 +489,7 @@ static bool parse_and_execute_instruction(agent_t *agent, const char *message, c
         data_t value = evaluate_expression(agent, message, value_expr, &offset);
         
         // Store in agent's memory
-        ar_memory_set(&agent->memory, key, &value);
+        ar_dict_set(&agent->memory, key, &value);
     }
     // Parse function call or other expression
     else {

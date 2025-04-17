@@ -29,21 +29,21 @@ typedef struct data_s {
 } data_t;
 
 /**
- * Memory Dictionary Entry for storing key-value pairs
+ * Dictionary Entry for storing key-value pairs
  */
-typedef struct memory_entry_s {
+typedef struct entry_s {
     char *key;
     data_t value;
     bool is_used;
-} memory_entry_t;
+} entry_t;
 
 /**
- * Memory Dictionary for storing agent state
+ * Dictionary for storing agent state
  */
-typedef struct memory_dict_s {
-    memory_entry_t entries[MEMORY_SIZE];
+typedef struct dict_s {
+    entry_t entries[MEMORY_SIZE];
     int count;
-} memory_dict_t;
+} dict_t;
 
 /**
  * Free resources associated with a data structure
@@ -52,27 +52,27 @@ typedef struct memory_dict_s {
 void ar_free_data(data_t *data);
 
 /**
- * Get a value from memory dictionary by key
- * @param memory Memory dictionary
+ * Get a value from dictionary by key
+ * @param dictionary Dictionary
  * @param key Key to lookup
  * @return Pointer to the value, or NULL if not found
  */
-data_t* ar_memory_get(void *memory, const char *key);
+data_t* ar_dict_get(void *dictionary, const char *key);
 
 /**
- * Initialize a memory dictionary
- * @param dict Memory dictionary to initialize
+ * Initialize a dictionary
+ * @param dict Dictionary to initialize
  * @return true if successful, false otherwise
  */
-bool ar_init_memory_dict(memory_dict_t *dict);
+bool ar_dict_init(dict_t *dict);
 
 /**
- * Set a value in memory dictionary
- * @param memory Memory dictionary
+ * Set a value in dictionary
+ * @param dictionary Dictionary
  * @param key Key to set
  * @param value_ptr Pointer to value to set
  * @return true if successful, false otherwise
  */
-bool ar_memory_set(void *memory, const char *key, void *value_ptr);
+bool ar_dict_set(void *dictionary, const char *key, void *value_ptr);
 
 #endif /* AGERUN_DATA_H */

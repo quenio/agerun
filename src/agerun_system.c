@@ -48,8 +48,8 @@ typedef struct agent_s {
     bool is_active;
     bool is_persistent;
     message_queue_t queue;
-    memory_dict_t memory;
-    memory_dict_t *context;
+    dict_t memory;
+    dict_t *context;
 } agent_t;
 
 /* Global State */
@@ -232,9 +232,9 @@ agent_id_t ar_create(const char *method_name, version_t version, void *context) 
     agents[agent_idx].method_version = method->version;
     agents[agent_idx].is_active = true;
     agents[agent_idx].is_persistent = method->persist;
-    agents[agent_idx].context = (memory_dict_t *)context;
+    agents[agent_idx].context = (dict_t *)context;
     
-    ar_init_memory_dict(&agents[agent_idx].memory);
+    ar_dict_init(&agents[agent_idx].memory);
     init_message_queue(&agents[agent_idx].queue);
     
     printf("Created agent %lld using method %s version %d\n", 
@@ -474,7 +474,7 @@ bool ar_load_agents(void) {
                         continue;
                     }
                     
-                    ar_memory_set(&agents[j].memory, key, &value);
+                    ar_dict_set(&agents[j].memory, key, &value);
                     
                     if (value.type == DATA_STRING && value.data.string_value) {
                         free(value.data.string_value);

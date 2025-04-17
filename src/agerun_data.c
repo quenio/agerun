@@ -16,11 +16,11 @@ void ar_free_data(data_t *data) {
 }
 
 /**
- * Initialize a memory dictionary
- * @param dict Memory dictionary to initialize
+ * Initialize a dictionary
+ * @param dict Dictionary to initialize
  * @return true if successful, false otherwise
  */
-bool ar_init_memory_dict(memory_dict_t *dict) {
+bool ar_dict_init(dict_t *dict) {
     if (!dict) {
         return false;
     }
@@ -35,42 +35,42 @@ bool ar_init_memory_dict(memory_dict_t *dict) {
 }
 
 /**
- * Get a value from memory dictionary by key
- * @param memory Memory dictionary
+ * Get a value from dictionary by key
+ * @param dictionary Dictionary
  * @param key Key to lookup
  * @return Pointer to the value, or NULL if not found
  */
-data_t* ar_memory_get(void *memory, const char *key) {
-    memory_dict_t *mem = (memory_dict_t *)memory;
-    if (!mem || !key) {
+data_t* ar_dict_get(void *dictionary, const char *key) {
+    dict_t *dict = (dict_t *)dictionary;
+    if (!dict || !key) {
         return NULL;
     }
     
     for (int i = 0; i < MEMORY_SIZE; i++) {
-        if (mem->entries[i].is_used && mem->entries[i].key && 
-            strcmp(mem->entries[i].key, key) == 0) {
-            return &mem->entries[i].value;
+        if (dict->entries[i].is_used && dict->entries[i].key && 
+            strcmp(dict->entries[i].key, key) == 0) {
+            return &dict->entries[i].value;
         }
     }
     return NULL;
 }
 
 /**
- * Set a value in memory dictionary
- * @param memory Memory dictionary
+ * Set a value in dictionary
+ * @param dictionary Dictionary
  * @param key Key to set
  * @param value_ptr Pointer to value to set
  * @return true if successful, false otherwise
  */
-bool ar_memory_set(void *memory, const char *key, void *value_ptr) {
-    memory_dict_t *mem = (memory_dict_t *)memory;
+bool ar_dict_set(void *dictionary, const char *key, void *value_ptr) {
+    dict_t *dict = (dict_t *)dictionary;
     data_t value = *(data_t *)value_ptr;
-    if (!mem || !key) {
+    if (!dict || !key) {
         return false;
     }
     
-    // First, check if key already exists using ar_memory_get
-    data_t *existing = ar_memory_get(mem, key);
+    // First, check if key already exists using ar_dict_get
+    data_t *existing = ar_dict_get(dict, key);
     if (existing) {
         // Free old value if it's a string
         ar_free_data(existing);
@@ -86,16 +86,16 @@ bool ar_memory_set(void *memory, const char *key, void *value_ptr) {
     
     // Find empty slot
     for (int i = 0; i < MEMORY_SIZE; i++) {
-        if (!mem->entries[i].is_used) {
-            mem->entries[i].is_used = true;
-            mem->entries[i].key = strdup(key);
-            mem->entries[i].value = value;
+        if (!dict->entries[i].is_used) {
+            dict->entries[i].is_used = true;
+            dict->entries[i].key = strdup(key);
+            dict->entries[i].value = value;
             
             if (value.type == DATA_STRING && value.data.string_value) {
-                mem->entries[i].value.data.string_value = strdup(value.data.string_value);
+                dict->entries[i].value.data.string_value = strdup(value.data.string_value);
             }
             
-            mem->count++;
+            dict->count++;
             return true;
         }
     }
