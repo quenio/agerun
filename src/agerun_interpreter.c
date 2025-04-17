@@ -13,7 +13,7 @@
 /* Memory Dictionary for Agent State */
 typedef struct memory_entry_s {
     char *key;
-    value_t value;
+    data_t value;
     bool is_used;
 } memory_entry_t;
 
@@ -42,7 +42,7 @@ extern bool ar_memory_set(void *memory, const char *key, void *value);
 
 // Forward declarations for internal functions
 static bool parse_and_execute_instruction(agent_t *agent, const char *message, const char *instruction);
-static value_t evaluate_expression(agent_t *agent, const char *message, const char *expr, int *offset);
+static data_t evaluate_expression(agent_t *agent, const char *message, const char *expr, int *offset);
 
 
 // This function has been moved to agerun_value.c
@@ -51,9 +51,9 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
 
 
 // Evaluate an expression in the agent's context
-static value_t evaluate_expression(agent_t *agent, const char *message, const char *expr, int *offset) {
-    value_t result;
-    result.type = VALUE_INT;
+static data_t evaluate_expression(agent_t *agent, const char *message, const char *expr, int *offset) {
+    data_t result;
+    result.type = DATA_INT;
     result.data.int_value = 0;
     
     if (!expr || !offset) {
@@ -83,7 +83,7 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
         }
         
         // Allocate and copy the string
-        result.type = VALUE_STRING;
+        result.type = DATA_STRING;
         result.data.string_value = malloc((size_t)len + 1);
         if (result.data.string_value) {
             strncpy(result.data.string_value, expr + start, (size_t)len);
@@ -102,7 +102,7 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
         (!expr[*offset + 7] || !isalnum((unsigned char)expr[*offset + 7]))) {
         *offset += 7; // Skip "message"
         
-        result.type = VALUE_STRING;
+        result.type = DATA_STRING;
         result.data.string_value = strdup(message ? message : "");
         return result;
     }
@@ -113,7 +113,7 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
         
         // Evaluate the key expression
         int key_offset = 0;
-        value_t key_val = evaluate_expression(agent, message, expr + *offset, &key_offset);
+        data_t key_val = evaluate_expression(agent, message, expr + *offset, &key_offset);
         *offset += key_offset;
         
         // Skip closing bracket
@@ -126,18 +126,18 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
         
         // Convert key to string
         char *key = NULL;
-        if (key_val.type == VALUE_STRING) {
+        if (key_val.type == DATA_STRING) {
             key = key_val.data.string_value;
-        } else if (key_val.type == VALUE_INT) {
+        } else if (key_val.type == DATA_INT) {
             char temp[32];
             snprintf(temp, sizeof(temp), "%lld", key_val.data.int_value);
             key = strdup(temp);
-            ar_free_value(&key_val);
-        } else if (key_val.type == VALUE_DOUBLE) {
+            ar_free_data(&key_val);
+        } else if (key_val.type == DATA_DOUBLE) {
             char temp[32];
             snprintf(temp, sizeof(temp), "%f", key_val.data.double_value);
             key = strdup(temp);
-            ar_free_value(&key_val);
+            ar_free_data(&key_val);
         }
         
         if (key) {
@@ -147,26 +147,26 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
                     strcmp(agent->memory.entries[i].key, key) == 0) {
                     
                     // Copy the value
-                    if (agent->memory.entries[i].value.type == VALUE_STRING && 
+                    if (agent->memory.entries[i].value.type == DATA_STRING && 
                         agent->memory.entries[i].value.data.string_value) {
-                        result.type = VALUE_STRING;
+                        result.type = DATA_STRING;
                         result.data.string_value = strdup(agent->memory.entries[i].value.data.string_value);
-                    } else if (agent->memory.entries[i].value.type == VALUE_INT) {
-                        result.type = VALUE_INT;
+                    } else if (agent->memory.entries[i].value.type == DATA_INT) {
+                        result.type = DATA_INT;
                         result.data.int_value = agent->memory.entries[i].value.data.int_value;
-                    } else if (agent->memory.entries[i].value.type == VALUE_DOUBLE) {
-                        result.type = VALUE_DOUBLE;
+                    } else if (agent->memory.entries[i].value.type == DATA_DOUBLE) {
+                        result.type = DATA_DOUBLE;
                         result.data.double_value = agent->memory.entries[i].value.data.double_value;
                     }
                     
-                    if (key_val.type != VALUE_STRING) {
+                    if (key_val.type != DATA_STRING) {
                         free(key);
                     }
                     return result;
                 }
             }
             
-            if (key_val.type != VALUE_STRING) {
+            if (key_val.type != DATA_STRING) {
                 free(key);
             } else {
                 free(key_val.data.string_value);
@@ -212,10 +212,10 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
         }
         
         if (is_double) {
-            result.type = VALUE_DOUBLE;
+            result.type = DATA_DOUBLE;
             result.data.double_value = is_negative ? -double_value : double_value;
         } else {
-            result.type = VALUE_INT;
+            result.type = DATA_INT;
             result.data.int_value = is_negative ? -value : value;
         }
         
@@ -247,7 +247,7 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
                 (*offset)++; // Skip opening parenthesis
                 
                 // Parse arguments
-                value_t args[10]; // Support up to 10 arguments
+                data_t args[10]; // Support up to 10 arguments
                 int arg_count = 0;
                 
                 // Skip whitespace
@@ -292,20 +292,20 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
                         char *send_message = NULL;
                         
                         // Get target agent ID
-                        if (args[0].type == VALUE_INT) {
+                        if (args[0].type == DATA_INT) {
                             target_id = args[0].data.int_value;
-                        } else if (args[0].type == VALUE_STRING && args[0].data.string_value) {
+                        } else if (args[0].type == DATA_STRING && args[0].data.string_value) {
                             target_id = atoll(args[0].data.string_value);
                         }
                         
                         // Get message content
-                        if (args[1].type == VALUE_STRING && args[1].data.string_value) {
+                        if (args[1].type == DATA_STRING && args[1].data.string_value) {
                             send_message = args[1].data.string_value;
-                        } else if (args[1].type == VALUE_INT) {
+                        } else if (args[1].type == DATA_INT) {
                             char temp[32];
                             snprintf(temp, sizeof(temp), "%lld", args[1].data.int_value);
                             send_message = strdup(temp);
-                        } else if (args[1].type == VALUE_DOUBLE) {
+                        } else if (args[1].type == DATA_DOUBLE) {
                             char temp[32];
                             snprintf(temp, sizeof(temp), "%f", args[1].data.double_value);
                             send_message = strdup(temp);
@@ -316,18 +316,18 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
                             ar_send(target_id, send_message);
                             
                             // Set result to success
-                            result.type = VALUE_INT;
+                            result.type = DATA_INT;
                             result.data.int_value = 1;
                         }
                         
                         // Free temporary message string
-                        if (args[1].type != VALUE_STRING && send_message) {
+                        if (args[1].type != DATA_STRING && send_message) {
                             free(send_message);
                         }
                     }
                 } else if (strcmp(func_name, "build") == 0) {
                     // build(format, arg1, arg2, ...)
-                    if (arg_count >= 1 && args[0].type == VALUE_STRING && args[0].data.string_value) {
+                    if (arg_count >= 1 && args[0].type == DATA_STRING && args[0].data.string_value) {
                         char *format = args[0].data.string_value;
                         char result_str[1024] = {0};
                         int result_pos = 0;
@@ -339,21 +339,21 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
                                 int arg_idx = 1 + (result_pos % (arg_count - 1));
                                 
                                 if (arg_idx < arg_count) {
-                                    if (args[arg_idx].type == VALUE_STRING && args[arg_idx].data.string_value) {
+                                    if (args[arg_idx].type == DATA_STRING && args[arg_idx].data.string_value) {
                                         size_t str_len = strlen(args[arg_idx].data.string_value);
                                         int len = (int)str_len;
                                         if ((size_t)(result_pos + len) < sizeof(result_str) - 1) {
                                             strcpy(result_str + result_pos, args[arg_idx].data.string_value);
                                             result_pos += len;
                                         }
-                                    } else if (args[arg_idx].type == VALUE_INT) {
+                                    } else if (args[arg_idx].type == DATA_INT) {
                                         char temp[32];
                                         int len = snprintf(temp, sizeof(temp), "%lld", args[arg_idx].data.int_value);
                                         if ((size_t)(result_pos + len) < sizeof(result_str) - 1) {
                                             strcpy(result_str + result_pos, temp);
                                             result_pos += len;
                                         }
-                                    } else if (args[arg_idx].type == VALUE_DOUBLE) {
+                                    } else if (args[arg_idx].type == DATA_DOUBLE) {
                                         char temp[32];
                                         int len = snprintf(temp, sizeof(temp), "%f", args[arg_idx].data.double_value);
                                         if ((size_t)(result_pos + len) < sizeof(result_str) - 1) {
@@ -373,14 +373,14 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
                         result_str[result_pos] = '\0';
                         
                         // Set result to the built string
-                        result.type = VALUE_STRING;
+                        result.type = DATA_STRING;
                         result.data.string_value = strdup(result_str);
                     }
                 }
                 
                 // Free argument values
                 for (int i = 0; i < arg_count; i++) {
-                    ar_free_value(&args[i]);
+                    ar_free_data(&args[i]);
                 }
             }
         }
@@ -399,11 +399,11 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
         
         // Evaluate right operand
         int right_offset = 0;
-        value_t right_val = evaluate_expression(agent, message, expr + *offset, &right_offset);
+        data_t right_val = evaluate_expression(agent, message, expr + *offset, &right_offset);
         *offset += right_offset;
         
         // Perform operation
-        if (result.type == VALUE_INT && right_val.type == VALUE_INT) {
+        if (result.type == DATA_INT && right_val.type == DATA_INT) {
             switch (op) {
                 case '+': result.data.int_value += right_val.data.int_value; break;
                 case '-': result.data.int_value -= right_val.data.int_value; break;
@@ -414,15 +414,15 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
                     }
                     break;
             }
-        } else if ((result.type == VALUE_DOUBLE || right_val.type == VALUE_DOUBLE)) {
+        } else if ((result.type == DATA_DOUBLE || right_val.type == DATA_DOUBLE)) {
             // Convert to double for operation
-            double left_val = (result.type == VALUE_INT) ? 
+            double left_val = (result.type == DATA_INT) ? 
                 (double)result.data.int_value : result.data.double_value;
                 
-            double right_double = (right_val.type == VALUE_INT) ? 
+            double right_double = (right_val.type == DATA_INT) ? 
                 (double)right_val.data.int_value : right_val.data.double_value;
                 
-            result.type = VALUE_DOUBLE;
+            result.type = DATA_DOUBLE;
             
             switch (op) {
                 case '+': result.data.double_value = left_val + right_double; break;
@@ -436,7 +436,7 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
             }
         }
         
-        ar_free_value(&right_val);
+        ar_free_data(&right_val);
     }
     
     return result;
@@ -496,7 +496,7 @@ static bool parse_and_execute_instruction(agent_t *agent, const char *message, c
         
         // Evaluate the value expression
         int offset = 0;
-        value_t value = evaluate_expression(agent, message, value_expr, &offset);
+        data_t value = evaluate_expression(agent, message, value_expr, &offset);
         
         // Store in agent's memory
         ar_memory_set(&agent->memory, key, &value);
@@ -504,8 +504,8 @@ static bool parse_and_execute_instruction(agent_t *agent, const char *message, c
     // Parse function call or other expression
     else {
         int offset = 0;
-        value_t result_val = evaluate_expression(agent, message, instr_trimmed, &offset);
-        ar_free_value(&result_val); // Discard the result
+        data_t result_val = evaluate_expression(agent, message, instr_trimmed, &offset);
+        ar_free_data(&result_val); // Discard the result
     }
     
     free(instr_copy);

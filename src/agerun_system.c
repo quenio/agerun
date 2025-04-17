@@ -23,7 +23,7 @@
 /* Memory Dictionary for Agent State */
 typedef struct memory_entry_s {
     char *key;
-    value_t value;
+    data_t value;
     bool is_used;
 } memory_entry_t;
 
@@ -72,7 +72,7 @@ static bool is_initialized = false;
 
 /* Forward Declarations */
 static bool init_memory_dict(memory_dict_t *dict);
-static value_t* memory_get(memory_dict_t *memory, const char *key);
+static data_t* memory_get(memory_dict_t *memory, const char *key);
 static bool init_message_queue(message_queue_t *queue);
 static bool queue_push(message_queue_t *queue, const char *message);
 static bool queue_pop(message_queue_t *queue, char *message);
@@ -141,7 +141,7 @@ void ar_shutdown(void) {
             for (int j = 0; j < MEMORY_SIZE; j++) {
                 if (agents[i].memory.entries[j].is_used && agents[i].memory.entries[j].key) {
                     free(agents[i].memory.entries[j].key);
-                    ar_free_value(&agents[i].memory.entries[j].value);
+                    ar_free_data(&agents[i].memory.entries[j].value);
                 }
             }
         }
@@ -276,7 +276,7 @@ bool ar_destroy(agent_id_t agent_id) {
             for (int j = 0; j < MEMORY_SIZE; j++) {
                 if (agents[i].memory.entries[j].is_used && agents[i].memory.entries[j].key) {
                     free(agents[i].memory.entries[j].key);
-                    ar_free_value(&agents[i].memory.entries[j].value);
+                    ar_free_data(&agents[i].memory.entries[j].value);
                 }
             }
             
@@ -398,12 +398,12 @@ bool ar_save_agents(void) {
                 if (agents[i].memory.entries[j].is_used && agents[i].memory.entries[j].key) {
                     fprintf(fp, "%s ", agents[i].memory.entries[j].key);
                     
-                    value_t *val = &agents[i].memory.entries[j].value;
-                    if (val->type == VALUE_INT) {
+                    data_t *val = &agents[i].memory.entries[j].value;
+                    if (val->type == DATA_INT) {
                         fprintf(fp, "int %lld\n", val->data.int_value);
-                    } else if (val->type == VALUE_DOUBLE) {
+                    } else if (val->type == DATA_DOUBLE) {
                         fprintf(fp, "double %f\n", val->data.double_value);
-                    } else if (val->type == VALUE_STRING && val->data.string_value) {
+                    } else if (val->type == DATA_STRING && val->data.string_value) {
                         fprintf(fp, "string %s\n", val->data.string_value);
                     } else {
                         fprintf(fp, "unknown\n");
@@ -467,15 +467,15 @@ bool ar_load_agents(void) {
                         break;
                     }
                     
-                    value_t value;
+                    data_t value;
                     if (strcmp(type, "int") == 0) {
-                        value.type = VALUE_INT;
+                        value.type = DATA_INT;
                         fscanf(fp, "%lld", &value.data.int_value);
                     } else if (strcmp(type, "double") == 0) {
-                        value.type = VALUE_DOUBLE;
+                        value.type = DATA_DOUBLE;
                         fscanf(fp, "%lf", &value.data.double_value);
                     } else if (strcmp(type, "string") == 0) {
-                        value.type = VALUE_STRING;
+                        value.type = DATA_STRING;
                         char str[1024];
                         fscanf(fp, "%1023s", str);
                         value.data.string_value = strdup(str);
@@ -488,7 +488,7 @@ bool ar_load_agents(void) {
                     
                     ar_memory_set(&agents[j].memory, key, &value);
                     
-                    if (value.type == VALUE_STRING && value.data.string_value) {
+                    if (value.type == DATA_STRING && value.data.string_value) {
                         free(value.data.string_value);
                     }
                 }
@@ -624,20 +624,20 @@ static bool init_memory_dict(memory_dict_t *dict) {
 
 bool ar_memory_set(void *memory_ptr, const char *key, void *value_ptr) {
     memory_dict_t *memory = (memory_dict_t *)memory_ptr;
-    value_t value = *(value_t *)value_ptr;
+    data_t value = *(data_t *)value_ptr;
     if (!memory || !key) {
         return false;
     }
     
     // First, check if key already exists using memory_get
-    value_t *existing = memory_get(memory, key);
+    data_t *existing = memory_get(memory, key);
     if (existing) {
         // Free old value if it's a string
-        ar_free_value(existing);
+        ar_free_data(existing);
         
         // Set new value
         *existing = value;
-        if (value.type == VALUE_STRING && value.data.string_value) {
+        if (value.type == DATA_STRING && value.data.string_value) {
             existing->data.string_value = strdup(value.data.string_value);
         }
         
@@ -651,7 +651,7 @@ bool ar_memory_set(void *memory_ptr, const char *key, void *value_ptr) {
             memory->entries[i].key = strdup(key);
             memory->entries[i].value = value;
             
-            if (value.type == VALUE_STRING && value.data.string_value) {
+            if (value.type == DATA_STRING && value.data.string_value) {
                 memory->entries[i].value.data.string_value = strdup(value.data.string_value);
             }
             
@@ -789,7 +789,7 @@ static bool interpret_method(agent_t *agent, const char *message) {
 }
 
 
-static value_t* memory_get(memory_dict_t *memory, const char *key) {
+static data_t* memory_get(memory_dict_t *memory, const char *key) {
     if (!memory || !key) {
         return NULL;
     }
