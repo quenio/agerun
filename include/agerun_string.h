@@ -1,5 +1,13 @@
 #ifndef AGERUN_STRING_H
 #define AGERUN_STRING_H
+#include <ctype.h>
+/**
+ * Returns non-zero if c is a whitespace character.
+ * This wrapper safely handles signed char values by casting to unsigned char.
+ */
+static inline int ar_isspace(int c) {
+    return isspace((unsigned char)c);
+}
 
 /**
  * Trims leading and trailing whitespace from a string.

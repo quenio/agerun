@@ -84,7 +84,7 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
     }
     
     // Skip leading whitespace
-    while (expr[*offset] && isspace((unsigned char)expr[*offset])) {
+    while (expr[*offset] && ar_isspace(expr[*offset])) {
         (*offset)++;
     }
     
@@ -261,7 +261,7 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
             func_name[name_len] = '\0';
             
             // Skip whitespace
-            while (expr[*offset] && isspace((unsigned char)expr[*offset])) {
+            while (expr[*offset] && ar_isspace(expr[*offset])) {
                 (*offset)++;
             }
             
@@ -274,7 +274,7 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
                 int arg_count = 0;
                 
                 // Skip whitespace
-                while (expr[*offset] && isspace((unsigned char)expr[*offset])) {
+                while (expr[*offset] && ar_isspace(expr[*offset])) {
                     (*offset)++;
                 }
                 
@@ -282,7 +282,7 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
                 if (expr[*offset] != ')') {
                     do {
                         // Skip whitespace and comma
-                        while (expr[*offset] && (isspace((unsigned char)expr[*offset]) || expr[*offset] == ',')) {
+                        while (expr[*offset] && (ar_isspace(expr[*offset]) || expr[*offset] == ',')) {
                             (*offset)++;
                         }
                         
@@ -295,7 +295,7 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
                         }
                         
                         // Skip whitespace
-                        while (expr[*offset] && isspace((unsigned char)expr[*offset])) {
+                        while (expr[*offset] && ar_isspace(expr[*offset])) {
                             (*offset)++;
                         }
                         
@@ -416,7 +416,7 @@ static value_t evaluate_expression(agent_t *agent, const char *message, const ch
         (*offset)++; // Skip operator
         
         // Skip whitespace
-        while (expr[*offset] && isspace((unsigned char)expr[*offset])) {
+        while (expr[*offset] && ar_isspace(expr[*offset])) {
             (*offset)++;
         }
         
