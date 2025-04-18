@@ -6,40 +6,6 @@
 static void free_dict(dict_t *dict);
 
 /**
- * Free resources associated with a data structure
- * @param data Pointer to the data to free
- */
-void ar_free_data(data_t *data) {
-    if (!data) return;
-    
-    if (data->type == DATA_STRING && data->data.string_value) {
-        free(data->data.string_value);
-        data->data.string_value = NULL;
-    } else if (data->type == DATA_DICT && data->data.dict_value) {
-        free_dict(data->data.dict_value);
-        data->data.dict_value = NULL;
-    }
-}
-
-/**
- * Free all resources in a dictionary
- * @param dict Dictionary to free
- */
-static void free_dict(dict_t *dict) {
-    if (!dict) return;
-    
-    for (int i = 0; i < DICT_SIZE; i++) {
-        if (dict->entries[i].is_used && dict->entries[i].key) {
-            free(dict->entries[i].key);
-            ar_free_data(&dict->entries[i].value);
-        }
-    }
-    
-    /* Free the dictionary structure itself */
-    free(dict);
-}
-
-/**
  * Initialize a dictionary
  * @param dict Dictionary to initialize
  * @return true if successful, false otherwise
@@ -56,6 +22,33 @@ bool ar_dict_init(dict_t *dict) {
     
     dict->count = 0;
     return true;
+}
+
+/**
+ * Create a new empty dictionary
+ * @return Pointer to the new dictionary, or NULL on failure
+ */
+dict_t* ar_dict_create(void) {
+    dict_t *dict = (dict_t *)malloc(sizeof(dict_t));
+    if (!dict) return NULL;
+    
+    if (!ar_dict_init(dict)) {
+        free(dict);
+        return NULL;
+    }
+    
+    return dict;
+}
+
+/**
+ * Create a new dictionary data value
+ * @return Data value containing a dictionary
+ */
+data_t ar_data_create_dict(void) {
+    data_t data;
+    data.type = DATA_DICT;
+    data.data.dict_value = ar_dict_create();
+    return data;
 }
 
 /**
@@ -123,28 +116,35 @@ bool ar_dict_set(dict_t *dict, const char *key, data_t *value_ptr) {
 }
 
 /**
- * Create a new empty dictionary
- * @return Pointer to the new dictionary, or NULL on failure
+ * Free resources associated with a data structure
+ * @param data Pointer to the data to free
  */
-dict_t* ar_dict_create(void) {
-    dict_t *dict = (dict_t *)malloc(sizeof(dict_t));
-    if (!dict) return NULL;
+void ar_free_data(data_t *data) {
+    if (!data) return;
     
-    if (!ar_dict_init(dict)) {
-        free(dict);
-        return NULL;
+    if (data->type == DATA_STRING && data->data.string_value) {
+        free(data->data.string_value);
+        data->data.string_value = NULL;
+    } else if (data->type == DATA_DICT && data->data.dict_value) {
+        free_dict(data->data.dict_value);
+        data->data.dict_value = NULL;
     }
-    
-    return dict;
 }
 
 /**
- * Create a new dictionary data value
- * @return Data value containing a dictionary
+ * Free all resources in a dictionary
+ * @param dict Dictionary to free
  */
-data_t ar_data_create_dict(void) {
-    data_t data;
-    data.type = DATA_DICT;
-    data.data.dict_value = ar_dict_create();
-    return data;
+static void free_dict(dict_t *dict) {
+    if (!dict) return;
+    
+    for (int i = 0; i < DICT_SIZE; i++) {
+        if (dict->entries[i].is_used && dict->entries[i].key) {
+            free(dict->entries[i].key);
+            ar_free_data(&dict->entries[i].value);
+        }
+    }
+    
+    /* Free the dictionary structure itself */
+    free(dict);
 }

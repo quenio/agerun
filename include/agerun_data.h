@@ -51,34 +51,11 @@ typedef struct dict_s {
 } dict_t;
 
 /**
- * Free resources associated with a data structure
- * @param data Pointer to the data to free
- */
-void ar_free_data(data_t *data);
-
-/**
- * Get a value from dictionary by key
- * @param dict Dictionary
- * @param key Key to lookup
- * @return Pointer to the value, or NULL if not found
- */
-data_t* ar_dict_get(dict_t *dict, const char *key);
-
-/**
  * Initialize a dictionary
  * @param dict Dictionary to initialize
  * @return true if successful, false otherwise
  */
 bool ar_dict_init(dict_t *dict);
-
-/**
- * Set a value in dictionary (reference assignment)
- * @param dict Dictionary
- * @param key Key to set
- * @param value_ptr Pointer to value to set (value is referenced, not copied)
- * @return true if successful, false otherwise
- */
-bool ar_dict_set(dict_t *dict, const char *key, data_t *value_ptr);
 
 /**
  * Create a new empty dictionary
@@ -91,5 +68,28 @@ dict_t* ar_dict_create(void);
  * @return Data value containing a dictionary
  */
 data_t ar_data_create_dict(void);
+
+/**
+ * Get a value from dictionary by key
+ * @param dict Dictionary
+ * @param key Key to lookup
+ * @return Pointer to the value, or NULL if not found
+ */
+data_t* ar_dict_get(dict_t *dict, const char *key);
+
+/**
+ * Set a value in dictionary (reference assignment)
+ * @param dict Dictionary
+ * @param key Key to set
+ * @param value_ptr Pointer to value to set (value is referenced, not copied)
+ * @return true if successful, false otherwise
+ */
+bool ar_dict_set(dict_t *dict, const char *key, data_t *value_ptr);
+
+/**
+ * Free resources associated with a data structure
+ * @param data Pointer to the data to free
+ */
+void ar_free_data(data_t *data);
 
 #endif /* AGERUN_DATA_H */
