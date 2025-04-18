@@ -5,6 +5,9 @@
 #include <stdint.h>
 #include "agerun_agent.h"
 
+/* Constants */
+#define AGENCY_FILE_NAME "agency.agerun"
+
 /**
  * Set initialization state - called by system init
  * @param initialized Initialization state to set
@@ -33,6 +36,24 @@ void ar_agency_set_next_id(agent_id_t id);
  * Reset agency state (used during shutdown)
  */
 void ar_agency_reset(void);
+
+/**
+ * Get the current number of active agents
+ * @return Number of active agents
+ */
+int ar_count_agents(void);
+
+/**
+ * Save all persistent agents to disk
+ * @return true if successful, false otherwise
+ */
+bool ar_save_agents(void);
+
+/**
+ * Load all persistent agents from disk
+ * @return true if successful, false otherwise
+ */
+bool ar_load_agents(void);
 
 #endif /* AGERUN_AGENCY_H */
 

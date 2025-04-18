@@ -5,6 +5,7 @@
 #include "../src/agerun_method.h"
 #include "../src/agerun_agent.h"
 #include "../src/agerun_agency.h"
+#include "../src/agerun_methodology.h"
 
 int main(void) {
     printf("Agerun Example Application\n");

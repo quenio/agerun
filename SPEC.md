@@ -18,8 +18,8 @@ This specification defines a lightweight, message-driven agent system where each
 
 ### Persistence:
 
-- **Methods**: All method definitions are persisted in a file named `agerun.methods`. They are loaded and made available when the agent system restarts.
-- **Agents**: Agents and their memory are not persisted by default. However, if an agent is created with the `persist: boolean` option set to `true` (default is `false`), its memory dictionary and context are saved to a file named `agerun.agents`. The persisted agents are automatically restored at system startup before the first agent is executed.
+- **Methods**: All method definitions are persisted in a file named `methodology.agerun`. They are loaded and made available when the agent system restarts.
+- **Agents**: Agents and their memory are not persisted by default. However, if an agent is created with the `persist: boolean` option set to `true` (default is `false`), its memory dictionary and context are saved to a file named `agency.agerun`. The persisted agents are automatically restored at system startup before the first agent is executed.
 
 ## Agent Lifecycle
 

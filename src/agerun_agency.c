@@ -1,10 +1,14 @@
 /* Agerun Agency Implementation */
 #include "agerun_agency.h"
 #include "agerun_agent.h"
+#include "agerun_map.h"
+#include "agerun_data.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+/* Constants */
 
 /* Global State */
 static agent_t agents[MAX_AGENTS];
@@ -36,6 +40,178 @@ void ar_agency_reset(void) {
     
     // Reset next_agent_id
     next_agent_id = 1;
+}
+
+int ar_count_agents(void) {
+    if (!is_initialized) {
+        return 0;
+    }
+    
+    int count = 0;
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (agents[i].is_active) {
+            count++;
+        }
+    }
+    
+    return count;
+}
+
+bool ar_save_agents(void) {
+    if (!is_initialized) {
+        return false;
+    }
+    
+    // Simple placeholder implementation for now
+    FILE *fp = fopen(AGENCY_FILE_NAME, "w");
+    if (!fp) {
+        printf("Error: Could not open %s for writing\n", AGENCY_FILE_NAME);
+        return false;
+    }
+    
+    // Count how many persistent agents we have
+    int count = 0;
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (agents[i].is_active && agents[i].is_persistent) {
+            count++;
+        }
+    }
+    
+    fprintf(fp, "%d\n", count);
+    
+    // Save basic agent info
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (agents[i].is_active && agents[i].is_persistent) {
+            fprintf(fp, "%lld %s %d\n", agents[i].id, agents[i].method_name, agents[i].method_version);
+            
+            // Save memory map - for simplicity just save int and string values
+            fprintf(fp, "%d\n", agents[i].memory.count);
+            for (int j = 0; j < MAP_SIZE; j++) {
+                if (agents[i].memory.entries[j].is_used && agents[i].memory.entries[j].key) {
+                    fprintf(fp, "%s ", agents[i].memory.entries[j].key);
+                    
+                    data_t *val = &agents[i].memory.entries[j].value;
+                    if (val->type == DATA_INT) {
+                        fprintf(fp, "int %lld\n", val->data.int_value);
+                    } else if (val->type == DATA_DOUBLE) {
+                        fprintf(fp, "double %f\n", val->data.double_value);
+                    } else if (val->type == DATA_STRING && val->data.string_value) {
+                        fprintf(fp, "string %s\n", val->data.string_value);
+                    } else {
+                        fprintf(fp, "unknown\n");
+                    }
+                }
+            }
+        }
+    }
+    
+    fclose(fp);
+    return true;
+}
+
+bool ar_load_agents(void) {
+    if (!is_initialized) {
+        return false;
+    }
+    
+    FILE *fp = fopen(AGENCY_FILE_NAME, "r");
+    if (!fp) {
+        // Not an error, might be first run
+        return true;
+    }
+    
+    int count = 0;
+    if (fscanf(fp, "%d", &count) != 1) {
+        fclose(fp);
+        return false;
+    }
+    
+    for (int i = 0; i < count; i++) {
+        agent_id_t id;
+        char method_name[MAX_METHOD_NAME_LENGTH];
+        version_t version;
+        
+        if (fscanf(fp, "%lld %s %d", &id, method_name, &version) != 3) {
+            printf("Error: Malformed agent entry in %s\n", AGENCY_FILE_NAME);
+            fclose(fp);
+            return false;
+        }
+        
+        // Create the agent
+        agent_id_t new_id = ar_agent_create(method_name, version, NULL);
+        if (new_id == 0) {
+            printf("Error: Could not recreate agent %lld\n", id);
+            continue;
+        }
+        
+        // Update the assigned ID to match the stored one
+        for (int j = 0; j < MAX_AGENTS; j++) {
+            if (agents[j].is_active && agents[j].id == new_id) {
+                agents[j].id = id;
+                
+                // Read memory map
+                int mem_count = 0;
+                if (fscanf(fp, "%d", &mem_count) != 1) {
+                    printf("Error: Could not read memory count\n");
+                    break;
+                }
+                
+                for (int k = 0; k < mem_count; k++) {
+                    char key[256];
+                    char type[32];
+                    
+                    if (fscanf(fp, "%255s %31s", key, type) != 2) {
+                        printf("Error: Malformed memory entry in %s\n", AGENCY_FILE_NAME);
+                        break;
+                    }
+                    
+                    data_t value;
+                    if (strcmp(type, "int") == 0) {
+                        value.type = DATA_INT;
+                        if (fscanf(fp, "%lld", &value.data.int_value) != 1) {
+                            printf("Error: Could not read int value\n");
+                            break;
+                        }
+                    } else if (strcmp(type, "double") == 0) {
+                        value.type = DATA_DOUBLE;
+                        if (fscanf(fp, "%lf", &value.data.double_value) != 1) {
+                            printf("Error: Could not read double value\n");
+                            break;
+                        }
+                    } else if (strcmp(type, "string") == 0) {
+                        value.type = DATA_STRING;
+                        char str[1024];
+                        if (fscanf(fp, "%1023s", str) != 1) {
+                            printf("Error: Could not read string value\n");
+                            break;
+                        }
+                        value.data.string_value = strdup(str);
+                    } else {
+                        // Skip unknown type
+                        char line[1024];
+                        fgets(line, sizeof(line), fp);
+                        continue;
+                    }
+                    
+                    ar_map_set(&agents[j].memory, key, &value);
+                    
+                    if (value.type == DATA_STRING && value.data.string_value) {
+                        free(value.data.string_value);
+                    }
+                }
+                
+                break;
+            }
+        }
+        
+        // Update next_agent_id if needed
+        if (id >= next_agent_id) {
+            next_agent_id = id + 1;
+        }
+    }
+    
+    fclose(fp);
+    return true;
 }
 
 /* End of implementation */
