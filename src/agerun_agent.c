@@ -1,5 +1,6 @@
 /* Agerun Agent Implementation */
 #include "agerun_agent.h"
+#include "agerun_agency.h"
 #include "agerun_system.h"
 #include "agerun_method.h"
 #include "agerun_map.h"
@@ -12,17 +13,13 @@
 #include <stdint.h>
 
 /* Constants */
-#define MAX_AGENTS 1024
 #define MAX_MESSAGE_LENGTH 1024
-
-/* Global State */
-static agent_t agents[MAX_AGENTS];
-static agent_id_t next_agent_id = 1;
-static bool is_initialized = false;
 
 /* Implementation */
 agent_id_t ar_agent_create(const char *method_name, version_t version, void *context) {
-    if (!is_initialized || !method_name) {
+    agent_t *agents = ar_agency_get_agents();
+    
+    if (agents == NULL || !method_name) {
         return 0;
     }
     
@@ -50,7 +47,10 @@ agent_id_t ar_agent_create(const char *method_name, version_t version, void *con
     }
     
     // Initialize agent structure
-    agents[agent_idx].id = next_agent_id++;
+    agent_id_t next_agent_id = ar_agency_get_next_id();
+    agents[agent_idx].id = next_agent_id;
+    ar_agency_set_next_id(next_agent_id + 1);
+    
     strncpy(agents[agent_idx].method_name, method_name, MAX_METHOD_NAME_LENGTH - 1);
     agents[agent_idx].method_name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
     agents[agent_idx].method_version = method->version;
@@ -68,7 +68,9 @@ agent_id_t ar_agent_create(const char *method_name, version_t version, void *con
 }
 
 bool ar_agent_destroy(agent_id_t agent_id) {
-    if (!is_initialized || agent_id == 0) {
+    agent_t *agents = ar_agency_get_agents();
+    
+    if (agents == NULL || agent_id == 0) {
         return false;
     }
     
@@ -107,7 +109,9 @@ bool ar_agent_destroy(agent_id_t agent_id) {
 }
 
 bool ar_agent_send(agent_id_t agent_id, const char *message) {
-    if (!is_initialized || !message) {
+    agent_t *agents = ar_agency_get_agents();
+    
+    if (agents == NULL || !message) {
         return false;
     }
     
@@ -128,7 +132,9 @@ bool ar_agent_send(agent_id_t agent_id, const char *message) {
 }
 
 bool ar_agent_exists(agent_id_t agent_id) {
-    if (!is_initialized) {
+    agent_t *agents = ar_agency_get_agents();
+    
+    if (agents == NULL) {
         return false;
     }
     
@@ -139,26 +145,6 @@ bool ar_agent_exists(agent_id_t agent_id) {
     }
     
     return false;
-}
-
-/* Set initialization state - called by system init */
-void ar_agent_set_initialized(bool initialized) {
-    is_initialized = initialized;
-}
-
-/* Get agents array - used by system functions */
-agent_t* ar_agent_get_agents(void) {
-    return agents;
-}
-
-/* Get next agent ID - used by system functions */
-agent_id_t ar_agent_get_next_id(void) {
-    return next_agent_id;
-}
-
-/* Set next agent ID - used by system functions */
-void ar_agent_set_next_id(agent_id_t id) {
-    next_agent_id = id;
 }
 
 /* End of implementation */

@@ -58,10 +58,4 @@ bool ar_agent_send(agent_id_t agent_id, const char *message);
  */
 bool ar_agent_exists(agent_id_t agent_id);
 
-/* Internal functions - used by system module */
-void ar_agent_set_initialized(bool initialized);
-agent_t* ar_agent_get_agents(void);
-agent_id_t ar_agent_get_next_id(void);
-void ar_agent_set_next_id(agent_id_t id);
-
 #endif /* AGERUN_AGENT_H */

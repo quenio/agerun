@@ -3,6 +3,7 @@
 #include "agerun_method.h"
 #include "agerun_data.h"
 #include "agerun_agent.h"
+#include "agerun_agency.h"
 #include "agerun_queue.h"
 #include "agerun_map.h"
 
@@ -40,7 +41,7 @@ agent_id_t ar_init(const char *method_name, version_t version) {
     }
     
     is_initialized = true;
-    ar_agent_set_initialized(true);
+    ar_agency_set_initialized(true);
     
     // Load methods from file if available
     if (!ar_load_methods()) {
@@ -77,7 +78,7 @@ void ar_shutdown(void) {
     ar_save_agents();
     
     // Clean up memory for all active agents
-    agent_t* agents = ar_agent_get_agents();
+    agent_t* agents = ar_agency_get_agents();
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (agents[i].is_active) {
             // Free memory map entries
@@ -91,7 +92,8 @@ void ar_shutdown(void) {
     }
     
     is_initialized = false;
-    ar_agent_set_initialized(false);
+    ar_agency_reset();
+    ar_agency_set_initialized(false);
 }
 
 
@@ -102,7 +104,7 @@ bool ar_process_next_message(void) {
     }
     
     // Find an agent with a non-empty message queue
-    agent_t* agents = ar_agent_get_agents();
+    agent_t* agents = ar_agency_get_agents();
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (agents[i].is_active && agents[i].queue.size > 0) {
             // Process one message
@@ -141,7 +143,7 @@ int ar_count_agents(void) {
     }
     
     int count = 0;
-    agent_t* agents = ar_agent_get_agents();
+    agent_t* agents = ar_agency_get_agents();
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (agents[i].is_active) {
             count++;
@@ -163,7 +165,7 @@ bool ar_save_agents(void) {
         return false;
     }
     
-    agent_t* agents = ar_agent_get_agents();
+    agent_t* agents = ar_agency_get_agents();
     
     // Count how many persistent agents we have
     int count = 0;
@@ -238,7 +240,7 @@ bool ar_load_agents(void) {
         }
         
         // Update the assigned ID to match the stored one
-        agent_t* agents = ar_agent_get_agents();
+        agent_t* agents = ar_agency_get_agents();
         for (int j = 0; j < MAX_AGENTS; j++) {
             if (agents[j].is_active && agents[j].id == new_id) {
                 agents[j].id = id;
@@ -287,9 +289,9 @@ bool ar_load_agents(void) {
         }
         
         // Update next_agent_id if needed
-        agent_id_t next_id = ar_agent_get_next_id();
+        agent_id_t next_id = ar_agency_get_next_id();
         if (id >= next_id) {
-            ar_agent_set_next_id(id + 1);
+            ar_agency_set_next_id(id + 1);
         }
     }
     
