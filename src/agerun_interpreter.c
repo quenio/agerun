@@ -446,7 +446,7 @@ bool ar_interpret_agent_method(agent_t *agent, const char *message, const char *
         
         // Skip empty lines and comments
         if (strlen(instruction) > 0 && instruction[0] != '#') {
-            if (!ar_parse_and_execute_instruction(agent, message, instruction)) {
+            if (!ar_instruction_run(agent, message, instruction)) {
                 result = false;
                 break;
             }
@@ -460,7 +460,7 @@ bool ar_interpret_agent_method(agent_t *agent, const char *message, const char *
 }
 
 // Parse and execute a single instruction
-bool ar_parse_and_execute_instruction(agent_t *agent, const char *message, const char *instruction) {
+bool ar_instruction_run(agent_t *agent, const char *message, const char *instruction) {
     char *instr_copy = strdup(instruction);
     char *instr_trimmed = ar_trim(instr_copy);
     bool result = true;

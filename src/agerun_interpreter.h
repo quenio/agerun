@@ -14,7 +14,7 @@ struct agent_s;
  * @param instruction The instruction to execute
  * @return true if execution was successful, false otherwise
  */
-bool ar_parse_and_execute_instruction(struct agent_s *agent, const char *message, const char *instruction);
+bool ar_instruction_run(struct agent_s *agent, const char *message, const char *instruction);
 
 /**
  * Evaluate an expression in the agent's context
