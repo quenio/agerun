@@ -24,9 +24,7 @@ typedef struct agent_s {
 } agent_t;
 
 
-// Forward declarations for internal functions
-static bool parse_and_execute_instruction(agent_t *agent, const char *message, const char *instruction);
-static data_t evaluate_expression(agent_t *agent, const char *message, const char *expr, int *offset);
+// Function declarations are now in the header file
 
 
 // This function has been moved to agerun_value.c
@@ -35,7 +33,7 @@ static data_t evaluate_expression(agent_t *agent, const char *message, const cha
 
 
 // Evaluate an expression in the agent's context
-static data_t evaluate_expression(agent_t *agent, const char *message, const char *expr, int *offset) {
+data_t ar_evaluate_expression(agent_t *agent, const char *message, const char *expr, int *offset) {
     data_t result;
     result.type = DATA_INT;
     result.data.int_value = 0;
@@ -97,7 +95,7 @@ static data_t evaluate_expression(agent_t *agent, const char *message, const cha
         
         // Evaluate the key expression
         int key_offset = 0;
-        data_t key_val = evaluate_expression(agent, message, expr + *offset, &key_offset);
+        data_t key_val = ar_evaluate_expression(agent, message, expr + *offset, &key_offset);
         *offset += key_offset;
         
         // Skip closing bracket
@@ -250,7 +248,7 @@ static data_t evaluate_expression(agent_t *agent, const char *message, const cha
                         // Evaluate argument expression
                         if (arg_count < 10 && expr[*offset] && expr[*offset] != ')') {
                             int arg_offset = 0;
-                            args[arg_count] = evaluate_expression(agent, message, expr + *offset, &arg_offset);
+                            args[arg_count] = ar_evaluate_expression(agent, message, expr + *offset, &arg_offset);
                             *offset += arg_offset;
                             arg_count++;
                         }
@@ -383,7 +381,7 @@ static data_t evaluate_expression(agent_t *agent, const char *message, const cha
         
         // Evaluate right operand
         int right_offset = 0;
-        data_t right_val = evaluate_expression(agent, message, expr + *offset, &right_offset);
+        data_t right_val = ar_evaluate_expression(agent, message, expr + *offset, &right_offset);
         *offset += right_offset;
         
         // Perform operation
@@ -448,7 +446,7 @@ bool ar_interpret_agent_method(agent_t *agent, const char *message, const char *
         
         // Skip empty lines and comments
         if (strlen(instruction) > 0 && instruction[0] != '#') {
-            if (!parse_and_execute_instruction(agent, message, instruction)) {
+            if (!ar_parse_and_execute_instruction(agent, message, instruction)) {
                 result = false;
                 break;
             }
@@ -462,7 +460,7 @@ bool ar_interpret_agent_method(agent_t *agent, const char *message, const char *
 }
 
 // Parse and execute a single instruction
-static bool parse_and_execute_instruction(agent_t *agent, const char *message, const char *instruction) {
+bool ar_parse_and_execute_instruction(agent_t *agent, const char *message, const char *instruction) {
     char *instr_copy = strdup(instruction);
     char *instr_trimmed = ar_trim(instr_copy);
     bool result = true;
@@ -480,7 +478,7 @@ static bool parse_and_execute_instruction(agent_t *agent, const char *message, c
         
         // Evaluate the value expression
         int offset = 0;
-        data_t value = evaluate_expression(agent, message, value_expr, &offset);
+        data_t value = ar_evaluate_expression(agent, message, value_expr, &offset);
         
         // Store in agent's memory
         ar_dict_set(&agent->memory, key, &value);
@@ -488,7 +486,7 @@ static bool parse_and_execute_instruction(agent_t *agent, const char *message, c
     // Parse function call or other expression
     else {
         int offset = 0;
-        data_t result_val = evaluate_expression(agent, message, instr_trimmed, &offset);
+        data_t result_val = ar_evaluate_expression(agent, message, instr_trimmed, &offset);
         ar_data_free(&result_val); // Discard the result
     }
     
