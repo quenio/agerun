@@ -29,14 +29,6 @@ version_t ar_method_create(const char *name, const char *instructions,
                         bool persist);
 
 /**
- * Get a method definition by name and version
- * @param name Method name
- * @param version Method version (0 for latest)
- * @return Pointer to method definition, or NULL if not found
- */
-method_t* ar_method_get(const char *name, version_t version);
-
-/**
  * Interprets and executes a method's instructions in the context of an agent
  * @param agent The agent executing the method
  * @param message The message being processed

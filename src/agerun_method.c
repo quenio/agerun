@@ -1,4 +1,5 @@
 #include "agerun_method.h"
+#include "agerun_methodology.h"
 #include "agerun_instruction.h"
 #include "agerun_string.h"
 #include "agerun_data.h"
@@ -12,88 +13,8 @@
 #include <stdint.h>
 
 /* Constants */
-#define MAX_METHODS 256
-#define MAX_VERSIONS_PER_METHOD 64
-#define MAX_METHOD_NAME_LENGTH 64
 #define MAX_INSTRUCTIONS_LENGTH 16384
-
-/* Global State */
-static method_t methods[MAX_METHODS][MAX_VERSIONS_PER_METHOD];
-static int method_counts[MAX_METHODS];
-static int method_name_count = 0;
-
-/* Forward Declarations */
-static int find_method_idx(const char *name);
-static method_t* find_latest_method(const char *name);
-static method_t* find_method(const char *name, version_t version);
-
-/* Method Search Functions */
-static int find_method_idx(const char *name) {
-    for (int i = 0; i < method_name_count; i++) {
-        if (strcmp(methods[i][0].name, name) == 0) {
-            return i;
-        }
-    }
-    
-    return -1;
-}
-
-static method_t* find_latest_method(const char *name) {
-    int method_idx = find_method_idx(name);
-    if (method_idx < 0 || method_counts[method_idx] == 0) {
-        return NULL;
-    }
-    
-    // Find the most recent version
-    version_t latest_version = 0;
-    int latest_idx = -1;
-    
-    for (int i = 0; i < method_counts[method_idx]; i++) {
-        if (methods[method_idx][i].version > latest_version) {
-            latest_version = methods[method_idx][i].version;
-            latest_idx = i;
-        }
-    }
-    
-    if (latest_idx >= 0) {
-        return &methods[method_idx][latest_idx];
-    }
-    
-    return NULL;
-}
-
-static method_t* find_method(const char *name, version_t version) {
-    int method_idx = find_method_idx(name);
-    if (method_idx < 0) {
-        return NULL;
-    }
-    
-    // Case 1: Exact version match
-    for (int i = 0; i < method_counts[method_idx]; i++) {
-        if (methods[method_idx][i].version == version) {
-            return &methods[method_idx][i];
-        }
-    }
-    
-    // Case 2: Find compatible version
-    version_t latest_compatible = 0;
-    int latest_idx = -1;
-    
-    for (int i = 0; i < method_counts[method_idx]; i++) {
-        if (methods[method_idx][i].backward_compatible && 
-            methods[method_idx][i].version > version && 
-            methods[method_idx][i].version > latest_compatible) {
-            latest_compatible = methods[method_idx][i].version;
-            latest_idx = i;
-        }
-    }
-    
-    if (latest_idx >= 0) {
-        return &methods[method_idx][latest_idx];
-    }
-    
-    return NULL; // No compatible version found
-}
+#define MAX_METHOD_NAME_LENGTH 64
 
 version_t ar_method_create(const char *name, const char *instructions, 
                         version_t previous_version, bool backward_compatible, 
@@ -103,20 +24,24 @@ version_t ar_method_create(const char *name, const char *instructions,
     }
     
     // Find or create method entry
-    int method_idx = find_method_idx(name);
+    int method_idx = ar_methodology_find_method_idx(name);
+    int *method_name_count = ar_methodology_get_method_name_count();
+    int *method_counts = ar_methodology_get_method_counts();
+    
     if (method_idx < 0) {
-        if (method_name_count >= MAX_METHODS) {
+        if (*method_name_count >= 256) { // MAX_METHODS
             printf("Error: Maximum number of method types reached\n");
             return 0;
         }
         
-        method_idx = method_name_count++;
-        strncpy(methods[method_idx][0].name, name, MAX_METHOD_NAME_LENGTH - 1);
-        methods[method_idx][0].name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
+        method_idx = (*method_name_count)++;
+        method_t *method = ar_methodology_get_method_storage(method_idx, 0);
+        strncpy(method->name, name, MAX_METHOD_NAME_LENGTH - 1);
+        method->name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
     }
     
     // Check if we've reached max versions for this method
-    if (method_counts[method_idx] >= MAX_VERSIONS_PER_METHOD) {
+    if (method_counts[method_idx] >= 64) { // MAX_VERSIONS_PER_METHOD
         printf("Error: Maximum number of versions reached for method %s\n", name);
         return 0;
     }
@@ -127,35 +52,26 @@ version_t ar_method_create(const char *name, const char *instructions,
     
     // Make sure the version is unique
     for (int i = 0; i < version_idx; i++) {
-        if (methods[method_idx][i].version == new_version) {
-            new_version = methods[method_idx][i].version + 1;
+        method_t *method = ar_methodology_get_method_storage(method_idx, i);
+        if (method->version == new_version) {
+            new_version = method->version + 1;
         }
     }
     
     // Initialize the new method version
-    strncpy(methods[method_idx][version_idx].name, name, MAX_METHOD_NAME_LENGTH - 1);
-    methods[method_idx][version_idx].name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
-    methods[method_idx][version_idx].version = new_version;
-    methods[method_idx][version_idx].previous_version = previous_version;
-    methods[method_idx][version_idx].backward_compatible = backward_compatible;
-    methods[method_idx][version_idx].persist = persist;
-    strncpy(methods[method_idx][version_idx].instructions, instructions, MAX_INSTRUCTIONS_LENGTH - 1);
-    methods[method_idx][version_idx].instructions[MAX_INSTRUCTIONS_LENGTH - 1] = '\0';
+    method_t *new_method = ar_methodology_get_method_storage(method_idx, version_idx);
+    strncpy(new_method->name, name, MAX_METHOD_NAME_LENGTH - 1);
+    new_method->name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
+    new_method->version = new_version;
+    new_method->previous_version = previous_version;
+    new_method->backward_compatible = backward_compatible;
+    new_method->persist = persist;
+    strncpy(new_method->instructions, instructions, MAX_INSTRUCTIONS_LENGTH - 1);
+    new_method->instructions[MAX_INSTRUCTIONS_LENGTH - 1] = '\0';
     
     printf("Created method %s version %d\n", name, new_version);
     
     return new_version;
-}
-
-// Main interpretation function for agent methods
-method_t* ar_method_get(const char *name, version_t version) {
-    if (version == 0) {
-        // Use latest version
-        return find_latest_method(name);
-    } else {
-        // Use specific version
-        return find_method(name, version);
-    }
 }
 
 bool ar_method_run(agent_t *agent, const char *message, const char *instructions) {
