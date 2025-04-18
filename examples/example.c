@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../src/agerun_system.h"
+#include "../src/agerun_method.h"
 
 int main(void) {
     printf("Agerun Example Application\n");
@@ -19,7 +20,7 @@ int main(void) {
     
     // Create a simple echo method
     printf("Creating echo method...\n");
-    version_t echo_version = ar_method("echo", "send(0, message)", 0, true, false);
+    version_t echo_version = ar_method_create("echo", "send(0, message)", 0, true, false);
     if (echo_version == 0) {
         printf("Failed to create echo method\n");
         ar_shutdown();
@@ -34,7 +35,7 @@ int main(void) {
         "if(message == \"increment\", memory[\"count\"] := memory[\"count\"] + 1, \"\")\n"
         "if(message == \"get\", send(0, build(\"Count: {}\", memory[\"count\"])), \"\")";
     
-    version_t counter_version = ar_method("counter", counter_code, 0, true, true);
+    version_t counter_version = ar_method_create("counter", counter_code, 0, true, true);
     if (counter_version == 0) {
         printf("Failed to create counter method\n");
         ar_shutdown();

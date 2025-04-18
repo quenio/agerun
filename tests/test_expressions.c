@@ -1,4 +1,5 @@
 #include "../src/agerun_system.h"
+#include "../src/agerun_method.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,7 +35,7 @@ static void test_echo_method(void) {
     printf("Testing echo method...\n");
     
     // Create a simple method that sends back a message
-    version_t version = ar_method("echo", "send(0, message)", 0, true, false);
+    version_t version = ar_method_create("echo", "send(0, message)", 0, true, false);
     assert(version > 0);
     printf("Created echo method version %d\n", version);
     
@@ -70,7 +71,7 @@ static void test_simple_method(void) {
         "# Store message in memory\n"
         "memory[\"stored_message\"] := message";
     
-    version_t version = ar_method("simple_test", simple_method, 0, true, false);
+    version_t version = ar_method_create("simple_test", simple_method, 0, true, false);
     assert(version > 0);
     printf("Created simple method version %d\n", version);
     

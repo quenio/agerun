@@ -17,18 +17,6 @@ agent_id_t ar_init(const char *method_name, version_t version);
  */
 void ar_shutdown(void);
 
-/**
- * Define a new method with the given instructions
- * @param name Method name
- * @param instructions The method implementation code
- * @param previous_version Previous version number (0 for new method)
- * @param backward_compatible Whether the method is backward compatible
- * @param persist Whether agents using this method should persist
- * @return New version number, or 0 on failure
- */
-version_t ar_method(const char *name, const char *instructions, 
-                        version_t previous_version, bool backward_compatible, 
-                        bool persist);
 
 /**
  * Create a new agent instance

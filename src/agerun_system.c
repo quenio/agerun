@@ -27,30 +27,16 @@
 
 /* Message Queue is now defined in agerun_queue.h */
 
-/* Method Definition */
-typedef struct method_s {
-    char name[MAX_METHOD_NAME_LENGTH];
-    version_t version;
-    version_t previous_version;
-    bool backward_compatible;
-    bool persist;
-    char instructions[MAX_INSTRUCTIONS_LENGTH];
-} method_t;
+/* Method Definition is now in agerun_method.h/c */
 
 /* Agent Definition is now in agerun_agent.h */
 
 /* Global State */
 static agent_t agents[MAX_AGENTS];
-static method_t methods[MAX_METHODS][MAX_VERSIONS_PER_METHOD];
-static int method_counts[MAX_METHODS];
-static int method_name_count = 0;
 static agent_id_t next_agent_id = 1;
 static bool is_initialized = false;
 
 /* Forward Declarations */
-static int find_method_idx(const char *name);
-static method_t* find_latest_method(const char *name);
-static method_t* find_method(const char *name, version_t version);
 static bool interpret_method(agent_t *agent, const char *message);
 
 /* Implementation */
@@ -63,11 +49,6 @@ agent_id_t ar_init(const char *method_name, version_t version) {
     // Initialize all agents as inactive
     for (int i = 0; i < MAX_AGENTS; i++) {
         agents[i].is_active = false;
-    }
-    
-    // Initialize method counts
-    for (int i = 0; i < MAX_METHODS; i++) {
-        method_counts[i] = 0;
     }
     
     is_initialized = true;
@@ -122,57 +103,6 @@ void ar_shutdown(void) {
     is_initialized = false;
 }
 
-version_t ar_method(const char *name, const char *instructions, 
-                        version_t previous_version, bool backward_compatible, 
-                        bool persist) {
-    if (!is_initialized || !name || !instructions) {
-        return 0;
-    }
-    
-    // Find or create method entry
-    int method_idx = find_method_idx(name);
-    if (method_idx < 0) {
-        if (method_name_count >= MAX_METHODS) {
-            printf("Error: Maximum number of method types reached\n");
-            return 0;
-        }
-        
-        method_idx = method_name_count++;
-        strncpy(methods[method_idx][0].name, name, MAX_METHOD_NAME_LENGTH - 1);
-        methods[method_idx][0].name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
-    }
-    
-    // Check if we've reached max versions for this method
-    if (method_counts[method_idx] >= MAX_VERSIONS_PER_METHOD) {
-        printf("Error: Maximum number of versions reached for method %s\n", name);
-        return 0;
-    }
-    
-    // Create new version
-    int version_idx = method_counts[method_idx]++;
-    version_t new_version = previous_version + 1;
-    
-    // Make sure the version is unique
-    for (int i = 0; i < version_idx; i++) {
-        if (methods[method_idx][i].version == new_version) {
-            new_version = methods[method_idx][i].version + 1;
-        }
-    }
-    
-    // Initialize the new method version
-    strncpy(methods[method_idx][version_idx].name, name, MAX_METHOD_NAME_LENGTH - 1);
-    methods[method_idx][version_idx].name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
-    methods[method_idx][version_idx].version = new_version;
-    methods[method_idx][version_idx].previous_version = previous_version;
-    methods[method_idx][version_idx].backward_compatible = backward_compatible;
-    methods[method_idx][version_idx].persist = persist;
-    strncpy(methods[method_idx][version_idx].instructions, instructions, MAX_INSTRUCTIONS_LENGTH - 1);
-    methods[method_idx][version_idx].instructions[MAX_INSTRUCTIONS_LENGTH - 1] = '\0';
-    
-    printf("Created method %s version %d\n", name, new_version);
-    
-    return new_version;
-}
 
 agent_id_t ar_create(const char *method_name, version_t version, void *context) {
     if (!is_initialized || !method_name) {
@@ -193,15 +123,8 @@ agent_id_t ar_create(const char *method_name, version_t version, void *context) 
         return 0;
     }
     
-    // Find method definition
-    method_t *method = NULL;
-    if (version == 0) {
-        // Use latest version
-        method = find_latest_method(method_name);
-    } else {
-        // Use specific version
-        method = find_method(method_name, version);
-    }
+    // Find method definition from the method module
+    method_t *method = ar_method_get(method_name, version);
     
     if (!method) {
         printf("Error: Method %s%s%d not found\n", 
@@ -480,104 +403,23 @@ bool ar_load_agents(void) {
 }
 
 bool ar_save_methods(void) {
+    // TODO: This function needs to be reimplemented to use the method module APIs
     if (!is_initialized) {
         return false;
     }
     
-    // Simple placeholder implementation for now
-    FILE *fp = fopen("agrun.methods", "w");
-    if (!fp) {
-        printf("Error: Could not open agrun.methods for writing\n");
-        return false;
-    }
-    
-    fprintf(fp, "%d\n", method_name_count);
-    
-    for (int i = 0; i < method_name_count; i++) {
-        fprintf(fp, "%d\n", method_counts[i]);
-        
-        for (int j = 0; j < method_counts[i]; j++) {
-            method_t *method = &methods[i][j];
-            fprintf(fp, "%s %d %d %d %d\n", 
-                   method->name, method->version, method->previous_version,
-                   method->backward_compatible ? 1 : 0, method->persist ? 1 : 0);
-            
-            // Save instructions with special encoding for newlines
-            for (size_t k = 0; k < strlen(method->instructions); k++) {
-                if (method->instructions[k] == '\n') {
-                    fprintf(fp, "\\n");
-                } else if (method->instructions[k] == '\\') {
-                    fprintf(fp, "\\\\");
-                } else {
-                    fputc(method->instructions[k], fp);
-                }
-            }
-            fprintf(fp, "\n");
-        }
-    }
-    
-    fclose(fp);
-    return true;
+    printf("Method saving not implemented yet\n");
+    return false;
 }
 
 bool ar_load_methods(void) {
+    // TODO: This function needs to be reimplemented to use the method module APIs
     if (!is_initialized) {
         return false;
     }
     
-    FILE *fp = fopen("agrun.methods", "r");
-    if (!fp) {
-        // Not an error, might be first run
-        return true;
-    }
-    
-    fscanf(fp, "%d", &method_name_count);
-    
-    for (int i = 0; i < method_name_count; i++) {
-        fscanf(fp, "%d", &method_counts[i]);
-        
-        for (int j = 0; j < method_counts[i]; j++) {
-            method_t *method = &methods[i][j];
-            int backward_compatible_int, persist_int;
-            
-            if (fscanf(fp, "%s %d %d %d %d", 
-                      method->name, &method->version, &method->previous_version,
-                      &backward_compatible_int, &persist_int) != 5) {
-                printf("Error: Malformed method entry in agrun.methods\n");
-                fclose(fp);
-                return false;
-            }
-            
-            method->backward_compatible = backward_compatible_int != 0;
-            method->persist = persist_int != 0;
-            
-            // Read instructions with special handling for newlines
-            int c;  // Using int for fgetc return value
-            int idx = 0;
-            // Skip the rest of the line
-            while ((c = fgetc(fp)) != '\n' && c != EOF);
-            
-            while ((c = fgetc(fp)) != '\n' && c != EOF && idx < MAX_INSTRUCTIONS_LENGTH - 1) {
-                if (c == '\\') {
-                    c = fgetc(fp);
-                    if (c == 'n') {
-                        method->instructions[idx++] = '\n';
-                    } else if (c == '\\') {
-                        method->instructions[idx++] = '\\';
-                    } else {
-                        method->instructions[idx++] = '\\';
-                        method->instructions[idx++] = (char)c;  // Explicit cast
-                    }
-                } else {
-                    method->instructions[idx++] = (char)c;  // Explicit cast
-                }
-            }
-            method->instructions[idx] = '\0';
-        }
-    }
-    
-    fclose(fp);
-    return true;
+    printf("Method loading not implemented yet\n");
+    return false;
 }
 
 // Memory functions are now defined in agerun_map.c
@@ -586,77 +428,11 @@ bool ar_load_methods(void) {
 
 /* Queue functions are now defined in agerun_message.c */
 
-static int find_method_idx(const char *name) {
-    for (int i = 0; i < method_name_count; i++) {
-        if (strcmp(methods[i][0].name, name) == 0) {
-            return i;
-        }
-    }
-    
-    return -1;
-}
-
-static method_t* find_latest_method(const char *name) {
-    int method_idx = find_method_idx(name);
-    if (method_idx < 0 || method_counts[method_idx] == 0) {
-        return NULL;
-    }
-    
-    // Find the most recent version
-    version_t latest_version = 0;
-    int latest_idx = -1;
-    
-    for (int i = 0; i < method_counts[method_idx]; i++) {
-        if (methods[method_idx][i].version > latest_version) {
-            latest_version = methods[method_idx][i].version;
-            latest_idx = i;
-        }
-    }
-    
-    if (latest_idx >= 0) {
-        return &methods[method_idx][latest_idx];
-    }
-    
-    return NULL;
-}
-
-static method_t* find_method(const char *name, version_t version) {
-    int method_idx = find_method_idx(name);
-    if (method_idx < 0) {
-        return NULL;
-    }
-    
-    // Case 1: Exact version match
-    for (int i = 0; i < method_counts[method_idx]; i++) {
-        if (methods[method_idx][i].version == version) {
-            return &methods[method_idx][i];
-        }
-    }
-    
-    // Case 2: Find compatible version
-    version_t latest_compatible = 0;
-    int latest_idx = -1;
-    
-    for (int i = 0; i < method_counts[method_idx]; i++) {
-        if (methods[method_idx][i].backward_compatible && 
-            methods[method_idx][i].version > version && 
-            methods[method_idx][i].version > latest_compatible) {
-            latest_compatible = methods[method_idx][i].version;
-            latest_idx = i;
-        }
-    }
-    
-    if (latest_idx >= 0) {
-        return &methods[method_idx][latest_idx];
-    }
-    
-    return NULL; // No compatible version found
-}
 
 
 static bool interpret_method(agent_t *agent, const char *message) {
-    // Find the method
-    method_t *method = find_method(agent->method_name, agent->method_version);
+    // Find the method - using the method module's exported function
+    method_t *method = ar_method_get(agent->method_name, agent->method_version);
     if (!method) {
         printf("Error: Method %s version %d not found for agent %lld\n", 
                agent->method_name, agent->method_version, agent->id);

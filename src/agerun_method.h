@@ -5,6 +5,37 @@
 #include "agerun_data.h"
 #include "agerun_agent.h"
 
+/* Method Definition */
+typedef struct method_s {
+    char name[64]; /* MAX_METHOD_NAME_LENGTH */
+    version_t version;
+    version_t previous_version;
+    bool backward_compatible;
+    bool persist;
+    char instructions[16384]; /* MAX_INSTRUCTIONS_LENGTH */
+} method_t;
+
+/**
+ * Define a new method with the given instructions
+ * @param name Method name
+ * @param instructions The method implementation code
+ * @param previous_version Previous version number (0 for new method)
+ * @param backward_compatible Whether the method is backward compatible
+ * @param persist Whether agents using this method should persist
+ * @return New version number, or 0 on failure
+ */
+version_t ar_method_create(const char *name, const char *instructions, 
+                        version_t previous_version, bool backward_compatible, 
+                        bool persist);
+
+/**
+ * Get a method definition by name and version
+ * @param name Method name
+ * @param version Method version (0 for latest)
+ * @return Pointer to method definition, or NULL if not found
+ */
+method_t* ar_method_get(const char *name, version_t version);
+
 /**
  * Interprets and executes a method's instructions in the context of an agent
  * @param agent The agent executing the method

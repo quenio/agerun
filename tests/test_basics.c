@@ -1,4 +1,5 @@
 #include "../src/agerun_system.h"
+#include "../src/agerun_method.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,11 +14,11 @@ static void test_method_creation(void) {
     printf("Testing method creation...\n");
     
     // Create a new method
-    version_t version = ar_method("test_method", "send(0, \"Hello, World!\")", 0, true, false);
+    version_t version = ar_method_create("test_method", "send(0, \"Hello, World!\")", 0, true, false);
     assert(version > 0);
     
     // Create a new version of the method
-    version_t version2 = ar_method("test_method", "send(0, \"Hello, Updated World!\")", version, true, false);
+    version_t version2 = ar_method_create("test_method", "send(0, \"Hello, Updated World!\")", version, true, false);
     assert(version2 > 0);
     assert(version2 > version);
     
@@ -28,7 +29,7 @@ static void test_agent_creation(void) {
     printf("Testing agent creation...\n");
     
     // Create a method
-    version_t version = ar_method("agent_test", "send(0, \"Agent created\")", 0, true, false);
+    version_t version = ar_method_create("agent_test", "send(0, \"Agent created\")", 0, true, false);
     assert(version > 0);
     
     // Create an agent
@@ -57,11 +58,11 @@ static void test_message_passing(void) {
     printf("Testing message passing between agents...\n");
     
     // Create sender method
-    version_t sender_version = ar_method("sender", "send(target_id, \"Hello from sender!\")", 0, true, false);
+    version_t sender_version = ar_method_create("sender", "send(target_id, \"Hello from sender!\")", 0, true, false);
     assert(sender_version > 0);
     
     // Create receiver method
-    version_t receiver_version = ar_method("receiver", "memory[\"received\"] := \"true\"", 0, true, false);
+    version_t receiver_version = ar_method_create("receiver", "memory[\"received\"] := \"true\"", 0, true, false);
     assert(receiver_version > 0);
     
     // Create receiver agent
@@ -104,7 +105,7 @@ int main(void) {
     }
     
     // Now create our test method
-    version_t version = ar_method("test_init", "send(0, \"Runtime initialized\")", 0, true, false);
+    version_t version = ar_method_create("test_init", "send(0, \"Runtime initialized\")", 0, true, false);
     if (version == 0) {
         printf("Error: Failed to create test_init method\n");
         ar_shutdown();
