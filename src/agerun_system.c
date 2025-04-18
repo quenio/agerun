@@ -1,6 +1,6 @@
 /* Agerun Runtime System Implementation */
 #include "agerun_system.h"
-#include "agerun_interpreter.h"
+#include "agerun_method.h"
 #include "agerun_data.h"
 #include "agerun_agent.h"
 #include "agerun_queue.h"
@@ -665,7 +665,7 @@ static bool interpret_method(agent_t *agent, const char *message) {
     printf("Agent %lld received message: %s\n", agent->id, message);
     
     // Call the interpreter function with the method instructions
-    return ar_interpret_agent_method(agent, message, method->instructions);
+    return ar_method_run(agent, message, method->instructions);
 }
 
 
