@@ -2,6 +2,8 @@
 #include "agerun_interpreter.h"
 #include "agerun_string.h"
 #include "agerun_data.h"
+#include "agerun_agent.h"
+#include "agerun_queue.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,16 +14,7 @@
 
 /* Memory Dictionary structure is now defined in agerun_data.h */
 
-typedef struct agent_s {
-    agent_id_t id;
-    char method_name[64]; // Use same size as defined in agerun.c
-    version_t method_version;
-    bool is_active;
-    bool is_persistent;
-    void *queue;
-    dict_t memory;
-    dict_t *context;
-} agent_t;
+/* Agent structure is now defined in agerun_agent.h */
 
 
 // Function declarations are now in the header file

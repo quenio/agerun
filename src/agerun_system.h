@@ -2,10 +2,7 @@
 #define AGERUN_SYSTEM_H
 
 #include <stdbool.h>
-#include <stdint.h>
-
-typedef int64_t agent_id_t;
-typedef int32_t version_t;
+#include "agerun_agent.h"
 
 /**
  * Initialize the Agerun runtime system

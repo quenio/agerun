@@ -2,6 +2,8 @@
 #include "agerun_system.h"
 #include "agerun_interpreter.h"
 #include "agerun_data.h"
+#include "agerun_agent.h"
+#include "agerun_queue.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,13 +24,7 @@
 
 /* Memory Dictionary structure is now defined in agerun_data.h */
 
-/* Message Queue for Agent Communication */
-typedef struct message_queue_s {
-    char messages[QUEUE_SIZE][MAX_MESSAGE_LENGTH];
-    int head;
-    int tail;
-    int size;
-} message_queue_t;
+/* Message Queue is now defined in agerun_queue.h */
 
 /* Method Definition */
 typedef struct method_s {
@@ -40,17 +36,7 @@ typedef struct method_s {
     char instructions[MAX_INSTRUCTIONS_LENGTH];
 } method_t;
 
-/* Agent Definition */
-typedef struct agent_s {
-    agent_id_t id;
-    char method_name[MAX_METHOD_NAME_LENGTH];
-    version_t method_version;
-    bool is_active;
-    bool is_persistent;
-    message_queue_t queue;
-    dict_t memory;
-    dict_t *context;
-} agent_t;
+/* Agent Definition is now in agerun_agent.h */
 
 /* Global State */
 static agent_t agents[MAX_AGENTS];
@@ -61,9 +47,6 @@ static agent_id_t next_agent_id = 1;
 static bool is_initialized = false;
 
 /* Forward Declarations */
-static bool init_message_queue(message_queue_t *queue);
-static bool queue_push(message_queue_t *queue, const char *message);
-static bool queue_pop(message_queue_t *queue, char *message);
 static int find_method_idx(const char *name);
 static method_t* find_latest_method(const char *name);
 static method_t* find_method(const char *name, version_t version);
@@ -235,7 +218,7 @@ agent_id_t ar_create(const char *method_name, version_t version, void *context) 
     agents[agent_idx].context = (dict_t *)context;
     
     ar_dict_init(&agents[agent_idx].memory);
-    init_message_queue(&agents[agent_idx].queue);
+    ar_queue_init(&agents[agent_idx].queue);
     
     printf("Created agent %lld using method %s version %d\n", 
            agents[agent_idx].id, method_name, method->version);
@@ -256,7 +239,7 @@ bool ar_destroy(agent_id_t agent_id) {
             
             // Process the sleep message
             char message[MAX_MESSAGE_LENGTH];
-            if (queue_pop(&agents[i].queue, message)) {
+            if (ar_queue_pop(&agents[i].queue, message)) {
                 interpret_method(&agents[i], message);
             }
             
@@ -291,7 +274,7 @@ bool ar_send(agent_id_t agent_id, const char *message) {
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (agents[i].is_active && agents[i].id == agent_id) {
             // Add message to queue
-            return queue_push(&agents[i].queue, message);
+            return ar_queue_push(&agents[i].queue, message);
         }
     }
     
@@ -304,7 +287,7 @@ bool ar_process_next_message(void) {
         if (agents[i].is_active && agents[i].queue.size > 0) {
             // Process one message
             char message[MAX_MESSAGE_LENGTH];
-            if (queue_pop(&agents[i].queue, message)) {
+            if (ar_queue_pop(&agents[i].queue, message)) {
                 interpret_method(&agents[i], message);
                 return true;
             }
@@ -600,44 +583,7 @@ bool ar_load_methods(void) {
 
 // This function has been moved to agerun_value.c
 
-static bool init_message_queue(message_queue_t *queue) {
-    if (!queue) {
-        return false;
-    }
-    
-    queue->head = 0;
-    queue->tail = 0;
-    queue->size = 0;
-    
-    return true;
-}
-
-static bool queue_push(message_queue_t *queue, const char *message) {
-    if (!queue || !message || queue->size >= QUEUE_SIZE) {
-        return false;
-    }
-    
-    strncpy(queue->messages[queue->tail], message, MAX_MESSAGE_LENGTH - 1);
-    queue->messages[queue->tail][MAX_MESSAGE_LENGTH - 1] = '\0';
-    
-    queue->tail = (queue->tail + 1) % QUEUE_SIZE;
-    queue->size++;
-    
-    return true;
-}
-
-static bool queue_pop(message_queue_t *queue, char *message) {
-    if (!queue || !message || queue->size == 0) {
-        return false;
-    }
-    
-    strncpy(message, queue->messages[queue->head], MAX_MESSAGE_LENGTH);
-    
-    queue->head = (queue->head + 1) % QUEUE_SIZE;
-    queue->size--;
-    
-    return true;
-}
+/* Queue functions are now defined in agerun_message.c */
 
 static int find_method_idx(const char *name) {
     for (int i = 0; i < method_name_count; i++) {

@@ -3,9 +3,7 @@
 
 #include <stdbool.h>
 #include "agerun_data.h"
-
-// Forward declarations
-struct agent_s;
+#include "agerun_agent.h"
 
 /**
  * Parse and execute a single instruction
@@ -14,7 +12,7 @@ struct agent_s;
  * @param instruction The instruction to execute
  * @return true if execution was successful, false otherwise
  */
-bool ar_instruction_run(struct agent_s *agent, const char *message, const char *instruction);
+bool ar_instruction_run(agent_t *agent, const char *message, const char *instruction);
 
 /**
  * Evaluate an expression in the agent's context
@@ -24,7 +22,7 @@ bool ar_instruction_run(struct agent_s *agent, const char *message, const char *
  * @param offset Pointer to current position in the expression
  * @return The evaluated data result
  */
-data_t ar_evaluate_expression(struct agent_s *agent, const char *message, const char *expr, int *offset);
+data_t ar_evaluate_expression(agent_t *agent, const char *message, const char *expr, int *offset);
 
 /**
  * Interprets and executes a method's instructions in the context of an agent
@@ -33,6 +31,6 @@ data_t ar_evaluate_expression(struct agent_s *agent, const char *message, const 
  * @param instructions The method instructions to execute
  * @return true if execution was successful, false otherwise
  */
-bool ar_interpret_agent_method(struct agent_s *agent, const char *message, const char *instructions);
+bool ar_interpret_agent_method(agent_t *agent, const char *message, const char *instructions);
 
 #endif /* AGERUN_INTERPRETER_H */
