@@ -1,6 +1,6 @@
-# Agerun
+# AgeRun
 
-Agerun is a lightweight, message-driven agent system where each agent is defined by a single method responsible for handling all incoming messages. Agents operate within a persistent runtime environment, allowing dynamic creation, versioning, pausing, resumption, and destruction.
+AgeRun is a lightweight, message-driven agent system where each agent is defined by a single method responsible for handling all incoming messages. Agents operate within a persistent runtime environment, allowing dynamic creation, versioning, pausing, resumption, and destruction.
 
 ## Features
 
@@ -57,7 +57,7 @@ int main() {
     agent_id_t initial_agent = ar_init("echo", echo_version);
     
     // Send a message to the echo agent
-    ar_send(initial_agent, "Hello, Agerun!");
+    ar_send(initial_agent, "Hello, AgeRun!");
     
     // Process all messages
     ar_process_all_messages();

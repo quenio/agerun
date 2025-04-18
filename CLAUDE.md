@@ -1,10 +1,10 @@
-# Agerun Development Guide for Claude
+# AgeRun Development Guide for Claude
 
-This document contains instructions and guidance for Claude Code to assist with the development of the Agerun project.
+This document contains instructions and guidance for Claude Code to assist with the development of the AgeRun project.
 
 ## Project Overview
 
-Agerun is a lightweight, message-driven agent system where each agent is defined by a single method responsible for handling all incoming messages. Agents operate within a persistent runtime environment, allowing dynamic creation, versioning, pausing, resumption, and destruction.
+AgeRun is a lightweight, message-driven agent system where each agent is defined by a single method responsible for handling all incoming messages. Agents operate within a persistent runtime environment, allowing dynamic creation, versioning, pausing, resumption, and destruction.
 
 ## Build and Test
 

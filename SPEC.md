@@ -1,4 +1,4 @@
-# Agerun: Agent Runtime Specification
+# AgeRun: Agent Runtime Specification
 
 ## Overview
 
