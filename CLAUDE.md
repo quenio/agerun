@@ -27,7 +27,7 @@ When making changes, always follow these steps to ensure code quality:
 
 4. **Run examples**:
    ```
-   ./example
+   ./bin/example
    ```
 
 IMPORTANT: Always run examples after running tests to verify changes work in practical application contexts, not just in test environments.
@@ -45,6 +45,10 @@ IMPORTANT: Always run examples after running tests to verify changes work in pra
 
 - **/tests**: Test files
   - `test_basics.c`: Basic functionality tests
+
+- **/bin**: Generated object files and executables
+  - All compiled object files, libraries, and executable files are placed here
+  - This directory is ignored by git
 
 ## Coding Style Guidelines
 
