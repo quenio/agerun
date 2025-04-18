@@ -6,6 +6,22 @@
 static void free_dict(dict_t *dict);
 
 /**
+ * Create a new empty dictionary
+ * @return Pointer to the new dictionary, or NULL on failure
+ */
+dict_t* ar_dict_create(void) {
+    dict_t *dict = (dict_t *)malloc(sizeof(dict_t));
+    if (!dict) return NULL;
+    
+    if (!ar_dict_init(dict)) {
+        free(dict);
+        return NULL;
+    }
+    
+    return dict;
+}
+
+/**
  * Initialize a dictionary
  * @param dict Dictionary to initialize
  * @return true if successful, false otherwise
@@ -22,22 +38,6 @@ bool ar_dict_init(dict_t *dict) {
     
     dict->count = 0;
     return true;
-}
-
-/**
- * Create a new empty dictionary
- * @return Pointer to the new dictionary, or NULL on failure
- */
-dict_t* ar_dict_create(void) {
-    dict_t *dict = (dict_t *)malloc(sizeof(dict_t));
-    if (!dict) return NULL;
-    
-    if (!ar_dict_init(dict)) {
-        free(dict);
-        return NULL;
-    }
-    
-    return dict;
 }
 
 /**

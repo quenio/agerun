@@ -51,17 +51,17 @@ typedef struct dict_s {
 } dict_t;
 
 /**
+ * Create a new empty dictionary
+ * @return Pointer to the new dictionary, or NULL on failure
+ */
+dict_t* ar_dict_create(void);
+
+/**
  * Initialize a dictionary
  * @param dict Dictionary to initialize
  * @return true if successful, false otherwise
  */
 bool ar_dict_init(dict_t *dict);
-
-/**
- * Create a new empty dictionary
- * @return Pointer to the new dictionary, or NULL on failure
- */
-dict_t* ar_dict_create(void);
 
 /**
  * Create a new dictionary data value
