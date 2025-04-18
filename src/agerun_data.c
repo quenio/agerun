@@ -6,6 +6,33 @@
 static void free_dict(dict_t *dict);
 
 /**
+ * Create a new data value of the specified type with default value
+ * @param type Type of data to create
+ * @return Data value of the requested type
+ */
+data_t ar_data_create(data_type_t type) {
+    data_t data;
+    data.type = type;
+    
+    switch (type) {
+        case DATA_INT:
+            data.data.int_value = 0;
+            break;
+        case DATA_DOUBLE:
+            data.data.double_value = 0.0;
+            break;
+        case DATA_STRING:
+            data.data.string_value = NULL;
+            break;
+        case DATA_DICT:
+            data.data.dict_value = ar_dict_create();
+            break;
+    }
+    
+    return data;
+}
+
+/**
  * Create a new empty dictionary
  * @return Pointer to the new dictionary, or NULL on failure
  */
@@ -38,17 +65,6 @@ bool ar_dict_init(dict_t *dict) {
     
     dict->count = 0;
     return true;
-}
-
-/**
- * Create a new dictionary data value
- * @return Data value containing a dictionary
- */
-data_t ar_data_create_dict(void) {
-    data_t data;
-    data.type = DATA_DICT;
-    data.data.dict_value = ar_dict_create();
-    return data;
 }
 
 /**

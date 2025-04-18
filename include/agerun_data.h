@@ -51,6 +51,13 @@ typedef struct dict_s {
 } dict_t;
 
 /**
+ * Create a new data value of the specified type with default value
+ * @param type Type of data to create
+ * @return Data value of the requested type
+ */
+data_t ar_data_create(data_type_t type);
+
+/**
  * Create a new empty dictionary
  * @return Pointer to the new dictionary, or NULL on failure
  */
@@ -62,12 +69,6 @@ dict_t* ar_dict_create(void);
  * @return true if successful, false otherwise
  */
 bool ar_dict_init(dict_t *dict);
-
-/**
- * Create a new dictionary data value
- * @return Data value containing a dictionary
- */
-data_t ar_data_create_dict(void);
 
 /**
  * Get a value from dictionary by key

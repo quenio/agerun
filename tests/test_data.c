@@ -13,6 +13,23 @@ int main(void) {
     assert(dict != NULL);
     assert(dict->count == 0);
     
+    // Test data creation for different types
+    data_t int_data_default = ar_data_create(DATA_INT);
+    assert(int_data_default.type == DATA_INT);
+    assert(int_data_default.data.int_value == 0);
+    
+    data_t double_data_default = ar_data_create(DATA_DOUBLE);
+    assert(double_data_default.type == DATA_DOUBLE);
+    assert(double_data_default.data.double_value == 0.0);
+    
+    data_t string_data_default = ar_data_create(DATA_STRING);
+    assert(string_data_default.type == DATA_STRING);
+    assert(string_data_default.data.string_value == NULL);
+    
+    data_t dict_data_default = ar_data_create(DATA_DICT);
+    assert(dict_data_default.type == DATA_DICT);
+    assert(dict_data_default.data.dict_value != NULL);
+    
     // Test 2: Set and get primitive values
     data_t int_data;
     int_data.type = DATA_INT;
@@ -41,7 +58,7 @@ int main(void) {
     assert(strcmp(value->data.string_value, "Hello, World!") == 0);
     
     // Test 4: Nested dictionary
-    data_t nested_dict_data = ar_data_create_dict();
+    data_t nested_dict_data = ar_data_create(DATA_DICT);
     assert(nested_dict_data.type == DATA_DICT);
     assert(nested_dict_data.data.dict_value != NULL);
     
@@ -71,7 +88,7 @@ int main(void) {
     // The nested_dict_data now is shared between the dictionary and the value that was set
     
     // Nested a third level deep
-    data_t third_level_dict = ar_data_create_dict();
+    data_t third_level_dict = ar_data_create(DATA_DICT);
     data_t deep_string;
     deep_string.type = DATA_STRING;
     deep_string.data.string_value = strdup("Deep value!");
