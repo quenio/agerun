@@ -23,12 +23,6 @@ typedef struct agent_s {
     dict_t *context;
 } agent_t;
 
-// External function declarations
-extern bool ar_send(agent_id_t agent_id, const char *message);
-extern agent_id_t ar_create(const char *method_name, version_t version, void *context);
-extern bool ar_destroy(agent_id_t agent_id);
-extern version_t ar_method(const char *name, const char *instructions, version_t previous_version, bool backward_compatible, bool persist);
-extern bool ar_dict_set(void *dictionary, const char *key, void *value);
 
 // Forward declarations for internal functions
 static bool parse_and_execute_instruction(agent_t *agent, const char *message, const char *instruction);
@@ -122,12 +116,12 @@ static data_t evaluate_expression(agent_t *agent, const char *message, const cha
             char temp[32];
             snprintf(temp, sizeof(temp), "%lld", key_val.data.int_value);
             key = strdup(temp);
-            ar_free_data(&key_val);
+            ar_data_free(&key_val);
         } else if (key_val.type == DATA_DOUBLE) {
             char temp[32];
             snprintf(temp, sizeof(temp), "%f", key_val.data.double_value);
             key = strdup(temp);
-            ar_free_data(&key_val);
+            ar_data_free(&key_val);
         }
         
         if (key) {
@@ -370,7 +364,7 @@ static data_t evaluate_expression(agent_t *agent, const char *message, const cha
                 
                 // Free argument values
                 for (int i = 0; i < arg_count; i++) {
-                    ar_free_data(&args[i]);
+                    ar_data_free(&args[i]);
                 }
             }
         }
@@ -426,7 +420,7 @@ static data_t evaluate_expression(agent_t *agent, const char *message, const cha
             }
         }
         
-        ar_free_data(&right_val);
+        ar_data_free(&right_val);
     }
     
     return result;
@@ -495,7 +489,7 @@ static bool parse_and_execute_instruction(agent_t *agent, const char *message, c
     else {
         int offset = 0;
         data_t result_val = evaluate_expression(agent, message, instr_trimmed, &offset);
-        ar_free_data(&result_val); // Discard the result
+        ar_data_free(&result_val); // Discard the result
     }
     
     free(instr_copy);

@@ -110,7 +110,7 @@ int main(void) {
     data_t temp_data;
     temp_data.type = DATA_DICT;
     temp_data.data.dict_value = dict;
-    ar_free_data(&temp_data);
+    ar_data_free(&temp_data);
     
     return 0;
 }

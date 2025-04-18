@@ -97,6 +97,6 @@ void ar_dict_free(dict_t *dict);
  * Free resources associated with a data structure
  * @param data Pointer to the data to free
  */
-void ar_free_data(data_t *data);
+void ar_data_free(data_t *data);
 
 #endif /* AGERUN_DATA_H */

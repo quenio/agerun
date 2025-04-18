@@ -129,7 +129,7 @@ void ar_shutdown(void) {
             for (int j = 0; j < DICT_SIZE; j++) {
                 if (agents[i].memory.entries[j].is_used && agents[i].memory.entries[j].key) {
                     free(agents[i].memory.entries[j].key);
-                    ar_free_data(&agents[i].memory.entries[j].value);
+                    ar_data_free(&agents[i].memory.entries[j].value);
                 }
             }
         }
@@ -264,7 +264,7 @@ bool ar_destroy(agent_id_t agent_id) {
             for (int j = 0; j < DICT_SIZE; j++) {
                 if (agents[i].memory.entries[j].is_used && agents[i].memory.entries[j].key) {
                     free(agents[i].memory.entries[j].key);
-                    ar_free_data(&agents[i].memory.entries[j].value);
+                    ar_data_free(&agents[i].memory.entries[j].value);
                 }
             }
             
@@ -706,7 +706,6 @@ static method_t* find_method(const char *name, version_t version) {
     return NULL; // No compatible version found
 }
 
-static bool interpret_method(agent_t *agent, const char *message);
 
 static bool interpret_method(agent_t *agent, const char *message) {
     // Find the method

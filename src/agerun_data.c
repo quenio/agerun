@@ -101,7 +101,7 @@ bool ar_dict_set(dict_t *dict, const char *key, data_t *value_ptr) {
     data_t *existing = ar_dict_get(dict, key);
     if (existing) {
         // Free old value
-        ar_free_data(existing);
+        ar_data_free(existing);
         
         // Directly assign the new value
         *existing = *value_ptr;
@@ -133,7 +133,7 @@ bool ar_dict_set(dict_t *dict, const char *key, data_t *value_ptr) {
  * Free resources associated with a data structure
  * @param data Pointer to the data to free
  */
-void ar_free_data(data_t *data) {
+void ar_data_free(data_t *data) {
     if (!data) return;
     
     if (data->type == DATA_STRING && data->data.string_value) {
@@ -155,7 +155,7 @@ void ar_dict_free(dict_t *dict) {
     for (int i = 0; i < DICT_SIZE; i++) {
         if (dict->entries[i].is_used && dict->entries[i].key) {
             free(dict->entries[i].key);
-            ar_free_data(&dict->entries[i].value);
+            ar_data_free(&dict->entries[i].value);
         }
     }
     
