@@ -113,7 +113,7 @@ bool ar_process_next_message(void) {
             if (ar_queue_pop(&agents[i].queue, message)) {
                 // Use the interpret_method function from agerun_agent
                 // Since that's now private, we need to call the method directly
-                method_t *method = ar_method_get(agents[i].method_name, agents[i].method_version);
+                method_t *method = ar_methodology_get_method(agents[i].method_name, agents[i].method_version);
                 if (method) {
                     printf("Agent %lld received message: %s\n", agents[i].id, message);
                     ar_method_run(&agents[i], message, method->instructions);

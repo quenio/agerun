@@ -108,7 +108,7 @@ int* ar_methodology_get_method_name_count(void) {
 }
 
 // Main method access function
-method_t* ar_method_get(const char *name, version_t version) {
+method_t* ar_methodology_get_method(const char *name, version_t version) {
     if (version == 0) {
         // Use latest version
         return find_latest_method(name);

@@ -39,7 +39,7 @@ agent_id_t ar_agent_create(const char *method_name, version_t version, void *con
     }
     
     // Find method definition from the method module
-    method_t *method = ar_method_get(method_name, version);
+    method_t *method = ar_methodology_get_method(method_name, version);
     
     if (!method) {
         printf("Error: Method %s%s%d not found\n", 
@@ -85,7 +85,7 @@ bool ar_agent_destroy(agent_id_t agent_id) {
             char message[MAX_MESSAGE_LENGTH];
             if (ar_queue_pop(&agents[i].queue, message)) {
                 // Find the method definition to process the sleep message
-                method_t *method = ar_method_get(agents[i].method_name, agents[i].method_version);
+                method_t *method = ar_methodology_get_method(agents[i].method_name, agents[i].method_version);
                 if (method) {
                     printf("Agent %lld received message: %s\n", agents[i].id, message);
                     ar_method_run(&agents[i], message, method->instructions);
