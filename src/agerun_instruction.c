@@ -3,6 +3,7 @@
 #include "agerun_data.h"
 #include "agerun_agent.h"
 #include "agerun_expression.h"
+#include "agerun_map.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,14 +27,14 @@ bool ar_instruction_run(agent_t *agent, const char *message, const char *instruc
         char *value_expr = ar_trim(assign_pos + 2);
         
         // Direct key access - no need to check for memory["key"] syntax
-        // as memory dictionary is implicit per the spec
+        // as memory map is implicit per the spec
         
         // Evaluate the value expression
         int offset = 0;
         data_t value = ar_expression_evaluate(agent, message, value_expr, &offset);
         
         // Store in agent's memory
-        ar_dict_set(&agent->memory, key, &value);
+        ar_map_set(&agent->memory, key, &value);
     }
     // Parse function call or other expression
     else {

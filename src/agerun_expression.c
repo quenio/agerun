@@ -4,6 +4,7 @@
 #include "agerun_data.h"
 #include "agerun_agent.h"
 #include "agerun_queue.h"
+#include "agerun_map.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -103,28 +104,24 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
         }
         
         if (key) {
-            // Look up value in memory
-            for (int i = 0; i < agent->memory.count; i++) {
-                if (agent->memory.entries[i].is_used && 
-                    strcmp(agent->memory.entries[i].key, key) == 0) {
-                    
-                    // Copy the value
-                    if (agent->memory.entries[i].value.type == DATA_STRING && 
-                        agent->memory.entries[i].value.data.string_value) {
-                        result.type = DATA_STRING;
-                        result.data.string_value = strdup(agent->memory.entries[i].value.data.string_value);
-                    } else if (agent->memory.entries[i].value.type == DATA_INT) {
-                        result.type = DATA_INT;
-                        result.data.int_value = agent->memory.entries[i].value.data.int_value;
-                    } else if (agent->memory.entries[i].value.type == DATA_DOUBLE) {
-                        result.type = DATA_DOUBLE;
-                        result.data.double_value = agent->memory.entries[i].value.data.double_value;
-                    }
-                    
-                    if (key_val.type != DATA_STRING) {
-                        free(key);
-                    }
-                    return result;
+            // Look up value in memory using the map interface
+            data_t *value = ar_map_get(&agent->memory, key);
+            if (value) {
+                // Copy the value
+                if (value->type == DATA_STRING && value->data.string_value) {
+                    result.type = DATA_STRING;
+                    result.data.string_value = strdup(value->data.string_value);
+                } else if (value->type == DATA_INT) {
+                    result.type = DATA_INT;
+                    result.data.int_value = value->data.int_value;
+                } else if (value->type == DATA_DOUBLE) {
+                    result.type = DATA_DOUBLE;
+                    result.data.double_value = value->data.double_value;
+                } else if (value->type == DATA_MAP) {
+                    result.type = DATA_MAP;
+                    // Create a deep copy of the map
+                    result.data.map_value = ar_map_create();
+                    // We'd implement map copying here if needed
                 }
             }
             
@@ -135,7 +132,6 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
             }
         }
         
-        // Key not found in memory, return default value
         return result;
     }
     
@@ -185,7 +181,6 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
     }
     
     // Check for function calls (function(arg1, arg2, ...))
-    // For now, we'll support a few basic functions like send() and build()
     if (isalpha((unsigned char)expr[*offset])) {
         // Find function name
         int name_start = *offset;
@@ -403,4 +398,3 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
     
     return result;
 }
-

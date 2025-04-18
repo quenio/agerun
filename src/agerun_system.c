@@ -4,6 +4,7 @@
 #include "agerun_data.h"
 #include "agerun_agent.h"
 #include "agerun_queue.h"
+#include "agerun_map.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,10 +20,10 @@
 #define MAX_METHOD_NAME_LENGTH 64
 #define MAX_MESSAGE_LENGTH 1024
 #define MAX_INSTRUCTIONS_LENGTH 16384
-// DICT_SIZE is now defined in agerun_data.h
+// MAP_SIZE is now defined in agerun_map.h
 #define QUEUE_SIZE 256
 
-/* Memory Dictionary structure is now defined in agerun_data.h */
+/* Memory Map structure is now defined in agerun_map.h */
 
 /* Message Queue is now defined in agerun_queue.h */
 
@@ -108,8 +109,8 @@ void ar_shutdown(void) {
     // Clean up memory for all active agents
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (agents[i].is_active) {
-            // Free memory dictionary entries
-            for (int j = 0; j < DICT_SIZE; j++) {
+            // Free memory map entries
+            for (int j = 0; j < MAP_SIZE; j++) {
                 if (agents[i].memory.entries[j].is_used && agents[i].memory.entries[j].key) {
                     free(agents[i].memory.entries[j].key);
                     ar_data_free(&agents[i].memory.entries[j].value);
@@ -215,9 +216,9 @@ agent_id_t ar_create(const char *method_name, version_t version, void *context) 
     agents[agent_idx].method_version = method->version;
     agents[agent_idx].is_active = true;
     agents[agent_idx].is_persistent = method->persist;
-    agents[agent_idx].context = (dict_t *)context;
+    agents[agent_idx].context = (map_t *)context;
     
-    ar_dict_init(&agents[agent_idx].memory);
+    ar_map_init(&agents[agent_idx].memory);
     ar_queue_init(&agents[agent_idx].queue);
     
     printf("Created agent %lld using method %s version %d\n", 
@@ -243,8 +244,8 @@ bool ar_destroy(agent_id_t agent_id) {
                 interpret_method(&agents[i], message);
             }
             
-            // Free memory dictionary entries
-            for (int j = 0; j < DICT_SIZE; j++) {
+            // Free memory map entries
+            for (int j = 0; j < MAP_SIZE; j++) {
                 if (agents[i].memory.entries[j].is_used && agents[i].memory.entries[j].key) {
                     free(agents[i].memory.entries[j].key);
                     ar_data_free(&agents[i].memory.entries[j].value);
@@ -363,9 +364,9 @@ bool ar_save_agents(void) {
         if (agents[i].is_active && agents[i].is_persistent) {
             fprintf(fp, "%lld %s %d\n", agents[i].id, agents[i].method_name, agents[i].method_version);
             
-            // Save memory dictionary - for simplicity just save int and string values
+            // Save memory map - for simplicity just save int and string values
             fprintf(fp, "%d\n", agents[i].memory.count);
-            for (int j = 0; j < DICT_SIZE; j++) {
+            for (int j = 0; j < MAP_SIZE; j++) {
                 if (agents[i].memory.entries[j].is_used && agents[i].memory.entries[j].key) {
                     fprintf(fp, "%s ", agents[i].memory.entries[j].key);
                     
@@ -425,7 +426,7 @@ bool ar_load_agents(void) {
             if (agents[j].is_active && agents[j].id == new_id) {
                 agents[j].id = id;
                 
-                // Read memory dictionary
+                // Read memory map
                 int mem_count = 0;
                 fscanf(fp, "%d", &mem_count);
                 
@@ -457,7 +458,7 @@ bool ar_load_agents(void) {
                         continue;
                     }
                     
-                    ar_dict_set(&agents[j].memory, key, &value);
+                    ar_map_set(&agents[j].memory, key, &value);
                     
                     if (value.type == DATA_STRING && value.data.string_value) {
                         free(value.data.string_value);
@@ -579,7 +580,7 @@ bool ar_load_methods(void) {
     return true;
 }
 
-// Memory functions are now defined in agerun_data.c
+// Memory functions are now defined in agerun_map.c
 
 // This function has been moved to agerun_value.c
 
@@ -668,7 +669,4 @@ static bool interpret_method(agent_t *agent, const char *message) {
     return ar_method_run(agent, message, method->instructions);
 }
 
-
-// Memory functions are now defined in agerun_data.c
-
-
+// Memory functions are now defined in agerun_map.c

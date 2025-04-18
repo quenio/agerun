@@ -56,6 +56,7 @@ IMPORTANT: Always run examples after running tests to verify changes work in pra
    - 4-space indentation
    - No tabs, only spaces
    - Maximum line length of 100 characters
+   - All source files must end with a newline
 
 2. **Naming Conventions**:
    - Function names: `ar_lowercase_with_underscores` (with `ar_` prefix)

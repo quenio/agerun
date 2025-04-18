@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "agerun_data.h"
+#include "agerun_map.h"
 #include "agerun_queue.h"
 
 /* Constants */
@@ -21,8 +22,8 @@ typedef struct agent_s {
     bool is_active;
     bool is_persistent;
     queue_t queue;
-    dict_t memory;
-    dict_t *context;
+    map_t memory;
+    map_t *context;
 } agent_t;
 
 #endif /* AGERUN_AGENT_H */
