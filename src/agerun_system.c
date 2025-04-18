@@ -33,7 +33,7 @@
 static bool is_initialized = false;
 
 /* Implementation */
-agent_id_t ar_init(const char *method_name, version_t version) {
+agent_id_t ar_system_init(const char *method_name, version_t version) {
     if (is_initialized) {
         printf("Agerun already initialized\n");
         return 0;
@@ -65,7 +65,7 @@ agent_id_t ar_init(const char *method_name, version_t version) {
     return 0;
 }
 
-void ar_shutdown(void) {
+void ar_system_shutdown(void) {
     if (!is_initialized) {
         return;
     }
@@ -85,7 +85,7 @@ void ar_shutdown(void) {
 
 
 
-bool ar_process_next_message(void) {
+bool ar_system_process_next_message(void) {
     if (!is_initialized) {
         return false;
     }
@@ -112,10 +112,10 @@ bool ar_process_next_message(void) {
     return false; // No messages to process
 }
 
-int ar_process_all_messages(void) {
+int ar_system_process_all_messages(void) {
     int count = 0;
     
-    while (ar_process_next_message()) {
+    while (ar_system_process_next_message()) {
         count++;
     }
     

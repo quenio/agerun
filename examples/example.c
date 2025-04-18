@@ -13,10 +13,10 @@ int main(void) {
     
     // Initialize the runtime
     printf("Initializing runtime...\n");
-    agent_id_t initial_agent = ar_init(NULL, 0);
+    agent_id_t initial_agent = ar_system_init(NULL, 0);
     if (initial_agent != 0) {
         printf("Error: Unexpected agent created during initialization\n");
-        ar_shutdown();
+        ar_system_shutdown();
         return 1;
     }
     printf("Runtime initialized successfully\n\n");
@@ -26,7 +26,7 @@ int main(void) {
     version_t echo_version = ar_method_create("echo", "send(0, message)", 0, true, false);
     if (echo_version == 0) {
         printf("Failed to create echo method\n");
-        ar_shutdown();
+        ar_system_shutdown();
         return 1;
     }
     printf("Echo method created with version %d\n\n", echo_version);
@@ -41,7 +41,7 @@ int main(void) {
     version_t counter_version = ar_method_create("counter", counter_code, 0, true, true);
     if (counter_version == 0) {
         printf("Failed to create counter method\n");
-        ar_shutdown();
+        ar_system_shutdown();
         return 1;
     }
     printf("Counter method created with version %d\n\n", counter_version);
@@ -51,7 +51,7 @@ int main(void) {
     initial_agent = ar_agent_create("echo", echo_version, NULL);
     if (initial_agent == 0) {
         printf("Failed to create initial agent\n");
-        ar_shutdown();
+        ar_system_shutdown();
         return 1;
     }
     
@@ -61,7 +61,7 @@ int main(void) {
     
     // Process the __wake__ message sent to the initial agent
     printf("Processing initial __wake__ message...\n");
-    int processed = ar_process_all_messages();
+    int processed = ar_system_process_all_messages();
     printf("Processed %d messages\n\n", processed);
     
     // Create a counter agent
@@ -69,7 +69,7 @@ int main(void) {
     agent_id_t counter_id = ar_agent_create("counter", counter_version, NULL);
     if (counter_id == 0) {
         printf("Failed to create counter agent\n");
-        ar_shutdown();
+        ar_system_shutdown();
         return 1;
     }
     printf("Counter agent created with ID: %lld\n\n", counter_id);
@@ -83,7 +83,7 @@ int main(void) {
     
     // Process all messages
     printf("Processing messages...\n");
-    processed = ar_process_all_messages();
+    processed = ar_system_process_all_messages();
     printf("Processed %d messages\n\n", processed);
     
     // Send more messages
@@ -94,7 +94,7 @@ int main(void) {
     
     // Process all messages
     printf("Processing messages...\n");
-    processed = ar_process_all_messages();
+    processed = ar_system_process_all_messages();
     printf("Processed %d messages\n\n", processed);
     
     // Save agents and methods to disk
@@ -106,7 +106,7 @@ int main(void) {
     
     // Shutdown the runtime
     printf("Shutting down runtime...\n");
-    ar_shutdown();
+    ar_system_shutdown();
     printf("Runtime shutdown complete\n\n");
     
     // Demonstrate loading from disk in a new runtime session
@@ -116,7 +116,7 @@ int main(void) {
     printf("Methods loaded: %s\n", loaded_methods ? "yes" : "no");
     
     // Initialize with echo method again
-    initial_agent = ar_init("echo", echo_version);
+    initial_agent = ar_system_init("echo", echo_version);
     if (initial_agent == 0) {
         printf("Failed to initialize runtime\n");
         return 1;
@@ -138,7 +138,7 @@ int main(void) {
         
         // Process the message
         printf("Processing messages...\n");
-        processed = ar_process_all_messages();
+        processed = ar_system_process_all_messages();
         printf("Processed %d messages\n", processed);
     } else {
         printf("Counter agent was not restored\n");
@@ -146,7 +146,7 @@ int main(void) {
     
     // Final shutdown
     printf("\nFinal shutdown...\n");
-    ar_shutdown();
+    ar_system_shutdown();
     printf("Runtime shutdown complete\n");
     
     return 0;

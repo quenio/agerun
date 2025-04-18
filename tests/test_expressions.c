@@ -14,10 +14,10 @@ int main(void) {
     printf("Starting Expression Tests...\n");
     
     // Initialize the runtime
-    agent_id_t initial_agent = ar_init(NULL, 0);
+    agent_id_t initial_agent = ar_system_init(NULL, 0);
     if (initial_agent != 0) {
         printf("Error: Unexpected agent created during initialization\n");
-        ar_shutdown();
+        ar_system_shutdown();
         return 1;
     }
     
@@ -26,7 +26,7 @@ int main(void) {
     test_simple_method();
     
     // Shutdown
-    ar_shutdown();
+    ar_system_shutdown();
     
     printf("All expression tests passed!\n");
     return 0;
@@ -52,11 +52,11 @@ static void test_echo_method(void) {
     
     // Process the message
     printf("Processing message...\n");
-    assert(ar_process_next_message());
+    assert(ar_system_process_next_message());
     
     // We should receive a response (not checking content as that depends on full implementation)
     printf("Processing response...\n");
-    bool response = ar_process_next_message();
+    bool response = ar_system_process_next_message();
     printf("Response received: %s\n", response ? "yes" : "no");
     
     // Cleanup
@@ -88,7 +88,7 @@ static void test_simple_method(void) {
     
     // Process the message
     printf("Processing message...\n");
-    assert(ar_process_next_message());
+    assert(ar_system_process_next_message());
     
     // Cleanup
     assert(ar_agent_destroy(agent_id));

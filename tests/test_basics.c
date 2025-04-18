@@ -44,7 +44,7 @@ static void test_agent_creation(void) {
     assert(ar_agent_send(agent_id, "test_message"));
     
     // Process the message
-    assert(ar_process_next_message());
+    assert(ar_system_process_next_message());
     
     // Destroy the agent
     assert(ar_agent_destroy(agent_id));
@@ -84,7 +84,7 @@ static void test_message_passing(void) {
     assert(ar_agent_send(sender_id, "__wake__"));
     
     // Process all messages
-    int count = ar_process_all_messages();
+    int count = ar_system_process_all_messages();
     assert(count >= 2);
     
     // Clean up
@@ -98,10 +98,10 @@ int main(void) {
     printf("Starting Agerun tests...\n");
     
     // First initialize the runtime
-    agent_id_t initial_agent = ar_init(NULL, 0);
+    agent_id_t initial_agent = ar_system_init(NULL, 0);
     if (initial_agent != 0) {
         printf("Error: Unexpected agent created during initialization\n");
-        ar_shutdown();
+        ar_system_shutdown();
         return 1;
     }
     
@@ -109,7 +109,7 @@ int main(void) {
     version_t version = ar_method_create("test_init", "send(0, \"Runtime initialized\")", 0, true, false);
     if (version == 0) {
         printf("Error: Failed to create test_init method\n");
-        ar_shutdown();
+        ar_system_shutdown();
         return 1;
     }
     
@@ -117,21 +117,21 @@ int main(void) {
     initial_agent = ar_agent_create("test_init", version, NULL);
     if (initial_agent == 0) {
         printf("Error: Failed to create initial agent\n");
-        ar_shutdown();
+        ar_system_shutdown();
         return 1;
     }
     
     // Send wake message to initial agent
     if (!ar_agent_send(initial_agent, "__wake__")) {
         printf("Error: Failed to send wake message\n");
-        ar_shutdown();
+        ar_system_shutdown();
         return 1;
     }
     
     // Process the message
-    if (ar_process_next_message() == false) {
+    if (ar_system_process_next_message() == false) {
         printf("Error: Failed to process message\n");
-        ar_shutdown();
+        ar_system_shutdown();
         return 1;
     }
     
@@ -141,7 +141,7 @@ int main(void) {
     test_message_passing();
     
     // Shutdown the runtime
-    ar_shutdown();
+    ar_system_shutdown();
     
     printf("All tests passed!\n");
     return 0;

@@ -10,23 +10,23 @@
  * @param version Version of the method (0 for latest)
  * @return ID of the created initial agent, or 0 on failure
  */
-agent_id_t ar_init(const char *method_name, version_t version);
+agent_id_t ar_system_init(const char *method_name, version_t version);
 
 /**
  * Shut down the Agerun runtime system
  */
-void ar_shutdown(void);
+void ar_system_shutdown(void);
 
 /**
  * Process the next pending message in the system
  * @return true if a message was processed, false if no messages
  */
-bool ar_process_next_message(void);
+bool ar_system_process_next_message(void);
 
 /**
  * Process all pending messages in the system
  * @return Number of messages processed
  */
-int ar_process_all_messages(void);
+int ar_system_process_all_messages(void);
 
 #endif /* AGERUN_SYSTEM_H */
