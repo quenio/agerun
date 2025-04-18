@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* Forward declaration for recursive freeing */
-static void free_dict(dict_t *dict);
 
 /**
  * Create a new data value of the specified type with default value
@@ -142,7 +140,7 @@ void ar_free_data(data_t *data) {
         free(data->data.string_value);
         data->data.string_value = NULL;
     } else if (data->type == DATA_DICT && data->data.dict_value) {
-        free_dict(data->data.dict_value);
+        ar_dict_free(data->data.dict_value);
         data->data.dict_value = NULL;
     }
 }
@@ -151,7 +149,7 @@ void ar_free_data(data_t *data) {
  * Free all resources in a dictionary
  * @param dict Dictionary to free
  */
-static void free_dict(dict_t *dict) {
+void ar_dict_free(dict_t *dict) {
     if (!dict) return;
     
     for (int i = 0; i < DICT_SIZE; i++) {

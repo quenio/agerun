@@ -88,6 +88,12 @@ data_t* ar_dict_get(dict_t *dict, const char *key);
 bool ar_dict_set(dict_t *dict, const char *key, data_t *value_ptr);
 
 /**
+ * Free all resources in a dictionary
+ * @param dict Dictionary to free
+ */
+void ar_dict_free(dict_t *dict);
+
+/**
  * Free resources associated with a data structure
  * @param data Pointer to the data to free
  */
