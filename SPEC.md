@@ -18,8 +18,8 @@ This specification defines a lightweight, message-driven agent system where each
 
 ### Persistence:
 
-- **Methods**: All method definitions are persisted in a file named `methodology.agerun`. They are loaded and made available when the agent system restarts.
-- **Agents**: Agents and their memory are not persisted by default. However, if an agent is created with the `persist: boolean` option set to `true` (default is `false`), its memory dictionary and context are saved to a file named `agency.agerun`. The persisted agents are automatically restored at system startup before the first agent is executed.
+- **Methodology**: All method definitions are persisted in a file named `methodology.agerun`. They are loaded and made available when the agent system restarts.
+- **Agency**: Agents and their memory are not persisted by default. However, if an agent is created with the `persist: boolean` option set to `true` (default is `false`), its memory map and context are saved to a file named `agency.agerun`. The persisted agents are automatically restored at system startup before the first agent is executed.
 
 ## Agent Lifecycle
 
@@ -28,19 +28,19 @@ This specification defines a lightweight, message-driven agent system where each
 
 ### Resource Management:
 
-- **Paused Agents**: Retain their message queue and memory dictionary.
+- **Paused Agents**: Retain their message queue and memory map.
 - **Destroyed Agents**: All associated resources, including message queue and memory, are deleted.
 - **Lifecycle Control**: The environment determines whether an agent is paused or destroyed.
 
 ## Agent Structure
 
 - **Message Queue**: Each agent has an implicit FIFO (First-In-First-Out) message queue for asynchronous communication.
-- **Memory Dictionary**: Agents maintain an implicit dictionary (memory) for storing state.
-- **Context Dictionary**: Agents can be provided with a read-only context dictionary (context) upon creation.
+- **Memory Map**: Agents maintain an implicit key-value map (memory) for storing state.
+- **Context Map**: Agents can be provided with a read-only context map (context) upon creation.
 
-## Method Instructions
+## Method Expressions and Instructions
 
-Agents can use the following instructions within their method:
+Agents can use the following expressions and instructions within their method:
 
 ### 1. Parsing and Building Strings
 
@@ -86,11 +86,11 @@ Agents can use the following instructions within their method:
 ## Agent Creation
 
 - **Dynamic Instantiation**: Agents can be dynamically created at runtime by existing agents.
-- **Context Sharing**: Parent agents can provide their memory dictionary as a read-only context to child agents.
+- **Context Sharing**: Parent agents can provide their memory map as a read-only context to child agents.
 
 ## Scalability
 
-- **Horizontal and Vertical Scaling**: The system supports both horizontal and vertical scaling.
+- **Horizontal and Vertical Scaling**: The agent system supports both horizontal and vertical scaling.
 - **Agent Awareness**: Agents are designed to be unaware of the underlying scaling mechanisms, ensuring seamless scalability.
 
 ## System Startup
