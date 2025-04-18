@@ -99,7 +99,7 @@ int main(void) {
     
     // Save agents and methods to disk
     printf("Saving agents and methods to disk...\n");
-    bool saved_agents = ar_save_agents();
+    bool saved_agents = ar_agency_save_agents();
     bool saved_methods = ar_methodology_save_methods();
     printf("Agents saved: %s\n", saved_agents ? "yes" : "no");
     printf("Methods saved: %s\n\n", saved_methods ? "yes" : "no");
@@ -125,7 +125,7 @@ int main(void) {
     
     // Check if the persistent counter agent was loaded
     printf("Checking if counter agent was restored...\n");
-    int agent_count = ar_count_agents();
+    int agent_count = ar_agency_count_agents();
     printf("Total active agents: %d\n", agent_count);
     
     // Should have at least 2 agents (initial agent and counter)

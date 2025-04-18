@@ -48,7 +48,7 @@ agent_id_t ar_init(const char *method_name, version_t version) {
     }
     
     // Load agents from file if available
-    if (!ar_load_agents()) {
+    if (!ar_agency_load_agents()) {
         printf("Warning: Could not load agents from file\n");
     }
     
@@ -74,7 +74,7 @@ void ar_shutdown(void) {
     ar_methodology_save_methods();
     
     // Save persistent agents to file
-    ar_save_agents();
+    ar_agency_save_agents();
     
     // The memory cleanup is now responsibility of the agency module
     

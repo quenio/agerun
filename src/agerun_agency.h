@@ -41,19 +41,19 @@ void ar_agency_reset(void);
  * Get the current number of active agents
  * @return Number of active agents
  */
-int ar_count_agents(void);
+int ar_agency_count_agents(void);
 
 /**
  * Save all persistent agents to disk
  * @return true if successful, false otherwise
  */
-bool ar_save_agents(void);
+bool ar_agency_save_agents(void);
 
 /**
  * Load all persistent agents from disk
  * @return true if successful, false otherwise
  */
-bool ar_load_agents(void);
+bool ar_agency_load_agents(void);
 
 #endif /* AGERUN_AGENCY_H */
 

@@ -42,7 +42,7 @@ void ar_agency_reset(void) {
     next_agent_id = 1;
 }
 
-int ar_count_agents(void) {
+int ar_agency_count_agents(void) {
     if (!is_initialized) {
         return 0;
     }
@@ -57,7 +57,7 @@ int ar_count_agents(void) {
     return count;
 }
 
-bool ar_save_agents(void) {
+bool ar_agency_save_agents(void) {
     if (!is_initialized) {
         return false;
     }
@@ -109,7 +109,7 @@ bool ar_save_agents(void) {
     return true;
 }
 
-bool ar_load_agents(void) {
+bool ar_agency_load_agents(void) {
     if (!is_initialized) {
         return false;
     }
