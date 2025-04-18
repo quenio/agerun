@@ -34,9 +34,10 @@ release: lib
 lib: $(OBJ)
 	ar rcs libagerun.a $(OBJ)
 
-# Example application
+# Example application - build and run
 example: lib
 	$(CC) $(CFLAGS) -o example examples/example.c libagerun.a $(LDFLAGS)
+	./example
 
 # Build and run tests
 test: $(TEST_BIN)

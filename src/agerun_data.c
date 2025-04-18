@@ -60,12 +60,11 @@ bool ar_dict_init(dict_t *dict) {
 
 /**
  * Get a value from dictionary by key
- * @param dictionary Dictionary
+ * @param dict Dictionary
  * @param key Key to lookup
  * @return Pointer to the value, or NULL if not found
  */
-data_t* ar_dict_get(void *dictionary, const char *key) {
-    dict_t *dict = (dict_t *)dictionary;
+data_t* ar_dict_get(dict_t *dict, const char *key) {
     if (!dict || !key) {
         return NULL;
     }
@@ -81,14 +80,13 @@ data_t* ar_dict_get(void *dictionary, const char *key) {
 
 /**
  * Set a value in dictionary
- * @param dictionary Dictionary
+ * @param dict Dictionary
  * @param key Key to set
  * @param value_ptr Pointer to value to set
  * @return true if successful, false otherwise
  */
-bool ar_dict_set(void *dictionary, const char *key, void *value_ptr) {
-    dict_t *dict = (dict_t *)dictionary;
-    data_t value = *(data_t *)value_ptr;
+bool ar_dict_set(dict_t *dict, const char *key, data_t *value_ptr) {
+    data_t value = *value_ptr;
     if (!dict || !key) {
         return false;
     }

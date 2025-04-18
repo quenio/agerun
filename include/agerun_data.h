@@ -58,11 +58,11 @@ void ar_free_data(data_t *data);
 
 /**
  * Get a value from dictionary by key
- * @param dictionary Dictionary
+ * @param dict Dictionary
  * @param key Key to lookup
  * @return Pointer to the value, or NULL if not found
  */
-data_t* ar_dict_get(void *dictionary, const char *key);
+data_t* ar_dict_get(dict_t *dict, const char *key);
 
 /**
  * Initialize a dictionary
@@ -73,12 +73,12 @@ bool ar_dict_init(dict_t *dict);
 
 /**
  * Set a value in dictionary
- * @param dictionary Dictionary
+ * @param dict Dictionary
  * @param key Key to set
  * @param value_ptr Pointer to value to set
  * @return true if successful, false otherwise
  */
-bool ar_dict_set(void *dictionary, const char *key, void *value_ptr);
+bool ar_dict_set(dict_t *dict, const char *key, data_t *value_ptr);
 
 /**
  * Create a new empty dictionary
