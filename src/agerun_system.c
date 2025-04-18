@@ -15,13 +15,11 @@
 #include <stdint.h>
 #include <time.h>
 
-/* Constants */
-#define MAX_METHODS 256
-#define MAX_VERSIONS_PER_METHOD 64
-#define MAX_METHOD_NAME_LENGTH 64
-#define MAX_MESSAGE_LENGTH 1024
-#define MAX_INSTRUCTIONS_LENGTH 16384
-#define QUEUE_SIZE 256
+/* Constants are now defined in their respective module header files:
+ * - MAX_METHODS, MAX_VERSIONS_PER_METHOD, MAX_METHOD_NAME_LENGTH, MAX_INSTRUCTIONS_LENGTH in agerun_methodology.h
+ * - MAX_MESSAGE_LENGTH, QUEUE_SIZE in agerun_queue.h
+ * - MAX_AGENTS, MAX_METHOD_NAME_LENGTH in agerun_agent.h
+ */
 
 /* Memory Map structure is now defined in agerun_map.h */
 
