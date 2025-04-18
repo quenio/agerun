@@ -18,30 +18,6 @@ agent_id_t ar_init(const char *method_name, version_t version);
 void ar_shutdown(void);
 
 
-/**
- * Create a new agent instance
- * @param method_name Name of the method to use
- * @param version Version of the method (0 for latest)
- * @param context Context dictionary (NULL for empty)
- * @return Unique agent ID, or 0 on failure
- */
-agent_id_t ar_create(const char *method_name, version_t version, 
-                         void *context);
-
-/**
- * Destroy an agent instance
- * @param agent_id ID of the agent to destroy
- * @return true if successful, false otherwise
- */
-bool ar_destroy(agent_id_t agent_id);
-
-/**
- * Send a message to an agent
- * @param agent_id ID of the agent to send to
- * @param message Message content
- * @return true if successful, false otherwise
- */
-bool ar_send(agent_id_t agent_id, const char *message);
 
 /**
  * Process the next pending message in the system

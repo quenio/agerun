@@ -1,5 +1,6 @@
 #include "../src/agerun_system.h"
 #include "../src/agerun_method.h"
+#include "../src/agerun_agent.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,20 +34,20 @@ static void test_agent_creation(void) {
     assert(version > 0);
     
     // Create an agent
-    agent_id_t agent_id = ar_create("agent_test", version, NULL);
+    agent_id_t agent_id = ar_agent_create("agent_test", version, NULL);
     assert(agent_id > 0);
     
     // Check if agent exists
     assert(ar_agent_exists(agent_id));
     
     // Send a message to the agent
-    assert(ar_send(agent_id, "test_message"));
+    assert(ar_agent_send(agent_id, "test_message"));
     
     // Process the message
     assert(ar_process_next_message());
     
     // Destroy the agent
-    assert(ar_destroy(agent_id));
+    assert(ar_agent_destroy(agent_id));
     
     // Check if agent no longer exists
     assert(!ar_agent_exists(agent_id));
@@ -66,29 +67,29 @@ static void test_message_passing(void) {
     assert(receiver_version > 0);
     
     // Create receiver agent
-    agent_id_t receiver_id = ar_create("receiver", receiver_version, NULL);
+    agent_id_t receiver_id = ar_agent_create("receiver", receiver_version, NULL);
     assert(receiver_id > 0);
     
     // Create sender agent with context that includes receiver ID
     // For now this just demonstrates the API, the actual context handling
     // will be implemented later
-    agent_id_t sender_id = ar_create("sender", sender_version, NULL);
+    agent_id_t sender_id = ar_agent_create("sender", sender_version, NULL);
     assert(sender_id > 0);
     
     // Set the target_id (this is a placeholder for now)
     // In the full implementation, this would be through memory manipulation
     
     // Send __wake__ message to both agents
-    assert(ar_send(receiver_id, "__wake__"));
-    assert(ar_send(sender_id, "__wake__"));
+    assert(ar_agent_send(receiver_id, "__wake__"));
+    assert(ar_agent_send(sender_id, "__wake__"));
     
     // Process all messages
     int count = ar_process_all_messages();
     assert(count >= 2);
     
     // Clean up
-    assert(ar_destroy(sender_id));
-    assert(ar_destroy(receiver_id));
+    assert(ar_agent_destroy(sender_id));
+    assert(ar_agent_destroy(receiver_id));
     
     printf("Message passing test passed.\n");
 }
@@ -113,7 +114,7 @@ int main(void) {
     }
     
     // Create our initial agent
-    initial_agent = ar_create("test_init", version, NULL);
+    initial_agent = ar_agent_create("test_init", version, NULL);
     if (initial_agent == 0) {
         printf("Error: Failed to create initial agent\n");
         ar_shutdown();
@@ -121,7 +122,7 @@ int main(void) {
     }
     
     // Send wake message to initial agent
-    if (!ar_send(initial_agent, "__wake__")) {
+    if (!ar_agent_send(initial_agent, "__wake__")) {
         printf("Error: Failed to send wake message\n");
         ar_shutdown();
         return 1;

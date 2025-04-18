@@ -95,17 +95,6 @@ void ar_shutdown(void) {
 }
 
 
-agent_id_t ar_create(const char *method_name, version_t version, void *context) {
-    return ar_agent_create(method_name, version, context);
-}
-
-bool ar_destroy(agent_id_t agent_id) {
-    return ar_agent_destroy(agent_id);
-}
-
-bool ar_send(agent_id_t agent_id, const char *message) {
-    return ar_agent_send(agent_id, message);
-}
 
 bool ar_process_next_message(void) {
     if (!is_initialized) {

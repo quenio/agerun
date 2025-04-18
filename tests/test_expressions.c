@@ -1,5 +1,6 @@
 #include "../src/agerun_system.h"
 #include "../src/agerun_method.h"
+#include "../src/agerun_agent.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,14 +41,14 @@ static void test_echo_method(void) {
     printf("Created echo method version %d\n", version);
     
     // Create an agent
-    agent_id_t agent_id = ar_create("echo", version, NULL);
+    agent_id_t agent_id = ar_agent_create("echo", version, NULL);
     assert(agent_id > 0);
     printf("Created agent %lld using echo method\n", (long long)agent_id);
     
     // Send test message
     const char *test_message = "Hello, Echo!";
     printf("Sending message: \"%s\"\n", test_message);
-    assert(ar_send(agent_id, test_message));
+    assert(ar_agent_send(agent_id, test_message));
     
     // Process the message
     printf("Processing message...\n");
@@ -59,7 +60,7 @@ static void test_echo_method(void) {
     printf("Response received: %s\n", response ? "yes" : "no");
     
     // Cleanup
-    assert(ar_destroy(agent_id));
+    assert(ar_agent_destroy(agent_id));
     printf("Echo method test passed.\n");
 }
 
@@ -76,20 +77,20 @@ static void test_simple_method(void) {
     printf("Created simple method version %d\n", version);
     
     // Create an agent
-    agent_id_t agent_id = ar_create("simple_test", version, NULL);
+    agent_id_t agent_id = ar_agent_create("simple_test", version, NULL);
     assert(agent_id > 0);
     printf("Created agent %lld using simple method\n", (long long)agent_id);
     
     // Send a test message
     const char *test_message = "Test Data";
     printf("Sending message: \"%s\"\n", test_message);
-    assert(ar_send(agent_id, test_message));
+    assert(ar_agent_send(agent_id, test_message));
     
     // Process the message
     printf("Processing message...\n");
     assert(ar_process_next_message());
     
     // Cleanup
-    assert(ar_destroy(agent_id));
+    assert(ar_agent_destroy(agent_id));
     printf("Simple method test passed.\n");
 }

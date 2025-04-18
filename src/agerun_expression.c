@@ -270,7 +270,7 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
                         
                         // Send the message
                         if (target_id > 0 && send_message) {
-                            ar_send(target_id, send_message);
+                            ar_agent_send(target_id, send_message);
                             
                             // Set result to success
                             result.type = DATA_INT;

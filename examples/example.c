@@ -3,6 +3,7 @@
 #include <string.h>
 #include "../src/agerun_system.h"
 #include "../src/agerun_method.h"
+#include "../src/agerun_agent.h"
 
 int main(void) {
     printf("Agerun Example Application\n");
@@ -45,7 +46,7 @@ int main(void) {
     
     // Create the initial agent
     printf("Creating initial agent...\n");
-    initial_agent = ar_create("echo", echo_version, NULL);
+    initial_agent = ar_agent_create("echo", echo_version, NULL);
     if (initial_agent == 0) {
         printf("Failed to create initial agent\n");
         ar_shutdown();
@@ -53,7 +54,7 @@ int main(void) {
     }
     
     // Send wake message to initial agent
-    ar_send(initial_agent, "__wake__");
+    ar_agent_send(initial_agent, "__wake__");
     printf("Initial agent created with ID: %lld\n\n", initial_agent);
     
     // Process the __wake__ message sent to the initial agent
@@ -63,7 +64,7 @@ int main(void) {
     
     // Create a counter agent
     printf("Creating counter agent...\n");
-    agent_id_t counter_id = ar_create("counter", counter_version, NULL);
+    agent_id_t counter_id = ar_agent_create("counter", counter_version, NULL);
     if (counter_id == 0) {
         printf("Failed to create counter agent\n");
         ar_shutdown();
@@ -73,10 +74,10 @@ int main(void) {
     
     // Send some messages to the counter agent
     printf("Sending messages to counter agent...\n");
-    ar_send(counter_id, "increment");
-    ar_send(counter_id, "increment");
-    ar_send(counter_id, "increment");
-    ar_send(counter_id, "get");
+    ar_agent_send(counter_id, "increment");
+    ar_agent_send(counter_id, "increment");
+    ar_agent_send(counter_id, "increment");
+    ar_agent_send(counter_id, "get");
     
     // Process all messages
     printf("Processing messages...\n");
@@ -85,9 +86,9 @@ int main(void) {
     
     // Send more messages
     printf("Sending more messages...\n");
-    ar_send(counter_id, "increment");
-    ar_send(counter_id, "increment");
-    ar_send(counter_id, "get");
+    ar_agent_send(counter_id, "increment");
+    ar_agent_send(counter_id, "increment");
+    ar_agent_send(counter_id, "get");
     
     // Process all messages
     printf("Processing messages...\n");
@@ -131,7 +132,7 @@ int main(void) {
         
         // Send a message to get the current count
         printf("Sending 'get' message to counter agent...\n");
-        ar_send(counter_id, "get");
+        ar_agent_send(counter_id, "get");
         
         // Process the message
         printf("Processing messages...\n");
