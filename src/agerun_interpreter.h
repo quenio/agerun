@@ -15,16 +15,6 @@
 bool ar_instruction_run(agent_t *agent, const char *message, const char *instruction);
 
 /**
- * Evaluate an expression in the agent's context
- * @param agent The agent context
- * @param message The message being processed
- * @param expr The expression to evaluate
- * @param offset Pointer to current position in the expression
- * @return The evaluated data result
- */
-data_t ar_evaluate_expression(agent_t *agent, const char *message, const char *expr, int *offset);
-
-/**
  * Interprets and executes a method's instructions in the context of an agent
  * @param agent The agent executing the method
  * @param message The message being processed
