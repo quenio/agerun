@@ -7,7 +7,7 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 - **Single-Method Agents**: Each agent is defined by a single method that processes all messages.
 - **Message-Driven Architecture**: Agents communicate exclusively through asynchronous message passing.
 - **Versioning System**: Method definitions are versioned with backward compatibility.
-- **Persistence**: Methods and agents (with their state) can be persisted and restored.
+- **Persistence**: Methodology (method definitions) and agency (agents with their state) can be persisted and restored.
 - **Dynamic Agent Creation**: Agents can create other agents at runtime.
 - **Minimal Memory Footprint**: Designed to be lightweight and efficient.
 
@@ -109,9 +109,9 @@ ar_methodology_load_methods();
 ar_init("some_method", some_version);
 ```
 
-## Method Instruction Language
+## Method Expressions and Instructions
 
-Agents use a simple instruction language for their methods:
+Agents use a simple expression and instruction language for their methods:
 
 ### String Operations
 
