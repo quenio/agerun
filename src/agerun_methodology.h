@@ -46,12 +46,12 @@ int* ar_methodology_get_method_name_count(void);
  * Save all method definitions to disk
  * @return true if successful, false otherwise
  */
-bool ar_save_methods(void);
+bool ar_methodology_save_methods(void);
 
 /**
  * Load all method definitions from disk
  * @return true if successful, false otherwise
  */
-bool ar_load_methods(void);
+bool ar_methodology_load_methods(void);
 
 #endif /* AGERUN_METHODOLOGY_H */

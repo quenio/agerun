@@ -119,7 +119,7 @@ method_t* ar_methodology_get_method(const char *name, version_t version) {
     }
 }
 
-bool ar_save_methods(void) {
+bool ar_methodology_save_methods(void) {
     // Simple placeholder implementation
     FILE *fp = fopen(METHODOLOGY_FILE_NAME, "w");
     if (!fp) {
@@ -154,7 +154,7 @@ bool ar_save_methods(void) {
     return true;
 }
 
-bool ar_load_methods(void) {
+bool ar_methodology_load_methods(void) {
     FILE *fp = fopen(METHODOLOGY_FILE_NAME, "r");
     if (!fp) {
         // Not an error, might be first run
@@ -163,10 +163,20 @@ bool ar_load_methods(void) {
     
     // Read the number of method types
     int method_count = 0;
-    if (fscanf(fp, "%d", &method_count) != 1) {
+    if (fscanf(fp, "%d", &method_count) != 1 || method_count <= 0 || method_count > MAX_METHODS) {
+        printf("Error: Invalid method count in %s\n", METHODOLOGY_FILE_NAME);
         fclose(fp);
-        return false;
+        // Delete the corrupted file and start fresh
+        printf("Deleting corrupted methodology file\n");
+        remove(METHODOLOGY_FILE_NAME);
+        return true;
     }
+    
+    // Clear existing methods to avoid conflicts
+    for (int i = 0; i < method_name_count; i++) {
+        method_counts[i] = 0;
+    }
+    method_name_count = 0;
     
     // For each method type
     for (int i = 0; i < method_count; i++) {
@@ -174,24 +184,19 @@ bool ar_load_methods(void) {
         int version_count;
         
         // Read method name and version count
-        if (fscanf(fp, "%63s %d", name, &version_count) != 2) {
+        if (fscanf(fp, "%63s %d", name, &version_count) != 2 || version_count <= 0 || 
+            version_count > MAX_VERSIONS_PER_METHOD) {
             printf("Error: Malformed method entry in %s\n", METHODOLOGY_FILE_NAME);
             fclose(fp);
-            return false;
+            // Delete the corrupted file and start fresh
+            printf("Deleting corrupted methodology file\n");
+            remove(METHODOLOGY_FILE_NAME);
+            return true;
         }
         
-        // Add this method to the methods array if it doesn't exist
-        int method_idx = find_method_idx(name);
-        if (method_idx < 0) {
-            // New method type
-            if (method_name_count >= MAX_METHODS) {
-                printf("Error: Maximum method types reached\n");
-                fclose(fp);
-                return false;
-            }
-            
-            method_idx = method_name_count++;
-        }
+        // Add this method to the methods array
+        int method_idx = method_name_count++;
+        method_counts[method_idx] = 0; // Reset count for this method
         
         // For each version
         for (int j = 0; j < version_count; j++) {
@@ -208,7 +213,10 @@ bool ar_load_methods(void) {
             if (fscanf(fp, "%d %d %d", &version, &backward_compatible, &persist) != 3) {
                 printf("Error: Malformed version entry in %s\n", METHODOLOGY_FILE_NAME);
                 fclose(fp);
-                return false;
+                // Delete the corrupted file and start fresh
+                printf("Deleting corrupted methodology file\n");
+                remove(METHODOLOGY_FILE_NAME);
+                return true;
             }
             
             // Skip newline
@@ -222,7 +230,10 @@ bool ar_load_methods(void) {
                 printf("Error: Could not read instructions for method %s version %d\n", 
                        name, version);
                 fclose(fp);
-                return false;
+                // Delete the corrupted file and start fresh
+                printf("Deleting corrupted methodology file\n");
+                remove(METHODOLOGY_FILE_NAME);
+                return true;
             }
             
             // Remove trailing newline if present

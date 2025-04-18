@@ -43,7 +43,7 @@ agent_id_t ar_init(const char *method_name, version_t version) {
     ar_agency_set_initialized(true);
     
     // Load methods from file if available
-    if (!ar_load_methods()) {
+    if (!ar_methodology_load_methods()) {
         printf("Warning: Could not load methods from file\n");
     }
     
@@ -71,7 +71,7 @@ void ar_shutdown(void) {
     }
     
     // Save methods to file
-    ar_save_methods();
+    ar_methodology_save_methods();
     
     // Save persistent agents to file
     ar_save_agents();
@@ -124,8 +124,8 @@ int ar_process_all_messages(void) {
 
 /* This function is now implemented in agerun_agent.c */
 
-/* The functions ar_count_agents, ar_save_agents, ar_load_agents, ar_save_methods, 
- * ar_load_methods, and ar_memory_set have been moved to other modules */
+/* The functions ar_count_agents, ar_save_agents, ar_load_agents, ar_methodology_save_methods, 
+ * ar_methodology_load_methods, and ar_memory_set have been moved to other modules */
 
 // Memory functions are now defined in agerun_map.c
 

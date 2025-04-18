@@ -38,9 +38,12 @@ bin bin/tests:
 lib: bin $(OBJ)
 	ar rcs bin/libagerun.a $(OBJ)
 
-# Example application - build and run
+# Example application - build only
 example: lib bin
 	$(CC) $(CFLAGS) -o bin/example examples/example.c bin/libagerun.a $(LDFLAGS)
+
+# Run the example
+run-example: example
 	./bin/example
 
 # Build and run tests
@@ -65,4 +68,4 @@ bin/tests/%.o: tests/%.c | bin/tests
 clean:
 	rm -rf bin
 
-.PHONY: all debug release clean test
+.PHONY: all debug release clean test example run-example

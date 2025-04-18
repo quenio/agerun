@@ -95,7 +95,7 @@ ar_process_all_messages();
 ```c
 // Save agents and methods to disk
 ar_save_agents();
-ar_save_methods();
+ar_methodology_save_methods();
 
 // Shutdown the runtime
 ar_shutdown();
@@ -103,7 +103,7 @@ ar_shutdown();
 // Later, in a new session:
 
 // Load methods
-ar_load_methods();
+ar_methodology_load_methods();
 
 // Initialize runtime (will also load persistent agents)
 ar_init("some_method", some_version);

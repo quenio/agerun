@@ -100,7 +100,7 @@ int main(void) {
     // Save agents and methods to disk
     printf("Saving agents and methods to disk...\n");
     bool saved_agents = ar_save_agents();
-    bool saved_methods = ar_save_methods();
+    bool saved_methods = ar_methodology_save_methods();
     printf("Agents saved: %s\n", saved_agents ? "yes" : "no");
     printf("Methods saved: %s\n\n", saved_methods ? "yes" : "no");
     
@@ -112,7 +112,7 @@ int main(void) {
     // Demonstrate loading from disk in a new runtime session
     printf("Starting new runtime session...\n");
     printf("Loading methods from disk...\n");
-    bool loaded_methods = ar_load_methods();
+    bool loaded_methods = ar_methodology_load_methods();
     printf("Methods loaded: %s\n", loaded_methods ? "yes" : "no");
     
     // Initialize with echo method again
