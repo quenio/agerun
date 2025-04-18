@@ -28,7 +28,7 @@ void ar_free_data(data_t *data) {
 static void free_dict(dict_t *dict) {
     if (!dict) return;
     
-    for (int i = 0; i < MEMORY_SIZE; i++) {
+    for (int i = 0; i < DICT_SIZE; i++) {
         if (dict->entries[i].is_used && dict->entries[i].key) {
             free(dict->entries[i].key);
             ar_free_data(&dict->entries[i].value);
@@ -49,7 +49,7 @@ bool ar_dict_init(dict_t *dict) {
         return false;
     }
     
-    for (int i = 0; i < MEMORY_SIZE; i++) {
+    for (int i = 0; i < DICT_SIZE; i++) {
         dict->entries[i].is_used = false;
         dict->entries[i].key = NULL;
     }
@@ -70,7 +70,7 @@ data_t* ar_dict_get(void *dictionary, const char *key) {
         return NULL;
     }
     
-    for (int i = 0; i < MEMORY_SIZE; i++) {
+    for (int i = 0; i < DICT_SIZE; i++) {
         if (dict->entries[i].is_used && dict->entries[i].key && 
             strcmp(dict->entries[i].key, key) == 0) {
             return &dict->entries[i].value;
@@ -109,7 +109,7 @@ bool ar_dict_set(void *dictionary, const char *key, void *value_ptr) {
     }
     
     // Find empty slot
-    for (int i = 0; i < MEMORY_SIZE; i++) {
+    for (int i = 0; i < DICT_SIZE; i++) {
         if (!dict->entries[i].is_used) {
             dict->entries[i].is_used = true;
             dict->entries[i].key = strdup(key);

@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 /* Constants */
-#define MEMORY_SIZE 256
+#define DICT_SIZE 256
 
 /**
  * Data type enumeration
@@ -46,7 +46,7 @@ typedef struct entry_s {
  * Dictionary for storing agent state
  */
 typedef struct dict_s {
-    entry_t entries[MEMORY_SIZE];
+    entry_t entries[DICT_SIZE];
     int count;
 } dict_t;
 

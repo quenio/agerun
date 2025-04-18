@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include <assert.h>
 
 int main(void) {
@@ -28,7 +29,8 @@ int main(void) {
     // Test 3: Set and get string values
     data_t string_data;
     string_data.type = DATA_STRING;
-    string_data.data.string_value = strdup("Hello, World!");
+    string_data.data.string_value = (char*)malloc(strlen("Hello, World!") + 1);
+    strcpy(string_data.data.string_value, "Hello, World!");
     
     result = ar_dict_set(dict, "greeting", &string_data);
     assert(result);
@@ -74,7 +76,8 @@ int main(void) {
     data_t third_level_dict = ar_data_create_dict();
     data_t deep_string;
     deep_string.type = DATA_STRING;
-    deep_string.data.string_value = strdup("Deep value!");
+    deep_string.data.string_value = (char*)malloc(strlen("Deep value!") + 1);
+    strcpy(deep_string.data.string_value, "Deep value!");
     
     result = ar_dict_set(third_level_dict.data.dict_value, "key", &deep_string);
     assert(result);
@@ -90,7 +93,10 @@ int main(void) {
     
     // Cleanup is done by one call to free the top-level dictionary
     // This will recursively free all nested dictionaries and values
-    ar_free_data(&value->data.dict_value);
+    data_t temp_data;
+    temp_data.type = DATA_DICT;
+    temp_data.data.dict_value = dict;
+    ar_free_data(&temp_data);
     
     return 0;
 }

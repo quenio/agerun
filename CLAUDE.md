@@ -25,6 +25,13 @@ When making changes, always follow these steps to ensure code quality:
    make test
    ```
 
+4. **Run examples**:
+   ```
+   ./example
+   ```
+
+IMPORTANT: Always run examples after running tests to verify changes work in practical application contexts, not just in test environments.
+
 ## Project Structure
 
 - **/include**: Header files
@@ -132,3 +139,9 @@ When making changes, always follow these steps to ensure code quality:
    - Use the test suite to catch regressions
    - Create separate test files for new functionality rather than modifying implementation files
    - Don't expose internal functions just for testing - create proper test interfaces
+
+7. **Update development guidelines**:
+   - When new important guidelines are discovered, add them to this file
+   - Keep this CLAUDE.md file updated with current best practices
+   - Consider this file the source of truth for development procedures
+   - Documenting guidelines here ensures consistency across development sessions

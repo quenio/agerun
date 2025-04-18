@@ -17,7 +17,7 @@
 #define MAX_METHOD_NAME_LENGTH 64
 #define MAX_MESSAGE_LENGTH 1024
 #define MAX_INSTRUCTIONS_LENGTH 16384
-// MEMORY_SIZE is now defined in agerun_data.h
+// DICT_SIZE is now defined in agerun_data.h
 #define QUEUE_SIZE 256
 
 /* Memory Dictionary structure is now defined in agerun_data.h */
@@ -126,7 +126,7 @@ void ar_shutdown(void) {
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (agents[i].is_active) {
             // Free memory dictionary entries
-            for (int j = 0; j < MEMORY_SIZE; j++) {
+            for (int j = 0; j < DICT_SIZE; j++) {
                 if (agents[i].memory.entries[j].is_used && agents[i].memory.entries[j].key) {
                     free(agents[i].memory.entries[j].key);
                     ar_free_data(&agents[i].memory.entries[j].value);
@@ -261,7 +261,7 @@ bool ar_destroy(agent_id_t agent_id) {
             }
             
             // Free memory dictionary entries
-            for (int j = 0; j < MEMORY_SIZE; j++) {
+            for (int j = 0; j < DICT_SIZE; j++) {
                 if (agents[i].memory.entries[j].is_used && agents[i].memory.entries[j].key) {
                     free(agents[i].memory.entries[j].key);
                     ar_free_data(&agents[i].memory.entries[j].value);
@@ -382,7 +382,7 @@ bool ar_save_agents(void) {
             
             // Save memory dictionary - for simplicity just save int and string values
             fprintf(fp, "%d\n", agents[i].memory.count);
-            for (int j = 0; j < MEMORY_SIZE; j++) {
+            for (int j = 0; j < DICT_SIZE; j++) {
                 if (agents[i].memory.entries[j].is_used && agents[i].memory.entries[j].key) {
                     fprintf(fp, "%s ", agents[i].memory.entries[j].key);
                     
