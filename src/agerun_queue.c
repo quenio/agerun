@@ -18,8 +18,11 @@ bool ar_queue_push(queue_t *queue, const char *message) {
         return false;
     }
     
-    strncpy(queue->messages[queue->tail], message, MAX_MESSAGE_LENGTH - 1);
-    queue->messages[queue->tail][MAX_MESSAGE_LENGTH - 1] = '\0';
+    size_t message_length = strlen(message);
+    size_t copy_length = message_length < MAX_MESSAGE_LENGTH - 1 ? message_length : MAX_MESSAGE_LENGTH - 1;
+    
+    memcpy(queue->messages[queue->tail], message, copy_length);
+    queue->messages[queue->tail][copy_length] = '\0';
     
     queue->tail = (queue->tail + 1) % QUEUE_SIZE;
     queue->size++;
@@ -32,7 +35,7 @@ bool ar_queue_pop(queue_t *queue, char *message) {
         return false;
     }
     
-    strncpy(message, queue->messages[queue->head], MAX_MESSAGE_LENGTH);
+    strcpy(message, queue->messages[queue->head]);
     
     queue->head = (queue->head + 1) % QUEUE_SIZE;
     queue->size--;
