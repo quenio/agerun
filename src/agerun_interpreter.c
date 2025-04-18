@@ -1,7 +1,7 @@
-#include "../include/agerun_system.h"
-#include "../include/agerun_interpreter.h"
-#include "../include/agerun_string.h"
-#include "../include/agerun_data.h"
+#include "agerun_system.h"
+#include "agerun_interpreter.h"
+#include "agerun_string.h"
+#include "agerun_data.h"
 
 #include <stdio.h>
 #include <stdlib.h>

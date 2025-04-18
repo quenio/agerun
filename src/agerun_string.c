@@ -1,4 +1,4 @@
-#include "../include/agerun_string.h"
+#include "agerun_string.h"
 
 #include <ctype.h>
 #include <string.h>

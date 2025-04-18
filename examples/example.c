@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../include/agerun_system.h"
+#include "../src/agerun_system.h"
 
 int main(void) {
     printf("Agerun Example Application\n");

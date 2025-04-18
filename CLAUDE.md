@@ -34,13 +34,11 @@ IMPORTANT: Always run examples after running tests to verify changes work in pra
 
 ## Project Structure
 
-- **/include**: Header files
-  - `agerun_system.h`: Public API
-  - `agerun_interpreter.h`: Interpreter interface
-
-- **/src**: Implementation files
-  - `agerun_system.c`: Core runtime implementation
-  - `agerun_interpreter.c`: Instruction language interpreter
+- **/src**: Implementation and header files
+  - `agerun_system.h`/`.c`: Public API and core runtime implementation
+  - `agerun_interpreter.h`/`.c`: Interpreter interface and instruction language interpreter
+  - `agerun_data.h`/`.c`: Data type definitions and operations
+  - `agerun_string.h`/`.c`: String utility functions
 
 - **/examples**: Example applications
   - `example.c`: Simple example demonstrating usage
