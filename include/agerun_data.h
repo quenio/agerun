@@ -72,10 +72,10 @@ data_t* ar_dict_get(dict_t *dict, const char *key);
 bool ar_dict_init(dict_t *dict);
 
 /**
- * Set a value in dictionary
+ * Set a value in dictionary (reference assignment)
  * @param dict Dictionary
  * @param key Key to set
- * @param value_ptr Pointer to value to set
+ * @param value_ptr Pointer to value to set (value is referenced, not copied)
  * @return true if successful, false otherwise
  */
 bool ar_dict_set(dict_t *dict, const char *key, data_t *value_ptr);

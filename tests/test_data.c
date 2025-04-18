@@ -29,12 +29,11 @@ int main(void) {
     // Test 3: Set and get string values
     data_t string_data;
     string_data.type = DATA_STRING;
-    string_data.data.string_value = (char*)malloc(strlen("Hello, World!") + 1);
-    strcpy(string_data.data.string_value, "Hello, World!");
+    string_data.data.string_value = strdup("Hello, World!");
     
     result = ar_dict_set(dict, "greeting", &string_data);
     assert(result);
-    free(string_data.data.string_value); // We can free this because ar_dict_set makes a copy
+    // We should NOT free the string here as ar_dict_set now uses references
     
     value = ar_dict_get(dict, "greeting");
     assert(value != NULL);
@@ -69,19 +68,17 @@ int main(void) {
     assert(nested_value->type == DATA_INT);
     assert(nested_value->data.int_value == 100);
     
-    // We don't need to free nested_dict_data.data.dict_value because ar_dict_set makes a copy
-    // and the original will be properly freed when we free the main dictionary
+    // The nested_dict_data now is shared between the dictionary and the value that was set
     
     // Nested a third level deep
     data_t third_level_dict = ar_data_create_dict();
     data_t deep_string;
     deep_string.type = DATA_STRING;
-    deep_string.data.string_value = (char*)malloc(strlen("Deep value!") + 1);
-    strcpy(deep_string.data.string_value, "Deep value!");
+    deep_string.data.string_value = strdup("Deep value!");
     
     result = ar_dict_set(third_level_dict.data.dict_value, "key", &deep_string);
     assert(result);
-    free(deep_string.data.string_value); // Safe to free as ar_dict_set makes a copy
+    // Do not free deep_string.data.string_value as ar_dict_set now uses references
     
     // Add third level to the nested dictionary
     result = ar_dict_set(value->data.dict_value, "more_data", &third_level_dict);

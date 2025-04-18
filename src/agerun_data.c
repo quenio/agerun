@@ -86,22 +86,18 @@ data_t* ar_dict_get(dict_t *dict, const char *key) {
  * @return true if successful, false otherwise
  */
 bool ar_dict_set(dict_t *dict, const char *key, data_t *value_ptr) {
-    data_t value = *value_ptr;
-    if (!dict || !key) {
+    if (!dict || !key || !value_ptr) {
         return false;
     }
     
     // First, check if key already exists using ar_dict_get
     data_t *existing = ar_dict_get(dict, key);
     if (existing) {
-        // Free old value if it's a string
+        // Free old value
         ar_free_data(existing);
         
-        // Set new value
-        *existing = value;
-        if (value.type == DATA_STRING && value.data.string_value) {
-            existing->data.string_value = strdup(value.data.string_value);
-        }
+        // Directly assign the new value
+        *existing = *value_ptr;
         
         return true;
     }
@@ -109,13 +105,14 @@ bool ar_dict_set(dict_t *dict, const char *key, data_t *value_ptr) {
     // Find empty slot
     for (int i = 0; i < DICT_SIZE; i++) {
         if (!dict->entries[i].is_used) {
-            dict->entries[i].is_used = true;
-            dict->entries[i].key = strdup(key);
-            dict->entries[i].value = value;
-            
-            if (value.type == DATA_STRING && value.data.string_value) {
-                dict->entries[i].value.data.string_value = strdup(value.data.string_value);
+            char *key_copy = strdup(key);
+            if (!key_copy) {
+                return false;
             }
+            
+            dict->entries[i].is_used = true;
+            dict->entries[i].key = key_copy;
+            dict->entries[i].value = *value_ptr;
             
             dict->count++;
             return true;
