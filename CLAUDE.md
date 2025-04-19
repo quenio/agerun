@@ -27,7 +27,7 @@ When making changes, always follow these steps to ensure code quality:
 
 4. **Run the executable**:
    ```
-   make run
+   cd bin && ./agerun
    ```
 
 IMPORTANT: Always run the executable after running tests to verify changes work in practical application contexts, not just in test environments.

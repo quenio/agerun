@@ -44,7 +44,7 @@ executable: lib bin
 
 # Run the executable
 run: executable
-	./bin/agerun
+	cd bin && ./agerun
 
 # Build and run tests
 test: bin $(TEST_BIN)
