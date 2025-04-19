@@ -1,6 +1,6 @@
-#include "../src/agerun_system.h"
-#include "../src/agerun_method.h"
-#include "../src/agerun_agent.h"
+#include "agerun_system.h"
+#include "agerun_method.h"
+#include "agerun_agent.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

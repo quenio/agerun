@@ -1,5 +1,5 @@
-#include "../src/agerun_data.h"
-#include "../src/agerun_map.h"
+#include "agerun_data.h"
+#include "agerun_map.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>

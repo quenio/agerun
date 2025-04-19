@@ -34,17 +34,15 @@ IMPORTANT: Always run examples after running tests to verify changes work in pra
 
 ## Project Structure
 
-- **/src**: Implementation and header files
+- **/src**: Implementation, header files, and tests
   - `agerun_system.h`/`.c`: Public API and core runtime implementation
   - `agerun_interpreter.h`/`.c`: Interpreter interface and instruction language interpreter
   - `agerun_data.h`/`.c`: Data type definitions and operations
   - `agerun_string.h`/`.c`: String utility functions
+  - `agerun_*_tests.c`: Test files for each module
 
 - **/examples**: Example applications
   - `example.c`: Simple example demonstrating usage
-
-- **/tests**: Test files
-  - `test_basics.c`: Basic functionality tests
 
 - **/bin**: Generated object files and executables
   - All compiled object files, libraries, and executable files are placed here
@@ -140,7 +138,8 @@ IMPORTANT: Always run examples after running tests to verify changes work in pra
    - Test changes with both normal and edge cases
    - Verify behavior matches the specification
    - Use the test suite to catch regressions
-   - Create separate test files for new functionality rather than modifying implementation files
+   - For each module, create a test file with the suffix `_tests.c` in the `src` directory
+   - Name test files after the module they test (e.g., `agerun_data_tests.c` for testing `agerun_data.c`, `agerun_system_tests.c` for testing `agerun_system.c`)
    - Don't expose internal functions just for testing - create proper test interfaces
 
 7. **Update development guidelines**:
