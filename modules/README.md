@@ -46,7 +46,6 @@ The data module builds on the map module to provide typed data storage with the 
 
 This tree illustrates the dependency relationships between modules in the AgeRun system. Each module depends on the modules listed under it (its children in the tree). For example, `agerun_executable` depends on both `agerun_system` and `agerun_methodology`, while `agerun_system` has multiple dependencies including `agerun_agent`, `agerun_method`, etc.
 
-```
 agerun_executable
 ├── agerun_system
 │   ├── agerun_agent
@@ -71,4 +70,3 @@ agerun_executable
 │   │   └── agerun_map ([documentation](agerun_map.md))   /* data depends on map, not the other way around */
 │   └── agerun_queue
 └── agerun_methodology
-```
