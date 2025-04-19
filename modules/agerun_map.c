@@ -1,5 +1,4 @@
 #include "agerun_map.h"
-#include "agerun_data.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -42,6 +41,7 @@ bool ar_map_init(map_t *map) {
     for (int i = 0; i < MAP_SIZE; i++) {
         map->entries[i].is_used = false;
         map->entries[i].key = NULL;
+        map->entries[i].value = NULL;
     }
     
     map->count = 0;
@@ -55,7 +55,7 @@ bool ar_map_init(map_t *map) {
  * @param key Key to lookup
  * @return Pointer to the value, or NULL if not found
  */
-data_t* ar_map_get(map_t *map, const char *key) {
+void* ar_map_get(map_t *map, const char *key) {
     if (!map || !key) {
         return NULL;
     }
@@ -63,7 +63,7 @@ data_t* ar_map_get(map_t *map, const char *key) {
     for (int i = 0; i < MAP_SIZE; i++) {
         if (map->entries[i].is_used && map->entries[i].key && 
             strcmp(map->entries[i].key, key) == 0) {
-            return &map->entries[i].value;
+            return map->entries[i].value;
         }
     }
     return NULL;
@@ -73,29 +73,22 @@ data_t* ar_map_get(map_t *map, const char *key) {
  * Set a value in map
  * @param map Map
  * @param key Key to set
- * @param value_ptr Pointer to value to set
+ * @param value Pointer to value to store
  * @return true if successful, false otherwise
  */
-bool ar_map_set(map_t *map, const char *key, data_t *value_ptr) {
-    if (!map || !key || !value_ptr) {
+bool ar_map_set(map_t *map, const char *key, void *value) {
+    if (!map || !key) {
         return false;
     }
     
-    // First, check if key already exists using ar_map_get
-    data_t *existing = ar_map_get(map, key);
-    if (existing) {
-        // If we're overwriting with a map value, reference the new map
-        if (value_ptr->type == DATA_MAP && value_ptr->data.map_value) {
-            map_ref(value_ptr->data.map_value);
+    // First, check if key already exists
+    for (int i = 0; i < MAP_SIZE; i++) {
+        if (map->entries[i].is_used && map->entries[i].key && 
+            strcmp(map->entries[i].key, key) == 0) {
+            // Just update the value pointer
+            map->entries[i].value = value;
+            return true;
         }
-        
-        // Free old value which will unref any maps it contains
-        ar_data_free(existing);
-        
-        // Directly assign the new value
-        *existing = *value_ptr;
-        
-        return true;
     }
     
     // Find empty slot
@@ -106,14 +99,9 @@ bool ar_map_set(map_t *map, const char *key, data_t *value_ptr) {
                 return false;
             }
             
-            // If we're setting a map value, reference it
-            if (value_ptr->type == DATA_MAP && value_ptr->data.map_value) {
-                map_ref(value_ptr->data.map_value);
-            }
-            
             map->entries[i].is_used = true;
             map->entries[i].key = key_copy;
-            map->entries[i].value = *value_ptr;
+            map->entries[i].value = value;
             
             map->count++;
             return true;
@@ -135,11 +123,10 @@ static void map_unref(map_t *map) {
     
     map->ref_count--;
     if (map->ref_count <= 0) {
-        /* Free the internal resources but don't free the map itself */
+        /* Free the internal resources but don't free the values */
         for (int i = 0; i < MAP_SIZE; i++) {
             if (map->entries[i].is_used && map->entries[i].key) {
                 free(map->entries[i].key);
-                ar_data_free(&map->entries[i].value);
             }
         }
         /* Now free the map structure */
@@ -155,4 +142,16 @@ void ar_map_free(map_t *map) {
     if (!map) return;
     
     map_unref(map);
+}
+
+/**
+ * Get a reference to the map (increments reference count)
+ * @param map Map to reference
+ * @return Same map pointer for convenience
+ */
+map_t* ar_map_get_reference(map_t *map) {
+    if (!map) return NULL;
+    
+    map_ref(map);
+    return map;
 }

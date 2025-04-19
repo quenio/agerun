@@ -8,8 +8,8 @@
 // Forward declarations
 static void test_map_create(void);
 static void test_map_init(void);
-static void test_map_set_get_integer(void);
-static void test_nested_maps(void);
+static void test_map_set_get_simple(void);
+static void test_map_get_reference(void);
 
 static void test_map_create(void) {
     printf("Testing ar_map_create()...\n");
@@ -27,6 +27,7 @@ static void test_map_create(void) {
     for (int i = 0; i < MAP_SIZE; i++) {
         assert(map->entries[i].is_used == false);
         assert(map->entries[i].key == NULL);
+        assert(map->entries[i].value == NULL);
     }
     
     // Cleanup
@@ -52,13 +53,14 @@ static void test_map_init(void) {
     for (int i = 0; i < MAP_SIZE; i++) {
         assert(map.entries[i].is_used == false);
         assert(map.entries[i].key == NULL);
+        assert(map.entries[i].value == NULL);
     }
     
     printf("All ar_map_init() tests passed!\n");
 }
 
-static void test_map_set_get_integer(void) {
-    printf("Testing ar_map_set() and ar_map_get() with integer value...\n");
+static void test_map_set_get_simple(void) {
+    printf("Testing ar_map_set() and ar_map_get() with simple value...\n");
     
     // Given a new map
     map_t *map = ar_map_create();
@@ -67,96 +69,70 @@ static void test_map_set_get_integer(void) {
         return;
     }
     
-    // And an integer data value
-    data_t int_data;
-    int_data.type = DATA_INT;
-    int_data.data.int_value = 42;
+    // And a test value (using an integer on the heap for this test)
+    int *value = malloc(sizeof(int));
+    *value = 42;
     
     // When we set the value in the map
-    bool set_result = ar_map_set(map, "int_key", &int_data);
+    bool set_result = ar_map_set(map, "test_key", value);
     
     // Then the set operation should succeed
     assert(set_result);
     
     // When we retrieve the value from the map
-    data_t *get_result = ar_map_get(map, "int_key");
+    int *get_result = (int*)ar_map_get(map, "test_key");
     
     // Then the value should be retrieved successfully
     assert(get_result != NULL);
-    assert(get_result->type == DATA_INT);
     
     // And the value should match what we stored
-    printf("Retrieved integer value: %lld\n", get_result->data.int_value);
-    assert(get_result->data.int_value == 42);
+    printf("Retrieved integer value: %d\n", *get_result);
+    assert(*get_result == 42);
     
     // Cleanup
+    free(value); // We need to free the value ourselves now
     ar_map_free(map);
     
-    printf("ar_map_set() and ar_map_get() integer value test passed!\n");
+    printf("ar_map_set() and ar_map_get() simple value test passed!\n");
 }
 
-static void test_nested_maps(void) {
-    printf("Testing nested maps...\n");
+static void test_map_get_reference(void) {
+    printf("Testing ar_map_get_reference() for reference counting...\n");
     
-    // Given we need a map structure with nested maps
-    map_t *outer_map = ar_map_create();
-    assert(outer_map != NULL);
-    assert(outer_map->ref_count == 1);  // Initial reference count should be 1
+    // Given a map
+    map_t *map = ar_map_create();
+    assert(map != NULL);
+    assert(map->ref_count == 1);  // Initial reference count should be 1
     
-    // Create an inner map
-    map_t *inner_map = ar_map_create();
-    assert(inner_map != NULL);
-    assert(inner_map->ref_count == 1);  // Initial reference count should be 1
+    // When we get a reference to the map
+    map_t *ref = ar_map_get_reference(map);
     
-    // Create a data value to hold the inner map
-    data_t map_data;
-    map_data.type = DATA_MAP;
-    map_data.data.map_value = inner_map;
+    // Then the reference count should be incremented
+    assert(map->ref_count == 2);
+    assert(ref == map);  // Same map object
     
-    // When we set the inner map in the outer map
-    bool set_result = ar_map_set(outer_map, "inner_map", &map_data);
+    // When we free one reference
+    ar_map_free(map);
+    
+    // Then the map should still be valid due to the other reference
+    assert(ref->ref_count == 1);
+    
+    // We can still use the map with the remaining reference
+    int *value = malloc(sizeof(int));
+    *value = 100;
+    bool set_result = ar_map_set(ref, "test", value);
     assert(set_result);
     
-    // Then the inner map's reference count should be incremented
-    assert(inner_map->ref_count == 2);  // Should be incremented after being stored in outer_map
+    // Retrieve the value
+    int *get_result = (int*)ar_map_get(ref, "test");
+    assert(get_result != NULL);
+    assert(*get_result == 100);
     
-    // When we get the inner map from the outer map
-    data_t *retrieved = ar_map_get(outer_map, "inner_map");
-    assert(retrieved != NULL);
-    assert(retrieved->type == DATA_MAP);
-    assert(retrieved->data.map_value == inner_map);
+    // Cleanup
+    free(value); // We need to free the value ourselves now
+    ar_map_free(ref);
     
-    // Add some data to the inner map
-    data_t int_data;
-    int_data.type = DATA_INT;
-    int_data.data.int_value = 42;
-    set_result = ar_map_set(inner_map, "answer", &int_data);
-    assert(set_result);
-    
-    // Retrieve the data through the outer map
-    data_t *inner_map_ref = ar_map_get(outer_map, "inner_map");
-    assert(inner_map_ref != NULL);
-    data_t *answer = ar_map_get(inner_map_ref->data.map_value, "answer");
-    assert(answer != NULL);
-    assert(answer->type == DATA_INT);
-    assert(answer->data.int_value == 42);
-    
-    // When we free the outer map
-    ar_map_free(outer_map);
-    
-    // Then the inner map should still be valid due to its own reference
-    assert(inner_map->ref_count == 1);  // Ref count should decrease to 1 after outer_map is freed
-    
-    // We can still access the inner map directly
-    answer = ar_map_get(inner_map, "answer");
-    assert(answer != NULL);
-    assert(answer->type == DATA_INT);
-    assert(answer->data.int_value == 42);
-    
-    // Finally free the inner map
-    ar_map_free(inner_map);
-    
-    printf("All nested map tests passed!\n");
+    printf("Reference counting tests passed!\n");
 }
 
 int main(void) {
@@ -169,11 +145,11 @@ int main(void) {
     printf("Running test_map_init()...\n");
     test_map_init();
     
-    printf("Running test_map_set_get_integer()...\n");
-    test_map_set_get_integer();
+    printf("Running test_map_set_get_simple()...\n");
+    test_map_set_get_simple();
     
-    printf("Running test_nested_maps()...\n");
-    test_nested_maps();
+    printf("Running test_map_get_reference()...\n");
+    test_map_get_reference();
     
     printf("All map tests passed!\n");
     return 0;

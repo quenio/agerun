@@ -3,10 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-
-/* Forward declaration */
-struct map_s;
-typedef struct map_s map_t;
+#include "agerun_map.h"
 
 /**
  * Data type enumeration

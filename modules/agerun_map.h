@@ -2,7 +2,6 @@
 #define AGERUN_MAP_H
 
 #include <stdbool.h>
-#include "agerun_data.h"
 
 /* Constants */
 #define MAP_SIZE 64
@@ -12,7 +11,7 @@
  */
 typedef struct entry_s {
     char *key;
-    data_t value;
+    void *value;
     bool is_used;
 } entry_t;
 
@@ -50,22 +49,28 @@ bool ar_map_init(map_t *map);
  * @param key Key to lookup
  * @return Pointer to the value, or NULL if not found
  */
-data_t* ar_map_get(map_t *map, const char *key);
+void* ar_map_get(map_t *map, const char *key);
 
 /**
  * Set a value in map
  * @param map Map
  * @param key Key to set
- * @param value_ptr Pointer to value to set (the data_t structure is copied into the map)
- * @note For DATA_MAP type, the map_value pointer is preserved, creating a reference to the same map
+ * @param value Pointer to value to store
  * @return true if successful, false otherwise
  */
-bool ar_map_set(map_t *map, const char *key, data_t *value_ptr);
+bool ar_map_set(map_t *map, const char *key, void *value);
 
 /**
  * Free all resources in a map
  * @param map Map to free
  */
 void ar_map_free(map_t *map);
+
+/**
+ * Get a reference to the map (increments reference count)
+ * @param map Map to reference
+ * @return Same map pointer for convenience
+ */
+map_t* ar_map_get_reference(map_t *map);
 
 #endif /* AGERUN_MAP_H */
