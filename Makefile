@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -Werror -Wpedantic -Wconversion -Wshadow -Wcast-qual \
          -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wstrict-aliasing=2 \
          -Wnull-dereference -Wformat=2 -Wuninitialized -Wpointer-arith \
-         -Wunused -Wunused-parameter -Wwrite-strings -std=c11 -I./src
+         -Wunused -Wunused-parameter -Wwrite-strings -std=c11 -I./modules
 LDFLAGS = -lm
 
 # Debug build flags
@@ -11,13 +11,13 @@ DEBUG_CFLAGS = -g -O0 -DDEBUG
 RELEASE_CFLAGS = -O3 -DNDEBUG
 
 # Source files (excluding test files)
-SRC = $(filter-out src/*_tests.c,$(wildcard src/*.c))
-OBJ = $(patsubst src/%.c,bin/%.o,$(SRC))
+SRC = $(filter-out modules/*_tests.c,$(wildcard modules/*.c))
+OBJ = $(patsubst modules/%.c,bin/%.o,$(SRC))
 
 # Test source files
-TEST_SRC = $(wildcard src/*_tests.c)
-TEST_OBJ = $(patsubst src/%.c,bin/%.o,$(TEST_SRC))
-TEST_BIN = $(patsubst src/%_tests.c,bin/%_tests,$(TEST_SRC))
+TEST_SRC = $(wildcard modules/*_tests.c)
+TEST_OBJ = $(patsubst modules/%.c,bin/%.o,$(TEST_SRC))
+TEST_BIN = $(patsubst modules/%_tests.c,bin/%_tests,$(TEST_SRC))
 
 # Main target
 all: debug executable
@@ -44,7 +44,7 @@ test_lib: bin $(OBJ) $(TEST_OBJ)
 
 # Executable application - build only
 executable: lib bin
-	$(CC) $(CFLAGS) -o bin/agerun src/agerun_executable.c bin/libagerun.a $(LDFLAGS)
+	$(CC) $(CFLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS)
 
 # Run the executable
 run: executable
@@ -62,7 +62,7 @@ bin/%_tests: bin/%_tests.o test_lib
 	$(CC) $(CFLAGS) -o $@ $< bin/libagerun.a $(LDFLAGS)
 
 # Compile source files
-bin/%.o: src/%.c | bin
+bin/%.o: modules/%.c | bin
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Clean target

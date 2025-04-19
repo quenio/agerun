@@ -34,7 +34,7 @@ IMPORTANT: Always run the executable after running tests to verify changes work 
 
 ## Project Structure
 
-- **/src**: Implementation, header files, and tests
+- **/modules**: Implementation, header files, and tests
   - `agerun_system.h`/`.c`: Public API and core runtime implementation
   - `agerun_interpreter.h`/`.c`: Interpreter interface and instruction language interpreter
   - `agerun_data.h`/`.c`: Data type definitions and operations
@@ -138,7 +138,7 @@ IMPORTANT: Always run the executable after running tests to verify changes work 
    - Verify behavior matches the specification
    - Use the test suite to catch regressions
    - EVERY module MUST have tests
-   - For each module, create a test file with the suffix `_tests.c` in the `src` directory
+   - For each module, create a test file with the suffix `_tests.c` in the `modules` directory
    - Name test files after the module they test (e.g., `agerun_data_tests.c` for testing `agerun_data.c`, `agerun_system_tests.c` for testing `agerun_system.c`)
    - Don't expose internal functions just for testing - create proper test interfaces
 
