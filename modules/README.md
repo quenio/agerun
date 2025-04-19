@@ -46,11 +46,12 @@ The data module builds on the map module to provide typed data storage with the 
 
 This tree illustrates the dependency relationships between modules in the AgeRun system. Each module depends on the modules listed under it (its children in the tree). For example, `agerun_executable` depends on both `agerun_system` and `agerun_methodology`, while `agerun_system` has multiple dependencies including `agerun_agent`, `agerun_method`, etc.
 
+```
 agerun_executable
 ├── agerun_system
 │   ├── agerun_agent
 │   │   ├── agerun_agency
-│   │   ├── agerun_map ([documentation](agerun_map.md))
+│   │   ├── agerun_map - See: agerun_map.md
 │   │   └── agerun_queue
 │   ├── agerun_method
 │   │   ├── agerun_methodology
@@ -58,15 +59,20 @@ agerun_executable
 │   │   ├── agerun_instruction
 │   │   │   ├── agerun_expression
 │   │   │   │   ├── agerun_string
-│   │   │   │   ├── agerun_data ([documentation](agerun_data.md))
-│   │   │   │   ├── agerun_map ([documentation](agerun_map.md))
+│   │   │   │   ├── agerun_data - See: agerun_data.md
+│   │   │   │   ├── agerun_map - See: agerun_map.md
 │   │   │   │   └── agerun_queue
 │   │   │   ├── agerun_string
-│   │   │   └── agerun_data ([documentation](agerun_data.md))
-│   │   ├── agerun_data ([documentation](agerun_data.md))
+│   │   │   └── agerun_data - See: agerun_data.md
+│   │   ├── agerun_data - See: agerun_data.md
 │   │   └── agerun_string
 │   ├── agerun_agency
-│   ├── agerun_data ([documentation](agerun_data.md))
-│   │   └── agerun_map ([documentation](agerun_map.md))   /* data depends on map, not the other way around */
+│   ├── agerun_data - See: agerun_data.md
+│   │   └── agerun_map - See: agerun_map.md   /* data depends on map, not the other way around */
 │   └── agerun_queue
 └── agerun_methodology
+```
+
+For detailed module documentation:
+- [Map Module Documentation](agerun_map.md)
+- [Data Module Documentation](agerun_data.md)
