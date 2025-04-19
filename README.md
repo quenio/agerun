@@ -137,6 +137,10 @@ Agents use a simple expression and instruction language for their methods:
 - `create(method_name, version, context)`: Create a new agent
 - `destroy(agent_id)`: Destroy an agent
 
+## Code Organization
+
+The AgeRun codebase is organized into modular components, each responsible for a specific aspect of the system. For more details on the module structure and dependencies, see the [Modules README](modules/README.md).
+
 ## License
 
 [MIT License](LICENSE)
