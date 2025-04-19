@@ -20,28 +20,6 @@ Within modules, consistent naming conventions are used:
 
 These conventions ensure consistency across the codebase and make it easier to understand which module a particular function or data structure belongs to.
 
-## Core Modules
-
-### Map Module (`agerun_map`)
-
-The map module provides a fundamental key-value storage implementation that is used throughout the system. It has the following characteristics:
-
-- **Key-Value Storage**: Stores string keys mapped to generic pointers (const void*) to values
-- **Reference-Based**: The map stores references to keys and values rather than duplicating them
-- **Type Safety**: Uses const qualifiers for keys and values to prevent unwanted modifications
-- **No Memory Management**: Does not manage memory for either keys or values
-- **No Dependencies**: This is a foundational module with no dependencies on other modules
-
-### Data Module (`agerun_data`)
-
-The data module builds on the map module to provide typed data storage with the following features:
-
-- **Type System**: Supports integers, doubles, strings, and nested maps
-- **Memory Management**: Handles memory allocation and cleanup for data values
-- **Reference Management**: Handles reference counting for nested maps and complex structures
-- **Type Safety**: Ensures proper handling of different data types
-- **Depends on Map**: Uses the map module for underlying storage
-
 ## Module Dependency Tree
 
 This tree illustrates the dependency relationships between modules in the AgeRun system. Each module depends on the modules listed under it (its children in the tree). For example, `agerun_executable` depends on both `agerun_system` and `agerun_methodology`, while `agerun_system` has multiple dependencies including `agerun_agent`, `agerun_method`, etc.
@@ -51,7 +29,7 @@ agerun_executable
 ├── agerun_system
 │   ├── agerun_agent
 │   │   ├── agerun_agency
-│   │   ├── agerun_map - See: agerun_map.md
+│   │   ├── agerun_map
 │   │   └── agerun_queue
 │   ├── agerun_method
 │   │   ├── agerun_methodology
@@ -59,20 +37,38 @@ agerun_executable
 │   │   ├── agerun_instruction
 │   │   │   ├── agerun_expression
 │   │   │   │   ├── agerun_string
-│   │   │   │   ├── agerun_data - See: agerun_data.md
-│   │   │   │   ├── agerun_map - See: agerun_map.md
+│   │   │   │   ├── agerun_data
+│   │   │   │   ├── agerun_map
 │   │   │   │   └── agerun_queue
 │   │   │   ├── agerun_string
-│   │   │   └── agerun_data - See: agerun_data.md
-│   │   ├── agerun_data - See: agerun_data.md
+│   │   │   └── agerun_data
+│   │   ├── agerun_data
 │   │   └── agerun_string
 │   ├── agerun_agency
-│   ├── agerun_data - See: agerun_data.md
-│   │   └── agerun_map - See: agerun_map.md   /* data depends on map, not the other way around */
+│   ├── agerun_data
+│   │   └── agerun_map   /* data depends on map, not the other way around */
 │   └── agerun_queue
 └── agerun_methodology
 ```
 
-For detailed module documentation:
-- [Map Module Documentation](agerun_map.md)
-- [Data Module Documentation](agerun_data.md)
+## Core Modules
+
+### Map Module (`agerun_map`)
+
+The [map module](agerun_map.md) provides a fundamental key-value storage implementation that is used throughout the system. It has the following characteristics:
+
+- **Key-Value Storage**: Stores string keys mapped to generic pointers (const void*) to values
+- **Reference-Based**: The map stores references to keys and values rather than duplicating them
+- **Type Safety**: Uses const qualifiers for keys and values to prevent unwanted modifications
+- **No Memory Management**: Does not manage memory for either keys or values
+- **No Dependencies**: This is a foundational module with no dependencies on other modules
+
+### Data Module (`agerun_data`)
+
+The [data module](agerun_data.md) builds on the map module to provide typed data storage with the following features:
+
+- **Type System**: Supports integers, doubles, strings, and nested maps
+- **Memory Management**: Handles memory allocation and cleanup for data values
+- **Reference Management**: Handles reference counting for nested maps and complex structures
+- **Type Safety**: Ensures proper handling of different data types
+- **Depends on Map**: Uses the map module for underlying storage
