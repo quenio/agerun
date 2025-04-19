@@ -50,12 +50,19 @@ static void test_trim_both_whitespace(void) {
     
     // Given a string with both leading and trailing whitespace
     char str[] = "  Hello World  ";
+    char *original_ptr = str;
     
     // When the trim function is called
     char *result = ar_string_trim(str);
     
     // Then the result should have all whitespace removed
     assert(strcmp(result, "Hello World") == 0);
+    
+    // Then the result should point to a position within the original string (no new allocation)
+    assert(result >= original_ptr && result <= original_ptr + strlen(original_ptr));
+    
+    // Then the original string should be modified in-place
+    assert(strcmp(str + 2, "Hello World") == 0);
     
     printf("ar_trim() both whitespace test passed!\n");
 }
