@@ -41,7 +41,7 @@ bool ar_map_init(map_t *map) {
     for (int i = 0; i < MAP_SIZE; i++) {
         map->entries[i].is_used = false;
         map->entries[i].key = NULL;
-        map->entries[i].value = NULL;
+        map->entries[i].ref = NULL;
     }
     
     map->count = 0;
@@ -50,10 +50,10 @@ bool ar_map_init(map_t *map) {
 }
 
 /**
- * Get a value from map by key
+ * Get a reference from map by key
  * @param map Map
  * @param key Key to lookup
- * @return Pointer to the value, or NULL if not found
+ * @return Pointer to the referenced value, or NULL if not found
  */
 void* ar_map_get(map_t *map, const char *key) {
     if (!map || !key) {
@@ -63,17 +63,17 @@ void* ar_map_get(map_t *map, const char *key) {
     for (int i = 0; i < MAP_SIZE; i++) {
         if (map->entries[i].is_used && map->entries[i].key && 
             strcmp(map->entries[i].key, key) == 0) {
-            return map->entries[i].value;
+            return map->entries[i].ref;
         }
     }
     return NULL;
 }
 
 /**
- * Set a value in map
+ * Set a reference in map
  * @param map Map
  * @param key Key to set
- * @param value Pointer to value to store
+ * @param value Pointer to value to reference
  * @return true if successful, false otherwise
  */
 bool ar_map_set(map_t *map, const char *key, void *value) {
@@ -85,8 +85,8 @@ bool ar_map_set(map_t *map, const char *key, void *value) {
     for (int i = 0; i < MAP_SIZE; i++) {
         if (map->entries[i].is_used && map->entries[i].key && 
             strcmp(map->entries[i].key, key) == 0) {
-            // Just update the value pointer
-            map->entries[i].value = value;
+            // Just update the reference pointer
+            map->entries[i].ref = value;
             return true;
         }
     }
@@ -101,7 +101,7 @@ bool ar_map_set(map_t *map, const char *key, void *value) {
             
             map->entries[i].is_used = true;
             map->entries[i].key = key_copy;
-            map->entries[i].value = value;
+            map->entries[i].ref = value;
             
             map->count++;
             return true;

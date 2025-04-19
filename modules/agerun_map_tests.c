@@ -27,7 +27,7 @@ static void test_map_create(void) {
     for (int i = 0; i < MAP_SIZE; i++) {
         assert(map->entries[i].is_used == false);
         assert(map->entries[i].key == NULL);
-        assert(map->entries[i].value == NULL);
+        assert(map->entries[i].ref == NULL);
     }
     
     // Cleanup
@@ -53,7 +53,7 @@ static void test_map_init(void) {
     for (int i = 0; i < MAP_SIZE; i++) {
         assert(map.entries[i].is_used == false);
         assert(map.entries[i].key == NULL);
-        assert(map.entries[i].value == NULL);
+        assert(map.entries[i].ref == NULL);
     }
     
     printf("All ar_map_init() tests passed!\n");
