@@ -55,10 +55,10 @@ void* ar_map_get(map_t *map, const char *key);
  * Set a reference in map
  * @param map Map
  * @param key Key to set
- * @param value Pointer to value to reference
+ * @param ref Pointer to value to reference
  * @return true if successful, false otherwise
  */
-bool ar_map_set(map_t *map, const char *key, void *value);
+bool ar_map_set(map_t *map, const char *key, void *ref);
 
 /**
  * Free all resources in a map

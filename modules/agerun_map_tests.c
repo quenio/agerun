@@ -70,11 +70,11 @@ static void test_map_set_get_simple(void) {
     }
     
     // And a test value (using an integer on the heap for this test)
-    int *value = malloc(sizeof(int));
-    *value = 42;
+    int *ref = malloc(sizeof(int));
+    *ref = 42;
     
-    // When we set the value in the map
-    bool set_result = ar_map_set(map, "test_key", value);
+    // When we set the reference in the map
+    bool set_result = ar_map_set(map, "test_key", ref);
     
     // Then the set operation should succeed
     assert(set_result);
@@ -90,7 +90,7 @@ static void test_map_set_get_simple(void) {
     assert(*get_result == 42);
     
     // Cleanup
-    free(value); // We need to free the value ourselves now
+    free(ref); // We need to free the referenced value ourselves
     ar_map_free(map);
     
     printf("ar_map_set() and ar_map_get() simple value test passed!\n");
@@ -118,18 +118,18 @@ static void test_map_get_reference(void) {
     assert(ref->ref_count == 1);
     
     // We can still use the map with the remaining reference
-    int *value = malloc(sizeof(int));
-    *value = 100;
-    bool set_result = ar_map_set(ref, "test", value);
+    int *valueRef = malloc(sizeof(int));
+    *valueRef = 100;
+    bool set_result = ar_map_set(ref, "test", valueRef);
     assert(set_result);
     
-    // Retrieve the value
+    // Retrieve the referenced value
     int *get_result = (int*)ar_map_get(ref, "test");
     assert(get_result != NULL);
     assert(*get_result == 100);
     
     // Cleanup
-    free(value); // We need to free the value ourselves now
+    free(valueRef); // We need to free the referenced value ourselves
     ar_map_free(ref);
     
     printf("Reference counting tests passed!\n");

@@ -58,13 +58,13 @@ static void test_integer_values(map_t *map) {
     int_data->type = DATA_INT;
     int_data->data.int_value = 42;
     
-    // When we set it in the map
+    // When we set the reference in the map
     bool result = ar_map_set(map, "answer", int_data);
     
     // Then the operation should succeed
     assert(result);
     
-    // When we retrieve the value from the map
+    // When we retrieve the referenced value from the map
     data_t *value = (data_t*)ar_map_get(map, "answer");
     
     // Then the value should be correctly retrieved
@@ -83,13 +83,13 @@ static void test_string_values(map_t *map) {
     string_data->type = DATA_STRING;
     string_data->data.string_value = strdup("Hello, World!");
     
-    // When we set it in the map
+    // When we set the reference in the map
     bool result = ar_map_set(map, "greeting", string_data);
     
     // Then the operation should succeed
     assert(result);
     
-    // When we retrieve the value from the map
+    // When we retrieve the referenced value from the map
     data_t *value = (data_t*)ar_map_get(map, "greeting");
     
     // Then the value should be correctly retrieved
@@ -116,19 +116,19 @@ static void test_nested_maps(map_t *map) {
     nested_int_data->type = DATA_INT;
     nested_int_data->data.int_value = 100;
     
-    // When we set data in the nested map
+    // When we set a reference in the nested map
     bool result = ar_map_set(nested_map_ptr->data.map_value, "count", nested_int_data);
     
     // Then the operation should succeed
     assert(result);
     
-    // When we add the nested map to the main map
+    // When we add a reference to the nested map to the main map
     result = ar_map_set(map, "user_data", nested_map_ptr);
     
     // Then the operation should succeed
     assert(result);
     
-    // When we retrieve the nested map from the main map
+    // When we retrieve the referenced nested map from the main map
     data_t *value = (data_t*)ar_map_get(map, "user_data");
     
     // Then the nested map should be correctly retrieved
@@ -136,7 +136,7 @@ static void test_nested_maps(map_t *map) {
     assert(value->type == DATA_MAP);
     assert(value->data.map_value != NULL);
     
-    // And its contents should be intact
+    // And its contents should be intact - retrieve the reference from inside the nested map
     data_t *nested_value = (data_t*)ar_map_get(value->data.map_value, "count");
     assert(nested_value != NULL);
     assert(nested_value->type == DATA_INT);
@@ -151,13 +151,13 @@ static void test_nested_maps(map_t *map) {
     deep_string->type = DATA_STRING;
     deep_string->data.string_value = strdup("Deep value!");
     
-    // When we set data in the third level map
+    // When we set a reference in the third level map
     result = ar_map_set(third_level_ptr->data.map_value, "key", deep_string);
     
     // Then the operation should succeed
     assert(result);
     
-    // When we add the third level map to the nested map
+    // When we add a reference to the third level map in the nested map
     result = ar_map_set(value->data.map_value, "more_data", third_level_ptr);
     
     // Then the operation should succeed

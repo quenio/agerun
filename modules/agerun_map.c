@@ -73,10 +73,10 @@ void* ar_map_get(map_t *map, const char *key) {
  * Set a reference in map
  * @param map Map
  * @param key Key to set
- * @param value Pointer to value to reference
+ * @param ref Pointer to value to reference
  * @return true if successful, false otherwise
  */
-bool ar_map_set(map_t *map, const char *key, void *value) {
+bool ar_map_set(map_t *map, const char *key, void *ref) {
     if (!map || !key) {
         return false;
     }
@@ -86,7 +86,7 @@ bool ar_map_set(map_t *map, const char *key, void *value) {
         if (map->entries[i].is_used && map->entries[i].key && 
             strcmp(map->entries[i].key, key) == 0) {
             // Just update the reference pointer
-            map->entries[i].ref = value;
+            map->entries[i].ref = ref;
             return true;
         }
     }
@@ -101,7 +101,7 @@ bool ar_map_set(map_t *map, const char *key, void *value) {
             
             map->entries[i].is_used = true;
             map->entries[i].key = key_copy;
-            map->entries[i].ref = value;
+            map->entries[i].ref = ref;
             
             map->count++;
             return true;
