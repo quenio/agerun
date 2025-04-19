@@ -5,7 +5,7 @@
 #include "agerun_data.h"
 
 /* Constants */
-#define MAP_SIZE 256
+#define MAP_SIZE 64
 
 /**
  * Map Entry for storing key-value pairs
