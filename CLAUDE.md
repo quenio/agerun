@@ -149,7 +149,8 @@ IMPORTANT:
    - EVERY module MUST have tests
    - For each module, create a test file with the suffix `_tests.c` in the `modules` directory
    - Name test files after the module they test (e.g., `agerun_data_tests.c` for testing `agerun_data.c`, `agerun_system_tests.c` for testing `agerun_system.c`)
-   - Don't expose internal functions just for testing - create proper test interfaces
+   - Use white-box testing approaches that directly inspect the internal state of modules when needed
+   - Encapsulation is about hiding implementation details from client code, not from tests
    - Each test function should implement a single scenario
    - Each test function should follow the Gherkin-style structure with Given/When/Then comments:
      ```c

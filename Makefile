@@ -55,7 +55,7 @@ TEST_BIN_NAMES = $(notdir $(TEST_BIN))
 
 # Build and run tests
 test: bin $(TEST_BIN)
-	@cd bin && for test in $(TEST_BIN_NAMES); do \
+	@cd bin && rm -f *.agerun && for test in $(TEST_BIN_NAMES); do \
 		echo "Running $$test"; \
 		./$$test; \
 	done

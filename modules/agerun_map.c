@@ -3,6 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* Internal function declarations */
+static void map_ref(map_t *map);
+static void map_unref(map_t *map);
+
 /**
  * Create a new heap-allocated empty map
  * @return Pointer to the new map, or NULL on failure
@@ -41,6 +45,7 @@ bool ar_map_init(map_t *map) {
     }
     
     map->count = 0;
+    map->ref_count = 1; /* Initialize with reference count of 1 */
     return true;
 }
 
@@ -79,7 +84,12 @@ bool ar_map_set(map_t *map, const char *key, data_t *value_ptr) {
     // First, check if key already exists using ar_map_get
     data_t *existing = ar_map_get(map, key);
     if (existing) {
-        // Free old value
+        // If we're overwriting with a map value, reference the new map
+        if (value_ptr->type == DATA_MAP && value_ptr->data.map_value) {
+            map_ref(value_ptr->data.map_value);
+        }
+        
+        // Free old value which will unref any maps it contains
         ar_data_free(existing);
         
         // Directly assign the new value
@@ -96,6 +106,11 @@ bool ar_map_set(map_t *map, const char *key, data_t *value_ptr) {
                 return false;
             }
             
+            // If we're setting a map value, reference it
+            if (value_ptr->type == DATA_MAP && value_ptr->data.map_value) {
+                map_ref(value_ptr->data.map_value);
+            }
+            
             map->entries[i].is_used = true;
             map->entries[i].key = key_copy;
             map->entries[i].value = *value_ptr;
@@ -108,6 +123,30 @@ bool ar_map_set(map_t *map, const char *key, data_t *value_ptr) {
     return false; // No space left
 }
 
+/* Internal function to increment reference count */
+static void map_ref(map_t *map) {
+    if (!map) return;
+    map->ref_count++;
+}
+
+/* Internal function to decrement reference count and free if zero */
+static void map_unref(map_t *map) {
+    if (!map) return;
+    
+    map->ref_count--;
+    if (map->ref_count <= 0) {
+        /* Free the internal resources but don't free the map itself */
+        for (int i = 0; i < MAP_SIZE; i++) {
+            if (map->entries[i].is_used && map->entries[i].key) {
+                free(map->entries[i].key);
+                ar_data_free(&map->entries[i].value);
+            }
+        }
+        /* Now free the map structure */
+        free(map);
+    }
+}
+
 /**
  * Free all resources in a map
  * @param map Map to free
@@ -115,10 +154,5 @@ bool ar_map_set(map_t *map, const char *key, data_t *value_ptr) {
 void ar_map_free(map_t *map) {
     if (!map) return;
     
-    for (int i = 0; i < MAP_SIZE; i++) {
-        if (map->entries[i].is_used && map->entries[i].key) {
-            free(map->entries[i].key);
-            ar_data_free(&map->entries[i].value);
-        }
-    }
+    map_unref(map);
 }

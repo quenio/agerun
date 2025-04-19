@@ -98,13 +98,63 @@ static void test_map_set_get_integer(void) {
 static void test_nested_maps(void) {
     printf("Testing nested maps...\n");
     
-    // Given we need to test nested maps
+    // Given we need a map structure with nested maps
+    map_t *outer_map = ar_map_create();
+    assert(outer_map != NULL);
+    assert(outer_map->ref_count == 1);  // Initial reference count should be 1
     
-    // When we attempt to create a nested map structure
-    // (Simplified test for now due to implementation issues)
+    // Create an inner map
+    map_t *inner_map = ar_map_create();
+    assert(inner_map != NULL);
+    assert(inner_map->ref_count == 1);  // Initial reference count should be 1
     
-    // Then the nested map operations should succeed
-    // (Placeholder for actual implementation)
+    // Create a data value to hold the inner map
+    data_t map_data;
+    map_data.type = DATA_MAP;
+    map_data.data.map_value = inner_map;
+    
+    // When we set the inner map in the outer map
+    bool set_result = ar_map_set(outer_map, "inner_map", &map_data);
+    assert(set_result);
+    
+    // Then the inner map's reference count should be incremented
+    assert(inner_map->ref_count == 2);  // Should be incremented after being stored in outer_map
+    
+    // When we get the inner map from the outer map
+    data_t *retrieved = ar_map_get(outer_map, "inner_map");
+    assert(retrieved != NULL);
+    assert(retrieved->type == DATA_MAP);
+    assert(retrieved->data.map_value == inner_map);
+    
+    // Add some data to the inner map
+    data_t int_data;
+    int_data.type = DATA_INT;
+    int_data.data.int_value = 42;
+    set_result = ar_map_set(inner_map, "answer", &int_data);
+    assert(set_result);
+    
+    // Retrieve the data through the outer map
+    data_t *inner_map_ref = ar_map_get(outer_map, "inner_map");
+    assert(inner_map_ref != NULL);
+    data_t *answer = ar_map_get(inner_map_ref->data.map_value, "answer");
+    assert(answer != NULL);
+    assert(answer->type == DATA_INT);
+    assert(answer->data.int_value == 42);
+    
+    // When we free the outer map
+    ar_map_free(outer_map);
+    
+    // Then the inner map should still be valid due to its own reference
+    assert(inner_map->ref_count == 1);  // Ref count should decrease to 1 after outer_map is freed
+    
+    // We can still access the inner map directly
+    answer = ar_map_get(inner_map, "answer");
+    assert(answer != NULL);
+    assert(answer->type == DATA_INT);
+    assert(answer->data.int_value == 42);
+    
+    // Finally free the inner map
+    ar_map_free(inner_map);
     
     printf("All nested map tests passed!\n");
 }

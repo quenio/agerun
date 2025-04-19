@@ -22,6 +22,7 @@ typedef struct entry_s {
 typedef struct map_s {
     entry_t entries[MAP_SIZE];
     int count;
+    int ref_count; /* Reference counter for this map */
 } map_t;
 
 /**
@@ -52,10 +53,11 @@ bool ar_map_init(map_t *map);
 data_t* ar_map_get(map_t *map, const char *key);
 
 /**
- * Set a value in map (reference assignment)
+ * Set a value in map
  * @param map Map
  * @param key Key to set
- * @param value_ptr Pointer to value to set (value is referenced, not copied)
+ * @param value_ptr Pointer to value to set (the data_t structure is copied into the map)
+ * @note For DATA_MAP type, the map_value pointer is preserved, creating a reference to the same map
  * @return true if successful, false otherwise
  */
 bool ar_map_set(map_t *map, const char *key, data_t *value_ptr);
