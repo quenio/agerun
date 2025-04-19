@@ -50,9 +50,12 @@ executable: lib bin
 run: executable
 	cd bin && ./agerun
 
+# Define test executables without bin/ prefix for use in the bin directory
+TEST_BIN_NAMES = $(notdir $(TEST_BIN))
+
 # Build and run tests
 test: bin $(TEST_BIN)
-	@for test in $(TEST_BIN); do \
+	@cd bin && for test in $(TEST_BIN_NAMES); do \
 		echo "Running $$test"; \
 		./$$test; \
 	done

@@ -24,13 +24,22 @@ When making changes, always follow these steps to ensure code quality:
    ```
    make test
    ```
+   (The Makefile handles changing to the bin directory)
 
 4. **Run the executable**:
    ```
-   cd bin && ./agerun
+   make run
    ```
+   (The Makefile handles changing to the bin directory)
 
-IMPORTANT: Always run the executable after running tests to verify changes work in practical application contexts, not just in test environments.
+IMPORTANT: 
+- Always run the executable after running tests to verify changes work in practical application contexts, not just in test environments.
+- Always run `make` from the top-level of the repository.
+- Always run tests and the executable with the `bin` directory as the current directory.
+- The Makefile has been set up to handle this directory requirement:
+  - The `test` target automatically changes to the `bin` directory before running tests
+  - The `run` target automatically changes to the `bin` directory before running the executable
+  - When running these targets, you can simply use `make test` and `make run` from the top level
 
 ## Project Structure
 
