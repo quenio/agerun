@@ -20,7 +20,7 @@ TEST_OBJ = $(patsubst src/%.c,bin/%.o,$(TEST_SRC))
 TEST_BIN = $(patsubst src/%_tests.c,bin/%_tests,$(TEST_SRC))
 
 # Main target
-all: debug
+all: debug executable
 
 # Debug target
 debug: CFLAGS += $(DEBUG_CFLAGS)
@@ -38,13 +38,13 @@ bin:
 lib: bin $(OBJ)
 	ar rcs bin/libagerun.a $(OBJ)
 
-# Example application - build only
-example: lib bin
-	$(CC) $(CFLAGS) -o bin/example examples/example.c bin/libagerun.a $(LDFLAGS)
+# Executable application - build only
+executable: lib bin
+	$(CC) $(CFLAGS) -o bin/agerun src/agerun_executable.c bin/libagerun.a $(LDFLAGS)
 
-# Run the example
-run-example: example
-	./bin/example
+# Run the executable
+run: executable
+	./bin/agerun
 
 # Build and run tests
 test: bin $(TEST_BIN)

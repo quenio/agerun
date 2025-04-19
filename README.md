@@ -26,19 +26,19 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
    cd agerun
    ```
 
-2. Build the library:
+2. Build the library and executable:
    ```
    make
    ```
 
-3. Build the example application:
-   ```
-   make example
-   ```
-
-4. Run tests:
+3. Run tests:
    ```
    make test
+   ```
+
+4. Run the executable:
+   ```
+   make run
    ```
 
 ## Usage Examples
@@ -46,24 +46,24 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 ### Basic Usage
 
 ```c
-#include <agerun_system.h>
+#include "agerun_system.h"
 #include <stdio.h>
 
-int main() {
+int main(void) {
     // Define a simple echo method
-    version_t echo_version = ar_method("echo", "send(0, message)", 0, true, false);
+    version_t echo_version = ar_method_create("echo", "send(0, message)", 0, true, false);
     
     // Initialize the runtime with the echo method
-    agent_id_t initial_agent = ar_init("echo", echo_version);
+    agent_id_t initial_agent = ar_system_init("echo", echo_version);
     
     // Send a message to the echo agent
-    ar_send(initial_agent, "Hello, AgeRun!");
+    ar_agent_send(initial_agent, "Hello, AgeRun!");
     
     // Process all messages
-    ar_process_all_messages();
+    ar_system_process_all_messages();
     
     // Shutdown the runtime
-    ar_shutdown();
+    ar_system_shutdown();
     
     return 0;
 }
@@ -73,32 +73,32 @@ int main() {
 
 ```c
 // Define a counter method
-version_t counter_version = ar_method("counter", 
+version_t counter_version = ar_method_create("counter", 
     "if(message == \"increment\", memory[\"count\"] := memory[\"count\"] + 1, \"\")\n"
     "if(message == \"get\", send(0, build(\"Count: {}\", memory[\"count\"])), \"\")",
     0, true, true);
 
 // Create a counter agent
-agent_id_t counter_id = ar_create("counter", counter_version, NULL);
+agent_id_t counter_id = ar_agent_create("counter", counter_version, NULL);
 
 // Send messages to the counter agent
-ar_send(counter_id, "increment");
-ar_send(counter_id, "increment");
-ar_send(counter_id, "get");
+ar_agent_send(counter_id, "increment");
+ar_agent_send(counter_id, "increment");
+ar_agent_send(counter_id, "get");
 
 // Process all messages
-ar_process_all_messages();
+ar_system_process_all_messages();
 ```
 
 ### Persistence
 
 ```c
 // Save agents and methods to disk
-ar_save_agents();
+ar_agency_save_agents();
 ar_methodology_save_methods();
 
 // Shutdown the runtime
-ar_shutdown();
+ar_system_shutdown();
 
 // Later, in a new session:
 
@@ -106,7 +106,7 @@ ar_shutdown();
 ar_methodology_load_methods();
 
 // Initialize runtime (will also load persistent agents)
-ar_init("some_method", some_version);
+ar_system_init("some_method", some_version);
 ```
 
 ## Method Expressions and Instructions

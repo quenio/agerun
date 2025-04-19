@@ -15,9 +15,9 @@ When making changes, always follow these steps to ensure code quality:
    make
    ```
 
-2. **Build the example application**:
+2. **Build the executable application**:
    ```
-   make example
+   make executable
    ```
 
 3. **Run tests**:
@@ -25,12 +25,12 @@ When making changes, always follow these steps to ensure code quality:
    make test
    ```
 
-4. **Run examples**:
+4. **Run the executable**:
    ```
-   ./bin/example
+   make run
    ```
 
-IMPORTANT: Always run examples after running tests to verify changes work in practical application contexts, not just in test environments.
+IMPORTANT: Always run the executable after running tests to verify changes work in practical application contexts, not just in test environments.
 
 ## Project Structure
 
@@ -39,13 +39,12 @@ IMPORTANT: Always run examples after running tests to verify changes work in pra
   - `agerun_interpreter.h`/`.c`: Interpreter interface and instruction language interpreter
   - `agerun_data.h`/`.c`: Data type definitions and operations
   - `agerun_string.h`/`.c`: String utility functions
+  - `agerun_executable.h`/`.c`: Main executable implementation
   - `agerun_*_tests.c`: Test files for each module
-
-- **/examples**: Example applications
-  - `example.c`: Simple example demonstrating usage
 
 - **/bin**: Generated object files and executables
   - All compiled object files, libraries, and executable files are placed here
+  - Main executable is generated as `bin/agerun`
   - This directory is ignored by git
 
 ## Coding Style Guidelines
@@ -142,7 +141,13 @@ IMPORTANT: Always run examples after running tests to verify changes work in pra
    - Name test files after the module they test (e.g., `agerun_data_tests.c` for testing `agerun_data.c`, `agerun_system_tests.c` for testing `agerun_system.c`)
    - Don't expose internal functions just for testing - create proper test interfaces
 
-7. **Update development guidelines**:
+7. **Update documentation appropriately**:
+   - Always update documentation after making code changes
+   - Make sure tests and executable work before updating documentation
+   - Documentation updates should include README.md, SPEC.md, and any other relevant files
+   - Never leave documentation in an inconsistent state with the code
+
+8. **Update development guidelines**:
    - When new important guidelines are discovered, add them to this file
    - Keep this CLAUDE.md file updated with current best practices
    - Consider this file the source of truth for development procedures
