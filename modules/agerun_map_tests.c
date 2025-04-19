@@ -9,7 +9,6 @@
 static void test_map_create(void);
 static void test_map_init(void);
 static void test_map_set_get_simple(void);
-static void test_map_get_reference(void);
 
 static void test_map_create(void) {
     printf("Testing ar_map_create()...\n");
@@ -96,44 +95,6 @@ static void test_map_set_get_simple(void) {
     printf("ar_map_set() and ar_map_get() simple value test passed!\n");
 }
 
-static void test_map_get_reference(void) {
-    printf("Testing ar_map_get_reference() for reference counting...\n");
-    
-    // Given a map
-    map_t *map = ar_map_create();
-    assert(map != NULL);
-    assert(map->ref_count == 1);  // Initial reference count should be 1
-    
-    // When we get a reference to the map
-    map_t *ref = ar_map_get_reference(map);
-    
-    // Then the reference count should be incremented
-    assert(map->ref_count == 2);
-    assert(ref == map);  // Same map object
-    
-    // When we free one reference
-    ar_map_free(map);
-    
-    // Then the map should still be valid due to the other reference
-    assert(ref->ref_count == 1);
-    
-    // We can still use the map with the remaining reference
-    int *valueRef = malloc(sizeof(int));
-    *valueRef = 100;
-    bool set_result = ar_map_set(ref, "test", valueRef);
-    assert(set_result);
-    
-    // Retrieve the referenced value
-    int *get_result = (int*)ar_map_get(ref, "test");
-    assert(get_result != NULL);
-    assert(*get_result == 100);
-    
-    // Cleanup
-    free(valueRef); // We need to free the referenced value ourselves
-    ar_map_free(ref);
-    
-    printf("Reference counting tests passed!\n");
-}
 
 int main(void) {
     printf("Starting Map Module Tests...\n");
@@ -147,9 +108,6 @@ int main(void) {
     
     printf("Running test_map_set_get_simple()...\n");
     test_map_set_get_simple();
-    
-    printf("Running test_map_get_reference()...\n");
-    test_map_get_reference();
     
     printf("All map tests passed!\n");
     return 0;

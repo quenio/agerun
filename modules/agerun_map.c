@@ -2,9 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* Internal function declarations */
-static void map_ref(map_t *map);
-static void map_unref(map_t *map);
 
 /**
  * Create a new heap-allocated empty map
@@ -45,7 +42,6 @@ bool ar_map_init(map_t *map) {
     }
     
     map->count = 0;
-    map->ref_count = 1; /* Initialize with reference count of 1 */
     return true;
 }
 
@@ -55,7 +51,7 @@ bool ar_map_init(map_t *map) {
  * @param key Key to lookup
  * @return Pointer to the referenced value, or NULL if not found
  */
-void* ar_map_get(map_t *map, const char *key) {
+const void* ar_map_get(map_t *map, const char *key) {
     if (!map || !key) {
         return NULL;
     }
@@ -76,7 +72,7 @@ void* ar_map_get(map_t *map, const char *key) {
  * @param ref Pointer to value to reference
  * @return true if successful, false otherwise
  */
-bool ar_map_set(map_t *map, char *key, void *ref) {
+bool ar_map_set(map_t *map, const char *key, const void *ref) {
     if (!map || !key) {
         return false;
     }
@@ -106,23 +102,6 @@ bool ar_map_set(map_t *map, char *key, void *ref) {
     return false; // No space left
 }
 
-/* Internal function to increment reference count */
-static void map_ref(map_t *map) {
-    if (!map) return;
-    map->ref_count++;
-}
-
-/* Internal function to decrement reference count and free if zero */
-static void map_unref(map_t *map) {
-    if (!map) return;
-    
-    map->ref_count--;
-    if (map->ref_count <= 0) {
-        /* No need to free keys as we no longer manage their memory */
-        /* Now free the map structure */
-        free(map);
-    }
-}
 
 /**
  * Free all resources in a map
@@ -131,17 +110,6 @@ static void map_unref(map_t *map) {
 void ar_map_free(map_t *map) {
     if (!map) return;
     
-    map_unref(map);
+    free(map);
 }
 
-/**
- * Get a reference to the map (increments reference count)
- * @param map Map to reference
- * @return Same map pointer for convenience
- */
-map_t* ar_map_get_reference(map_t *map) {
-    if (!map) return NULL;
-    
-    map_ref(map);
-    return map;
-}

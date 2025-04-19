@@ -26,10 +26,10 @@ These conventions ensure consistency across the codebase and make it easier to u
 
 The map module provides a fundamental key-value storage implementation that is used throughout the system. It has the following characteristics:
 
-- **Key-Value Storage**: Stores string keys mapped to generic pointers (void*) to values
-- **Reference-Based**: The map stores references to values rather than the values themselves
-- **Memory Management**: Manages memory for keys (duplicates them) but not for values
-- **Reference Counting**: Implements reference counting for maps themselves to enable nested maps
+- **Key-Value Storage**: Stores string keys mapped to generic pointers (const void*) to values
+- **Reference-Based**: The map stores references to keys and values rather than duplicating them
+- **Type Safety**: Uses const qualifiers for keys and values to prevent unwanted modifications
+- **No Memory Management**: Does not manage memory for either keys or values
 - **No Dependencies**: This is a foundational module with no dependencies on other modules
 
 ### Data Module (`agerun_data`)
@@ -38,7 +38,9 @@ The data module builds on the map module to provide typed data storage with the 
 
 - **Type System**: Supports integers, doubles, strings, and nested maps
 - **Memory Management**: Handles memory allocation and cleanup for data values
-- **Depends on Map**: Uses the map module for its implementation
+- **Reference Management**: Handles reference counting for nested maps and complex structures
+- **Type Safety**: Ensures proper handling of different data types
+- **Depends on Map**: Uses the map module for underlying storage
 
 ## Module Dependency Tree
 

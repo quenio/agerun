@@ -10,8 +10,8 @@
  * Map Entry for storing key-value pairs
  */
 typedef struct entry_s {
-    char *key;
-    void *ref;
+    const char *key;
+    const void *ref;
     bool is_used;
 } entry_t;
 
@@ -21,7 +21,6 @@ typedef struct entry_s {
 typedef struct map_s {
     entry_t entries[MAP_SIZE];
     int count;
-    int ref_count; /* Reference counter for this map */
 } map_t;
 
 /**
@@ -49,7 +48,7 @@ bool ar_map_init(map_t *map);
  * @param key Key to lookup
  * @return Pointer to the referenced value, or NULL if not found
  */
-void* ar_map_get(map_t *map, const char *key);
+const void* ar_map_get(map_t *map, const char *key);
 
 /**
  * Set a reference in map
@@ -60,7 +59,7 @@ void* ar_map_get(map_t *map, const char *key);
  * @note The caller is responsible for ensuring the key string remains valid
  *       for the lifetime of the map entry.
  */
-bool ar_map_set(map_t *map, char *key, void *ref);
+bool ar_map_set(map_t *map, const char *key, const void *ref);
 
 /**
  * Free all resources in a map
@@ -70,11 +69,5 @@ bool ar_map_set(map_t *map, char *key, void *ref);
  */
 void ar_map_free(map_t *map);
 
-/**
- * Get a reference to the map (increments reference count)
- * @param map Map to reference
- * @return Same map pointer for convenience
- */
-map_t* ar_map_get_reference(map_t *map);
 
 #endif /* AGERUN_MAP_H */
