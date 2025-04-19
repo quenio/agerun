@@ -59,7 +59,7 @@ static void test_trim_both_whitespace(void) {
     assert(strcmp(result, "Hello World") == 0);
     
     // Then the result should point to a position within the original string (no new allocation)
-    assert(result >= original_ptr && result <= original_ptr + strlen(original_ptr));
+    assert(result >= original_ptr && result < original_ptr + sizeof(str));
     
     // Then the original string should be modified in-place
     assert(strcmp(str + 2, "Hello World") == 0);
