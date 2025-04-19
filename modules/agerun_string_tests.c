@@ -22,7 +22,7 @@ static void test_trim_leading_whitespace(void) {
     char str[] = "   Hello";
     
     // When the trim function is called
-    char *result = ar_trim(str);
+    char *result = ar_string_trim(str);
     
     // Then the result should have the whitespace removed
     assert(strcmp(result, "Hello") == 0);
@@ -37,7 +37,7 @@ static void test_trim_trailing_whitespace(void) {
     char str[] = "World   ";
     
     // When the trim function is called
-    char *result = ar_trim(str);
+    char *result = ar_string_trim(str);
     
     // Then the result should have the whitespace removed
     assert(strcmp(result, "World") == 0);
@@ -52,7 +52,7 @@ static void test_trim_both_whitespace(void) {
     char str[] = "  Hello World  ";
     
     // When the trim function is called
-    char *result = ar_trim(str);
+    char *result = ar_string_trim(str);
     
     // Then the result should have all whitespace removed
     assert(strcmp(result, "Hello World") == 0);
@@ -67,7 +67,7 @@ static void test_trim_no_whitespace(void) {
     char str[] = "NoWhitespace";
     
     // When the trim function is called
-    char *result = ar_trim(str);
+    char *result = ar_string_trim(str);
     
     // Then the result should be unchanged
     assert(strcmp(result, "NoWhitespace") == 0);
@@ -82,7 +82,7 @@ static void test_trim_empty_string(void) {
     char str[] = "";
     
     // When the trim function is called
-    char *result = ar_trim(str);
+    char *result = ar_string_trim(str);
     
     // Then the result should remain an empty string
     assert(strcmp(result, "") == 0);
@@ -97,7 +97,7 @@ static void test_trim_only_whitespace(void) {
     char str[] = "   \t\n   ";
     
     // When the trim function is called
-    char *result = ar_trim(str);
+    char *result = ar_string_trim(str);
     
     // Then the result should be an empty string
     assert(strcmp(result, "") == 0);
@@ -112,12 +112,12 @@ static void test_isspace_standard_whitespace(void) {
     
     // When ar_isspace is called on each character
     // Then it should return non-zero for each whitespace character
-    assert(ar_isspace(' ') != 0);
-    assert(ar_isspace('\t') != 0);
-    assert(ar_isspace('\n') != 0);
-    assert(ar_isspace('\r') != 0);
-    assert(ar_isspace('\f') != 0);
-    assert(ar_isspace('\v') != 0);
+    assert(ar_string_isspace(' ') != 0);
+    assert(ar_string_isspace('\t') != 0);
+    assert(ar_string_isspace('\n') != 0);
+    assert(ar_string_isspace('\r') != 0);
+    assert(ar_string_isspace('\f') != 0);
+    assert(ar_string_isspace('\v') != 0);
     
     printf("ar_isspace() standard whitespace test passed!\n");
 }
@@ -129,11 +129,11 @@ static void test_isspace_non_whitespace(void) {
     
     // When ar_isspace is called on each character
     // Then it should return zero for each non-whitespace character
-    assert(ar_isspace('a') == 0);
-    assert(ar_isspace('Z') == 0);
-    assert(ar_isspace('0') == 0);
-    assert(ar_isspace('_') == 0);
-    assert(ar_isspace('@') == 0);
+    assert(ar_string_isspace('a') == 0);
+    assert(ar_string_isspace('Z') == 0);
+    assert(ar_string_isspace('0') == 0);
+    assert(ar_string_isspace('_') == 0);
+    assert(ar_string_isspace('@') == 0);
     
     printf("ar_isspace() non-whitespace test passed!\n");
 }
@@ -145,8 +145,8 @@ static void test_isspace_edge_cases(void) {
     
     // When ar_isspace is called with these values
     // Then it should return zero for non-whitespace values
-    assert(ar_isspace(0) == 0);
-    assert(ar_isspace(-1) == 0);
+    assert(ar_string_isspace(0) == 0);
+    assert(ar_string_isspace(-1) == 0);
     
     printf("ar_isspace() edge cases test passed!\n");
 }

@@ -24,7 +24,7 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
     }
     
     // Skip leading whitespace
-    while (expr[*offset] && ar_isspace(expr[*offset])) {
+    while (expr[*offset] && ar_string_isspace(expr[*offset])) {
         (*offset)++;
     }
     
@@ -195,7 +195,7 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
             func_name[name_len] = '\0';
             
             // Skip whitespace
-            while (expr[*offset] && ar_isspace(expr[*offset])) {
+            while (expr[*offset] && ar_string_isspace(expr[*offset])) {
                 (*offset)++;
             }
             
@@ -208,7 +208,7 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
                 int arg_count = 0;
                 
                 // Skip whitespace
-                while (expr[*offset] && ar_isspace(expr[*offset])) {
+                while (expr[*offset] && ar_string_isspace(expr[*offset])) {
                     (*offset)++;
                 }
                 
@@ -216,7 +216,7 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
                 if (expr[*offset] != ')') {
                     do {
                         // Skip whitespace and comma
-                        while (expr[*offset] && (ar_isspace(expr[*offset]) || expr[*offset] == ',')) {
+                        while (expr[*offset] && (ar_string_isspace(expr[*offset]) || expr[*offset] == ',')) {
                             (*offset)++;
                         }
                         
@@ -229,7 +229,7 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
                         }
                         
                         // Skip whitespace
-                        while (expr[*offset] && ar_isspace(expr[*offset])) {
+                        while (expr[*offset] && ar_string_isspace(expr[*offset])) {
                             (*offset)++;
                         }
                         
@@ -350,7 +350,7 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
         (*offset)++; // Skip operator
         
         // Skip whitespace
-        while (expr[*offset] && ar_isspace(expr[*offset])) {
+        while (expr[*offset] && ar_string_isspace(expr[*offset])) {
             (*offset)++;
         }
         

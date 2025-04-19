@@ -5,7 +5,7 @@
  * Returns non-zero if c is a whitespace character.
  * This wrapper safely handles signed char values by casting to unsigned char.
  */
-static inline int ar_isspace(int c) {
+static inline int ar_string_isspace(int c) {
     return isspace((unsigned char)c);
 }
 
@@ -15,6 +15,6 @@ static inline int ar_isspace(int c) {
  * @param str The string to trim
  * @return Pointer to the trimmed string
  */
-char* ar_trim(char *str);
+char* ar_string_trim(char *str);
 
 #endif /* AGERUN_STRING_H */

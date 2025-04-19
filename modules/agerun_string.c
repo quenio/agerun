@@ -6,19 +6,19 @@
 /**
  * Helper function to trim whitespace from a string
  */
-char* ar_trim(char *str) {
+char* ar_string_trim(char *str) {
     if (!str) return NULL;
     
     // Trim leading space
     char *start = str;
-    while (ar_isspace(*start)) start++;
+    while (ar_string_isspace(*start)) start++;
     
     if(*start == 0) // All spaces
         return start;
     
     // Trim trailing space
     char *end = start + strlen(start) - 1;
-    while (end > start && ar_isspace(*end)) end--;
+    while (end > start && ar_string_isspace(*end)) end--;
     
     // Write new null terminator
     *(end + 1) = 0;

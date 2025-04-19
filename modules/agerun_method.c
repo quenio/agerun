@@ -89,7 +89,7 @@ bool ar_method_run(agent_t *agent, const char *message, const char *instructions
     bool result = true;
     
     while (instruction != NULL) {
-        instruction = ar_trim(instruction);
+        instruction = ar_string_trim(instruction);
         
         // Skip empty lines and comments
         if (strlen(instruction) > 0 && instruction[0] != '#') {
