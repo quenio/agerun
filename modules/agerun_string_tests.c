@@ -61,6 +61,9 @@ static void test_trim_both_whitespace(void) {
     // Then the result should point to a position within the original string (no new allocation)
     assert(result >= original_ptr && result < original_ptr + sizeof(str));
     
+    // Then the result end (including null terminator) should be within the original buffer
+    assert(result + strlen(result) < original_ptr + sizeof(str));
+    
     // Then the original string should be modified in-place
     assert(strcmp(str + 2, "Hello World") == 0);
     
