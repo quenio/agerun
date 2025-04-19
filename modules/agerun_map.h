@@ -54,15 +54,19 @@ void* ar_map_get(map_t *map, const char *key);
 /**
  * Set a reference in map
  * @param map Map
- * @param key Key to set
+ * @param key Key to set (the pointer is stored directly, not copied)
  * @param ref Pointer to value to reference
  * @return true if successful, false otherwise
+ * @note The caller is responsible for ensuring the key string remains valid
+ *       for the lifetime of the map entry.
  */
-bool ar_map_set(map_t *map, const char *key, void *ref);
+bool ar_map_set(map_t *map, char *key, void *ref);
 
 /**
  * Free all resources in a map
  * @param map Map to free
+ * @note This function does not free memory for keys or referenced values.
+ *       The caller is responsible for managing those resources.
  */
 void ar_map_free(map_t *map);
 

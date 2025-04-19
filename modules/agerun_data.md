@@ -77,8 +77,11 @@ data_t *int_data = malloc(sizeof(data_t));
 *int_data = ar_data_create(DATA_INT);
 int_data->data.int_value = 42;
 
+// Create a key that will remain valid for the lifetime of the map entry
+char *key = strdup("answer");
+
 // Store the data in the map
-ar_map_set(map, "answer", int_data);
+ar_map_set(map, key, int_data);
 
 // Retrieve the data from the map
 data_t *retrieved = (data_t*)ar_map_get(map, "answer");
@@ -87,6 +90,7 @@ printf("The answer is: %lld\n", retrieved->data.int_value);
 // Clean up
 ar_data_free(int_data);
 free(int_data);
+free(key);     // Free the key as the map doesn't manage its memory
 ar_map_free(map);
 ```
 
@@ -95,5 +99,9 @@ ar_map_free(map);
 - The data module uses the map module for storing nested maps
 - It handles memory management for strings and nested maps
 - The data_type_t enum allows type-safe access to the union members
-- When using with maps, the client code is responsible for allocating and freeing the data_t structures
+- When using with maps, the client code is responsible for:
+  - Allocating and freeing the data_t structures
+  - Allocating and freeing the keys used with the map
+  - Ensuring keys remain valid for the lifetime of the map entries
 - The ar_data_free function handles the internal cleanup of strings and maps
+- The map module does not manage memory for either keys or values

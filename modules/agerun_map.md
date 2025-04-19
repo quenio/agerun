@@ -7,8 +7,8 @@ The map module (`agerun_map`) provides a fundamental key-value storage implement
 ## Key Features
 
 - **Key-Value Storage**: Stores string keys mapped to generic pointers (void*) to values
-- **Reference-Based**: The map stores references to values rather than the values themselves
-- **Memory Management for Keys**: Automatically duplicates keys but doesn't manage memory for values
+- **Reference-Based**: The map stores references to keys and values rather than duplicating them
+- **No Memory Management**: Does not manage memory for either keys or values
 - **Reference Counting**: Implements reference counting for maps to enable safe nested maps
 - **No Dependencies**: This is a foundational module with no dependencies on other modules
 
@@ -49,7 +49,7 @@ bool ar_map_init(map_t *map);
 void* ar_map_get(map_t *map, const char *key);
 
 // Set a reference in map
-bool ar_map_set(map_t *map, const char *key, void *ref);
+bool ar_map_set(map_t *map, char *key, void *ref);
 ```
 
 #### Reference Management
@@ -70,17 +70,21 @@ map_t* ar_map_get_reference(map_t *map);
 // Create a map
 map_t *map = ar_map_create();
 
+// Key must remain valid for the lifetime of the map entry
+char *key = strdup("answer");
+
 // Store a value (integer)
 int *value = malloc(sizeof(int));
 *value = 42;
-ar_map_set(map, "answer", value);
+ar_map_set(map, key, value);
 
 // Retrieve the value
 int *retrieved = (int*)ar_map_get(map, "answer");
 printf("The answer is: %d\n", *retrieved);
 
 // Clean up
-free(value);  // Note: The map doesn't free the value itself
+free(value);  // The map doesn't free the value
+free(key);    // The map doesn't free the key either
 ar_map_free(map);
 ```
 
@@ -93,13 +97,17 @@ map_t *outer_map = ar_map_create();
 // Create inner map
 map_t *inner_map = ar_map_create();
 
+// Create keys (must remain valid for the lifetime of the map entries)
+char *outer_key = strdup("inner");
+char *inner_key = strdup("count");
+
 // Store inner map in outer map
-ar_map_set(outer_map, "inner", inner_map);
+ar_map_set(outer_map, outer_key, inner_map);
 
 // Store a value in inner map
 int *value = malloc(sizeof(int));
 *value = 100;
-ar_map_set(inner_map, "count", value);
+ar_map_set(inner_map, inner_key, value);
 
 // Retrieve through nested structure
 map_t *retrieved_inner = ar_map_get(outer_map, "inner");
@@ -110,6 +118,8 @@ map_t *inner_ref = ar_map_get_reference(inner_map);  // Increases reference coun
 
 // Clean up
 free(value);
+free(outer_key);  // Free the keys
+free(inner_key);
 ar_map_free(outer_map);  // Decreases inner_map reference count but doesn't free it
 ar_map_free(inner_ref);  // Now inner_map is freed as ref count reaches 0
 ```
@@ -118,7 +128,8 @@ ar_map_free(inner_ref);  // Now inner_map is freed as ref count reaches 0
 
 - The map uses a fixed-size array (MAP_SIZE) for entries
 - Internally uses reference counting to manage map lifetime
-- Keys are duplicated using strdup() and the map owns these copies
+- Keys are stored as direct pointers without copying
 - Values are stored as opaque void pointers with no type information
-- The map never frees the referenced values
-- The client code is responsible for managing value memory
+- The map never frees the referenced keys or values
+- The client code is responsible for managing both key and value memory
+- Key pointers must remain valid for the lifetime of the map entry

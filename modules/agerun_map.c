@@ -76,7 +76,7 @@ void* ar_map_get(map_t *map, const char *key) {
  * @param ref Pointer to value to reference
  * @return true if successful, false otherwise
  */
-bool ar_map_set(map_t *map, const char *key, void *ref) {
+bool ar_map_set(map_t *map, char *key, void *ref) {
     if (!map || !key) {
         return false;
     }
@@ -94,13 +94,8 @@ bool ar_map_set(map_t *map, const char *key, void *ref) {
     // Find empty slot
     for (int i = 0; i < MAP_SIZE; i++) {
         if (!map->entries[i].is_used) {
-            char *key_copy = strdup(key);
-            if (!key_copy) {
-                return false;
-            }
-            
             map->entries[i].is_used = true;
-            map->entries[i].key = key_copy;
+            map->entries[i].key = key;  // Store the key pointer directly without copying
             map->entries[i].ref = ref;
             
             map->count++;
@@ -123,12 +118,7 @@ static void map_unref(map_t *map) {
     
     map->ref_count--;
     if (map->ref_count <= 0) {
-        /* Free the internal resources but don't free the values */
-        for (int i = 0; i < MAP_SIZE; i++) {
-            if (map->entries[i].is_used && map->entries[i].key) {
-                free(map->entries[i].key);
-            }
-        }
+        /* No need to free keys as we no longer manage their memory */
         /* Now free the map structure */
         free(map);
     }
