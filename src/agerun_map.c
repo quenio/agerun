@@ -115,7 +115,4 @@ void ar_map_free(map_t *map) {
             ar_data_free(&map->entries[i].value);
         }
     }
-    
-    /* Free the map structure itself */
-    free(map);
 }

@@ -37,6 +37,10 @@ bin:
 # Library target
 lib: bin $(OBJ)
 	ar rcs bin/libagerun.a $(OBJ)
+	
+# Test library target (including all obj files but not test files)
+test_lib: bin $(OBJ) $(TEST_OBJ)
+	ar rcs bin/libagerun.a $(OBJ)
 
 # Executable application - build only
 executable: lib bin
@@ -54,7 +58,7 @@ test: bin $(TEST_BIN)
 	done
 
 # Individual test binaries
-bin/%_tests: bin/%_tests.o lib
+bin/%_tests: bin/%_tests.o test_lib
 	$(CC) $(CFLAGS) -o $@ $< bin/libagerun.a $(LDFLAGS)
 
 # Compile source files

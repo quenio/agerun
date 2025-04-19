@@ -137,6 +137,7 @@ IMPORTANT: Always run the executable after running tests to verify changes work 
    - Test changes with both normal and edge cases
    - Verify behavior matches the specification
    - Use the test suite to catch regressions
+   - EVERY module MUST have tests
    - For each module, create a test file with the suffix `_tests.c` in the `src` directory
    - Name test files after the module they test (e.g., `agerun_data_tests.c` for testing `agerun_data.c`, `agerun_system_tests.c` for testing `agerun_system.c`)
    - Don't expose internal functions just for testing - create proper test interfaces
