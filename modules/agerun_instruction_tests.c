@@ -43,25 +43,35 @@ static agent_t* get_agent_by_id(agent_id_t agent_id) {
 static void test_simple_instructions(void) {
     printf("Testing simple instructions...\n");
     
-    // Create a test agent
+    // Given a test agent for running instructions
     agent_id_t agent_id = setup_test_agent("test_agent", "");
     agent_t *agent = get_agent_by_id(agent_id);
     assert(agent != NULL);
     
-    // Test a simple message assignment instruction
+    // And a message and simple assignment instruction
     const char *message = "Hello";
     const char *instruction = "message -> \"Test Response\"";
     
+    // When we run the instruction
     bool result = ar_instruction_run(agent, message, instruction);
+    
+    // Then the instruction should execute successfully
     assert(result);
     
-    // Test another simple instruction (identity function)
+    // Given another simple instruction (identity function)
     instruction = "message -> message";
+    
+    // When we run this instruction
     result = ar_instruction_run(agent, message, instruction);
+    
+    // Then the instruction should execute successfully
     assert(result);
     
-    // Clean up
-    ar_agent_destroy(agent_id);
+    // When we clean up the agent
+    bool destroy_result = ar_agent_destroy(agent_id);
+    
+    // Then the cleanup should succeed
+    assert(destroy_result);
     
     printf("Simple instructions test passed!\n");
 }
@@ -228,22 +238,24 @@ static void test_message_send_instructions(void) {
 int main(void) {
     printf("Starting Instruction Module Tests...\n");
     
-    // Create a method and initialize the system
+    // Given a test method and initialized system
     const char *init_method = "instruction_test_method";
     const char *init_instructions = "memory.result = \"Test complete\"";
     version_t init_version = ar_method_create(init_method, init_instructions, 0, false, false);
     
-    // Initialize without assertions since we're just setting up for instruction tests
+    // When we initialize the system
     ar_system_init(init_method, init_version);
     
+    // And we run all instruction tests
     test_simple_instructions();
     test_memory_access_instructions();
     test_condition_instructions();
     test_message_send_instructions();
     
-    // Shutdown the system after tests
+    // Then we clean up the system
     ar_system_shutdown();
     
+    // And report success
     printf("All instruction tests passed!\n");
     return 0;
 }

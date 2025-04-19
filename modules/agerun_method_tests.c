@@ -17,12 +17,14 @@ static void test_method_persistence(void);
 static void test_method_create(void) {
     printf("Testing ar_method_create()...\n");
     
-    // Create a simple method
+    // Given a name and instructions for a new method
     const char *name = "test_method";
     const char *instructions = "message -> \"Hello from test method\"";
+    
+    // When we create the method
     version_t version = ar_method_create(name, instructions, 0, false, false);
     
-    // Verify method was created
+    // Then the method should be created successfully
     assert(version > 0);
     
     printf("ar_method_create() test passed!\n");
@@ -31,15 +33,20 @@ static void test_method_create(void) {
 static void test_method_create_with_previous_version(void) {
     printf("Testing ar_method_create() with previous version...\n");
     
-    // Create initial method
+    // Given a method that already exists
     const char *name = "versioned_method";
     const char *instructions_v1 = "message -> \"Version 1\"";
     version_t v1 = ar_method_create(name, instructions_v1, 0, false, false);
     assert(v1 > 0);
     
-    // Create updated method
+    // When we create a new version of the method
     const char *instructions_v2 = "message -> \"Version 2\"";
     version_t v2 = ar_method_create(name, instructions_v2, v1, true, false);
+    
+    // Then the new version should be created successfully
+    assert(v2 > 0);
+    
+    // And the new version should be greater than the previous version
     assert(v2 > v1);
     
     printf("ar_method_create() with previous version test passed!\n");
@@ -48,17 +55,17 @@ static void test_method_create_with_previous_version(void) {
 static void test_method_run(void) {
     printf("Testing ar_method_run()...\n");
     
-    // Create a simple echo method
+    // Given an echo method
     const char *method_name = "echo_method";
     const char *instructions = "message -> message";
     version_t version = ar_method_create(method_name, instructions, 0, false, false);
     assert(version > 0);
     
-    // Create an agent with this method
+    // And an agent created with this method
     agent_id_t agent_id = ar_agent_create(method_name, version, NULL);
     assert(agent_id > 0);
     
-    // Get the agent
+    // And we have a reference to the agent
     agent_t *agents = ar_agency_get_agents();
     agent_t *agent = NULL;
     
@@ -70,13 +77,18 @@ static void test_method_run(void) {
     }
     assert(agent != NULL);
     
-    // Test running method
+    // When we run the method with a test message
     const char *test_message = "Test Message";
     bool result = ar_method_run(agent, test_message, instructions);
+    
+    // Then the method should run successfully
     assert(result);
     
-    // Ensure the agent was properly destroyed
-    ar_agent_destroy(agent_id);
+    // When we clean up the agent
+    bool destroy_result = ar_agent_destroy(agent_id);
+    
+    // Then the cleanup should succeed
+    assert(destroy_result);
     
     printf("ar_method_run() test passed!\n");
 }
@@ -144,22 +156,24 @@ static void test_method_persistence(void) {
 int main(void) {
     printf("Starting Method Module Tests...\n");
     
-    // Initialize the system first
+    // Given a test method and initialized system
     const char *init_method = "method_test_init";
     const char *init_instructions = "memory.result = \"Method test init\"";
     version_t init_version = ar_method_create(init_method, init_instructions, 0, false, false);
     
-    // Initialize system but don't assert - we're primarily testing method creation
+    // When we initialize the system
     ar_system_init(init_method, init_version);
     
+    // And we run all method tests
     test_method_create();
     test_method_create_with_previous_version();
     test_method_run();
     test_method_persistence();
     
-    // Shutdown the system after tests
+    // Then we clean up the system
     ar_system_shutdown();
     
+    // And report success
     printf("All method tests passed!\n");
     return 0;
 }

@@ -8,23 +8,28 @@
 // Forward declarations
 static void test_map_create(void);
 static void test_map_init(void);
-static void test_map_set_get(void);
+static void test_map_set_get_integer(void);
 static void test_nested_maps(void);
 
 static void test_map_create(void) {
     printf("Testing ar_map_create()...\n");
     
+    // Given we need a new map
+    
+    // When we call ar_map_create
     map_t *map = ar_map_create();
+    
+    // Then the map should be created successfully
     assert(map != NULL);
     assert(map->count == 0);
     
-    // Check that entries are initialized
+    // And all entries should be properly initialized
     for (int i = 0; i < MAP_SIZE; i++) {
         assert(map->entries[i].is_used == false);
         assert(map->entries[i].key == NULL);
     }
     
-    // Free resources
+    // Cleanup
     ar_map_free(map);
     
     printf("All ar_map_create() tests passed!\n");
@@ -33,13 +38,17 @@ static void test_map_create(void) {
 static void test_map_init(void) {
     printf("Testing ar_map_init()...\n");
     
+    // Given we have an uninitialized map structure
     map_t map;
+    
+    // When we initialize the map
     bool result = ar_map_init(&map);
     
+    // Then the initialization should succeed
     assert(result);
     assert(map.count == 0);
     
-    // Check that entries are initialized
+    // And all entries should be properly initialized
     for (int i = 0; i < MAP_SIZE; i++) {
         assert(map.entries[i].is_used == false);
         assert(map.entries[i].key == NULL);
@@ -48,51 +57,55 @@ static void test_map_init(void) {
     printf("All ar_map_init() tests passed!\n");
 }
 
-static void test_map_set_get(void) {
-    printf("Testing ar_map_set() and ar_map_get()...\n");
+static void test_map_set_get_integer(void) {
+    printf("Testing ar_map_set() and ar_map_get() with integer value...\n");
     
-    // Create a new test map
+    // Given a new map
     map_t *map = ar_map_create();
     if (map == NULL) {
         printf("Failed to create map, skipping test\n");
         return;
     }
     
-    // Test 1: Set and get integer value
-    printf("Testing with integer value...\n");
+    // And an integer data value
     data_t int_data;
     int_data.type = DATA_INT;
     int_data.data.int_value = 42;
     
+    // When we set the value in the map
     bool set_result = ar_map_set(map, "int_key", &int_data);
-    if (!set_result) {
-        printf("Failed to set integer value, skipping further tests\n");
-        ar_map_free(map);
-        return;
-    }
     
+    // Then the set operation should succeed
+    assert(set_result);
+    
+    // When we retrieve the value from the map
     data_t *get_result = ar_map_get(map, "int_key");
-    if (get_result == NULL || get_result->type != DATA_INT) {
-        printf("Failed to retrieve integer value properly, skipping further tests\n");
-        ar_map_free(map);
-        return;
-    }
     
+    // Then the value should be retrieved successfully
+    assert(get_result != NULL);
+    assert(get_result->type == DATA_INT);
+    
+    // And the value should match what we stored
     printf("Retrieved integer value: %lld\n", get_result->data.int_value);
-    if (get_result->data.int_value != 42) {
-        printf("Integer value incorrect\n");
-    }
+    assert(get_result->data.int_value == 42);
     
-    printf("All ar_map_set() and ar_map_get() tests passed!\n");
-    
-    // Clean up
+    // Cleanup
     ar_map_free(map);
+    
+    printf("ar_map_set() and ar_map_get() integer value test passed!\n");
 }
 
 static void test_nested_maps(void) {
     printf("Testing nested maps...\n");
     
-    // Simplified test for now due to issues in implementation
+    // Given we need to test nested maps
+    
+    // When we attempt to create a nested map structure
+    // (Simplified test for now due to implementation issues)
+    
+    // Then the nested map operations should succeed
+    // (Placeholder for actual implementation)
+    
     printf("All nested map tests passed!\n");
 }
 
@@ -106,8 +119,8 @@ int main(void) {
     printf("Running test_map_init()...\n");
     test_map_init();
     
-    printf("Running test_map_set_get()...\n");
-    test_map_set_get();
+    printf("Running test_map_set_get_integer()...\n");
+    test_map_set_get_integer();
     
     printf("Running test_nested_maps()...\n");
     test_nested_maps();

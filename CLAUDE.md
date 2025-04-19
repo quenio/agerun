@@ -150,6 +150,18 @@ IMPORTANT:
    - For each module, create a test file with the suffix `_tests.c` in the `modules` directory
    - Name test files after the module they test (e.g., `agerun_data_tests.c` for testing `agerun_data.c`, `agerun_system_tests.c` for testing `agerun_system.c`)
    - Don't expose internal functions just for testing - create proper test interfaces
+   - Each test function should implement a single scenario
+   - Each test function should follow the Gherkin-style structure with Given/When/Then comments:
+     ```c
+     // Given a description of the test setup
+     /* Setup code here */
+     
+     // When describing the action being tested
+     /* Action code here */
+     
+     // Then describing the expected result
+     /* Assertion code here */
+     ```
 
 7. **Update documentation appropriately**:
    - Always update documentation after making code changes

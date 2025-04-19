@@ -5,49 +5,113 @@
 #include <assert.h>
 
 // Forward declarations
-static void test_trim(void);
-static void test_isspace(void);
+static void test_trim_leading_whitespace(void);
+static void test_trim_trailing_whitespace(void);
+static void test_trim_both_whitespace(void);
+static void test_trim_no_whitespace(void);
+static void test_trim_empty_string(void);
+static void test_trim_only_whitespace(void);
+static void test_isspace_standard_whitespace(void);
+static void test_isspace_non_whitespace(void);
+static void test_isspace_edge_cases(void);
 
-static void test_trim(void) {
-    printf("Testing ar_trim()...\n");
+static void test_trim_leading_whitespace(void) {
+    printf("Testing ar_trim() with leading whitespace...\n");
     
-    // Test 1: Trim leading whitespace
-    char str1[] = "   Hello";
-    char *result1 = ar_trim(str1);
-    assert(strcmp(result1, "Hello") == 0);
+    // Given a string with leading whitespace
+    char str[] = "   Hello";
     
-    // Test 2: Trim trailing whitespace
-    char str2[] = "World   ";
-    char *result2 = ar_trim(str2);
-    assert(strcmp(result2, "World") == 0);
+    // When the trim function is called
+    char *result = ar_trim(str);
     
-    // Test 3: Trim both leading and trailing whitespace
-    char str3[] = "  Hello World  ";
-    char *result3 = ar_trim(str3);
-    assert(strcmp(result3, "Hello World") == 0);
+    // Then the result should have the whitespace removed
+    assert(strcmp(result, "Hello") == 0);
     
-    // Test 4: No whitespace to trim
-    char str4[] = "NoWhitespace";
-    char *result4 = ar_trim(str4);
-    assert(strcmp(result4, "NoWhitespace") == 0);
-    
-    // Test 5: Empty string
-    char str5[] = "";
-    char *result5 = ar_trim(str5);
-    assert(strcmp(result5, "") == 0);
-    
-    // Test 6: Only whitespace
-    char str6[] = "   \t\n   ";
-    char *result6 = ar_trim(str6);
-    assert(strcmp(result6, "") == 0);
-    
-    printf("All ar_trim() tests passed!\n");
+    printf("ar_trim() leading whitespace test passed!\n");
 }
 
-static void test_isspace(void) {
-    printf("Testing ar_isspace()...\n");
+static void test_trim_trailing_whitespace(void) {
+    printf("Testing ar_trim() with trailing whitespace...\n");
     
-    // Test standard whitespace characters
+    // Given a string with trailing whitespace
+    char str[] = "World   ";
+    
+    // When the trim function is called
+    char *result = ar_trim(str);
+    
+    // Then the result should have the whitespace removed
+    assert(strcmp(result, "World") == 0);
+    
+    printf("ar_trim() trailing whitespace test passed!\n");
+}
+
+static void test_trim_both_whitespace(void) {
+    printf("Testing ar_trim() with both leading and trailing whitespace...\n");
+    
+    // Given a string with both leading and trailing whitespace
+    char str[] = "  Hello World  ";
+    
+    // When the trim function is called
+    char *result = ar_trim(str);
+    
+    // Then the result should have all whitespace removed
+    assert(strcmp(result, "Hello World") == 0);
+    
+    printf("ar_trim() both whitespace test passed!\n");
+}
+
+static void test_trim_no_whitespace(void) {
+    printf("Testing ar_trim() with no whitespace...\n");
+    
+    // Given a string with no whitespace
+    char str[] = "NoWhitespace";
+    
+    // When the trim function is called
+    char *result = ar_trim(str);
+    
+    // Then the result should be unchanged
+    assert(strcmp(result, "NoWhitespace") == 0);
+    
+    printf("ar_trim() no whitespace test passed!\n");
+}
+
+static void test_trim_empty_string(void) {
+    printf("Testing ar_trim() with empty string...\n");
+    
+    // Given an empty string
+    char str[] = "";
+    
+    // When the trim function is called
+    char *result = ar_trim(str);
+    
+    // Then the result should remain an empty string
+    assert(strcmp(result, "") == 0);
+    
+    printf("ar_trim() empty string test passed!\n");
+}
+
+static void test_trim_only_whitespace(void) {
+    printf("Testing ar_trim() with only whitespace...\n");
+    
+    // Given a string containing only whitespace
+    char str[] = "   \t\n   ";
+    
+    // When the trim function is called
+    char *result = ar_trim(str);
+    
+    // Then the result should be an empty string
+    assert(strcmp(result, "") == 0);
+    
+    printf("ar_trim() only whitespace test passed!\n");
+}
+
+static void test_isspace_standard_whitespace(void) {
+    printf("Testing ar_isspace() with standard whitespace characters...\n");
+    
+    // Given standard whitespace characters
+    
+    // When ar_isspace is called on each character
+    // Then it should return non-zero for each whitespace character
     assert(ar_isspace(' ') != 0);
     assert(ar_isspace('\t') != 0);
     assert(ar_isspace('\n') != 0);
@@ -55,25 +119,53 @@ static void test_isspace(void) {
     assert(ar_isspace('\f') != 0);
     assert(ar_isspace('\v') != 0);
     
-    // Test non-whitespace characters
+    printf("ar_isspace() standard whitespace test passed!\n");
+}
+
+static void test_isspace_non_whitespace(void) {
+    printf("Testing ar_isspace() with non-whitespace characters...\n");
+    
+    // Given non-whitespace characters
+    
+    // When ar_isspace is called on each character
+    // Then it should return zero for each non-whitespace character
     assert(ar_isspace('a') == 0);
     assert(ar_isspace('Z') == 0);
     assert(ar_isspace('0') == 0);
     assert(ar_isspace('_') == 0);
     assert(ar_isspace('@') == 0);
     
-    // Test edge cases
+    printf("ar_isspace() non-whitespace test passed!\n");
+}
+
+static void test_isspace_edge_cases(void) {
+    printf("Testing ar_isspace() with edge cases...\n");
+    
+    // Given edge case values
+    
+    // When ar_isspace is called with these values
+    // Then it should return zero for non-whitespace values
     assert(ar_isspace(0) == 0);
     assert(ar_isspace(-1) == 0);
     
-    printf("All ar_isspace() tests passed!\n");
+    printf("ar_isspace() edge cases test passed!\n");
 }
 
 int main(void) {
     printf("Starting String Module Tests...\n");
     
-    test_isspace();
-    test_trim();
+    // Run isspace tests
+    test_isspace_standard_whitespace();
+    test_isspace_non_whitespace();
+    test_isspace_edge_cases();
+    
+    // Run trim tests
+    test_trim_leading_whitespace();
+    test_trim_trailing_whitespace();
+    test_trim_both_whitespace();
+    test_trim_no_whitespace();
+    test_trim_empty_string();
+    test_trim_only_whitespace();
     
     printf("All string tests passed!\n");
     return 0;

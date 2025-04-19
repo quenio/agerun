@@ -17,25 +17,29 @@ static void test_agent_persistence(void);
 static void test_agent_create_destroy(void) {
     printf("Testing ar_agent_create() and ar_agent_destroy()...\n");
     
-    // Create a simple method first
+    // Given a simple method for an agent
     const char *method_name = "test_method";
     const char *instructions = "message -> \"Test Method Response\"";
     version_t version = ar_method_create(method_name, instructions, 0, false, false);
     assert(version > 0);
     
-    // Create an agent with this method
+    // When we create an agent with this method
     agent_id_t agent_id = ar_agent_create(method_name, version, NULL);
+    
+    // Then the agent should be created successfully
     assert(agent_id > 0);
     
-    // Verify agent exists
+    // And the agent should exist in the system
     bool exists = ar_agent_exists(agent_id);
     assert(exists);
     
-    // Destroy the agent
+    // When we destroy the agent
     bool destroy_result = ar_agent_destroy(agent_id);
+    
+    // Then the agent should be destroyed successfully
     assert(destroy_result);
     
-    // Verify agent no longer exists
+    // And the agent should no longer exist in the system
     exists = ar_agent_exists(agent_id);
     assert(!exists);
     
@@ -45,22 +49,23 @@ static void test_agent_create_destroy(void) {
 static void test_agent_send(void) {
     printf("Testing ar_agent_send()...\n");
     
-    // Create a simple echo method
+    // Given an echo method and an agent using it
     const char *method_name = "echo_method";
     const char *instructions = "message -> message";
     version_t version = ar_method_create(method_name, instructions, 0, false, false);
     assert(version > 0);
     
-    // Create an agent with this method
     agent_id_t agent_id = ar_agent_create(method_name, version, NULL);
     assert(agent_id > 0);
     
-    // Send a message to the agent
+    // When we send a message to the agent
     const char *test_message = "Hello Agent!";
     bool send_result = ar_agent_send(agent_id, test_message);
+    
+    // Then the message should be sent successfully
     assert(send_result);
     
-    // Get the agent to verify message queue
+    // And the agent's message queue should contain the message
     agent_t *agents = ar_agency_get_agents();
     agent_t *agent = NULL;
     
@@ -73,7 +78,7 @@ static void test_agent_send(void) {
     assert(agent != NULL);
     assert(agent->queue.size > 0);
     
-    // Clean up
+    // Cleanup
     ar_agent_destroy(agent_id);
     
     printf("ar_agent_send() test passed!\n");
@@ -82,32 +87,37 @@ static void test_agent_send(void) {
 static void test_agent_exists(void) {
     printf("Testing ar_agent_exists()...\n");
     
-    // Create a simple method
+    // Given a method and an agent created with it
     const char *method_name = "exists_method";
     const char *instructions = "message -> \"I exist\"";
     version_t version = ar_method_create(method_name, instructions, 0, false, false);
     assert(version > 0);
     
-    // Create an agent
     agent_id_t agent_id = ar_agent_create(method_name, version, NULL);
     assert(agent_id > 0);
     
-    // Valid ID should exist
+    // When we check if the valid agent ID exists
     bool exists = ar_agent_exists(agent_id);
+    
+    // Then it should exist
     assert(exists);
     
-    // Invalid ID should not exist
-    exists = ar_agent_exists(0);
-    assert(!exists);
+    // When we check if invalid agent IDs exist
+    bool exists_zero = ar_agent_exists(0);
+    bool exists_large = ar_agent_exists(999999);
     
-    exists = ar_agent_exists(999999);
-    assert(!exists);
+    // Then they should not exist
+    assert(!exists_zero);
+    assert(!exists_large);
     
-    // Destroy and verify it no longer exists
+    // When we destroy the agent
     bool destroy_result = ar_agent_destroy(agent_id);
     assert(destroy_result);
     
+    // And check if it still exists
     exists = ar_agent_exists(agent_id);
+    
+    // Then it should no longer exist
     assert(!exists);
     
     printf("ar_agent_exists() test passed!\n");
@@ -116,39 +126,42 @@ static void test_agent_exists(void) {
 static void test_agent_persistence(void) {
     printf("Testing agent persistence...\n");
     
-    // Create a persistent method
+    // Given a persistent method
     const char *method_name = "persistent_method";
     const char *instructions = "message -> \"I persist\"";
     version_t version = ar_method_create(method_name, instructions, 0, false, true);
     assert(version > 0);
     
-    // Create an agent with this persistent method
+    // And an agent created with this persistent method
     agent_id_t agent_id = ar_agent_create(method_name, version, NULL);
     assert(agent_id > 0);
     
-    // Save agents to disk
+    // When we save agents to disk
     bool save_result = ar_agency_save_agents();
+    
+    // Then the save operation should succeed
     assert(save_result);
     
-    // Reset system to simulate restart
+    // When we simulate a system restart
     ar_system_shutdown();
-    
-    // Initialize with the default method
     ar_system_init(method_name, version);
     
-    // Load methods first
+    // And load the methods and agents
     bool load_methods_result = ar_methodology_load_methods();
     assert(load_methods_result);
     
-    // Load agents
     bool load_agents_result = ar_agency_load_agents();
+    
+    // Then the load operations should succeed
     assert(load_agents_result);
     
-    // Verify our agent still exists
+    // When we check if our persistent agent still exists
     bool exists = ar_agent_exists(agent_id);
+    
+    // Then the agent should still exist
     assert(exists);
     
-    // Clean up
+    // Cleanup
     ar_agent_destroy(agent_id);
     
     printf("Agent persistence test passed!\n");
@@ -157,7 +170,7 @@ static void test_agent_persistence(void) {
 int main(void) {
     printf("Starting Agent Module Tests...\n");
     
-    // Initialize the system before running tests
+    // Given a test method and initialized system
     const char *method_name = "test_method";
     const char *instructions = "message -> \"Test\"";
     version_t version = ar_method_create(method_name, instructions, 0, false, false);
@@ -166,14 +179,16 @@ int main(void) {
     agent_id_t init_agent_id = ar_system_init(method_name, version);
     assert(init_agent_id > 0);
     
+    // When we run all agent tests
     test_agent_create_destroy();
     test_agent_send();
     test_agent_exists();
     test_agent_persistence();
     
-    // Shutdown the system after tests
+    // Then clean up the system
     ar_system_shutdown();
     
+    // And report success
     printf("All agent tests passed!\n");
     return 0;
 }

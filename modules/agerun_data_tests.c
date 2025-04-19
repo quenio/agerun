@@ -6,108 +6,181 @@
 #include <string.h>
 #include <assert.h>
 
-int main(void) {
-    printf("Starting Data Module Tests...\n");
+// Forward declarations
+static void test_data_creation(void);
+static void test_integer_values(map_t *map);
+static void test_string_values(map_t *map);
+static void test_nested_maps(map_t *map);
+
+static void test_data_creation(void) {
+    printf("Testing data creation for different types...\n");
     
-    // Test 1: Create a map
-    map_t *map = ar_map_create();
-    assert(map != NULL);
-    assert(map->count == 0);
+    // Given we need to create data of different types
     
-    // Test data creation for different types
+    // When we create an integer data item
     data_t int_data_default = ar_data_create(DATA_INT);
+    
+    // Then it should have the correct type and default value
     assert(int_data_default.type == DATA_INT);
     assert(int_data_default.data.int_value == 0);
     
+    // When we create a double data item
     data_t double_data_default = ar_data_create(DATA_DOUBLE);
+    
+    // Then it should have the correct type and default value
     assert(double_data_default.type == DATA_DOUBLE);
     assert(double_data_default.data.double_value == 0.0);
     
+    // When we create a string data item
     data_t string_data_default = ar_data_create(DATA_STRING);
+    
+    // Then it should have the correct type and null string
     assert(string_data_default.type == DATA_STRING);
     assert(string_data_default.data.string_value == NULL);
     
+    // When we create a map data item
     data_t map_data_default = ar_data_create(DATA_MAP);
+    
+    // Then it should have the correct type and a valid map
     assert(map_data_default.type == DATA_MAP);
     assert(map_data_default.data.map_value != NULL);
     
-    // Test 2: Set and get primitive values
+    // Cleanup
+    ar_data_free(&map_data_default);
+    
+    printf("Data creation tests passed!\n");
+}
+
+static void test_integer_values(map_t *map) {
+    printf("Testing integer values in map...\n");
+    
+    // Given an integer data item
     data_t int_data;
     int_data.type = DATA_INT;
     int_data.data.int_value = 42;
     
+    // When we set it in the map
     bool result = ar_map_set(map, "answer", &int_data);
+    
+    // Then the operation should succeed
     assert(result);
     
+    // When we retrieve the value from the map
     data_t *value = ar_map_get(map, "answer");
+    
+    // Then the value should be correctly retrieved
     assert(value != NULL);
     assert(value->type == DATA_INT);
     assert(value->data.int_value == 42);
     
-    // Test 3: Set and get string values
+    printf("Integer value tests passed!\n");
+}
+
+static void test_string_values(map_t *map) {
+    printf("Testing string values in map...\n");
+    
+    // Given a string data item
     data_t string_data;
     string_data.type = DATA_STRING;
     string_data.data.string_value = strdup("Hello, World!");
     
-    result = ar_map_set(map, "greeting", &string_data);
-    assert(result);
-    // We should NOT free the string here as ar_map_set now uses references
+    // When we set it in the map
+    bool result = ar_map_set(map, "greeting", &string_data);
     
-    value = ar_map_get(map, "greeting");
+    // Then the operation should succeed
+    assert(result);
+    // Note: We should NOT free the string here as ar_map_set now uses references
+    
+    // When we retrieve the value from the map
+    data_t *value = ar_map_get(map, "greeting");
+    
+    // Then the value should be correctly retrieved
     assert(value != NULL);
     assert(value->type == DATA_STRING);
     assert(strcmp(value->data.string_value, "Hello, World!") == 0);
     
-    // Test 4: Nested map
+    printf("String value tests passed!\n");
+}
+
+static void test_nested_maps(map_t *map) {
+    printf("Testing nested maps...\n");
+    
+    // Given a nested map data item
     data_t nested_map_data = ar_data_create(DATA_MAP);
     assert(nested_map_data.type == DATA_MAP);
     assert(nested_map_data.data.map_value != NULL);
     
-    // Add some data to the nested map
+    // And data to add to the nested map
     data_t nested_int_data;
     nested_int_data.type = DATA_INT;
     nested_int_data.data.int_value = 100;
     
-    result = ar_map_set(nested_map_data.data.map_value, "count", &nested_int_data);
+    // When we set data in the nested map
+    bool result = ar_map_set(nested_map_data.data.map_value, "count", &nested_int_data);
+    
+    // Then the operation should succeed
     assert(result);
     
-    // Add the nested map to the main map
+    // When we add the nested map to the main map
     result = ar_map_set(map, "user_data", &nested_map_data);
+    
+    // Then the operation should succeed
     assert(result);
     
-    // Get the nested map and verify its contents
-    value = ar_map_get(map, "user_data");
+    // When we retrieve the nested map from the main map
+    data_t *value = ar_map_get(map, "user_data");
+    
+    // Then the nested map should be correctly retrieved
     assert(value != NULL);
     assert(value->type == DATA_MAP);
     assert(value->data.map_value != NULL);
     
+    // And its contents should be intact
     data_t *nested_value = ar_map_get(value->data.map_value, "count");
     assert(nested_value != NULL);
     assert(nested_value->type == DATA_INT);
     assert(nested_value->data.int_value == 100);
     
-    // The nested_map_data now is shared between the map and the value that was set
-    
-    // Nested a third level deep
+    // Given a third level map
     data_t third_level_map = ar_data_create(DATA_MAP);
     data_t deep_string;
     deep_string.type = DATA_STRING;
     deep_string.data.string_value = strdup("Deep value!");
     
+    // When we set data in the third level map
     result = ar_map_set(third_level_map.data.map_value, "key", &deep_string);
-    assert(result);
-    // Do not free deep_string.data.string_value as ar_map_set now uses references
     
-    // Add third level to the nested map
+    // Then the operation should succeed
+    assert(result);
+    // Note: Do not free deep_string.data.string_value as ar_map_set now uses references
+    
+    // When we add the third level map to the nested map
     result = ar_map_set(value->data.map_value, "more_data", &third_level_map);
+    
+    // Then the operation should succeed
     assert(result);
     
-    // Now we have map->user_data->more_data->key with value "Deep value!"
+    printf("Nested maps tests passed!\n");
+}
+
+int main(void) {
+    printf("Starting Data Module Tests...\n");
     
+    // Given we need a map for testing
+    map_t *map = ar_map_create();
+    assert(map != NULL);
+    assert(map->count == 0);
+    
+    // When we run all data tests
+    test_data_creation();
+    test_integer_values(map);
+    test_string_values(map);
+    test_nested_maps(map);
+    
+    // Then all tests should pass
     printf("All data tests passed!\n");
     
-    // Cleanup is done by one call to free the top-level map
-    // This will recursively free all nested maps and values
+    // Cleanup resources
     data_t temp_data;
     temp_data.type = DATA_MAP;
     temp_data.data.map_value = map;

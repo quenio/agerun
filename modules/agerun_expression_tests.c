@@ -13,21 +13,24 @@ static void test_simple_method(void);
 int main(void) {
     printf("Starting Expression Tests...\n");
     
-    // Initialize the runtime
+    // Given we initialize the runtime
     agent_id_t initial_agent = ar_system_init(NULL, 0);
+    
+    // Then no agent should be created during initialization
     if (initial_agent != 0) {
         printf("Error: Unexpected agent created during initialization\n");
         ar_system_shutdown();
         return 1;
     }
     
-    // Run expression tests
+    // When we run all expression tests
     test_echo_method();
     test_simple_method();
     
-    // Shutdown
+    // Then we clean up the system
     ar_system_shutdown();
     
+    // And report success
     printf("All expression tests passed!\n");
     return 0;
 }
@@ -35,39 +38,51 @@ int main(void) {
 static void test_echo_method(void) {
     printf("Testing echo method...\n");
     
-    // Create a simple method that sends back a message
+    // Given a simple echo method that returns the input message
     version_t version = ar_method_create("echo", "send(0, message)", 0, true, false);
     assert(version > 0);
     printf("Created echo method version %d\n", version);
     
-    // Create an agent
+    // And an agent created with this method
     agent_id_t agent_id = ar_agent_create("echo", version, NULL);
     assert(agent_id > 0);
     printf("Created agent %lld using echo method\n", (long long)agent_id);
     
-    // Send test message
+    // When we send a test message to the agent
     const char *test_message = "Hello, Echo!";
     printf("Sending message: \"%s\"\n", test_message);
-    assert(ar_agent_send(agent_id, test_message));
+    bool send_result = ar_agent_send(agent_id, test_message);
     
-    // Process the message
+    // Then the message should be sent successfully
+    assert(send_result);
+    
+    // When we process the next message
     printf("Processing message...\n");
-    assert(ar_system_process_next_message());
+    bool process_result = ar_system_process_next_message();
     
-    // We should receive a response (not checking content as that depends on full implementation)
+    // Then the message should be processed successfully
+    assert(process_result);
+    
+    // When we check for a response
     printf("Processing response...\n");
     bool response = ar_system_process_next_message();
+    
+    // Then there may be a response depending on the implementation
     printf("Response received: %s\n", response ? "yes" : "no");
     
-    // Cleanup
-    assert(ar_agent_destroy(agent_id));
+    // When we clean up the agent
+    bool destroy_result = ar_agent_destroy(agent_id);
+    
+    // Then the agent should be destroyed successfully
+    assert(destroy_result);
+    
     printf("Echo method test passed.\n");
 }
 
 static void test_simple_method(void) {
     printf("Testing simple method...\n");
     
-    // Create a simple method that just stores a value
+    // Given a simple method that stores a message in memory
     const char *simple_method = 
         "# Store message in memory\n"
         "memory[\"stored_message\"] := message";
@@ -76,21 +91,31 @@ static void test_simple_method(void) {
     assert(version > 0);
     printf("Created simple method version %d\n", version);
     
-    // Create an agent
+    // And an agent created with this method
     agent_id_t agent_id = ar_agent_create("simple_test", version, NULL);
     assert(agent_id > 0);
     printf("Created agent %lld using simple method\n", (long long)agent_id);
     
-    // Send a test message
+    // When we send a test message to the agent
     const char *test_message = "Test Data";
     printf("Sending message: \"%s\"\n", test_message);
-    assert(ar_agent_send(agent_id, test_message));
+    bool send_result = ar_agent_send(agent_id, test_message);
     
-    // Process the message
+    // Then the message should be sent successfully
+    assert(send_result);
+    
+    // When we process the next message
     printf("Processing message...\n");
-    assert(ar_system_process_next_message());
+    bool process_result = ar_system_process_next_message();
     
-    // Cleanup
-    assert(ar_agent_destroy(agent_id));
+    // Then the message should be processed successfully
+    assert(process_result);
+    
+    // When we clean up the agent
+    bool destroy_result = ar_agent_destroy(agent_id);
+    
+    // Then the agent should be destroyed successfully
+    assert(destroy_result);
+    
     printf("Simple method test passed.\n");
 }
