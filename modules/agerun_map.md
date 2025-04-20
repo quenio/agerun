@@ -71,9 +71,9 @@ const int *retrieved = (const int*)ar_map_get(map, "answer");
 printf("The answer is: %d\n", *retrieved);
 
 // Clean up
-free((void*)value);  // The map doesn't free the value
+ar_map_free(map);  // Free the map first
+free((void*)value);  // Then free the value
 // No need to free key as it's a string literal
-ar_map_free(map);
 ```
 
 ### Nested Maps
@@ -107,12 +107,13 @@ printf("The count is: %d\n", *retrieved_value);
 // must be handled externally, typically by the data module.
 
 // Clean up
-free((void*)value);  // Free the value
-// No need to free keys as they're string literals
-
 // Warning: outer_map must be freed before inner_map to avoid use-after-free
 ar_map_free(outer_map);
 ar_map_free(inner_map);
+
+// Then free the value
+free((void*)value);
+// No need to free keys as they're string literals
 ```
 
 ## Implementation Notes

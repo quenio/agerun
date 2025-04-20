@@ -81,6 +81,8 @@ IMPORTANT:
    - Always check return values from memory allocation functions
    - Free allocated memory in the appropriate scope
    - Use valgrind to check for memory leaks
+   - When freeing containers/structures and their contents, always free containers first, then their contents
+   - This prevents use-after-free bugs when containers might access their contents during cleanup
 
 ## Implementation Notes
 
