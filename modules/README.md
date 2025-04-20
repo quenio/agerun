@@ -72,3 +72,12 @@ The [data module](agerun_data.md) builds on the map module to provide typed data
 - **Reference Management**: Handles reference counting for nested maps and complex structures
 - **Type Safety**: Ensures proper handling of different data types
 - **Depends on Map**: Uses the map module for underlying storage
+
+### String Module (`agerun_string`)
+
+The string module provides utility functions for string manipulation with the following features:
+
+- **String Trimming**: Removes leading and trailing whitespace from strings
+- **Safe Character Handling**: Ensures proper handling of character values with safe typecasting
+- **Whitespace Detection**: Provides a safe wrapper for whitespace character identification
+- **No Dependencies**: Functions as a standalone utility module with no dependencies on other modules
