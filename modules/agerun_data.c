@@ -40,7 +40,7 @@ void ar_data_free(data_t *data) {
         free(data->data.string_value);
         data->data.string_value = NULL;
     } else if (data->type == DATA_MAP && data->data.map_value) {
-        ar_map_free(data->data.map_value);
+        ar_map_destroy(data->data.map_value);
         data->data.map_value = NULL;
     }
 }

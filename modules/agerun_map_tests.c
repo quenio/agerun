@@ -35,7 +35,7 @@ static void test_map_create(void) {
     // Following the guideline to free containers first, then contents
     // In this case, the map is the container and test_value is stack-allocated
     // so no manual freeing of the content is needed
-    ar_map_free(map);
+    ar_map_destroy(map);
     
     printf("All ar_map_create() tests passed!\n");
 }
@@ -76,7 +76,7 @@ static void test_map_set_get_simple(void) {
     
     // Cleanup
     // Following the guideline to free containers first, then contents
-    ar_map_free(map);
+    ar_map_destroy(map);
     free(ref); // Now free the referenced value after freeing the container
     
     printf("ar_map_set() and ar_map_get() simple value test passed!\n");

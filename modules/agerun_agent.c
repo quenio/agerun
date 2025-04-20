@@ -64,7 +64,7 @@ agent_id_t ar_agent_create(const char *method_name, version_t version, void *con
     
     if (!agents[agent_idx].queue) {
         printf("Error: Failed to create queue for agent %lld\n", next_agent_id);
-        ar_map_free(agents[agent_idx].memory);
+        ar_map_destroy(agents[agent_idx].memory);
         agents[agent_idx].is_active = false;
         return 0;
     }
@@ -101,7 +101,7 @@ bool ar_agent_destroy(agent_id_t agent_id) {
             
             // Free memory map if it exists
             if (agents[i].memory) {
-                ar_map_free(agents[i].memory);
+                ar_map_destroy(agents[i].memory);
                 agents[i].memory = NULL;
             }
             

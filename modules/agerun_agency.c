@@ -53,7 +53,7 @@ void ar_agency_reset(void) {
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (agents[i].is_active) {
             if (agents[i].memory) {
-                ar_map_free(agents[i].memory);
+                ar_map_destroy(agents[i].memory);
             }
             if (agents[i].queue) {
                 ar_queue_destroy(agents[i].queue);

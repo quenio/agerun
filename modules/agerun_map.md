@@ -46,7 +46,7 @@ bool ar_map_set(map_t *map, const char *key, const void *ref);
 
 ```c
 // Free the map structure 
-void ar_map_free(map_t *map);
+void ar_map_destroy(map_t *map);
 ```
 
 ## Usage Examples
@@ -71,7 +71,7 @@ const int *retrieved = (const int*)ar_map_get(map, "answer");
 printf("The answer is: %d\n", *retrieved);
 
 // Clean up
-ar_map_free(map);  // Free the map first
+ar_map_destroy(map);  // Free the map first
 free((void*)value);  // Then free the value
 // No need to free key as it's a string literal
 ```
@@ -108,8 +108,8 @@ printf("The count is: %d\n", *retrieved_value);
 
 // Clean up
 // Warning: outer_map must be freed before inner_map to avoid use-after-free
-ar_map_free(outer_map);
-ar_map_free(inner_map);
+ar_map_destroy(outer_map);
+ar_map_destroy(inner_map);
 
 // Then free the value
 free((void*)value);
@@ -131,4 +131,4 @@ free((void*)value);
 - The map implementation is opaque, hiding its internal structure from clients
 - Clients should use the public API functions rather than accessing the map structure directly
 - Maps are always heap-allocated and fully initialized through ar_map_create()
-- All maps should be freed with ar_map_free() when no longer needed
+- All maps should be freed with ar_map_destroy() when no longer needed

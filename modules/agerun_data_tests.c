@@ -184,7 +184,7 @@ int main(void) {
     printf("All data tests passed!\n");
     
     // Cleanup map resources
-    ar_map_free(map);
+    ar_map_destroy(map);
     
     // Note: In this refactored version, the values need to be freed separately
     // For simplicity in this test, we're allowing some memory leaks

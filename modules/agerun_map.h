@@ -41,7 +41,7 @@ bool ar_map_set(map_t *map, const char *key, const void *ref);
  * @note This function does not free memory for keys or referenced values.
  *       The caller is responsible for managing those resources.
  */
-void ar_map_free(map_t *map);
+void ar_map_destroy(map_t *map);
 
 
 #endif /* AGERUN_MAP_H */

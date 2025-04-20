@@ -103,7 +103,7 @@ bool ar_map_set(map_t *map, const char *key, const void *ref) {
  * Free all resources in a map
  * @param map Map to free
  */
-void ar_map_free(map_t *map) {
+void ar_map_destroy(map_t *map) {
     if (!map) return;
     
     free(map);
