@@ -11,8 +11,8 @@ static void test_data_getters(void);
 static void test_integer_values(map_t *map);
 static void test_string_values(map_t *map);
 static void test_nested_maps(map_t *map);
-static void test_sub_data_getters(void);
-static void test_sub_data_setters(void);
+static void test_map_data_getters(void);
+static void test_map_data_setters(void);
 
 static void test_data_creation(void) {
     printf("Testing data creation for different types...\n");
@@ -265,8 +265,8 @@ static void test_nested_maps(map_t *map) {
     printf("Nested maps tests passed!\n");
 }
 
-static void test_sub_data_getters(void) {
-    printf("Testing sub data getters...\n");
+static void test_map_data_getters(void) {
+    printf("Testing map data getters...\n");
     
     // Given a map data structure with different data types
     data_t *map_data = ar_data_create_map();
@@ -284,38 +284,38 @@ static void test_sub_data_getters(void) {
     ar_map_set(map, "string_key", string_data);
     ar_map_set(map, "map_key", nested_map_data);
     
-    // When we use the sub data getters with the correct keys
-    int int_value = ar_data_get_sub_integer(map_data, "int_key");
-    double double_value = ar_data_get_sub_double(map_data, "double_key");
-    const char *string_value = ar_data_get_sub_string(map_data, "string_key");
+    // When we use the map data getters with the correct keys
+    int int_value = ar_data_get_map_integer(map_data, "int_key");
+    double double_value = ar_data_get_map_double(map_data, "double_key");
+    const char *string_value = ar_data_get_map_string(map_data, "string_key");
     
     // Then they should return the correct values
     assert(int_value == 42);
     assert(double_value == 3.14159);
     assert(strcmp(string_value, "Hello, World!") == 0);
     
-    // When we use the sub data getters with incorrect keys
-    int wrong_int = ar_data_get_sub_integer(map_data, "nonexistent_key");
-    double wrong_double = ar_data_get_sub_double(map_data, "nonexistent_key");
-    const char *wrong_string = ar_data_get_sub_string(map_data, "nonexistent_key");
+    // When we use the map data getters with incorrect keys
+    int wrong_int = ar_data_get_map_integer(map_data, "nonexistent_key");
+    double wrong_double = ar_data_get_map_double(map_data, "nonexistent_key");
+    const char *wrong_string = ar_data_get_map_string(map_data, "nonexistent_key");
     
     // Then they should return default values
     assert(wrong_int == 0);
     assert(wrong_double == 0.0);
     assert(wrong_string == NULL);
     
-    // When we use the sub data getters with NULL data or key
-    int null_data_int = ar_data_get_sub_integer(NULL, "int_key");
-    double null_key_double = ar_data_get_sub_double(map_data, NULL);
+    // When we use the map data getters with NULL data or key
+    int null_data_int = ar_data_get_map_integer(NULL, "int_key");
+    double null_key_double = ar_data_get_map_double(map_data, NULL);
     
     // Then they should return default values
     assert(null_data_int == 0);
     assert(null_key_double == 0.0);
     
-    // When we use the sub data getters with incorrect types
-    int wrong_type_int = ar_data_get_sub_integer(map_data, "string_key");
-    double wrong_type_double = ar_data_get_sub_double(map_data, "int_key");
-    const char *wrong_type_string = ar_data_get_sub_string(map_data, "double_key");
+    // When we use the map data getters with incorrect types
+    int wrong_type_int = ar_data_get_map_integer(map_data, "string_key");
+    double wrong_type_double = ar_data_get_map_double(map_data, "int_key");
+    const char *wrong_type_string = ar_data_get_map_string(map_data, "double_key");
     
     // Then they should return default values
     assert(wrong_type_int == 0);
@@ -335,19 +335,19 @@ static void test_sub_data_getters(void) {
     ar_data_destroy(int_data);
     ar_data_destroy(map_data);
     
-    printf("Sub data getter tests passed!\n");
+    printf("Map data getter tests passed!\n");
 }
 
-static void test_sub_data_setters(void) {
-    printf("Testing sub data setters...\n");
+static void test_map_data_setters(void) {
+    printf("Testing map data setters...\n");
     
     // Given a map data structure for storing different data types
     data_t *map_data = ar_data_create_map();
     
-    // When we set different data types using the sub data setters
-    bool int_result = ar_data_set_sub_integer(map_data, "int_key", 42);
-    bool double_result = ar_data_set_sub_double(map_data, "double_key", 3.14159);
-    bool string_result = ar_data_set_sub_string(map_data, "string_key", "Hello, World!");
+    // When we set different data types using the map data setters
+    bool int_result = ar_data_set_map_integer(map_data, "int_key", 42);
+    bool double_result = ar_data_set_map_double(map_data, "double_key", 3.14159);
+    bool string_result = ar_data_set_map_string(map_data, "string_key", "Hello, World!");
     
     // Then the operations should succeed
     assert(int_result);
@@ -355,9 +355,9 @@ static void test_sub_data_setters(void) {
     assert(string_result);
     
     // And the values should be retrievable using the corresponding getters
-    int int_value = ar_data_get_sub_integer(map_data, "int_key");
-    double double_value = ar_data_get_sub_double(map_data, "double_key");
-    const char *string_value = ar_data_get_sub_string(map_data, "string_key");
+    int int_value = ar_data_get_map_integer(map_data, "int_key");
+    double double_value = ar_data_get_map_double(map_data, "double_key");
+    const char *string_value = ar_data_get_map_string(map_data, "string_key");
     
     // Then they should match the set values
     assert(int_value == 42);
@@ -365,9 +365,9 @@ static void test_sub_data_setters(void) {
     assert(strcmp(string_value, "Hello, World!") == 0);
     
     // When we update existing values
-    bool update_int = ar_data_set_sub_integer(map_data, "int_key", 100);
-    bool update_double = ar_data_set_sub_double(map_data, "double_key", 2.71828);
-    bool update_string = ar_data_set_sub_string(map_data, "string_key", "Updated text");
+    bool update_int = ar_data_set_map_integer(map_data, "int_key", 100);
+    bool update_double = ar_data_set_map_double(map_data, "double_key", 2.71828);
+    bool update_string = ar_data_set_map_string(map_data, "string_key", "Updated text");
     
     // Then the operations should succeed
     assert(update_int);
@@ -375,9 +375,9 @@ static void test_sub_data_setters(void) {
     assert(update_string);
     
     // And the updated values should be retrievable
-    int updated_int = ar_data_get_sub_integer(map_data, "int_key");
-    double updated_double = ar_data_get_sub_double(map_data, "double_key");
-    const char *updated_string = ar_data_get_sub_string(map_data, "string_key");
+    int updated_int = ar_data_get_map_integer(map_data, "int_key");
+    double updated_double = ar_data_get_map_double(map_data, "double_key");
+    const char *updated_string = ar_data_get_map_string(map_data, "string_key");
     
     // Then they should match the updated values
     assert(updated_int == 100);
@@ -385,8 +385,8 @@ static void test_sub_data_setters(void) {
     assert(strcmp(updated_string, "Updated text") == 0);
     
     // When we set values with NULL data or key
-    bool null_data_result = ar_data_set_sub_integer(NULL, "int_key", 42);
-    bool null_key_result = ar_data_set_sub_double(map_data, NULL, 3.14159);
+    bool null_data_result = ar_data_set_map_integer(NULL, "int_key", 42);
+    bool null_key_result = ar_data_set_map_double(map_data, NULL, 3.14159);
     
     // Then the operations should fail
     assert(!null_data_result);
@@ -394,7 +394,7 @@ static void test_sub_data_setters(void) {
     
     // When we set values in a non-map data type
     data_t *int_data = ar_data_create_integer(42);
-    bool wrong_type_result = ar_data_set_sub_string(int_data, "key", "value");
+    bool wrong_type_result = ar_data_set_map_string(int_data, "key", "value");
     
     // Then the operation should fail
     assert(!wrong_type_result);
@@ -403,7 +403,7 @@ static void test_sub_data_setters(void) {
     ar_data_destroy(int_data);
     ar_data_destroy(map_data);
     
-    printf("Sub data setter tests passed!\n");
+    printf("Map data setter tests passed!\n");
 }
 
 int main(void) {
@@ -420,11 +420,11 @@ int main(void) {
     test_string_values(map);
     test_nested_maps(map);
     
-    // Run sub data getter tests
-    test_sub_data_getters();
+    // Run map data getter tests
+    test_map_data_getters();
     
-    // Run sub data setter tests
-    test_sub_data_setters();
+    // Run map data setter tests
+    test_map_data_setters();
     
     // Then all tests should pass
     printf("All data tests passed!\n");

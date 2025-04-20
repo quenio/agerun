@@ -184,7 +184,7 @@ map_t *ar_data_get_map_mutable(data_t *data) {
  * @param key The key to look up in the map
  * @return The integer value, or 0 if data is NULL, not a map, key not found, or value not an integer
  */
-int ar_data_get_sub_integer(const data_t *data, const char *key) {
+int ar_data_get_map_integer(const data_t *data, const char *key) {
     if (!data || !key || data->type != DATA_MAP) {
         return 0;
     }
@@ -205,7 +205,7 @@ int ar_data_get_sub_integer(const data_t *data, const char *key) {
  * @param key The key to look up in the map
  * @return The double value, or 0.0 if data is NULL, not a map, key not found, or value not a double
  */
-double ar_data_get_sub_double(const data_t *data, const char *key) {
+double ar_data_get_map_double(const data_t *data, const char *key) {
     if (!data || !key || data->type != DATA_MAP) {
         return 0.0;
     }
@@ -226,7 +226,7 @@ double ar_data_get_sub_double(const data_t *data, const char *key) {
  * @param key The key to look up in the map
  * @return The string value, or NULL if data is NULL, not a map, key not found, or value not a string
  */
-const char *ar_data_get_sub_string(const data_t *data, const char *key) {
+const char *ar_data_get_map_string(const data_t *data, const char *key) {
     if (!data || !key || data->type != DATA_MAP) {
         return NULL;
     }
@@ -249,7 +249,7 @@ const char *ar_data_get_sub_string(const data_t *data, const char *key) {
  * @param value The integer value to store
  * @return true if successful, false if data is NULL, not a map, or allocation failure
  */
-bool ar_data_set_sub_integer(data_t *data, const char *key, int value) {
+bool ar_data_set_map_integer(data_t *data, const char *key, int value) {
     if (!data || !key || data->type != DATA_MAP) {
         return false;
     }
@@ -279,7 +279,7 @@ bool ar_data_set_sub_integer(data_t *data, const char *key, int value) {
  * @param value The double value to store
  * @return true if successful, false if data is NULL, not a map, or allocation failure
  */
-bool ar_data_set_sub_double(data_t *data, const char *key, double value) {
+bool ar_data_set_map_double(data_t *data, const char *key, double value) {
     if (!data || !key || data->type != DATA_MAP) {
         return false;
     }
@@ -309,7 +309,7 @@ bool ar_data_set_sub_double(data_t *data, const char *key, double value) {
  * @param value The string value to store (will be copied)
  * @return true if successful, false if data is NULL, not a map, or allocation failure
  */
-bool ar_data_set_sub_string(data_t *data, const char *key, const char *value) {
+bool ar_data_set_map_string(data_t *data, const char *key, const char *value) {
     if (!data || !key || data->type != DATA_MAP) {
         return false;
     }
