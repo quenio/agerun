@@ -105,14 +105,7 @@ const char *ar_data_get_string(const data_t *data);
  * @param data Pointer to the data to retrieve from
  * @return The map value or NULL if data is NULL or not a map type
  */
-const map_t *ar_data_get_map(const data_t *data);
-
-/**
- * Get a mutable map value from a data structure
- * @param data Pointer to the data to retrieve from
- * @return The map value or NULL if data is NULL or not a map type
- */
-map_t *ar_data_get_map_mutable(data_t *data);
+map_t *ar_data_get_map(const data_t *data);
 
 /**
  * Get an integer value from a map data structure by key
@@ -252,7 +245,7 @@ if (retrieved_child && ar_data_get_type(retrieved_child) == DATA_MAP) {
 ```c
 // Create a map
 data_t *map_data = ar_data_create_map();
-map_t *map = ar_data_get_map_mutable(map_data);
+map_t *map = ar_data_get_map(map_data);
 
 // Create and store values of different types using the traditional approach
 data_t *int_data = ar_data_create_integer(42);
@@ -267,7 +260,7 @@ ar_map_set(map, "string_key", string_data);
 ar_map_set(map, "map_key", nested_map_data);
 
 // Add data to the nested map
-map_t *nested_map = ar_data_get_map_mutable(nested_map_data);
+map_t *nested_map = ar_data_get_map(nested_map_data);
 data_t *nested_int = ar_data_create_integer(100);
 ar_map_set(nested_map, "nested_int", nested_int);
 
@@ -308,7 +301,7 @@ data_t *nested_map_data = ar_data_create_map();
 ar_data_set_map_integer(nested_map_data, "nested_int", 100);
 
 // Add the nested map to the main map
-map_t *map = ar_data_get_map_mutable(map_data);
+map_t *map = ar_data_get_map(map_data);
 ar_map_set(map, "map_key", nested_map_data);
 
 // Access values using the map-data getter functions

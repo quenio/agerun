@@ -217,7 +217,7 @@ static void test_nested_maps(map_t *map) {
     data_t *nested_int_data = ar_data_create_integer(100);
     
     // When we set a reference in the nested map
-    map_t *nested_map = ar_data_get_map_mutable(nested_map_ptr);
+    map_t *nested_map = ar_data_get_map(nested_map_ptr);
     bool result = ar_map_set(nested_map, "count", nested_int_data);
     
     // Then the operation should succeed
@@ -247,7 +247,7 @@ static void test_nested_maps(map_t *map) {
     data_t *deep_string = ar_data_create_string("Deep value!");
     
     // When we set a reference in the third level map
-    map_t *third_level_map = ar_data_get_map_mutable(third_level_ptr);
+    map_t *third_level_map = ar_data_get_map(third_level_ptr);
     result = ar_map_set(third_level_map, "key", deep_string);
     
     // Then the operation should succeed
@@ -256,7 +256,7 @@ static void test_nested_maps(map_t *map) {
     // When we add a reference to the third level map in the nested map
     // Need to create a new data_t for the nested value since we can't modify const value
     data_t *new_nested_value = ar_data_create_map();
-    map_t *new_map = ar_data_get_map_mutable(new_nested_value);
+    map_t *new_map = ar_data_get_map(new_nested_value);
     result = ar_map_set(new_map, "more_data", third_level_ptr);
     
     // Then the operation should succeed
@@ -270,7 +270,7 @@ static void test_map_data_getters(void) {
     
     // Given a map data structure with different data types
     data_t *map_data = ar_data_create_map();
-    map_t *map = ar_data_get_map_mutable(map_data);
+    map_t *map = ar_data_get_map(map_data);
     
     // And values of different types stored in the map
     data_t *int_data = ar_data_create_integer(42);
@@ -323,7 +323,7 @@ static void test_map_data_getters(void) {
     assert(wrong_type_string == NULL);
     
     // When we have nested map with values
-    map_t *nested_map = ar_data_get_map_mutable(nested_map_data);
+    map_t *nested_map = ar_data_get_map(nested_map_data);
     data_t *nested_int = ar_data_create_integer(100);
     ar_map_set(nested_map, "nested_int", nested_int);
     

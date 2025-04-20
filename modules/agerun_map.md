@@ -6,10 +6,10 @@ The map module (`agerun_map`) provides a fundamental key-value storage implement
 
 ## Key Features
 
-- **Key-Value Storage**: Stores string keys mapped to generic pointers (const void*) to values
+- **Key-Value Storage**: Stores string keys mapped to generic pointers (void*) to values
 - **Reference-Based**: The map stores references to keys and values rather than duplicating them
 - **No Memory Management**: Does not manage memory for either keys or values
-- **Type Safety**: Uses const qualifiers for keys and values to prevent unwanted modifications
+- **Type Safety**: Uses const qualifiers for keys to prevent unwanted modifications
 - **No Dependencies**: This is a foundational module with no dependencies on other modules
 - **Opaque Type**: The map structure is opaque, encapsulating implementation details from clients
 - **Simplified API**: Maps are heap-allocated and fully initialized through ar_map_create()
@@ -36,10 +36,10 @@ map_t* ar_map_create(void);
 
 ```c
 // Get a reference from map by key
-const void* ar_map_get(map_t *map, const char *key);
+void* ar_map_get(const map_t *map, const char *key);
 
 // Set a reference in map
-bool ar_map_set(map_t *map, const char *key, const void *ref);
+bool ar_map_set(map_t *map, const char *key, void *ref);
 ```
 
 #### Memory Management
@@ -67,7 +67,7 @@ int *value = malloc(sizeof(int));
 ar_map_set(map, key, value);
 
 // Retrieve the value
-const int *retrieved = (const int*)ar_map_get(map, "answer");
+int *retrieved = (int*)ar_map_get(map, "answer");
 printf("The answer is: %d\n", *retrieved);
 
 // Clean up
@@ -99,8 +99,8 @@ int *value = malloc(sizeof(int));
 ar_map_set(inner_map, inner_key, value);
 
 // Retrieve through nested structure
-const map_t *retrieved_inner = (const map_t*)ar_map_get(outer_map, "inner");
-const int *retrieved_value = (const int*)ar_map_get(retrieved_inner, "count");
+map_t *retrieved_inner = (map_t*)ar_map_get(outer_map, "inner");
+int *retrieved_value = (int*)ar_map_get(retrieved_inner, "count");
 printf("The count is: %d\n", *retrieved_value);
 
 // Note: With map reference counting removed, proper nested map management 
@@ -120,8 +120,8 @@ free((void*)value);
 
 - The map uses a fixed-size array (MAP_SIZE) for entries
 - Keys are stored as direct `const char*` pointers without copying
-- Values are stored as opaque `const void*` pointers with no type information
-- Type safety is enhanced by using `const` qualifiers on keys and values
+- Values are stored as opaque `void*` pointers with no type information
+- Type safety is enhanced by using `const` qualifiers on keys
 - The map never frees the referenced keys or values
 - The client code is responsible for managing both key and value memory
 - Key pointers must remain valid for the lifetime of the map entry

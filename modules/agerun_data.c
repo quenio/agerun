@@ -159,7 +159,7 @@ const char *ar_data_get_string(const data_t *data) {
  * @param data Pointer to the data to retrieve from
  * @return The map value or NULL if data is NULL or not a map type
  */
-const map_t *ar_data_get_map(const data_t *data) {
+map_t *ar_data_get_map(const data_t *data) {
     if (!data || data->type != DATA_MAP) {
         return NULL;
     }
@@ -167,16 +167,9 @@ const map_t *ar_data_get_map(const data_t *data) {
 }
 
 /**
- * Get a mutable map value from a data structure
- * @param data Pointer to the data to retrieve from
- * @return The map value or NULL if data is NULL or not a map type
+ * NOTE: Removed ar_data_get_map_mutable as it's now redundant with ar_data_get_map
+ * Both ar_data_get_map and ar_data_get_map_mutable return a mutable map pointer
  */
-map_t *ar_data_get_map_mutable(data_t *data) {
-    if (!data || data->type != DATA_MAP) {
-        return NULL;
-    }
-    return data->data.map_ref;
-}
 
 /**
  * Get an integer value from a map data structure by key
@@ -254,19 +247,30 @@ bool ar_data_set_map_integer(data_t *data, const char *key, int value) {
         return false;
     }
     
-    map_t *map = ar_data_get_map_mutable(data);
+    // Direct access to the map
+    map_t *map = data->data.map_ref;
     if (!map) {
         return false;
     }
     
+    // Get the existing data for later cleanup
+    data_t *prev_data = ar_map_get(map, key);
+    
+    // Create new data
     data_t *int_data = ar_data_create_integer(value);
     if (!int_data) {
         return false;
     }
     
+    // Set the new value
     if (!ar_map_set(map, key, int_data)) {
         ar_data_destroy(int_data);
         return false;
+    }
+    
+    // Free the old data after successful update
+    if (prev_data) {
+        ar_data_destroy(prev_data);
     }
     
     return true;
@@ -284,19 +288,30 @@ bool ar_data_set_map_double(data_t *data, const char *key, double value) {
         return false;
     }
     
-    map_t *map = ar_data_get_map_mutable(data);
+    // Direct access to the map
+    map_t *map = data->data.map_ref;
     if (!map) {
         return false;
     }
     
+    // Get the existing data for later cleanup
+    data_t *prev_data = ar_map_get(map, key);
+    
+    // Create new data
     data_t *double_data = ar_data_create_double(value);
     if (!double_data) {
         return false;
     }
     
+    // Set the new value
     if (!ar_map_set(map, key, double_data)) {
         ar_data_destroy(double_data);
         return false;
+    }
+    
+    // Free the old data after successful update
+    if (prev_data) {
+        ar_data_destroy(prev_data);
     }
     
     return true;
@@ -314,19 +329,30 @@ bool ar_data_set_map_string(data_t *data, const char *key, const char *value) {
         return false;
     }
     
-    map_t *map = ar_data_get_map_mutable(data);
+    // Direct access to the map
+    map_t *map = data->data.map_ref;
     if (!map) {
         return false;
     }
     
+    // Get the existing data for later cleanup
+    data_t *prev_data = ar_map_get(map, key);
+    
+    // Create new data
     data_t *string_data = ar_data_create_string(value);
     if (!string_data) {
         return false;
     }
     
+    // Set the new value
     if (!ar_map_set(map, key, string_data)) {
         ar_data_destroy(string_data);
         return false;
+    }
+    
+    // Free the old data after successful update
+    if (prev_data) {
+        ar_data_destroy(prev_data);
     }
     
     return true;

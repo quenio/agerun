@@ -10,7 +10,7 @@
  */
 typedef struct entry_s {
     const char *key;
-    const void *ref;
+    void *ref;
     bool is_used;
 } entry_t;
 
@@ -47,7 +47,7 @@ map_t* ar_map_create(void) {
  * @param key Key to lookup
  * @return Pointer to the referenced value, or NULL if not found
  */
-const void* ar_map_get(const map_t *map, const char *key) {
+void* ar_map_get(const map_t *map, const char *key) {
     if (!map || !key) {
         return NULL;
     }
@@ -68,7 +68,7 @@ const void* ar_map_get(const map_t *map, const char *key) {
  * @param ref Pointer to value to reference
  * @return true if successful, false otherwise
  */
-bool ar_map_set(map_t *map, const char *key, const void *ref) {
+bool ar_map_set(map_t *map, const char *key, void *ref) {
     if (!map || !key) {
         return false;
     }

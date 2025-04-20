@@ -86,14 +86,12 @@ const char *ar_data_get_string(const data_t *data);
  * @param data Pointer to the data to retrieve from
  * @return The map value or NULL if data is NULL or not a map type
  */
-const map_t *ar_data_get_map(const data_t *data);
+map_t *ar_data_get_map(const data_t *data);
 
 /**
- * Get a mutable map value from a data structure
- * @param data Pointer to the data to retrieve from
- * @return The map value or NULL if data is NULL or not a map type
+ * NOTE: Removed ar_data_get_map_mutable as it's now redundant with ar_data_get_map
+ * Both ar_data_get_map and ar_data_get_map_mutable return a mutable map pointer
  */
-map_t *ar_data_get_map_mutable(data_t *data);
 
 /**
  * Get an integer value from a map data structure by key
