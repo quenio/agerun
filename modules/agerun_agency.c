@@ -21,6 +21,7 @@ static void ar_agency_init(void) {
         for (int i = 0; i < MAX_AGENTS; i++) {
             agents[i].is_active = false;
             agents[i].memory = NULL;
+            agents[i].queue = NULL;
             agents[i].context = NULL;
         }
         is_initialized = true;
@@ -50,11 +51,17 @@ void ar_agency_set_next_id(agent_id_t id) {
 void ar_agency_reset(void) {
     // Reset all agents to inactive
     for (int i = 0; i < MAX_AGENTS; i++) {
-        if (agents[i].is_active && agents[i].memory) {
-            ar_map_free(agents[i].memory);
+        if (agents[i].is_active) {
+            if (agents[i].memory) {
+                ar_map_free(agents[i].memory);
+            }
+            if (agents[i].queue) {
+                ar_queue_destroy(agents[i].queue);
+            }
         }
         agents[i].is_active = false;
         agents[i].memory = NULL;
+        agents[i].queue = NULL;
     }
     
     // Reset next_agent_id

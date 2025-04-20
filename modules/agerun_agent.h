@@ -22,7 +22,7 @@ typedef struct agent_s {
     version_t method_version;
     bool is_active;
     bool is_persistent;
-    queue_t queue;
+    queue_t *queue;
     map_t *memory;
     map_t *context;
 } agent_t;

@@ -60,7 +60,14 @@ agent_id_t ar_agent_create(const char *method_name, version_t version, void *con
     agents[agent_idx].context = (map_t *)context;
     
     agents[agent_idx].memory = ar_map_create();
-    ar_queue_init(&agents[agent_idx].queue);
+    agents[agent_idx].queue = ar_queue_create();
+    
+    if (!agents[agent_idx].queue) {
+        printf("Error: Failed to create queue for agent %lld\n", next_agent_id);
+        ar_map_free(agents[agent_idx].memory);
+        agents[agent_idx].is_active = false;
+        return 0;
+    }
     
     printf("Created agent %lld using method %s version %d\n", 
            agents[agent_idx].id, method_name, method->version);
@@ -83,7 +90,7 @@ bool ar_agent_destroy(agent_id_t agent_id) {
             
             // Process the sleep message
             char message[MAX_MESSAGE_LENGTH];
-            if (ar_queue_pop(&agents[i].queue, message)) {
+            if (ar_queue_pop(agents[i].queue, message)) {
                 // Find the method definition to process the sleep message
                 method_t *method = ar_methodology_get_method(agents[i].method_name, agents[i].method_version);
                 if (method) {
@@ -96,6 +103,12 @@ bool ar_agent_destroy(agent_id_t agent_id) {
             if (agents[i].memory) {
                 ar_map_free(agents[i].memory);
                 agents[i].memory = NULL;
+            }
+            
+            // Free queue if it exists
+            if (agents[i].queue) {
+                ar_queue_destroy(agents[i].queue);
+                agents[i].queue = NULL;
             }
             
             agents[i].is_active = false;
@@ -123,7 +136,7 @@ bool ar_agent_send(agent_id_t agent_id, const char *message) {
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (agents[i].is_active && agents[i].id == agent_id) {
             // Add message to queue
-            return ar_queue_push(&agents[i].queue, message);
+            return ar_queue_push(agents[i].queue, message);
         }
     }
     

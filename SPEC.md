@@ -34,9 +34,11 @@ This specification defines a lightweight, message-driven agent system where each
 
 ## Agent Structure
 
-- **Message Queue**: Each agent has an implicit FIFO (First-In-First-Out) message queue for asynchronous communication.
-- **Memory Map**: Agents maintain an implicit key-value map (memory) for storing state.
+- **Message Queue**: Each agent has an encapsulated FIFO (First-In-First-Out) message queue for asynchronous communication.
+- **Memory Map**: Agents maintain an encapsulated key-value map (memory) for storing state.
 - **Context Map**: Agents can be provided with a read-only context map (context) upon creation.
+
+Both the queue and map structures are implemented as opaque types to maintain encapsulation and protect internal implementation details.
 
 ## Method Expressions and Instructions
 

@@ -72,7 +72,7 @@ This layering reflects the dependency structure of the system, with higher layer
 
 ## Core Modules
 
-Core modules have no dependencies on other modules and provide essential low-level functionality that other modules build upon. These modules form the base layer of the system architecture and are designed to be simple, focused, and highly reusable.
+Core modules have minimal or no dependencies on other modules and provide essential low-level functionality that other modules build upon. These modules form the base layer of the system architecture and are designed to be simple, focused, and highly reusable.
 
 ### Map Module (`agerun_map`)
 
@@ -83,6 +83,7 @@ The [map module](agerun_map.md) provides a fundamental key-value storage impleme
 - **Type Safety**: Uses const qualifiers for keys and values to prevent unwanted modifications
 - **No Memory Management**: Does not manage memory for either keys or values
 - **No Dependencies**: This is a foundational module with no dependencies on other modules
+- **Opaque Type**: The map structure is opaque, encapsulating implementation details from clients
 
 ### String Module (`agerun_string`)
 
@@ -92,6 +93,17 @@ The string module provides utility functions for string manipulation with the fo
 - **Safe Character Handling**: Ensures proper handling of character values with safe typecasting
 - **Whitespace Detection**: Provides a safe wrapper for whitespace character identification
 - **No Dependencies**: Functions as a standalone utility module with no dependencies on other modules
+
+### Queue Module (`agerun_queue`)
+
+The [queue module](agerun_queue.md) provides a message queue implementation for agent communication with the following features:
+
+- **Message Passing**: Stores and retrieves string messages in FIFO order
+- **Circular Buffer**: Implements a circular buffer to efficiently manage message storage
+- **Fixed Capacity**: Provides a configurable maximum capacity to prevent unbounded growth
+- **Memory Management**: Manages memory for stored messages, copying them internally
+- **No Dependencies**: Functions as a standalone module with no dependencies on other modules
+- **Opaque Type**: The queue structure is opaque, encapsulating implementation details from clients
 
 ## Foundation Modules
 

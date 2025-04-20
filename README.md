@@ -147,8 +147,8 @@ Agents use a simple expression and instruction language for their methods:
 The AgeRun codebase is organized into modular components, each responsible for a specific aspect of the system:
 
 - **Map Module**: A foundational key-value store with no dependencies
+- **Queue Module**: Message queue implementation for agent communication using an opaque type
 - **Data Module**: Type-safe data storage and reference management built on the Map Module
-- **Queue Module**: Message queue implementation for agent communication
 - **Agent Module**: Agent lifecycle and message handling
 - **Method Module**: Method definition, versioning, and execution
 - **System Module**: High-level API for the runtime environment

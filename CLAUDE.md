@@ -131,6 +131,7 @@ IMPORTANT:
      - Use a forward declaration in the header file: `typedef struct name_s name_t;`
      - Define the full structure in the implementation file
      - Provide a creation function (e.g., `ar_name_create()`) that handles both allocation and initialization
+     - Provide a complementary destruction function (e.g., `ar_name_destroy()`) that handles cleanup
      - Avoid size-exposing functions (like `ar_name_size()`) as these break encapsulation
      - Remove any constants related to internal implementation details from header files
      - Provide a single creation function rather than separating allocation and initialization
@@ -139,6 +140,9 @@ IMPORTANT:
      - Implement accessor functions for any internal state that needs to be exposed
      - Document opaque types by describing their purpose and behavior, not their implementation details
      - Use complete sentences with proper punctuation in all documentation
+     - Update all dependent modules to use the new opaque type API instead of direct structure access
+     - Update tests to use the public API rather than accessing internal structure fields
+     - Handle NULL pointer checks consistently in all accessor functions
 
 3. **Make incremental changes**:
    - Implement small changes with frequent compilation checks
@@ -191,6 +195,13 @@ IMPORTANT:
    - Focus documentation on the purpose and behavior of components, not implementation details
    - Write all documentation as complete sentences with proper punctuation
    - For types and functions, describe what they do rather than how they are implemented
+   - For each module, create a separate markdown documentation file (e.g., `agerun_queue.md`) that includes:
+     - An overview of the module's purpose
+     - Key features and behaviors
+     - A complete API reference with function descriptions
+     - Usage examples demonstrating how to use the module
+     - Implementation notes that describe design decisions but not specific details
+     - For opaque type modules, emphasize the public API and avoid revealing internal structure details
 
 8. **Update development guidelines**:
    - When new important guidelines are discovered, add them to this file
