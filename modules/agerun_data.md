@@ -38,12 +38,6 @@ typedef struct data_s data_t;
 ### Functions
 
 ```c
-/**
- * Create a new data value of the specified type with default value
- * @param type Type of data to create
- * @return Pointer to the new data, or NULL on failure
- */
-data_t* ar_data_create(data_type_t type);
 
 /**
  * Create a new integer data value
@@ -119,10 +113,7 @@ const map_t *ar_data_get_map(const data_t *data);
 ### Basic Usage
 
 ```c
-// Create data using the generic function
-data_t *int_data_default = ar_data_create(DATA_INTEGER);
-
-// Create data using type-specific functions
+// Create data using the type-specific creator functions
 data_t *int_data = ar_data_create_integer(42);
 data_t *double_data = ar_data_create_double(3.14159);
 data_t *string_data = ar_data_create_string("Hello, World!");
@@ -139,7 +130,6 @@ ar_data_destroy(string_data);
 ar_data_destroy(map_data);
 ar_data_destroy(double_data);
 ar_data_destroy(int_data);
-ar_data_destroy(int_data_default);
 ```
 
 ### Using with Maps
