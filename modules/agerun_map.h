@@ -22,7 +22,7 @@ map_t* ar_map_create(void);
  * @param key Key to lookup
  * @return Pointer to the referenced value, or NULL if not found
  */
-const void* ar_map_get(map_t *map, const char *key);
+const void* ar_map_get(const map_t *map, const char *key);
 
 /**
  * Set a reference in map

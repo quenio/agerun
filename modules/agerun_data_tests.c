@@ -11,6 +11,7 @@ static void test_data_getters(void);
 static void test_integer_values(map_t *map);
 static void test_string_values(map_t *map);
 static void test_nested_maps(map_t *map);
+static void test_sub_data_getters(void);
 
 static void test_data_creation(void) {
     printf("Testing data creation for different types...\n");
@@ -263,6 +264,94 @@ static void test_nested_maps(map_t *map) {
     printf("Nested maps tests passed!\n");
 }
 
+static void test_sub_data_getters(void) {
+    printf("Testing sub data getters...\n");
+    
+    // Given a map data structure with different data types
+    data_t *map_data = ar_data_create_map();
+    map_t *map = ar_data_get_map_mutable(map_data);
+    
+    // And values of different types stored in the map
+    data_t *int_data = ar_data_create_integer(42);
+    data_t *double_data = ar_data_create_double(3.14159);
+    data_t *string_data = ar_data_create_string("Hello, World!");
+    data_t *nested_map_data = ar_data_create_map();
+    
+    // And values added to the map
+    ar_map_set(map, "int_key", int_data);
+    ar_map_set(map, "double_key", double_data);
+    ar_map_set(map, "string_key", string_data);
+    ar_map_set(map, "map_key", nested_map_data);
+    
+    // When we use the sub data getters with the correct keys
+    int int_value = ar_data_get_sub_integer(map_data, "int_key");
+    double double_value = ar_data_get_sub_double(map_data, "double_key");
+    const char *string_value = ar_data_get_sub_string(map_data, "string_key");
+    const map_t *sub_map = ar_data_get_sub_map(map_data, "map_key");
+    
+    // Then they should return the correct values
+    assert(int_value == 42);
+    assert(double_value == 3.14159);
+    assert(strcmp(string_value, "Hello, World!") == 0);
+    assert(sub_map != NULL);
+    
+    // When we use the sub data getters with incorrect keys
+    int wrong_int = ar_data_get_sub_integer(map_data, "nonexistent_key");
+    double wrong_double = ar_data_get_sub_double(map_data, "nonexistent_key");
+    const char *wrong_string = ar_data_get_sub_string(map_data, "nonexistent_key");
+    const map_t *wrong_map = ar_data_get_sub_map(map_data, "nonexistent_key");
+    
+    // Then they should return default values
+    assert(wrong_int == 0);
+    assert(wrong_double == 0.0);
+    assert(wrong_string == NULL);
+    assert(wrong_map == NULL);
+    
+    // When we use the sub data getters with NULL data or key
+    int null_data_int = ar_data_get_sub_integer(NULL, "int_key");
+    double null_key_double = ar_data_get_sub_double(map_data, NULL);
+    
+    // Then they should return default values
+    assert(null_data_int == 0);
+    assert(null_key_double == 0.0);
+    
+    // When we use the sub data getters with incorrect types
+    int wrong_type_int = ar_data_get_sub_integer(map_data, "string_key");
+    double wrong_type_double = ar_data_get_sub_double(map_data, "int_key");
+    const char *wrong_type_string = ar_data_get_sub_string(map_data, "double_key");
+    const map_t *wrong_type_map = ar_data_get_sub_map(map_data, "int_key");
+    
+    // Then they should return default values
+    assert(wrong_type_int == 0);
+    assert(wrong_type_double == 0.0);
+    assert(wrong_type_string == NULL);
+    assert(wrong_type_map == NULL);
+    
+    // When we have nested map with values
+    map_t *nested_map = ar_data_get_map_mutable(nested_map_data);
+    data_t *nested_int = ar_data_create_integer(100);
+    ar_map_set(nested_map, "nested_int", nested_int);
+    
+    // And use the sub map getter and then get a value from it
+    const map_t *retrieved_map = ar_data_get_sub_map(map_data, "map_key");
+    const data_t *retrieved_nested = (const data_t*)ar_map_get(retrieved_map, "nested_int");
+    
+    // Then the nested value should be correctly retrieved
+    assert(retrieved_nested != NULL);
+    assert(ar_data_get_type(retrieved_nested) == DATA_INTEGER);
+    assert(ar_data_get_integer(retrieved_nested) == 100);
+    
+    // Cleanup
+    ar_data_destroy(nested_int);
+    ar_data_destroy(nested_map_data);
+    ar_data_destroy(string_data);
+    ar_data_destroy(double_data);
+    ar_data_destroy(int_data);
+    ar_data_destroy(map_data);
+    
+    printf("Sub data getter tests passed!\n");
+}
+
 int main(void) {
     printf("Starting Data Module Tests...\n");
     
@@ -276,6 +365,9 @@ int main(void) {
     test_integer_values(map);
     test_string_values(map);
     test_nested_maps(map);
+    
+    // Run sub data getter tests
+    test_sub_data_getters();
     
     // Then all tests should pass
     printf("All data tests passed!\n");

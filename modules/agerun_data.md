@@ -106,6 +106,45 @@ const char *ar_data_get_string(const data_t *data);
  * @return The map value or NULL if data is NULL or not a map type
  */
 const map_t *ar_data_get_map(const data_t *data);
+
+/**
+ * Get a mutable map value from a data structure
+ * @param data Pointer to the data to retrieve from
+ * @return The map value or NULL if data is NULL or not a map type
+ */
+map_t *ar_data_get_map_mutable(data_t *data);
+
+/**
+ * Get an integer value from a map data structure by key
+ * @param data Pointer to the map data to retrieve from
+ * @param key The key to look up in the map
+ * @return The integer value, or 0 if data is NULL, not a map, key not found, or value not an integer
+ */
+int ar_data_get_sub_integer(const data_t *data, const char *key);
+
+/**
+ * Get a double value from a map data structure by key
+ * @param data Pointer to the map data to retrieve from
+ * @param key The key to look up in the map
+ * @return The double value, or 0.0 if data is NULL, not a map, key not found, or value not a double
+ */
+double ar_data_get_sub_double(const data_t *data, const char *key);
+
+/**
+ * Get a string value from a map data structure by key
+ * @param data Pointer to the map data to retrieve from
+ * @param key The key to look up in the map
+ * @return The string value, or NULL if data is NULL, not a map, key not found, or value not a string
+ */
+const char *ar_data_get_sub_string(const data_t *data, const char *key);
+
+/**
+ * Get a sub-map value from a map data structure by key
+ * @param data Pointer to the map data to retrieve from
+ * @param key The key to look up in the map
+ * @return The map value, or NULL if data is NULL, not a map, key not found, or value not a map
+ */
+const map_t *ar_data_get_sub_map(const data_t *data, const char *key);
 ```
 
 ## Usage Examples
@@ -188,6 +227,48 @@ if (retrieved_child && ar_data_get_type(retrieved_child) == DATA_MAP) {
 // This example omits cleanup details for brevity
 ```
 
+### Using Sub-Data Accessors
+
+```c
+// Create a map
+data_t *map_data = ar_data_create_map();
+map_t *map = ar_data_get_map_mutable(map_data);
+
+// Create and store values of different types
+data_t *int_data = ar_data_create_integer(42);
+data_t *double_data = ar_data_create_double(3.14159);
+data_t *string_data = ar_data_create_string("Hello, World!");
+data_t *nested_map_data = ar_data_create_map();
+
+// Store values in the map
+ar_map_set(map, "int_key", int_data);
+ar_map_set(map, "double_key", double_data);
+ar_map_set(map, "string_key", string_data);
+ar_map_set(map, "map_key", nested_map_data);
+
+// Add data to the nested map
+map_t *nested_map = ar_data_get_map_mutable(nested_map_data);
+data_t *nested_int = ar_data_create_integer(100);
+ar_map_set(nested_map, "nested_int", nested_int);
+
+// Access values directly with the sub accessors
+int int_value = ar_data_get_sub_integer(map_data, "int_key");
+double double_value = ar_data_get_sub_double(map_data, "double_key");
+const char *string_value = ar_data_get_sub_string(map_data, "string_key");
+
+// Access nested map with the sub map accessor
+const map_t *sub_map = ar_data_get_sub_map(map_data, "map_key");
+const data_t *nested_value = (const data_t*)ar_map_get(sub_map, "nested_int");
+int nested_int_value = ar_data_get_integer(nested_value);
+
+printf("Int value: %d\n", int_value);
+printf("Double value: %f\n", double_value);
+printf("String value: %s\n", string_value);
+printf("Nested int value: %d\n", nested_int_value);
+
+// Cleanup (omitted for brevity)
+```
+
 ## Implementation Notes
 
 - The data module implements an opaque type for improved encapsulation
@@ -208,3 +289,6 @@ if (retrieved_child && ar_data_get_type(retrieved_child) == DATA_MAP) {
 - String and map values are stored as references (string_ref and map_ref) within the internal data structure
 - While the map module stores references as `const void*`, the data module manages these references
 - Type safety is improved through the use of const qualifiers throughout the API
+- Sub-data accessors simplify retrieval of values from maps by keys, reducing boilerplate code
+- The sub-data accessors handle all type checking and error handling, providing safe default values
+- Nested map access is simplified with the ar_data_get_sub_map function, which directly retrieves a sub-map by key

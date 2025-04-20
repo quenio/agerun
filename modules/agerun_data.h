@@ -95,4 +95,36 @@ const map_t *ar_data_get_map(const data_t *data);
  */
 map_t *ar_data_get_map_mutable(data_t *data);
 
+/**
+ * Get an integer value from a map data structure by key
+ * @param data Pointer to the map data to retrieve from
+ * @param key The key to look up in the map
+ * @return The integer value, or 0 if data is NULL, not a map, key not found, or value not an integer
+ */
+int ar_data_get_sub_integer(const data_t *data, const char *key);
+
+/**
+ * Get a double value from a map data structure by key
+ * @param data Pointer to the map data to retrieve from
+ * @param key The key to look up in the map
+ * @return The double value, or 0.0 if data is NULL, not a map, key not found, or value not a double
+ */
+double ar_data_get_sub_double(const data_t *data, const char *key);
+
+/**
+ * Get a string value from a map data structure by key
+ * @param data Pointer to the map data to retrieve from
+ * @param key The key to look up in the map
+ * @return The string value, or NULL if data is NULL, not a map, key not found, or value not a string
+ */
+const char *ar_data_get_sub_string(const data_t *data, const char *key);
+
+/**
+ * Get a sub-map value from a map data structure by key
+ * @param data Pointer to the map data to retrieve from
+ * @param key The key to look up in the map
+ * @return The map value, or NULL if data is NULL, not a map, key not found, or value not a map
+ */
+const map_t *ar_data_get_sub_map(const data_t *data, const char *key);
+
 #endif /* AGERUN_DATA_H */
