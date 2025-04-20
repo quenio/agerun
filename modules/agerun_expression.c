@@ -14,10 +14,11 @@
 #include <stdint.h>
 
 // Evaluate an expression in the agent's context
-data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *expr, int *offset) {
-    data_t result;
-    result.type = DATA_INTEGER;
-    result.data.int_value = 0;
+data_t* ar_expression_evaluate(agent_t *agent, const char *message, const char *expr, int *offset) {
+    data_t *result = ar_data_create_integer(0);
+    if (!result) {
+        return NULL;
+    }
     
     if (!expr || !offset) {
         return result;
@@ -45,12 +46,21 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
             len++;
         }
         
-        // Allocate and copy the string
-        result.type = DATA_STRING;
-        result.data.string_value = malloc((size_t)len + 1);
-        if (result.data.string_value) {
-            strncpy(result.data.string_value, expr + start, (size_t)len);
-            result.data.string_value[len] = '\0';
+        // Allocate and create a string value
+        char *temp_str = malloc((size_t)len + 1);
+        if (temp_str) {
+            strncpy(temp_str, expr + start, (size_t)len);
+            temp_str[len] = '\0';
+            
+            // Replace our result with a new string data
+            ar_data_destroy(result);
+            result = ar_data_create_string(temp_str);
+            free(temp_str);
+            
+            if (!result) {
+                // If string creation failed, return a default integer
+                result = ar_data_create_integer(0);
+            }
         }
         
         if (expr[*offset] == '"') {
@@ -65,8 +75,12 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
         (!expr[*offset + 7] || !isalnum((unsigned char)expr[*offset + 7]))) {
         *offset += 7; // Skip "message"
         
-        result.type = DATA_STRING;
-        result.data.string_value = strdup(message ? message : "");
+        ar_data_destroy(result);
+        result = ar_data_create_string(message ? message : "");
+        if (!result) {
+            // If string creation failed, return a default integer
+            result = ar_data_create_integer(0);
+        }
         return result;
     }
     
@@ -76,7 +90,7 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
         
         // Evaluate the key expression
         int key_offset = 0;
-        data_t key_val = ar_expression_evaluate(agent, message, expr + *offset, &key_offset);
+        data_t *key_val = ar_expression_evaluate(agent, message, expr + *offset, &key_offset);
         *offset += key_offset;
         
         // Skip closing bracket
@@ -89,47 +103,50 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
         
         // Convert key to string
         char *key = NULL;
-        if (key_val.type == DATA_STRING) {
-            key = key_val.data.string_value;
-        } else if (key_val.type == DATA_INTEGER) {
+        data_type_t key_type = ar_data_get_type(key_val);
+        
+        if (key_type == DATA_STRING) {
+            key = strdup(ar_data_get_string(key_val));
+        } else if (key_type == DATA_INTEGER) {
             char temp[32];
-            snprintf(temp, sizeof(temp), "%lld", key_val.data.int_value);
+            snprintf(temp, sizeof(temp), "%lld", ar_data_get_integer(key_val));
             key = strdup(temp);
-            ar_data_destroy(&key_val);
-        } else if (key_val.type == DATA_DOUBLE) {
+        } else if (key_type == DATA_DOUBLE) {
             char temp[32];
-            snprintf(temp, sizeof(temp), "%f", key_val.data.double_value);
+            snprintf(temp, sizeof(temp), "%f", ar_data_get_double(key_val));
             key = strdup(temp);
-            ar_data_destroy(&key_val);
         }
+        
+        // Destroy the key value as we've extracted what we need
+        ar_data_destroy(key_val);
         
         if (key) {
             // Look up value in memory using the map interface
             const data_t *value = (const data_t *)ar_map_get(agent->memory, key);
             if (value) {
-                // Copy the value
-                if (value->type == DATA_STRING && value->data.string_value) {
-                    result.type = DATA_STRING;
-                    result.data.string_value = strdup(value->data.string_value);
-                } else if (value->type == DATA_INTEGER) {
-                    result.type = DATA_INTEGER;
-                    result.data.int_value = value->data.int_value;
-                } else if (value->type == DATA_DOUBLE) {
-                    result.type = DATA_DOUBLE;
-                    result.data.double_value = value->data.double_value;
-                } else if (value->type == DATA_MAP) {
-                    result.type = DATA_MAP;
-                    // Create a deep copy of the map
-                    result.data.map_value = ar_map_create();
+                // Replace our result with a new data object based on the value
+                ar_data_destroy(result);
+                
+                data_type_t value_type = ar_data_get_type(value);
+                if (value_type == DATA_STRING) {
+                    result = ar_data_create_string(ar_data_get_string(value));
+                } else if (value_type == DATA_INTEGER) {
+                    result = ar_data_create_integer(ar_data_get_integer(value));
+                } else if (value_type == DATA_DOUBLE) {
+                    result = ar_data_create_double(ar_data_get_double(value));
+                } else if (value_type == DATA_MAP) {
+                    // Create a new map
+                    result = ar_data_create_map();
                     // We'd implement map copying here if needed
+                }
+                
+                if (!result) {
+                    // If creation failed, return a default integer
+                    result = ar_data_create_integer(0);
                 }
             }
             
-            if (key_val.type != DATA_STRING) {
-                free(key);
-            } else {
-                free(key_val.data.string_value);
-            }
+            free(key);
         }
         
         return result;
@@ -169,12 +186,20 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
             }
         }
         
+        // Replace our result with the appropriate numeric type
+        ar_data_destroy(result);
+        
         if (is_double) {
-            result.type = DATA_DOUBLE;
-            result.data.double_value = is_negative ? -double_value : double_value;
+            double final_value = is_negative ? -double_value : double_value;
+            result = ar_data_create_double(final_value);
         } else {
-            result.type = DATA_INTEGER;
-            result.data.int_value = is_negative ? -value : value;
+            int64_t final_value = is_negative ? -value : value;
+            result = ar_data_create_integer(final_value);
+        }
+        
+        if (!result) {
+            // If creation failed, return a default integer
+            result = ar_data_create_integer(0);
         }
         
         return result;
@@ -204,7 +229,7 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
                 (*offset)++; // Skip opening parenthesis
                 
                 // Parse arguments
-                data_t args[10]; // Support up to 10 arguments
+                data_t *args[10] = {NULL}; // Support up to 10 arguments
                 int arg_count = 0;
                 
                 // Skip whitespace
@@ -244,27 +269,35 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
                 // Process specific functions
                 if (strcmp(func_name, "send") == 0) {
                     // send(agent_id, message)
-                    if (arg_count >= 2) {
+                    if (arg_count >= 2 && args[0] && args[1]) {
                         agent_id_t target_id = 0;
                         char *send_message = NULL;
                         
                         // Get target agent ID
-                        if (args[0].type == DATA_INTEGER) {
-                            target_id = args[0].data.int_value;
-                        } else if (args[0].type == DATA_STRING && args[0].data.string_value) {
-                            target_id = atoll(args[0].data.string_value);
+                        data_type_t arg0_type = ar_data_get_type(args[0]);
+                        if (arg0_type == DATA_INTEGER) {
+                            target_id = ar_data_get_integer(args[0]);
+                        } else if (arg0_type == DATA_STRING) {
+                            const char *id_str = ar_data_get_string(args[0]);
+                            if (id_str) {
+                                target_id = atoll(id_str);
+                            }
                         }
                         
                         // Get message content
-                        if (args[1].type == DATA_STRING && args[1].data.string_value) {
-                            send_message = args[1].data.string_value;
-                        } else if (args[1].type == DATA_INTEGER) {
+                        data_type_t arg1_type = ar_data_get_type(args[1]);
+                        if (arg1_type == DATA_STRING) {
+                            const char *msg_str = ar_data_get_string(args[1]);
+                            if (msg_str) {
+                                send_message = strdup(msg_str);
+                            }
+                        } else if (arg1_type == DATA_INTEGER) {
                             char temp[32];
-                            snprintf(temp, sizeof(temp), "%lld", args[1].data.int_value);
+                            snprintf(temp, sizeof(temp), "%lld", ar_data_get_integer(args[1]));
                             send_message = strdup(temp);
-                        } else if (args[1].type == DATA_DOUBLE) {
+                        } else if (arg1_type == DATA_DOUBLE) {
                             char temp[32];
-                            snprintf(temp, sizeof(temp), "%f", args[1].data.double_value);
+                            snprintf(temp, sizeof(temp), "%f", ar_data_get_double(args[1]));
                             send_message = strdup(temp);
                         }
                         
@@ -273,71 +306,82 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
                             ar_agent_send(target_id, send_message);
                             
                             // Set result to success
-                            result.type = DATA_INTEGER;
-                            result.data.int_value = 1;
-                        }
-                        
-                        // Free temporary message string
-                        if (args[1].type != DATA_STRING && send_message) {
-                            free(send_message);
-                        }
-                    }
-                } else if (strcmp(func_name, "build") == 0) {
-                    // build(format, arg1, arg2, ...)
-                    if (arg_count >= 1 && args[0].type == DATA_STRING && args[0].data.string_value) {
-                        char *format = args[0].data.string_value;
-                        char result_str[1024] = {0};
-                        int result_pos = 0;
-                        
-                        // Simple format string processing
-                        for (int i = 0; format[i] && (size_t)result_pos < sizeof(result_str) - 1; i++) {
-                            if (format[i] == '{' && format[i+1] == '}') {
-                                // Replace {} with next argument
-                                int arg_idx = 1 + (result_pos % (arg_count - 1));
-                                
-                                if (arg_idx < arg_count) {
-                                    if (args[arg_idx].type == DATA_STRING && args[arg_idx].data.string_value) {
-                                        size_t str_len = strlen(args[arg_idx].data.string_value);
-                                        int len = (int)str_len;
-                                        if ((size_t)(result_pos + len) < sizeof(result_str) - 1) {
-                                            strcpy(result_str + result_pos, args[arg_idx].data.string_value);
-                                            result_pos += len;
-                                        }
-                                    } else if (args[arg_idx].type == DATA_INTEGER) {
-                                        char temp[32];
-                                        int len = snprintf(temp, sizeof(temp), "%lld", args[arg_idx].data.int_value);
-                                        if ((size_t)(result_pos + len) < sizeof(result_str) - 1) {
-                                            strcpy(result_str + result_pos, temp);
-                                            result_pos += len;
-                                        }
-                                    } else if (args[arg_idx].type == DATA_DOUBLE) {
-                                        char temp[32];
-                                        int len = snprintf(temp, sizeof(temp), "%f", args[arg_idx].data.double_value);
-                                        if ((size_t)(result_pos + len) < sizeof(result_str) - 1) {
-                                            strcpy(result_str + result_pos, temp);
-                                            result_pos += len;
-                                        }
-                                    }
-                                }
-                                
-                                i++; // Skip the closing brace
-                            } else {
-                                // Copy character as is
-                                result_str[result_pos++] = format[i];
+                            ar_data_destroy(result);
+                            result = ar_data_create_integer(1);
+                            if (!result) {
+                                result = ar_data_create_integer(0);
                             }
                         }
                         
-                        result_str[result_pos] = '\0';
-                        
-                        // Set result to the built string
-                        result.type = DATA_STRING;
-                        result.data.string_value = strdup(result_str);
+                        // Free temporary message string
+                        free(send_message);
+                    }
+                } else if (strcmp(func_name, "build") == 0) {
+                    // build(format, arg1, arg2, ...)
+                    if (arg_count >= 1 && args[0] && ar_data_get_type(args[0]) == DATA_STRING) {
+                        const char *format = ar_data_get_string(args[0]);
+                        if (format) {
+                            char result_str[1024] = {0};
+                            int result_pos = 0;
+                            
+                            // Simple format string processing
+                            for (int i = 0; format[i] && (size_t)result_pos < sizeof(result_str) - 1; i++) {
+                                if (format[i] == '{' && format[i+1] == '}') {
+                                    // Replace {} with next argument
+                                    int arg_idx = 1 + (result_pos % (arg_count - 1));
+                                    
+                                    if (arg_idx < arg_count && args[arg_idx]) {
+                                        data_type_t arg_type = ar_data_get_type(args[arg_idx]);
+                                        
+                                        if (arg_type == DATA_STRING) {
+                                            const char *str_val = ar_data_get_string(args[arg_idx]);
+                                            if (str_val) {
+                                                size_t str_len = strlen(str_val);
+                                                int len = (int)str_len;
+                                                if ((size_t)(result_pos + len) < sizeof(result_str) - 1) {
+                                                    strcpy(result_str + result_pos, str_val);
+                                                    result_pos += len;
+                                                }
+                                            }
+                                        } else if (arg_type == DATA_INTEGER) {
+                                            char temp[32];
+                                            int len = snprintf(temp, sizeof(temp), "%lld", ar_data_get_integer(args[arg_idx]));
+                                            if ((size_t)(result_pos + len) < sizeof(result_str) - 1) {
+                                                strcpy(result_str + result_pos, temp);
+                                                result_pos += len;
+                                            }
+                                        } else if (arg_type == DATA_DOUBLE) {
+                                            char temp[32];
+                                            int len = snprintf(temp, sizeof(temp), "%f", ar_data_get_double(args[arg_idx]));
+                                            if ((size_t)(result_pos + len) < sizeof(result_str) - 1) {
+                                                strcpy(result_str + result_pos, temp);
+                                                result_pos += len;
+                                            }
+                                        }
+                                    }
+                                    
+                                    i++; // Skip the closing brace
+                                } else {
+                                    // Copy character as is
+                                    result_str[result_pos++] = format[i];
+                                }
+                            }
+                            
+                            result_str[result_pos] = '\0';
+                            
+                            // Set result to the built string
+                            ar_data_destroy(result);
+                            result = ar_data_create_string(result_str);
+                            if (!result) {
+                                result = ar_data_create_integer(0);
+                            }
+                        }
                     }
                 }
                 
                 // Free argument values
                 for (int i = 0; i < arg_count; i++) {
-                    ar_data_destroy(&args[i]);
+                    ar_data_destroy(args[i]);
                 }
             }
         }
@@ -356,44 +400,67 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
         
         // Evaluate right operand
         int right_offset = 0;
-        data_t right_val = ar_expression_evaluate(agent, message, expr + *offset, &right_offset);
+        data_t *right_val = ar_expression_evaluate(agent, message, expr + *offset, &right_offset);
         *offset += right_offset;
         
-        // Perform operation
-        if (result.type == DATA_INTEGER && right_val.type == DATA_INTEGER) {
-            switch (op) {
-                case '+': result.data.int_value += right_val.data.int_value; break;
-                case '-': result.data.int_value -= right_val.data.int_value; break;
-                case '*': result.data.int_value *= right_val.data.int_value; break;
-                case '/': 
-                    if (right_val.data.int_value != 0) {
-                        result.data.int_value /= right_val.data.int_value;
-                    }
-                    break;
-            }
-        } else if ((result.type == DATA_DOUBLE || right_val.type == DATA_DOUBLE)) {
-            // Convert to double for operation
-            double left_val = (result.type == DATA_INTEGER) ? 
-                (double)result.data.int_value : result.data.double_value;
-                
-            double right_double = (right_val.type == DATA_INTEGER) ? 
-                (double)right_val.data.int_value : right_val.data.double_value;
-                
-            result.type = DATA_DOUBLE;
+        if (right_val) {
+            data_type_t left_type = ar_data_get_type(result);
+            data_type_t right_type = ar_data_get_type(right_val);
             
-            switch (op) {
-                case '+': result.data.double_value = left_val + right_double; break;
-                case '-': result.data.double_value = left_val - right_double; break;
-                case '*': result.data.double_value = left_val * right_double; break;
-                case '/': 
-                    if (right_double != 0.0) {
-                        result.data.double_value = left_val / right_double;
-                    }
-                    break;
+            // Perform operation
+            if (left_type == DATA_INTEGER && right_type == DATA_INTEGER) {
+                int64_t left_int = ar_data_get_integer(result);
+                int64_t right_int = ar_data_get_integer(right_val);
+                int64_t new_int_val = 0;
+                
+                switch (op) {
+                    case '+': new_int_val = left_int + right_int; break;
+                    case '-': new_int_val = left_int - right_int; break;
+                    case '*': new_int_val = left_int * right_int; break;
+                    case '/': 
+                        if (right_int != 0) {
+                            new_int_val = left_int / right_int;
+                        }
+                        break;
+                }
+                
+                // Create a new result with the calculated value
+                data_t *new_result = ar_data_create_integer(new_int_val);
+                if (new_result) {
+                    ar_data_destroy(result);
+                    result = new_result;
+                }
+            } else if ((left_type == DATA_DOUBLE || right_type == DATA_DOUBLE)) {
+                // Convert to double for operation
+                double left_val = (left_type == DATA_INTEGER) ? 
+                    (double)ar_data_get_integer(result) : ar_data_get_double(result);
+                    
+                double right_double = (right_type == DATA_INTEGER) ? 
+                    (double)ar_data_get_integer(right_val) : ar_data_get_double(right_val);
+                
+                double new_double_val = 0.0;
+                switch (op) {
+                    case '+': new_double_val = left_val + right_double; break;
+                    case '-': new_double_val = left_val - right_double; break;
+                    case '*': new_double_val = left_val * right_double; break;
+                    case '/': 
+                        if (right_double != 0.0) {
+                            new_double_val = left_val / right_double;
+                        }
+                        break;
+                }
+                
+                // Create a new result with the calculated value
+                data_t *new_result = ar_data_create_double(new_double_val);
+                if (new_result) {
+                    ar_data_destroy(result);
+                    result = new_result;
+                }
             }
+            
+            // Clean up the right operand
+            ar_data_destroy(right_val);
         }
-        
-        ar_data_destroy(&right_val);
     }
     
     return result;

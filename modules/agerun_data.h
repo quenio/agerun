@@ -16,54 +16,46 @@ typedef enum {
 } data_type_t;
 
 /**
- * Data structure for storing various data types
+ * Opaque data structure for storing various data types
  */
-typedef struct data_s {
-    data_type_t type;
-    union {
-        int64_t int_value;
-        double double_value;
-        char *string_value;
-        map_t *map_value;
-    } data;
-} data_t;
+typedef struct data_s data_t;
 
 /**
  * Create a new data value of the specified type with default value
  * @param type Type of data to create
- * @return Data value of the requested type
+ * @return Pointer to the new data, or NULL on failure
  */
-data_t ar_data_create(data_type_t type);
+data_t* ar_data_create(data_type_t type);
 
 /**
  * Create a new integer data value
  * @param value Integer value to initialize with
- * @return Data value containing the integer
+ * @return Pointer to the new data, or NULL on failure
  */
-data_t ar_data_create_integer(int64_t value);
+data_t* ar_data_create_integer(int64_t value);
 
 /**
  * Create a new double data value
  * @param value Double value to initialize with
- * @return Data value containing the double
+ * @return Pointer to the new data, or NULL on failure
  */
-data_t ar_data_create_double(double value);
+data_t* ar_data_create_double(double value);
 
 /**
  * Create a new string data value
  * @param value String value to initialize with (will be copied)
- * @return Data value containing the string
+ * @return Pointer to the new data, or NULL on failure
  */
-data_t ar_data_create_string(const char *value);
+data_t* ar_data_create_string(const char *value);
 
 /**
  * Create a new map data value
- * @return Data value containing an empty map
+ * @return Pointer to the new data, or NULL on failure
  */
-data_t ar_data_create_map(void);
+data_t* ar_data_create_map(void);
 
 /**
- * Free resources associated with a data structure
+ * Free resources associated with a data structure and release memory
  * @param data Pointer to the data to destroy
  */
 void ar_data_destroy(data_t *data);
@@ -97,10 +89,17 @@ double ar_data_get_double(const data_t *data);
 const char *ar_data_get_string(const data_t *data);
 
 /**
- * Get the map value from a data structure
+ * Get the map value from a data structure (read-only)
  * @param data Pointer to the data to retrieve from
  * @return The map value or NULL if data is NULL or not a map type
  */
 const map_t *ar_data_get_map(const data_t *data);
+
+/**
+ * Get a mutable map value from a data structure
+ * @param data Pointer to the data to retrieve from
+ * @return The map value or NULL if data is NULL or not a map type
+ */
+map_t *ar_data_get_map_mutable(data_t *data);
 
 #endif /* AGERUN_DATA_H */

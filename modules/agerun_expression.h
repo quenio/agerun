@@ -11,9 +11,9 @@
  * @param message The message being processed
  * @param expr The expression to evaluate
  * @param offset Pointer to current position in the expression
- * @return The evaluated data result
+ * @return Pointer to the evaluated data result, or NULL on failure
  */
-data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *expr, int *offset);
+data_t* ar_expression_evaluate(agent_t *agent, const char *message, const char *expr, int *offset);
 
 #endif /* AGERUN_EXPRESSION_H */
 

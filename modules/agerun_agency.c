@@ -178,27 +178,28 @@ bool ar_agency_load_agents(void) {
                         break;
                     }
                     
-                    data_t value;
+                    data_t *value = NULL;
                     if (strcmp(type, "int") == 0) {
-                        value.type = DATA_INTEGER;
-                        if (fscanf(fp, "%lld", &value.data.int_value) != 1) {
+                        int64_t int_value;
+                        if (fscanf(fp, "%lld", &int_value) != 1) {
                             printf("Error: Could not read int value\n");
                             break;
                         }
+                        value = ar_data_create_integer(int_value);
                     } else if (strcmp(type, "double") == 0) {
-                        value.type = DATA_DOUBLE;
-                        if (fscanf(fp, "%lf", &value.data.double_value) != 1) {
+                        double double_value;
+                        if (fscanf(fp, "%lf", &double_value) != 1) {
                             printf("Error: Could not read double value\n");
                             break;
                         }
+                        value = ar_data_create_double(double_value);
                     } else if (strcmp(type, "string") == 0) {
-                        value.type = DATA_STRING;
                         char str[1024];
                         if (fscanf(fp, "%1023s", str) != 1) {
                             printf("Error: Could not read string value\n");
                             break;
                         }
-                        value.data.string_value = strdup(str);
+                        value = ar_data_create_string(str);
                     } else {
                         // Skip unknown type
                         char line[1024];
@@ -206,10 +207,9 @@ bool ar_agency_load_agents(void) {
                         continue;
                     }
                     
-                    ar_map_set(agents[j].memory, key, &value);
-                    
-                    if (value.type == DATA_STRING && value.data.string_value) {
-                        free(value.data.string_value);
+                    if (value) {
+                        ar_map_set(agents[j].memory, key, value);
+                        // Note: Do not free value here, it's now owned by the map
                     }
                 }
                 

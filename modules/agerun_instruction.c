@@ -31,16 +31,21 @@ bool ar_instruction_run(agent_t *agent, const char *message, const char *instruc
         
         // Evaluate the value expression
         int offset = 0;
-        data_t value = ar_expression_evaluate(agent, message, value_expr, &offset);
+        data_t *value = ar_expression_evaluate(agent, message, value_expr, &offset);
         
-        // Store in agent's memory
-        ar_map_set(agent->memory, key, &value);
+        // Store in agent's memory and then clean up (map_set makes a copy)
+        if (value) {
+            ar_map_set(agent->memory, key, value);
+            ar_data_destroy(value);
+        }
     }
     // Parse function call or other expression
     else {
         int offset = 0;
-        data_t result_val = ar_expression_evaluate(agent, message, instr_trimmed, &offset);
-        ar_data_destroy(&result_val); // Discard the result
+        data_t *result_val = ar_expression_evaluate(agent, message, instr_trimmed, &offset);
+        if (result_val) {
+            ar_data_destroy(result_val); // Discard the result
+        }
     }
     
     free(instr_copy);

@@ -3,26 +3,47 @@
 #include <string.h>
 
 /**
+ * Data structure for storing various data types
+ */
+struct data_s {
+    data_type_t type;
+    union {
+        int64_t int_value;
+        double double_value;
+        char *string_value;
+        map_t *map_value;
+    } data;
+};
+
+/**
  * Create a new data value of the specified type with default value
  * @param type Type of data to create
- * @return Data value of the requested type
+ * @return Pointer to the new data, or NULL on failure
  */
-data_t ar_data_create(data_type_t type) {
-    data_t data;
-    data.type = type;
+data_t* ar_data_create(data_type_t type) {
+    data_t* data = (data_t*)malloc(sizeof(data_t));
+    if (!data) {
+        return NULL;
+    }
+    
+    data->type = type;
     
     switch (type) {
         case DATA_INTEGER:
-            data.data.int_value = 0;
+            data->data.int_value = 0;
             break;
         case DATA_DOUBLE:
-            data.data.double_value = 0.0;
+            data->data.double_value = 0.0;
             break;
         case DATA_STRING:
-            data.data.string_value = NULL;
+            data->data.string_value = NULL;
             break;
         case DATA_MAP:
-            data.data.map_value = ar_map_create();
+            data->data.map_value = ar_map_create();
+            if (!data->data.map_value) {
+                free(data);
+                return NULL;
+            }
             break;
     }
     
@@ -32,52 +53,78 @@ data_t ar_data_create(data_type_t type) {
 /**
  * Create a new integer data value
  * @param value Integer value to initialize with
- * @return Data value containing the integer
+ * @return Pointer to the new data, or NULL on failure
  */
-data_t ar_data_create_integer(int64_t value) {
-    data_t data;
-    data.type = DATA_INTEGER;
-    data.data.int_value = value;
+data_t* ar_data_create_integer(int64_t value) {
+    data_t* data = (data_t*)malloc(sizeof(data_t));
+    if (!data) {
+        return NULL;
+    }
+    
+    data->type = DATA_INTEGER;
+    data->data.int_value = value;
     return data;
 }
 
 /**
  * Create a new double data value
  * @param value Double value to initialize with
- * @return Data value containing the double
+ * @return Pointer to the new data, or NULL on failure
  */
-data_t ar_data_create_double(double value) {
-    data_t data;
-    data.type = DATA_DOUBLE;
-    data.data.double_value = value;
+data_t* ar_data_create_double(double value) {
+    data_t* data = (data_t*)malloc(sizeof(data_t));
+    if (!data) {
+        return NULL;
+    }
+    
+    data->type = DATA_DOUBLE;
+    data->data.double_value = value;
     return data;
 }
 
 /**
  * Create a new string data value
  * @param value String value to initialize with (will be copied)
- * @return Data value containing the string
+ * @return Pointer to the new data, or NULL on failure
  */
-data_t ar_data_create_string(const char *value) {
-    data_t data;
-    data.type = DATA_STRING;
-    data.data.string_value = value ? strdup(value) : NULL;
+data_t* ar_data_create_string(const char *value) {
+    data_t* data = (data_t*)malloc(sizeof(data_t));
+    if (!data) {
+        return NULL;
+    }
+    
+    data->type = DATA_STRING;
+    data->data.string_value = value ? strdup(value) : NULL;
+    if (value && !data->data.string_value) {
+        free(data);
+        return NULL;
+    }
+    
     return data;
 }
 
 /**
  * Create a new map data value
- * @return Data value containing an empty map
+ * @return Pointer to the new data, or NULL on failure
  */
-data_t ar_data_create_map(void) {
-    data_t data;
-    data.type = DATA_MAP;
-    data.data.map_value = ar_map_create();
+data_t* ar_data_create_map(void) {
+    data_t* data = (data_t*)malloc(sizeof(data_t));
+    if (!data) {
+        return NULL;
+    }
+    
+    data->type = DATA_MAP;
+    data->data.map_value = ar_map_create();
+    if (!data->data.map_value) {
+        free(data);
+        return NULL;
+    }
+    
     return data;
 }
 
 /**
- * Free resources associated with a data structure
+ * Free resources associated with a data structure and release memory
  * @param data Pointer to the data to destroy
  */
 void ar_data_destroy(data_t *data) {
@@ -90,6 +137,8 @@ void ar_data_destroy(data_t *data) {
         ar_map_destroy(data->data.map_value);
         data->data.map_value = NULL;
     }
+    
+    free(data);
 }
 
 /**
@@ -141,11 +190,23 @@ const char *ar_data_get_string(const data_t *data) {
 }
 
 /**
- * Get the map value from a data structure
+ * Get the map value from a data structure (read-only)
  * @param data Pointer to the data to retrieve from
  * @return The map value or NULL if data is NULL or not a map type
  */
 const map_t *ar_data_get_map(const data_t *data) {
+    if (!data || data->type != DATA_MAP) {
+        return NULL;
+    }
+    return data->data.map_value;
+}
+
+/**
+ * Get a mutable map value from a data structure
+ * @param data Pointer to the data to retrieve from
+ * @return The map value or NULL if data is NULL or not a map type
+ */
+map_t *ar_data_get_map_mutable(data_t *data) {
     if (!data || data->type != DATA_MAP) {
         return NULL;
     }
