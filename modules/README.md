@@ -97,13 +97,13 @@ The string module provides utility functions for string manipulation with the fo
 
 ### Queue Module (`agerun_queue`)
 
-The [queue module](agerun_queue.md) provides a message queue implementation for agent communication with the following features:
+The [queue module](agerun_queue.md) provides a generic queue implementation for storing references with the following features:
 
-- **Message Passing**: Stores and retrieves string message references in FIFO order
-- **Circular Buffer**: Implements a circular buffer to efficiently manage message storage
-- **Fixed Capacity**: Provides a fixed maximum capacity of 256 messages to prevent unbounded growth
-- **Reference Based**: Only stores references to messages, not copies of the messages themselves
-- **No Memory Management**: Does not manage memory for stored messages, only references them
+- **Reference Passing**: Stores and retrieves references in FIFO order
+- **Circular Buffer**: Implements a circular buffer to efficiently manage reference storage
+- **Fixed Capacity**: Provides a fixed maximum capacity of 256 references to prevent unbounded growth
+- **Generic Storage**: Stores void pointers, allowing for any type of reference to be stored
+- **No Memory Management**: Does not manage memory for referenced content, only stores pointers
 - **Minimal Interface**: Provides only essential operations (create, destroy, push, pop, is_empty)
 - **No Dependencies**: Functions independently without relying on other modules
 - **Opaque Type**: The queue structure is opaque, encapsulating implementation details from clients
