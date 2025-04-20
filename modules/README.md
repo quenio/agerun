@@ -63,6 +63,17 @@ The [map module](agerun_map.md) provides a fundamental key-value storage impleme
 - **No Memory Management**: Does not manage memory for either keys or values
 - **No Dependencies**: This is a foundational module with no dependencies on other modules
 
+### String Module (`agerun_string`)
+
+The string module provides utility functions for string manipulation with the following features:
+
+- **String Trimming**: Removes leading and trailing whitespace from strings
+- **Safe Character Handling**: Ensures proper handling of character values with safe typecasting
+- **Whitespace Detection**: Provides a safe wrapper for whitespace character identification
+- **No Dependencies**: Functions as a standalone utility module with no dependencies on other modules
+
+## Foundation Modules
+
 ### Data Module (`agerun_data`)
 
 The [data module](agerun_data.md) builds on the map module to provide typed data storage with the following features:
@@ -72,12 +83,3 @@ The [data module](agerun_data.md) builds on the map module to provide typed data
 - **Reference Management**: Handles reference counting for nested maps and complex structures
 - **Type Safety**: Ensures proper handling of different data types
 - **Depends on Map**: Uses the map module for underlying storage
-
-### String Module (`agerun_string`)
-
-The string module provides utility functions for string manipulation with the following features:
-
-- **String Trimming**: Removes leading and trailing whitespace from strings
-- **Safe Character Handling**: Ensures proper handling of character values with safe typecasting
-- **Whitespace Detection**: Provides a safe wrapper for whitespace character identification
-- **No Dependencies**: Functions as a standalone utility module with no dependencies on other modules
