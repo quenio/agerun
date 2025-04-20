@@ -57,13 +57,13 @@ The AgeRun system is organized into hierarchical layers, with each layer buildin
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                 Foundation Modules                       │
-│  (agerun_data, ...)                                      │
+│                 Foundation Modules                      │
+│  (agerun_data, ...)                                     │
 └────────────────────────────┬────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────┐
-│                    Core Modules                          │
+│                    Core Modules                         │
 │  (agerun_map, agerun_string, agerun_queue)              │
 └─────────────────────────────────────────────────────────┘
 ```
