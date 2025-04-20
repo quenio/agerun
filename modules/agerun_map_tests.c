@@ -29,8 +29,12 @@ static void test_map_create(void) {
     const int *retrieved = ar_map_get(map, test_key);
     assert(retrieved != NULL);
     assert(*retrieved == test_value);
+    assert(retrieved == &test_value);
     
     // Cleanup
+    // Following the guideline to free containers first, then contents
+    // In this case, the map is the container and test_value is stack-allocated
+    // so no manual freeing of the content is needed
     ar_map_free(map);
     
     printf("All ar_map_create() tests passed!\n");
@@ -67,9 +71,13 @@ static void test_map_set_get_simple(void) {
     printf("Retrieved integer value: %d\n", *get_result);
     assert(*get_result == 42);
     
+    // And the pointer should be the same as the original reference
+    assert(get_result == ref);
+    
     // Cleanup
-    free(ref); // We need to free the referenced value ourselves
+    // Following the guideline to free containers first, then contents
     ar_map_free(map);
+    free(ref); // Now free the referenced value after freeing the container
     
     printf("ar_map_set() and ar_map_get() simple value test passed!\n");
 }
