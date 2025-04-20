@@ -7,6 +7,7 @@
 
 // Forward declarations
 static void test_data_creation(void);
+static void test_data_getters(void);
 static void test_integer_values(map_t *map);
 static void test_string_values(map_t *map);
 static void test_nested_maps(map_t *map);
@@ -70,6 +71,72 @@ static void test_data_creation(void) {
     ar_data_destroy(&string_data);
     
     printf("Data creation tests passed!\n");
+}
+
+static void test_data_getters(void) {
+    printf("Testing data getters...\n");
+    
+    // Given data values of different types
+    data_t int_data = ar_data_create_integer(42);
+    data_t double_data = ar_data_create_double(3.14159);
+    data_t string_data = ar_data_create_string("Hello, World!");
+    data_t map_data = ar_data_create_map();
+    
+    // When we use the type getter
+    data_type_t int_type = ar_data_get_type(&int_data);
+    data_type_t double_type = ar_data_get_type(&double_data);
+    data_type_t string_type = ar_data_get_type(&string_data);
+    data_type_t map_type = ar_data_get_type(&map_data);
+    data_type_t null_type = ar_data_get_type(NULL);
+    
+    // Then the types should be correct
+    assert(int_type == DATA_INT);
+    assert(double_type == DATA_DOUBLE);
+    assert(string_type == DATA_STRING);
+    assert(map_type == DATA_MAP);
+    assert(null_type == DATA_INT); // Default to int if NULL
+    
+    // When we use the value getters with the correct types
+    int64_t int_value = ar_data_get_integer(&int_data);
+    double double_value = ar_data_get_double(&double_data);
+    const char *string_value = ar_data_get_string(&string_data);
+    const map_t *map_value = ar_data_get_map(&map_data);
+    
+    // Then they should return the correct values
+    assert(int_value == 42);
+    assert(double_value == 3.14159);
+    assert(strcmp(string_value, "Hello, World!") == 0);
+    assert(map_value != NULL);
+    
+    // When we use the getters with incorrect types
+    int64_t wrong_int = ar_data_get_integer(&string_data);
+    double wrong_double = ar_data_get_double(&int_data);
+    const char *wrong_string = ar_data_get_string(&int_data);
+    const map_t *wrong_map = ar_data_get_map(&double_data);
+    
+    // Then they should return default values
+    assert(wrong_int == 0);
+    assert(wrong_double == 0.0);
+    assert(wrong_string == NULL);
+    assert(wrong_map == NULL);
+    
+    // When we use the getters with NULL
+    int64_t null_int = ar_data_get_integer(NULL);
+    double null_double = ar_data_get_double(NULL);
+    const char *null_string = ar_data_get_string(NULL);
+    const map_t *null_map = ar_data_get_map(NULL);
+    
+    // Then they should return default values
+    assert(null_int == 0);
+    assert(null_double == 0.0);
+    assert(null_string == NULL);
+    assert(null_map == NULL);
+    
+    // Cleanup
+    ar_data_destroy(&string_data);
+    ar_data_destroy(&map_data);
+    
+    printf("Data getter tests passed!\n");
 }
 
 static void test_integer_values(map_t *map) {
@@ -192,6 +259,7 @@ int main(void) {
     
     // When we run all data tests
     test_data_creation();
+    test_data_getters();
     test_integer_values(map);
     test_string_values(map);
     test_nested_maps(map);

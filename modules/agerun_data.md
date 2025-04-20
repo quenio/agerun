@@ -56,6 +56,21 @@ data_t ar_data_create_map(void);
 
 // Free resources associated with a data structure
 void ar_data_destroy(data_t *data);
+
+// Get the type of a data structure
+data_type_t ar_data_get_type(const data_t *data);
+
+// Get the integer value from a data structure
+int64_t ar_data_get_integer(const data_t *data);
+
+// Get the double value from a data structure
+double ar_data_get_double(const data_t *data);
+
+// Get the string value from a data structure
+const char *ar_data_get_string(const data_t *data);
+
+// Get the map value from a data structure
+const map_t *ar_data_get_map(const data_t *data);
 ```
 
 ## Usage Examples
@@ -91,7 +106,7 @@ ar_map_set(map, "answer", &int_data);
 
 // Retrieve the data from the map
 const data_t *retrieved = (const data_t*)ar_map_get(map, "answer");
-printf("The answer is: %lld\n", retrieved->data.int_value);
+printf("The answer is: %lld\n", ar_data_get_integer(retrieved));
 
 // Clean up - make sure to free the map values before destroying the map
 ar_map_destroy(map);
@@ -117,10 +132,11 @@ ar_map_set(parent_map.data.map_value, "child", &child_map);
 
 // Retrieve and use the nested data
 const data_t *retrieved_child = (const data_t*)ar_map_get(parent_map.data.map_value, "child");
-if (retrieved_child && retrieved_child->type == DATA_MAP) {
-    const data_t *count = (const data_t*)ar_map_get(retrieved_child->data.map_value, "count");
-    if (count && count->type == DATA_INT) {
-        printf("Count value: %lld\n", count->data.int_value);
+if (retrieved_child && ar_data_get_type(retrieved_child) == DATA_MAP) {
+    const map_t *child_map = ar_data_get_map(retrieved_child);
+    const data_t *count = (const data_t*)ar_map_get(child_map, "count");
+    if (count && ar_data_get_type(count) == DATA_INT) {
+        printf("Count value: %lld\n", ar_data_get_integer(count));
     }
 }
 
@@ -136,7 +152,10 @@ ar_data_destroy(&parent_map);
 - The data module takes over reference counting responsibility from the map module
 - Type-specific creator functions provide a safer API that prevents direct manipulation of data_t fields
 - Always use the specialized creator functions instead of directly assigning to data_t fields
+- Use getter functions to access values rather than directly accessing structure fields
+- The getter functions handle type checking and provide appropriate default values when types don't match
 - The specialized creator functions handle all necessary memory allocation for strings and maps
 - The ar_data_destroy function handles the internal cleanup of strings and maps
 - While the map module stores references as `const void*`, the data module manages these references
 - Type safety is improved through the use of const qualifiers throughout the API
+- Getter functions for maps return const pointers to enforce proper encapsulation
