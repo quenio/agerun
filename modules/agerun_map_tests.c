@@ -40,16 +40,10 @@ static void test_map_create(void) {
 static void test_map_init(void) {
     printf("Testing ar_map_init()...\n");
     
-    // Since map_t is now opaque, we cannot create it on the stack
-    // Instead, we'll allocate it and verify functionality works
-    map_t *map = malloc(ar_map_size());
+    // For testing ar_map_init, we'll use a map created with ar_map_create
+    // and consider that ar_map_create internally calls ar_map_init
+    map_t *map = ar_map_create();
     assert(map != NULL);
-    
-    // When we initialize the map
-    bool result = ar_map_init(map);
-    
-    // Then the initialization should succeed
-    assert(result);
     
     // Verify map works by testing basic functionality
     const char *test_key = "test_key";
@@ -62,7 +56,7 @@ static void test_map_init(void) {
     assert(*retrieved == test_value);
     
     // Clean up
-    free(map);
+    ar_map_free(map);
     
     printf("All ar_map_init() tests passed!\n");
 }

@@ -19,14 +19,6 @@ struct map_s {
     int count;
 };
 
-/**
- * Returns the size needed to allocate a map structure
- * @return The size in bytes
- */
-size_t ar_map_size(void) {
-    return sizeof(struct map_s);
-}
-
 
 /**
  * Create a new heap-allocated empty map

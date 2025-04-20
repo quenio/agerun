@@ -12,11 +12,6 @@
  */
 typedef struct map_s map_t;
 
-/**
- * Returns the size needed to allocate a map structure
- * @return The size in bytes
- */
-size_t ar_map_size(void);
 
 /**
  * Create a new heap-allocated empty map
