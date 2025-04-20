@@ -64,6 +64,12 @@ IMPORTANT:
    - No tabs, only spaces
    - Maximum line length of 100 characters
    - All source files must end with a newline
+   - IMPORTANT: Every text file MUST end with a newline character
+     - The C standard requires all source files to end with a newline
+     - This includes .c, .h, and documentation files
+     - When creating new files, always add a final empty line
+     - When using echo/printf to write files, end the content with '\n'
+     - This avoids compiler warnings and errors about "no newline at end of file"
 
 2. **Naming Conventions**:
    - Function names: `ar_lowercase_with_underscores` (with `ar_` prefix)

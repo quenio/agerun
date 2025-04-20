@@ -2,9 +2,7 @@
 #define AGERUN_QUEUE_H
 
 #include <stdbool.h>
-
-/* Constants */
-#define MAX_MESSAGE_LENGTH 1024
+#include "agerun_message.h"
 
 /**
  * A message queue structure for agent communication.

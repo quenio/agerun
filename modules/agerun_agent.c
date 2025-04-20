@@ -6,6 +6,7 @@
 #include "agerun_methodology.h"
 #include "agerun_map.h"
 #include "agerun_queue.h"
+#include "agerun_message.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,7 +15,6 @@
 #include <stdint.h>
 
 /* Constants */
-#define MAX_MESSAGE_LENGTH 1024
 
 /* Implementation */
 agent_id_t ar_agent_create(const char *method_name, version_t version, void *context) {

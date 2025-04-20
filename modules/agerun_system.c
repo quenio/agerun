@@ -7,6 +7,7 @@
 #include "agerun_agency.h"
 #include "agerun_queue.h"
 #include "agerun_map.h"
+#include "agerun_message.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,7 +18,8 @@
 
 /* Constants are now defined in their respective module header files:
  * - MAX_METHODS, MAX_VERSIONS_PER_METHOD, MAX_METHOD_NAME_LENGTH, MAX_INSTRUCTIONS_LENGTH in agerun_methodology.h
- * - MAX_MESSAGE_LENGTH, QUEUE_SIZE in agerun_queue.h
+ * - MAX_MESSAGE_LENGTH in agerun_message.h
+ * - QUEUE_SIZE in agerun_queue.h
  * - MAX_AGENTS, MAX_METHOD_NAME_LENGTH in agerun_agent.h
  */
 

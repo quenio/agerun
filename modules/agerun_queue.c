@@ -1,9 +1,9 @@
 #include "agerun_queue.h"
+#include "agerun_message.h"
 #include <string.h>
 #include <stdlib.h>
 
 /* Constants */
-#define MAX_MESSAGE_LENGTH 1024  // Maximum length of a message
 #define QUEUE_SIZE 256           // Maximum number of messages in the queue
 
 /**
