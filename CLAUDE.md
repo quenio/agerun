@@ -130,6 +130,7 @@ IMPORTANT:
      - Define the full structure in the implementation file
      - Provide a creation function (e.g., `ar_name_create()`) that handles both allocation and initialization
      - Avoid size-exposing functions (like `ar_name_size()`) as these break encapsulation
+     - Remove any constants related to internal implementation details from header files
      - Provide a single creation function rather than separating allocation and initialization
      - Consolidate initialization logic directly into the creation function
      - Never expose separate initialization functions if there's only one way to initialize

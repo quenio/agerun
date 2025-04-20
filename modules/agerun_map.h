@@ -4,9 +4,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-/* Constants */
-#define MAP_SIZE 64
-
 /**
  * A key-value mapping structure that associates string keys with pointer values.
  */
