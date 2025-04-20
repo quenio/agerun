@@ -55,7 +55,7 @@ data_t ar_data_create_string(const char *value);
 data_t ar_data_create_map(void);
 
 // Free resources associated with a data structure
-void ar_data_free(data_t *data);
+void ar_data_destroy(data_t *data);
 ```
 
 ## Usage Examples
@@ -73,8 +73,8 @@ data_t string_data = ar_data_create_string("Hello, World!");
 data_t map_data = ar_data_create_map();
 
 // Clean up
-ar_data_free(&string_data);
-ar_data_free(&map_data);
+ar_data_destroy(&string_data);
+ar_data_destroy(&map_data);
 ```
 
 ### Using with Maps
@@ -125,7 +125,7 @@ if (retrieved_child && retrieved_child->type == DATA_MAP) {
 }
 
 // Clean up the parent map, which will clean up child maps
-ar_data_free(&parent_map);
+ar_data_destroy(&parent_map);
 ```
 
 ## Implementation Notes
@@ -137,6 +137,6 @@ ar_data_free(&parent_map);
 - Type-specific creator functions provide a safer API that prevents direct manipulation of data_t fields
 - Always use the specialized creator functions instead of directly assigning to data_t fields
 - The specialized creator functions handle all necessary memory allocation for strings and maps
-- The ar_data_free function handles the internal cleanup of strings and maps
+- The ar_data_destroy function handles the internal cleanup of strings and maps
 - While the map module stores references as `const void*`, the data module manages these references
 - Type safety is improved through the use of const qualifiers throughout the API

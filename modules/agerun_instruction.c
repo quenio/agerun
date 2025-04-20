@@ -40,7 +40,7 @@ bool ar_instruction_run(agent_t *agent, const char *message, const char *instruc
     else {
         int offset = 0;
         data_t result_val = ar_expression_evaluate(agent, message, instr_trimmed, &offset);
-        ar_data_free(&result_val); // Discard the result
+        ar_data_destroy(&result_val); // Discard the result
     }
     
     free(instr_copy);

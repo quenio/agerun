@@ -78,9 +78,9 @@ data_t ar_data_create_map(void) {
 
 /**
  * Free resources associated with a data structure
- * @param data Pointer to the data to free
+ * @param data Pointer to the data to destroy
  */
-void ar_data_free(data_t *data) {
+void ar_data_destroy(data_t *data) {
     if (!data) return;
     
     if (data->type == DATA_STRING && data->data.string_value) {

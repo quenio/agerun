@@ -95,12 +95,12 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
             char temp[32];
             snprintf(temp, sizeof(temp), "%lld", key_val.data.int_value);
             key = strdup(temp);
-            ar_data_free(&key_val);
+            ar_data_destroy(&key_val);
         } else if (key_val.type == DATA_DOUBLE) {
             char temp[32];
             snprintf(temp, sizeof(temp), "%f", key_val.data.double_value);
             key = strdup(temp);
-            ar_data_free(&key_val);
+            ar_data_destroy(&key_val);
         }
         
         if (key) {
@@ -337,7 +337,7 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
                 
                 // Free argument values
                 for (int i = 0; i < arg_count; i++) {
-                    ar_data_free(&args[i]);
+                    ar_data_destroy(&args[i]);
                 }
             }
         }
@@ -393,7 +393,7 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
             }
         }
         
-        ar_data_free(&right_val);
+        ar_data_destroy(&right_val);
     }
     
     return result;

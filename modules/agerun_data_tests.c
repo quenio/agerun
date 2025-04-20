@@ -65,9 +65,9 @@ static void test_data_creation(void) {
     assert(map_data.data.map_value != NULL);
     
     // Cleanup
-    ar_data_free(&map_data_default);
-    ar_data_free(&map_data);
-    ar_data_free(&string_data);
+    ar_data_destroy(&map_data_default);
+    ar_data_destroy(&map_data);
+    ar_data_destroy(&string_data);
     
     printf("Data creation tests passed!\n");
 }
