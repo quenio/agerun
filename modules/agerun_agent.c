@@ -6,7 +6,6 @@
 #include "agerun_methodology.h"
 #include "agerun_map.h"
 #include "agerun_queue.h"
-#include "agerun_message.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -89,8 +88,8 @@ bool ar_agent_destroy(agent_id_t agent_id) {
             ar_agent_send(agent_id, "__sleep__");
             
             // Process the sleep message
-            char message[MAX_MESSAGE_LENGTH];
-            if (ar_queue_pop(agents[i].queue, message)) {
+            const char *message = ar_queue_pop(agents[i].queue);
+            if (message) {
                 // Find the method definition to process the sleep message
                 method_t *method = ar_methodology_get_method(agents[i].method_name, agents[i].method_version);
                 if (method) {

@@ -30,8 +30,7 @@ agerun_executable
 │   ├── agerun_agent
 │   │   ├── agerun_agency
 │   │   ├── agerun_map
-│   │   ├── agerun_queue
-│   │   └── agerun_message
+│   │   └── agerun_queue
 │   ├── agerun_method
 │   │   ├── agerun_methodology
 │   │   │   └── agerun_string
@@ -48,9 +47,7 @@ agerun_executable
 │   ├── agerun_agency
 │   ├── agerun_data
 │   │   └── agerun_map   /* data depends on map, not the other way around */
-│   ├── agerun_queue
-│   │   └── agerun_message
-│   └── agerun_message
+│   └── agerun_queue
 └── agerun_methodology
 ```
 
@@ -67,7 +64,7 @@ The AgeRun system is organized into hierarchical layers, with each layer buildin
                                ▼
 ┌───────────────────────────────────────────────────────────┐
 │                      Core Modules                         │
-│  (agerun_map, agerun_string, agerun_queue, agerun_message)│
+│  (agerun_map, agerun_string, agerun_queue)                │
 └───────────────────────────────────────────────────────────┘
 ```
 
@@ -97,24 +94,18 @@ The string module provides utility functions for string manipulation with the fo
 - **Whitespace Detection**: Provides a safe wrapper for whitespace character identification
 - **No Dependencies**: Functions as a standalone utility module with no dependencies on other modules
 
-### Message Module (`agerun_message`)
-
-The [message module](agerun_message.md) defines constants and utilities for message handling in the system:
-
-- **Message Constants**: Defines the maximum length for messages (MAX_MESSAGE_LENGTH)
-- **Centralized Definitions**: Provides a single source of truth for message-related constants
-- **No Dependencies**: Functions as a standalone utility module with no dependencies on other modules
 
 ### Queue Module (`agerun_queue`)
 
 The [queue module](agerun_queue.md) provides a message queue implementation for agent communication with the following features:
 
-- **Message Passing**: Stores and retrieves string messages in FIFO order
+- **Message Passing**: Stores and retrieves string message references in FIFO order
 - **Circular Buffer**: Implements a circular buffer to efficiently manage message storage
-- **Fixed Capacity**: Provides a configurable maximum capacity to prevent unbounded growth
-- **Memory Management**: Manages memory for stored messages, copying them internally
+- **Fixed Capacity**: Provides a fixed maximum capacity of 256 messages to prevent unbounded growth
+- **Reference Based**: Only stores references to messages, not copies of the messages themselves
+- **No Memory Management**: Does not manage memory for stored messages, only references them
 - **Minimal Interface**: Provides only essential operations (create, destroy, push, pop, is_empty)
-- **Depends on Message**: Uses the message module for message size constants
+- **No Dependencies**: Functions independently without relying on other modules
 - **Opaque Type**: The queue structure is opaque, encapsulating implementation details from clients
 
 ## Foundation Modules

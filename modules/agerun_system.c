@@ -7,7 +7,6 @@
 #include "agerun_agency.h"
 #include "agerun_queue.h"
 #include "agerun_map.h"
-#include "agerun_message.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,7 +17,6 @@
 
 /* Constants are now defined in their respective module header files:
  * - MAX_METHODS, MAX_VERSIONS_PER_METHOD, MAX_METHOD_NAME_LENGTH, MAX_INSTRUCTIONS_LENGTH in agerun_methodology.h
- * - MAX_MESSAGE_LENGTH in agerun_message.h
  * - QUEUE_SIZE in agerun_queue.h
  * - MAX_AGENTS, MAX_METHOD_NAME_LENGTH in agerun_agent.h
  */
@@ -97,8 +95,8 @@ bool ar_system_process_next_message(void) {
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (agents[i].is_active && !ar_queue_is_empty(agents[i].queue)) {
             // Process one message
-            char message[MAX_MESSAGE_LENGTH];
-            if (ar_queue_pop(agents[i].queue, message)) {
+            const char *message = ar_queue_pop(agents[i].queue);
+            if (message) {
                 // Use the interpret_method function from agerun_agent
                 // Since that's now private, we need to call the method directly
                 method_t *method = ar_methodology_get_method(agents[i].method_name, agents[i].method_version);
@@ -133,7 +131,7 @@ int ar_system_process_all_messages(void) {
 
 // This function has been moved to agerun_value.c
 
-/* Queue functions are now defined in agerun_message.c */
+/* Queue functions are now defined in agerun_queue.c */
 
 
 

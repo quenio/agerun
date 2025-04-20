@@ -1,6 +1,4 @@
 #include "agerun_queue.h"
-#include "agerun_message.h"
-#include <string.h>
 #include <stdlib.h>
 
 /* Constants */
@@ -11,10 +9,10 @@
  * Uses a circular buffer for efficient message storage.
  */
 struct queue_s {
-    char messages[QUEUE_SIZE][MAX_MESSAGE_LENGTH];  // Message storage
-    int head;                                       // Index of the oldest message
-    int tail;                                       // Index for inserting new messages
-    int size;                                       // Current number of messages
+    const char *messages[QUEUE_SIZE];  // Message storage (references only)
+    int head;                          // Index of the oldest message
+    int tail;                          // Index for inserting new messages
+    int size;                          // Current number of messages
 };
 
 /**
@@ -43,20 +41,15 @@ void ar_queue_destroy(queue_t *queue) {
 }
 
 /**
- * Adds a message to the queue.
- * The message is copied, so the original can be safely modified after this call.
+ * Adds a message reference to the queue.
+ * The message is not copied, only its reference is stored.
  */
 bool ar_queue_push(queue_t *queue, const char *message) {
     if (!queue || !message || queue->size >= QUEUE_SIZE) {
         return false;
     }
     
-    size_t message_length = strlen(message);
-    size_t copy_length = message_length < MAX_MESSAGE_LENGTH - 1 ? message_length : MAX_MESSAGE_LENGTH - 1;
-    
-    memcpy(queue->messages[queue->tail], message, copy_length);
-    queue->messages[queue->tail][copy_length] = '\0';
-    
+    queue->messages[queue->tail] = message;
     queue->tail = (queue->tail + 1) % QUEUE_SIZE;
     queue->size++;
     
@@ -64,19 +57,18 @@ bool ar_queue_push(queue_t *queue, const char *message) {
 }
 
 /**
- * Removes and returns the oldest message from the queue.
+ * Removes and returns a reference to the oldest message from the queue.
  */
-bool ar_queue_pop(queue_t *queue, char *message) {
-    if (!queue || !message || queue->size == 0) {
-        return false;
+const char* ar_queue_pop(queue_t *queue) {
+    if (!queue || queue->size == 0) {
+        return NULL;
     }
     
-    strcpy(message, queue->messages[queue->head]);
-    
+    const char *message = queue->messages[queue->head];
     queue->head = (queue->head + 1) % QUEUE_SIZE;
     queue->size--;
     
-    return true;
+    return message;
 }
 
 /**
