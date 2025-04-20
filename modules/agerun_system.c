@@ -93,10 +93,10 @@ bool ar_system_process_next_message(void) {
     // Find an agent with a non-empty message queue
     agent_t* agents = ar_agency_get_agents();
     for (int i = 0; i < MAX_AGENTS; i++) {
-        if (agents[i].is_active && agents[i].queue.size > 0) {
+        if (agents[i].is_active && !ar_queue_is_empty(agents[i].queue)) {
             // Process one message
             char message[MAX_MESSAGE_LENGTH];
-            if (ar_queue_pop(&agents[i].queue, message)) {
+            if (ar_queue_pop(agents[i].queue, message)) {
                 // Use the interpret_method function from agerun_agent
                 // Since that's now private, we need to call the method directly
                 method_t *method = ar_methodology_get_method(agents[i].method_name, agents[i].method_version);

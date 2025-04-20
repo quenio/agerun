@@ -102,6 +102,7 @@ The [queue module](agerun_queue.md) provides a message queue implementation for 
 - **Circular Buffer**: Implements a circular buffer to efficiently manage message storage
 - **Fixed Capacity**: Provides a configurable maximum capacity to prevent unbounded growth
 - **Memory Management**: Manages memory for stored messages, copying them internally
+- **Minimal Interface**: Provides only essential operations (create, destroy, push, pop, is_empty)
 - **No Dependencies**: Functions as a standalone module with no dependencies on other modules
 - **Opaque Type**: The queue structure is opaque, encapsulating implementation details from clients
 

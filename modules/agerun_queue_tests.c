@@ -25,7 +25,6 @@ static void test_queue_create_destroy(void) {
     
     // And the queue should be empty
     assert(ar_queue_is_empty(queue));
-    assert(ar_queue_size(queue) == 0);
     
     // When we destroy the queue
     ar_queue_destroy(queue);
@@ -46,8 +45,7 @@ static void test_queue_push_pop_single(void) {
     // Then the push should succeed
     assert(push_result);
     
-    // And the queue size should be incremented
-    assert(ar_queue_size(queue) == 1);
+    // And the queue should not be empty
     assert(!ar_queue_is_empty(queue));
     
     // When we pop a message from the queue
@@ -61,7 +59,6 @@ static void test_queue_push_pop_single(void) {
     assert(strcmp(message, "Hello, World!") == 0);
     
     // And the queue should be empty
-    assert(ar_queue_size(queue) == 0);
     assert(ar_queue_is_empty(queue));
     
     // Clean up
@@ -105,8 +102,8 @@ static void test_queue_push_pop_multiple(void) {
     assert(push2);
     assert(push3);
     
-    // And the queue size should be incremented correctly
-    assert(ar_queue_size(queue) == 3);
+    // And the queue should not be empty
+    assert(!ar_queue_is_empty(queue));
     
     // When we pop the first message
     char message[1024]; // Using a reasonable size for tests
@@ -131,7 +128,6 @@ static void test_queue_push_pop_multiple(void) {
     assert(strcmp(message, "Message 3") == 0);
     
     // And the queue should be empty
-    assert(ar_queue_size(queue) == 0);
     assert(ar_queue_is_empty(queue));
     
     // Clean up
@@ -208,7 +204,6 @@ static void test_queue_wrap_around(void) {
     }
     
     // Then the queue should be empty 
-    assert(ar_queue_size(queue) == 0);
     assert(ar_queue_is_empty(queue));
     
     // And popping from the empty queue should fail

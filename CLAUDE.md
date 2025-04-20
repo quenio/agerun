@@ -10,9 +10,9 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 
 When making changes, always follow these steps to ensure code quality:
 
-1. **Build the project**:
+1. **Clean and build the project**:
    ```
-   make
+   make clean && make
    ```
 
 2. **Build the executable application**:
@@ -33,6 +33,7 @@ When making changes, always follow these steps to ensure code quality:
    (The Makefile handles changing to the bin directory)
 
 IMPORTANT: 
+- Always do a clean build before running tests and the executable to ensure all changes are properly incorporated.
 - Always run the executable after running tests to verify changes work in practical application contexts, not just in test environments.
 - Always run `make` from the top-level of the repository.
 - Always run tests and the executable with the `bin` directory as the current directory.
@@ -203,7 +204,14 @@ IMPORTANT:
      - Implementation notes that describe design decisions but not specific details
      - For opaque type modules, emphasize the public API and avoid revealing internal structure details
 
-8. **Update development guidelines**:
+8. **Keep modules with minimal interfaces**:
+   - Remove functions that are not used in the implementation code
+   - Only expose what's truly needed by clients of the module
+   - Aim for focused, cohesive modules with well-defined responsibilities
+   - Smaller interfaces are easier to understand, test, and maintain
+   - Avoid exposing functions that are only used in tests
+
+9. **Update development guidelines**:
    - When new important guidelines are discovered, add them to this file
    - Keep this CLAUDE.md file updated with current best practices
    - Consider this file the source of truth for development procedures

@@ -3,6 +3,9 @@
 
 #include <stdbool.h>
 
+/* Constants */
+#define MAX_MESSAGE_LENGTH 1024
+
 /**
  * A message queue structure for agent communication.
  */
@@ -43,11 +46,5 @@ bool ar_queue_pop(queue_t *queue, char *message);
  */
 bool ar_queue_is_empty(const queue_t *queue);
 
-/**
- * Get the current size of the queue.
- * @param queue Queue to get size of.
- * @return Number of messages in queue, or 0 if queue is NULL.
- */
-int ar_queue_size(const queue_t *queue);
 
 #endif /* AGERUN_QUEUE_H */

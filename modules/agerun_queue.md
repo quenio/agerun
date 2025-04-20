@@ -50,9 +50,6 @@ bool ar_queue_pop(queue_t *queue, char *message);
 ```c
 // Check if the queue is empty
 bool ar_queue_is_empty(const queue_t *queue);
-
-// Get the current size of the queue
-int ar_queue_size(const queue_t *queue);
 ```
 
 ## Usage Examples
@@ -68,8 +65,6 @@ ar_queue_push(queue, "Hello, World!");
 ar_queue_push(queue, "Another message");
 
 // Check queue state
-int size = ar_queue_size(queue);
-printf("Queue size: %d\n", size);
 bool empty = ar_queue_is_empty(queue);
 printf("Queue empty: %s\n", empty ? "true" : "false");
 

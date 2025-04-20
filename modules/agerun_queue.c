@@ -86,9 +86,3 @@ bool ar_queue_is_empty(const queue_t *queue) {
     return queue ? queue->size == 0 : true;
 }
 
-/**
- * Returns the current number of messages in the queue.
- */
-int ar_queue_size(const queue_t *queue) {
-    return queue ? queue->size : 0;
-}
