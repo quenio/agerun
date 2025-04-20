@@ -110,9 +110,9 @@ printf("The count is: %d\n", *retrieved_value);
 free((void*)value);  // Free the value
 // No need to free keys as they're string literals
 
-// Warning: inner_map must be freed before outer_map to avoid use-after-free
-ar_map_free(inner_map);  
+// Warning: outer_map must be freed before inner_map to avoid use-after-free
 ar_map_free(outer_map);
+ar_map_free(inner_map);
 ```
 
 ## Implementation Notes
