@@ -130,6 +130,8 @@ IMPORTANT:
      - Define the full structure in the implementation file
      - Provide allocation/initialization functions with appropriate memory management
      - Implement accessor functions for any internal state that needs to be exposed
+     - Document opaque types by describing their purpose and behavior, not their implementation details
+     - Use complete sentences with proper punctuation in all documentation
 
 3. **Make incremental changes**:
    - Implement small changes with frequent compilation checks
@@ -178,6 +180,9 @@ IMPORTANT:
    - Make sure tests and executable work before updating documentation
    - Documentation updates should include README.md, SPEC.md, and any other relevant files
    - Never leave documentation in an inconsistent state with the code
+   - Focus documentation on the purpose and behavior of components, not implementation details
+   - Write all documentation as complete sentences with proper punctuation
+   - For types and functions, describe what they do rather than how they are implemented
 
 8. **Update development guidelines**:
    - When new important guidelines are discovered, add them to this file

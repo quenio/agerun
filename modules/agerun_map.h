@@ -8,7 +8,7 @@
 #define MAP_SIZE 64
 
 /**
- * Forward declaration for the opaque map type
+ * A key-value mapping structure that associates string keys with pointer values.
  */
 typedef struct map_s map_t;
 
