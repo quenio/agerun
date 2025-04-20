@@ -2,17 +2,17 @@
 #include <stdlib.h>
 
 /* Constants */
-#define QUEUE_SIZE 256           // Maximum number of messages in the queue
+#define QUEUE_SIZE 256           // Maximum number of references in the queue
 
 /**
  * Queue structure implementation.
- * Uses a circular buffer for efficient message storage.
+ * Uses a circular buffer for efficient reference storage.
  */
 struct queue_s {
-    const char *messages[QUEUE_SIZE];  // Message storage (references only)
-    int head;                          // Index of the oldest message
-    int tail;                          // Index for inserting new messages
-    int size;                          // Current number of messages
+    const void *refs[QUEUE_SIZE];  // Reference storage (not copied)
+    int head;                       // Index of the oldest reference
+    int tail;                       // Index for inserting new references
+    int size;                       // Current number of references
 };
 
 /**
@@ -41,15 +41,15 @@ void ar_queue_destroy(queue_t *queue) {
 }
 
 /**
- * Adds a message reference to the queue.
- * The message is not copied, only its reference is stored.
+ * Adds a reference to the queue.
+ * The reference is not copied, only stored.
  */
-bool ar_queue_push(queue_t *queue, const char *message) {
-    if (!queue || !message || queue->size >= QUEUE_SIZE) {
+bool ar_queue_push(queue_t *queue, const void *ref) {
+    if (!queue || !ref || queue->size >= QUEUE_SIZE) {
         return false;
     }
     
-    queue->messages[queue->tail] = message;
+    queue->refs[queue->tail] = ref;
     queue->tail = (queue->tail + 1) % QUEUE_SIZE;
     queue->size++;
     
@@ -57,18 +57,18 @@ bool ar_queue_push(queue_t *queue, const char *message) {
 }
 
 /**
- * Removes and returns a reference to the oldest message from the queue.
+ * Removes and returns the oldest reference from the queue.
  */
-const char* ar_queue_pop(queue_t *queue) {
+const void* ar_queue_pop(queue_t *queue) {
     if (!queue || queue->size == 0) {
         return NULL;
     }
     
-    const char *message = queue->messages[queue->head];
+    const void *ref = queue->refs[queue->head];
     queue->head = (queue->head + 1) % QUEUE_SIZE;
     queue->size--;
     
-    return message;
+    return ref;
 }
 
 /**

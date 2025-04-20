@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 /**
- * A message queue structure for agent communication.
+ * A generic queue structure for storing references.
  */
 typedef struct queue_s queue_t;
 
@@ -21,19 +21,19 @@ queue_t* ar_queue_create(void);
 void ar_queue_destroy(queue_t *queue);
 
 /**
- * Push a message to the queue.
+ * Push a reference to the queue.
  * @param queue Queue to push to.
- * @param message Message to push (reference only, not copied).
+ * @param ref Reference to push (not copied).
  * @return true if successful, false if queue is full or parameters are invalid.
  */
-bool ar_queue_push(queue_t *queue, const char *message);
+bool ar_queue_push(queue_t *queue, const void *ref);
 
 /**
- * Pop a message from the queue.
+ * Pop a reference from the queue.
  * @param queue Queue to pop from.
- * @return Pointer to the next message, or NULL if queue is empty or invalid.
+ * @return Pointer to the next reference, or NULL if queue is empty or invalid.
  */
-const char* ar_queue_pop(queue_t *queue);
+const void* ar_queue_pop(queue_t *queue);
 
 /**
  * Check if the queue is empty.

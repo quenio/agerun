@@ -12,7 +12,7 @@ static void test_queue_push_pop_multiple(void);
 static void test_queue_wrap_around(void);
 static void test_queue_full(void);
 
-// We need static messages for tests since queue now only stores references
+// We need static strings for tests since queue now only stores references
 static char g_message_hello[] = "Hello, World!";
 static char g_message_1[] = "Message 1";
 static char g_message_2[] = "Message 2";
@@ -43,12 +43,12 @@ static void test_queue_create_destroy(void) {
 }
 
 static void test_queue_push_pop_single(void) {
-    printf("Testing ar_queue_push() and ar_queue_pop() with a single message...\n");
+    printf("Testing ar_queue_push() and ar_queue_pop() with a single reference...\n");
     
     // Given an initialized queue
     queue_t *queue = ar_queue_create();
     
-    // When we push a message to the queue
+    // When we push a reference to the queue
     bool push_result = ar_queue_push(queue, g_message_hello);
     
     // Then the push should succeed
@@ -57,17 +57,17 @@ static void test_queue_push_pop_single(void) {
     // And the queue should not be empty
     assert(!ar_queue_is_empty(queue));
     
-    // When we pop a message from the queue
-    const char *message = ar_queue_pop(queue);
+    // When we pop a reference from the queue
+    const void *ref = ar_queue_pop(queue);
     
-    // Then the pop should return a valid message pointer
-    assert(message != NULL);
+    // Then the pop should return a valid reference pointer
+    assert(ref != NULL);
     
-    // And the message content should match what we pushed
-    assert(strcmp(message, "Hello, World!") == 0);
+    // And the reference content should match what we pushed
+    assert(strcmp((const char *)ref, "Hello, World!") == 0);
     
     // And it should be the exact same pointer we pushed
-    assert(message == g_message_hello);
+    assert(ref == g_message_hello);
     
     // And the queue should be empty
     assert(ar_queue_is_empty(queue));
@@ -75,7 +75,7 @@ static void test_queue_push_pop_single(void) {
     // Clean up
     ar_queue_destroy(queue);
     
-    printf("Push and pop single message test passed!\n");
+    printf("Push and pop single reference test passed!\n");
 }
 
 static void test_queue_pop_empty(void) {
@@ -85,10 +85,10 @@ static void test_queue_pop_empty(void) {
     queue_t *queue = ar_queue_create();
     
     // When we attempt to pop from the empty queue
-    const char *message = ar_queue_pop(queue);
+    const void *ref = ar_queue_pop(queue);
     
     // Then the pop operation should return NULL
-    assert(message == NULL);
+    assert(ref == NULL);
     
     // Clean up
     ar_queue_destroy(queue);
@@ -97,12 +97,12 @@ static void test_queue_pop_empty(void) {
 }
 
 static void test_queue_push_pop_multiple(void) {
-    printf("Testing ar_queue_push() and ar_queue_pop() with multiple messages...\n");
+    printf("Testing ar_queue_push() and ar_queue_pop() with multiple references...\n");
     
     // Given an initialized queue
     queue_t *queue = ar_queue_create();
     
-    // When we push multiple messages to the queue
+    // When we push multiple references to the queue
     bool push1 = ar_queue_push(queue, g_message_1);
     bool push2 = ar_queue_push(queue, g_message_2);
     bool push3 = ar_queue_push(queue, g_message_3);
@@ -115,41 +115,41 @@ static void test_queue_push_pop_multiple(void) {
     // And the queue should not be empty
     assert(!ar_queue_is_empty(queue));
     
-    // When we pop the first message
-    const char *message1 = ar_queue_pop(queue);
+    // When we pop the first reference
+    const void *ref1 = ar_queue_pop(queue);
     
-    // Then the pop should return a valid message pointer
-    assert(message1 != NULL);
+    // Then the pop should return a valid reference pointer
+    assert(ref1 != NULL);
     
-    // And the message content should match what we pushed
-    assert(strcmp(message1, "Message 1") == 0);
-    
-    // And it should be the exact same pointer we pushed
-    assert(message1 == g_message_1);
-    
-    // When we pop the second message
-    const char *message2 = ar_queue_pop(queue);
-    
-    // Then the pop should return a valid message pointer
-    assert(message2 != NULL);
-    
-    // And the message content should match what we pushed
-    assert(strcmp(message2, "Message 2") == 0);
+    // And the reference content should match what we pushed
+    assert(strcmp((const char *)ref1, "Message 1") == 0);
     
     // And it should be the exact same pointer we pushed
-    assert(message2 == g_message_2);
+    assert(ref1 == g_message_1);
     
-    // When we pop the third message
-    const char *message3 = ar_queue_pop(queue);
+    // When we pop the second reference
+    const void *ref2 = ar_queue_pop(queue);
     
-    // Then the pop should return a valid message pointer
-    assert(message3 != NULL);
+    // Then the pop should return a valid reference pointer
+    assert(ref2 != NULL);
     
-    // And the message content should match what we pushed
-    assert(strcmp(message3, "Message 3") == 0);
+    // And the reference content should match what we pushed
+    assert(strcmp((const char *)ref2, "Message 2") == 0);
     
     // And it should be the exact same pointer we pushed
-    assert(message3 == g_message_3);
+    assert(ref2 == g_message_2);
+    
+    // When we pop the third reference
+    const void *ref3 = ar_queue_pop(queue);
+    
+    // Then the pop should return a valid reference pointer
+    assert(ref3 != NULL);
+    
+    // And the reference content should match what we pushed
+    assert(strcmp((const char *)ref3, "Message 3") == 0);
+    
+    // And it should be the exact same pointer we pushed
+    assert(ref3 == g_message_3);
     
     // And the queue should be empty
     assert(ar_queue_is_empty(queue));
@@ -157,7 +157,7 @@ static void test_queue_push_pop_multiple(void) {
     // Clean up
     ar_queue_destroy(queue);
     
-    printf("Push and pop multiple messages test passed!\n");
+    printf("Push and pop multiple references test passed!\n");
 }
 
 static void test_queue_wrap_around(void) {
@@ -183,20 +183,20 @@ static void test_queue_wrap_around(void) {
         assert(ar_queue_push(queue, g_message_buffer[i]));
     }
     
-    // When we pop half the messages
+    // When we pop half the references
     for (int i = 0; i < (TEST_QUEUE_SIZE - 1) / 2; i++) {
-        const char *message = ar_queue_pop(queue);
+        const void *ref = ar_queue_pop(queue);
         
-        // Then each pop should return a valid message pointer
-        assert(message != NULL);
+        // Then each pop should return a valid reference pointer
+        assert(ref != NULL);
         
-        // And the messages should match what we pushed
+        // And the references should match what we pushed
         char expected[32];
         sprintf(expected, "Message %d", i);
-        assert(strcmp(message, expected) == 0);
+        assert(strcmp((const char *)ref, expected) == 0);
         
         // And it should be the exact same pointer we pushed
-        assert(message == g_message_buffer[i]);
+        assert(ref == g_message_buffer[i]);
     }
     
     // When we push more messages to force wrap-around
@@ -208,36 +208,36 @@ static void test_queue_wrap_around(void) {
         assert(push_result);
     }
     
-    // When we pop the remaining original messages
+    // When we pop the remaining original references
     for (int i = start_idx; i < TEST_QUEUE_SIZE - 1; i++) {
-        const char *message = ar_queue_pop(queue);
+        const void *ref = ar_queue_pop(queue);
         
-        // Then each pop should return a valid message pointer
-        assert(message != NULL);
+        // Then each pop should return a valid reference pointer
+        assert(ref != NULL);
         
-        // And the messages should match the original ones
+        // And the references should match the original ones
         char expected[32];
         sprintf(expected, "Message %d", i);
-        assert(strcmp(message, expected) == 0);
+        assert(strcmp((const char *)ref, expected) == 0);
         
         // And it should be the exact same pointer we pushed
-        assert(message == g_message_buffer[i]);
+        assert(ref == g_message_buffer[i]);
     }
     
-    // When we pop the wrap-around messages
+    // When we pop the wrap-around references
     for (int i = 0; i < (TEST_QUEUE_SIZE - 1) / 2; i++) {
-        const char *message = ar_queue_pop(queue);
+        const void *ref = ar_queue_pop(queue);
         
-        // Then each pop should return a valid message pointer
-        assert(message != NULL);
+        // Then each pop should return a valid reference pointer
+        assert(ref != NULL);
         
-        // And the messages should match the wrap-around ones
+        // And the references should match the wrap-around ones
         char expected[32];
         sprintf(expected, "Wrap %d", i);
-        assert(strcmp(message, expected) == 0);
+        assert(strcmp((const char *)ref, expected) == 0);
         
         // And it should be the exact same pointer we pushed
-        assert(message == g_message_buffer[i + TEST_QUEUE_SIZE - 1]);
+        assert(ref == g_message_buffer[i + TEST_QUEUE_SIZE - 1]);
     }
     
     // Then the queue should be empty 
@@ -282,17 +282,17 @@ static void test_queue_full(void) {
     // Then the push operation should fail
     assert(!overflow_result);
     
-    // When we pop one message
-    const char *message = ar_queue_pop(queue);
+    // When we pop one reference
+    const void *ref = ar_queue_pop(queue);
     
-    // Then the pop should return a valid message pointer
-    assert(message != NULL);
+    // Then the pop should return a valid reference pointer
+    assert(ref != NULL);
     
-    // And the message should match the first one we pushed
-    assert(strcmp(message, "Message 0") == 0);
+    // And the reference should match the first one we pushed
+    assert(strcmp((const char *)ref, "Message 0") == 0);
     
     // And it should be the exact same pointer we pushed
-    assert(message == g_message_buffer[0]);
+    assert(ref == g_message_buffer[0]);
     
     // When we push a new message after making space
     bool replacement_result = ar_queue_push(queue, g_message_replacement);
