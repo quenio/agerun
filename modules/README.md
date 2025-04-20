@@ -30,7 +30,8 @@ agerun_executable
 │   ├── agerun_agent
 │   │   ├── agerun_agency
 │   │   ├── agerun_map
-│   │   └── agerun_queue
+│   │   ├── agerun_queue
+│   │   └── agerun_message
 │   ├── agerun_method
 │   │   ├── agerun_methodology
 │   │   │   └── agerun_string
@@ -47,7 +48,9 @@ agerun_executable
 │   ├── agerun_agency
 │   ├── agerun_data
 │   │   └── agerun_map   /* data depends on map, not the other way around */
-│   └── agerun_queue
+│   ├── agerun_queue
+│   │   └── agerun_message
+│   └── agerun_message
 └── agerun_methodology
 ```
 
@@ -64,7 +67,7 @@ The AgeRun system is organized into hierarchical layers, with each layer buildin
                              ▼
 ┌─────────────────────────────────────────────────────────┐
 │                    Core Modules                         │
-│  (agerun_map, agerun_string, agerun_queue)              │
+│  (agerun_map, agerun_string, agerun_queue, agerun_message) │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -94,6 +97,14 @@ The string module provides utility functions for string manipulation with the fo
 - **Whitespace Detection**: Provides a safe wrapper for whitespace character identification
 - **No Dependencies**: Functions as a standalone utility module with no dependencies on other modules
 
+### Message Module (`agerun_message`)
+
+The [message module](agerun_message.md) defines constants and utilities for message handling in the system:
+
+- **Message Constants**: Defines the maximum length for messages (MAX_MESSAGE_LENGTH)
+- **Centralized Definitions**: Provides a single source of truth for message-related constants
+- **No Dependencies**: Functions as a standalone utility module with no dependencies on other modules
+
 ### Queue Module (`agerun_queue`)
 
 The [queue module](agerun_queue.md) provides a message queue implementation for agent communication with the following features:
@@ -103,7 +114,7 @@ The [queue module](agerun_queue.md) provides a message queue implementation for 
 - **Fixed Capacity**: Provides a configurable maximum capacity to prevent unbounded growth
 - **Memory Management**: Manages memory for stored messages, copying them internally
 - **Minimal Interface**: Provides only essential operations (create, destroy, push, pop, is_empty)
-- **No Dependencies**: Functions as a standalone module with no dependencies on other modules
+- **Depends on Message**: Uses the message module for message size constants
 - **Opaque Type**: The queue structure is opaque, encapsulating implementation details from clients
 
 ## Foundation Modules
