@@ -96,7 +96,7 @@ map_t *ar_data_get_map(const data_t *data);
 /**
  * Get an integer value from a map data structure by key
  * @param data Pointer to the map data to retrieve from
- * @param key The key to look up in the map
+ * @param key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
  * @return The integer value, or 0 if data is NULL, not a map, key not found, or value not an integer
  */
 int ar_data_get_map_integer(const data_t *data, const char *key);
@@ -104,7 +104,7 @@ int ar_data_get_map_integer(const data_t *data, const char *key);
 /**
  * Get a double value from a map data structure by key
  * @param data Pointer to the map data to retrieve from
- * @param key The key to look up in the map
+ * @param key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
  * @return The double value, or 0.0 if data is NULL, not a map, key not found, or value not a double
  */
 double ar_data_get_map_double(const data_t *data, const char *key);
@@ -112,7 +112,7 @@ double ar_data_get_map_double(const data_t *data, const char *key);
 /**
  * Get a string value from a map data structure by key
  * @param data Pointer to the map data to retrieve from
- * @param key The key to look up in the map
+ * @param key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
  * @return The string value, or NULL if data is NULL, not a map, key not found, or value not a string
  */
 const char *ar_data_get_map_string(const data_t *data, const char *key);
@@ -121,7 +121,7 @@ const char *ar_data_get_map_string(const data_t *data, const char *key);
 /**
  * Set an integer value in a map data structure by key
  * @param data Pointer to the map data to modify
- * @param key The key to set in the map
+ * @param key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
  * @param value The integer value to store
  * @return true if successful, false if data is NULL, not a map, or allocation failure
  */
@@ -130,7 +130,7 @@ bool ar_data_set_map_integer(data_t *data, const char *key, int value);
 /**
  * Set a double value in a map data structure by key
  * @param data Pointer to the map data to modify
- * @param key The key to set in the map
+ * @param key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
  * @param value The double value to store
  * @return true if successful, false if data is NULL, not a map, or allocation failure
  */
@@ -139,7 +139,7 @@ bool ar_data_set_map_double(data_t *data, const char *key, double value);
 /**
  * Set a string value in a map data structure by key
  * @param data Pointer to the map data to modify
- * @param key The key to set in the map
+ * @param key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
  * @param value The string value to store (will be copied)
  * @return true if successful, false if data is NULL, not a map, or allocation failure
  */

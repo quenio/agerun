@@ -14,6 +14,10 @@ static void test_trim_only_whitespace(void);
 static void test_isspace_standard_whitespace(void);
 static void test_isspace_non_whitespace(void);
 static void test_isspace_edge_cases(void);
+static void test_path_count_normal(void);
+static void test_path_count_edge_cases(void);
+static void test_path_segment_normal(void);
+static void test_path_segment_edge_cases(void);
 
 static void test_trim_leading_whitespace(void) {
     printf("Testing ar_trim() with leading whitespace...\n");
@@ -161,6 +165,139 @@ static void test_isspace_edge_cases(void) {
     printf("ar_isspace() edge cases test passed!\n");
 }
 
+static void test_path_count_normal(void) {
+    printf("Testing ar_string_path_count() with normal paths...\n");
+    
+    // Given several paths with different numbers of segments
+    const char *path1 = "key";
+    const char *path2 = "key.sub_key";
+    const char *path3 = "key.sub_key.sub_sub_key";
+    const char *path4 = "key.sub_key.sub_sub_key.final";
+    
+    // When the path_count function is called
+    size_t count1 = ar_string_path_count(path1, '.');
+    size_t count2 = ar_string_path_count(path2, '.');
+    size_t count3 = ar_string_path_count(path3, '.');
+    size_t count4 = ar_string_path_count(path4, '.');
+    
+    // Then the counts should match the expected segment counts
+    assert(count1 == 1);
+    assert(count2 == 2);
+    assert(count3 == 3);
+    assert(count4 == 4);
+    
+    printf("ar_string_path_count() normal paths test passed!\n");
+}
+
+static void test_path_count_edge_cases(void) {
+    printf("Testing ar_string_path_count() with edge cases...\n");
+    
+    // Given edge case paths
+    const char *empty = "";
+    const char *null_ptr = NULL;
+    const char *only_separators = ".....";
+    const char *trailing_separator = "key.sub_key.";
+    const char *leading_separator = ".key.sub_key";
+    
+    // When the path_count function is called
+    size_t empty_count = ar_string_path_count(empty, '.');
+    size_t null_count = ar_string_path_count(null_ptr, '.');
+    size_t only_separators_count = ar_string_path_count(only_separators, '.');
+    size_t trailing_count = ar_string_path_count(trailing_separator, '.');
+    size_t leading_count = ar_string_path_count(leading_separator, '.');
+    
+    // Then the counts should match the expected segment counts
+    assert(empty_count == 0);
+    assert(null_count == 0);
+    assert(only_separators_count == 6); // 5 separators = 6 segments
+    assert(trailing_count == 3); // 2 keys + empty segment
+    assert(leading_count == 3); // empty + 2 keys
+    
+    printf("ar_string_path_count() edge cases test passed!\n");
+}
+
+static void test_path_segment_normal(void) {
+    printf("Testing ar_string_path_segment() with normal cases...\n");
+    
+    // Given a path with multiple segments
+    const char *path = "key.sub_key.sub_sub_key";
+    
+    // When the path_segment function is called for each index
+    char *segment0 = ar_string_path_segment(path, '.', 0);
+    char *segment1 = ar_string_path_segment(path, '.', 1);
+    char *segment2 = ar_string_path_segment(path, '.', 2);
+    
+    // Then each segment should match the expected value
+    assert(segment0 != NULL);
+    assert(segment1 != NULL);
+    assert(segment2 != NULL);
+    assert(strcmp(segment0, "key") == 0);
+    assert(strcmp(segment1, "sub_key") == 0);
+    assert(strcmp(segment2, "sub_sub_key") == 0);
+    
+    // Clean up allocated memory
+    free(segment0);
+    free(segment1);
+    free(segment2);
+    
+    printf("ar_string_path_segment() normal cases test passed!\n");
+}
+
+static void test_path_segment_edge_cases(void) {
+    printf("Testing ar_string_path_segment() with edge cases...\n");
+    
+    // Given edge case paths
+    const char *empty = "";
+    const char *null_ptr = NULL;
+    const char *path_with_empties = "..key..end.";
+    
+    // When the path_segment function is called with various edge cases
+    char *empty_result = ar_string_path_segment(empty, '.', 0);
+    char *null_result = ar_string_path_segment(null_ptr, '.', 0);
+    char *out_of_bounds = ar_string_path_segment("key.value", '.', 5);
+    
+    // Then the results should be as expected
+    assert(empty_result == NULL);
+    assert(null_result == NULL);
+    assert(out_of_bounds == NULL);
+    
+    // Test empty segments in a path
+    char *empty_seg1 = ar_string_path_segment(path_with_empties, '.', 0);
+    char *empty_seg2 = ar_string_path_segment(path_with_empties, '.', 1);
+    char *key_seg = ar_string_path_segment(path_with_empties, '.', 2);
+    char *empty_seg3 = ar_string_path_segment(path_with_empties, '.', 3);
+    char *empty_seg4 = ar_string_path_segment(path_with_empties, '.', 4);
+    char *end_seg = ar_string_path_segment(path_with_empties, '.', 5);
+    char *empty_seg5 = ar_string_path_segment(path_with_empties, '.', 6);
+    
+    assert(empty_seg1 != NULL);
+    assert(empty_seg2 != NULL);
+    assert(key_seg != NULL);
+    assert(empty_seg3 != NULL);
+    assert(empty_seg4 != NULL);
+    assert(end_seg != NULL);
+    assert(empty_seg5 != NULL);
+    
+    assert(strcmp(empty_seg1, "") == 0);
+    assert(strcmp(empty_seg2, "") == 0);
+    assert(strcmp(key_seg, "key") == 0);
+    assert(strcmp(empty_seg3, "") == 0);
+    assert(strcmp(empty_seg4, "") == 0);
+    assert(strcmp(end_seg, "end") == 0);
+    assert(strcmp(empty_seg5, "") == 0);
+    
+    // Clean up allocated memory
+    free(empty_seg1);
+    free(empty_seg2);
+    free(key_seg);
+    free(empty_seg3);
+    free(empty_seg4);
+    free(end_seg);
+    free(empty_seg5);
+    
+    printf("ar_string_path_segment() edge cases test passed!\n");
+}
+
 int main(void) {
     printf("Starting String Module Tests...\n");
     
@@ -176,6 +313,12 @@ int main(void) {
     test_trim_no_whitespace();
     test_trim_empty_string();
     test_trim_only_whitespace();
+    
+    // Run path tests
+    test_path_count_normal();
+    test_path_count_edge_cases();
+    test_path_segment_normal();
+    test_path_segment_edge_cases();
     
     printf("All string tests passed!\n");
     return 0;

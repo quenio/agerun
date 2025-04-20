@@ -13,6 +13,8 @@ static void test_string_values(map_t *map);
 static void test_nested_maps(map_t *map);
 static void test_map_data_getters(void);
 static void test_map_data_setters(void);
+static void test_map_data_path_getters(void);
+static void test_map_data_path_setters(void);
 
 static void test_data_creation(void) {
     printf("Testing data creation for different types...\n");
@@ -359,6 +361,11 @@ static void test_map_data_setters(void) {
     double double_value = ar_data_get_map_double(map_data, "double_key");
     const char *string_value = ar_data_get_map_string(map_data, "string_key");
     
+    // Print the values for debugging
+    printf("int_value: %d\n", int_value);
+    printf("double_value: %f\n", double_value);
+    printf("string_value: %s\n", string_value ? string_value : "NULL");
+    
     // Then they should match the set values
     assert(int_value == 42);
     assert(double_value == 3.14159);
@@ -406,6 +413,179 @@ static void test_map_data_setters(void) {
     printf("Map data setter tests passed!\n");
 }
 
+static void test_map_data_path_getters(void) {
+    printf("Testing map data path getters...\n");
+    
+    // Given a nested map data structure with various data types
+    data_t *root_map = ar_data_create_map();
+    
+    // Create a nested structure
+    data_t *user_map = ar_data_create_map();
+    data_t *address_map = ar_data_create_map();
+    data_t *scores_map = ar_data_create_map();
+    
+    // Set values in the address map
+    ar_data_set_map_string(address_map, "street", "123 Main St");
+    ar_data_set_map_string(address_map, "city", "Anytown");
+    ar_data_set_map_integer(address_map, "zip", 12345);
+    
+    // Set values in the scores map
+    ar_data_set_map_integer(scores_map, "math", 95);
+    ar_data_set_map_integer(scores_map, "science", 87);
+    ar_data_set_map_double(scores_map, "average", 91.0);
+    
+    // Set values in the user map
+    ar_data_set_map_string(user_map, "name", "John Doe");
+    ar_data_set_map_integer(user_map, "age", 30);
+    
+    // Link the maps
+    map_t *user_map_ref = ar_data_get_map(user_map);
+    ar_map_set(user_map_ref, "address", address_map);
+    ar_map_set(user_map_ref, "scores", scores_map);
+    
+    map_t *root_map_ref = ar_data_get_map(root_map);
+    ar_map_set(root_map_ref, "user", user_map);
+    
+    // When we use the path-based getters
+    int age = ar_data_get_map_integer(root_map, "user.age");
+    const char *name = ar_data_get_map_string(root_map, "user.name");
+    const char *street = ar_data_get_map_string(root_map, "user.address.street");
+    const char *city = ar_data_get_map_string(root_map, "user.address.city");
+    int zip = ar_data_get_map_integer(root_map, "user.address.zip");
+    int math_score = ar_data_get_map_integer(root_map, "user.scores.math");
+    int science_score = ar_data_get_map_integer(root_map, "user.scores.science");
+    double avg_score = ar_data_get_map_double(root_map, "user.scores.average");
+    
+    // Then the values should be correctly retrieved
+    assert(age == 30);
+    assert(strcmp(name, "John Doe") == 0);
+    assert(strcmp(street, "123 Main St") == 0);
+    assert(strcmp(city, "Anytown") == 0);
+    assert(zip == 12345);
+    assert(math_score == 95);
+    assert(science_score == 87);
+    assert(avg_score == 91.0);
+    
+    // When we use path-based getters with invalid paths
+    int invalid_age = ar_data_get_map_integer(root_map, "user.invalid.age");
+    const char *invalid_name = ar_data_get_map_string(root_map, "invalid.user.name");
+    double invalid_avg = ar_data_get_map_double(root_map, "user.scores.invalid");
+    
+    // Then they should return default values
+    assert(invalid_age == 0);
+    assert(invalid_name == NULL);
+    assert(invalid_avg == 0.0);
+    
+    // When we use path-based getters with incorrect types
+    int wrong_type = ar_data_get_map_integer(root_map, "user.name");
+    double wrong_double = ar_data_get_map_double(root_map, "user.age");
+    const char *wrong_string = ar_data_get_map_string(root_map, "user.scores.math");
+    
+    // Then they should return default values
+    assert(wrong_type == 0);
+    assert(wrong_double == 0.0);
+    assert(wrong_string == NULL);
+    
+    // Cleanup
+    ar_data_destroy(root_map);
+    
+    printf("Map data path getter tests passed!\n");
+}
+
+static void test_map_data_path_setters(void) {
+    printf("Testing map data path setters...\n");
+    
+    // Given a root map data structure
+    data_t *root_map = ar_data_create_map();
+    
+    // When we set values using path-based setters for paths that don't exist yet
+    printf("Setting integer value...\n");
+    bool set_int_result = ar_data_set_map_integer(root_map, "user.preferences.notifications", 1);
+    printf("Testing integer value directly after setting...\n");
+    printf("integer type: %d, value: %s\n", 
+           ar_data_get_type(get_data_by_path(root_map, "user.preferences.notifications")),
+           ar_data_get_map_string(root_map, "user.preferences.notifications"));
+    
+    printf("Setting double value...\n");
+    bool set_double_result = ar_data_set_map_double(root_map, "user.account.balance", 1250.75);
+    printf("Testing double value directly after setting...\n");
+    printf("double type: %d, value: %s\n", 
+           ar_data_get_type(get_data_by_path(root_map, "user.account.balance")),
+           ar_data_get_map_string(root_map, "user.account.balance"));
+    
+    printf("Setting string value...\n");
+    bool set_string_result = ar_data_set_map_string(root_map, "user.profile.email", "john.doe@example.com");
+    printf("Testing string value directly after setting...\n");
+    printf("string type: %d, value: %s\n", 
+           ar_data_get_type(get_data_by_path(root_map, "user.profile.email")),
+           ar_data_get_map_string(root_map, "user.profile.email"));
+    
+    // Then the operations should succeed and create the necessary intermediate maps
+    assert(set_int_result);
+    assert(set_double_result);
+    assert(set_string_result);
+    
+    // And the values should be retrievable using path-based getters
+    int notif = ar_data_get_map_integer(root_map, "user.preferences.notifications");
+    double balance = ar_data_get_map_double(root_map, "user.account.balance");
+    const char *email = ar_data_get_map_string(root_map, "user.profile.email");
+    
+    // Print the debug values
+    printf("notif: %d\n", notif);
+    printf("balance: %f\n", balance);
+    printf("email: %s\n", email ? email : "NULL");
+    
+    // Then they should match the set values
+    // Print the string values
+    const char *notifications_str = ar_data_get_map_string(root_map, "user.preferences.notifications");
+    const char *balance_str = ar_data_get_map_string(root_map, "user.account.balance");
+    
+    printf("notifications_str: %s\n", notifications_str ? notifications_str : "NULL");
+    printf("balance_str: %s\n", balance_str ? balance_str : "NULL");
+    
+    // Manual conversion
+    assert(notifications_str && atoi(notifications_str) == 1);
+    assert(balance_str && atof(balance_str) == 1250.75);
+    assert(strcmp(email, "john.doe@example.com") == 0);
+    
+    // When we update existing values
+    bool update_int = ar_data_set_map_integer(root_map, "user.preferences.notifications", 0);
+    bool update_double = ar_data_set_map_double(root_map, "user.account.balance", 2000.50);
+    bool update_string = ar_data_set_map_string(root_map, "user.profile.email", "johndoe@example.com");
+    
+    // Then the operations should succeed
+    assert(update_int);
+    assert(update_double);
+    assert(update_string);
+    
+    // And the updated values should be retrievable
+    const char *updated_email = ar_data_get_map_string(root_map, "user.profile.email");
+    
+    // Then they should match the updated values
+    assert(atoi(ar_data_get_map_string(root_map, "user.preferences.notifications")) == 0);
+    assert(atof(ar_data_get_map_string(root_map, "user.account.balance")) == 2000.50);
+    assert(strcmp(updated_email, "johndoe@example.com") == 0);
+    
+    // When we update paths where some segments are not maps
+    // First, set a string value
+    ar_data_set_map_string(root_map, "config", "settings");
+    
+    // Then try to set a nested value through it
+    bool invalid_path = ar_data_set_map_integer(root_map, "config.value", 123);
+    
+    // It should succeed by replacing the non-map value with a map
+    assert(invalid_path);
+    
+    // And the new value should be retrievable
+    int config_value = ar_data_get_map_integer(root_map, "config.value");
+    assert(config_value == 123);
+    
+    // Cleanup
+    ar_data_destroy(root_map);
+    
+    printf("Map data path setter tests passed!\n");
+}
+
 int main(void) {
     printf("Starting Data Module Tests...\n");
     
@@ -425,6 +605,12 @@ int main(void) {
     
     // Run map data setter tests
     test_map_data_setters();
+    
+    // Run map data path getter tests
+    test_map_data_path_getters();
+    
+    // Run map data path setter tests
+    test_map_data_path_setters();
     
     // Then all tests should pass
     printf("All data tests passed!\n");

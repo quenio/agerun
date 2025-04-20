@@ -1,6 +1,8 @@
 #ifndef AGERUN_STRING_H
 #define AGERUN_STRING_H
 #include <ctype.h>
+#include <stddef.h>
+
 /**
  * Returns non-zero if c is a whitespace character.
  * This wrapper safely handles signed char values by casting to unsigned char.
@@ -16,5 +18,25 @@ static inline int ar_string_isspace(int c) {
  * @return Pointer to the trimmed string
  */
 char* ar_string_trim(char *str);
+
+/**
+ * Counts the number of segments in a path separated by the given separator.
+ *
+ * @param str The string to analyze (e.g., "key.sub_key.sub_sub_key")
+ * @param separator The character used as separator (e.g., '.')
+ * @return Number of segments in the string (0 if str is NULL)
+ */
+size_t ar_string_path_count(const char *str, char separator);
+
+/**
+ * Extracts a segment from a separated string.
+ *
+ * @param str The string to extract from (e.g., "key.sub_key.sub_sub_key")
+ * @param separator The character used as separator (e.g., '.')
+ * @param index The zero-based index of the segment to extract
+ * @return Heap-allocated string containing the extracted segment, or NULL on error
+ *         Caller is responsible for freeing the returned string.
+ */
+char* ar_string_path_segment(const char *str, char separator, size_t index);
 
 #endif /* AGERUN_STRING_H */

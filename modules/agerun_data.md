@@ -13,6 +13,7 @@ The data module (`agerun_data`) provides a type-safe data storage system built o
 - **Reference Management**: Handles reference counting for nested maps and complex structures
 - **Dependencies**: Depends on the map module for underlying storage
 - **Type-Specific Creators**: Specialized functions for creating different data types
+- **Path-Based Access**: Support for accessing nested maps using dot-separated paths (e.g., "user.address.city")
 
 ## API Reference
 
@@ -110,7 +111,7 @@ map_t *ar_data_get_map(const data_t *data);
 /**
  * Get an integer value from a map data structure by key
  * @param data Pointer to the map data to retrieve from
- * @param key The key to look up in the map
+ * @param key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
  * @return The integer value, or 0 if data is NULL, not a map, key not found, or value not an integer
  */
 int ar_data_get_map_integer(const data_t *data, const char *key);
@@ -118,7 +119,7 @@ int ar_data_get_map_integer(const data_t *data, const char *key);
 /**
  * Get a double value from a map data structure by key
  * @param data Pointer to the map data to retrieve from
- * @param key The key to look up in the map
+ * @param key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
  * @return The double value, or 0.0 if data is NULL, not a map, key not found, or value not a double
  */
 double ar_data_get_map_double(const data_t *data, const char *key);
@@ -126,7 +127,7 @@ double ar_data_get_map_double(const data_t *data, const char *key);
 /**
  * Get a string value from a map data structure by key
  * @param data Pointer to the map data to retrieve from
- * @param key The key to look up in the map
+ * @param key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
  * @return The string value, or NULL if data is NULL, not a map, key not found, or value not a string
  */
 const char *ar_data_get_map_string(const data_t *data, const char *key);
@@ -135,7 +136,7 @@ const char *ar_data_get_map_string(const data_t *data, const char *key);
 /**
  * Set an integer value in a map data structure by key
  * @param data Pointer to the map data to modify
- * @param key The key to set in the map
+ * @param key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
  * @param value The integer value to store
  * @return true if successful, false if data is NULL, not a map, or allocation failure
  */
@@ -144,7 +145,7 @@ bool ar_data_set_map_integer(data_t *data, const char *key, int value);
 /**
  * Set a double value in a map data structure by key
  * @param data Pointer to the map data to modify
- * @param key The key to set in the map
+ * @param key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
  * @param value The double value to store
  * @return true if successful, false if data is NULL, not a map, or allocation failure
  */
@@ -153,7 +154,7 @@ bool ar_data_set_map_double(data_t *data, const char *key, double value);
 /**
  * Set a string value in a map data structure by key
  * @param data Pointer to the map data to modify
- * @param key The key to set in the map
+ * @param key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
  * @param value The string value to store (will be copied)
  * @return true if successful, false if data is NULL, not a map, or allocation failure
  */
@@ -331,6 +332,58 @@ ar_data_destroy(nested_map_data);
 ar_data_destroy(map_data);
 ```
 
+### Using Path-Based Access
+
+```c
+// Create a root map
+data_t *root_map = ar_data_create_map();
+
+// Set nested values using path-based setters
+// These automatically create intermediate maps as needed
+ar_data_set_map_string(root_map, "user.profile.name", "John Doe");
+ar_data_set_map_integer(root_map, "user.profile.age", 30);
+ar_data_set_map_string(root_map, "user.contact.email", "john.doe@example.com");
+ar_data_set_map_string(root_map, "user.address.street", "123 Main St");
+ar_data_set_map_string(root_map, "user.address.city", "Anytown");
+ar_data_set_map_integer(root_map, "user.address.zip", 12345);
+
+// Access nested values using path-based getters
+const char *name = ar_data_get_map_string(root_map, "user.profile.name");
+int age = ar_data_get_map_integer(root_map, "user.profile.age");
+const char *email = ar_data_get_map_string(root_map, "user.contact.email");
+const char *street = ar_data_get_map_string(root_map, "user.address.street");
+const char *city = ar_data_get_map_string(root_map, "user.address.city");
+int zip = ar_data_get_map_integer(root_map, "user.address.zip");
+
+printf("Name: %s\n", name);
+printf("Age: %d\n", age);
+printf("Email: %s\n", email);
+printf("Address: %s, %s %d\n", street, city, zip);
+
+// Update a nested value
+ar_data_set_map_integer(root_map, "user.profile.age", 31);
+int updated_age = ar_data_get_map_integer(root_map, "user.profile.age");
+printf("Updated age: %d\n", updated_age);
+
+// Access a non-existent path
+const char *missing = ar_data_get_map_string(root_map, "user.profile.nickname");
+printf("Missing value: %s\n", missing ? missing : "NULL");
+
+// Path-based setters can convert non-map values to maps
+// First set a string value at "config"
+ar_data_set_map_string(root_map, "config", "settings");
+
+// Then set a nested value, which will convert "config" to a map
+ar_data_set_map_integer(root_map, "config.enabled", 1);
+
+// The old string value is replaced, and we can access the new nested value
+int enabled = ar_data_get_map_integer(root_map, "config.enabled");
+printf("Config enabled: %d\n", enabled);
+
+// Cleanup
+ar_data_destroy(root_map);
+```
+
 ## Implementation Notes
 
 - The data module implements an opaque type for improved encapsulation
@@ -357,3 +410,8 @@ ar_data_destroy(map_data);
 - The map-data setter functions handle memory management automatically, creating the necessary data objects and storing them in the map
 - The map-data setter functions return boolean status to indicate success or failure, allowing error handling
 - When using map-data setter functions to update existing values, the old data is properly destroyed to prevent memory leaks
+- Path-based access functions parse and navigate dot-separated paths (e.g., "user.address.city") to access or modify nested maps
+- Path-based get functions traverse the path segments, returning default values if any segment doesn't exist or isn't a map
+- Path-based set functions automatically create any intermediate maps needed when setting values at a specific path
+- Path-based set functions will replace non-map values with maps if needed when an intermediate segment exists but isn't a map
+- Path handling functions manage memory properly, freeing any temporary segments after use
