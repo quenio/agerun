@@ -62,7 +62,7 @@ Agents can use the following expressions and instructions within their method:
 ### 4. Arithmetic Operations
 
 - **Operators**: Standard arithmetic operators are used: `+`, `-`, `*`, `/`.
-- **Type Inference**: When parsing strings, values are inferred in the following order: integer, decimal, double, string.
+- **Type Inference**: When parsing strings, values are inferred in the following order: integer, double, string.
 
 ### 5. Conditional Evaluation
 

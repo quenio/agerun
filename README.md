@@ -127,6 +127,11 @@ Agents use a simple expression and instruction language for their methods:
 - Read: `memory["key"]` or using shorthand `key`
 - Write: `memory["key"] := value` or using shorthand `key := value`
 
+### Arithmetic Operations
+
+- **Operators**: Standard arithmetic operators: `+`, `-`, `*`, `/`
+- **Type Inference**: When parsing strings, values are inferred as integer, double, or string
+
 ### Control Flow
 
 - `if(condition, true_value, false_value)`: Conditional evaluation
