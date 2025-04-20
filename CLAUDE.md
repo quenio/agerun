@@ -209,6 +209,12 @@ IMPORTANT:
      - Usage examples demonstrating how to use the module
      - Implementation notes that describe design decisions but not specific details
      - For opaque type modules, emphasize the public API and avoid revealing internal structure details
+   - When creating a new module, update the `modules/README.md` to:
+     - Add the module to the Module Dependency Tree diagram
+     - Add the module to the Module Layers diagram if it's a core or foundation module
+     - Add a section describing the module with its key features and dependencies
+     - Ensure dependency information in the tree accurately reflects the new module's relationships
+     - Update any existing module descriptions that now depend on the new module
 
 8. **Keep modules with minimal interfaces**:
    - Remove functions that are not used in the implementation code
