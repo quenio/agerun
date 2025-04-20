@@ -65,7 +65,7 @@ static void test_integer_values(map_t *map) {
     assert(result);
     
     // When we retrieve the referenced value from the map
-    data_t *value = (data_t*)ar_map_get(map, "answer");
+    const data_t *value = (const data_t*)ar_map_get(map, "answer");
     
     // Then the value should be correctly retrieved
     assert(value != NULL);
@@ -90,7 +90,7 @@ static void test_string_values(map_t *map) {
     assert(result);
     
     // When we retrieve the referenced value from the map
-    data_t *value = (data_t*)ar_map_get(map, "greeting");
+    const data_t *value = (const data_t*)ar_map_get(map, "greeting");
     
     // Then the value should be correctly retrieved
     assert(value != NULL);
@@ -129,7 +129,7 @@ static void test_nested_maps(map_t *map) {
     assert(result);
     
     // When we retrieve the referenced nested map from the main map
-    data_t *value = (data_t*)ar_map_get(map, "user_data");
+    const data_t *value = (const data_t*)ar_map_get(map, "user_data");
     
     // Then the nested map should be correctly retrieved
     assert(value != NULL);
@@ -137,7 +137,7 @@ static void test_nested_maps(map_t *map) {
     assert(value->data.map_value != NULL);
     
     // And its contents should be intact - retrieve the reference from inside the nested map
-    data_t *nested_value = (data_t*)ar_map_get(value->data.map_value, "count");
+    const data_t *nested_value = (const data_t*)ar_map_get(value->data.map_value, "count");
     assert(nested_value != NULL);
     assert(nested_value->type == DATA_INT);
     assert(nested_value->data.int_value == 100);
@@ -172,7 +172,7 @@ int main(void) {
     // Given we need a map for testing
     map_t *map = ar_map_create();
     assert(map != NULL);
-    assert(map->count == 0);
+    // We no longer have direct access to count since map_t is opaque
     
     // When we run all data tests
     test_data_creation();

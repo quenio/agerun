@@ -2,26 +2,21 @@
 #define AGERUN_MAP_H
 
 #include <stdbool.h>
+#include <stddef.h>
 
 /* Constants */
 #define MAP_SIZE 64
 
 /**
- * Map Entry for storing key-value pairs
+ * Forward declaration for the opaque map type
  */
-typedef struct entry_s {
-    const char *key;
-    const void *ref;
-    bool is_used;
-} entry_t;
+typedef struct map_s map_t;
 
 /**
- * Map for storing agent state
+ * Returns the size needed to allocate a map structure
+ * @return The size in bytes
  */
-typedef struct map_s {
-    entry_t entries[MAP_SIZE];
-    int count;
-} map_t;
+size_t ar_map_size(void);
 
 /**
  * Create a new heap-allocated empty map

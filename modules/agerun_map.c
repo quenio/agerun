@@ -2,6 +2,31 @@
 #include <stdlib.h>
 #include <string.h>
 
+/**
+ * Map Entry for storing key-value pairs
+ */
+typedef struct entry_s {
+    const char *key;
+    const void *ref;
+    bool is_used;
+} entry_t;
+
+/**
+ * Map implementation structure
+ */
+struct map_s {
+    entry_t entries[MAP_SIZE];
+    int count;
+};
+
+/**
+ * Returns the size needed to allocate a map structure
+ * @return The size in bytes
+ */
+size_t ar_map_size(void) {
+    return sizeof(struct map_s);
+}
+
 
 /**
  * Create a new heap-allocated empty map

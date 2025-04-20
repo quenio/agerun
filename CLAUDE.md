@@ -124,6 +124,12 @@ IMPORTANT:
    - Share data structures and function declarations through headers
    - Use forward declarations or opaque pointers to break circular dependencies
    - Keep interface definitions consistent across modules
+   - Prefer opaque types for complex data structures to improve encapsulation
+   - When implementing opaque types:
+     - Use a forward declaration in the header file: `typedef struct name_s name_t;`
+     - Define the full structure in the implementation file
+     - Provide allocation/initialization functions with appropriate memory management
+     - Implement accessor functions for any internal state that needs to be exposed
 
 3. **Make incremental changes**:
    - Implement small changes with frequent compilation checks
@@ -135,6 +141,9 @@ IMPORTANT:
    - Provide complete implementations or appropriate stubs for all functions
    - Use proper type declarations and avoid implicit conversions
    - Never add unused functions, and always remove them if found
+   - Encapsulate implementation details using opaque types
+   - Design clean, well-defined interfaces for modules
+   - When working with opaque types, update tests to use the public API rather than accessing internal structures directly
 
 5. **Handle compiler warnings and errors**:
    - All compilation warnings and errors must be fixed before committing files

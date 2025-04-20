@@ -34,7 +34,7 @@ bool ar_instruction_run(agent_t *agent, const char *message, const char *instruc
         data_t value = ar_expression_evaluate(agent, message, value_expr, &offset);
         
         // Store in agent's memory
-        ar_map_set(&agent->memory, key, &value);
+        ar_map_set(agent->memory, key, &value);
     }
     // Parse function call or other expression
     else {

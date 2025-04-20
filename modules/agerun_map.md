@@ -11,22 +11,15 @@ The map module (`agerun_map`) provides a fundamental key-value storage implement
 - **No Memory Management**: Does not manage memory for either keys or values
 - **Type Safety**: Uses const qualifiers for keys and values to prevent unwanted modifications
 - **No Dependencies**: This is a foundational module with no dependencies on other modules
+- **Opaque Type**: The map structure is opaque, encapsulating implementation details from clients
 
 ## API Reference
 
 ### Types
 
 ```c
-typedef struct entry_s {
-    const char *key;
-    const void *ref;
-    bool is_used;
-} entry_t;
-
-typedef struct map_s {
-    entry_t entries[MAP_SIZE];
-    int count;
-} map_t;
+// Opaque map type - implementation details hidden
+typedef struct map_s map_t;
 ```
 
 ### Functions
@@ -34,6 +27,9 @@ typedef struct map_s {
 #### Creation and Initialization
 
 ```c
+// Returns the size needed to allocate a map structure
+size_t ar_map_size(void);
+
 // Create a new heap-allocated empty map
 map_t* ar_map_create(void);
 
@@ -65,6 +61,10 @@ void ar_map_free(map_t *map);
 ```c
 // Create a map
 map_t *map = ar_map_create();
+
+// Alternatively, allocate memory for a map yourself
+// map_t *map = malloc(ar_map_size());
+// ar_map_init(map);
 
 // Key must remain valid for the lifetime of the map entry
 // Using const char* for better compatibility with string literals
@@ -136,3 +136,6 @@ ar_map_free(outer_map);
 - String literals can be used directly as keys for convenience
 - Proper memory management for nested maps must be handled by client code (typically by the data module)
 - No reference counting is implemented - memory management responsibility lies with the caller
+- The map implementation is opaque, hiding its internal structure from clients
+- Clients should use the public API functions rather than accessing the map structure directly
+- The ar_map_size() function can be used to determine the memory needed for allocating map structures

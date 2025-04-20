@@ -23,7 +23,7 @@ typedef struct agent_s {
     bool is_active;
     bool is_persistent;
     queue_t queue;
-    map_t memory;
+    map_t *memory;
     map_t *context;
 } agent_t;
 

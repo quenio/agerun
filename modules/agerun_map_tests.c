@@ -20,14 +20,16 @@ static void test_map_create(void) {
     
     // Then the map should be created successfully
     assert(map != NULL);
-    assert(map->count == 0);
     
-    // And all entries should be properly initialized
-    for (int i = 0; i < MAP_SIZE; i++) {
-        assert(map->entries[i].is_used == false);
-        assert(map->entries[i].key == NULL);
-        assert(map->entries[i].ref == NULL);
-    }
+    // Test functionality via ar_map_set and ar_map_get
+    const char *test_key = "test_key";
+    int test_value = 42;
+    bool set_result = ar_map_set(map, test_key, &test_value);
+    assert(set_result);
+    
+    const int *retrieved = ar_map_get(map, test_key);
+    assert(retrieved != NULL);
+    assert(*retrieved == test_value);
     
     // Cleanup
     ar_map_free(map);
@@ -38,22 +40,29 @@ static void test_map_create(void) {
 static void test_map_init(void) {
     printf("Testing ar_map_init()...\n");
     
-    // Given we have an uninitialized map structure
-    map_t map;
+    // Since map_t is now opaque, we cannot create it on the stack
+    // Instead, we'll allocate it and verify functionality works
+    map_t *map = malloc(ar_map_size());
+    assert(map != NULL);
     
     // When we initialize the map
-    bool result = ar_map_init(&map);
+    bool result = ar_map_init(map);
     
     // Then the initialization should succeed
     assert(result);
-    assert(map.count == 0);
     
-    // And all entries should be properly initialized
-    for (int i = 0; i < MAP_SIZE; i++) {
-        assert(map.entries[i].is_used == false);
-        assert(map.entries[i].key == NULL);
-        assert(map.entries[i].ref == NULL);
-    }
+    // Verify map works by testing basic functionality
+    const char *test_key = "test_key";
+    int test_value = 42;
+    bool set_result = ar_map_set(map, test_key, &test_value);
+    assert(set_result);
+    
+    const int *retrieved = ar_map_get(map, test_key);
+    assert(retrieved != NULL);
+    assert(*retrieved == test_value);
+    
+    // Clean up
+    free(map);
     
     printf("All ar_map_init() tests passed!\n");
 }
@@ -79,7 +88,7 @@ static void test_map_set_get_simple(void) {
     assert(set_result);
     
     // When we retrieve the value from the map
-    int *get_result = (int*)ar_map_get(map, "test_key");
+    const int *get_result = (const int*)ar_map_get(map, "test_key");
     
     // Then the value should be retrieved successfully
     assert(get_result != NULL);

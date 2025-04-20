@@ -59,7 +59,7 @@ agent_id_t ar_agent_create(const char *method_name, version_t version, void *con
     agents[agent_idx].is_persistent = method->persist;
     agents[agent_idx].context = (map_t *)context;
     
-    ar_map_init(&agents[agent_idx].memory);
+    agents[agent_idx].memory = ar_map_create();
     ar_queue_init(&agents[agent_idx].queue);
     
     printf("Created agent %lld using method %s version %d\n", 
@@ -92,12 +92,10 @@ bool ar_agent_destroy(agent_id_t agent_id) {
                 }
             }
             
-            // Free memory map entries
-            for (int j = 0; j < MAP_SIZE; j++) {
-                if (agents[i].memory.entries[j].is_used && agents[i].memory.entries[j].key) {
-                    free(agents[i].memory.entries[j].key);
-                    ar_data_free(&agents[i].memory.entries[j].value);
-                }
+            // Free memory map if it exists
+            if (agents[i].memory) {
+                ar_map_free(agents[i].memory);
+                agents[i].memory = NULL;
             }
             
             agents[i].is_active = false;

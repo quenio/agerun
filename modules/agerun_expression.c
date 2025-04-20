@@ -105,7 +105,7 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
         
         if (key) {
             // Look up value in memory using the map interface
-            data_t *value = ar_map_get(&agent->memory, key);
+            const data_t *value = (const data_t *)ar_map_get(agent->memory, key);
             if (value) {
                 // Copy the value
                 if (value->type == DATA_STRING && value->data.string_value) {
