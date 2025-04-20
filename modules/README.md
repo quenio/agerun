@@ -53,6 +53,8 @@ agerun_executable
 
 ## Core Modules
 
+Core modules have no dependencies on other modules and provide essential low-level functionality that other modules build upon. These modules form the base layer of the system architecture and are designed to be simple, focused, and highly reusable.
+
 ### Map Module (`agerun_map`)
 
 The [map module](agerun_map.md) provides a fundamental key-value storage implementation that is used throughout the system. It has the following characteristics:
@@ -73,6 +75,8 @@ The string module provides utility functions for string manipulation with the fo
 - **No Dependencies**: Functions as a standalone utility module with no dependencies on other modules
 
 ## Foundation Modules
+
+Foundation modules build upon core modules to provide essential data structures and services that support the execution environment. These modules depend on one or more core modules and add type safety, memory management, and other critical services required by higher-level components.
 
 ### Data Module (`agerun_data`)
 
