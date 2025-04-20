@@ -8,7 +8,7 @@
 struct data_s {
     data_type_t type;
     union {
-        int64_t int_value;
+        int int_value;
         double double_value;
         char *string_value;
         map_t *map_value;
@@ -20,7 +20,7 @@ struct data_s {
  * @param value Integer value to initialize with
  * @return Pointer to the new data, or NULL on failure
  */
-data_t* ar_data_create_integer(int64_t value) {
+data_t* ar_data_create_integer(int value) {
     data_t* data = (data_t*)malloc(sizeof(data_t));
     if (!data) {
         return NULL;
@@ -123,7 +123,7 @@ data_type_t ar_data_get_type(const data_t *data) {
  * @param data Pointer to the data to retrieve from
  * @return The integer value or 0 if data is NULL or not an integer type
  */
-int64_t ar_data_get_integer(const data_t *data) {
+int ar_data_get_integer(const data_t *data) {
     if (!data || data->type != DATA_INTEGER) {
         return 0;
     }

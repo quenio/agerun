@@ -111,7 +111,7 @@ static void test_data_getters(void) {
     assert(null_type == DATA_INTEGER); // Default to int if NULL
     
     // When we use the value getters with the correct types
-    int64_t int_value = ar_data_get_integer(int_data);
+    int int_value = ar_data_get_integer(int_data);
     double double_value = ar_data_get_double(double_data);
     const char *string_value = ar_data_get_string(string_data);
     const map_t *map_value = ar_data_get_map(map_data);
@@ -123,7 +123,7 @@ static void test_data_getters(void) {
     assert(map_value != NULL);
     
     // When we use the getters with incorrect types
-    int64_t wrong_int = ar_data_get_integer(string_data);
+    int wrong_int = ar_data_get_integer(string_data);
     double wrong_double = ar_data_get_double(int_data);
     const char *wrong_string = ar_data_get_string(int_data);
     const map_t *wrong_map = ar_data_get_map(double_data);
@@ -135,7 +135,7 @@ static void test_data_getters(void) {
     assert(wrong_map == NULL);
     
     // When we use the getters with NULL
-    int64_t null_int = ar_data_get_integer(NULL);
+    int null_int = ar_data_get_integer(NULL);
     double null_double = ar_data_get_double(NULL);
     const char *null_string = ar_data_get_string(NULL);
     const map_t *null_map = ar_data_get_map(NULL);

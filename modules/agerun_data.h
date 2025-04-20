@@ -25,7 +25,7 @@ typedef struct data_s data_t;
  * @param value Integer value to initialize with
  * @return Pointer to the new data, or NULL on failure
  */
-data_t* ar_data_create_integer(int64_t value);
+data_t* ar_data_create_integer(int value);
 
 /**
  * Create a new double data value
@@ -65,7 +65,7 @@ data_type_t ar_data_get_type(const data_t *data);
  * @param data Pointer to the data to retrieve from
  * @return The integer value or 0 if data is NULL or not an integer type
  */
-int64_t ar_data_get_integer(const data_t *data);
+int ar_data_get_integer(const data_t *data);
 
 /**
  * Get the double value from a data structure

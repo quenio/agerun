@@ -109,7 +109,7 @@ data_t* ar_expression_evaluate(agent_t *agent, const char *message, const char *
             key = strdup(ar_data_get_string(key_val));
         } else if (key_type == DATA_INTEGER) {
             char temp[32];
-            snprintf(temp, sizeof(temp), "%lld", ar_data_get_integer(key_val));
+            snprintf(temp, sizeof(temp), "%d", ar_data_get_integer(key_val));
             key = strdup(temp);
         } else if (key_type == DATA_DOUBLE) {
             char temp[32];
@@ -160,7 +160,7 @@ data_t* ar_expression_evaluate(agent_t *agent, const char *message, const char *
             (*offset)++;
         }
         
-        int64_t value = 0;
+        int value = 0;
         bool is_double = false;
         double double_value = 0.0;
         
@@ -193,7 +193,7 @@ data_t* ar_expression_evaluate(agent_t *agent, const char *message, const char *
             double final_value = is_negative ? -double_value : double_value;
             result = ar_data_create_double(final_value);
         } else {
-            int64_t final_value = is_negative ? -value : value;
+            int final_value = is_negative ? -value : value;
             result = ar_data_create_integer(final_value);
         }
         
@@ -293,7 +293,7 @@ data_t* ar_expression_evaluate(agent_t *agent, const char *message, const char *
                             }
                         } else if (arg1_type == DATA_INTEGER) {
                             char temp[32];
-                            snprintf(temp, sizeof(temp), "%lld", ar_data_get_integer(args[1]));
+                            snprintf(temp, sizeof(temp), "%d", ar_data_get_integer(args[1]));
                             send_message = strdup(temp);
                         } else if (arg1_type == DATA_DOUBLE) {
                             char temp[32];
@@ -345,7 +345,7 @@ data_t* ar_expression_evaluate(agent_t *agent, const char *message, const char *
                                             }
                                         } else if (arg_type == DATA_INTEGER) {
                                             char temp[32];
-                                            int len = snprintf(temp, sizeof(temp), "%lld", ar_data_get_integer(args[arg_idx]));
+                                            int len = snprintf(temp, sizeof(temp), "%d", ar_data_get_integer(args[arg_idx]));
                                             if ((size_t)(result_pos + len) < sizeof(result_str) - 1) {
                                                 strcpy(result_str + result_pos, temp);
                                                 result_pos += len;
@@ -409,9 +409,9 @@ data_t* ar_expression_evaluate(agent_t *agent, const char *message, const char *
             
             // Perform operation
             if (left_type == DATA_INTEGER && right_type == DATA_INTEGER) {
-                int64_t left_int = ar_data_get_integer(result);
-                int64_t right_int = ar_data_get_integer(right_val);
-                int64_t new_int_val = 0;
+                int left_int = ar_data_get_integer(result);
+                int right_int = ar_data_get_integer(right_val);
+                int new_int_val = 0;
                 
                 switch (op) {
                     case '+': new_int_val = left_int + right_int; break;

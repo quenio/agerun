@@ -180,8 +180,8 @@ bool ar_agency_load_agents(void) {
                     
                     data_t *value = NULL;
                     if (strcmp(type, "int") == 0) {
-                        int64_t int_value;
-                        if (fscanf(fp, "%lld", &int_value) != 1) {
+                        int int_value;
+                        if (fscanf(fp, "%d", &int_value) != 1) {
                             printf("Error: Could not read int value\n");
                             break;
                         }

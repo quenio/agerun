@@ -44,7 +44,7 @@ typedef struct data_s data_t;
  * @param value Integer value to initialize with
  * @return Pointer to the new data, or NULL on failure
  */
-data_t* ar_data_create_integer(int64_t value);
+data_t* ar_data_create_integer(int value);
 
 /**
  * Create a new double data value
@@ -84,7 +84,7 @@ data_type_t ar_data_get_type(const data_t *data);
  * @param data Pointer to the data to retrieve from
  * @return The integer value or 0 if data is NULL or not an integer type
  */
-int64_t ar_data_get_integer(const data_t *data);
+int ar_data_get_integer(const data_t *data);
 
 /**
  * Get the double value from a data structure
@@ -120,7 +120,7 @@ data_t *string_data = ar_data_create_string("Hello, World!");
 data_t *map_data = ar_data_create_map();
 
 // Access values through accessor functions
-int64_t i = ar_data_get_integer(int_data);
+int i = ar_data_get_integer(int_data);
 double d = ar_data_get_double(double_data);
 const char *s = ar_data_get_string(string_data);
 const map_t *m = ar_data_get_map(map_data);
@@ -146,7 +146,7 @@ ar_map_set(map, "answer", int_data);
 
 // Retrieve the data from the map
 const data_t *retrieved = (const data_t*)ar_map_get(map, "answer");
-printf("The answer is: %lld\n", ar_data_get_integer(retrieved));
+printf("The answer is: %d\n", ar_data_get_integer(retrieved));
 
 // Note: When the map is destroyed, it doesn't free the data values
 // You must free them separately before destroying the map
@@ -180,7 +180,7 @@ if (retrieved_child && ar_data_get_type(retrieved_child) == DATA_MAP) {
     const map_t *child = ar_data_get_map(retrieved_child);
     const data_t *count = (const data_t*)ar_map_get(child, "count");
     if (count && ar_data_get_type(count) == DATA_INTEGER) {
-        printf("Count value: %lld\n", ar_data_get_integer(count));
+        printf("Count value: %d\n", ar_data_get_integer(count));
     }
 }
 
