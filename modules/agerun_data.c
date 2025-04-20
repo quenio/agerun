@@ -16,41 +16,6 @@ struct data_s {
 };
 
 /**
- * Create a new data value of the specified type with default value
- * @param type Type of data to create
- * @return Pointer to the new data, or NULL on failure
- */
-data_t* ar_data_create(data_type_t type) {
-    data_t* data = (data_t*)malloc(sizeof(data_t));
-    if (!data) {
-        return NULL;
-    }
-    
-    data->type = type;
-    
-    switch (type) {
-        case DATA_INTEGER:
-            data->data.int_value = 0;
-            break;
-        case DATA_DOUBLE:
-            data->data.double_value = 0.0;
-            break;
-        case DATA_STRING:
-            data->data.string_value = NULL;
-            break;
-        case DATA_MAP:
-            data->data.map_value = ar_map_create();
-            if (!data->data.map_value) {
-                free(data);
-                return NULL;
-            }
-            break;
-    }
-    
-    return data;
-}
-
-/**
  * Create a new integer data value
  * @param value Integer value to initialize with
  * @return Pointer to the new data, or NULL on failure

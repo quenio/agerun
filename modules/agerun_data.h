@@ -21,13 +21,6 @@ typedef enum {
 typedef struct data_s data_t;
 
 /**
- * Create a new data value of the specified type with default value
- * @param type Type of data to create
- * @return Pointer to the new data, or NULL on failure
- */
-data_t* ar_data_create(data_type_t type);
-
-/**
  * Create a new integer data value
  * @param value Integer value to initialize with
  * @return Pointer to the new data, or NULL on failure

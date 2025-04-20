@@ -17,32 +17,32 @@ static void test_data_creation(void) {
     
     // Given we need to create data of different types
     
-    // When we create an integer data item with the generic function
-    data_t *int_data_default = ar_data_create(DATA_INTEGER);
+    // When we create an integer data item with default value
+    data_t *int_data_default = ar_data_create_integer(0);
     
     // Then it should have the correct type and default value
     assert(int_data_default != NULL);
     assert(ar_data_get_type(int_data_default) == DATA_INTEGER);
     assert(ar_data_get_integer(int_data_default) == 0);
     
-    // When we create a double data item with the generic function
-    data_t *double_data_default = ar_data_create(DATA_DOUBLE);
+    // When we create a double data item with default value
+    data_t *double_data_default = ar_data_create_double(0.0);
     
     // Then it should have the correct type and default value
     assert(double_data_default != NULL);
     assert(ar_data_get_type(double_data_default) == DATA_DOUBLE);
     assert(ar_data_get_double(double_data_default) == 0.0);
     
-    // When we create a string data item with the generic function
-    data_t *string_data_default = ar_data_create(DATA_STRING);
+    // When we create a string data item with NULL value
+    data_t *string_data_default = ar_data_create_string(NULL);
     
     // Then it should have the correct type and null string
     assert(string_data_default != NULL);
     assert(ar_data_get_type(string_data_default) == DATA_STRING);
     assert(ar_data_get_string(string_data_default) == NULL);
     
-    // When we create a map data item with the generic function
-    data_t *map_data_default = ar_data_create(DATA_MAP);
+    // When we create an empty map data item
+    data_t *map_data_default = ar_data_create_map();
     
     // Then it should have the correct type and a valid map
     assert(map_data_default != NULL);
