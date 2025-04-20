@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* Constants */
+#define MAP_SIZE 64
+
 /**
  * Map Entry for storing key-value pairs
  */
