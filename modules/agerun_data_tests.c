@@ -16,36 +16,58 @@ static void test_data_creation(void) {
     
     // Given we need to create data of different types
     
-    // When we create an integer data item
+    // When we create an integer data item with the generic function
     data_t int_data_default = ar_data_create(DATA_INT);
     
     // Then it should have the correct type and default value
     assert(int_data_default.type == DATA_INT);
     assert(int_data_default.data.int_value == 0);
     
-    // When we create a double data item
+    // When we create a double data item with the generic function
     data_t double_data_default = ar_data_create(DATA_DOUBLE);
     
     // Then it should have the correct type and default value
     assert(double_data_default.type == DATA_DOUBLE);
     assert(double_data_default.data.double_value == 0.0);
     
-    // When we create a string data item
+    // When we create a string data item with the generic function
     data_t string_data_default = ar_data_create(DATA_STRING);
     
     // Then it should have the correct type and null string
     assert(string_data_default.type == DATA_STRING);
     assert(string_data_default.data.string_value == NULL);
     
-    // When we create a map data item
+    // When we create a map data item with the generic function
     data_t map_data_default = ar_data_create(DATA_MAP);
     
     // Then it should have the correct type and a valid map
     assert(map_data_default.type == DATA_MAP);
     assert(map_data_default.data.map_value != NULL);
     
+    // When we create data items with the specialized functions
+    data_t int_data = ar_data_create_integer(42);
+    data_t double_data = ar_data_create_double(3.14159);
+    data_t string_data = ar_data_create_string("Hello, World!");
+    data_t map_data = ar_data_create_map();
+    
+    // Then they should have the correct types and values
+    assert(int_data.type == DATA_INT);
+    assert(int_data.data.int_value == 42);
+    
+    assert(double_data.type == DATA_DOUBLE);
+    assert(double_data.data.double_value == 3.14159);
+    
+    assert(string_data.type == DATA_STRING);
+    assert(string_data.data.string_value != NULL);
+    assert(strcmp(string_data.data.string_value, "Hello, World!") == 0);
+    
+    assert(map_data.type == DATA_MAP);
+    assert(map_data.data.map_value != NULL);
+    
     // Cleanup
     ar_data_free(&map_data_default);
+    ar_data_free(&map_data);
+    ar_data_free(&string_data);
     
     printf("Data creation tests passed!\n");
 }
@@ -53,10 +75,9 @@ static void test_data_creation(void) {
 static void test_integer_values(map_t *map) {
     printf("Testing integer values in map...\n");
     
-    // Given an integer data item
+    // Given an integer data item created with the specialized function
     data_t *int_data = malloc(sizeof(data_t));
-    int_data->type = DATA_INT;
-    int_data->data.int_value = 42;
+    *int_data = ar_data_create_integer(42);
     
     // When we set the reference in the map
     bool result = ar_map_set(map, "answer", int_data);
@@ -78,10 +99,9 @@ static void test_integer_values(map_t *map) {
 static void test_string_values(map_t *map) {
     printf("Testing string values in map...\n");
     
-    // Given a string data item
+    // Given a string data item created with the specialized function
     data_t *string_data = malloc(sizeof(data_t));
-    string_data->type = DATA_STRING;
-    string_data->data.string_value = strdup("Hello, World!");
+    *string_data = ar_data_create_string("Hello, World!");
     
     // When we set the reference in the map
     bool result = ar_map_set(map, "greeting", string_data);
@@ -103,18 +123,16 @@ static void test_string_values(map_t *map) {
 static void test_nested_maps(map_t *map) {
     printf("Testing nested maps...\n");
     
-    // Given a nested map data item
-    data_t nested_map_data = ar_data_create(DATA_MAP);
+    // Given a nested map data item using the specialized function
     data_t *nested_map_ptr = malloc(sizeof(data_t));
-    *nested_map_ptr = nested_map_data;
+    *nested_map_ptr = ar_data_create_map();
     
     assert(nested_map_ptr->type == DATA_MAP);
     assert(nested_map_ptr->data.map_value != NULL);
     
-    // And data to add to the nested map
+    // And data to add to the nested map using the specialized function
     data_t *nested_int_data = malloc(sizeof(data_t));
-    nested_int_data->type = DATA_INT;
-    nested_int_data->data.int_value = 100;
+    *nested_int_data = ar_data_create_integer(100);
     
     // When we set a reference in the nested map
     bool result = ar_map_set(nested_map_ptr->data.map_value, "count", nested_int_data);
@@ -142,14 +160,12 @@ static void test_nested_maps(map_t *map) {
     assert(nested_value->type == DATA_INT);
     assert(nested_value->data.int_value == 100);
     
-    // Given a third level map
-    data_t third_level_map = ar_data_create(DATA_MAP);
+    // Given a third level map using the specialized function
     data_t *third_level_ptr = malloc(sizeof(data_t));
-    *third_level_ptr = third_level_map;
+    *third_level_ptr = ar_data_create_map();
     
     data_t *deep_string = malloc(sizeof(data_t));
-    deep_string->type = DATA_STRING;
-    deep_string->data.string_value = strdup("Deep value!");
+    *deep_string = ar_data_create_string("Deep value!");
     
     // When we set a reference in the third level map
     result = ar_map_set(third_level_ptr->data.map_value, "key", deep_string);

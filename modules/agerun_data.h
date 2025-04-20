@@ -36,6 +36,33 @@ typedef struct data_s {
 data_t ar_data_create(data_type_t type);
 
 /**
+ * Create a new integer data value
+ * @param value Integer value to initialize with
+ * @return Data value containing the integer
+ */
+data_t ar_data_create_integer(int64_t value);
+
+/**
+ * Create a new double data value
+ * @param value Double value to initialize with
+ * @return Data value containing the double
+ */
+data_t ar_data_create_double(double value);
+
+/**
+ * Create a new string data value
+ * @param value String value to initialize with (will be copied)
+ * @return Data value containing the string
+ */
+data_t ar_data_create_string(const char *value);
+
+/**
+ * Create a new map data value
+ * @return Data value containing an empty map
+ */
+data_t ar_data_create_map(void);
+
+/**
  * Free resources associated with a data structure
  * @param data Pointer to the data to free
  */

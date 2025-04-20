@@ -11,6 +11,7 @@ The data module (`agerun_data`) provides a type-safe data storage system built o
 - **Type Safety**: Ensures proper handling of different data types
 - **Reference Management**: Handles reference counting for nested maps and complex structures
 - **Dependencies**: Depends on the map module for underlying storage
+- **Type-Specific Creators**: Specialized functions for creating different data types
 
 ## API Reference
 
@@ -41,6 +42,18 @@ typedef struct data_s {
 // Create a new data value of the specified type with default value
 data_t ar_data_create(data_type_t type);
 
+// Create a new integer data value
+data_t ar_data_create_integer(int64_t value);
+
+// Create a new double data value
+data_t ar_data_create_double(double value);
+
+// Create a new string data value
+data_t ar_data_create_string(const char *value);
+
+// Create a new map data value
+data_t ar_data_create_map(void);
+
 // Free resources associated with a data structure
 void ar_data_free(data_t *data);
 ```
@@ -50,17 +63,14 @@ void ar_data_free(data_t *data);
 ### Basic Usage
 
 ```c
-// Create an integer data type
-data_t int_data = ar_data_create(DATA_INT);
-int_data.data.int_value = 42;
+// Create data using the generic function
+data_t int_data_default = ar_data_create(DATA_INT);
 
-// Create a string data type
-data_t string_data = ar_data_create(DATA_STRING);
-string_data.data.string_value = strdup("Hello, World!");
-
-// Create a map data type
-data_t map_data = ar_data_create(DATA_MAP);
-// map_data.data.map_value is already initialized
+// Create data using type-specific functions
+data_t int_data = ar_data_create_integer(42);
+data_t double_data = ar_data_create_double(3.14159);
+data_t string_data = ar_data_create_string("Hello, World!");
+data_t map_data = ar_data_create_map();
 
 // Clean up
 ar_data_free(&string_data);
@@ -73,26 +83,49 @@ ar_data_free(&map_data);
 // Create a map
 map_t *map = ar_map_create();
 
-// Create and store data values
-data_t *int_data = malloc(sizeof(data_t));
-*int_data = ar_data_create(DATA_INT);
-int_data->data.int_value = 42;
-
-// Use string literal as key
-const char *key = "answer";
+// Create data value directly with type-specific creator
+data_t int_data = ar_data_create_integer(42);
 
 // Store the data in the map
-ar_map_set(map, key, int_data);
+ar_map_set(map, "answer", &int_data);
 
 // Retrieve the data from the map
 const data_t *retrieved = (const data_t*)ar_map_get(map, "answer");
 printf("The answer is: %lld\n", retrieved->data.int_value);
 
-// Clean up
-ar_data_free(int_data);
-free(int_data);
-// No need to free key as it's a string literal
-ar_map_free(map);
+// Clean up - make sure to free the map values before destroying the map
+ar_map_destroy(map);
+```
+
+### Creating Nested Maps
+
+```c
+// Create a parent map directly
+data_t parent_map = ar_data_create_map();
+
+// Create a child map directly
+data_t child_map = ar_data_create_map();
+
+// Create a value for the child map
+data_t count_data = ar_data_create_integer(100);
+
+// Store the count in the child map
+ar_map_set(child_map.data.map_value, "count", &count_data);
+
+// Store the child map in the parent map
+ar_map_set(parent_map.data.map_value, "child", &child_map);
+
+// Retrieve and use the nested data
+const data_t *retrieved_child = (const data_t*)ar_map_get(parent_map.data.map_value, "child");
+if (retrieved_child && retrieved_child->type == DATA_MAP) {
+    const data_t *count = (const data_t*)ar_map_get(retrieved_child->data.map_value, "count");
+    if (count && count->type == DATA_INT) {
+        printf("Count value: %lld\n", count->data.int_value);
+    }
+}
+
+// Clean up the parent map, which will clean up child maps
+ar_data_free(&parent_map);
 ```
 
 ## Implementation Notes
@@ -101,10 +134,9 @@ ar_map_free(map);
 - It handles reference management and memory cleanup for strings and nested maps
 - The data_type_t enum allows type-safe access to the union members
 - The data module takes over reference counting responsibility from the map module
-- When using with maps, the client code is responsible for:
-  - Allocating and freeing the data_t structures
-  - Managing key lifetimes (using string literals simplifies this)
-  - Properly calling ar_data_free on all data structures
+- Type-specific creator functions provide a safer API that prevents direct manipulation of data_t fields
+- Always use the specialized creator functions instead of directly assigning to data_t fields
+- The specialized creator functions handle all necessary memory allocation for strings and maps
 - The ar_data_free function handles the internal cleanup of strings and maps
 - While the map module stores references as `const void*`, the data module manages these references
 - Type safety is improved through the use of const qualifiers throughout the API
