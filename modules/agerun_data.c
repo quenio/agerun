@@ -10,8 +10,8 @@ struct data_s {
     union {
         int int_value;
         double double_value;
-        char *string_value;
-        map_t *map_value;
+        char *string_ref;
+        map_t *map_ref;
     } data;
 };
 
@@ -59,8 +59,8 @@ data_t* ar_data_create_string(const char *value) {
     }
     
     data->type = DATA_STRING;
-    data->data.string_value = value ? strdup(value) : NULL;
-    if (value && !data->data.string_value) {
+    data->data.string_ref = value ? strdup(value) : NULL;
+    if (value && !data->data.string_ref) {
         free(data);
         return NULL;
     }
@@ -79,8 +79,8 @@ data_t* ar_data_create_map(void) {
     }
     
     data->type = DATA_MAP;
-    data->data.map_value = ar_map_create();
-    if (!data->data.map_value) {
+    data->data.map_ref = ar_map_create();
+    if (!data->data.map_ref) {
         free(data);
         return NULL;
     }
@@ -95,12 +95,12 @@ data_t* ar_data_create_map(void) {
 void ar_data_destroy(data_t *data) {
     if (!data) return;
     
-    if (data->type == DATA_STRING && data->data.string_value) {
-        free(data->data.string_value);
-        data->data.string_value = NULL;
-    } else if (data->type == DATA_MAP && data->data.map_value) {
-        ar_map_destroy(data->data.map_value);
-        data->data.map_value = NULL;
+    if (data->type == DATA_STRING && data->data.string_ref) {
+        free(data->data.string_ref);
+        data->data.string_ref = NULL;
+    } else if (data->type == DATA_MAP && data->data.map_ref) {
+        ar_map_destroy(data->data.map_ref);
+        data->data.map_ref = NULL;
     }
     
     free(data);
@@ -151,7 +151,7 @@ const char *ar_data_get_string(const data_t *data) {
     if (!data || data->type != DATA_STRING) {
         return NULL;
     }
-    return data->data.string_value;
+    return data->data.string_ref;
 }
 
 /**
@@ -163,7 +163,7 @@ const map_t *ar_data_get_map(const data_t *data) {
     if (!data || data->type != DATA_MAP) {
         return NULL;
     }
-    return data->data.map_value;
+    return data->data.map_ref;
 }
 
 /**
@@ -175,5 +175,5 @@ map_t *ar_data_get_map_mutable(data_t *data) {
     if (!data || data->type != DATA_MAP) {
         return NULL;
     }
-    return data->data.map_value;
+    return data->data.map_ref;
 }

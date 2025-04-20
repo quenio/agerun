@@ -205,5 +205,6 @@ if (retrieved_child && ar_data_get_type(retrieved_child) == DATA_MAP) {
 - The use of opaque types prevents direct manipulation of internal fields
 - The getter functions handle all necessary type checking and validation
 - Memory leaks are avoided by proper resource management in create/destroy functions
+- String and map values are stored as references (string_ref and map_ref) within the internal data structure
 - While the map module stores references as `const void*`, the data module manages these references
 - Type safety is improved through the use of const qualifiers throughout the API
