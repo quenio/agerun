@@ -12,7 +12,7 @@ The map module (`agerun_map`) provides a fundamental key-value storage implement
 - **Type Safety**: Uses const qualifiers for keys and values to prevent unwanted modifications
 - **No Dependencies**: This is a foundational module with no dependencies on other modules
 - **Opaque Type**: The map structure is opaque, encapsulating implementation details from clients
-- **Simplified API**: Maps are created only through ar_map_create(), ensuring proper allocation and initialization
+- **Simplified API**: Maps are heap-allocated and fully initialized through ar_map_create()
 
 ## API Reference
 
@@ -30,9 +30,6 @@ typedef struct map_s map_t;
 ```c
 // Create a new heap-allocated empty map
 map_t* ar_map_create(void);
-
-// Initialize a map structure
-bool ar_map_init(map_t *map);
 ```
 
 #### Getting and Setting Values
@@ -132,5 +129,5 @@ ar_map_free(outer_map);
 - No reference counting is implemented - memory management responsibility lies with the caller
 - The map implementation is opaque, hiding its internal structure from clients
 - Clients should use the public API functions rather than accessing the map structure directly
-- Maps can only be created through ar_map_create() - manual allocation is no longer supported
+- Maps are always heap-allocated and fully initialized through ar_map_create()
 - All maps should be freed with ar_map_free() when no longer needed

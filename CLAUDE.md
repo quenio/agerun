@@ -130,7 +130,9 @@ IMPORTANT:
      - Define the full structure in the implementation file
      - Provide a creation function (e.g., `ar_name_create()`) that handles both allocation and initialization
      - Avoid size-exposing functions (like `ar_name_size()`) as these break encapsulation
-     - Provide a single clear way to create instances through the creation function
+     - Provide a single creation function rather than separating allocation and initialization
+     - Consolidate initialization logic directly into the creation function
+     - Never expose separate initialization functions if there's only one way to initialize
      - Implement accessor functions for any internal state that needs to be exposed
      - Document opaque types by describing their purpose and behavior, not their implementation details
      - Use complete sentences with proper punctuation in all documentation
@@ -148,7 +150,7 @@ IMPORTANT:
    - Encapsulate implementation details using opaque types
    - Design clean, well-defined interfaces for modules
    - When working with opaque types, update tests to use the public API rather than accessing internal structures directly
-   - For opaque types, provide a single creation function rather than exposing internal allocation details
+   - For opaque types, provide a single creation function that handles both allocation and initialization
 
 5. **Handle compiler warnings and errors**:
    - All compilation warnings and errors must be fixed before committing files

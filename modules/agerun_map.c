@@ -23,34 +23,10 @@ struct map_s {
 /**
  * Create a new heap-allocated empty map
  * @return Pointer to the new map, or NULL on failure
- * @note This function allocates memory for the map structure and then
- *       initializes it by calling ar_map_init(). Use this when you need
- *       a standalone map allocated on the heap.
  */
 map_t* ar_map_create(void) {
     map_t *map = (map_t *)malloc(sizeof(map_t));
     if (!map) return NULL;
-    
-    if (!ar_map_init(map)) {
-        free(map);
-        return NULL;
-    }
-    
-    return map;
-}
-
-/**
- * Initialize a map structure
- * @param map Map to initialize
- * @return true if successful, false otherwise
- * @note Use this function to initialize a map that is already allocated,
- *       such as a map that is embedded in another structure or allocated
- *       on the stack. This is called by ar_map_create() internally.
- */
-bool ar_map_init(map_t *map) {
-    if (!map) {
-        return false;
-    }
     
     for (int i = 0; i < MAP_SIZE; i++) {
         map->entries[i].is_used = false;
@@ -59,7 +35,7 @@ bool ar_map_init(map_t *map) {
     }
     
     map->count = 0;
-    return true;
+    return map;
 }
 
 /**

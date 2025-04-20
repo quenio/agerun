@@ -16,21 +16,8 @@ typedef struct map_s map_t;
 /**
  * Create a new heap-allocated empty map
  * @return Pointer to the new map, or NULL on failure
- * @note This function allocates memory for the map structure and then
- *       initializes it by calling ar_map_init(). Use this when you need
- *       a standalone map allocated on the heap.
  */
 map_t* ar_map_create(void);
-
-/**
- * Initialize a map structure
- * @param map Map to initialize
- * @return true if successful, false otherwise
- * @note Use this function to initialize a map that is already allocated,
- *       such as a map that is embedded in another structure or allocated
- *       on the stack. This is called by ar_map_create() internally.
- */
-bool ar_map_init(map_t *map);
 
 /**
  * Get a reference from map by key
