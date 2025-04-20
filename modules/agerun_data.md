@@ -138,13 +138,33 @@ double ar_data_get_sub_double(const data_t *data, const char *key);
  */
 const char *ar_data_get_sub_string(const data_t *data, const char *key);
 
+
 /**
- * Get a sub-map value from a map data structure by key
- * @param data Pointer to the map data to retrieve from
- * @param key The key to look up in the map
- * @return The map value, or NULL if data is NULL, not a map, key not found, or value not a map
+ * Set an integer value in a map data structure by key
+ * @param data Pointer to the map data to modify
+ * @param key The key to set in the map
+ * @param value The integer value to store
+ * @return true if successful, false if data is NULL, not a map, or allocation failure
  */
-const map_t *ar_data_get_sub_map(const data_t *data, const char *key);
+bool ar_data_set_sub_integer(data_t *data, const char *key, int value);
+
+/**
+ * Set a double value in a map data structure by key
+ * @param data Pointer to the map data to modify
+ * @param key The key to set in the map
+ * @param value The double value to store
+ * @return true if successful, false if data is NULL, not a map, or allocation failure
+ */
+bool ar_data_set_sub_double(data_t *data, const char *key, double value);
+
+/**
+ * Set a string value in a map data structure by key
+ * @param data Pointer to the map data to modify
+ * @param key The key to set in the map
+ * @param value The string value to store (will be copied)
+ * @return true if successful, false if data is NULL, not a map, or allocation failure
+ */
+bool ar_data_set_sub_string(data_t *data, const char *key, const char *value);
 ```
 
 ## Usage Examples
@@ -234,7 +254,7 @@ if (retrieved_child && ar_data_get_type(retrieved_child) == DATA_MAP) {
 data_t *map_data = ar_data_create_map();
 map_t *map = ar_data_get_map_mutable(map_data);
 
-// Create and store values of different types
+// Create and store values of different types using the traditional approach
 data_t *int_data = ar_data_create_integer(42);
 data_t *double_data = ar_data_create_double(3.14159);
 data_t *string_data = ar_data_create_string("Hello, World!");
@@ -256,8 +276,10 @@ int int_value = ar_data_get_sub_integer(map_data, "int_key");
 double double_value = ar_data_get_sub_double(map_data, "double_key");
 const char *string_value = ar_data_get_sub_string(map_data, "string_key");
 
-// Access nested map with the sub map accessor
-const map_t *sub_map = ar_data_get_sub_map(map_data, "map_key");
+// Access nested map through map function
+const map_t *map = ar_data_get_map(map_data);
+const data_t *map_value = (const data_t*)ar_map_get(map, "map_key");
+const map_t *sub_map = ar_data_get_map(map_value);
 const data_t *nested_value = (const data_t*)ar_map_get(sub_map, "nested_int");
 int nested_int_value = ar_data_get_integer(nested_value);
 
@@ -267,6 +289,53 @@ printf("String value: %s\n", string_value);
 printf("Nested int value: %d\n", nested_int_value);
 
 // Cleanup (omitted for brevity)
+```
+
+### Using Sub-Data Setters
+
+```c
+// Create a map
+data_t *map_data = ar_data_create_map();
+
+// Set values directly using the sub-data setter functions
+// No need to manually create data_t objects or handle the map
+ar_data_set_sub_integer(map_data, "int_key", 42);
+ar_data_set_sub_double(map_data, "double_key", 3.14159);
+ar_data_set_sub_string(map_data, "string_key", "Hello, World!");
+
+// Create a nested map
+data_t *nested_map_data = ar_data_create_map();
+ar_data_set_sub_integer(nested_map_data, "nested_int", 100);
+
+// Add the nested map to the main map
+map_t *map = ar_data_get_map_mutable(map_data);
+ar_map_set(map, "map_key", nested_map_data);
+
+// Access values using the sub-data getter functions
+int int_value = ar_data_get_sub_integer(map_data, "int_key");
+double double_value = ar_data_get_sub_double(map_data, "double_key");
+const char *string_value = ar_data_get_sub_string(map_data, "string_key");
+int nested_int = ar_data_get_sub_integer(nested_map_data, "nested_int");
+
+printf("Int value: %d\n", int_value);
+printf("Double value: %f\n", double_value);
+printf("String value: %s\n", string_value);
+printf("Nested int value: %d\n", nested_int);
+
+// Update values
+ar_data_set_sub_integer(map_data, "int_key", 100);
+ar_data_set_sub_string(map_data, "string_key", "Updated text");
+
+// Get updated values
+int updated_int = ar_data_get_sub_integer(map_data, "int_key");
+const char *updated_string = ar_data_get_sub_string(map_data, "string_key");
+
+printf("Updated int value: %d\n", updated_int);
+printf("Updated string value: %s\n", updated_string);
+
+// Cleanup
+ar_data_destroy(nested_map_data);
+ar_data_destroy(map_data);
 ```
 
 ## Implementation Notes
@@ -292,3 +361,7 @@ printf("Nested int value: %d\n", nested_int_value);
 - Sub-data accessors simplify retrieval of values from maps by keys, reducing boilerplate code
 - The sub-data accessors handle all type checking and error handling, providing safe default values
 - Nested map access is simplified with the ar_data_get_sub_map function, which directly retrieves a sub-map by key
+- Sub-data setter functions simplify storing values in maps by keys, eliminating the need to manually create data objects and handle map references
+- The sub-data setter functions handle memory management automatically, creating the necessary data objects and storing them in the map
+- The sub-data setter functions return boolean status to indicate success or failure, allowing error handling
+- When using sub-data setter functions to update existing values, the old data is properly destroyed to prevent memory leaks

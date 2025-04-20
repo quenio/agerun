@@ -119,12 +119,32 @@ double ar_data_get_sub_double(const data_t *data, const char *key);
  */
 const char *ar_data_get_sub_string(const data_t *data, const char *key);
 
+
 /**
- * Get a sub-map value from a map data structure by key
- * @param data Pointer to the map data to retrieve from
- * @param key The key to look up in the map
- * @return The map value, or NULL if data is NULL, not a map, key not found, or value not a map
+ * Set an integer value in a map data structure by key
+ * @param data Pointer to the map data to modify
+ * @param key The key to set in the map
+ * @param value The integer value to store
+ * @return true if successful, false if data is NULL, not a map, or allocation failure
  */
-const map_t *ar_data_get_sub_map(const data_t *data, const char *key);
+bool ar_data_set_sub_integer(data_t *data, const char *key, int value);
+
+/**
+ * Set a double value in a map data structure by key
+ * @param data Pointer to the map data to modify
+ * @param key The key to set in the map
+ * @param value The double value to store
+ * @return true if successful, false if data is NULL, not a map, or allocation failure
+ */
+bool ar_data_set_sub_double(data_t *data, const char *key, double value);
+
+/**
+ * Set a string value in a map data structure by key
+ * @param data Pointer to the map data to modify
+ * @param key The key to set in the map
+ * @param value The string value to store (will be copied)
+ * @return true if successful, false if data is NULL, not a map, or allocation failure
+ */
+bool ar_data_set_sub_string(data_t *data, const char *key, const char *value);
 
 #endif /* AGERUN_DATA_H */
