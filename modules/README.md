@@ -51,6 +51,25 @@ agerun_executable
 └── agerun_methodology
 ```
 
+## Module Layers
+
+The AgeRun system is organized into hierarchical layers, with each layer building upon the functionality provided by the layers below it. This layered architecture promotes clean separation of concerns, reusability, and maintainability.
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                 Foundation Modules                       │
+│  (agerun_data, ...)                                      │
+└────────────────────────────┬────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────┐
+│                    Core Modules                          │
+│  (agerun_map, agerun_string, agerun_queue)              │
+└─────────────────────────────────────────────────────────┘
+```
+
+This layering reflects the dependency structure of the system, with higher layers depending on the services provided by lower layers.
+
 ## Core Modules
 
 Core modules have no dependencies on other modules and provide essential low-level functionality that other modules build upon. These modules form the base layer of the system architecture and are designed to be simple, focused, and highly reusable.
