@@ -12,7 +12,7 @@ data_t ar_data_create(data_type_t type) {
     data.type = type;
     
     switch (type) {
-        case DATA_INT:
+        case DATA_INTEGER:
             data.data.int_value = 0;
             break;
         case DATA_DOUBLE:
@@ -36,7 +36,7 @@ data_t ar_data_create(data_type_t type) {
  */
 data_t ar_data_create_integer(int64_t value) {
     data_t data;
-    data.type = DATA_INT;
+    data.type = DATA_INTEGER;
     data.data.int_value = value;
     return data;
 }
@@ -95,11 +95,11 @@ void ar_data_destroy(data_t *data) {
 /**
  * Get the type of a data structure
  * @param data Pointer to the data to check
- * @return The data type or DATA_INT if data is NULL
+ * @return The data type or DATA_INTEGER if data is NULL
  */
 data_type_t ar_data_get_type(const data_t *data) {
     if (!data) {
-        return DATA_INT; // Default to int if NULL
+        return DATA_INTEGER; // Default to int if NULL
     }
     return data->type;
 }
@@ -110,7 +110,7 @@ data_type_t ar_data_get_type(const data_t *data) {
  * @return The integer value or 0 if data is NULL or not an integer type
  */
 int64_t ar_data_get_integer(const data_t *data) {
-    if (!data || data->type != DATA_INT) {
+    if (!data || data->type != DATA_INTEGER) {
         return 0;
     }
     return data->data.int_value;

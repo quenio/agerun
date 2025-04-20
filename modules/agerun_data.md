@@ -19,7 +19,7 @@ The data module (`agerun_data`) provides a type-safe data storage system built o
 
 ```c
 typedef enum {
-    DATA_INT,
+    DATA_INTEGER,
     DATA_DOUBLE,
     DATA_STRING,
     DATA_MAP
@@ -79,7 +79,7 @@ const map_t *ar_data_get_map(const data_t *data);
 
 ```c
 // Create data using the generic function
-data_t int_data_default = ar_data_create(DATA_INT);
+data_t int_data_default = ar_data_create(DATA_INTEGER);
 
 // Create data using type-specific functions
 data_t int_data = ar_data_create_integer(42);

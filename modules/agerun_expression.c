@@ -16,7 +16,7 @@
 // Evaluate an expression in the agent's context
 data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *expr, int *offset) {
     data_t result;
-    result.type = DATA_INT;
+    result.type = DATA_INTEGER;
     result.data.int_value = 0;
     
     if (!expr || !offset) {
@@ -91,7 +91,7 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
         char *key = NULL;
         if (key_val.type == DATA_STRING) {
             key = key_val.data.string_value;
-        } else if (key_val.type == DATA_INT) {
+        } else if (key_val.type == DATA_INTEGER) {
             char temp[32];
             snprintf(temp, sizeof(temp), "%lld", key_val.data.int_value);
             key = strdup(temp);
@@ -111,8 +111,8 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
                 if (value->type == DATA_STRING && value->data.string_value) {
                     result.type = DATA_STRING;
                     result.data.string_value = strdup(value->data.string_value);
-                } else if (value->type == DATA_INT) {
-                    result.type = DATA_INT;
+                } else if (value->type == DATA_INTEGER) {
+                    result.type = DATA_INTEGER;
                     result.data.int_value = value->data.int_value;
                 } else if (value->type == DATA_DOUBLE) {
                     result.type = DATA_DOUBLE;
@@ -173,7 +173,7 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
             result.type = DATA_DOUBLE;
             result.data.double_value = is_negative ? -double_value : double_value;
         } else {
-            result.type = DATA_INT;
+            result.type = DATA_INTEGER;
             result.data.int_value = is_negative ? -value : value;
         }
         
@@ -249,7 +249,7 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
                         char *send_message = NULL;
                         
                         // Get target agent ID
-                        if (args[0].type == DATA_INT) {
+                        if (args[0].type == DATA_INTEGER) {
                             target_id = args[0].data.int_value;
                         } else if (args[0].type == DATA_STRING && args[0].data.string_value) {
                             target_id = atoll(args[0].data.string_value);
@@ -258,7 +258,7 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
                         // Get message content
                         if (args[1].type == DATA_STRING && args[1].data.string_value) {
                             send_message = args[1].data.string_value;
-                        } else if (args[1].type == DATA_INT) {
+                        } else if (args[1].type == DATA_INTEGER) {
                             char temp[32];
                             snprintf(temp, sizeof(temp), "%lld", args[1].data.int_value);
                             send_message = strdup(temp);
@@ -273,7 +273,7 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
                             ar_agent_send(target_id, send_message);
                             
                             // Set result to success
-                            result.type = DATA_INT;
+                            result.type = DATA_INTEGER;
                             result.data.int_value = 1;
                         }
                         
@@ -303,7 +303,7 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
                                             strcpy(result_str + result_pos, args[arg_idx].data.string_value);
                                             result_pos += len;
                                         }
-                                    } else if (args[arg_idx].type == DATA_INT) {
+                                    } else if (args[arg_idx].type == DATA_INTEGER) {
                                         char temp[32];
                                         int len = snprintf(temp, sizeof(temp), "%lld", args[arg_idx].data.int_value);
                                         if ((size_t)(result_pos + len) < sizeof(result_str) - 1) {
@@ -360,7 +360,7 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
         *offset += right_offset;
         
         // Perform operation
-        if (result.type == DATA_INT && right_val.type == DATA_INT) {
+        if (result.type == DATA_INTEGER && right_val.type == DATA_INTEGER) {
             switch (op) {
                 case '+': result.data.int_value += right_val.data.int_value; break;
                 case '-': result.data.int_value -= right_val.data.int_value; break;
@@ -373,10 +373,10 @@ data_t ar_expression_evaluate(agent_t *agent, const char *message, const char *e
             }
         } else if ((result.type == DATA_DOUBLE || right_val.type == DATA_DOUBLE)) {
             // Convert to double for operation
-            double left_val = (result.type == DATA_INT) ? 
+            double left_val = (result.type == DATA_INTEGER) ? 
                 (double)result.data.int_value : result.data.double_value;
                 
-            double right_double = (right_val.type == DATA_INT) ? 
+            double right_double = (right_val.type == DATA_INTEGER) ? 
                 (double)right_val.data.int_value : right_val.data.double_value;
                 
             result.type = DATA_DOUBLE;

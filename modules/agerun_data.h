@@ -9,7 +9,7 @@
  * Data type enumeration
  */
 typedef enum {
-    DATA_INT,
+    DATA_INTEGER,
     DATA_DOUBLE,
     DATA_STRING,
     DATA_MAP
@@ -71,7 +71,7 @@ void ar_data_destroy(data_t *data);
 /**
  * Get the type of a data structure
  * @param data Pointer to the data to check
- * @return The data type or DATA_INT if data is NULL
+ * @return The data type or DATA_INTEGER if data is NULL
  */
 data_type_t ar_data_get_type(const data_t *data);
 

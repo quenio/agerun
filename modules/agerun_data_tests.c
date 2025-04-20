@@ -18,10 +18,10 @@ static void test_data_creation(void) {
     // Given we need to create data of different types
     
     // When we create an integer data item with the generic function
-    data_t int_data_default = ar_data_create(DATA_INT);
+    data_t int_data_default = ar_data_create(DATA_INTEGER);
     
     // Then it should have the correct type and default value
-    assert(int_data_default.type == DATA_INT);
+    assert(int_data_default.type == DATA_INTEGER);
     assert(int_data_default.data.int_value == 0);
     
     // When we create a double data item with the generic function
@@ -52,7 +52,7 @@ static void test_data_creation(void) {
     data_t map_data = ar_data_create_map();
     
     // Then they should have the correct types and values
-    assert(int_data.type == DATA_INT);
+    assert(int_data.type == DATA_INTEGER);
     assert(int_data.data.int_value == 42);
     
     assert(double_data.type == DATA_DOUBLE);
@@ -90,11 +90,11 @@ static void test_data_getters(void) {
     data_type_t null_type = ar_data_get_type(NULL);
     
     // Then the types should be correct
-    assert(int_type == DATA_INT);
+    assert(int_type == DATA_INTEGER);
     assert(double_type == DATA_DOUBLE);
     assert(string_type == DATA_STRING);
     assert(map_type == DATA_MAP);
-    assert(null_type == DATA_INT); // Default to int if NULL
+    assert(null_type == DATA_INTEGER); // Default to int if NULL
     
     // When we use the value getters with the correct types
     int64_t int_value = ar_data_get_integer(&int_data);
@@ -157,7 +157,7 @@ static void test_integer_values(map_t *map) {
     
     // Then the value should be correctly retrieved
     assert(value != NULL);
-    assert(value->type == DATA_INT);
+    assert(value->type == DATA_INTEGER);
     assert(value->data.int_value == 42);
     
     printf("Integer value tests passed!\n");
@@ -224,7 +224,7 @@ static void test_nested_maps(map_t *map) {
     // And its contents should be intact - retrieve the reference from inside the nested map
     const data_t *nested_value = (const data_t*)ar_map_get(value->data.map_value, "count");
     assert(nested_value != NULL);
-    assert(nested_value->type == DATA_INT);
+    assert(nested_value->type == DATA_INTEGER);
     assert(nested_value->data.int_value == 100);
     
     // Given a third level map using the specialized function
