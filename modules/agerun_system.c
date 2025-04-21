@@ -26,7 +26,7 @@ static char g_wake_message[] = "__wake__";
 
 /* Memory Map structure is now defined in agerun_map.h */
 
-/* Message Queue is now defined in agerun_queue.h */
+/* Message Queue functionality is now provided by the list module */
 
 /* Method Definition is now in agerun_method.h/c */
 
