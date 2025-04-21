@@ -18,12 +18,48 @@ typedef struct list_s list_t;
 list_t* ar_list_create(void);
 
 /**
- * Append an item to the end of the list
- * @param list The list to append to
- * @param item The item to append
+ * Add an item to the end of the list
+ * @param list The list to add to
+ * @param item The item to add
  * @return true if successful, false otherwise
  */
-bool ar_list_append(list_t *list, void *item);
+bool ar_list_add_last(list_t *list, void *item);
+
+/**
+ * Add an item to the beginning of the list
+ * @param list The list to add to
+ * @param item The item to add
+ * @return true if successful, false otherwise
+ */
+bool ar_list_add_first(list_t *list, void *item);
+
+/**
+ * Get the first item in the list
+ * @param list The list to get the first item from
+ * @return Pointer to the first item, or NULL if the list is empty
+ */
+void* ar_list_first(const list_t *list);
+
+/**
+ * Get the last item in the list
+ * @param list The list to get the last item from
+ * @return Pointer to the last item, or NULL if the list is empty
+ */
+void* ar_list_last(const list_t *list);
+
+/**
+ * Remove and return the first item from the list
+ * @param list The list to remove from
+ * @return Pointer to the removed item, or NULL if the list is empty
+ */
+void* ar_list_remove_first(list_t *list);
+
+/**
+ * Remove and return the last item from the list
+ * @param list The list to remove from
+ * @return Pointer to the removed item, or NULL if the list is empty
+ */
+void* ar_list_remove_last(list_t *list);
 
 /**
  * Get the number of items in the list

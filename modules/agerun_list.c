@@ -36,12 +36,12 @@ list_t* ar_list_create(void) {
 }
 
 /**
- * Append an item to the end of the list
- * @param list The list to append to
- * @param item The item to append
+ * Add an item to the end of the list
+ * @param list The list to add to
+ * @param item The item to add
  * @return true if successful, false otherwise
  */
-bool ar_list_append(list_t *list, void *item) {
+bool ar_list_add_last(list_t *list, void *item) {
     if (!list) {
         return false;
     }
@@ -64,6 +64,117 @@ bool ar_list_append(list_t *list, void *item) {
     list->count++;
     
     return true;
+}
+
+/**
+ * Add an item to the beginning of the list
+ * @param list The list to add to
+ * @param item The item to add
+ * @return true if successful, false otherwise
+ */
+bool ar_list_add_first(list_t *list, void *item) {
+    if (!list) {
+        return false;
+    }
+    
+    struct list_node_s *node = (struct list_node_s*)malloc(sizeof(struct list_node_s));
+    if (!node) {
+        return false;
+    }
+    
+    node->item = item;
+    node->next = list->head;
+    
+    list->head = node;
+    
+    if (!list->tail) {
+        list->tail = node;
+    }
+    
+    list->count++;
+    
+    return true;
+}
+
+/**
+ * Get the first item in the list
+ * @param list The list to get the first item from
+ * @return Pointer to the first item, or NULL if the list is empty
+ */
+void* ar_list_first(const list_t *list) {
+    if (!list || !list->head) {
+        return NULL;
+    }
+    
+    return list->head->item;
+}
+
+/**
+ * Get the last item in the list
+ * @param list The list to get the last item from
+ * @return Pointer to the last item, or NULL if the list is empty
+ */
+void* ar_list_last(const list_t *list) {
+    if (!list || !list->tail) {
+        return NULL;
+    }
+    
+    return list->tail->item;
+}
+
+/**
+ * Remove and return the first item from the list
+ * @param list The list to remove from
+ * @return Pointer to the removed item, or NULL if the list is empty
+ */
+void* ar_list_remove_first(list_t *list) {
+    if (!list || !list->head) {
+        return NULL;
+    }
+    
+    struct list_node_s *node = list->head;
+    void *item = node->item;
+    
+    list->head = node->next;
+    if (!list->head) {
+        list->tail = NULL;
+    }
+    
+    free(node);
+    list->count--;
+    
+    return item;
+}
+
+/**
+ * Remove and return the last item from the list
+ * @param list The list to remove from
+ * @return Pointer to the removed item, or NULL if the list is empty
+ */
+void* ar_list_remove_last(list_t *list) {
+    if (!list || !list->tail) {
+        return NULL;
+    }
+    
+    struct list_node_s *node = list->tail;
+    void *item = node->item;
+    
+    if (list->head == list->tail) {
+        list->head = NULL;
+        list->tail = NULL;
+    } else {
+        struct list_node_s *current = list->head;
+        while (current->next != list->tail) {
+            current = current->next;
+        }
+        current->next = NULL;
+        list->tail = current;
+    }
+    
+    free(node);
+    list->count--;
+    
+    return item;
 }
 
 /**

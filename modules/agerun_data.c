@@ -452,7 +452,7 @@ bool ar_data_set_map_data(data_t *data, const char *key, data_t *value) {
         }
         
         // Add the key to our tracking list
-        if (!ar_list_append(data->keys, key_copy)) {
+        if (!ar_list_add_last(data->keys, key_copy)) {
             // Unlikely, but handle failure
             ar_map_set(map, key, prev_data); // Try to restore previous state
             free(key_copy);

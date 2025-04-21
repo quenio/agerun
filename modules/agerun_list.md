@@ -6,7 +6,10 @@ The list module provides a simple linked list implementation for storing pointer
 
 ## Key Features
 
-- Append items to the end of the list in O(1) time
+- Add items to the beginning or end of the list in O(1) time
+- Get the first or last item in the list
+- Remove items from the beginning or end of the list
+- Use as a stack (LIFO) or queue (FIFO)
 - Check if a list is empty
 - Get the count of items in the list
 - Get an array of all items in the list
@@ -35,9 +38,38 @@ Frees all resources associated with the list. Note that this function only frees
 #### Adding Items
 
 ```c
-bool ar_list_append(list_t *list, void *item);
+bool ar_list_add_last(list_t *list, void *item);
 ```
-Appends an item to the end of the list. Returns true if successful, false otherwise.
+Adds an item to the end of the list. Returns true if successful, false otherwise.
+
+```c
+bool ar_list_add_first(list_t *list, void *item);
+```
+Adds an item to the beginning of the list. Returns true if successful, false otherwise.
+
+#### Accessing Items
+
+```c
+void* ar_list_first(const list_t *list);
+```
+Gets the first item in the list. Returns NULL if the list is empty or NULL.
+
+```c
+void* ar_list_last(const list_t *list);
+```
+Gets the last item in the list. Returns NULL if the list is empty or NULL.
+
+#### Removing Items
+
+```c
+void* ar_list_remove_first(list_t *list);
+```
+Removes and returns the first item from the list. Returns NULL if the list is empty or NULL.
+
+```c
+void* ar_list_remove_last(list_t *list);
+```
+Removes and returns the last item from the list. Returns NULL if the list is empty or NULL.
 
 #### Querying
 
@@ -64,11 +96,11 @@ Gets an array of all items in the list. Returns NULL if the list is empty or on 
 // Create a list
 list_t *list = ar_list_create();
 
-// Append items
+// Add items
 char *item1 = strdup("item1");
 char *item2 = strdup("item2");
-ar_list_append(list, item1);
-ar_list_append(list, item2);
+ar_list_add_last(list, item1);
+ar_list_add_last(list, item2);
 
 // Check properties
 size_t count = ar_list_count(list);  // Returns 2
@@ -92,6 +124,56 @@ free(item2);
 ar_list_destroy(list);
 ```
 
+### Using List as a Stack (LIFO)
+
+```c
+// Create a stack
+list_t *stack = ar_list_create();
+
+// Push items onto the stack
+ar_list_add_first(stack, strdup("bottom"));
+ar_list_add_first(stack, strdup("middle"));
+ar_list_add_first(stack, strdup("top"));
+
+// Peek at the top item
+char *top = (char*)ar_list_first(stack);
+printf("Top of stack: %s\n", top);  // Prints "top"
+
+// Pop items from the stack
+while (!ar_list_empty(stack)) {
+    char *item = (char*)ar_list_remove_first(stack);
+    printf("Popped: %s\n", item);  // Pops in order: "top", "middle", "bottom"
+    free(item);
+}
+
+ar_list_destroy(stack);
+```
+
+### Using List as a Queue (FIFO)
+
+```c
+// Create a queue
+list_t *queue = ar_list_create();
+
+// Enqueue items
+ar_list_add_last(queue, strdup("first"));
+ar_list_add_last(queue, strdup("second"));
+ar_list_add_last(queue, strdup("third"));
+
+// Peek at the front item
+char *front = (char*)ar_list_first(queue);
+printf("Front of queue: %s\n", front);  // Prints "first"
+
+// Dequeue items
+while (!ar_list_empty(queue)) {
+    char *item = (char*)ar_list_remove_first(queue);
+    printf("Dequeued: %s\n", item);  // Dequeues in order: "first", "second", "third"
+    free(item);
+}
+
+ar_list_destroy(queue);
+```
+
 ### Storing Different Types of Items
 
 The list can store pointers to any type of data:
@@ -103,14 +185,14 @@ list_t *list = ar_list_create();
 // Store different types
 int *int_value = malloc(sizeof(int));
 *int_value = 42;
-ar_list_append(list, int_value);
+ar_list_add_last(list, int_value);
 
 double *double_value = malloc(sizeof(double));
 *double_value = 3.14;
-ar_list_append(list, double_value);
+ar_list_add_last(list, double_value);
 
 char *string_value = strdup("Hello");
-ar_list_append(list, string_value);
+ar_list_add_last(list, string_value);
 
 // Use type casting when retrieving items
 void **items = ar_list_items(list);
@@ -144,10 +226,10 @@ list_t *allocations = ar_list_create();
 
 // Allocate and track memory
 char *str1 = strdup("string one");
-ar_list_append(allocations, str1);
+ar_list_add_last(allocations, str1);
 
 char *str2 = strdup("string two");
-ar_list_append(allocations, str2);
+ar_list_add_last(allocations, str2);
 
 // Use the strings
 printf("String 1: %s\n", str1);
@@ -169,10 +251,13 @@ ar_list_destroy(allocations);
 ## Implementation Notes
 
 - The list is implemented as a singly-linked list with head and tail pointers
-- Appending items is an O(1) operation
+- Adding to either end of the list is an O(1) operation
+- Removing from the beginning of the list is an O(1) operation
+- Removing from the end of the list is an O(n) operation due to the need to find the new tail
 - Getting an array of all items is an O(n) operation where n is the number of items
 - The list maintains a count of items for fast size queries
 - NULL items can be stored in the list
 - All functions handle NULL list parameters gracefully
+- The list can be used as a stack (LIFO), queue (FIFO), or a standard list depending on which operations are used
 - The list is particularly useful for tracking allocated memory that needs to be freed later
 - The module is used by the data module to track dynamically allocated map keys
