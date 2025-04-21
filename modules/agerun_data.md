@@ -2,19 +2,20 @@
 
 ## Overview
 
-The data module (`agerun_data`) provides a type-safe data storage system built on top of the map module. It offers a structured way to handle different data types within the AgeRun system using an opaque data type.
+The data module (`agerun_data`) provides a type-safe data storage system built on top of the map and list modules. It offers a structured way to handle different data types within the AgeRun system using an opaque data type.
 
 ## Key Features
 
 - **Opaque Type**: Uses an opaque data type to hide implementation details
-- **Type System**: Supports integers, doubles, strings, and nested maps
+- **Type System**: Supports integers, doubles, strings, lists, and nested maps
 - **Memory Management**: Handles memory allocation and cleanup for data values
 - **Type Safety**: Ensures proper handling of different data types
-- **Reference Management**: Handles reference counting for nested maps and complex structures
-- **Dependencies**: Depends on the map module for underlying storage
+- **Reference Management**: Handles reference counting for lists, maps, and complex structures
+- **Dependencies**: Depends on the map and list modules for underlying storage
 - **Type-Specific Creators**: Specialized functions for creating different data types
 - **Path-Based Access**: Support for accessing nested maps using dot-separated paths (e.g., "user.address.city")
 - **Fail-Fast Path Operations**: Path-based setters fail if intermediate maps don't exist, ensuring predictable behavior
+- **List Operations**: Support for adding and removing values from both ends of a list
 
 ## API Reference
 
@@ -28,6 +29,7 @@ typedef enum {
     DATA_INTEGER,
     DATA_DOUBLE,
     DATA_STRING,
+    DATA_LIST,
     DATA_MAP
 } data_type_t;
 
@@ -61,6 +63,12 @@ data_t* ar_data_create_double(double value);
  * @return Pointer to the new data, or NULL on failure
  */
 data_t* ar_data_create_string(const char *value);
+
+/**
+ * Create a new list data value
+ * @return Pointer to the new data, or NULL on failure
+ */
+data_t* ar_data_create_list(void);
 
 /**
  * Create a new map data value
@@ -170,6 +178,153 @@ bool ar_data_set_map_double(data_t *data, const char *key, double value);
  * @note For paths with multiple segments, all intermediate segments must exist and be maps
  */
 bool ar_data_set_map_string(data_t *data, const char *key, const char *value);
+
+/**
+ * Add an integer value to the beginning of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The integer value to add
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_first_integer(data_t *data, int value);
+
+/**
+ * Add a double value to the beginning of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The double value to add
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_first_double(data_t *data, double value);
+
+/**
+ * Add a string value to the beginning of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The string value to add (will be copied)
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_first_string(data_t *data, const char *value);
+
+/**
+ * Add a data value to the beginning of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The data value to add (ownership is transferred)
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_first_data(data_t *data, data_t *value);
+
+/**
+ * Add an integer value to the end of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The integer value to add
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_last_integer(data_t *data, int value);
+
+/**
+ * Add a double value to the end of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The double value to add
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_last_double(data_t *data, double value);
+
+/**
+ * Add a string value to the end of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The string value to add (will be copied)
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_last_string(data_t *data, const char *value);
+
+/**
+ * Add a data value to the end of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The data value to add (ownership is transferred)
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_last_data(data_t *data, data_t *value);
+
+/**
+ * Remove and return the first data value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The removed data value (ownership is transferred), or NULL if data is NULL, not a list, or list is empty
+ */
+data_t *ar_data_list_remove_first(data_t *data);
+
+/**
+ * Remove and return the last data value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The removed data value (ownership is transferred), or NULL if data is NULL, not a list, or list is empty
+ */
+data_t *ar_data_list_remove_last(data_t *data);
+
+/**
+ * Remove and return the first integer value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The integer value, or 0 if data is NULL, not a list, list is empty, or first item not an integer
+ * @note This function also removes and frees the data structure containing the integer
+ */
+int ar_data_list_remove_first_integer(data_t *data);
+
+/**
+ * Remove and return the first double value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The double value, or 0.0 if data is NULL, not a list, list is empty, or first item not a double
+ * @note This function also removes and frees the data structure containing the double
+ */
+double ar_data_list_remove_first_double(data_t *data);
+
+/**
+ * Remove and return the first string value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The string value (caller must free), or NULL if data is NULL, not a list, list is empty, or first item not a string
+ * @note This function also removes and frees the data structure containing the string reference
+ */
+char *ar_data_list_remove_first_string(data_t *data);
+
+/**
+ * Remove and return the last integer value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The integer value, or 0 if data is NULL, not a list, list is empty, or last item not an integer
+ * @note This function also removes and frees the data structure containing the integer
+ */
+int ar_data_list_remove_last_integer(data_t *data);
+
+/**
+ * Remove and return the last double value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The double value, or 0.0 if data is NULL, not a list, list is empty, or last item not a double
+ * @note This function also removes and frees the data structure containing the double
+ */
+double ar_data_list_remove_last_double(data_t *data);
+
+/**
+ * Remove and return the last string value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The string value (caller must free), or NULL if data is NULL, not a list, list is empty, or last item not a string
+ * @note This function also removes and frees the data structure containing the string reference
+ */
+char *ar_data_list_remove_last_string(data_t *data);
+
+/**
+ * Get the first data value from a list data structure (without removing it)
+ * @param data Pointer to the list data
+ * @return The first data value (ownership is not transferred), or NULL if data is NULL, not a list, or list is empty
+ */
+data_t *ar_data_list_first(const data_t *data);
+
+/**
+ * Get the last data value from a list data structure (without removing it)
+ * @param data Pointer to the list data
+ * @return The last data value (ownership is not transferred), or NULL if data is NULL, not a list, or list is empty
+ */
+data_t *ar_data_list_last(const data_t *data);
+
+/**
+ * Get the number of items in a list data structure
+ * @param data Pointer to the list data
+ * @return The number of items, or 0 if data is NULL or not a list
+ */
+size_t ar_data_list_count(const data_t *data);
 ```
 
 ## Usage Examples
@@ -181,6 +336,7 @@ bool ar_data_set_map_string(data_t *data, const char *key, const char *value);
 data_t *int_data = ar_data_create_integer(42);
 data_t *double_data = ar_data_create_double(3.14159);
 data_t *string_data = ar_data_create_string("Hello, World!");
+data_t *list_data = ar_data_create_list();
 data_t *map_data = ar_data_create_map();
 
 // Access values through accessor functions
@@ -191,6 +347,7 @@ const map_t *m = ar_data_get_map(map_data);
 
 // Clean up
 ar_data_destroy(string_data);
+ar_data_destroy(list_data);
 ar_data_destroy(map_data);
 ar_data_destroy(double_data);
 ar_data_destroy(int_data);
@@ -341,6 +498,69 @@ printf("Updated string value: %s\n", updated_string);
 // Cleanup
 ar_data_destroy(nested_map_data);
 ar_data_destroy(map_data);
+```
+
+### Using Lists
+
+```c
+// Create a list data structure
+data_t *list_data = ar_data_create_list();
+
+// Add various types of data to the list
+ar_data_list_add_last_integer(list_data, 42);                // Integer at the end
+ar_data_list_add_last_double(list_data, 3.14159);            // Double at the end
+ar_data_list_add_last_string(list_data, "Hello, World!");    // String at the end
+ar_data_list_add_first_integer(list_data, 100);              // Integer at the beginning
+ar_data_list_add_first_double(list_data, 2.71828);           // Double at the beginning
+
+// Add a map to the list
+data_t *map_data = ar_data_create_map();
+ar_data_set_map_string(map_data, "name", "John");
+ar_data_set_map_integer(map_data, "age", 30);
+ar_data_list_add_last_data(list_data, map_data);             // Map at the end (ownership transferred)
+
+// Check the list count
+size_t count = ar_data_list_count(list_data);
+printf("List contains %zu items\n", count);
+
+// Access the first and last items without removing them
+data_t *first_item = ar_data_list_first(list_data);
+data_t *last_item = ar_data_list_last(list_data);
+
+// Check the types and values
+if (first_item && ar_data_get_type(first_item) == DATA_DOUBLE) {
+    printf("First item is a double: %f\n", ar_data_get_double(first_item));
+}
+
+if (last_item && ar_data_get_type(last_item) == DATA_MAP) {
+    printf("Last item is a map\n");
+    printf("Name: %s\n", ar_data_get_map_string(last_item, "name"));
+    printf("Age: %d\n", ar_data_get_map_integer(last_item, "age"));
+}
+
+// Remove and use typed values
+double first_double = ar_data_list_remove_first_double(list_data);
+printf("Removed first double: %f\n", first_double);
+
+int first_int = ar_data_list_remove_first_integer(list_data);
+printf("Removed first integer: %d\n", first_int);
+
+// Remove and manage data values (we need to free these ourselves)
+data_t *removed_data = ar_data_list_remove_first(list_data);
+if (removed_data) {
+    // Process the data...
+    ar_data_destroy(removed_data);  // Don't forget to destroy it when done
+}
+
+// Remove string and free it when done
+char *str = ar_data_list_remove_first_string(list_data);
+if (str) {
+    printf("Removed string: %s\n", str);
+    free(str);  // Must free the string when finished
+}
+
+// Clean up
+ar_data_destroy(list_data);  // Destroys the list and all remaining items
 ```
 
 ### Using Path-Based Access
@@ -501,9 +721,10 @@ ar_data_destroy(root_map);
 - All access to data values must go through the provided API functions
 - Memory management is handled internally by the module
 - Creation functions allocate memory and initialize the data structure
-- The destroy function properly frees all allocated resources including recursively freeing map keys and values
+- The destroy function properly frees all allocated resources including recursively freeing list items, map keys, and map values
 - Type-specific getter functions ensure type safety when accessing values
-- The module uses the map module for storing nested maps and the list module for tracking memory allocations
+- The module uses the list module for sequence-based collections and the map module for key-value storage
+- Both list and map data types handle proper memory management of contained items
 - The data_type_t enum is still exposed to allow clients to specify types
 - Each data instance is heap-allocated and must be explicitly destroyed 
 - All accessor functions include appropriate NULL checks
@@ -512,14 +733,21 @@ ar_data_destroy(root_map);
 - The getter functions handle all necessary type checking and validation
 - Memory leaks are avoided by proper resource management in create/destroy functions
 - The data module fully manages memory for all its components - when a data object is destroyed, all of its contents are properly freed
-- String and map values are stored as references (string_ref and map_ref) within the internal data structure
-- While the map module stores references as `const void*` and doesn't manage memory for keys or values, the data module handles this responsibility
+- String, list, and map values are stored as references (string_ref, list_ref, and map_ref) within the internal data structure
+- While the list and map modules store references as void pointers and don't manage memory for items/values, the data module handles this responsibility
+- For list data types, ar_data_destroy uses ar_list_items to get all items, then properly frees them
 - For map data types, ar_data_destroy uses ar_map_refs to get all keys and values, then properly frees them
 - Duplicated keys created by ar_data_set_map_* functions are tracked in a keys list to ensure proper cleanup
 - When a key is duplicated with strdup, it is added to a tracking list for later cleanup during destruction
 - The list module allows simple management of the dynamically allocated keys
 - The ownership model is clear: the data module owns and manages all memory for data objects and their contents
 - Type safety is improved through the use of const qualifiers throughout the API
+- List operations are provided for both generic data objects and specific typed values
+- Typed list operations (add_first_integer, remove_last_double, etc.) simplify working with lists of specific types
+- Remove operations handle type checking and return default values for type mismatches
+- The typed remove operations that extract primitive values handle memory cleanup of the containing data structure
+- String removal operations return dynamically allocated strings that must be freed by the caller
+- The list operations follow a consistent pattern with operations for both ends of the list (first/last)
 - Map-data accessors simplify retrieval of values from maps by keys, reducing boilerplate code
 - The map-data accessors handle all type checking and error handling, providing safe default values
 - Map-data setter functions simplify storing values in maps by keys, eliminating the need to manually create data objects and handle map references
