@@ -296,23 +296,53 @@ static void test_map_data_getters(void) {
     assert(double_value == 3.14159);
     assert(strcmp(string_value, "Hello, World!") == 0);
     
+    // When we use ar_data_get_map_data with correct keys
+    const data_t *int_data_direct = ar_data_get_map_data(map_data, "int_key");
+    const data_t *double_data_direct = ar_data_get_map_data(map_data, "double_key");
+    const data_t *string_data_direct = ar_data_get_map_data(map_data, "string_key");
+    const data_t *map_data_direct = ar_data_get_map_data(map_data, "map_key");
+    
+    // Then it should return the correct data objects
+    assert(int_data_direct != NULL);
+    assert(double_data_direct != NULL);
+    assert(string_data_direct != NULL);
+    assert(map_data_direct != NULL);
+    
+    // And the data objects should have the correct types
+    assert(ar_data_get_type(int_data_direct) == DATA_INTEGER);
+    assert(ar_data_get_type(double_data_direct) == DATA_DOUBLE);
+    assert(ar_data_get_type(string_data_direct) == DATA_STRING);
+    assert(ar_data_get_type(map_data_direct) == DATA_MAP);
+    
+    // And the data objects should contain the correct values
+    assert(ar_data_get_integer(int_data_direct) == 42);
+    assert(ar_data_get_double(double_data_direct) == 3.14159);
+    assert(strcmp(ar_data_get_string(string_data_direct), "Hello, World!") == 0);
+    assert(ar_data_get_map(map_data_direct) != NULL);
+    
     // When we use the map data getters with incorrect keys
     int wrong_int = ar_data_get_map_integer(map_data, "nonexistent_key");
     double wrong_double = ar_data_get_map_double(map_data, "nonexistent_key");
     const char *wrong_string = ar_data_get_map_string(map_data, "nonexistent_key");
+    const data_t *wrong_data = ar_data_get_map_data(map_data, "nonexistent_key");
     
     // Then they should return default values
     assert(wrong_int == 0);
     assert(wrong_double == 0.0);
     assert(wrong_string == NULL);
+    assert(wrong_data == NULL);
     
     // When we use the map data getters with NULL data or key
     int null_data_int = ar_data_get_map_integer(NULL, "int_key");
     double null_key_double = ar_data_get_map_double(map_data, NULL);
+    const data_t *null_data_obj = ar_data_get_map_data(NULL, "int_key");
+    const data_t *null_key_obj = ar_data_get_map_data(map_data, NULL);
     
     // Then they should return default values
     assert(null_data_int == 0);
     assert(null_key_double == 0.0);
+    assert(null_data_obj == NULL);
+    assert(null_key_obj == NULL);
     
     // When we use the map data getters with incorrect types
     int wrong_type_int = ar_data_get_map_integer(map_data, "string_key");
@@ -466,15 +496,56 @@ static void test_map_data_path_getters(void) {
     assert(science_score == 87);
     assert(avg_score == 91.0);
     
+    // When we use ar_data_get_map_data with paths
+    const data_t *user_data = ar_data_get_map_data(root_map, "user");
+    const data_t *address_data = ar_data_get_map_data(root_map, "user.address");
+    const data_t *scores_data = ar_data_get_map_data(root_map, "user.scores");
+    const data_t *name_data = ar_data_get_map_data(root_map, "user.name");
+    const data_t *age_data = ar_data_get_map_data(root_map, "user.age");
+    const data_t *street_data = ar_data_get_map_data(root_map, "user.address.street");
+    const data_t *math_data = ar_data_get_map_data(root_map, "user.scores.math");
+    const data_t *avg_data = ar_data_get_map_data(root_map, "user.scores.average");
+    
+    // Then the data objects should be correctly retrieved
+    assert(user_data != NULL);
+    assert(address_data != NULL);
+    assert(scores_data != NULL);
+    assert(name_data != NULL);
+    assert(age_data != NULL);
+    assert(street_data != NULL);
+    assert(math_data != NULL);
+    assert(avg_data != NULL);
+    
+    // And the data objects should have the correct types
+    assert(ar_data_get_type(user_data) == DATA_MAP);
+    assert(ar_data_get_type(address_data) == DATA_MAP);
+    assert(ar_data_get_type(scores_data) == DATA_MAP);
+    assert(ar_data_get_type(name_data) == DATA_STRING);
+    assert(ar_data_get_type(age_data) == DATA_INTEGER);
+    assert(ar_data_get_type(street_data) == DATA_STRING);
+    assert(ar_data_get_type(math_data) == DATA_INTEGER);
+    assert(ar_data_get_type(avg_data) == DATA_DOUBLE);
+    
+    // And the data objects should contain the correct values
+    assert(ar_data_get_integer(age_data) == 30);
+    assert(strcmp(ar_data_get_string(name_data), "John Doe") == 0);
+    assert(strcmp(ar_data_get_string(street_data), "123 Main St") == 0);
+    assert(ar_data_get_integer(math_data) == 95);
+    assert(ar_data_get_double(avg_data) == 91.0);
+    
     // When we use path-based getters with invalid paths
     int invalid_age = ar_data_get_map_integer(root_map, "user.invalid.age");
     const char *invalid_name = ar_data_get_map_string(root_map, "invalid.user.name");
     double invalid_avg = ar_data_get_map_double(root_map, "user.scores.invalid");
+    const data_t *invalid_data = ar_data_get_map_data(root_map, "user.invalid.path");
+    const data_t *nonexistent_data = ar_data_get_map_data(root_map, "nonexistent");
     
     // Then they should return default values
     assert(invalid_age == 0);
     assert(invalid_name == NULL);
     assert(invalid_avg == 0.0);
+    assert(invalid_data == NULL);
+    assert(nonexistent_data == NULL);
     
     // When we use path-based getters with incorrect types
     int wrong_type = ar_data_get_map_integer(root_map, "user.name");

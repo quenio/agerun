@@ -132,6 +132,13 @@ double ar_data_get_map_double(const data_t *data, const char *key);
  */
 const char *ar_data_get_map_string(const data_t *data, const char *key);
 
+/**
+ * Get a data value from a map data structure by key or path
+ * @param data Pointer to the map data to retrieve from
+ * @param key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
+ * @return The data value, or NULL if data is NULL, not a map, or key not found
+ */
+const data_t *ar_data_get_map_data(const data_t *data, const char *key);
 
 /**
  * Set an integer value in a map data structure by key
@@ -384,6 +391,77 @@ printf("Config enabled: %d\n", enabled);
 ar_data_destroy(root_map);
 ```
 
+### Using Direct Data Access with get_map_data
+
+```c
+// Create a root map
+data_t *root_map = ar_data_create_map();
+
+// Set nested values using path-based setters
+ar_data_set_map_string(root_map, "user.profile.name", "John Doe");
+ar_data_set_map_integer(root_map, "user.profile.age", 30);
+ar_data_set_map_double(root_map, "user.stats.height", 185.5);
+ar_data_set_map_double(root_map, "user.stats.weight", 82.3);
+
+// Create a nested map for scores
+data_t *scores_map = ar_data_create_map();
+ar_data_set_map_integer(scores_map, "math", 95);
+ar_data_set_map_integer(scores_map, "science", 87);
+ar_data_set_map_double(scores_map, "average", 91.0);
+
+// Add the scores map to the user map
+map_t *user_map = ar_data_get_map(ar_data_get_map_data(root_map, "user"));
+ar_map_set(user_map, "scores", scores_map);
+
+// Access nested data directly with ar_data_get_map_data
+const data_t *profile_data = ar_data_get_map_data(root_map, "user.profile");
+const data_t *name_data = ar_data_get_map_data(root_map, "user.profile.name");
+const data_t *age_data = ar_data_get_map_data(root_map, "user.profile.age");
+const data_t *stats_data = ar_data_get_map_data(root_map, "user.stats");
+const data_t *height_data = ar_data_get_map_data(root_map, "user.stats.height");
+const data_t *scores_data = ar_data_get_map_data(root_map, "user.scores");
+const data_t *math_score_data = ar_data_get_map_data(root_map, "user.scores.math");
+
+// Check data types and access values appropriately
+if (profile_data && ar_data_get_type(profile_data) == DATA_MAP) {
+    printf("Profile is a map\n");
+    
+    if (name_data && ar_data_get_type(name_data) == DATA_STRING) {
+        printf("Name: %s\n", ar_data_get_string(name_data));
+    }
+    
+    if (age_data && ar_data_get_type(age_data) == DATA_INTEGER) {
+        printf("Age: %d\n", ar_data_get_integer(age_data));
+    }
+}
+
+if (stats_data && ar_data_get_type(stats_data) == DATA_MAP) {
+    if (height_data && ar_data_get_type(height_data) == DATA_DOUBLE) {
+        printf("Height: %.1f cm\n", ar_data_get_double(height_data));
+    }
+}
+
+if (scores_data && ar_data_get_type(scores_data) == DATA_MAP) {
+    if (math_score_data && ar_data_get_type(math_score_data) == DATA_INTEGER) {
+        printf("Math score: %d\n", ar_data_get_integer(math_score_data));
+    }
+    
+    // You can also enumerate all scores by getting the map and iterating
+    map_t *scores = ar_data_get_map(scores_data);
+    // (iteration code would go here)
+}
+
+// Handle non-existent paths gracefully
+const data_t *missing_data = ar_data_get_map_data(root_map, "user.profile.nonexistent");
+if (!missing_data) {
+    printf("Missing data path returns NULL as expected\n");
+}
+
+// Cleanup
+ar_data_destroy(scores_map);
+ar_data_destroy(root_map);
+```
+
 ## Implementation Notes
 
 - The data module implements an opaque type for improved encapsulation
@@ -415,3 +493,4 @@ ar_data_destroy(root_map);
 - Path-based set functions automatically create any intermediate maps needed when setting values at a specific path
 - Path-based set functions will replace non-map values with maps if needed when an intermediate segment exists but isn't a map
 - Path handling functions manage memory properly, freeing any temporary segments after use
+- The `ar_data_get_map_data()` function allows direct access to the data structure at a specified path, enabling type checking and accessing values of any type

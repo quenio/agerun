@@ -117,6 +117,13 @@ double ar_data_get_map_double(const data_t *data, const char *key);
  */
 const char *ar_data_get_map_string(const data_t *data, const char *key);
 
+/**
+ * Get a data value from a map data structure by key or path
+ * @param data Pointer to the map data to retrieve from
+ * @param key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
+ * @return The data value, or NULL if data is NULL, not a map, or key not found
+ */
+const data_t *ar_data_get_map_data(const data_t *data, const char *key);
 
 /**
  * Set an integer value in a map data structure by key

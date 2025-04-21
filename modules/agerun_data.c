@@ -174,13 +174,13 @@ map_t *ar_data_get_map(const data_t *data) {
  */
 
 /**
- * Helper function to get a data value from a map using a path
+ * Get a data value from a map data structure by key or path
  * @param data Pointer to the map data to retrieve from
- * @param path The path to look up in the map (format: "key.sub_key.sub_sub_key")
- * @return The data value, or NULL if not found
+ * @param key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
+ * @return The data value, or NULL if data is NULL, not a map, or key not found
  */
-static const data_t* get_data_by_path(const data_t *data, const char *path) {
-    if (!data || !path || data->type != DATA_MAP) {
+const data_t *ar_data_get_map_data(const data_t *data, const char *key) {
+    if (!data || !key || data->type != DATA_MAP) {
         return NULL;
     }
     
@@ -191,13 +191,13 @@ static const data_t* get_data_by_path(const data_t *data, const char *path) {
     }
     
     // Check if the path contains any dots
-    if (strchr(path, '.') == NULL) {
+    if (strchr(key, '.') == NULL) {
         // No dots, do a direct lookup
-        return ar_map_get(map, path);
+        return ar_map_get(map, key);
     }
     
     // Count path segments for multi-segment paths
-    size_t segment_count = ar_string_path_count(path, '.');
+    size_t segment_count = ar_string_path_count(key, '.');
     
     // Start with the current data
     const data_t *current_data = data;
@@ -205,7 +205,7 @@ static const data_t* get_data_by_path(const data_t *data, const char *path) {
     // Process each segment
     for (size_t i = 0; i < segment_count; i++) {
         // Get the current segment
-        char *segment = ar_string_path_segment(path, '.', i);
+        char *segment = ar_string_path_segment(key, '.', i);
         if (!segment) {
             return NULL;
         }
@@ -249,7 +249,7 @@ int ar_data_get_map_integer(const data_t *data, const char *key) {
         return 0;
     }
     
-    const data_t *value = get_data_by_path(data, key);
+    const data_t *value = ar_data_get_map_data(data, key);
     
     if (!value) {
         return 0;
@@ -269,7 +269,7 @@ double ar_data_get_map_double(const data_t *data, const char *key) {
         return 0.0;
     }
     
-    const data_t *value = get_data_by_path(data, key);
+    const data_t *value = ar_data_get_map_data(data, key);
     
     if (!value) {
         return 0.0;
@@ -289,7 +289,7 @@ const char *ar_data_get_map_string(const data_t *data, const char *key) {
         return NULL;
     }
     
-    const data_t *value = get_data_by_path(data, key);
+    const data_t *value = ar_data_get_map_data(data, key);
     
     if (!value) {
         return NULL;
