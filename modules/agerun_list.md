@@ -52,9 +52,9 @@ bool ar_list_empty(const list_t *list);
 Checks if the list is empty. Returns true if the list is empty or NULL, false otherwise.
 
 ```c
-void** ar_list_items(const list_t *list, size_t *count);
+void** ar_list_items(const list_t *list);
 ```
-Gets an array of all items in the list. The count parameter will be set to the number of items. Returns NULL if the list is empty or on failure. The caller is responsible for freeing the returned array using free(). The items themselves are not copied and remain owned by the caller.
+Gets an array of all items in the list. Returns NULL if the list is empty or on failure. The caller is responsible for freeing the returned array using free(). The items themselves are not copied and remain owned by the caller. Use ar_list_count() to determine the size of the array.
 
 ## Usage Examples
 
@@ -75,15 +75,18 @@ size_t count = ar_list_count(list);  // Returns 2
 bool is_empty = ar_list_empty(list); // Returns false
 
 // Get all items
-size_t items_count;
-void **items = ar_list_items(list, &items_count);
-for (size_t i = 0; i < items_count; i++) {
-    char *item = (char*)items[i];
-    printf("Item: %s\n", item);
+void **items = ar_list_items(list);
+if (items) {
+    for (size_t i = 0; i < ar_list_count(list); i++) {
+        char *item = (char*)items[i];
+        printf("Item: %s\n", item);
+    }
+    
+    // Free the array when done
+    free(items);
 }
 
 // Clean up
-free(items);  // Free the array only, not the items
 free(item1);  // The caller is responsible for freeing items
 free(item2);
 ar_list_destroy(list);
@@ -110,18 +113,57 @@ char *string_value = strdup("Hello");
 ar_list_append(list, string_value);
 
 // Use type casting when retrieving items
-size_t count;
-void **items = ar_list_items(list, &count);
-int *retrieved_int = (int*)items[0];
-double *retrieved_double = (double*)items[1];
-char *retrieved_string = (char*)items[2];
+void **items = ar_list_items(list);
+if (items) {
+    int *retrieved_int = (int*)items[0];
+    double *retrieved_double = (double*)items[1];
+    char *retrieved_string = (char*)items[2];
+    
+    printf("Integer: %d\n", *retrieved_int);
+    printf("Double: %f\n", *retrieved_double);
+    printf("String: %s\n", retrieved_string);
+    
+    // Free the array
+    free(items);
+}
 
 // Clean up
-free(items);
 free(int_value);
 free(double_value);
 free(string_value);
 ar_list_destroy(list);
+```
+
+### Using the List for Memory Management
+
+The list module can be used to track allocated memory that needs to be freed later:
+
+```c
+// Create a tracking list
+list_t *allocations = ar_list_create();
+
+// Allocate and track memory
+char *str1 = strdup("string one");
+ar_list_append(allocations, str1);
+
+char *str2 = strdup("string two");
+ar_list_append(allocations, str2);
+
+// Use the strings
+printf("String 1: %s\n", str1);
+printf("String 2: %s\n", str2);
+
+// Free all tracked allocations at once
+void **items = ar_list_items(allocations);
+if (items) {
+    for (size_t i = 0; i < ar_list_count(allocations); i++) {
+        free(items[i]);
+    }
+    free(items);
+}
+
+// Then free the list itself
+ar_list_destroy(allocations);
 ```
 
 ## Implementation Notes
@@ -132,3 +174,5 @@ ar_list_destroy(list);
 - The list maintains a count of items for fast size queries
 - NULL items can be stored in the list
 - All functions handle NULL list parameters gracefully
+- The list is particularly useful for tracking allocated memory that needs to be freed later
+- The module is used by the data module to track dynamically allocated map keys

@@ -12,18 +12,6 @@
 typedef struct map_s map_t;
 
 /**
- * Callback function type for map iteration
- * @param key The key for the current entry
- * @param value The value for the current entry
- * @param arg Additional argument passed to the iterator function
- * @return true to continue iteration, false to stop
- * @note The map does not own keys or values; it only provides access to these pointers during iteration.
- *       The caller must not free the key or value pointers during iteration, but is responsible
- *       for their eventual cleanup outside of the iteration context.
- */
-typedef bool (*map_iterator_t)(const char *key, void *value, void *arg);
-
-/**
  * Create a new heap-allocated empty map
  * @return Pointer to the new map, or NULL on failure
  */
@@ -48,15 +36,6 @@ void* ar_map_get(const map_t *map, const char *key);
  *       The map never takes ownership of keys or values.
  */
 bool ar_map_set(map_t *map, const char *key, void *ref);
-
-/**
- * Iterate over all entries in the map
- * @param map Map to iterate over
- * @param iterator Function to call for each entry
- * @param arg Additional argument to pass to the iterator function
- * @return true if iteration completed, false if stopped early by iterator
- */
-bool ar_map_iterate(const map_t *map, map_iterator_t iterator, void *arg);
 
 /**
  * Get the number of used entries in the map

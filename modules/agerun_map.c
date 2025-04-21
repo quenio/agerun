@@ -98,28 +98,7 @@ bool ar_map_set(map_t *map, const char *key, void *ref) {
     return false; // No space left
 }
 
-/**
- * Iterate over all entries in the map
- * @param map Map to iterate over
- * @param iterator Function to call for each entry
- * @param arg Additional argument to pass to the iterator function
- * @return true if iteration completed, false if stopped early by iterator
- */
-bool ar_map_iterate(const map_t *map, map_iterator_t iterator, void *arg) {
-    if (!map || !iterator) {
-        return false;
-    }
-    
-    for (int i = 0; i < MAP_SIZE; i++) {
-        if (map->entries[i].is_used && map->entries[i].key) {
-            if (!iterator(map->entries[i].key, map->entries[i].ref, arg)) {
-                return false; // Iterator requested to stop
-            }
-        }
-    }
-    
-    return true; // Completed all iterations
-}
+// Iterator function has been removed in favor of ar_map_refs
 
 /**
  * Get the number of used entries in the map
