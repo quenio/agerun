@@ -314,6 +314,8 @@ const char *ar_data_get_map_string(const data_t *data, const char *key) {
  * and fail if it doesn't. These functions are implemented recursively, traversing the 
  * path to the final key and using the base case implementation for the leaf node.
  * Clients must explicitly create intermediate maps before setting values in nested paths.
+ * 
+ * All set_map_* functions use ar_data_set_map_data for the actual implementation to reduce code duplication.
  */
 
 /**
@@ -328,71 +330,14 @@ bool ar_data_set_map_integer(data_t *data, const char *key, int value) {
         return false;
     }
     
-    // For simple keys with no dots, use direct access
-    if (strchr(key, '.') == NULL) {
-        map_t *map = data->data.map_ref;
-        if (!map) {
-            return false;
-        }
-        
-        // Get the existing data for later cleanup
-        data_t *prev_data = ar_map_get(map, key);
-        
-        // Create new data
-        data_t *int_data = ar_data_create_integer(value);
-        if (!int_data) {
-            return false;
-        }
-        
-        // Set the new value
-        if (!ar_map_set(map, strdup(key), int_data)) {
-            ar_data_destroy(int_data);
-            return false;
-        }
-        
-        // Free the old data after successful update
-        if (prev_data) {
-            ar_data_destroy(prev_data);
-        }
-        
-        return true;
-    }
-    
-    // Handle path-based access for keys with dots
-    // Extract the parent path and final key
-    size_t segment_count = ar_string_path_count(key, '.');
-    if (segment_count == 0) {
+    // Create new data
+    data_t *int_data = ar_data_create_integer(value);
+    if (!int_data) {
         return false;
     }
     
-    // Get the parent path using ar_string_path_parent
-    char *parent_path = ar_string_path_parent(key, '.');
-    if (!parent_path) {
-        return false;
-    }
-    
-    // Get the final key segment
-    char *final_key = ar_string_path_segment(key, '.', segment_count - 1);
-    if (!final_key) {
-        free(parent_path);
-        return false;
-    }
-    
-    // Get the parent map data - this will fail if any part of the path doesn't exist
-    // or if any part of the path is not a map
-    data_t *parent_data = ar_data_get_map_data(data, parent_path);
-    if (!parent_data || ar_data_get_type(parent_data) != DATA_MAP) {
-        free(final_key);
-        free(parent_path);
-        return false;
-    }
-    
-    // Recursively call set_map_integer with the parent data and final key
-    bool success = ar_data_set_map_integer(parent_data, final_key, value);
-    
-    free(final_key);
-    free(parent_path);
-    return success;
+    // Use the common set_map_data function
+    return ar_data_set_map_data(data, key, int_data);
 }
 
 /**
@@ -407,71 +352,14 @@ bool ar_data_set_map_double(data_t *data, const char *key, double value) {
         return false;
     }
     
-    // For simple keys with no dots, use direct access
-    if (strchr(key, '.') == NULL) {
-        map_t *map = data->data.map_ref;
-        if (!map) {
-            return false;
-        }
-        
-        // Get the existing data for later cleanup
-        data_t *prev_data = ar_map_get(map, key);
-        
-        // Create new data
-        data_t *double_data = ar_data_create_double(value);
-        if (!double_data) {
-            return false;
-        }
-        
-        // Set the new value
-        if (!ar_map_set(map, strdup(key), double_data)) {
-            ar_data_destroy(double_data);
-            return false;
-        }
-        
-        // Free the old data after successful update
-        if (prev_data) {
-            ar_data_destroy(prev_data);
-        }
-        
-        return true;
-    }
-    
-    // Handle path-based access for keys with dots
-    // Extract the parent path and final key
-    size_t segment_count = ar_string_path_count(key, '.');
-    if (segment_count == 0) {
+    // Create new data
+    data_t *double_data = ar_data_create_double(value);
+    if (!double_data) {
         return false;
     }
     
-    // Get the parent path using ar_string_path_parent
-    char *parent_path = ar_string_path_parent(key, '.');
-    if (!parent_path) {
-        return false;
-    }
-    
-    // Get the final key segment
-    char *final_key = ar_string_path_segment(key, '.', segment_count - 1);
-    if (!final_key) {
-        free(parent_path);
-        return false;
-    }
-    
-    // Get the parent map data - this will fail if any part of the path doesn't exist
-    // or if any part of the path is not a map
-    data_t *parent_data = ar_data_get_map_data(data, parent_path);
-    if (!parent_data || ar_data_get_type(parent_data) != DATA_MAP) {
-        free(final_key);
-        free(parent_path);
-        return false;
-    }
-    
-    // Recursively call set_map_double with the parent data and final key
-    bool success = ar_data_set_map_double(parent_data, final_key, value);
-    
-    free(final_key);
-    free(parent_path);
-    return success;
+    // Use the common set_map_data function
+    return ar_data_set_map_data(data, key, double_data);
 }
 
 /**
@@ -481,8 +369,15 @@ bool ar_data_set_map_double(data_t *data, const char *key, double value) {
  * @param value The string value to store (will be copied)
  * @return true if successful, false if data is NULL, not a map, or allocation failure
  */
-bool ar_data_set_map_string(data_t *data, const char *key, const char *value) {
-    if (!data || !key || data->type != DATA_MAP) {
+/**
+ * Set a data value in a map data structure by key or path
+ * @param data Pointer to the map data to modify
+ * @param key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
+ * @param value The data value to store (ownership is transferred)
+ * @return true if successful, false if data is NULL, not a map, or allocation failure
+ */
+bool ar_data_set_map_data(data_t *data, const char *key, data_t *value) {
+    if (!data || !key || data->type != DATA_MAP || !value) {
         return false;
     }
     
@@ -496,15 +391,8 @@ bool ar_data_set_map_string(data_t *data, const char *key, const char *value) {
         // Get the existing data for later cleanup
         data_t *prev_data = ar_map_get(map, key);
         
-        // Create new data
-        data_t *string_data = ar_data_create_string(value);
-        if (!string_data) {
-            return false;
-        }
-        
         // Set the new value
-        if (!ar_map_set(map, strdup(key), string_data)) {
-            ar_data_destroy(string_data);
+        if (!ar_map_set(map, strdup(key), value)) {
             return false;
         }
         
@@ -545,10 +433,30 @@ bool ar_data_set_map_string(data_t *data, const char *key, const char *value) {
         return false;
     }
     
-    // Recursively call set_map_string with the parent data and final key
-    bool success = ar_data_set_map_string(parent_data, final_key, value);
+    // Recursively call set_map_data with the parent data and final key
+    bool success = ar_data_set_map_data(parent_data, final_key, value);
+    
+    // If not successful, we need to destroy the value since ownership wasn't transferred
+    if (!success) {
+        ar_data_destroy(value);
+    }
     
     free(final_key);
     free(parent_path);
     return success;
+}
+
+bool ar_data_set_map_string(data_t *data, const char *key, const char *value) {
+    if (!data || !key || data->type != DATA_MAP) {
+        return false;
+    }
+    
+    // Create new data
+    data_t *string_data = ar_data_create_string(value);
+    if (!string_data) {
+        return false;
+    }
+    
+    // Use the common set_map_data function
+    return ar_data_set_map_data(data, key, string_data);
 }

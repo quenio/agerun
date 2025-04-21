@@ -152,4 +152,13 @@ bool ar_data_set_map_double(data_t *data, const char *key, double value);
  */
 bool ar_data_set_map_string(data_t *data, const char *key, const char *value);
 
+/**
+ * Set a data value in a map data structure by key or path
+ * @param data Pointer to the map data to modify
+ * @param key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
+ * @param value The data value to store (ownership is transferred)
+ * @return true if successful, false if data is NULL, not a map, or allocation failure
+ */
+bool ar_data_set_map_data(data_t *data, const char *key, data_t *value);
+
 #endif /* AGERUN_DATA_H */
