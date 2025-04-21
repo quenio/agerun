@@ -171,6 +171,16 @@ IMPORTANT:
    - Consider temporarily disabling -Werror during development if needed
    - Address all warnings before finalizing code
    - Document reasons for any deliberately ignored warnings
+   - Remember that the project enables all compiler warnings with -Wall and treats warnings as errors with -Werror
+   - Be especially careful with:
+     - Type safety and casting (particularly const correctness)
+     - Memory allocation and ownership
+     - Potential null pointer dereferences
+     - Unused variables and parameters
+     - Missing return values
+     - Strict aliasing violations
+   - When dealing with third-party interfaces (like the map module), carefully follow the documented ownership model
+   - Prefer explicit, well-documented approaches over clever tricks that might trigger warnings
 
 6. **Test extensively**:
    - Test changes with both normal and edge cases
