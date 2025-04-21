@@ -42,12 +42,12 @@ bool ar_list_empty(const list_t *list);
 /**
  * Get an array of all items in the list
  * @param list The list to get items from
- * @param count Pointer to store the number of items
  * @return Array of pointers to items, or NULL on failure
  * @note The caller is responsible for freeing the returned array using free().
  *       The items themselves are not copied and remain owned by the caller.
+ *       The caller can use ar_list_count() to determine the size of the array.
  */
-void** ar_list_items(const list_t *list, size_t *count);
+void** ar_list_items(const list_t *list);
 
 /**
  * Free all resources in a list

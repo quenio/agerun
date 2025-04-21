@@ -179,8 +179,8 @@ void ar_data_destroy(data_t *data) {
         
         // Free all tracked keys
         if (data->keys) {
-            size_t key_count = 0;
-            void **key_ptrs = ar_list_items(data->keys, &key_count);
+            void **key_ptrs = ar_list_items(data->keys);
+            size_t key_count = ar_list_count(data->keys);
             
             if (key_ptrs) {
                 for (size_t i = 0; i < key_count; i++) {

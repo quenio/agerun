@@ -20,12 +20,11 @@ static void test_create_destroy(void) {
     assert(ar_list_count(list) == 0);
     
     // When getting all items
-    size_t count = 0;
-    void **items = ar_list_items(list, &count);
+    void **items = ar_list_items(list);
     
-    // Then it should return NULL items and zero count
+    // Then it should return NULL items and count should be zero
     assert(items == NULL);
-    assert(count == 0);
+    assert(ar_list_count(list) == 0);
     
     // Cleanup
     ar_list_destroy(list);
@@ -58,8 +57,8 @@ static void test_append(void) {
     assert(ar_list_count(list) == 3);
     
     // When getting all items
-    size_t count = 0;
-    void **items = ar_list_items(list, &count);
+    void **items = ar_list_items(list);
+    size_t count = ar_list_count(list);
     
     // Then it should return the correct items in order
     assert(items != NULL);
@@ -104,8 +103,8 @@ static void test_append_many(void) {
     assert(ar_list_count(list) == TEST_COUNT);
     
     // When getting all items
-    size_t count = 0;
-    void **items = ar_list_items(list, &count);
+    void **items = ar_list_items(list);
+    size_t count = ar_list_count(list);
     
     // Then it should return the correct items in order
     assert(items != NULL);
@@ -143,14 +142,8 @@ static void test_null_parameters(void) {
     assert(ar_list_append(list, NULL) == true);  // NULL items are allowed
     assert(ar_list_count(list) == 1);
     
-    // Test getting items with NULL parameters
-    size_t count = 0;
-    void **items = ar_list_items(NULL, &count);
-    assert(items == NULL);
-    assert(count == 0);
-    
-    count = 123;  // Should be reset by the function
-    items = ar_list_items(list, NULL);
+    // Test getting items with NULL list
+    void **items = ar_list_items(NULL);
     assert(items == NULL);
     
     // Cleanup
