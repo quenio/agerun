@@ -614,9 +614,40 @@ static void test_map_data_path_setters(void) {
     printf("integer value: %d\n", int_val);
     
     printf("Setting double value on valid path...\n");
+    
+    // Verify account map exists before setting
+    data_t *pre_account_data = ar_data_get_map_data(root_map, "user.account");
+    printf("account data exists before setting: %s\n", pre_account_data ? "yes" : "no");
+    
+    // Set the double value and check result
     set_double_result = ar_data_set_map_double(root_map, "user.account.balance", 1250.75);
     printf("Set double result: %d\n", set_double_result ? 1 : 0);
     printf("Testing double value after setting...\n");
+    
+    // Get the target map to directly inspect if needed
+    data_t *user_data = ar_data_get_map_data(root_map, "user");
+    printf("user data type: %d\n", ar_data_get_type(user_data));
+    data_t *account_data = ar_data_get_map_data(root_map, "user.account");
+    printf("account data type: %d\n", ar_data_get_type(account_data));
+    
+    // Direct map check
+    map_t *account_map_ref = ar_data_get_map(account_data);
+    if (account_map_ref) {
+        printf("Direct check of account_map entries:\n");
+        void *direct_balance = ar_map_get(account_map_ref, "balance");
+        printf("Direct map lookup of 'balance': %p\n", direct_balance);
+        if (direct_balance) {
+            data_t *balance_d = (data_t *)direct_balance;
+            printf("Direct balance data type: %d\n", ar_data_get_type(balance_d));
+            if (ar_data_get_type(balance_d) == DATA_DOUBLE) {
+                printf("Direct balance value: %f\n", ar_data_get_double(balance_d));
+            }
+        }
+    }
+    
+    data_t *balance_data = ar_data_get_map_data(root_map, "user.account.balance");
+    printf("balance data type: %d\n", balance_data ? (int)ar_data_get_type(balance_data) : -1);
+    
     double double_val = ar_data_get_map_double(root_map, "user.account.balance");
     printf("double value: %f\n", double_val);
     
