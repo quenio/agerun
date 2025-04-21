@@ -8,6 +8,9 @@
 #include <string.h>
 #include <assert.h>
 
+/* Static variables for commonly used messages */
+static char g_hello_message[] = "Hello Agent!";
+
 // Forward declarations
 static void test_agent_create_destroy(void);
 static void test_agent_send(void);
@@ -59,8 +62,7 @@ static void test_agent_send(void) {
     assert(agent_id > 0);
     
     // When we send a message to the agent
-    const char *test_message = "Hello Agent!";
-    bool send_result = ar_agent_send(agent_id, test_message);
+    bool send_result = ar_agent_send(agent_id, g_hello_message);
     
     // Then the message should be sent successfully
     assert(send_result);

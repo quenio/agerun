@@ -4,7 +4,7 @@
 #include "agerun_system.h"
 #include "agerun_method.h"
 #include "agerun_methodology.h"
-#include "agerun_queue.h"
+#include "agerun_list.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,6 +13,9 @@
 #include <stdint.h>
 
 /* Constants */
+
+/* Static variables for commonly used messages */
+static char g_sleep_message[] = "__sleep__";
 
 /* Implementation */
 agent_id_t ar_agent_create(const char *method_name, version_t version, data_t *context) {
@@ -64,10 +67,10 @@ agent_id_t ar_agent_create(const char *method_name, version_t version, data_t *c
         return 0;
     }
     
-    // Create message queue
-    agents[agent_idx].queue = ar_queue_create();
-    if (!agents[agent_idx].queue) {
-        printf("Error: Failed to create queue for agent %lld\n", next_agent_id);
+    // Create message queue using list
+    agents[agent_idx].message_queue = ar_list_create();
+    if (!agents[agent_idx].message_queue) {
+        printf("Error: Failed to create message queue for agent %lld\n", next_agent_id);
         ar_data_destroy(agents[agent_idx].memory);
         agents[agent_idx].is_active = false;
         return 0;
@@ -90,10 +93,10 @@ bool ar_agent_destroy(agent_id_t agent_id) {
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (agents[i].is_active && agents[i].id == agent_id) {
             // Send sleep message before destroying
-            ar_agent_send(agent_id, "__sleep__");
+            ar_agent_send(agent_id, g_sleep_message);
             
             // Process the sleep message
-            const char *message = ar_queue_pop(agents[i].queue);
+            char *message = ar_list_remove_first(agents[i].message_queue);
             if (message) {
                 // Find the method definition to process the sleep message
                 method_t *method = ar_methodology_get_method(agents[i].method_name, agents[i].method_version);
@@ -115,10 +118,10 @@ bool ar_agent_destroy(agent_id_t agent_id) {
                 agents[i].context = NULL;
             }
             
-            // Free queue if it exists
-            if (agents[i].queue) {
-                ar_queue_destroy(agents[i].queue);
-                agents[i].queue = NULL;
+            // Free message queue if it exists
+            if (agents[i].message_queue) {
+                ar_list_destroy(agents[i].message_queue);
+                agents[i].message_queue = NULL;
             }
             
             agents[i].is_active = false;
@@ -130,7 +133,7 @@ bool ar_agent_destroy(agent_id_t agent_id) {
     return false;
 }
 
-bool ar_agent_send(agent_id_t agent_id, const char *message) {
+bool ar_agent_send(agent_id_t agent_id, char *message) {
     agent_t *agents = ar_agency_get_agents();
     
     if (agents == NULL || !message) {
@@ -146,7 +149,7 @@ bool ar_agent_send(agent_id_t agent_id, const char *message) {
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (agents[i].is_active && agents[i].id == agent_id) {
             // Add message to queue
-            return ar_queue_push(agents[i].queue, message);
+            return ar_list_add_last(agents[i].message_queue, (void *)message);
         }
     }
     

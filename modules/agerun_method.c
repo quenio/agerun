@@ -74,7 +74,7 @@ version_t ar_method_create(const char *name, const char *instructions,
     return new_version;
 }
 
-bool ar_method_run(agent_t *agent, const char *message, const char *instructions) {
+bool ar_method_run(agent_t *agent, char *message, const char *instructions) {
     (void)agent; // Avoid unused parameter warning
     (void)message; // Avoid unused parameter warning
     

@@ -1,45 +1,23 @@
+/*
+ * This header is now deprecated in favor of using the list module for queue operations.
+ * Including this header simply defines compatibility macros to map the old queue interface
+ * to the new list interface for backward compatibility.
+ * New code should directly use the list module's API.
+ */
+
 #ifndef AGERUN_QUEUE_H
 #define AGERUN_QUEUE_H
 
-#include <stdbool.h>
+#include "agerun_list.h"
 
-/**
- * A generic queue structure for storing references.
- */
-typedef struct queue_s queue_t;
+// Compatibility type definition
+typedef list_t queue_t;
 
-/**
- * Create a new heap-allocated empty queue.
- * @return Pointer to the new queue, or NULL on failure.
- */
-queue_t* ar_queue_create(void);
-
-/**
- * Destroy a queue and free all associated memory.
- * @param queue Queue to destroy.
- */
-void ar_queue_destroy(queue_t *queue);
-
-/**
- * Push a reference to the queue.
- * @param queue Queue to push to.
- * @param ref Reference to push (not copied).
- * @return true if successful, false if queue is full or parameters are invalid.
- */
-bool ar_queue_push(queue_t *queue, const void *ref);
-
-/**
- * Pop a reference from the queue.
- * @param queue Queue to pop from.
- * @return Pointer to the next reference, or NULL if queue is empty or invalid.
- */
-const void* ar_queue_pop(queue_t *queue);
-
-/**
- * Check if the queue is empty.
- * @param queue Queue to check.
- * @return true if empty or NULL, false otherwise.
- */
-bool ar_queue_is_empty(const queue_t *queue);
+// Compatibility function macros for backward compatibility
+#define ar_queue_create() ar_list_create()
+#define ar_queue_destroy(q) ar_list_destroy(q)
+#define ar_queue_push(q, r) ar_list_add_last(q, (void*)(r))
+#define ar_queue_pop(q) ar_list_remove_first(q)
+#define ar_queue_is_empty(q) ar_list_empty(q)
 
 #endif /* AGERUN_QUEUE_H */

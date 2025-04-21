@@ -2,138 +2,83 @@
 
 ## Overview
 
-The queue module (`agerun_queue`) provides a generic queue implementation that is central to agent communication in the AgeRun system. It's designed as a FIFO (First-In-First-Out) buffer for passing references between components.
+The queue module (`agerun_queue`) has been deprecated and replaced by the list module (`agerun_list`). All queue functionality is now provided by the list module.
 
-## Key Features
+## Migration Guide
 
-- **Reference Passing**: Stores and retrieves references in FIFO order
-- **Thread Safety**: Designed for safe concurrent access in a single-threaded environment
-- **Fixed Capacity**: Provides a fixed maximum capacity of 256 references to prevent unbounded growth
-- **Circular Buffer**: Implements a circular buffer to efficiently manage reference storage
-- **Opaque Type**: The queue structure is opaque, encapsulating implementation details from clients
-- **Simplified API**: Queues are heap-allocated and fully initialized through ar_queue_create()
-- **Reference Based**: Only stores references, not copies of the referenced content
-- **No Memory Management**: Does not perform any memory management for referenced content (allocation/deallocation)
+The queue module now provides compatibility macros that redirect to the list module. However, new code should directly use the list module API.
 
-## API Reference
+### Queue to List API Mapping
 
-### Types
+| Old Queue API | New List API |
+|--------------|-------------|
+| `queue_t` | `list_t` |
+| `ar_queue_create()` | `ar_list_create()` |
+| `ar_queue_destroy(q)` | `ar_list_destroy(q)` |
+| `ar_queue_push(q, r)` | `ar_list_add_last(q, r)` |
+| `ar_queue_pop(q)` | `ar_list_remove_first(q)` |
+| `ar_queue_is_empty(q)` | `ar_list_empty(q)` |
 
-```c
-// Opaque queue type - implementation details hidden
-typedef struct queue_s queue_t;
-```
+## Benefits of Using List for Queue Operations
 
-### Functions
+The list module offers several advantages over the old queue implementation:
 
-#### Creation and Destruction
+1. **More Operations**: The list module provides additional operations like `ar_list_add_first`, `ar_list_last`, and `ar_list_remove_last` that weren't available in the queue module.
 
-```c
-// Create a new heap-allocated empty queue
-queue_t* ar_queue_create(void);
+2. **Flexibility**: Lists can be used as queues (FIFO), stacks (LIFO), or general-purpose collections.
 
-// Destroy a queue and free all associated memory
-void ar_queue_destroy(queue_t *queue);
-```
+3. **Dynamic Sizing**: Unlike the fixed-size queue implementation, lists grow dynamically.
 
-#### Queue Operations
+4. **Consistent API**: The list module uses a consistent naming convention across all operations.
 
-```c
-// Push a reference to the queue
-bool ar_queue_push(queue_t *queue, const void *ref);
-
-// Pop a reference from the queue
-const void* ar_queue_pop(queue_t *queue);
-```
-
-#### State Queries
-
-```c
-// Check if the queue is empty
-bool ar_queue_is_empty(const queue_t *queue);
-```
+5. **Improved Performance**: The implementation of `ar_list_remove_last` is now O(1) due to the use of a doubly-linked list, which offers better performance for stack operations.
 
 ## Usage Examples
 
-### Basic Usage
+### Using List as a Queue (FIFO)
 
 ```c
 // Create a queue
-queue_t *queue = ar_queue_create();
+list_t *queue = ar_list_create();
 
-// References to be stored
-const char *msg1 = "Hello, World!";
-const char *msg2 = "Another message";
+// Enqueue items (add to end)
+ar_list_add_last(queue, item1);
+ar_list_add_last(queue, item2);
+ar_list_add_last(queue, item3);
 
-// Push references to the queue
-ar_queue_push(queue, msg1);
-ar_queue_push(queue, msg2);
+// Peek at front item
+void *front = ar_list_first(queue);
 
-// Check queue state
-bool empty = ar_queue_is_empty(queue);
-printf("Queue empty: %s\n", empty ? "true" : "false");
-
-// Pop references from the queue
-const void *ref = ar_queue_pop(queue);
-if (ref) {
-    printf("Received: %s\n", (const char *)ref);
+// Dequeue items (remove from front)
+while (!ar_list_empty(queue)) {
+    void *item = ar_list_remove_first(queue);
+    // Process item...
 }
 
-// Clean up
-ar_queue_destroy(queue);
+// Cleanup
+ar_list_destroy(queue);
 ```
 
-### Agent Reference Queue
+### Using List as a Stack (LIFO)
 
 ```c
-// References to be used
-const char *wake_msg = "__wake__";
-const char *action_msg = "perform_action";
-const char *calc_msg = "calculate_result";
-const char *sleep_msg = "__sleep__";
+// Create a stack
+list_t *stack = ar_list_create();
 
-// Create a queue for agent references
-queue_t *reference_queue = ar_queue_create();
+// Push items (add to beginning)
+ar_list_add_first(stack, item1);
+ar_list_add_first(stack, item2);
+ar_list_add_first(stack, item3);
 
-// Producer: Add references to the queue
-ar_queue_push(reference_queue, wake_msg);
-ar_queue_push(reference_queue, action_msg);
-ar_queue_push(reference_queue, calc_msg);
+// Peek at top item
+void *top = ar_list_first(stack);
 
-// Consumer: Process references in order
-while (!ar_queue_is_empty(reference_queue)) {
-    const void *ref = ar_queue_pop(reference_queue);
-    if (ref) {
-        printf("Processing reference: %s\n", (const char *)ref);
-        // Process the reference...
-    }
+// Pop items (remove from beginning)
+while (!ar_list_empty(stack)) {
+    void *item = ar_list_remove_first(stack);
+    // Process item...
 }
 
-// Prepare for shutdown
-ar_queue_push(reference_queue, sleep_msg);
-
-// Process final reference
-const void *final_ref = ar_queue_pop(reference_queue);
-if (final_ref) {
-    printf("Processing final reference: %s\n", (const char *)final_ref);
-    // Process the reference...
-}
-
-// Clean up
-ar_queue_destroy(reference_queue);
+// Cleanup
+ar_list_destroy(stack);
 ```
-
-## Implementation Notes
-
-- The queue uses a fixed-size circular buffer to store references
-- Only references are stored, not the content they point to
-- The client is responsible for memory management of the referenced content
-- References must remain valid for as long as they are in the queue
-- The internal buffer wraps around to efficiently utilize space
-- The queue automatically prevents adding references when full
-- The queue implementation is opaque, hiding its internal structure from clients
-- Clients should use the public API functions rather than accessing the queue structure directly
-- Queues are always heap-allocated and fully initialized through ar_queue_create()
-- All queues should be freed with ar_queue_destroy() when no longer needed
-- The queue is not thread-safe for concurrent access from multiple threads
-- Error handling is implemented via boolean return values and NULL pointers

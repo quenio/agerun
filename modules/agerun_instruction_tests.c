@@ -45,13 +45,13 @@ static void test_simple_instructions(void) {
     assert(test_agent_exists(agent_id));
     
     // And a message to send
-    const char *message = "Hello";
+    static char hello_message[] = "Hello";
     // We would test with an instruction, but can't access agent directly
     // const char *instruction = "message -> \"Test Response\""; // Unused
     
     // We can't access the agent structure directly anymore, so we'll need to
     // use other system functions to test this instead
-    bool result = ar_agent_send(agent_id, message);
+    bool result = ar_agent_send(agent_id, hello_message);
     // We can't directly test the instruction functionality anymore due to opaque agents
     
     // Then the instruction should execute successfully
@@ -61,7 +61,7 @@ static void test_simple_instructions(void) {
     // instruction = "message -> message"; // Unused
     
     // We test indirectly by sending another message
-    result = ar_agent_send(agent_id, message);
+    result = ar_agent_send(agent_id, hello_message);
     
     // Then the instruction should execute successfully
     assert(result);
@@ -84,7 +84,8 @@ static void test_memory_access_instructions(void) {
     assert(test_agent_exists(agent_id));
     
     // Make sure memory is initialized first
-    bool result = ar_agent_send(agent_id, "__wake__");
+    static char wake_message[] = "__wake__";
+    bool result = ar_agent_send(agent_id, wake_message);
     assert(result);
     
     // Since we can't directly access the memory with the new opaque type,
@@ -105,7 +106,8 @@ static void test_condition_instructions(void) {
     assert(test_agent_exists(agent_id));
     
     // Ensure memory is initialized
-    ar_agent_send(agent_id, "__wake__");
+    static char wake_message2[] = "__wake__";
+    ar_agent_send(agent_id, wake_message2);
     
     // Since we can't directly access the memory with the new opaque type,
     // we can only verify that the agent exists and can receive messages
@@ -128,8 +130,9 @@ static void test_message_send_instructions(void) {
     assert(test_agent_exists(receiver_id));
     
     // Initialize both agents
-    ar_agent_send(sender_id, "__wake__");
-    ar_agent_send(receiver_id, "__wake__");
+    static char wake_message3[] = "__wake__";
+    ar_agent_send(sender_id, wake_message3);
+    ar_agent_send(receiver_id, wake_message3);
     
     // Since we can't directly access memory or queue with the opaque types,
     // we can only send messages and verify the agents exist

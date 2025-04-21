@@ -35,6 +35,6 @@ version_t ar_method_create(const char *name, const char *instructions,
  * @param instructions The method instructions to execute
  * @return true if execution was successful, false otherwise
  */
-bool ar_method_run(agent_t *agent, const char *message, const char *instructions);
+bool ar_method_run(agent_t *agent, char *message, const char *instructions);
 
 #endif /* AGERUN_METHOD_H */

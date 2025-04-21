@@ -5,7 +5,7 @@
 #include "agerun_data.h"
 #include "agerun_agent.h"
 #include "agerun_agency.h"
-#include "agerun_queue.h"
+#include "agerun_list.h"
 #include "agerun_map.h"
 
 #include <stdio.h>
@@ -17,9 +17,12 @@
 
 /* Constants are now defined in their respective module header files:
  * - MAX_METHODS, MAX_VERSIONS_PER_METHOD, MAX_METHOD_NAME_LENGTH, MAX_INSTRUCTIONS_LENGTH in agerun_methodology.h
- * - QUEUE_SIZE in agerun_queue.h
+ * - Lists used for message queues provide dynamic sizing
  * - MAX_AGENTS, MAX_METHOD_NAME_LENGTH in agerun_agent.h
  */
+
+/* Static variables for commonly used messages */
+static char g_wake_message[] = "__wake__";
 
 /* Memory Map structure is now defined in agerun_map.h */
 
@@ -58,7 +61,7 @@ agent_id_t ar_system_init(const char *method_name, version_t version) {
         agent_id_t initial_agent = ar_agent_create(method_name, version, NULL);
         if (initial_agent != 0) {
             // Send wake message to initial agent
-            ar_agent_send(initial_agent, "__wake__");
+            ar_agent_send(initial_agent, g_wake_message);
         }
         return initial_agent;
     }
@@ -94,9 +97,9 @@ bool ar_system_process_next_message(void) {
     // Find an agent with a non-empty message queue
     agent_t* agents = ar_agency_get_agents();
     for (int i = 0; i < MAX_AGENTS; i++) {
-        if (agents[i].is_active && !ar_queue_is_empty(agents[i].queue)) {
+        if (agents[i].is_active && !ar_list_empty(agents[i].message_queue)) {
             // Process one message
-            const char *message = ar_queue_pop(agents[i].queue);
+            char *message = ar_list_remove_first(agents[i].message_queue);
             if (message) {
                 // Use the interpret_method function from agerun_agent
                 // Since that's now private, we need to call the method directly

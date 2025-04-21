@@ -6,6 +6,10 @@
 #include <string.h>
 #include <assert.h>
 
+/* Static variables for commonly used messages */
+static char g_wake_message[] = "__wake__";
+static char g_test_message[] = "test_message";
+
 /* Test function prototypes */
 static void test_method_creation(void);
 static void test_agent_creation(void);
@@ -56,7 +60,7 @@ static void test_agent_creation(void) {
     assert(ar_agent_exists(agent_id));
     
     // When we send a message to the agent
-    bool send_result = ar_agent_send(agent_id, "test_message");
+    bool send_result = ar_agent_send(agent_id, g_test_message);
     
     // Then the message should be sent successfully
     assert(send_result);
@@ -97,8 +101,8 @@ static void test_message_passing(void) {
     assert(sender_id > 0);
     
     // When we send __wake__ messages to both agents
-    bool receiver_send = ar_agent_send(receiver_id, "__wake__");
-    bool sender_send = ar_agent_send(sender_id, "__wake__");
+    bool receiver_send = ar_agent_send(receiver_id, g_wake_message);
+    bool sender_send = ar_agent_send(sender_id, g_wake_message);
     
     // Then the messages should be sent successfully
     assert(receiver_send);
@@ -153,7 +157,7 @@ int main(void) {
     }
     
     // When we send a wake message to the initial agent
-    bool send_result = ar_agent_send(initial_agent, "__wake__");
+    bool send_result = ar_agent_send(initial_agent, g_wake_message);
     
     // Then the message should be sent successfully
     if (!send_result) {

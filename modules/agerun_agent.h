@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "agerun_data.h"
-#include "agerun_queue.h"
+#include "agerun_list.h"
 
 /* Constants */
 #define MAX_AGENTS 1024
@@ -21,7 +21,7 @@ typedef struct agent_s {
     version_t method_version;
     bool is_active;
     bool is_persistent;
-    queue_t *queue;
+    list_t *message_queue;  // Using list as a message queue
     data_t *memory;
     data_t *context;
 } agent_t;
@@ -45,10 +45,10 @@ bool ar_agent_destroy(agent_id_t agent_id);
 /**
  * Send a message to an agent
  * @param agent_id ID of the agent to send to
- * @param message Message content
+ * @param message Message content (not modified, but stored without const qualifier)
  * @return true if successful, false otherwise
  */
-bool ar_agent_send(agent_id_t agent_id, const char *message);
+bool ar_agent_send(agent_id_t agent_id, char *message);
 
 /**
  * Check if an agent exists
