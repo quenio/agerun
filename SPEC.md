@@ -90,7 +90,6 @@ The following BNF grammar defines the syntax of individual instructions allowed 
                  | <method-function>
                  | <create-function>
                  | <destroy-function>
-                 | <equals-function>
 
 <send-function> ::= 'send' '(' <expression> ',' <expression> ')'
 <parse-function> ::= 'parse' '(' <expression> ',' <expression> ')'
@@ -98,7 +97,6 @@ The following BNF grammar defines the syntax of individual instructions allowed 
 <method-function> ::= 'method' '(' <expression> ',' <expression> [',' <expression> [',' <expression> [',' <expression>]]] ')'
 <create-function> ::= 'create' '(' <expression> [',' <expression> [',' <expression>]] ')'
 <destroy-function> ::= 'destroy' '(' <expression> ')'
-<equals-function> ::= 'equals' '(' <expression> ',' <expression> ')'
 
 <conditional-instruction> ::= [<variable> ':='] 'if' '(' <expression> ',' <expression> ',' <expression> ')'
 
@@ -114,7 +112,6 @@ Instructions in an agent method can be of three types:
   - `method` - Define a new agent method
   - `create` - Create a new agent instance
   - `destroy` - Destroy an existing agent
-  - `equals` - Compare two values for equality
 - A conditional instruction using `if`, which evaluates a condition and returns one of two values based on the result
 
 Function call and conditional instructions can optionally assign their result to a variable. For example:
@@ -135,6 +132,7 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
               | <variable-access>
               | <memory-access>
               | <arithmetic-expression>
+              | <comparison-expression>
 
 <string-literal> ::= '"' <characters> '"'
 
@@ -148,8 +146,10 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
 
 <memory-access> ::= 'memory' '[' <expression> ']'
 
-<arithmetic-expression> ::= <expression> <operator> <expression>
-<operator> ::= '+' | '-' | '*' | '/'
+<arithmetic-expression> ::= <expression> <arithmetic-operator> <expression>
+<arithmetic-operator> ::= '+' | '-' | '*' | '/'
+
+<comparison-expression> ::= <expression> '=' <expression>
 
 <identifier> ::= <letter> {<letter> | <digit> | '_'}
 <characters> ::= {<any-character-except-quote>}
@@ -162,8 +162,8 @@ The expression evaluator follows these rules:
 - Number literals can be either integers (whole numbers) or doubles (floating-point numbers)
 - The special identifier `message` refers to the current message being processed
 - Memory access is done through `memory[key]` where key is any expression that evaluates to a string
-- Function calls take the form `name(arg1, arg2, ...)` and can have zero or more arguments
 - Arithmetic operations can be performed with basic operators: +, -, *, /
+- Comparison operations use the equality operator `=` to compare two values for equality
 - Type conversion is automatic where possible; integers are promoted to doubles, numeric types can be converted to strings
 
 ### 1. Parsing and Building Strings
