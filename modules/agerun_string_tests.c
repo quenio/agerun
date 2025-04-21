@@ -18,6 +18,8 @@ static void test_path_count_normal(void);
 static void test_path_count_edge_cases(void);
 static void test_path_segment_normal(void);
 static void test_path_segment_edge_cases(void);
+static void test_path_parent_normal(void);
+static void test_path_parent_edge_cases(void);
 
 static void test_trim_leading_whitespace(void) {
     printf("Testing ar_trim() with leading whitespace...\n");
@@ -290,6 +292,81 @@ static void test_path_segment_edge_cases(void) {
     printf("ar_string_path_segment() edge cases test passed!\n");
 }
 
+static void test_path_parent_normal(void) {
+    printf("Testing ar_string_path_parent() with normal paths...\n");
+    
+    // Given several paths with different numbers of segments
+    const char *path1 = "key.sub_key";
+    const char *path2 = "key.sub_key.sub_sub_key";
+    const char *path3 = "key.sub_key.sub_sub_key.final";
+    
+    // When the path_parent function is called
+    char *parent1 = ar_string_path_parent(path1, '.');
+    char *parent2 = ar_string_path_parent(path2, '.');
+    char *parent3 = ar_string_path_parent(path3, '.');
+    
+    // Then the parents should match the expected values
+    assert(parent1 != NULL);
+    assert(parent2 != NULL);
+    assert(parent3 != NULL);
+    assert(strcmp(parent1, "key") == 0);
+    assert(strcmp(parent2, "key.sub_key") == 0);
+    assert(strcmp(parent3, "key.sub_key.sub_sub_key") == 0);
+    
+    // Clean up allocated memory
+    free(parent1);
+    free(parent2);
+    free(parent3);
+    
+    printf("ar_string_path_parent() normal paths test passed!\n");
+}
+
+static void test_path_parent_edge_cases(void) {
+    printf("Testing ar_string_path_parent() with edge cases...\n");
+    
+    // Given edge case paths
+    const char *empty = "";
+    const char *null_ptr = NULL;
+    const char *single_segment = "key";
+    const char *leading_separator = ".key.sub_key";
+    const char *trailing_separator = "key.sub_key.";
+    const char *only_separators = ".....";
+    
+    // When the path_parent function is called with edge cases
+    char *empty_result = ar_string_path_parent(empty, '.');
+    char *null_result = ar_string_path_parent(null_ptr, '.');
+    char *single_segment_result = ar_string_path_parent(single_segment, '.');
+    char *leading_separator_result = ar_string_path_parent(leading_separator, '.');
+    char *trailing_separator_result = ar_string_path_parent(trailing_separator, '.');
+    char *only_separators_result = ar_string_path_parent(only_separators, '.');
+    
+    // Then the results should be as expected
+    assert(empty_result == NULL);
+    assert(null_result == NULL);
+    assert(single_segment_result == NULL);
+    
+    // For a path starting with a separator like ".key.sub_key"
+    // The parent should be ".key"
+    assert(leading_separator_result != NULL);
+    assert(strcmp(leading_separator_result, ".key") == 0);
+    
+    // For a path ending with a separator like "key.sub_key."
+    // The parent should be "key.sub_key" (not "key" since our implementation keeps all segments)
+    assert(trailing_separator_result != NULL);
+    assert(strcmp(trailing_separator_result, "key.sub_key") == 0);
+    
+    // For a path with only separators, the parent of "....." would be "...."
+    assert(only_separators_result != NULL);
+    assert(strcmp(only_separators_result, "....") == 0);
+    
+    // Clean up allocated memory
+    free(leading_separator_result);
+    free(trailing_separator_result);
+    free(only_separators_result);
+    
+    printf("ar_string_path_parent() edge cases test passed!\n");
+}
+
 int main(void) {
     printf("Starting String Module Tests...\n");
     
@@ -311,6 +388,8 @@ int main(void) {
     test_path_count_edge_cases();
     test_path_segment_normal();
     test_path_segment_edge_cases();
+    test_path_parent_normal();
+    test_path_parent_edge_cases();
     
     printf("All string tests passed!\n");
     return 0;

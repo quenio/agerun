@@ -87,11 +87,14 @@ The [map module](agerun_map.md) provides a fundamental key-value storage impleme
 
 ### String Module (`agerun_string`)
 
-The string module provides utility functions for string manipulation with the following features:
+The [string module](agerun_string.md) provides utility functions for string manipulation with the following features:
 
 - **String Trimming**: Removes leading and trailing whitespace from strings
 - **Safe Character Handling**: Ensures proper handling of character values with safe typecasting
 - **Whitespace Detection**: Provides a safe wrapper for whitespace character identification
+- **Path Manipulation**: Parses and extracts segments from path-like strings with separators
+- **Path Parent Resolution**: Extracts parent paths from hierarchical path strings
+- **Memory Management**: Clearly documents ownership transfers for allocated strings
 - **No Dependencies**: Functions as a standalone utility module with no dependencies on other modules
 
 

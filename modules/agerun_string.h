@@ -39,4 +39,14 @@ size_t ar_string_path_count(const char *str, char separator);
  */
 char* ar_string_path_segment(const char *str, char separator, size_t index);
 
+/**
+ * Extracts the parent path from a path string.
+ *
+ * @param str The path string to extract from (e.g., "key.sub_key.sub_sub_key")
+ * @param separator The character used as separator (e.g., '.')
+ * @return Heap-allocated string containing the parent path, or NULL if no parent exists
+ *         (i.e., for root paths or errors). Caller is responsible for freeing the returned string.
+ */
+char* ar_string_path_parent(const char *str, char separator);
+
 #endif /* AGERUN_STRING_H */

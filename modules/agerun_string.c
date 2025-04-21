@@ -103,3 +103,49 @@ char* ar_string_path_segment(const char *str, char separator, size_t index) {
     
     return segment;
 }
+
+/**
+ * Extracts the parent path from a path string.
+ *
+ * @param str The path string to extract from (e.g., "key.sub_key.sub_sub_key")
+ * @param separator The character used as separator (e.g., '.')
+ * @return Heap-allocated string containing the parent path, or NULL if no parent exists
+ *         (i.e., for root paths or errors). Caller is responsible for freeing the returned string.
+ */
+char* ar_string_path_parent(const char *str, char separator) {
+    if (!str || !*str) {
+        return NULL;
+    }
+    
+    // Count segments to determine if parent exists
+    size_t segments = ar_string_path_count(str, separator);
+    if (segments <= 1) {
+        // No parent for root paths or single segments
+        return NULL;
+    }
+    
+    // Find the last separator
+    const char *last_sep = strrchr(str, separator);
+    if (!last_sep) {
+        // This should not happen if segments > 1, but handle it anyway
+        return NULL;
+    }
+    
+    // Calculate the length of the parent path (excluding the last separator)
+    size_t parent_len = (size_t)(last_sep - str);
+    if (parent_len == 0) {
+        // Edge case: path starts with a separator (e.g., ".key")
+        return strdup("");
+    }
+    
+    // Allocate and copy the parent path
+    char *parent = (char *)malloc(parent_len + 1);
+    if (!parent) {
+        return NULL;
+    }
+    
+    memcpy(parent, str, parent_len);
+    parent[parent_len] = '\0';
+    
+    return parent;
+}
