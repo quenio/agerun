@@ -14,6 +14,7 @@ struct data_s {
         int int_value;
         double double_value;
         char *string_ref;
+        list_t *list_ref;
         map_t *map_ref;
     } data;
     list_t *keys;  // List of keys that belong to this data's map (only used for DATA_MAP type)
@@ -76,6 +77,27 @@ data_t* ar_data_create_string(const char *value) {
 }
 
 /**
+ * Create a new list data value
+ * @return Pointer to the new data, or NULL on failure
+ */
+data_t* ar_data_create_list(void) {
+    data_t* data = (data_t*)malloc(sizeof(data_t));
+    if (!data) {
+        return NULL;
+    }
+    
+    data->type = DATA_LIST;
+    data->data.list_ref = ar_list_create();
+    if (!data->data.list_ref) {
+        free(data);
+        return NULL;
+    }
+    
+    data->keys = NULL;
+    return data;
+}
+
+/**
  * Create a new map data value
  * @return Pointer to the new data, or NULL on failure
  */
@@ -115,6 +137,27 @@ void ar_data_destroy(data_t *data) {
     if (data->type == DATA_STRING && data->data.string_ref) {
         free(data->data.string_ref);
         data->data.string_ref = NULL;
+    } else if (data->type == DATA_LIST && data->data.list_ref) {
+        // For lists, we need to:
+        // 1. Get all data values stored in the list (for later cleanup)
+        // 2. Free the list structure itself
+        // 3. Then free all the data values
+        
+        // Get all data values for later cleanup
+        void **items = ar_list_items(data->data.list_ref);
+        size_t item_count = ar_list_count(data->data.list_ref);
+        
+        // Destroy the list structure first
+        ar_list_destroy(data->data.list_ref);
+        data->data.list_ref = NULL;
+        
+        // Free all data values
+        if (items) {
+            for (size_t i = 0; i < item_count; i++) {
+                ar_data_destroy((data_t*)items[i]);
+            }
+            free(items); // Free the array itself
+        }
     } else if (data->type == DATA_MAP && data->data.map_ref) {
         // For maps, we need to:
         // 1. Get all data values stored in the map (for later cleanup)
@@ -206,6 +249,19 @@ const char *ar_data_get_string(const data_t *data) {
         return NULL;
     }
     return data->data.string_ref;
+}
+
+/**
+ * Get the list value from a data structure (read-only)
+ * This is a PRIVATE function only for use within the data module.
+ * @param data Pointer to the data to retrieve from
+ * @return The list value or NULL if data is NULL or not a list type
+ */
+static list_t *ar_data_get_list(const data_t *data) {
+    if (!data || data->type != DATA_LIST) {
+        return NULL;
+    }
+    return data->data.list_ref;
 }
 
 /**
@@ -522,4 +578,352 @@ bool ar_data_set_map_string(data_t *data, const char *key, const char *value) {
     
     // Use the common set_map_data function
     return ar_data_set_map_data(data, key, string_data);
+}
+
+/**
+ * Add an integer value to the beginning of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The integer value to add
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_first_integer(data_t *data, int value) {
+    if (!data || data->type != DATA_LIST) {
+        return false;
+    }
+    
+    // Create new data
+    data_t *int_data = ar_data_create_integer(value);
+    if (!int_data) {
+        return false;
+    }
+    
+    // Get the list from the data
+    list_t *list = ar_data_get_list(data);
+    if (!list) {
+        ar_data_destroy(int_data);
+        return false;
+    }
+    
+    // Add the data to the beginning of the list
+    if (!ar_list_add_first(list, int_data)) {
+        ar_data_destroy(int_data);
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * Add a double value to the beginning of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The double value to add
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_first_double(data_t *data, double value) {
+    if (!data || data->type != DATA_LIST) {
+        return false;
+    }
+    
+    // Create new data
+    data_t *double_data = ar_data_create_double(value);
+    if (!double_data) {
+        return false;
+    }
+    
+    // Get the list from the data
+    list_t *list = ar_data_get_list(data);
+    if (!list) {
+        ar_data_destroy(double_data);
+        return false;
+    }
+    
+    // Add the data to the beginning of the list
+    if (!ar_list_add_first(list, double_data)) {
+        ar_data_destroy(double_data);
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * Add a string value to the beginning of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The string value to add (will be copied)
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_first_string(data_t *data, const char *value) {
+    if (!data || data->type != DATA_LIST) {
+        return false;
+    }
+    
+    // Create new data
+    data_t *string_data = ar_data_create_string(value);
+    if (!string_data) {
+        return false;
+    }
+    
+    // Get the list from the data
+    list_t *list = ar_data_get_list(data);
+    if (!list) {
+        ar_data_destroy(string_data);
+        return false;
+    }
+    
+    // Add the data to the beginning of the list
+    if (!ar_list_add_first(list, string_data)) {
+        ar_data_destroy(string_data);
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * Add a data value to the beginning of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The data value to add (ownership is transferred)
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_first_data(data_t *data, data_t *value) {
+    if (!data || data->type != DATA_LIST || !value) {
+        return false;
+    }
+    
+    // Get the list from the data
+    list_t *list = ar_data_get_list(data);
+    if (!list) {
+        return false;
+    }
+    
+    // Add the data to the beginning of the list
+    if (!ar_list_add_first(list, value)) {
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * Add an integer value to the end of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The integer value to add
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_last_integer(data_t *data, int value) {
+    if (!data || data->type != DATA_LIST) {
+        return false;
+    }
+    
+    // Create new data
+    data_t *int_data = ar_data_create_integer(value);
+    if (!int_data) {
+        return false;
+    }
+    
+    // Get the list from the data
+    list_t *list = ar_data_get_list(data);
+    if (!list) {
+        ar_data_destroy(int_data);
+        return false;
+    }
+    
+    // Add the data to the end of the list
+    if (!ar_list_add_last(list, int_data)) {
+        ar_data_destroy(int_data);
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * Add a double value to the end of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The double value to add
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_last_double(data_t *data, double value) {
+    if (!data || data->type != DATA_LIST) {
+        return false;
+    }
+    
+    // Create new data
+    data_t *double_data = ar_data_create_double(value);
+    if (!double_data) {
+        return false;
+    }
+    
+    // Get the list from the data
+    list_t *list = ar_data_get_list(data);
+    if (!list) {
+        ar_data_destroy(double_data);
+        return false;
+    }
+    
+    // Add the data to the end of the list
+    if (!ar_list_add_last(list, double_data)) {
+        ar_data_destroy(double_data);
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * Add a string value to the end of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The string value to add (will be copied)
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_last_string(data_t *data, const char *value) {
+    if (!data || data->type != DATA_LIST) {
+        return false;
+    }
+    
+    // Create new data
+    data_t *string_data = ar_data_create_string(value);
+    if (!string_data) {
+        return false;
+    }
+    
+    // Get the list from the data
+    list_t *list = ar_data_get_list(data);
+    if (!list) {
+        ar_data_destroy(string_data);
+        return false;
+    }
+    
+    // Add the data to the end of the list
+    if (!ar_list_add_last(list, string_data)) {
+        ar_data_destroy(string_data);
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * Add a data value to the end of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The data value to add (ownership is transferred)
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_last_data(data_t *data, data_t *value) {
+    if (!data || data->type != DATA_LIST || !value) {
+        return false;
+    }
+    
+    // Get the list from the data
+    list_t *list = ar_data_get_list(data);
+    if (!list) {
+        return false;
+    }
+    
+    // Add the data to the end of the list
+    if (!ar_list_add_last(list, value)) {
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * Remove and return the first data value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The removed data value (ownership is transferred), or NULL if data is NULL, not a list, or list is empty
+ */
+data_t *ar_data_list_remove_first(data_t *data) {
+    if (!data || data->type != DATA_LIST) {
+        return NULL;
+    }
+    
+    // Get the list from the data
+    list_t *list = ar_data_get_list(data);
+    if (!list) {
+        return NULL;
+    }
+    
+    // Remove the first item from the list
+    return (data_t *)ar_list_remove_first(list);
+}
+
+/**
+ * Remove and return the last data value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The removed data value (ownership is transferred), or NULL if data is NULL, not a list, or list is empty
+ */
+data_t *ar_data_list_remove_last(data_t *data) {
+    if (!data || data->type != DATA_LIST) {
+        return NULL;
+    }
+    
+    // Get the list from the data
+    list_t *list = ar_data_get_list(data);
+    if (!list) {
+        return NULL;
+    }
+    
+    // Remove the last item from the list
+    return (data_t *)ar_list_remove_last(list);
+}
+
+/**
+ * Get the first data value from a list data structure (without removing it)
+ * @param data Pointer to the list data
+ * @return The first data value (ownership is not transferred), or NULL if data is NULL, not a list, or list is empty
+ */
+data_t *ar_data_list_first(const data_t *data) {
+    if (!data || data->type != DATA_LIST) {
+        return NULL;
+    }
+    
+    // Get the list from the data
+    list_t *list = ar_data_get_list(data);
+    if (!list) {
+        return NULL;
+    }
+    
+    // Get the first item from the list
+    return (data_t *)ar_list_first(list);
+}
+
+/**
+ * Get the last data value from a list data structure (without removing it)
+ * @param data Pointer to the list data
+ * @return The last data value (ownership is not transferred), or NULL if data is NULL, not a list, or list is empty
+ */
+data_t *ar_data_list_last(const data_t *data) {
+    if (!data || data->type != DATA_LIST) {
+        return NULL;
+    }
+    
+    // Get the list from the data
+    list_t *list = ar_data_get_list(data);
+    if (!list) {
+        return NULL;
+    }
+    
+    // Get the last item from the list
+    return (data_t *)ar_list_last(list);
+}
+
+/**
+ * Get the number of items in a list data structure
+ * @param data Pointer to the list data
+ * @return The number of items, or 0 if data is NULL or not a list
+ */
+size_t ar_data_list_count(const data_t *data) {
+    if (!data || data->type != DATA_LIST) {
+        return 0;
+    }
+    
+    // Get the list from the data
+    list_t *list = ar_data_get_list(data);
+    if (!list) {
+        return 0;
+    }
+    
+    // Get the count from the list
+    return ar_list_count(list);
 }

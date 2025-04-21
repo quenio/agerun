@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "agerun_map.h"
+#include "agerun_list.h"
 
 /**
  * Data type enumeration
@@ -12,6 +13,7 @@ typedef enum {
     DATA_INTEGER,
     DATA_DOUBLE,
     DATA_STRING,
+    DATA_LIST,
     DATA_MAP
 } data_type_t;
 
@@ -40,6 +42,12 @@ data_t* ar_data_create_double(double value);
  * @return Pointer to the new data, or NULL on failure
  */
 data_t* ar_data_create_string(const char *value);
+
+/**
+ * Create a new list data value
+ * @return Pointer to the new data, or NULL on failure
+ */
+data_t* ar_data_create_list(void);
 
 /**
  * Create a new map data value
@@ -155,5 +163,104 @@ bool ar_data_set_map_string(data_t *data, const char *key, const char *value);
  * @return true if successful, false if data is NULL, not a map, or allocation failure
  */
 bool ar_data_set_map_data(data_t *data, const char *key, data_t *value);
+
+/**
+ * Add an integer value to the beginning of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The integer value to add
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_first_integer(data_t *data, int value);
+
+/**
+ * Add a double value to the beginning of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The double value to add
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_first_double(data_t *data, double value);
+
+/**
+ * Add a string value to the beginning of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The string value to add (will be copied)
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_first_string(data_t *data, const char *value);
+
+/**
+ * Add a data value to the beginning of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The data value to add (ownership is transferred)
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_first_data(data_t *data, data_t *value);
+
+/**
+ * Add an integer value to the end of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The integer value to add
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_last_integer(data_t *data, int value);
+
+/**
+ * Add a double value to the end of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The double value to add
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_last_double(data_t *data, double value);
+
+/**
+ * Add a string value to the end of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The string value to add (will be copied)
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_last_string(data_t *data, const char *value);
+
+/**
+ * Add a data value to the end of a list data structure
+ * @param data Pointer to the list data to modify
+ * @param value The data value to add (ownership is transferred)
+ * @return true if successful, false if data is NULL, not a list, or allocation failure
+ */
+bool ar_data_list_add_last_data(data_t *data, data_t *value);
+
+/**
+ * Remove and return the first data value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The removed data value (ownership is transferred), or NULL if data is NULL, not a list, or list is empty
+ */
+data_t *ar_data_list_remove_first(data_t *data);
+
+/**
+ * Remove and return the last data value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The removed data value (ownership is transferred), or NULL if data is NULL, not a list, or list is empty
+ */
+data_t *ar_data_list_remove_last(data_t *data);
+
+/**
+ * Get the first data value from a list data structure (without removing it)
+ * @param data Pointer to the list data
+ * @return The first data value (ownership is not transferred), or NULL if data is NULL, not a list, or list is empty
+ */
+data_t *ar_data_list_first(const data_t *data);
+
+/**
+ * Get the last data value from a list data structure (without removing it)
+ * @param data Pointer to the list data
+ * @return The last data value (ownership is not transferred), or NULL if data is NULL, not a list, or list is empty
+ */
+data_t *ar_data_list_last(const data_t *data);
+
+/**
+ * Get the number of items in a list data structure
+ * @param data Pointer to the list data
+ * @return The number of items, or 0 if data is NULL or not a list
+ */
+size_t ar_data_list_count(const data_t *data);
 
 #endif /* AGERUN_DATA_H */

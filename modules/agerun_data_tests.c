@@ -15,6 +15,7 @@ static void test_map_data_getters(void);
 static void test_map_data_setters(void);
 static void test_map_data_path_getters(void);
 static void test_map_data_path_setters(void);
+static void test_list_operations(void);
 
 static void test_data_creation(void) {
     printf("Testing data creation for different types...\n");
@@ -45,6 +46,13 @@ static void test_data_creation(void) {
     assert(ar_data_get_type(string_data_default) == DATA_STRING);
     assert(ar_data_get_string(string_data_default) == NULL);
     
+    // When we create an empty list data item
+    data_t *list_data_default = ar_data_create_list();
+    
+    // Then it should have the correct type
+    assert(list_data_default != NULL);
+    assert(ar_data_get_type(list_data_default) == DATA_LIST);
+    
     // When we create an empty map data item
     data_t *map_data_default = ar_data_create_map();
     
@@ -57,6 +65,7 @@ static void test_data_creation(void) {
     data_t *int_data = ar_data_create_integer(42);
     data_t *double_data = ar_data_create_double(3.14159);
     data_t *string_data = ar_data_create_string("Hello, World!");
+    data_t *list_data = ar_data_create_list();
     data_t *map_data = ar_data_create_map();
     
     // Then they should have the correct types and values
@@ -73,17 +82,22 @@ static void test_data_creation(void) {
     assert(ar_data_get_string(string_data) != NULL);
     assert(strcmp(ar_data_get_string(string_data), "Hello, World!") == 0);
     
+    assert(list_data != NULL);
+    assert(ar_data_get_type(list_data) == DATA_LIST);
+    
     assert(map_data != NULL);
     assert(ar_data_get_type(map_data) == DATA_MAP);
     // We can verify it's a map by checking its type - can't check ar_data_get_map anymore
     
     // Cleanup
     ar_data_destroy(map_data_default);
+    ar_data_destroy(list_data_default);
     ar_data_destroy(string_data_default);
     ar_data_destroy(double_data_default);
     ar_data_destroy(int_data_default);
     
     ar_data_destroy(map_data);
+    ar_data_destroy(list_data);
     ar_data_destroy(string_data);
     ar_data_destroy(double_data);
     ar_data_destroy(int_data);
@@ -98,12 +112,14 @@ static void test_data_getters(void) {
     data_t *int_data = ar_data_create_integer(42);
     data_t *double_data = ar_data_create_double(3.14159);
     data_t *string_data = ar_data_create_string("Hello, World!");
+    data_t *list_data = ar_data_create_list();
     data_t *map_data = ar_data_create_map();
     
     // When we use the type getter
     data_type_t int_type = ar_data_get_type(int_data);
     data_type_t double_type = ar_data_get_type(double_data);
     data_type_t string_type = ar_data_get_type(string_data);
+    data_type_t list_type = ar_data_get_type(list_data);
     data_type_t map_type = ar_data_get_type(map_data);
     data_type_t null_type = ar_data_get_type(NULL);
     
@@ -111,6 +127,7 @@ static void test_data_getters(void) {
     assert(int_type == DATA_INTEGER);
     assert(double_type == DATA_DOUBLE);
     assert(string_type == DATA_STRING);
+    assert(list_type == DATA_LIST);
     assert(map_type == DATA_MAP);
     assert(null_type == DATA_INTEGER); // Default to int if NULL
     
@@ -148,6 +165,7 @@ static void test_data_getters(void) {
     ar_data_destroy(int_data);
     ar_data_destroy(double_data);
     ar_data_destroy(string_data);
+    ar_data_destroy(list_data);
     ar_data_destroy(map_data);
     
     printf("Data getter tests passed!\n");
@@ -707,6 +725,165 @@ static void test_map_data_path_setters(void) {
     printf("Map data path setter tests passed!\n");
 }
 
+static void test_list_operations(void) {
+    printf("Testing list operations...\n");
+    
+    // Given a list data structure
+    data_t *list_data = ar_data_create_list();
+    assert(list_data != NULL);
+    assert(ar_data_get_type(list_data) == DATA_LIST);
+    
+    // When we check the initial list count
+    size_t initial_count = ar_data_list_count(list_data);
+    
+    // Then it should be empty
+    assert(initial_count == 0);
+    
+    // When we add integers to the list
+    bool add_first_result = ar_data_list_add_first_integer(list_data, 10);
+    bool add_last_result = ar_data_list_add_last_integer(list_data, 20);
+    
+    // Then the operations should succeed
+    assert(add_first_result);
+    assert(add_last_result);
+    
+    // And the list count should be updated
+    assert(ar_data_list_count(list_data) == 2);
+    
+    // When we get the first and last items
+    data_t *first_item = ar_data_list_first(list_data);
+    data_t *last_item = ar_data_list_last(list_data);
+    
+    // Then they should be valid data items with the correct values
+    assert(first_item != NULL);
+    assert(last_item != NULL);
+    assert(ar_data_get_type(first_item) == DATA_INTEGER);
+    assert(ar_data_get_type(last_item) == DATA_INTEGER);
+    assert(ar_data_get_integer(first_item) == 10);
+    assert(ar_data_get_integer(last_item) == 20);
+    
+    // When we add doubles to the list
+    bool add_first_double_result = ar_data_list_add_first_double(list_data, 3.14);
+    bool add_last_double_result = ar_data_list_add_last_double(list_data, 2.71);
+    
+    // Then the operations should succeed
+    assert(add_first_double_result);
+    assert(add_last_double_result);
+    
+    // And the list count should be updated
+    assert(ar_data_list_count(list_data) == 4);
+    
+    // When we get the first and last items again
+    first_item = ar_data_list_first(list_data);
+    last_item = ar_data_list_last(list_data);
+    
+    // Then they should be valid data items with the correct values
+    assert(first_item != NULL);
+    assert(last_item != NULL);
+    assert(ar_data_get_type(first_item) == DATA_DOUBLE);
+    assert(ar_data_get_type(last_item) == DATA_DOUBLE);
+    assert(ar_data_get_double(first_item) == 3.14);
+    assert(ar_data_get_double(last_item) == 2.71);
+    
+    // When we add strings to the list
+    bool add_first_string_result = ar_data_list_add_first_string(list_data, "hello");
+    bool add_last_string_result = ar_data_list_add_last_string(list_data, "world");
+    
+    // Then the operations should succeed
+    assert(add_first_string_result);
+    assert(add_last_string_result);
+    
+    // And the list count should be updated
+    assert(ar_data_list_count(list_data) == 6);
+    
+    // When we get the first and last items again
+    first_item = ar_data_list_first(list_data);
+    last_item = ar_data_list_last(list_data);
+    
+    // Then they should be valid data items with the correct values
+    assert(first_item != NULL);
+    assert(last_item != NULL);
+    assert(ar_data_get_type(first_item) == DATA_STRING);
+    assert(ar_data_get_type(last_item) == DATA_STRING);
+    assert(strcmp(ar_data_get_string(first_item), "hello") == 0);
+    assert(strcmp(ar_data_get_string(last_item), "world") == 0);
+    
+    // When we add data directly to the list
+    data_t *int_data = ar_data_create_integer(42);
+    data_t *double_data = ar_data_create_double(3.14159);
+    
+    bool add_first_data_result = ar_data_list_add_first_data(list_data, int_data);
+    bool add_last_data_result = ar_data_list_add_last_data(list_data, double_data);
+    
+    // Then the operations should succeed
+    assert(add_first_data_result);
+    assert(add_last_data_result);
+    
+    // And the list count should be updated
+    assert(ar_data_list_count(list_data) == 8);
+    
+    // When we get the first and last items again
+    first_item = ar_data_list_first(list_data);
+    last_item = ar_data_list_last(list_data);
+    
+    // Then they should be valid data items with the correct values
+    assert(first_item != NULL);
+    assert(last_item != NULL);
+    assert(ar_data_get_type(first_item) == DATA_INTEGER);
+    assert(ar_data_get_type(last_item) == DATA_DOUBLE);
+    assert(ar_data_get_integer(first_item) == 42);
+    assert(ar_data_get_double(last_item) == 3.14159);
+    
+    // When we remove items from the list
+    data_t *removed_first = ar_data_list_remove_first(list_data);
+    data_t *removed_last = ar_data_list_remove_last(list_data);
+    
+    // Then the operations should succeed and return the correct items
+    assert(removed_first != NULL);
+    assert(removed_last != NULL);
+    assert(ar_data_get_type(removed_first) == DATA_INTEGER);
+    assert(ar_data_get_type(removed_last) == DATA_DOUBLE);
+    assert(ar_data_get_integer(removed_first) == 42);
+    assert(ar_data_get_double(removed_last) == 3.14159);
+    
+    // And the list count should be updated
+    assert(ar_data_list_count(list_data) == 6);
+    
+    // Cleanup removed items and list
+    ar_data_destroy(removed_first);
+    ar_data_destroy(removed_last);
+    ar_data_destroy(list_data);
+    
+    // Test error handling for null data
+    assert(ar_data_list_count(NULL) == 0);
+    assert(!ar_data_list_add_first_integer(NULL, 42));
+    assert(!ar_data_list_add_last_integer(NULL, 42));
+    assert(!ar_data_list_add_first_double(NULL, 3.14));
+    assert(!ar_data_list_add_last_double(NULL, 3.14));
+    assert(!ar_data_list_add_first_string(NULL, "test"));
+    assert(!ar_data_list_add_last_string(NULL, "test"));
+    assert(ar_data_list_first(NULL) == NULL);
+    assert(ar_data_list_last(NULL) == NULL);
+    assert(ar_data_list_remove_first(NULL) == NULL);
+    assert(ar_data_list_remove_last(NULL) == NULL);
+    
+    // Test error handling for wrong data type
+    data_t *int_data2 = ar_data_create_integer(42);
+    assert(!ar_data_list_add_first_integer(int_data2, 10));
+    assert(!ar_data_list_add_last_integer(int_data2, 10));
+    assert(!ar_data_list_add_first_double(int_data2, 3.14));
+    assert(!ar_data_list_add_last_double(int_data2, 3.14));
+    assert(!ar_data_list_add_first_string(int_data2, "test"));
+    assert(!ar_data_list_add_last_string(int_data2, "test"));
+    assert(ar_data_list_first(int_data2) == NULL);
+    assert(ar_data_list_last(int_data2) == NULL);
+    assert(ar_data_list_remove_first(int_data2) == NULL);
+    assert(ar_data_list_remove_last(int_data2) == NULL);
+    ar_data_destroy(int_data2);
+    
+    printf("List operations tests passed!\n");
+}
+
 int main(void) {
     printf("Starting Data Module Tests...\n");
     
@@ -728,6 +905,9 @@ int main(void) {
     
     // Run map data path setter tests
     test_map_data_path_setters();
+    
+    // Run list operations tests
+    test_list_operations();
     
     // Then all tests should pass
     printf("All data tests passed!\n");
