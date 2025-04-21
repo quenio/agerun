@@ -10,6 +10,7 @@ The map module (`agerun_map`) provides a fundamental key-value storage implement
 - **Reference-Based**: The map stores references to keys and values rather than duplicating them
 - **No Memory Management**: Does not manage memory for either keys or values
 - **Type Safety**: Uses const qualifiers for keys to prevent unwanted modifications
+- **Iteration Support**: Provides a callback-based mechanism to iterate through all entries
 - **No Dependencies**: This is a foundational module with no dependencies on other modules
 - **Opaque Type**: The map structure is opaque, encapsulating implementation details from clients
 - **Simplified API**: Maps are heap-allocated and fully initialized through ar_map_create()
@@ -21,6 +22,9 @@ The map module (`agerun_map`) provides a fundamental key-value storage implement
 ```c
 // Opaque map type - implementation details hidden
 typedef struct map_s map_t;
+
+// Callback function type for map iteration
+typedef bool (*map_iterator_t)(const char *key, void *value, void *arg);
 ```
 
 ### Functions
@@ -40,6 +44,13 @@ void* ar_map_get(const map_t *map, const char *key);
 
 // Set a reference in map
 bool ar_map_set(map_t *map, const char *key, void *ref);
+```
+
+#### Iteration
+
+```c
+// Iterate over all entries in the map
+bool ar_map_iterate(const map_t *map, map_iterator_t iterator, void *arg);
 ```
 
 #### Memory Management
@@ -76,6 +87,58 @@ free((void*)value);  // Then free the value
 // No need to free key as it's a string literal
 ```
 
+### Using Map Iteration
+
+```c
+// Callback function for counting entries
+bool count_entries(const char *key, void *value, void *arg) {
+    int *counter = (int*)arg;
+    (*counter)++;
+    printf("Key: %s\n", key);
+    return true; // Continue iteration
+}
+
+// Create and populate a map
+map_t *map = ar_map_create();
+ar_map_set(map, "key1", value1);
+ar_map_set(map, "key2", value2);
+ar_map_set(map, "key3", value3);
+
+// Count entries
+int count = 0;
+ar_map_iterate(map, count_entries, &count);
+printf("Map contains %d entries\n", count);
+
+// Clean up map (but not the keys and values, which must be freed separately)
+ar_map_destroy(map);
+```
+
+### Freeing Map Contents
+
+```c
+// Callback function for freeing all entries
+bool free_entries(const char *key, void *value, void *arg) {
+    // Free the key if it was dynamically allocated
+    free((void*)key);
+    
+    // Free the value if it was dynamically allocated
+    free(value);
+    
+    return true; // Continue iteration
+}
+
+// Create and populate a map
+map_t *map = ar_map_create();
+ar_map_set(map, strdup("key1"), malloc(sizeof(int)));
+ar_map_set(map, strdup("key2"), malloc(sizeof(int)));
+
+// Free all keys and values
+ar_map_iterate(map, free_entries, NULL);
+
+// Then free the map itself
+ar_map_destroy(map);
+```
+
 ### Nested Maps
 
 ```c
@@ -103,17 +166,30 @@ map_t *retrieved_inner = (map_t*)ar_map_get(outer_map, "inner");
 int *retrieved_value = (int*)ar_map_get(retrieved_inner, "count");
 printf("The count is: %d\n", *retrieved_value);
 
-// Note: With map reference counting removed, proper nested map management 
-// must be handled externally, typically by the data module.
+// Recursive cleanup function
+bool recursive_cleanup(const char *key, void *value, void *arg) {
+    bool is_inner_map = (arg != NULL);
+    
+    if (is_inner_map) {
+        // For inner maps, clean up the keys and values
+        free((void*)key);
+        free(value);
+    } else {
+        // For the outer map, check if value is a map and recursively clean up
+        if (strcmp(key, "inner") == 0) {
+            map_t *inner = (map_t*)value;
+            ar_map_iterate(inner, recursive_cleanup, (void*)1);
+            ar_map_destroy(inner);
+        }
+        free((void*)key);
+    }
+    
+    return true;
+}
 
-// Clean up
-// Warning: outer_map must be freed before inner_map to avoid use-after-free
+// Clean up everything with a single function call
+ar_map_iterate(outer_map, recursive_cleanup, NULL);
 ar_map_destroy(outer_map);
-ar_map_destroy(inner_map);
-
-// Then free the value
-free((void*)value);
-// No need to free keys as they're string literals
 ```
 
 ## Implementation Notes
@@ -126,6 +202,7 @@ free((void*)value);
 - The client code is responsible for managing both key and value memory
 - Key pointers must remain valid for the lifetime of the map entry
 - String literals can be used directly as keys for convenience
+- The iteration function allows clean traversal of all map entries without exposing internal details
 - Proper memory management for nested maps must be handled by client code (typically by the data module)
 - No reference counting is implemented - memory management responsibility lies with the caller
 - The map implementation is opaque, hiding its internal structure from clients

@@ -91,6 +91,53 @@ data_t* ar_data_create_map(void) {
 }
 
 /**
+ * Map iterator callback for collecting data and keys to free
+ * @param key The key for the current entry
+ * @param value The data value for the current entry
+ * @param user_data Pointer to collection of key-value pairs to free
+ * @return true to continue iteration
+ */
+struct cleanup_entry {
+    char *key;
+    data_t *value;
+    struct cleanup_entry *next;
+};
+
+struct cleanup_list {
+    struct cleanup_entry *head;
+};
+
+static bool collect_map_entries(const char *key, void *value, void *arg) {
+    struct cleanup_list *list = (struct cleanup_list *)arg;
+    
+    if (!list || !key || !value) {
+        return true; // Continue iteration
+    }
+    
+    // Create a new entry to store the key and value for later cleanup
+    struct cleanup_entry *entry = malloc(sizeof(struct cleanup_entry));
+    if (!entry) {
+        return true; // Continue iteration despite failure
+    }
+    
+    // Store pointers to the key and value
+    // Instead of casting, we need to store the keys without changing their type
+    // Since we can't cast away const without a warning, we need a safe approach
+    entry->key = strdup(key);  // Make a new copy of the key
+    if (!entry->key) {
+        free(entry);
+        return true; // Continue iteration despite failure
+    }
+    entry->value = (data_t *)value;
+    
+    // Add to the head of the list
+    entry->next = list->head;
+    list->head = entry;
+    
+    return true; // Continue iteration
+}
+
+/**
  * Free resources associated with a data structure and release memory
  * @param data Pointer to the data to destroy
  */
@@ -101,8 +148,36 @@ void ar_data_destroy(data_t *data) {
         free(data->data.string_ref);
         data->data.string_ref = NULL;
     } else if (data->type == DATA_MAP && data->data.map_ref) {
+        // For maps, we need to:
+        // 1. Collect all the data values and keys stored in the map
+        // 2. Free the map structure itself since it doesn't own the keys and values
+        // 3. Then free all the keys and values separately
+        
+        struct cleanup_list list = { NULL };
+        
+        // Collect all map entries for later cleanup
+        ar_map_iterate(data->data.map_ref, collect_map_entries, &list);
+        
+        // Destroy the map structure first - it doesn't own the keys and values
         ar_map_destroy(data->data.map_ref);
         data->data.map_ref = NULL;
+        
+        // Now process the collected entries
+        struct cleanup_entry *current = list.head;
+        while (current) {
+            struct cleanup_entry *next = current->next;
+            
+            // Free the key string
+            free(current->key);
+            
+            // Free the data value
+            ar_data_destroy(current->value);
+            
+            // Free the list entry
+            free(current);
+            
+            current = next;
+        }
     }
     
     free(data);

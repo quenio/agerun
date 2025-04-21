@@ -501,7 +501,7 @@ ar_data_destroy(root_map);
 - All access to data values must go through the provided API functions
 - Memory management is handled internally by the module
 - Creation functions allocate memory and initialize the data structure
-- The destroy function properly frees all allocated resources
+- The destroy function properly frees all allocated resources including recursively freeing map keys and values
 - Type-specific getter functions ensure type safety when accessing values
 - The module uses the map module for storing nested maps
 - The data_type_t enum is still exposed to allow clients to specify types
@@ -511,8 +511,11 @@ ar_data_destroy(root_map);
 - The use of opaque types prevents direct manipulation of internal fields
 - The getter functions handle all necessary type checking and validation
 - Memory leaks are avoided by proper resource management in create/destroy functions
+- The data module fully manages memory for all its components - when a data object is destroyed, all of its contents are properly freed
 - String and map values are stored as references (string_ref and map_ref) within the internal data structure
-- While the map module stores references as `const void*`, the data module manages these references
+- While the map module stores references as `const void*` and doesn't manage memory for keys or values, the data module handles this responsibility
+- For map data types, ar_data_destroy uses map iteration to collect and free all keys and values before freeing the map itself
+- The ownership model is clear: the data module owns and manages all memory for data objects and their contents
 - Type safety is improved through the use of const qualifiers throughout the API
 - Map-data accessors simplify retrieval of values from maps by keys, reducing boilerplate code
 - The map-data accessors handle all type checking and error handling, providing safe default values
