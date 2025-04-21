@@ -123,7 +123,7 @@ const char *ar_data_get_map_string(const data_t *data, const char *key);
  * @param key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
  * @return The data value, or NULL if data is NULL, not a map, or key not found
  */
-const data_t *ar_data_get_map_data(const data_t *data, const char *key);
+data_t *ar_data_get_map_data(const data_t *data, const char *key);
 
 /**
  * Set an integer value in a map data structure by key

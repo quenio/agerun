@@ -179,13 +179,13 @@ map_t *ar_data_get_map(const data_t *data) {
  * @param key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
  * @return The data value, or NULL if data is NULL, not a map, or key not found
  */
-const data_t *ar_data_get_map_data(const data_t *data, const char *key) {
+data_t *ar_data_get_map_data(const data_t *data, const char *key) {
     if (!data || !key || data->type != DATA_MAP) {
         return NULL;
     }
     
     // Get the map from the data
-    const map_t *map = ar_data_get_map(data);
+    map_t *map = ar_data_get_map(data);
     if (!map) {
         return NULL;
     }
@@ -199,7 +199,8 @@ const data_t *ar_data_get_map_data(const data_t *data, const char *key) {
     // Count path segments for multi-segment paths
     size_t segment_count = ar_string_path_count(key, '.');
     
-    // Start with the current data
+    // Keep track of current data as we traverse the path
+    data_t *result = NULL;
     const data_t *current_data = data;
     
     // Process each segment
@@ -211,31 +212,31 @@ const data_t *ar_data_get_map_data(const data_t *data, const char *key) {
         }
         
         // Get the map from the current data
-        const map_t *current_map = ar_data_get_map(current_data);
+        map_t *current_map = ar_data_get_map(current_data);
         if (!current_map) {
             free(segment);
             return NULL;
         }
         
         // Get the value for this segment
-        const data_t *value = ar_map_get(current_map, segment);
+        result = ar_map_get(current_map, segment);
         
-        if (!value) {
+        if (!result) {
             free(segment);
             return NULL;
         }
         
         // For all but the last segment, the value must be a map
-        if (i < segment_count - 1 && value->type != DATA_MAP) {
+        if (i < segment_count - 1 && result->type != DATA_MAP) {
             free(segment);
             return NULL;
         }
         
-        current_data = value;
+        current_data = result;
         free(segment);
     }
     
-    return current_data;
+    return result;
 }
 
 /**
@@ -300,81 +301,11 @@ const char *ar_data_get_map_string(const data_t *data, const char *key) {
 
 
 /**
- * Helper function to ensure that all intermediate maps in a path exist
- * @param data Pointer to the root map data to start from
- * @param path The path to create/ensure
- * @param final_segment_index The index of the final segment where the value will be set
- * @return Pointer to the map where the final value should be set, or NULL on failure
+ * NOTE: The set_map_* functions no longer create paths as needed. Instead,
+ * they use ar_data_get_map_data to verify that the path exists and fail if it doesn't.
+ * This behavior change means clients must explicitly create intermediate maps
+ * before setting values in nested paths.
  */
-static map_t* ensure_path_exists(data_t *data, const char *path, size_t *final_segment_index) {
-    if (!data || !path || data->type != DATA_MAP) {
-        return NULL;
-    }
-    
-    // Check if the path contains any dots
-    if (strchr(path, '.') == NULL) {
-        // No dots, just use the current map
-        *final_segment_index = 0;
-        return data->data.map_ref;
-    }
-    
-    // Count path segments for multi-segment paths
-    size_t segment_count = ar_string_path_count(path, '.');
-    if (segment_count == 0) {
-        return NULL;
-    }
-    
-    // Set the final segment index for the caller
-    *final_segment_index = segment_count - 1;
-    
-    // Start with the current data's map
-    map_t *current_map = data->data.map_ref;
-    data_t *current_data = data;
-    
-    // Process each segment except the last one
-    for (size_t i = 0; i < segment_count - 1; i++) {
-        // Get the current segment
-        char *segment = ar_string_path_segment(path, '.', i);
-        if (!segment) {
-            return NULL;
-        }
-        
-        // Get the value for this segment
-        data_t *value = ar_map_get(current_map, segment);
-        
-        // If the segment doesn't exist or isn't a map, create a new map
-        if (!value || value->type != DATA_MAP) {
-            // If there's an existing value but it's not a map, remove it
-            if (value) {
-                ar_data_destroy(value);
-            }
-            
-            // Create a new map
-            data_t *map_data = ar_data_create_map();
-            if (!map_data) {
-                free(segment);
-                return NULL;
-            }
-            
-            // Set the new map
-            if (!ar_map_set(current_map, segment, map_data)) {
-                ar_data_destroy(map_data);
-                free(segment);
-                return NULL;
-            }
-            
-            value = map_data;
-        }
-        
-        // Update current pointers
-        current_data = value;
-        current_map = current_data->data.map_ref;
-        
-        free(segment);
-    }
-    
-    return current_map;
-}
 
 /**
  * Set an integer value in a map data structure by key
@@ -419,15 +350,47 @@ bool ar_data_set_map_integer(data_t *data, const char *key, int value) {
     }
     
     // Handle path-based access for keys with dots
-    size_t final_segment_index = 0;
-    map_t *target_map = ensure_path_exists(data, key, &final_segment_index);
-    if (!target_map) {
+    // Extract the parent path and final key
+    size_t segment_count = ar_string_path_count(key, '.');
+    if (segment_count == 0) {
         return false;
     }
     
-    // Get the final segment key
-    char *final_key = ar_string_path_segment(key, '.', final_segment_index);
+    // Build the parent path (all segments except the last one)
+    char parent_path[256] = {0}; // Use fixed buffer for simplicity
+    
+    for (size_t i = 0; i < segment_count - 1; i++) {
+        char *segment = ar_string_path_segment(key, '.', i);
+        if (!segment) {
+            return false;
+        }
+        
+        // Add segment to parent path
+        if (i > 0) {
+            strncat(parent_path, ".", sizeof(parent_path) - strlen(parent_path) - 1);
+        }
+        strncat(parent_path, segment, sizeof(parent_path) - strlen(parent_path) - 1);
+        free(segment);
+    }
+    
+    // Get the final key segment
+    char *final_key = ar_string_path_segment(key, '.', segment_count - 1);
     if (!final_key) {
+        return false;
+    }
+    
+    // Get the parent map data - this will fail if any part of the path doesn't exist
+    // or if any part of the path is not a map
+    data_t *parent_data = ar_data_get_map_data(data, parent_path);
+    if (!parent_data || ar_data_get_type(parent_data) != DATA_MAP) {
+        free(final_key);
+        return false;
+    }
+    
+    // Get the map from the parent
+    map_t *target_map = ar_data_get_map(parent_data);
+    if (!target_map) {
+        free(final_key);
         return false;
     }
     
@@ -500,15 +463,47 @@ bool ar_data_set_map_double(data_t *data, const char *key, double value) {
     }
     
     // Handle path-based access for keys with dots
-    size_t final_segment_index = 0;
-    map_t *target_map = ensure_path_exists(data, key, &final_segment_index);
-    if (!target_map) {
+    // Extract the parent path and final key
+    size_t segment_count = ar_string_path_count(key, '.');
+    if (segment_count == 0) {
         return false;
     }
     
-    // Get the final segment key
-    char *final_key = ar_string_path_segment(key, '.', final_segment_index);
+    // Build the parent path (all segments except the last one)
+    char parent_path[256] = {0}; // Use fixed buffer for simplicity
+    
+    for (size_t i = 0; i < segment_count - 1; i++) {
+        char *segment = ar_string_path_segment(key, '.', i);
+        if (!segment) {
+            return false;
+        }
+        
+        // Add segment to parent path
+        if (i > 0) {
+            strncat(parent_path, ".", sizeof(parent_path) - strlen(parent_path) - 1);
+        }
+        strncat(parent_path, segment, sizeof(parent_path) - strlen(parent_path) - 1);
+        free(segment);
+    }
+    
+    // Get the final key segment
+    char *final_key = ar_string_path_segment(key, '.', segment_count - 1);
     if (!final_key) {
+        return false;
+    }
+    
+    // Get the parent map data - this will fail if any part of the path doesn't exist
+    // or if any part of the path is not a map
+    data_t *parent_data = ar_data_get_map_data(data, parent_path);
+    if (!parent_data || ar_data_get_type(parent_data) != DATA_MAP) {
+        free(final_key);
+        return false;
+    }
+    
+    // Get the map from the parent
+    map_t *target_map = ar_data_get_map(parent_data);
+    if (!target_map) {
+        free(final_key);
         return false;
     }
     
@@ -581,15 +576,47 @@ bool ar_data_set_map_string(data_t *data, const char *key, const char *value) {
     }
     
     // Handle path-based access for keys with dots
-    size_t final_segment_index = 0;
-    map_t *target_map = ensure_path_exists(data, key, &final_segment_index);
-    if (!target_map) {
+    // Extract the parent path and final key
+    size_t segment_count = ar_string_path_count(key, '.');
+    if (segment_count == 0) {
         return false;
     }
     
-    // Get the final segment key
-    char *final_key = ar_string_path_segment(key, '.', final_segment_index);
+    // Build the parent path (all segments except the last one)
+    char parent_path[256] = {0}; // Use fixed buffer for simplicity
+    
+    for (size_t i = 0; i < segment_count - 1; i++) {
+        char *segment = ar_string_path_segment(key, '.', i);
+        if (!segment) {
+            return false;
+        }
+        
+        // Add segment to parent path
+        if (i > 0) {
+            strncat(parent_path, ".", sizeof(parent_path) - strlen(parent_path) - 1);
+        }
+        strncat(parent_path, segment, sizeof(parent_path) - strlen(parent_path) - 1);
+        free(segment);
+    }
+    
+    // Get the final key segment
+    char *final_key = ar_string_path_segment(key, '.', segment_count - 1);
     if (!final_key) {
+        return false;
+    }
+    
+    // Get the parent map data - this will fail if any part of the path doesn't exist
+    // or if any part of the path is not a map
+    data_t *parent_data = ar_data_get_map_data(data, parent_path);
+    if (!parent_data || ar_data_get_type(parent_data) != DATA_MAP) {
+        free(final_key);
+        return false;
+    }
+    
+    // Get the map from the parent
+    map_t *target_map = ar_data_get_map(parent_data);
+    if (!target_map) {
+        free(final_key);
         return false;
     }
     

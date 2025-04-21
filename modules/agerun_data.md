@@ -14,6 +14,7 @@ The data module (`agerun_data`) provides a type-safe data storage system built o
 - **Dependencies**: Depends on the map module for underlying storage
 - **Type-Specific Creators**: Specialized functions for creating different data types
 - **Path-Based Access**: Support for accessing nested maps using dot-separated paths (e.g., "user.address.city")
+- **Fail-Fast Path Operations**: Path-based setters fail if intermediate maps don't exist, ensuring predictable behavior
 
 ## API Reference
 
@@ -145,7 +146,8 @@ const data_t *ar_data_get_map_data(const data_t *data, const char *key);
  * @param data Pointer to the map data to modify
  * @param key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
  * @param value The integer value to store
- * @return true if successful, false if data is NULL, not a map, or allocation failure
+ * @return true if successful, false if data is NULL, not a map, path doesn't exist, or allocation failure
+ * @note For paths with multiple segments, all intermediate segments must exist and be maps
  */
 bool ar_data_set_map_integer(data_t *data, const char *key, int value);
 
@@ -154,7 +156,8 @@ bool ar_data_set_map_integer(data_t *data, const char *key, int value);
  * @param data Pointer to the map data to modify
  * @param key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
  * @param value The double value to store
- * @return true if successful, false if data is NULL, not a map, or allocation failure
+ * @return true if successful, false if data is NULL, not a map, path doesn't exist, or allocation failure
+ * @note For paths with multiple segments, all intermediate segments must exist and be maps
  */
 bool ar_data_set_map_double(data_t *data, const char *key, double value);
 
@@ -163,7 +166,8 @@ bool ar_data_set_map_double(data_t *data, const char *key, double value);
  * @param data Pointer to the map data to modify
  * @param key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
  * @param value The string value to store (will be copied)
- * @return true if successful, false if data is NULL, not a map, or allocation failure
+ * @return true if successful, false if data is NULL, not a map, path doesn't exist, or allocation failure
+ * @note For paths with multiple segments, all intermediate segments must exist and be maps
  */
 bool ar_data_set_map_string(data_t *data, const char *key, const char *value);
 ```
@@ -345,8 +349,23 @@ ar_data_destroy(map_data);
 // Create a root map
 data_t *root_map = ar_data_create_map();
 
-// Set nested values using path-based setters
-// These automatically create intermediate maps as needed
+// First, we need to create all intermediate maps manually
+// Create the user map
+data_t *user_map = ar_data_create_map();
+ar_map_set(ar_data_get_map(root_map), "user", user_map);
+
+// Create the profile, contact, and address maps
+data_t *profile_map = ar_data_create_map();
+data_t *contact_map = ar_data_create_map();
+data_t *address_map = ar_data_create_map();
+
+// Add them to the user map
+ar_map_set(ar_data_get_map(user_map), "profile", profile_map);
+ar_map_set(ar_data_get_map(user_map), "contact", contact_map);
+ar_map_set(ar_data_get_map(user_map), "address", address_map);
+
+// Now we can set values using path-based setters
+// (intermediate maps must exist for this to succeed)
 ar_data_set_map_string(root_map, "user.profile.name", "John Doe");
 ar_data_set_map_integer(root_map, "user.profile.age", 30);
 ar_data_set_map_string(root_map, "user.contact.email", "john.doe@example.com");
@@ -367,7 +386,7 @@ printf("Age: %d\n", age);
 printf("Email: %s\n", email);
 printf("Address: %s, %s %d\n", street, city, zip);
 
-// Update a nested value
+// Update a nested value (will succeed because path exists)
 ar_data_set_map_integer(root_map, "user.profile.age", 31);
 int updated_age = ar_data_get_map_integer(root_map, "user.profile.age");
 printf("Updated age: %d\n", updated_age);
@@ -376,18 +395,22 @@ printf("Updated age: %d\n", updated_age);
 const char *missing = ar_data_get_map_string(root_map, "user.profile.nickname");
 printf("Missing value: %s\n", missing ? missing : "NULL");
 
-// Path-based setters can convert non-map values to maps
-// First set a string value at "config"
-ar_data_set_map_string(root_map, "config", "settings");
+// Attempt to set a value on a non-existent path will fail
+bool success = ar_data_set_map_integer(root_map, "user.settings.enabled", 1);
+printf("Set on non-existent path succeeded: %s\n", success ? "yes" : "no"); // Will print "no"
 
-// Then set a nested value, which will convert "config" to a map
-ar_data_set_map_integer(root_map, "config.enabled", 1);
+// To add values at a new path, we must first create the intermediate maps
+data_t *settings_map = ar_data_create_map();
+ar_map_set(ar_data_get_map(user_map), "settings", settings_map);
 
-// The old string value is replaced, and we can access the new nested value
-int enabled = ar_data_get_map_integer(root_map, "config.enabled");
-printf("Config enabled: %d\n", enabled);
+// Now we can set values at this path
+success = ar_data_set_map_integer(root_map, "user.settings.enabled", 1);
+printf("Set on newly created path succeeded: %s\n", success ? "yes" : "no"); // Will print "yes"
+int enabled = ar_data_get_map_integer(root_map, "user.settings.enabled");
+printf("Settings enabled: %d\n", enabled);
 
-// Cleanup
+// Cleanup - we need to free only the root map as the set operations took ownership
+// of the other maps we created
 ar_data_destroy(root_map);
 ```
 
@@ -397,7 +420,16 @@ ar_data_destroy(root_map);
 // Create a root map
 data_t *root_map = ar_data_create_map();
 
-// Set nested values using path-based setters
+// Create the needed intermediate maps manually
+data_t *user_map = ar_data_create_map();
+ar_map_set(ar_data_get_map(root_map), "user", user_map);
+
+data_t *profile_map = ar_data_create_map();
+data_t *stats_map = ar_data_create_map();
+ar_map_set(ar_data_get_map(user_map), "profile", profile_map);
+ar_map_set(ar_data_get_map(user_map), "stats", stats_map);
+
+// Now set nested values using path-based setters
 ar_data_set_map_string(root_map, "user.profile.name", "John Doe");
 ar_data_set_map_integer(root_map, "user.profile.age", 30);
 ar_data_set_map_double(root_map, "user.stats.height", 185.5);
@@ -410,8 +442,8 @@ ar_data_set_map_integer(scores_map, "science", 87);
 ar_data_set_map_double(scores_map, "average", 91.0);
 
 // Add the scores map to the user map
-map_t *user_map = ar_data_get_map(ar_data_get_map_data(root_map, "user"));
-ar_map_set(user_map, "scores", scores_map);
+map_t *user_map_ptr = ar_data_get_map(ar_data_get_map_data(root_map, "user"));
+ar_map_set(user_map_ptr, "scores", scores_map);
 
 // Access nested data directly with ar_data_get_map_data
 const data_t *profile_data = ar_data_get_map_data(root_map, "user.profile");
@@ -490,7 +522,9 @@ ar_data_destroy(root_map);
 - When using map-data setter functions to update existing values, the old data is properly destroyed to prevent memory leaks
 - Path-based access functions parse and navigate dot-separated paths (e.g., "user.address.city") to access or modify nested maps
 - Path-based get functions traverse the path segments, returning default values if any segment doesn't exist or isn't a map
-- Path-based set functions automatically create any intermediate maps needed when setting values at a specific path
-- Path-based set functions will replace non-map values with maps if needed when an intermediate segment exists but isn't a map
+- Path-based set functions require all intermediate segments to exist and be maps - they will fail if any part of the path doesn't exist
+- Path-based set functions no longer automatically create intermediate maps when setting values at a specific path
+- Path-based set functions will return false if attempting to set values on non-existent paths
 - Path handling functions manage memory properly, freeing any temporary segments after use
 - The `ar_data_get_map_data()` function allows direct access to the data structure at a specified path, enabling type checking and accessing values of any type
+- The path-based functions rely on the `ar_data_get_map_data()` function to validate paths before attempting operations

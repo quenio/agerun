@@ -569,26 +569,65 @@ static void test_map_data_path_setters(void) {
     // Given a root map data structure
     data_t *root_map = ar_data_create_map();
     
-    // When we set values using path-based setters for paths that don't exist yet
-    printf("Setting integer value...\n");
+    // When we try to set values using path-based setters for paths that don't exist yet
+    printf("Setting integer value on non-existent path...\n");
     bool set_int_result = ar_data_set_map_integer(root_map, "user.preferences.notifications", 1);
-    printf("Testing integer value directly after setting...\n");
+    
+    // Then the operation should fail since the paths don't exist
+    assert(!set_int_result);
+    
+    printf("Setting double value on non-existent path...\n");
+    bool set_double_result = ar_data_set_map_double(root_map, "user.account.balance", 1250.75);
+    
+    // Then the operation should fail since the paths don't exist
+    assert(!set_double_result);
+    
+    printf("Setting string value on non-existent path...\n");
+    bool set_string_result = ar_data_set_map_string(root_map, "user.profile.email", "john.doe@example.com");
+    
+    // Then the operation should fail since the paths don't exist
+    assert(!set_string_result);
+    
+    // First create intermediate maps for a proper test
+    // Create the intermediate maps for a test path
+    data_t *user_map = ar_data_create_map();
+    data_t *prefs_map = ar_data_create_map();
+    data_t *account_map = ar_data_create_map();
+    data_t *profile_map = ar_data_create_map();
+    
+    // Add to root
+    map_t *root_map_ref = ar_data_get_map(root_map);
+    ar_map_set(root_map_ref, "user", user_map);
+    
+    // Add to user map
+    map_t *user_map_ref = ar_data_get_map(user_map);
+    ar_map_set(user_map_ref, "preferences", prefs_map);
+    ar_map_set(user_map_ref, "account", account_map);
+    ar_map_set(user_map_ref, "profile", profile_map);
+    
+    // Now set on valid paths
+    printf("Setting integer value on valid path...\n");
+    set_int_result = ar_data_set_map_integer(root_map, "user.preferences.notifications", 1);
+    printf("Set integer result: %d\n", set_int_result ? 1 : 0);
+    printf("Testing integer value after setting...\n");
     int int_val = ar_data_get_map_integer(root_map, "user.preferences.notifications");
     printf("integer value: %d\n", int_val);
     
-    printf("Setting double value...\n");
-    bool set_double_result = ar_data_set_map_double(root_map, "user.account.balance", 1250.75);
-    printf("Testing double value directly after setting...\n");
+    printf("Setting double value on valid path...\n");
+    set_double_result = ar_data_set_map_double(root_map, "user.account.balance", 1250.75);
+    printf("Set double result: %d\n", set_double_result ? 1 : 0);
+    printf("Testing double value after setting...\n");
     double double_val = ar_data_get_map_double(root_map, "user.account.balance");
     printf("double value: %f\n", double_val);
     
-    printf("Setting string value...\n");
-    bool set_string_result = ar_data_set_map_string(root_map, "user.profile.email", "john.doe@example.com");
-    printf("Testing string value directly after setting...\n");
+    printf("Setting string value on valid path...\n");
+    set_string_result = ar_data_set_map_string(root_map, "user.profile.email", "john.doe@example.com");
+    printf("Set string result: %d\n", set_string_result ? 1 : 0);
+    printf("Testing string value after setting...\n");
     const char *string_val = ar_data_get_map_string(root_map, "user.profile.email");
     printf("string value: %s\n", string_val ? string_val : "NULL");
     
-    // Then the operations should succeed and create the necessary intermediate maps
+    // Then the operations on valid paths should succeed
     assert(set_int_result);
     assert(set_double_result);
     assert(set_string_result);
@@ -613,19 +652,16 @@ static void test_map_data_path_setters(void) {
     assert(update_double);
     assert(update_string);
     
-    // When we update paths where some segments are not maps
+    // When we set a value at a non-map location, it should fail
     // First, set a string value
     ar_data_set_map_string(root_map, "config", "settings");
     
     // Then try to set a nested value through it
+    printf("Setting nested value through non-map node...\n");
     bool invalid_path = ar_data_set_map_integer(root_map, "config.value", 123);
     
-    // It should succeed by replacing the non-map value with a map
-    assert(invalid_path);
-    
-    // And the new value should be retrievable
-    int config_value = ar_data_get_map_integer(root_map, "config.value");
-    assert(config_value == 123);
+    // It should fail since "config" is a string, not a map
+    assert(!invalid_path);
     
     // Cleanup
     ar_data_destroy(root_map);
