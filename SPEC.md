@@ -56,6 +56,51 @@ Both the list and map structures are implemented as opaque types to maintain enc
 
 Agents can use the following expressions and instructions within their method:
 
+### Expression Syntax
+
+The following BNF grammar defines the syntax of expressions allowed in AgeRun instructions:
+
+```
+<expression> ::= <string-literal>
+              | <number-literal>
+              | <variable-access>
+              | <memory-access>
+              | <function-call>
+              | <arithmetic-expression>
+
+<string-literal> ::= '"' <characters> '"'
+
+<number-literal> ::= <integer>
+                  | <double>
+
+<integer> ::= ['-'] <digit> {<digit>}
+<double>  ::= <integer> '.' <digit> {<digit>}
+
+<variable-access> ::= 'message'
+
+<memory-access> ::= 'memory' '[' <expression> ']'
+
+<function-call> ::= <identifier> '(' [<argument-list>] ')'
+<argument-list> ::= <expression> {',' <expression>}
+
+<arithmetic-expression> ::= <expression> <operator> <expression>
+<operator> ::= '+' | '-' | '*' | '/'
+
+<identifier> ::= <letter> {<letter> | <digit> | '_'}
+<characters> ::= {<any-character-except-quote>}
+<digit> ::= '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+<letter> ::= 'a' | 'b' | ... | 'z' | 'A' | 'B' | ... | 'Z'
+```
+
+The expression evaluator follows these rules:
+- String literals are enclosed in double quotes and represent string values
+- Number literals can be either integers (whole numbers) or doubles (floating-point numbers)
+- The special identifier `message` refers to the current message being processed
+- Memory access is done through `memory[key]` where key is any expression that evaluates to a string
+- Function calls take the form `name(arg1, arg2, ...)` and can have zero or more arguments
+- Arithmetic operations can be performed with basic operators: +, -, *, /
+- Type conversion is automatic where possible; integers are promoted to doubles, numeric types can be converted to strings
+
 ### 1. Parsing and Building Strings
 
 - `parse(template: string, input: string) → map`: Extracts values from input based on the template. Always returns a map; if parsing fails, returns an empty map. The template parameter must be a STRING type.
