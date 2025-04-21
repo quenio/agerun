@@ -65,7 +65,7 @@ The AgeRun system is organized into hierarchical layers, with each layer buildin
                                ▼
 ┌───────────────────────────────────────────────────────────┐
 │                      Core Modules                         │
-│  (agerun_string, agerun_map, agerun_list)                 │
+│  (agerun_string, agerun_list, agerun_map)                 │
 └───────────────────────────────────────────────────────────┘
 ```
 
@@ -87,17 +87,6 @@ The [string module](agerun_string.md) provides utility functions for string mani
 - **Memory Management**: Clearly documents ownership transfers for allocated strings
 - **No Dependencies**: Functions as a standalone utility module with no dependencies on other modules
 
-### Map Module (`agerun_map`)
-
-The [map module](agerun_map.md) provides a fundamental key-value storage implementation that is used throughout the system. It has the following characteristics:
-
-- **Key-Value Storage**: Stores string keys mapped to generic pointers (const void*) to values
-- **Reference-Based**: The map stores references to keys and values rather than duplicating them
-- **Type Safety**: Uses const qualifiers for keys and values to prevent unwanted modifications
-- **No Memory Management**: Does not manage memory for either keys or values
-- **No Dependencies**: This is a foundational module with no dependencies on other modules
-- **Opaque Type**: The map structure is opaque, encapsulating implementation details from clients
-
 ### List Module (`agerun_list`)
 
 The [list module](agerun_list.md) provides a doubly-linked list implementation for storing pointer items:
@@ -110,6 +99,17 @@ The [list module](agerun_list.md) provides a doubly-linked list implementation f
 - **Memory-Efficient**: Implements a doubly-linked list with minimal overhead
 - **No Dependencies**: Functions independently without relying on other modules
 - **Opaque Type**: The list structure is opaque, encapsulating implementation details
+
+### Map Module (`agerun_map`)
+
+The [map module](agerun_map.md) provides a fundamental key-value storage implementation that is used throughout the system. It has the following characteristics:
+
+- **Key-Value Storage**: Stores string keys mapped to generic pointers (const void*) to values
+- **Reference-Based**: The map stores references to keys and values rather than duplicating them
+- **Type Safety**: Uses const qualifiers for keys and values to prevent unwanted modifications
+- **No Memory Management**: Does not manage memory for either keys or values
+- **No Dependencies**: This is a foundational module with no dependencies on other modules
+- **Opaque Type**: The map structure is opaque, encapsulating implementation details from clients
 
 ## Foundation Modules
 
