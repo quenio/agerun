@@ -58,8 +58,8 @@ Agents can use the following expressions and instructions within their method:
 
 ### 1. Parsing and Building Strings
 
-- `parse(template: string, input: string) → dict`: Extracts values from input based on the template. Always returns a dictionary; if parsing fails, returns an empty dictionary.
-- `build(template: string, values: dict) → string`: Constructs a string by replacing placeholders in template with corresponding values from values. Always returns a string; placeholders without corresponding values remain unchanged.
+- `parse(template: string, input: string) → map`: Extracts values from input based on the template. Always returns a map; if parsing fails, returns an empty map. The template parameter must be a STRING type.
+- `build(template: string, values: map) → string`: Constructs a string by replacing placeholders in template with corresponding values from values. Always returns a string; placeholders without corresponding values remain unchanged. The template parameter must be a STRING type.
 
 ### 2. Messaging
 
@@ -86,7 +86,7 @@ Agents can use the following expressions and instructions within their method:
 ### 6. Agent Management
 
 - `method(name: string, instructions: string, previous_version: integer = 0, backward_compatible: boolean = true, persist: boolean = false) → version`: Defines a new method with the specified name and instruction code. If `previous_version` is given, it builds on the prior version. If `backward_compatible` is true, existing agents will upgrade automatically. Returns the new version number. If the instructions cannot be parsed or compiled, returns 0.
-- `create(method_name: string, version: integer = null, context: dict = null) → agent_id`: Creates a new agent instance based on the specified method name and (optionally) version. If no version is specified, the latest available version will be used. An optional context may be provided. Returns a unique agent ID.
+- `create(method_name: string, version: integer = null, context: map = null) → agent_id`: Creates a new agent instance based on the specified method name and (optionally) version. If no version is specified, the latest available version will be used. An optional context may be provided. Returns a unique agent ID.
 - `destroy(agent_id: integer) → boolean`: Attempts to destroy the specified agent. Returns true if successful, or false if the agent does not exist or is already destroyed.
 
 ## Message Handling

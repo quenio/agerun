@@ -41,6 +41,7 @@ IMPORTANT:
   - The `test` target automatically changes to the `bin` directory before running tests
   - The `run` target automatically changes to the `bin` directory before running the executable
   - When running these targets, you can simply use `make test` and `make run` from the top level
+- When updating markdown files or other documentation, it is not necessary to run tests and executable as these changes don't affect functionality
 
 ## Project Structure
 
