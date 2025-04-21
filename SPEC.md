@@ -149,7 +149,8 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
 <arithmetic-expression> ::= <expression> <arithmetic-operator> <expression>
 <arithmetic-operator> ::= '+' | '-' | '*' | '/'
 
-<comparison-expression> ::= <expression> '=' <expression>
+<comparison-expression> ::= <expression> <comparison-operator> <expression>
+<comparison-operator> ::= '=' | '<>' | '<' | '<=' | '>' | '>='
 
 <identifier> ::= <letter> {<letter> | <digit> | '_'}
 <characters> ::= {<any-character-except-quote>}
@@ -163,7 +164,13 @@ The expression evaluator follows these rules:
 - The special identifier `message` refers to the current message being processed
 - Memory access is done through `memory[key]` where key is any expression that evaluates to a string
 - Arithmetic operations can be performed with basic operators: +, -, *, /
-- Comparison operations use the equality operator `=` to compare two values for equality
+- Comparison operations use relational operators to compare values:
+  - `=` equality (returns true if the values are equal)
+  - `<>` inequality (returns true if the values are not equal)
+  - `<` less than (returns true if the left value is less than the right value)
+  - `<=` less than or equal to (returns true if the left value is less than or equal to the right value)
+  - `>` greater than (returns true if the left value is greater than the right value)
+  - `>=` greater than or equal to (returns true if the left value is greater than or equal to the right value)
 - Type conversion is automatic where possible; integers are promoted to doubles, numeric types can be converted to strings
 
 ### 1. Parsing and Building Strings
