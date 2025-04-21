@@ -6,6 +6,8 @@
 
 /**
  * A key-value mapping structure that associates string keys with pointer values.
+ * The map never owns or manages the memory for keys or values.
+ * The caller is always responsible for allocating and freeing memory for both keys and values.
  */
 typedef struct map_s map_t;
 
@@ -15,10 +17,9 @@ typedef struct map_s map_t;
  * @param value The value for the current entry
  * @param arg Additional argument passed to the iterator function
  * @return true to continue iteration, false to stop
- * @note This intentionally uses const-qualified char* for the key to match the map storage,
- *       but the internal implementation does NOT pass ownership of keys or values to the caller.
- *       The callback must NOT free the key or value pointers during iteration, as they are still
- *       owned by the map. The map module only provides access to these pointers during iteration.
+ * @note The map does not own keys or values; it only provides access to these pointers during iteration.
+ *       The caller must not free the key or value pointers during iteration, but is responsible
+ *       for their eventual cleanup outside of the iteration context.
  */
 typedef bool (*map_iterator_t)(const char *key, void *value, void *arg);
 
@@ -42,8 +43,9 @@ void* ar_map_get(const map_t *map, const char *key);
  * @param key Key to set (the pointer is stored directly, not copied)
  * @param ref Pointer to value to reference
  * @return true if successful, false otherwise
- * @note The caller is responsible for ensuring the key string remains valid
- *       for the lifetime of the map entry.
+ * @note The caller is responsible for allocating and freeing the key string.
+ *       The key string must remain valid for the lifetime of the map entry.
+ *       The map never takes ownership of keys or values.
  */
 bool ar_map_set(map_t *map, const char *key, void *ref);
 
@@ -59,8 +61,9 @@ bool ar_map_iterate(const map_t *map, map_iterator_t iterator, void *arg);
 /**
  * Free all resources in a map
  * @param map Map to free
- * @note This function does not free memory for keys or referenced values.
- *       The caller is responsible for managing those resources.
+ * @note This function only frees the map structure itself.
+ *       It does not free memory for keys or referenced values.
+ *       The caller is responsible for freeing all keys and values that were added to the map.
  */
 void ar_map_destroy(map_t *map);
 
