@@ -77,17 +77,53 @@ The following BNF grammar defines the syntax of individual instructions allowed 
 
 ```
 <instruction> ::= <assignment>
-               | <expression-statement>
+               | <function-instruction>
+               | <conditional-instruction>
                
 <assignment> ::= <variable> ':=' <expression>
-<variable> ::= <identifier>
 
-<expression-statement> ::= <expression>
+<function-instruction> ::= [<variable> ':='] <function-call>
+
+<function-call> ::= <send-function>
+                 | <parse-function>
+                 | <build-function>
+                 | <method-function>
+                 | <create-function>
+                 | <destroy-function>
+                 | <equals-function>
+
+<send-function> ::= 'send' '(' <expression> ',' <expression> ')'
+<parse-function> ::= 'parse' '(' <expression> ',' <expression> ')'
+<build-function> ::= 'build' '(' <expression> ',' <expression> ')'
+<method-function> ::= 'method' '(' <expression> ',' <expression> [',' <expression> [',' <expression> [',' <expression>]]] ')'
+<create-function> ::= 'create' '(' <expression> [',' <expression> [',' <expression>]] ')'
+<destroy-function> ::= 'destroy' '(' <expression> ')'
+<equals-function> ::= 'equals' '(' <expression> ',' <expression> ')'
+
+<conditional-instruction> ::= [<variable> ':='] 'if' '(' <expression> ',' <expression> ',' <expression> ')'
+
+<variable> ::= <identifier>
 ```
 
-Instructions in an agent method can be of two types:
-- An assignment, which stores a value in the agent's memory using the `:=` operator
-- An expression statement, which evaluates an expression and discards the result
+Instructions in an agent method can be of three types:
+- An assignment, which stores the result of an expression in the agent's memory using the `:=` operator
+- A function call instruction, which must be one of the supported system functions:
+  - `send` - Send a message to another agent
+  - `parse` - Extract values from a string using a template
+  - `build` - Construct a string using a template and values
+  - `method` - Define a new agent method
+  - `create` - Create a new agent instance
+  - `destroy` - Destroy an existing agent
+  - `equals` - Compare two values for equality
+- A conditional instruction using `if`, which evaluates a condition and returns one of two values based on the result
+
+Function call and conditional instructions can optionally assign their result to a variable. For example:
+- `send(agent_id, message)` - Call the function without storing the result
+- `success := send(agent_id, message)` - Store the result in a memory variable
+- `if(condition, true_value, false_value)` - Evaluate without storing the result
+- `result := if(condition, true_value, false_value)` - Store the result in a memory variable
+
+Standalone expressions that are not part of an assignment or one of the allowed function calls are not permitted as instructions.
 
 ### Expression Syntax
 
@@ -98,7 +134,6 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
               | <number-literal>
               | <variable-access>
               | <memory-access>
-              | <function-call>
               | <arithmetic-expression>
 
 <string-literal> ::= '"' <characters> '"'
@@ -112,9 +147,6 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
 <variable-access> ::= 'message'
 
 <memory-access> ::= 'memory' '[' <expression> ']'
-
-<function-call> ::= <identifier> '(' [<argument-list>] ')'
-<argument-list> ::= <expression> {',' <expression>}
 
 <arithmetic-expression> ::= <expression> <operator> <expression>
 <operator> ::= '+' | '-' | '*' | '/'
