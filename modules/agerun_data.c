@@ -1,5 +1,6 @@
 #include "agerun_data.h"
 #include "agerun_string.h"
+#include "agerun_list.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -15,6 +16,7 @@ struct data_s {
         char *string_ref;
         map_t *map_ref;
     } data;
+    list_t *keys;  // List of keys that belong to this data's map (only used for DATA_MAP type)
 };
 
 /**
@@ -30,6 +32,7 @@ data_t* ar_data_create_integer(int value) {
     
     data->type = DATA_INTEGER;
     data->data.int_value = value;
+    data->keys = NULL;
     return data;
 }
 
@@ -46,6 +49,7 @@ data_t* ar_data_create_double(double value) {
     
     data->type = DATA_DOUBLE;
     data->data.double_value = value;
+    data->keys = NULL;
     return data;
 }
 
@@ -67,6 +71,7 @@ data_t* ar_data_create_string(const char *value) {
         return NULL;
     }
     
+    data->keys = NULL;
     return data;
 }
 
@@ -83,6 +88,14 @@ data_t* ar_data_create_map(void) {
     data->type = DATA_MAP;
     data->data.map_ref = ar_map_create();
     if (!data->data.map_ref) {
+        free(data);
+        return NULL;
+    }
+    
+    // Create a list to track keys
+    data->keys = ar_list_create();
+    if (!data->keys) {
+        ar_map_destroy(data->data.map_ref);
         free(data);
         return NULL;
     }
@@ -149,31 +162,50 @@ void ar_data_destroy(data_t *data) {
         data->data.string_ref = NULL;
     } else if (data->type == DATA_MAP && data->data.map_ref) {
         // For maps, we need to:
-        // 1. Collect all the data values and keys stored in the map
-        // 2. Free the map structure itself since it doesn't own the keys and values
-        // 3. Then free all the keys and values separately
+        // 1. Collect all the data values stored in the map (for later cleanup)
+        // 2. Free the map structure itself
+        // 3. Free all keys tracked in our list
+        // 4. Free the list itself
+        // 5. Then free all the data values
         
         struct cleanup_list list = { NULL };
         
-        // Collect all map entries for later cleanup
+        // Collect all data values for later cleanup
         ar_map_iterate(data->data.map_ref, collect_map_entries, &list);
         
-        // Destroy the map structure first - it doesn't own the keys and values
+        // Destroy the map structure first
         ar_map_destroy(data->data.map_ref);
         data->data.map_ref = NULL;
         
-        // Now process the collected entries
+        // Free all tracked keys
+        if (data->keys) {
+            size_t key_count = 0;
+            void **key_ptrs = ar_list_items(data->keys, &key_count);
+            
+            if (key_ptrs) {
+                for (size_t i = 0; i < key_count; i++) {
+                    free(key_ptrs[i]); // Free each key string
+                }
+                free(key_ptrs); // Free the array itself
+            }
+            
+            // Destroy the key tracking list
+            ar_list_destroy(data->keys);
+            data->keys = NULL;
+        }
+        
+        // Now process the collected data values
         struct cleanup_entry *current = list.head;
         while (current) {
             struct cleanup_entry *next = current->next;
             
-            // Free the key string
+            // Free the temporary key copy made by collect_map_entries
             free(current->key);
             
             // Free the data value
             ar_data_destroy(current->value);
             
-            // Free the list entry
+            // Free the list entry itself
             free(current);
             
             current = next;
@@ -462,8 +494,23 @@ bool ar_data_set_map_data(data_t *data, const char *key, data_t *value) {
         // Get the existing data for later cleanup
         data_t *prev_data = ar_map_get(map, key);
         
+        // Create a copy of the key
+        char *key_copy = strdup(key);
+        if (!key_copy) {
+            return false;
+        }
+        
         // Set the new value
-        if (!ar_map_set(map, strdup(key), value)) {
+        if (!ar_map_set(map, key_copy, value)) {
+            free(key_copy);
+            return false;
+        }
+        
+        // Add the key to our tracking list
+        if (!ar_list_append(data->keys, key_copy)) {
+            // Unlikely, but handle failure
+            ar_map_set(map, key, prev_data); // Try to restore previous state
+            free(key_copy);
             return false;
         }
         
