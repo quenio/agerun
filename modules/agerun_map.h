@@ -59,6 +59,23 @@ bool ar_map_set(map_t *map, const char *key, void *ref);
 bool ar_map_iterate(const map_t *map, map_iterator_t iterator, void *arg);
 
 /**
+ * Get the number of used entries in the map
+ * @param map The map to count
+ * @return The number of used entries
+ */
+size_t ar_map_count(const map_t *map);
+
+/**
+ * Get an array of all refs in the map
+ * @param map The map to get refs from
+ * @return Array of pointers to refs, or NULL on failure
+ * @note The caller is responsible for freeing the returned array using free().
+ *       The refs themselves are not copied and remain owned by the caller.
+ *       The caller can use ar_map_count() to determine the size of the array.
+ */
+void** ar_map_refs(const map_t *map);
+
+/**
  * Free all resources in a map
  * @param map Map to free
  * @note This function only frees the map structure itself.

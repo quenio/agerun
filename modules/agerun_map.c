@@ -122,6 +122,51 @@ bool ar_map_iterate(const map_t *map, map_iterator_t iterator, void *arg) {
 }
 
 /**
+ * Get the number of used entries in the map
+ * @param map The map to count
+ * @return The number of used entries
+ */
+size_t ar_map_count(const map_t *map) {
+    if (!map) {
+        return 0;
+    }
+    
+    return (size_t)map->count;
+}
+
+/**
+ * Get an array of all refs in the map
+ * @param map The map to get refs from
+ * @return Array of pointers to refs, or NULL on failure
+ * @note The caller is responsible for freeing the returned array using free().
+ *       The refs themselves are not copied and remain owned by the caller.
+ *       The caller can use ar_map_count() to determine the size of the array.
+ */
+void** ar_map_refs(const map_t *map) {
+    if (!map) {
+        return NULL;
+    }
+    
+    if (map->count == 0) {
+        return NULL;
+    }
+    
+    void **refs = (void**)malloc((size_t)map->count * sizeof(void*));
+    if (!refs) {
+        return NULL;
+    }
+    
+    size_t index = 0;
+    for (int i = 0; i < MAP_SIZE && index < (size_t)map->count; i++) {
+        if (map->entries[i].is_used && map->entries[i].key) {
+            refs[index++] = map->entries[i].ref;
+        }
+    }
+    
+    return refs;
+}
+
+/**
  * Free all resources in a map
  * @param map Map to free
  */
