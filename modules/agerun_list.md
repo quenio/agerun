@@ -258,6 +258,8 @@ ar_list_destroy(allocations);
 - NULL items can be stored in the list
 - All functions handle NULL list parameters gracefully
 - The list can be used efficiently as a stack (LIFO), queue (FIFO), or a standard list depending on which operations are used
+- The list has completely replaced the queue module in the codebase, providing a more versatile and efficient solution
 - Both stack implementations (LIFO with either end) are now O(1) for all operations
+- Queue operations are also O(1) for all operations (enqueue and dequeue)
 - The list is particularly useful for tracking allocated memory that needs to be freed later
 - The module is used by the data module to track dynamically allocated map keys

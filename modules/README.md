@@ -30,7 +30,7 @@ agerun_executable
 │   ├── agerun_agent
 │   │   ├── agerun_agency
 │   │   ├── agerun_map
-│   │   └── agerun_queue
+│   │   └── agerun_list
 │   ├── agerun_method
 │   │   ├── agerun_methodology
 │   │   │   └── agerun_string
@@ -39,7 +39,7 @@ agerun_executable
 │   │   │   │   ├── agerun_string
 │   │   │   │   ├── agerun_data
 │   │   │   │   ├── agerun_map
-│   │   │   │   └── agerun_queue
+│   │   │   │   └── agerun_list
 │   │   │   ├── agerun_string
 │   │   │   └── agerun_data
 │   │   ├── agerun_data
@@ -48,7 +48,7 @@ agerun_executable
 │   ├── agerun_data
 │   │   ├── agerun_map
 │   │   └── agerun_list
-│   └── agerun_queue
+│   └── agerun_list
 └── agerun_methodology
 ```
 
@@ -65,7 +65,7 @@ The AgeRun system is organized into hierarchical layers, with each layer buildin
                                ▼
 ┌───────────────────────────────────────────────────────────┐
 │                      Core Modules                         │
-│  (agerun_map, agerun_string, agerun_queue)                │
+│  (agerun_map, agerun_string, agerun_list)                 │
 └───────────────────────────────────────────────────────────┘
 ```
 
@@ -98,70 +98,16 @@ The [string module](agerun_string.md) provides utility functions for string mani
 - **Memory Management**: Clearly documents ownership transfers for allocated strings
 - **No Dependencies**: Functions as a standalone utility module with no dependencies on other modules
 
-
-### Queue Module (`agerun_queue`)
-
-The [queue module](agerun_queue.md) provides a generic queue implementation for storing references with the following features:
-
-- **Reference Passing**: Stores and retrieves references in FIFO order
-- **Circular Buffer**: Implements a circular buffer to efficiently manage reference storage
-- **Fixed Capacity**: Provides a fixed maximum capacity of 256 references to prevent unbounded growth
-- **Generic Storage**: Stores void pointers, allowing for any type of reference to be stored
-- **No Memory Management**: Does not manage memory for referenced content, only stores pointers
-- **Minimal Interface**: Provides only essential operations (create, destroy, push, pop, is_empty)
-- **No Dependencies**: Functions independently without relying on other modules
-- **Opaque Type**: The queue structure is opaque, encapsulating implementation details from clients
-
-## Core Modules
-
-Core modules have minimal or no dependencies on other modules and provide essential low-level functionality that other modules build upon. These modules form the base layer of the system architecture and are designed to be simple, focused, and highly reusable.
-
-### Map Module (`agerun_map`)
-
-The [map module](agerun_map.md) provides a fundamental key-value storage implementation that is used throughout the system. It has the following characteristics:
-
-- **Key-Value Storage**: Stores string keys mapped to generic pointers (const void*) to values
-- **Reference-Based**: The map stores references to keys and values rather than duplicating them
-- **Type Safety**: Uses const qualifiers for keys and values to prevent unwanted modifications
-- **No Memory Management**: Does not manage memory for either keys or values
-- **No Dependencies**: This is a foundational module with no dependencies on other modules
-- **Opaque Type**: The map structure is opaque, encapsulating implementation details from clients
-
-### String Module (`agerun_string`)
-
-The [string module](agerun_string.md) provides utility functions for string manipulation with the following features:
-
-- **String Trimming**: Removes leading and trailing whitespace from strings
-- **Safe Character Handling**: Ensures proper handling of character values with safe typecasting
-- **Whitespace Detection**: Provides a safe wrapper for whitespace character identification
-- **Path Manipulation**: Parses and extracts segments from path-like strings with separators
-- **Path Parent Resolution**: Extracts parent paths from hierarchical path strings
-- **Memory Management**: Clearly documents ownership transfers for allocated strings
-- **No Dependencies**: Functions as a standalone utility module with no dependencies on other modules
-
-
-### Queue Module (`agerun_queue`)
-
-The [queue module](agerun_queue.md) provides a generic queue implementation for storing references with the following features:
-
-- **Reference Passing**: Stores and retrieves references in FIFO order
-- **Circular Buffer**: Implements a circular buffer to efficiently manage reference storage
-- **Fixed Capacity**: Provides a fixed maximum capacity of 256 references to prevent unbounded growth
-- **Generic Storage**: Stores void pointers, allowing for any type of reference to be stored
-- **No Memory Management**: Does not manage memory for referenced content, only stores pointers
-- **Minimal Interface**: Provides only essential operations (create, destroy, push, pop, is_empty)
-- **No Dependencies**: Functions independently without relying on other modules
-- **Opaque Type**: The queue structure is opaque, encapsulating implementation details from clients
-
 ### List Module (`agerun_list`)
 
-The [list module](agerun_list.md) provides a simple linked list implementation for storing pointer items:
+The [list module](agerun_list.md) provides a doubly-linked list implementation for storing pointer items:
 
 - **Non-Owning Container**: Stores references without managing memory for the items
-- **Append Operation**: Adds items to the end of the list in O(1) time
+- **Versatile Interface**: Supports both stack (LIFO) and queue (FIFO) operations
+- **Efficient Operations**: O(1) operations for adding and removing from either end of the list
 - **Querying Functions**: Supports checking if a list is empty and getting the count of items
 - **Array Access**: Provides a function to get an array of all items
-- **Memory-Efficient**: Implements a singly-linked list with minimal overhead
+- **Memory-Efficient**: Implements a doubly-linked list with minimal overhead
 - **No Dependencies**: Functions independently without relying on other modules
 - **Opaque Type**: The list structure is opaque, encapsulating implementation details
 

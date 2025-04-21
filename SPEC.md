@@ -38,7 +38,7 @@ This specification defines a lightweight, message-driven agent system where each
 - **Memory Map**: Agents maintain an encapsulated key-value map (memory) for storing state.
 - **Context Map**: Agents can be provided with a read-only context map (context) upon creation.
 
-Both the queue and map structures are implemented as opaque types to maintain encapsulation and protect internal implementation details.
+Both the list and map structures are implemented as opaque types to maintain encapsulation and protect internal implementation details.
 
 ## Method Expressions and Instructions
 
