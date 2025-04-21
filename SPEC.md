@@ -52,9 +52,42 @@ All data types are implemented as opaque structures with proper memory managemen
 
 Both the list and map structures are implemented as opaque types to maintain encapsulation and protect internal implementation details.
 
+## Method Definition
+
+A method definition consists of a sequence of instructions, with each instruction on a separate line. The following BNF grammar defines the syntax of a method definition:
+
+```
+<method-definition> ::= <instruction> {<newline> <instruction>} <newline>
+<newline> ::= '\n'
+```
+
+Important rules for method definitions:
+- Each instruction must be on its own line
+- Instructions cannot be combined on the same line
+- Even the last instruction must be followed by a newline
+- Empty lines are ignored
+
 ## Method Expressions and Instructions
 
 Agents can use the following expressions and instructions within their method:
+
+### Instruction Syntax
+
+The following BNF grammar defines the syntax of individual instructions allowed in AgeRun methods:
+
+```
+<instruction> ::= <assignment>
+               | <expression-statement>
+               
+<assignment> ::= <variable> ':=' <expression>
+<variable> ::= <identifier>
+
+<expression-statement> ::= <expression>
+```
+
+Instructions in an agent method can be of two types:
+- An assignment, which stores a value in the agent's memory using the `:=` operator
+- An expression statement, which evaluates an expression and discards the result
 
 ### Expression Syntax
 
