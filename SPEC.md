@@ -42,7 +42,7 @@ The AgeRun system uses a type-safe data model for storing and manipulating value
 - **LIST**: Ordered collections of values (which can be of any data type).
 - **MAP**: Key-value collections where keys are strings and values can be of any data type.
 
-All data types are implemented as opaque structures with proper memory management and type safety. Messages in the system are represented as STRING values, while agent memory and context are implemented as MAPs that can store any of the supported data types, including nested structures.
+All data types are implemented as opaque structures with proper memory management and type safety. Agent memory and context are implemented as MAPs that can store any of the supported data types, including nested structures.
 
 ## Agent Structure
 
@@ -63,10 +63,11 @@ Agents can use the following expressions and instructions within their method:
 
 ### 2. Messaging
 
-- `send(agent_id: integer, message: string) → boolean`:
+- `send(agent_id: integer, message: data) → boolean`:
   - If `agent_id == 0`: No operation is performed; returns `true`.
   - If `agent_id != 0` and the target agent's queue exists: Enqueues the message; returns `true`.
   - If `agent_id != 0` and the target agent's queue does not exist: Returns `false`.
+  - The `message` parameter can be any supported data type (INTEGER, DOUBLE, STRING, LIST, or MAP).
 
 ### 3. Memory Access
 
@@ -90,12 +91,20 @@ Agents can use the following expressions and instructions within their method:
 
 ## Message Handling
 
+### Message Types:
+
+Messages can be any of the supported data types:
+- **STRING**: Text messages for simple communication.
+- **INTEGER** or **DOUBLE**: Numeric values for direct data exchange.
+- **LIST**: Collections of values for batch processing.
+- **MAP**: Structured data with named fields.
+
 ### Special Messages:
 
-- `__wake__`: Indicates the agent has been created or resumed.
-- `__sleep__`: Indicates the agent is about to be paused or destroyed.
+- `__wake__`: Special STRING message indicating the agent has been created or resumed.
+- `__sleep__`: Special STRING message indicating the agent is about to be paused or destroyed.
 
-**Processing**: All messages, including special ones, are handled by the agent's single method.
+**Processing**: All messages, regardless of their data type and including special ones, are handled by the agent's single method.
 
 ## Agent Creation
 
