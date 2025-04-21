@@ -8,9 +8,9 @@
 // Forward declarations
 static void test_data_creation(void);
 static void test_data_getters(void);
-static void test_integer_values(map_t *map);
-static void test_string_values(map_t *map);
-static void test_nested_maps(map_t *map);
+static void test_integer_values(void);
+static void test_string_values(void);
+static void test_nested_maps(void);
 static void test_map_data_getters(void);
 static void test_map_data_setters(void);
 static void test_map_data_path_getters(void);
@@ -159,110 +159,116 @@ static void test_data_getters(void) {
     printf("Data getter tests passed!\n");
 }
 
-static void test_integer_values(map_t *map) {
+static void test_integer_values(void) {
     printf("Testing integer values in map...\n");
     
-    // Given an integer data item created with the specialized function
-    data_t *int_data = ar_data_create_integer(42);
+    // Create a data wrapper for the map parameter
+    data_t *map_data = ar_data_create_map();
     
-    // When we set the reference in the map
-    bool result = ar_map_set(map, "answer", int_data);
+    // When we set an integer value in the map
+    bool result = ar_data_set_map_integer(map_data, "answer", 42);
     
     // Then the operation should succeed
     assert(result);
     
     // When we retrieve the referenced value from the map
-    const data_t *value = (const data_t*)ar_map_get(map, "answer");
+    const data_t *value = ar_data_get_map_data(map_data, "answer");
     
     // Then the value should be correctly retrieved
     assert(value != NULL);
     assert(ar_data_get_type(value) == DATA_INTEGER);
     assert(ar_data_get_integer(value) == 42);
     
+    // Verify the integer is accessible via getter
+    int int_value = ar_data_get_map_integer(map_data, "answer");
+    assert(int_value == 42);
+    
+    // Cleanup
+    ar_data_destroy(map_data);
+    
     printf("Integer value tests passed!\n");
 }
 
-static void test_string_values(map_t *map) {
+static void test_string_values(void) {
     printf("Testing string values in map...\n");
     
-    // Given a string data item created with the specialized function
-    data_t *string_data = ar_data_create_string("Hello, World!");
+    // Create a data wrapper for the map parameter
+    data_t *map_data = ar_data_create_map();
     
-    // When we set the reference in the map
-    bool result = ar_map_set(map, "greeting", string_data);
+    // When we set a string value in the map
+    bool result = ar_data_set_map_string(map_data, "greeting", "Hello, World!");
     
     // Then the operation should succeed
     assert(result);
     
     // When we retrieve the referenced value from the map
-    const data_t *value = (const data_t*)ar_map_get(map, "greeting");
+    const data_t *value = ar_data_get_map_data(map_data, "greeting");
     
     // Then the value should be correctly retrieved
     assert(value != NULL);
     assert(ar_data_get_type(value) == DATA_STRING);
     assert(strcmp(ar_data_get_string(value), "Hello, World!") == 0);
     
+    // Verify the string is accessible via getter
+    const char *string_value = ar_data_get_map_string(map_data, "greeting");
+    assert(string_value != NULL);
+    assert(strcmp(string_value, "Hello, World!") == 0);
+    
+    // Cleanup
+    ar_data_destroy(map_data);
+    
     printf("String value tests passed!\n");
 }
 
-static void test_nested_maps(map_t *map) {
+static void test_nested_maps(void) {
     printf("Testing nested maps...\n");
     
-    // Given a nested map data item using the specialized function
-    data_t *nested_map_ptr = ar_data_create_map();
+    // Given a data structure to store nested maps
+    data_t *root_data = ar_data_create_map();
+    assert(root_data != NULL);
+    assert(ar_data_get_type(root_data) == DATA_MAP);
     
-    assert(nested_map_ptr != NULL);
-    assert(ar_data_get_type(nested_map_ptr) == DATA_MAP);
-    assert(ar_data_get_map(nested_map_ptr) != NULL);
+    // Create first level map
+    data_t *first_level = ar_data_create_map();
+    assert(first_level != NULL);
     
-    // And data to add to the nested map using the specialized function
-    data_t *nested_int_data = ar_data_create_integer(100);
-    
-    // When we set a reference in the nested map
-    map_t *nested_map = ar_data_get_map(nested_map_ptr);
-    bool result = ar_map_set(nested_map, "count", nested_int_data);
-    
-    // Then the operation should succeed
+    // Set an integer value in the first level map
+    bool result = ar_data_set_map_integer(first_level, "count", 100);
     assert(result);
     
-    // When we add a reference to the nested map to the main map
-    result = ar_map_set(map, "user_data", nested_map_ptr);
-    
-    // Then the operation should succeed
+    // Add the first level map to the root
+    result = ar_data_set_map_data(root_data, "user_data", first_level);
     assert(result);
     
-    // When we retrieve the referenced nested map from the main map
-    // Since we need to get a mutable reference to use ar_map_get, let's get the original one
+    // Verify the value can be retrieved via the path
+    int count_value = ar_data_get_map_integer(root_data, "user_data.count");
+    assert(count_value == 100);
     
-    // Then the nested map should be correctly retrieved
-    // We'll use the original nested_map that we saved earlier instead of retrieving from the map
-    assert(nested_map != NULL);
+    // Create second level map
+    data_t *second_level = ar_data_create_map();
+    assert(second_level != NULL);
     
-    // And its contents should be intact - retrieve the reference from inside the nested map
-    const data_t *nested_value = (const data_t*)ar_map_get(nested_map, "count");
-    assert(nested_value != NULL);
-    assert(ar_data_get_type(nested_value) == DATA_INTEGER);
-    assert(ar_data_get_integer(nested_value) == 100);
-    
-    // Given a third level map using the specialized function
-    data_t *third_level_ptr = ar_data_create_map();
-    data_t *deep_string = ar_data_create_string("Deep value!");
-    
-    // When we set a reference in the third level map
-    map_t *third_level_map = ar_data_get_map(third_level_ptr);
-    result = ar_map_set(third_level_map, "key", deep_string);
-    
-    // Then the operation should succeed
+    // Create third level map with a string value
+    data_t *third_level = ar_data_create_map();
+    assert(third_level != NULL);
+    result = ar_data_set_map_string(third_level, "key", "Deep value!");
     assert(result);
     
-    // When we add a reference to the third level map in the nested map
-    // Need to create a new data_t for the nested value since we can't modify const value
-    data_t *new_nested_value = ar_data_create_map();
-    map_t *new_map = ar_data_get_map(new_nested_value);
-    result = ar_map_set(new_map, "more_data", third_level_ptr);
-    
-    // Then the operation should succeed
+    // Add the third level map to the second level map
+    result = ar_data_set_map_data(second_level, "more_data", third_level);
     assert(result);
+    
+    // Add the second level map to the first level map
+    result = ar_data_set_map_data(first_level, "nested", second_level);
+    assert(result);
+    
+    // Verify deep nested value can be retrieved via path
+    const char *deep_value = ar_data_get_map_string(root_data, "user_data.nested.more_data.key");
+    assert(deep_value != NULL);
+    assert(strcmp(deep_value, "Deep value!") == 0);
+    
+    // Cleanup
+    ar_data_destroy(root_data);
     
     printf("Nested maps tests passed!\n");
 }
@@ -272,19 +278,21 @@ static void test_map_data_getters(void) {
     
     // Given a map data structure with different data types
     data_t *map_data = ar_data_create_map();
-    map_t *map = ar_data_get_map(map_data);
     
-    // And values of different types stored in the map
-    data_t *int_data = ar_data_create_integer(42);
-    data_t *double_data = ar_data_create_double(3.14159);
-    data_t *string_data = ar_data_create_string("Hello, World!");
+    // Set values of different types in the map using ar_data_set_map_* functions
+    bool int_result = ar_data_set_map_integer(map_data, "int_key", 42);
+    bool double_result = ar_data_set_map_double(map_data, "double_key", 3.14159);
+    bool string_result = ar_data_set_map_string(map_data, "string_key", "Hello, World!");
+    
+    // Create a nested map and set it in the parent map
     data_t *nested_map_data = ar_data_create_map();
+    bool map_result = ar_data_set_map_data(map_data, "map_key", nested_map_data);
     
-    // And values added to the map
-    ar_map_set(map, "int_key", int_data);
-    ar_map_set(map, "double_key", double_data);
-    ar_map_set(map, "string_key", string_data);
-    ar_map_set(map, "map_key", nested_map_data);
+    // All operations should succeed
+    assert(int_result);
+    assert(double_result);
+    assert(string_result);
+    assert(map_result);
     
     // When we use the map data getters with the correct keys
     int int_value = ar_data_get_map_integer(map_data, "int_key");
@@ -354,17 +362,17 @@ static void test_map_data_getters(void) {
     assert(wrong_type_double == 0.0);
     assert(wrong_type_string == NULL);
     
-    // When we have nested map with values
-    map_t *nested_map = ar_data_get_map(nested_map_data);
-    data_t *nested_int = ar_data_create_integer(100);
-    ar_map_set(nested_map, "nested_int", nested_int);
+    // Create a data wrapper for the nested map value
+    data_t *nested_data = ar_data_create_map();
+    
+    // Set a value in the nested map
+    bool nested_result = ar_data_set_map_integer(nested_data, "nested_int", 100);
+    assert(nested_result);
     
     // Cleanup
-    ar_data_destroy(nested_int);
-    ar_data_destroy(nested_map_data);
-    ar_data_destroy(string_data);
-    ar_data_destroy(double_data);
-    ar_data_destroy(int_data);
+    ar_data_destroy(nested_data);
+    
+    // Cleanup
     ar_data_destroy(map_data);
     
     printf("Map data getter tests passed!\n");
@@ -449,32 +457,42 @@ static void test_map_data_path_getters(void) {
     // Given a nested map data structure with various data types
     data_t *root_map = ar_data_create_map();
     
-    // Create a nested structure
+    // Create the nested maps
     data_t *user_map = ar_data_create_map();
     data_t *address_map = ar_data_create_map();
     data_t *scores_map = ar_data_create_map();
     
     // Set values in the address map
-    ar_data_set_map_string(address_map, "street", "123 Main St");
-    ar_data_set_map_string(address_map, "city", "Anytown");
-    ar_data_set_map_integer(address_map, "zip", 12345);
+    bool result = ar_data_set_map_string(address_map, "street", "123 Main St");
+    assert(result);
+    result = ar_data_set_map_string(address_map, "city", "Anytown");
+    assert(result);
+    result = ar_data_set_map_integer(address_map, "zip", 12345);
+    assert(result);
     
     // Set values in the scores map
-    ar_data_set_map_integer(scores_map, "math", 95);
-    ar_data_set_map_integer(scores_map, "science", 87);
-    ar_data_set_map_double(scores_map, "average", 91.0);
+    result = ar_data_set_map_integer(scores_map, "math", 95);
+    assert(result);
+    result = ar_data_set_map_integer(scores_map, "science", 87);
+    assert(result);
+    result = ar_data_set_map_double(scores_map, "average", 91.0);
+    assert(result);
     
     // Set values in the user map
-    ar_data_set_map_string(user_map, "name", "John Doe");
-    ar_data_set_map_integer(user_map, "age", 30);
+    result = ar_data_set_map_string(user_map, "name", "John Doe");
+    assert(result);
+    result = ar_data_set_map_integer(user_map, "age", 30);
+    assert(result);
     
-    // Link the maps
-    map_t *user_map_ref = ar_data_get_map(user_map);
-    ar_map_set(user_map_ref, "address", address_map);
-    ar_map_set(user_map_ref, "scores", scores_map);
+    // Add address and scores maps to the user map
+    result = ar_data_set_map_data(user_map, "address", address_map);
+    assert(result);
+    result = ar_data_set_map_data(user_map, "scores", scores_map);
+    assert(result);
     
-    map_t *root_map_ref = ar_data_get_map(root_map);
-    ar_map_set(root_map_ref, "user", user_map);
+    // Add user map to the root map
+    result = ar_data_set_map_data(root_map, "user", user_map);
+    assert(result);
     
     // When we use the path-based getters
     int age = ar_data_get_map_integer(root_map, "user.age");
@@ -703,16 +721,12 @@ static void test_map_data_path_setters(void) {
 int main(void) {
     printf("Starting Data Module Tests...\n");
     
-    // Given we need a map for testing
-    map_t *map = ar_map_create();
-    assert(map != NULL);
-    
     // When we run all data tests
     test_data_creation();
     test_data_getters();
-    test_integer_values(map);
-    test_string_values(map);
-    test_nested_maps(map);
+    test_integer_values();
+    test_string_values();
+    test_nested_maps();
     
     // Run map data getter tests
     test_map_data_getters();
@@ -728,13 +742,6 @@ int main(void) {
     
     // Then all tests should pass
     printf("All data tests passed!\n");
-    
-    // Cleanup map resources
-    ar_map_destroy(map);
-    
-    // Note: We have memory leaks in this test because we're not freeing
-    // the data items stored in the map. In a real application, we would need
-    // to iterate over the map and free each item before destroying the map.
     
     return 0;
 }
