@@ -7,6 +7,7 @@
 struct list_node_s {
     void *item;                   // Pointer to the item
     struct list_node_s *next;     // Pointer to the next node
+    struct list_node_s *prev;     // Pointer to the previous node
 };
 
 /**
@@ -53,11 +54,12 @@ bool ar_list_add_last(list_t *list, void *item) {
     
     node->item = item;
     node->next = NULL;
+    node->prev = list->tail;   // Set the previous pointer to current tail
     
     if (list->tail) {
         list->tail->next = node;
     } else {
-        list->head = node;
+        list->head = node;     // If the list was empty, also set the head
     }
     
     list->tail = node;
@@ -84,13 +86,15 @@ bool ar_list_add_first(list_t *list, void *item) {
     
     node->item = item;
     node->next = list->head;
+    node->prev = NULL;         // First node has no previous
     
-    list->head = node;
-    
-    if (!list->tail) {
-        list->tail = node;
+    if (list->head) {
+        list->head->prev = node;  // Update the previous head's prev pointer
+    } else {
+        list->tail = node;     // If the list was empty, also set the tail
     }
     
+    list->head = node;
     list->count++;
     
     return true;
@@ -136,8 +140,11 @@ void* ar_list_remove_first(list_t *list) {
     void *item = node->item;
     
     list->head = node->next;
-    if (!list->head) {
-        list->tail = NULL;
+    
+    if (list->head) {
+        list->head->prev = NULL;  // Update new head to have no previous
+    } else {
+        list->tail = NULL;       // If list is now empty, update tail too
     }
     
     free(node);
@@ -159,16 +166,12 @@ void* ar_list_remove_last(list_t *list) {
     struct list_node_s *node = list->tail;
     void *item = node->item;
     
-    if (list->head == list->tail) {
-        list->head = NULL;
-        list->tail = NULL;
+    list->tail = node->prev;  // Update tail to the previous node
+    
+    if (list->tail) {
+        list->tail->next = NULL;  // New tail has no next
     } else {
-        struct list_node_s *current = list->head;
-        while (current->next != list->tail) {
-            current = current->next;
-        }
-        current->next = NULL;
-        list->tail = current;
+        list->head = NULL;        // If list is now empty, update head too
     }
     
     free(node);

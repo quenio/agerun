@@ -2,7 +2,7 @@
 
 ## Overview
 
-The list module provides a simple linked list implementation for storing pointer items. The list is designed to be a non-owning container, meaning it does not manage the memory for the items it stores. The caller is responsible for allocating and freeing memory for all items.
+The list module provides a doubly-linked list implementation for storing pointer items. The list is designed to be a non-owning container, meaning it does not manage the memory for the items it stores. The caller is responsible for allocating and freeing memory for all items.
 
 ## Key Features
 
@@ -250,14 +250,14 @@ ar_list_destroy(allocations);
 
 ## Implementation Notes
 
-- The list is implemented as a singly-linked list with head and tail pointers
+- The list is implemented as a doubly-linked list with head and tail pointers
 - Adding to either end of the list is an O(1) operation
-- Removing from the beginning of the list is an O(1) operation
-- Removing from the end of the list is an O(n) operation due to the need to find the new tail
+- Removing from either end of the list is an O(1) operation
 - Getting an array of all items is an O(n) operation where n is the number of items
 - The list maintains a count of items for fast size queries
 - NULL items can be stored in the list
 - All functions handle NULL list parameters gracefully
-- The list can be used as a stack (LIFO), queue (FIFO), or a standard list depending on which operations are used
+- The list can be used efficiently as a stack (LIFO), queue (FIFO), or a standard list depending on which operations are used
+- Both stack implementations (LIFO with either end) are now O(1) for all operations
 - The list is particularly useful for tracking allocated memory that needs to be freed later
 - The module is used by the data module to track dynamically allocated map keys
