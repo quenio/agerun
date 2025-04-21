@@ -124,8 +124,13 @@ static void test_agent_persistence(void) {
     version_t version = ar_method_create(method_name, instructions, 0, false, true);
     assert(version > 0);
     
+    // Create a context with data_t
+    data_t *context = ar_data_create_map();
+    assert(context != NULL);
+    ar_data_set_map_string(context, "test_key", "test_value");
+    
     // And an agent created with this persistent method
-    agent_id_t agent_id = ar_agent_create(method_name, version, NULL);
+    agent_id_t agent_id = ar_agent_create(method_name, version, context);
     assert(agent_id > 0);
     
     // When we save agents to disk

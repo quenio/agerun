@@ -158,20 +158,16 @@ const char *ar_data_get_string(const data_t *data) {
 
 /**
  * Get the map value from a data structure (read-only)
+ * This is a PRIVATE function only for use within the data module.
  * @param data Pointer to the data to retrieve from
  * @return The map value or NULL if data is NULL or not a map type
  */
-map_t *ar_data_get_map(const data_t *data) {
+static map_t *ar_data_get_map(const data_t *data) {
     if (!data || data->type != DATA_MAP) {
         return NULL;
     }
     return data->data.map_ref;
 }
-
-/**
- * NOTE: Removed ar_data_get_map_mutable as it's now redundant with ar_data_get_map
- * Both ar_data_get_map and ar_data_get_map_mutable return a mutable map pointer
- */
 
 /**
  * Get a data value from a map data structure by key or path

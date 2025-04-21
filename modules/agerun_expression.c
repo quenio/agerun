@@ -121,8 +121,8 @@ data_t* ar_expression_evaluate(agent_t *agent, const char *message, const char *
         ar_data_destroy(key_val);
         
         if (key) {
-            // Look up value in memory using the map interface
-            const data_t *value = (const data_t *)ar_map_get(agent->memory, key);
+            // Look up value in memory using the data API
+            data_t *value = ar_data_get_map_data(agent->memory, key);
             if (value) {
                 // Replace our result with a new data object based on the value
                 ar_data_destroy(result);
@@ -276,11 +276,11 @@ data_t* ar_expression_evaluate(agent_t *agent, const char *message, const char *
                         // Get target agent ID
                         data_type_t arg0_type = ar_data_get_type(args[0]);
                         if (arg0_type == DATA_INTEGER) {
-                            target_id = ar_data_get_integer(args[0]);
+                            target_id = (agent_id_t)ar_data_get_integer(args[0]);
                         } else if (arg0_type == DATA_STRING) {
                             const char *id_str = ar_data_get_string(args[0]);
                             if (id_str) {
-                                target_id = atoll(id_str);
+                                target_id = (agent_id_t)atoll(id_str);
                             }
                         }
                         

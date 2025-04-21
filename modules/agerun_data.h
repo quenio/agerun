@@ -82,15 +82,10 @@ double ar_data_get_double(const data_t *data);
 const char *ar_data_get_string(const data_t *data);
 
 /**
- * Get the map value from a data structure (read-only)
- * @param data Pointer to the data to retrieve from
- * @return The map value or NULL if data is NULL or not a map type
- */
-map_t *ar_data_get_map(const data_t *data);
-
-/**
- * NOTE: Removed ar_data_get_map_mutable as it's now redundant with ar_data_get_map
- * Both ar_data_get_map and ar_data_get_map_mutable return a mutable map pointer
+ * NOTE: Removed ar_data_get_map and ar_data_get_map_mutable
+ * These functions are no longer necessary since we have ar_data_get_map_data
+ * and other accessor functions. Modules outside data.c should never
+ * have direct access to map_t instances.
  */
 
 /**

@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "agerun_data.h"
-#include "agerun_map.h"
 #include "agerun_queue.h"
 
 /* Constants */
@@ -23,18 +22,18 @@ typedef struct agent_s {
     bool is_active;
     bool is_persistent;
     queue_t *queue;
-    map_t *memory;
-    map_t *context;
+    data_t *memory;
+    data_t *context;
 } agent_t;
 
 /**
  * Create a new agent instance
  * @param method_name Name of the method to use
  * @param version Version of the method (0 for latest)
- * @param context Context dictionary (NULL for empty)
+ * @param context Context data (NULL for empty)
  * @return Unique agent ID, or 0 on failure
  */
-agent_id_t ar_agent_create(const char *method_name, version_t version, void *context);
+agent_id_t ar_agent_create(const char *method_name, version_t version, data_t *context);
 
 /**
  * Destroy an agent instance

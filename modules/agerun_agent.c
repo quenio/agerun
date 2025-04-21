@@ -4,7 +4,6 @@
 #include "agerun_system.h"
 #include "agerun_method.h"
 #include "agerun_methodology.h"
-#include "agerun_map.h"
 #include "agerun_queue.h"
 
 #include <stdio.h>
@@ -16,7 +15,7 @@
 /* Constants */
 
 /* Implementation */
-agent_id_t ar_agent_create(const char *method_name, version_t version, void *context) {
+agent_id_t ar_agent_create(const char *method_name, version_t version, data_t *context) {
     agent_t *agents = ar_agency_get_agents();
     
     if (agents == NULL || !method_name) {
@@ -56,14 +55,20 @@ agent_id_t ar_agent_create(const char *method_name, version_t version, void *con
     agents[agent_idx].method_version = method->version;
     agents[agent_idx].is_active = true;
     agents[agent_idx].is_persistent = method->persist;
-    agents[agent_idx].context = (map_t *)context;
+    agents[agent_idx].context = context; // Context can be NULL
     
-    agents[agent_idx].memory = ar_map_create();
+    // Create memory as an empty map
+    agents[agent_idx].memory = ar_data_create_map();
+    if (!agents[agent_idx].memory) {
+        printf("Error: Failed to create memory for agent %lld\n", next_agent_id);
+        return 0;
+    }
+    
+    // Create message queue
     agents[agent_idx].queue = ar_queue_create();
-    
     if (!agents[agent_idx].queue) {
         printf("Error: Failed to create queue for agent %lld\n", next_agent_id);
-        ar_map_destroy(agents[agent_idx].memory);
+        ar_data_destroy(agents[agent_idx].memory);
         agents[agent_idx].is_active = false;
         return 0;
     }
@@ -98,10 +103,16 @@ bool ar_agent_destroy(agent_id_t agent_id) {
                 }
             }
             
-            // Free memory map if it exists
+            // Free memory data if it exists
             if (agents[i].memory) {
-                ar_map_destroy(agents[i].memory);
+                ar_data_destroy(agents[i].memory);
                 agents[i].memory = NULL;
+            }
+            
+            // Free context data if it exists
+            if (agents[i].context) {
+                ar_data_destroy(agents[i].context);
+                agents[i].context = NULL;
             }
             
             // Free queue if it exists

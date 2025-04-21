@@ -53,7 +53,11 @@ void ar_agency_reset(void) {
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (agents[i].is_active) {
             if (agents[i].memory) {
-                ar_map_destroy(agents[i].memory);
+                ar_data_destroy(agents[i].memory);
+            }
+            // Only destroy context if it exists
+            if (agents[i].context) {
+                ar_data_destroy(agents[i].context);
             }
             if (agents[i].queue) {
                 ar_queue_destroy(agents[i].queue);
@@ -61,6 +65,7 @@ void ar_agency_reset(void) {
         }
         agents[i].is_active = false;
         agents[i].memory = NULL;
+        agents[i].context = NULL;
         agents[i].queue = NULL;
     }
     
@@ -208,8 +213,8 @@ bool ar_agency_load_agents(void) {
                     }
                     
                     if (value) {
-                        ar_map_set(agents[j].memory, key, value);
-                        // Note: Do not free value here, it's now owned by the map
+                        ar_data_set_map_data(agents[j].memory, key, value);
+                        // Note: Data ownership is transferred, so we don't free value here
                     }
                 }
                 

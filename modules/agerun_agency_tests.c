@@ -103,7 +103,8 @@ static void test_agency_next_id(void) {
     assert(version > 0);
     
     // When we create a new agent
-    agent_id_t agent_id = ar_agent_create(method_name, version, NULL);
+    data_t *context = ar_data_create_map();
+    agent_id_t agent_id = ar_agent_create(method_name, version, context);
     
     // Then the agent should be assigned the current next ID
     assert(agent_id == new_next_id);

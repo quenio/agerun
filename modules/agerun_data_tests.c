@@ -51,7 +51,7 @@ static void test_data_creation(void) {
     // Then it should have the correct type and a valid map
     assert(map_data_default != NULL);
     assert(ar_data_get_type(map_data_default) == DATA_MAP);
-    assert(ar_data_get_map(map_data_default) != NULL);
+    // We can verify it's a map by checking its type - can't check ar_data_get_map anymore
     
     // When we create data items with the specialized functions
     data_t *int_data = ar_data_create_integer(42);
@@ -75,7 +75,7 @@ static void test_data_creation(void) {
     
     assert(map_data != NULL);
     assert(ar_data_get_type(map_data) == DATA_MAP);
-    assert(ar_data_get_map(map_data) != NULL);
+    // We can verify it's a map by checking its type - can't check ar_data_get_map anymore
     
     // Cleanup
     ar_data_destroy(map_data_default);
@@ -118,37 +118,31 @@ static void test_data_getters(void) {
     int int_value = ar_data_get_integer(int_data);
     double double_value = ar_data_get_double(double_data);
     const char *string_value = ar_data_get_string(string_data);
-    const map_t *map_value = ar_data_get_map(map_data);
     
     // Then they should return the correct values
     assert(int_value == 42);
     assert(double_value == 3.14159);
     assert(strcmp(string_value, "Hello, World!") == 0);
-    assert(map_value != NULL);
     
     // When we use the getters with incorrect types
     int wrong_int = ar_data_get_integer(string_data);
     double wrong_double = ar_data_get_double(int_data);
     const char *wrong_string = ar_data_get_string(int_data);
-    const map_t *wrong_map = ar_data_get_map(double_data);
     
     // Then they should return default values
     assert(wrong_int == 0);
     assert(wrong_double == 0.0);
     assert(wrong_string == NULL);
-    assert(wrong_map == NULL);
     
     // When we use the getters with NULL
     int null_int = ar_data_get_integer(NULL);
     double null_double = ar_data_get_double(NULL);
     const char *null_string = ar_data_get_string(NULL);
-    const map_t *null_map = ar_data_get_map(NULL);
     
     // Then they should return default values
     assert(null_int == 0);
     assert(null_double == 0.0);
     assert(null_string == NULL);
-    assert(null_map == NULL);
     
     // Cleanup
     ar_data_destroy(int_data);
@@ -326,7 +320,8 @@ static void test_map_data_getters(void) {
     assert(ar_data_get_integer(int_data_direct) == 42);
     assert(ar_data_get_double(double_data_direct) == 3.14159);
     assert(strcmp(ar_data_get_string(string_data_direct), "Hello, World!") == 0);
-    assert(ar_data_get_map(map_data_direct) != NULL);
+    // For map data, we verify the type is correct
+    assert(ar_data_get_type(map_data_direct) == DATA_MAP);
     
     // When we use the map data getters with incorrect keys
     int wrong_int = ar_data_get_map_integer(map_data, "nonexistent_key");
@@ -613,15 +608,13 @@ static void test_map_data_path_setters(void) {
     data_t *account_map = ar_data_create_map();
     data_t *profile_map = ar_data_create_map();
     
-    // Add to root
-    map_t *root_map_ref = ar_data_get_map(root_map);
-    ar_map_set(root_map_ref, "user", user_map);
+    // Add to root using data interface
+    ar_data_set_map_data(root_map, "user", user_map);
     
-    // Add to user map
-    map_t *user_map_ref = ar_data_get_map(user_map);
-    ar_map_set(user_map_ref, "preferences", prefs_map);
-    ar_map_set(user_map_ref, "account", account_map);
-    ar_map_set(user_map_ref, "profile", profile_map);
+    // Add to user map using data interface
+    ar_data_set_map_data(user_map, "preferences", prefs_map);
+    ar_data_set_map_data(user_map, "account", account_map);
+    ar_data_set_map_data(user_map, "profile", profile_map);
     
     // Now set on valid paths
     printf("Setting integer value on valid path...\n");
@@ -648,18 +641,14 @@ static void test_map_data_path_setters(void) {
     data_t *account_data = ar_data_get_map_data(root_map, "user.account");
     printf("account data type: %d\n", ar_data_get_type(account_data));
     
-    // Direct map check
-    map_t *account_map_ref = ar_data_get_map(account_data);
-    if (account_map_ref) {
-        printf("Direct check of account_map entries:\n");
-        void *direct_balance = ar_map_get(account_map_ref, "balance");
-        printf("Direct map lookup of 'balance': %p\n", direct_balance);
-        if (direct_balance) {
-            data_t *balance_d = (data_t *)direct_balance;
-            printf("Direct balance data type: %d\n", ar_data_get_type(balance_d));
-            if (ar_data_get_type(balance_d) == DATA_DOUBLE) {
-                printf("Direct balance value: %f\n", ar_data_get_double(balance_d));
-            }
+    // Use data interface for inspection
+    printf("Direct check of account_map entries:\n");
+    data_t *balance_direct = ar_data_get_map_data(account_data, "balance");
+    printf("Direct map lookup of 'balance': %p\n", (void *)balance_direct);
+    if (balance_direct) {
+        printf("Direct balance data type: %d\n", ar_data_get_type(balance_direct));
+        if (ar_data_get_type(balance_direct) == DATA_DOUBLE) {
+            printf("Direct balance value: %f\n", ar_data_get_double(balance_direct));
         }
     }
     

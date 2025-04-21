@@ -54,6 +54,7 @@ agent_id_t ar_system_init(const char *method_name, version_t version) {
     
     // Create initial agent if method_name is provided
     if (method_name != NULL) {
+        // Create initial agent with NULL context
         agent_id_t initial_agent = ar_agent_create(method_name, version, NULL);
         if (initial_agent != 0) {
             // Send wake message to initial agent

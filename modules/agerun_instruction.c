@@ -33,10 +33,15 @@ bool ar_instruction_run(agent_t *agent, const char *message, const char *instruc
         int offset = 0;
         data_t *value = ar_expression_evaluate(agent, message, value_expr, &offset);
         
-        // Store in agent's memory and then clean up (map_set makes a copy)
+        // Store in agent's memory map
+        // Note: ar_data_set_map_data takes ownership of value when successful
         if (value) {
-            ar_map_set(agent->memory, key, value);
-            ar_data_destroy(value);
+            // ar_data_set_map_data takes ownership of value when it returns true
+            // Otherwise, we need to free the value to avoid memory leaks
+            if (!ar_data_set_map_data(agent->memory, key, value)) {
+                ar_data_destroy(value);
+            }
+            // If set_map_data returned true, ownership was transferred, so don't destroy
         }
     }
     // Parse function call or other expression
