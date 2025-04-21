@@ -93,17 +93,35 @@ bool ar_agent_destroy(agent_id_t agent_id) {
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (agents[i].is_active && agents[i].id == agent_id) {
             // Send sleep message before destroying
-            ar_agent_send(agent_id, g_sleep_message);
+            data_t *sleep_data = ar_data_create_string(g_sleep_message);
+            if (sleep_data) {
+                ar_agent_send(agent_id, sleep_data);
+            }
             
             // Process the sleep message
-            char *message = ar_list_remove_first(agents[i].message_queue);
+            data_t *message = ar_list_remove_first(agents[i].message_queue);
             if (message) {
                 // Find the method definition to process the sleep message
                 method_t *method = ar_methodology_get_method(agents[i].method_name, agents[i].method_version);
                 if (method) {
-                    printf("Agent %lld received message: %s\n", agents[i].id, message);
+                    // Print message based on its type
+                    printf("Agent %lld received message: ", agents[i].id);
+                    data_type_t msg_type = ar_data_get_type(message);
+                    if (msg_type == DATA_STRING) {
+                        printf("%s\n", ar_data_get_string(message));
+                    } else if (msg_type == DATA_INTEGER) {
+                        printf("%d\n", ar_data_get_integer(message));
+                    } else if (msg_type == DATA_DOUBLE) {
+                        printf("%f\n", ar_data_get_double(message));
+                    } else if (msg_type == DATA_LIST || msg_type == DATA_MAP) {
+                        printf("[complex data]\n");
+                    }
+                    
                     ar_method_run(&agents[i], message, method->instructions);
                 }
+                
+                // Free the message data
+                ar_data_destroy(message);
             }
             
             // Free memory data if it exists
@@ -133,7 +151,7 @@ bool ar_agent_destroy(agent_id_t agent_id) {
     return false;
 }
 
-bool ar_agent_send(agent_id_t agent_id, char *message) {
+bool ar_agent_send(agent_id_t agent_id, data_t *message) {
     agent_t *agents = ar_agency_get_agents();
     
     if (agents == NULL || !message) {
@@ -142,6 +160,8 @@ bool ar_agent_send(agent_id_t agent_id, char *message) {
     
     // Special case: agent_id 0 is a no-op
     if (agent_id == 0) {
+        // Free the message since we're not using it
+        ar_data_destroy(message);
         return true;
     }
     
@@ -149,10 +169,19 @@ bool ar_agent_send(agent_id_t agent_id, char *message) {
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (agents[i].is_active && agents[i].id == agent_id) {
             // Add message to queue
-            return ar_list_add_last(agents[i].message_queue, (void *)message);
+            bool result = ar_list_add_last(agents[i].message_queue, message);
+            
+            // If we couldn't add to the queue, destroy the message
+            if (!result) {
+                ar_data_destroy(message);
+            }
+            
+            return result;
         }
     }
     
+    // If we couldn't find the agent, destroy the message
+    ar_data_destroy(message);
     return false;
 }
 

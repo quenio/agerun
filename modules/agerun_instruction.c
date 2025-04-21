@@ -13,8 +13,16 @@
 #include <stdint.h>
 
 // Parse and execute a single instruction
-bool ar_instruction_run(agent_t *agent, const char *message, const char *instruction) {
+bool ar_instruction_run(agent_t *agent, const data_t *message, const char *instruction) {
+    if (!agent || !instruction) {
+        return false;
+    }
+    
     char *instr_copy = strdup(instruction);
+    if (!instr_copy) {
+        return false;
+    }
+    
     char *instr_trimmed = ar_string_trim(instr_copy);
     bool result = true;
     

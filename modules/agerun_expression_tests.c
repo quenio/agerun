@@ -70,8 +70,10 @@ static void test_echo_method(void) {
     fflush(stdout);
     
     // When we send a test message to the agent
-    static char echo_message[] = "Hello, Echo!";
-    printf("Sending message: \"%s\"\n", echo_message);
+    static const char *echo_text = "Hello, Echo!";
+    data_t *echo_message = ar_data_create_string(echo_text);
+    assert(echo_message != NULL);
+    printf("Sending message: \"%s\"\n", echo_text);
     bool send_result = ar_agent_send(agent_id, echo_message);
     
     // Then the message should be sent successfully
@@ -116,8 +118,10 @@ static void test_simple_method(void) {
     printf("Created agent %lld using simple method\n", (long long)agent_id);
     
     // When we send a test message to the agent
-    static char test_data_message[] = "Test Data";
-    printf("Sending message: \"%s\"\n", test_data_message);
+    static const char *test_data_text = "Test Data";
+    data_t *test_data_message = ar_data_create_string(test_data_text);
+    assert(test_data_message != NULL);
+    printf("Sending message: \"%s\"\n", test_data_text);
     bool send_result = ar_agent_send(agent_id, test_data_message);
     
     // Then the message should be sent successfully

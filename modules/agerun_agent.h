@@ -45,10 +45,10 @@ bool ar_agent_destroy(agent_id_t agent_id);
 /**
  * Send a message to an agent
  * @param agent_id ID of the agent to send to
- * @param message Message content (not modified, but stored without const qualifier)
+ * @param message Message data (any supported data type - ownership is transferred on success)
  * @return true if successful, false otherwise
  */
-bool ar_agent_send(agent_id_t agent_id, char *message);
+bool ar_agent_send(agent_id_t agent_id, data_t *message);
 
 /**
  * Check if an agent exists

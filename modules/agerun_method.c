@@ -74,9 +74,10 @@ version_t ar_method_create(const char *name, const char *instructions,
     return new_version;
 }
 
-bool ar_method_run(agent_t *agent, char *message, const char *instructions) {
-    (void)agent; // Avoid unused parameter warning
-    (void)message; // Avoid unused parameter warning
+bool ar_method_run(agent_t *agent, data_t *message, const char *instructions) {
+    if (!agent || !instructions) {
+        return false;
+    }
     
     // Make a copy of the instructions for tokenization
     char *instructions_copy = strdup(instructions);

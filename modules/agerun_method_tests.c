@@ -70,7 +70,9 @@ static void test_method_run(void) {
     assert(ar_agent_exists(agent_id));
     
     // When we send a message to the agent
-    static char sleep_message[] = "__sleep__"; // Use a special message that will be handled
+    static const char *sleep_text = "__sleep__"; // Use a special message that will be handled
+    data_t *sleep_message = ar_data_create_string(sleep_text);
+    assert(sleep_message != NULL);
     bool result = ar_agent_send(agent_id, sleep_message);
     
     // Then the method should run successfully

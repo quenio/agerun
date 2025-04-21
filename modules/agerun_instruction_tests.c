@@ -45,7 +45,9 @@ static void test_simple_instructions(void) {
     assert(test_agent_exists(agent_id));
     
     // And a message to send
-    static char hello_message[] = "Hello";
+    static const char *hello_text = "Hello";
+    data_t *hello_message = ar_data_create_string(hello_text);
+    assert(hello_message != NULL);
     // We would test with an instruction, but can't access agent directly
     // const char *instruction = "message -> \"Test Response\""; // Unused
     
@@ -61,7 +63,9 @@ static void test_simple_instructions(void) {
     // instruction = "message -> message"; // Unused
     
     // We test indirectly by sending another message
-    result = ar_agent_send(agent_id, hello_message);
+    data_t *hello_message2 = ar_data_create_string(hello_text);
+    assert(hello_message2 != NULL);
+    result = ar_agent_send(agent_id, hello_message2);
     
     // Then the instruction should execute successfully
     assert(result);
@@ -84,7 +88,9 @@ static void test_memory_access_instructions(void) {
     assert(test_agent_exists(agent_id));
     
     // Make sure memory is initialized first
-    static char wake_message[] = "__wake__";
+    static const char *wake_text = "__wake__";
+    data_t *wake_message = ar_data_create_string(wake_text);
+    assert(wake_message != NULL);
     bool result = ar_agent_send(agent_id, wake_message);
     assert(result);
     
@@ -106,7 +112,9 @@ static void test_condition_instructions(void) {
     assert(test_agent_exists(agent_id));
     
     // Ensure memory is initialized
-    static char wake_message2[] = "__wake__";
+    static const char *wake_text2 = "__wake__";
+    data_t *wake_message2 = ar_data_create_string(wake_text2);
+    assert(wake_message2 != NULL);
     ar_agent_send(agent_id, wake_message2);
     
     // Since we can't directly access the memory with the new opaque type,
@@ -130,9 +138,13 @@ static void test_message_send_instructions(void) {
     assert(test_agent_exists(receiver_id));
     
     // Initialize both agents
-    static char wake_message3[] = "__wake__";
-    ar_agent_send(sender_id, wake_message3);
-    ar_agent_send(receiver_id, wake_message3);
+    static const char *wake_text3 = "__wake__";
+    data_t *wake_message3_sender = ar_data_create_string(wake_text3);
+    data_t *wake_message3_receiver = ar_data_create_string(wake_text3);
+    assert(wake_message3_sender != NULL);
+    assert(wake_message3_receiver != NULL);
+    ar_agent_send(sender_id, wake_message3_sender);
+    ar_agent_send(receiver_id, wake_message3_receiver);
     
     // Since we can't directly access memory or queue with the opaque types,
     // we can only send messages and verify the agents exist

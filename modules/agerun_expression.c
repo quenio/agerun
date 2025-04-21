@@ -14,7 +14,7 @@
 #include <stdint.h>
 
 // Evaluate an expression in the agent's context
-data_t* ar_expression_evaluate(agent_t *agent, const char *message, const char *expr, int *offset) {
+data_t* ar_expression_evaluate(agent_t *agent, const data_t *message, const char *expr, int *offset) {
     data_t *result = ar_data_create_integer(0);
     if (!result) {
         return NULL;
@@ -76,11 +76,39 @@ data_t* ar_expression_evaluate(agent_t *agent, const char *message, const char *
         *offset += 7; // Skip "message"
         
         ar_data_destroy(result);
-        result = ar_data_create_string(message ? message : "");
+        
+        // If message exists, return a copy of it, otherwise return empty string
+        if (message) {
+            // This will create a new data_t of the appropriate type
+            data_type_t msg_type = ar_data_get_type(message);
+            
+            switch (msg_type) {
+                case DATA_INTEGER:
+                    result = ar_data_create_integer(ar_data_get_integer(message));
+                    break;
+                case DATA_DOUBLE:
+                    result = ar_data_create_double(ar_data_get_double(message));
+                    break;
+                case DATA_STRING:
+                    result = ar_data_create_string(ar_data_get_string(message));
+                    break;
+                case DATA_LIST:
+                case DATA_MAP:
+                    // For complex types, we'll return a string representation for now
+                    result = ar_data_create_string(msg_type == DATA_LIST ? "[List data]" : "{Map data}");
+                    break;
+                default:
+                    result = ar_data_create_integer(0);
+                    break;
+            }
+        } else {
+            result = ar_data_create_string("");
+        }
+        
         if (!result) {
-            // If string creation failed, return a default integer
             result = ar_data_create_integer(0);
         }
+        
         return result;
     }
     
@@ -271,7 +299,7 @@ data_t* ar_expression_evaluate(agent_t *agent, const char *message, const char *
                     // send(agent_id, message)
                     if (arg_count >= 2 && args[0] && args[1]) {
                         agent_id_t target_id = 0;
-                        char *send_message = NULL;
+                        data_t *send_message = NULL;
                         
                         // Get target agent ID
                         data_type_t arg0_type = ar_data_get_type(args[0]);
@@ -284,37 +312,121 @@ data_t* ar_expression_evaluate(agent_t *agent, const char *message, const char *
                             }
                         }
                         
-                        // Get message content
+                        // Create a copy of the message to send
                         data_type_t arg1_type = ar_data_get_type(args[1]);
-                        if (arg1_type == DATA_STRING) {
-                            const char *msg_str = ar_data_get_string(args[1]);
-                            if (msg_str) {
-                                send_message = strdup(msg_str);
-                            }
-                        } else if (arg1_type == DATA_INTEGER) {
-                            char temp[32];
-                            snprintf(temp, sizeof(temp), "%d", ar_data_get_integer(args[1]));
-                            send_message = strdup(temp);
-                        } else if (arg1_type == DATA_DOUBLE) {
-                            char temp[32];
-                            snprintf(temp, sizeof(temp), "%f", ar_data_get_double(args[1]));
-                            send_message = strdup(temp);
+                        switch (arg1_type) {
+                            case DATA_INTEGER:
+                                send_message = ar_data_create_integer(ar_data_get_integer(args[1]));
+                                break;
+                            case DATA_DOUBLE:
+                                send_message = ar_data_create_double(ar_data_get_double(args[1]));
+                                break;
+                            case DATA_STRING:
+                                send_message = ar_data_create_string(ar_data_get_string(args[1]));
+                                break;
+                            case DATA_LIST:
+                                // For complex types, we'll send a string representation for now
+                                send_message = ar_data_create_string("[List data]");
+                                break;
+                            case DATA_MAP:
+                                // For complex types, we'll send a string representation for now
+                                send_message = ar_data_create_string("{Map data}");
+                                break;
+                            default:
+                                send_message = NULL;
+                                break;
                         }
                         
-                        // Send the message
+                        // Send the message (ownership transferred to ar_agent_send)
                         if (target_id > 0 && send_message) {
-                            ar_agent_send(target_id, send_message);
+                            bool sent = ar_agent_send(target_id, send_message);
                             
-                            // Set result to success
+                            // Set result to success/failure
                             ar_data_destroy(result);
-                            result = ar_data_create_integer(1);
+                            result = ar_data_create_integer(sent ? 1 : 0);
                             if (!result) {
                                 result = ar_data_create_integer(0);
                             }
+                        } else {
+                            // Set result to failure
+                            ar_data_destroy(result);
+                            result = ar_data_create_integer(0);
                         }
-                        
-                        // Free temporary message string
-                        free(send_message);
+                    }
+                } else if (strcmp(func_name, "parse") == 0) {
+                    // parse(template, input)
+                    if (arg_count >= 2 && args[0] && args[1]) {
+                        // Template must be a string
+                        if (ar_data_get_type(args[0]) != DATA_STRING) {
+                            // Return empty map if template is not a string
+                            ar_data_destroy(result);
+                            result = ar_data_create_map();
+                        } else {
+                            const char *template = ar_data_get_string(args[0]);
+                            
+                            // Input should be a string, if not, return empty map
+                            if (ar_data_get_type(args[1]) != DATA_STRING) {
+                                // Return empty map if input is not a string
+                                ar_data_destroy(result);
+                                result = ar_data_create_map();
+                            } else {
+                                const char *input = ar_data_get_string(args[1]);
+                                
+                                if (template && input) {
+                                    // Create a map to store the parsed values
+                                    data_t *map_data = ar_data_create_map();
+                                    if (map_data) {
+                                        // Very simple parsing implementation
+                                        // TODO: Implement proper parsing using template
+                                        
+                                        // For now, just split input by spaces and use as key=value
+                                        char input_copy[1024];
+                                        strncpy(input_copy, input, sizeof(input_copy) - 1);
+                                        input_copy[sizeof(input_copy) - 1] = '\0';
+                                        
+                                        char *token = strtok(input_copy, " ");
+                                        while (token) {
+                                            char *equals = strchr(token, '=');
+                                            if (equals) {
+                                                *equals = '\0'; // Split at the equals sign
+                                                char *key = token;
+                                                char *value = equals + 1;
+                                                
+                                                // Try to parse value as integer or double
+                                                char *endptr;
+                                                long long_val = strtol(value, &endptr, 10);
+                                                if (*endptr == '\0') {
+                                                    // Integer value
+                                                    data_t *val_data = ar_data_create_integer((int)long_val);
+                                                    ar_data_set_map_data(map_data, key, val_data);
+                                                } else {
+                                                    // Try as double
+                                                    double double_val = strtod(value, &endptr);
+                                                    if (*endptr == '\0') {
+                                                        // Double value
+                                                        data_t *val_data = ar_data_create_double(double_val);
+                                                        ar_data_set_map_data(map_data, key, val_data);
+                                                    } else {
+                                                        // String value
+                                                        data_t *val_data = ar_data_create_string(value);
+                                                        ar_data_set_map_data(map_data, key, val_data);
+                                                    }
+                                                }
+                                            }
+                                            token = strtok(NULL, " ");
+                                        }
+                                        
+                                        // Return the map as the result
+                                        ar_data_destroy(result);
+                                        result = map_data;
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        // Return empty map for parse failures
+                        ar_data_destroy(result);
+                        result = ar_data_create_map();
                     }
                 } else if (strcmp(func_name, "build") == 0) {
                     // build(format, arg1, arg2, ...)

@@ -8,10 +8,10 @@
 #include "agerun_methodology.h"
 #include "agerun_executable.h"
 
-/* Static variables for commonly used messages */
-static char g_wake_message[] = "__wake__";
-static char g_increment_message[] = "increment";
-static char g_get_message[] = "get";
+/* Message strings */
+static const char *g_wake_message = "__wake__";
+static const char *g_increment_message = "increment";
+static const char *g_get_message = "get";
 
 int ar_executable_main(void) {
     printf("Agerun Example Application\n");
@@ -62,7 +62,10 @@ int ar_executable_main(void) {
     }
     
     // Send wake message to initial agent
-    ar_agent_send(initial_agent, g_wake_message);
+    data_t *wake_data = ar_data_create_string(g_wake_message);
+    if (wake_data) {
+        ar_agent_send(initial_agent, wake_data);
+    }
     printf("Initial agent created with ID: %lld\n\n", initial_agent);
     
     // Process the __wake__ message sent to the initial agent
@@ -82,10 +85,17 @@ int ar_executable_main(void) {
     
     // Send some messages to the counter agent
     printf("Sending messages to counter agent...\n");
-    ar_agent_send(counter_id, g_increment_message);
-    ar_agent_send(counter_id, g_increment_message);
-    ar_agent_send(counter_id, g_increment_message);
-    ar_agent_send(counter_id, g_get_message);
+    data_t *incr_msg1 = ar_data_create_string(g_increment_message);
+    data_t *incr_msg2 = ar_data_create_string(g_increment_message);
+    data_t *incr_msg3 = ar_data_create_string(g_increment_message);
+    data_t *get_msg1 = ar_data_create_string(g_get_message);
+    
+    if (incr_msg1 && incr_msg2 && incr_msg3 && get_msg1) {
+        ar_agent_send(counter_id, incr_msg1);
+        ar_agent_send(counter_id, incr_msg2);
+        ar_agent_send(counter_id, incr_msg3);
+        ar_agent_send(counter_id, get_msg1);
+    }
     
     // Process all messages
     printf("Processing messages...\n");
@@ -94,9 +104,15 @@ int ar_executable_main(void) {
     
     // Send more messages
     printf("Sending more messages...\n");
-    ar_agent_send(counter_id, g_increment_message);
-    ar_agent_send(counter_id, g_increment_message);
-    ar_agent_send(counter_id, g_get_message);
+    data_t *incr_msg4 = ar_data_create_string(g_increment_message);
+    data_t *incr_msg5 = ar_data_create_string(g_increment_message);
+    data_t *get_msg2 = ar_data_create_string(g_get_message);
+    
+    if (incr_msg4 && incr_msg5 && get_msg2) {
+        ar_agent_send(counter_id, incr_msg4);
+        ar_agent_send(counter_id, incr_msg5);
+        ar_agent_send(counter_id, get_msg2);
+    }
     
     // Process all messages
     printf("Processing messages...\n");
@@ -140,7 +156,10 @@ int ar_executable_main(void) {
         
         // Send a message to get the current count
         printf("Sending 'get' message to counter agent...\n");
-        ar_agent_send(counter_id, g_get_message);
+        data_t *get_msg3 = ar_data_create_string(g_get_message);
+        if (get_msg3) {
+            ar_agent_send(counter_id, get_msg3);
+        }
         
         // Process the message
         printf("Processing messages...\n");

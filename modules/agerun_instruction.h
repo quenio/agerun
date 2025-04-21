@@ -8,10 +8,10 @@
 /**
  * Parse and execute a single instruction
  * @param agent The agent executing the instruction
- * @param message The message being processed
+ * @param message The message being processed (can be any data type)
  * @param instruction The instruction to execute
  * @return true if execution was successful, false otherwise
  */
-bool ar_instruction_run(agent_t *agent, const char *message, const char *instruction);
+bool ar_instruction_run(agent_t *agent, const data_t *message, const char *instruction);
 
 #endif /* AGERUN_INSTRUCTION_H */

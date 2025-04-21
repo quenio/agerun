@@ -31,10 +31,10 @@ version_t ar_method_create(const char *name, const char *instructions,
 /**
  * Interprets and executes a method's instructions in the context of an agent
  * @param agent The agent executing the method
- * @param message The message being processed
+ * @param message The message being processed (ownership remains with the caller)
  * @param instructions The method instructions to execute
  * @return true if execution was successful, false otherwise
  */
-bool ar_method_run(agent_t *agent, char *message, const char *instructions);
+bool ar_method_run(agent_t *agent, data_t *message, const char *instructions);
 
 #endif /* AGERUN_METHOD_H */

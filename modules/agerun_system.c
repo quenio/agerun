@@ -61,7 +61,10 @@ agent_id_t ar_system_init(const char *method_name, version_t version) {
         agent_id_t initial_agent = ar_agent_create(method_name, version, NULL);
         if (initial_agent != 0) {
             // Send wake message to initial agent
-            ar_agent_send(initial_agent, g_wake_message);
+            data_t *wake_data = ar_data_create_string(g_wake_message);
+            if (wake_data) {
+                ar_agent_send(initial_agent, wake_data);
+            }
         }
         return initial_agent;
     }
@@ -99,16 +102,34 @@ bool ar_system_process_next_message(void) {
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (agents[i].is_active && !ar_list_empty(agents[i].message_queue)) {
             // Process one message
-            char *message = ar_list_remove_first(agents[i].message_queue);
+            data_t *message = ar_list_remove_first(agents[i].message_queue);
             if (message) {
                 // Use the interpret_method function from agerun_agent
                 // Since that's now private, we need to call the method directly
                 method_t *method = ar_methodology_get_method(agents[i].method_name, agents[i].method_version);
                 if (method) {
-                    printf("Agent %lld received message: %s\n", agents[i].id, message);
+                    // Print message based on its type
+                    printf("Agent %lld received message: ", agents[i].id);
+                    data_type_t msg_type = ar_data_get_type(message);
+                    if (msg_type == DATA_STRING) {
+                        printf("%s\n", ar_data_get_string(message));
+                    } else if (msg_type == DATA_INTEGER) {
+                        printf("%d\n", ar_data_get_integer(message));
+                    } else if (msg_type == DATA_DOUBLE) {
+                        printf("%f\n", ar_data_get_double(message));
+                    } else if (msg_type == DATA_LIST || msg_type == DATA_MAP) {
+                        printf("[complex data]\n");
+                    }
+                    
                     ar_method_run(&agents[i], message, method->instructions);
+                    
+                    // Free the message as it's now been processed
+                    ar_data_destroy(message);
                     return true;
                 }
+                
+                // Free the message if we couldn't process it
+                ar_data_destroy(message);
             }
         }
     }
