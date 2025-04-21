@@ -40,9 +40,9 @@ int ar_executable_main(void) {
     // Create a counter method that increments a counter on each message
     printf("Creating counter method...\n");
     const char *counter_code = 
-        "if(message == \"__wake__\", memory[\"count\"] := 0, \"\")\n"
-        "if(message == \"increment\", memory[\"count\"] := memory[\"count\"] + 1, \"\")\n"
-        "if(message == \"get\", send(0, build(\"Count: {}\", memory[\"count\"])), \"\")";
+        "if(equals(message, \"__wake__\"), memory[\"count\"] := 0, \"\")\n"
+        "if(equals(message, \"increment\"), memory[\"count\"] := memory[\"count\"] + 1, \"\")\n"
+        "if(equals(message, \"get\"), send(0, build(\"Count: {}\", memory[\"count\"])), \"\")";
     
     version_t counter_version = ar_method_create("counter", counter_code, 0, true, true);
     if (counter_version == 0) {

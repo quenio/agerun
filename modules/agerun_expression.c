@@ -428,6 +428,81 @@ data_t* ar_expression_evaluate(agent_t *agent, const data_t *message, const char
                         ar_data_destroy(result);
                         result = ar_data_create_map();
                     }
+                } else if (strcmp(func_name, "equals") == 0) {
+                    // equals(value1, value2)
+                    // Compares two values for equality, handling different data types
+                    if (arg_count >= 2 && args[0] && args[1]) {
+                        data_type_t type1 = ar_data_get_type(args[0]);
+                        data_type_t type2 = ar_data_get_type(args[1]);
+                        
+                        bool is_equal = false;
+                        
+                        // If types are the same, compare directly
+                        if (type1 == type2) {
+                            switch (type1) {
+                                case DATA_INTEGER:
+                                    is_equal = (ar_data_get_integer(args[0]) == ar_data_get_integer(args[1]));
+                                    break;
+                                case DATA_DOUBLE:
+                                    is_equal = (ar_data_get_double(args[0]) == ar_data_get_double(args[1]));
+                                    break;
+                                case DATA_STRING:
+                                    is_equal = (strcmp(ar_data_get_string(args[0]), ar_data_get_string(args[1])) == 0);
+                                    break;
+                                case DATA_LIST:
+                                case DATA_MAP:
+                                    // For now, complex types can only equal themselves (reference equality)
+                                    is_equal = (args[0] == args[1]);
+                                    break;
+                                default:
+                                    is_equal = false;
+                                    break;
+                            }
+                        } else {
+                            // Types are different - try some automatic conversions for comparison
+                            if ((type1 == DATA_INTEGER && type2 == DATA_DOUBLE) ||
+                                (type1 == DATA_DOUBLE && type2 == DATA_INTEGER)) {
+                                // Compare as doubles
+                                double val1 = (type1 == DATA_INTEGER) ? 
+                                    (double)ar_data_get_integer(args[0]) : ar_data_get_double(args[0]);
+                                double val2 = (type2 == DATA_INTEGER) ? 
+                                    (double)ar_data_get_integer(args[1]) : ar_data_get_double(args[1]);
+                                is_equal = (val1 == val2);
+                            } else if (type1 == DATA_STRING || type2 == DATA_STRING) {
+                                // If either is a string, convert both to strings and compare
+                                char str1[64] = {0};
+                                char str2[64] = {0};
+                                
+                                // Convert first argument to string
+                                if (type1 == DATA_STRING) {
+                                    strncpy(str1, ar_data_get_string(args[0]), sizeof(str1) - 1);
+                                } else if (type1 == DATA_INTEGER) {
+                                    snprintf(str1, sizeof(str1), "%d", ar_data_get_integer(args[0]));
+                                } else if (type1 == DATA_DOUBLE) {
+                                    snprintf(str1, sizeof(str1), "%f", ar_data_get_double(args[0]));
+                                }
+                                
+                                // Convert second argument to string
+                                if (type2 == DATA_STRING) {
+                                    strncpy(str2, ar_data_get_string(args[1]), sizeof(str2) - 1);
+                                } else if (type2 == DATA_INTEGER) {
+                                    snprintf(str2, sizeof(str2), "%d", ar_data_get_integer(args[1]));
+                                } else if (type2 == DATA_DOUBLE) {
+                                    snprintf(str2, sizeof(str2), "%f", ar_data_get_double(args[1]));
+                                }
+                                
+                                // Compare the string representations
+                                is_equal = (strcmp(str1, str2) == 0);
+                            }
+                        }
+                        
+                        // Set result to boolean result (1 for true, 0 for false)
+                        ar_data_destroy(result);
+                        result = ar_data_create_integer(is_equal ? 1 : 0);
+                        if (!result) {
+                            result = ar_data_create_integer(0);
+                        }
+                    }
                 } else if (strcmp(func_name, "build") == 0) {
                     // build(format, arg1, arg2, ...)
                     if (arg_count >= 1 && args[0] && ar_data_get_type(args[0]) == DATA_STRING) {
