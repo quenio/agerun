@@ -849,7 +849,88 @@ static void test_list_operations(void) {
     // And the list count should be updated
     assert(ar_data_list_count(list_data) == 6);
     
-    // Cleanup removed items and list
+    // Test the typed removal functions
+    
+    // Start with a fresh list
+    data_t *typed_list = ar_data_create_list();
+    assert(typed_list != NULL);
+    
+    // Add items of different types in a specific order for our tests
+    ar_data_list_add_last_integer(typed_list, 100);  // first item - for first integer test
+    ar_data_list_add_last_double(typed_list, 2.5);   // second item - for first double test
+    ar_data_list_add_last_string(typed_list, "test string"); // third item - for first string test
+    ar_data_list_add_last_string(typed_list, "another string"); // fourth item
+    ar_data_list_add_last_double(typed_list, 3.5);   // fifth item - for last double test
+    ar_data_list_add_last_integer(typed_list, 200);  // last item - for last integer test
+    
+    // Test ar_data_list_remove_first_integer
+    int first_int = ar_data_list_remove_first_integer(typed_list);
+    assert(first_int == 100);
+    assert(ar_data_list_count(typed_list) == 5);
+    
+    // Test ar_data_list_remove_first_double
+    double first_double = ar_data_list_remove_first_double(typed_list);
+    assert(first_double == 2.5);
+    assert(ar_data_list_count(typed_list) == 4);
+    
+    // Test ar_data_list_remove_first_string
+    char *first_string = ar_data_list_remove_first_string(typed_list);
+    assert(first_string != NULL);
+    assert(strcmp(first_string, "test string") == 0);
+    free(first_string);
+    assert(ar_data_list_count(typed_list) == 3);
+    
+    // Test ar_data_list_remove_last_integer
+    int last_int = ar_data_list_remove_last_integer(typed_list);
+    assert(last_int == 200);
+    assert(ar_data_list_count(typed_list) == 2);
+    
+    // Test ar_data_list_remove_last_double
+    double last_double = ar_data_list_remove_last_double(typed_list);
+    assert(last_double == 3.5);
+    assert(ar_data_list_count(typed_list) == 1);
+    
+    // Test ar_data_list_remove_last_string
+    char *last_string = ar_data_list_remove_last_string(typed_list);
+    assert(last_string != NULL);
+    assert(strcmp(last_string, "another string") == 0);
+    free(last_string);
+    assert(ar_data_list_count(typed_list) == 0);
+    
+    // Test removing from an empty list
+    assert(ar_data_list_remove_first_integer(typed_list) == 0);
+    assert(ar_data_list_remove_first_double(typed_list) == 0.0);
+    assert(ar_data_list_remove_first_string(typed_list) == NULL);
+    assert(ar_data_list_remove_last_integer(typed_list) == 0);
+    assert(ar_data_list_remove_last_double(typed_list) == 0.0);
+    assert(ar_data_list_remove_last_string(typed_list) == NULL);
+    
+    // Test removing with type mismatch
+    ar_data_list_add_last_integer(typed_list, 300);
+    assert(ar_data_list_remove_first_double(typed_list) == 0.0); // Should return 0.0 and not remove
+    assert(ar_data_list_remove_first_string(typed_list) == NULL); // Should return NULL and not remove
+    assert(ar_data_list_count(typed_list) == 1); // Should still be 1
+    assert(ar_data_list_remove_first_integer(typed_list) == 300); // Now remove properly
+    assert(ar_data_list_count(typed_list) == 0);
+    
+    // Add mixed types in reverse order
+    ar_data_list_add_last_string(typed_list, "string first");
+    ar_data_list_add_last_double(typed_list, 4.5);
+    ar_data_list_add_last_integer(typed_list, 400);
+    
+    // Test last with type mismatch
+    assert(ar_data_list_remove_last_double(typed_list) == 0.0); // Should return 0.0 and not remove
+    assert(ar_data_list_remove_last_string(typed_list) == NULL); // Should return NULL and not remove
+    assert(ar_data_list_count(typed_list) == 3); // Should still be 3
+    assert(ar_data_list_remove_last_integer(typed_list) == 400); // Now remove properly
+    assert(ar_data_list_count(typed_list) == 2);
+    assert(ar_data_list_remove_last_double(typed_list) == 4.5);
+    assert(ar_data_list_count(typed_list) == 1);
+    
+    // Cleanup typed_list
+    ar_data_destroy(typed_list);
+    
+    // Cleanup removed items and original list
     ar_data_destroy(removed_first);
     ar_data_destroy(removed_last);
     ar_data_destroy(list_data);
@@ -866,6 +947,12 @@ static void test_list_operations(void) {
     assert(ar_data_list_last(NULL) == NULL);
     assert(ar_data_list_remove_first(NULL) == NULL);
     assert(ar_data_list_remove_last(NULL) == NULL);
+    assert(ar_data_list_remove_first_integer(NULL) == 0);
+    assert(ar_data_list_remove_first_double(NULL) == 0.0);
+    assert(ar_data_list_remove_first_string(NULL) == NULL);
+    assert(ar_data_list_remove_last_integer(NULL) == 0);
+    assert(ar_data_list_remove_last_double(NULL) == 0.0);
+    assert(ar_data_list_remove_last_string(NULL) == NULL);
     
     // Test error handling for wrong data type
     data_t *int_data2 = ar_data_create_integer(42);
@@ -879,6 +966,12 @@ static void test_list_operations(void) {
     assert(ar_data_list_last(int_data2) == NULL);
     assert(ar_data_list_remove_first(int_data2) == NULL);
     assert(ar_data_list_remove_last(int_data2) == NULL);
+    assert(ar_data_list_remove_first_integer(int_data2) == 0);
+    assert(ar_data_list_remove_first_double(int_data2) == 0.0);
+    assert(ar_data_list_remove_first_string(int_data2) == NULL);
+    assert(ar_data_list_remove_last_integer(int_data2) == 0);
+    assert(ar_data_list_remove_last_double(int_data2) == 0.0);
+    assert(ar_data_list_remove_last_string(int_data2) == NULL);
     ar_data_destroy(int_data2);
     
     printf("List operations tests passed!\n");

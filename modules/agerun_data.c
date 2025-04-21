@@ -909,6 +909,254 @@ data_t *ar_data_list_last(const data_t *data) {
 }
 
 /**
+ * Remove and return the first integer value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The integer value, or 0 if data is NULL, not a list, list is empty, or first item not an integer
+ * @note This function also removes and frees the data structure containing the integer
+ */
+int ar_data_list_remove_first_integer(data_t *data) {
+    if (!data || data->type != DATA_LIST) {
+        return 0;
+    }
+    
+    // Get the list from the data
+    list_t *list = ar_data_get_list(data);
+    if (!list) {
+        return 0;
+    }
+    
+    // Remove the first item from the list
+    data_t *first_data = (data_t *)ar_list_remove_first(list);
+    if (!first_data) {
+        return 0;
+    }
+    
+    // Check if the data is an integer
+    if (ar_data_get_type(first_data) != DATA_INTEGER) {
+        // Put the item back in the list if it's not an integer
+        ar_list_add_first(list, first_data);
+        return 0;
+    }
+    
+    // Get the integer value
+    int value = ar_data_get_integer(first_data);
+    
+    // Free the data structure
+    ar_data_destroy(first_data);
+    
+    return value;
+}
+
+/**
+ * Remove and return the first double value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The double value, or 0.0 if data is NULL, not a list, list is empty, or first item not a double
+ * @note This function also removes and frees the data structure containing the double
+ */
+double ar_data_list_remove_first_double(data_t *data) {
+    if (!data || data->type != DATA_LIST) {
+        return 0.0;
+    }
+    
+    // Get the list from the data
+    list_t *list = ar_data_get_list(data);
+    if (!list) {
+        return 0.0;
+    }
+    
+    // Remove the first item from the list
+    data_t *first_data = (data_t *)ar_list_remove_first(list);
+    if (!first_data) {
+        return 0.0;
+    }
+    
+    // Check if the data is a double
+    if (ar_data_get_type(first_data) != DATA_DOUBLE) {
+        // Put the item back in the list if it's not a double
+        ar_list_add_first(list, first_data);
+        return 0.0;
+    }
+    
+    // Get the double value
+    double value = ar_data_get_double(first_data);
+    
+    // Free the data structure
+    ar_data_destroy(first_data);
+    
+    return value;
+}
+
+/**
+ * Remove and return the first string value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The string value (caller must free), or NULL if data is NULL, not a list, list is empty, or first item not a string
+ * @note This function also removes and frees the data structure containing the string reference
+ */
+char *ar_data_list_remove_first_string(data_t *data) {
+    if (!data || data->type != DATA_LIST) {
+        return NULL;
+    }
+    
+    // Get the list from the data
+    list_t *list = ar_data_get_list(data);
+    if (!list) {
+        return NULL;
+    }
+    
+    // Remove the first item from the list
+    data_t *first_data = (data_t *)ar_list_remove_first(list);
+    if (!first_data) {
+        return NULL;
+    }
+    
+    // Check if the data is a string
+    if (ar_data_get_type(first_data) != DATA_STRING) {
+        // Put the item back in the list if it's not a string
+        ar_list_add_first(list, first_data);
+        return NULL;
+    }
+    
+    // Get the string value
+    const char *orig_str = ar_data_get_string(first_data);
+    if (!orig_str) {
+        ar_data_destroy(first_data);
+        return NULL;
+    }
+    
+    // Make a copy of the string for the caller
+    char *str_copy = strdup(orig_str);
+    
+    // Free the data structure
+    ar_data_destroy(first_data);
+    
+    return str_copy;
+}
+
+/**
+ * Remove and return the last integer value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The integer value, or 0 if data is NULL, not a list, list is empty, or last item not an integer
+ * @note This function also removes and frees the data structure containing the integer
+ */
+int ar_data_list_remove_last_integer(data_t *data) {
+    if (!data || data->type != DATA_LIST) {
+        return 0;
+    }
+    
+    // Get the list from the data
+    list_t *list = ar_data_get_list(data);
+    if (!list) {
+        return 0;
+    }
+    
+    // Remove the last item from the list
+    data_t *last_data = (data_t *)ar_list_remove_last(list);
+    if (!last_data) {
+        return 0;
+    }
+    
+    // Check if the data is an integer
+    if (ar_data_get_type(last_data) != DATA_INTEGER) {
+        // Put the item back in the list if it's not an integer
+        ar_list_add_last(list, last_data);
+        return 0;
+    }
+    
+    // Get the integer value
+    int value = ar_data_get_integer(last_data);
+    
+    // Free the data structure
+    ar_data_destroy(last_data);
+    
+    return value;
+}
+
+/**
+ * Remove and return the last double value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The double value, or 0.0 if data is NULL, not a list, list is empty, or last item not a double
+ * @note This function also removes and frees the data structure containing the double
+ */
+double ar_data_list_remove_last_double(data_t *data) {
+    if (!data || data->type != DATA_LIST) {
+        return 0.0;
+    }
+    
+    // Get the list from the data
+    list_t *list = ar_data_get_list(data);
+    if (!list) {
+        return 0.0;
+    }
+    
+    // Remove the last item from the list
+    data_t *last_data = (data_t *)ar_list_remove_last(list);
+    if (!last_data) {
+        return 0.0;
+    }
+    
+    // Check if the data is a double
+    if (ar_data_get_type(last_data) != DATA_DOUBLE) {
+        // Put the item back in the list if it's not a double
+        ar_list_add_last(list, last_data);
+        return 0.0;
+    }
+    
+    // Get the double value
+    double value = ar_data_get_double(last_data);
+    
+    // Free the data structure
+    ar_data_destroy(last_data);
+    
+    return value;
+}
+
+/**
+ * Remove and return the last string value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The string value (caller must free), or NULL if data is NULL, not a list, list is empty, or last item not a string
+ * @note This function also removes and frees the data structure containing the string reference
+ */
+char *ar_data_list_remove_last_string(data_t *data) {
+    if (!data || data->type != DATA_LIST) {
+        return NULL;
+    }
+    
+    // Get the list from the data
+    list_t *list = ar_data_get_list(data);
+    if (!list) {
+        return NULL;
+    }
+    
+    // Remove the last item from the list
+    data_t *last_data = (data_t *)ar_list_remove_last(list);
+    if (!last_data) {
+        return NULL;
+    }
+    
+    // Check if the data is a string
+    if (ar_data_get_type(last_data) != DATA_STRING) {
+        // Put the item back in the list if it's not a string
+        ar_list_add_last(list, last_data);
+        return NULL;
+    }
+    
+    // Get the string value
+    const char *orig_str = ar_data_get_string(last_data);
+    if (!orig_str) {
+        ar_data_destroy(last_data);
+        return NULL;
+    }
+    
+    // Make a copy of the string for the caller
+    char *str_copy = strdup(orig_str);
+    
+    // Free the data structure
+    ar_data_destroy(last_data);
+    
+    return str_copy;
+}
+
+/**
  * Get the number of items in a list data structure
  * @param data Pointer to the list data
  * @return The number of items, or 0 if data is NULL or not a list

@@ -243,6 +243,54 @@ data_t *ar_data_list_remove_first(data_t *data);
 data_t *ar_data_list_remove_last(data_t *data);
 
 /**
+ * Remove and return the first integer value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The integer value, or 0 if data is NULL, not a list, list is empty, or first item not an integer
+ * @note This function also removes and frees the data structure containing the integer
+ */
+int ar_data_list_remove_first_integer(data_t *data);
+
+/**
+ * Remove and return the first double value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The double value, or 0.0 if data is NULL, not a list, list is empty, or first item not a double
+ * @note This function also removes and frees the data structure containing the double
+ */
+double ar_data_list_remove_first_double(data_t *data);
+
+/**
+ * Remove and return the first string value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The string value (caller must free), or NULL if data is NULL, not a list, list is empty, or first item not a string
+ * @note This function also removes and frees the data structure containing the string reference
+ */
+char *ar_data_list_remove_first_string(data_t *data);
+
+/**
+ * Remove and return the last integer value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The integer value, or 0 if data is NULL, not a list, list is empty, or last item not an integer
+ * @note This function also removes and frees the data structure containing the integer
+ */
+int ar_data_list_remove_last_integer(data_t *data);
+
+/**
+ * Remove and return the last double value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The double value, or 0.0 if data is NULL, not a list, list is empty, or last item not a double
+ * @note This function also removes and frees the data structure containing the double
+ */
+double ar_data_list_remove_last_double(data_t *data);
+
+/**
+ * Remove and return the last string value from a list data structure
+ * @param data Pointer to the list data to modify
+ * @return The string value (caller must free), or NULL if data is NULL, not a list, list is empty, or last item not a string
+ * @note This function also removes and frees the data structure containing the string reference
+ */
+char *ar_data_list_remove_last_string(data_t *data);
+
+/**
  * Get the first data value from a list data structure (without removing it)
  * @param data Pointer to the list data
  * @return The first data value (ownership is not transferred), or NULL if data is NULL, not a list, or list is empty
