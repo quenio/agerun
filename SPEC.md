@@ -11,10 +11,14 @@ This specification defines a lightweight, message-driven agent system where each
 
 ### Versioning:
 
+- **Semantic Versioning**: Method versions follow semantic versioning (e.g., "1.0.0"), where:
+  - The first number is the major version (breaking changes)
+  - The second number is the minor version (backward-compatible new features)
+  - The third number is the patch version (backward-compatible bug fixes)
 - **Immutable Versions**: Once a method version is created, it is immutable.
-- **Backward Compatibility**: New method versions can specify backward compatibility. If set:
-  - Existing agents automatically switch to the newest compatible version.
-  - New agents referencing older versions are instantiated with the latest compatible version.
+- **Backward Compatibility**: Compatibility between versions is determined by semantic versioning rules:
+  - Existing agents automatically switch to the newest compatible version (same major version).
+  - New agents referencing a partial version (e.g., "1") are instantiated with the latest matching version (e.g., latest "1.x.x").
 
 ### Persistence:
 
@@ -94,7 +98,7 @@ The following BNF grammar defines the syntax of individual instructions allowed 
 <send-function> ::= 'send' '(' <expression> ',' <expression> ')'
 <parse-function> ::= 'parse' '(' <expression> ',' <expression> ')'
 <build-function> ::= 'build' '(' <expression> ',' <expression> ')'
-<method-function> ::= 'method' '(' <expression> ',' <expression> [',' <expression> [',' <expression> [',' <expression>]]] ')'
+<method-function> ::= 'method' '(' <expression> ',' <expression> ',' <expression> ')'
 <agent-function> ::= 'agent' '(' <expression> [',' <expression> [',' <expression>]] ')'
 <destroy-function> ::= 'destroy' '(' <expression> ')'
 <if-function> ::= 'if' '(' <comparison-expression> ',' <expression> ',' <expression> ')'
@@ -198,8 +202,8 @@ The expression evaluator follows these rules:
 
 ### 6. Agent Management
 
-- `method(name: string, instructions: string, previous_version: integer = 0, backward_compatible: boolean = true, persist: boolean = false) → version`: Defines a new method with the specified name and instruction code. If `previous_version` is given, it builds on the prior version. If `backward_compatible` is true, existing agents will upgrade automatically. Returns the new version number. If the instructions cannot be parsed or compiled, returns 0.
-- `agent(method_name: string, version: integer = null, context: map = null) → agent_id`: Creates a new agent instance based on the specified method name and (optionally) version. If no version is specified, the latest available version will be used. An optional context may be provided. Returns a unique agent ID.
+- `method(name: string, instructions: string, version: string) → boolean`: Defines a new method with the specified name, instruction code, and version string. The version string must follow semantic versioning (e.g., "1.0.0"). Compatibility between versions is determined based on semantic versioning rules: agents using version 1.x.x will automatically use the latest 1.x.x version. Returns true if the method was successfully defined, or false if the instructions cannot be parsed or compiled.
+- `agent(method_name: string, version: string = null, context: map = null) → agent_id`: Creates a new agent instance based on the specified method name and (optionally) version string. If no version is specified, the latest available version will be used. If a partial version is specified (e.g., "1"), the latest matching version (e.g., latest "1.x.x") will be used. An optional context may be provided. Returns a unique agent ID.
 - `destroy(agent_id: integer) → boolean`: Attempts to destroy the specified agent. Returns true if successful, or false if the agent does not exist or is already destroyed.
 
 ## Message Handling
@@ -231,4 +235,4 @@ Messages can be any of the supported data types:
 
 ## System Startup
 
-The system is started by providing a method name and version, which is used to create the first agent—similar to the `agent` instruction. Immediately after creation, the system sends the special message `__wake__` to this initial agent.
+The system is started by providing a method name and version string, which is used to create the first agent—similar to the `agent` instruction. Immediately after creation, the system sends the special message `__wake__` to this initial agent.
