@@ -78,7 +78,6 @@ The following BNF grammar defines the syntax of individual instructions allowed 
 ```
 <instruction> ::= <assignment>
                | <function-instruction>
-               | <conditional-instruction>
                
 <assignment> ::= <memory-access> ':=' <expression>
 
@@ -90,6 +89,7 @@ The following BNF grammar defines the syntax of individual instructions allowed 
                  | <method-function>
                  | <create-function>
                  | <destroy-function>
+                 | <if-function>
 
 <send-function> ::= 'send' '(' <expression> ',' <expression> ')'
 <parse-function> ::= 'parse' '(' <expression> ',' <expression> ')'
@@ -97,11 +97,10 @@ The following BNF grammar defines the syntax of individual instructions allowed 
 <method-function> ::= 'method' '(' <expression> ',' <expression> [',' <expression> [',' <expression> [',' <expression>]]] ')'
 <create-function> ::= 'create' '(' <expression> [',' <expression> [',' <expression>]] ')'
 <destroy-function> ::= 'destroy' '(' <expression> ')'
-
-<conditional-instruction> ::= [<memory-access> ':='] 'if' '(' <comparison-expression> ',' <expression> ',' <expression> ')'
+<if-function> ::= 'if' '(' <comparison-expression> ',' <expression> ',' <expression> ')'
 ```
 
-Instructions in an agent method can be of three types:
+Instructions in an agent method can be of two types:
 - An assignment, which stores the result of an expression in the agent's memory using the `:=` operator
 - A function call instruction, which must be one of the supported system functions:
   - `send` - Send a message to another agent
@@ -110,9 +109,9 @@ Instructions in an agent method can be of three types:
   - `method` - Define a new agent method
   - `create` - Create a new agent instance
   - `destroy` - Destroy an existing agent
-- A conditional instruction using `if`, which evaluates a condition and returns one of two values based on the result
+  - `if` - Evaluates a condition and returns one of two values based on the result
 
-Function call and conditional instructions can optionally assign their result to a variable. For example:
+Function call instructions can optionally assign their result to a variable. For example:
 - `send(agent_id, message)` - Call the function without storing the result
 - `success := send(agent_id, message)` - Store the result in a memory variable
 - `if(condition, true_value, false_value)` - Evaluate without storing the result
