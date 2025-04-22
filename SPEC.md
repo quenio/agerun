@@ -98,7 +98,7 @@ The following BNF grammar defines the syntax of individual instructions allowed 
 <create-function> ::= 'create' '(' <expression> [',' <expression> [',' <expression>]] ')'
 <destroy-function> ::= 'destroy' '(' <expression> ')'
 
-<conditional-instruction> ::= [<variable> ':='] 'if' '(' <expression> ',' <expression> ',' <expression> ')'
+<conditional-instruction> ::= [<variable> ':='] 'if' '(' <comparison-expression> ',' <expression> ',' <expression> ')'
 
 <variable> ::= <identifier>
 ```
