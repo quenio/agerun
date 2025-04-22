@@ -74,8 +74,8 @@ int main(void) {
 ```c
 // Define a counter method
 version_t counter_version = ar_method_create("counter", 
-    "if(message == \"increment\", memory[\"count\"] := memory[\"count\"] + 1, \"\")\n"
-    "if(message == \"get\", send(0, build(\"Count: {}\", memory[\"count\"])), \"\")",
+    "if(message == \"increment\", memory.count := memory.count + 1, \"\")\n"
+    "if(message == \"get\", send(0, build(\"Count: {}\", memory.count)), \"\")",
     0, true, true);
 
 // Create a counter agent
@@ -124,8 +124,8 @@ Agents use a simple expression and instruction language for their methods:
 
 ### Memory Operations
 
-- Read: `memory["key"]` or using shorthand `key`
-- Write: `memory["key"] := value` or using shorthand `key := value`
+- Read: `memory.key` or nested paths like `memory.user.name`
+- Write: `memory.key := value` or nested paths like `memory.user.settings.theme := "dark"`
 
 ### Arithmetic Operations
 

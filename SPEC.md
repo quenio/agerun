@@ -147,9 +147,9 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
 <integer> ::= ['-'] <digit> {<digit>}
 <double>  ::= <integer> '.' <digit> {<digit>}
 
-<memory-access> ::= <identifier>
-                 | 'message'
-                 | 'memory' '[' <expression> ']'
+<memory-access> ::= 'message' {'.' <identifier>}
+                 | 'memory' {'.' <identifier>}
+                 | 'context' {'.' <identifier>}
 
 <arithmetic-expression> ::= <expression> <arithmetic-operator> <expression>
 <arithmetic-operator> ::= '+' | '-' | '*' | '/'
@@ -166,8 +166,10 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
 The expression evaluator follows these rules:
 - String literals are enclosed in double quotes and represent string values
 - Number literals can be either integers (whole numbers) or doubles (floating-point numbers)
-- The special identifier `message` refers to the current message being processed
-- Memory access is done through `memory[key]` where key is any expression that evaluates to a string
+- `message` refers to the current message being processed, and nested fields can be accessed using dot notation (e.g., `message.field`)
+- `memory` provides access to the agent's memory map, and nested fields can be accessed using dot notation (e.g., `memory.field`)
+- `context` provides access to the agent's read-only context map, and nested fields can be accessed using dot notation (e.g., `context.field`)
+- In assignments, only `memory` paths can be used on the left side of the ':=' operator
 - Arithmetic operations can be performed with basic operators: +, -, *, /
 - Comparison operations use relational operators to compare values:
   - `=` equality (returns true if the values are equal)
@@ -193,8 +195,8 @@ The expression evaluator follows these rules:
 
 ### 3. Memory Access
 
-- **Reading**: Access a value using `var`.
-- **Writing**: Assign a value using `var := value`.
+- **Reading**: Access values using dot notation with the root identifiers `message`, `memory`, or `context` (e.g., `message.field`, `memory.user.name`, `context.settings`).
+- **Writing**: Assign values to memory using `memory.path := value`. Only `memory` paths can be used on the left side of an assignment.
 
 ### 4. Arithmetic Operations
 
