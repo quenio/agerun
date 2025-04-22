@@ -80,9 +80,9 @@ The following BNF grammar defines the syntax of individual instructions allowed 
                | <function-instruction>
                | <conditional-instruction>
                
-<assignment> ::= <variable> ':=' <expression>
+<assignment> ::= <memory-access> ':=' <expression>
 
-<function-instruction> ::= [<variable> ':='] <function-call>
+<function-instruction> ::= [<memory-access> ':='] <function-call>
 
 <function-call> ::= <send-function>
                  | <parse-function>
@@ -98,9 +98,7 @@ The following BNF grammar defines the syntax of individual instructions allowed 
 <create-function> ::= 'create' '(' <expression> [',' <expression> [',' <expression>]] ')'
 <destroy-function> ::= 'destroy' '(' <expression> ')'
 
-<conditional-instruction> ::= [<variable> ':='] 'if' '(' <comparison-expression> ',' <expression> ',' <expression> ')'
-
-<variable> ::= <identifier>
+<conditional-instruction> ::= [<memory-access> ':='] 'if' '(' <comparison-expression> ',' <expression> ',' <expression> ')'
 ```
 
 Instructions in an agent method can be of three types:
@@ -129,7 +127,6 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
 ```
 <expression> ::= <string-literal>
               | <number-literal>
-              | <variable-access>
               | <memory-access>
               | <arithmetic-expression>
               | <comparison-expression>
@@ -142,9 +139,9 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
 <integer> ::= ['-'] <digit> {<digit>}
 <double>  ::= <integer> '.' <digit> {<digit>}
 
-<variable-access> ::= 'message'
-
-<memory-access> ::= 'memory' '[' <expression> ']'
+<memory-access> ::= <identifier>
+                 | 'message'
+                 | 'memory' '[' <expression> ']'
 
 <arithmetic-expression> ::= <expression> <arithmetic-operator> <expression>
 <arithmetic-operator> ::= '+' | '-' | '*' | '/'
