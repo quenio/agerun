@@ -87,7 +87,7 @@ The following BNF grammar defines the syntax of individual instructions allowed 
                  | <parse-function>
                  | <build-function>
                  | <method-function>
-                 | <create-function>
+                 | <agent-function>
                  | <destroy-function>
                  | <if-function>
 
@@ -95,7 +95,7 @@ The following BNF grammar defines the syntax of individual instructions allowed 
 <parse-function> ::= 'parse' '(' <expression> ',' <expression> ')'
 <build-function> ::= 'build' '(' <expression> ',' <expression> ')'
 <method-function> ::= 'method' '(' <expression> ',' <expression> [',' <expression> [',' <expression> [',' <expression>]]] ')'
-<create-function> ::= 'create' '(' <expression> [',' <expression> [',' <expression>]] ')'
+<agent-function> ::= 'agent' '(' <expression> [',' <expression> [',' <expression>]] ')'
 <destroy-function> ::= 'destroy' '(' <expression> ')'
 <if-function> ::= 'if' '(' <comparison-expression> ',' <expression> ',' <expression> ')'
 ```
@@ -107,7 +107,7 @@ Instructions in an agent method can be of two types:
   - `parse` - Extract values from a string using a template
   - `build` - Construct a string using a template and values
   - `method` - Define a new agent method
-  - `create` - Create a new agent instance
+  - `agent` - Create a new agent instance
   - `destroy` - Destroy an existing agent
   - `if` - Evaluates a condition and returns one of two values based on the result
 
@@ -199,7 +199,7 @@ The expression evaluator follows these rules:
 ### 6. Agent Management
 
 - `method(name: string, instructions: string, previous_version: integer = 0, backward_compatible: boolean = true, persist: boolean = false) → version`: Defines a new method with the specified name and instruction code. If `previous_version` is given, it builds on the prior version. If `backward_compatible` is true, existing agents will upgrade automatically. Returns the new version number. If the instructions cannot be parsed or compiled, returns 0.
-- `create(method_name: string, version: integer = null, context: map = null) → agent_id`: Creates a new agent instance based on the specified method name and (optionally) version. If no version is specified, the latest available version will be used. An optional context may be provided. Returns a unique agent ID.
+- `agent(method_name: string, version: integer = null, context: map = null) → agent_id`: Creates a new agent instance based on the specified method name and (optionally) version. If no version is specified, the latest available version will be used. An optional context may be provided. Returns a unique agent ID.
 - `destroy(agent_id: integer) → boolean`: Attempts to destroy the specified agent. Returns true if successful, or false if the agent does not exist or is already destroyed.
 
 ## Message Handling
@@ -231,4 +231,4 @@ Messages can be any of the supported data types:
 
 ## System Startup
 
-The system is started by providing a method name and version, which is used to create the first agent—similar to the `create` instruction. Immediately after creation, the system sends the special message `__wake__` to this initial agent.
+The system is started by providing a method name and version, which is used to create the first agent—similar to the `agent` instruction. Immediately after creation, the system sends the special message `__wake__` to this initial agent.
