@@ -28,7 +28,7 @@ This specification defines a lightweight, message-driven agent system where each
 ## Agent Lifecycle
 
 - **Creation/Resumption**: Upon creation or resumption, the agent receives the special message `__wake__`.
-- **Pausing/Destruction**: Before pausing or destruction, the agent receives the special message `__sleep__`.
+- **Pausing/Destruction**: Before pausing or destruction, the agent receives the special message `__sleep__`. An agent is only destroyed after it has processed the `__sleep__` message and entered a sleeping state.
 
 ### Resource Management:
 
@@ -101,6 +101,7 @@ The following BNF grammar defines the syntax of individual instructions allowed 
 <method-function> ::= 'method' '(' <expression> ',' <expression> ',' <expression> ')'
 <agent-function> ::= 'agent' '(' <expression> ',' <expression> [',' <expression>] ')'
 <destroy-function> ::= 'destroy' '(' <expression> ')'
+                     | 'destroy' '(' <expression> ',' <expression> ')'
 <if-function> ::= 'if' '(' <comparison-expression> ',' <expression> ',' <expression> ')'
 ```
 
@@ -112,12 +113,16 @@ Instructions in an agent method can be of two types:
   - `build` - Construct a string using a template and values
   - `method` - Define a new agent method
   - `agent` - Create a new agent instance
-  - `destroy` - Destroy an existing agent
+  - `destroy` - Destroy an existing agent or method
   - `if` - Evaluates a condition and returns one of two values based on the result
 
 Function call instructions can optionally assign their result to a variable. For example:
 - `send(agent_id, message)` - Call the function without storing the result
 - `success := send(agent_id, message)` - Store the result in a memory variable
+- `destroy(agent_id)` - Destroy an agent without storing the result
+- `success := destroy(agent_id)` - Destroy an agent and store the result
+- `destroy(method_name, method_version)` - Destroy a method without storing the result
+- `success := destroy(method_name, method_version)` - Destroy a method and store the result
 - `if(condition, true_value, false_value)` - Evaluate without storing the result
 - `result := if(condition, true_value, false_value)` - Store the result in a memory variable
 
@@ -204,7 +209,8 @@ The expression evaluator follows these rules:
 
 - `method(method_name: string, version: string, instructions: string) → boolean`: Defines a new method with the specified name, version string, and instruction code. The version string must follow semantic versioning (e.g., "1.0.0"). Compatibility between versions is determined based on semantic versioning rules: agents using version 1.x.x will automatically use the latest 1.x.x version. Returns true if the method was successfully defined, or false if the instructions cannot be parsed or compiled.
 - `agent(method_name: string, version: string, context: map = null) → agent_id`: Creates a new agent instance based on the specified method name and version string. The version parameter is required. If a partial version is specified (e.g., "1"), the latest matching version (e.g., latest "1.x.x") will be used. An optional context may be provided. Returns a unique agent ID.
-- `destroy(agent_id: integer) → boolean`: Attempts to destroy the specified agent. Returns true if successful, or false if the agent does not exist or is already destroyed.
+- `destroy(agent_id: integer) → boolean`: Attempts to destroy the specified agent. Before destruction, the agent receives the `__sleep__` message. The agent is only destroyed after it is in a sleeping state. Returns true if successful, or false if the agent does not exist or is already destroyed.
+- `destroy(method_name: string, method_version: string) → boolean`: Attempts to destroy the specified method version. If any agents are using this method, they will all be sent the `__sleep__` message first, then destroyed once they are sleeping, before the method is removed. Returns true if successful, or false if the method does not exist.
 
 ## Message Handling
 
