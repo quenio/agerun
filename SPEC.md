@@ -18,7 +18,7 @@ This specification defines a lightweight, message-driven agent system where each
 - **Immutable Versions**: Once a method version is created, it is immutable.
 - **Backward Compatibility**: Compatibility between versions is determined by semantic versioning rules:
   - Existing agents automatically switch to the newest compatible version (same major version).
-  - New agents referencing a partial version (e.g., "1") are instantiated with the latest matching version (e.g., latest "1.x.x").
+  - Agents must specify a version, but can use a partial version (e.g., "1") to get the latest matching version (e.g., latest "1.x.x").
 
 ### Persistence:
 
@@ -99,7 +99,7 @@ The following BNF grammar defines the syntax of individual instructions allowed 
 <parse-function> ::= 'parse' '(' <expression> ',' <expression> ')'
 <build-function> ::= 'build' '(' <expression> ',' <expression> ')'
 <method-function> ::= 'method' '(' <expression> ',' <expression> ',' <expression> ')'
-<agent-function> ::= 'agent' '(' <expression> [',' <expression> [',' <expression>]] ')'
+<agent-function> ::= 'agent' '(' <expression> ',' <expression> [',' <expression>] ')'
 <destroy-function> ::= 'destroy' '(' <expression> ')'
 <if-function> ::= 'if' '(' <comparison-expression> ',' <expression> ',' <expression> ')'
 ```
@@ -203,7 +203,7 @@ The expression evaluator follows these rules:
 ### 6. Agent Management
 
 - `method(name: string, instructions: string, version: string) → boolean`: Defines a new method with the specified name, instruction code, and version string. The version string must follow semantic versioning (e.g., "1.0.0"). Compatibility between versions is determined based on semantic versioning rules: agents using version 1.x.x will automatically use the latest 1.x.x version. Returns true if the method was successfully defined, or false if the instructions cannot be parsed or compiled.
-- `agent(method_name: string, version: string = null, context: map = null) → agent_id`: Creates a new agent instance based on the specified method name and (optionally) version string. If no version is specified, the latest available version will be used. If a partial version is specified (e.g., "1"), the latest matching version (e.g., latest "1.x.x") will be used. An optional context may be provided. Returns a unique agent ID.
+- `agent(method_name: string, version: string, context: map = null) → agent_id`: Creates a new agent instance based on the specified method name and version string. The version parameter is required. If a partial version is specified (e.g., "1"), the latest matching version (e.g., latest "1.x.x") will be used. An optional context may be provided. Returns a unique agent ID.
 - `destroy(agent_id: integer) → boolean`: Attempts to destroy the specified agent. Returns true if successful, or false if the agent does not exist or is already destroyed.
 
 ## Message Handling
