@@ -126,3 +126,28 @@ The [data module](agerun_data.md) builds on the map and list modules to provide 
 - **Depends on Map**: Uses the map module for underlying storage
 - **Depends on List**: Uses the list module for tracking allocated keys
 - **Memory Leak Prevention**: Properly tracks and frees all dynamically allocated memory
+
+### Expression Module (`agerun_expression`)
+
+The [expression module](agerun_expression.md) provides a recursive descent parser for evaluating expressions in the AgeRun agent system:
+
+- **Grammar Implementation**: Implements the BNF grammar for expressions defined in the specification
+- **Type Handling**: Properly evaluates expressions for all supported data types
+- **Memory Access**: Supports dot notation for accessing message, memory, and context values
+- **Arithmetic Operations**: Handles addition, subtraction, multiplication, and division
+- **Comparison Operations**: Implements equality, inequality, and relational operators
+- **Function Calls**: Supports function calls with argument evaluation
+- **Recursive Parsing**: Uses recursive descent parsing for nested expressions
+- **Depends on Data**: Uses the data module for storing and manipulating values
+
+### Instruction Module (`agerun_instruction`)
+
+The [instruction module](agerun_instruction.md) provides a recursive descent parser for executing instructions in the AgeRun agent system:
+
+- **Grammar Implementation**: Implements the BNF grammar for instructions defined in the specification
+- **Memory Assignment**: Handles assignment to memory using dot notation
+- **Function Instruction**: Supports function calls with optional assignment
+- **Parser Integration**: Works with the expression evaluator for expression parsing
+- **Memory Safety**: Provides proper memory management and error handling
+- **Depends on Expression**: Uses the expression module for evaluating expressions
+- **Depends on Data**: Uses the data module for storing and manipulating values
