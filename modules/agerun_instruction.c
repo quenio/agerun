@@ -13,16 +13,16 @@
 #include <stdint.h>
 
 // Function prototypes for recursive descent parsing
-static bool parse_instruction(agent_t *agent, const data_t *message, const char *instruction, int *pos);
-static bool parse_assignment(agent_t *agent, const data_t *message, const char *instruction, int *pos);
-static bool parse_function_instruction(agent_t *agent, const data_t *message, const char *instruction, int *pos);
+static bool parse_instruction(agent_t *agent, data_t *message, const char *instruction, int *pos);
+static bool parse_assignment(agent_t *agent, data_t *message, const char *instruction, int *pos);
+static bool parse_function_instruction(agent_t *agent, data_t *message, const char *instruction, int *pos);
 static bool parse_memory_access(const char *instruction, int *pos, char **path);
-static bool parse_function_call(agent_t *agent, const data_t *message, const char *instruction, int *pos, data_t **result);
+static bool parse_function_call(agent_t *agent, data_t *message, const char *instruction, int *pos, data_t **result);
 static bool skip_whitespace(const char *instruction, int *pos);
 static bool extract_identifier(const char *instruction, int *pos, char *identifier, int max_size);
 
 // Parse and execute a single instruction
-bool ar_instruction_run(agent_t *agent, const data_t *message, const char *instruction) {
+bool ar_instruction_run(agent_t *agent, data_t *message, const char *instruction) {
     if (!agent || !instruction) {
         return false;
     }
@@ -32,7 +32,7 @@ bool ar_instruction_run(agent_t *agent, const data_t *message, const char *instr
 }
 
 // <instruction> ::= <assignment> | <function-instruction>
-static bool parse_instruction(agent_t *agent, const data_t *message, const char *instruction, int *pos) {
+static bool parse_instruction(agent_t *agent, data_t *message, const char *instruction, int *pos) {
     skip_whitespace(instruction, pos);
     
     // Check for assignment or function instruction
@@ -50,7 +50,7 @@ static bool parse_instruction(agent_t *agent, const data_t *message, const char 
 }
 
 // <assignment> ::= <memory-access> ':=' <expression>
-static bool parse_assignment(agent_t *agent, const data_t *message, const char *instruction, int *pos) {
+static bool parse_assignment(agent_t *agent, data_t *message, const char *instruction, int *pos) {
     char *path = NULL;
     
     // Parse memory access (left side)
@@ -90,7 +90,7 @@ static bool parse_assignment(agent_t *agent, const data_t *message, const char *
 }
 
 // <function-instruction> ::= [<memory-access> ':='] <function-call>
-static bool parse_function_instruction(agent_t *agent, const data_t *message, const char *instruction, int *pos) {
+static bool parse_function_instruction(agent_t *agent, data_t *message, const char *instruction, int *pos) {
     char *path = NULL;
     data_t *result = NULL;
     bool has_assignment = false;
@@ -186,7 +186,7 @@ static bool parse_memory_access(const char *instruction, int *pos, char **path) 
 // Parse function call and execute it
 // <function-call> ::= <send-function> | <parse-function> | <build-function> | <method-function> |
 //                     <agent-function> | <destroy-function> | <if-function>
-static bool parse_function_call(agent_t *agent, const data_t *message, const char *instruction, int *pos, data_t **result) {
+static bool parse_function_call(agent_t *agent, data_t *message, const char *instruction, int *pos, data_t **result) {
     // Extract function name
     char function_name[32];
     if (!extract_identifier(instruction, pos, function_name, sizeof(function_name))) {

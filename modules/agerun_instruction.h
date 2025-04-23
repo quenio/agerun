@@ -36,6 +36,6 @@
  * @param instruction The instruction to execute
  * @return true if execution was successful, false otherwise
  */
-bool ar_instruction_run(agent_t *agent, const data_t *message, const char *instruction);
+bool ar_instruction_run(agent_t *agent, data_t *message, const char *instruction);
 
 #endif /* AGERUN_INSTRUCTION_H */

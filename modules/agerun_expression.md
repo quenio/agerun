@@ -54,20 +54,24 @@ Note that function calls are not part of the expression grammar. Function calls 
 ### ar_expression_evaluate
 
 ```c
-data_t* ar_expression_evaluate(agent_t *agent, const data_t *message, const char *expr, int *offset);
+data_t* ar_expression_evaluate(agent_t *agent, data_t *message, const char *expr, int *offset);
 ```
 
 Evaluates an expression in the agent's context.
 
 **Parameters:**
 - `agent`: The agent executing the expression
-- `message`: The message being processed
+- `message`: The message being processed (non-const to allow direct reference return)
 - `expr`: The expression string to evaluate
 - `offset`: Pointer to the current position in the expression string
 
 **Returns:**
-- A pointer to a new data_t containing the result of the evaluation
-- NULL on syntax error (such as encountering a function call in an expression)
+- For memory access expressions (`memory`, `context`, `message`):
+  - Returns a direct reference to the actual data without copying
+  - Returns NULL for non-existent paths
+- For other expressions (literals, arithmetic, comparison):
+  - Returns a new data_t containing the result of the evaluation
+- Returns NULL on syntax error (such as encountering a function call in an expression) or when the evaluated path doesn't exist
 
 The offset is updated to point to the position after the evaluated expression on success, or to the position where the syntax error was detected on failure.
 
@@ -98,7 +102,12 @@ result = ar_expression_evaluate(agent, message, "3.14159", &offset);
 ```c
 int offset = 0;
 data_t *result = ar_expression_evaluate(agent, message, "memory.user.name", &offset);
-// result will contain the value stored in memory.user.name, or 0 if not found
+// result will contain a direct reference to the value stored in memory.user.name, or NULL if path not found
+if (result) {
+    // Use the result value
+} else {
+    // Handle the case where the path doesn't exist
+}
 ```
 
 ### Evaluating Arithmetic Expression

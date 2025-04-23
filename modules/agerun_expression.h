@@ -40,6 +40,6 @@
  * @param offset Pointer to current position in the expression
  * @return Pointer to the evaluated data result, or NULL on failure
  */
-data_t* ar_expression_evaluate(agent_t *agent, const data_t *message, const char *expr, int *offset);
+data_t* ar_expression_evaluate(agent_t *agent, data_t *message, const char *expr, int *offset);
 
 #endif /* AGERUN_EXPRESSION_H */

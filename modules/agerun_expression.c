@@ -43,11 +43,11 @@
  */
 
 // Forward declarations for recursive descent functions
-static data_t* parse_expression(agent_t *agent, const data_t *message, const char *expr, int *offset);
-static data_t* parse_primary(agent_t *agent, const data_t *message, const char *expr, int *offset);
-static data_t* parse_string_literal(agent_t *agent, const data_t *message, const char *expr, int *offset);
-static data_t* parse_number_literal(agent_t *agent, const data_t *message, const char *expr, int *offset);
-static data_t* parse_memory_access(agent_t *agent, const data_t *message, const char *expr, int *offset);
+static data_t* parse_expression(agent_t *agent, data_t *message, const char *expr, int *offset);
+static data_t* parse_primary(agent_t *agent, data_t *message, const char *expr, int *offset);
+static data_t* parse_string_literal(agent_t *agent, data_t *message, const char *expr, int *offset);
+static data_t* parse_number_literal(agent_t *agent, data_t *message, const char *expr, int *offset);
+static data_t* parse_memory_access(agent_t *agent, data_t *message, const char *expr, int *offset);
 static void skip_whitespace(const char *expr, int *offset);
 static bool is_comparison_operator(const char *expr, int offset);
 static bool is_arithmetic_operator(char c);
@@ -150,7 +150,7 @@ static bool is_comparison_operator(const char *expr, int offset) {
 }
 
 // Parse a string literal from the expression
-static data_t* parse_string_literal(agent_t *agent, const data_t *message, const char *expr, int *offset) {
+static data_t* parse_string_literal(agent_t *agent, data_t *message, const char *expr, int *offset) {
     (void)agent; // Unused parameter
     (void)message; // Unused parameter
 
@@ -192,7 +192,7 @@ static data_t* parse_string_literal(agent_t *agent, const data_t *message, const
 }
 
 // Parse a number literal (integer or double) from the expression
-static data_t* parse_number_literal(agent_t *agent, const data_t *message, const char *expr, int *offset) {
+static data_t* parse_number_literal(agent_t *agent, data_t *message, const char *expr, int *offset) {
     (void)agent; // Unused parameter
     (void)message; // Unused parameter
 
@@ -248,7 +248,7 @@ static data_t* parse_number_literal(agent_t *agent, const data_t *message, const
 }
 
 // Parse a memory access (message, memory, context) expression
-static data_t* parse_memory_access(agent_t *agent, const data_t *message, const char *expr, int *offset) {
+static data_t* parse_memory_access(agent_t *agent, data_t *message, const char *expr, int *offset) {
     enum {
         ACCESS_TYPE_MESSAGE,
         ACCESS_TYPE_MEMORY,
@@ -271,37 +271,24 @@ static data_t* parse_memory_access(agent_t *agent, const data_t *message, const 
         switch (access_type) {
             case ACCESS_TYPE_MESSAGE:
                 if (message) {
-                    // Make a copy of the message data
-                    data_type_t msg_type = ar_data_get_type(message);
-                    switch (msg_type) {
-                        case DATA_INTEGER:
-                            return ar_data_create_integer(ar_data_get_integer(message));
-                        case DATA_DOUBLE:
-                            return ar_data_create_double(ar_data_get_double(message));
-                        case DATA_STRING:
-                            return ar_data_create_string(ar_data_get_string(message));
-                        case DATA_LIST:
-                            // For list, we need a deep copy - not implemented yet
-                            return ar_data_create_string("[List data]");
-                        case DATA_MAP:
-                            // For map, we need a deep copy - not implemented yet
-                            return ar_data_create_string("{Map data}");
-                        default:
-                            return ar_data_create_integer(0);
-                    }
+                    // Return the message directly, not a copy
+                    return message;
                 } else {
-                    return ar_data_create_string("");
+                    // Return NULL for non-existent message
+                    return NULL;
                 }
             case ACCESS_TYPE_MEMORY:
                 if (agent && agent->memory) {
                     return agent->memory;
                 }
-                return ar_data_create_map();
+                // Return NULL for non-existent memory
+                return NULL;
             case ACCESS_TYPE_CONTEXT:
                 if (agent && agent->context) {
                     return agent->context;
                 }
-                return ar_data_create_map();
+                // Return NULL for non-existent context
+                return NULL;
         }
     }
     
@@ -331,7 +318,7 @@ static data_t* parse_memory_access(agent_t *agent, const data_t *message, const 
     }
     
     // Now we have the full path, get the data
-    const data_t *source = NULL;
+    data_t *source = NULL;
     switch (access_type) {
         case ACCESS_TYPE_MESSAGE:
             source = message;
@@ -345,7 +332,8 @@ static data_t* parse_memory_access(agent_t *agent, const data_t *message, const 
     }
     
     if (!source) {
-        return ar_data_create_integer(0);
+        // Return NULL for non-existent source
+        return NULL;
     }
     
     // Look up the data by path
@@ -356,34 +344,18 @@ static data_t* parse_memory_access(agent_t *agent, const data_t *message, const 
         // For map type, use the map access function
         value = ar_data_get_map_data(source, path);
         if (value) {
-            // Make a copy of the value
-            data_type_t value_type = ar_data_get_type(value);
-            switch (value_type) {
-                case DATA_INTEGER:
-                    return ar_data_create_integer(ar_data_get_integer(value));
-                case DATA_DOUBLE:
-                    return ar_data_create_double(ar_data_get_double(value));
-                case DATA_STRING:
-                    return ar_data_create_string(ar_data_get_string(value));
-                case DATA_LIST:
-                    // For list, we need a deep copy - not implemented yet
-                    return ar_data_create_string("[List data]");
-                case DATA_MAP:
-                    // For map, we need a deep copy - not implemented yet
-                    return ar_data_create_string("{Map data}");
-                default:
-                    return ar_data_create_integer(0);
-            }
+            // Return the value directly, not a copy
+            return value;
         }
     }
     
-    // Default to 0 for missing or invalid paths
-    return ar_data_create_integer(0);
+    // Return NULL for missing or invalid paths
+    return NULL;
 }
 
 
 // Parse a primary expression (literal or memory access)
-static data_t* parse_primary(agent_t *agent, const data_t *message, const char *expr, int *offset) {
+static data_t* parse_primary(agent_t *agent, data_t *message, const char *expr, int *offset) {
     skip_whitespace(expr, offset);
     
     // Check for string literal
@@ -432,7 +404,7 @@ static data_t* parse_primary(agent_t *agent, const data_t *message, const char *
 }
 
 // Parse and evaluate a comparison expression
-static data_t* parse_comparison(agent_t *agent, const data_t *message, const char *expr, int *offset) {
+static data_t* parse_comparison(agent_t *agent, data_t *message, const char *expr, int *offset) {
     // First parse the left operand
     data_t *left = parse_primary(agent, message, expr, offset);
     if (!left) {
@@ -586,7 +558,7 @@ static data_t* parse_comparison(agent_t *agent, const data_t *message, const cha
 }
 
 // Parse and evaluate an arithmetic expression
-static data_t* parse_arithmetic(agent_t *agent, const data_t *message, const char *expr, int *offset) {
+static data_t* parse_arithmetic(agent_t *agent, data_t *message, const char *expr, int *offset) {
     // First parse the left operand as a comparison (which might be just a primary)
     data_t *left = parse_comparison(agent, message, expr, offset);
     if (!left) {
@@ -715,12 +687,12 @@ static data_t* parse_arithmetic(agent_t *agent, const data_t *message, const cha
 }
 
 // Parse and evaluate an expression
-static data_t* parse_expression(agent_t *agent, const data_t *message, const char *expr, int *offset) {
+static data_t* parse_expression(agent_t *agent, data_t *message, const char *expr, int *offset) {
     return parse_arithmetic(agent, message, expr, offset);
 }
 
 // Public function to evaluate an expression
-data_t* ar_expression_evaluate(agent_t *agent, const data_t *message, const char *expr, int *offset) {
+data_t* ar_expression_evaluate(agent_t *agent, data_t *message, const char *expr, int *offset) {
     if (!expr || !offset) {
         return NULL;
     }
