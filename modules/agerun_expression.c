@@ -301,7 +301,7 @@ static data_t* parse_memory_access(agent_t *agent, data_t *message, const char *
         
         char *id = parse_identifier(expr, offset);
         if (!id) {
-            return ar_data_create_integer(0); // Invalid path
+            return NULL; // Invalid identifier in path is a syntax error
         }
         
         // Append to path
