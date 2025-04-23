@@ -294,14 +294,12 @@ static data_t* parse_memory_access(agent_t *agent, const data_t *message, const 
                 }
             case ACCESS_TYPE_MEMORY:
                 if (agent && agent->memory) {
-                    // Not ideal, but we return a string for now
-                    return ar_data_create_string("{Memory map}");
+                    return agent->memory;
                 }
                 return ar_data_create_map();
             case ACCESS_TYPE_CONTEXT:
                 if (agent && agent->context) {
-                    // Not ideal, but we return a string for now
-                    return ar_data_create_string("{Context map}");
+                    return agent->context;
                 }
                 return ar_data_create_map();
         }
