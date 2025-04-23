@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Expression module is responsible for evaluating expressions in the AgeRun agent system according to the BNF grammar defined in the specification. It provides a recursive descent parser that can handle string literals, number literals, memory access paths, arithmetic expressions, comparison expressions, and function calls.
+The Expression module is responsible for evaluating expressions in the AgeRun agent system according to the BNF grammar defined in the specification. It provides a recursive descent parser that can handle string literals, number literals, memory access paths, arithmetic expressions, and comparison expressions.
 
 ## Key Features
 
@@ -11,11 +11,10 @@ The Expression module is responsible for evaluating expressions in the AgeRun ag
 - Memory access using dot notation for message, memory, and context
 - Arithmetic operations: addition, subtraction, multiplication, division
 - Comparison operations: equals, not equals, less than, greater than, etc.
-- Function calls with argument evaluation
 
 ## BNF Grammar
 
-The expression module implements the following BNF grammar:
+The expression module implements the following BNF grammar as defined in the specification:
 
 ```
 <expression> ::= <string-literal>
@@ -48,6 +47,8 @@ The expression module implements the following BNF grammar:
 <letter> ::= 'a' | 'b' | ... | 'z' | 'A' | 'B' | ... | 'Z'
 ```
 
+Note that function calls are not part of the expression grammar. Function calls are handled at the instruction level as defined in the specification.
+
 ## API Reference
 
 ### ar_expression_evaluate
@@ -66,9 +67,9 @@ Evaluates an expression in the agent's context.
 
 **Returns:**
 - A pointer to a new data_t containing the result of the evaluation
-- NULL on failure
+- NULL on syntax error (such as encountering a function call in an expression)
 
-The offset is updated to point to the position after the evaluated expression.
+The offset is updated to point to the position after the evaluated expression on success, or to the position where the syntax error was detected on failure.
 
 ## Usage Examples
 
@@ -116,19 +117,13 @@ data_t *result = ar_expression_evaluate(agent, message, "memory.count > 5", &off
 // result will contain an INTEGER data with value 1 (true) or 0 (false)
 ```
 
-### Evaluating Function Call
-
-```c
-int offset = 0;
-data_t *result = ar_expression_evaluate(agent, message, "if(memory.count > 5, \"Greater\", \"Less\")", &offset);
-// result will contain a STRING data with value "Greater" or "Less" depending on the condition
-```
 
 ## Implementation Notes
 
 - The expression evaluator uses recursive descent parsing to handle nested expressions
 - It properly handles precedence of operators (e.g., multiplication before addition)
 - Memory access with dot notation is supported for message, memory, and context
-- Function calls are treated as expressions that return values
 - Type conversions are performed automatically where appropriate
-- Error handling ensures the parser recovers gracefully from malformed expressions
+- Function calls are detected and treated as syntax errors in expressions
+- When a syntax error is encountered, NULL is returned and the offset points to the error location
+- This ensures clear distinction between expressions and function calls as specified in the BNF grammar

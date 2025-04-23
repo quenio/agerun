@@ -48,13 +48,10 @@ static data_t* parse_primary(agent_t *agent, const data_t *message, const char *
 static data_t* parse_string_literal(agent_t *agent, const data_t *message, const char *expr, int *offset);
 static data_t* parse_number_literal(agent_t *agent, const data_t *message, const char *expr, int *offset);
 static data_t* parse_memory_access(agent_t *agent, const data_t *message, const char *expr, int *offset);
-static data_t* parse_function_call(agent_t *agent, const data_t *message, const char *expr, int *offset);
 static void skip_whitespace(const char *expr, int *offset);
 static bool is_comparison_operator(const char *expr, int offset);
 static bool is_arithmetic_operator(char c);
 static bool match(const char *expr, int *offset, const char *to_match);
-static bool match_char(const char *expr, int *offset, char to_match);
-static bool expect_char(const char *expr, int *offset, char expected);
 static bool is_identifier_start(char c);
 static bool is_identifier_part(char c);
 static char* parse_identifier(const char *expr, int *offset);
@@ -111,16 +108,6 @@ static char* parse_identifier(const char *expr, int *offset) {
 }
 
 
-// Check if the next character in expr matches the expected one
-// If it does, advance offset and return true
-static bool match_char(const char *expr, int *offset, char to_match) {
-    if (expr[*offset] == to_match) {
-        (*offset)++;
-        return true;
-    }
-    return false;
-}
-
 // Check if the string at the current offset matches the expected string
 // If it does, advance offset past the matched string and return true
 static bool match(const char *expr, int *offset, const char *to_match) {
@@ -132,15 +119,6 @@ static bool match(const char *expr, int *offset, const char *to_match) {
             *offset += (int)len;
             return true;
         }
-    }
-    return false;
-}
-
-// Expect a specific character, advance offset if found, return success/failure
-static bool expect_char(const char *expr, int *offset, char expected) {
-    if (expr[*offset] == expected) {
-        (*offset)++;
-        return true;
     }
     return false;
 }
@@ -405,358 +383,8 @@ static data_t* parse_memory_access(agent_t *agent, const data_t *message, const 
     return ar_data_create_integer(0);
 }
 
-// Parse a function call expression
-static data_t* parse_function_call(agent_t *agent, const data_t *message, const char *expr, int *offset) {
-    // Parse function name
-    char *func_name = parse_identifier(expr, offset);
-    if (!func_name) {
-        return NULL;
-    }
-    
-    skip_whitespace(expr, offset);
-    
-    // Expect opening parenthesis
-    if (!expect_char(expr, offset, '(')) {
-        free(func_name);
-        return NULL;
-    }
-    
-    // Parse arguments
-    data_t *args[10] = {NULL}; // Support up to 10 arguments
-    int arg_count = 0;
-    
-    skip_whitespace(expr, offset);
-    
-    // Check for empty argument list
-    if (expr[*offset] != ')') {
-        do {
-            // Skip whitespace and comma
-            skip_whitespace(expr, offset);
-            
-            // Parse argument expression
-            if (arg_count < 10 && expr[*offset] && expr[*offset] != ')') {
-                args[arg_count] = parse_expression(agent, message, expr, offset);
-                if (!args[arg_count]) {
-                    // Clean up previously parsed args
-                    for (int i = 0; i < arg_count; i++) {
-                        ar_data_destroy(args[i]);
-                    }
-                    free(func_name);
-                    return NULL;
-                }
-                arg_count++;
-            }
-            
-            skip_whitespace(expr, offset);
-            
-        } while (match_char(expr, offset, ',') && arg_count < 10);
-    }
-    
-    // Expect closing parenthesis
-    if (!expect_char(expr, offset, ')')) {
-        // Clean up
-        for (int i = 0; i < arg_count; i++) {
-            ar_data_destroy(args[i]);
-        }
-        free(func_name);
-        return NULL;
-    }
-    
-    // Process specific functions
-    data_t *result = NULL;
-    
-    if (strcmp(func_name, "send") == 0) {
-        // send(agent_id, message)
-        if (arg_count >= 2 && args[0] && args[1]) {
-            agent_id_t target_id = 0;
-            data_t *send_message = NULL;
-            
-            // Get target agent ID
-            data_type_t arg0_type = ar_data_get_type(args[0]);
-            if (arg0_type == DATA_INTEGER) {
-                target_id = (agent_id_t)ar_data_get_integer(args[0]);
-            } else if (arg0_type == DATA_STRING) {
-                const char *id_str = ar_data_get_string(args[0]);
-                if (id_str) {
-                    target_id = (agent_id_t)atoll(id_str);
-                }
-            }
-            
-            // Create a copy of the message to send
-            data_type_t arg1_type = ar_data_get_type(args[1]);
-            switch (arg1_type) {
-                case DATA_INTEGER:
-                    send_message = ar_data_create_integer(ar_data_get_integer(args[1]));
-                    break;
-                case DATA_DOUBLE:
-                    send_message = ar_data_create_double(ar_data_get_double(args[1]));
-                    break;
-                case DATA_STRING:
-                    send_message = ar_data_create_string(ar_data_get_string(args[1]));
-                    break;
-                case DATA_LIST:
-                    // For complex types, we'll send a string representation for now
-                    send_message = ar_data_create_string("[List data]");
-                    break;
-                case DATA_MAP:
-                    // For complex types, we'll send a string representation for now
-                    send_message = ar_data_create_string("{Map data}");
-                    break;
-                default:
-                    send_message = NULL;
-                    break;
-            }
-            
-            // Send the message (ownership transferred to ar_agent_send)
-            if (target_id != 0 && send_message) {
-                bool sent = ar_agent_send(target_id, send_message);
-                
-                // Set result to success/failure
-                result = ar_data_create_integer(sent ? 1 : 0);
-            } else if (target_id == 0) {
-                // Special case: sending to agent_id 0 is a no-op that returns true
-                result = ar_data_create_integer(1);
-                // Destroy the message since we won't be sending it
-                ar_data_destroy(send_message);
-            } else {
-                // Set result to failure
-                result = ar_data_create_integer(0);
-            }
-        }
-    } else if (strcmp(func_name, "parse") == 0) {
-        // parse(template, input)
-        if (arg_count >= 2 && args[0] && args[1]) {
-            // Template must be a string
-            if (ar_data_get_type(args[0]) != DATA_STRING) {
-                // Return empty map if template is not a string
-                result = ar_data_create_map();
-            } else {
-                const char *template = ar_data_get_string(args[0]);
-                
-                // Input should be a string, if not, return empty map
-                if (ar_data_get_type(args[1]) != DATA_STRING) {
-                    // Return empty map if input is not a string
-                    result = ar_data_create_map();
-                } else {
-                    const char *input = ar_data_get_string(args[1]);
-                    
-                    if (template && input) {
-                        // Create a map to store the parsed values
-                        result = ar_data_create_map();
-                        if (result) {
-                            // Very simple parsing implementation
-                            // TODO: Implement proper parsing using template
-                            
-                            // For now, just split input by spaces and use as key=value
-                            char input_copy[1024];
-                            strncpy(input_copy, input, sizeof(input_copy) - 1);
-                            input_copy[sizeof(input_copy) - 1] = '\0';
-                            
-                            char *token = strtok(input_copy, " ");
-                            while (token) {
-                                char *equals = strchr(token, '=');
-                                if (equals) {
-                                    *equals = '\0'; // Split at the equals sign
-                                    char *key = token;
-                                    char *value = equals + 1;
-                                    
-                                    // Try to parse value as integer or double
-                                    char *endptr;
-                                    long long_val = strtol(value, &endptr, 10);
-                                    if (*endptr == '\0') {
-                                        // Integer value
-                                        data_t *val_data = ar_data_create_integer((int)long_val);
-                                        ar_data_set_map_data(result, key, val_data);
-                                    } else {
-                                        // Try as double
-                                        double double_val = strtod(value, &endptr);
-                                        if (*endptr == '\0') {
-                                            // Double value
-                                            data_t *val_data = ar_data_create_double(double_val);
-                                            ar_data_set_map_data(result, key, val_data);
-                                        } else {
-                                            // String value
-                                            data_t *val_data = ar_data_create_string(value);
-                                            ar_data_set_map_data(result, key, val_data);
-                                        }
-                                    }
-                                }
-                                token = strtok(NULL, " ");
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        // If we didn't create a result, return empty map for parse failures
-        if (!result) {
-            result = ar_data_create_map();
-        }
-    } else if (strcmp(func_name, "build") == 0) {
-        // build(template, values)
-        if (arg_count >= 2 && args[0] && args[1]) {
-            // Template must be a string
-            if (ar_data_get_type(args[0]) == DATA_STRING) {
-                const char *template = ar_data_get_string(args[0]);
-                
-                // Values should be a map
-                if (template) {
-                    char result_str[1024] = {0};
-                    int result_pos = 0;
-                    
-                    // Simple template processing
-                    // For now, just replace placeholders with values from args
-                    for (int i = 0; template[i] && (size_t)result_pos < sizeof(result_str) - 1; i++) {
-                        if (template[i] == '{' && template[i+1] == '}') {
-                            // Replace {} with next argument
-                            if (arg_count > 1 && args[1]) {
-                                data_type_t arg_type = ar_data_get_type(args[1]);
-                                
-                                if (arg_type == DATA_MAP) {
-                                    // TODO: Handle map values properly
-                                    const char *str_val = "{Map data}";
-                                    size_t str_len = strlen(str_val);
-                                    if ((size_t)result_pos + str_len < sizeof(result_str) - 1) {
-                                        strcpy(result_str + result_pos, str_val);
-                                        result_pos += (int)str_len;
-                                    }
-                                } else if (arg_type == DATA_STRING) {
-                                    const char *str_val = ar_data_get_string(args[1]);
-                                    if (str_val) {
-                                        size_t str_len = strlen(str_val);
-                                        if ((size_t)result_pos + str_len < sizeof(result_str) - 1) {
-                                            strcpy(result_str + result_pos, str_val);
-                                            result_pos += (int)str_len;
-                                        }
-                                    }
-                                } else if (arg_type == DATA_INTEGER) {
-                                    char temp[32];
-                                    int len = snprintf(temp, sizeof(temp), "%d", ar_data_get_integer(args[1]));
-                                    if ((size_t)(result_pos + len) < sizeof(result_str) - 1) {
-                                        strcpy(result_str + result_pos, temp);
-                                        result_pos += len;
-                                    }
-                                } else if (arg_type == DATA_DOUBLE) {
-                                    char temp[32];
-                                    int len = snprintf(temp, sizeof(temp), "%f", ar_data_get_double(args[1]));
-                                    if ((size_t)(result_pos + len) < sizeof(result_str) - 1) {
-                                        strcpy(result_str + result_pos, temp);
-                                        result_pos += len;
-                                    }
-                                }
-                            }
-                            i++; // Skip the closing brace
-                        } else {
-                            // Copy character as is
-                            result_str[result_pos++] = template[i];
-                        }
-                    }
-                    
-                    result_str[result_pos] = '\0';
-                    
-                    // Return the built string
-                    result = ar_data_create_string(result_str);
-                }
-            }
-        }
-        
-        // Default to empty string if build fails
-        if (!result) {
-            result = ar_data_create_string("");
-        }
-    } else if (strcmp(func_name, "if") == 0) {
-        // if(condition, true_value, false_value)
-        if (arg_count >= 3 && args[0] && args[1] && args[2]) {
-            // Evaluate condition
-            bool condition = false;
-            data_type_t cond_type = ar_data_get_type(args[0]);
-            
-            if (cond_type == DATA_INTEGER) {
-                condition = (ar_data_get_integer(args[0]) != 0);
-            } else if (cond_type == DATA_DOUBLE) {
-                condition = (ar_data_get_double(args[0]) != 0.0);
-            } else if (cond_type == DATA_STRING) {
-                const char *str = ar_data_get_string(args[0]);
-                condition = (str && *str); // True if non-empty string
-            } else {
-                condition = false; // Default for other types
-            }
-            
-            // Return appropriate value based on condition
-            if (condition) {
-                data_type_t true_type = ar_data_get_type(args[1]);
-                switch (true_type) {
-                    case DATA_INTEGER:
-                        result = ar_data_create_integer(ar_data_get_integer(args[1]));
-                        break;
-                    case DATA_DOUBLE:
-                        result = ar_data_create_double(ar_data_get_double(args[1]));
-                        break;
-                    case DATA_STRING:
-                        result = ar_data_create_string(ar_data_get_string(args[1]));
-                        break;
-                    case DATA_LIST:
-                    case DATA_MAP:
-                        // For complex types, we return a string representation for now
-                        result = ar_data_create_string(true_type == DATA_LIST ? "[List data]" : "{Map data}");
-                        break;
-                    default:
-                        result = ar_data_create_integer(0);
-                        break;
-                }
-            } else {
-                data_type_t false_type = ar_data_get_type(args[2]);
-                switch (false_type) {
-                    case DATA_INTEGER:
-                        result = ar_data_create_integer(ar_data_get_integer(args[2]));
-                        break;
-                    case DATA_DOUBLE:
-                        result = ar_data_create_double(ar_data_get_double(args[2]));
-                        break;
-                    case DATA_STRING:
-                        result = ar_data_create_string(ar_data_get_string(args[2]));
-                        break;
-                    case DATA_LIST:
-                    case DATA_MAP:
-                        // For complex types, we return a string representation for now
-                        result = ar_data_create_string(false_type == DATA_LIST ? "[List data]" : "{Map data}");
-                        break;
-                    default:
-                        result = ar_data_create_integer(0);
-                        break;
-                }
-            }
-        }
-    } else if (strcmp(func_name, "method") == 0) {
-        // method(name, version, instructions)
-        // Implementation would go here - placeholder for now
-        result = ar_data_create_integer(0);
-    } else if (strcmp(func_name, "agent") == 0) {
-        // agent(method_name, version, context)
-        // Implementation would go here - placeholder for now
-        result = ar_data_create_integer(0);
-    } else if (strcmp(func_name, "destroy") == 0) {
-        // destroy(id) or destroy(method_name, version)
-        // Implementation would go here - placeholder for now
-        result = ar_data_create_integer(0);
-    }
-    
-    // Free arguments and function name
-    for (int i = 0; i < arg_count; i++) {
-        ar_data_destroy(args[i]);
-    }
-    free(func_name);
-    
-    // Default result if none was created
-    if (!result) {
-        result = ar_data_create_integer(0);
-    }
-    
-    return result;
-}
 
-// Parse a primary expression (literal, memory access, or function call)
+// Parse a primary expression (literal or memory access)
 static data_t* parse_primary(agent_t *agent, const data_t *message, const char *expr, int *offset) {
     skip_whitespace(expr, offset);
     
@@ -777,9 +405,28 @@ static data_t* parse_primary(agent_t *agent, const data_t *message, const char *
         return parse_memory_access(agent, message, expr, offset);
     }
     
-    // Check for function call
+    // Check for function call - which is a syntax error in expressions
     if (is_identifier_start(expr[*offset])) {
-        return parse_function_call(agent, message, expr, offset);
+        // Save the position at the start of the function name
+        int func_name_start = *offset;
+        
+        // Skip over function name
+        while (expr[*offset] && is_identifier_part(expr[*offset])) {
+            (*offset)++;
+        }
+        
+        skip_whitespace(expr, offset);
+        
+        // If we find an opening parenthesis, it's a function call - syntax error
+        if (expr[*offset] == '(') {
+            // Reset offset to the start of the function name
+            *offset = func_name_start;
+            // Return NULL to indicate a syntax error
+            return NULL;
+        }
+        
+        // Not a function call, reset offset and continue
+        *offset = func_name_start;
     }
     
     // If we get here, it's not a valid primary expression
@@ -1077,19 +724,16 @@ static data_t* parse_expression(agent_t *agent, const data_t *message, const cha
 // Public function to evaluate an expression
 data_t* ar_expression_evaluate(agent_t *agent, const data_t *message, const char *expr, int *offset) {
     if (!expr || !offset) {
-        return ar_data_create_integer(0);
+        return NULL;
     }
-    
-    // Save the original offset to restore in case of parsing failure
-    int original_offset = *offset;
     
     // Parse the expression
     data_t *result = parse_expression(agent, message, expr, offset);
     
-    // If parsing failed, reset the offset and return a default value
+    // If parsing failed, return NULL to indicate a syntax error
+    // The offset should already be at the position where the error was detected
     if (!result) {
-        *offset = original_offset;
-        return ar_data_create_integer(0);
+        return NULL;
     }
     
     return result;

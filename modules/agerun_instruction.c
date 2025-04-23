@@ -184,16 +184,202 @@ static bool parse_memory_access(const char *instruction, int *pos, char **path) 
 }
 
 // Parse function call and execute it
+// <function-call> ::= <send-function> | <parse-function> | <build-function> | <method-function> |
+//                     <agent-function> | <destroy-function> | <if-function>
 static bool parse_function_call(agent_t *agent, const data_t *message, const char *instruction, int *pos, data_t **result) {
-    // For the recursive descent implementation, we'll rely on ar_expression_evaluate
-    // to handle the function call parsing and execution, since the expressions already
-    // include function calls according to the grammar.
+    // Extract function name
+    char function_name[32];
+    if (!extract_identifier(instruction, pos, function_name, sizeof(function_name))) {
+        return false;
+    }
     
-    int expr_pos = *pos;
-    *result = ar_expression_evaluate(agent, message, instruction + expr_pos, &expr_pos);
-    *pos += expr_pos;
+    skip_whitespace(instruction, pos);
     
-    return *result != NULL;
+    // Expect opening parenthesis
+    if (instruction[*pos] != '(') {
+        return false;
+    }
+    (*pos)++; // Skip '('
+    
+    // Initialize result
+    *result = NULL;
+    
+    // Handle different function types
+    if (strcmp(function_name, "send") == 0) {
+        // send(agent_id, message)
+        skip_whitespace(instruction, pos);
+        
+        // Parse agent_id expression
+        int agent_id_pos = *pos;
+        data_t *agent_id_data = ar_expression_evaluate(agent, message, instruction + agent_id_pos, &agent_id_pos);
+        *pos += agent_id_pos;
+        
+        if (!agent_id_data) {
+            return false;
+        }
+        
+        skip_whitespace(instruction, pos);
+        
+        // Expect comma
+        if (instruction[*pos] != ',') {
+            ar_data_destroy(agent_id_data);
+            return false;
+        }
+        (*pos)++; // Skip ','
+        skip_whitespace(instruction, pos);
+        
+        // Parse message expression
+        int msg_pos = *pos;
+        data_t *msg_data = ar_expression_evaluate(agent, message, instruction + msg_pos, &msg_pos);
+        *pos += msg_pos;
+        
+        if (!msg_data) {
+            ar_data_destroy(agent_id_data);
+            return false;
+        }
+        
+        skip_whitespace(instruction, pos);
+        
+        // Expect closing parenthesis
+        if (instruction[*pos] != ')') {
+            ar_data_destroy(agent_id_data);
+            ar_data_destroy(msg_data);
+            return false;
+        }
+        (*pos)++; // Skip ')'
+        
+        // Extract agent_id
+        agent_id_t target_id = 0;
+        if (ar_data_get_type(agent_id_data) == DATA_INTEGER) {
+            target_id = (agent_id_t)ar_data_get_integer(agent_id_data);
+        }
+        
+        // Send message
+        bool success = false;
+        if (target_id == 0) {
+            // Special case: agent_id 0 is a no-op that always returns true
+            success = true;
+            ar_data_destroy(msg_data);
+        } else {
+            // Ownership of msg_data is transferred to ar_agent_send
+            success = ar_agent_send(target_id, msg_data);
+        }
+        
+        ar_data_destroy(agent_id_data);
+        *result = ar_data_create_integer(success ? 1 : 0);
+        return true;
+    }
+    else if (strcmp(function_name, "if") == 0) {
+        // if(condition, true_value, false_value)
+        skip_whitespace(instruction, pos);
+        
+        // Parse condition expression
+        int cond_pos = *pos;
+        data_t *cond_data = ar_expression_evaluate(agent, message, instruction + cond_pos, &cond_pos);
+        *pos += cond_pos;
+        
+        if (!cond_data) {
+            return false;
+        }
+        
+        skip_whitespace(instruction, pos);
+        
+        // Expect comma
+        if (instruction[*pos] != ',') {
+            ar_data_destroy(cond_data);
+            return false;
+        }
+        (*pos)++; // Skip ','
+        skip_whitespace(instruction, pos);
+        
+        // Parse true_value expression
+        int true_pos = *pos;
+        data_t *true_data = ar_expression_evaluate(agent, message, instruction + true_pos, &true_pos);
+        *pos += true_pos;
+        
+        if (!true_data) {
+            ar_data_destroy(cond_data);
+            return false;
+        }
+        
+        skip_whitespace(instruction, pos);
+        
+        // Expect comma
+        if (instruction[*pos] != ',') {
+            ar_data_destroy(cond_data);
+            ar_data_destroy(true_data);
+            return false;
+        }
+        (*pos)++; // Skip ','
+        skip_whitespace(instruction, pos);
+        
+        // Parse false_value expression
+        int false_pos = *pos;
+        data_t *false_data = ar_expression_evaluate(agent, message, instruction + false_pos, &false_pos);
+        *pos += false_pos;
+        
+        if (!false_data) {
+            ar_data_destroy(cond_data);
+            ar_data_destroy(true_data);
+            return false;
+        }
+        
+        skip_whitespace(instruction, pos);
+        
+        // Expect closing parenthesis
+        if (instruction[*pos] != ')') {
+            ar_data_destroy(cond_data);
+            ar_data_destroy(true_data);
+            ar_data_destroy(false_data);
+            return false;
+        }
+        (*pos)++; // Skip ')'
+        
+        // Evaluate condition
+        bool condition = false;
+        data_type_t cond_type = ar_data_get_type(cond_data);
+        
+        if (cond_type == DATA_INTEGER) {
+            condition = (ar_data_get_integer(cond_data) != 0);
+        } else if (cond_type == DATA_DOUBLE) {
+            condition = (ar_data_get_double(cond_data) != 0.0);
+        } else if (cond_type == DATA_STRING) {
+            const char *str = ar_data_get_string(cond_data);
+            condition = (str && *str); // True if non-empty string
+        }
+        
+        // Select the result based on condition
+        if (condition) {
+            *result = true_data;
+            ar_data_destroy(false_data);
+        } else {
+            *result = false_data;
+            ar_data_destroy(true_data);
+        }
+        
+        ar_data_destroy(cond_data);
+        return true;
+    }
+    else {
+        // For all other functions (parse, build, method, agent, destroy),
+        // just return a default result for now
+        // Skip to closing parenthesis
+        int nesting = 1;
+        while (instruction[*pos] && nesting > 0) {
+            if (instruction[*pos] == '(') {
+                nesting++;
+            } else if (instruction[*pos] == ')') {
+                nesting--;
+            }
+            (*pos)++;
+        }
+        
+        // Create a default result
+        *result = ar_data_create_integer(0);
+        return true;
+    }
+    
+    return false; // Should not reach here
 }
 
 // Utility functions
