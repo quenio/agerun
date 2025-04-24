@@ -12,7 +12,7 @@
  * This is an opaque type. Clients should use the provided functions to create,
  * manipulate, and destroy expression contexts.
  */
-typedef struct expr_context_s expr_context_t;
+typedef struct expression_context_s expression_context_t;
 
 /**
  * Creates a new expression evaluation context.
@@ -22,14 +22,14 @@ typedef struct expr_context_s expr_context_t;
  * @param expr The expression string to evaluate
  * @return Newly created expression context, or NULL on failure
  */
-expr_context_t* ar_expression_create_context(agent_t *agent, data_t *message, const char *expr);
+expression_context_t* ar_expression_create_context(agent_t *agent, data_t *message, const char *expr);
 
 /**
  * Destroys an expression context and frees all associated resources.
  *
  * @param ctx The expression context to destroy
  */
-void ar_expression_destroy_context(expr_context_t *ctx);
+void ar_expression_destroy_context(expression_context_t *ctx);
 
 /**
  * Gets the current parsing offset in the expression string.
@@ -37,7 +37,7 @@ void ar_expression_destroy_context(expr_context_t *ctx);
  * @param ctx The expression context
  * @return Current offset in the expression string
  */
-int ar_expression_offset(const expr_context_t *ctx);
+int ar_expression_offset(const expression_context_t *ctx);
 
 /**
  * Evaluate an expression in the agent's context using recursive descent parsing.
@@ -71,6 +71,6 @@ int ar_expression_offset(const expr_context_t *ctx);
  * @param ctx Pointer to the expression evaluation context
  * @return Pointer to the evaluated data result, or NULL on failure
  */
-data_t* ar_expression_evaluate(expr_context_t *ctx);
+data_t* ar_expression_evaluate(expression_context_t *ctx);
 
 #endif /* AGERUN_EXPRESSION_H */

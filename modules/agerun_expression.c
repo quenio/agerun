@@ -17,7 +17,7 @@
  * Full definition of the expression context structure.
  * This is only visible in the implementation file.
  */
-struct expr_context_s {
+struct expression_context_s {
     agent_t *agent;     /* The agent context */
     data_t *message;    /* The message being processed */
     const char *expr;   /* The expression to evaluate */
@@ -27,12 +27,12 @@ struct expr_context_s {
 /**
  * Creates a new expression evaluation context.
  */
-expr_context_t* ar_expression_create_context(agent_t *agent, data_t *message, const char *expr) {
+expression_context_t* ar_expression_create_context(agent_t *agent, data_t *message, const char *expr) {
     if (!expr) {
         return NULL;
     }
     
-    expr_context_t *ctx = malloc(sizeof(expr_context_t));
+    expression_context_t *ctx = malloc(sizeof(expression_context_t));
     if (!ctx) {
         return NULL;
     }
@@ -48,14 +48,14 @@ expr_context_t* ar_expression_create_context(agent_t *agent, data_t *message, co
 /**
  * Destroys an expression context and frees all associated resources.
  */
-void ar_expression_destroy_context(expr_context_t *ctx) {
+void ar_expression_destroy_context(expression_context_t *ctx) {
     free(ctx);
 }
 
 /**
  * Gets the current parsing offset in the expression string.
  */
-int ar_expression_offset(const expr_context_t *ctx) {
+int ar_expression_offset(const expression_context_t *ctx) {
     if (!ctx) {
         return 0;
     }
@@ -92,22 +92,22 @@ int ar_expression_offset(const expr_context_t *ctx) {
  */
 
 // Forward declarations for recursive descent functions
-static data_t* parse_expression(expr_context_t *ctx);
-static data_t* parse_primary(expr_context_t *ctx);
-static data_t* parse_string_literal(expr_context_t *ctx);
-static data_t* parse_number_literal(expr_context_t *ctx);
-static data_t* parse_memory_access(expr_context_t *ctx);
-static void skip_whitespace(expr_context_t *ctx);
-static bool is_comparison_operator(expr_context_t *ctx);
+static data_t* parse_expression(expression_context_t *ctx);
+static data_t* parse_primary(expression_context_t *ctx);
+static data_t* parse_string_literal(expression_context_t *ctx);
+static data_t* parse_number_literal(expression_context_t *ctx);
+static data_t* parse_memory_access(expression_context_t *ctx);
+static void skip_whitespace(expression_context_t *ctx);
+static bool is_comparison_operator(expression_context_t *ctx);
 static bool is_arithmetic_operator(char c);
-static bool match(expr_context_t *ctx, const char *to_match);
+static bool match(expression_context_t *ctx, const char *to_match);
 static bool is_identifier_start(char c);
 static bool is_identifier_part(char c);
-static char* parse_identifier(expr_context_t *ctx);
+static char* parse_identifier(expression_context_t *ctx);
 static bool is_digit(char c);
 
 // Skip whitespace characters in the expression
-static void skip_whitespace(expr_context_t *ctx) {
+static void skip_whitespace(expression_context_t *ctx) {
     while (ctx->expr[ctx->offset] && ar_string_isspace(ctx->expr[ctx->offset])) {
         ctx->offset++;
     }
@@ -129,7 +129,7 @@ static bool is_identifier_part(char c) {
 }
 
 // Parse an identifier from the expression
-static char* parse_identifier(expr_context_t *ctx) {
+static char* parse_identifier(expression_context_t *ctx) {
     int start = ctx->offset;
     
     // First character must be a letter
@@ -159,7 +159,7 @@ static char* parse_identifier(expr_context_t *ctx) {
 
 // Check if the string at the current offset matches the expected string
 // If it does, advance offset past the matched string and return true
-static bool match(expr_context_t *ctx, const char *to_match) {
+static bool match(expression_context_t *ctx, const char *to_match) {
     size_t len = strlen(to_match);
     if (strncmp(ctx->expr + ctx->offset, to_match, len) == 0) {
         // Make sure it's not part of a longer identifier
@@ -179,7 +179,7 @@ static bool is_arithmetic_operator(char c) {
 }
 
 // Check if the next sequence of characters is a comparison operator
-static bool is_comparison_operator(expr_context_t *ctx) {
+static bool is_comparison_operator(expression_context_t *ctx) {
     if (ctx->expr[ctx->offset] == '=') {
         return true;
     }
@@ -199,7 +199,7 @@ static bool is_comparison_operator(expr_context_t *ctx) {
 }
 
 // Parse a string literal from the expression
-static data_t* parse_string_literal(expr_context_t *ctx) {
+static data_t* parse_string_literal(expression_context_t *ctx) {
     if (ctx->expr[ctx->offset] != '"') {
         return NULL;
     }
@@ -238,7 +238,7 @@ static data_t* parse_string_literal(expr_context_t *ctx) {
 }
 
 // Parse a number literal (integer or double) from the expression
-static data_t* parse_number_literal(expr_context_t *ctx) {
+static data_t* parse_number_literal(expression_context_t *ctx) {
     bool is_negative = false;
     if (ctx->expr[ctx->offset] == '-') {
         is_negative = true;
@@ -291,7 +291,7 @@ static data_t* parse_number_literal(expr_context_t *ctx) {
 }
 
 // Parse a memory access (message, memory, context) expression
-static data_t* parse_memory_access(expr_context_t *ctx) {
+static data_t* parse_memory_access(expression_context_t *ctx) {
     enum {
         ACCESS_TYPE_MESSAGE,
         ACCESS_TYPE_MEMORY,
@@ -398,7 +398,7 @@ static data_t* parse_memory_access(expr_context_t *ctx) {
 
 
 // Parse a primary expression (literal or memory access)
-static data_t* parse_primary(expr_context_t *ctx) {
+static data_t* parse_primary(expression_context_t *ctx) {
     skip_whitespace(ctx);
     
     // Check for string literal
@@ -447,7 +447,7 @@ static data_t* parse_primary(expr_context_t *ctx) {
 }
 
 // Parse and evaluate a comparison expression
-static data_t* parse_comparison(expr_context_t *ctx) {
+static data_t* parse_comparison(expression_context_t *ctx) {
     // First parse the left operand
     data_t *left = parse_primary(ctx);
     if (!left) {
@@ -601,7 +601,7 @@ static data_t* parse_comparison(expr_context_t *ctx) {
 }
 
 // Parse and evaluate an arithmetic expression
-static data_t* parse_arithmetic(expr_context_t *ctx) {
+static data_t* parse_arithmetic(expression_context_t *ctx) {
     // First parse the left operand as a comparison (which might be just a primary)
     data_t *left = parse_comparison(ctx);
     if (!left) {
@@ -730,12 +730,12 @@ static data_t* parse_arithmetic(expr_context_t *ctx) {
 }
 
 // Parse and evaluate an expression
-static data_t* parse_expression(expr_context_t *ctx) {
+static data_t* parse_expression(expression_context_t *ctx) {
     return parse_arithmetic(ctx);
 }
 
 // Public function to evaluate an expression
-data_t* ar_expression_evaluate(expr_context_t *ctx) {
+data_t* ar_expression_evaluate(expression_context_t *ctx) {
     if (!ctx || !ctx->expr) {
         return NULL;
     }

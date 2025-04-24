@@ -76,7 +76,7 @@ static bool parse_assignment(agent_t *agent, data_t *message, const char *instru
     skip_whitespace(instruction, pos);
     
     // Evaluate the expression (right side)
-    expr_context_t *ctx = ar_expression_create_context(agent, message, instruction + *pos);
+    expression_context_t *ctx = ar_expression_create_context(agent, message, instruction + *pos);
     if (!ctx) {
         free(path);
         return false;
@@ -221,7 +221,7 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         skip_whitespace(instruction, pos);
         
         // Parse agent_id expression
-        expr_context_t *agent_id_ctx = ar_expression_create_context(agent, message, instruction + *pos);
+        expression_context_t *agent_id_ctx = ar_expression_create_context(agent, message, instruction + *pos);
         if (!agent_id_ctx) {
             return false;
         }
@@ -244,7 +244,7 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         skip_whitespace(instruction, pos);
         
         // Parse message expression
-        expr_context_t *msg_ctx = ar_expression_create_context(agent, message, instruction + *pos);
+        expression_context_t *msg_ctx = ar_expression_create_context(agent, message, instruction + *pos);
         if (!msg_ctx) {
             ar_data_destroy(agent_id_data);
             return false;
@@ -299,7 +299,7 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         skip_whitespace(instruction, pos);
         
         // Parse condition expression
-        expr_context_t *cond_ctx = ar_expression_create_context(agent, message, instruction + *pos);
+        expression_context_t *cond_ctx = ar_expression_create_context(agent, message, instruction + *pos);
         if (!cond_ctx) {
             return false;
         }
@@ -322,7 +322,7 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         skip_whitespace(instruction, pos);
         
         // Parse true_value expression
-        expr_context_t *true_ctx = ar_expression_create_context(agent, message, instruction + *pos);
+        expression_context_t *true_ctx = ar_expression_create_context(agent, message, instruction + *pos);
         if (!true_ctx) {
             ar_data_destroy(cond_data);
             return false;
@@ -348,7 +348,7 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         skip_whitespace(instruction, pos);
         
         // Parse false_value expression
-        expr_context_t *false_ctx = ar_expression_create_context(agent, message, instruction + *pos);
+        expression_context_t *false_ctx = ar_expression_create_context(agent, message, instruction + *pos);
         if (!false_ctx) {
             ar_data_destroy(cond_data);
             ar_data_destroy(true_data);
