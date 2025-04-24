@@ -43,11 +43,11 @@
  */
 
 // Forward declarations for recursive descent functions
-static data_t* parse_expression(agent_t *agent, data_t *message, const char *expr, int *offset);
-static data_t* parse_primary(agent_t *agent, data_t *message, const char *expr, int *offset);
-static data_t* parse_string_literal(agent_t *agent, data_t *message, const char *expr, int *offset);
-static data_t* parse_number_literal(agent_t *agent, data_t *message, const char *expr, int *offset);
-static data_t* parse_memory_access(agent_t *agent, data_t *message, const char *expr, int *offset);
+static data_t* parse_expression(expr_context_t *ctx);
+static data_t* parse_primary(expr_context_t *ctx);
+static data_t* parse_string_literal(expr_context_t *ctx);
+static data_t* parse_number_literal(expr_context_t *ctx);
+static data_t* parse_memory_access(expr_context_t *ctx);
 static void skip_whitespace(const char *expr, int *offset);
 static bool is_comparison_operator(const char *expr, int offset);
 static bool is_arithmetic_operator(char c);
@@ -150,26 +150,23 @@ static bool is_comparison_operator(const char *expr, int offset) {
 }
 
 // Parse a string literal from the expression
-static data_t* parse_string_literal(agent_t *agent, data_t *message, const char *expr, int *offset) {
-    (void)agent; // Unused parameter
-    (void)message; // Unused parameter
-
-    if (expr[*offset] != '"') {
+static data_t* parse_string_literal(expr_context_t *ctx) {
+    if (ctx->expr[*ctx->offset] != '"') {
         return NULL;
     }
     
-    (*offset)++; // Skip opening quote
+    (*ctx->offset)++; // Skip opening quote
     
     // Find the closing quote and count the length
-    int start = *offset;
+    int start = *ctx->offset;
     int len = 0;
     
-    while (expr[*offset] && expr[*offset] != '"') {
-        (*offset)++;
+    while (ctx->expr[*ctx->offset] && ctx->expr[*ctx->offset] != '"') {
+        (*ctx->offset)++;
         len++;
     }
     
-    if (expr[*offset] != '"') {
+    if (ctx->expr[*ctx->offset] != '"') {
         // Unterminated string literal
         return NULL;
     }
@@ -180,10 +177,10 @@ static data_t* parse_string_literal(agent_t *agent, data_t *message, const char 
         return NULL;
     }
     
-    strncpy(temp_str, expr + start, (size_t)len);
+    strncpy(temp_str, ctx->expr + start, (size_t)len);
     temp_str[len] = '\0';
     
-    (*offset)++; // Skip closing quote
+    (*ctx->offset)++; // Skip closing quote
     
     data_t *result = ar_data_create_string(temp_str);
     free(temp_str);
@@ -192,32 +189,29 @@ static data_t* parse_string_literal(agent_t *agent, data_t *message, const char 
 }
 
 // Parse a number literal (integer or double) from the expression
-static data_t* parse_number_literal(agent_t *agent, data_t *message, const char *expr, int *offset) {
-    (void)agent; // Unused parameter
-    (void)message; // Unused parameter
-
+static data_t* parse_number_literal(expr_context_t *ctx) {
     bool is_negative = false;
-    if (expr[*offset] == '-') {
+    if (ctx->expr[*ctx->offset] == '-') {
         is_negative = true;
-        (*offset)++;
+        (*ctx->offset)++;
     }
     
-    if (!is_digit(expr[*offset])) {
+    if (!is_digit(ctx->expr[*ctx->offset])) {
         return NULL;
     }
     
     // Parse integer part
     int value = 0;
-    while (expr[*offset] && is_digit(expr[*offset])) {
-        value = value * 10 + (expr[*offset] - '0');
-        (*offset)++;
+    while (ctx->expr[*ctx->offset] && is_digit(ctx->expr[*ctx->offset])) {
+        value = value * 10 + (ctx->expr[*ctx->offset] - '0');
+        (*ctx->offset)++;
     }
     
     // Check for decimal point for double
-    if (expr[*offset] == '.') {
-        (*offset)++; // Skip decimal point
+    if (ctx->expr[*ctx->offset] == '.') {
+        (*ctx->offset)++; // Skip decimal point
         
-        if (!is_digit(expr[*offset])) {
+        if (!is_digit(ctx->expr[*ctx->offset])) {
             // Malformed double, must have at least one digit after decimal
             return NULL;
         }
@@ -226,10 +220,10 @@ static data_t* parse_number_literal(agent_t *agent, data_t *message, const char 
         double decimal_place = 0.1;
         
         // Parse decimal part
-        while (expr[*offset] && is_digit(expr[*offset])) {
-            double_value += (expr[*offset] - '0') * decimal_place;
+        while (ctx->expr[*ctx->offset] && is_digit(ctx->expr[*ctx->offset])) {
+            double_value += (ctx->expr[*ctx->offset] - '0') * decimal_place;
             decimal_place *= 0.1;
-            (*offset)++;
+            (*ctx->offset)++;
         }
         
         if (is_negative) {
@@ -248,7 +242,7 @@ static data_t* parse_number_literal(agent_t *agent, data_t *message, const char 
 }
 
 // Parse a memory access (message, memory, context) expression
-static data_t* parse_memory_access(agent_t *agent, data_t *message, const char *expr, int *offset) {
+static data_t* parse_memory_access(expr_context_t *ctx) {
     enum {
         ACCESS_TYPE_MESSAGE,
         ACCESS_TYPE_MEMORY,
@@ -256,36 +250,36 @@ static data_t* parse_memory_access(agent_t *agent, data_t *message, const char *
     } access_type;
     
     // Determine which type of access we're dealing with
-    if (match(expr, offset, "message")) {
+    if (match(ctx->expr, ctx->offset, "message")) {
         access_type = ACCESS_TYPE_MESSAGE;
-    } else if (match(expr, offset, "memory")) {
+    } else if (match(ctx->expr, ctx->offset, "memory")) {
         access_type = ACCESS_TYPE_MEMORY;
-    } else if (match(expr, offset, "context")) {
+    } else if (match(ctx->expr, ctx->offset, "context")) {
         access_type = ACCESS_TYPE_CONTEXT;
     } else {
         return NULL;
     }
     
     // Handle root access (no nested fields)
-    if (expr[*offset] != '.') {
+    if (ctx->expr[*ctx->offset] != '.') {
         switch (access_type) {
             case ACCESS_TYPE_MESSAGE:
-                if (message) {
+                if (ctx->message) {
                     // Return the message directly, not a copy
-                    return message;
+                    return ctx->message;
                 } else {
                     // Return NULL for non-existent message
                     return NULL;
                 }
             case ACCESS_TYPE_MEMORY:
-                if (agent && agent->memory) {
-                    return agent->memory;
+                if (ctx->agent && ctx->agent->memory) {
+                    return ctx->agent->memory;
                 }
                 // Return NULL for non-existent memory
                 return NULL;
             case ACCESS_TYPE_CONTEXT:
-                if (agent && agent->context) {
-                    return agent->context;
+                if (ctx->agent && ctx->agent->context) {
+                    return ctx->agent->context;
                 }
                 // Return NULL for non-existent context
                 return NULL;
@@ -296,10 +290,10 @@ static data_t* parse_memory_access(agent_t *agent, data_t *message, const char *
     char path[256] = "";
     int path_len = 0;
     
-    while (expr[*offset] == '.') {
-        (*offset)++; // Skip the dot
+    while (ctx->expr[*ctx->offset] == '.') {
+        (*ctx->offset)++; // Skip the dot
         
-        char *id = parse_identifier(expr, offset);
+        char *id = parse_identifier(ctx->expr, ctx->offset);
         if (!id) {
             return NULL; // Invalid identifier in path is a syntax error
         }
@@ -321,13 +315,13 @@ static data_t* parse_memory_access(agent_t *agent, data_t *message, const char *
     data_t *source = NULL;
     switch (access_type) {
         case ACCESS_TYPE_MESSAGE:
-            source = message;
+            source = ctx->message;
             break;
         case ACCESS_TYPE_MEMORY:
-            source = agent ? agent->memory : NULL;
+            source = ctx->agent ? ctx->agent->memory : NULL;
             break;
         case ACCESS_TYPE_CONTEXT:
-            source = agent ? agent->context : NULL;
+            source = ctx->agent ? ctx->agent->context : NULL;
             break;
     }
     
@@ -355,48 +349,48 @@ static data_t* parse_memory_access(agent_t *agent, data_t *message, const char *
 
 
 // Parse a primary expression (literal or memory access)
-static data_t* parse_primary(agent_t *agent, data_t *message, const char *expr, int *offset) {
-    skip_whitespace(expr, offset);
+static data_t* parse_primary(expr_context_t *ctx) {
+    skip_whitespace(ctx->expr, ctx->offset);
     
     // Check for string literal
-    if (expr[*offset] == '"') {
-        return parse_string_literal(agent, message, expr, offset);
+    if (ctx->expr[*ctx->offset] == '"') {
+        return parse_string_literal(ctx);
     }
     
     // Check for number literal (including negative numbers)
-    if (is_digit(expr[*offset]) || (expr[*offset] == '-' && is_digit(expr[*offset + 1]))) {
-        return parse_number_literal(agent, message, expr, offset);
+    if (is_digit(ctx->expr[*ctx->offset]) || (ctx->expr[*ctx->offset] == '-' && is_digit(ctx->expr[*ctx->offset + 1]))) {
+        return parse_number_literal(ctx);
     }
     
     // Check for memory access (message, memory, context)
-    if (strncmp(expr + *offset, "message", 7) == 0 ||
-        strncmp(expr + *offset, "memory", 6) == 0 ||
-        strncmp(expr + *offset, "context", 7) == 0) {
-        return parse_memory_access(agent, message, expr, offset);
+    if (strncmp(ctx->expr + *ctx->offset, "message", 7) == 0 ||
+        strncmp(ctx->expr + *ctx->offset, "memory", 6) == 0 ||
+        strncmp(ctx->expr + *ctx->offset, "context", 7) == 0) {
+        return parse_memory_access(ctx);
     }
     
     // Check for function call - which is a syntax error in expressions
-    if (is_identifier_start(expr[*offset])) {
+    if (is_identifier_start(ctx->expr[*ctx->offset])) {
         // Save the position at the start of the function name
-        int func_name_start = *offset;
+        int func_name_start = *ctx->offset;
         
         // Skip over function name
-        while (expr[*offset] && is_identifier_part(expr[*offset])) {
-            (*offset)++;
+        while (ctx->expr[*ctx->offset] && is_identifier_part(ctx->expr[*ctx->offset])) {
+            (*ctx->offset)++;
         }
         
-        skip_whitespace(expr, offset);
+        skip_whitespace(ctx->expr, ctx->offset);
         
         // If we find an opening parenthesis, it's a function call - syntax error
-        if (expr[*offset] == '(') {
+        if (ctx->expr[*ctx->offset] == '(') {
             // Reset offset to the start of the function name
-            *offset = func_name_start;
+            *ctx->offset = func_name_start;
             // Return NULL to indicate a syntax error
             return NULL;
         }
         
         // Not a function call, reset offset and continue
-        *offset = func_name_start;
+        *ctx->offset = func_name_start;
     }
     
     // If we get here, it's not a valid primary expression
@@ -404,36 +398,36 @@ static data_t* parse_primary(agent_t *agent, data_t *message, const char *expr, 
 }
 
 // Parse and evaluate a comparison expression
-static data_t* parse_comparison(agent_t *agent, data_t *message, const char *expr, int *offset) {
+static data_t* parse_comparison(expr_context_t *ctx) {
     // First parse the left operand
-    data_t *left = parse_primary(agent, message, expr, offset);
+    data_t *left = parse_primary(ctx);
     if (!left) {
         return NULL;
     }
     
-    skip_whitespace(expr, offset);
+    skip_whitespace(ctx->expr, ctx->offset);
     
     // Check if there's a comparison operator
-    if (!is_comparison_operator(expr, *offset)) {
+    if (!is_comparison_operator(ctx->expr, *ctx->offset)) {
         return left; // No comparison, just return the left operand
     }
     
     // Get the comparison operator
     char op[3] = {0};
-    op[0] = expr[*offset];
-    (*offset)++;
+    op[0] = ctx->expr[*ctx->offset];
+    (*ctx->offset)++;
     
     // Check for two-character operators (<>, <=, >=)
-    if ((op[0] == '<' && (expr[*offset] == '>' || expr[*offset] == '=')) ||
-        (op[0] == '>' && expr[*offset] == '=')) {
-        op[1] = expr[*offset];
-        (*offset)++;
+    if ((op[0] == '<' && (ctx->expr[*ctx->offset] == '>' || ctx->expr[*ctx->offset] == '=')) ||
+        (op[0] == '>' && ctx->expr[*ctx->offset] == '=')) {
+        op[1] = ctx->expr[*ctx->offset];
+        (*ctx->offset)++;
     }
     
-    skip_whitespace(expr, offset);
+    skip_whitespace(ctx->expr, ctx->offset);
     
     // Parse the right operand
-    data_t *right = parse_primary(agent, message, expr, offset);
+    data_t *right = parse_primary(ctx);
     if (!right) {
         ar_data_destroy(left);
         return NULL;
@@ -558,28 +552,28 @@ static data_t* parse_comparison(agent_t *agent, data_t *message, const char *exp
 }
 
 // Parse and evaluate an arithmetic expression
-static data_t* parse_arithmetic(agent_t *agent, data_t *message, const char *expr, int *offset) {
+static data_t* parse_arithmetic(expr_context_t *ctx) {
     // First parse the left operand as a comparison (which might be just a primary)
-    data_t *left = parse_comparison(agent, message, expr, offset);
+    data_t *left = parse_comparison(ctx);
     if (!left) {
         return NULL;
     }
     
-    skip_whitespace(expr, offset);
+    skip_whitespace(ctx->expr, ctx->offset);
     
     // Check if there's an arithmetic operator
-    if (!is_arithmetic_operator(expr[*offset])) {
+    if (!is_arithmetic_operator(ctx->expr[*ctx->offset])) {
         return left; // No arithmetic, just return the left operand
     }
     
     // Get the arithmetic operator
-    char op = expr[*offset];
-    (*offset)++;
+    char op = ctx->expr[*ctx->offset];
+    (*ctx->offset)++;
     
-    skip_whitespace(expr, offset);
+    skip_whitespace(ctx->expr, ctx->offset);
     
     // Parse the right operand
-    data_t *right = parse_comparison(agent, message, expr, offset);
+    data_t *right = parse_comparison(ctx);
     if (!right) {
         ar_data_destroy(left);
         return NULL;
@@ -687,8 +681,8 @@ static data_t* parse_arithmetic(agent_t *agent, data_t *message, const char *exp
 }
 
 // Parse and evaluate an expression
-static data_t* parse_expression(agent_t *agent, data_t *message, const char *expr, int *offset) {
-    return parse_arithmetic(agent, message, expr, offset);
+static data_t* parse_expression(expr_context_t *ctx) {
+    return parse_arithmetic(ctx);
 }
 
 // Public function to evaluate an expression
@@ -697,8 +691,16 @@ data_t* ar_expression_evaluate(agent_t *agent, data_t *message, const char *expr
         return NULL;
     }
     
+    // Create the expression context
+    expr_context_t ctx = {
+        .agent = agent,
+        .message = message,
+        .expr = expr,
+        .offset = offset
+    };
+    
     // Parse the expression
-    data_t *result = parse_expression(agent, message, expr, offset);
+    data_t *result = parse_expression(&ctx);
     
     // If parsing failed, return NULL to indicate a syntax error
     // The offset should already be at the position where the error was detected

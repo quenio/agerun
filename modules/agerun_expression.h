@@ -6,6 +6,17 @@
 #include "agerun_agent.h"
 
 /**
+ * Context structure for expression evaluation.
+ * Contains all the information needed during expression parsing and evaluation.
+ */
+typedef struct {
+    agent_t *agent;     /* The agent context */
+    data_t *message;    /* The message being processed */
+    const char *expr;   /* The expression to evaluate */
+    int *offset;        /* Pointer to current position in the expression */
+} expr_context_t;
+
+/**
  * Evaluate an expression in the agent's context using recursive descent parsing.
  * 
  * The expression grammar follows the BNF definition:
