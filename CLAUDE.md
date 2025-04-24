@@ -239,3 +239,8 @@ IMPORTANT:
    - Keep this CLAUDE.md file updated with current best practices
    - Consider this file the source of truth for development procedures
    - Documenting guidelines here ensures consistency across development sessions
+
+10. **Code Presentations**:
+   - When asked to show "the actual code" for a structure declaration or similar, provide only the exact code without additional commentary
+   - Present the raw code as it appears in the source files
+   - For example, when asked to show a struct definition, show only the typedef struct {...} code block
