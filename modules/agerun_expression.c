@@ -48,19 +48,19 @@ static data_t* parse_primary(expr_context_t *ctx);
 static data_t* parse_string_literal(expr_context_t *ctx);
 static data_t* parse_number_literal(expr_context_t *ctx);
 static data_t* parse_memory_access(expr_context_t *ctx);
-static void skip_whitespace(const char *expr, int *offset);
-static bool is_comparison_operator(const char *expr, int offset);
+static void skip_whitespace(expr_context_t *ctx);
+static bool is_comparison_operator(expr_context_t *ctx);
 static bool is_arithmetic_operator(char c);
-static bool match(const char *expr, int *offset, const char *to_match);
+static bool match(expr_context_t *ctx, const char *to_match);
 static bool is_identifier_start(char c);
 static bool is_identifier_part(char c);
-static char* parse_identifier(const char *expr, int *offset);
+static char* parse_identifier(expr_context_t *ctx);
 static bool is_digit(char c);
 
 // Skip whitespace characters in the expression
-static void skip_whitespace(const char *expr, int *offset) {
-    while (expr[*offset] && ar_string_isspace(expr[*offset])) {
-        (*offset)++;
+static void skip_whitespace(expr_context_t *ctx) {
+    while (ctx->expr[ctx->offset] && ar_string_isspace(ctx->expr[ctx->offset])) {
+        ctx->offset++;
     }
 }
 
@@ -80,28 +80,28 @@ static bool is_identifier_part(char c) {
 }
 
 // Parse an identifier from the expression
-static char* parse_identifier(const char *expr, int *offset) {
-    int start = *offset;
+static char* parse_identifier(expr_context_t *ctx) {
+    int start = ctx->offset;
     
     // First character must be a letter
-    if (!is_identifier_start(expr[*offset])) {
+    if (!is_identifier_start(ctx->expr[ctx->offset])) {
         return NULL;
     }
     
-    (*offset)++;
+    ctx->offset++;
     
     // Rest of identifier can include letters, digits, and underscore
-    while (expr[*offset] && is_identifier_part(expr[*offset])) {
-        (*offset)++;
+    while (ctx->expr[ctx->offset] && is_identifier_part(ctx->expr[ctx->offset])) {
+        ctx->offset++;
     }
     
-    int length = *offset - start;
+    int length = ctx->offset - start;
     char *identifier = malloc((size_t)length + 1);
     if (!identifier) {
         return NULL;
     }
     
-    strncpy(identifier, expr + start, (size_t)length);
+    strncpy(identifier, ctx->expr + start, (size_t)length);
     identifier[length] = '\0';
     
     return identifier;
@@ -110,13 +110,13 @@ static char* parse_identifier(const char *expr, int *offset) {
 
 // Check if the string at the current offset matches the expected string
 // If it does, advance offset past the matched string and return true
-static bool match(const char *expr, int *offset, const char *to_match) {
+static bool match(expr_context_t *ctx, const char *to_match) {
     size_t len = strlen(to_match);
-    if (strncmp(expr + *offset, to_match, len) == 0) {
+    if (strncmp(ctx->expr + ctx->offset, to_match, len) == 0) {
         // Make sure it's not part of a longer identifier
-        if (to_match[len-1] == '.' || !expr[*offset + (int)len] || 
-            !is_identifier_part(expr[*offset + (int)len])) {
-            *offset += (int)len;
+        if (to_match[len-1] == '.' || !ctx->expr[ctx->offset + (int)len] || 
+            !is_identifier_part(ctx->expr[ctx->offset + (int)len])) {
+            ctx->offset += (int)len;
             return true;
         }
     }
@@ -130,18 +130,18 @@ static bool is_arithmetic_operator(char c) {
 }
 
 // Check if the next sequence of characters is a comparison operator
-static bool is_comparison_operator(const char *expr, int offset) {
-    if (expr[offset] == '=') {
+static bool is_comparison_operator(expr_context_t *ctx) {
+    if (ctx->expr[ctx->offset] == '=') {
         return true;
     }
-    if (expr[offset] == '<') {
-        if (expr[offset + 1] == '>' || expr[offset + 1] == '=') {
+    if (ctx->expr[ctx->offset] == '<') {
+        if (ctx->expr[ctx->offset + 1] == '>' || ctx->expr[ctx->offset + 1] == '=') {
             return true;
         }
         return true;
     }
-    if (expr[offset] == '>') {
-        if (expr[offset + 1] == '=') {
+    if (ctx->expr[ctx->offset] == '>') {
+        if (ctx->expr[ctx->offset + 1] == '=') {
             return true;
         }
         return true;
@@ -151,22 +151,22 @@ static bool is_comparison_operator(const char *expr, int offset) {
 
 // Parse a string literal from the expression
 static data_t* parse_string_literal(expr_context_t *ctx) {
-    if (ctx->expr[*ctx->offset] != '"') {
+    if (ctx->expr[ctx->offset] != '"') {
         return NULL;
     }
     
-    (*ctx->offset)++; // Skip opening quote
+    ctx->offset++; // Skip opening quote
     
     // Find the closing quote and count the length
-    int start = *ctx->offset;
+    int start = ctx->offset;
     int len = 0;
     
-    while (ctx->expr[*ctx->offset] && ctx->expr[*ctx->offset] != '"') {
-        (*ctx->offset)++;
+    while (ctx->expr[ctx->offset] && ctx->expr[ctx->offset] != '"') {
+        ctx->offset++;
         len++;
     }
     
-    if (ctx->expr[*ctx->offset] != '"') {
+    if (ctx->expr[ctx->offset] != '"') {
         // Unterminated string literal
         return NULL;
     }
@@ -180,7 +180,7 @@ static data_t* parse_string_literal(expr_context_t *ctx) {
     strncpy(temp_str, ctx->expr + start, (size_t)len);
     temp_str[len] = '\0';
     
-    (*ctx->offset)++; // Skip closing quote
+    ctx->offset++; // Skip closing quote
     
     data_t *result = ar_data_create_string(temp_str);
     free(temp_str);
@@ -191,27 +191,27 @@ static data_t* parse_string_literal(expr_context_t *ctx) {
 // Parse a number literal (integer or double) from the expression
 static data_t* parse_number_literal(expr_context_t *ctx) {
     bool is_negative = false;
-    if (ctx->expr[*ctx->offset] == '-') {
+    if (ctx->expr[ctx->offset] == '-') {
         is_negative = true;
-        (*ctx->offset)++;
+        ctx->offset++;
     }
     
-    if (!is_digit(ctx->expr[*ctx->offset])) {
+    if (!is_digit(ctx->expr[ctx->offset])) {
         return NULL;
     }
     
     // Parse integer part
     int value = 0;
-    while (ctx->expr[*ctx->offset] && is_digit(ctx->expr[*ctx->offset])) {
-        value = value * 10 + (ctx->expr[*ctx->offset] - '0');
-        (*ctx->offset)++;
+    while (ctx->expr[ctx->offset] && is_digit(ctx->expr[ctx->offset])) {
+        value = value * 10 + (ctx->expr[ctx->offset] - '0');
+        ctx->offset++;
     }
     
     // Check for decimal point for double
-    if (ctx->expr[*ctx->offset] == '.') {
-        (*ctx->offset)++; // Skip decimal point
+    if (ctx->expr[ctx->offset] == '.') {
+        ctx->offset++; // Skip decimal point
         
-        if (!is_digit(ctx->expr[*ctx->offset])) {
+        if (!is_digit(ctx->expr[ctx->offset])) {
             // Malformed double, must have at least one digit after decimal
             return NULL;
         }
@@ -220,10 +220,10 @@ static data_t* parse_number_literal(expr_context_t *ctx) {
         double decimal_place = 0.1;
         
         // Parse decimal part
-        while (ctx->expr[*ctx->offset] && is_digit(ctx->expr[*ctx->offset])) {
-            double_value += (ctx->expr[*ctx->offset] - '0') * decimal_place;
+        while (ctx->expr[ctx->offset] && is_digit(ctx->expr[ctx->offset])) {
+            double_value += (ctx->expr[ctx->offset] - '0') * decimal_place;
             decimal_place *= 0.1;
-            (*ctx->offset)++;
+            ctx->offset++;
         }
         
         if (is_negative) {
@@ -250,18 +250,18 @@ static data_t* parse_memory_access(expr_context_t *ctx) {
     } access_type;
     
     // Determine which type of access we're dealing with
-    if (match(ctx->expr, ctx->offset, "message")) {
+    if (match(ctx, "message")) {
         access_type = ACCESS_TYPE_MESSAGE;
-    } else if (match(ctx->expr, ctx->offset, "memory")) {
+    } else if (match(ctx, "memory")) {
         access_type = ACCESS_TYPE_MEMORY;
-    } else if (match(ctx->expr, ctx->offset, "context")) {
+    } else if (match(ctx, "context")) {
         access_type = ACCESS_TYPE_CONTEXT;
     } else {
         return NULL;
     }
     
     // Handle root access (no nested fields)
-    if (ctx->expr[*ctx->offset] != '.') {
+    if (ctx->expr[ctx->offset] != '.') {
         switch (access_type) {
             case ACCESS_TYPE_MESSAGE:
                 if (ctx->message) {
@@ -290,10 +290,10 @@ static data_t* parse_memory_access(expr_context_t *ctx) {
     char path[256] = "";
     int path_len = 0;
     
-    while (ctx->expr[*ctx->offset] == '.') {
-        (*ctx->offset)++; // Skip the dot
+    while (ctx->expr[ctx->offset] == '.') {
+        ctx->offset++; // Skip the dot
         
-        char *id = parse_identifier(ctx->expr, ctx->offset);
+        char *id = parse_identifier(ctx);
         if (!id) {
             return NULL; // Invalid identifier in path is a syntax error
         }
@@ -350,47 +350,47 @@ static data_t* parse_memory_access(expr_context_t *ctx) {
 
 // Parse a primary expression (literal or memory access)
 static data_t* parse_primary(expr_context_t *ctx) {
-    skip_whitespace(ctx->expr, ctx->offset);
+    skip_whitespace(ctx);
     
     // Check for string literal
-    if (ctx->expr[*ctx->offset] == '"') {
+    if (ctx->expr[ctx->offset] == '"') {
         return parse_string_literal(ctx);
     }
     
     // Check for number literal (including negative numbers)
-    if (is_digit(ctx->expr[*ctx->offset]) || (ctx->expr[*ctx->offset] == '-' && is_digit(ctx->expr[*ctx->offset + 1]))) {
+    if (is_digit(ctx->expr[ctx->offset]) || (ctx->expr[ctx->offset] == '-' && is_digit(ctx->expr[ctx->offset + 1]))) {
         return parse_number_literal(ctx);
     }
     
     // Check for memory access (message, memory, context)
-    if (strncmp(ctx->expr + *ctx->offset, "message", 7) == 0 ||
-        strncmp(ctx->expr + *ctx->offset, "memory", 6) == 0 ||
-        strncmp(ctx->expr + *ctx->offset, "context", 7) == 0) {
+    if (strncmp(ctx->expr + ctx->offset, "message", 7) == 0 ||
+        strncmp(ctx->expr + ctx->offset, "memory", 6) == 0 ||
+        strncmp(ctx->expr + ctx->offset, "context", 7) == 0) {
         return parse_memory_access(ctx);
     }
     
     // Check for function call - which is a syntax error in expressions
-    if (is_identifier_start(ctx->expr[*ctx->offset])) {
+    if (is_identifier_start(ctx->expr[ctx->offset])) {
         // Save the position at the start of the function name
-        int func_name_start = *ctx->offset;
+        int func_name_start = ctx->offset;
         
         // Skip over function name
-        while (ctx->expr[*ctx->offset] && is_identifier_part(ctx->expr[*ctx->offset])) {
-            (*ctx->offset)++;
+        while (ctx->expr[ctx->offset] && is_identifier_part(ctx->expr[ctx->offset])) {
+            ctx->offset++;
         }
         
-        skip_whitespace(ctx->expr, ctx->offset);
+        skip_whitespace(ctx);
         
         // If we find an opening parenthesis, it's a function call - syntax error
-        if (ctx->expr[*ctx->offset] == '(') {
+        if (ctx->expr[ctx->offset] == '(') {
             // Reset offset to the start of the function name
-            *ctx->offset = func_name_start;
+            ctx->offset = func_name_start;
             // Return NULL to indicate a syntax error
             return NULL;
         }
         
         // Not a function call, reset offset and continue
-        *ctx->offset = func_name_start;
+        ctx->offset = func_name_start;
     }
     
     // If we get here, it's not a valid primary expression
@@ -405,26 +405,26 @@ static data_t* parse_comparison(expr_context_t *ctx) {
         return NULL;
     }
     
-    skip_whitespace(ctx->expr, ctx->offset);
+    skip_whitespace(ctx);
     
     // Check if there's a comparison operator
-    if (!is_comparison_operator(ctx->expr, *ctx->offset)) {
+    if (!is_comparison_operator(ctx)) {
         return left; // No comparison, just return the left operand
     }
     
     // Get the comparison operator
     char op[3] = {0};
-    op[0] = ctx->expr[*ctx->offset];
-    (*ctx->offset)++;
+    op[0] = ctx->expr[ctx->offset];
+    ctx->offset++;
     
     // Check for two-character operators (<>, <=, >=)
-    if ((op[0] == '<' && (ctx->expr[*ctx->offset] == '>' || ctx->expr[*ctx->offset] == '=')) ||
-        (op[0] == '>' && ctx->expr[*ctx->offset] == '=')) {
-        op[1] = ctx->expr[*ctx->offset];
-        (*ctx->offset)++;
+    if ((op[0] == '<' && (ctx->expr[ctx->offset] == '>' || ctx->expr[ctx->offset] == '=')) ||
+        (op[0] == '>' && ctx->expr[ctx->offset] == '=')) {
+        op[1] = ctx->expr[ctx->offset];
+        ctx->offset++;
     }
     
-    skip_whitespace(ctx->expr, ctx->offset);
+    skip_whitespace(ctx);
     
     // Parse the right operand
     data_t *right = parse_primary(ctx);
@@ -559,18 +559,18 @@ static data_t* parse_arithmetic(expr_context_t *ctx) {
         return NULL;
     }
     
-    skip_whitespace(ctx->expr, ctx->offset);
+    skip_whitespace(ctx);
     
     // Check if there's an arithmetic operator
-    if (!is_arithmetic_operator(ctx->expr[*ctx->offset])) {
+    if (!is_arithmetic_operator(ctx->expr[ctx->offset])) {
         return left; // No arithmetic, just return the left operand
     }
     
     // Get the arithmetic operator
-    char op = ctx->expr[*ctx->offset];
-    (*ctx->offset)++;
+    char op = ctx->expr[ctx->offset];
+    ctx->offset++;
     
-    skip_whitespace(ctx->expr, ctx->offset);
+    skip_whitespace(ctx);
     
     // Parse the right operand
     data_t *right = parse_comparison(ctx);
@@ -687,7 +687,7 @@ static data_t* parse_expression(expr_context_t *ctx) {
 
 // Public function to evaluate an expression
 data_t* ar_expression_evaluate(expr_context_t *ctx) {
-    if (!ctx || !ctx->expr || !ctx->offset) {
+    if (!ctx || !ctx->expr) {
         return NULL;
     }
     

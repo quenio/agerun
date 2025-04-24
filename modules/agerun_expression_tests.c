@@ -60,14 +60,13 @@ static void test_string_literal(void) {
     
     // Given a string literal expression
     const char *expr = "\"Hello, World!\"";
-    int offset = 0;
     
     // Create expression context
     expr_context_t ctx = {
         .agent = NULL,
         .message = NULL,
         .expr = expr,
-        .offset = &offset
+        .offset = 0
     };
     
     // When we evaluate the expression
@@ -79,7 +78,7 @@ static void test_string_literal(void) {
     assert(strcmp(ar_data_get_string(result), "Hello, World!") == 0);
     
     // And the offset should be updated correctly
-    assert(offset == (int)strlen(expr));
+    assert(ctx.offset == (int)strlen(expr));
     
     // Clean up
     ar_data_destroy(result);
@@ -95,14 +94,13 @@ static void test_number_literal(void) {
     // Test integer literal
     {
         const char *expr = "42";
-        int offset = 0;
         
         // Create expression context
         expr_context_t ctx = {
             .agent = NULL,
             .message = NULL,
             .expr = expr,
-            .offset = &offset
+            .offset = 0
         };
         
         data_t *result = ar_expression_evaluate(&ctx);
@@ -110,7 +108,7 @@ static void test_number_literal(void) {
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 42);
-        assert(offset == (int)strlen(expr));
+        assert(ctx.offset == (int)strlen(expr));
         
         ar_data_destroy(result);
     }
@@ -118,14 +116,13 @@ static void test_number_literal(void) {
     // Test negative integer literal
     {
         const char *expr = "-123";
-        int offset = 0;
         
         // Create expression context
         expr_context_t ctx = {
             .agent = NULL,
             .message = NULL,
             .expr = expr,
-            .offset = &offset
+            .offset = 0
         };
         
         data_t *result = ar_expression_evaluate(&ctx);
@@ -133,7 +130,7 @@ static void test_number_literal(void) {
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == -123);
-        assert(offset == (int)strlen(expr));
+        assert(ctx.offset == (int)strlen(expr));
         
         ar_data_destroy(result);
     }
@@ -141,14 +138,13 @@ static void test_number_literal(void) {
     // Test double literal
     {
         const char *expr = "3.14159";
-        int offset = 0;
         
         // Create expression context
         expr_context_t ctx = {
             .agent = NULL,
             .message = NULL,
             .expr = expr,
-            .offset = &offset
+            .offset = 0
         };
         
         data_t *result = ar_expression_evaluate(&ctx);
@@ -159,7 +155,7 @@ static void test_number_literal(void) {
         double epsilon = 0.00001;
         assert(ar_data_get_double(result) - 3.14159 < epsilon && 
                ar_data_get_double(result) - 3.14159 > -epsilon);
-        assert(offset == (int)strlen(expr));
+        assert(ctx.offset == (int)strlen(expr));
         
         ar_data_destroy(result);
     }
@@ -167,14 +163,13 @@ static void test_number_literal(void) {
     // Test negative double literal
     {
         const char *expr = "-2.718";
-        int offset = 0;
         
         // Create expression context
         expr_context_t ctx = {
             .agent = NULL,
             .message = NULL,
             .expr = expr,
-            .offset = &offset
+            .offset = 0
         };
         
         data_t *result = ar_expression_evaluate(&ctx);
@@ -185,7 +180,7 @@ static void test_number_literal(void) {
         double epsilon = 0.00001;
         assert(ar_data_get_double(result) - (-2.718) < epsilon && 
                ar_data_get_double(result) - (-2.718) > -epsilon);
-        assert(offset == (int)strlen(expr));
+        assert(ctx.offset == (int)strlen(expr));
         
         ar_data_destroy(result);
     }
@@ -215,14 +210,13 @@ static void test_arithmetic_expression(void) {
     // Test addition
     {
         const char *expr = "2 + 3";
-        int offset = 0;
         
         // Create expression context
         expr_context_t ctx = {
             .agent = NULL,
             .message = NULL,
             .expr = expr,
-            .offset = &offset
+            .offset = 0
         };
         
         data_t *result = ar_expression_evaluate(&ctx);
@@ -230,7 +224,7 @@ static void test_arithmetic_expression(void) {
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 5);
-        assert(offset == (int)strlen(expr));
+        assert(ctx.offset == (int)strlen(expr));
         
         ar_data_destroy(result);
     }
@@ -238,14 +232,13 @@ static void test_arithmetic_expression(void) {
     // Test subtraction
     {
         const char *expr = "10 - 4";
-        int offset = 0;
         
         // Create expression context
         expr_context_t ctx = {
             .agent = NULL,
             .message = NULL,
             .expr = expr,
-            .offset = &offset
+            .offset = 0
         };
         
         data_t *result = ar_expression_evaluate(&ctx);
@@ -253,7 +246,7 @@ static void test_arithmetic_expression(void) {
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 6);
-        assert(offset == (int)strlen(expr));
+        assert(ctx.offset == (int)strlen(expr));
         
         ar_data_destroy(result);
     }
@@ -261,14 +254,13 @@ static void test_arithmetic_expression(void) {
     // Test multiplication
     {
         const char *expr = "5 * 3";
-        int offset = 0;
         
         // Create expression context
         expr_context_t ctx = {
             .agent = NULL,
             .message = NULL,
             .expr = expr,
-            .offset = &offset
+            .offset = 0
         };
         
         data_t *result = ar_expression_evaluate(&ctx);
@@ -276,7 +268,7 @@ static void test_arithmetic_expression(void) {
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 15);
-        assert(offset == (int)strlen(expr));
+        assert(ctx.offset == (int)strlen(expr));
         
         ar_data_destroy(result);
     }
@@ -284,14 +276,13 @@ static void test_arithmetic_expression(void) {
     // Test division
     {
         const char *expr = "20 / 4";
-        int offset = 0;
         
         // Create expression context
         expr_context_t ctx = {
             .agent = NULL,
             .message = NULL,
             .expr = expr,
-            .offset = &offset
+            .offset = 0
         };
         
         data_t *result = ar_expression_evaluate(&ctx);
@@ -299,7 +290,7 @@ static void test_arithmetic_expression(void) {
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 5);
-        assert(offset == (int)strlen(expr));
+        assert(ctx.offset == (int)strlen(expr));
         
         ar_data_destroy(result);
     }
@@ -307,14 +298,13 @@ static void test_arithmetic_expression(void) {
     // Test simple addition to avoid operator precedence issues
     {
         const char *expr = "5 + 7";
-        int offset = 0;
         
         // Create expression context
         expr_context_t ctx = {
             .agent = NULL,
             .message = NULL,
             .expr = expr,
-            .offset = &offset
+            .offset = 0
         };
         
         data_t *result = ar_expression_evaluate(&ctx);
@@ -322,7 +312,7 @@ static void test_arithmetic_expression(void) {
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 12);
-        assert(offset == (int)strlen(expr));
+        assert(ctx.offset == (int)strlen(expr));
         
         ar_data_destroy(result);
     }
@@ -338,14 +328,13 @@ static void test_comparison_expression(void) {
     // Test equality
     {
         const char *expr = "5 = 5";
-        int offset = 0;
         
         // Create expression context
         expr_context_t ctx = {
             .agent = NULL,
             .message = NULL,
             .expr = expr,
-            .offset = &offset
+            .offset = 0
         };
         
         data_t *result = ar_expression_evaluate(&ctx);
@@ -353,7 +342,7 @@ static void test_comparison_expression(void) {
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 1); // true
-        assert(offset == (int)strlen(expr));
+        assert(ctx.offset == (int)strlen(expr));
         
         ar_data_destroy(result);
     }
@@ -361,14 +350,13 @@ static void test_comparison_expression(void) {
     // Test inequality
     {
         const char *expr = "5 <> 3";
-        int offset = 0;
         
         // Create expression context
         expr_context_t ctx = {
             .agent = NULL,
             .message = NULL,
             .expr = expr,
-            .offset = &offset
+            .offset = 0
         };
         
         data_t *result = ar_expression_evaluate(&ctx);
@@ -376,7 +364,7 @@ static void test_comparison_expression(void) {
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 1); // true
-        assert(offset == (int)strlen(expr));
+        assert(ctx.offset == (int)strlen(expr));
         
         ar_data_destroy(result);
     }
@@ -384,14 +372,13 @@ static void test_comparison_expression(void) {
     // Test less than
     {
         const char *expr = "3 < 5";
-        int offset = 0;
         
         // Create expression context
         expr_context_t ctx = {
             .agent = NULL,
             .message = NULL,
             .expr = expr,
-            .offset = &offset
+            .offset = 0
         };
         
         data_t *result = ar_expression_evaluate(&ctx);
@@ -399,7 +386,7 @@ static void test_comparison_expression(void) {
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 1); // true
-        assert(offset == (int)strlen(expr));
+        assert(ctx.offset == (int)strlen(expr));
         
         ar_data_destroy(result);
     }
@@ -407,14 +394,13 @@ static void test_comparison_expression(void) {
     // Test greater than
     {
         const char *expr = "7 > 4";
-        int offset = 0;
         
         // Create expression context
         expr_context_t ctx = {
             .agent = NULL,
             .message = NULL,
             .expr = expr,
-            .offset = &offset
+            .offset = 0
         };
         
         data_t *result = ar_expression_evaluate(&ctx);
@@ -422,7 +408,7 @@ static void test_comparison_expression(void) {
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 1); // true
-        assert(offset == (int)strlen(expr));
+        assert(ctx.offset == (int)strlen(expr));
         
         ar_data_destroy(result);
     }
@@ -430,14 +416,13 @@ static void test_comparison_expression(void) {
     // Test less than or equal
     {
         const char *expr = "5 <= 5";
-        int offset = 0;
         
         // Create expression context
         expr_context_t ctx = {
             .agent = NULL,
             .message = NULL,
             .expr = expr,
-            .offset = &offset
+            .offset = 0
         };
         
         data_t *result = ar_expression_evaluate(&ctx);
@@ -445,7 +430,7 @@ static void test_comparison_expression(void) {
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 1); // true
-        assert(offset == (int)strlen(expr));
+        assert(ctx.offset == (int)strlen(expr));
         
         ar_data_destroy(result);
     }
@@ -453,14 +438,13 @@ static void test_comparison_expression(void) {
     // Test greater than or equal
     {
         const char *expr = "7 >= 10";
-        int offset = 0;
         
         // Create expression context
         expr_context_t ctx = {
             .agent = NULL,
             .message = NULL,
             .expr = expr,
-            .offset = &offset
+            .offset = 0
         };
         
         data_t *result = ar_expression_evaluate(&ctx);
@@ -468,7 +452,7 @@ static void test_comparison_expression(void) {
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 0); // false
-        assert(offset == (int)strlen(expr));
+        assert(ctx.offset == (int)strlen(expr));
         
         ar_data_destroy(result);
     }
@@ -483,14 +467,13 @@ static void test_function_call_expression(void) {
     
     // Try to evaluate a function call as an expression
     const char *expr = "if(1, \"true\", \"false\")";
-    int offset = 0;
     
     // Create expression context
     expr_context_t ctx = {
         .agent = NULL,
         .message = NULL,
         .expr = expr,
-        .offset = &offset
+        .offset = 0
     };
     
     // This should return NULL since function calls are not valid expressions
@@ -500,18 +483,17 @@ static void test_function_call_expression(void) {
     assert(result == NULL);
     
     // Offset should be at the start of "if"
-    assert(offset == 0);
+    assert(ctx.offset == 0);
     
     // Test a function call within an arithmetic expression
     const char *expr2 = "5 + if(1, 10, 20)";
-    offset = 0;
     
     // Create expression context
     expr_context_t ctx2 = {
         .agent = NULL,
         .message = NULL,
         .expr = expr2,
-        .offset = &offset
+        .offset = 0
     };
     
     // This should also return NULL when it encounters the "if" function call
@@ -521,7 +503,7 @@ static void test_function_call_expression(void) {
     assert(result == NULL);
     
     // Offset should be at the start of "if", which is after "5 + "
-    assert(offset == 4);
+    assert(ctx2.offset == 4);
     
     printf("Function call expression test passed (verified that function calls are not valid expressions).\n");
     fflush(stdout);

@@ -13,7 +13,7 @@ typedef struct {
     agent_t *agent;     /* The agent context */
     data_t *message;    /* The message being processed */
     const char *expr;   /* The expression to evaluate */
-    int *offset;        /* Pointer to current position in the expression */
+    int offset;         /* Current position in the expression */
 } expr_context_t;
 
 /**
