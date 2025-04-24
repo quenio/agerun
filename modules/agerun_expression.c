@@ -686,21 +686,13 @@ static data_t* parse_expression(expr_context_t *ctx) {
 }
 
 // Public function to evaluate an expression
-data_t* ar_expression_evaluate(agent_t *agent, data_t *message, const char *expr, int *offset) {
-    if (!expr || !offset) {
+data_t* ar_expression_evaluate(expr_context_t *ctx) {
+    if (!ctx || !ctx->expr || !ctx->offset) {
         return NULL;
     }
     
-    // Create the expression context
-    expr_context_t ctx = {
-        .agent = agent,
-        .message = message,
-        .expr = expr,
-        .offset = offset
-    };
-    
     // Parse the expression
-    data_t *result = parse_expression(&ctx);
+    data_t *result = parse_expression(ctx);
     
     // If parsing failed, return NULL to indicate a syntax error
     // The offset should already be at the position where the error was detected

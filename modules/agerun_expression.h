@@ -45,12 +45,9 @@ typedef struct {
  * <comparison-expression> ::= <expression> <comparison-operator> <expression>
  * <comparison-operator> ::= '=' | '<>' | '<' | '<=' | '>' | '>='
  * 
- * @param agent The agent context
- * @param message The message being processed (can be any data type)
- * @param expr The expression to evaluate
- * @param offset Pointer to current position in the expression
+ * @param ctx Pointer to the expression evaluation context containing agent, message, expression string, and offset
  * @return Pointer to the evaluated data result, or NULL on failure
  */
-data_t* ar_expression_evaluate(agent_t *agent, data_t *message, const char *expr, int *offset);
+data_t* ar_expression_evaluate(expr_context_t *ctx);
 
 #endif /* AGERUN_EXPRESSION_H */

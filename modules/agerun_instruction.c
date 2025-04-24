@@ -27,8 +27,14 @@ bool ar_instruction_run(agent_t *agent, data_t *message, const char *instruction
         return false;
     }
     
+    printf("DEBUG: Running instruction: %s\n", instruction);
+    
     int pos = 0;
-    return parse_instruction(agent, message, instruction, &pos);
+    bool result = parse_instruction(agent, message, instruction, &pos);
+    
+    printf("DEBUG: Instruction result: %s\n", result ? "success" : "failure");
+    
+    return result;
 }
 
 // <instruction> ::= <assignment> | <function-instruction>
@@ -70,8 +76,14 @@ static bool parse_assignment(agent_t *agent, data_t *message, const char *instru
     skip_whitespace(instruction, pos);
     
     // Evaluate the expression (right side)
-    int expr_pos = *pos;
-    data_t *value = ar_expression_evaluate(agent, message, instruction + expr_pos, &expr_pos);
+    int expr_pos = 0;
+    expr_context_t ctx = {
+        .agent = agent,
+        .message = message,
+        .expr = instruction + *pos,
+        .offset = &expr_pos
+    };
+    data_t *value = ar_expression_evaluate(&ctx);
     *pos += expr_pos;
     
     if (!value) {
@@ -210,8 +222,14 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         skip_whitespace(instruction, pos);
         
         // Parse agent_id expression
-        int agent_id_pos = *pos;
-        data_t *agent_id_data = ar_expression_evaluate(agent, message, instruction + agent_id_pos, &agent_id_pos);
+        int agent_id_pos = 0;
+        expr_context_t agent_id_ctx = {
+            .agent = agent,
+            .message = message,
+            .expr = instruction + *pos,
+            .offset = &agent_id_pos
+        };
+        data_t *agent_id_data = ar_expression_evaluate(&agent_id_ctx);
         *pos += agent_id_pos;
         
         if (!agent_id_data) {
@@ -229,8 +247,14 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         skip_whitespace(instruction, pos);
         
         // Parse message expression
-        int msg_pos = *pos;
-        data_t *msg_data = ar_expression_evaluate(agent, message, instruction + msg_pos, &msg_pos);
+        int msg_pos = 0;
+        expr_context_t msg_ctx = {
+            .agent = agent,
+            .message = message,
+            .expr = instruction + *pos,
+            .offset = &msg_pos
+        };
+        data_t *msg_data = ar_expression_evaluate(&msg_ctx);
         *pos += msg_pos;
         
         if (!msg_data) {
@@ -259,7 +283,12 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         if (target_id == 0) {
             // Special case: agent_id 0 is a no-op that always returns true
             success = true;
-            ar_data_destroy(msg_data);
+            
+            // Only destroy the message data if it's not the original message
+            // This prevents trying to free the shared message
+            if (msg_data != message) {
+                ar_data_destroy(msg_data);
+            }
         } else {
             // Ownership of msg_data is transferred to ar_agent_send
             success = ar_agent_send(target_id, msg_data);
@@ -274,8 +303,14 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         skip_whitespace(instruction, pos);
         
         // Parse condition expression
-        int cond_pos = *pos;
-        data_t *cond_data = ar_expression_evaluate(agent, message, instruction + cond_pos, &cond_pos);
+        int cond_pos = 0;
+        expr_context_t cond_ctx = {
+            .agent = agent,
+            .message = message,
+            .expr = instruction + *pos,
+            .offset = &cond_pos
+        };
+        data_t *cond_data = ar_expression_evaluate(&cond_ctx);
         *pos += cond_pos;
         
         if (!cond_data) {
@@ -293,8 +328,14 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         skip_whitespace(instruction, pos);
         
         // Parse true_value expression
-        int true_pos = *pos;
-        data_t *true_data = ar_expression_evaluate(agent, message, instruction + true_pos, &true_pos);
+        int true_pos = 0;
+        expr_context_t true_ctx = {
+            .agent = agent,
+            .message = message,
+            .expr = instruction + *pos,
+            .offset = &true_pos
+        };
+        data_t *true_data = ar_expression_evaluate(&true_ctx);
         *pos += true_pos;
         
         if (!true_data) {
@@ -314,8 +355,14 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         skip_whitespace(instruction, pos);
         
         // Parse false_value expression
-        int false_pos = *pos;
-        data_t *false_data = ar_expression_evaluate(agent, message, instruction + false_pos, &false_pos);
+        int false_pos = 0;
+        expr_context_t false_ctx = {
+            .agent = agent,
+            .message = message,
+            .expr = instruction + *pos,
+            .offset = &false_pos
+        };
+        data_t *false_data = ar_expression_evaluate(&false_ctx);
         *pos += false_pos;
         
         if (!false_data) {
