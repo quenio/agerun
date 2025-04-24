@@ -136,7 +136,7 @@ The [expression module](agerun_expression.md) provides a recursive descent parse
 - **Memory Access**: Supports dot notation for accessing message, memory, and context values
 - **Arithmetic Operations**: Handles addition, subtraction, multiplication, and division
 - **Comparison Operations**: Implements equality, inequality, and relational operators
-- **Function Calls**: Supports function calls with argument evaluation
+- **Opaque Type**: Uses an opaque context structure to encapsulate expression evaluation state
 - **Recursive Parsing**: Uses recursive descent parsing for nested expressions
 - **Depends on Data**: Uses the data module for storing and manipulating values
 

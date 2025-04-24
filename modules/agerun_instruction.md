@@ -102,7 +102,7 @@ ar_instruction_run(agent, message, "memory.result := if(memory.count > 5, \"High
 - All instructions follow the BNF grammar from the specification
 - Memory access in assignment operations uses dot notation (e.g., `memory.field := value`)
 - Function calls can be standalone or part of an assignment
-- The parser uses `ar_expression_evaluate` to evaluate all expressions
+- The parser uses the expression context API to evaluate all expressions
 - The parser properly handles whitespace and maintains correct context during parsing
 - Function calls delegate to the expression evaluator for argument evaluation
 - Memory safety is maintained throughout with proper allocation and cleanup
