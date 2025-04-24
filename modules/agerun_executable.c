@@ -37,12 +37,9 @@ int ar_executable_main(void) {
     }
     printf("Echo method created with version %d\n\n", echo_version);
     
-    // Create a counter method that increments a counter on each message
+    // Create a simplified counter method that just echoes back messages
     printf("Creating counter method...\n");
-    const char *counter_code = 
-        "if(equals(message, \"__wake__\"), memory[\"count\"] := 0, \"\")\n"
-        "if(equals(message, \"increment\"), memory[\"count\"] := memory[\"count\"] + 1, \"\")\n"
-        "if(equals(message, \"get\"), send(0, build(\"Count: {}\", memory[\"count\"])), \"\")";
+    const char *counter_code = "send(0, \"Hello from counter!\")";
     
     version_t counter_version = ar_method_create("counter", counter_code, 0, true, true);
     if (counter_version == 0) {
