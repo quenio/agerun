@@ -76,14 +76,14 @@ static bool parse_assignment(agent_t *agent, data_t *message, const char *instru
     skip_whitespace(instruction, pos);
     
     // Evaluate the expression (right side)
-    expr_context_t ctx = {
-        .agent = agent,
-        .message = message,
-        .expr = instruction + *pos,
-        .offset = 0
-    };
-    data_t *value = ar_expression_evaluate(&ctx);
-    *pos += ctx.offset;
+    expr_context_t *ctx = ar_expression_create_context(agent, message, instruction + *pos);
+    if (!ctx) {
+        free(path);
+        return false;
+    }
+    data_t *value = ar_expression_evaluate(ctx);
+    *pos += ar_expression_offset(ctx);
+    ar_expression_destroy_context(ctx);
     
     if (!value) {
         free(path);
@@ -221,14 +221,13 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         skip_whitespace(instruction, pos);
         
         // Parse agent_id expression
-        expr_context_t agent_id_ctx = {
-            .agent = agent,
-            .message = message,
-            .expr = instruction + *pos,
-            .offset = 0
-        };
-        data_t *agent_id_data = ar_expression_evaluate(&agent_id_ctx);
-        *pos += agent_id_ctx.offset;
+        expr_context_t *agent_id_ctx = ar_expression_create_context(agent, message, instruction + *pos);
+        if (!agent_id_ctx) {
+            return false;
+        }
+        data_t *agent_id_data = ar_expression_evaluate(agent_id_ctx);
+        *pos += ar_expression_offset(agent_id_ctx);
+        ar_expression_destroy_context(agent_id_ctx);
         
         if (!agent_id_data) {
             return false;
@@ -245,14 +244,14 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         skip_whitespace(instruction, pos);
         
         // Parse message expression
-        expr_context_t msg_ctx = {
-            .agent = agent,
-            .message = message,
-            .expr = instruction + *pos,
-            .offset = 0
-        };
-        data_t *msg_data = ar_expression_evaluate(&msg_ctx);
-        *pos += msg_ctx.offset;
+        expr_context_t *msg_ctx = ar_expression_create_context(agent, message, instruction + *pos);
+        if (!msg_ctx) {
+            ar_data_destroy(agent_id_data);
+            return false;
+        }
+        data_t *msg_data = ar_expression_evaluate(msg_ctx);
+        *pos += ar_expression_offset(msg_ctx);
+        ar_expression_destroy_context(msg_ctx);
         
         if (!msg_data) {
             ar_data_destroy(agent_id_data);
@@ -300,14 +299,13 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         skip_whitespace(instruction, pos);
         
         // Parse condition expression
-        expr_context_t cond_ctx = {
-            .agent = agent,
-            .message = message,
-            .expr = instruction + *pos,
-            .offset = 0
-        };
-        data_t *cond_data = ar_expression_evaluate(&cond_ctx);
-        *pos += cond_ctx.offset;
+        expr_context_t *cond_ctx = ar_expression_create_context(agent, message, instruction + *pos);
+        if (!cond_ctx) {
+            return false;
+        }
+        data_t *cond_data = ar_expression_evaluate(cond_ctx);
+        *pos += ar_expression_offset(cond_ctx);
+        ar_expression_destroy_context(cond_ctx);
         
         if (!cond_data) {
             return false;
@@ -324,14 +322,14 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         skip_whitespace(instruction, pos);
         
         // Parse true_value expression
-        expr_context_t true_ctx = {
-            .agent = agent,
-            .message = message,
-            .expr = instruction + *pos,
-            .offset = 0
-        };
-        data_t *true_data = ar_expression_evaluate(&true_ctx);
-        *pos += true_ctx.offset;
+        expr_context_t *true_ctx = ar_expression_create_context(agent, message, instruction + *pos);
+        if (!true_ctx) {
+            ar_data_destroy(cond_data);
+            return false;
+        }
+        data_t *true_data = ar_expression_evaluate(true_ctx);
+        *pos += ar_expression_offset(true_ctx);
+        ar_expression_destroy_context(true_ctx);
         
         if (!true_data) {
             ar_data_destroy(cond_data);
@@ -350,14 +348,15 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         skip_whitespace(instruction, pos);
         
         // Parse false_value expression
-        expr_context_t false_ctx = {
-            .agent = agent,
-            .message = message,
-            .expr = instruction + *pos,
-            .offset = 0
-        };
-        data_t *false_data = ar_expression_evaluate(&false_ctx);
-        *pos += false_ctx.offset;
+        expr_context_t *false_ctx = ar_expression_create_context(agent, message, instruction + *pos);
+        if (!false_ctx) {
+            ar_data_destroy(cond_data);
+            ar_data_destroy(true_data);
+            return false;
+        }
+        data_t *false_data = ar_expression_evaluate(false_ctx);
+        *pos += ar_expression_offset(false_ctx);
+        ar_expression_destroy_context(false_ctx);
         
         if (!false_data) {
             ar_data_destroy(cond_data);

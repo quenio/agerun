@@ -13,6 +13,55 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+/**
+ * Full definition of the expression context structure.
+ * This is only visible in the implementation file.
+ */
+struct expr_context_s {
+    agent_t *agent;     /* The agent context */
+    data_t *message;    /* The message being processed */
+    const char *expr;   /* The expression to evaluate */
+    int offset;         /* Current position in the expression */
+};
+
+/**
+ * Creates a new expression evaluation context.
+ */
+expr_context_t* ar_expression_create_context(agent_t *agent, data_t *message, const char *expr) {
+    if (!expr) {
+        return NULL;
+    }
+    
+    expr_context_t *ctx = malloc(sizeof(expr_context_t));
+    if (!ctx) {
+        return NULL;
+    }
+    
+    ctx->agent = agent;
+    ctx->message = message;
+    ctx->expr = expr;
+    ctx->offset = 0;
+    
+    return ctx;
+}
+
+/**
+ * Destroys an expression context and frees all associated resources.
+ */
+void ar_expression_destroy_context(expr_context_t *ctx) {
+    free(ctx);
+}
+
+/**
+ * Gets the current parsing offset in the expression string.
+ */
+int ar_expression_offset(const expr_context_t *ctx) {
+    if (!ctx) {
+        return 0;
+    }
+    return ctx->offset;
+}
+
 /*
  * Recursive Descent Parser for AgeRun expressions
  * Based on the BNF grammar:
