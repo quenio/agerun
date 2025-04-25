@@ -62,7 +62,7 @@ static void test_string_literal(void) {
     const char *expr = "\"Hello, World!\"";
     
     // Create expression context
-    expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+    expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
     assert(ctx != NULL);
     
     // When we evaluate the expression
@@ -93,7 +93,7 @@ static void test_number_literal(void) {
         const char *expr = "42";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -112,7 +112,7 @@ static void test_number_literal(void) {
         const char *expr = "-123";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -131,7 +131,7 @@ static void test_number_literal(void) {
         const char *expr = "3.14159";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -153,7 +153,7 @@ static void test_number_literal(void) {
         const char *expr = "-2.718";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -224,7 +224,7 @@ static void test_memory_access(void) {
         const char *expr = "memory.name";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -243,7 +243,7 @@ static void test_memory_access(void) {
         const char *expr = "memory.preferences.theme";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -262,7 +262,7 @@ static void test_memory_access(void) {
         const char *expr = "context.environment";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -281,7 +281,7 @@ static void test_memory_access(void) {
         const char *expr = "context.limits.timeout";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -300,7 +300,7 @@ static void test_memory_access(void) {
         const char *expr = "message.type";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -319,7 +319,7 @@ static void test_memory_access(void) {
         const char *expr = "message.payload.field";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -338,7 +338,7 @@ static void test_memory_access(void) {
         const char *expr = "memory.nonexistent.field";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -394,7 +394,7 @@ static void test_arithmetic_expression(void) {
         const char *expr = "2 + 3";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -419,7 +419,7 @@ static void test_arithmetic_expression(void) {
         const char *expr = "10 - 4";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -444,7 +444,7 @@ static void test_arithmetic_expression(void) {
         const char *expr = "5 * 3";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -469,7 +469,7 @@ static void test_arithmetic_expression(void) {
         const char *expr = "20 / 4";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -494,7 +494,7 @@ static void test_arithmetic_expression(void) {
         const char *expr = "2 + 3";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -519,7 +519,7 @@ static void test_arithmetic_expression(void) {
         const char *expr = "3.5 + 2.5";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -547,7 +547,7 @@ static void test_arithmetic_expression(void) {
         const char *expr = "5 * 2.5";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -575,7 +575,7 @@ static void test_arithmetic_expression(void) {
         const char *expr = "\"Hello, \" + \"World!\"";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -600,7 +600,7 @@ static void test_arithmetic_expression(void) {
         fflush(stdout);
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
         printf("Context created successfully\n");
@@ -654,7 +654,7 @@ static void test_arithmetic_expression(void) {
         fflush(stdout);
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
         assert(ctx != NULL);
         
         printf("Context created successfully\n");
@@ -692,7 +692,7 @@ static void test_arithmetic_expression(void) {
         const char *expr = "memory.x * 2";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -713,7 +713,7 @@ static void test_arithmetic_expression(void) {
         const char *expr = "message.count * 2";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -775,7 +775,7 @@ static void test_comparison_expression(void) {
         fflush(stdout);
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -810,7 +810,7 @@ static void test_comparison_expression(void) {
         fflush(stdout);
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -847,7 +847,7 @@ static void test_comparison_expression(void) {
         const char *expr = "5 <> 3";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -866,7 +866,7 @@ static void test_comparison_expression(void) {
         const char *expr = "\"active\" <> \"inactive\"";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -885,7 +885,7 @@ static void test_comparison_expression(void) {
         const char *expr = "3 < 5";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -904,7 +904,7 @@ static void test_comparison_expression(void) {
         const char *expr = "7 > 4";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -923,7 +923,7 @@ static void test_comparison_expression(void) {
         const char *expr = "5 <= 5";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -942,7 +942,7 @@ static void test_comparison_expression(void) {
         const char *expr = "7 >= 10";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -961,7 +961,7 @@ static void test_comparison_expression(void) {
         const char *expr = "memory.count > 5";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -980,7 +980,7 @@ static void test_comparison_expression(void) {
         const char *expr = "memory.status = \"active\"";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -999,7 +999,7 @@ static void test_comparison_expression(void) {
         const char *expr = "memory.count > context.threshold";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -1018,7 +1018,7 @@ static void test_comparison_expression(void) {
         const char *expr = "message.priority <= context.threshold";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -1037,7 +1037,7 @@ static void test_comparison_expression(void) {
         const char *expr = "memory.count + 5 > context.threshold * 3";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -1070,7 +1070,7 @@ static void test_function_call_expression(void) {
     const char *expr = "if(1, \"true\", \"false\")";
     
     // Create expression context
-    expression_context_t *ctx = ar_expression_create_context(NULL, NULL, expr);
+    expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
     assert(ctx != NULL);
     
     // This should return NULL since function calls are not valid expressions
@@ -1088,7 +1088,7 @@ static void test_function_call_expression(void) {
     const char *expr2 = "5 + if(1, 10, 20)";
     
     // Create expression context
-    expression_context_t *ctx2 = ar_expression_create_context(NULL, NULL, expr2);
+    expression_context_t *ctx2 = ar_expression_create_context(NULL, NULL, NULL, expr2);
     assert(ctx2 != NULL);
     
     // This should also return NULL when it encounters the "if" function call

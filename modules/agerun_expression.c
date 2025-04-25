@@ -2,7 +2,6 @@
 #include "agerun_expression.h"
 #include "agerun_string.h"
 #include "agerun_data.h"
-#include "agerun_agent.h"
 #include "agerun_list.h"
 #include "agerun_map.h"
 
@@ -18,7 +17,8 @@
  * This is only visible in the implementation file.
  */
 struct expression_context_s {
-    agent_t *agent;     /* The agent context */
+    data_t *memory;     /* The agent's memory */
+    data_t *context;    /* The agent's context */
     data_t *message;    /* The message being processed */
     const char *expr;   /* The expression to evaluate */
     int offset;         /* Current position in the expression */
@@ -27,7 +27,7 @@ struct expression_context_s {
 /**
  * Creates a new expression evaluation context.
  */
-expression_context_t* ar_expression_create_context(agent_t *agent, data_t *message, const char *expr) {
+expression_context_t* ar_expression_create_context(data_t *memory, data_t *context, data_t *message, const char *expr) {
     if (!expr) {
         return NULL;
     }
@@ -37,7 +37,8 @@ expression_context_t* ar_expression_create_context(agent_t *agent, data_t *messa
         return NULL;
     }
     
-    ctx->agent = agent;
+    ctx->memory = memory;
+    ctx->context = context;
     ctx->message = message;
     ctx->expr = expr;
     ctx->offset = 0;
@@ -316,14 +317,14 @@ static data_t* parse_memory_access(expression_context_t *ctx) {
                     return NULL;
                 }
             case ACCESS_TYPE_MEMORY:
-                if (ctx->agent && ctx->agent->memory) {
-                    return ctx->agent->memory;
+                if (ctx->memory) {
+                    return ctx->memory;
                 }
                 // Return NULL for non-existent memory
                 return NULL;
             case ACCESS_TYPE_CONTEXT:
-                if (ctx->agent && ctx->agent->context) {
-                    return ctx->agent->context;
+                if (ctx->context) {
+                    return ctx->context;
                 }
                 // Return NULL for non-existent context
                 return NULL;
@@ -362,10 +363,10 @@ static data_t* parse_memory_access(expression_context_t *ctx) {
             source = ctx->message;
             break;
         case ACCESS_TYPE_MEMORY:
-            source = ctx->agent ? ctx->agent->memory : NULL;
+            source = ctx->memory;
             break;
         case ACCESS_TYPE_CONTEXT:
-            source = ctx->agent ? ctx->agent->context : NULL;
+            source = ctx->context;
             break;
     }
     

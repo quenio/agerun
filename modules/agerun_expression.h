@@ -3,7 +3,6 @@
 
 #include <stdbool.h>
 #include "agerun_data.h"
-#include "agerun_agent.h"
 
 /**
  * Context structure for expression evaluation.
@@ -17,12 +16,13 @@ typedef struct expression_context_s expression_context_t;
 /**
  * Creates a new expression evaluation context.
  *
- * @param agent The agent context (can be NULL for standalone evaluation)
+ * @param memory The agent's memory data (can be NULL if not needed)
+ * @param context The agent's context data (can be NULL if not needed)
  * @param message The message being processed (can be NULL if not needed)
  * @param expr The expression string to evaluate
  * @return Newly created expression context, or NULL on failure
  */
-expression_context_t* ar_expression_create_context(agent_t *agent, data_t *message, const char *expr);
+expression_context_t* ar_expression_create_context(data_t *memory, data_t *context, data_t *message, const char *expr);
 
 /**
  * Destroys an expression context and frees all associated resources.
