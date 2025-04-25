@@ -115,6 +115,8 @@ IMPORTANT:
 1. **Add logging**:
    - Use printf statements for debugging
    - Include agent ID, method name, and version in logs
+   - Always place debug log files under the bin directory
+   - Debug log files should be named with the pattern bin/debug*.log
 
 2. **Use gdb**:
    - Set breakpoints in key functions

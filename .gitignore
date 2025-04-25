@@ -62,3 +62,6 @@ agrun.methods
 # Build directories
 build/
 bin/
+
+# Debug logs
+debug*.log
