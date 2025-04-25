@@ -592,7 +592,6 @@ static void test_arithmetic_expression(void) {
         fflush(stdout);
     }
     
-    /* Comment out the string+number test temporarily
     // Test string and number
     {
         const char *expr = "\"Price: $\" + 42.99";
@@ -641,8 +640,10 @@ static void test_arithmetic_expression(void) {
         
         ar_data_destroy(result);
         ar_expression_destroy_context(ctx);
+        
+        printf("String+number concatenation test passed\n");
+        fflush(stdout);
     }
-    */
     
     /* Temporarily commenting out memory access tests
     // Test arithmetic with memory access
