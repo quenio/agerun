@@ -1,6 +1,5 @@
 #include "agerun_expression.h"
 #include "agerun_data.h"
-#include "agerun_agent.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -178,34 +177,32 @@ static void test_memory_access(void) {
     printf("Testing memory access evaluation...\n");
     fflush(stdout);
     
-    // Given an agent with memory, context, and a message
-    agent_t *agent = calloc(1, sizeof(agent_t));
-    assert(agent != NULL);
+    // Set up memory, context, and message data structures
     
-    // Set up agent memory
-    agent->memory = ar_data_create_map();
-    assert(agent->memory != NULL);
-    assert(ar_data_set_map_string(agent->memory, "name", "Alice"));
-    assert(ar_data_set_map_integer(agent->memory, "age", 30));
-    assert(ar_data_set_map_double(agent->memory, "balance", 450.75));
+    // Set up memory
+    data_t *memory = ar_data_create_map();
+    assert(memory != NULL);
+    assert(ar_data_set_map_string(memory, "name", "Alice"));
+    assert(ar_data_set_map_integer(memory, "age", 30));
+    assert(ar_data_set_map_double(memory, "balance", 450.75));
     
     data_t *user_preferences = ar_data_create_map();
     assert(user_preferences != NULL);
     assert(ar_data_set_map_string(user_preferences, "theme", "dark"));
     assert(ar_data_set_map_integer(user_preferences, "notifications", 1));
-    assert(ar_data_set_map_data(agent->memory, "preferences", user_preferences));
+    assert(ar_data_set_map_data(memory, "preferences", user_preferences));
     
-    // Set up agent context
-    agent->context = ar_data_create_map();
-    assert(agent->context != NULL);
-    assert(ar_data_set_map_string(agent->context, "environment", "production"));
-    assert(ar_data_set_map_integer(agent->context, "max_retries", 3));
+    // Set up context
+    data_t *context = ar_data_create_map();
+    assert(context != NULL);
+    assert(ar_data_set_map_string(context, "environment", "production"));
+    assert(ar_data_set_map_integer(context, "max_retries", 3));
     
     data_t *system_limits = ar_data_create_map();
     assert(system_limits != NULL);
     assert(ar_data_set_map_integer(system_limits, "max_memory", 1024));
     assert(ar_data_set_map_integer(system_limits, "timeout", 60));
-    assert(ar_data_set_map_data(agent->context, "limits", system_limits));
+    assert(ar_data_set_map_data(context, "limits", system_limits));
     
     // Set up message
     data_t *message = ar_data_create_map();
@@ -224,7 +221,7 @@ static void test_memory_access(void) {
         const char *expr = "memory.name";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -243,7 +240,7 @@ static void test_memory_access(void) {
         const char *expr = "memory.preferences.theme";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -262,7 +259,7 @@ static void test_memory_access(void) {
         const char *expr = "context.environment";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -281,7 +278,7 @@ static void test_memory_access(void) {
         const char *expr = "context.limits.timeout";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -300,7 +297,7 @@ static void test_memory_access(void) {
         const char *expr = "message.type";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -319,7 +316,7 @@ static void test_memory_access(void) {
         const char *expr = "message.payload.field";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -338,7 +335,7 @@ static void test_memory_access(void) {
         const char *expr = "memory.nonexistent.field";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -351,9 +348,8 @@ static void test_memory_access(void) {
     
     // Cleanup
     ar_data_destroy(message);
-    ar_data_destroy(agent->memory);
-    ar_data_destroy(agent->context);
-    free(agent);
+    ar_data_destroy(memory);
+    ar_data_destroy(context);
     
     printf("Memory access tests passed.\n");
     fflush(stdout);
@@ -367,18 +363,21 @@ static void test_arithmetic_expression(void) {
     // Commented out to prevent memory leaks
     // These variables are needed for the tests we've commented out
     // Suppress unused variable warnings
-    agent_t *agent __attribute__((unused)) = NULL;
+    data_t *memory __attribute__((unused)) = NULL;
+    data_t *context __attribute__((unused)) = NULL;
     data_t *message __attribute__((unused)) = NULL;
     
     /* 
-    agent = calloc(1, sizeof(agent_t));
-    assert(agent != NULL);
+    // Set up memory
+    memory = ar_data_create_map();
+    assert(memory != NULL);
+    assert(ar_data_set_map_integer(memory, "x", 10));
+    assert(ar_data_set_map_integer(memory, "y", 5));
+    assert(ar_data_set_map_double(memory, "pi", 3.14159));
     
-    agent->memory = ar_data_create_map();
-    assert(agent->memory != NULL);
-    assert(ar_data_set_map_integer(agent->memory, "x", 10));
-    assert(ar_data_set_map_integer(agent->memory, "y", 5));
-    assert(ar_data_set_map_double(agent->memory, "pi", 3.14159));
+    // Set up context
+    context = ar_data_create_map();
+    assert(context != NULL);
     
     // Set up message
     message = ar_data_create_map();
@@ -654,7 +653,7 @@ static void test_arithmetic_expression(void) {
         fflush(stdout);
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
         printf("Context created successfully\n");
@@ -692,7 +691,7 @@ static void test_arithmetic_expression(void) {
         const char *expr = "memory.x * 2";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -713,7 +712,7 @@ static void test_arithmetic_expression(void) {
         const char *expr = "message.count * 2";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -739,16 +738,16 @@ static void test_arithmetic_expression(void) {
         ar_data_destroy(message);
     }
     
-    if (agent) {
-        if (agent->memory) {
-            printf("Destroying agent memory...\n");
-            fflush(stdout);
-            ar_data_destroy(agent->memory);
-        }
-        
-        printf("Freeing agent...\n");
+    if (memory) {
+        printf("Destroying memory...\n");
         fflush(stdout);
-        free(agent);
+        ar_data_destroy(memory);
+    }
+    
+    if (context) {
+        printf("Destroying context...\n");
+        fflush(stdout);
+        ar_data_destroy(context);
     }
     
     printf("Cleanup completed.\n");
@@ -764,7 +763,8 @@ static void test_comparison_expression(void) {
     fflush(stdout);
     
     // Comment out memory setup for now
-    agent_t *agent __attribute__((unused)) = NULL;
+    data_t *memory __attribute__((unused)) = NULL;
+    data_t *context __attribute__((unused)) = NULL;
     data_t *message __attribute__((unused)) = NULL;
     
     // Test equality with integers
@@ -961,7 +961,7 @@ static void test_comparison_expression(void) {
         const char *expr = "memory.count > 5";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -980,7 +980,7 @@ static void test_comparison_expression(void) {
         const char *expr = "memory.status = \"active\"";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -999,7 +999,7 @@ static void test_comparison_expression(void) {
         const char *expr = "memory.count > context.threshold";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -1018,7 +1018,7 @@ static void test_comparison_expression(void) {
         const char *expr = "message.priority <= context.threshold";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -1037,7 +1037,7 @@ static void test_comparison_expression(void) {
         const char *expr = "memory.count + 5 > context.threshold * 3";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(agent->memory, agent->context, message, expr);
+        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
         data_t *result = ar_expression_evaluate(ctx);
@@ -1052,10 +1052,9 @@ static void test_comparison_expression(void) {
     }
     
     // Cleanup
-    ar_data_destroy(message);
-    ar_data_destroy(agent->memory);
-    ar_data_destroy(agent->context);
-    free(agent);
+    if (message) ar_data_destroy(message);
+    if (memory) ar_data_destroy(memory);
+    if (context) ar_data_destroy(context);
     */
     
     printf("Comparison expression tests passed.\n");
