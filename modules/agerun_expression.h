@@ -25,7 +25,9 @@ typedef struct expression_context_s expression_context_t;
 expression_context_t* ar_expression_create_context(data_t *memory, data_t *context, data_t *message, const char *expr);
 
 /**
- * Destroys an expression context and frees all associated resources.
+ * Destroys an expression context.
+ * Note: This only frees the context structure itself, not the memory, context, or message
+ * data structures which are owned by the caller.
  *
  * @param ctx The expression context to destroy
  */

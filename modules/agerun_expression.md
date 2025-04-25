@@ -57,18 +57,19 @@ Note that function calls are not part of the expression grammar. Function calls 
 typedef struct expression_context_s expression_context_t;
 ```
 
-An opaque type representing a context for expression evaluation. Contains all information needed during expression parsing and evaluation, including agent context, message being processed, expression string, and current parsing position.
+An opaque type representing a context for expression evaluation. Contains all information needed during expression parsing and evaluation, including memory map, context map, message being processed, expression string, and current parsing position.
 
 ### ar_expression_create_context
 
 ```c
-expression_context_t* ar_expression_create_context(agent_t *agent, data_t *message, const char *expr);
+expression_context_t* ar_expression_create_context(data_t *memory, data_t *context, data_t *message, const char *expr);
 ```
 
 Creates a new expression evaluation context.
 
 **Parameters:**
-- `agent`: The agent context (can be NULL for standalone evaluation)
+- `memory`: The agent's memory data (can be NULL if not needed)
+- `context`: The agent's context data (can be NULL if not needed)
 - `message`: The message being processed (can be NULL if not needed)
 - `expr`: The expression string to evaluate
 
@@ -81,7 +82,9 @@ Creates a new expression evaluation context.
 void ar_expression_destroy_context(expression_context_t *ctx);
 ```
 
-Destroys an expression context and frees all associated resources.
+Destroys an expression context.
+Note: This only frees the context structure itself, not the memory, context, or message
+data structures which are owned by the caller.
 
 **Parameters:**
 - `ctx`: The expression context to destroy
@@ -126,7 +129,7 @@ The context's offset is updated to point to the position after the evaluated exp
 ### Evaluating a String Literal
 
 ```c
-expression_context_t *ctx = ar_expression_create_context(agent, message, "\"Hello, World!\"");
+expression_context_t *ctx = ar_expression_create_context(memory, context, message, "\"Hello, World!\"");
 data_t *result = ar_expression_evaluate(ctx);
 // result will contain a STRING data with value "Hello, World!"
 int position = ar_expression_offset(ctx);
@@ -137,13 +140,13 @@ ar_expression_destroy_context(ctx);
 
 ```c
 // Integer evaluation
-expression_context_t *ctx = ar_expression_create_context(agent, message, "42");
+expression_context_t *ctx = ar_expression_create_context(memory, context, message, "42");
 data_t *result = ar_expression_evaluate(ctx);
 // result will contain an INTEGER data with value 42
 ar_expression_destroy_context(ctx);
 
 // Double evaluation
-ctx = ar_expression_create_context(agent, message, "3.14159");
+ctx = ar_expression_create_context(memory, context, message, "3.14159");
 result = ar_expression_evaluate(ctx);
 // result will contain a DOUBLE data with value 3.14159
 ar_expression_destroy_context(ctx);
@@ -152,7 +155,7 @@ ar_expression_destroy_context(ctx);
 ### Evaluating Memory Access
 
 ```c
-expression_context_t *ctx = ar_expression_create_context(agent, message, "memory.user.name");
+expression_context_t *ctx = ar_expression_create_context(memory, context, message, "memory.user.name");
 data_t *result = ar_expression_evaluate(ctx);
 // result will contain a direct reference to the value stored in memory.user.name, or NULL if path not found
 if (result) {
@@ -166,7 +169,7 @@ ar_expression_destroy_context(ctx);
 ### Evaluating Arithmetic Expression
 
 ```c
-expression_context_t *ctx = ar_expression_create_context(agent, message, "2 + 3 * 4");
+expression_context_t *ctx = ar_expression_create_context(memory, context, message, "2 + 3 * 4");
 data_t *result = ar_expression_evaluate(ctx);
 // result will contain an INTEGER data with value 14
 ar_expression_destroy_context(ctx);
@@ -175,7 +178,7 @@ ar_expression_destroy_context(ctx);
 ### Evaluating Comparison Expression
 
 ```c
-expression_context_t *ctx = ar_expression_create_context(agent, message, "memory.count > 5");
+expression_context_t *ctx = ar_expression_create_context(memory, context, message, "memory.count > 5");
 data_t *result = ar_expression_evaluate(ctx);
 // result will contain an INTEGER data with value 1 (true) or 0 (false)
 ar_expression_destroy_context(ctx);
@@ -186,7 +189,9 @@ ar_expression_destroy_context(ctx);
 
 - The expression context is implemented as an opaque type for improved encapsulation
 - Clients interact with the context through a well-defined API (create, destroy, offset, evaluate)
-- This design allows for future changes to the internal structure without affecting client code
+- The module has no dependency on the agent module, maintaining proper layer architecture
+- The expression context takes memory and context maps directly instead of requiring an agent
+- This design allows for efficient testing and easier reuse in different contexts
 - The expression evaluator uses recursive descent parsing to handle nested expressions
 - It properly handles precedence of operators (e.g., multiplication before addition)
 - Memory access with dot notation is supported for message, memory, and context
@@ -194,3 +199,4 @@ ar_expression_destroy_context(ctx);
 - Function calls are detected and treated as syntax errors in expressions
 - When a syntax error is encountered, NULL is returned and the context's offset indicates the error location
 - This ensures clear distinction between expressions and function calls as specified in the BNF grammar
+- The module follows proper resource ownership principles, where the creator of a resource is responsible for destroying it
