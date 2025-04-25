@@ -99,7 +99,6 @@ static data_t* parse_number_literal(expression_context_t *ctx);
 static data_t* parse_memory_access(expression_context_t *ctx);
 static void skip_whitespace(expression_context_t *ctx);
 static bool is_comparison_operator(expression_context_t *ctx);
-static bool is_arithmetic_operator(char c);
 static bool match(expression_context_t *ctx, const char *to_match);
 static bool is_identifier_start(char c);
 static bool is_identifier_part(char c);
@@ -173,10 +172,6 @@ static bool match(expression_context_t *ctx, const char *to_match) {
 }
 
 
-// Check if the next character is an arithmetic operator
-static bool is_arithmetic_operator(char c) {
-    return c == '+' || c == '-' || c == '*' || c == '/';
-}
 
 // Check if the next sequence of characters is a comparison operator
 static bool is_comparison_operator(expression_context_t *ctx) {
@@ -446,10 +441,228 @@ static data_t* parse_primary(expression_context_t *ctx) {
     return NULL;
 }
 
-// Parse and evaluate a comparison expression
-static data_t* parse_comparison(expression_context_t *ctx) {
-    // First parse the left operand
+// Forward declarations for recursive descent functions
+static data_t* parse_multiplicative(expression_context_t *ctx);
+static data_t* parse_additive(expression_context_t *ctx);
+static data_t* parse_comparison(expression_context_t *ctx);
+
+// Parse a multiplicative expression (higher precedence: *, /)
+static data_t* parse_multiplicative(expression_context_t *ctx) {
+    // Parse the left operand
     data_t *left = parse_primary(ctx);
+    if (!left) {
+        return NULL;
+    }
+    
+    skip_whitespace(ctx);
+    
+    // Check if there's a multiplicative operator (*, /)
+    while (ctx->expr[ctx->offset] == '*' || ctx->expr[ctx->offset] == '/') {
+        // Get the operator
+        char op = ctx->expr[ctx->offset];
+        ctx->offset++;
+        
+        skip_whitespace(ctx);
+        
+        // Parse the right operand (which is a primary)
+        data_t *right = parse_primary(ctx);
+        if (!right) {
+            ar_data_destroy(left);
+            return NULL;
+        }
+        
+        // Perform the operation
+        data_type_t left_type = ar_data_get_type(left);
+        data_type_t right_type = ar_data_get_type(right);
+        data_t *result = NULL;
+        
+        // Both operands are integers
+        if (left_type == DATA_INTEGER && right_type == DATA_INTEGER) {
+            int left_val = ar_data_get_integer(left);
+            int right_val = ar_data_get_integer(right);
+            int result_val = 0;
+            
+            switch (op) {
+                case '*': result_val = left_val * right_val; break;
+                case '/': 
+                    if (right_val != 0) {
+                        result_val = left_val / right_val;
+                    }
+                    break;
+            }
+            
+            result = ar_data_create_integer(result_val);
+        }
+        // At least one operand is a double, result is a double
+        else if ((left_type == DATA_INTEGER || left_type == DATA_DOUBLE) &&
+                 (right_type == DATA_INTEGER || right_type == DATA_DOUBLE)) {
+            
+            double left_val = (left_type == DATA_INTEGER) ? 
+                (double)ar_data_get_integer(left) : ar_data_get_double(left);
+                
+            double right_val = (right_type == DATA_INTEGER) ? 
+                (double)ar_data_get_integer(right) : ar_data_get_double(right);
+            
+            double result_val = 0.0;
+            
+            switch (op) {
+                case '*': result_val = left_val * right_val; break;
+                case '/': 
+                    if (right_val != 0.0) {
+                        result_val = left_val / right_val;
+                    }
+                    break;
+            }
+            
+            result = ar_data_create_double(result_val);
+        }
+        // Unsupported operation
+        else {
+            result = ar_data_create_integer(0);
+        }
+        
+        // Clean up operands
+        ar_data_destroy(left);
+        ar_data_destroy(right);
+        
+        // Default result if operation failed
+        if (!result) {
+            result = ar_data_create_integer(0);
+        }
+        
+        // The result becomes the new left operand for the next iteration
+        left = result;
+        
+        skip_whitespace(ctx);
+    }
+    
+    return left;
+}
+
+// Parse an additive expression (medium precedence: +, -)
+static data_t* parse_additive(expression_context_t *ctx) {
+    // Parse the left operand (which is a multiplicative expression)
+    data_t *left = parse_multiplicative(ctx);
+    if (!left) {
+        return NULL;
+    }
+    
+    skip_whitespace(ctx);
+    
+    // Check if there's an additive operator (+, -)
+    while (ctx->expr[ctx->offset] == '+' || ctx->expr[ctx->offset] == '-') {
+        // Get the operator
+        char op = ctx->expr[ctx->offset];
+        ctx->offset++;
+        
+        skip_whitespace(ctx);
+        
+        // Parse the right operand (which is a multiplicative expression)
+        data_t *right = parse_multiplicative(ctx);
+        if (!right) {
+            ar_data_destroy(left);
+            return NULL;
+        }
+        
+        // Perform the operation
+        data_type_t left_type = ar_data_get_type(left);
+        data_type_t right_type = ar_data_get_type(right);
+        data_t *result = NULL;
+        
+        // String concatenation with +
+        if (op == '+' && (left_type == DATA_STRING || right_type == DATA_STRING)) {
+            char left_str[512] = {0};
+            char right_str[512] = {0};
+            
+            // Convert left operand to string
+            if (left_type == DATA_STRING) {
+                const char *str = ar_data_get_string(left);
+                if (str) {
+                    strncpy(left_str, str, sizeof(left_str) - 1);
+                }
+            } else if (left_type == DATA_INTEGER) {
+                snprintf(left_str, sizeof(left_str), "%d", ar_data_get_integer(left));
+            } else if (left_type == DATA_DOUBLE) {
+                snprintf(left_str, sizeof(left_str), "%.2f", ar_data_get_double(left));
+            }
+            
+            // Convert right operand to string
+            if (right_type == DATA_STRING) {
+                const char *str = ar_data_get_string(right);
+                if (str) {
+                    strncpy(right_str, str, sizeof(right_str) - 1);
+                }
+            } else if (right_type == DATA_INTEGER) {
+                snprintf(right_str, sizeof(right_str), "%d", ar_data_get_integer(right));
+            } else if (right_type == DATA_DOUBLE) {
+                snprintf(right_str, sizeof(right_str), "%.2f", ar_data_get_double(right));
+            }
+            
+            // Concatenate the strings
+            char result_str[1024] = {0};
+            snprintf(result_str, sizeof(result_str), "%s%s", left_str, right_str);
+            
+            result = ar_data_create_string(result_str);
+        }
+        // Both operands are integers
+        else if (left_type == DATA_INTEGER && right_type == DATA_INTEGER) {
+            int left_val = ar_data_get_integer(left);
+            int right_val = ar_data_get_integer(right);
+            int result_val = 0;
+            
+            switch (op) {
+                case '+': result_val = left_val + right_val; break;
+                case '-': result_val = left_val - right_val; break;
+            }
+            
+            result = ar_data_create_integer(result_val);
+        }
+        // At least one operand is a double, result is a double
+        else if ((left_type == DATA_INTEGER || left_type == DATA_DOUBLE) &&
+                 (right_type == DATA_INTEGER || right_type == DATA_DOUBLE)) {
+            
+            double left_val = (left_type == DATA_INTEGER) ? 
+                (double)ar_data_get_integer(left) : ar_data_get_double(left);
+                
+            double right_val = (right_type == DATA_INTEGER) ? 
+                (double)ar_data_get_integer(right) : ar_data_get_double(right);
+            
+            double result_val = 0.0;
+            
+            switch (op) {
+                case '+': result_val = left_val + right_val; break;
+                case '-': result_val = left_val - right_val; break;
+            }
+            
+            result = ar_data_create_double(result_val);
+        }
+        // Unsupported operation
+        else {
+            result = ar_data_create_integer(0);
+        }
+        
+        // Clean up operands
+        ar_data_destroy(left);
+        ar_data_destroy(right);
+        
+        // Default result if operation failed
+        if (!result) {
+            result = ar_data_create_integer(0);
+        }
+        
+        // The result becomes the new left operand for the next iteration
+        left = result;
+        
+        skip_whitespace(ctx);
+    }
+    
+    return left;
+}
+
+// Parse a comparison expression (lowest precedence: =, <>, <, <=, >, >=)
+static data_t* parse_comparison(expression_context_t *ctx) {
+    // Parse the left operand (which is an additive expression)
+    data_t *left = parse_additive(ctx);
     if (!left) {
         return NULL;
     }
@@ -475,8 +688,8 @@ static data_t* parse_comparison(expression_context_t *ctx) {
     
     skip_whitespace(ctx);
     
-    // Parse the right operand
-    data_t *right = parse_primary(ctx);
+    // Parse the right operand (which is an additive expression)
+    data_t *right = parse_additive(ctx);
     if (!right) {
         ar_data_destroy(left);
         return NULL;
@@ -600,138 +813,9 @@ static data_t* parse_comparison(expression_context_t *ctx) {
     return ar_data_create_integer(result ? 1 : 0);
 }
 
-// Parse and evaluate an arithmetic expression
-static data_t* parse_arithmetic(expression_context_t *ctx) {
-    // First parse the left operand as a comparison (which might be just a primary)
-    data_t *left = parse_comparison(ctx);
-    if (!left) {
-        return NULL;
-    }
-    
-    skip_whitespace(ctx);
-    
-    // Check if there's an arithmetic operator
-    if (!is_arithmetic_operator(ctx->expr[ctx->offset])) {
-        return left; // No arithmetic, just return the left operand
-    }
-    
-    // Get the arithmetic operator
-    char op = ctx->expr[ctx->offset];
-    ctx->offset++;
-    
-    skip_whitespace(ctx);
-    
-    // Parse the right operand
-    data_t *right = parse_comparison(ctx);
-    if (!right) {
-        ar_data_destroy(left);
-        return NULL;
-    }
-    
-    // Perform the arithmetic operation
-    data_type_t left_type = ar_data_get_type(left);
-    data_type_t right_type = ar_data_get_type(right);
-    data_t *result = NULL;
-    
-    // Both operands are integers
-    if (left_type == DATA_INTEGER && right_type == DATA_INTEGER) {
-        int left_val = ar_data_get_integer(left);
-        int right_val = ar_data_get_integer(right);
-        int result_val = 0;
-        
-        switch (op) {
-            case '+': result_val = left_val + right_val; break;
-            case '-': result_val = left_val - right_val; break;
-            case '*': result_val = left_val * right_val; break;
-            case '/': 
-                if (right_val != 0) {
-                    result_val = left_val / right_val;
-                }
-                break;
-        }
-        
-        result = ar_data_create_integer(result_val);
-    }
-    // At least one operand is a double, result is a double
-    else if ((left_type == DATA_INTEGER || left_type == DATA_DOUBLE) &&
-             (right_type == DATA_INTEGER || right_type == DATA_DOUBLE)) {
-        
-        double left_val = (left_type == DATA_INTEGER) ? 
-            (double)ar_data_get_integer(left) : ar_data_get_double(left);
-            
-        double right_val = (right_type == DATA_INTEGER) ? 
-            (double)ar_data_get_integer(right) : ar_data_get_double(right);
-        
-        double result_val = 0.0;
-        
-        switch (op) {
-            case '+': result_val = left_val + right_val; break;
-            case '-': result_val = left_val - right_val; break;
-            case '*': result_val = left_val * right_val; break;
-            case '/': 
-                if (right_val != 0.0) {
-                    result_val = left_val / right_val;
-                }
-                break;
-        }
-        
-        result = ar_data_create_double(result_val);
-    }
-    // String concatenation with +
-    else if (op == '+' && (left_type == DATA_STRING || right_type == DATA_STRING)) {
-        char left_str[512] = {0};
-        char right_str[512] = {0};
-        
-        // Convert left operand to string
-        if (left_type == DATA_STRING) {
-            const char *str = ar_data_get_string(left);
-            if (str) {
-                strncpy(left_str, str, sizeof(left_str) - 1);
-            }
-        } else if (left_type == DATA_INTEGER) {
-            snprintf(left_str, sizeof(left_str), "%d", ar_data_get_integer(left));
-        } else if (left_type == DATA_DOUBLE) {
-            snprintf(left_str, sizeof(left_str), "%.2f", ar_data_get_double(left));
-        }
-        
-        // Convert right operand to string
-        if (right_type == DATA_STRING) {
-            const char *str = ar_data_get_string(right);
-            if (str) {
-                strncpy(right_str, str, sizeof(right_str) - 1);
-            }
-        } else if (right_type == DATA_INTEGER) {
-            snprintf(right_str, sizeof(right_str), "%d", ar_data_get_integer(right));
-        } else if (right_type == DATA_DOUBLE) {
-            snprintf(right_str, sizeof(right_str), "%.2f", ar_data_get_double(right));
-        }
-        
-        // Concatenate the strings
-        char result_str[1024] = {0};
-        snprintf(result_str, sizeof(result_str), "%s%s", left_str, right_str);
-        
-        result = ar_data_create_string(result_str);
-    }
-    // Unsupported operation
-    else {
-        result = ar_data_create_integer(0);
-    }
-    
-    // Clean up operands
-    ar_data_destroy(left);
-    ar_data_destroy(right);
-    
-    // Default result if operation failed
-    if (!result) {
-        result = ar_data_create_integer(0);
-    }
-    
-    return result;
-}
-
 // Parse and evaluate an expression
 static data_t* parse_expression(expression_context_t *ctx) {
-    return parse_arithmetic(ctx);
+    return parse_comparison(ctx);
 }
 
 // Public function to evaluate an expression
