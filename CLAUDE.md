@@ -91,6 +91,16 @@ IMPORTANT:
    - Use valgrind to check for memory leaks
    - When freeing containers/structures and their contents, always free containers first, then their contents
    - This prevents use-after-free bugs when containers might access their contents during cleanup
+   - Be explicit about resource ownership in all function documentation:
+     - Clearly document when ownership is transferred (e.g., `ar_data_set_map_data()` transfers ownership of the value)
+     - Document when functions return references versus new objects
+     - Comment variables that should not be used after ownership transfer (e.g., "Don't use after this point")
+   - For expression evaluation, follow these memory ownership rules:
+     - Direct memory access expressions (e.g., `memory.x`) return references that should NOT be destroyed
+     - Arithmetic expressions (e.g., `2 + 3`) return new objects that MUST be destroyed
+     - Arithmetic expressions with memory access (e.g., `memory.x + 5`) return new objects that MUST be destroyed
+     - String expressions (e.g., `"Hello" + " World"`) return new objects that MUST be destroyed
+     - String+number concatenation (e.g., `"Price: $" + 42.99`) returns new objects that MUST be destroyed
 
 ## Implementation Notes
 
@@ -125,6 +135,14 @@ IMPORTANT:
 3. **Memory issues**:
    - Use valgrind to check for memory leaks
    - Use AddressSanitizer for detecting memory errors
+   - Add debug print statements before and after critical memory operations
+   - When debugging complex memory ownership patterns:
+     - Add print statements with object addresses and types
+     - Log object creation and destruction to track lifecycle
+     - Isolate problematic sections by testing only one module at a time
+     - Temporarily skip cleanup in non-critical sections to identify crash points
+     - Check for double-free errors by setting pointers to NULL after freeing
+     - Be careful with references vs. new objects in expression evaluation
 
 ## Code Modification Guidelines
 
