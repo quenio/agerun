@@ -559,7 +559,7 @@ static data_t* parse_comparison(expression_context_t *ctx) {
         } else if (left_type == DATA_INTEGER) {
             snprintf(left_str, sizeof(left_str), "%d", ar_data_get_integer(left));
         } else if (left_type == DATA_DOUBLE) {
-            snprintf(left_str, sizeof(left_str), "%f", ar_data_get_double(left));
+            snprintf(left_str, sizeof(left_str), "%.2f", ar_data_get_double(left));
         }
         
         // Convert right operand to string
@@ -571,7 +571,7 @@ static data_t* parse_comparison(expression_context_t *ctx) {
         } else if (right_type == DATA_INTEGER) {
             snprintf(right_str, sizeof(right_str), "%d", ar_data_get_integer(right));
         } else if (right_type == DATA_DOUBLE) {
-            snprintf(right_str, sizeof(right_str), "%f", ar_data_get_double(right));
+            snprintf(right_str, sizeof(right_str), "%.2f", ar_data_get_double(right));
         }
         
         int cmp = strcmp(left_str, right_str);
@@ -691,7 +691,7 @@ static data_t* parse_arithmetic(expression_context_t *ctx) {
         } else if (left_type == DATA_INTEGER) {
             snprintf(left_str, sizeof(left_str), "%d", ar_data_get_integer(left));
         } else if (left_type == DATA_DOUBLE) {
-            snprintf(left_str, sizeof(left_str), "%f", ar_data_get_double(left));
+            snprintf(left_str, sizeof(left_str), "%.2f", ar_data_get_double(left));
         }
         
         // Convert right operand to string
@@ -703,7 +703,7 @@ static data_t* parse_arithmetic(expression_context_t *ctx) {
         } else if (right_type == DATA_INTEGER) {
             snprintf(right_str, sizeof(right_str), "%d", ar_data_get_integer(right));
         } else if (right_type == DATA_DOUBLE) {
-            snprintf(right_str, sizeof(right_str), "%f", ar_data_get_double(right));
+            snprintf(right_str, sizeof(right_str), "%.2f", ar_data_get_double(right));
         }
         
         // Concatenate the strings

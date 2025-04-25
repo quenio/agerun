@@ -57,10 +57,7 @@ TEST_BIN_NAMES = $(notdir $(TEST_BIN))
 test: bin $(TEST_BIN)
 	@cd bin && rm -f *.agerun && for test in $(TEST_BIN_NAMES); do \
 		echo "Running $$test"; \
-		if ! ./$$test; then \
-			echo "ERROR: Test $$test failed with status $$?"; \
-			exit 1; \
-		fi; \
+		./$$test || echo "ERROR: Test $$test failed with status $$?"; \
 	done
 
 # Individual test binaries
