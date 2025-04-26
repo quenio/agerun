@@ -100,6 +100,8 @@ IMPORTANT:
      - Document when functions return references versus new objects
      - Comment variables that should not be used after ownership transfer (e.g., "Don't use after this point")
      - Mark transferred pointers with NULL after ownership transfer (e.g., `own_value = NULL;`)
+     - Add a comment at every return statement that returns locally owned memory with the text "// Ownership transferred to caller"
+     - This makes ownership transfer points explicitly visible in the implementation
    - For expression evaluation, follow these memory ownership rules:
      - Direct memory access expressions (e.g., `memory.x`) return references that should NOT be destroyed
      - Arithmetic expressions (e.g., `2 + 3`) return new objects that MUST be destroyed
