@@ -39,9 +39,11 @@ AgeRun implements a memory ownership model with three fundamental value categori
    - Example: `ar_data_get_map_value()` returns a borrowed reference
 
 3. **Transferring Existing Ownership:**
-   - Functions with names like `set`, `add`, `insert` take ownership from caller
-   - After transfer, caller must not use or destroy the transferred object
+   - Some functions with names like `set`, `add`, `insert` may take ownership from caller
+   - When ownership is transferred, caller must not use or destroy the transferred object
    - Example: `ar_data_set_map_value()` takes ownership of the value
+   - Note: Not all `set`/`add`/`insert` functions transfer ownership; check module documentation
+   - For example, `ar_map_set()` and `ar_list_add_last()` do NOT take ownership
 
 4. **Taking Ownership:**
    - Functions with names containing `take` explicitly transfer ownership from another container
@@ -123,7 +125,7 @@ bool ar_list_add_last(list_t *list, void *item);
 // OWNER: Caller owns returned map
 map_t* ar_map_create();
 
-// TRANSFER: Map takes ownership of value
+// NO-TRANSFER: Map does not take ownership of value
 bool ar_map_set(map_t *map, const char *key, void *value);
 
 // BORROW: Caller borrows but doesn't own returned value
@@ -131,10 +133,11 @@ void* ar_map_get(const map_t *map, const char *key);
 ```
 
 **Key Rules:**
-- The map takes ownership of values when they are set
+- The map does not take ownership of keys or values when they are set
 - Getting a value from the map returns a BORROWED reference
-- When a map is destroyed, all values it owns are destroyed
-- The map makes copies of keys, so caller can free key strings
+- When a map is destroyed, keys and values are not destroyed
+- The caller is responsible for freeing both keys and values
+- Key pointers must remain valid for the lifetime of the map entry
 
 ## Common Patterns
 
