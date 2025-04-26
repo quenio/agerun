@@ -86,6 +86,16 @@ bool ar_list_empty(const list_t *list);
 void** ar_list_items(const list_t *list);
 
 /**
+ * Remove all occurrences of an item from the list by value
+ * @param list The list to remove from
+ * @param item The item to remove
+ * @return true if at least one occurrence of the item was found and removed, false otherwise
+ * @note This function compares the item pointer directly with the stored pointers,
+ *       not the contents of what they point to.
+ */
+bool ar_list_remove(list_t *list, void *item);
+
+/**
  * Free all resources in a list
  * @param list List to free
  * @note This function only frees the list structure itself.

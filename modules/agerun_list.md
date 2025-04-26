@@ -71,6 +71,11 @@ void* ar_list_remove_last(list_t *list);
 ```
 Removes and returns the last item from the list. Returns NULL if the list is empty or NULL.
 
+```c
+bool ar_list_remove(list_t *list, void *item);
+```
+Removes all occurrences of an item from the list by direct pointer comparison. Returns true if at least one occurrence of the item was found and removed, false otherwise. This function is useful for removing specific items by their pointer value, not by their content.
+
 #### Querying
 
 ```c
@@ -216,6 +221,45 @@ free(string_value);
 ar_list_destroy(list);
 ```
 
+### Using ar_list_remove to Remove Specific Items
+
+```c
+// Create a list
+list_t *list = ar_list_create();
+
+// Add some items
+int *value1 = malloc(sizeof(int));
+*value1 = 10;
+ar_list_add_last(list, value1);
+
+int *value2 = malloc(sizeof(int));
+*value2 = 20;
+ar_list_add_last(list, value2);
+
+int *value3 = malloc(sizeof(int));
+*value3 = 30;
+ar_list_add_last(list, value3);
+
+// Remove the middle item by its pointer value
+if (ar_list_remove(list, value2)) {
+    printf("Item removed successfully\n");
+    free(value2); // Free the item ourselves after removing it from the list
+}
+
+// The list now contains value1 and value3 only
+printf("List size after removal: %zu\n", ar_list_count(list)); // Should print 2
+
+// Clean up the remaining items
+void **items = ar_list_items(list);
+if (items) {
+    for (size_t i = 0; i < ar_list_count(list); i++) {
+        free(items[i]);
+    }
+    free(items);
+}
+ar_list_destroy(list);
+```
+
 ### Using the List for Memory Management
 
 The list module can be used to track allocated memory that needs to be freed later:
@@ -253,6 +297,7 @@ ar_list_destroy(allocations);
 - The list is implemented as a doubly-linked list with head and tail pointers
 - Adding to either end of the list is an O(1) operation
 - Removing from either end of the list is an O(1) operation
+- Removing a specific item by pointer value using `ar_list_remove` is an O(n) operation that requires traversing the list to find the item
 - Getting an array of all items is an O(n) operation where n is the number of items
 - The list maintains a count of items for fast size queries
 - NULL items can be stored in the list
@@ -262,4 +307,6 @@ ar_list_destroy(allocations);
 - Both stack implementations (LIFO with either end) are now O(1) for all operations
 - Queue operations are also O(1) for all operations (enqueue and dequeue)
 - The list is particularly useful for tracking allocated memory that needs to be freed later
+- The `ar_list_remove` function is ideal for working with resource management patterns where you need to transfer ownership of an object from a tracking list
+- The module is used by the expression module to track expression results that need to be freed when the context is destroyed
 - The module is used by the data module to track dynamically allocated map keys

@@ -240,6 +240,59 @@ void** ar_list_items(const list_t *list) {
 }
 
 /**
+ * Remove all occurrences of an item from the list by value
+ * @param list The list to remove from
+ * @param item The item to remove
+ * @return true if at least one occurrence of the item was found and removed, false otherwise
+ * @note This function compares the item pointer directly with the stored pointers,
+ *       not the contents of what they point to.
+ */
+bool ar_list_remove(list_t *list, void *item) {
+    if (!list || list->count == 0) {
+        return false;
+    }
+    
+    bool found = false;
+    struct list_node_s *current = list->head;
+    
+    while (current) {
+        struct list_node_s *next = current->next;
+        
+        // Check if this node contains the item to remove
+        if (current->item == item) {
+            // Remove this node from the list
+            
+            // Update the previous node's next pointer (or head if this is the first node)
+            if (current->prev) {
+                current->prev->next = current->next;
+            } else {
+                list->head = current->next;
+            }
+            
+            // Update the next node's previous pointer (or tail if this is the last node)
+            if (current->next) {
+                current->next->prev = current->prev;
+            } else {
+                list->tail = current->prev;
+            }
+            
+            // Free the node
+            free(current);
+            
+            // Decrement count
+            list->count--;
+            
+            // Mark that we found at least one occurrence
+            found = true;
+        }
+        
+        current = next;
+    }
+    
+    return found;
+}
+
+/**
  * Free all resources in a list
  * @param list List to free
  * @note This function only frees the list structure itself.

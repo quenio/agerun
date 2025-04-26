@@ -401,6 +401,105 @@ static void test_null_parameters(void) {
 }
 
 /**
+ * Test removing specific items from a list
+ */
+static void test_remove(void) {
+    printf("Running test_remove...\n");
+    
+    // Given an empty list
+    list_t *list = ar_list_create();
+    assert(list != NULL);
+    
+    // When trying to remove from an empty list
+    // Then it should return false
+    assert(ar_list_remove(list, NULL) == false);
+    
+    // And some test string items
+    char *item1 = strdup("item1");
+    char *item2 = strdup("item2");
+    char *item3 = strdup("item3");
+    char *item4 = strdup("item4");
+    char *item5 = strdup("item5");
+    
+    // And a list with items
+    assert(ar_list_add_last(list, item1) == true);
+    assert(ar_list_add_last(list, item2) == true);
+    assert(ar_list_add_last(list, item3) == true);
+    assert(ar_list_add_last(list, item4) == true);
+    assert(ar_list_add_last(list, item5) == true);
+    assert(ar_list_count(list) == 5);
+    
+    // When removing an item from the middle
+    // Then it should return true and update the list
+    assert(ar_list_remove(list, item3) == true);
+    assert(ar_list_count(list) == 4);
+    
+    // And the items should be in the correct order
+    void **items = ar_list_items(list);
+    assert(items != NULL);
+    assert(items[0] == item1);
+    assert(items[1] == item2);
+    assert(items[2] == item4);
+    assert(items[3] == item5);
+    free(items);
+    
+    // When removing the first item
+    // Then it should return true and update the list
+    assert(ar_list_remove(list, item1) == true);
+    assert(ar_list_count(list) == 3);
+    
+    // And the list should be updated correctly
+    items = ar_list_items(list);
+    assert(items != NULL);
+    assert(items[0] == item2);
+    assert(items[1] == item4);
+    assert(items[2] == item5);
+    free(items);
+    
+    // When removing the last item
+    // Then it should return true and update the list
+    assert(ar_list_remove(list, item5) == true);
+    assert(ar_list_count(list) == 2);
+    
+    // And the list should be updated correctly
+    items = ar_list_items(list);
+    assert(items != NULL);
+    assert(items[0] == item2);
+    assert(items[1] == item4);
+    free(items);
+    
+    // When removing an item that doesn't exist in the list
+    // Then it should return false and not modify the list
+    char *non_existent = strdup("non_existent");
+    assert(ar_list_remove(list, non_existent) == false);
+    assert(ar_list_count(list) == 2);
+    free(non_existent);
+    
+    // When adding a duplicate item
+    assert(ar_list_add_last(list, item2) == true);
+    assert(ar_list_count(list) == 3);
+    
+    // And removing the duplicated item
+    // Then it should remove all occurrences and return true
+    assert(ar_list_remove(list, item2) == true);
+    assert(ar_list_count(list) == 1);
+    
+    // And the list should contain only the remaining item
+    assert(ar_list_first(list) == item4);
+    assert(ar_list_last(list) == item4);
+    
+    // Cleanup
+    free(item1);
+    free(item2);
+    free(item3);
+    free(item4);
+    free(item5);
+    ar_list_destroy(list);
+    
+    printf("test_remove passed\n");
+}
+
+/**
  * Main test runner
  */
 int main(void) {
@@ -415,6 +514,7 @@ int main(void) {
     test_queue_operations();
     test_add_many();
     test_null_parameters();
+    test_remove();
     
     printf("All agerun_list tests passed!\n");
     return 0;
