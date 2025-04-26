@@ -4,11 +4,11 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Expression Module Memory Management
 
-- [ ] Fix remaining memory ownership issues in the expression tests:
-  - [ ] Re-enable and fix the `memory.x * 2` test case
-  - [ ] Re-enable and fix the `message.count * 2` test case
-  - [ ] Remove the intentional memory leaks in cleanup sections
-  - [ ] Add comprehensive tests for all expression types with memory access
+- [x] Fix remaining memory ownership issues in the expression tests:
+  - [x] Re-enable and fix the `memory.x * 2` test case (completed 2025-04-26)
+  - [x] Re-enable and fix the `message.count * 2` test case (completed 2025-04-26)
+  - [x] Remove the intentional memory leaks in cleanup sections (completed 2025-04-26)
+  - [x] Add comprehensive tests for all expression types with memory access (completed 2025-04-26)
 
 - [x] Improve expression module memory management:
   - [x] Implement proper cleanup that respects ownership hierarchy (completed 2025-04-26)
@@ -16,10 +16,10 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Consider adding a reference counting mechanism for shared data objects
   - [ ] Add debug logging options for memory operations to simplify troubleshooting
 
-- [ ] Fix the comparison expression tests:
-  - [ ] Fix memory management issues in the comparison tests
-  - [ ] Re-enable all comparison test cases
-  - [ ] Add memory access tests for comparison expressions
+- [x] Fix the comparison expression tests:
+  - [x] Fix memory management issues in the comparison tests (completed 2025-04-26)
+  - [x] Re-enable all comparison test cases (completed 2025-04-26)
+  - [x] Add memory access tests for comparison expressions (completed 2025-04-26)
 
 ## Expression Module Documentation
 

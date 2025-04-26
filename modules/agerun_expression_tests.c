@@ -36,14 +36,44 @@ int main(int argc, char **argv) {
             return 1;
         }
     } else {
-        // Focus on just arithmetic to debug the issue
-        printf("Running only arithmetic expression test to debug...\n");
+        // Run all tests by default
+        printf("Running all expression tests...\n");
+        fflush(stdout);
+        
+        printf("Running test_string_literal()...\n");
+        fflush(stdout);
+        test_string_literal();
+        printf("Completed test_string_literal().\n");
+        fflush(stdout);
+        
+        printf("Running test_number_literal()...\n");
+        fflush(stdout);
+        test_number_literal();
+        printf("Completed test_number_literal().\n");
+        fflush(stdout);
+        
+        printf("Running test_memory_access()...\n");
+        fflush(stdout);
+        test_memory_access();
+        printf("Completed test_memory_access().\n");
         fflush(stdout);
         
         printf("Running test_arithmetic_expression()...\n");
         fflush(stdout);
         test_arithmetic_expression();
         printf("Completed test_arithmetic_expression().\n");
+        fflush(stdout);
+        
+        printf("Running test_comparison_expression()...\n");
+        fflush(stdout);
+        test_comparison_expression();
+        printf("Completed test_comparison_expression().\n");
+        fflush(stdout);
+        
+        printf("Running test_function_call_expression()...\n");
+        fflush(stdout);
+        test_function_call_expression();
+        printf("Completed test_function_call_expression().\n");
         fflush(stdout);
     }
     
@@ -732,34 +762,20 @@ static void test_arithmetic_expression(void) {
             fflush(stdout);
         }
         
-        // There might be an inconsistency in data type handling in the expression implementation,
-        // so we'll skip the exact type assertion for now and just make sure there's a result
         assert(result != NULL);
-        printf("Skipping strict type check, output received: %s\n", 
-               ar_data_get_type(result) == DATA_INTEGER ? "integer" : 
-               ar_data_get_type(result) == DATA_DOUBLE ? "double" : "other type");
-        fflush(stdout);
-        
-        // We'll use a type check for now
-        if (ar_data_get_type(result) == DATA_INTEGER) {
-            assert(ar_data_get_integer(result) == 20); // 10 * 2 = 20
-        } else if (ar_data_get_type(result) == DATA_DOUBLE) {
-            double epsilon = 0.00001;
-            assert(ar_data_get_double(result) - 20.0 < epsilon && 
-                   ar_data_get_double(result) - 20.0 > -epsilon);
-        }
+        assert(ar_data_get_type(result) == DATA_INTEGER);
+        assert(ar_data_get_integer(result) == 20); // 10 * 2 = 20
         assert(ar_expression_offset(ctx) == (int)strlen(expr));
         
-        // IMPORTANT: Expression results are borrowed references, not owned by the caller.
-        // Do not destroy the result - the context will handle cleanup.
+        // IMPORTANT: For arithmetic operations with memory access, the result is a NEW value, 
+        // not a reference, so we need to take ownership if we want to keep it.
+        // If we don't need the result after context destruction, we can let the context handle cleanup.
         ar_expression_destroy_context(ctx);
         
         printf("Memory access multiplication test passed\n");
         fflush(stdout);
     }
     
-    // Temporarily disable this test until we fix the implementation
-    /*
     // Test with message data - multiplication with a constant
     {
         const char *expr = "message.count * 2";
@@ -790,26 +806,30 @@ static void test_arithmetic_expression(void) {
         assert(ar_expression_offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: The result of an arithmetic operation (even with message access)
-        // is a NEW value, not a reference to message. Therefore, we DO own the result
-        // and MUST destroy it.
-        ar_data_destroy(result);
+        // is a NEW value, not a reference to message. The context will handle cleanup.
         ar_expression_destroy_context(ctx);
         
         printf("Message access multiplication test passed\n");
         fflush(stdout);
     }
-    */
     
-    // We're going to leave memory leaks for now to avoid crashes
-    // This is a temporary approach until we can properly fix the memory ownership issues
+    // Properly clean up allocated objects
+    if (message) {
+        ar_data_destroy(message);
+        message = NULL;
+    }
     
-    // Skip cleanup of the main memory, context, and message objects
-    // MEMORY LEAK: These resources are intentionally not freed to avoid crashes
-    memory = NULL;  // Just set to NULL to avoid accidental use
-    context = NULL;
-    message = NULL;
+    if (context) {
+        ar_data_destroy(context);
+        context = NULL;
+    }
     
-    printf("Resources intentionally leaked to avoid crash.\n");
+    if (memory) {
+        ar_data_destroy(memory);
+        memory = NULL;
+    }
+    
+    printf("Resources properly cleaned up.\n");
     fflush(stdout);
     
     printf("Arithmetic expression tests passed.\n");
@@ -823,13 +843,23 @@ static void test_comparison_expression(void) {
     printf("Testing comparison expression evaluation...\n");
     fflush(stdout);
     
-    // Skip comparison test for now - uncomment when we've fixed the arithmetic test
-    return;
+    // Set up minimal memory structures for testing
+    printf("Setting up memory, context, and message for comparison tests\n");
+    fflush(stdout);
     
-    // Comment out memory setup for now
-    data_t *memory __attribute__((unused)) = NULL;
-    data_t *context __attribute__((unused)) = NULL;
-    data_t *message __attribute__((unused)) = NULL;
+    // We'll create fresh structures for comparison tests
+    data_t *memory = ar_data_create_map();
+    assert(memory != NULL);
+    assert(ar_data_set_map_integer(memory, "count", 10));
+    assert(ar_data_set_map_string(memory, "status", "active"));
+    
+    data_t *context = ar_data_create_map();
+    assert(context != NULL);
+    assert(ar_data_set_map_integer(context, "threshold", 5));
+    
+    data_t *message = ar_data_create_map();
+    assert(message != NULL);
+    assert(ar_data_set_map_integer(message, "priority", 3));
     
     // Test equality with integers
     {
@@ -859,7 +889,7 @@ static void test_comparison_expression(void) {
         assert(ar_data_get_integer(result) == 1); // true
         assert(ar_expression_offset(ctx) == (int)strlen(expr));
         
-        ar_data_destroy(result);
+        // Let the context handle cleanup of the result
         ar_expression_destroy_context(ctx);
         
         printf("Equality test passed\n");
@@ -893,22 +923,19 @@ static void test_comparison_expression(void) {
         assert(ar_data_get_integer(result) == 1); // true
         assert(ar_expression_offset(ctx) == (int)strlen(expr));
         
-        ar_data_destroy(result);
+        // Let the context handle cleanup of the result
         ar_expression_destroy_context(ctx);
         
         printf("String equality test passed\n");
         fflush(stdout);
     }
-    
-    // Skip remaining tests
-    printf("Skipping remaining comparison tests for now...\n");
-    printf("Partial comparison tests completed successfully.\n");
-    fflush(stdout);
 
-    /* Temporarily commenting out additional comparison tests
     // Test inequality
     {
         const char *expr = "5 <> 3";
+        
+        printf("Testing inequality expression: '%s'\n", expr);
+        fflush(stdout);
         
         // Create expression context
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
@@ -921,14 +948,20 @@ static void test_comparison_expression(void) {
         assert(ar_data_get_integer(result) == 1); // true
         assert(ar_expression_offset(ctx) == (int)strlen(expr));
         
-        ar_data_destroy(result);
+        // Let the context handle cleanup of the result
         ar_expression_destroy_context(ctx);
+        
+        printf("Inequality test passed\n");
+        fflush(stdout);
     }
     
     // Test inequality with strings
     {
         const char *expr = "\"active\" <> \"inactive\"";
         
+        printf("Testing string inequality expression: '%s'\n", expr);
+        fflush(stdout);
+        
         // Create expression context
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
@@ -940,14 +973,20 @@ static void test_comparison_expression(void) {
         assert(ar_data_get_integer(result) == 1); // true
         assert(ar_expression_offset(ctx) == (int)strlen(expr));
         
-        ar_data_destroy(result);
+        // Let the context handle cleanup of the result
         ar_expression_destroy_context(ctx);
+        
+        printf("String inequality test passed\n");
+        fflush(stdout);
     }
     
     // Test less than
     {
         const char *expr = "3 < 5";
         
+        printf("Testing less than expression: '%s'\n", expr);
+        fflush(stdout);
+        
         // Create expression context
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
@@ -959,14 +998,20 @@ static void test_comparison_expression(void) {
         assert(ar_data_get_integer(result) == 1); // true
         assert(ar_expression_offset(ctx) == (int)strlen(expr));
         
-        ar_data_destroy(result);
+        // Let the context handle cleanup of the result
         ar_expression_destroy_context(ctx);
+        
+        printf("Less than test passed\n");
+        fflush(stdout);
     }
     
     // Test greater than
     {
         const char *expr = "7 > 4";
         
+        printf("Testing greater than expression: '%s'\n", expr);
+        fflush(stdout);
+        
         // Create expression context
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
@@ -978,14 +1023,20 @@ static void test_comparison_expression(void) {
         assert(ar_data_get_integer(result) == 1); // true
         assert(ar_expression_offset(ctx) == (int)strlen(expr));
         
-        ar_data_destroy(result);
+        // Let the context handle cleanup of the result
         ar_expression_destroy_context(ctx);
+        
+        printf("Greater than test passed\n");
+        fflush(stdout);
     }
     
     // Test less than or equal
     {
         const char *expr = "5 <= 5";
         
+        printf("Testing less than or equal expression: '%s'\n", expr);
+        fflush(stdout);
+        
         // Create expression context
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
@@ -997,13 +1048,19 @@ static void test_comparison_expression(void) {
         assert(ar_data_get_integer(result) == 1); // true
         assert(ar_expression_offset(ctx) == (int)strlen(expr));
         
-        ar_data_destroy(result);
+        // Let the context handle cleanup of the result
         ar_expression_destroy_context(ctx);
+        
+        printf("Less than or equal test passed\n");
+        fflush(stdout);
     }
     
     // Test greater than or equal
     {
         const char *expr = "7 >= 10";
+        
+        printf("Testing greater than or equal expression: '%s'\n", expr);
+        fflush(stdout);
         
         // Create expression context
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
@@ -1016,13 +1073,19 @@ static void test_comparison_expression(void) {
         assert(ar_data_get_integer(result) == 0); // false
         assert(ar_expression_offset(ctx) == (int)strlen(expr));
         
-        ar_data_destroy(result);
+        // Let the context handle cleanup of the result
         ar_expression_destroy_context(ctx);
+        
+        printf("Greater than or equal test passed\n");
+        fflush(stdout);
     }
     
     // Test comparing with memory access
     {
         const char *expr = "memory.count > 5";
+        
+        printf("Testing memory comparison expression: '%s'\n", expr);
+        fflush(stdout);
         
         // Create expression context
         expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
@@ -1035,13 +1098,19 @@ static void test_comparison_expression(void) {
         assert(ar_data_get_integer(result) == 1); // true (10 > 5)
         assert(ar_expression_offset(ctx) == (int)strlen(expr));
         
-        ar_data_destroy(result);
+        // Let the context handle cleanup of the result
         ar_expression_destroy_context(ctx);
+        
+        printf("Memory comparison test passed\n");
+        fflush(stdout);
     }
     
     // Test string comparison with memory access
     {
         const char *expr = "memory.status = \"active\"";
+        
+        printf("Testing string memory comparison expression: '%s'\n", expr);
+        fflush(stdout);
         
         // Create expression context
         expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
@@ -1054,13 +1123,19 @@ static void test_comparison_expression(void) {
         assert(ar_data_get_integer(result) == 1); // true
         assert(ar_expression_offset(ctx) == (int)strlen(expr));
         
-        ar_data_destroy(result);
+        // Let the context handle cleanup of the result
         ar_expression_destroy_context(ctx);
+        
+        printf("String memory comparison test passed\n");
+        fflush(stdout);
     }
     
     // Test comparing memory and context
     {
         const char *expr = "memory.count > context.threshold";
+        
+        printf("Testing memory-context comparison expression: '%s'\n", expr);
+        fflush(stdout);
         
         // Create expression context
         expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
@@ -1073,13 +1148,19 @@ static void test_comparison_expression(void) {
         assert(ar_data_get_integer(result) == 1); // true (10 > 5)
         assert(ar_expression_offset(ctx) == (int)strlen(expr));
         
-        ar_data_destroy(result);
+        // Let the context handle cleanup of the result
         ar_expression_destroy_context(ctx);
+        
+        printf("Memory-context comparison test passed\n");
+        fflush(stdout);
     }
     
     // Test comparing message and context
     {
         const char *expr = "message.priority <= context.threshold";
+        
+        printf("Testing message-context comparison expression: '%s'\n", expr);
+        fflush(stdout);
         
         // Create expression context
         expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
@@ -1092,13 +1173,19 @@ static void test_comparison_expression(void) {
         assert(ar_data_get_integer(result) == 1); // true (3 <= 5)
         assert(ar_expression_offset(ctx) == (int)strlen(expr));
         
-        ar_data_destroy(result);
+        // Let the context handle cleanup of the result
         ar_expression_destroy_context(ctx);
+        
+        printf("Message-context comparison test passed\n");
+        fflush(stdout);
     }
     
     // Test complex comparison with arithmetic
     {
         const char *expr = "memory.count + 5 > context.threshold * 3";
+        
+        printf("Testing complex comparison expression: '%s'\n", expr);
+        fflush(stdout);
         
         // Create expression context
         expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
@@ -1111,15 +1198,28 @@ static void test_comparison_expression(void) {
         assert(ar_data_get_integer(result) == 0); // false (10 + 5 = 15, 5 * 3 = 15, 15 > 15 is false)
         assert(ar_expression_offset(ctx) == (int)strlen(expr));
         
-        ar_data_destroy(result);
+        // Let the context handle cleanup of the result
         ar_expression_destroy_context(ctx);
+        
+        printf("Complex comparison test passed\n");
+        fflush(stdout);
     }
     
     // Cleanup
-    if (message) ar_data_destroy(message);
-    if (memory) ar_data_destroy(memory);
-    if (context) ar_data_destroy(context);
-    */
+    if (message) {
+        ar_data_destroy(message);
+        message = NULL;
+    }
+    
+    if (context) {
+        ar_data_destroy(context);
+        context = NULL;
+    }
+    
+    if (memory) {
+        ar_data_destroy(memory);
+        memory = NULL;
+    }
     
     printf("Comparison expression tests passed.\n");
     fflush(stdout);
@@ -1128,9 +1228,6 @@ static void test_comparison_expression(void) {
 static void test_function_call_expression(void) {
     printf("Testing function call as expression (should fail)...\n");
     fflush(stdout);
-    
-    // Skip test for now - uncomment when we've fixed the arithmetic test
-    return;
     
     // Try to evaluate a function call as an expression
     const char *expr = "if(1, \"true\", \"false\")";
