@@ -253,6 +253,62 @@ The AgeRun project follows specific rules for parameter assignment to ensure mem
    - For larger data structures, prefer creating handles and transferring ownership rather than copying
    - "Move" semantics are implemented via explicit ownership transfer
 
+## Assignment and Access Restrictions
+
+AgeRun enforces the following restrictions to prevent memory errors:
+
+1. **Ownership Transfer Restrictions:**
+   - After transferring ownership of a pointer to a function or container, the original pointer MUST NOT be used
+   - Code review should verify that transferred pointers are set to NULL immediately after transfer
+   - Example:
+   ```c
+   own_data_t *own_value = ar_data_create_integer(42);
+   ar_data_set_map_value(mut_map, "key", own_value); // ownership transferred
+   own_value = NULL; // mark as transferred
+   // Using own_value after this point is a programming error
+   ```
+
+2. **Access Prohibition After Transfer:**
+   - Code that attempts to use a pointer after ownership transfer is considered invalid
+   - All transferred ownership variables must be immediately set to NULL
+   - Functions that take ownership should document this clearly
+   - Example of INCORRECT usage:
+   ```c
+   own_data_t *own_value = ar_data_create_integer(42);
+   ar_data_set_map_value(mut_map, "key", own_value); // ownership transferred
+   int value = ar_data_get_integer(own_value); // ERROR: Using after transfer
+   ```
+
+3. **Multiple Ownership Prevention:**
+   - A single owned object cannot have multiple owners
+   - When passing an owned object to another owner, the original owner must relinquish ownership
+   - Test code should verify proper ownership transfer by checking that:
+     - The value is correctly stored in the new owner
+     - The original pointer is set to NULL
+     - No memory leaks occur (using valgrind)
+
+4. **Immutable Reference Restrictions:**
+   - Functions accepting `const` references (`ref_` prefix) must not modify the referenced object
+   - A `const` qualified parameter guarantees the object will not be modified
+   - Casting away `const` to modify such objects violates the ownership model
+   
+5. **Temporary Value Restrictions:**
+   - Results of expression evaluations must have their ownership properly managed
+   - Temporary values created by expressions must be explicitly owned and destroyed
+   - Example:
+   ```c
+   // CORRECT: Take ownership of expression result
+   own_data_t *own_result = ar_expression_evaluate(mut_ctx);
+   ar_expression_take_ownership(mut_ctx, own_result);
+   // use own_result...
+   ar_data_destroy(own_result);
+
+   // INCORRECT: Not taking ownership of temporary
+   ref_data_t *ref_result = ar_expression_evaluate(mut_ctx);
+   // use ref_result...
+   // Memory leak: Expression result not properly handled
+   ```
+
 ## Consistent Use of Conventions
 
 For clarity and consistency, all ownership prefixes should be used throughout the codebase:
@@ -301,6 +357,32 @@ For clarity and consistency, all ownership prefixes should be used throughout th
 
 This consistency makes ownership semantics explicit throughout the entire codebase, reducing the risk of memory management errors and making code reviews more effective.
 
+## Static Analysis Guidelines
+
+While C doesn't offer the same compile-time guarantees as Mojo, we can enforce ownership rules through careful coding, review, and static analysis:
+
+1. **Use Static Analyzers:**
+   - Run static analysis tools regularly to detect potential ownership violations
+   - Configure analyzers to flag suspicious pointer usage after transfers
+   - Check for double-free and use-after-free patterns
+
+2. **Code Review Checklist:**
+   - Verify every ownership transfer is followed by setting the source pointer to NULL
+   - Check that all owned values are correctly destroyed exactly once
+   - Review that functions with ownership transfer are properly documented
+   - Confirm proper ownership prefix usage on all variable declarations
+   - Ensure consistent const-qualification for borrowed references
+
+3. **Ownership Annotation Validation:**
+   - Verify function implementations match their ownership documentation
+   - Check that functions documented to take ownership properly handle cleanup
+   - Confirm that functions taking borrowed references don't destroy the objects
+
+4. **Test Ownership Semantics:**
+   - Write tests specifically targeting ownership semantics
+   - Verify memory usage with valgrind or similar tools
+   - Test boundary cases like error conditions to ensure proper cleanup
+
 ## Debugging Ownership Issues
 
 When debugging memory issues:
@@ -312,7 +394,7 @@ When debugging memory issues:
 5. When transferring ownership, set the source pointer to NULL:
    ```c
    own_data_t *own_value = ar_data_create_integer(42);
-   ar_data_set_map_value(map, "key", own_value);
+   ar_data_set_map_value(mut_map, "key", own_value);
    own_value = NULL; // Mark as transferred
    ```
 6. Use consistent prefixes in variable declarations to clearly indicate ownership:
@@ -326,6 +408,13 @@ When debugging memory issues:
    // For borrowed references (BValues)
    const data_t *ref_data = ar_data_get_map_value(map, "key");
    ```
+7. Add debug assertions to check for null pointers after transfers:
+   ```c
+   own_data_t *own_value = ar_data_create_integer(42);
+   ar_data_set_map_value(mut_map, "key", own_value);
+   own_value = NULL;
+   assert(own_value == NULL); // Verify the transfer marker is applied
+   ```
 
 ## Future Improvements
 
@@ -333,3 +422,5 @@ We are considering adding:
 1. Debug-only ownership tracking that logs all ownership transfers
 2. Helper macros to enforce ownership rules at compile time
 3. Reference counting for complex ownership scenarios
+4. Sanitizer options in debug builds to detect ownership violations
+5. Custom static analysis rules to verify ownership transfer patterns
