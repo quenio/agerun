@@ -10,11 +10,11 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Remove the intentional memory leaks in cleanup sections
   - [ ] Add comprehensive tests for all expression types with memory access
 
-- [ ] Improve expression module memory management:
+- [x] Improve expression module memory management:
+  - [x] Implement proper cleanup that respects ownership hierarchy (completed 2025-04-26)
+  - [x] Add helper functions for safely managing memory in complex expressions (added ar_expression_take_ownership 2025-04-26)
   - [ ] Consider adding a reference counting mechanism for shared data objects
-  - [ ] Add helper functions for safely managing memory in complex expressions
   - [ ] Add debug logging options for memory operations to simplify troubleshooting
-  - [ ] Implement proper cleanup that respects ownership hierarchy
 
 - [ ] Fix the comparison expression tests:
   - [ ] Fix memory management issues in the comparison tests
@@ -23,9 +23,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Expression Module Documentation
 
-- [ ] Add more examples to the expression module documentation:
-  - [ ] Examples showing proper cleanup for all expression types
-  - [ ] Common error patterns to avoid
+- [x] Add more examples to the expression module documentation:
+  - [x] Examples showing proper cleanup for all expression types (completed 2025-04-26)
+  - [x] Common error patterns to avoid (added documentation on ownership transfer 2025-04-26)
   - [ ] Debug techniques for memory access issues
 
 - [ ] Create diagrams showing memory ownership flows:
@@ -33,6 +33,11 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Ownership transfer points in nested structures
 
 ## General Code Quality Improvements
+
+- [x] Enhance list module functionality:
+  - [x] Implement ar_list_remove function (completed 2025-04-26)
+  - [x] Add comprehensive tests for ar_list_remove (completed 2025-04-26)
+  - [x] Update documentation for ar_list_remove (completed 2025-04-26)
 
 - [ ] Implement comprehensive memory leak detection in the build process:
   - [ ] Add valgrind tests for all modules
@@ -44,14 +49,17 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 - [ ] Improve error handling:
   - [ ] Add better error reporting for memory allocation failures
-  - [ ] Add logging for ownership transfer operations
+  - [x] Add logging for ownership transfer operations (documented in instruction.md 2025-04-26)
 
 ## Long-term Architecture Improvements
+
+- [x] Implement consistent ownership semantics across modules:
+  - [x] Expression and instruction modules now follow a consistent ownership model (completed 2025-04-26)
+  - [ ] Extend consistent ownership model to remaining modules
 
 - [ ] Consider redesigning the memory management approach:
   - [ ] Evaluate reference counting vs. other memory management approaches
   - [ ] Consider adding debug-only memory tracking for development builds
-  - [ ] Implement consistent ownership semantics across all modules
 
 - [ ] Improve test infrastructure:
   - [ ] Add isolated test runners for each module
@@ -59,6 +67,11 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Add memory tracking to tests
 
 ## Documentation Improvements
+
+- [x] Document memory management for specific modules:
+  - [x] Document expression module's ownership model (completed 2025-04-26)
+  - [x] Document instruction module's ownership model (completed 2025-04-26)
+  - [ ] Document remaining modules' ownership models
 
 - [ ] Create comprehensive memory management guidelines:
   - [ ] Document ownership patterns for all data types
