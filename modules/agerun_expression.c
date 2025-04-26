@@ -22,6 +22,7 @@ struct expression_context_s {
     data_t *message;    /* The message being processed */
     const char *expr;   /* The expression to evaluate */
     int offset;         /* Current position in the expression */
+    list_t *results;    /* List of borrowed results to be freed when context is destroyed */
 };
 
 /**
@@ -43,15 +44,53 @@ expression_context_t* ar_expression_create_context(data_t *memory, data_t *conte
     ctx->expr = expr;
     ctx->offset = 0;
     
+    // Initialize list to track expression results
+    ctx->results = ar_list_create();
+    if (!ctx->results) {
+        free(ctx);
+        return NULL;
+    }
+    
     return ctx;
 }
 
 /**
  * Destroys an expression context.
- * Note: This only frees the context structure itself, not the memory, context, or message
- * data structures which are owned by the caller.
+ * This frees the context structure itself and all borrowed expression results,
+ * but not the memory, context, or message data structures which are owned by the caller.
  */
 void ar_expression_destroy_context(expression_context_t *ctx) {
+    if (!ctx) {
+        return;
+    }
+    
+    // Free all results tracked by this context
+    if (ctx->results) {
+        // Get all items in the list
+        void **items = ar_list_items(ctx->results);
+        size_t count = ar_list_count(ctx->results);
+        
+        if (items && count > 0) {
+            // Free each result that isn't a direct reference
+            for (size_t i = 0; i < count; i++) {
+                data_t *result = (data_t *)items[i];
+                if (result) {
+                    // Skip memory, context, and message - these are owned by caller
+                    if (result != ctx->memory && result != ctx->context && result != ctx->message) {
+                        ar_data_destroy(result);
+                    }
+                }
+            }
+            
+            // Free the items array
+            free(items);
+        }
+        
+        // Free the list itself
+        ar_list_destroy(ctx->results);
+    }
+    
+    // Free the context structure
     free(ctx);
 }
 
@@ -232,6 +271,11 @@ static data_t* parse_string_literal(expression_context_t *ctx) {
     data_t *result = ar_data_create_string(temp_str);
     free(temp_str);
     
+    // Track this result since we created it
+    if (result) {
+        ar_list_add_last(ctx->results, result);
+    }
+    
     return result;
 }
 
@@ -277,7 +321,14 @@ static data_t* parse_number_literal(expression_context_t *ctx) {
             double_value = -double_value;
         }
         
-        return ar_data_create_double(double_value);
+        data_t *result = ar_data_create_double(double_value);
+        
+        // Track this result since we created it
+        if (result) {
+            ar_list_add_last(ctx->results, result);
+        }
+        
+        return result;
     }
     
     // It's an integer
@@ -285,7 +336,14 @@ static data_t* parse_number_literal(expression_context_t *ctx) {
         value = -value;
     }
     
-    return ar_data_create_integer(value);
+    data_t *result = ar_data_create_integer(value);
+    
+    // Track this result since we created it
+    if (result) {
+        ar_list_add_last(ctx->results, result);
+    }
+    
+    return result;
 }
 
 // Parse a memory access (message, memory, context) expression
@@ -471,7 +529,7 @@ static data_t* parse_multiplicative(expression_context_t *ctx) {
         // Parse the right operand (which is a primary)
         data_t *right = parse_primary(ctx);
         if (!right) {
-            ar_data_destroy(left);
+            // Don't destroy left - it's a borrowed reference
             return NULL;
         }
         
@@ -525,13 +583,14 @@ static data_t* parse_multiplicative(expression_context_t *ctx) {
             result = ar_data_create_integer(0);
         }
         
-        // Clean up operands
-        ar_data_destroy(left);
-        ar_data_destroy(right);
-        
         // Default result if operation failed
         if (!result) {
             result = ar_data_create_integer(0);
+        }
+        
+        // Track this result since we created it
+        if (result) {
+            ar_list_add_last(ctx->results, result);
         }
         
         // The result becomes the new left operand for the next iteration
@@ -564,7 +623,7 @@ static data_t* parse_additive(expression_context_t *ctx) {
         // Parse the right operand (which is a multiplicative expression)
         data_t *right = parse_multiplicative(ctx);
         if (!right) {
-            ar_data_destroy(left);
+            // Don't destroy left - it's a borrowed reference
             return NULL;
         }
         
@@ -645,13 +704,14 @@ static data_t* parse_additive(expression_context_t *ctx) {
             result = ar_data_create_integer(0);
         }
         
-        // Clean up operands
-        ar_data_destroy(left);
-        ar_data_destroy(right);
-        
         // Default result if operation failed
         if (!result) {
             result = ar_data_create_integer(0);
+        }
+        
+        // Track this result since we created it
+        if (result) {
+            ar_list_add_last(ctx->results, result);
         }
         
         // The result becomes the new left operand for the next iteration
@@ -695,7 +755,7 @@ static data_t* parse_comparison(expression_context_t *ctx) {
     // Parse the right operand (which is an additive expression)
     data_t *right = parse_additive(ctx);
     if (!right) {
-        ar_data_destroy(left);
+        // Don't destroy left - it's a borrowed reference
         return NULL;
     }
     
@@ -809,12 +869,15 @@ static data_t* parse_comparison(expression_context_t *ctx) {
         }
     }
     
-    // Clean up operands
-    ar_data_destroy(left);
-    ar_data_destroy(right);
+    // Create a new integer result (0 for false, 1 for true)
+    data_t *comparison_result = ar_data_create_integer(result ? 1 : 0);
     
-    // Return the result as an integer (0 for false, 1 for true)
-    return ar_data_create_integer(result ? 1 : 0);
+    // Track this result since we created it
+    if (comparison_result) {
+        ar_list_add_last(ctx->results, comparison_result);
+    }
+    
+    return comparison_result;
 }
 
 // Parse and evaluate an expression
@@ -838,4 +901,26 @@ data_t* ar_expression_evaluate(expression_context_t *ctx) {
     }
     
     return result;
+}
+
+/**
+ * Take ownership of a result from the expression context.
+ * 
+ * This function removes the result from the context's tracked results list,
+ * so it won't be destroyed when the context is destroyed. The caller
+ * becomes responsible for destroying the result when no longer needed.
+ */
+bool ar_expression_take_ownership(expression_context_t *ctx, data_t *result) {
+    if (!ctx || !result || !ctx->results) {
+        return false;
+    }
+    
+    // If result is a direct reference to memory, context, or message, we don't need to remove
+    // it from the results list as these are already not freed by the context
+    if (result == ctx->memory || result == ctx->context || result == ctx->message) {
+        return true;
+    }
+    
+    // Remove the result from the list
+    return ar_list_remove(ctx->results, result);
 }

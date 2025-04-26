@@ -75,4 +75,17 @@ int ar_expression_offset(const expression_context_t *ctx);
  */
 data_t* ar_expression_evaluate(expression_context_t *ctx);
 
+/**
+ * Take ownership of a result from the expression context.
+ * 
+ * This function removes the result from the context's tracked results list,
+ * so it won't be destroyed when the context is destroyed. The caller
+ * becomes responsible for destroying the result when no longer needed.
+ *
+ * @param ctx Pointer to the expression evaluation context
+ * @param result The result to take ownership of
+ * @return true if ownership was successfully transferred, false otherwise
+ */
+bool ar_expression_take_ownership(expression_context_t *ctx, data_t *result);
+
 #endif /* AGERUN_EXPRESSION_H */

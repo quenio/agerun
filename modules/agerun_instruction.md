@@ -108,6 +108,30 @@ ar_instruction_run(agent, message, "memory.result := if(memory.count > 5, \"High
 - Memory safety is maintained throughout with proper allocation and cleanup
 - Backtracking is used when necessary to determine the correct parsing path
 
+## Memory Ownership Model
+
+The instruction module carefully manages memory ownership when working with expressions:
+
+1. When an expression is evaluated using `ar_expression_evaluate()`, the expression context initially owns the result.
+2. For assignments (e.g., `memory.x := expression`), the instruction module takes ownership of the result using `ar_expression_take_ownership()` BEFORE destroying the context.
+3. When a function call returns a result that needs to be stored, the instruction module assumes ownership of that result.
+4. Results that aren't stored (e.g., from functions without assignment) are properly destroyed.
+
+IMPORTANT: The sequence of operations is critical when handling expression results:
+1. Create the expression context
+2. Evaluate the expression to get a result
+3. Check if the result is valid
+4. If valid and the result needs to be preserved, call `ar_expression_take_ownership()` 
+5. Destroy the expression context
+6. Use the result as needed (store in memory, return from function, etc.)
+7. Eventually destroy the result when no longer needed
+
+This ownership transfer mechanism ensures that:
+- No memory leaks occur when an expression result is stored in memory.
+- The expression context won't free data that has been stored elsewhere.
+- Data is only freed once, preventing use-after-free and double-free errors.
+- Results are not accessed after their context has been destroyed, preventing use-after-free bugs.
+
 ## Important Considerations
 
 - Only the `memory` root identifier can be used on the left side of assignments

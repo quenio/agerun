@@ -83,12 +83,16 @@ static bool parse_assignment(agent_t *agent, data_t *message, const char *instru
     }
     data_t *value = ar_expression_evaluate(ctx);
     *pos += ar_expression_offset(ctx);
-    ar_expression_destroy_context(ctx);
     
     if (!value) {
+        ar_expression_destroy_context(ctx);
         free(path);
         return false;
     }
+    
+    // Take ownership of the value from the expression context before destroying it
+    ar_expression_take_ownership(ctx, value);
+    ar_expression_destroy_context(ctx);
     
     // Store result in agent's memory
     bool success = ar_data_set_map_data(agent->memory, path, value);
@@ -134,6 +138,7 @@ static bool parse_function_instruction(agent_t *agent, data_t *message, const ch
     
     // Store result in memory if assignment was present
     if (has_assignment && path && result) {
+        // We're taking ownership of the result
         bool success = ar_data_set_map_data(agent->memory, path, result);
         if (!success) {
             ar_data_destroy(result);
@@ -227,11 +232,15 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         }
         data_t *agent_id_data = ar_expression_evaluate(agent_id_ctx);
         *pos += ar_expression_offset(agent_id_ctx);
-        ar_expression_destroy_context(agent_id_ctx);
         
         if (!agent_id_data) {
+            ar_expression_destroy_context(agent_id_ctx);
             return false;
         }
+        
+        // Take ownership of agent_id_data before destroying the context
+        ar_expression_take_ownership(agent_id_ctx, agent_id_data);
+        ar_expression_destroy_context(agent_id_ctx);
         
         skip_whitespace(instruction, pos);
         
@@ -251,12 +260,16 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         }
         data_t *msg_data = ar_expression_evaluate(msg_ctx);
         *pos += ar_expression_offset(msg_ctx);
-        ar_expression_destroy_context(msg_ctx);
         
         if (!msg_data) {
+            ar_expression_destroy_context(msg_ctx);
             ar_data_destroy(agent_id_data);
             return false;
         }
+        
+        // Take ownership of msg_data before destroying the context
+        ar_expression_take_ownership(msg_ctx, msg_data);
+        ar_expression_destroy_context(msg_ctx);
         
         skip_whitespace(instruction, pos);
         
@@ -291,6 +304,7 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         }
         
         ar_data_destroy(agent_id_data);
+        // Create a new result (we own it from creation)
         *result = ar_data_create_integer(success ? 1 : 0);
         return true;
     }
@@ -305,11 +319,15 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         }
         data_t *cond_data = ar_expression_evaluate(cond_ctx);
         *pos += ar_expression_offset(cond_ctx);
-        ar_expression_destroy_context(cond_ctx);
         
         if (!cond_data) {
+            ar_expression_destroy_context(cond_ctx);
             return false;
         }
+        
+        // Take ownership of the condition data
+        ar_expression_take_ownership(cond_ctx, cond_data);
+        ar_expression_destroy_context(cond_ctx);
         
         skip_whitespace(instruction, pos);
         
@@ -329,12 +347,16 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         }
         data_t *true_data = ar_expression_evaluate(true_ctx);
         *pos += ar_expression_offset(true_ctx);
-        ar_expression_destroy_context(true_ctx);
         
         if (!true_data) {
+            ar_expression_destroy_context(true_ctx);
             ar_data_destroy(cond_data);
             return false;
         }
+        
+        // Take ownership of the true data
+        ar_expression_take_ownership(true_ctx, true_data);
+        ar_expression_destroy_context(true_ctx);
         
         skip_whitespace(instruction, pos);
         
@@ -356,13 +378,17 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         }
         data_t *false_data = ar_expression_evaluate(false_ctx);
         *pos += ar_expression_offset(false_ctx);
-        ar_expression_destroy_context(false_ctx);
         
         if (!false_data) {
+            ar_expression_destroy_context(false_ctx);
             ar_data_destroy(cond_data);
             ar_data_destroy(true_data);
             return false;
         }
+        
+        // Take ownership of the false data
+        ar_expression_take_ownership(false_ctx, false_data);
+        ar_expression_destroy_context(false_ctx);
         
         skip_whitespace(instruction, pos);
         
@@ -390,9 +416,11 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
         
         // Select the result based on condition
         if (condition) {
+            // We're taking ownership of true_data
             *result = true_data;
             ar_data_destroy(false_data);
         } else {
+            // We're taking ownership of false_data
             *result = false_data;
             ar_data_destroy(true_data);
         }
@@ -414,7 +442,7 @@ static bool parse_function_call(agent_t *agent, data_t *message, const char *ins
             (*pos)++;
         }
         
-        // Create a default result
+        // Create a default result (we own it from creation)
         *result = ar_data_create_integer(0);
         return true;
     }
