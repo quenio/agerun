@@ -57,6 +57,10 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [ ] Enhance tests for other modules:
   - [ ] Review all modules for similar memory management issues
   - [ ] Ensure test coverage for edge cases in memory management
+  - [ ] Review memory management guidelines in remaining modules
+    - [ ] Verify rules and restrictions on assignment operations
+    - [ ] Check for proper enforcement of access restrictions
+    - [ ] Ensure consistent ownership transfer documentation
 
 - [ ] Improve error handling:
   - [ ] Add better error reporting for memory allocation failures
@@ -68,6 +72,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Expression and instruction modules now follow a consistent ownership model (completed 2025-04-26)
   - [x] Implement consistent list module memory ownership model (completed 2025-04-26)
   - [x] Extend consistent ownership model to remaining modules (completed 2025-04-26)
+  
+- [ ] Conduct comprehensive review of Memory Management Model (MMM) implementation:
+  - [ ] Audit all modules for strict enforcement of MMM restrictions
+  - [ ] Verify all functions properly document ownership semantics
+  - [ ] Check for consistent use of ownership assertions vs. guard clauses
+  - [ ] Ensure proper use of ownership prefixes throughout the codebase
+  - [ ] Implement static analysis tools to verify MMM compliance
 
 - [x] Redesign the memory management approach:
   - [x] Implement Mojo-inspired ownership semantics (LValues, RValues, BValues) instead of reference counting (completed 2025-04-26)
