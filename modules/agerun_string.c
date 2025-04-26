@@ -101,8 +101,6 @@ char* ar_string_path_segment(const char *ref_str, char separator, size_t index) 
         return NULL;
     }
     
-    AR_ASSERT_OWNERSHIP(own_segment);
-    
     memcpy(own_segment, ref_start, length);
     own_segment[length] = '\0';
     
@@ -150,8 +148,6 @@ char* ar_string_path_parent(const char *ref_str, char separator) {
     if (!own_parent) {
         return NULL;
     }
-    
-    AR_ASSERT_OWNERSHIP(own_parent);
     
     memcpy(own_parent, ref_str, parent_len);
     own_parent[parent_len] = '\0';
