@@ -24,16 +24,16 @@ struct list_s {
  * @return Pointer to the new list, or NULL on failure
  */
 list_t* ar_list_create(void) {
-    list_t *list = (list_t*)malloc(sizeof(list_t));
-    if (!list) {
+    list_t *own_list = (list_t*)malloc(sizeof(list_t));
+    if (!own_list) {
         return NULL;
     }
     
-    list->head = NULL;
-    list->tail = NULL;
-    list->count = 0;
+    own_list->head = NULL;
+    own_list->tail = NULL;
+    own_list->count = 0;
     
-    return list;
+    return own_list; // Ownership transferred to caller
 }
 
 /**
@@ -42,28 +42,28 @@ list_t* ar_list_create(void) {
  * @param item The item to add
  * @return true if successful, false otherwise
  */
-bool ar_list_add_last(list_t *list, void *item) {
-    if (!list) {
+bool ar_list_add_last(list_t *mut_list, void *ref_item) {
+    if (!mut_list) {
         return false;
     }
     
-    struct list_node_s *node = (struct list_node_s*)malloc(sizeof(struct list_node_s));
-    if (!node) {
+    struct list_node_s *own_node = (struct list_node_s*)malloc(sizeof(struct list_node_s));
+    if (!own_node) {
         return false;
     }
     
-    node->item = item;
-    node->next = NULL;
-    node->prev = list->tail;   // Set the previous pointer to current tail
+    own_node->item = ref_item;
+    own_node->next = NULL;
+    own_node->prev = mut_list->tail;   // Set the previous pointer to current tail
     
-    if (list->tail) {
-        list->tail->next = node;
+    if (mut_list->tail) {
+        mut_list->tail->next = own_node;
     } else {
-        list->head = node;     // If the list was empty, also set the head
+        mut_list->head = own_node;     // If the list was empty, also set the head
     }
     
-    list->tail = node;
-    list->count++;
+    mut_list->tail = own_node;
+    mut_list->count++;
     
     return true;
 }
@@ -74,28 +74,28 @@ bool ar_list_add_last(list_t *list, void *item) {
  * @param item The item to add
  * @return true if successful, false otherwise
  */
-bool ar_list_add_first(list_t *list, void *item) {
-    if (!list) {
+bool ar_list_add_first(list_t *mut_list, void *ref_item) {
+    if (!mut_list) {
         return false;
     }
     
-    struct list_node_s *node = (struct list_node_s*)malloc(sizeof(struct list_node_s));
-    if (!node) {
+    struct list_node_s *own_node = (struct list_node_s*)malloc(sizeof(struct list_node_s));
+    if (!own_node) {
         return false;
     }
     
-    node->item = item;
-    node->next = list->head;
-    node->prev = NULL;         // First node has no previous
+    own_node->item = ref_item;
+    own_node->next = mut_list->head;
+    own_node->prev = NULL;         // First node has no previous
     
-    if (list->head) {
-        list->head->prev = node;  // Update the previous head's prev pointer
+    if (mut_list->head) {
+        mut_list->head->prev = own_node;  // Update the previous head's prev pointer
     } else {
-        list->tail = node;     // If the list was empty, also set the tail
+        mut_list->tail = own_node;     // If the list was empty, also set the tail
     }
     
-    list->head = node;
-    list->count++;
+    mut_list->head = own_node;
+    mut_list->count++;
     
     return true;
 }
@@ -105,12 +105,12 @@ bool ar_list_add_first(list_t *list, void *item) {
  * @param list The list to get the first item from
  * @return Pointer to the first item, or NULL if the list is empty
  */
-void* ar_list_first(const list_t *list) {
-    if (!list || !list->head) {
+void* ar_list_first(const list_t *ref_list) {
+    if (!ref_list || !ref_list->head) {
         return NULL;
     }
     
-    return list->head->item;
+    return ref_list->head->item; // Borrowed reference, not owned by caller
 }
 
 /**
@@ -118,12 +118,12 @@ void* ar_list_first(const list_t *list) {
  * @param list The list to get the last item from
  * @return Pointer to the last item, or NULL if the list is empty
  */
-void* ar_list_last(const list_t *list) {
-    if (!list || !list->tail) {
+void* ar_list_last(const list_t *ref_list) {
+    if (!ref_list || !ref_list->tail) {
         return NULL;
     }
     
-    return list->tail->item;
+    return ref_list->tail->item; // Borrowed reference, not owned by caller
 }
 
 /**
@@ -131,26 +131,27 @@ void* ar_list_last(const list_t *list) {
  * @param list The list to remove from
  * @return Pointer to the removed item, or NULL if the list is empty
  */
-void* ar_list_remove_first(list_t *list) {
-    if (!list || !list->head) {
+void* ar_list_remove_first(list_t *mut_list) {
+    if (!mut_list || !mut_list->head) {
         return NULL;
     }
     
-    struct list_node_s *node = list->head;
-    void *item = node->item;
+    struct list_node_s *mut_node = mut_list->head;
+    void *ref_item = mut_node->item;
     
-    list->head = node->next;
+    mut_list->head = mut_node->next;
     
-    if (list->head) {
-        list->head->prev = NULL;  // Update new head to have no previous
+    if (mut_list->head) {
+        mut_list->head->prev = NULL;  // Update new head to have no previous
     } else {
-        list->tail = NULL;       // If list is now empty, update tail too
+        mut_list->tail = NULL;       // If list is now empty, update tail too
     }
     
-    free(node);
-    list->count--;
+    free(mut_node);
+    mut_node = NULL; // Mark as freed
+    mut_list->count--;
     
-    return item;
+    return ref_item; // Borrowed reference, ownership not transferred
 }
 
 /**
@@ -158,26 +159,27 @@ void* ar_list_remove_first(list_t *list) {
  * @param list The list to remove from
  * @return Pointer to the removed item, or NULL if the list is empty
  */
-void* ar_list_remove_last(list_t *list) {
-    if (!list || !list->tail) {
+void* ar_list_remove_last(list_t *mut_list) {
+    if (!mut_list || !mut_list->tail) {
         return NULL;
     }
     
-    struct list_node_s *node = list->tail;
-    void *item = node->item;
+    struct list_node_s *mut_node = mut_list->tail;
+    void *ref_item = mut_node->item;
     
-    list->tail = node->prev;  // Update tail to the previous node
+    mut_list->tail = mut_node->prev;  // Update tail to the previous node
     
-    if (list->tail) {
-        list->tail->next = NULL;  // New tail has no next
+    if (mut_list->tail) {
+        mut_list->tail->next = NULL;  // New tail has no next
     } else {
-        list->head = NULL;        // If list is now empty, update head too
+        mut_list->head = NULL;        // If list is now empty, update head too
     }
     
-    free(node);
-    list->count--;
+    free(mut_node);
+    mut_node = NULL; // Mark as freed
+    mut_list->count--;
     
-    return item;
+    return ref_item; // Borrowed reference, ownership not transferred
 }
 
 /**
@@ -185,12 +187,12 @@ void* ar_list_remove_last(list_t *list) {
  * @param list The list to count
  * @return The number of items
  */
-size_t ar_list_count(const list_t *list) {
-    if (!list) {
+size_t ar_list_count(const list_t *ref_list) {
+    if (!ref_list) {
         return 0;
     }
     
-    return list->count;
+    return ref_list->count;
 }
 
 /**
@@ -198,12 +200,12 @@ size_t ar_list_count(const list_t *list) {
  * @param list The list to check
  * @return true if the list is empty, false otherwise
  */
-bool ar_list_empty(const list_t *list) {
-    if (!list) {
+bool ar_list_empty(const list_t *ref_list) {
+    if (!ref_list) {
         return true;
     }
     
-    return list->count == 0;
+    return ref_list->count == 0;
 }
 
 /**
@@ -214,29 +216,29 @@ bool ar_list_empty(const list_t *list) {
  *       The items themselves are not copied and remain owned by the caller.
  *       The caller can use ar_list_count() to determine the size of the array.
  */
-void** ar_list_items(const list_t *list) {
-    if (!list) {
+void** ar_list_items(const list_t *ref_list) {
+    if (!ref_list) {
         return NULL;
     }
     
-    if (list->count == 0) {
+    if (ref_list->count == 0) {
         return NULL;
     }
     
-    void **items = (void**)malloc(list->count * sizeof(void*));
-    if (!items) {
+    void **own_items = (void**)malloc(ref_list->count * sizeof(void*));
+    if (!own_items) {
         return NULL;
     }
     
-    struct list_node_s *current = list->head;
+    struct list_node_s *ref_current = ref_list->head;
     size_t index = 0;
     
-    while (current) {
-        items[index++] = current->item;
-        current = current->next;
+    while (ref_current) {
+        own_items[index++] = ref_current->item;
+        ref_current = ref_current->next;
     }
     
-    return items;
+    return own_items; // Ownership of array transferred to caller, but not items
 }
 
 /**
@@ -247,46 +249,47 @@ void** ar_list_items(const list_t *list) {
  * @note This function compares the item pointer directly with the stored pointers,
  *       not the contents of what they point to.
  */
-bool ar_list_remove(list_t *list, void *item) {
-    if (!list || list->count == 0) {
+bool ar_list_remove(list_t *mut_list, void *ref_item) {
+    if (!mut_list || mut_list->count == 0) {
         return false;
     }
     
     bool found = false;
-    struct list_node_s *current = list->head;
+    struct list_node_s *mut_current = mut_list->head;
     
-    while (current) {
-        struct list_node_s *next = current->next;
+    while (mut_current) {
+        struct list_node_s *mut_next = mut_current->next;
         
         // Check if this node contains the item to remove
-        if (current->item == item) {
+        if (mut_current->item == ref_item) {
             // Remove this node from the list
             
             // Update the previous node's next pointer (or head if this is the first node)
-            if (current->prev) {
-                current->prev->next = current->next;
+            if (mut_current->prev) {
+                mut_current->prev->next = mut_current->next;
             } else {
-                list->head = current->next;
+                mut_list->head = mut_current->next;
             }
             
             // Update the next node's previous pointer (or tail if this is the last node)
-            if (current->next) {
-                current->next->prev = current->prev;
+            if (mut_current->next) {
+                mut_current->next->prev = mut_current->prev;
             } else {
-                list->tail = current->prev;
+                mut_list->tail = mut_current->prev;
             }
             
             // Free the node
-            free(current);
+            free(mut_current);
+            mut_current = NULL; // Mark as freed
             
             // Decrement count
-            list->count--;
+            mut_list->count--;
             
             // Mark that we found at least one occurrence
             found = true;
         }
         
-        current = next;
+        mut_current = mut_next;
     }
     
     return found;
@@ -299,17 +302,19 @@ bool ar_list_remove(list_t *list, void *item) {
  *       It does not free memory for items.
  *       The caller is responsible for freeing all items that were added to the list.
  */
-void ar_list_destroy(list_t *list) {
-    if (!list) {
+void ar_list_destroy(list_t *own_list) {
+    if (!own_list) {
         return;
     }
     
-    struct list_node_s *current = list->head;
-    while (current) {
-        struct list_node_s *next = current->next;
-        free(current);
-        current = next;
+    struct list_node_s *mut_current = own_list->head;
+    while (mut_current) {
+        struct list_node_s *mut_next = mut_current->next;
+        free(mut_current);
+        // Move to next node (no need for intermediate NULL assignment)
+        mut_current = mut_next;
     }
     
-    free(list);
+    free(own_list);
+    own_list = NULL; // Mark as freed
 }

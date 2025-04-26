@@ -11,23 +11,23 @@ static void test_create_destroy(void) {
     printf("Running test_create_destroy...\n");
     
     // Given an empty list
-    list_t *list = ar_list_create();
-    assert(list != NULL);
+    list_t *own_list = ar_list_create();
+    assert(own_list != NULL);
     
     // When checking its properties
     // Then it should be empty and have zero items
-    assert(ar_list_empty(list) == true);
-    assert(ar_list_count(list) == 0);
+    assert(ar_list_empty(own_list) == true);
+    assert(ar_list_count(own_list) == 0);
     
     // When getting all items
-    void **items = ar_list_items(list);
+    void **own_items = ar_list_items(own_list);
     
     // Then it should return NULL items and count should be zero
-    assert(items == NULL);
-    assert(ar_list_count(list) == 0);
+    assert(own_items == NULL);
+    assert(ar_list_count(own_list) == 0);
     
     // Cleanup
-    ar_list_destroy(list);
+    ar_list_destroy(own_list);
     
     printf("test_create_destroy passed\n");
 }
@@ -39,40 +39,40 @@ static void test_add_last(void) {
     printf("Running test_add_last...\n");
     
     // Given an empty list
-    list_t *list = ar_list_create();
-    assert(list != NULL);
+    list_t *own_list = ar_list_create();
+    assert(own_list != NULL);
     
     // And some test string items
-    char *item1 = strdup("item1");
-    char *item2 = strdup("item2");
-    char *item3 = strdup("item3");
+    char *own_item1 = strdup("item1");
+    char *own_item2 = strdup("item2");
+    char *own_item3 = strdup("item3");
     
     // When adding items to the end
-    assert(ar_list_add_last(list, item1) == true);
-    assert(ar_list_add_last(list, item2) == true);
-    assert(ar_list_add_last(list, item3) == true);
+    assert(ar_list_add_last(own_list, own_item1) == true);
+    assert(ar_list_add_last(own_list, own_item2) == true);
+    assert(ar_list_add_last(own_list, own_item3) == true);
     
     // Then the list should not be empty and have the correct count
-    assert(ar_list_empty(list) == false);
-    assert(ar_list_count(list) == 3);
+    assert(ar_list_empty(own_list) == false);
+    assert(ar_list_count(own_list) == 3);
     
     // When getting all items
-    void **items = ar_list_items(list);
-    size_t count = ar_list_count(list);
+    void **own_items = ar_list_items(own_list);
+    size_t count = ar_list_count(own_list);
     
     // Then it should return the correct items in order
-    assert(items != NULL);
+    assert(own_items != NULL);
     assert(count == 3);
-    assert(strcmp((char*)items[0], "item1") == 0);
-    assert(strcmp((char*)items[1], "item2") == 0);
-    assert(strcmp((char*)items[2], "item3") == 0);
+    assert(strcmp((char*)own_items[0], "item1") == 0);
+    assert(strcmp((char*)own_items[1], "item2") == 0);
+    assert(strcmp((char*)own_items[2], "item3") == 0);
     
     // Cleanup
-    free(items);
-    free(item1);
-    free(item2);
-    free(item3);
-    ar_list_destroy(list);
+    free(own_items);
+    free(own_item1);
+    free(own_item2);
+    free(own_item3);
+    ar_list_destroy(own_list);
     
     printf("test_add_last passed\n");
 }
@@ -173,57 +173,57 @@ static void test_remove_first_last(void) {
     printf("Running test_remove_first_last...\n");
     
     // Given an empty list
-    list_t *list = ar_list_create();
-    assert(list != NULL);
+    list_t *own_list = ar_list_create();
+    assert(own_list != NULL);
     
     // When removing from an empty list
     // Then both operations should return NULL
-    assert(ar_list_remove_first(list) == NULL);
-    assert(ar_list_remove_last(list) == NULL);
+    assert(ar_list_remove_first(own_list) == NULL);
+    assert(ar_list_remove_last(own_list) == NULL);
     
     // And some test string items
-    char *item1 = strdup("item1");
-    char *item2 = strdup("item2");
-    char *item3 = strdup("item3");
+    char *own_item1 = strdup("item1");
+    char *own_item2 = strdup("item2");
+    char *own_item3 = strdup("item3");
     
     // When adding items
-    assert(ar_list_add_last(list, item1) == true);
-    assert(ar_list_add_last(list, item2) == true);
-    assert(ar_list_add_last(list, item3) == true);
-    assert(ar_list_count(list) == 3);
+    assert(ar_list_add_last(own_list, own_item1) == true);
+    assert(ar_list_add_last(own_list, own_item2) == true);
+    assert(ar_list_add_last(own_list, own_item3) == true);
+    assert(ar_list_count(own_list) == 3);
     
     // When removing the first item
-    void *removed = ar_list_remove_first(list);
+    void *ref_removed = ar_list_remove_first(own_list);
     
     // Then it should return the first item and update the list
-    assert(removed == item1);
-    assert(ar_list_count(list) == 2);
-    assert(ar_list_first(list) == item2);
+    assert(ref_removed == own_item1);
+    assert(ar_list_count(own_list) == 2);
+    assert(ar_list_first(own_list) == own_item2);
     
     // When removing the last item
-    removed = ar_list_remove_last(list);
+    ref_removed = ar_list_remove_last(own_list);
     
     // Then it should return the last item and update the list
-    assert(removed == item3);
-    assert(ar_list_count(list) == 1);
-    assert(ar_list_first(list) == item2);
-    assert(ar_list_last(list) == item2);
+    assert(ref_removed == own_item3);
+    assert(ar_list_count(own_list) == 1);
+    assert(ar_list_first(own_list) == own_item2);
+    assert(ar_list_last(own_list) == own_item2);
     
     // When removing the only remaining item
-    removed = ar_list_remove_first(list);
+    ref_removed = ar_list_remove_first(own_list);
     
     // Then it should return the item and empty the list
-    assert(removed == item2);
-    assert(ar_list_count(list) == 0);
-    assert(ar_list_empty(list) == true);
-    assert(ar_list_first(list) == NULL);
-    assert(ar_list_last(list) == NULL);
+    assert(ref_removed == own_item2);
+    assert(ar_list_count(own_list) == 0);
+    assert(ar_list_empty(own_list) == true);
+    assert(ar_list_first(own_list) == NULL);
+    assert(ar_list_last(own_list) == NULL);
     
     // Cleanup
-    free(item1);
-    free(item2);
-    free(item3);
-    ar_list_destroy(list);
+    free(own_item1);
+    free(own_item2);
+    free(own_item3);
+    ar_list_destroy(own_list);
     
     printf("test_remove_first_last passed\n");
 }

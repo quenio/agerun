@@ -79,11 +79,32 @@ IMPORTANT:
    - Types: `lowercase_with_underscores_t` (with `_t` suffix)
    - Global variables: `g_lowercase_with_underscores`
 
-3. **Comments**:
+3. **Comments and Documentation**:
    - Use `//` for single-line comments
    - Use `/* */` for multi-line comments
    - All functions should have a descriptive comment
    - Comment complex logic within functions
+   - Standardized documentation comments:
+     - All modules, types, and functions must have doc comments using the `/**` style
+     - Function doc comments must include:
+       - A clear description of what the function does
+       - `@param` tags for all parameters with their name, purpose, and ownership semantics
+       - `@return` tags explaining the return value and its ownership
+       - `@note` tags for ownership transfer information
+     - Type documentation must explain the type's purpose and ownership model
+     - Doc comments should be consistent between header file declarations and implementations
+     - Example:
+       ```c
+       /**
+        * Processes data and creates a new result object
+        * @param mut_context The context to use (mutable reference)
+        * @param ref_data The data to process (borrowed reference)
+        * @return A newly created result object
+        * @note Ownership: Returns an owned value that caller must destroy.
+        *       The function does not take ownership of the data parameter.
+        */
+       result_t* ar_module_process(context_t *mut_context, const data_t *ref_data);
+       ```
 
 4. **Memory Management**:
    - Always check return values from memory allocation functions
@@ -193,6 +214,11 @@ IMPORTANT:
    - Design clean, well-defined interfaces for modules
    - When working with opaque types, update tests to use the public API rather than accessing internal structures directly
    - For opaque types, provide a single creation function that handles both allocation and initialization
+   - Apply memory ownership naming conventions consistently across all files of a module:
+     - Header files (.h): Function parameters should use the ownership prefixes (`own_`, `mut_`, `ref_`)
+     - Implementation files (.c): Variables should use the ownership prefixes
+     - Test files (_tests.c): Test code should also follow the same naming conventions
+     - This consistent naming scheme makes ownership semantics explicit and transparent
 
 5. **Handle compiler warnings and errors**:
    - All compilation warnings and errors must be fixed before committing files

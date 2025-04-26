@@ -4,6 +4,12 @@
 
 The list module provides a doubly-linked list implementation for storing pointer items. The list is designed to be a non-owning container, meaning it does not manage the memory for the items it stores. The caller is responsible for allocating and freeing memory for all items.
 
+This module follows the AgeRun Memory Management Model (MMM) with explicit ownership semantics:
+- The list structure itself is an owned value that must be destroyed by its owner
+- The list never takes ownership of stored items - they remain owned by the caller
+- Functions like `ar_list_first()` return borrowed references that should not be destroyed
+- The `ar_list_items()` function transfers ownership of the returned array but not the items
+
 ## Key Features
 
 - Add items to the beginning or end of the list in O(1) time
@@ -21,6 +27,16 @@ The list module provides a doubly-linked list implementation for storing pointer
 
 - `list_t`: An opaque type representing a linked list.
 
+### Memory Ownership Model
+
+The list module follows these memory ownership rules:
+
+- **Creation Functions**: `ar_list_create()` returns an owned value that the caller must destroy
+- **Destruction Functions**: `ar_list_destroy()` takes ownership of the list parameter
+- **Add/Remove Functions**: Do not transfer ownership of the items; the caller remains responsible for them
+- **Access Functions**: Return borrowed references to items, which must not be destroyed by the caller
+- **Array Function**: `ar_list_items()` transfers ownership of the returned array to the caller, but not of the items in the array
+
 ### Functions
 
 #### Creation and Destruction
@@ -28,70 +44,82 @@ The list module provides a doubly-linked list implementation for storing pointer
 ```c
 list_t* ar_list_create(void);
 ```
-Creates a new empty list. Returns a pointer to the new list, or NULL on failure.
+Creates a new empty list. Returns a pointer to the new list, or NULL on failure.  
+**Ownership**: Returns an owned value that the caller must eventually destroy using `ar_list_destroy()`.
 
 ```c
-void ar_list_destroy(list_t *list);
+void ar_list_destroy(list_t *own_list);
 ```
-Frees all resources associated with the list. Note that this function only frees the list structure itself, not the items stored in the list. The caller is responsible for freeing all items that were added to the list.
+Frees all resources associated with the list. Note that this function only frees the list structure itself, not the items stored in the list.  
+**Ownership**: Takes ownership of the list parameter. The caller is responsible for freeing all items that were added to the list.
 
 #### Adding Items
 
 ```c
-bool ar_list_add_last(list_t *list, void *item);
+bool ar_list_add_last(list_t *mut_list, void *ref_item);
 ```
-Adds an item to the end of the list. Returns true if successful, false otherwise.
+Adds an item to the end of the list. Returns true if successful, false otherwise.  
+**Ownership**: Borrows the item without taking ownership. The caller remains responsible for the item's memory.
 
 ```c
-bool ar_list_add_first(list_t *list, void *item);
+bool ar_list_add_first(list_t *mut_list, void *ref_item);
 ```
-Adds an item to the beginning of the list. Returns true if successful, false otherwise.
+Adds an item to the beginning of the list. Returns true if successful, false otherwise.  
+**Ownership**: Borrows the item without taking ownership. The caller remains responsible for the item's memory.
 
 #### Accessing Items
 
 ```c
-void* ar_list_first(const list_t *list);
+void* ar_list_first(const list_t *ref_list);
 ```
-Gets the first item in the list. Returns NULL if the list is empty or NULL.
+Gets the first item in the list. Returns NULL if the list is empty or NULL.  
+**Ownership**: Returns a borrowed reference. The caller must not destroy the returned item.
 
 ```c
-void* ar_list_last(const list_t *list);
+void* ar_list_last(const list_t *ref_list);
 ```
-Gets the last item in the list. Returns NULL if the list is empty or NULL.
+Gets the last item in the list. Returns NULL if the list is empty or NULL.  
+**Ownership**: Returns a borrowed reference. The caller must not destroy the returned item.
 
 #### Removing Items
 
 ```c
-void* ar_list_remove_first(list_t *list);
+void* ar_list_remove_first(list_t *mut_list);
 ```
-Removes and returns the first item from the list. Returns NULL if the list is empty or NULL.
+Removes and returns the first item from the list. Returns NULL if the list is empty or NULL.  
+**Ownership**: Returns a borrowed reference. The list does not transfer ownership to the caller.
 
 ```c
-void* ar_list_remove_last(list_t *list);
+void* ar_list_remove_last(list_t *mut_list);
 ```
-Removes and returns the last item from the list. Returns NULL if the list is empty or NULL.
+Removes and returns the last item from the list. Returns NULL if the list is empty or NULL.  
+**Ownership**: Returns a borrowed reference. The list does not transfer ownership to the caller.
 
 ```c
-bool ar_list_remove(list_t *list, void *item);
+bool ar_list_remove(list_t *mut_list, void *ref_item);
 ```
-Removes all occurrences of an item from the list by direct pointer comparison. Returns true if at least one occurrence of the item was found and removed, false otherwise. This function is useful for removing specific items by their pointer value, not by their content.
+Removes all occurrences of an item from the list by direct pointer comparison. Returns true if at least one occurrence of the item was found and removed, false otherwise.  
+**Ownership**: This function does not affect ownership of the item. The caller remains responsible for freeing the item if necessary.
 
 #### Querying
 
 ```c
-size_t ar_list_count(const list_t *list);
+size_t ar_list_count(const list_t *ref_list);
 ```
-Gets the number of items in the list. Returns 0 if the list is NULL.
+Gets the number of items in the list. Returns 0 if the list is NULL.  
+**Ownership**: No ownership implications; this is a pure query operation.
 
 ```c
-bool ar_list_empty(const list_t *list);
+bool ar_list_empty(const list_t *ref_list);
 ```
-Checks if the list is empty. Returns true if the list is empty or NULL, false otherwise.
+Checks if the list is empty. Returns true if the list is empty or NULL, false otherwise.  
+**Ownership**: No ownership implications; this is a pure query operation.
 
 ```c
-void** ar_list_items(const list_t *list);
+void** ar_list_items(const list_t *ref_list);
 ```
-Gets an array of all items in the list. Returns NULL if the list is empty or on failure. The caller is responsible for freeing the returned array using free(). The items themselves are not copied and remain owned by the caller. Use ar_list_count() to determine the size of the array.
+Gets an array of all items in the list. Returns NULL if the list is empty or on failure.  
+**Ownership**: Transfers ownership of the returned array to the caller, who must free it using `free()`. The items in the array remain borrowed references. Use `ar_list_count()` to determine the size of the array.
 
 ## Usage Examples
 
@@ -306,7 +334,24 @@ ar_list_destroy(allocations);
 - The list has completely replaced the queue module in the codebase, providing a more versatile and efficient solution
 - Both stack implementations (LIFO with either end) are now O(1) for all operations
 - Queue operations are also O(1) for all operations (enqueue and dequeue)
-- The list is particularly useful for tracking allocated memory that needs to be freed later
-- The `ar_list_remove` function is ideal for working with resource management patterns where you need to transfer ownership of an object from a tracking list
-- The module is used by the expression module to track expression results that need to be freed when the context is destroyed
-- The module is used by the data module to track dynamically allocated map keys
+
+### Memory Management Best Practices
+
+- Variables follow the AgeRun Memory Management Model naming convention:
+  - `own_` prefix for variables that own their memory (must be destroyed)
+  - `mut_` prefix for mutable references (can be modified but not destroyed)
+  - `ref_` prefix for borrowed references (should not be modified or destroyed)
+
+- When using a list to track allocated memory:
+  1. Create a list to track allocated objects
+  2. Add newly allocated objects to the list
+  3. When cleaning up, use `ar_list_items()` to get all items and free them
+  4. Remember to free the array returned by `ar_list_items()`
+  5. Finally, destroy the list with `ar_list_destroy()`
+
+- The list module is particularly useful for:
+  - Tracking allocated memory that needs to be freed later
+  - Implementing resource pools with clear ownership semantics
+  - Working with resource management patterns where you need to track multiple owned objects
+  - The module is used by the expression module to track expression results that need to be freed when the context is destroyed
+  - The module is used by the data module to track dynamically allocated map keys

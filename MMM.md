@@ -149,9 +149,9 @@ void* ar_map_get(const map_t *map, const char *key);
 ```c
 // Factory function pattern - returns owned value
 data_t* create_something() {
-    own_data_t *result = ar_data_create_map();
+    own_data_t *own_result = ar_data_create_map();
     // configure result...
-    return result; // Ownership transferred to caller
+    return own_result; // Ownership transferred to caller
 }
 ```
 
@@ -181,6 +181,54 @@ void process_data(const data_t *ref_data) {
     // ...
 }
 ```
+
+## Consistent Use of Conventions
+
+For clarity and consistency, all ownership prefixes should be used throughout the codebase:
+
+1. **Header Files (.h)**:
+   - Function parameters should use ownership prefixes:
+   ```c
+   bool ar_module_function(module_t *own_object, const data_t *ref_data);
+   ```
+
+2. **Implementation Files (.c)**:
+   - Local variables should use ownership prefixes:
+   ```c
+   bool ar_module_function(module_t *own_object, const data_t *ref_data) {
+       own_data_t *own_result = ar_data_create_map();
+       ref_data_t *ref_value = ar_data_get_map_value(ref_data, "key");
+       // ...
+   }
+   ```
+
+3. **Test Files (_tests.c)**:
+   - Test code should maintain the same conventions:
+   ```c
+   void test_module_function() {
+       own_module_t *own_object = ar_module_create();
+       own_data_t *own_map = ar_data_create_map();
+       // ...
+   }
+   ```
+
+4. **Documentation Comments**:
+   - Documentation must clearly express ownership semantics:
+   ```c
+   /**
+    * Inserts a value into a map with the specified key
+    * @param mut_map The map to modify (mutable reference)
+    * @param ref_key The key to use (borrowed reference)
+    * @param own_value The value to insert (ownership transferred to map)
+    * @return True if the insertion succeeded, false otherwise
+    * @note Ownership: Takes ownership of the value parameter.
+    *       The map will be responsible for destroying own_value.
+    *       Caller should set own_value = NULL after this call.
+    */
+   bool ar_map_insert(map_t *mut_map, const char *ref_key, data_t *own_value);
+   ```
+
+This consistency makes ownership semantics explicit throughout the entire codebase, reducing the risk of memory management errors and making code reviews more effective.
 
 ## Debugging Ownership Issues
 

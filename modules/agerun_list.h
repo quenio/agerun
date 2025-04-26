@@ -8,100 +8,118 @@
  * A linked list structure for storing pointer items.
  * The list never owns or manages the memory for items.
  * The caller is always responsible for allocating and freeing memory for all items.
+ * 
+ * This module follows the AgeRun Memory Management Model (MMM):
+ * - The list structure itself is an owned value that must be destroyed by its owner
+ * - The list never takes ownership of stored items - they remain owned by the caller
+ * - Functions like ar_list_first() return borrowed references that should not be destroyed
+ * - The ar_list_items() function transfers ownership of the returned array but not the items
  */
 typedef struct list_s list_t;
 
 /**
  * Create a new empty list
  * @return Pointer to the new list, or NULL on failure
+ * @note Ownership: Returns an owned value that the caller must eventually destroy using ar_list_destroy()
  */
 list_t* ar_list_create(void);
 
 /**
  * Add an item to the end of the list
- * @param list The list to add to
- * @param item The item to add
+ * @param mut_list The list to add to (mutable reference)
+ * @param ref_item The item to add (borrowed reference)
  * @return true if successful, false otherwise
+ * @note Ownership: Borrows the item without taking ownership. The caller remains responsible for the item's memory.
  */
-bool ar_list_add_last(list_t *list, void *item);
+bool ar_list_add_last(list_t *mut_list, void *ref_item);
 
 /**
  * Add an item to the beginning of the list
- * @param list The list to add to
- * @param item The item to add
+ * @param mut_list The list to add to (mutable reference)
+ * @param ref_item The item to add (borrowed reference)
  * @return true if successful, false otherwise
+ * @note Ownership: Borrows the item without taking ownership. The caller remains responsible for the item's memory.
  */
-bool ar_list_add_first(list_t *list, void *item);
+bool ar_list_add_first(list_t *mut_list, void *ref_item);
 
 /**
  * Get the first item in the list
- * @param list The list to get the first item from
+ * @param ref_list The list to get the first item from (borrowed reference)
  * @return Pointer to the first item, or NULL if the list is empty
+ * @note Ownership: Returns a borrowed reference. The caller must not destroy the returned item.
  */
-void* ar_list_first(const list_t *list);
+void* ar_list_first(const list_t *ref_list);
 
 /**
  * Get the last item in the list
- * @param list The list to get the last item from
+ * @param ref_list The list to get the last item from (borrowed reference)
  * @return Pointer to the last item, or NULL if the list is empty
+ * @note Ownership: Returns a borrowed reference. The caller must not destroy the returned item.
  */
-void* ar_list_last(const list_t *list);
+void* ar_list_last(const list_t *ref_list);
 
 /**
  * Remove and return the first item from the list
- * @param list The list to remove from
+ * @param mut_list The list to remove from (mutable reference)
  * @return Pointer to the removed item, or NULL if the list is empty
+ * @note Ownership: Returns a borrowed reference. The list does not transfer ownership to the caller.
  */
-void* ar_list_remove_first(list_t *list);
+void* ar_list_remove_first(list_t *mut_list);
 
 /**
  * Remove and return the last item from the list
- * @param list The list to remove from
+ * @param mut_list The list to remove from (mutable reference)
  * @return Pointer to the removed item, or NULL if the list is empty
+ * @note Ownership: Returns a borrowed reference. The list does not transfer ownership to the caller.
  */
-void* ar_list_remove_last(list_t *list);
+void* ar_list_remove_last(list_t *mut_list);
 
 /**
  * Get the number of items in the list
- * @param list The list to count
+ * @param ref_list The list to count (borrowed reference)
  * @return The number of items
+ * @note Ownership: No ownership implications; this is a pure query operation.
  */
-size_t ar_list_count(const list_t *list);
+size_t ar_list_count(const list_t *ref_list);
 
 /**
  * Check if the list is empty
- * @param list The list to check
+ * @param ref_list The list to check (borrowed reference)
  * @return true if the list is empty, false otherwise
+ * @note Ownership: No ownership implications; this is a pure query operation.
  */
-bool ar_list_empty(const list_t *list);
+bool ar_list_empty(const list_t *ref_list);
 
 /**
  * Get an array of all items in the list
- * @param list The list to get items from
+ * @param ref_list The list to get items from (borrowed reference)
  * @return Array of pointers to items, or NULL on failure
- * @note The caller is responsible for freeing the returned array using free().
- *       The items themselves are not copied and remain owned by the caller.
+ * @note Ownership: Transfers ownership of the returned array to the caller, who must free it using free().
+ *       The items in the array remain borrowed references.
  *       The caller can use ar_list_count() to determine the size of the array.
  */
-void** ar_list_items(const list_t *list);
+void** ar_list_items(const list_t *ref_list);
 
 /**
  * Remove all occurrences of an item from the list by value
- * @param list The list to remove from
- * @param item The item to remove
+ * @param mut_list The list to remove from (mutable reference)
+ * @param ref_item The item to remove (borrowed reference)
  * @return true if at least one occurrence of the item was found and removed, false otherwise
+ * @note Ownership: This function does not affect ownership of the item. 
+ *       The caller remains responsible for freeing the item if necessary.
  * @note This function compares the item pointer directly with the stored pointers,
  *       not the contents of what they point to.
  */
-bool ar_list_remove(list_t *list, void *item);
+bool ar_list_remove(list_t *mut_list, void *ref_item);
 
 /**
  * Free all resources in a list
- * @param list List to free
- * @note This function only frees the list structure itself.
+ * @param own_list List to free (owned value)
+ * @note Ownership: Takes ownership of the list parameter.
+ *       This function only frees the list structure itself.
  *       It does not free memory for items.
  *       The caller is responsible for freeing all items that were added to the list.
  */
-void ar_list_destroy(list_t *list);
+void ar_list_destroy(list_t *own_list);
 
 #endif /* AGERUN_LIST_H */
