@@ -1,4 +1,5 @@
 #include "agerun_list.h"
+#include "agerun_debug.h"
 #include <stdlib.h>
 
 /**
@@ -33,6 +34,7 @@ list_t* ar_list_create(void) {
     own_list->tail = NULL;
     own_list->count = 0;
     
+    AR_ASSERT_OWNERSHIP(own_list);
     return own_list; // Ownership transferred to caller
 }
 
@@ -148,7 +150,8 @@ void* ar_list_remove_first(list_t *mut_list) {
     }
     
     free(mut_node);
-    mut_node = NULL; // Mark as freed
+    // Note: Setting mut_node to NULL is technically not needed as it's a local variable
+    // but it helps signal that the memory is no longer accessible.
     mut_list->count--;
     
     return ref_item; // Borrowed reference, ownership not transferred
@@ -176,7 +179,8 @@ void* ar_list_remove_last(list_t *mut_list) {
     }
     
     free(mut_node);
-    mut_node = NULL; // Mark as freed
+    // Note: Setting mut_node to NULL is technically not needed as it's a local variable
+    // but it helps signal that the memory is no longer accessible.
     mut_list->count--;
     
     return ref_item; // Borrowed reference, ownership not transferred
@@ -280,7 +284,8 @@ bool ar_list_remove(list_t *mut_list, void *ref_item) {
             
             // Free the node
             free(mut_current);
-            mut_current = NULL; // Mark as freed
+            // Note: Setting mut_current to NULL is technically not needed as we don't use it after this,
+            // but it would help signal that the memory is no longer accessible in more complex contexts.
             
             // Decrement count
             mut_list->count--;
@@ -307,14 +312,18 @@ void ar_list_destroy(list_t *own_list) {
         return;
     }
     
+    AR_ASSERT_OWNERSHIP(own_list);
+    
     struct list_node_s *mut_current = own_list->head;
     while (mut_current) {
         struct list_node_s *mut_next = mut_current->next;
         free(mut_current);
-        // Move to next node (no need for intermediate NULL assignment)
+        // Move to next node
         mut_current = mut_next;
     }
     
     free(own_list);
-    own_list = NULL; // Mark as freed
+    // Note: Setting own_list to NULL here doesn't affect the caller's variable,
+    // since C passes parameters by value. We rely on the caller to not use the 
+    // pointer after calling this function.
 }

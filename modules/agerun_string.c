@@ -1,4 +1,5 @@
 #include "agerun_string.h"
+#include "agerun_debug.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -11,20 +12,20 @@ char* ar_string_trim(char *mut_str) {
     if (!mut_str) return NULL;
     
     // Trim leading space
-    char *start = mut_str;
-    while (ar_string_isspace(*start)) start++;
+    char *ref_start = mut_str;
+    while (ar_string_isspace(*ref_start)) ref_start++;
     
-    if(*start == 0) // All spaces
-        return start;
+    if(*ref_start == 0) // All spaces
+        return ref_start; // Borrowed reference, not owned by caller
     
     // Trim trailing space
-    char *end = start + strlen(start) - 1;
-    while (end > start && ar_string_isspace(*end)) end--;
+    char *mut_end = ref_start + strlen(ref_start) - 1;
+    while (mut_end > ref_start && ar_string_isspace(*mut_end)) mut_end--;
     
     // Write new null terminator
-    *(end + 1) = 0;
+    *(mut_end + 1) = 0;
     
-    return start;
+    return ref_start; // Borrowed reference, not owned by caller
 }
 
 /**
@@ -40,11 +41,11 @@ size_t ar_string_path_count(const char *ref_str, char separator) {
     }
     
     size_t count = 1;  // Start with 1 for the first segment
-    const char *ptr = ref_str;
+    const char *ref_ptr = ref_str;
     
-    while ((ptr = strchr(ptr, separator)) != NULL) {
+    while ((ref_ptr = strchr(ref_ptr, separator)) != NULL) {
         count++;
-        ptr++;  // Move past the separator
+        ref_ptr++;  // Move past the separator
     }
     
     return count;
@@ -64,32 +65,34 @@ char* ar_string_path_segment(const char *ref_str, char separator, size_t index) 
         return NULL;
     }
     
-    const char *start = ref_str;
+    const char *ref_start = ref_str;
     size_t current_index = 0;
     
     // Find the start of the segment at the specified index
     while (current_index < index) {
-        start = strchr(start, separator);
-        if (!start) {
+        ref_start = strchr(ref_start, separator);
+        if (!ref_start) {
             // Index is out of bounds
             return NULL;
         }
-        start++;  // Move past the separator
+        ref_start++;  // Move past the separator
         current_index++;
     }
     
     // Find the end of the segment (either next separator or end of string)
-    const char *end = strchr(start, separator);
-    if (!end) {
+    const char *ref_end = strchr(ref_start, separator);
+    if (!ref_end) {
         // This is the last segment
-        end = start + strlen(start);
+        ref_end = ref_start + strlen(ref_start);
     }
     
     // Calculate segment length
-    size_t length = (size_t)(end - start);
+    size_t length = (size_t)(ref_end - ref_start);
     if (length == 0) {
         // Empty segment
-        return strdup(""); // Ownership transferred to caller
+        char *own_result = strdup(""); 
+        AR_ASSERT_OWNERSHIP(own_result);
+        return own_result; // Ownership transferred to caller
     }
     
     // Allocate and copy the segment
@@ -98,9 +101,10 @@ char* ar_string_path_segment(const char *ref_str, char separator, size_t index) 
         return NULL;
     }
     
-    memcpy(own_segment, start, length);
+    memcpy(own_segment, ref_start, length);
     own_segment[length] = '\0';
     
+    AR_ASSERT_OWNERSHIP(own_segment);
     return own_segment; // Ownership transferred to caller
 }
 
@@ -125,17 +129,19 @@ char* ar_string_path_parent(const char *ref_str, char separator) {
     }
     
     // Find the last separator
-    const char *last_sep = strrchr(ref_str, separator);
-    if (!last_sep) {
+    const char *ref_last_sep = strrchr(ref_str, separator);
+    if (!ref_last_sep) {
         // This should not happen if segments > 1, but handle it anyway
         return NULL;
     }
     
     // Calculate the length of the parent path (excluding the last separator)
-    size_t parent_len = (size_t)(last_sep - ref_str);
+    size_t parent_len = (size_t)(ref_last_sep - ref_str);
     if (parent_len == 0) {
         // Edge case: path starts with a separator (e.g., ".key")
-        return strdup(""); // Ownership transferred to caller
+        char *own_result = strdup("");
+        AR_ASSERT_OWNERSHIP(own_result);
+        return own_result; // Ownership transferred to caller
     }
     
     // Allocate and copy the parent path
@@ -147,5 +153,6 @@ char* ar_string_path_parent(const char *ref_str, char separator) {
     memcpy(own_parent, ref_str, parent_len);
     own_parent[parent_len] = '\0';
     
+    AR_ASSERT_OWNERSHIP(own_parent);
     return own_parent; // Ownership transferred to caller
 }
