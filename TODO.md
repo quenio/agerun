@@ -38,6 +38,17 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Implement ar_list_remove function (completed 2025-04-26)
   - [x] Add comprehensive tests for ar_list_remove (completed 2025-04-26)
   - [x] Update documentation for ar_list_remove (completed 2025-04-26)
+  - [x] Implement memory ownership prefixes in list module (completed 2025-04-26)
+
+- [ ] Fix memory ownership prefix inconsistencies in modules using list:
+  - [ ] Update agerun_data.c:
+    - [ ] Use `own_items` for arrays returned by `ar_list_items()`
+    - [ ] Update `ar_data_get_list()` to indicate it returns a reference
+    - [ ] Consistently use `mut_list` or `ref_list` depending on access pattern
+  - [ ] Update agerun_expression.c:
+    - [ ] Rename `results` list to `own_results` in context structure
+    - [ ] Update all references to `ctx->results` to use `ctx->own_results`
+    - [ ] Review for other list-related ownership inconsistencies
 
 - [ ] Implement comprehensive memory leak detection in the build process:
   - [ ] Add valgrind tests for all modules
@@ -55,6 +66,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 - [x] Implement consistent ownership semantics across modules:
   - [x] Expression and instruction modules now follow a consistent ownership model (completed 2025-04-26)
+  - [x] Implement consistent list module memory ownership model (completed 2025-04-26)
   - [ ] Extend consistent ownership model to remaining modules
 
 - [x] Redesign the memory management approach:
