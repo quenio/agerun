@@ -91,10 +91,15 @@ IMPORTANT:
    - Use valgrind to check for memory leaks
    - When freeing containers/structures and their contents, always free containers first, then their contents
    - This prevents use-after-free bugs when containers might access their contents during cleanup
+   - Use consistent variable name prefixes to denote ownership type:
+     - Use `own_` prefix for owned values (RValues) that must be destroyed by the owner
+     - Use `mut_` prefix for mutable references (LValues) that provide read-write access
+     - Use `ref_` prefix for borrowed references (BValues) that provide read-only access
    - Be explicit about resource ownership in all function documentation:
      - Clearly document when ownership is transferred (e.g., `ar_data_set_map_data()` transfers ownership of the value)
      - Document when functions return references versus new objects
      - Comment variables that should not be used after ownership transfer (e.g., "Don't use after this point")
+     - Mark transferred pointers with NULL after ownership transfer (e.g., `own_value = NULL;`)
    - For expression evaluation, follow these memory ownership rules:
      - Direct memory access expressions (e.g., `memory.x`) return references that should NOT be destroyed
      - Arithmetic expressions (e.g., `2 + 3`) return new objects that MUST be destroyed

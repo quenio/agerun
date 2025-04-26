@@ -13,18 +13,21 @@ AgeRun implements a memory ownership model with three fundamental value categori
    - Must be explicitly destroyed by the owner
    - Ownership can be transferred but never shared
    - Created by functions that return new objects
+   - Use prefix `own_` in variable declarations (e.g., `own_data`)
 
 2. **Mutable References (like Mojo LValues):**
    - Provide read-write access to another object
    - Do not own the underlying memory
    - Must never outlive the owner
    - Marked with parameter names like `target` or documentation about mutation
+   - Use prefix `mut_` in variable declarations (e.g., `mut_data`)
 
 3. **Borrowed References (like Mojo BValues):**
    - Provide read-only access to another object
    - Do not own the underlying memory
    - Must never outlive the owner
    - Typically passed as `const` parameters
+   - Use prefix `ref_` in variable declarations (e.g., `ref_data`)
 
 ## Ownership Transfer Rules
 
@@ -146,7 +149,7 @@ void* ar_map_get(const map_t *map, const char *key);
 ```c
 // Factory function pattern - returns owned value
 data_t* create_something() {
-    data_t *result = ar_data_create_map();
+    own_data_t *result = ar_data_create_map();
     // configure result...
     return result; // Ownership transferred to caller
 }
@@ -156,23 +159,25 @@ data_t* create_something() {
 
 ```c
 // Container takes ownership of value
-data_t *value = ar_data_create_integer(42);
-ar_data_set_map_value(map, "key", value);
-// value is now owned by map, don't use or free it
+own_data_t *own_value = ar_data_create_integer(42);
+ar_data_set_map_value(map, "key", own_value);
+// own_value is now owned by map, don't use or free it
+own_value = NULL; // Mark as transferred
 
 // Taking ownership from container
-data_t *result = ar_expression_evaluate(ctx);
-ar_expression_take_ownership(ctx, result);
-// result is now owned by caller, not context
+ref_data_t *ref_result = ar_expression_evaluate(ctx);
+ar_expression_take_ownership(ctx, ref_result);
+// ref_result becomes own_result as it is now owned by caller, not context
+own_data_t *own_result = ref_result;
 ```
 
 ### Borrowing Pattern
 
 ```c
 // Borrowing pattern - doesn't take ownership
-void process_data(const data_t *data) {
-    // Use but don't modify or destroy data
-    int value = ar_data_get_integer(data);
+void process_data(const data_t *ref_data) {
+    // Use but don't modify or destroy ref_data
+    int value = ar_data_get_integer(ref_data);
     // ...
 }
 ```
@@ -187,9 +192,20 @@ When debugging memory issues:
 4. Use valgrind to identify leaks and double-free errors
 5. When transferring ownership, set the source pointer to NULL:
    ```c
-   data_t *value = ar_data_create_integer(42);
-   ar_data_set_map_value(map, "key", value);
-   value = NULL; // Mark as transferred
+   own_data_t *own_value = ar_data_create_integer(42);
+   ar_data_set_map_value(map, "key", own_value);
+   own_value = NULL; // Mark as transferred
+   ```
+6. Use consistent prefixes in variable declarations to clearly indicate ownership:
+   ```c
+   // For owned values (RValues)
+   own_data_t *own_data = ar_data_create_integer(42);
+   
+   // For mutable references (LValues)
+   mut_data_t *mut_data = some_mutable_reference;
+   
+   // For borrowed references (BValues)
+   const data_t *ref_data = ar_data_get_map_value(map, "key");
    ```
 
 ## Future Improvements
