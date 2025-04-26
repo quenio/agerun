@@ -25,10 +25,10 @@ static void test_trim_leading_whitespace(void) {
     printf("Testing ar_trim() with leading whitespace...\n");
     
     // Given a string with leading whitespace
-    char str[] = "   Hello";
+    char mut_str[] = "   Hello";
     
     // When the trim function is called
-    char *result = ar_string_trim(str);
+    char *result = ar_string_trim(mut_str);
     
     // Then the result should have the whitespace removed
     assert(strcmp(result, "Hello") == 0);
@@ -40,10 +40,10 @@ static void test_trim_trailing_whitespace(void) {
     printf("Testing ar_trim() with trailing whitespace...\n");
     
     // Given a string with trailing whitespace
-    char str[] = "World   ";
+    char mut_str[] = "World   ";
     
     // When the trim function is called
-    char *result = ar_string_trim(str);
+    char *result = ar_string_trim(mut_str);
     
     // Then the result should have the whitespace removed
     assert(strcmp(result, "World") == 0);
@@ -55,23 +55,23 @@ static void test_trim_both_whitespace(void) {
     printf("Testing ar_trim() with both leading and trailing whitespace...\n");
     
     // Given a string with both leading and trailing whitespace
-    char str[] = "  Hello World  ";
-    char *original_ptr = str;
+    char mut_str[] = "  Hello World  ";
+    char *original_ptr = mut_str;
     
     // When the trim function is called
-    char *result = ar_string_trim(str);
+    char *result = ar_string_trim(mut_str);
     
     // Then the result should have all whitespace removed
     assert(strcmp(result, "Hello World") == 0);
     
     // Then the result should point to a position within the original string (no new allocation)
-    assert(result >= original_ptr && result < original_ptr + sizeof(str));
+    assert(result >= original_ptr && result < original_ptr + sizeof(mut_str));
     
     // Then the result end (including null terminator) should be within the original buffer
-    assert(result + strlen(result) < original_ptr + sizeof(str));
+    assert(result + strlen(result) < original_ptr + sizeof(mut_str));
     
     // Then the original string should be modified in-place
-    assert(strcmp(str + 2, "Hello World") == 0);
+    assert(strcmp(mut_str + 2, "Hello World") == 0);
     
     printf("ar_trim() both whitespace test passed!\n");
 }
@@ -80,10 +80,10 @@ static void test_trim_no_whitespace(void) {
     printf("Testing ar_trim() with no whitespace...\n");
     
     // Given a string with no whitespace
-    char str[] = "NoWhitespace";
+    char mut_str[] = "NoWhitespace";
     
     // When the trim function is called
-    char *result = ar_string_trim(str);
+    char *result = ar_string_trim(mut_str);
     
     // Then the result should be unchanged
     assert(strcmp(result, "NoWhitespace") == 0);
@@ -95,10 +95,10 @@ static void test_trim_empty_string(void) {
     printf("Testing ar_trim() with empty string...\n");
     
     // Given an empty string
-    char str[] = "";
+    char mut_str[] = "";
     
     // When the trim function is called
-    char *result = ar_string_trim(str);
+    char *result = ar_string_trim(mut_str);
     
     // Then the result should remain an empty string
     assert(strcmp(result, "") == 0);
@@ -110,10 +110,10 @@ static void test_trim_only_whitespace(void) {
     printf("Testing ar_trim() with only whitespace...\n");
     
     // Given a string containing only whitespace
-    char str[] = "   \t\n   ";
+    char mut_str[] = "   \t\n   ";
     
     // When the trim function is called
-    char *result = ar_string_trim(str);
+    char *result = ar_string_trim(mut_str);
     
     // Then the result should be an empty string
     assert(strcmp(result, "") == 0);
@@ -171,16 +171,16 @@ static void test_path_count_normal(void) {
     printf("Testing ar_string_path_count() with normal paths...\n");
     
     // Given several paths with different numbers of segments
-    const char *path1 = "key";
-    const char *path2 = "key.sub_key";
-    const char *path3 = "key.sub_key.sub_sub_key";
-    const char *path4 = "key.sub_key.sub_sub_key.final";
+    const char *ref_path1 = "key";
+    const char *ref_path2 = "key.sub_key";
+    const char *ref_path3 = "key.sub_key.sub_sub_key";
+    const char *ref_path4 = "key.sub_key.sub_sub_key.final";
     
     // When the path_count function is called
-    size_t count1 = ar_string_path_count(path1, '.');
-    size_t count2 = ar_string_path_count(path2, '.');
-    size_t count3 = ar_string_path_count(path3, '.');
-    size_t count4 = ar_string_path_count(path4, '.');
+    size_t count1 = ar_string_path_count(ref_path1, '.');
+    size_t count2 = ar_string_path_count(ref_path2, '.');
+    size_t count3 = ar_string_path_count(ref_path3, '.');
+    size_t count4 = ar_string_path_count(ref_path4, '.');
     
     // Then the counts should match the expected segment counts
     assert(count1 == 1);
@@ -195,18 +195,18 @@ static void test_path_count_edge_cases(void) {
     printf("Testing ar_string_path_count() with edge cases...\n");
     
     // Given edge case paths
-    const char *empty = "";
-    const char *null_ptr = NULL;
-    const char *only_separators = ".....";
-    const char *trailing_separator = "key.sub_key.";
-    const char *leading_separator = ".key.sub_key";
+    const char *ref_empty = "";
+    const char *ref_null_ptr = NULL;
+    const char *ref_only_separators = ".....";
+    const char *ref_trailing_separator = "key.sub_key.";
+    const char *ref_leading_separator = ".key.sub_key";
     
     // When the path_count function is called
-    size_t empty_count = ar_string_path_count(empty, '.');
-    size_t null_count = ar_string_path_count(null_ptr, '.');
-    size_t only_separators_count = ar_string_path_count(only_separators, '.');
-    size_t trailing_count = ar_string_path_count(trailing_separator, '.');
-    size_t leading_count = ar_string_path_count(leading_separator, '.');
+    size_t empty_count = ar_string_path_count(ref_empty, '.');
+    size_t null_count = ar_string_path_count(ref_null_ptr, '.');
+    size_t only_separators_count = ar_string_path_count(ref_only_separators, '.');
+    size_t trailing_count = ar_string_path_count(ref_trailing_separator, '.');
+    size_t leading_count = ar_string_path_count(ref_leading_separator, '.');
     
     // Then the counts should match the expected segment counts
     assert(empty_count == 0);
@@ -222,25 +222,25 @@ static void test_path_segment_normal(void) {
     printf("Testing ar_string_path_segment() with normal cases...\n");
     
     // Given a path with multiple segments
-    const char *path = "key.sub_key.sub_sub_key";
+    const char *ref_path = "key.sub_key.sub_sub_key";
     
     // When the path_segment function is called for each index
-    char *segment0 = ar_string_path_segment(path, '.', 0);
-    char *segment1 = ar_string_path_segment(path, '.', 1);
-    char *segment2 = ar_string_path_segment(path, '.', 2);
+    char *own_segment0 = ar_string_path_segment(ref_path, '.', 0);
+    char *own_segment1 = ar_string_path_segment(ref_path, '.', 1);
+    char *own_segment2 = ar_string_path_segment(ref_path, '.', 2);
     
     // Then each segment should match the expected value
-    assert(segment0 != NULL);
-    assert(segment1 != NULL);
-    assert(segment2 != NULL);
-    assert(strcmp(segment0, "key") == 0);
-    assert(strcmp(segment1, "sub_key") == 0);
-    assert(strcmp(segment2, "sub_sub_key") == 0);
+    assert(own_segment0 != NULL);
+    assert(own_segment1 != NULL);
+    assert(own_segment2 != NULL);
+    assert(strcmp(own_segment0, "key") == 0);
+    assert(strcmp(own_segment1, "sub_key") == 0);
+    assert(strcmp(own_segment2, "sub_sub_key") == 0);
     
     // Clean up allocated memory
-    free(segment0);
-    free(segment1);
-    free(segment2);
+    free(own_segment0);
+    free(own_segment1);
+    free(own_segment2);
     
     printf("ar_string_path_segment() normal cases test passed!\n");
 }
@@ -249,45 +249,45 @@ static void test_path_segment_edge_cases(void) {
     printf("Testing ar_string_path_segment() with edge cases...\n");
     
     // Given edge case paths
-    const char *empty = "";
-    const char *null_ptr = NULL;
-    const char *path_with_empties = "..key..end.";
+    const char *ref_empty = "";
+    const char *ref_null_ptr = NULL;
+    const char *ref_path_with_empties = "..key..end.";
     
     // When the path_segment function is called with various edge cases
-    char *empty_result = ar_string_path_segment(empty, '.', 0);
-    char *null_result = ar_string_path_segment(null_ptr, '.', 0);
-    char *out_of_bounds = ar_string_path_segment("key.value", '.', 5);
+    char *own_empty_result = ar_string_path_segment(ref_empty, '.', 0);
+    char *own_null_result = ar_string_path_segment(ref_null_ptr, '.', 0);
+    char *own_out_of_bounds = ar_string_path_segment("key.value", '.', 5);
     
     // Then the results should be as expected
-    assert(empty_result == NULL);
-    assert(null_result == NULL);
-    assert(out_of_bounds == NULL);
+    assert(own_empty_result == NULL);
+    assert(own_null_result == NULL);
+    assert(own_out_of_bounds == NULL);
     
     // Test empty segments in a path
     // Print the path for debugging
-    printf("Test path: \"%s\"\n", path_with_empties);
+    printf("Test path: \"%s\"\n", ref_path_with_empties);
     
     // Try getting just a few segments for debugging
-    char *empty_seg1 = ar_string_path_segment(path_with_empties, '.', 0);
-    char *empty_seg2 = ar_string_path_segment(path_with_empties, '.', 1);
-    char *key_seg = ar_string_path_segment(path_with_empties, '.', 2);
+    char *own_empty_seg1 = ar_string_path_segment(ref_path_with_empties, '.', 0);
+    char *own_empty_seg2 = ar_string_path_segment(ref_path_with_empties, '.', 1);
+    char *own_key_seg = ar_string_path_segment(ref_path_with_empties, '.', 2);
     
-    assert(empty_seg1 != NULL);
-    assert(empty_seg2 != NULL);
-    assert(key_seg != NULL);
+    assert(own_empty_seg1 != NULL);
+    assert(own_empty_seg2 != NULL);
+    assert(own_key_seg != NULL);
     
-    printf("Segment 0: \"%s\"\n", empty_seg1);
-    printf("Segment 1: \"%s\"\n", empty_seg2);
-    printf("Segment 2: \"%s\"\n", key_seg);
+    printf("Segment 0: \"%s\"\n", own_empty_seg1);
+    printf("Segment 1: \"%s\"\n", own_empty_seg2);
+    printf("Segment 2: \"%s\"\n", own_key_seg);
     
-    assert(strcmp(empty_seg1, "") == 0);
-    assert(strcmp(empty_seg2, "") == 0);
-    assert(strcmp(key_seg, "key") == 0);
+    assert(strcmp(own_empty_seg1, "") == 0);
+    assert(strcmp(own_empty_seg2, "") == 0);
+    assert(strcmp(own_key_seg, "key") == 0);
     
     // Clean up allocated memory
-    free(empty_seg1);
-    free(empty_seg2);
-    free(key_seg);
+    free(own_empty_seg1);
+    free(own_empty_seg2);
+    free(own_key_seg);
     
     printf("ar_string_path_segment() edge cases test passed!\n");
 }
@@ -296,27 +296,27 @@ static void test_path_parent_normal(void) {
     printf("Testing ar_string_path_parent() with normal paths...\n");
     
     // Given several paths with different numbers of segments
-    const char *path1 = "key.sub_key";
-    const char *path2 = "key.sub_key.sub_sub_key";
-    const char *path3 = "key.sub_key.sub_sub_key.final";
+    const char *ref_path1 = "key.sub_key";
+    const char *ref_path2 = "key.sub_key.sub_sub_key";
+    const char *ref_path3 = "key.sub_key.sub_sub_key.final";
     
     // When the path_parent function is called
-    char *parent1 = ar_string_path_parent(path1, '.');
-    char *parent2 = ar_string_path_parent(path2, '.');
-    char *parent3 = ar_string_path_parent(path3, '.');
+    char *own_parent1 = ar_string_path_parent(ref_path1, '.');
+    char *own_parent2 = ar_string_path_parent(ref_path2, '.');
+    char *own_parent3 = ar_string_path_parent(ref_path3, '.');
     
     // Then the parents should match the expected values
-    assert(parent1 != NULL);
-    assert(parent2 != NULL);
-    assert(parent3 != NULL);
-    assert(strcmp(parent1, "key") == 0);
-    assert(strcmp(parent2, "key.sub_key") == 0);
-    assert(strcmp(parent3, "key.sub_key.sub_sub_key") == 0);
+    assert(own_parent1 != NULL);
+    assert(own_parent2 != NULL);
+    assert(own_parent3 != NULL);
+    assert(strcmp(own_parent1, "key") == 0);
+    assert(strcmp(own_parent2, "key.sub_key") == 0);
+    assert(strcmp(own_parent3, "key.sub_key.sub_sub_key") == 0);
     
     // Clean up allocated memory
-    free(parent1);
-    free(parent2);
-    free(parent3);
+    free(own_parent1);
+    free(own_parent2);
+    free(own_parent3);
     
     printf("ar_string_path_parent() normal paths test passed!\n");
 }
@@ -325,44 +325,44 @@ static void test_path_parent_edge_cases(void) {
     printf("Testing ar_string_path_parent() with edge cases...\n");
     
     // Given edge case paths
-    const char *empty = "";
-    const char *null_ptr = NULL;
-    const char *single_segment = "key";
-    const char *leading_separator = ".key.sub_key";
-    const char *trailing_separator = "key.sub_key.";
-    const char *only_separators = ".....";
+    const char *ref_empty = "";
+    const char *ref_null_ptr = NULL;
+    const char *ref_single_segment = "key";
+    const char *ref_leading_separator = ".key.sub_key";
+    const char *ref_trailing_separator = "key.sub_key.";
+    const char *ref_only_separators = ".....";
     
     // When the path_parent function is called with edge cases
-    char *empty_result = ar_string_path_parent(empty, '.');
-    char *null_result = ar_string_path_parent(null_ptr, '.');
-    char *single_segment_result = ar_string_path_parent(single_segment, '.');
-    char *leading_separator_result = ar_string_path_parent(leading_separator, '.');
-    char *trailing_separator_result = ar_string_path_parent(trailing_separator, '.');
-    char *only_separators_result = ar_string_path_parent(only_separators, '.');
+    char *own_empty_result = ar_string_path_parent(ref_empty, '.');
+    char *own_null_result = ar_string_path_parent(ref_null_ptr, '.');
+    char *own_single_segment_result = ar_string_path_parent(ref_single_segment, '.');
+    char *own_leading_separator_result = ar_string_path_parent(ref_leading_separator, '.');
+    char *own_trailing_separator_result = ar_string_path_parent(ref_trailing_separator, '.');
+    char *own_only_separators_result = ar_string_path_parent(ref_only_separators, '.');
     
     // Then the results should be as expected
-    assert(empty_result == NULL);
-    assert(null_result == NULL);
-    assert(single_segment_result == NULL);
+    assert(own_empty_result == NULL);
+    assert(own_null_result == NULL);
+    assert(own_single_segment_result == NULL);
     
     // For a path starting with a separator like ".key.sub_key"
     // The parent should be ".key"
-    assert(leading_separator_result != NULL);
-    assert(strcmp(leading_separator_result, ".key") == 0);
+    assert(own_leading_separator_result != NULL);
+    assert(strcmp(own_leading_separator_result, ".key") == 0);
     
     // For a path ending with a separator like "key.sub_key."
     // The parent should be "key.sub_key" (not "key" since our implementation keeps all segments)
-    assert(trailing_separator_result != NULL);
-    assert(strcmp(trailing_separator_result, "key.sub_key") == 0);
+    assert(own_trailing_separator_result != NULL);
+    assert(strcmp(own_trailing_separator_result, "key.sub_key") == 0);
     
     // For a path with only separators, the parent of "....." would be "...."
-    assert(only_separators_result != NULL);
-    assert(strcmp(only_separators_result, "....") == 0);
+    assert(own_only_separators_result != NULL);
+    assert(strcmp(own_only_separators_result, "....") == 0);
     
     // Clean up allocated memory
-    free(leading_separator_result);
-    free(trailing_separator_result);
-    free(only_separators_result);
+    free(own_leading_separator_result);
+    free(own_trailing_separator_result);
+    free(own_only_separators_result);
     
     printf("ar_string_path_parent() edge cases test passed!\n");
 }
