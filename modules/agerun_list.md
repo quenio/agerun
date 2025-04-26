@@ -127,84 +127,84 @@ Gets an array of all items in the list. Returns NULL if the list is empty or on 
 
 ```c
 // Create a list
-list_t *list = ar_list_create();
+list_t *own_list = ar_list_create();
 
 // Add items
-char *item1 = strdup("item1");
-char *item2 = strdup("item2");
-ar_list_add_last(list, item1);
-ar_list_add_last(list, item2);
+char *own_item1 = strdup("item1");
+char *own_item2 = strdup("item2");
+ar_list_add_last(own_list, own_item1);
+ar_list_add_last(own_list, own_item2);
 
 // Check properties
-size_t count = ar_list_count(list);  // Returns 2
-bool is_empty = ar_list_empty(list); // Returns false
+size_t count = ar_list_count(own_list);  // Returns 2
+bool is_empty = ar_list_empty(own_list); // Returns false
 
 // Get all items
-void **items = ar_list_items(list);
-if (items) {
-    for (size_t i = 0; i < ar_list_count(list); i++) {
-        char *item = (char*)items[i];
-        printf("Item: %s\n", item);
+void **own_items = ar_list_items(own_list);
+if (own_items) {
+    for (size_t i = 0; i < ar_list_count(own_list); i++) {
+        char *ref_item = (char*)own_items[i];
+        printf("Item: %s\n", ref_item);
     }
     
     // Free the array when done
-    free(items);
+    free(own_items);
 }
 
 // Clean up
-free(item1);  // The caller is responsible for freeing items
-free(item2);
-ar_list_destroy(list);
+free(own_item1);  // The caller is responsible for freeing items
+free(own_item2);
+ar_list_destroy(own_list);
 ```
 
 ### Using List as a Stack (LIFO)
 
 ```c
 // Create a stack
-list_t *stack = ar_list_create();
+list_t *own_stack = ar_list_create();
 
 // Push items onto the stack
-ar_list_add_first(stack, strdup("bottom"));
-ar_list_add_first(stack, strdup("middle"));
-ar_list_add_first(stack, strdup("top"));
+ar_list_add_first(own_stack, strdup("bottom"));
+ar_list_add_first(own_stack, strdup("middle"));
+ar_list_add_first(own_stack, strdup("top"));
 
 // Peek at the top item
-char *top = (char*)ar_list_first(stack);
-printf("Top of stack: %s\n", top);  // Prints "top"
+char *ref_top = (char*)ar_list_first(own_stack);
+printf("Top of stack: %s\n", ref_top);  // Prints "top"
 
 // Pop items from the stack
-while (!ar_list_empty(stack)) {
-    char *item = (char*)ar_list_remove_first(stack);
-    printf("Popped: %s\n", item);  // Pops in order: "top", "middle", "bottom"
-    free(item);
+while (!ar_list_empty(own_stack)) {
+    char *ref_item = (char*)ar_list_remove_first(own_stack);
+    printf("Popped: %s\n", ref_item);  // Pops in order: "top", "middle", "bottom"
+    free(ref_item);
 }
 
-ar_list_destroy(stack);
+ar_list_destroy(own_stack);
 ```
 
 ### Using List as a Queue (FIFO)
 
 ```c
 // Create a queue
-list_t *queue = ar_list_create();
+list_t *own_queue = ar_list_create();
 
 // Enqueue items
-ar_list_add_last(queue, strdup("first"));
-ar_list_add_last(queue, strdup("second"));
-ar_list_add_last(queue, strdup("third"));
+ar_list_add_last(own_queue, strdup("first"));
+ar_list_add_last(own_queue, strdup("second"));
+ar_list_add_last(own_queue, strdup("third"));
 
 // Peek at the front item
-char *front = (char*)ar_list_first(queue);
-printf("Front of queue: %s\n", front);  // Prints "first"
+char *ref_front = (char*)ar_list_first(own_queue);
+printf("Front of queue: %s\n", ref_front);  // Prints "first"
 
 // Dequeue items
-while (!ar_list_empty(queue)) {
-    char *item = (char*)ar_list_remove_first(queue);
-    printf("Dequeued: %s\n", item);  // Dequeues in order: "first", "second", "third"
-    free(item);
+while (!ar_list_empty(own_queue)) {
+    char *ref_item = (char*)ar_list_remove_first(own_queue);
+    printf("Dequeued: %s\n", ref_item);  // Dequeues in order: "first", "second", "third"
+    free(ref_item);
 }
 
-ar_list_destroy(queue);
+ar_list_destroy(own_queue);
 ```
 
 ### Storing Different Types of Items
@@ -213,79 +213,80 @@ The list can store pointers to any type of data:
 
 ```c
 // Create a list
-list_t *list = ar_list_create();
+list_t *own_list = ar_list_create();
 
 // Store different types
-int *int_value = malloc(sizeof(int));
-*int_value = 42;
-ar_list_add_last(list, int_value);
+int *own_int_value = malloc(sizeof(int));
+*own_int_value = 42;
+ar_list_add_last(own_list, own_int_value);
 
-double *double_value = malloc(sizeof(double));
-*double_value = 3.14;
-ar_list_add_last(list, double_value);
+double *own_double_value = malloc(sizeof(double));
+*own_double_value = 3.14;
+ar_list_add_last(own_list, own_double_value);
 
-char *string_value = strdup("Hello");
-ar_list_add_last(list, string_value);
+char *own_string_value = strdup("Hello");
+ar_list_add_last(own_list, own_string_value);
 
 // Use type casting when retrieving items
-void **items = ar_list_items(list);
-if (items) {
-    int *retrieved_int = (int*)items[0];
-    double *retrieved_double = (double*)items[1];
-    char *retrieved_string = (char*)items[2];
+void **own_items = ar_list_items(own_list);
+if (own_items) {
+    int *ref_retrieved_int = (int*)own_items[0];
+    double *ref_retrieved_double = (double*)own_items[1];
+    char *ref_retrieved_string = (char*)own_items[2];
     
-    printf("Integer: %d\n", *retrieved_int);
-    printf("Double: %f\n", *retrieved_double);
-    printf("String: %s\n", retrieved_string);
+    printf("Integer: %d\n", *ref_retrieved_int);
+    printf("Double: %f\n", *ref_retrieved_double);
+    printf("String: %s\n", ref_retrieved_string);
     
     // Free the array
-    free(items);
+    free(own_items);
 }
 
 // Clean up
-free(int_value);
-free(double_value);
-free(string_value);
-ar_list_destroy(list);
+free(own_int_value);
+free(own_double_value);
+free(own_string_value);
+ar_list_destroy(own_list);
 ```
 
 ### Using ar_list_remove to Remove Specific Items
 
 ```c
 // Create a list
-list_t *list = ar_list_create();
+list_t *own_list = ar_list_create();
 
 // Add some items
-int *value1 = malloc(sizeof(int));
-*value1 = 10;
-ar_list_add_last(list, value1);
+int *own_value1 = malloc(sizeof(int));
+*own_value1 = 10;
+ar_list_add_last(own_list, own_value1);
 
-int *value2 = malloc(sizeof(int));
-*value2 = 20;
-ar_list_add_last(list, value2);
+int *own_value2 = malloc(sizeof(int));
+*own_value2 = 20;
+ar_list_add_last(own_list, own_value2);
 
-int *value3 = malloc(sizeof(int));
-*value3 = 30;
-ar_list_add_last(list, value3);
+int *own_value3 = malloc(sizeof(int));
+*own_value3 = 30;
+ar_list_add_last(own_list, own_value3);
 
 // Remove the middle item by its pointer value
-if (ar_list_remove(list, value2)) {
+if (ar_list_remove(own_list, own_value2)) {
     printf("Item removed successfully\n");
-    free(value2); // Free the item ourselves after removing it from the list
+    free(own_value2); // Free the item ourselves after removing it from the list
+    own_value2 = NULL; // Mark as freed
 }
 
 // The list now contains value1 and value3 only
-printf("List size after removal: %zu\n", ar_list_count(list)); // Should print 2
+printf("List size after removal: %zu\n", ar_list_count(own_list)); // Should print 2
 
 // Clean up the remaining items
-void **items = ar_list_items(list);
-if (items) {
-    for (size_t i = 0; i < ar_list_count(list); i++) {
-        free(items[i]);
+void **own_items = ar_list_items(own_list);
+if (own_items) {
+    for (size_t i = 0; i < ar_list_count(own_list); i++) {
+        free(own_items[i]);
     }
-    free(items);
+    free(own_items);
 }
-ar_list_destroy(list);
+ar_list_destroy(own_list);
 ```
 
 ### Using the List for Memory Management
@@ -294,30 +295,32 @@ The list module can be used to track allocated memory that needs to be freed lat
 
 ```c
 // Create a tracking list
-list_t *allocations = ar_list_create();
+list_t *own_allocations = ar_list_create();
 
 // Allocate and track memory
-char *str1 = strdup("string one");
-ar_list_add_last(allocations, str1);
+char *own_str1 = strdup("string one");
+ar_list_add_last(own_allocations, own_str1);
 
-char *str2 = strdup("string two");
-ar_list_add_last(allocations, str2);
+char *own_str2 = strdup("string two");
+ar_list_add_last(own_allocations, own_str2);
 
 // Use the strings
-printf("String 1: %s\n", str1);
-printf("String 2: %s\n", str2);
+printf("String 1: %s\n", own_str1);
+printf("String 2: %s\n", own_str2);
 
 // Free all tracked allocations at once
-void **items = ar_list_items(allocations);
-if (items) {
-    for (size_t i = 0; i < ar_list_count(allocations); i++) {
-        free(items[i]);
+void **own_items = ar_list_items(own_allocations);
+if (own_items) {
+    for (size_t i = 0; i < ar_list_count(own_allocations); i++) {
+        free(own_items[i]);
+        // Note: We don't need to set own_str1/own_str2 to NULL here
+        // since we'll never use them again after this point
     }
-    free(items);
+    free(own_items);
 }
 
 // Then free the list itself
-ar_list_destroy(allocations);
+ar_list_destroy(own_allocations);
 ```
 
 ## Implementation Notes
