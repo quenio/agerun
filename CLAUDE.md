@@ -129,6 +129,15 @@ IMPORTANT:
      - Arithmetic expressions with memory access (e.g., `memory.x + 5`) return new objects that MUST be destroyed
      - String expressions (e.g., `"Hello" + " World"`) return new objects that MUST be destroyed
      - String+number concatenation (e.g., `"Price: $" + 42.99`) returns new objects that MUST be destroyed
+   - Follow the AgeRun Memory Management Model (MMM) to ensure memory safety:
+     - STRICTLY adhere to all rules in the MMM.md document
+     - After transferring ownership of a pointer, NEVER use that pointer again
+     - Immediately set transferred pointers to NULL after ownership transfer
+     - Use the correct ownership prefix for ALL variables in the codebase
+     - Document ALL ownership semantics in function comments
+     - Include assertions in debug builds to verify ownership invariants
+     - Test all ownership semantics thoroughly, including error cases
+     - Treat ownership violations as critical issues that must be fixed immediately
 
 ## Implementation Notes
 

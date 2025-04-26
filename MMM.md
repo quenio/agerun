@@ -416,6 +416,47 @@ When debugging memory issues:
    assert(own_value == NULL); // Verify the transfer marker is applied
    ```
 
+## Development Guidelines for Ownership
+
+All developers working on the AgeRun codebase MUST adhere to the following guidelines:
+
+1. **Zero Tolerance for Ownership Violations:**
+   - Any code that violates the ownership rules MUST NOT be committed
+   - Ownership violations include:
+     - Using pointers after ownership transfer
+     - Double freeing memory
+     - Memory leaks
+     - Missing NULL assignments after ownership transfer
+     - Modifying objects through borrowed references
+     - Missing ownership documentation
+
+2. **Mandatory Code Review for Ownership:**
+   - All pull requests MUST be reviewed with specific attention to ownership
+   - Code reviewers MUST verify all ownership transfer points
+   - Review checklist MUST include:
+     - Proper variable naming with ownership prefixes
+     - Setting pointers to NULL after transfer
+     - Complete ownership documentation
+     - Proper cleanup in all code paths (including error handling)
+
+3. **Testing Requirements:**
+   - All modules MUST include tests that verify ownership semantics
+   - Memory leak detection tools MUST be run on all tests
+   - Tests MUST include error cases to verify proper cleanup
+
+4. **Documentation Requirements:**
+   - All functions MUST document their ownership semantics
+   - Functions that take ownership MUST explicitly state this
+   - Functions that return owned values MUST document the caller's responsibility
+   - All ownership transfer points in code MUST be commented
+
+5. **Code Enforcement:**
+   - Regular static analysis runs are MANDATORY
+   - Valgrind or similar memory checker runs are REQUIRED before release
+   - Developers MUST add assertions to verify ownership invariants in debug builds
+
+Violating these guidelines is considered a serious issue. Code that doesn't follow these rules must be fixed immediately, as ownership violations lead to memory corruption, crashes, and security vulnerabilities.
+
 ## Future Improvements
 
 We are considering adding:
@@ -424,3 +465,4 @@ We are considering adding:
 3. Reference counting for complex ownership scenarios
 4. Sanitizer options in debug builds to detect ownership violations
 5. Custom static analysis rules to verify ownership transfer patterns
+6. Automated test generation for ownership boundary cases
