@@ -89,7 +89,7 @@ char* ar_string_path_segment(const char *ref_str, char separator, size_t index) 
     size_t length = (size_t)(end - start);
     if (length == 0) {
         // Empty segment
-        return strdup("");
+        return strdup(""); // Ownership transferred to caller
     }
     
     // Allocate and copy the segment
@@ -101,7 +101,7 @@ char* ar_string_path_segment(const char *ref_str, char separator, size_t index) 
     memcpy(own_segment, start, length);
     own_segment[length] = '\0';
     
-    return own_segment;
+    return own_segment; // Ownership transferred to caller
 }
 
 /**
@@ -135,7 +135,7 @@ char* ar_string_path_parent(const char *ref_str, char separator) {
     size_t parent_len = (size_t)(last_sep - ref_str);
     if (parent_len == 0) {
         // Edge case: path starts with a separator (e.g., ".key")
-        return strdup("");
+        return strdup(""); // Ownership transferred to caller
     }
     
     // Allocate and copy the parent path
@@ -147,5 +147,5 @@ char* ar_string_path_parent(const char *ref_str, char separator) {
     memcpy(own_parent, ref_str, parent_len);
     own_parent[parent_len] = '\0';
     
-    return own_parent;
+    return own_parent; // Ownership transferred to caller
 }
