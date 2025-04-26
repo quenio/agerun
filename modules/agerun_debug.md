@@ -135,6 +135,16 @@ bool process_data(data_t *own_input) {
 - The debug module is header-only, making it easy to include anywhere in the codebase
 - Clear error messages in assertions make it easier to identify the source of problems
 
+## Usage Guidelines
+
+1. **Assert Prior to First Use**: Always place ownership assertions immediately after acquiring ownership and before using the resource. This ensures validity is checked before any operations are performed.
+
+2. **Assert After Transfer**: Place transfer assertions immediately after setting a pointer to NULL following ownership transfer. This confirms the pointer was properly invalidated.
+
+3. **Handle Resource Failures**: Ownership assertions should not replace proper null-checking - they're for detecting programming errors, not handling resource failures.
+
+4. **Context-Specific Assertions**: Choose the appropriate assertion based on the context (new ownership, transfer, or use-after-free).
+
 ## Future Enhancements
 
 - Stack trace capture for ownership violations

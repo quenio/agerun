@@ -54,6 +54,8 @@ bool ar_list_add_last(list_t *mut_list, void *ref_item) {
         return false;
     }
     
+    AR_ASSERT_OWNERSHIP(own_node);
+    
     own_node->item = ref_item;
     own_node->next = NULL;
     own_node->prev = mut_list->tail;   // Set the previous pointer to current tail
@@ -85,6 +87,8 @@ bool ar_list_add_first(list_t *mut_list, void *ref_item) {
     if (!own_node) {
         return false;
     }
+    
+    AR_ASSERT_OWNERSHIP(own_node);
     
     own_node->item = ref_item;
     own_node->next = mut_list->head;
@@ -233,6 +237,8 @@ void** ar_list_items(const list_t *ref_list) {
     if (!own_items) {
         return NULL;
     }
+    
+    AR_ASSERT_OWNERSHIP(own_items);
     
     struct list_node_s *ref_current = ref_list->head;
     size_t index = 0;
