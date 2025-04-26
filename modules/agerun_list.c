@@ -34,7 +34,6 @@ list_t* ar_list_create(void) {
     own_list->tail = NULL;
     own_list->count = 0;
     
-    AR_ASSERT_OWNERSHIP(own_list);
     return own_list; // Ownership transferred to caller
 }
 
@@ -53,8 +52,6 @@ bool ar_list_add_last(list_t *mut_list, void *ref_item) {
     if (!own_node) {
         return false;
     }
-    
-    AR_ASSERT_OWNERSHIP(own_node);
     
     own_node->item = ref_item;
     own_node->next = NULL;
@@ -87,8 +84,6 @@ bool ar_list_add_first(list_t *mut_list, void *ref_item) {
     if (!own_node) {
         return false;
     }
-    
-    AR_ASSERT_OWNERSHIP(own_node);
     
     own_node->item = ref_item;
     own_node->next = mut_list->head;
@@ -238,8 +233,6 @@ void** ar_list_items(const list_t *ref_list) {
         return NULL;
     }
     
-    AR_ASSERT_OWNERSHIP(own_items);
-    
     struct list_node_s *ref_current = ref_list->head;
     size_t index = 0;
     
@@ -317,8 +310,6 @@ void ar_list_destroy(list_t *own_list) {
     if (!own_list) {
         return;
     }
-    
-    AR_ASSERT_OWNERSHIP(own_list);
     
     struct list_node_s *mut_current = own_list->head;
     while (mut_current) {
