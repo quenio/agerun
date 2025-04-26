@@ -35,11 +35,13 @@ AgeRun implements a memory ownership model with three fundamental value categori
    - Functions with names containing `create`, `make`, or `copy` transfer ownership to the caller
    - The caller is responsible for eventually destroying these objects
    - Example: `ar_data_create_integer()` returns an owned value
+   - Comment all return statements that transfer ownership with "// Ownership transferred to caller"
 
 2. **Borrowing without Ownership:**
    - Functions with names like `get`, `find`, `lookup` return borrowed references
    - The caller must not destroy these objects
    - Example: `ar_data_get_map_value()` returns a borrowed reference
+   - Always use `const` qualifier for borrowed references in function parameters
 
 3. **Transferring Existing Ownership:**
    - Some functions with names like `set`, `add`, `insert` may take ownership from caller
@@ -47,10 +49,21 @@ AgeRun implements a memory ownership model with three fundamental value categori
    - Example: `ar_data_set_map_value()` takes ownership of the value
    - Note: Not all `set`/`add`/`insert` functions transfer ownership; check module documentation
    - For example, `ar_map_set()` and `ar_list_add_last()` do NOT take ownership
+   - Set transferred pointers to NULL after ownership transfer (e.g., `own_value = NULL;`)
+   - Document with a comment like "Don't use after this point" after transfer
 
 4. **Taking Ownership:**
    - Functions with names containing `take` explicitly transfer ownership from another container
    - Example: `ar_expression_take_ownership()` transfers from context to caller
+
+5. **Parameter Assignment Rules:**
+   - When passing an owned value to a function that takes ownership:
+     - Parameter appears as `own_value` in the function signature
+     - Function is responsible for destroying or transferring ownership
+     - Function documentation must indicate ownership transfer
+   - For non-transferring calls:
+     - Use `ref_` prefix for read-only access (always with `const` qualifier)
+     - Use `mut_` prefix for mutable access
 
 ## Module-Specific Ownership Guidelines
 
@@ -59,20 +72,22 @@ AgeRun implements a memory ownership model with three fundamental value categori
 ```c
 // OWNER: Caller owns memory, context, message
 // OWNER: Context owns newly created results
-expression_context_t* ar_expression_create_context(data_t *memory, data_t *context, data_t *message, const char *expr);
+expression_context_t* ar_expression_create_context(data_t *mut_memory, data_t *mut_context, data_t *mut_message, const char *ref_expr);
 
 // BORROW: Returns reference to existing data or newly created data
 // OWNER: Context maintains ownership of result
-data_t* ar_expression_evaluate(expression_context_t *ctx);
+data_t* ar_expression_evaluate(expression_context_t *mut_ctx);
 
 // TRANSFER: Transfers ownership from context to caller
-bool ar_expression_take_ownership(expression_context_t *ctx, data_t *result);
+bool ar_expression_take_ownership(expression_context_t *mut_ctx, data_t *ref_result);
 ```
 
 **Key Rules:**
 - Direct memory access expressions (e.g., `memory.x`) return BORROWED references
 - Arithmetic expressions (e.g., `2 + 3`) return OWNED values maintained by context
+- Arithmetic expressions with memory access (e.g., `memory.x + 5`) return OWNED values maintained by context
 - String expressions (e.g., `"Hello" + " World"`) return OWNED values maintained by context
+- String+number concatenation (e.g., `"Price: $" + 42.99`) returns OWNED values maintained by context
 - When using results beyond context's lifetime, always call `ar_expression_take_ownership()`
 
 ### Data Module
@@ -81,17 +96,17 @@ bool ar_expression_take_ownership(expression_context_t *ctx, data_t *result);
 // OWNER: Caller is new owner of returned data
 data_t* ar_data_create_integer(int value);
 data_t* ar_data_create_double(double value);
-data_t* ar_data_create_string(const char *value);
+data_t* ar_data_create_string(const char *ref_value);
 data_t* ar_data_create_map();
 data_t* ar_data_create_list();
 
 // BORROW: Returns reference, caller does not own
-int ar_data_get_integer(const data_t *data);
-double ar_data_get_double(const data_t *data);
-const char* ar_data_get_string(const data_t *data);
+int ar_data_get_integer(const data_t *ref_data);
+double ar_data_get_double(const data_t *ref_data);
+const char* ar_data_get_string(const data_t *ref_data);
 
 // TRANSFER: Takes ownership from caller
-bool ar_data_set_map_value(data_t *map, const char *key, data_t *value);
+bool ar_data_set_map_value(data_t *mut_map, const char *ref_key, data_t *own_value);
 ```
 
 **Key Rules:**
@@ -99,6 +114,7 @@ bool ar_data_set_map_value(data_t *map, const char *key, data_t *value);
 - Getter functions return BORROWED references
 - Setter functions TRANSFER ownership from caller to container
 - Once ownership is transferred, caller must not destroy the object
+- After transfer, caller should set pointer to NULL: `own_value = NULL;`
 
 ### List Module
 
@@ -107,13 +123,13 @@ bool ar_data_set_map_value(data_t *map, const char *key, data_t *value);
 list_t* ar_list_create();
 
 // BORROW: Caller borrows but doesn't own items
-void** ar_list_items(const list_t *list);
+void** ar_list_items(const list_t *ref_list);
 
 // BORROW: Items in list remain owned by their original owners
-void* ar_list_get(const list_t *list, size_t index);
+void* ar_list_get(const list_t *ref_list, size_t index);
 
 // NO-TRANSFER: List doesn't take ownership of item
-bool ar_list_add_last(list_t *list, void *item);
+bool ar_list_add_last(list_t *mut_list, void *ref_item);
 ```
 
 **Key Rules:**
@@ -121,6 +137,7 @@ bool ar_list_add_last(list_t *list, void *item);
 - Adding an item to a list does NOT transfer ownership
 - Removing an item from a list does NOT transfer ownership
 - When a list is destroyed, items are not automatically destroyed
+- Caller maintains responsibility for destroying list items
 
 ### Map Module
 
@@ -129,10 +146,10 @@ bool ar_list_add_last(list_t *list, void *item);
 map_t* ar_map_create();
 
 // NO-TRANSFER: Map does not take ownership of value
-bool ar_map_set(map_t *map, const char *key, void *value);
+bool ar_map_set(map_t *mut_map, const char *ref_key, void *ref_value);
 
 // BORROW: Caller borrows but doesn't own returned value
-void* ar_map_get(const map_t *map, const char *key);
+void* ar_map_get(const map_t *ref_map, const char *ref_key);
 ```
 
 **Key Rules:**
@@ -141,6 +158,7 @@ void* ar_map_get(const map_t *map, const char *key);
 - When a map is destroyed, keys and values are not destroyed
 - The caller is responsible for freeing both keys and values
 - Key pointers must remain valid for the lifetime of the map entry
+- Prefix naming conventions make ownership responsibilities clear
 
 ## Common Patterns
 
@@ -152,6 +170,7 @@ data_t* create_something() {
     own_data_t *own_result = ar_data_create_map();
     // configure result...
     return own_result; // Ownership transferred to caller
+    // Comment: Ownership transferred to caller
 }
 ```
 
@@ -160,13 +179,14 @@ data_t* create_something() {
 ```c
 // Container takes ownership of value
 own_data_t *own_value = ar_data_create_integer(42);
-ar_data_set_map_value(map, "key", own_value);
+ar_data_set_map_value(mut_map, "key", own_value);
 // own_value is now owned by map, don't use or free it
 own_value = NULL; // Mark as transferred
+// Don't use own_value after this point
 
 // Taking ownership from container
-ref_data_t *ref_result = ar_expression_evaluate(ctx);
-ar_expression_take_ownership(ctx, ref_result);
+ref_data_t *ref_result = ar_expression_evaluate(mut_ctx);
+ar_expression_take_ownership(mut_ctx, ref_result);
 // ref_result becomes own_result as it is now owned by caller, not context
 own_data_t *own_result = ref_result;
 ```
@@ -181,6 +201,57 @@ void process_data(const data_t *ref_data) {
     // ...
 }
 ```
+
+### Expression Evaluation Rules
+
+```c
+// Direct memory access (returns reference)
+ref_data_t *ref_value = ar_expression_evaluate(mut_ctx); // expression: "memory.x"
+// No need to destroy ref_value (borrowed reference)
+
+// Arithmetic expressions (returns new owned object)
+own_data_t *own_result = ar_expression_evaluate(mut_ctx); // expression: "2 + 3"
+ar_expression_take_ownership(mut_ctx, own_result); // Take ownership
+// Must destroy own_result when done
+
+// Arithmetic with memory access (returns new owned object)
+own_data_t *own_calc = ar_expression_evaluate(mut_ctx); // expression: "memory.x + 5"
+ar_expression_take_ownership(mut_ctx, own_calc); // Take ownership
+// Must destroy own_calc when done
+
+// String expressions (returns new owned object)
+own_data_t *own_str = ar_expression_evaluate(mut_ctx); // expression: "\"Hello\" + \" World\""
+ar_expression_take_ownership(mut_ctx, own_str); // Take ownership
+// Must destroy own_str when done
+```
+
+## Parameter Assignment Rules
+
+The AgeRun project follows specific rules for parameter assignment to ensure memory safety:
+
+1. **For RValues (Owned Values):**
+   - When passed as owned parameters, they are owned by the callee
+   - Ownership transfer occurs for parameters with `own_` prefix
+   - After passing an owned value to a function that takes ownership, the caller must not use or destroy it
+   - The original pointer should be set to NULL to indicate ownership transfer
+
+2. **For LValues (Mutable References):**
+   - Mutable references provide read-write access
+   - Use `mut_` prefix to indicate this parameter may be modified
+   - Function can modify the referenced object
+   - No ownership transfer occurs
+
+3. **For BValues (Borrowed References):**
+   - Provide read-only access to existing objects
+   - Always use `const` qualifier with these parameters
+   - Use `ref_` prefix to indicate borrowed, immutable status
+   - Function cannot modify or destroy the referenced object
+   - No ownership transfer occurs
+
+4. **Copy and Move Semantics:**
+   - When `ar_data_copy` is used, a new owned object is created
+   - For larger data structures, prefer creating handles and transferring ownership rather than copying
+   - "Move" semantics are implemented via explicit ownership transfer
 
 ## Consistent Use of Conventions
 
