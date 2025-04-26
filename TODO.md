@@ -13,7 +13,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Improve expression module memory management:
   - [x] Implement proper cleanup that respects ownership hierarchy (completed 2025-04-26)
   - [x] Add helper functions for safely managing memory in complex expressions (added ar_expression_take_ownership 2025-04-26)
-  - [ ] Consider adding a reference counting mechanism for shared data objects
+  - [ ] ~~Consider adding a reference counting mechanism for shared data objects~~ Implement Mojo-inspired ownership semantics instead (LValues, RValues, BValues)
   - [ ] Add debug logging options for memory operations to simplify troubleshooting
 
 - [x] Fix the comparison expression tests:
@@ -57,8 +57,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Expression and instruction modules now follow a consistent ownership model (completed 2025-04-26)
   - [ ] Extend consistent ownership model to remaining modules
 
-- [ ] Consider redesigning the memory management approach:
-  - [ ] Evaluate reference counting vs. other memory management approaches
+- [x] Redesign the memory management approach:
+  - [x] Implement Mojo-inspired ownership semantics (LValues, RValues, BValues) instead of reference counting (completed 2025-04-26)
   - [ ] Consider adding debug-only memory tracking for development builds
 
 - [ ] Improve test infrastructure:
@@ -71,9 +71,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Document memory management for specific modules:
   - [x] Document expression module's ownership model (completed 2025-04-26)
   - [x] Document instruction module's ownership model (completed 2025-04-26)
-  - [ ] Document remaining modules' ownership models
+  - [x] Document remaining modules' ownership models (completed 2025-04-26)
 
-- [ ] Create comprehensive memory management guidelines:
-  - [ ] Document ownership patterns for all data types
-  - [ ] Provide examples of correct memory handling for complex structures
-  - [ ] Add troubleshooting section for common memory issues
+- [x] Create comprehensive memory management guidelines:
+  - [x] Document ownership patterns for all data types (completed 2025-04-26)
+  - [x] Provide examples of correct memory handling for complex structures (completed 2025-04-26)
+  - [x] Add troubleshooting section for common memory issues (completed 2025-04-26)

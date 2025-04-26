@@ -20,6 +20,16 @@ Within modules, consistent naming conventions are used:
 
 These conventions ensure consistency across the codebase and make it easier to understand which module a particular function or data structure belongs to.
 
+### Memory Ownership Model
+
+AgeRun implements a memory ownership model inspired by Mojo's ownership semantics. For comprehensive guidelines on memory ownership across all modules, refer to the [Memory Management Model](/MMM.md) in the project root. This document details:
+
+- Core concepts of Owned Values, Mutable References, and Borrowed References
+- Explicit ownership transfer rules and conventions
+- Module-specific ownership guidelines
+- Common patterns for memory management
+- Debugging tips for memory-related issues
+
 ## Module Dependency Tree
 
 This tree illustrates the dependency relationships between modules in the AgeRun system. Each module depends on the modules listed under it (its children in the tree). For example, `agerun_executable` depends on both `agerun_system` and `agerun_methodology`, while `agerun_system` has multiple dependencies including `agerun_agent`, `agerun_method`, etc.

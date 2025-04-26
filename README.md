@@ -155,6 +155,16 @@ The AgeRun codebase is organized into modular components, each responsible for a
 
 For more details on the module structure and dependencies, see the [Modules README](modules/README.md).
 
+## Memory Management
+
+AgeRun implements a consistent memory ownership model inspired by Mojo's ownership semantics. The system distinguishes between:
+
+- **Owned Values**: Objects with unique ownership that must be explicitly destroyed
+- **Mutable References**: Read-write access to objects without ownership
+- **Borrowed References**: Read-only access to objects without ownership
+
+For comprehensive documentation on memory ownership patterns, see the [Memory Management Model](MMM.md).
+
 ## License
 
 [MIT License](LICENSE)
