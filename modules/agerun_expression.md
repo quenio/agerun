@@ -115,21 +115,22 @@ Evaluates an expression in the agent's context using recursive descent parsing.
 - `ctx`: Pointer to the expression evaluation context
 
 **Returns:**
-- For memory access expressions (`memory`, `context`, `message`):
-  - Returns a direct reference to the actual data without copying
-  - Returns NULL for non-existent paths
-  - IMPORTANT: These references MUST NOT be destroyed by the caller
-- For literal expressions (strings, numbers):
-  - Returns a new data_t containing the result of the evaluation
-  - The caller MUST destroy these objects when no longer needed
-- For arithmetic expressions (including those with memory access):
-  - Returns a new data_t containing the result of the evaluation
-  - The caller MUST destroy these objects, even when they include memory references
-  - e.g., For `memory.x + 5`, the result is a new object that must be destroyed
-- For comparison expressions:
-  - Returns a new data_t containing the result of the evaluation (0 or 1)
-  - The caller MUST destroy these objects when no longer needed
-- Returns NULL on syntax error (such as encountering a function call in an expression) or when the evaluated path doesn't exist
+- A borrowed reference to the result of the expression evaluation
+- This reference is OWNED BY THE EXPRESSION SYSTEM, not the caller
+- The caller MUST NOT destroy this reference with ar_data_destroy()
+- Returns NULL on syntax error or when the evaluated path doesn't exist
+
+**IMPORTANT: Memory Ownership Clarification**
+
+All results returned by ar_expression_evaluate() are BORROWED REFERENCES, not owned objects. The caller must never attempt to destroy these references using ar_data_destroy(). The expression system manages the lifetime of all expression results internally.
+
+This applies to all expression types:
+- Memory access expressions (e.g., `memory.x`)
+- Literal expressions (strings, numbers)
+- Arithmetic expressions (e.g., `2 + 3`)
+- Arithmetic expressions with memory access (e.g., `memory.x + 5`)
+- String concatenation (e.g., `"Hello" + " World"`)
+- Comparison expressions (e.g., `memory.count > 5`)
 
 The context's offset is updated to point to the position after the evaluated expression on success, or to the position where the syntax error was detected on failure.
 
@@ -138,7 +139,7 @@ The context's offset is updated to point to the position after the evaluated exp
 ### Evaluating a String Literal
 
 ```c
-// String literals create new data objects that must be destroyed
+// All expression results are borrowed references
 expression_context_t *ctx = ar_expression_create_context(memory, context, message, "\"Hello, World!\"");
 data_t *result = ar_expression_evaluate(ctx);
 // result will contain a STRING data with value "Hello, World!"
@@ -146,8 +147,11 @@ int position = ar_expression_offset(ctx);
 
 // Use the result
 if (result) {
-    // IMPORTANT: String literal results MUST be destroyed
-    ar_data_destroy(result);
+    // Use the result directly
+    const char *str = ar_data_get_string(result);
+    printf("String value: %s\n", str);
+    
+    // IMPORTANT: Do NOT destroy the result - it's a borrowed reference
 }
 ar_expression_destroy_context(ctx);
 ```
@@ -155,39 +159,49 @@ ar_expression_destroy_context(ctx);
 ### Evaluating a Number Literal
 
 ```c
-// Integer evaluation - creates a new data object
+// Integer evaluation - returns a borrowed reference
 expression_context_t *ctx = ar_expression_create_context(memory, context, message, "42");
 data_t *result = ar_expression_evaluate(ctx);
 // result will contain an INTEGER data with value 42
 
-// IMPORTANT: Number literal results MUST be destroyed
-ar_data_destroy(result);
+// Use the result directly
+if (result) {
+    int value = ar_data_get_integer(result);
+    printf("Integer value: %d\n", value);
+    
+    // IMPORTANT: Do NOT destroy the result - it's a borrowed reference
+}
 ar_expression_destroy_context(ctx);
 
-// Double evaluation - creates a new data object
+// Double evaluation - returns a borrowed reference
 ctx = ar_expression_create_context(memory, context, message, "3.14159");
 result = ar_expression_evaluate(ctx);
 // result will contain a DOUBLE data with value 3.14159
 
-// IMPORTANT: Number literal results MUST be destroyed
-ar_data_destroy(result);
+// Use the result directly
+if (result) {
+    double value = ar_data_get_double(result);
+    printf("Double value: %f\n", value);
+    
+    // IMPORTANT: Do NOT destroy the result - it's a borrowed reference
+}
 ar_expression_destroy_context(ctx);
 ```
 
 ### Evaluating Memory Access
 
 ```c
-// Memory access expressions return REFERENCES to existing data
+// Memory access expressions return borrowed references
 expression_context_t *ctx = ar_expression_create_context(memory, context, message, "memory.user.name");
 data_t *result = ar_expression_evaluate(ctx);
-// result will contain a direct reference to the value stored in memory.user.name, or NULL if path not found
+// result will contain a reference to the value stored in memory.user.name, or NULL if path not found
 
 if (result) {
     // Use the result value, but do NOT destroy it
     const char *name = ar_data_get_string(result);
     printf("User name: %s\n", name);
     
-    // IMPORTANT: Do NOT call ar_data_destroy(result) for memory access expressions
+    // IMPORTANT: Do NOT call ar_data_destroy(result) - it's a borrowed reference
 } else {
     // Handle the case where the path doesn't exist
 }
@@ -197,7 +211,7 @@ ar_expression_destroy_context(ctx);
 ### Evaluating Arithmetic Expression
 
 ```c
-// Arithmetic expressions create new data objects that must be destroyed
+// Arithmetic expressions also return borrowed references
 expression_context_t *ctx = ar_expression_create_context(memory, context, message, "2 + 3 * 4");
 data_t *result = ar_expression_evaluate(ctx);
 // result will contain an INTEGER data with value 14
@@ -207,8 +221,7 @@ if (result) {
     int value = ar_data_get_integer(result);
     printf("Result: %d\n", value);
     
-    // IMPORTANT: Arithmetic expression results MUST be destroyed
-    ar_data_destroy(result);
+    // IMPORTANT: Do NOT destroy the result - it's a borrowed reference
 }
 ar_expression_destroy_context(ctx);
 ```
@@ -216,18 +229,17 @@ ar_expression_destroy_context(ctx);
 ### Evaluating Arithmetic with Memory Access
 
 ```c
-// Arithmetic with memory access still creates a new data object
+// Arithmetic with memory access returns a borrowed reference
 expression_context_t *ctx = ar_expression_create_context(memory, context, message, "memory.count * 2");
 data_t *result = ar_expression_evaluate(ctx);
-// result will contain a new INTEGER data object with the calculation result
+// result will contain a reference to the calculation result
 
 // Use the result
 if (result) {
     int value = ar_data_get_integer(result);
     printf("Result: %d\n", value);
     
-    // IMPORTANT: Even though this uses memory access, the result MUST be destroyed
-    ar_data_destroy(result);
+    // IMPORTANT: Do NOT destroy the result - it's a borrowed reference
 }
 ar_expression_destroy_context(ctx);
 ```
@@ -235,7 +247,7 @@ ar_expression_destroy_context(ctx);
 ### Evaluating Comparison Expression
 
 ```c
-// Comparison expressions create new integer data objects (0 or 1)
+// Comparison expressions return borrowed references
 expression_context_t *ctx = ar_expression_create_context(memory, context, message, "memory.count > 5");
 data_t *result = ar_expression_evaluate(ctx);
 // result will contain an INTEGER data with value 1 (true) or 0 (false)
@@ -245,8 +257,7 @@ if (result) {
     bool is_true = (ar_data_get_integer(result) != 0);
     printf("Comparison result: %s\n", is_true ? "true" : "false");
     
-    // IMPORTANT: Comparison expression results MUST be destroyed
-    ar_data_destroy(result);
+    // IMPORTANT: Do NOT destroy the result - it's a borrowed reference
 }
 ar_expression_destroy_context(ctx);
 ```
@@ -269,32 +280,24 @@ ar_expression_destroy_context(ctx);
 
 ### Memory Ownership Rules
 
-The module follows these critical memory ownership principles:
+**CRITICAL UPDATE**: All expression results are now BORROWED REFERENCES.
 
-- **Memory Access Expressions**: For direct memory access expressions like `memory.x`:
-  - The module returns references to existing data, not copies
-  - These references MUST NOT be destroyed by the caller
-  - Example: `memory.preferences.theme` returns a reference to the theme string value
+The expression module follows these critical memory ownership principles:
 
-- **Literal Expressions**: For simple literals like `"Hello"` or `42`:
-  - The module creates new data objects containing the value
-  - The caller MUST destroy these objects when no longer needed
+- **All Expression Results**: For ALL types of expressions (literals, arithmetic, memory access, etc.):
+  - The module returns borrowed references that are managed by the expression system
+  - These references MUST NEVER be destroyed by the caller using ar_data_destroy()
+  - The expression system is responsible for managing the lifetime of all results
+  - Attempting to destroy these references will cause segmentation faults
 
-- **Arithmetic Expressions**: For arithmetic operations like `2 + 3`:
-  - The module creates new data objects containing the result
-  - The caller MUST destroy these objects when no longer needed
+- **Expression Context**: The only resource the caller is responsible for managing is the expression context:
+  - The caller creates the context with ar_expression_create_context()
+  - The caller must destroy the context with ar_expression_destroy_context() when done
+  - Destroying the context does not destroy the result references
 
-- **Arithmetic with Memory Access**: For expressions like `memory.x + 5`:
-  - Even though they involve memory access, these create new data objects
-  - The caller MUST destroy these result objects
-  - The module handles the proper memory management internally during evaluation
-  
-- **String Concatenation**: For string operations like `"Hello" + " World"`:
-  - The module creates new string objects with the concatenated result
-  - The caller MUST destroy these objects when no longer needed
+This simplified ownership model provides several advantages:
+1. Eliminates the risk of double-free errors or memory leaks from incorrect result handling
+2. Provides a consistent interface across all expression types
+3. Simplifies the caller's responsibility to using results without managing their memory
 
-- **Comparison Expressions**: For comparisons like `memory.count > 5`:
-  - The module creates new integer data objects with the result (0 or 1)
-  - The caller MUST destroy these objects when no longer needed
-
-Failing to follow these rules can lead to memory leaks or crashes from double-free errors.
+Failing to follow these rules can lead to crashes from attempting to free borrowed references.

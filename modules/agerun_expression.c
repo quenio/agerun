@@ -386,6 +386,7 @@ static data_t* parse_memory_access(expression_context_t *ctx) {
         value = ar_data_get_map_data(source, path);
         if (value) {
             // Return the value directly, not a copy
+            // The caller is responsible for not destroying this reference
             return value;
         }
     }
