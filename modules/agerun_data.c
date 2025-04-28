@@ -56,24 +56,25 @@ data_t* ar_data_create_double(double value) {
 
 /**
  * Create a new string data value
- * @param value String value to initialize with (will be copied)
+ * @param ref_value String value to initialize with (will be copied)
  * @return Pointer to the new data, or NULL on failure
+ * @note Ownership: Returns an owned value that caller must destroy.
  */
-data_t* ar_data_create_string(const char *value) {
-    data_t* data = (data_t*)malloc(sizeof(data_t));
-    if (!data) {
+data_t* ar_data_create_string(const char *ref_value) {
+    data_t* own_data = (data_t*)malloc(sizeof(data_t));
+    if (!own_data) {
         return NULL;
     }
     
-    data->type = DATA_STRING;
-    data->data.string_ref = value ? strdup(value) : NULL;
-    if (value && !data->data.string_ref) {
-        free(data);
+    own_data->type = DATA_STRING;
+    own_data->data.string_ref = ref_value ? strdup(ref_value) : NULL;
+    if (ref_value && !own_data->data.string_ref) {
+        free(own_data);
         return NULL;
     }
     
-    data->keys = NULL;
-    return data;
+    own_data->keys = NULL;
+    return own_data; // Ownership transferred to caller
 }
 
 /**
@@ -129,36 +130,39 @@ data_t* ar_data_create_map(void) {
 
 /**
  * Free resources associated with a data structure and release memory
- * @param data Pointer to the data to destroy
+ * @param own_data Pointer to the data to destroy
+ * @note Ownership: Takes ownership of the own_data parameter.
+ *       Ownership is fully consumed by this function.
  */
-void ar_data_destroy(data_t *data) {
-    if (!data) return;
+void ar_data_destroy(data_t *own_data) {
+    if (!own_data) return;
     
-    if (data->type == DATA_STRING && data->data.string_ref) {
-        free(data->data.string_ref);
-        data->data.string_ref = NULL;
-    } else if (data->type == DATA_LIST && data->data.list_ref) {
+    if (own_data->type == DATA_STRING && own_data->data.string_ref) {
+        free(own_data->data.string_ref);
+        own_data->data.string_ref = NULL;
+    } else if (own_data->type == DATA_LIST && own_data->data.list_ref) {
         // For lists, we need to:
         // 1. Get all data values stored in the list (for later cleanup)
         // 2. Free the list structure itself
         // 3. Then free all the data values
         
         // Get all data values for later cleanup
-        void **items = ar_list_items(data->data.list_ref);
-        size_t item_count = ar_list_count(data->data.list_ref);
+        void **own_items = ar_list_items(own_data->data.list_ref);
+        size_t item_count = ar_list_count(own_data->data.list_ref);
         
         // Destroy the list structure first
-        ar_list_destroy(data->data.list_ref);
-        data->data.list_ref = NULL;
+        ar_list_destroy(own_data->data.list_ref);
+        own_data->data.list_ref = NULL;
         
         // Free all data values
-        if (items) {
+        if (own_items) {
             for (size_t i = 0; i < item_count; i++) {
-                ar_data_destroy((data_t*)items[i]);
+                ar_data_destroy((data_t*)own_items[i]); // Ownership transferred to ar_data_destroy
             }
-            free(items); // Free the array itself
+            free(own_items); // Free the array itself
+            own_items = NULL; // Mark as freed
         }
-    } else if (data->type == DATA_MAP && data->data.map_ref) {
+    } else if (own_data->type == DATA_MAP && own_data->data.map_ref) {
         // For maps, we need to:
         // 1. Get all data values stored in the map (for later cleanup)
         // 2. Free the map structure itself
@@ -167,163 +171,175 @@ void ar_data_destroy(data_t *data) {
         // 5. Then free all the data values
         
         // Get all data values for later cleanup
-        void **refs = ar_map_refs(data->data.map_ref);
-        size_t ref_count = ar_map_count(data->data.map_ref);
+        void **own_refs = ar_map_refs(own_data->data.map_ref);
+        size_t ref_count = ar_map_count(own_data->data.map_ref);
         
         // Destroy the map structure first
-        ar_map_destroy(data->data.map_ref);
-        data->data.map_ref = NULL;
+        ar_map_destroy(own_data->data.map_ref);
+        own_data->data.map_ref = NULL;
         
         // Free all tracked keys
-        if (data->keys) {
-            void **key_ptrs = ar_list_items(data->keys);
-            size_t key_count = ar_list_count(data->keys);
+        if (own_data->keys) {
+            void **own_key_ptrs = ar_list_items(own_data->keys);
+            size_t key_count = ar_list_count(own_data->keys);
             
-            if (key_ptrs) {
+            if (own_key_ptrs) {
                 for (size_t i = 0; i < key_count; i++) {
-                    free(key_ptrs[i]); // Free each key string
+                    free(own_key_ptrs[i]); // Free each key string
                 }
-                free(key_ptrs); // Free the array itself
+                free(own_key_ptrs); // Free the array itself
+                own_key_ptrs = NULL; // Mark as freed
             }
             
             // Destroy the key tracking list
-            ar_list_destroy(data->keys);
-            data->keys = NULL;
+            ar_list_destroy(own_data->keys);
+            own_data->keys = NULL;
         }
         
         // Free all data values
-        if (refs) {
+        if (own_refs) {
             for (size_t i = 0; i < ref_count; i++) {
-                ar_data_destroy((data_t*)refs[i]);
+                ar_data_destroy((data_t*)own_refs[i]); // Ownership transferred to ar_data_destroy
             }
-            free(refs); // Free the array itself
+            free(own_refs); // Free the array itself
+            own_refs = NULL; // Mark as freed
         }
     }
     
-    free(data);
+    free(own_data);
+    // Ownership consumed completely
 }
 
 /**
  * Get the type of a data structure
- * @param data Pointer to the data to check
+ * @param ref_data Pointer to the data to check
  * @return The data type or DATA_INTEGER if data is NULL
+ * @note Ownership: Does not take ownership of the data parameter.
  */
-data_type_t ar_data_get_type(const data_t *data) {
-    if (!data) {
+data_type_t ar_data_get_type(const data_t *ref_data) {
+    if (!ref_data) {
         return DATA_INTEGER; // Default to int if NULL
     }
-    return data->type;
+    return ref_data->type;
 }
 
 /**
  * Get the integer value from a data structure
- * @param data Pointer to the data to retrieve from
+ * @param ref_data Pointer to the data to retrieve from
  * @return The integer value or 0 if data is NULL or not an integer type
+ * @note Ownership: Does not take ownership of the data parameter.
  */
-int ar_data_get_integer(const data_t *data) {
-    if (!data || data->type != DATA_INTEGER) {
+int ar_data_get_integer(const data_t *ref_data) {
+    if (!ref_data || ref_data->type != DATA_INTEGER) {
         return 0;
     }
-    return data->data.int_value;
+    return ref_data->data.int_value;
 }
 
 /**
  * Get the double value from a data structure
- * @param data Pointer to the data to retrieve from
+ * @param ref_data Pointer to the data to retrieve from
  * @return The double value or 0.0 if data is NULL or not a double type
+ * @note Ownership: Does not take ownership of the data parameter.
  */
-double ar_data_get_double(const data_t *data) {
-    if (!data || data->type != DATA_DOUBLE) {
+double ar_data_get_double(const data_t *ref_data) {
+    if (!ref_data || ref_data->type != DATA_DOUBLE) {
         return 0.0;
     }
-    return data->data.double_value;
+    return ref_data->data.double_value;
 }
 
 /**
  * Get the string value from a data structure
- * @param data Pointer to the data to retrieve from
+ * @param ref_data Pointer to the data to retrieve from
  * @return The string value or NULL if data is NULL or not a string type
+ * @note Ownership: Does not take ownership of the data parameter.
  */
-const char *ar_data_get_string(const data_t *data) {
-    if (!data || data->type != DATA_STRING) {
+const char *ar_data_get_string(const data_t *ref_data) {
+    if (!ref_data || ref_data->type != DATA_STRING) {
         return NULL;
     }
-    return data->data.string_ref;
+    return ref_data->data.string_ref;
 }
 
 /**
  * Get the list value from a data structure (read-only)
  * This is a PRIVATE function only for use within the data module.
- * @param data Pointer to the data to retrieve from
+ * @param ref_data Pointer to the data to retrieve from
  * @return The list value or NULL if data is NULL or not a list type
+ * @note Ownership: Does not take ownership of the ref_data parameter.
+ *       Returns a borrowed reference that caller must not destroy.
  */
-static list_t *ar_data_get_list(const data_t *data) {
-    if (!data || data->type != DATA_LIST) {
+static list_t *ar_data_get_list(const data_t *ref_data) {
+    if (!ref_data || ref_data->type != DATA_LIST) {
         return NULL;
     }
-    return data->data.list_ref;
+    return ref_data->data.list_ref;
 }
 
 /**
  * Get the map value from a data structure (read-only)
  * This is a PRIVATE function only for use within the data module.
- * @param data Pointer to the data to retrieve from
+ * @param ref_data Pointer to the data to retrieve from
  * @return The map value or NULL if data is NULL or not a map type
+ * @note Ownership: Does not take ownership of the ref_data parameter.
+ *       Returns a borrowed reference that caller must not destroy.
  */
-static map_t *ar_data_get_map(const data_t *data) {
-    if (!data || data->type != DATA_MAP) {
+static map_t *ar_data_get_map(const data_t *ref_data) {
+    if (!ref_data || ref_data->type != DATA_MAP) {
         return NULL;
     }
-    return data->data.map_ref;
+    return ref_data->data.map_ref;
 }
 
 /**
  * Get a data value from a map data structure by key or path
- * @param data Pointer to the map data to retrieve from
- * @param key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
+ * @param ref_data Pointer to the map data to retrieve from
+ * @param ref_key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
  * @return The data value, or NULL if data is NULL, not a map, or key not found
+ * @note Ownership: Does not take ownership of the parameters. Returns a borrowed reference.
  */
-data_t *ar_data_get_map_data(const data_t *data, const char *key) {
-    if (!data || !key || data->type != DATA_MAP) {
+data_t *ar_data_get_map_data(const data_t *ref_data, const char *ref_key) {
+    if (!ref_data || !ref_key || ref_data->type != DATA_MAP) {
         return NULL;
     }
     
     // Get the map from the data
-    map_t *map = ar_data_get_map(data);
-    if (!map) {
+    map_t *ref_map = ar_data_get_map(ref_data);
+    if (!ref_map) {
         return NULL;
     }
     
     // Check if the path contains any dots
-    if (strchr(key, '.') == NULL) {
+    if (strchr(ref_key, '.') == NULL) {
         // No dots, do a direct lookup
-        return ar_map_get(map, key);
+        return ar_map_get(ref_map, ref_key);
     }
     
     // Count path segments for multi-segment paths
-    size_t segment_count = ar_string_path_count(key, '.');
+    size_t segment_count = ar_string_path_count(ref_key, '.');
     
     // Keep track of current data as we traverse the path
     data_t *result = NULL;
-    const data_t *current_data = data;
+    const data_t *ref_current_data = ref_data;
     
     // Process each segment
     for (size_t i = 0; i < segment_count; i++) {
         // Get the current segment
-        char *segment = ar_string_path_segment(key, '.', i);
+        char *segment = ar_string_path_segment(ref_key, '.', i);
         if (!segment) {
             return NULL;
         }
         
         // Get the map from the current data
-        map_t *current_map = ar_data_get_map(current_data);
-        if (!current_map) {
+        map_t *ref_current_map = ar_data_get_map(ref_current_data);
+        if (!ref_current_map) {
             free(segment);
             return NULL;
         }
         
         // Get the value for this segment
-        result = ar_map_get(current_map, segment);
+        result = ar_map_get(ref_current_map, segment);
         
         if (!result) {
             free(segment);
@@ -336,7 +352,7 @@ data_t *ar_data_get_map_data(const data_t *data, const char *key) {
             return NULL;
         }
         
-        current_data = result;
+        ref_current_data = result;
         free(segment);
     }
     
@@ -345,48 +361,50 @@ data_t *ar_data_get_map_data(const data_t *data, const char *key) {
 
 /**
  * Get an integer value from a map data structure by key
- * @param data Pointer to the map data to retrieve from
- * @param key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
+ * @param ref_data Pointer to the map data to retrieve from
+ * @param ref_key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
  * @return The integer value, or 0 if data is NULL, not a map, key not found, or value not an integer
+ * @note Ownership: Does not take ownership of the parameters.
  */
-int ar_data_get_map_integer(const data_t *data, const char *key) {
-    if (!data || !key || data->type != DATA_MAP) {
+int ar_data_get_map_integer(const data_t *ref_data, const char *ref_key) {
+    if (!ref_data || !ref_key || ref_data->type != DATA_MAP) {
         return 0;
     }
     
-    const data_t *value = ar_data_get_map_data(data, key);
+    const data_t *ref_value = ar_data_get_map_data(ref_data, ref_key);
     
-    if (!value) {
+    if (!ref_value) {
         return 0;
     }
     
-    return ar_data_get_integer(value);
+    return ar_data_get_integer(ref_value);
 }
 
 /**
  * Get a double value from a map data structure by key
- * @param data Pointer to the map data to retrieve from
- * @param key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
+ * @param ref_data Pointer to the map data to retrieve from
+ * @param ref_key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
  * @return The double value, or 0.0 if data is NULL, not a map, key not found, or value not a double
+ * @note Ownership: Does not take ownership of the parameters.
  */
-double ar_data_get_map_double(const data_t *data, const char *key) {
-    if (!data || !key || data->type != DATA_MAP) {
+double ar_data_get_map_double(const data_t *ref_data, const char *ref_key) {
+    if (!ref_data || !ref_key || ref_data->type != DATA_MAP) {
         printf("ar_data_get_map_double - invalid parameters: data=%p, key=%s, data_type=%d\n", 
-               (const void*)data, key ? key : "NULL", data ? (int)data->type : -1);
+               (const void*)ref_data, ref_key ? ref_key : "NULL", ref_data ? (int)ref_data->type : -1);
         return 0.0;
     }
     
-    const data_t *value = ar_data_get_map_data(data, key);
+    const data_t *ref_value = ar_data_get_map_data(ref_data, ref_key);
     
-    if (!value) {
-        printf("ar_data_get_map_double - value not found for key: %s\n", key);
+    if (!ref_value) {
+        printf("ar_data_get_map_double - value not found for key: %s\n", ref_key);
         return 0.0;
     }
     
     printf("ar_data_get_map_double - found value of type: %d for key: %s\n", 
-           (int)value->type, key);
+           (int)ref_value->type, ref_key);
     
-    double result = ar_data_get_double(value);
+    double result = ar_data_get_double(ref_value);
     printf("ar_data_get_map_double - result: %f\n", result);
     
     return result;
@@ -394,22 +412,23 @@ double ar_data_get_map_double(const data_t *data, const char *key) {
 
 /**
  * Get a string value from a map data structure by key
- * @param data Pointer to the map data to retrieve from
- * @param key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
+ * @param ref_data Pointer to the map data to retrieve from
+ * @param ref_key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
  * @return The string value, or NULL if data is NULL, not a map, key not found, or value not a string
+ * @note Ownership: Does not take ownership of the parameters.
  */
-const char *ar_data_get_map_string(const data_t *data, const char *key) {
-    if (!data || !key || data->type != DATA_MAP) {
+const char *ar_data_get_map_string(const data_t *ref_data, const char *ref_key) {
+    if (!ref_data || !ref_key || ref_data->type != DATA_MAP) {
         return NULL;
     }
     
-    const data_t *value = ar_data_get_map_data(data, key);
+    const data_t *ref_value = ar_data_get_map_data(ref_data, ref_key);
     
-    if (!value) {
+    if (!ref_value) {
         return NULL;
     }
     
-    return ar_data_get_string(value);
+    return ar_data_get_string(ref_value);
 }
 
 
@@ -424,46 +443,58 @@ const char *ar_data_get_map_string(const data_t *data, const char *key) {
 
 /**
  * Set an integer value in a map data structure by key
- * @param data Pointer to the map data to modify
- * @param key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
+ * @param mut_data Pointer to the map data to modify
+ * @param ref_key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
  * @param value The integer value to store
  * @return true if successful, false if data is NULL, not a map, or allocation failure
+ * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar_data_set_map_integer(data_t *data, const char *key, int value) {
-    if (!data || !key || data->type != DATA_MAP) {
+bool ar_data_set_map_integer(data_t *mut_data, const char *ref_key, int value) {
+    if (!mut_data || !ref_key || mut_data->type != DATA_MAP) {
         return false;
     }
     
     // Create new data
-    data_t *int_data = ar_data_create_integer(value);
-    if (!int_data) {
+    data_t *own_int_data = ar_data_create_integer(value);
+    if (!own_int_data) {
         return false;
     }
     
     // Use the common set_map_data function
-    return ar_data_set_map_data(data, key, int_data);
+    bool result = ar_data_set_map_data(mut_data, ref_key, own_int_data);
+    
+    // If set_map_data failed, it will have freed own_int_data for us
+    // If successful, ownership is transferred to the map
+    
+    return result;
 }
 
 /**
  * Set a double value in a map data structure by key
- * @param data Pointer to the map data to modify
- * @param key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
+ * @param mut_data Pointer to the map data to modify
+ * @param ref_key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
  * @param value The double value to store
  * @return true if successful, false if data is NULL, not a map, or allocation failure
+ * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar_data_set_map_double(data_t *data, const char *key, double value) {
-    if (!data || !key || data->type != DATA_MAP) {
+bool ar_data_set_map_double(data_t *mut_data, const char *ref_key, double value) {
+    if (!mut_data || !ref_key || mut_data->type != DATA_MAP) {
         return false;
     }
     
     // Create new data
-    data_t *double_data = ar_data_create_double(value);
-    if (!double_data) {
+    data_t *own_double_data = ar_data_create_double(value);
+    if (!own_double_data) {
         return false;
     }
     
     // Use the common set_map_data function
-    return ar_data_set_map_data(data, key, double_data);
+    bool result = ar_data_set_map_data(mut_data, ref_key, own_double_data);
+    
+    // If set_map_data failed, it will have freed own_double_data for us
+    // If successful, ownership is transferred to the map
+    
+    return result;
 }
 
 /**
@@ -475,42 +506,44 @@ bool ar_data_set_map_double(data_t *data, const char *key, double value) {
  */
 /**
  * Set a data value in a map data structure by key or path
- * @param data Pointer to the map data to modify
- * @param key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
- * @param value The data value to store (ownership is transferred)
+ * @param mut_data Pointer to the map data to modify
+ * @param ref_key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
+ * @param own_value The data value to store (ownership is transferred)
  * @return true if successful, false if data is NULL, not a map, or allocation failure
+ * @note Ownership: Takes ownership of the own_value parameter.
+ *       The caller should set own_value = NULL after this call.
  */
-bool ar_data_set_map_data(data_t *data, const char *key, data_t *value) {
-    if (!data || !key || data->type != DATA_MAP || !value) {
+bool ar_data_set_map_data(data_t *mut_data, const char *ref_key, data_t *own_value) {
+    if (!mut_data || !ref_key || mut_data->type != DATA_MAP || !own_value) {
         return false;
     }
     
     // For simple keys with no dots, use direct access
-    if (strchr(key, '.') == NULL) {
-        map_t *map = data->data.map_ref;
+    if (strchr(ref_key, '.') == NULL) {
+        map_t *map = mut_data->data.map_ref;
         if (!map) {
             return false;
         }
         
         // Get the existing data for later cleanup
-        data_t *prev_data = ar_map_get(map, key);
+        data_t *prev_data = ar_map_get(map, ref_key);
         
         // Create a copy of the key
-        char *key_copy = strdup(key);
+        char *key_copy = strdup(ref_key);
         if (!key_copy) {
             return false;
         }
         
         // Set the new value
-        if (!ar_map_set(map, key_copy, value)) {
+        if (!ar_map_set(map, key_copy, own_value)) {
             free(key_copy);
             return false;
         }
         
         // Add the key to our tracking list
-        if (!ar_list_add_last(data->keys, key_copy)) {
+        if (!ar_list_add_last(mut_data->keys, key_copy)) {
             // Unlikely, but handle failure
-            ar_map_set(map, key, prev_data); // Try to restore previous state
+            ar_map_set(map, ref_key, prev_data); // Try to restore previous state
             free(key_copy);
             return false;
         }
@@ -525,19 +558,19 @@ bool ar_data_set_map_data(data_t *data, const char *key, data_t *value) {
     
     // Handle path-based access for keys with dots
     // Extract the parent path and final key
-    size_t segment_count = ar_string_path_count(key, '.');
+    size_t segment_count = ar_string_path_count(ref_key, '.');
     if (segment_count == 0) {
         return false;
     }
     
     // Get the parent path using ar_string_path_parent
-    char *parent_path = ar_string_path_parent(key, '.');
+    char *parent_path = ar_string_path_parent(ref_key, '.');
     if (!parent_path) {
         return false;
     }
     
     // Get the final key segment
-    char *final_key = ar_string_path_segment(key, '.', segment_count - 1);
+    char *final_key = ar_string_path_segment(ref_key, '.', segment_count - 1);
     if (!final_key) {
         free(parent_path);
         return false;
@@ -545,19 +578,26 @@ bool ar_data_set_map_data(data_t *data, const char *key, data_t *value) {
     
     // Get the parent map data - this will fail if any part of the path doesn't exist
     // or if any part of the path is not a map
-    data_t *parent_data = ar_data_get_map_data(data, parent_path);
+    data_t *parent_data = ar_data_get_map_data(mut_data, parent_path);
     if (!parent_data || ar_data_get_type(parent_data) != DATA_MAP) {
         free(final_key);
         free(parent_path);
         return false;
     }
     
-    // Recursively call set_map_data with the parent data and final key
-    bool success = ar_data_set_map_data(parent_data, final_key, value);
+    // Create a local variable to track ownership before recursive call
+    data_t *own_value_local = own_value;
     
-    // If not successful, we need to destroy the value since ownership wasn't transferred
-    if (!success) {
-        ar_data_destroy(value);
+    // Recursively call set_map_data with the parent data and final key
+    bool success = ar_data_set_map_data(parent_data, final_key, own_value_local);
+    
+    // If successful, ownership was transferred to parent_data
+    if (success) {
+        // Mark as transferred - ownership now belongs to parent_data
+        own_value_local = NULL; // Don't use after this point
+    } else {
+        // If not successful, we need to destroy the value since ownership wasn't transferred
+        ar_data_destroy(own_value_local);
     }
     
     free(final_key);
@@ -565,48 +605,62 @@ bool ar_data_set_map_data(data_t *data, const char *key, data_t *value) {
     return success;
 }
 
-bool ar_data_set_map_string(data_t *data, const char *key, const char *value) {
-    if (!data || !key || data->type != DATA_MAP) {
+/**
+ * Set a string value in a map data structure by key
+ * @param mut_data Pointer to the map data to modify
+ * @param ref_key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
+ * @param ref_value The string value to store (will be copied)
+ * @return true if successful, false if data is NULL, not a map, or allocation failure
+ * @note Ownership: Does not take ownership of the parameters.
+ */
+bool ar_data_set_map_string(data_t *mut_data, const char *ref_key, const char *ref_value) {
+    if (!mut_data || !ref_key || mut_data->type != DATA_MAP) {
         return false;
     }
     
     // Create new data
-    data_t *string_data = ar_data_create_string(value);
-    if (!string_data) {
+    data_t *own_string_data = ar_data_create_string(ref_value);
+    if (!own_string_data) {
         return false;
     }
     
     // Use the common set_map_data function
-    return ar_data_set_map_data(data, key, string_data);
+    bool result = ar_data_set_map_data(mut_data, ref_key, own_string_data);
+    
+    // If set_map_data failed, it will have freed own_string_data for us
+    // If successful, ownership is transferred to the map
+    
+    return result;
 }
 
 /**
  * Add an integer value to the beginning of a list data structure
- * @param data Pointer to the list data to modify
+ * @param mut_data Pointer to the list data to modify
  * @param value The integer value to add
  * @return true if successful, false if data is NULL, not a list, or allocation failure
+ * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar_data_list_add_first_integer(data_t *data, int value) {
-    if (!data || data->type != DATA_LIST) {
+bool ar_data_list_add_first_integer(data_t *mut_data, int value) {
+    if (!mut_data || mut_data->type != DATA_LIST) {
         return false;
     }
     
     // Create new data
-    data_t *int_data = ar_data_create_integer(value);
-    if (!int_data) {
+    data_t *own_int_data = ar_data_create_integer(value);
+    if (!own_int_data) {
         return false;
     }
     
     // Get the list from the data
-    list_t *list = ar_data_get_list(data);
-    if (!list) {
-        ar_data_destroy(int_data);
+    list_t *ref_list = ar_data_get_list(mut_data);
+    if (!ref_list) {
+        ar_data_destroy(own_int_data);
         return false;
     }
     
     // Add the data to the beginning of the list
-    if (!ar_list_add_first(list, int_data)) {
-        ar_data_destroy(int_data);
+    if (!ar_list_add_first(ref_list, own_int_data)) {
+        ar_data_destroy(own_int_data);
         return false;
     }
     
@@ -615,31 +669,32 @@ bool ar_data_list_add_first_integer(data_t *data, int value) {
 
 /**
  * Add a double value to the beginning of a list data structure
- * @param data Pointer to the list data to modify
+ * @param mut_data Pointer to the list data to modify
  * @param value The double value to add
  * @return true if successful, false if data is NULL, not a list, or allocation failure
+ * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar_data_list_add_first_double(data_t *data, double value) {
-    if (!data || data->type != DATA_LIST) {
+bool ar_data_list_add_first_double(data_t *mut_data, double value) {
+    if (!mut_data || mut_data->type != DATA_LIST) {
         return false;
     }
     
     // Create new data
-    data_t *double_data = ar_data_create_double(value);
-    if (!double_data) {
+    data_t *own_double_data = ar_data_create_double(value);
+    if (!own_double_data) {
         return false;
     }
     
     // Get the list from the data
-    list_t *list = ar_data_get_list(data);
-    if (!list) {
-        ar_data_destroy(double_data);
+    list_t *ref_list = ar_data_get_list(mut_data);
+    if (!ref_list) {
+        ar_data_destroy(own_double_data);
         return false;
     }
     
     // Add the data to the beginning of the list
-    if (!ar_list_add_first(list, double_data)) {
-        ar_data_destroy(double_data);
+    if (!ar_list_add_first(ref_list, own_double_data)) {
+        ar_data_destroy(own_double_data);
         return false;
     }
     
@@ -648,31 +703,32 @@ bool ar_data_list_add_first_double(data_t *data, double value) {
 
 /**
  * Add a string value to the beginning of a list data structure
- * @param data Pointer to the list data to modify
- * @param value The string value to add (will be copied)
+ * @param mut_data Pointer to the list data to modify
+ * @param ref_value The string value to add (will be copied)
  * @return true if successful, false if data is NULL, not a list, or allocation failure
+ * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar_data_list_add_first_string(data_t *data, const char *value) {
-    if (!data || data->type != DATA_LIST) {
+bool ar_data_list_add_first_string(data_t *mut_data, const char *ref_value) {
+    if (!mut_data || mut_data->type != DATA_LIST) {
         return false;
     }
     
     // Create new data
-    data_t *string_data = ar_data_create_string(value);
-    if (!string_data) {
+    data_t *own_string_data = ar_data_create_string(ref_value);
+    if (!own_string_data) {
         return false;
     }
     
     // Get the list from the data
-    list_t *list = ar_data_get_list(data);
-    if (!list) {
-        ar_data_destroy(string_data);
+    list_t *ref_list = ar_data_get_list(mut_data);
+    if (!ref_list) {
+        ar_data_destroy(own_string_data);
         return false;
     }
     
     // Add the data to the beginning of the list
-    if (!ar_list_add_first(list, string_data)) {
-        ar_data_destroy(string_data);
+    if (!ar_list_add_first(ref_list, own_string_data)) {
+        ar_data_destroy(own_string_data);
         return false;
     }
     
@@ -681,56 +737,64 @@ bool ar_data_list_add_first_string(data_t *data, const char *value) {
 
 /**
  * Add a data value to the beginning of a list data structure
- * @param data Pointer to the list data to modify
- * @param value The data value to add (ownership is transferred)
+ * @param mut_data Pointer to the list data to modify
+ * @param own_value The data value to add (ownership is transferred)
  * @return true if successful, false if data is NULL, not a list, or allocation failure
+ * @note Ownership: Takes ownership of the own_value parameter.
+ *       The caller should set own_value = NULL after this call.
+ *       While ar_list_add_first does not take ownership directly,
+ *       this function takes ownership as part of the API contract.
  */
-bool ar_data_list_add_first_data(data_t *data, data_t *value) {
-    if (!data || data->type != DATA_LIST || !value) {
+bool ar_data_list_add_first_data(data_t *mut_data, data_t *own_value) {
+    if (!mut_data || mut_data->type != DATA_LIST || !own_value) {
         return false;
     }
     
     // Get the list from the data
-    list_t *list = ar_data_get_list(data);
-    if (!list) {
+    list_t *ref_list = ar_data_get_list(mut_data);
+    if (!ref_list) {
         return false;
     }
     
     // Add the data to the beginning of the list
-    if (!ar_list_add_first(list, value)) {
+    if (!ar_list_add_first(ref_list, own_value)) {
         return false;
     }
+    
+    // Note: We don't set own_value = NULL here because ownership is handled internally.
+    // The caller will set own_value = NULL after calling this function, per the API contract.
     
     return true;
 }
 
 /**
  * Add an integer value to the end of a list data structure
- * @param data Pointer to the list data to modify
+ * @param mut_data Pointer to the list data to modify
  * @param value The integer value to add
  * @return true if successful, false if data is NULL, not a list, or allocation failure
+ * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar_data_list_add_last_integer(data_t *data, int value) {
-    if (!data || data->type != DATA_LIST) {
+bool ar_data_list_add_last_integer(data_t *mut_data, int value) {
+    if (!mut_data || mut_data->type != DATA_LIST) {
         return false;
     }
     
     // Create new data
-    data_t *int_data = ar_data_create_integer(value);
-    if (!int_data) {
+    data_t *own_int_data = ar_data_create_integer(value);
+    if (!own_int_data) {
         return false;
     }
     
     // Get the list from the data
-    list_t *list = ar_data_get_list(data);
-    if (!list) {
-        ar_data_destroy(int_data);
+    list_t *ref_list = ar_data_get_list(mut_data);
+    if (!ref_list) {
+        ar_data_destroy(own_int_data);
         return false;
     }
     
     // Add the data to the end of the list
-    if (!ar_list_add_last(list, int_data)) {
-        ar_data_destroy(int_data);
+    if (!ar_list_add_last(ref_list, own_int_data)) {
+        ar_data_destroy(own_int_data);
         return false;
     }
     
@@ -739,31 +803,32 @@ bool ar_data_list_add_last_integer(data_t *data, int value) {
 
 /**
  * Add a double value to the end of a list data structure
- * @param data Pointer to the list data to modify
+ * @param mut_data Pointer to the list data to modify
  * @param value The double value to add
  * @return true if successful, false if data is NULL, not a list, or allocation failure
+ * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar_data_list_add_last_double(data_t *data, double value) {
-    if (!data || data->type != DATA_LIST) {
+bool ar_data_list_add_last_double(data_t *mut_data, double value) {
+    if (!mut_data || mut_data->type != DATA_LIST) {
         return false;
     }
     
     // Create new data
-    data_t *double_data = ar_data_create_double(value);
-    if (!double_data) {
+    data_t *own_double_data = ar_data_create_double(value);
+    if (!own_double_data) {
         return false;
     }
     
     // Get the list from the data
-    list_t *list = ar_data_get_list(data);
-    if (!list) {
-        ar_data_destroy(double_data);
+    list_t *ref_list = ar_data_get_list(mut_data);
+    if (!ref_list) {
+        ar_data_destroy(own_double_data);
         return false;
     }
     
     // Add the data to the end of the list
-    if (!ar_list_add_last(list, double_data)) {
-        ar_data_destroy(double_data);
+    if (!ar_list_add_last(ref_list, own_double_data)) {
+        ar_data_destroy(own_double_data);
         return false;
     }
     
@@ -772,31 +837,32 @@ bool ar_data_list_add_last_double(data_t *data, double value) {
 
 /**
  * Add a string value to the end of a list data structure
- * @param data Pointer to the list data to modify
- * @param value The string value to add (will be copied)
+ * @param mut_data Pointer to the list data to modify
+ * @param ref_value The string value to add (will be copied)
  * @return true if successful, false if data is NULL, not a list, or allocation failure
+ * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar_data_list_add_last_string(data_t *data, const char *value) {
-    if (!data || data->type != DATA_LIST) {
+bool ar_data_list_add_last_string(data_t *mut_data, const char *ref_value) {
+    if (!mut_data || mut_data->type != DATA_LIST) {
         return false;
     }
     
     // Create new data
-    data_t *string_data = ar_data_create_string(value);
-    if (!string_data) {
+    data_t *own_string_data = ar_data_create_string(ref_value);
+    if (!own_string_data) {
         return false;
     }
     
     // Get the list from the data
-    list_t *list = ar_data_get_list(data);
-    if (!list) {
-        ar_data_destroy(string_data);
+    list_t *ref_list = ar_data_get_list(mut_data);
+    if (!ref_list) {
+        ar_data_destroy(own_string_data);
         return false;
     }
     
     // Add the data to the end of the list
-    if (!ar_list_add_last(list, string_data)) {
-        ar_data_destroy(string_data);
+    if (!ar_list_add_last(ref_list, own_string_data)) {
+        ar_data_destroy(own_string_data);
         return false;
     }
     
@@ -805,107 +871,118 @@ bool ar_data_list_add_last_string(data_t *data, const char *value) {
 
 /**
  * Add a data value to the end of a list data structure
- * @param data Pointer to the list data to modify
- * @param value The data value to add (ownership is transferred)
+ * @param mut_data Pointer to the list data to modify
+ * @param own_value The data value to add (ownership is transferred)
  * @return true if successful, false if data is NULL, not a list, or allocation failure
+ * @note Ownership: Takes ownership of the own_value parameter.
+ *       The caller should set own_value = NULL after this call.
+ *       While ar_list_add_last does not take ownership directly,
+ *       this function takes ownership as part of the API contract.
  */
-bool ar_data_list_add_last_data(data_t *data, data_t *value) {
-    if (!data || data->type != DATA_LIST || !value) {
+bool ar_data_list_add_last_data(data_t *mut_data, data_t *own_value) {
+    if (!mut_data || mut_data->type != DATA_LIST || !own_value) {
         return false;
     }
     
     // Get the list from the data
-    list_t *list = ar_data_get_list(data);
-    if (!list) {
+    list_t *ref_list = ar_data_get_list(mut_data);
+    if (!ref_list) {
         return false;
     }
     
     // Add the data to the end of the list
-    if (!ar_list_add_last(list, value)) {
+    if (!ar_list_add_last(ref_list, own_value)) {
         return false;
     }
+    
+    // Note: We don't set own_value = NULL here because ownership is handled internally.
+    // The caller will set own_value = NULL after calling this function, per the API contract.
     
     return true;
 }
 
 /**
  * Remove and return the first data value from a list data structure
- * @param data Pointer to the list data to modify
+ * @param mut_data Pointer to the list data to modify
  * @return The removed data value (ownership is transferred), or NULL if data is NULL, not a list, or list is empty
+ * @note Ownership: Returns an owned value that caller must destroy.
  */
-data_t *ar_data_list_remove_first(data_t *data) {
-    if (!data || data->type != DATA_LIST) {
+data_t *ar_data_list_remove_first(data_t *mut_data) {
+    if (!mut_data || mut_data->type != DATA_LIST) {
         return NULL;
     }
     
     // Get the list from the data
-    list_t *list = ar_data_get_list(data);
-    if (!list) {
+    list_t *ref_list = ar_data_get_list(mut_data);
+    if (!ref_list) {
         return NULL;
     }
     
     // Remove the first item from the list
-    return (data_t *)ar_list_remove_first(list);
+    return (data_t *)ar_list_remove_first(ref_list); // Ownership transferred to caller
 }
 
 /**
  * Remove and return the last data value from a list data structure
- * @param data Pointer to the list data to modify
+ * @param mut_data Pointer to the list data to modify
  * @return The removed data value (ownership is transferred), or NULL if data is NULL, not a list, or list is empty
+ * @note Ownership: Returns an owned value that caller must destroy.
  */
-data_t *ar_data_list_remove_last(data_t *data) {
-    if (!data || data->type != DATA_LIST) {
+data_t *ar_data_list_remove_last(data_t *mut_data) {
+    if (!mut_data || mut_data->type != DATA_LIST) {
         return NULL;
     }
     
     // Get the list from the data
-    list_t *list = ar_data_get_list(data);
-    if (!list) {
+    list_t *ref_list = ar_data_get_list(mut_data);
+    if (!ref_list) {
         return NULL;
     }
     
     // Remove the last item from the list
-    return (data_t *)ar_list_remove_last(list);
+    return (data_t *)ar_list_remove_last(ref_list); // Ownership transferred to caller
 }
 
 /**
  * Get the first data value from a list data structure (without removing it)
- * @param data Pointer to the list data
+ * @param ref_data Pointer to the list data
  * @return The first data value (ownership is not transferred), or NULL if data is NULL, not a list, or list is empty
+ * @note Ownership: Returns a borrowed reference that caller must not destroy.
  */
-data_t *ar_data_list_first(const data_t *data) {
-    if (!data || data->type != DATA_LIST) {
+data_t *ar_data_list_first(const data_t *ref_data) {
+    if (!ref_data || ref_data->type != DATA_LIST) {
         return NULL;
     }
     
     // Get the list from the data
-    list_t *list = ar_data_get_list(data);
-    if (!list) {
+    list_t *ref_list = ar_data_get_list(ref_data);
+    if (!ref_list) {
         return NULL;
     }
     
     // Get the first item from the list
-    return (data_t *)ar_list_first(list);
+    return (data_t *)ar_list_first(ref_list);
 }
 
 /**
  * Get the last data value from a list data structure (without removing it)
- * @param data Pointer to the list data
+ * @param ref_data Pointer to the list data
  * @return The last data value (ownership is not transferred), or NULL if data is NULL, not a list, or list is empty
+ * @note Ownership: Returns a borrowed reference that caller must not destroy.
  */
-data_t *ar_data_list_last(const data_t *data) {
-    if (!data || data->type != DATA_LIST) {
+data_t *ar_data_list_last(const data_t *ref_data) {
+    if (!ref_data || ref_data->type != DATA_LIST) {
         return NULL;
     }
     
     // Get the list from the data
-    list_t *list = ar_data_get_list(data);
-    if (!list) {
+    list_t *ref_list = ar_data_get_list(ref_data);
+    if (!ref_list) {
         return NULL;
     }
     
     // Get the last item from the list
-    return (data_t *)ar_list_last(list);
+    return (data_t *)ar_list_last(ref_list);
 }
 
 /**
