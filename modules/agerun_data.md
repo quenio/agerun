@@ -2,15 +2,16 @@
 
 ## Overview
 
-The data module (`agerun_data`) provides a type-safe data storage system built on top of the map and list modules. It offers a structured way to handle different data types within the AgeRun system using an opaque data type.
+The data module (`agerun_data`) provides a type-safe data storage system built on top of the map and list modules. It offers a structured way to handle different data types within the AgeRun system using an opaque data type. The module implements the AgeRun Memory Management Model (MMM) with rigorous ownership semantics.
 
 ## Key Features
 
 - **Opaque Type**: Uses an opaque data type to hide implementation details
 - **Type System**: Supports integers, doubles, strings, lists, and nested maps
-- **Memory Management**: Handles memory allocation and cleanup for data values
+- **Memory Management Model**: Implements strict MMM ownership semantics (own/mut/ref)  
+- **Ownership Tracking**: Clearly documents and enforces ownership transfer
 - **Type Safety**: Ensures proper handling of different data types
-- **Reference Management**: Handles reference counting for lists, maps, and complex structures
+- **Reference Management**: Handles ownership for lists, maps, and complex structures
 - **Dependencies**: Depends on the map and list modules for underlying storage
 - **Type-Specific Creators**: Specialized functions for creating different data types
 - **Path-Based Access**: Support for accessing nested maps using dot-separated paths (e.g., "user.address.city")
@@ -42,11 +43,11 @@ typedef struct data_s data_t;
 ### Functions
 
 ```c
-
 /**
  * Create a new integer data value
  * @param value Integer value to initialize with
  * @return Pointer to the new data, or NULL on failure
+ * @note Ownership: Returns an owned value that caller must destroy.
  */
 data_t* ar_data_create_integer(int value);
 
@@ -54,277 +55,315 @@ data_t* ar_data_create_integer(int value);
  * Create a new double data value
  * @param value Double value to initialize with
  * @return Pointer to the new data, or NULL on failure
+ * @note Ownership: Returns an owned value that caller must destroy.
  */
 data_t* ar_data_create_double(double value);
 
 /**
  * Create a new string data value
- * @param value String value to initialize with (will be copied)
+ * @param ref_value String value to initialize with (will be copied)
  * @return Pointer to the new data, or NULL on failure
+ * @note Ownership: Returns an owned value that caller must destroy.
  */
-data_t* ar_data_create_string(const char *value);
+data_t* ar_data_create_string(const char *ref_value);
 
 /**
  * Create a new list data value
  * @return Pointer to the new data, or NULL on failure
+ * @note Ownership: Returns an owned value that caller must destroy.
  */
 data_t* ar_data_create_list(void);
 
 /**
  * Create a new map data value
  * @return Pointer to the new data, or NULL on failure
+ * @note Ownership: Returns an owned value that caller must destroy.
  */
 data_t* ar_data_create_map(void);
 
 /**
  * Free resources associated with a data structure and release memory
- * @param data Pointer to the data to destroy
+ * @param own_data Pointer to the data to destroy
+ * @note Ownership: Takes ownership of the data parameter.
  */
-void ar_data_destroy(data_t *data);
+void ar_data_destroy(data_t *own_data);
 
 /**
  * Get the type of a data structure
- * @param data Pointer to the data to check
+ * @param ref_data Pointer to the data to check
  * @return The data type or DATA_INTEGER if data is NULL
+ * @note Ownership: Does not take ownership of the data parameter.
  */
-data_type_t ar_data_get_type(const data_t *data);
+data_type_t ar_data_get_type(const data_t *ref_data);
 
 /**
  * Get the integer value from a data structure
- * @param data Pointer to the data to retrieve from
+ * @param ref_data Pointer to the data to retrieve from
  * @return The integer value or 0 if data is NULL or not an integer type
+ * @note Ownership: Does not take ownership of the data parameter.
  */
-int ar_data_get_integer(const data_t *data);
+int ar_data_get_integer(const data_t *ref_data);
 
 /**
  * Get the double value from a data structure
- * @param data Pointer to the data to retrieve from
+ * @param ref_data Pointer to the data to retrieve from
  * @return The double value or 0.0 if data is NULL or not a double type
+ * @note Ownership: Does not take ownership of the data parameter.
  */
-double ar_data_get_double(const data_t *data);
+double ar_data_get_double(const data_t *ref_data);
 
 /**
  * Get the string value from a data structure
- * @param data Pointer to the data to retrieve from
+ * @param ref_data Pointer to the data to retrieve from
  * @return The string value or NULL if data is NULL or not a string type
+ * @note Ownership: Does not take ownership of the data parameter.
  */
-const char *ar_data_get_string(const data_t *data);
-
-/**
- * Get the map value from a data structure
- * @param data Pointer to the data to retrieve from
- * @return The map value or NULL if data is NULL or not a map type
- */
-map_t *ar_data_get_map(const data_t *data);
+const char *ar_data_get_string(const data_t *ref_data);
 
 /**
  * Get an integer value from a map data structure by key
- * @param data Pointer to the map data to retrieve from
- * @param key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
+ * @param ref_data Pointer to the map data to retrieve from
+ * @param ref_key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
  * @return The integer value, or 0 if data is NULL, not a map, key not found, or value not an integer
+ * @note Ownership: Does not take ownership of the parameters.
  */
-int ar_data_get_map_integer(const data_t *data, const char *key);
+int ar_data_get_map_integer(const data_t *ref_data, const char *ref_key);
 
 /**
  * Get a double value from a map data structure by key
- * @param data Pointer to the map data to retrieve from
- * @param key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
+ * @param ref_data Pointer to the map data to retrieve from
+ * @param ref_key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
  * @return The double value, or 0.0 if data is NULL, not a map, key not found, or value not a double
+ * @note Ownership: Does not take ownership of the parameters.
  */
-double ar_data_get_map_double(const data_t *data, const char *key);
+double ar_data_get_map_double(const data_t *ref_data, const char *ref_key);
 
 /**
  * Get a string value from a map data structure by key
- * @param data Pointer to the map data to retrieve from
- * @param key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
+ * @param ref_data Pointer to the map data to retrieve from
+ * @param ref_key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
  * @return The string value, or NULL if data is NULL, not a map, key not found, or value not a string
+ * @note Ownership: Does not take ownership of the parameters.
  */
-const char *ar_data_get_map_string(const data_t *data, const char *key);
+const char *ar_data_get_map_string(const data_t *ref_data, const char *ref_key);
 
 /**
  * Get a data value from a map data structure by key or path
- * @param data Pointer to the map data to retrieve from
- * @param key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
+ * @param ref_data Pointer to the map data to retrieve from
+ * @param ref_key The key or path to look up in the map (supports "key.sub_key.sub_sub_key" format)
  * @return The data value, or NULL if data is NULL, not a map, or key not found
+ * @note Ownership: Does not take ownership of the parameters. Returns a borrowed reference.
  */
-const data_t *ar_data_get_map_data(const data_t *data, const char *key);
+data_t *ar_data_get_map_data(const data_t *ref_data, const char *ref_key);
 
 /**
  * Set an integer value in a map data structure by key
- * @param data Pointer to the map data to modify
- * @param key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
+ * @param mut_data Pointer to the map data to modify
+ * @param ref_key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
  * @param value The integer value to store
- * @return true if successful, false if data is NULL, not a map, path doesn't exist, or allocation failure
- * @note For paths with multiple segments, all intermediate segments must exist and be maps
+ * @return true if successful, false if data is NULL, not a map, or allocation failure
+ * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar_data_set_map_integer(data_t *data, const char *key, int value);
+bool ar_data_set_map_integer(data_t *mut_data, const char *ref_key, int value);
 
 /**
  * Set a double value in a map data structure by key
- * @param data Pointer to the map data to modify
- * @param key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
+ * @param mut_data Pointer to the map data to modify
+ * @param ref_key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
  * @param value The double value to store
- * @return true if successful, false if data is NULL, not a map, path doesn't exist, or allocation failure
- * @note For paths with multiple segments, all intermediate segments must exist and be maps
+ * @return true if successful, false if data is NULL, not a map, or allocation failure
+ * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar_data_set_map_double(data_t *data, const char *key, double value);
+bool ar_data_set_map_double(data_t *mut_data, const char *ref_key, double value);
 
 /**
  * Set a string value in a map data structure by key
- * @param data Pointer to the map data to modify
- * @param key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
- * @param value The string value to store (will be copied)
- * @return true if successful, false if data is NULL, not a map, path doesn't exist, or allocation failure
- * @note For paths with multiple segments, all intermediate segments must exist and be maps
+ * @param mut_data Pointer to the map data to modify
+ * @param ref_key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
+ * @param ref_value The string value to store (will be copied)
+ * @return true if successful, false if data is NULL, not a map, or allocation failure
+ * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar_data_set_map_string(data_t *data, const char *key, const char *value);
+bool ar_data_set_map_string(data_t *mut_data, const char *ref_key, const char *ref_value);
+
+/**
+ * Set a data value in a map data structure by key or path
+ * @param mut_data Pointer to the map data to modify
+ * @param ref_key The key or path to set in the map (supports "key.sub_key.sub_sub_key" format)
+ * @param own_value The data value to store (ownership is transferred)
+ * @return true if successful, false if data is NULL, not a map, or allocation failure
+ * @note Ownership: Takes ownership of the own_value parameter.
+ *       The caller should set own_value = NULL after this call.
+ */
+bool ar_data_set_map_data(data_t *mut_data, const char *ref_key, data_t *own_value);
 
 /**
  * Add an integer value to the beginning of a list data structure
- * @param data Pointer to the list data to modify
+ * @param mut_data Pointer to the list data to modify
  * @param value The integer value to add
  * @return true if successful, false if data is NULL, not a list, or allocation failure
+ * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar_data_list_add_first_integer(data_t *data, int value);
+bool ar_data_list_add_first_integer(data_t *mut_data, int value);
 
 /**
  * Add a double value to the beginning of a list data structure
- * @param data Pointer to the list data to modify
+ * @param mut_data Pointer to the list data to modify
  * @param value The double value to add
  * @return true if successful, false if data is NULL, not a list, or allocation failure
+ * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar_data_list_add_first_double(data_t *data, double value);
+bool ar_data_list_add_first_double(data_t *mut_data, double value);
 
 /**
  * Add a string value to the beginning of a list data structure
- * @param data Pointer to the list data to modify
- * @param value The string value to add (will be copied)
+ * @param mut_data Pointer to the list data to modify
+ * @param ref_value The string value to add (will be copied)
  * @return true if successful, false if data is NULL, not a list, or allocation failure
+ * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar_data_list_add_first_string(data_t *data, const char *value);
+bool ar_data_list_add_first_string(data_t *mut_data, const char *ref_value);
 
 /**
  * Add a data value to the beginning of a list data structure
- * @param data Pointer to the list data to modify
- * @param value The data value to add (ownership is transferred)
+ * @param mut_data Pointer to the list data to modify
+ * @param own_value The data value to add (ownership is transferred)
  * @return true if successful, false if data is NULL, not a list, or allocation failure
+ * @note Ownership: Takes ownership of the own_value parameter.
+ *       The caller should set own_value = NULL after this call.
  */
-bool ar_data_list_add_first_data(data_t *data, data_t *value);
+bool ar_data_list_add_first_data(data_t *mut_data, data_t *own_value);
 
 /**
  * Add an integer value to the end of a list data structure
- * @param data Pointer to the list data to modify
+ * @param mut_data Pointer to the list data to modify
  * @param value The integer value to add
  * @return true if successful, false if data is NULL, not a list, or allocation failure
+ * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar_data_list_add_last_integer(data_t *data, int value);
+bool ar_data_list_add_last_integer(data_t *mut_data, int value);
 
 /**
  * Add a double value to the end of a list data structure
- * @param data Pointer to the list data to modify
+ * @param mut_data Pointer to the list data to modify
  * @param value The double value to add
  * @return true if successful, false if data is NULL, not a list, or allocation failure
+ * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar_data_list_add_last_double(data_t *data, double value);
+bool ar_data_list_add_last_double(data_t *mut_data, double value);
 
 /**
  * Add a string value to the end of a list data structure
- * @param data Pointer to the list data to modify
- * @param value The string value to add (will be copied)
+ * @param mut_data Pointer to the list data to modify
+ * @param ref_value The string value to add (will be copied)
  * @return true if successful, false if data is NULL, not a list, or allocation failure
+ * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar_data_list_add_last_string(data_t *data, const char *value);
+bool ar_data_list_add_last_string(data_t *mut_data, const char *ref_value);
 
 /**
  * Add a data value to the end of a list data structure
- * @param data Pointer to the list data to modify
- * @param value The data value to add (ownership is transferred)
+ * @param mut_data Pointer to the list data to modify
+ * @param own_value The data value to add (ownership is transferred)
  * @return true if successful, false if data is NULL, not a list, or allocation failure
+ * @note Ownership: Takes ownership of the own_value parameter.
+ *       The caller should set own_value = NULL after this call.
  */
-bool ar_data_list_add_last_data(data_t *data, data_t *value);
+bool ar_data_list_add_last_data(data_t *mut_data, data_t *own_value);
 
 /**
  * Remove and return the first data value from a list data structure
- * @param data Pointer to the list data to modify
+ * @param mut_data Pointer to the list data to modify
  * @return The removed data value (ownership is transferred), or NULL if data is NULL, not a list, or list is empty
+ * @note Ownership: Returns an owned value that caller must destroy.
  */
-data_t *ar_data_list_remove_first(data_t *data);
+data_t *ar_data_list_remove_first(data_t *mut_data);
 
 /**
  * Remove and return the last data value from a list data structure
- * @param data Pointer to the list data to modify
+ * @param mut_data Pointer to the list data to modify
  * @return The removed data value (ownership is transferred), or NULL if data is NULL, not a list, or list is empty
+ * @note Ownership: Returns an owned value that caller must destroy.
  */
-data_t *ar_data_list_remove_last(data_t *data);
+data_t *ar_data_list_remove_last(data_t *mut_data);
 
 /**
  * Remove and return the first integer value from a list data structure
- * @param data Pointer to the list data to modify
+ * @param mut_data Pointer to the list data to modify
  * @return The integer value, or 0 if data is NULL, not a list, list is empty, or first item not an integer
  * @note This function also removes and frees the data structure containing the integer
+ * @note Ownership: Does not transfer any ownership for the return value.
  */
-int ar_data_list_remove_first_integer(data_t *data);
+int ar_data_list_remove_first_integer(data_t *mut_data);
 
 /**
  * Remove and return the first double value from a list data structure
- * @param data Pointer to the list data to modify
+ * @param mut_data Pointer to the list data to modify
  * @return The double value, or 0.0 if data is NULL, not a list, list is empty, or first item not a double
  * @note This function also removes and frees the data structure containing the double
+ * @note Ownership: Does not transfer any ownership for the return value.
  */
-double ar_data_list_remove_first_double(data_t *data);
+double ar_data_list_remove_first_double(data_t *mut_data);
 
 /**
  * Remove and return the first string value from a list data structure
- * @param data Pointer to the list data to modify
+ * @param mut_data Pointer to the list data to modify
  * @return The string value (caller must free), or NULL if data is NULL, not a list, list is empty, or first item not a string
  * @note This function also removes and frees the data structure containing the string reference
+ * @note Ownership: Returns an owned string that caller must free.
  */
-char *ar_data_list_remove_first_string(data_t *data);
+char *ar_data_list_remove_first_string(data_t *mut_data);
 
 /**
  * Remove and return the last integer value from a list data structure
- * @param data Pointer to the list data to modify
+ * @param mut_data Pointer to the list data to modify
  * @return The integer value, or 0 if data is NULL, not a list, list is empty, or last item not an integer
  * @note This function also removes and frees the data structure containing the integer
+ * @note Ownership: Does not transfer any ownership for the return value.
  */
-int ar_data_list_remove_last_integer(data_t *data);
+int ar_data_list_remove_last_integer(data_t *mut_data);
 
 /**
  * Remove and return the last double value from a list data structure
- * @param data Pointer to the list data to modify
+ * @param mut_data Pointer to the list data to modify
  * @return The double value, or 0.0 if data is NULL, not a list, list is empty, or last item not a double
  * @note This function also removes and frees the data structure containing the double
+ * @note Ownership: Does not transfer any ownership for the return value.
  */
-double ar_data_list_remove_last_double(data_t *data);
+double ar_data_list_remove_last_double(data_t *mut_data);
 
 /**
  * Remove and return the last string value from a list data structure
- * @param data Pointer to the list data to modify
+ * @param mut_data Pointer to the list data to modify
  * @return The string value (caller must free), or NULL if data is NULL, not a list, list is empty, or last item not a string
  * @note This function also removes and frees the data structure containing the string reference
+ * @note Ownership: Returns an owned string that caller must free.
  */
-char *ar_data_list_remove_last_string(data_t *data);
+char *ar_data_list_remove_last_string(data_t *mut_data);
 
 /**
  * Get the first data value from a list data structure (without removing it)
- * @param data Pointer to the list data
+ * @param ref_data Pointer to the list data
  * @return The first data value (ownership is not transferred), or NULL if data is NULL, not a list, or list is empty
+ * @note Ownership: Returns a borrowed reference that caller must not destroy.
  */
-data_t *ar_data_list_first(const data_t *data);
+data_t *ar_data_list_first(const data_t *ref_data);
 
 /**
  * Get the last data value from a list data structure (without removing it)
- * @param data Pointer to the list data
+ * @param ref_data Pointer to the list data
  * @return The last data value (ownership is not transferred), or NULL if data is NULL, not a list, or list is empty
+ * @note Ownership: Returns a borrowed reference that caller must not destroy.
  */
-data_t *ar_data_list_last(const data_t *data);
+data_t *ar_data_list_last(const data_t *ref_data);
 
 /**
  * Get the number of items in a list data structure
- * @param data Pointer to the list data
+ * @param ref_data Pointer to the list data
  * @return The number of items, or 0 if data is NULL or not a list
+ * @note Ownership: Does not take ownership of the data parameter.
  */
-size_t ar_data_list_count(const data_t *data);
+size_t ar_data_list_count(const data_t *ref_data);
 ```
 
 ## Usage Examples
@@ -332,25 +371,24 @@ size_t ar_data_list_count(const data_t *data);
 ### Basic Usage
 
 ```c
-// Create data using the type-specific creator functions
-data_t *int_data = ar_data_create_integer(42);
-data_t *double_data = ar_data_create_double(3.14159);
-data_t *string_data = ar_data_create_string("Hello, World!");
-data_t *list_data = ar_data_create_list();
-data_t *map_data = ar_data_create_map();
+// Create data using the type-specific creator functions - these return owned values
+data_t *own_int_data = ar_data_create_integer(42);
+data_t *own_double_data = ar_data_create_double(3.14159);
+data_t *own_string_data = ar_data_create_string("Hello, World!");
+data_t *own_list_data = ar_data_create_list();
+data_t *own_map_data = ar_data_create_map();
 
-// Access values through accessor functions
-int i = ar_data_get_integer(int_data);
-double d = ar_data_get_double(double_data);
-const char *s = ar_data_get_string(string_data);
-const map_t *m = ar_data_get_map(map_data);
+// Access values through accessor functions - these don't transfer ownership
+int i = ar_data_get_integer(own_int_data);
+double d = ar_data_get_double(own_double_data);
+const char *ref_str = ar_data_get_string(own_string_data); // borrowed reference
 
-// Clean up
-ar_data_destroy(string_data);
-ar_data_destroy(list_data);
-ar_data_destroy(map_data);
-ar_data_destroy(double_data);
-ar_data_destroy(int_data);
+// Clean up owned resources
+ar_data_destroy(own_string_data);
+ar_data_destroy(own_list_data);
+ar_data_destroy(own_map_data);
+ar_data_destroy(own_double_data);
+ar_data_destroy(own_int_data);
 ```
 
 ### Using with Maps
@@ -503,64 +541,67 @@ ar_data_destroy(map_data);
 ### Using Lists
 
 ```c
-// Create a list data structure
-data_t *list_data = ar_data_create_list();
+// Create a list data structure - this returns an owned value
+data_t *own_list_data = ar_data_create_list();
 
-// Add various types of data to the list
-ar_data_list_add_last_integer(list_data, 42);                // Integer at the end
-ar_data_list_add_last_double(list_data, 3.14159);            // Double at the end
-ar_data_list_add_last_string(list_data, "Hello, World!");    // String at the end
-ar_data_list_add_first_integer(list_data, 100);              // Integer at the beginning
-ar_data_list_add_first_double(list_data, 2.71828);           // Double at the beginning
+// Add various types of data to the list - primitive values don't transfer ownership
+ar_data_list_add_last_integer(own_list_data, 42);                // Integer at the end
+ar_data_list_add_last_double(own_list_data, 3.14159);            // Double at the end
+ar_data_list_add_last_string(own_list_data, "Hello, World!");    // String at the end
+ar_data_list_add_first_integer(own_list_data, 100);              // Integer at the beginning
+ar_data_list_add_first_double(own_list_data, 2.71828);           // Double at the beginning
 
-// Add a map to the list
-data_t *map_data = ar_data_create_map();
-ar_data_set_map_string(map_data, "name", "John");
-ar_data_set_map_integer(map_data, "age", 30);
-ar_data_list_add_last_data(list_data, map_data);             // Map at the end (ownership transferred)
+// Add a map to the list - this will transfer ownership
+data_t *own_map_data = ar_data_create_map();
+ar_data_set_map_string(own_map_data, "name", "John");
+ar_data_set_map_integer(own_map_data, "age", 30);
+ar_data_list_add_last_data(own_list_data, own_map_data);  // Ownership is transferred to the list
+own_map_data = NULL;  // Don't use after this point - ownership transferred
 
 // Check the list count
-size_t count = ar_data_list_count(list_data);
+size_t count = ar_data_list_count(own_list_data);
 printf("List contains %zu items\n", count);
 
-// Access the first and last items without removing them
-data_t *first_item = ar_data_list_first(list_data);
-data_t *last_item = ar_data_list_last(list_data);
+// Access the first and last items without removing them - these are borrowed references
+data_t *ref_first_item = ar_data_list_first(own_list_data);
+data_t *ref_last_item = ar_data_list_last(own_list_data);
 
 // Check the types and values
-if (first_item && ar_data_get_type(first_item) == DATA_DOUBLE) {
-    printf("First item is a double: %f\n", ar_data_get_double(first_item));
+if (ref_first_item && ar_data_get_type(ref_first_item) == DATA_DOUBLE) {
+    printf("First item is a double: %f\n", ar_data_get_double(ref_first_item));
 }
 
-if (last_item && ar_data_get_type(last_item) == DATA_MAP) {
+if (ref_last_item && ar_data_get_type(ref_last_item) == DATA_MAP) {
     printf("Last item is a map\n");
-    printf("Name: %s\n", ar_data_get_map_string(last_item, "name"));
-    printf("Age: %d\n", ar_data_get_map_integer(last_item, "age"));
+    printf("Name: %s\n", ar_data_get_map_string(ref_last_item, "name"));
+    printf("Age: %d\n", ar_data_get_map_integer(ref_last_item, "age"));
 }
 
-// Remove and use typed values
-double first_double = ar_data_list_remove_first_double(list_data);
+// Remove and use typed primitive values - these don't need special ownership handling
+double first_double = ar_data_list_remove_first_double(own_list_data);
 printf("Removed first double: %f\n", first_double);
 
-int first_int = ar_data_list_remove_first_integer(list_data);
+int first_int = ar_data_list_remove_first_integer(own_list_data);
 printf("Removed first integer: %d\n", first_int);
 
-// Remove and manage data values (we need to free these ourselves)
-data_t *removed_data = ar_data_list_remove_first(list_data);
-if (removed_data) {
+// Remove and manage data values - we get ownership and must destroy when done
+data_t *own_removed_data = ar_data_list_remove_first(own_list_data);
+if (own_removed_data) {
     // Process the data...
-    ar_data_destroy(removed_data);  // Don't forget to destroy it when done
+    ar_data_destroy(own_removed_data);  // Don't forget to destroy it when done
+    own_removed_data = NULL;  // Mark as destroyed
 }
 
-// Remove string and free it when done
-char *str = ar_data_list_remove_first_string(list_data);
-if (str) {
-    printf("Removed string: %s\n", str);
-    free(str);  // Must free the string when finished
+// Remove string and free it when done - we get ownership of the string
+char *own_str = ar_data_list_remove_first_string(own_list_data);
+if (own_str) {
+    printf("Removed string: %s\n", own_str);
+    free(own_str);  // Must free the string when finished
+    own_str = NULL;  // Mark as freed
 }
 
 // Clean up
-ar_data_destroy(list_data);  // Destroys the list and all remaining items
+ar_data_destroy(own_list_data);  // Destroys the list and all remaining items
 ```
 
 ### Using Path-Based Access
@@ -712,6 +753,50 @@ if (!missing_data) {
 // Cleanup
 ar_data_destroy(scores_map);
 ar_data_destroy(root_map);
+```
+
+## Memory Management Model (MMM) Implementation
+
+The data module strictly follows the AgeRun Memory Management Model (MMM) with three categories of values:
+
+1. **Owned Values (`own_` prefix)**
+   - Functions returning new objects:
+     - All creation functions (`ar_data_create_*`) return owned values that the caller must destroy
+     - Functions like `ar_data_list_remove_first()` transfer ownership from the container to the caller
+   - Functions taking ownership:
+     - `ar_data_destroy()` takes ownership of the data and frees all resources
+     - `ar_data_set_map_data()` and `ar_data_list_add_*_data()` take ownership of value parameters
+   - After ownership transfer, the original pointer must be set to NULL and not used again
+
+2. **Mutable References (`mut_` prefix)**
+   - Functions that modify data but don't take ownership:
+     - Setters like `ar_data_set_map_integer()` use mutable references
+     - List operations like `ar_data_list_add_last_integer()` use mutable references
+   - These functions change the referenced object but don't own or destroy it
+
+3. **Borrowed References (`ref_` prefix)**
+   - Functions that provide read-only access:
+     - All getter functions accept `const` references and don't take ownership
+     - Functions like `ar_data_list_first()` return borrowed references that must not be destroyed
+   - Never destroy or modify objects accessed through borrowed references
+
+### Ownership Transfer Points
+
+The module has several critical ownership transfer points:
+
+1. **Creation → Caller**: All creation functions transfer ownership to the caller
+2. **Caller → Data Module**: Functions like `ar_data_set_map_data()` transfer ownership from caller to the module
+3. **Container → Caller**: Functions like `ar_data_list_remove_first()` transfer ownership from container to caller
+4. **String extraction**: Functions like `ar_data_list_remove_first_string()` return strings that the caller must free
+
+### NULL Marking After Transfer
+
+After ownership is transferred, the original pointer should be marked as NULL:
+
+```c
+data_t *own_value = ar_data_create_integer(42);
+ar_data_set_map_data(mut_map, "key", own_value);
+own_value = NULL; // Mark as transferred, don't use after this point
 ```
 
 ## Implementation Notes
