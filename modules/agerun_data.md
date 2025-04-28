@@ -809,6 +809,31 @@ own_value = NULL; // Mark as transferred, don't use after this point
 - The destroy function properly frees all allocated resources including recursively freeing list items, map keys, and map values
 - Type-specific getter functions ensure type safety when accessing values
 - The module uses the list module for sequence-based collections and the map module for key-value storage
+
+### Struct Field Ownership
+
+The data module's internal structure follows the AgeRun Memory Management Model (MMM) for field naming:
+
+```c
+struct data_s {
+    data_type_t type;
+    union {
+        int int_value;
+        double double_value;
+        char *string_ref;        // Borrowed reference to the string
+        list_t *list_ref;        // Borrowed reference to the list
+        map_t *map_ref;          // Borrowed reference to the map
+    } data;
+    list_t *own_keys;            // Owned list of keys (data struct is responsible for freeing)
+};
+```
+
+- All struct fields use appropriate ownership prefixes:
+  - Primitive types (int_value, double_value) have no prefix
+  - Borrowed references use `_ref` suffix (string_ref, list_ref, map_ref)
+  - Owned pointers use `own_` prefix (own_keys)
+- The data struct owns and must destroy the own_keys list when destroyed
+- Strings, lists, and maps are stored as references but are managed by the data module
 - Both list and map data types handle proper memory management of contained items
 - The data_type_t enum is still exposed to allow clients to specify types
 - Each data instance is heap-allocated and must be explicitly destroyed 

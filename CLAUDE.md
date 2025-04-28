@@ -227,6 +227,10 @@ IMPORTANT:
      - Header files (.h): Function parameters should use the ownership prefixes (`own_`, `mut_`, `ref_`)
      - Implementation files (.c): Variables should use the ownership prefixes
      - Test files (_tests.c): Test code should also follow the same naming conventions
+     - Struct field names should follow the same ownership prefix conventions:
+       - `own_` prefix for fields the struct owns and must destroy
+       - `mut_` prefix for mutable fields the struct doesn't own
+       - `ref_` prefix for read-only references to data owned elsewhere
      - This consistent naming scheme makes ownership semantics explicit and transparent
 
 5. **Handle compiler warnings and errors**:

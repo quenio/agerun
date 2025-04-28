@@ -17,7 +17,7 @@ struct data_s {
         list_t *list_ref;
         map_t *map_ref;
     } data;
-    list_t *keys;  // List of keys that belong to this data's map (only used for DATA_MAP type)
+    list_t *own_keys;  // List of keys that belong to this data's map (only used for DATA_MAP type)
 };
 
 /**
@@ -33,7 +33,7 @@ data_t* ar_data_create_integer(int value) {
     
     data->type = DATA_INTEGER;
     data->data.int_value = value;
-    data->keys = NULL;
+    data->own_keys = NULL;
     return data;
 }
 
@@ -50,7 +50,7 @@ data_t* ar_data_create_double(double value) {
     
     data->type = DATA_DOUBLE;
     data->data.double_value = value;
-    data->keys = NULL;
+    data->own_keys = NULL;
     return data;
 }
 
@@ -94,7 +94,7 @@ data_t* ar_data_create_list(void) {
         return NULL;
     }
     
-    data->keys = NULL;
+    data->own_keys = NULL;
     return data;
 }
 
@@ -116,8 +116,8 @@ data_t* ar_data_create_map(void) {
     }
     
     // Create a list to track keys
-    data->keys = ar_list_create();
-    if (!data->keys) {
+    data->own_keys = ar_list_create();
+    if (!data->own_keys) {
         ar_map_destroy(data->data.map_ref);
         free(data);
         return NULL;
@@ -179,9 +179,9 @@ void ar_data_destroy(data_t *own_data) {
         own_data->data.map_ref = NULL;
         
         // Free all tracked keys
-        if (own_data->keys) {
-            void **own_key_ptrs = ar_list_items(own_data->keys);
-            size_t key_count = ar_list_count(own_data->keys);
+        if (own_data->own_keys) {
+            void **own_key_ptrs = ar_list_items(own_data->own_keys);
+            size_t key_count = ar_list_count(own_data->own_keys);
             
             if (own_key_ptrs) {
                 for (size_t i = 0; i < key_count; i++) {
@@ -192,8 +192,8 @@ void ar_data_destroy(data_t *own_data) {
             }
             
             // Destroy the key tracking list
-            ar_list_destroy(own_data->keys);
-            own_data->keys = NULL;
+            ar_list_destroy(own_data->own_keys);
+            own_data->own_keys = NULL;
         }
         
         // Free all data values
@@ -541,7 +541,7 @@ bool ar_data_set_map_data(data_t *mut_data, const char *ref_key, data_t *own_val
         }
         
         // Add the key to our tracking list
-        if (!ar_list_add_last(mut_data->keys, key_copy)) {
+        if (!ar_list_add_last(mut_data->own_keys, key_copy)) {
             // Unlikely, but handle failure
             ar_map_set(map, ref_key, prev_data); // Try to restore previous state
             free(key_copy);

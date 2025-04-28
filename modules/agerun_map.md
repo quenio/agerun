@@ -268,3 +268,26 @@ free(own_value);
 - Maps are always heap-allocated and fully initialized through ar_map_create()
 - All maps should be freed with ar_map_destroy() when no longer needed
 - MMM ownership prefixes (`own_`, `mut_`, `ref_`) are used consistently throughout the implementation
+
+### Struct Field Ownership
+
+The map module's internal structures follow the AgeRun Memory Management Model (MMM) for field naming:
+
+```c
+typedef struct entry_s {
+    const char *ref_key;    // Borrowed reference to the key
+    void *ref_value;        // Borrowed reference to the value
+    bool is_used;           // No prefix for primitive types
+} entry_t;
+
+struct map_s {
+    entry_t entries[MAP_SIZE];  // Fixed-size array, no prefix needed
+    int count;                  // No prefix for primitive types
+};
+```
+
+- All pointer fields use appropriate ownership prefixes:
+  - Borrowed references use `ref_` prefix (ref_key, ref_value)
+  - The map does not own its entries' keys or values, so they're marked as borrowed references
+- Fixed-size arrays and primitive types don't require ownership prefixes
+- This naming convention makes the ownership relationships clear at the struct definition level

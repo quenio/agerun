@@ -340,10 +340,18 @@ ar_list_destroy(own_allocations);
 
 ### Memory Management Best Practices
 
-- Variables follow the AgeRun Memory Management Model naming convention:
-  - `own_` prefix for variables that own their memory (must be destroyed)
+- Variables and struct fields follow the AgeRun Memory Management Model naming convention:
+  - `own_` prefix for variables/fields that own their memory (must be destroyed)
   - `mut_` prefix for mutable references (can be modified but not destroyed)
   - `ref_` prefix for borrowed references (should not be modified or destroyed)
+  
+- The list_node_s structure uses ownership prefixes for fields:
+  - `ref_item` - borrowed reference to the item (list doesn't own items)
+  - `mut_next`, `mut_prev` - mutable references to neighboring nodes
+  
+- The list_s structure uses ownership prefixes for fields:
+  - `own_head`, `own_tail` - owned references to the head and tail nodes (list owns its nodes)
+  - The list is responsible for freeing all nodes via ar_list_destroy
 
 - When using a list to track allocated memory:
   1. Create a list to track allocated objects

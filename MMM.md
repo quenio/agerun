@@ -355,6 +355,19 @@ For clarity and consistency, all ownership prefixes should be used throughout th
    bool ar_map_insert(map_t *mut_map, const char *ref_key, data_t *own_value);
    ```
 
+5. **Struct Field Names:**
+   - Struct field names should follow the same ownership prefix conventions as local variables and parameters:
+   ```c
+   typedef struct example_s {
+       int *own_resource;       // Struct owns this resource and must free it
+       data_t *mut_data;        // Field can be modified but struct doesn't own it
+       const char *ref_name;    // Read-only reference to data owned elsewhere
+   } example_t;
+   ```
+   - This makes ownership relationships clear at the struct definition level
+   - Apply this convention to all struct fields consistently throughout the codebase
+   - Use the same naming rules for both opaque and non-opaque types
+
 This consistency makes ownership semantics explicit throughout the entire codebase, reducing the risk of memory management errors and making code reviews more effective.
 
 ## Static Analysis Guidelines
