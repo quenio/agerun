@@ -11,11 +11,11 @@
 struct data_s {
     data_type_t type;
     union {
-        int int_value;
-        double double_value;
-        char *string_ref;
-        list_t *list_ref;
-        map_t *map_ref;
+        int int_value;         // Primitive type, no prefix needed
+        double double_value;   // Primitive type, no prefix needed
+        char *own_string;      // Owned string that data_t owns and must free
+        list_t *own_list;      // Owned list that data_t owns and must free
+        map_t *own_map;        // Owned map that data_t owns and must free
     } data;
     list_t *own_keys;  // List of keys that belong to this data's map (only used for DATA_MAP type)
 };
@@ -67,13 +67,13 @@ data_t* ar_data_create_string(const char *ref_value) {
     }
     
     own_data->type = DATA_STRING;
-    own_data->data.string_ref = ref_value ? strdup(ref_value) : NULL;
-    if (ref_value && !own_data->data.string_ref) {
+    own_data->data.own_string = ref_value ? strdup(ref_value) : NULL;
+    if (ref_value && !own_data->data.own_string) {
         free(own_data);
         return NULL;
     }
     
-    own_data->keys = NULL;
+    own_data->own_keys = NULL;
     return own_data; // Ownership transferred to caller
 }
 
@@ -88,8 +88,8 @@ data_t* ar_data_create_list(void) {
     }
     
     data->type = DATA_LIST;
-    data->data.list_ref = ar_list_create();
-    if (!data->data.list_ref) {
+    data->data.own_list = ar_list_create();
+    if (!data->data.own_list) {
         free(data);
         return NULL;
     }
@@ -109,8 +109,8 @@ data_t* ar_data_create_map(void) {
     }
     
     data->type = DATA_MAP;
-    data->data.map_ref = ar_map_create();
-    if (!data->data.map_ref) {
+    data->data.own_map = ar_map_create();
+    if (!data->data.own_map) {
         free(data);
         return NULL;
     }
@@ -118,7 +118,7 @@ data_t* ar_data_create_map(void) {
     // Create a list to track keys
     data->own_keys = ar_list_create();
     if (!data->own_keys) {
-        ar_map_destroy(data->data.map_ref);
+        ar_map_destroy(data->data.own_map);
         free(data);
         return NULL;
     }
@@ -137,22 +137,22 @@ data_t* ar_data_create_map(void) {
 void ar_data_destroy(data_t *own_data) {
     if (!own_data) return;
     
-    if (own_data->type == DATA_STRING && own_data->data.string_ref) {
-        free(own_data->data.string_ref);
-        own_data->data.string_ref = NULL;
-    } else if (own_data->type == DATA_LIST && own_data->data.list_ref) {
+    if (own_data->type == DATA_STRING && own_data->data.own_string) {
+        free(own_data->data.own_string);
+        own_data->data.own_string = NULL;
+    } else if (own_data->type == DATA_LIST && own_data->data.own_list) {
         // For lists, we need to:
         // 1. Get all data values stored in the list (for later cleanup)
         // 2. Free the list structure itself
         // 3. Then free all the data values
         
         // Get all data values for later cleanup
-        void **own_items = ar_list_items(own_data->data.list_ref);
-        size_t item_count = ar_list_count(own_data->data.list_ref);
+        void **own_items = ar_list_items(own_data->data.own_list);
+        size_t item_count = ar_list_count(own_data->data.own_list);
         
         // Destroy the list structure first
-        ar_list_destroy(own_data->data.list_ref);
-        own_data->data.list_ref = NULL;
+        ar_list_destroy(own_data->data.own_list);
+        own_data->data.own_list = NULL;
         
         // Free all data values
         if (own_items) {
@@ -162,7 +162,7 @@ void ar_data_destroy(data_t *own_data) {
             free(own_items); // Free the array itself
             own_items = NULL; // Mark as freed
         }
-    } else if (own_data->type == DATA_MAP && own_data->data.map_ref) {
+    } else if (own_data->type == DATA_MAP && own_data->data.own_map) {
         // For maps, we need to:
         // 1. Get all data values stored in the map (for later cleanup)
         // 2. Free the map structure itself
@@ -171,12 +171,12 @@ void ar_data_destroy(data_t *own_data) {
         // 5. Then free all the data values
         
         // Get all data values for later cleanup
-        void **own_refs = ar_map_refs(own_data->data.map_ref);
-        size_t ref_count = ar_map_count(own_data->data.map_ref);
+        void **own_refs = ar_map_refs(own_data->data.own_map);
+        size_t ref_count = ar_map_count(own_data->data.own_map);
         
         // Destroy the map structure first
-        ar_map_destroy(own_data->data.map_ref);
-        own_data->data.map_ref = NULL;
+        ar_map_destroy(own_data->data.own_map);
+        own_data->data.own_map = NULL;
         
         // Free all tracked keys
         if (own_data->own_keys) {
@@ -259,7 +259,7 @@ const char *ar_data_get_string(const data_t *ref_data) {
     if (!ref_data || ref_data->type != DATA_STRING) {
         return NULL;
     }
-    return ref_data->data.string_ref;
+    return ref_data->data.own_string;
 }
 
 /**
@@ -274,7 +274,7 @@ static list_t *ar_data_get_list(const data_t *ref_data) {
     if (!ref_data || ref_data->type != DATA_LIST) {
         return NULL;
     }
-    return ref_data->data.list_ref;
+    return ref_data->data.own_list;
 }
 
 /**
@@ -289,7 +289,7 @@ static map_t *ar_data_get_map(const data_t *ref_data) {
     if (!ref_data || ref_data->type != DATA_MAP) {
         return NULL;
     }
-    return ref_data->data.map_ref;
+    return ref_data->data.own_map;
 }
 
 /**
@@ -520,7 +520,7 @@ bool ar_data_set_map_data(data_t *mut_data, const char *ref_key, data_t *own_val
     
     // For simple keys with no dots, use direct access
     if (strchr(ref_key, '.') == NULL) {
-        map_t *map = mut_data->data.map_ref;
+        map_t *map = mut_data->data.own_map;
         if (!map) {
             return false;
         }

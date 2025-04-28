@@ -818,20 +818,19 @@ The data module's internal structure follows the AgeRun Memory Management Model 
 struct data_s {
     data_type_t type;
     union {
-        int int_value;
-        double double_value;
-        char *string_ref;        // Borrowed reference to the string
-        list_t *list_ref;        // Borrowed reference to the list
-        map_t *map_ref;          // Borrowed reference to the map
+        int int_value;         // Primitive type, no prefix needed
+        double double_value;   // Primitive type, no prefix needed
+        char *own_string;      // Owned string that data_t owns and must free
+        list_t *own_list;      // Owned list that data_t owns and must free
+        map_t *own_map;        // Owned map that data_t owns and must free
     } data;
-    list_t *own_keys;            // Owned list of keys (data struct is responsible for freeing)
+    list_t *own_keys;          // Owned list of keys (data struct is responsible for freeing)
 };
 ```
 
 - All struct fields use appropriate ownership prefixes:
   - Primitive types (int_value, double_value) have no prefix
-  - Borrowed references use `_ref` suffix (string_ref, list_ref, map_ref)
-  - Owned pointers use `own_` prefix (own_keys)
+  - Owned pointers use `own_` prefix (own_string, own_list, own_map, own_keys)
 - The data struct owns and must destroy the own_keys list when destroyed
 - Strings, lists, and maps are stored as references but are managed by the data module
 - Both list and map data types handle proper memory management of contained items
