@@ -44,7 +44,7 @@ AgeRun implements a strict Memory Management Model (MMM) inspired by Mojo's owne
 
 For comprehensive guidelines on memory ownership across all modules, refer to the [Memory Management Model](/MMM.md) in the project root.
 
-The data module serves as a reference implementation of the MMM, with rigorous application of ownership semantics throughout its API and implementation.
+Both the data module and map module serve as reference implementations of the MMM, with rigorous application of ownership semantics throughout their API and implementation. The data module demonstrates ownership semantics for a module that manages memory for contained values, while the map module shows MMM compliance for a module that doesn't manage value memory but still follows strict ownership conventions.
 
 ## Module Dependency Tree
 
@@ -130,10 +130,12 @@ The [list module](agerun_list.md) provides a doubly-linked list implementation f
 
 The [map module](agerun_map.md) provides a fundamental key-value storage implementation that is used throughout the system. It has the following characteristics:
 
-- **Key-Value Storage**: Stores string keys mapped to generic pointers (const void*) to values
+- **Key-Value Storage**: Stores string keys mapped to generic pointers (void*) to values
 - **Reference-Based**: The map stores references to keys and values rather than duplicating them
-- **Type Safety**: Uses const qualifiers for keys and values to prevent unwanted modifications
-- **No Memory Management**: Does not manage memory for either keys or values
+- **MMM-Compliant**: Fully implements the AgeRun Memory Management Model ownership semantics
+- **Ownership Semantics**: Clear documentation of ownership transfers and borrowing patterns
+- **Type Safety**: Uses const qualifiers for keys and borrowed references to prevent modifications
+- **No Content Memory Management**: Does not manage memory for either keys or values
 - **No Dependencies**: This is a foundational module with no dependencies on other modules
 - **Opaque Type**: The map structure is opaque, encapsulating implementation details from clients
 

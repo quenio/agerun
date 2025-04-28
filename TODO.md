@@ -79,6 +79,12 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Check for consistent use of ownership assertions vs. guard clauses in data module (completed 2025-04-27)
   - [x] Ensure proper use of ownership prefixes throughout the data module (completed 2025-04-27)
   - [ ] Audit remaining modules for MMM compliance
+    - [x] Audit map module for MMM compliance (completed 2025-04-27)
+    - [x] Audit list module for MMM compliance (completed 2025-04-27)
+    - [x] Audit string module for MMM compliance (completed 2025-04-27)
+    - [ ] Audit expression module for MMM compliance
+    - [ ] Audit instruction module for MMM compliance
+    - [ ] Audit agent/agency modules for MMM compliance
   - [ ] Implement static analysis tools to verify MMM compliance
 
 - [x] Redesign the memory management approach:

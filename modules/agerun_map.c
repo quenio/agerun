@@ -9,8 +9,8 @@
  * Map Entry for storing key-value pairs
  */
 typedef struct entry_s {
-    const char *key;
-    void *ref;
+    const char *ref_key;
+    void *ref_value;
     bool is_used;
 } entry_t;
 
@@ -26,36 +26,38 @@ struct map_s {
 /**
  * Create a new heap-allocated empty map
  * @return Pointer to the new map, or NULL on failure
+ * @note Ownership: Returns an owned value that caller must destroy.
  */
 map_t* ar_map_create(void) {
-    map_t *map = (map_t *)malloc(sizeof(map_t));
-    if (!map) return NULL;
+    map_t *own_map = (map_t *)malloc(sizeof(map_t));
+    if (!own_map) return NULL;
     
     for (int i = 0; i < MAP_SIZE; i++) {
-        map->entries[i].is_used = false;
-        map->entries[i].key = NULL;
-        map->entries[i].ref = NULL;
+        own_map->entries[i].is_used = false;
+        own_map->entries[i].ref_key = NULL;
+        own_map->entries[i].ref_value = NULL;
     }
     
-    map->count = 0;
-    return map;
+    own_map->count = 0;
+    return own_map; // Ownership transferred to caller
 }
 
 /**
  * Get a reference from map by key
- * @param map Map
- * @param key Key to lookup
+ * @param ref_map The map to look up in (borrowed reference)
+ * @param ref_key The key to lookup (borrowed reference)
  * @return Pointer to the referenced value, or NULL if not found
+ * @note Ownership: Returns a borrowed reference. Caller does not own the returned value.
  */
-void* ar_map_get(const map_t *map, const char *key) {
-    if (!map || !key) {
+void* ar_map_get(const map_t *ref_map, const char *ref_key) {
+    if (!ref_map || !ref_key) {
         return NULL;
     }
     
     for (int i = 0; i < MAP_SIZE; i++) {
-        if (map->entries[i].is_used && map->entries[i].key && 
-            strcmp(map->entries[i].key, key) == 0) {
-            return map->entries[i].ref;
+        if (ref_map->entries[i].is_used && ref_map->entries[i].ref_key && 
+            strcmp(ref_map->entries[i].ref_key, ref_key) == 0) {
+            return ref_map->entries[i].ref_value;
         }
     }
     return NULL;
@@ -63,34 +65,37 @@ void* ar_map_get(const map_t *map, const char *key) {
 
 /**
  * Set a reference in map
- * @param map Map
- * @param key Key to set
- * @param ref Pointer to value to reference
+ * @param mut_map The map to modify (mutable reference)
+ * @param ref_key The key to set (borrowed reference, not copied)
+ * @param ref_value The pointer to reference (borrowed reference)
  * @return true if successful, false otherwise
+ * @note Ownership: The map does NOT take ownership of the key or value.
+ *       The caller remains responsible for allocating and freeing the key string.
+ *       The key string must remain valid for the lifetime of the map entry.
  */
-bool ar_map_set(map_t *map, const char *key, void *ref) {
-    if (!map || !key) {
+bool ar_map_set(map_t *mut_map, const char *ref_key, void *ref_value) {
+    if (!mut_map || !ref_key) {
         return false;
     }
     
     // First, check if key already exists
     for (int i = 0; i < MAP_SIZE; i++) {
-        if (map->entries[i].is_used && map->entries[i].key && 
-            strcmp(map->entries[i].key, key) == 0) {
+        if (mut_map->entries[i].is_used && mut_map->entries[i].ref_key && 
+            strcmp(mut_map->entries[i].ref_key, ref_key) == 0) {
             // Just update the reference pointer
-            map->entries[i].ref = ref;
+            mut_map->entries[i].ref_value = ref_value;
             return true;
         }
     }
     
     // Find empty slot
     for (int i = 0; i < MAP_SIZE; i++) {
-        if (!map->entries[i].is_used) {
-            map->entries[i].is_used = true;
-            map->entries[i].key = key;  // Store the key pointer directly without copying
-            map->entries[i].ref = ref;
+        if (!mut_map->entries[i].is_used) {
+            mut_map->entries[i].is_used = true;
+            mut_map->entries[i].ref_key = ref_key;  // Store the key pointer directly without copying
+            mut_map->entries[i].ref_value = ref_value;
             
-            map->count++;
+            mut_map->count++;
             return true;
         }
     }
@@ -98,60 +103,62 @@ bool ar_map_set(map_t *map, const char *key, void *ref) {
     return false; // No space left
 }
 
-// Iterator function has been removed in favor of ar_map_refs
-
 /**
  * Get the number of used entries in the map
- * @param map The map to count
+ * @param ref_map The map to count (borrowed reference)
  * @return The number of used entries
  */
-size_t ar_map_count(const map_t *map) {
-    if (!map) {
+size_t ar_map_count(const map_t *ref_map) {
+    if (!ref_map) {
         return 0;
     }
     
-    return (size_t)map->count;
+    return (size_t)ref_map->count;
 }
 
 /**
  * Get an array of all refs in the map
- * @param map The map to get refs from
+ * @param ref_map The map to get refs from (borrowed reference)
  * @return Array of pointers to refs, or NULL on failure
- * @note The caller is responsible for freeing the returned array using free().
- *       The refs themselves are not copied and remain owned by the caller.
+ * @note Ownership: Returns an owned array that caller must free.
+ *       The caller is responsible for freeing the returned array using free().
+ *       The refs themselves are borrowed references and remain owned by their original owners.
  *       The caller can use ar_map_count() to determine the size of the array.
  */
-void** ar_map_refs(const map_t *map) {
-    if (!map) {
+void** ar_map_refs(const map_t *ref_map) {
+    if (!ref_map) {
         return NULL;
     }
     
-    if (map->count == 0) {
+    if (ref_map->count == 0) {
         return NULL;
     }
     
-    void **refs = (void**)malloc((size_t)map->count * sizeof(void*));
-    if (!refs) {
+    void **own_refs = (void**)malloc((size_t)ref_map->count * sizeof(void*));
+    if (!own_refs) {
         return NULL;
     }
     
     size_t index = 0;
-    for (int i = 0; i < MAP_SIZE && index < (size_t)map->count; i++) {
-        if (map->entries[i].is_used && map->entries[i].key) {
-            refs[index++] = map->entries[i].ref;
+    for (int i = 0; i < MAP_SIZE && index < (size_t)ref_map->count; i++) {
+        if (ref_map->entries[i].is_used && ref_map->entries[i].ref_key) {
+            own_refs[index++] = ref_map->entries[i].ref_value;
         }
     }
     
-    return refs;
+    return own_refs; // Ownership of the array transferred to caller
 }
 
 /**
  * Free all resources in a map
- * @param map Map to free
+ * @param own_map Map to free (owned value)
+ * @note Ownership: Destroys the map structure itself.
+ *       It does not free memory for keys or referenced values.
+ *       The caller remains responsible for freeing all keys and values that were added to the map.
  */
-void ar_map_destroy(map_t *map) {
-    if (!map) return;
+void ar_map_destroy(map_t *own_map) {
+    if (!own_map) return;
     
-    free(map);
+    free(own_map);
 }
 
