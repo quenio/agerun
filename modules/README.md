@@ -20,15 +20,31 @@ Within modules, consistent naming conventions are used:
 
 These conventions ensure consistency across the codebase and make it easier to understand which module a particular function or data structure belongs to.
 
-### Memory Ownership Model
+### Memory Management Model (MMM)
 
-AgeRun implements a memory ownership model inspired by Mojo's ownership semantics. For comprehensive guidelines on memory ownership across all modules, refer to the [Memory Management Model](/MMM.md) in the project root. This document details:
+AgeRun implements a strict Memory Management Model (MMM) inspired by Mojo's ownership semantics to ensure memory safety and prevent memory leaks. The model is rigorously implemented across all modules with consistent naming conventions to make ownership explicit.
 
-- Core concepts of Owned Values, Mutable References, and Borrowed References
-- Explicit ownership transfer rules and conventions
-- Module-specific ownership guidelines
-- Common patterns for memory management
-- Debugging tips for memory-related issues
+**Key components of the MMM:**
+
+- **Ownership Categories**:
+  - **Owned Values (`own_` prefix)**: Values that have unique ownership and must be explicitly destroyed
+  - **Mutable References (`mut_` prefix)**: References that provide read-write access but don't own the object
+  - **Borrowed References (`ref_` prefix)**: Read-only references that don't own the object
+
+- **Ownership Transfer Points**:
+  - Functions returning owned values that callers must destroy
+  - Functions taking ownership from callers
+  - Clear documentation of ownership semantics in all function comments
+
+- **Conventions**:
+  - Setting pointers to NULL after ownership transfer
+  - Using `const` qualifiers for borrowed references
+  - Adding ownership documentation to all module functions
+  - Using ownership assertions in debug builds
+
+For comprehensive guidelines on memory ownership across all modules, refer to the [Memory Management Model](/MMM.md) in the project root.
+
+The data module serves as a reference implementation of the MMM, with rigorous application of ownership semantics throughout its API and implementation.
 
 ## Module Dependency Tree
 
@@ -129,13 +145,18 @@ Foundation modules build upon core modules to provide essential data structures 
 
 The [data module](agerun_data.md) builds on the map and list modules to provide typed data storage with the following features:
 
-- **Type System**: Supports integers, doubles, strings, and nested maps
+- **Type System**: Supports integers, doubles, strings, lists, and nested maps
 - **Memory Management**: Handles memory allocation and cleanup for data values
-- **Reference Management**: Handles reference counting for nested maps and complex structures
-- **Type Safety**: Ensures proper handling of different data types
-- **Depends on Map**: Uses the map module for underlying storage
-- **Depends on List**: Uses the list module for tracking allocated keys
+- **Ownership Model**: Implements rigorous MMM ownership semantics with explicit transfers
+- **Type Safety**: Ensures proper handling of different data types with strong type checking
+- **Depends on Map**: Uses the map module for underlying key-value storage
+- **Depends on List**: Uses the list module for list operations and tracking allocated keys
 - **Memory Leak Prevention**: Properly tracks and frees all dynamically allocated memory
+- **Ownership Documentation**: Every function documents ownership semantics in header and implementation
+- **Transfer Marking**: Includes NULL pointer marking after ownership transfers
+- **Reference Semantics**: Clear distinction between owned values and borrowed references
+- **Container Management**: Proper destruction sequence to prevent use-after-free issues
+- **Path-Based Access**: Supports dot-notation paths for accessing nested data structures
 
 ### Expression Module (`agerun_expression`)
 
