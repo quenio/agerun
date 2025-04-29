@@ -17,91 +17,105 @@
  * This is only visible in the implementation file.
  */
 struct expression_context_s {
-    data_t *memory;     /* The agent's memory */
-    data_t *context;    /* The agent's context */
-    data_t *message;    /* The message being processed */
-    const char *expr;   /* The expression to evaluate */
-    int offset;         /* Current position in the expression */
-    list_t *results;    /* List of borrowed results to be freed when context is destroyed */
+    data_t *mut_memory;     /* The agent's memory (mutable reference) */
+    data_t *mut_context;    /* The agent's context (mutable reference) */
+    data_t *mut_message;    /* The message being processed (mutable reference) */
+    const char *ref_expr;   /* The expression to evaluate (borrowed reference) */
+    int offset;             /* Current position in the expression */
+    list_t *own_results;    /* List of results owned by this context (to be freed when context is destroyed) */
 };
 
 /**
  * Creates a new expression evaluation context.
+ *
+ * @param mut_memory The agent's memory data (mutable reference, can be NULL if not needed)
+ * @param mut_context The agent's context data (mutable reference, can be NULL if not needed)
+ * @param mut_message The message being processed (mutable reference, can be NULL if not needed)
+ * @param ref_expr The expression string to evaluate (borrowed reference)
+ * @return Newly created expression context (owned by caller), or NULL on failure
  */
-expression_context_t* ar_expression_create_context(data_t *memory, data_t *context, data_t *message, const char *expr) {
-    if (!expr) {
+expression_context_t* ar_expression_create_context(data_t *mut_memory, data_t *mut_context, data_t *mut_message, const char *ref_expr) {
+    if (!ref_expr) {
         return NULL;
     }
     
-    expression_context_t *ctx = malloc(sizeof(expression_context_t));
-    if (!ctx) {
+    expression_context_t *own_ctx = malloc(sizeof(expression_context_t));
+    if (!own_ctx) {
         return NULL;
     }
     
-    ctx->memory = memory;
-    ctx->context = context;
-    ctx->message = message;
-    ctx->expr = expr;
-    ctx->offset = 0;
+    own_ctx->mut_memory = mut_memory;
+    own_ctx->mut_context = mut_context;
+    own_ctx->mut_message = mut_message;
+    own_ctx->ref_expr = ref_expr;
+    own_ctx->offset = 0;
     
     // Initialize list to track expression results
-    ctx->results = ar_list_create();
-    if (!ctx->results) {
-        free(ctx);
+    own_ctx->own_results = ar_list_create();
+    if (!own_ctx->own_results) {
+        free(own_ctx);
         return NULL;
     }
     
-    return ctx;
+    return own_ctx; // Ownership transferred to caller
 }
 
 /**
  * Destroys an expression context.
- * This frees the context structure itself and all borrowed expression results,
- * but not the memory, context, or message data structures which are owned by the caller.
+ * 
+ * @param own_ctx The expression context to destroy (ownership transferred to function)
  */
-void ar_expression_destroy_context(expression_context_t *ctx) {
-    if (!ctx) {
+void ar_expression_destroy_context(expression_context_t *own_ctx) {
+    if (!own_ctx) {
         return;
     }
     
     // Free all results tracked by this context
-    if (ctx->results) {
+    if (own_ctx->own_results) {
         // Get all items in the list
-        void **items = ar_list_items(ctx->results);
-        size_t count = ar_list_count(ctx->results);
+        void **own_items = ar_list_items(own_ctx->own_results);
+        size_t count = ar_list_count(own_ctx->own_results);
         
-        if (items && count > 0) {
+        if (own_items && count > 0) {
             // Free each result that isn't a direct reference
             for (size_t i = 0; i < count; i++) {
-                data_t *result = (data_t *)items[i];
-                if (result) {
+                data_t *ref_result = (data_t *)own_items[i];
+                if (ref_result) {
                     // Skip memory, context, and message - these are owned by caller
-                    if (result != ctx->memory && result != ctx->context && result != ctx->message) {
-                        ar_data_destroy(result);
+                    if (ref_result != own_ctx->mut_memory && 
+                        ref_result != own_ctx->mut_context && 
+                        ref_result != own_ctx->mut_message) {
+                        ar_data_destroy(ref_result);
                     }
                 }
             }
             
             // Free the items array
-            free(items);
+            free(own_items);
+            own_items = NULL; // Mark as transferred
         }
         
         // Free the list itself
-        ar_list_destroy(ctx->results);
+        ar_list_destroy(own_ctx->own_results);
+        own_ctx->own_results = NULL; // Mark as transferred
     }
     
     // Free the context structure
-    free(ctx);
+    free(own_ctx);
+    // No need to set own_ctx to NULL as it's a parameter and not accessible outside
 }
 
 /**
  * Gets the current parsing offset in the expression string.
+ *
+ * @param ref_ctx The expression context (borrowed reference)
+ * @return Current offset in the expression string
  */
-int ar_expression_offset(const expression_context_t *ctx) {
-    if (!ctx) {
+int ar_expression_offset(const expression_context_t *ref_ctx) {
+    if (!ref_ctx) {
         return 0;
     }
-    return ctx->offset;
+    return ref_ctx->offset;
 }
 
 /*
@@ -148,9 +162,9 @@ static char* parse_identifier(expression_context_t *ctx);
 static bool is_digit(char c);
 
 // Skip whitespace characters in the expression
-static void skip_whitespace(expression_context_t *ctx) {
-    while (ctx->expr[ctx->offset] && ar_string_isspace(ctx->expr[ctx->offset])) {
-        ctx->offset++;
+static void skip_whitespace(expression_context_t *mut_ctx) {
+    while (mut_ctx->ref_expr[mut_ctx->offset] && ar_string_isspace(mut_ctx->ref_expr[mut_ctx->offset])) {
+        mut_ctx->offset++;
     }
 }
 
@@ -170,43 +184,43 @@ static bool is_identifier_part(char c) {
 }
 
 // Parse an identifier from the expression
-static char* parse_identifier(expression_context_t *ctx) {
-    int start = ctx->offset;
+static char* parse_identifier(expression_context_t *mut_ctx) {
+    int start = mut_ctx->offset;
     
     // First character must be a letter
-    if (!is_identifier_start(ctx->expr[ctx->offset])) {
+    if (!is_identifier_start(mut_ctx->ref_expr[mut_ctx->offset])) {
         return NULL;
     }
     
-    ctx->offset++;
+    mut_ctx->offset++;
     
     // Rest of identifier can include letters, digits, and underscore
-    while (ctx->expr[ctx->offset] && is_identifier_part(ctx->expr[ctx->offset])) {
-        ctx->offset++;
+    while (mut_ctx->ref_expr[mut_ctx->offset] && is_identifier_part(mut_ctx->ref_expr[mut_ctx->offset])) {
+        mut_ctx->offset++;
     }
     
-    int length = ctx->offset - start;
-    char *identifier = malloc((size_t)length + 1);
-    if (!identifier) {
+    int length = mut_ctx->offset - start;
+    char *own_identifier = malloc((size_t)length + 1);
+    if (!own_identifier) {
         return NULL;
     }
     
-    strncpy(identifier, ctx->expr + start, (size_t)length);
-    identifier[length] = '\0';
+    strncpy(own_identifier, mut_ctx->ref_expr + start, (size_t)length);
+    own_identifier[length] = '\0';
     
-    return identifier;
+    return own_identifier; // Ownership transferred to caller
 }
 
 
 // Check if the string at the current offset matches the expected string
 // If it does, advance offset past the matched string and return true
-static bool match(expression_context_t *ctx, const char *to_match) {
-    size_t len = strlen(to_match);
-    if (strncmp(ctx->expr + ctx->offset, to_match, len) == 0) {
+static bool match(expression_context_t *mut_ctx, const char *ref_to_match) {
+    size_t len = strlen(ref_to_match);
+    if (strncmp(mut_ctx->ref_expr + mut_ctx->offset, ref_to_match, len) == 0) {
         // Make sure it's not part of a longer identifier
-        if (to_match[len-1] == '.' || !ctx->expr[ctx->offset + (int)len] || 
-            !is_identifier_part(ctx->expr[ctx->offset + (int)len])) {
-            ctx->offset += (int)len;
+        if (ref_to_match[len-1] == '.' || !mut_ctx->ref_expr[mut_ctx->offset + (int)len] || 
+            !is_identifier_part(mut_ctx->ref_expr[mut_ctx->offset + (int)len])) {
+            mut_ctx->offset += (int)len;
             return true;
         }
     }
@@ -216,18 +230,18 @@ static bool match(expression_context_t *ctx, const char *to_match) {
 
 
 // Check if the next sequence of characters is a comparison operator
-static bool is_comparison_operator(expression_context_t *ctx) {
-    if (ctx->expr[ctx->offset] == '=') {
+static bool is_comparison_operator(expression_context_t *ref_ctx) {
+    if (ref_ctx->ref_expr[ref_ctx->offset] == '=') {
         return true;
     }
-    if (ctx->expr[ctx->offset] == '<') {
-        if (ctx->expr[ctx->offset + 1] == '>' || ctx->expr[ctx->offset + 1] == '=') {
+    if (ref_ctx->ref_expr[ref_ctx->offset] == '<') {
+        if (ref_ctx->ref_expr[ref_ctx->offset + 1] == '>' || ref_ctx->ref_expr[ref_ctx->offset + 1] == '=') {
             return true;
         }
         return true;
     }
-    if (ctx->expr[ctx->offset] == '>') {
-        if (ctx->expr[ctx->offset + 1] == '=') {
+    if (ref_ctx->ref_expr[ref_ctx->offset] == '>') {
+        if (ref_ctx->ref_expr[ref_ctx->offset + 1] == '=') {
             return true;
         }
         return true;
@@ -236,73 +250,74 @@ static bool is_comparison_operator(expression_context_t *ctx) {
 }
 
 // Parse a string literal from the expression
-static data_t* parse_string_literal(expression_context_t *ctx) {
-    if (ctx->expr[ctx->offset] != '"') {
+static data_t* parse_string_literal(expression_context_t *mut_ctx) {
+    if (mut_ctx->ref_expr[mut_ctx->offset] != '"') {
         return NULL;
     }
     
-    ctx->offset++; // Skip opening quote
+    mut_ctx->offset++; // Skip opening quote
     
     // Find the closing quote and count the length
-    int start = ctx->offset;
+    int start = mut_ctx->offset;
     int len = 0;
     
-    while (ctx->expr[ctx->offset] && ctx->expr[ctx->offset] != '"') {
-        ctx->offset++;
+    while (mut_ctx->ref_expr[mut_ctx->offset] && mut_ctx->ref_expr[mut_ctx->offset] != '"') {
+        mut_ctx->offset++;
         len++;
     }
     
-    if (ctx->expr[ctx->offset] != '"') {
+    if (mut_ctx->ref_expr[mut_ctx->offset] != '"') {
         // Unterminated string literal
         return NULL;
     }
     
     // Allocate and create the string
-    char *temp_str = malloc((size_t)len + 1);
-    if (!temp_str) {
+    char *own_temp_str = malloc((size_t)len + 1);
+    if (!own_temp_str) {
         return NULL;
     }
     
-    strncpy(temp_str, ctx->expr + start, (size_t)len);
-    temp_str[len] = '\0';
+    strncpy(own_temp_str, mut_ctx->ref_expr + start, (size_t)len);
+    own_temp_str[len] = '\0';
     
-    ctx->offset++; // Skip closing quote
+    mut_ctx->offset++; // Skip closing quote
     
-    data_t *result = ar_data_create_string(temp_str);
-    free(temp_str);
+    data_t *own_result = ar_data_create_string(own_temp_str);
+    free(own_temp_str);
+    own_temp_str = NULL; // Mark as transferred
     
     // Track this result since we created it
-    if (result) {
-        ar_list_add_last(ctx->results, result);
+    if (own_result) {
+        ar_list_add_last(mut_ctx->own_results, own_result);
     }
     
-    return result;
+    return own_result; // Ownership retained by context
 }
 
 // Parse a number literal (integer or double) from the expression
-static data_t* parse_number_literal(expression_context_t *ctx) {
+static data_t* parse_number_literal(expression_context_t *mut_ctx) {
     bool is_negative = false;
-    if (ctx->expr[ctx->offset] == '-') {
+    if (mut_ctx->ref_expr[mut_ctx->offset] == '-') {
         is_negative = true;
-        ctx->offset++;
+        mut_ctx->offset++;
     }
     
-    if (!is_digit(ctx->expr[ctx->offset])) {
+    if (!is_digit(mut_ctx->ref_expr[mut_ctx->offset])) {
         return NULL;
     }
     
     // Parse integer part
     int value = 0;
-    while (ctx->expr[ctx->offset] && is_digit(ctx->expr[ctx->offset])) {
-        value = value * 10 + (ctx->expr[ctx->offset] - '0');
-        ctx->offset++;
+    while (mut_ctx->ref_expr[mut_ctx->offset] && is_digit(mut_ctx->ref_expr[mut_ctx->offset])) {
+        value = value * 10 + (mut_ctx->ref_expr[mut_ctx->offset] - '0');
+        mut_ctx->offset++;
     }
     
     // Check for decimal point for double
-    if (ctx->expr[ctx->offset] == '.') {
-        ctx->offset++; // Skip decimal point
+    if (mut_ctx->ref_expr[mut_ctx->offset] == '.') {
+        mut_ctx->offset++; // Skip decimal point
         
-        if (!is_digit(ctx->expr[ctx->offset])) {
+        if (!is_digit(mut_ctx->ref_expr[mut_ctx->offset])) {
             // Malformed double, must have at least one digit after decimal
             return NULL;
         }
@@ -311,24 +326,24 @@ static data_t* parse_number_literal(expression_context_t *ctx) {
         double decimal_place = 0.1;
         
         // Parse decimal part
-        while (ctx->expr[ctx->offset] && is_digit(ctx->expr[ctx->offset])) {
-            double_value += (ctx->expr[ctx->offset] - '0') * decimal_place;
+        while (mut_ctx->ref_expr[mut_ctx->offset] && is_digit(mut_ctx->ref_expr[mut_ctx->offset])) {
+            double_value += (mut_ctx->ref_expr[mut_ctx->offset] - '0') * decimal_place;
             decimal_place *= 0.1;
-            ctx->offset++;
+            mut_ctx->offset++;
         }
         
         if (is_negative) {
             double_value = -double_value;
         }
         
-        data_t *result = ar_data_create_double(double_value);
+        data_t *own_result = ar_data_create_double(double_value);
         
         // Track this result since we created it
-        if (result) {
-            ar_list_add_last(ctx->results, result);
+        if (own_result) {
+            ar_list_add_last(mut_ctx->own_results, own_result);
         }
         
-        return result;
+        return own_result; // Ownership retained by context
     }
     
     // It's an integer
@@ -336,18 +351,18 @@ static data_t* parse_number_literal(expression_context_t *ctx) {
         value = -value;
     }
     
-    data_t *result = ar_data_create_integer(value);
+    data_t *own_result = ar_data_create_integer(value);
     
     // Track this result since we created it
-    if (result) {
-        ar_list_add_last(ctx->results, result);
+    if (own_result) {
+        ar_list_add_last(mut_ctx->own_results, own_result);
     }
     
-    return result;
+    return own_result; // Ownership retained by context
 }
 
 // Parse a memory access (message, memory, context) expression
-static data_t* parse_memory_access(expression_context_t *ctx) {
+static data_t* parse_memory_access(expression_context_t *mut_ctx) {
     enum {
         ACCESS_TYPE_MESSAGE,
         ACCESS_TYPE_MEMORY,
@@ -355,36 +370,36 @@ static data_t* parse_memory_access(expression_context_t *ctx) {
     } access_type;
     
     // Determine which type of access we're dealing with
-    if (match(ctx, "message")) {
+    if (match(mut_ctx, "message")) {
         access_type = ACCESS_TYPE_MESSAGE;
-    } else if (match(ctx, "memory")) {
+    } else if (match(mut_ctx, "memory")) {
         access_type = ACCESS_TYPE_MEMORY;
-    } else if (match(ctx, "context")) {
+    } else if (match(mut_ctx, "context")) {
         access_type = ACCESS_TYPE_CONTEXT;
     } else {
         return NULL;
     }
     
     // Handle root access (no nested fields)
-    if (ctx->expr[ctx->offset] != '.') {
+    if (mut_ctx->ref_expr[mut_ctx->offset] != '.') {
         switch (access_type) {
             case ACCESS_TYPE_MESSAGE:
-                if (ctx->message) {
+                if (mut_ctx->mut_message) {
                     // Return the message directly, not a copy
-                    return ctx->message;
+                    return mut_ctx->mut_message;
                 } else {
                     // Return NULL for non-existent message
                     return NULL;
                 }
             case ACCESS_TYPE_MEMORY:
-                if (ctx->memory) {
-                    return ctx->memory;
+                if (mut_ctx->mut_memory) {
+                    return mut_ctx->mut_memory;
                 }
                 // Return NULL for non-existent memory
                 return NULL;
             case ACCESS_TYPE_CONTEXT:
-                if (ctx->context) {
-                    return ctx->context;
+                if (mut_ctx->mut_context) {
+                    return mut_ctx->mut_context;
                 }
                 // Return NULL for non-existent context
                 return NULL;
@@ -395,57 +410,58 @@ static data_t* parse_memory_access(expression_context_t *ctx) {
     char path[256] = "";
     int path_len = 0;
     
-    while (ctx->expr[ctx->offset] == '.') {
-        ctx->offset++; // Skip the dot
+    while (mut_ctx->ref_expr[mut_ctx->offset] == '.') {
+        mut_ctx->offset++; // Skip the dot
         
-        char *id = parse_identifier(ctx);
-        if (!id) {
+        char *own_id = parse_identifier(mut_ctx);
+        if (!own_id) {
             return NULL; // Invalid identifier in path is a syntax error
         }
         
         // Append to path
-        size_t id_len = strlen(id);
+        size_t id_len = strlen(own_id);
         if ((size_t)path_len + id_len + 1U < sizeof(path)) {
             if (path_len > 0) {
                 path[path_len++] = '.';
             }
-            strcpy(path + path_len, id);
+            strcpy(path + path_len, own_id);
             path_len += (int)id_len;
         }
         
-        free(id);
+        free(own_id);
+        own_id = NULL; // Mark as transferred
     }
     
     // Now we have the full path, get the data
-    data_t *source = NULL;
+    data_t *ref_source = NULL;
     switch (access_type) {
         case ACCESS_TYPE_MESSAGE:
-            source = ctx->message;
+            ref_source = mut_ctx->mut_message;
             break;
         case ACCESS_TYPE_MEMORY:
-            source = ctx->memory;
+            ref_source = mut_ctx->mut_memory;
             break;
         case ACCESS_TYPE_CONTEXT:
-            source = ctx->context;
+            ref_source = mut_ctx->mut_context;
             break;
     }
     
-    if (!source) {
+    if (!ref_source) {
         // Return NULL for non-existent source
         return NULL;
     }
     
     // Look up the data by path
-    data_t *value = NULL;
-    data_type_t source_type = ar_data_get_type(source);
+    data_t *ref_value = NULL;
+    data_type_t source_type = ar_data_get_type(ref_source);
     
     if (source_type == DATA_MAP) {
         // For map type, use the map access function
-        value = ar_data_get_map_data(source, path);
-        if (value) {
+        ref_value = ar_data_get_map_data(ref_source, path);
+        if (ref_value) {
             // Return the value directly, not a copy
             // The caller is responsible for not destroying this reference
-            return value;
+            return ref_value; // Borrowed reference
         }
     }
     
@@ -455,48 +471,51 @@ static data_t* parse_memory_access(expression_context_t *ctx) {
 
 
 // Parse a primary expression (literal or memory access)
-static data_t* parse_primary(expression_context_t *ctx) {
-    skip_whitespace(ctx);
+static data_t* parse_primary(expression_context_t *mut_ctx) {
+    skip_whitespace(mut_ctx);
     
     // Check for string literal
-    if (ctx->expr[ctx->offset] == '"') {
-        return parse_string_literal(ctx);
+    if (mut_ctx->ref_expr[mut_ctx->offset] == '"') {
+        return parse_string_literal(mut_ctx);
     }
     
     // Check for number literal (including negative numbers)
-    if (is_digit(ctx->expr[ctx->offset]) || (ctx->expr[ctx->offset] == '-' && is_digit(ctx->expr[ctx->offset + 1]))) {
-        return parse_number_literal(ctx);
+    if (is_digit(mut_ctx->ref_expr[mut_ctx->offset]) || 
+        (mut_ctx->ref_expr[mut_ctx->offset] == '-' && 
+         is_digit(mut_ctx->ref_expr[mut_ctx->offset + 1]))) {
+        return parse_number_literal(mut_ctx);
     }
     
     // Check for memory access (message, memory, context)
-    if (strncmp(ctx->expr + ctx->offset, "message", 7) == 0 ||
-        strncmp(ctx->expr + ctx->offset, "memory", 6) == 0 ||
-        strncmp(ctx->expr + ctx->offset, "context", 7) == 0) {
-        return parse_memory_access(ctx);
+    if (strncmp(mut_ctx->ref_expr + mut_ctx->offset, "message", 7) == 0 ||
+        strncmp(mut_ctx->ref_expr + mut_ctx->offset, "memory", 6) == 0 ||
+        strncmp(mut_ctx->ref_expr + mut_ctx->offset, "context", 7) == 0) {
+        return parse_memory_access(mut_ctx);
     }
     
     // Check for function call - which is a syntax error in expressions
-    if (is_identifier_start(ctx->expr[ctx->offset])) {
+    if (is_identifier_start(mut_ctx->ref_expr[mut_ctx->offset])) {
         // Save the position at the start of the function name
-        int func_name_start = ctx->offset;
+        int func_name_start = mut_ctx->offset;
         
         // Skip over function name
-        while (ctx->expr[ctx->offset] && is_identifier_part(ctx->expr[ctx->offset])) {
-            ctx->offset++;
+        while (mut_ctx->ref_expr[mut_ctx->offset] && 
+               is_identifier_part(mut_ctx->ref_expr[mut_ctx->offset])) {
+            mut_ctx->offset++;
         }
         
-        skip_whitespace(ctx);
+        skip_whitespace(mut_ctx);
         
         // If we find an opening parenthesis, it's a function call - syntax error
-        if (ctx->expr[ctx->offset] == '(') {
+        if (mut_ctx->ref_expr[mut_ctx->offset] == '(') {
             // Reset offset to the start of the function name
-            ctx->offset = func_name_start;
+            mut_ctx->offset = func_name_start;
             // Return NULL to indicate a syntax error
             return NULL;
         }
         
         // Not a function call, reset offset and continue
-        ctx->offset = func_name_start;
+        mut_ctx->offset = func_name_start;
     }
     
     // If we get here, it's not a valid primary expression
@@ -519,9 +538,9 @@ static data_t* parse_multiplicative(expression_context_t *ctx) {
     skip_whitespace(ctx);
     
     // Check if there's a multiplicative operator (*, /)
-    while (ctx->expr[ctx->offset] == '*' || ctx->expr[ctx->offset] == '/') {
+    while (ctx->ref_expr[ctx->offset] == '*' || ctx->ref_expr[ctx->offset] == '/') {
         // Get the operator
-        char op = ctx->expr[ctx->offset];
+        char op = ctx->ref_expr[ctx->offset];
         ctx->offset++;
         
         skip_whitespace(ctx);
@@ -590,7 +609,7 @@ static data_t* parse_multiplicative(expression_context_t *ctx) {
         
         // Track this result since we created it
         if (result) {
-            ar_list_add_last(ctx->results, result);
+            ar_list_add_last(ctx->own_results, result);
         }
         
         // The result becomes the new left operand for the next iteration
@@ -613,9 +632,9 @@ static data_t* parse_additive(expression_context_t *ctx) {
     skip_whitespace(ctx);
     
     // Check if there's an additive operator (+, -)
-    while (ctx->expr[ctx->offset] == '+' || ctx->expr[ctx->offset] == '-') {
+    while (ctx->ref_expr[ctx->offset] == '+' || ctx->ref_expr[ctx->offset] == '-') {
         // Get the operator
-        char op = ctx->expr[ctx->offset];
+        char op = ctx->ref_expr[ctx->offset];
         ctx->offset++;
         
         skip_whitespace(ctx);
@@ -711,7 +730,7 @@ static data_t* parse_additive(expression_context_t *ctx) {
         
         // Track this result since we created it
         if (result) {
-            ar_list_add_last(ctx->results, result);
+            ar_list_add_last(ctx->own_results, result);
         }
         
         // The result becomes the new left operand for the next iteration
@@ -740,13 +759,13 @@ static data_t* parse_comparison(expression_context_t *ctx) {
     
     // Get the comparison operator
     char op[3] = {0};
-    op[0] = ctx->expr[ctx->offset];
+    op[0] = ctx->ref_expr[ctx->offset];
     ctx->offset++;
     
     // Check for two-character operators (<>, <=, >=)
-    if ((op[0] == '<' && (ctx->expr[ctx->offset] == '>' || ctx->expr[ctx->offset] == '=')) ||
-        (op[0] == '>' && ctx->expr[ctx->offset] == '=')) {
-        op[1] = ctx->expr[ctx->offset];
+    if ((op[0] == '<' && (ctx->ref_expr[ctx->offset] == '>' || ctx->ref_expr[ctx->offset] == '=')) ||
+        (op[0] == '>' && ctx->ref_expr[ctx->offset] == '=')) {
+        op[1] = ctx->ref_expr[ctx->offset];
         ctx->offset++;
     }
     
@@ -874,7 +893,7 @@ static data_t* parse_comparison(expression_context_t *ctx) {
     
     // Track this result since we created it
     if (comparison_result) {
-        ar_list_add_last(ctx->results, comparison_result);
+        ar_list_add_last(ctx->own_results, comparison_result);
     }
     
     return comparison_result;
@@ -885,22 +904,27 @@ static data_t* parse_expression(expression_context_t *ctx) {
     return parse_comparison(ctx);
 }
 
-// Public function to evaluate an expression
-data_t* ar_expression_evaluate(expression_context_t *ctx) {
-    if (!ctx || !ctx->expr) {
+/**
+ * Evaluate an expression in the agent's context using recursive descent parsing.
+ *
+ * @param mut_ctx Pointer to the expression evaluation context (mutable reference)
+ * @return Pointer to the evaluated data result, or NULL on failure
+ */
+data_t* ar_expression_evaluate(expression_context_t *mut_ctx) {
+    if (!mut_ctx || !mut_ctx->ref_expr) {
         return NULL;
     }
     
     // Parse the expression
-    data_t *result = parse_expression(ctx);
+    data_t *ref_result = parse_expression(mut_ctx);
     
     // If parsing failed, return NULL to indicate a syntax error
     // The offset should already be at the position where the error was detected
-    if (!result) {
+    if (!ref_result) {
         return NULL;
     }
     
-    return result;
+    return ref_result; // Result is owned by context unless ownership is transferred
 }
 
 /**
@@ -909,18 +933,29 @@ data_t* ar_expression_evaluate(expression_context_t *ctx) {
  * This function removes the result from the context's tracked results list,
  * so it won't be destroyed when the context is destroyed. The caller
  * becomes responsible for destroying the result when no longer needed.
+ *
+ * @param mut_ctx Pointer to the expression evaluation context (mutable reference)
+ * @param ref_result The result to take ownership of (becomes owned by caller)
+ * @return true if ownership was successfully transferred, false otherwise
  */
-bool ar_expression_take_ownership(expression_context_t *ctx, data_t *result) {
-    if (!ctx || !result || !ctx->results) {
+bool ar_expression_take_ownership(expression_context_t *mut_ctx, data_t *ref_result) {
+    if (!mut_ctx || !ref_result || !mut_ctx->own_results) {
         return false;
     }
     
     // If result is a direct reference to memory, context, or message, we don't need to remove
     // it from the results list as these are already not freed by the context
-    if (result == ctx->memory || result == ctx->context || result == ctx->message) {
+    if (ref_result == mut_ctx->mut_memory || 
+        ref_result == mut_ctx->mut_context || 
+        ref_result == mut_ctx->mut_message) {
         return true;
     }
     
     // Remove the result from the list
-    return ar_list_remove(ctx->results, result);
+    bool success = ar_list_remove(mut_ctx->own_results, ref_result);
+    if (success) {
+        // Ownership successfully transferred to caller
+        // Result will not be destroyed when context is destroyed
+    }
+    return success;
 }
