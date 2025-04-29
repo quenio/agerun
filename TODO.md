@@ -83,7 +83,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] Audit list module for MMM compliance (completed 2025-04-27)
     - [x] Audit string module for MMM compliance (completed 2025-04-27)
     - [x] Audit expression module for MMM compliance (completed 2025-04-29)
-    - [ ] Audit instruction module for MMM compliance
+    - [x] Audit instruction module for MMM compliance (completed 2025-04-29)
     - [ ] Audit agent/agency modules for MMM compliance
   - [ ] Implement static analysis tools to verify MMM compliance
 

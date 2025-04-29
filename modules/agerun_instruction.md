@@ -49,19 +49,23 @@ The instruction module implements the following BNF grammar:
 ### ar_instruction_run
 
 ```c
-bool ar_instruction_run(agent_t *agent, const data_t *message, const char *instruction);
+bool ar_instruction_run(agent_t *mut_agent, data_t *mut_message, const char *ref_instruction);
 ```
 
 Parses and executes a single instruction in the agent's context.
 
 **Parameters:**
-- `agent`: The agent executing the instruction
-- `message`: The message being processed
-- `instruction`: The instruction string to parse and execute
+- `mut_agent`: The agent executing the instruction (mutable reference)
+- `mut_message`: The message being processed (mutable reference)
+- `ref_instruction`: The instruction string to parse and execute (borrowed reference)
 
 **Returns:**
 - `true` if the instruction was successfully executed
 - `false` if parsing failed or execution encountered an error
+
+**Ownership:**
+- Does not take ownership of any parameters
+- Does not transfer ownership of any objects
 
 ## Usage Examples
 
@@ -69,32 +73,32 @@ Parses and executes a single instruction in the agent's context.
 
 ```c
 // Store a string in memory
-ar_instruction_run(agent, message, "memory.greeting := \"Hello, World!\"");
+ar_instruction_run(mut_agent, mut_message, "memory.greeting := \"Hello, World!\"");
 
 // Store a number in memory
-ar_instruction_run(agent, message, "memory.count := 42");
+ar_instruction_run(mut_agent, mut_message, "memory.count := 42");
 
 // Store an expression result in memory
-ar_instruction_run(agent, message, "memory.sum := 2 + 3 * 4");
+ar_instruction_run(mut_agent, mut_message, "memory.sum := 2 + 3 * 4");
 
 // Assign a nested value
-ar_instruction_run(agent, message, "memory.user.name := \"John\"");
+ar_instruction_run(mut_agent, mut_message, "memory.user.name := \"John\"");
 ```
 
 ### Function Call Instruction
 
 ```c
 // Send a message to another agent
-ar_instruction_run(agent, message, "send(target_id, \"Hello\")");
+ar_instruction_run(mut_agent, mut_message, "send(target_id, \"Hello\")");
 
 // Parse a string into a structured map
-ar_instruction_run(agent, message, "memory.parsed := parse(\"name={name}\", \"name=John\")");
+ar_instruction_run(mut_agent, mut_message, "memory.parsed := parse(\"name={name}\", \"name=John\")");
 
 // Build a string from a template and values
-ar_instruction_run(agent, message, "memory.greeting := build(\"Hello, {name}!\", memory.user)");
+ar_instruction_run(mut_agent, mut_message, "memory.greeting := build(\"Hello, {name}!\", memory.user)");
 
 // Conditional evaluation
-ar_instruction_run(agent, message, "memory.result := if(memory.count > 5, \"High\", \"Low\")");
+ar_instruction_run(mut_agent, mut_message, "memory.result := if(memory.count > 5, \"High\", \"Low\")");
 ```
 
 ## Implementation Notes
@@ -118,19 +122,25 @@ The instruction module carefully manages memory ownership when working with expr
 4. Results that aren't stored (e.g., from functions without assignment) are properly destroyed.
 
 IMPORTANT: The sequence of operations is critical when handling expression results:
-1. Create the expression context
-2. Evaluate the expression to get a result
+1. Create the expression context (`own_ctx = ar_expression_create_context(...)`)
+2. Evaluate the expression to get a result (`own_value = ar_expression_evaluate(own_ctx)`)
 3. Check if the result is valid
-4. If valid and the result needs to be preserved, call `ar_expression_take_ownership()` 
-5. Destroy the expression context
-6. Use the result as needed (store in memory, return from function, etc.)
-7. Eventually destroy the result when no longer needed
+4. If valid and the result needs to be preserved, call `ar_expression_take_ownership(own_ctx, own_value)` 
+5. Destroy the expression context (`ar_expression_destroy_context(own_ctx)`)
+6. Mark the destroyed context as NULL (`own_ctx = NULL;`)
+7. Use the result as needed (store in memory, return from function, etc.)
+8. Eventually destroy the result when no longer needed
+9. Mark the destroyed result as NULL (`own_value = NULL;`)
 
 This ownership transfer mechanism ensures that:
 - No memory leaks occur when an expression result is stored in memory.
 - The expression context won't free data that has been stored elsewhere.
 - Data is only freed once, preventing use-after-free and double-free errors.
 - Results are not accessed after their context has been destroyed, preventing use-after-free bugs.
+- All variables explicitly indicate their ownership semantics through prefixes:
+  - `own_` prefix for owned values that must be destroyed by the owner
+  - `mut_` prefix for mutable references that the function can modify
+  - `ref_` prefix for borrowed references that are read-only
 
 ## Important Considerations
 
@@ -138,3 +148,6 @@ This ownership transfer mechanism ensures that:
 - Memory access uses exclusively dot notation (e.g., `memory.field.subfield`)
 - All assignments use the `:=` operator
 - The function call grammar is implemented through the expression evaluator
+- After transferring ownership of a pointer, it should be set to NULL immediately
+- Variables should always use ownership prefixes to make memory management explicit
+- When an owned object is no longer needed, it should be properly destroyed and set to NULL

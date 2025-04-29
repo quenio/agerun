@@ -31,11 +31,13 @@
  * assignments. The ':=' operator is used for all assignments. Memory access
  * uses dot notation (e.g., memory.field.subfield).
  * 
- * @param agent The agent executing the instruction
- * @param message The message being processed (can be any data type)
- * @param instruction The instruction to execute
+ * @param mut_agent The agent executing the instruction (mutable reference)
+ * @param mut_message The message being processed (mutable reference)
+ * @param ref_instruction The instruction to execute (borrowed reference)
  * @return true if execution was successful, false otherwise
+ * @note Ownership: Does not take ownership of any parameters.
+ *       The function does not transfer ownership of any objects.
  */
-bool ar_instruction_run(agent_t *agent, data_t *message, const char *instruction);
+bool ar_instruction_run(agent_t *mut_agent, data_t *mut_message, const char *ref_instruction);
 
 #endif /* AGERUN_INSTRUCTION_H */
