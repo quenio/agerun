@@ -17,14 +17,16 @@ typedef struct method_s {
 
 /**
  * Define a new method with the given instructions
- * @param name Method name
- * @param instructions The method implementation code
+ * @param ref_name Method name (borrowed reference)
+ * @param ref_instructions The method implementation code (borrowed reference)
  * @param previous_version Previous version number (0 for new method)
  * @param backward_compatible Whether the method is backward compatible
  * @param persist Whether agents using this method should persist
  * @return New version number, or 0 on failure
+ * @note Ownership: The method copies the name and instructions. The original strings
+ *       remain owned by the caller.
  */
-version_t ar_method_create(const char *name, const char *instructions, 
+version_t ar_method_create(const char *ref_name, const char *ref_instructions, 
                         version_t previous_version, bool backward_compatible, 
                         bool persist);
 
@@ -34,6 +36,8 @@ version_t ar_method_create(const char *name, const char *instructions,
  * @param mut_message The message being processed (mutable reference, ownership remains with the caller)
  * @param ref_instructions The method instructions to execute (borrowed reference)
  * @return true if execution was successful, false otherwise
+ * @note Ownership: Function does not take ownership of any parameters.
+ *       The agent, message, and instructions remain owned by the caller.
  */
 bool ar_method_run(agent_t *mut_agent, data_t *mut_message, const char *ref_instructions);
 

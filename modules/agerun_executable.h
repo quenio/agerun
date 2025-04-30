@@ -5,6 +5,8 @@
  * Execute the main AgeRun example application.
  * 
  * @return Exit code (0 for success, non-zero for failure)
+ * @note Ownership: The function manages all memory internally and
+ *       cleans up resources before returning.
  */
 int ar_executable_main(void);
 

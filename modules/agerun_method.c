@@ -16,60 +16,60 @@
 #define MAX_INSTRUCTIONS_LENGTH 16384
 #define MAX_METHOD_NAME_LENGTH 64
 
-version_t ar_method_create(const char *name, const char *instructions, 
+version_t ar_method_create(const char *ref_name, const char *ref_instructions, 
                         version_t previous_version, bool backward_compatible, 
                         bool persist) {
-    if (!name || !instructions) {
+    if (!ref_name || !ref_instructions) {
         return 0;
     }
     
     // Find or create method entry
-    int method_idx = ar_methodology_find_method_idx(name);
-    int *method_name_count = ar_methodology_get_method_name_count();
-    int *method_counts = ar_methodology_get_method_counts();
+    int method_idx = ar_methodology_find_method_idx(ref_name);
+    int *mut_method_name_count = ar_methodology_get_method_name_count();
+    int *mut_method_counts = ar_methodology_get_method_counts();
     
     if (method_idx < 0) {
-        if (*method_name_count >= 256) { // MAX_METHODS
+        if (*mut_method_name_count >= 256) { // MAX_METHODS
             printf("Error: Maximum number of method types reached\n");
             return 0;
         }
         
-        method_idx = (*method_name_count)++;
-        method_t *method = ar_methodology_get_method_storage(method_idx, 0);
-        strncpy(method->name, name, MAX_METHOD_NAME_LENGTH - 1);
-        method->name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
+        method_idx = (*mut_method_name_count)++;
+        method_t *mut_method = ar_methodology_get_method_storage(method_idx, 0);
+        strncpy(mut_method->name, ref_name, MAX_METHOD_NAME_LENGTH - 1);
+        mut_method->name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
     }
     
     // Check if we've reached max versions for this method
-    if (method_counts[method_idx] >= 64) { // MAX_VERSIONS_PER_METHOD
-        printf("Error: Maximum number of versions reached for method %s\n", name);
+    if (mut_method_counts[method_idx] >= 64) { // MAX_VERSIONS_PER_METHOD
+        printf("Error: Maximum number of versions reached for method %s\n", ref_name);
         return 0;
     }
     
     // Create new version
-    int version_idx = method_counts[method_idx]++;
+    int version_idx = mut_method_counts[method_idx]++;
     version_t new_version = previous_version + 1;
     
     // Make sure the version is unique
     for (int i = 0; i < version_idx; i++) {
-        method_t *method = ar_methodology_get_method_storage(method_idx, i);
-        if (method->version == new_version) {
-            new_version = method->version + 1;
+        method_t *ref_method = ar_methodology_get_method_storage(method_idx, i);
+        if (ref_method->version == new_version) {
+            new_version = ref_method->version + 1;
         }
     }
     
     // Initialize the new method version
-    method_t *new_method = ar_methodology_get_method_storage(method_idx, version_idx);
-    strncpy(new_method->name, name, MAX_METHOD_NAME_LENGTH - 1);
-    new_method->name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
-    new_method->version = new_version;
-    new_method->previous_version = previous_version;
-    new_method->backward_compatible = backward_compatible;
-    new_method->persist = persist;
-    strncpy(new_method->instructions, instructions, MAX_INSTRUCTIONS_LENGTH - 1);
-    new_method->instructions[MAX_INSTRUCTIONS_LENGTH - 1] = '\0';
+    method_t *mut_new_method = ar_methodology_get_method_storage(method_idx, version_idx);
+    strncpy(mut_new_method->name, ref_name, MAX_METHOD_NAME_LENGTH - 1);
+    mut_new_method->name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
+    mut_new_method->version = new_version;
+    mut_new_method->previous_version = previous_version;
+    mut_new_method->backward_compatible = backward_compatible;
+    mut_new_method->persist = persist;
+    strncpy(mut_new_method->instructions, ref_instructions, MAX_INSTRUCTIONS_LENGTH - 1);
+    mut_new_method->instructions[MAX_INSTRUCTIONS_LENGTH - 1] = '\0';
     
-    printf("Created method %s version %d\n", name, new_version);
+    printf("Created method %s version %d\n", ref_name, new_version);
     
     return new_version;
 }

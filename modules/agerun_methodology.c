@@ -19,14 +19,14 @@ static int method_counts[MAX_METHODS];
 static int method_name_count = 0;
 
 /* Forward Declarations */
-static int find_method_idx(const char *name);
-static method_t* find_latest_method(const char *name);
-static method_t* find_method(const char *name, version_t version);
+static int find_method_idx(const char *ref_name);
+static method_t* find_latest_method(const char *ref_name);
+static method_t* find_method(const char *ref_name, version_t version);
 
 /* Method Search Functions */
-static int find_method_idx(const char *name) {
+static int find_method_idx(const char *ref_name) {
     for (int i = 0; i < method_name_count; i++) {
-        if (strcmp(methods[i][0].name, name) == 0) {
+        if (strcmp(methods[i][0].name, ref_name) == 0) {
             return i;
         }
     }
@@ -34,8 +34,8 @@ static int find_method_idx(const char *name) {
     return -1;
 }
 
-static method_t* find_latest_method(const char *name) {
-    int method_idx = find_method_idx(name);
+static method_t* find_latest_method(const char *ref_name) {
+    int method_idx = find_method_idx(ref_name);
     if (method_idx < 0 || method_counts[method_idx] == 0) {
         return NULL;
     }
@@ -58,8 +58,8 @@ static method_t* find_latest_method(const char *name) {
     return NULL;
 }
 
-static method_t* find_method(const char *name, version_t version) {
-    int method_idx = find_method_idx(name);
+static method_t* find_method(const char *ref_name, version_t version) {
+    int method_idx = find_method_idx(ref_name);
     if (method_idx < 0) {
         return NULL;
     }
@@ -92,8 +92,8 @@ static method_t* find_method(const char *name, version_t version) {
 }
 
 // Interface functions for agerun_method.c
-int ar_methodology_find_method_idx(const char *name) {
-    return find_method_idx(name);
+int ar_methodology_find_method_idx(const char *ref_name) {
+    return find_method_idx(ref_name);
 }
 
 method_t* ar_methodology_get_method_storage(int method_idx, int version_idx) {
@@ -109,63 +109,63 @@ int* ar_methodology_get_method_name_count(void) {
 }
 
 // Main method access function
-method_t* ar_methodology_get_method(const char *name, version_t version) {
+method_t* ar_methodology_get_method(const char *ref_name, version_t version) {
     if (version == 0) {
         // Use latest version
-        return find_latest_method(name);
+        return find_latest_method(ref_name);
     } else {
         // Use specific version
-        return find_method(name, version);
+        return find_method(ref_name, version);
     }
 }
 
 bool ar_methodology_save_methods(void) {
     // Simple placeholder implementation
-    FILE *fp = fopen(METHODOLOGY_FILE_NAME, "w");
-    if (!fp) {
+    FILE *mut_fp = fopen(METHODOLOGY_FILE_NAME, "w");
+    if (!mut_fp) {
         printf("Error: Could not open %s for writing\n", METHODOLOGY_FILE_NAME);
         return false;
     }
     
     // Write the number of method types
-    fprintf(fp, "%d\n", method_name_count);
+    fprintf(mut_fp, "%d\n", method_name_count);
     
     // For each method type
     for (int i = 0; i < method_name_count; i++) {
         // Write the method name and number of versions
-        fprintf(fp, "%s %d\n", methods[i][0].name, method_counts[i]);
+        fprintf(mut_fp, "%s %d\n", methods[i][0].name, method_counts[i]);
         
         // For each version
         for (int j = 0; j < method_counts[i]; j++) {
-            method_t *method = &methods[i][j];
+            method_t *ref_method = &methods[i][j];
             
             // Write method metadata
-            fprintf(fp, "%d %d %d\n", 
-                    method->version, 
-                    method->backward_compatible ? 1 : 0,
-                    method->persist ? 1 : 0);
+            fprintf(mut_fp, "%d %d %d\n", 
+                    ref_method->version, 
+                    ref_method->backward_compatible ? 1 : 0,
+                    ref_method->persist ? 1 : 0);
             
             // Write instructions (base64 encoded or other suitable format)
-            fprintf(fp, "%s\n", method->instructions);
+            fprintf(mut_fp, "%s\n", ref_method->instructions);
         }
     }
     
-    fclose(fp);
+    fclose(mut_fp);
     return true;
 }
 
 bool ar_methodology_load_methods(void) {
-    FILE *fp = fopen(METHODOLOGY_FILE_NAME, "r");
-    if (!fp) {
+    FILE *mut_fp = fopen(METHODOLOGY_FILE_NAME, "r");
+    if (!mut_fp) {
         // Not an error, might be first run
         return true;
     }
     
     // Read the number of method types
     int method_count = 0;
-    if (fscanf(fp, "%d", &method_count) != 1 || method_count <= 0 || method_count > MAX_METHODS) {
+    if (fscanf(mut_fp, "%d", &method_count) != 1 || method_count <= 0 || method_count > MAX_METHODS) {
         printf("Error: Invalid method count in %s\n", METHODOLOGY_FILE_NAME);
-        fclose(fp);
+        fclose(mut_fp);
         // Delete the corrupted file and start fresh
         printf("Deleting corrupted methodology file\n");
         remove(METHODOLOGY_FILE_NAME);
@@ -184,10 +184,10 @@ bool ar_methodology_load_methods(void) {
         int version_count;
         
         // Read method name and version count
-        if (fscanf(fp, "%63s %d", name, &version_count) != 2 || version_count <= 0 || 
+        if (fscanf(mut_fp, "%63s %d", name, &version_count) != 2 || version_count <= 0 || 
             version_count > MAX_VERSIONS_PER_METHOD) {
             printf("Error: Malformed method entry in %s\n", METHODOLOGY_FILE_NAME);
-            fclose(fp);
+            fclose(mut_fp);
             // Delete the corrupted file and start fresh
             printf("Deleting corrupted methodology file\n");
             remove(METHODOLOGY_FILE_NAME);
@@ -202,7 +202,7 @@ bool ar_methodology_load_methods(void) {
         for (int j = 0; j < version_count; j++) {
             if (method_counts[method_idx] >= MAX_VERSIONS_PER_METHOD) {
                 printf("Error: Maximum versions reached for method %s\n", name);
-                fclose(fp);
+                fclose(mut_fp);
                 return false;
             }
             
@@ -210,9 +210,9 @@ bool ar_methodology_load_methods(void) {
             int backward_compatible, persist;
             
             // Read method metadata
-            if (fscanf(fp, "%d %d %d", &version, &backward_compatible, &persist) != 3) {
+            if (fscanf(mut_fp, "%d %d %d", &version, &backward_compatible, &persist) != 3) {
                 printf("Error: Malformed version entry in %s\n", METHODOLOGY_FILE_NAME);
-                fclose(fp);
+                fclose(mut_fp);
                 // Delete the corrupted file and start fresh
                 printf("Deleting corrupted methodology file\n");
                 remove(METHODOLOGY_FILE_NAME);
@@ -220,16 +220,16 @@ bool ar_methodology_load_methods(void) {
             }
             
             // Skip newline
-            getc(fp);
+            getc(mut_fp);
             
             // Allocate space for instructions
             char instructions[MAX_INSTRUCTIONS_LENGTH];
             
             // Read the instructions
-            if (fgets(instructions, MAX_INSTRUCTIONS_LENGTH, fp) == NULL) {
+            if (fgets(instructions, MAX_INSTRUCTIONS_LENGTH, mut_fp) == NULL) {
                 printf("Error: Could not read instructions for method %s version %d\n", 
                        name, version);
-                fclose(fp);
+                fclose(mut_fp);
                 // Delete the corrupted file and start fresh
                 printf("Deleting corrupted methodology file\n");
                 remove(METHODOLOGY_FILE_NAME);
@@ -243,17 +243,17 @@ bool ar_methodology_load_methods(void) {
             }
             
             // Register the method
-            method_t *method = &methods[method_idx][method_counts[method_idx]++];
-            strncpy(method->name, name, MAX_METHOD_NAME_LENGTH - 1);
-            method->name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
-            method->version = version;
-            method->backward_compatible = backward_compatible != 0;
-            method->persist = persist != 0;
-            strncpy(method->instructions, instructions, MAX_INSTRUCTIONS_LENGTH - 1);
-            method->instructions[MAX_INSTRUCTIONS_LENGTH - 1] = '\0';
+            method_t *mut_method = &methods[method_idx][method_counts[method_idx]++];
+            strncpy(mut_method->name, name, MAX_METHOD_NAME_LENGTH - 1);
+            mut_method->name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
+            mut_method->version = version;
+            mut_method->backward_compatible = backward_compatible != 0;
+            mut_method->persist = persist != 0;
+            strncpy(mut_method->instructions, instructions, MAX_INSTRUCTIONS_LENGTH - 1);
+            mut_method->instructions[MAX_INSTRUCTIONS_LENGTH - 1] = '\0';
         }
     }
     
-    fclose(fp);
+    fclose(mut_fp);
     return true;
 }

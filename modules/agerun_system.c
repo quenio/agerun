@@ -36,7 +36,7 @@ static char g_wake_message[] = "__wake__";
 static bool is_initialized = false;
 
 /* Implementation */
-agent_id_t ar_system_init(const char *method_name, version_t version) {
+agent_id_t ar_system_init(const char *ref_method_name, version_t version) {
     if (is_initialized) {
         printf("Agerun already initialized\n");
         return 0;
@@ -55,15 +55,17 @@ agent_id_t ar_system_init(const char *method_name, version_t version) {
         printf("Warning: Could not load agents from file\n");
     }
     
-    // Create initial agent if method_name is provided
-    if (method_name != NULL) {
+    // Create initial agent if ref_method_name is provided
+    if (ref_method_name != NULL) {
         // Create initial agent with NULL context
-        agent_id_t initial_agent = ar_agent_create(method_name, version, NULL);
+        agent_id_t initial_agent = ar_agent_create(ref_method_name, version, NULL);
         if (initial_agent != 0) {
             // Send wake message to initial agent
-            data_t *wake_data = ar_data_create_string(g_wake_message);
-            if (wake_data) {
-                ar_agent_send(initial_agent, wake_data);
+            data_t *own_wake_data = ar_data_create_string(g_wake_message);
+            if (own_wake_data) {
+                ar_agent_send(initial_agent, own_wake_data);
+                // Ownership transferred to agent's message queue
+                // own_wake_data is now NULL
             }
         }
         return initial_agent;
@@ -90,46 +92,46 @@ void ar_system_shutdown(void) {
     ar_agency_set_initialized(false);
 }
 
-
-
 bool ar_system_process_next_message(void) {
     if (!is_initialized) {
         return false;
     }
     
     // Find an agent with a non-empty message queue
-    agent_t* agents = ar_agency_get_agents();
+    agent_t* mut_agents = ar_agency_get_agents();
     for (int i = 0; i < MAX_AGENTS; i++) {
-        if (agents[i].is_active && !ar_list_empty(agents[i].own_message_queue)) {
+        if (mut_agents[i].is_active && !ar_list_empty(mut_agents[i].own_message_queue)) {
             // Process one message
-            data_t *message = ar_list_remove_first(agents[i].own_message_queue);
-            if (message) {
+            data_t *own_message = ar_list_remove_first(mut_agents[i].own_message_queue);
+            if (own_message) {
                 // Use the interpret_method function from agerun_agent
                 // Since that's now private, we need to call the method directly
-                method_t *method = ar_methodology_get_method(agents[i].method_name, agents[i].method_version);
-                if (method) {
+                method_t *ref_method = ar_methodology_get_method(mut_agents[i].method_name, mut_agents[i].method_version);
+                if (ref_method) {
                     // Print message based on its type
-                    printf("Agent %lld received message: ", agents[i].id);
-                    data_type_t msg_type = ar_data_get_type(message);
+                    printf("Agent %lld received message: ", mut_agents[i].id);
+                    data_type_t msg_type = ar_data_get_type(own_message);
                     if (msg_type == DATA_STRING) {
-                        printf("%s\n", ar_data_get_string(message));
+                        printf("%s\n", ar_data_get_string(own_message));
                     } else if (msg_type == DATA_INTEGER) {
-                        printf("%d\n", ar_data_get_integer(message));
+                        printf("%d\n", ar_data_get_integer(own_message));
                     } else if (msg_type == DATA_DOUBLE) {
-                        printf("%f\n", ar_data_get_double(message));
+                        printf("%f\n", ar_data_get_double(own_message));
                     } else if (msg_type == DATA_LIST || msg_type == DATA_MAP) {
                         printf("[complex data]\n");
                     }
                     
-                    ar_method_run(&agents[i], message, method->instructions);
+                    ar_method_run(&mut_agents[i], own_message, ref_method->instructions);
                     
                     // Free the message as it's now been processed
-                    ar_data_destroy(message);
+                    ar_data_destroy(own_message);
+                    own_message = NULL; // Mark as freed
                     return true;
                 }
                 
                 // Free the message if we couldn't process it
-                ar_data_destroy(message);
+                ar_data_destroy(own_message);
+                own_message = NULL; // Mark as freed
             }
         }
     }
@@ -157,8 +159,6 @@ int ar_system_process_all_messages(void) {
 // This function has been moved to agerun_value.c
 
 /* Queue functions are now defined in agerun_queue.c */
-
-
 
 /* Memory functions are now defined in agerun_map.c */
 
