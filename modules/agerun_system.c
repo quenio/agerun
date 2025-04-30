@@ -90,6 +90,9 @@ void ar_system_shutdown(void) {
     is_initialized = false;
     ar_agency_reset();
     ar_agency_set_initialized(false);
+    
+    // Clean up methodology resources
+    ar_methodology_cleanup();
 }
 
 bool ar_system_process_next_message(void) {

@@ -113,3 +113,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Document ownership patterns for all data types (completed 2025-04-26)
   - [x] Provide examples of correct memory handling for complex structures (completed 2025-04-26)
   - [x] Add troubleshooting section for common memory issues (completed 2025-04-26)
+
+## Future Architecture Improvements
+
+- [ ] Method module cleanup:
+  - [ ] Consolidate method creation functions into a single creation function
+  - [ ] Simplify API by removing `ar_method_create_object` in favor of a unified `ar_method_create`
+  - [ ] Maintain separation of concerns between method and methodology modules
+  - [ ] Add optional callback for methodology registration
+  - [ ] Ensure function follows standard opaque type pattern (returning the created object)
+  - [ ] Update documentation to reflect the simplified API

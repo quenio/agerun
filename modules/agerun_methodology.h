@@ -35,6 +35,16 @@ int ar_methodology_find_method_idx(const char *ref_name);
 method_t* ar_methodology_get_method_storage(int method_idx, int version_idx);
 
 /**
+ * Set a method pointer in the method storage location
+ * @param method_idx Index of the method in the methods array
+ * @param version_idx Index of the version for this method
+ * @param ref_method Method pointer to store (methodology takes ownership)
+ * @note Ownership: Methodology takes ownership of the method pointer.
+ *       The caller should not use or free the method after this call.
+ */
+void ar_methodology_set_method_storage(int method_idx, int version_idx, method_t *ref_method);
+
+/**
  * Get a pointer to the array of method counts
  * @return Pointer to the array of method counts (mutable reference)
  * @note Ownership: Returns a mutable reference to internal storage.
@@ -61,5 +71,19 @@ bool ar_methodology_save_methods(void);
  * @return true if successful, false otherwise
  */
 bool ar_methodology_load_methods(void);
+
+/**
+ * Clean up all method definitions and free resources
+ * This should be called during system shutdown
+ */
+void ar_methodology_cleanup(void);
+
+/**
+ * Register a method with the methodology module
+ * @param own_method The method to register (ownership is transferred to methodology)
+ * @note Ownership: The methodology module takes ownership of the method.
+ *       The caller should not access or free the method after this call.
+ */
+void ar_methodology_register_method(method_t *own_method);
 
 #endif /* AGERUN_METHODOLOGY_H */

@@ -58,8 +58,6 @@ agerun_executable
 │   │   ├── agerun_map
 │   │   └── agerun_list
 │   ├── agerun_method
-│   │   ├── agerun_methodology
-│   │   │   └── agerun_string
 │   │   ├── agerun_instruction
 │   │   │   ├── agerun_expression
 │   │   │   │   ├── agerun_string
@@ -69,6 +67,9 @@ agerun_executable
 │   │   │   ├── agerun_string
 │   │   │   └── agerun_data
 │   │   ├── agerun_data
+│   │   └── agerun_string
+│   ├── agerun_methodology
+│   │   ├── agerun_method
 │   │   └── agerun_string
 │   ├── agerun_agency
 │   ├── agerun_data
@@ -154,9 +155,24 @@ The [method module](agerun_method.md) provides functionality for creating, manag
 - **Method Execution**: Provides a runtime for executing method instructions
 - **Accessor Functions**: Exposes method properties through a clean API
 - **Memory Ownership**: Clear documentation of ownership semantics for method creation and execution
-- **Depends on Methodology**: Collaborates with the methodology module for storage operations
+- **Independent Design**: Provides a clean API that the methodology module uses, not the other way around
 - **Depends on Instruction**: Uses the instruction module to parse and execute method code
 - **Depends on String**: Utilizes string utilities for method name and instruction handling
+
+### Methodology Module (`agerun_methodology`)
+
+The [methodology module](agerun_methodology.md) provides a registry for methods, including storage, retrieval, and versioning:
+
+- **Method Registry**: Stores and manages method objects created by the method module
+- **Version Management**: Tracks multiple versions of the same method
+- **Method Lookup**: Provides efficient lookup of methods by name and version
+- **Version Resolution**: Can find compatible versions when exact matches aren't available
+- **Persistence**: Saves and loads methods to/from disk for system restarts
+- **Depends on Method**: Uses the method module's opaque type and functions
+- **Depends on String**: Uses string utilities for method name handling
+- **Proper Encapsulation**: Accesses methods only through their public API
+- **Memory Management**: Properly handles ownership of method objects
+- **Clean Interface**: Provides a clear API for interacting with methods
 
 ### Data Module (`agerun_data`)
 

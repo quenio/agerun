@@ -20,9 +20,25 @@ typedef struct method_s method_t;
 
 ### Functions
 
-#### Method Creation
+#### Method Creation and Memory Management
 
 ```c
+/**
+ * Creates a new method object with the given parameters
+ * @param ref_name Method name (borrowed reference)
+ * @param ref_instructions The method implementation code (borrowed reference)
+ * @param version The version number for this method
+ * @param previous_version Previous version number (0 for first version)
+ * @param backward_compatible Whether the method is backward compatible
+ * @param persist Whether agents using this method should persist
+ * @return Newly created method object, or NULL on failure
+ * @note Ownership: Returns an owned object that the caller must destroy with ar_method_destroy.
+ *       The method copies the name and instructions. The original strings remain owned by the caller.
+ */
+method_t* ar_method_create_object(const char *ref_name, const char *ref_instructions, 
+                         version_t version, version_t previous_version, 
+                         bool backward_compatible, bool persist);
+
 /**
  * Define a new method with the given instructions
  * @param ref_name Method name (borrowed reference)
@@ -37,6 +53,14 @@ typedef struct method_s method_t;
 version_t ar_method_create(const char *ref_name, const char *ref_instructions, 
                         version_t previous_version, bool backward_compatible, 
                         bool persist);
+
+/**
+ * Destroys a method object and frees its resources
+ * @param own_method The method to destroy (owned reference, will be freed)
+ * @note Ownership: This function takes ownership of the method and frees it.
+ *       The pointer will be invalid after this call.
+ */
+void ar_method_destroy(method_t *own_method);
 ```
 
 #### Method Accessors
@@ -106,16 +130,21 @@ bool ar_method_run(agent_t *mut_agent, data_t *mut_message, const char *ref_inst
 
 - The method module uses an opaque type to hide the implementation details from client code
 - Access to method fields is provided through accessor functions
-- The module collaborates with the methodology module for storage and versioning
+- The module is independent and follows proper encapsulation principles
+- The methodology module uses the method module for creating and accessing methods
+- Methods can be created directly using ar_method_create_object and managed manually
+- Or methods can be created with ar_method_create which registers them with the methodology
 - Methods are versioned to support backward compatibility and upgrades
 - Persistent methods are saved to disk for system restarts
+- Proper memory management follows the AgeRun Memory Management Model (MMM)
+- The method_t type is fully opaque, with its definition visible only in method.c
 
 ## Usage Examples
 
 ### Creating a new method
 
 ```c
-// Create a new method that echoes the message back
+// Method 1: Create a method registered with the methodology system (recommended)
 const char *name = "echo_method";
 const char *instructions = "message -> message";
 version_t version = ar_method_create(name, instructions, 0, false, false);
@@ -123,6 +152,18 @@ version_t version = ar_method_create(name, instructions, 0, false, false);
 // Create a new version of an existing method
 const char *new_instructions = "message -> \"Echo: \" + message";
 version_t new_version = ar_method_create(name, new_instructions, version, true, true);
+
+// Method 2: Create a method object directly (for custom handling)
+const char *custom_name = "custom_method";
+const char *custom_instructions = "message -> \"Custom: \" + message";
+method_t *own_method = ar_method_create_object(custom_name, custom_instructions, 
+                                            1, 0, false, false);
+
+// Do something with the method...
+
+// Remember to destroy the method when finished using it
+ar_method_destroy(own_method);
+own_method = NULL; // Mark as destroyed
 ```
 
 ### Running a method

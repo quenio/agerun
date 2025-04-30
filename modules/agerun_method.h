@@ -9,6 +9,22 @@
 typedef struct method_s method_t;
 
 /**
+ * Creates a new method object with the given parameters
+ * @param ref_name Method name (borrowed reference)
+ * @param ref_instructions The method implementation code (borrowed reference)
+ * @param version The version number for this method
+ * @param previous_version Previous version number (0 for first version)
+ * @param backward_compatible Whether the method is backward compatible
+ * @param persist Whether agents using this method should persist
+ * @return Newly created method object, or NULL on failure
+ * @note Ownership: Returns an owned object that the caller must destroy with ar_method_destroy.
+ *       The method copies the name and instructions. The original strings remain owned by the caller.
+ */
+method_t* ar_method_create_object(const char *ref_name, const char *ref_instructions, 
+                         version_t version, version_t previous_version, 
+                         bool backward_compatible, bool persist);
+
+/**
  * Define a new method with the given instructions
  * @param ref_name Method name (borrowed reference)
  * @param ref_instructions The method implementation code (borrowed reference)
@@ -66,6 +82,14 @@ bool ar_method_is_persistent(const method_t *ref_method);
  * @note Ownership: Returns a borrowed reference. The caller should not free the result.
  */
 const char* ar_method_get_instructions(const method_t *ref_method);
+
+/**
+ * Destroys a method object and frees its resources
+ * @param own_method The method to destroy (owned reference, will be freed)
+ * @note Ownership: This function takes ownership of the method and frees it.
+ *       The pointer will be invalid after this call.
+ */
+void ar_method_destroy(method_t *own_method);
 
 /**
  * Interprets and executes a method's instructions in the context of an agent

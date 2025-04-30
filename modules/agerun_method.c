@@ -1,5 +1,4 @@
 #include "agerun_method.h"
-#include "agerun_methodology.h"
 #include "agerun_instruction.h"
 #include "agerun_string.h"
 #include "agerun_data.h"
@@ -58,6 +57,44 @@ const char* ar_method_get_instructions(const method_t *ref_method) {
     return ref_method->instructions;
 }
 
+void ar_method_destroy(method_t *own_method) {
+    if (own_method) {
+        free(own_method);
+    }
+}
+
+/**
+ * Creates a new method with the given parameters
+ * This function creates and returns an allocated method object that the caller takes ownership of.
+ */
+method_t* ar_method_create_object(const char *ref_name, const char *ref_instructions, 
+                         version_t version, version_t previous_version, 
+                         bool backward_compatible, bool persist) {
+    if (!ref_name || !ref_instructions) {
+        return NULL;
+    }
+    
+    // Allocate memory for the new method
+    method_t *mut_method = malloc(sizeof(method_t));
+    if (!mut_method) {
+        printf("Error: Failed to allocate memory for method\n");
+        return NULL;
+    }
+    
+    // Initialize the method fields
+    strncpy(mut_method->name, ref_name, MAX_METHOD_NAME_LENGTH - 1);
+    mut_method->name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
+    
+    mut_method->version = version;
+    mut_method->previous_version = previous_version;
+    mut_method->backward_compatible = backward_compatible;
+    mut_method->persist = persist;
+    strncpy(mut_method->instructions, ref_instructions, MAX_INSTRUCTIONS_LENGTH - 1);
+    mut_method->instructions[MAX_INSTRUCTIONS_LENGTH - 1] = '\0';
+    
+    return mut_method;
+}
+
 version_t ar_method_create(const char *ref_name, const char *ref_instructions, 
                         version_t previous_version, bool backward_compatible, 
                         bool persist) {
@@ -65,55 +102,22 @@ version_t ar_method_create(const char *ref_name, const char *ref_instructions,
         return 0;
     }
     
-    // Find or create method entry
-    int method_idx = ar_methodology_find_method_idx(ref_name);
-    int *mut_method_name_count = ar_methodology_get_method_name_count();
-    int *mut_method_counts = ar_methodology_get_method_counts();
+    version_t version = previous_version + 1;
     
-    if (method_idx < 0) {
-        if (*mut_method_name_count >= 256) { // MAX_METHODS
-            printf("Error: Maximum number of method types reached\n");
-            return 0;
-        }
-        
-        method_idx = (*mut_method_name_count)++;
-        method_t *mut_method = ar_methodology_get_method_storage(method_idx, 0);
-        strncpy(mut_method->name, ref_name, MAX_METHOD_NAME_LENGTH - 1);
-        mut_method->name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
-    }
-    
-    // Check if we've reached max versions for this method
-    if (mut_method_counts[method_idx] >= 64) { // MAX_VERSIONS_PER_METHOD
-        printf("Error: Maximum number of versions reached for method %s\n", ref_name);
+    // Create a new method object with the next version number
+    method_t *mut_method = ar_method_create_object(ref_name, ref_instructions, 
+                                          version, previous_version, 
+                                          backward_compatible, persist);
+    if (!mut_method) {
         return 0;
     }
     
-    // Create new version
-    int version_idx = mut_method_counts[method_idx]++;
-    version_t new_version = previous_version + 1;
+    // Let the methodology module handle this - it will track, store, and own the method
+    extern void ar_methodology_register_method(method_t *own_method);
+    ar_methodology_register_method(mut_method);
     
-    // Make sure the version is unique
-    for (int i = 0; i < version_idx; i++) {
-        method_t *ref_method = ar_methodology_get_method_storage(method_idx, i);
-        if (ref_method->version == new_version) {
-            new_version = ref_method->version + 1;
-        }
-    }
-    
-    // Initialize the new method version
-    method_t *mut_new_method = ar_methodology_get_method_storage(method_idx, version_idx);
-    strncpy(mut_new_method->name, ref_name, MAX_METHOD_NAME_LENGTH - 1);
-    mut_new_method->name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
-    mut_new_method->version = new_version;
-    mut_new_method->previous_version = previous_version;
-    mut_new_method->backward_compatible = backward_compatible;
-    mut_new_method->persist = persist;
-    strncpy(mut_new_method->instructions, ref_instructions, MAX_INSTRUCTIONS_LENGTH - 1);
-    mut_new_method->instructions[MAX_INSTRUCTIONS_LENGTH - 1] = '\0';
-    
-    printf("Created method %s version %d\n", ref_name, new_version);
-    
-    return new_version;
+    // Return the version number
+    return version;
 }
 
 bool ar_method_run(agent_t *mut_agent, data_t *mut_message, const char *ref_instructions) {
