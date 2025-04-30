@@ -85,6 +85,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] Audit expression module for MMM compliance (completed 2025-04-29)
     - [x] Audit instruction module for MMM compliance (completed 2025-04-29)
     - [x] Audit agent/agency modules for MMM compliance (completed 2025-04-29)
+    - [ ] Change agent's context from mutable to borrowed reference (mut_context → ref_context)
+    - [ ] Change instruction/expression's message from mutable to borrowed reference (mut_message → ref_message)
   - [ ] Implement static analysis tools to verify MMM compliance
 
 - [x] Redesign the memory management approach:
