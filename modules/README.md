@@ -143,6 +143,21 @@ The [map module](agerun_map.md) provides a fundamental key-value storage impleme
 
 Foundation modules build upon core modules to provide essential data structures and services that support the execution environment. These modules depend on one or more core modules and add type safety, memory management, and other critical services required by higher-level components.
 
+### Method Module (`agerun_method`)
+
+The [method module](agerun_method.md) provides functionality for creating, managing, and running methods within the AgeRun system:
+
+- **Method Encapsulation**: Uses an opaque type to hide implementation details
+- **Version Control**: Supports creating and managing versioned methods
+- **Backward Compatibility**: Handles backward compatibility between versions
+- **Method Persistence**: Manages which methods persist across system restarts
+- **Method Execution**: Provides a runtime for executing method instructions
+- **Accessor Functions**: Exposes method properties through a clean API
+- **Memory Ownership**: Clear documentation of ownership semantics for method creation and execution
+- **Depends on Methodology**: Collaborates with the methodology module for storage operations
+- **Depends on Instruction**: Uses the instruction module to parse and execute method code
+- **Depends on String**: Utilizes string utilities for method name and instruction handling
+
 ### Data Module (`agerun_data`)
 
 The [data module](agerun_data.md) builds on the map and list modules to provide typed data storage with the following features:

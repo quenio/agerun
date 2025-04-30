@@ -58,9 +58,9 @@ agent_id_t ar_agent_create(const char *ref_method_name, version_t version, data_
     
     strncpy(mut_agents[agent_idx].method_name, ref_method_name, MAX_METHOD_NAME_LENGTH - 1);
     mut_agents[agent_idx].method_name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
-    mut_agents[agent_idx].method_version = ref_method->version;
+    mut_agents[agent_idx].method_version = ar_method_get_version(ref_method);
     mut_agents[agent_idx].is_active = true;
-    mut_agents[agent_idx].is_persistent = ref_method->persist;
+    mut_agents[agent_idx].is_persistent = ar_method_is_persistent(ref_method);
     mut_agents[agent_idx].mut_context = mut_context; // Context can be NULL
     // No ownership transfer for context as it's just a mutable reference
     
@@ -90,7 +90,7 @@ agent_id_t ar_agent_create(const char *ref_method_name, version_t version, data_
     // Ownership of own_message_queue transferred to agent
     
     printf("Created agent %lld using method %s version %d\n", 
-           mut_agents[agent_idx].id, ref_method_name, ref_method->version);
+           mut_agents[agent_idx].id, ref_method_name, ar_method_get_version(ref_method));
     
     return mut_agents[agent_idx].id; // Ownership transferred to caller
 }
@@ -131,7 +131,7 @@ bool ar_agent_destroy(agent_id_t agent_id) {
                         printf("[complex data]\n");
                     }
                     
-                    ar_method_run(&mut_agents[i], own_message, ref_method->instructions);
+                    ar_method_run(&mut_agents[i], own_message, ar_method_get_instructions(ref_method));
                 }
                 
                 // Free the message data

@@ -11,6 +11,16 @@
  */
 
 /**
+ * General assertion macro for checking conditions in debug builds.
+ * In release builds, this becomes a no-op.
+ */
+#ifdef DEBUG
+#define AR_ASSERT(cond, msg) assert((cond) && msg)
+#else
+#define AR_ASSERT(cond, msg) ((void)0)
+#endif
+
+/**
  * Helper macro for checking ownership invariants in debug builds.
  * In release builds, this becomes a no-op.
  * 

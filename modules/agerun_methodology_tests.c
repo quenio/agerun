@@ -29,19 +29,19 @@ static void test_methodology_get_method(void) {
     assert(method != NULL);
     
     // And the method properties should match what we created
-    assert(strcmp(method->name, name) == 0);
+    assert(strcmp(ar_method_get_name(method), name) == 0);
     // Version might be different if the method was recreated during testing
     printf("Found method with version %d (expected around %d)\n", 
-           method->version, version);
+           ar_method_get_version(method), version);
     
     // When we get the method by name and request the latest version (version = 0)
     method = ar_methodology_get_method(name, 0);
     
     // Then the latest version of the method should be found
     assert(method != NULL);
-    assert(strcmp(method->name, name) == 0);
+    assert(strcmp(ar_method_get_name(method), name) == 0);
     printf("Found method with version %d (expected around %d)\n", 
-           method->version, version);
+           ar_method_get_version(method), version);
     
     // When we try to get a non-existent method
     method = ar_methodology_get_method("non_existent_method", 0);
@@ -96,9 +96,9 @@ static void test_methodology_get_method_storage(void) {
     assert(method != NULL);
     
     // And the method properties should match what we created
-    assert(strcmp(method->name, name) == 0);
+    assert(strcmp(ar_method_get_name(method), name) == 0);
     printf("Found method with version %d (expected around %d)\n", 
-           method->version, version);
+           ar_method_get_version(method), version);
     
     printf("ar_methodology_get_method_storage() test passed!\n");
 }
@@ -142,10 +142,10 @@ static void test_methodology_save_load(void) {
         printf("Warning: Method %s not loaded correctly, skipping detailed check\n", name);
     } else {
         // And the method properties should match what we created
-        assert(strcmp(method->name, name) == 0);
-        assert(method->version == version);
-        assert(strcmp(method->instructions, instructions) == 0);
-        assert(method->persist == true);
+        assert(strcmp(ar_method_get_name(method), name) == 0);
+        assert(ar_method_get_version(method) == version);
+        assert(strcmp(ar_method_get_instructions(method), instructions) == 0);
+        assert(ar_method_is_persistent(method) == true);
     }
     
     printf("ar_methodology_save_methods() and ar_methodology_load_methods() tests passed!\n");

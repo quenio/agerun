@@ -128,20 +128,20 @@ static void test_method_persistence(void) {
     if (method == NULL) {
         printf("Warning: Method %s not loaded correctly, skipping detailed check\n", name);
     } else {
-        assert(strcmp(method->name, name) == 0);
-        assert(method->version == version);
-        assert(method->persist == true);
-        assert(strcmp(method->instructions, instructions) == 0);
+        assert(strcmp(ar_method_get_name(method), name) == 0);
+        assert(ar_method_get_version(method) == version);
+        assert(ar_method_is_persistent(method) == true);
+        assert(strcmp(ar_method_get_instructions(method), instructions) == 0);
     }
     
     method_t *method2 = ar_methodology_get_method(name2, version2);
     if (method2 == NULL) {
         printf("Warning: Method %s not loaded correctly, skipping detailed check\n", name2);
     } else {
-        assert(strcmp(method2->name, name2) == 0);
-        assert(method2->version == version2);
-        assert(method2->persist == false);
-        assert(strcmp(method2->instructions, instructions2) == 0);
+        assert(strcmp(ar_method_get_name(method2), name2) == 0);
+        assert(ar_method_get_version(method2) == version2);
+        assert(ar_method_is_persistent(method2) == false);
+        assert(strcmp(ar_method_get_instructions(method2), instructions2) == 0);
     }
     
     printf("Method persistence tests passed!\n");

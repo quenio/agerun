@@ -1,6 +1,7 @@
 #include "agerun_methodology.h"
 #include "agerun_method.h"
 #include "agerun_string.h"
+#include "agerun_debug.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,8 +14,21 @@
 #define MAX_METHOD_NAME_LENGTH 64
 #define MAX_INSTRUCTIONS_LENGTH 16384
 
+/* 
+ * Access the internal method structure from method.c
+ * This is needed for methodology to work efficiently with methods
+ */
+struct method_s {
+    char name[MAX_METHOD_NAME_LENGTH];
+    version_t version;
+    version_t previous_version;
+    bool backward_compatible;
+    bool persist;
+    char instructions[MAX_INSTRUCTIONS_LENGTH];
+};
+
 /* Global State */
-static method_t methods[MAX_METHODS][MAX_VERSIONS_PER_METHOD];
+static struct method_s methods[MAX_METHODS][MAX_VERSIONS_PER_METHOD];
 static int method_counts[MAX_METHODS];
 static int method_name_count = 0;
 
@@ -97,6 +111,8 @@ int ar_methodology_find_method_idx(const char *ref_name) {
 }
 
 method_t* ar_methodology_get_method_storage(int method_idx, int version_idx) {
+    AR_ASSERT(method_idx >= 0 && method_idx < MAX_METHODS, "Method index out of bounds");
+    AR_ASSERT(version_idx >= 0 && version_idx < MAX_VERSIONS_PER_METHOD, "Version index out of bounds");
     return &methods[method_idx][version_idx];
 }
 
@@ -137,16 +153,16 @@ bool ar_methodology_save_methods(void) {
         
         // For each version
         for (int j = 0; j < method_counts[i]; j++) {
-            method_t *ref_method = &methods[i][j];
+            const method_t *ref_method = &methods[i][j];
             
             // Write method metadata
             fprintf(mut_fp, "%d %d %d\n", 
-                    ref_method->version, 
-                    ref_method->backward_compatible ? 1 : 0,
-                    ref_method->persist ? 1 : 0);
+                    ar_method_get_version(ref_method), 
+                    ar_method_is_backward_compatible(ref_method) ? 1 : 0,
+                    ar_method_is_persistent(ref_method) ? 1 : 0);
             
-            // Write instructions (base64 encoded or other suitable format)
-            fprintf(mut_fp, "%s\n", ref_method->instructions);
+            // Write instructions
+            fprintf(mut_fp, "%s\n", ar_method_get_instructions(ref_method));
         }
     }
     
@@ -243,7 +259,7 @@ bool ar_methodology_load_methods(void) {
             }
             
             // Register the method
-            method_t *mut_method = &methods[method_idx][method_counts[method_idx]++];
+            struct method_s *mut_method = &methods[method_idx][method_counts[method_idx]++];
             strncpy(mut_method->name, name, MAX_METHOD_NAME_LENGTH - 1);
             mut_method->name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
             mut_method->version = version;

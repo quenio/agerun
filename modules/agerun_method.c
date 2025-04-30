@@ -5,6 +5,7 @@
 #include "agerun_data.h"
 #include "agerun_agent.h"
 #include "agerun_map.h"
+#include "agerun_debug.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,6 +16,47 @@
 /* Constants */
 #define MAX_INSTRUCTIONS_LENGTH 16384
 #define MAX_METHOD_NAME_LENGTH 64
+
+/* Method Definition (full structure) */
+struct method_s {
+    char name[MAX_METHOD_NAME_LENGTH];
+    version_t version;
+    version_t previous_version;
+    bool backward_compatible;
+    bool persist;
+    char instructions[MAX_INSTRUCTIONS_LENGTH];
+};
+
+/* Accessor functions implementation */
+const char* ar_method_get_name(const method_t *ref_method) {
+    AR_ASSERT(ref_method != NULL, "Method pointer cannot be NULL");
+    return ref_method->name;
+}
+
+version_t ar_method_get_version(const method_t *ref_method) {
+    AR_ASSERT(ref_method != NULL, "Method pointer cannot be NULL");
+    return ref_method->version;
+}
+
+version_t ar_method_get_previous_version(const method_t *ref_method) {
+    AR_ASSERT(ref_method != NULL, "Method pointer cannot be NULL");
+    return ref_method->previous_version;
+}
+
+bool ar_method_is_backward_compatible(const method_t *ref_method) {
+    AR_ASSERT(ref_method != NULL, "Method pointer cannot be NULL");
+    return ref_method->backward_compatible;
+}
+
+bool ar_method_is_persistent(const method_t *ref_method) {
+    AR_ASSERT(ref_method != NULL, "Method pointer cannot be NULL");
+    return ref_method->persist;
+}
+
+const char* ar_method_get_instructions(const method_t *ref_method) {
+    AR_ASSERT(ref_method != NULL, "Method pointer cannot be NULL");
+    return ref_method->instructions;
+}
 
 version_t ar_method_create(const char *ref_name, const char *ref_instructions, 
                         version_t previous_version, bool backward_compatible, 

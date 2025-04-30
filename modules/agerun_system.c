@@ -121,7 +121,7 @@ bool ar_system_process_next_message(void) {
                         printf("[complex data]\n");
                     }
                     
-                    ar_method_run(&mut_agents[i], own_message, ref_method->instructions);
+                    ar_method_run(&mut_agents[i], own_message, ar_method_get_instructions(ref_method));
                     
                     // Free the message as it's now been processed
                     ar_data_destroy(own_message);
