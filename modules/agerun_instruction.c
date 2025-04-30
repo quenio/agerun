@@ -77,7 +77,7 @@ static bool parse_assignment(agent_t *mut_agent, data_t *mut_message, const char
     skip_whitespace(ref_instruction, mut_pos);
     
     // Evaluate the expression (right side)
-    expression_context_t *ctx = ar_expression_create_context(mut_agent->memory, mut_agent->context, mut_message, ref_instruction + *mut_pos);
+    expression_context_t *ctx = ar_expression_create_context(mut_agent->own_memory, mut_agent->mut_context, mut_message, ref_instruction + *mut_pos);
     if (!ctx) {
         free(path);
         path = NULL; // Mark as freed
@@ -100,7 +100,7 @@ static bool parse_assignment(agent_t *mut_agent, data_t *mut_message, const char
     ctx = NULL; // Mark as destroyed
     
     // Store result in agent's memory (transfers ownership of value)
-    bool success = ar_data_set_map_data(mut_agent->memory, path, value);
+    bool success = ar_data_set_map_data(mut_agent->own_memory, path, value);
     if (!success) {
         ar_data_destroy(value);
     }
@@ -147,7 +147,7 @@ static bool parse_function_instruction(agent_t *mut_agent, data_t *mut_message, 
     // Store result in memory if assignment was present
     if (has_assignment && path && result) {
         // We're taking ownership of the result
-        bool success = ar_data_set_map_data(mut_agent->memory, path, result);
+        bool success = ar_data_set_map_data(mut_agent->own_memory, path, result);
         if (!success) {
             ar_data_destroy(result);
         }
@@ -237,7 +237,7 @@ static bool parse_function_call(agent_t *mut_agent, data_t *mut_message, const c
         skip_whitespace(ref_instruction, mut_pos);
         
         // Parse agent_id expression
-        expression_context_t *agent_id_ctx = ar_expression_create_context(mut_agent->memory, mut_agent->context, mut_message, ref_instruction + *mut_pos);
+        expression_context_t *agent_id_ctx = ar_expression_create_context(mut_agent->own_memory, mut_agent->mut_context, mut_message, ref_instruction + *mut_pos);
         if (!agent_id_ctx) {
             return false;
         }
@@ -267,7 +267,7 @@ static bool parse_function_call(agent_t *mut_agent, data_t *mut_message, const c
         skip_whitespace(ref_instruction, mut_pos);
         
         // Parse message expression
-        expression_context_t *msg_ctx = ar_expression_create_context(mut_agent->memory, mut_agent->context, mut_message, ref_instruction + *mut_pos);
+        expression_context_t *msg_ctx = ar_expression_create_context(mut_agent->own_memory, mut_agent->mut_context, mut_message, ref_instruction + *mut_pos);
         if (!msg_ctx) {
             ar_data_destroy(agent_id_data);
             agent_id_data = NULL; // Mark as destroyed
@@ -337,7 +337,7 @@ static bool parse_function_call(agent_t *mut_agent, data_t *mut_message, const c
         skip_whitespace(ref_instruction, mut_pos);
         
         // Parse condition expression
-        expression_context_t *cond_ctx = ar_expression_create_context(mut_agent->memory, mut_agent->context, mut_message, ref_instruction + *mut_pos);
+        expression_context_t *cond_ctx = ar_expression_create_context(mut_agent->own_memory, mut_agent->mut_context, mut_message, ref_instruction + *mut_pos);
         if (!cond_ctx) {
             return false;
         }
@@ -367,7 +367,7 @@ static bool parse_function_call(agent_t *mut_agent, data_t *mut_message, const c
         skip_whitespace(ref_instruction, mut_pos);
         
         // Parse true_value expression
-        expression_context_t *true_ctx = ar_expression_create_context(mut_agent->memory, mut_agent->context, mut_message, ref_instruction + *mut_pos);
+        expression_context_t *true_ctx = ar_expression_create_context(mut_agent->own_memory, mut_agent->mut_context, mut_message, ref_instruction + *mut_pos);
         if (!true_ctx) {
             ar_data_destroy(cond_data);
             cond_data = NULL; // Mark as destroyed
@@ -403,7 +403,7 @@ static bool parse_function_call(agent_t *mut_agent, data_t *mut_message, const c
         skip_whitespace(ref_instruction, mut_pos);
         
         // Parse false_value expression
-        expression_context_t *false_ctx = ar_expression_create_context(mut_agent->memory, mut_agent->context, mut_message, ref_instruction + *mut_pos);
+        expression_context_t *false_ctx = ar_expression_create_context(mut_agent->own_memory, mut_agent->mut_context, mut_message, ref_instruction + *mut_pos);
         if (!false_ctx) {
             ar_data_destroy(cond_data);
             cond_data = NULL; // Mark as destroyed

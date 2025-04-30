@@ -11,85 +11,86 @@
 /* Constants */
 
 /* Global State */
-static agent_t agents[MAX_AGENTS];
-static agent_id_t next_agent_id = 1;
-static bool is_initialized = false;
+static agent_t g_own_agents[MAX_AGENTS]; // Owned by the agency module
+static agent_id_t g_next_agent_id = 1;
+static bool g_is_initialized = false;
 
 /* Static initialization */
 static void ar_agency_init(void) {
-    if (!is_initialized) {
+    if (!g_is_initialized) {
         for (int i = 0; i < MAX_AGENTS; i++) {
-            agents[i].is_active = false;
-            agents[i].memory = NULL;
-            agents[i].message_queue = NULL;
-            agents[i].context = NULL;
+            g_own_agents[i].is_active = false;
+            g_own_agents[i].own_memory = NULL;
+            g_own_agents[i].own_message_queue = NULL;
+            g_own_agents[i].mut_context = NULL; // Not owned, just initialize reference
         }
-        is_initialized = true;
+        g_is_initialized = true;
     }
 }
 
 /* Implementation */
 void ar_agency_set_initialized(bool initialized) {
-    is_initialized = initialized;
+    g_is_initialized = initialized;
 }
 
 agent_t* ar_agency_get_agents(void) {
-    if (!is_initialized) {
+    if (!g_is_initialized) {
         ar_agency_init();
     }
-    return agents;
+    return g_own_agents; // Ownership: Borrowed reference (module retains ownership)
 }
 
 agent_id_t ar_agency_get_next_id(void) {
-    return next_agent_id;
+    return g_next_agent_id; // Value type, not a reference
 }
 
 void ar_agency_set_next_id(agent_id_t id) {
-    next_agent_id = id;
+    g_next_agent_id = id; // Value type, not a reference
 }
 
 void ar_agency_reset(void) {
     // Reset all agents to inactive
     for (int i = 0; i < MAX_AGENTS; i++) {
-        if (agents[i].is_active) {
-            if (agents[i].memory) {
-                ar_data_destroy(agents[i].memory);
+        if (g_own_agents[i].is_active) {
+            // Free memory data if it exists
+            if (g_own_agents[i].own_memory) {
+                ar_data_destroy(g_own_agents[i].own_memory);
+                g_own_agents[i].own_memory = NULL; // Mark as destroyed
             }
-            // Only destroy context if it exists
-            if (agents[i].context) {
-                ar_data_destroy(agents[i].context);
-            }
-            if (agents[i].message_queue) {
-                ar_list_destroy(agents[i].message_queue);
+            
+            // Clear context reference (we don't own it)
+            g_own_agents[i].mut_context = NULL;
+            
+            // Free message queue if it exists
+            if (g_own_agents[i].own_message_queue) {
+                ar_list_destroy(g_own_agents[i].own_message_queue);
+                g_own_agents[i].own_message_queue = NULL; // Mark as destroyed
             }
         }
-        agents[i].is_active = false;
-        agents[i].memory = NULL;
-        agents[i].context = NULL;
-        agents[i].message_queue = NULL;
+        g_own_agents[i].is_active = false;
     }
     
     // Reset next_agent_id
-    next_agent_id = 1;
+    g_next_agent_id = 1;
 }
 
 int ar_agency_count_agents(void) {
-    if (!is_initialized) {
+    if (!g_is_initialized) {
         return 0;
     }
     
     int count = 0;
     for (int i = 0; i < MAX_AGENTS; i++) {
-        if (agents[i].is_active) {
+        if (g_own_agents[i].is_active) {
             count++;
         }
     }
     
-    return count;
+    return count; // Value type, not a reference
 }
 
 bool ar_agency_save_agents(void) {
-    if (!is_initialized) {
+    if (!g_is_initialized) {
         return false;
     }
     
@@ -103,7 +104,7 @@ bool ar_agency_save_agents(void) {
     // Count how many persistent agents we have
     int count = 0;
     for (int i = 0; i < MAX_AGENTS; i++) {
-        if (agents[i].is_active && agents[i].is_persistent) {
+        if (g_own_agents[i].is_active && g_own_agents[i].is_persistent) {
             count++;
         }
     }
@@ -112,8 +113,8 @@ bool ar_agency_save_agents(void) {
     
     // Save basic agent info
     for (int i = 0; i < MAX_AGENTS; i++) {
-        if (agents[i].is_active && agents[i].is_persistent) {
-            fprintf(fp, "%lld %s %d\n", agents[i].id, agents[i].method_name, agents[i].method_version);
+        if (g_own_agents[i].is_active && g_own_agents[i].is_persistent) {
+            fprintf(fp, "%lld %s %d\n", g_own_agents[i].id, g_own_agents[i].method_name, g_own_agents[i].method_version);
             
             // Save memory map placeholder
             // For now, just save an empty count since we can't access the internal structure
@@ -128,7 +129,7 @@ bool ar_agency_save_agents(void) {
 }
 
 bool ar_agency_load_agents(void) {
-    if (!is_initialized) {
+    if (!g_is_initialized) {
         return false;
     }
     
@@ -161,11 +162,12 @@ bool ar_agency_load_agents(void) {
             printf("Error: Could not recreate agent %lld\n", id);
             continue;
         }
+        // Note: The ar_agent_create function takes ownership of any context passed
         
         // Update the assigned ID to match the stored one
         for (int j = 0; j < MAX_AGENTS; j++) {
-            if (agents[j].is_active && agents[j].id == new_id) {
-                agents[j].id = id;
+            if (g_own_agents[j].is_active && g_own_agents[j].id == new_id) {
+                g_own_agents[j].id = id;
                 
                 // Read memory map
                 int mem_count = 0;
@@ -183,28 +185,28 @@ bool ar_agency_load_agents(void) {
                         break;
                     }
                     
-                    data_t *value = NULL;
+                    data_t *own_value = NULL; // Will be an owned value after creation
                     if (strcmp(type, "int") == 0) {
                         int int_value;
                         if (fscanf(fp, "%d", &int_value) != 1) {
                             printf("Error: Could not read int value\n");
                             break;
                         }
-                        value = ar_data_create_integer(int_value);
+                        own_value = ar_data_create_integer(int_value);
                     } else if (strcmp(type, "double") == 0) {
                         double double_value;
                         if (fscanf(fp, "%lf", &double_value) != 1) {
                             printf("Error: Could not read double value\n");
                             break;
                         }
-                        value = ar_data_create_double(double_value);
+                        own_value = ar_data_create_double(double_value);
                     } else if (strcmp(type, "string") == 0) {
                         char str[1024];
                         if (fscanf(fp, "%1023s", str) != 1) {
                             printf("Error: Could not read string value\n");
                             break;
                         }
-                        value = ar_data_create_string(str);
+                        own_value = ar_data_create_string(str);
                     } else {
                         // Skip unknown type
                         char line[1024];
@@ -212,9 +214,10 @@ bool ar_agency_load_agents(void) {
                         continue;
                     }
                     
-                    if (value) {
-                        ar_data_set_map_data(agents[j].memory, key, value);
+                    if (own_value) {
+                        ar_data_set_map_data(g_own_agents[j].own_memory, key, own_value);
                         // Note: Data ownership is transferred, so we don't free value here
+                        own_value = NULL; // Mark as transferred
                     }
                 }
                 
@@ -223,8 +226,8 @@ bool ar_agency_load_agents(void) {
         }
         
         // Update next_agent_id if needed
-        if (id >= next_agent_id) {
-            next_agent_id = id + 1;
+        if (id >= g_next_agent_id) {
+            g_next_agent_id = id + 1;
         }
     }
     

@@ -74,35 +74,36 @@ version_t ar_method_create(const char *name, const char *instructions,
     return new_version;
 }
 
-bool ar_method_run(agent_t *agent, data_t *message, const char *instructions) {
-    if (!agent || !instructions) {
+bool ar_method_run(agent_t *mut_agent, data_t *mut_message, const char *ref_instructions) {
+    if (!mut_agent || !ref_instructions) {
         return false;
     }
     
     // Make a copy of the instructions for tokenization
-    char *instructions_copy = strdup(instructions);
-    if (!instructions_copy) {
+    char *own_instructions_copy = strdup(ref_instructions);
+    if (!own_instructions_copy) {
         return false;
     }
     
     // Split instructions by newlines
-    char *instruction = strtok(instructions_copy, "\n");
+    char *mut_instruction = strtok(own_instructions_copy, "\n");
     bool result = true;
     
-    while (instruction != NULL) {
-        instruction = ar_string_trim(instruction);
+    while (mut_instruction != NULL) {
+        mut_instruction = ar_string_trim(mut_instruction);
         
         // Skip empty lines and comments
-        if (strlen(instruction) > 0 && instruction[0] != '#') {
-            if (!ar_instruction_run(agent, message, instruction)) {
+        if (strlen(mut_instruction) > 0 && mut_instruction[0] != '#') {
+            if (!ar_instruction_run(mut_agent, mut_message, mut_instruction)) {
                 result = false;
                 break;
             }
         }
         
-        instruction = strtok(NULL, "\n");
+        mut_instruction = strtok(NULL, "\n");
     }
     
-    free(instructions_copy);
+    free(own_instructions_copy);
+    own_instructions_copy = NULL; // Mark as freed
     return result;
 }

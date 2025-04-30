@@ -62,9 +62,10 @@ static void test_agent_send(void) {
     assert(agent_id > 0);
     
     // When we send a message to the agent
-    data_t *message_data = ar_data_create_string(g_hello_message);
-    assert(message_data != NULL);
-    bool send_result = ar_agent_send(agent_id, message_data);
+    data_t *own_message_data = ar_data_create_string(g_hello_message);
+    assert(own_message_data != NULL);
+    bool send_result = ar_agent_send(agent_id, own_message_data);
+    own_message_data = NULL; // Mark as transferred
     
     // Then the message should be sent successfully
     assert(send_result);
@@ -129,12 +130,12 @@ static void test_agent_persistence(void) {
     assert(version > 0);
     
     // Create a context with data_t
-    data_t *context = ar_data_create_map();
-    assert(context != NULL);
-    ar_data_set_map_string(context, "test_key", "test_value");
+    data_t *own_context = ar_data_create_map();
+    assert(own_context != NULL);
+    ar_data_set_map_string(own_context, "test_key", "test_value");
     
-    // And an agent created with this persistent method
-    agent_id_t agent_id = ar_agent_create(method_name, version, context);
+    // And an agent created with this persistent method - agent doesn't take ownership
+    agent_id_t agent_id = ar_agent_create(method_name, version, own_context);
     assert(agent_id > 0);
     
     // When we save agents to disk
@@ -164,6 +165,10 @@ static void test_agent_persistence(void) {
     
     // Cleanup
     ar_agent_destroy(agent_id);
+    
+    // Since the agent didn't take ownership, we need to cleanup our context
+    ar_data_destroy(own_context);
+    own_context = NULL; // Mark as destroyed
     
     printf("Agent persistence test passed!\n");
 }
