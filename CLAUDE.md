@@ -305,6 +305,10 @@ IMPORTANT:
    - Keep this CLAUDE.md file updated with current best practices
    - Consider this file the source of truth for development procedures
    - Documenting guidelines here ensures consistency across development sessions
+   - When reviewing "pending tasks," always check both:
+     - The session's current todo list (using TodoRead)
+     - The TODO.md file in the repository
+     - This provides a comprehensive view of both immediate session tasks and longer-term project tasks
 
 10. **Code Presentations**:
    - When asked to show "the actual code" for a structure declaration or similar, provide only the exact code without additional commentary
