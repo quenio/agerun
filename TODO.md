@@ -136,3 +136,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Fix the method function to use 3 parameters as per the spec instead of 6 parameters
   - [ ] Add tests for the method function in the instruction module
   - [ ] Update the instruction module documentation to match the implementation
+
+- [ ] Code optimization improvements:
+  - [ ] In the instruction module, reuse local expression context variable
+    - [ ] Use a single `own_context` variable within the same function when processing multiple expressions
+    - [ ] Ensure proper context destruction before reuse
+    - [ ] Maintain clear ownership semantics while eliminating redundant variables
