@@ -72,7 +72,7 @@ AgeRun implements a memory ownership model with three fundamental value categori
 ```c
 // OWNER: Caller owns memory, context, message
 // OWNER: Context owns newly created results
-expression_context_t* ar_expression_create_context(data_t *mut_memory, data_t *mut_context, data_t *mut_message, const char *ref_expr);
+expression_context_t* ar_expression_create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message, const char *ref_expr);
 
 // BORROW: Returns reference to existing data or newly created data
 // OWNER: Context maintains ownership of result

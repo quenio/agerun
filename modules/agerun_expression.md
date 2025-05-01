@@ -35,16 +35,16 @@ expression string, current parsing position, and references to memory, context, 
 #### ar_expression_create_context
 
 ```c
-expression_context_t* ar_expression_create_context(data_t *memory, data_t *context, data_t *message, const char *expr);
+expression_context_t* ar_expression_create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message, const char *ref_expr);
 ```
 
 Creates a new expression evaluation context.
 
 - **Parameters:**
-  - `memory`: The agent's memory data (can be NULL if not needed)
-  - `context`: The agent's context data (can be NULL if not needed)
-  - `message`: The message being processed (can be NULL if not needed)
-  - `expr`: The expression string to evaluate
+  - `mut_memory`: The agent's memory data (mutable reference, can be NULL if not needed)
+  - `ref_context`: The agent's context data (borrowed reference, can be NULL if not needed)
+  - `ref_message`: The message being processed (borrowed reference, can be NULL if not needed)
+  - `ref_expr`: The expression string to evaluate (borrowed reference)
 - **Returns:** A newly created expression context, or NULL on failure
 - **Ownership:** The caller retains ownership of memory, context, and message
 

@@ -96,9 +96,9 @@ Removes and returns the last item from the list. Returns NULL if the list is emp
 **Ownership**: Returns a borrowed reference. The list does not transfer ownership to the caller.
 
 ```c
-bool ar_list_remove(list_t *mut_list, void *ref_item);
+void* ar_list_remove(list_t *mut_list, const void *ref_item);
 ```
-Removes all occurrences of an item from the list by direct pointer comparison. Returns true if at least one occurrence of the item was found and removed, false otherwise.  
+Removes the first occurrence of an item from the list by direct pointer comparison. Returns the removed item as a non-const pointer, or NULL if it was not found.  
 **Ownership**: This function does not affect ownership of the item. The caller remains responsible for freeing the item if necessary.
 
 #### Querying
@@ -269,10 +269,11 @@ int *own_value3 = malloc(sizeof(int));
 ar_list_add_last(own_list, own_value3);
 
 // Remove the middle item by its pointer value
-if (ar_list_remove(own_list, own_value2)) {
-    printf("Item removed successfully\n");
-    free(own_value2); // Free the item ourselves after removing it from the list
-    own_value2 = NULL; // Mark as freed
+int *removed_item = (int*)ar_list_remove(own_list, own_value2);
+if (removed_item) {
+    printf("Item removed successfully, value: %d\n", *removed_item);
+    free(removed_item); // Free the item ourselves after removing it from the list
+    removed_item = NULL; // Mark as freed
 }
 
 // The list now contains value1 and value3 only

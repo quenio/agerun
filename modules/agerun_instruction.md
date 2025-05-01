@@ -49,14 +49,14 @@ The instruction module implements the following BNF grammar:
 ### ar_instruction_run
 
 ```c
-bool ar_instruction_run(agent_t *mut_agent, data_t *mut_message, const char *ref_instruction);
+bool ar_instruction_run(agent_t *mut_agent, const data_t *ref_message, const char *ref_instruction);
 ```
 
 Parses and executes a single instruction in the agent's context.
 
 **Parameters:**
 - `mut_agent`: The agent executing the instruction (mutable reference)
-- `mut_message`: The message being processed (mutable reference)
+- `ref_message`: The message being processed (borrowed reference)
 - `ref_instruction`: The instruction string to parse and execute (borrowed reference)
 
 **Returns:**
