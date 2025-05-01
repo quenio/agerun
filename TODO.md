@@ -142,3 +142,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [ ] Use a single `own_context` variable within the same function when processing multiple expressions
     - [ ] Ensure proper context destruction before reuse
     - [ ] Maintain clear ownership semantics while eliminating redundant variables
+
+- [ ] Ownership prefix consistency improvements:
+  - [ ] Fix list module parameter naming
+    - [ ] Change non-const `ref_item` parameters to `mut_item` since they are mutable references
+    - [ ] Update API documentation to reflect the correct parameter semantics
+    - [ ] Ensure consistency across all list operations
