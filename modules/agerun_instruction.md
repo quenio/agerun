@@ -35,7 +35,7 @@ The instruction module implements the following BNF grammar:
 <send-function> ::= 'send' '(' <expression> ',' <expression> ')'
 <parse-function> ::= 'parse' '(' <expression> ',' <expression> ')'
 <build-function> ::= 'build' '(' <expression> ',' <expression> ')'
-<method-function> ::= 'method' '(' <expression> ',' <expression> ',' <expression> ')'
+<method-function> ::= 'method' '(' <expression> ',' <expression> ',' <expression> ',' <expression> ',' <expression> ',' <expression> ')'
 <agent-function> ::= 'agent' '(' <expression> ',' <expression> [',' <expression>] ')'
 <destroy-function> ::= 'destroy' '(' <expression> ')'
                      | 'destroy' '(' <expression> ',' <expression> ')'

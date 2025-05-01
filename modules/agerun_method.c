@@ -65,13 +65,26 @@ void ar_method_destroy(method_t *own_method) {
 
 /**
  * Creates a new method with the given parameters
- * This function creates and returns an allocated method object that the caller takes ownership of.
+ * @param ref_name Method name (borrowed reference)
+ * @param ref_instructions The method implementation code (borrowed reference)
+ * @param version The version number for this method (pass 0 to auto-increment from previous_version)
+ * @param previous_version Previous version number (0 for first version)
+ * @param backward_compatible Whether the method is backward compatible
+ * @param persist Whether agents using this method should persist
+ * @return Newly created method object, or NULL on failure
+ * @note Ownership: Returns an owned object that the caller must destroy with ar_method_destroy.
+ *       The method copies the name and instructions. The original strings remain owned by the caller.
  */
-method_t* ar_method_create_object(const char *ref_name, const char *ref_instructions, 
+method_t* ar_method_create(const char *ref_name, const char *ref_instructions, 
                          version_t version, version_t previous_version, 
                          bool backward_compatible, bool persist) {
     if (!ref_name || !ref_instructions) {
         return NULL;
+    }
+    
+    // Calculate version if auto-increment requested
+    if (version == 0) {
+        version = previous_version + 1;
     }
     
     // Allocate memory for the new method
@@ -93,31 +106,6 @@ method_t* ar_method_create_object(const char *ref_name, const char *ref_instruct
     mut_method->instructions[MAX_INSTRUCTIONS_LENGTH - 1] = '\0';
     
     return mut_method;
-}
-
-version_t ar_method_create(const char *ref_name, const char *ref_instructions, 
-                        version_t previous_version, bool backward_compatible, 
-                        bool persist) {
-    if (!ref_name || !ref_instructions) {
-        return 0;
-    }
-    
-    version_t version = previous_version + 1;
-    
-    // Create a new method object with the next version number
-    method_t *mut_method = ar_method_create_object(ref_name, ref_instructions, 
-                                          version, previous_version, 
-                                          backward_compatible, persist);
-    if (!mut_method) {
-        return 0;
-    }
-    
-    // Let the methodology module handle this - it will track, store, and own the method
-    extern void ar_methodology_register_method(method_t *own_method);
-    ar_methodology_register_method(mut_method);
-    
-    // Return the version number
-    return version;
 }
 
 bool ar_method_run(agent_t *mut_agent, data_t *mut_message, const char *ref_instructions) {
