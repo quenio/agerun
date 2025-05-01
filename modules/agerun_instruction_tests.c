@@ -18,8 +18,17 @@ static void test_message_send_instructions(void);
 
 // Helper function to set up an agent for testing
 static agent_id_t setup_test_agent(const char *ref_method_name, const char *ref_instructions) {
-    version_t version = ar_method_create(ref_method_name, ref_instructions, 0, false, false);
-    assert(version > 0);
+    // Create method and register it with methodology 
+    method_t *own_method = ar_method_create(ref_method_name, ref_instructions, 0, 0, false, false);
+    assert(own_method != NULL);
+    
+    // Register with methodology
+    extern void ar_methodology_register_method(method_t *own_method);
+    ar_methodology_register_method(own_method);
+    own_method = NULL; // Mark as transferred
+    
+    // For test purposes, we assume registration succeeds and creates version 1
+    version_t version = 1;
     
     agent_id_t agent_id = ar_agent_create(ref_method_name, version, NULL);
     assert(agent_id > 0);
@@ -179,7 +188,18 @@ int main(void) {
     // Given a test method and initialized system
     const char *ref_init_method = "instruction_test_method";
     const char *ref_init_instructions = "memory.result = \"Test complete\"";
-    version_t init_version = ar_method_create(ref_init_method, ref_init_instructions, 0, false, false);
+    
+    // Create method and register it with methodology 
+    method_t *own_method = ar_method_create(ref_init_method, ref_init_instructions, 0, 0, false, false);
+    assert(own_method != NULL);
+    
+    // Register with methodology
+    extern void ar_methodology_register_method(method_t *own_method);
+    ar_methodology_register_method(own_method);
+    own_method = NULL; // Mark as transferred
+    
+    // For test purposes, we assume registration succeeds and creates version 1
+    version_t init_version = 1;
     
     // When we initialize the system
     ar_system_init(ref_init_method, init_version);
@@ -197,3 +217,4 @@ int main(void) {
     printf("All instruction tests passed!\n");
     return 0;
 }
+

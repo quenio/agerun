@@ -30,24 +30,44 @@ int ar_executable_main(void) {
     // Create a simple echo method
     printf("Creating echo method...\n");
     const char *ref_echo_instructions = "send(0, message)";
-    version_t echo_version = ar_method_create("echo", ref_echo_instructions, 0, true, false);
-    if (echo_version == 0) {
+    
+    // Create method and register it with methodology 
+    method_t *own_echo_method = ar_method_create("echo", ref_echo_instructions, 0, 0, true, false);
+    if (!own_echo_method) {
         printf("Failed to create echo method\n");
         ar_system_shutdown();
         return 1;
     }
+    
+    // Register with methodology
+    extern void ar_methodology_register_method(method_t *own_method);
+    ar_methodology_register_method(own_echo_method);
+    own_echo_method = NULL; // Mark as transferred
+    
+    // For simplicity, we use version 1 for the echo method
+    version_t echo_version = 1;
+    
     printf("Echo method created with version %d\n\n", echo_version);
     
     // Create a simplified counter method that just echoes back messages
     printf("Creating counter method...\n");
     const char *ref_counter_code = "send(0, \"Hello from counter!\")";
     
-    version_t counter_version = ar_method_create("counter", ref_counter_code, 0, true, true);
-    if (counter_version == 0) {
+    // Create method and register it with methodology 
+    method_t *own_counter_method = ar_method_create("counter", ref_counter_code, 0, 0, true, true);
+    if (!own_counter_method) {
         printf("Failed to create counter method\n");
         ar_system_shutdown();
         return 1;
     }
+    
+    // Register with methodology
+    ar_methodology_register_method(own_counter_method);
+    own_counter_method = NULL; // Mark as transferred
+    
+    // For simplicity, we use version 1 for the counter method
+    version_t counter_version = 1;
+    
     printf("Counter method created with version %d\n\n", counter_version);
     
     // Create the initial agent

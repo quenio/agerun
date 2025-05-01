@@ -348,8 +348,8 @@ bool ar_methodology_load_methods(void) {
             }
             
             // Create a new method with the exact version and previous_version from the file
-            method_t *mut_method = ar_method_create_object(name, instructions, version, previous_version, 
-                                                  backward_compatible != 0, persist != 0);
+            method_t *mut_method = ar_method_create(name, instructions, version, previous_version, 
+                                            backward_compatible != 0, persist != 0);
             
             if (mut_method) {
                 // Store the method directly in the methods array

@@ -4,6 +4,8 @@
 #include "agerun_agent.h"
 #include "agerun_expression.h"
 #include "agerun_map.h"
+#include "agerun_method.h"
+#include "agerun_methodology.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -473,8 +475,289 @@ static bool parse_function_call(agent_t *mut_agent, data_t *mut_message, const c
         cond_data = NULL; // Mark as destroyed
         return true;
     }
+    else if (strcmp(function_name, "method") == 0) {
+        // method(name, instructions, previous_version, backward_compatible, persist)
+        skip_whitespace(ref_instruction, mut_pos);
+        
+        // Parse method name expression
+        expression_context_t *name_ctx = ar_expression_create_context(mut_agent->own_memory, mut_agent->mut_context, mut_message, ref_instruction + *mut_pos);
+        if (!name_ctx) {
+            return false;
+        }
+        data_t *name_data = ar_expression_evaluate(name_ctx);
+        *mut_pos += ar_expression_offset(name_ctx);
+        
+        if (!name_data) {
+            ar_expression_destroy_context(name_ctx);
+            name_ctx = NULL; // Mark as destroyed
+            return false;
+        }
+        
+        // Take ownership of name_data
+        ar_expression_take_ownership(name_ctx, name_data);
+        ar_expression_destroy_context(name_ctx);
+        name_ctx = NULL; // Mark as destroyed
+        
+        // Ensure name is a string
+        if (ar_data_get_type(name_data) != DATA_STRING) {
+            ar_data_destroy(name_data);
+            name_data = NULL; // Mark as destroyed
+            return false;
+        }
+        const char *method_name = ar_data_get_string(name_data);
+        
+        skip_whitespace(ref_instruction, mut_pos);
+        
+        // Expect comma
+        if (ref_instruction[*mut_pos] != ',') {
+            ar_data_destroy(name_data);
+            name_data = NULL; // Mark as destroyed
+            return false;
+        }
+        (*mut_pos)++; // Skip ','
+        skip_whitespace(ref_instruction, mut_pos);
+        
+        // Parse instructions expression
+        expression_context_t *instr_ctx = ar_expression_create_context(mut_agent->own_memory, mut_agent->mut_context, mut_message, ref_instruction + *mut_pos);
+        if (!instr_ctx) {
+            ar_data_destroy(name_data);
+            name_data = NULL; // Mark as destroyed
+            return false;
+        }
+        data_t *instr_data = ar_expression_evaluate(instr_ctx);
+        *mut_pos += ar_expression_offset(instr_ctx);
+        
+        if (!instr_data) {
+            ar_expression_destroy_context(instr_ctx);
+            instr_ctx = NULL; // Mark as destroyed
+            ar_data_destroy(name_data);
+            name_data = NULL; // Mark as destroyed
+            return false;
+        }
+        
+        // Take ownership of instr_data
+        ar_expression_take_ownership(instr_ctx, instr_data);
+        ar_expression_destroy_context(instr_ctx);
+        instr_ctx = NULL; // Mark as destroyed
+        
+        // Ensure instructions are a string
+        if (ar_data_get_type(instr_data) != DATA_STRING) {
+            ar_data_destroy(instr_data);
+            instr_data = NULL; // Mark as destroyed
+            ar_data_destroy(name_data);
+            name_data = NULL; // Mark as destroyed
+            return false;
+        }
+        const char *instructions = ar_data_get_string(instr_data);
+        
+        skip_whitespace(ref_instruction, mut_pos);
+        
+        // Expect comma
+        if (ref_instruction[*mut_pos] != ',') {
+            ar_data_destroy(instr_data);
+            instr_data = NULL; // Mark as destroyed
+            ar_data_destroy(name_data);
+            name_data = NULL; // Mark as destroyed
+            return false;
+        }
+        (*mut_pos)++; // Skip ','
+        skip_whitespace(ref_instruction, mut_pos);
+        
+        // Parse previous_version expression
+        expression_context_t *prev_ver_ctx = ar_expression_create_context(mut_agent->own_memory, mut_agent->mut_context, mut_message, ref_instruction + *mut_pos);
+        if (!prev_ver_ctx) {
+            ar_data_destroy(instr_data);
+            instr_data = NULL; // Mark as destroyed
+            ar_data_destroy(name_data);
+            name_data = NULL; // Mark as destroyed
+            return false;
+        }
+        data_t *prev_ver_data = ar_expression_evaluate(prev_ver_ctx);
+        *mut_pos += ar_expression_offset(prev_ver_ctx);
+        
+        if (!prev_ver_data) {
+            ar_expression_destroy_context(prev_ver_ctx);
+            prev_ver_ctx = NULL; // Mark as destroyed
+            ar_data_destroy(instr_data);
+            instr_data = NULL; // Mark as destroyed
+            ar_data_destroy(name_data);
+            name_data = NULL; // Mark as destroyed
+            return false;
+        }
+        
+        // Take ownership of prev_ver_data
+        ar_expression_take_ownership(prev_ver_ctx, prev_ver_data);
+        ar_expression_destroy_context(prev_ver_ctx);
+        prev_ver_ctx = NULL; // Mark as destroyed
+        
+        // Ensure previous_version is a number
+        version_t previous_version = 0;
+        if (ar_data_get_type(prev_ver_data) == DATA_INTEGER) {
+            previous_version = (version_t)ar_data_get_integer(prev_ver_data);
+        }
+        
+        skip_whitespace(ref_instruction, mut_pos);
+        
+        // Expect comma
+        if (ref_instruction[*mut_pos] != ',') {
+            ar_data_destroy(prev_ver_data);
+            prev_ver_data = NULL; // Mark as destroyed
+            ar_data_destroy(instr_data);
+            instr_data = NULL; // Mark as destroyed
+            ar_data_destroy(name_data);
+            name_data = NULL; // Mark as destroyed
+            return false;
+        }
+        (*mut_pos)++; // Skip ','
+        skip_whitespace(ref_instruction, mut_pos);
+        
+        // Parse backward_compatible expression
+        expression_context_t *compat_ctx = ar_expression_create_context(mut_agent->own_memory, mut_agent->mut_context, mut_message, ref_instruction + *mut_pos);
+        if (!compat_ctx) {
+            ar_data_destroy(prev_ver_data);
+            prev_ver_data = NULL; // Mark as destroyed
+            ar_data_destroy(instr_data);
+            instr_data = NULL; // Mark as destroyed
+            ar_data_destroy(name_data);
+            name_data = NULL; // Mark as destroyed
+            return false;
+        }
+        data_t *compat_data = ar_expression_evaluate(compat_ctx);
+        *mut_pos += ar_expression_offset(compat_ctx);
+        
+        if (!compat_data) {
+            ar_expression_destroy_context(compat_ctx);
+            compat_ctx = NULL; // Mark as destroyed
+            ar_data_destroy(prev_ver_data);
+            prev_ver_data = NULL; // Mark as destroyed
+            ar_data_destroy(instr_data);
+            instr_data = NULL; // Mark as destroyed
+            ar_data_destroy(name_data);
+            name_data = NULL; // Mark as destroyed
+            return false;
+        }
+        
+        // Take ownership of compat_data
+        ar_expression_take_ownership(compat_ctx, compat_data);
+        ar_expression_destroy_context(compat_ctx);
+        compat_ctx = NULL; // Mark as destroyed
+        
+        // Ensure backward_compatible is a boolean (or can be converted to one)
+        bool backward_compatible = false;
+        if (ar_data_get_type(compat_data) == DATA_INTEGER) {
+            backward_compatible = (ar_data_get_integer(compat_data) != 0);
+        }
+        
+        skip_whitespace(ref_instruction, mut_pos);
+        
+        // Expect comma
+        if (ref_instruction[*mut_pos] != ',') {
+            ar_data_destroy(compat_data);
+            compat_data = NULL; // Mark as destroyed
+            ar_data_destroy(prev_ver_data);
+            prev_ver_data = NULL; // Mark as destroyed
+            ar_data_destroy(instr_data);
+            instr_data = NULL; // Mark as destroyed
+            ar_data_destroy(name_data);
+            name_data = NULL; // Mark as destroyed
+            return false;
+        }
+        (*mut_pos)++; // Skip ','
+        skip_whitespace(ref_instruction, mut_pos);
+        
+        // Parse persist expression
+        expression_context_t *persist_ctx = ar_expression_create_context(mut_agent->own_memory, mut_agent->mut_context, mut_message, ref_instruction + *mut_pos);
+        if (!persist_ctx) {
+            ar_data_destroy(compat_data);
+            compat_data = NULL; // Mark as destroyed
+            ar_data_destroy(prev_ver_data);
+            prev_ver_data = NULL; // Mark as destroyed
+            ar_data_destroy(instr_data);
+            instr_data = NULL; // Mark as destroyed
+            ar_data_destroy(name_data);
+            name_data = NULL; // Mark as destroyed
+            return false;
+        }
+        data_t *persist_data = ar_expression_evaluate(persist_ctx);
+        *mut_pos += ar_expression_offset(persist_ctx);
+        
+        if (!persist_data) {
+            ar_expression_destroy_context(persist_ctx);
+            persist_ctx = NULL; // Mark as destroyed
+            ar_data_destroy(compat_data);
+            compat_data = NULL; // Mark as destroyed
+            ar_data_destroy(prev_ver_data);
+            prev_ver_data = NULL; // Mark as destroyed
+            ar_data_destroy(instr_data);
+            instr_data = NULL; // Mark as destroyed
+            ar_data_destroy(name_data);
+            name_data = NULL; // Mark as destroyed
+            return false;
+        }
+        
+        // Take ownership of persist_data
+        ar_expression_take_ownership(persist_ctx, persist_data);
+        ar_expression_destroy_context(persist_ctx);
+        persist_ctx = NULL; // Mark as destroyed
+        
+        // Ensure persist is a boolean (or can be converted to one)
+        bool persist = false;
+        if (ar_data_get_type(persist_data) == DATA_INTEGER) {
+            persist = (ar_data_get_integer(persist_data) != 0);
+        }
+        
+        skip_whitespace(ref_instruction, mut_pos);
+        
+        // Expect closing parenthesis
+        if (ref_instruction[*mut_pos] != ')') {
+            ar_data_destroy(persist_data);
+            persist_data = NULL; // Mark as destroyed
+            ar_data_destroy(compat_data);
+            compat_data = NULL; // Mark as destroyed
+            ar_data_destroy(prev_ver_data);
+            prev_ver_data = NULL; // Mark as destroyed
+            ar_data_destroy(instr_data);
+            instr_data = NULL; // Mark as destroyed
+            ar_data_destroy(name_data);
+            name_data = NULL; // Mark as destroyed
+            return false;
+        }
+        (*mut_pos)++; // Skip ')'
+        
+        // Create method (use auto-versioning by passing 0 for version)
+        method_t *own_method = ar_method_create(method_name, instructions, 0, previous_version, 
+                                          backward_compatible, persist);
+        
+        // Clean up input data
+        ar_data_destroy(persist_data);
+        persist_data = NULL; // Mark as destroyed
+        ar_data_destroy(compat_data);
+        compat_data = NULL; // Mark as destroyed
+        ar_data_destroy(prev_ver_data);
+        prev_ver_data = NULL; // Mark as destroyed
+        ar_data_destroy(instr_data);
+        instr_data = NULL; // Mark as destroyed
+        ar_data_destroy(name_data);
+        name_data = NULL; // Mark as destroyed
+        
+        // Check if method creation was successful
+        if (!own_method) {
+            // Method creation failed
+            *result = ar_data_create_integer(0);
+            return true;
+        }
+        
+        // Register the method with methodology
+        extern void ar_methodology_register_method(method_t *own_method);
+        ar_methodology_register_method(own_method);
+        own_method = NULL; // Mark as transferred
+        
+        // Return the new version number
+        *result = ar_data_create_integer(1); // Success indicator
+        return true;
+    }
     else {
-        // For all other functions (parse, build, method, agent, destroy),
+        // For all other functions (parse, build, agent, destroy),
         // just return a default result for now
         // Skip to closing parenthesis
         int nesting = 1;
