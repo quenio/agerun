@@ -335,3 +335,13 @@ IMPORTANT:
      - Ensure proper memory ownership semantics are maintained
      - Add memory management functions (create/destroy) if needed
      - Update tests to use the public API rather than accessing internals
+
+13. **File Ending Verification**:
+   - ALWAYS ensure every text file ends with a newline character
+   - After every file edit, explicitly verify the file ends with '\n'
+   - For Edit/Write tool usage, check that content ends with a newline before submission
+   - For multi-line edits, explicitly add a final empty line if not present
+   - Remember that missing newlines at end of file cause compiler errors with -Wall -Werror
+   - When creating new files, always terminate with a newline
+   - Never submit file edits that remove the final newline character
+   - This verification step is mandatory for ALL file modifications

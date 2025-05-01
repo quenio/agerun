@@ -65,3 +65,4 @@ bin/
 
 # Debug logs
 debug*.log
+**/.claude/settings.local.json
