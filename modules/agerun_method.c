@@ -108,7 +108,7 @@ method_t* ar_method_create(const char *ref_name, const char *ref_instructions,
     return mut_method;
 }
 
-bool ar_method_run(agent_t *mut_agent, data_t *mut_message, const char *ref_instructions) {
+bool ar_method_run(agent_t *mut_agent, const data_t *ref_message, const char *ref_instructions) {
     if (!mut_agent || !ref_instructions) {
         return false;
     }
@@ -128,7 +128,7 @@ bool ar_method_run(agent_t *mut_agent, data_t *mut_message, const char *ref_inst
         
         // Skip empty lines and comments
         if (strlen(mut_instruction) > 0 && mut_instruction[0] != '#') {
-            if (!ar_instruction_run(mut_agent, mut_message, mut_instruction)) {
+            if (!ar_instruction_run(mut_agent, ref_message, mut_instruction)) {
                 result = false;
                 break;
             }

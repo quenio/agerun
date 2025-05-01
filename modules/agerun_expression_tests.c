@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <stdint.h>
 
 // Test expression evaluation directly using the ar_expression_evaluate function
 static void test_string_literal(void);
@@ -97,7 +98,7 @@ static void test_string_literal(void) {
     assert(ctx != NULL);
     
     // When we evaluate the expression
-    data_t *result = ar_expression_evaluate(ctx);
+    const data_t *result = ar_expression_evaluate(ctx);
     
     // Then the result should be a string with the correct value
     assert(result != NULL);
@@ -126,7 +127,7 @@ static void test_number_literal(void) {
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
@@ -146,7 +147,7 @@ static void test_number_literal(void) {
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
@@ -166,7 +167,7 @@ static void test_number_literal(void) {
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_DOUBLE);
@@ -189,7 +190,7 @@ static void test_number_literal(void) {
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_DOUBLE);
@@ -263,7 +264,7 @@ static void test_memory_access(void) {
         expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_STRING);
@@ -282,7 +283,7 @@ static void test_memory_access(void) {
         expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_STRING);
@@ -301,7 +302,7 @@ static void test_memory_access(void) {
         expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_STRING);
@@ -320,7 +321,7 @@ static void test_memory_access(void) {
         expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
@@ -339,7 +340,7 @@ static void test_memory_access(void) {
         expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_STRING);
@@ -358,7 +359,7 @@ static void test_memory_access(void) {
         expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_STRING);
@@ -377,7 +378,7 @@ static void test_memory_access(void) {
         expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         // Should return NULL for non-existent path
         assert(result == NULL);
@@ -426,7 +427,7 @@ static void test_arithmetic_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
@@ -452,7 +453,7 @@ static void test_arithmetic_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
@@ -478,7 +479,7 @@ static void test_arithmetic_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
@@ -504,7 +505,7 @@ static void test_arithmetic_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
@@ -530,7 +531,7 @@ static void test_arithmetic_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
@@ -556,7 +557,7 @@ static void test_arithmetic_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_DOUBLE);
@@ -585,7 +586,7 @@ static void test_arithmetic_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_DOUBLE);
@@ -614,7 +615,7 @@ static void test_arithmetic_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_STRING);
@@ -643,9 +644,9 @@ static void test_arithmetic_expression(void) {
         printf("Context created successfully\n");
         fflush(stdout);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
-        printf("Expression evaluated, result is %p\n", (void*)result);
+        printf("Expression evaluated successfully\n");
         fflush(stdout);
         
         if (result) {
@@ -697,9 +698,9 @@ static void test_arithmetic_expression(void) {
         printf("Context created successfully\n");
         fflush(stdout);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
-        printf("Expression evaluated, result is %p\n", (void*)result);
+        printf("Expression evaluated successfully\n");
         fflush(stdout);
         
         if (result) {
@@ -737,9 +738,9 @@ static void test_arithmetic_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
-        printf("Expression evaluated, result is %p\n", (void*)result);
+        printf("Expression evaluated successfully\n");
         fflush(stdout);
         
         if (result) {
@@ -787,9 +788,9 @@ static void test_arithmetic_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
-        printf("Expression evaluated, result is %p\n", (void*)result);
+        printf("Expression evaluated successfully\n");
         fflush(stdout);
         
         if (result) {
@@ -872,9 +873,9 @@ static void test_comparison_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
-        printf("Equality test - Expr: '%s', Result: %p\n", expr, (void*)result);
+        printf("Equality test - Expr: '%s'\n", expr);
         if (result) {
             printf("Type: %d, Value: %d, Offset: %d\n", 
                    ar_data_get_type(result), 
@@ -907,9 +908,9 @@ static void test_comparison_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
-        printf("String equality test - Result: %p\n", (void*)result);
+        printf("String equality test\n");
         if (result) {
             printf("Type: %d, Value: %d, Offset: %d\n", 
                    ar_data_get_type(result), 
@@ -941,7 +942,7 @@ static void test_comparison_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
@@ -966,7 +967,7 @@ static void test_comparison_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
@@ -991,7 +992,7 @@ static void test_comparison_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
@@ -1016,7 +1017,7 @@ static void test_comparison_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
@@ -1041,7 +1042,7 @@ static void test_comparison_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
@@ -1066,7 +1067,7 @@ static void test_comparison_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
@@ -1091,7 +1092,7 @@ static void test_comparison_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
@@ -1116,7 +1117,7 @@ static void test_comparison_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
@@ -1141,7 +1142,7 @@ static void test_comparison_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
@@ -1166,7 +1167,7 @@ static void test_comparison_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
@@ -1191,7 +1192,7 @@ static void test_comparison_expression(void) {
         expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar_expression_evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
@@ -1237,7 +1238,7 @@ static void test_function_call_expression(void) {
     assert(ctx != NULL);
     
     // This should return NULL since function calls are not valid expressions
-    data_t *result = ar_expression_evaluate(ctx);
+    const data_t *result = ar_expression_evaluate(ctx);
     
     // Verify the result is NULL for invalid syntax
     assert(result == NULL);

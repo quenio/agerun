@@ -101,16 +101,21 @@ bool ar_list_empty(const list_t *ref_list);
 void** ar_list_items(const list_t *ref_list);
 
 /**
- * Remove all occurrences of an item from the list by value
+ * Remove the first occurrence of an item from the list by value
  * @param mut_list The list to remove from (mutable reference)
- * @param ref_item The item to remove (borrowed reference)
- * @return true if at least one occurrence of the item was found and removed, false otherwise
+ * @param ref_item The item to remove (const borrowed reference)
+ * @return The removed item as a non-const pointer, or NULL if it was not found
  * @note Ownership: This function does not affect ownership of the item. 
  *       The caller remains responsible for freeing the item if necessary.
  * @note This function compares the item pointer directly with the stored pointers,
  *       not the contents of what they point to.
+ * @note This function accepts a const reference to the item to facilitate removing
+ *       items from the list that have been passed as const references, particularly
+ *       when transferring ownership from a context to a caller.
+ * @note When the item is removed, it is returned as a non-const pointer, allowing the
+ *       caller to take ownership of it regardless of how it was originally passed.
  */
-bool ar_list_remove(list_t *mut_list, void *ref_item);
+void* ar_list_remove(list_t *mut_list, const void *ref_item);
 
 /**
  * Free all resources in a list

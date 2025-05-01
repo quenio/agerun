@@ -245,27 +245,27 @@ void** ar_list_items(const list_t *ref_list) {
 }
 
 /**
- * Remove all occurrences of an item from the list by value
- * @param list The list to remove from
- * @param item The item to remove
- * @return true if at least one occurrence of the item was found and removed, false otherwise
+ * Remove the first occurrence of an item from the list by value
+ * @param mut_list The list to remove from (mutable reference)
+ * @param ref_item The item to remove (const borrowed reference)
+ * @return The removed item as a non-const pointer, or NULL if it was not found
+ * @note Ownership: This function does not affect ownership of the item.
+ *       The caller remains responsible for freeing the item if necessary.
  * @note This function compares the item pointer directly with the stored pointers,
  *       not the contents of what they point to.
  */
-bool ar_list_remove(list_t *mut_list, void *ref_item) {
+void* ar_list_remove(list_t *mut_list, const void *ref_item) {
     if (!mut_list || mut_list->count == 0) {
-        return false;
+        return NULL;
     }
     
-    bool found = false;
     struct list_node_s *mut_current = mut_list->own_head;
     
     while (mut_current) {
-        struct list_node_s *mut_next = mut_current->mut_next;
-        
         // Check if this node contains the item to remove
         if (mut_current->ref_item == ref_item) {
-            // Remove this node from the list
+            // Store the item to return
+            void *removed_item = (void*)mut_current->ref_item;
             
             // Update the previous node's next pointer (or head if this is the first node)
             if (mut_current->mut_prev) {
@@ -283,20 +283,18 @@ bool ar_list_remove(list_t *mut_list, void *ref_item) {
             
             // Free the node
             free(mut_current);
-            // Note: Setting mut_current to NULL is technically not needed as we don't use it after this,
-            // but it would help signal that the memory is no longer accessible in more complex contexts.
             
             // Decrement count
             mut_list->count--;
             
-            // Mark that we found at least one occurrence
-            found = true;
+            // Return the removed item (with const qualifier removed)
+            return removed_item;
         }
         
-        mut_current = mut_next;
+        mut_current = mut_current->mut_next;
     }
     
-    return found;
+    return NULL;
 }
 
 /**

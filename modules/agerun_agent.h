@@ -23,18 +23,18 @@ typedef struct agent_s {
     bool is_persistent;
     list_t *own_message_queue;  // Using list as a message queue, owned by agent
     data_t *own_memory;        // Memory owned by agent
-    data_t *mut_context;       // Context mutable by agent but not owned
+    const data_t *ref_context;  // Context is read-only reference, not owned
 } agent_t;
 
 /**
  * Create a new agent instance
  * @param ref_method_name Name of the method to use (borrowed reference)
  * @param version Version of the method (0 for latest)
- * @param mut_context Context data (NULL for empty, mutable reference, not owned by agent)
+ * @param ref_context Context data (NULL for empty, borrowed reference, not owned by agent)
  * @return Unique agent ID, or 0 on failure
- * @note Ownership: Function does not take ownership of mut_context, it just references it.
+ * @note Ownership: Function does not take ownership of ref_context, it just references it.
  */
-agent_id_t ar_agent_create(const char *ref_method_name, version_t version, data_t *mut_context);
+agent_id_t ar_agent_create(const char *ref_method_name, version_t version, const data_t *ref_context);
 
 /**
  * Destroy an agent instance

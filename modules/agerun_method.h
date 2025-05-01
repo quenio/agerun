@@ -79,12 +79,12 @@ void ar_method_destroy(method_t *own_method);
 /**
  * Interprets and executes a method's instructions in the context of an agent
  * @param mut_agent The agent executing the method (mutable reference)
- * @param mut_message The message being processed (mutable reference, ownership remains with the caller)
+ * @param ref_message The message being processed (borrowed reference, ownership remains with the caller)
  * @param ref_instructions The method instructions to execute (borrowed reference)
  * @return true if execution was successful, false otherwise
  * @note Ownership: Function does not take ownership of any parameters.
  *       The agent, message, and instructions remain owned by the caller.
  */
-bool ar_method_run(agent_t *mut_agent, data_t *mut_message, const char *ref_instructions);
+bool ar_method_run(agent_t *mut_agent, const data_t *ref_message, const char *ref_instructions);
 
 #endif /* AGERUN_METHOD_H */

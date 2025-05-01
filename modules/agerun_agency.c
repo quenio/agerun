@@ -22,7 +22,7 @@ static void ar_agency_init(void) {
             g_own_agents[i].is_active = false;
             g_own_agents[i].own_memory = NULL;
             g_own_agents[i].own_message_queue = NULL;
-            g_own_agents[i].mut_context = NULL; // Not owned, just initialize reference
+            g_own_agents[i].ref_context = NULL; // Not owned, just initialize reference
         }
         g_is_initialized = true;
     }
@@ -59,7 +59,7 @@ void ar_agency_reset(void) {
             }
             
             // Clear context reference (we don't own it)
-            g_own_agents[i].mut_context = NULL;
+            g_own_agents[i].ref_context = NULL;
             
             // Free message queue if it exists
             if (g_own_agents[i].own_message_queue) {

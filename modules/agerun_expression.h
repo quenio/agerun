@@ -17,14 +17,14 @@ typedef struct expression_context_s expression_context_t;
  * Creates a new expression evaluation context.
  *
  * @param mut_memory The agent's memory data (mutable reference, can be NULL if not needed)
- * @param mut_context The agent's context data (mutable reference, can be NULL if not needed)
- * @param mut_message The message being processed (mutable reference, can be NULL if not needed)
+ * @param ref_context The agent's context data (borrowed reference, can be NULL if not needed)
+ * @param ref_message The message being processed (borrowed reference, can be NULL if not needed)
  * @param ref_expr The expression string to evaluate (borrowed reference)
  * @return Newly created expression context (owned by caller), or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy.
  *       The function does not take ownership of the memory, context, or message parameters.
  */
-expression_context_t* ar_expression_create_context(data_t *mut_memory, data_t *mut_context, data_t *mut_message, const char *ref_expr);
+expression_context_t* ar_expression_create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message, const char *ref_expr);
 
 /**
  * Destroys an expression context.
@@ -80,8 +80,9 @@ int ar_expression_offset(const expression_context_t *ref_ctx);
  *       return direct references to existing data. Other expression types create new objects
  *       that will be destroyed when the context is destroyed unless ownership is transferred
  *       using ar_expression_take_ownership().
+ *       The return value may be const or non-const depending on the type of expression.
  */
-data_t* ar_expression_evaluate(expression_context_t *mut_ctx);
+const data_t* ar_expression_evaluate(expression_context_t *mut_ctx);
 
 /**
  * Take ownership of a result from the expression context.
@@ -92,11 +93,14 @@ data_t* ar_expression_evaluate(expression_context_t *mut_ctx);
  *
  * @param mut_ctx Pointer to the expression evaluation context (mutable reference)
  * @param ref_result The result to take ownership of (becomes owned by caller)
- * @return true if ownership was successfully transferred, false otherwise
+ * @return A non-const pointer to the result if ownership was successfully transferred,
+ *         NULL otherwise.
  * @note Ownership: Transfers ownership of result from context to caller.
  *       After a successful call, the caller becomes responsible for eventually
- *       destroying ref_result with ar_data_destroy().
+ *       destroying the returned pointer with ar_data_destroy().
+ *       The const qualifier is removed from ref_result after ownership transfer,
+ *       and the returned pointer can be used with functions that take ownership.
  */
-bool ar_expression_take_ownership(expression_context_t *mut_ctx, data_t *ref_result);
+data_t* ar_expression_take_ownership(expression_context_t *mut_ctx, const data_t *ref_result);
 
 #endif /* AGERUN_EXPRESSION_H */

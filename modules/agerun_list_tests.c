@@ -411,8 +411,8 @@ static void test_remove(void) {
     assert(own_list != NULL);
     
     // When trying to remove from an empty list
-    // Then it should return false
-    assert(ar_list_remove(own_list, NULL) == false);
+    // Then it should return NULL
+    assert(ar_list_remove(own_list, NULL) == NULL);
     
     // And some test string items
     char *own_item1 = strdup("item1");
@@ -430,8 +430,9 @@ static void test_remove(void) {
     assert(ar_list_count(own_list) == 5);
     
     // When removing an item from the middle
-    // Then it should return true and update the list
-    assert(ar_list_remove(own_list, own_item3) == true);
+    // Then it should return the item and update the list
+    void *removed_item = ar_list_remove(own_list, own_item3);
+    assert(removed_item == own_item3);
     assert(ar_list_count(own_list) == 4);
     
     // And the items should be in the correct order
@@ -444,8 +445,9 @@ static void test_remove(void) {
     free(own_items);
     
     // When removing the first item
-    // Then it should return true and update the list
-    assert(ar_list_remove(own_list, own_item1) == true);
+    // Then it should return the item and update the list
+    void *removed_item2 = ar_list_remove(own_list, own_item1);
+    assert(removed_item2 == own_item1);
     assert(ar_list_count(own_list) == 3);
     
     // And the list should be updated correctly
@@ -457,8 +459,9 @@ static void test_remove(void) {
     free(own_items);
     
     // When removing the last item
-    // Then it should return true and update the list
-    assert(ar_list_remove(own_list, own_item5) == true);
+    // Then it should return the item and update the list
+    void *removed_item3 = ar_list_remove(own_list, own_item5);
+    assert(removed_item3 == own_item5);
     assert(ar_list_count(own_list) == 2);
     
     // And the list should be updated correctly
@@ -469,9 +472,9 @@ static void test_remove(void) {
     free(own_items);
     
     // When removing an item that doesn't exist in the list
-    // Then it should return false and not modify the list
+    // Then it should return NULL and not modify the list
     char *own_non_existent = strdup("non_existent");
-    assert(ar_list_remove(own_list, own_non_existent) == false);
+    assert(ar_list_remove(own_list, own_non_existent) == NULL);
     assert(ar_list_count(own_list) == 2);
     free(own_non_existent);
     
@@ -480,13 +483,14 @@ static void test_remove(void) {
     assert(ar_list_count(own_list) == 3);
     
     // And removing the duplicated item
-    // Then it should remove all occurrences and return true
-    assert(ar_list_remove(own_list, own_item2) == true);
-    assert(ar_list_count(own_list) == 1);
+    // Then it should remove the first occurrence and return the item
+    void *removed_item4 = ar_list_remove(own_list, own_item2);
+    assert(removed_item4 == own_item2);
+    assert(ar_list_count(own_list) == 2);
     
-    // And the list should contain only the remaining item
+    // And the list should contain the remaining items
     assert(ar_list_first(own_list) == own_item4);
-    assert(ar_list_last(own_list) == own_item4);
+    assert(ar_list_last(own_list) == own_item2);
     
     // Cleanup
     free(own_item1);

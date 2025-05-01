@@ -18,11 +18,11 @@
 static const char g_sleep_message[] = "__sleep__";
 
 /* Implementation */
-agent_id_t ar_agent_create(const char *ref_method_name, version_t version, data_t *mut_context) {
+agent_id_t ar_agent_create(const char *ref_method_name, version_t version, const data_t *ref_context) {
     agent_t *mut_agents = ar_agency_get_agents();
     
     if (mut_agents == NULL || !ref_method_name) {
-        // No need to free mut_context as we don't own it
+        // No need to free ref_context as we don't own it
         return 0;
     }
     
@@ -37,7 +37,7 @@ agent_id_t ar_agent_create(const char *ref_method_name, version_t version, data_
     
     if (agent_idx < 0) {
         printf("Error: Maximum number of agents reached\n");
-        // No need to free mut_context as we don't own it
+        // No need to free ref_context as we don't own it
         return 0;
     }
     
@@ -47,7 +47,7 @@ agent_id_t ar_agent_create(const char *ref_method_name, version_t version, data_
     if (!ref_method) {
         printf("Error: Method %s%s%d not found\n", 
                ref_method_name, version ? " version " : "", version);
-        // No need to free mut_context as we don't own it
+        // No need to free ref_context as we don't own it
         return 0;
     }
     
@@ -61,15 +61,15 @@ agent_id_t ar_agent_create(const char *ref_method_name, version_t version, data_
     mut_agents[agent_idx].method_version = ar_method_get_version(ref_method);
     mut_agents[agent_idx].is_active = true;
     mut_agents[agent_idx].is_persistent = ar_method_is_persistent(ref_method);
-    mut_agents[agent_idx].mut_context = mut_context; // Context can be NULL
-    // No ownership transfer for context as it's just a mutable reference
+    mut_agents[agent_idx].ref_context = ref_context; // Context can be NULL
+    // No ownership transfer for context as it's just a borrowed reference
     
     // Create memory as an empty map
     mut_agents[agent_idx].own_memory = ar_data_create_map();
     if (!mut_agents[agent_idx].own_memory) {
         printf("Error: Failed to create memory for agent %lld\n", next_agent_id);
-        // No need to free mut_context as we don't own it
-        mut_agents[agent_idx].mut_context = NULL; // Remove the reference
+        // No need to free ref_context as we don't own it
+        mut_agents[agent_idx].ref_context = NULL; // Remove the reference
         return 0;
     }
     // Ownership of own_memory transferred to agent
@@ -81,8 +81,8 @@ agent_id_t ar_agent_create(const char *ref_method_name, version_t version, data_
         ar_data_destroy(mut_agents[agent_idx].own_memory);
         mut_agents[agent_idx].own_memory = NULL; // Mark as no longer owned
         
-        // No need to free mut_context as we don't own it
-        mut_agents[agent_idx].mut_context = NULL; // Remove the reference
+        // No need to free ref_context as we don't own it
+        mut_agents[agent_idx].ref_context = NULL; // Remove the reference
         
         mut_agents[agent_idx].is_active = false;
         return 0;
@@ -131,7 +131,7 @@ bool ar_agent_destroy(agent_id_t agent_id) {
                         printf("[complex data]\n");
                     }
                     
-                    ar_method_run(&mut_agents[i], own_message, ar_method_get_instructions(ref_method));
+                    ar_method_run(&mut_agents[i], (const data_t *)own_message, ar_method_get_instructions(ref_method));
                 }
                 
                 // Free the message data
@@ -146,7 +146,7 @@ bool ar_agent_destroy(agent_id_t agent_id) {
             }
             
             // Clear context reference (we don't own it)
-            mut_agents[i].mut_context = NULL;
+            mut_agents[i].ref_context = NULL;
             
             // Free message queue if it exists
             if (mut_agents[i].own_message_queue) {
