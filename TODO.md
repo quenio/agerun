@@ -89,8 +89,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] Audit methodology module for MMM compliance (completed 2025-04-29)
     - [x] Audit system module for MMM compliance (completed 2025-04-29)
     - [x] Audit executable module for MMM compliance (completed 2025-04-29)
-    - [ ] Change agent's context from mutable to borrowed reference (mut_context → ref_context)
-    - [ ] Change instruction/expression's message from mutable to borrowed reference (mut_message → ref_message)
+    - [x] Change agent's context from mutable to borrowed reference (mut_context → ref_context) (completed 2025-05-01)
+    - [x] Change instruction/expression's message from mutable to borrowed reference (mut_message → ref_message) (completed 2025-05-01)
   - [ ] Implement static analysis tools to verify MMM compliance
 
 - [x] Redesign the memory management approach:
@@ -123,6 +123,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Ensure function follows standard opaque type pattern (returning the created object) (completed 2025-05-01)
   - [x] Update documentation to reflect the simplified API (completed 2025-05-01)
   - [x] Update all test files to use the new API (completed 2025-05-01)
+
+- [x] Memory ownership consistency improvements: (completed 2025-05-01)
+  - [x] Fix agent's context handling to use ref_context for borrowed references (completed 2025-05-01)
+  - [x] Update ar_list_remove to return removed item for better ownership transfer (completed 2025-05-01)
+  - [x] Fix instruction/method execution to use const data_t parameters (completed 2025-05-01)
+  - [x] Ensure consistent use of own_, mut_, and ref_ prefixes across all modules (completed 2025-05-01)
+  - [x] Improve expression context handling with proper ownership semantics (completed 2025-05-01)
 
 - [ ] Fix instruction module method function:
   - [ ] Update the method function implementation in the instruction module to match the specification
