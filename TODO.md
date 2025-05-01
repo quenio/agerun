@@ -116,10 +116,16 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Future Architecture Improvements
 
-- [ ] Method module cleanup:
-  - [ ] Consolidate method creation functions into a single creation function
-  - [ ] Simplify API by removing `ar_method_create_object` in favor of a unified `ar_method_create`
-  - [ ] Maintain separation of concerns between method and methodology modules
-  - [ ] Add optional callback for methodology registration
-  - [ ] Ensure function follows standard opaque type pattern (returning the created object)
-  - [ ] Update documentation to reflect the simplified API
+- [x] Method module cleanup: (completed 2025-05-01)
+  - [x] Consolidate method creation functions into a single creation function (completed 2025-05-01)
+  - [x] Simplify API by removing `ar_method_create_object` in favor of a unified `ar_method_create` (completed 2025-05-01)
+  - [x] Maintain separation of concerns between method and methodology modules (completed 2025-05-01)
+  - [x] Ensure function follows standard opaque type pattern (returning the created object) (completed 2025-05-01)
+  - [x] Update documentation to reflect the simplified API (completed 2025-05-01)
+  - [x] Update all test files to use the new API (completed 2025-05-01)
+
+- [ ] Fix instruction module method function:
+  - [ ] Update the method function implementation in the instruction module to match the specification
+  - [ ] Fix the method function to use 3 parameters as per the spec instead of 6 parameters
+  - [ ] Add tests for the method function in the instruction module
+  - [ ] Update the instruction module documentation to match the implementation

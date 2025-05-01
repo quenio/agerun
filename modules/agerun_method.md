@@ -27,7 +27,7 @@ typedef struct method_s method_t;
  * Creates a new method object with the given parameters
  * @param ref_name Method name (borrowed reference)
  * @param ref_instructions The method implementation code (borrowed reference)
- * @param version The version number for this method
+ * @param version The version number for this method (pass 0 to auto-increment from previous_version)
  * @param previous_version Previous version number (0 for first version)
  * @param backward_compatible Whether the method is backward compatible
  * @param persist Whether agents using this method should persist
@@ -35,24 +35,9 @@ typedef struct method_s method_t;
  * @note Ownership: Returns an owned object that the caller must destroy with ar_method_destroy.
  *       The method copies the name and instructions. The original strings remain owned by the caller.
  */
-method_t* ar_method_create_object(const char *ref_name, const char *ref_instructions, 
+method_t* ar_method_create(const char *ref_name, const char *ref_instructions, 
                          version_t version, version_t previous_version, 
                          bool backward_compatible, bool persist);
-
-/**
- * Define a new method with the given instructions
- * @param ref_name Method name (borrowed reference)
- * @param ref_instructions The method implementation code (borrowed reference)
- * @param previous_version Previous version number (0 for new method)
- * @param backward_compatible Whether the method is backward compatible
- * @param persist Whether agents using this method should persist
- * @return New version number, or 0 on failure
- * @note Ownership: The method copies the name and instructions. The original strings
- *       remain owned by the caller.
- */
-version_t ar_method_create(const char *ref_name, const char *ref_instructions, 
-                        version_t previous_version, bool backward_compatible, 
-                        bool persist);
 
 /**
  * Destroys a method object and frees its resources
@@ -131,39 +116,68 @@ bool ar_method_run(agent_t *mut_agent, data_t *mut_message, const char *ref_inst
 - The method module uses an opaque type to hide the implementation details from client code
 - Access to method fields is provided through accessor functions
 - The module is independent and follows proper encapsulation principles
-- The methodology module uses the method module for creating and accessing methods
-- Methods can be created directly using ar_method_create_object and managed manually
-- Or methods can be created with ar_method_create which registers them with the methodology
 - Methods are versioned to support backward compatibility and upgrades
-- Persistent methods are saved to disk for system restarts
+- Persistent methods can be saved to disk for system restarts
 - Proper memory management follows the AgeRun Memory Management Model (MMM)
 - The method_t type is fully opaque, with its definition visible only in method.c
 
 ## Usage Examples
 
-### Creating a new method
+### Creating and registering a method
 
 ```c
-// Method 1: Create a method registered with the methodology system (recommended)
+// Create a method object
 const char *name = "echo_method";
 const char *instructions = "message -> message";
-version_t version = ar_method_create(name, instructions, 0, false, false);
+method_t *own_method = ar_method_create(name, instructions, 0, 0, false, false);
 
-// Create a new version of an existing method
-const char *new_instructions = "message -> \"Echo: \" + message";
-version_t new_version = ar_method_create(name, new_instructions, version, true, true);
+if (own_method) {
+    // Register the method with methodology (methodology takes ownership)
+    ar_methodology_register_method(own_method);
+    own_method = NULL; // Mark as transferred
+    
+    // Or manage it yourself 
+    // (remember to call ar_method_destroy when you're done with it)
+}
+```
 
-// Method 2: Create a method object directly (for custom handling)
-const char *custom_name = "custom_method";
-const char *custom_instructions = "message -> \"Custom: \" + message";
-method_t *own_method = ar_method_create_object(custom_name, custom_instructions, 
-                                            1, 0, false, false);
+### Creating a new version of a method
 
-// Do something with the method...
+```c
+// Get the previous version from methodology
+method_t *ref_prev_method = ar_methodology_get_method("echo_method", 0);
+if (ref_prev_method) {
+    version_t prev_version = ar_method_get_version(ref_prev_method);
+    
+    // Create a new version (auto-increment by passing 0 for version)
+    const char *new_instructions = "message -> \"Echo: \" + message";
+    method_t *own_new_method = ar_method_create(
+        ar_method_get_name(ref_prev_method),
+        new_instructions,
+        0, // Auto-increment from previous version
+        prev_version,
+        true, // Backward compatible
+        true  // Persistent
+    );
+    
+    // Register with methodology
+    if (own_new_method) {
+        ar_methodology_register_method(own_new_method);
+        own_new_method = NULL; // Mark as transferred
+    }
+}
+```
 
-// Remember to destroy the method when finished using it
-ar_method_destroy(own_method);
-own_method = NULL; // Mark as destroyed
+### Using the method function in instructions
+
+```c
+// Example of using the method function in instructions
+const char *agent_instructions = 
+    "# Create a new echo method\n"
+    "method(\"echo\", \"memory.output := message\", 0, 0, true, true)";
+
+// Use these instructions to create an agent that creates methods
+// ...
 ```
 
 ### Running a method

@@ -144,14 +144,14 @@ if (ref_specific_method) {
 
 ```c
 // Create a method object
-method_t *own_method = ar_method_create_object("custom_method", 
-                                           "message -> \"Custom: \" + message",
-                                           1, 0, false, false);
+method_t *own_method = ar_method_create("custom_method", 
+                                    "message -> \"Custom: \" + message",
+                                    1, 0, false, false);
 
 // Register the method with the methodology module (transfers ownership)
 ar_methodology_register_method(own_method);
+own_method = NULL; // Mark as transferred
 // After this point, own_method is owned by the methodology module
-// Don't use or free it
 ```
 
 ### Persistence
