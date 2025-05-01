@@ -8,6 +8,22 @@
 #define METHODOLOGY_FILE_NAME "methodology.agerun"
 
 /**
+ * Creates a new method object and registers it with the methodology module
+ * @param ref_name Method name (borrowed reference)
+ * @param ref_instructions The method implementation code (borrowed reference)
+ * @param version The version number for this method (pass 0 to auto-increment from previous_version)
+ * @param previous_version Previous version number (0 for first version)
+ * @param backward_compatible Whether the method is backward compatible
+ * @param persist Whether agents using this method should persist
+ * @return true if method was created and registered successfully, false otherwise
+ * @note Ownership: This function creates and takes ownership of the method.
+ *       The caller should not worry about destroying the method.
+ */
+bool ar_methodology_create_method(const char *ref_name, const char *ref_instructions, 
+                              version_t version, version_t previous_version, 
+                              bool backward_compatible, bool persist);
+
+/**
  * Get a method definition by name and version
  * @param ref_name Method name (borrowed reference)
  * @param version Method version (0 for latest)

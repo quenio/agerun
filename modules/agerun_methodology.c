@@ -19,6 +19,39 @@ static method_t* methods[MAX_METHODS][MAX_VERSIONS_PER_METHOD];
 static int method_counts[MAX_METHODS];
 static int method_name_count = 0;
 
+/**
+ * Creates a new method object and registers it with the methodology module
+ * @param ref_name Method name (borrowed reference)
+ * @param ref_instructions The method implementation code (borrowed reference)
+ * @param version The version number for this method (pass 0 to auto-increment from previous_version)
+ * @param previous_version Previous version number (0 for first version)
+ * @param backward_compatible Whether the method is backward compatible
+ * @param persist Whether agents using this method should persist
+ * @return true if method was created and registered successfully, false otherwise
+ * @note Ownership: This function creates and takes ownership of the method.
+ *       The caller should not worry about destroying the method.
+ */
+bool ar_methodology_create_method(const char *ref_name, const char *ref_instructions, 
+                              version_t version, version_t previous_version, 
+                              bool backward_compatible, bool persist) {
+    if (!ref_name || !ref_instructions) {
+        return false;
+    }
+    
+    // Create the method
+    method_t *own_method = ar_method_create(ref_name, ref_instructions, version, 
+                                        previous_version, backward_compatible, persist);
+    if (!own_method) {
+        return false;
+    }
+    
+    // Register the method (transfers ownership)
+    ar_methodology_register_method(own_method);
+    own_method = NULL; // Mark as transferred
+    
+    return true;
+}
+
 /* Forward Declarations */
 static int find_method_idx(const char *ref_name);
 static method_t* find_latest_method(const char *ref_name);
@@ -348,12 +381,13 @@ bool ar_methodology_load_methods(void) {
             }
             
             // Create a new method with the exact version and previous_version from the file
-            method_t *mut_method = ar_method_create(name, instructions, version, previous_version, 
+            method_t *own_method = ar_method_create(name, instructions, version, previous_version, 
                                             backward_compatible != 0, persist != 0);
             
-            if (mut_method) {
+            if (own_method) {
                 // Store the method directly in the methods array
-                ar_methodology_set_method_storage(method_idx, method_counts[method_idx]++, mut_method);
+                ar_methodology_set_method_storage(method_idx, method_counts[method_idx]++, own_method);
+                own_method = NULL; // Mark as transferred
             }
         }
     }
