@@ -131,11 +131,11 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Ensure consistent use of own_, mut_, and ref_ prefixes across all modules (completed 2025-05-01)
   - [x] Improve expression context handling with proper ownership semantics (completed 2025-05-01)
 
-- [ ] Fix instruction module method function:
-  - [ ] Update the method function implementation in the instruction module to match the specification
-  - [ ] Fix the method function to use 3 parameters as per the spec instead of 6 parameters
-  - [ ] Add tests for the method function in the instruction module
-  - [ ] Update the instruction module documentation to match the implementation
+- [x] Fix instruction module method function: (completed 2025-05-01)
+  - [x] Update the method function implementation in the instruction module to match the specification (completed 2025-05-01)
+  - [x] Fix the method function to use 3 parameters as per the spec instead of 6 parameters (completed 2025-05-01)
+  - [x] Add tests for the method function in the instruction module (completed 2025-05-01)
+  - [x] Update the instruction module documentation to match the implementation (completed 2025-05-01)
 
 - [x] Code optimization improvements:
   - [x] In the instruction module, reuse local expression context variable (completed 2025-05-01)

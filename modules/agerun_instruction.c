@@ -468,25 +468,27 @@ static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, c
         return true;
     }
     else if (strcmp(function_name, "method") == 0) {
-        // method(name, instructions, previous_version, backward_compatible, persist)
+        // method(name, instructions, version)
         skip_whitespace(ref_instruction, mut_pos);
         
+        // Create a single context for all expressions
+        expression_context_t *own_context = NULL;
+        
         // Parse method name expression
-        expression_context_t *name_ctx = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
-        if (!name_ctx) {
+        own_context = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
+        if (!own_context) {
             return false;
         }
-        data_t *own_name = ar_expression_take_ownership(name_ctx, ar_expression_evaluate(name_ctx));
-        *mut_pos += ar_expression_offset(name_ctx);
+        data_t *own_name = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
+        *mut_pos += ar_expression_offset(own_context);
+        
+        // Clean up context immediately
+        ar_expression_destroy_context(own_context);
+        own_context = NULL; // Mark as destroyed
         
         if (!own_name) {
-            ar_expression_destroy_context(name_ctx);
-            name_ctx = NULL; // Mark as destroyed
             return false;
         }
-        
-        ar_expression_destroy_context(name_ctx);
-        name_ctx = NULL; // Mark as destroyed
         
         // Ensure name is a string
         if (ar_data_get_type(own_name) != DATA_STRING) {
@@ -507,26 +509,25 @@ static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, c
         (*mut_pos)++; // Skip ','
         skip_whitespace(ref_instruction, mut_pos);
         
-        // Parse instructions expression
-        expression_context_t *instr_ctx = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
-        if (!instr_ctx) {
+        // Parse instructions expression - reusing the context variable
+        own_context = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
+        if (!own_context) {
             ar_data_destroy(own_name);
             own_name = NULL; // Mark as destroyed
             return false;
         }
-        data_t *own_instr = ar_expression_take_ownership(instr_ctx, ar_expression_evaluate(instr_ctx));
-        *mut_pos += ar_expression_offset(instr_ctx);
+        data_t *own_instr = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
+        *mut_pos += ar_expression_offset(own_context);
+        
+        // Clean up context immediately
+        ar_expression_destroy_context(own_context);
+        own_context = NULL; // Mark as destroyed
         
         if (!own_instr) {
-            ar_expression_destroy_context(instr_ctx);
-            instr_ctx = NULL; // Mark as destroyed
             ar_data_destroy(own_name);
             own_name = NULL; // Mark as destroyed
             return false;
         }
-        
-        ar_expression_destroy_context(instr_ctx);
-        instr_ctx = NULL; // Mark as destroyed
         
         // Ensure instructions are a string
         if (ar_data_get_type(own_instr) != DATA_STRING) {
@@ -551,153 +552,36 @@ static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, c
         (*mut_pos)++; // Skip ','
         skip_whitespace(ref_instruction, mut_pos);
         
-        // Parse previous_version expression
-        expression_context_t *prev_ver_ctx = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
-        if (!prev_ver_ctx) {
+        // Parse version expression - reusing the context variable
+        own_context = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
+        if (!own_context) {
             ar_data_destroy(own_instr);
             own_instr = NULL; // Mark as destroyed
             ar_data_destroy(own_name);
             own_name = NULL; // Mark as destroyed
             return false;
         }
-        data_t *own_prev_ver = ar_expression_take_ownership(prev_ver_ctx, ar_expression_evaluate(prev_ver_ctx));
-        *mut_pos += ar_expression_offset(prev_ver_ctx);
+        data_t *own_version = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
+        *mut_pos += ar_expression_offset(own_context);
         
-        if (!own_prev_ver) {
-            ar_expression_destroy_context(prev_ver_ctx);
-            prev_ver_ctx = NULL; // Mark as destroyed
+        // Clean up context immediately
+        ar_expression_destroy_context(own_context);
+        own_context = NULL; // Mark as destroyed
+        
+        if (!own_version) {
             ar_data_destroy(own_instr);
             own_instr = NULL; // Mark as destroyed
             ar_data_destroy(own_name);
             own_name = NULL; // Mark as destroyed
             return false;
-        }
-        
-        ar_expression_destroy_context(prev_ver_ctx);
-        prev_ver_ctx = NULL; // Mark as destroyed
-        
-        // Ensure previous_version is a number
-        version_t previous_version = 0;
-        if (ar_data_get_type(own_prev_ver) == DATA_INTEGER) {
-            previous_version = (version_t)ar_data_get_integer(own_prev_ver);
-        }
-        
-        skip_whitespace(ref_instruction, mut_pos);
-        
-        // Expect comma
-        if (ref_instruction[*mut_pos] != ',') {
-            ar_data_destroy(own_prev_ver);
-            own_prev_ver = NULL; // Mark as destroyed
-            ar_data_destroy(own_instr);
-            own_instr = NULL; // Mark as destroyed
-            ar_data_destroy(own_name);
-            own_name = NULL; // Mark as destroyed
-            return false;
-        }
-        (*mut_pos)++; // Skip ','
-        skip_whitespace(ref_instruction, mut_pos);
-        
-        // Parse backward_compatible expression
-        expression_context_t *compat_ctx = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
-        if (!compat_ctx) {
-            ar_data_destroy(own_prev_ver);
-            own_prev_ver = NULL; // Mark as destroyed
-            ar_data_destroy(own_instr);
-            own_instr = NULL; // Mark as destroyed
-            ar_data_destroy(own_name);
-            own_name = NULL; // Mark as destroyed
-            return false;
-        }
-        data_t *own_compat = ar_expression_take_ownership(compat_ctx, ar_expression_evaluate(compat_ctx));
-        *mut_pos += ar_expression_offset(compat_ctx);
-        
-        if (!own_compat) {
-            ar_expression_destroy_context(compat_ctx);
-            compat_ctx = NULL; // Mark as destroyed
-            ar_data_destroy(own_prev_ver);
-            own_prev_ver = NULL; // Mark as destroyed
-            ar_data_destroy(own_instr);
-            own_instr = NULL; // Mark as destroyed
-            ar_data_destroy(own_name);
-            own_name = NULL; // Mark as destroyed
-            return false;
-        }
-        
-        ar_expression_destroy_context(compat_ctx);
-        compat_ctx = NULL; // Mark as destroyed
-        
-        // Ensure backward_compatible is a boolean (or can be converted to one)
-        bool backward_compatible = false;
-        if (ar_data_get_type(own_compat) == DATA_INTEGER) {
-            backward_compatible = (ar_data_get_integer(own_compat) != 0);
-        }
-        
-        skip_whitespace(ref_instruction, mut_pos);
-        
-        // Expect comma
-        if (ref_instruction[*mut_pos] != ',') {
-            ar_data_destroy(own_compat);
-            own_compat = NULL; // Mark as destroyed
-            ar_data_destroy(own_prev_ver);
-            own_prev_ver = NULL; // Mark as destroyed
-            ar_data_destroy(own_instr);
-            own_instr = NULL; // Mark as destroyed
-            ar_data_destroy(own_name);
-            own_name = NULL; // Mark as destroyed
-            return false;
-        }
-        (*mut_pos)++; // Skip ','
-        skip_whitespace(ref_instruction, mut_pos);
-        
-        // Parse persist expression
-        expression_context_t *persist_ctx = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
-        if (!persist_ctx) {
-            ar_data_destroy(own_compat);
-            own_compat = NULL; // Mark as destroyed
-            ar_data_destroy(own_prev_ver);
-            own_prev_ver = NULL; // Mark as destroyed
-            ar_data_destroy(own_instr);
-            own_instr = NULL; // Mark as destroyed
-            ar_data_destroy(own_name);
-            own_name = NULL; // Mark as destroyed
-            return false;
-        }
-        data_t *own_persist = ar_expression_take_ownership(persist_ctx, ar_expression_evaluate(persist_ctx));
-        *mut_pos += ar_expression_offset(persist_ctx);
-        
-        if (!own_persist) {
-            ar_expression_destroy_context(persist_ctx);
-            persist_ctx = NULL; // Mark as destroyed
-            ar_data_destroy(own_compat);
-            own_compat = NULL; // Mark as destroyed
-            ar_data_destroy(own_prev_ver);
-            own_prev_ver = NULL; // Mark as destroyed
-            ar_data_destroy(own_instr);
-            own_instr = NULL; // Mark as destroyed
-            ar_data_destroy(own_name);
-            own_name = NULL; // Mark as destroyed
-            return false;
-        }
-        
-        ar_expression_destroy_context(persist_ctx);
-        persist_ctx = NULL; // Mark as destroyed
-        
-        // Ensure persist is a boolean (or can be converted to one)
-        bool persist = false;
-        if (ar_data_get_type(own_persist) == DATA_INTEGER) {
-            persist = (ar_data_get_integer(own_persist) != 0);
         }
         
         skip_whitespace(ref_instruction, mut_pos);
         
         // Expect closing parenthesis
         if (ref_instruction[*mut_pos] != ')') {
-            ar_data_destroy(own_persist);
-            own_persist = NULL; // Mark as destroyed
-            ar_data_destroy(own_compat);
-            own_compat = NULL; // Mark as destroyed
-            ar_data_destroy(own_prev_ver);
-            own_prev_ver = NULL; // Mark as destroyed
+            ar_data_destroy(own_version);
+            own_version = NULL; // Mark as destroyed
             ar_data_destroy(own_instr);
             own_instr = NULL; // Mark as destroyed
             ar_data_destroy(own_name);
@@ -706,17 +590,32 @@ static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, c
         }
         (*mut_pos)++; // Skip ')'
         
-        // Create method (use auto-versioning by passing 0 for version)
-        method_t *own_method = ar_method_create(method_name, instructions, 0, previous_version, 
+        // Extract version information (default to version 1 if not a valid number)
+        version_t version = 1;
+        if (ar_data_get_type(own_version) == DATA_INTEGER) {
+            version = (version_t)ar_data_get_integer(own_version);
+        } else if (ar_data_get_type(own_version) == DATA_STRING) {
+            // Try to parse version string if provided as string
+            // For simplicity, we'll just use the first number found in the string
+            const char *ver_str = ar_data_get_string(own_version);
+            if (ver_str) {
+                version = (version_t)atoi(ver_str);
+            }
+        }
+        
+        // Set default values for backward compatibility and persistence
+        // According to the spec, we're not taking these as parameters anymore
+        version_t previous_version = 0;  // Default to 0 for first version
+        bool backward_compatible = true; // Default to true for backward compatibility
+        bool persist = false;            // Default to false for persistence
+        
+        // Create method with specified version (not auto-versioning)
+        method_t *own_method = ar_method_create(method_name, instructions, version, previous_version, 
                                           backward_compatible, persist);
         
         // Clean up input data
-        ar_data_destroy(own_persist);
-        own_persist = NULL; // Mark as destroyed
-        ar_data_destroy(own_compat);
-        own_compat = NULL; // Mark as destroyed
-        ar_data_destroy(own_prev_ver);
-        own_prev_ver = NULL; // Mark as destroyed
+        ar_data_destroy(own_version);
+        own_version = NULL; // Mark as destroyed
         ar_data_destroy(own_instr);
         own_instr = NULL; // Mark as destroyed
         ar_data_destroy(own_name);
@@ -734,8 +633,8 @@ static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, c
         ar_methodology_register_method(own_method);
         own_method = NULL; // Mark as transferred
         
-        // Return the new version number
-        *own_result = ar_data_create_integer(1); // Success indicator
+        // Return success indicator
+        *own_result = ar_data_create_integer(1);
         return true;
     }
     else {

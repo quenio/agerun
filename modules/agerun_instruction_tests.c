@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <unistd.h> // for usleep
 
 // Forward declarations
 static agent_id_t setup_test_agent(const char *ref_method_name, const char *ref_instructions);
@@ -15,6 +16,7 @@ static void test_simple_instructions(void);
 static void test_memory_access_instructions(void);
 static void test_condition_instructions(void);
 static void test_message_send_instructions(void);
+static void test_method_function(void);
 
 // Helper function to set up an agent for testing
 static agent_id_t setup_test_agent(const char *ref_method_name, const char *ref_instructions) {
@@ -182,6 +184,66 @@ static void test_message_send_instructions(void) {
     printf("Message send instructions test passed!\n");
 }
 
+static void test_method_function(void) {
+    printf("Testing method function instruction with 3 parameters...\n");
+    
+    // Given a test agent for running method instruction
+    agent_id_t agent_id = setup_test_agent("method_instruction_agent", "");
+    assert(test_agent_exists(agent_id));
+    
+    // And a message containing a simple method instruction without assignment
+    const char *method_instruction = "method(\"test_method_3params\", \"memory.x := 10\", 1)";
+    data_t *own_method_message = ar_data_create_string(method_instruction);
+    assert(own_method_message != NULL);
+    
+    // Test the instruction directly using ar_instruction_run instead of sending a message
+    // First we need to get access to the agent struct to run the instruction on it
+    extern agent_t* ar_agency_get_agents(void);
+    agent_t* agents = ar_agency_get_agents();
+    
+    // Find our agent
+    agent_t *test_agent = NULL;
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (agents[i].is_active && agents[i].id == agent_id) {
+            test_agent = &agents[i];
+            break;
+        }
+    }
+    assert(test_agent != NULL);
+    
+    // Run the instruction directly
+    extern bool ar_instruction_run(agent_t *mut_agent, const data_t *ref_message, const char *ref_instruction);
+    bool instruction_result = ar_instruction_run(test_agent, own_method_message, method_instruction);
+    assert(instruction_result);
+    
+    // Clean up the message since we didn't send it
+    ar_data_destroy(own_method_message);
+    own_method_message = NULL; // Mark as destroyed
+    
+    // Now try to reference the newly created method
+    agent_id_t test_agent_id = ar_agent_create("test_method_3params", 1, NULL);
+    
+    // If the method was created successfully, we'll get a valid agent ID
+    // Otherwise, we'll get 0
+    bool method_created = (test_agent_id > 0);
+    
+    // Check the result
+    if (method_created) {
+        printf("Method function with 3 parameters created method successfully\n");
+        ar_agent_destroy(test_agent_id);
+    } else {
+        printf("Method function with 3 parameters failed to create method\n");
+    }
+    
+    // Test must pass - the method should be created successfully
+    assert(method_created);
+    
+    // Clean up the original agent
+    ar_agent_destroy(agent_id);
+    
+    printf("Method function 3-parameter test passed!\n");
+}
+
 int main(void) {
     printf("Starting Instruction Module Tests...\n");
     
@@ -209,6 +271,7 @@ int main(void) {
     test_memory_access_instructions();
     test_condition_instructions();
     test_message_send_instructions();
+    test_method_function();
     
     // Then we clean up the system
     ar_system_shutdown();
