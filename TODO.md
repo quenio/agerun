@@ -148,3 +148,18 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] Change non-const `ref_item` parameters to `mut_item` since they are mutable references (completed 2025-05-01)
     - [x] Update API documentation to reflect the correct parameter semantics (completed 2025-05-01) 
     - [x] Ensure consistency across all list operations (completed 2025-05-01)
+
+- [ ] Instruction module independence improvements:
+  - [ ] Create a dedicated instruction_context structure for the instruction module
+  - [ ] Remove dependency on agent module by using the new context structure
+  - [ ] Refactor instruction functions to use the new context type
+  - [ ] Update tests to use the new context structure
+  - [ ] Update documentation to reflect the new design
+
+- [ ] Method creation architecture improvements:
+  - [ ] Update instruction module to call methodology module directly for method creation
+  - [ ] Align ar_methodology_create_method parameters with method instruction spec (name, instructions, version)
+  - [ ] Update ar_method_create parameters to match the specification
+  - [ ] Ensure consistent parameter flow from instruction module through methodology module to method module
+  - [ ] Update tests to verify correct parameter passing
+  - [ ] Update documentation to reflect the new interaction between modules
