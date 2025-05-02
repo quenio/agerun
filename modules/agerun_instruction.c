@@ -79,27 +79,24 @@ static bool parse_assignment(agent_t *mut_agent, const data_t *ref_message, cons
     skip_whitespace(ref_instruction, mut_pos);
     
     // Evaluate the expression (right side)
-    expression_context_t *ctx = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
-    if (!ctx) {
+    // Create a context that we'll reuse for all expressions in this function
+    expression_context_t *own_context = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
+    if (!own_context) {
         free(path);
         path = NULL; // Mark as freed
         return false;
     }
-    data_t *own_value = ar_expression_take_ownership(ctx, ar_expression_evaluate(ctx));
-    *mut_pos += ar_expression_offset(ctx);
+    
+    // Evaluate the expression
+    data_t *own_value = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
+    *mut_pos += ar_expression_offset(own_context);
+    
+    // Clean up context immediately after we're done with it
+    ar_expression_destroy_context(own_context);
+    own_context = NULL; // Mark as destroyed
     
     if (!own_value) {
-        ar_expression_destroy_context(ctx);
-        ctx = NULL; // Mark as destroyed
-        free(path);
-        path = NULL; // Mark as freed
-        return false;
-    }
-    ar_expression_destroy_context(ctx);
-    ctx = NULL; // Mark as destroyed
-    
-    if (!own_value) {
-        // If take_ownership returned NULL, we can't use the value
+        // If evaluation or take_ownership returned NULL, we can't use the value
         free(path);
         path = NULL; // Mark as freed
         return false;
@@ -242,23 +239,24 @@ static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, c
         // send(agent_id, message)
         skip_whitespace(ref_instruction, mut_pos);
         
+        // Create a single context for all expressions
+        expression_context_t *own_context = NULL;
+        
         // Parse agent_id expression
-        expression_context_t *agent_id_ctx = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
-        if (!agent_id_ctx) {
+        own_context = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
+        if (!own_context) {
             return false;
         }
-        data_t *own_agent_id = ar_expression_take_ownership(agent_id_ctx, ar_expression_evaluate(agent_id_ctx));
-        *mut_pos += ar_expression_offset(agent_id_ctx);
+        data_t *own_agent_id = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
+        *mut_pos += ar_expression_offset(own_context);
+        
+        // Clean up context immediately
+        ar_expression_destroy_context(own_context);
+        own_context = NULL; // Mark as destroyed
         
         if (!own_agent_id) {
-            ar_expression_destroy_context(agent_id_ctx);
-            agent_id_ctx = NULL; // Mark as destroyed
             return false;
         }
-        
-        // Destroy the context now that we have taken ownership of the data
-        ar_expression_destroy_context(agent_id_ctx);
-        agent_id_ctx = NULL; // Mark as destroyed
         
         skip_whitespace(ref_instruction, mut_pos);
         
@@ -271,27 +269,25 @@ static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, c
         (*mut_pos)++; // Skip ','
         skip_whitespace(ref_instruction, mut_pos);
         
-        // Parse message expression
-        expression_context_t *msg_ctx = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
-        if (!msg_ctx) {
+        // Parse message expression - reusing the context variable
+        own_context = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
+        if (!own_context) {
             ar_data_destroy(own_agent_id);
             own_agent_id = NULL; // Mark as destroyed
             return false;
         }
-        data_t *own_msg = ar_expression_take_ownership(msg_ctx, ar_expression_evaluate(msg_ctx));
-        *mut_pos += ar_expression_offset(msg_ctx);
+        data_t *own_msg = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
+        *mut_pos += ar_expression_offset(own_context);
+        
+        // Clean up context immediately
+        ar_expression_destroy_context(own_context);
+        own_context = NULL; // Mark as destroyed
         
         if (!own_msg) {
-            ar_expression_destroy_context(msg_ctx);
-            msg_ctx = NULL; // Mark as destroyed
             ar_data_destroy(own_agent_id);
             own_agent_id = NULL; // Mark as destroyed
             return false;
         }
-        
-        // Destroy the context now that we have taken ownership of the data
-        ar_expression_destroy_context(msg_ctx);
-        msg_ctx = NULL; // Mark as destroyed
         
         skip_whitespace(ref_instruction, mut_pos);
         
@@ -340,23 +336,24 @@ static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, c
         // if(condition, true_value, false_value)
         skip_whitespace(ref_instruction, mut_pos);
         
+        // Create a single context for all expressions
+        expression_context_t *own_context = NULL;
+        
         // Parse condition expression
-        expression_context_t *cond_ctx = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
-        if (!cond_ctx) {
+        own_context = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
+        if (!own_context) {
             return false;
         }
-        data_t *own_cond = ar_expression_take_ownership(cond_ctx, ar_expression_evaluate(cond_ctx));
-        *mut_pos += ar_expression_offset(cond_ctx);
+        data_t *own_cond = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
+        *mut_pos += ar_expression_offset(own_context);
+        
+        // Clean up context immediately
+        ar_expression_destroy_context(own_context);
+        own_context = NULL; // Mark as destroyed
         
         if (!own_cond) {
-            ar_expression_destroy_context(cond_ctx);
-            cond_ctx = NULL; // Mark as destroyed
             return false;
         }
-        
-        // Destroy the context now that we have taken ownership of the data
-        ar_expression_destroy_context(cond_ctx);
-        cond_ctx = NULL; // Mark as destroyed
         
         skip_whitespace(ref_instruction, mut_pos);
         
@@ -369,27 +366,25 @@ static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, c
         (*mut_pos)++; // Skip ','
         skip_whitespace(ref_instruction, mut_pos);
         
-        // Parse true_value expression
-        expression_context_t *true_ctx = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
-        if (!true_ctx) {
+        // Parse true_value expression - reusing the context variable
+        own_context = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
+        if (!own_context) {
             ar_data_destroy(own_cond);
             own_cond = NULL; // Mark as destroyed
             return false;
         }
-        data_t *own_true = ar_expression_take_ownership(true_ctx, ar_expression_evaluate(true_ctx));
-        *mut_pos += ar_expression_offset(true_ctx);
+        data_t *own_true = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
+        *mut_pos += ar_expression_offset(own_context);
+        
+        // Clean up context immediately
+        ar_expression_destroy_context(own_context);
+        own_context = NULL; // Mark as destroyed
         
         if (!own_true) {
-            ar_expression_destroy_context(true_ctx);
-            true_ctx = NULL; // Mark as destroyed
             ar_data_destroy(own_cond);
             own_cond = NULL; // Mark as destroyed
             return false;
         }
-        
-        // Destroy the context now that we have taken ownership of the data
-        ar_expression_destroy_context(true_ctx);
-        true_ctx = NULL; // Mark as destroyed
         
         skip_whitespace(ref_instruction, mut_pos);
         
@@ -404,31 +399,29 @@ static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, c
         (*mut_pos)++; // Skip ','
         skip_whitespace(ref_instruction, mut_pos);
         
-        // Parse false_value expression
-        expression_context_t *false_ctx = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
-        if (!false_ctx) {
+        // Parse false_value expression - reusing the context variable
+        own_context = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
+        if (!own_context) {
             ar_data_destroy(own_cond);
             own_cond = NULL; // Mark as destroyed
             ar_data_destroy(own_true);
             own_true = NULL; // Mark as destroyed
             return false;
         }
-        data_t *own_false = ar_expression_take_ownership(false_ctx, ar_expression_evaluate(false_ctx));
-        *mut_pos += ar_expression_offset(false_ctx);
+        data_t *own_false = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
+        *mut_pos += ar_expression_offset(own_context);
+        
+        // Clean up context immediately
+        ar_expression_destroy_context(own_context);
+        own_context = NULL; // Mark as destroyed
         
         if (!own_false) {
-            ar_expression_destroy_context(false_ctx);
-            false_ctx = NULL; // Mark as destroyed
             ar_data_destroy(own_cond);
             own_cond = NULL; // Mark as destroyed
             ar_data_destroy(own_true);
             own_true = NULL; // Mark as destroyed
             return false;
         }
-        
-        // Destroy the context now that we have taken ownership of the data
-        ar_expression_destroy_context(false_ctx);
-        false_ctx = NULL; // Mark as destroyed
         
         skip_whitespace(ref_instruction, mut_pos);
         
