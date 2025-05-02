@@ -143,8 +143,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [ ] Ensure proper context destruction before reuse
     - [ ] Maintain clear ownership semantics while eliminating redundant variables
 
-- [ ] Ownership prefix consistency improvements:
-  - [ ] Fix list module parameter naming
-    - [ ] Change non-const `ref_item` parameters to `mut_item` since they are mutable references
-    - [ ] Update API documentation to reflect the correct parameter semantics
-    - [ ] Ensure consistency across all list operations
+- [x] Ownership prefix consistency improvements:
+  - [x] Fix list module parameter naming (completed 2025-05-01)
+    - [x] Change non-const `ref_item` parameters to `mut_item` since they are mutable references (completed 2025-05-01)
+    - [x] Update API documentation to reflect the correct parameter semantics (completed 2025-05-01) 
+    - [x] Ensure consistency across all list operations (completed 2025-05-01)

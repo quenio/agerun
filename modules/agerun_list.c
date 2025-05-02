@@ -6,7 +6,7 @@
  * List node structure
  */
 struct list_node_s {
-    void *ref_item;              // Pointer to the item (borrowed reference)
+    void *mut_item;              // Pointer to the item (mutable borrowed reference)
     struct list_node_s *mut_next; // Pointer to the next node (mutable reference)
     struct list_node_s *mut_prev; // Pointer to the previous node (mutable reference)
 };
@@ -43,7 +43,7 @@ list_t* ar_list_create(void) {
  * @param item The item to add
  * @return true if successful, false otherwise
  */
-bool ar_list_add_last(list_t *mut_list, void *ref_item) {
+bool ar_list_add_last(list_t *mut_list, void *mut_item) {
     if (!mut_list) {
         return false;
     }
@@ -53,7 +53,7 @@ bool ar_list_add_last(list_t *mut_list, void *ref_item) {
         return false;
     }
     
-    own_node->ref_item = ref_item;
+    own_node->mut_item = mut_item;
     own_node->mut_next = NULL;
     own_node->mut_prev = mut_list->own_tail;   // Set the previous pointer to current tail
     
@@ -75,7 +75,7 @@ bool ar_list_add_last(list_t *mut_list, void *ref_item) {
  * @param item The item to add
  * @return true if successful, false otherwise
  */
-bool ar_list_add_first(list_t *mut_list, void *ref_item) {
+bool ar_list_add_first(list_t *mut_list, void *mut_item) {
     if (!mut_list) {
         return false;
     }
@@ -85,7 +85,7 @@ bool ar_list_add_first(list_t *mut_list, void *ref_item) {
         return false;
     }
     
-    own_node->ref_item = ref_item;
+    own_node->mut_item = mut_item;
     own_node->mut_next = mut_list->own_head;
     own_node->mut_prev = NULL;         // First node has no previous
     
@@ -111,7 +111,7 @@ void* ar_list_first(const list_t *ref_list) {
         return NULL;
     }
     
-    return ref_list->own_head->ref_item; // Borrowed reference, not owned by caller
+    return ref_list->own_head->mut_item; // Borrowed reference, not owned by caller
 }
 
 /**
@@ -124,7 +124,7 @@ void* ar_list_last(const list_t *ref_list) {
         return NULL;
     }
     
-    return ref_list->own_tail->ref_item; // Borrowed reference, not owned by caller
+    return ref_list->own_tail->mut_item; // Borrowed reference, not owned by caller
 }
 
 /**
@@ -138,7 +138,7 @@ void* ar_list_remove_first(list_t *mut_list) {
     }
     
     struct list_node_s *mut_node = mut_list->own_head;
-    void *ref_item = mut_node->ref_item;
+    void *mut_item = mut_node->mut_item;
     
     mut_list->own_head = mut_node->mut_next;
     
@@ -153,7 +153,7 @@ void* ar_list_remove_first(list_t *mut_list) {
     // but it helps signal that the memory is no longer accessible.
     mut_list->count--;
     
-    return ref_item; // Borrowed reference, ownership not transferred
+    return mut_item; // Borrowed reference, ownership not transferred
 }
 
 /**
@@ -167,7 +167,7 @@ void* ar_list_remove_last(list_t *mut_list) {
     }
     
     struct list_node_s *mut_node = mut_list->own_tail;
-    void *ref_item = mut_node->ref_item;
+    void *mut_item = mut_node->mut_item;
     
     mut_list->own_tail = mut_node->mut_prev;  // Update tail to the previous node
     
@@ -182,7 +182,7 @@ void* ar_list_remove_last(list_t *mut_list) {
     // but it helps signal that the memory is no longer accessible.
     mut_list->count--;
     
-    return ref_item; // Borrowed reference, ownership not transferred
+    return mut_item; // Borrowed reference, ownership not transferred
 }
 
 /**
@@ -237,7 +237,7 @@ void** ar_list_items(const list_t *ref_list) {
     size_t index = 0;
     
     while (ref_current) {
-        own_items[index++] = ref_current->ref_item;
+        own_items[index++] = ref_current->mut_item;
         ref_current = ref_current->mut_next;
     }
     
@@ -263,9 +263,9 @@ void* ar_list_remove(list_t *mut_list, const void *ref_item) {
     
     while (mut_current) {
         // Check if this node contains the item to remove
-        if (mut_current->ref_item == ref_item) {
+        if (mut_current->mut_item == ref_item) {
             // Store the item to return
-            void *removed_item = (void*)mut_current->ref_item;
+            void *removed_item = (void*)mut_current->mut_item;
             
             // Update the previous node's next pointer (or head if this is the first node)
             if (mut_current->mut_prev) {

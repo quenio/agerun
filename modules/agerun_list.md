@@ -56,13 +56,13 @@ Frees all resources associated with the list. Note that this function only frees
 #### Adding Items
 
 ```c
-bool ar_list_add_last(list_t *mut_list, void *ref_item);
+bool ar_list_add_last(list_t *mut_list, void *mut_item);
 ```
 Adds an item to the end of the list. Returns true if successful, false otherwise.  
 **Ownership**: Borrows the item without taking ownership. The caller remains responsible for the item's memory.
 
 ```c
-bool ar_list_add_first(list_t *mut_list, void *ref_item);
+bool ar_list_add_first(list_t *mut_list, void *mut_item);
 ```
 Adds an item to the beginning of the list. Returns true if successful, false otherwise.  
 **Ownership**: Borrows the item without taking ownership. The caller remains responsible for the item's memory.
@@ -132,8 +132,8 @@ list_t *own_list = ar_list_create();
 // Add items
 char *own_item1 = strdup("item1");
 char *own_item2 = strdup("item2");
-ar_list_add_last(own_list, own_item1);
-ar_list_add_last(own_list, own_item2);
+ar_list_add_last(own_list, own_item1); // own_item1 is a mutable borrowed reference here
+ar_list_add_last(own_list, own_item2); // own_item2 is a mutable borrowed reference here
 
 // Check properties
 size_t count = ar_list_count(own_list);  // Returns 2

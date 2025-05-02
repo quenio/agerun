@@ -27,20 +27,20 @@ list_t* ar_list_create(void);
 /**
  * Add an item to the end of the list
  * @param mut_list The list to add to (mutable reference)
- * @param ref_item The item to add (borrowed reference)
+ * @param mut_item The item to add (mutable borrowed reference)
  * @return true if successful, false otherwise
  * @note Ownership: Borrows the item without taking ownership. The caller remains responsible for the item's memory.
  */
-bool ar_list_add_last(list_t *mut_list, void *ref_item);
+bool ar_list_add_last(list_t *mut_list, void *mut_item);
 
 /**
  * Add an item to the beginning of the list
  * @param mut_list The list to add to (mutable reference)
- * @param ref_item The item to add (borrowed reference)
+ * @param mut_item The item to add (mutable borrowed reference)
  * @return true if successful, false otherwise
  * @note Ownership: Borrows the item without taking ownership. The caller remains responsible for the item's memory.
  */
-bool ar_list_add_first(list_t *mut_list, void *ref_item);
+bool ar_list_add_first(list_t *mut_list, void *mut_item);
 
 /**
  * Get the first item in the list
