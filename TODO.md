@@ -137,11 +137,11 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Add tests for the method function in the instruction module
   - [ ] Update the instruction module documentation to match the implementation
 
-- [ ] Code optimization improvements:
-  - [ ] In the instruction module, reuse local expression context variable
-    - [ ] Use a single `own_context` variable within the same function when processing multiple expressions
-    - [ ] Ensure proper context destruction before reuse
-    - [ ] Maintain clear ownership semantics while eliminating redundant variables
+- [x] Code optimization improvements:
+  - [x] In the instruction module, reuse local expression context variable (completed 2025-05-01)
+    - [x] Use a single `own_context` variable within the same function when processing multiple expressions (completed 2025-05-01)
+    - [x] Ensure proper context destruction before reuse (completed 2025-05-01)
+    - [x] Maintain clear ownership semantics while eliminating redundant variables (completed 2025-05-01)
 
 - [x] Ownership prefix consistency improvements:
   - [x] Fix list module parameter naming (completed 2025-05-01)

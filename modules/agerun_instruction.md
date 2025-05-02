@@ -111,6 +111,9 @@ ar_instruction_run(mut_agent, mut_message, "memory.result := if(memory.count > 5
 - Function calls delegate to the expression evaluator for argument evaluation
 - Memory safety is maintained throughout with proper allocation and cleanup
 - Backtracking is used when necessary to determine the correct parsing path
+- Expression contexts are reused within function scopes for better efficiency
+- Context variables follow a create-use-destroy pattern for each expression evaluation
+- The implementation reuses context variables to minimize redundant allocations
 
 ## Memory Ownership Model
 
@@ -122,15 +125,21 @@ The instruction module carefully manages memory ownership when working with expr
 4. Results that aren't stored (e.g., from functions without assignment) are properly destroyed.
 
 IMPORTANT: The sequence of operations is critical when handling expression results:
-1. Create the expression context (`own_ctx = ar_expression_create_context(...)`)
-2. Evaluate the expression to get a result (`own_value = ar_expression_evaluate(own_ctx)`)
-3. Check if the result is valid
-4. If valid and the result needs to be preserved, call `ar_expression_take_ownership(own_ctx, own_value)` 
-5. Destroy the expression context (`ar_expression_destroy_context(own_ctx)`)
-6. Mark the destroyed context as NULL (`own_ctx = NULL;`)
+1. Create the expression context (`own_context = ar_expression_create_context(...)`)
+2. Evaluate the expression to get a result (`own_value = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context))`)
+3. Capture the position offset (`*mut_pos += ar_expression_offset(own_context)`)
+4. Immediately destroy the context (`ar_expression_destroy_context(own_context)`)
+5. Mark the destroyed context as NULL (`own_context = NULL;`)
+6. Check if the result is valid
 7. Use the result as needed (store in memory, return from function, etc.)
 8. Eventually destroy the result when no longer needed
 9. Mark the destroyed result as NULL (`own_value = NULL;`)
+
+When reusing the context variable for multiple expressions:
+1. Ensure the previous context is fully destroyed before reassigning
+2. Follow the same pattern of immediate destruction after each expression
+3. Reset the context variable to NULL after each destruction
+4. This pattern allows safe reuse while maintaining memory safety
 
 This ownership transfer mechanism ensures that:
 - No memory leaks occur when an expression result is stored in memory.
