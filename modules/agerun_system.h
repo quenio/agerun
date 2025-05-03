@@ -7,11 +7,11 @@
 /**
  * Initialize the Agerun runtime system
  * @param ref_method_name Name of the initial method to run (borrowed reference)
- * @param version Version of the method (0 for latest)
+ * @param ref_version Version string of the method (NULL for latest)
  * @return ID of the created initial agent, or 0 on failure
  * @note Ownership: Function copies the method name; does not take ownership of ref_method_name.
  */
-agent_id_t ar_system_init(const char *ref_method_name, version_t version);
+agent_id_t ar_system_init(const char *ref_method_name, const char *ref_version);
 
 /**
  * Shut down the Agerun runtime system

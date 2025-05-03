@@ -114,6 +114,18 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Provide examples of correct memory handling for complex structures (completed 2025-04-26)
   - [x] Add troubleshooting section for common memory issues (completed 2025-04-26)
 
+## Recently Completed Tasks
+
+- [x] Method semver implementation improvements: (completed 2025-05-03)
+  - [x] Update method module to use semantic versioning strings instead of numeric versioning (completed 2025-05-03)
+  - [x] Remove fields not in spec (previous_version, backward_compatible, persist) (completed 2025-05-03)
+  - [x] Update agent structure to store a borrowed method reference instead of method attributes (completed 2025-05-03)
+  - [x] Update methodology module to work with string versions (completed 2025-05-03)
+  - [x] Fix version comparison logic to use string comparisons (completed 2025-05-03)
+  - [x] Update system module to work with the new agent structure (completed 2025-05-03)
+  - [x] Update tests to use string versions (completed 2025-05-03)
+  - [x] Update documentation to reflect these changes (completed 2025-05-03)
+
 ## Future Architecture Improvements
 
 - [x] Method module cleanup: (completed 2025-05-01)
@@ -163,3 +175,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Ensure consistent parameter flow from instruction module through methodology module to method module (completed 2025-05-02)
   - [x] Update tests to verify correct parameter passing (completed 2025-05-02)
   - [x] Update documentation to reflect the new interaction between modules (completed 2025-05-02)
+
+- [ ] Enhance semantic versioning support:
+  - [ ] Implement proper semantic version comparison (major.minor.patch)
+  - [ ] Support latest compatible version lookup based on semver rules
+  - [ ] Add tests for semantic version handling
+  - [ ] Improve version resolution in methodology_get_method for partial versions

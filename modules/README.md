@@ -149,24 +149,23 @@ Foundation modules build upon core modules to provide essential data structures 
 The [method module](agerun_method.md) provides functionality for creating, managing, and running methods within the AgeRun system:
 
 - **Method Encapsulation**: Uses an opaque type to hide implementation details
-- **Version Control**: Supports creating and managing versioned methods
-- **Backward Compatibility**: Handles backward compatibility between versions
-- **Method Persistence**: Manages which methods persist across system restarts
+- **Semantic Versioning**: Supports creating and managing methods with semantic version strings (e.g., "1.0.0")
 - **Method Execution**: Provides a runtime for executing method instructions
 - **Accessor Functions**: Exposes method properties through a clean API
 - **Memory Ownership**: Clear documentation of ownership semantics for method creation and execution
 - **Independent Design**: Provides a clean API that the methodology module uses, not the other way around
 - **Depends on Instruction**: Uses the instruction module to parse and execute method code
 - **Depends on String**: Utilizes string utilities for method name and instruction handling
+- **Simplified API**: Offers a single creation function that aligns with the specification
 
 ### Methodology Module (`agerun_methodology`)
 
 The [methodology module](agerun_methodology.md) provides a registry for methods, including storage, retrieval, and versioning:
 
 - **Method Registry**: Stores and manages method objects created by the method module
-- **Version Management**: Tracks multiple versions of the same method
-- **Method Lookup**: Provides efficient lookup of methods by name and version
-- **Version Resolution**: Can find compatible versions when exact matches aren't available
+- **Semantic Version Management**: Tracks multiple versions of the same method using semantic versioning
+- **Method Lookup**: Provides efficient lookup of methods by name and version string
+- **Version Resolution**: Handles finding methods when NULL is passed to get the latest version
 - **Persistence**: Saves and loads methods to/from disk for system restarts
 - **Depends on Method**: Uses the method module's opaque type and functions
 - **Depends on String**: Uses string utilities for method name handling

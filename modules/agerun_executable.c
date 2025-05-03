@@ -19,7 +19,7 @@ int ar_executable_main(void) {
     
     // Initialize the runtime
     printf("Initializing runtime...\n");
-    agent_id_t initial_agent = ar_system_init(NULL, 0);
+    agent_id_t initial_agent = ar_system_init(NULL, NULL);
     if (initial_agent != 0) {
         printf("Error: Unexpected agent created during initialization\n");
         ar_system_shutdown();
@@ -32,36 +32,32 @@ int ar_executable_main(void) {
     const char *ref_echo_instructions = "send(0, message)";
     
     // Create method using methodology module (simplified API)
-    if (!ar_methodology_create_method("echo", ref_echo_instructions, 0)) {
+    const char *ref_echo_version = "1.0.0";
+    if (!ar_methodology_create_method("echo", ref_echo_instructions, ref_echo_version)) {
         printf("Failed to create echo method\n");
         ar_system_shutdown();
         return 1;
     }
     
-    // For simplicity, we use version 1 for the echo method
-    version_t echo_version = 1;
-    
-    printf("Echo method created with version %d\n\n", echo_version);
+    printf("Echo method created with version %s\n\n", ref_echo_version);
     
     // Create a simplified counter method that just echoes back messages
     printf("Creating counter method...\n");
     const char *ref_counter_code = "send(0, \"Hello from counter!\")";
     
     // Create method using methodology module (simplified API)
-    if (!ar_methodology_create_method("counter", ref_counter_code, 0)) {
+    const char *ref_counter_version = "1.0.0";
+    if (!ar_methodology_create_method("counter", ref_counter_code, ref_counter_version)) {
         printf("Failed to create counter method\n");
         ar_system_shutdown();
         return 1;
     }
     
-    // For simplicity, we use version 1 for the counter method
-    version_t counter_version = 1;
-    
-    printf("Counter method created with version %d\n\n", counter_version);
+    printf("Counter method created with version %s\n\n", ref_counter_version);
     
     // Create the initial agent
     printf("Creating initial agent...\n");
-    initial_agent = ar_agent_create("echo", echo_version, NULL);
+    initial_agent = ar_agent_create("echo", ref_echo_version, NULL);
     if (initial_agent == 0) {
         printf("Failed to create initial agent\n");
         ar_system_shutdown();
@@ -84,7 +80,7 @@ int ar_executable_main(void) {
     
     // Create a counter agent
     printf("Creating counter agent...\n");
-    agent_id_t counter_id = ar_agent_create("counter", counter_version, NULL);
+    agent_id_t counter_id = ar_agent_create("counter", ref_counter_version, NULL);
     if (counter_id == 0) {
         printf("Failed to create counter agent\n");
         ar_system_shutdown();
@@ -166,7 +162,7 @@ int ar_executable_main(void) {
     printf("Methods loaded: %s\n", loaded_methods ? "yes" : "no");
     
     // Initialize with echo method again
-    initial_agent = ar_system_init("echo", echo_version);
+    initial_agent = ar_system_init("echo", ref_echo_version);
     if (initial_agent == 0) {
         printf("Failed to initialize runtime\n");
         return 1;

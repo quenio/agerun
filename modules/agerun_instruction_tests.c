@@ -21,7 +21,7 @@ static void test_method_function(void);
 // Helper function to set up an agent for testing
 static agent_id_t setup_test_agent(const char *ref_method_name, const char *ref_instructions) {
     // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(ref_method_name, ref_instructions, 0, 0, false, false);
+    method_t *own_method = ar_method_create(ref_method_name, ref_instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -29,8 +29,8 @@ static agent_id_t setup_test_agent(const char *ref_method_name, const char *ref_
     ar_methodology_register_method(own_method);
     own_method = NULL; // Mark as transferred
     
-    // For test purposes, we assume registration succeeds and creates version 1
-    version_t version = 1;
+    // For test purposes, we assume registration succeeds and creates version "1.0.0"
+    const char *version = "1.0.0";
     
     agent_id_t agent_id = ar_agent_create(ref_method_name, version, NULL);
     assert(agent_id > 0);
@@ -212,12 +212,12 @@ static void test_method_function(void) {
     assert(own_ctx != NULL);
     
     // Create a method using the methodology API directly to ensure it works
-    extern bool ar_methodology_create_method(const char *ref_name, const char *ref_instructions, version_t version);
-    bool direct_result = ar_methodology_create_method("test_method_direct", "memory.x := 20", 1);
+    extern bool ar_methodology_create_method(const char *ref_name, const char *ref_instructions, const char *ref_version);
+    bool direct_result = ar_methodology_create_method("test_method_direct", "memory.x := 20", "1.0.0");
     assert(direct_result);
     
     // And a method instruction without assignment
-    const char *method_instruction = "method(\"test_method_3params\", \"memory.x := 10\", 1)";
+    const char *method_instruction = "method(\"test_method_3params\", \"memory.x := 10\", \"1.0.0\")";
     
     // Run the instruction directly
     bool instruction_result = ar_instruction_run(own_ctx, method_instruction);
@@ -227,8 +227,8 @@ static void test_method_function(void) {
     ar_instruction_destroy_context(own_ctx);
     
     // Now try to reference both the newly created methods
-    agent_id_t direct_agent_id = ar_agent_create("test_method_direct", 1, NULL);
-    agent_id_t test_agent_id = ar_agent_create("test_method_3params", 1, NULL);
+    agent_id_t direct_agent_id = ar_agent_create("test_method_direct", "1.0.0", NULL);
+    agent_id_t test_agent_id = ar_agent_create("test_method_3params", "1.0.0", NULL);
     
     // Check the results for the directly created method
     bool direct_method_created = (direct_agent_id > 0);
@@ -267,7 +267,7 @@ int main(void) {
     const char *ref_init_instructions = "memory.result = \"Test complete\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(ref_init_method, ref_init_instructions, 0, 0, false, false);
+    method_t *own_method = ar_method_create(ref_init_method, ref_init_instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -275,8 +275,8 @@ int main(void) {
     ar_methodology_register_method(own_method);
     own_method = NULL; // Mark as transferred
     
-    // For test purposes, we assume registration succeeds and creates version 1
-    version_t init_version = 1;
+    // For test purposes, we assume registration succeeds and creates version "1.0.0"
+    const char *init_version = "1.0.0";
     
     // When we initialize the system
     ar_system_init(ref_init_method, init_version);

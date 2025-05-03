@@ -23,7 +23,7 @@ static void test_method_creation(void) {
     const char *method_body = "send(0, \"Hello, World!\")";
     
     // When we create the method
-    method_t *own_method = ar_method_create(method_name, method_body, 0, 0, true, false);
+    method_t *own_method = ar_method_create(method_name, method_body, "1.0.0");
     
     // Then the method should be created successfully
     assert(own_method != NULL);
@@ -33,12 +33,12 @@ static void test_method_creation(void) {
     ar_methodology_register_method(own_method);
     own_method = NULL; // Mark as transferred
     
-    // For test purposes, we assume registration succeeds and creates version 1
-    version_t version = 1;
+    // For test purposes, we use version "1.0.0"
+    const char *version = "1.0.0";
     
     // When we create a new version of the same method
     const char *updated_body = "send(0, \"Hello, Updated World!\")";
-    method_t *own_method2 = ar_method_create(method_name, updated_body, 0, version, true, false);
+    method_t *own_method2 = ar_method_create(method_name, updated_body, "2.0.0");
     
     // Then the method should be created successfully
     assert(own_method2 != NULL);
@@ -47,11 +47,11 @@ static void test_method_creation(void) {
     ar_methodology_register_method(own_method2);
     own_method2 = NULL; // Mark as transferred
     
-    // For test purposes, we assume registration succeeds and creates version 2
-    version_t version2 = 2;
+    // For test purposes, we use version "2.0.0"
+    const char *version2 = "2.0.0";
     
-    // And the new version should be greater than the previous version
-    assert(version2 > version);
+    // And the new version should be different from the previous version
+    assert(strcmp(version2, version) != 0);
     
     printf("Method creation test passed.\n");
 }
@@ -64,7 +64,7 @@ static void test_agent_creation(void) {
     const char *method_body = "send(0, \"Agent created\")";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(method_name, method_body, 0, 0, true, false);
+    method_t *own_method = ar_method_create(method_name, method_body, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -72,8 +72,8 @@ static void test_agent_creation(void) {
     ar_methodology_register_method(own_method);
     own_method = NULL; // Mark as transferred
     
-    // For test purposes, we assume registration succeeds and creates version 1
-    version_t version = 1;
+    // For test purposes, we use version "1.0.0"
+    const char *version = "1.0.0";
     
     // When we create an agent with this method
     agent_id_t agent_id = ar_agent_create(method_name, version, NULL);
@@ -113,7 +113,7 @@ static void test_message_passing(void) {
     
     // Given methods for sender and receiver agents
     // Create and register sender method
-    method_t *own_sender_method = ar_method_create("sender", "send(target_id, \"Hello from sender!\")", 0, 0, true, false);
+    method_t *own_sender_method = ar_method_create("sender", "send(target_id, \"Hello from sender!\")", "1.0.0");
     assert(own_sender_method != NULL);
     
     // Register with methodology
@@ -121,19 +121,19 @@ static void test_message_passing(void) {
     ar_methodology_register_method(own_sender_method);
     own_sender_method = NULL; // Mark as transferred
     
-    // For test purposes, we assume registration succeeds and creates version 1
-    version_t sender_version = 1;
+    // For test purposes, we use version "1.0.0"
+    const char *sender_version = "1.0.0";
     
     // Create and register receiver method
-    method_t *own_receiver_method = ar_method_create("receiver", "memory[\"received\"] := \"true\"", 0, 0, true, false);
+    method_t *own_receiver_method = ar_method_create("receiver", "memory[\"received\"] := \"true\"", "1.0.0");
     assert(own_receiver_method != NULL);
     
     // Register with methodology
     ar_methodology_register_method(own_receiver_method);
     own_receiver_method = NULL; // Mark as transferred
     
-    // For test purposes, we assume registration succeeds and creates version 1
-    version_t receiver_version = 1;
+    // For test purposes, we use version "1.0.0"
+    const char *receiver_version = "1.0.0";
     
     // And a receiver agent created with the receiver method
     agent_id_t receiver_id = ar_agent_create("receiver", receiver_version, NULL);
@@ -175,7 +175,7 @@ int main(void) {
     printf("Starting Agerun tests...\n");
     
     // Given we initialize the runtime
-    agent_id_t initial_agent = ar_system_init(NULL, 0);
+    agent_id_t initial_agent = ar_system_init(NULL, NULL);
     
     // Then no agent should be created during initialization
     if (initial_agent != 0) {
@@ -185,7 +185,7 @@ int main(void) {
     }
     
     // Given we create a test method
-    method_t *own_method = ar_method_create("test_init", "send(0, \"Runtime initialized\")", 0, 0, true, false);
+    method_t *own_method = ar_method_create("test_init", "send(0, \"Runtime initialized\")", "1.0.0");
     
     // Then the method should be created successfully
     if (own_method == NULL) {
@@ -199,8 +199,8 @@ int main(void) {
     ar_methodology_register_method(own_method);
     own_method = NULL; // Mark as transferred
     
-    // For test purposes, we assume registration succeeds and creates version 1
-    version_t version = 1;
+    // For test purposes, we use version "1.0.0"
+    const char *version = "1.0.0";
     
     // When we create an initial agent with this method
     initial_agent = ar_agent_create("test_init", version, NULL);

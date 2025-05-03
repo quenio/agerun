@@ -18,7 +18,7 @@
 static const char g_sleep_message[] = "__sleep__";
 
 /* Implementation */
-agent_id_t ar_agent_create(const char *ref_method_name, version_t version, const data_t *ref_context) {
+agent_id_t ar_agent_create(const char *ref_method_name, const char *ref_version, const data_t *ref_context) {
     agent_t *mut_agents = ar_agency_get_agents();
     
     if (mut_agents == NULL || !ref_method_name) {
@@ -42,11 +42,11 @@ agent_id_t ar_agent_create(const char *ref_method_name, version_t version, const
     }
     
     // Find method definition from the method module
-    const method_t *ref_method = ar_methodology_get_method(ref_method_name, version);
+    const method_t *ref_method = ar_methodology_get_method(ref_method_name, ref_version);
     
     if (!ref_method) {
-        printf("Error: Method %s%s%d not found\n", 
-               ref_method_name, version ? " version " : "", version);
+        printf("Error: Method %s%s%s not found\n", 
+               ref_method_name, ref_version ? " version " : "", ref_version ? ref_version : "");
         // No need to free ref_context as we don't own it
         return 0;
     }
@@ -56,11 +56,8 @@ agent_id_t ar_agent_create(const char *ref_method_name, version_t version, const
     mut_agents[agent_idx].id = next_agent_id;
     ar_agency_set_next_id(next_agent_id + 1);
     
-    strncpy(mut_agents[agent_idx].method_name, ref_method_name, MAX_METHOD_NAME_LENGTH - 1);
-    mut_agents[agent_idx].method_name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
-    mut_agents[agent_idx].method_version = ar_method_get_version(ref_method);
+    mut_agents[agent_idx].ref_method = ref_method; // Store reference to method
     mut_agents[agent_idx].is_active = true;
-    mut_agents[agent_idx].is_persistent = ar_method_is_persistent(ref_method);
     mut_agents[agent_idx].ref_context = ref_context; // Context can be NULL
     // No ownership transfer for context as it's just a borrowed reference
     
@@ -70,6 +67,7 @@ agent_id_t ar_agent_create(const char *ref_method_name, version_t version, const
         printf("Error: Failed to create memory for agent %lld\n", next_agent_id);
         // No need to free ref_context as we don't own it
         mut_agents[agent_idx].ref_context = NULL; // Remove the reference
+        mut_agents[agent_idx].ref_method = NULL;  // Remove the reference
         return 0;
     }
     // Ownership of own_memory transferred to agent
@@ -83,14 +81,15 @@ agent_id_t ar_agent_create(const char *ref_method_name, version_t version, const
         
         // No need to free ref_context as we don't own it
         mut_agents[agent_idx].ref_context = NULL; // Remove the reference
+        mut_agents[agent_idx].ref_method = NULL;  // Remove the reference
         
         mut_agents[agent_idx].is_active = false;
         return 0;
     }
     // Ownership of own_message_queue transferred to agent
     
-    printf("Created agent %lld using method %s version %d\n", 
-           mut_agents[agent_idx].id, ref_method_name, ar_method_get_version(ref_method));
+    printf("Created agent %lld using method %s version %s\n", 
+           mut_agents[agent_idx].id, ar_method_get_name(ref_method), ar_method_get_version(ref_method));
     
     return mut_agents[agent_idx].id; // Ownership transferred to caller
 }
@@ -115,8 +114,8 @@ bool ar_agent_destroy(agent_id_t agent_id) {
             // Process the sleep message
             data_t *own_message = ar_list_remove_first(mut_agents[i].own_message_queue);
             if (own_message) {
-                // Find the method definition to process the sleep message
-                const method_t *ref_method = ar_methodology_get_method(mut_agents[i].method_name, mut_agents[i].method_version);
+                // Get the method reference for processing the sleep message
+                const method_t *ref_method = mut_agents[i].ref_method;
                 if (ref_method) {
                     // Print message based on its type
                     printf("Agent %lld received message: ", mut_agents[i].id);

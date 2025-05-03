@@ -23,45 +23,19 @@ static int method_name_count = 0;
  * Creates a new method object and registers it with the methodology module
  * @param ref_name Method name (borrowed reference)
  * @param ref_instructions The method implementation code (borrowed reference)
- * @param version The version number for this method (pass 0 to auto-increment from previous_version)
+ * @param ref_version Semantic version string for this method (e.g., "1.0.0")
  * @return true if method was created and registered successfully, false otherwise
  * @note Ownership: This function creates and takes ownership of the method.
  *       The caller should not worry about destroying the method.
- *       Default values:
- *       - previous_version: 0 (automatically detected if method with the same name exists)
- *       - backward_compatible: true (methods are backward compatible by default)
- *       - persist: false (methods don't persist by default)
  */
 bool ar_methodology_create_method(const char *ref_name, const char *ref_instructions, 
-                              version_t version) {
+                              const char *ref_version) {
     if (!ref_name || !ref_instructions) {
         return false;
     }
     
-    // We used to set these values, now they are handled by ar_method_create_simple
-    // We'll keep the previous_version detection for auto-incrementing
-    
-    // If the method already exists, find its current version to use as previous_version
-    int method_idx = ar_methodology_find_method_idx(ref_name);
-    if (method_idx >= 0) {
-        // Find the latest version
-        version_t latest_version = 0;
-        for (int i = 0; i < method_counts[method_idx]; i++) {
-            if (methods[method_idx][i] != NULL) {
-                version_t current_version = ar_method_get_version(methods[method_idx][i]);
-                if (current_version > latest_version) {
-                    latest_version = current_version;
-                }
-            }
-        }
-        // Update version to be one more than the latest if auto-incrementing was requested
-        if (latest_version > 0 && version == 0) {
-            version = latest_version + 1;
-        }
-    }
-    
-    // Create the method using the simplified interface
-    method_t *own_method = ar_method_create_simple(ref_name, ref_instructions, version);
+    // Create the method directly with the provided parameters
+    method_t *own_method = ar_method_create(ref_name, ref_instructions, ref_version);
     if (!own_method) {
         return false;
     }
@@ -75,7 +49,7 @@ bool ar_methodology_create_method(const char *ref_name, const char *ref_instruct
 
 /* Forward Declarations */
 static method_t* find_latest_method(const char *ref_name);
-static method_t* find_method(const char *ref_name, version_t version);
+static method_t* find_method(const char *ref_name, const char *ref_version);
 
 /* Method Search Functions */
 int ar_methodology_find_method_idx(const char *ref_name) {
@@ -94,20 +68,9 @@ static method_t* find_latest_method(const char *ref_name) {
         return NULL;
     }
     
-    // Find the most recent version
-    version_t latest_version = 0;
-    int latest_idx = -1;
-    
-    for (int i = 0; i < method_counts[method_idx]; i++) {
-        if (methods[method_idx][i] != NULL) {
-            version_t current_version = ar_method_get_version(methods[method_idx][i]);
-            if (current_version > latest_version) {
-                latest_version = current_version;
-                latest_idx = i;
-            }
-        }
-    }
-    
+    // For now, with string versions, we'll just return the last registered version
+    // In a future implementation, we could parse semantic versions and compare them
+    int latest_idx = method_counts[method_idx] - 1;
     if (latest_idx >= 0) {
         return methods[method_idx][latest_idx];
     }
@@ -115,7 +78,7 @@ static method_t* find_latest_method(const char *ref_name) {
     return NULL;
 }
 
-static method_t* find_method(const char *ref_name, version_t version) {
+static method_t* find_method(const char *ref_name, const char *ref_version) {
     int method_idx = ar_methodology_find_method_idx(ref_name);
     if (method_idx < 0) {
         return NULL;
@@ -124,32 +87,17 @@ static method_t* find_method(const char *ref_name, version_t version) {
     // Case 1: Exact version match
     for (int i = 0; i < method_counts[method_idx]; i++) {
         if (methods[method_idx][i] != NULL && 
-            ar_method_get_version(methods[method_idx][i]) == version) {
+            strcmp(ar_method_get_version(methods[method_idx][i]), ref_version) == 0) {
             return methods[method_idx][i];
         }
     }
     
-    // Case 2: Find compatible version
-    version_t latest_compatible = 0;
-    int latest_idx = -1;
-    
-    for (int i = 0; i < method_counts[method_idx]; i++) {
-        if (methods[method_idx][i] != NULL) {
-            version_t current_version = ar_method_get_version(methods[method_idx][i]);
-            if (ar_method_is_backward_compatible(methods[method_idx][i]) && 
-                current_version > version && 
-                current_version > latest_compatible) {
-                latest_compatible = current_version;
-                latest_idx = i;
-            }
-        }
+    // Case 2: If version is NULL, return the latest method
+    if (ref_version == NULL) {
+        return find_latest_method(ref_name);
     }
     
-    if (latest_idx >= 0) {
-        return methods[method_idx][latest_idx];
-    }
-    
-    return NULL; // No compatible version found
+    return NULL; // No matching version found
 }
 
 // This function is now implemented directly above
@@ -182,13 +130,13 @@ int* ar_methodology_get_method_name_count(void) {
 }
 
 // Main method access function
-method_t* ar_methodology_get_method(const char *ref_name, version_t version) {
-    if (version == 0) {
+method_t* ar_methodology_get_method(const char *ref_name, const char *ref_version) {
+    if (ref_version == NULL) {
         // Use latest version
         return find_latest_method(ref_name);
     } else {
         // Use specific version
-        return find_method(ref_name, version);
+        return find_method(ref_name, ref_version);
     }
 }
 
@@ -220,12 +168,8 @@ bool ar_methodology_save_methods(void) {
             
             const method_t *ref_method = methods[i][j];
             
-            // Write method metadata
-            fprintf(mut_fp, "%d %d %d %d\n", 
-                    ar_method_get_version(ref_method), 
-                    ar_method_get_previous_version(ref_method),
-                    ar_method_is_backward_compatible(ref_method) ? 1 : 0,
-                    ar_method_is_persistent(ref_method) ? 1 : 0);
+            // Write method metadata - just version string now
+            fprintf(mut_fp, "%s\n", ar_method_get_version(ref_method));
             
             // Write instructions
             fprintf(mut_fp, "%s\n", ar_method_get_instructions(ref_method));
@@ -256,7 +200,7 @@ void ar_methodology_register_method(method_t *own_method) {
     }
     
     const char *method_name = ar_method_get_name(own_method);
-    version_t method_version = ar_method_get_version(own_method);
+    const char *method_version = ar_method_get_version(own_method);
     
     // Find or create a method index for this name
     int method_idx = ar_methodology_find_method_idx(method_name);
@@ -285,7 +229,7 @@ void ar_methodology_register_method(method_t *own_method) {
     bool version_conflict = false;
     for (int i = 0; i < version_idx; i++) {
         if (methods[method_idx][i] != NULL && 
-            ar_method_get_version(methods[method_idx][i]) == method_version) {
+            strcmp(ar_method_get_version(methods[method_idx][i]), method_version) == 0) {
             version_conflict = true;
             break;
         }
@@ -293,14 +237,14 @@ void ar_methodology_register_method(method_t *own_method) {
     
     if (version_conflict) {
         // Rather than modifying the version, we'll just append a note
-        printf("Warning: Method %s version %d already exists\n", method_name, method_version);
+        printf("Warning: Method %s version %s already exists\n", method_name, method_version);
     }
     
     // Store the method in our methods array, handling any existing method
     ar_methodology_set_method_storage(method_idx, version_idx, own_method);
     method_counts[method_idx]++;
     
-    printf("Registered method %s version %d\n", method_name, method_version);
+    printf("Registered method %s version %s\n", method_name, method_version);
 }
 
 bool ar_methodology_load_methods(void) {
@@ -361,11 +305,10 @@ bool ar_methodology_load_methods(void) {
                 return false;
             }
             
-            version_t version, previous_version;
-            int backward_compatible, persist;
+            char version[32]; // Buffer for version string
             
-            // Read method metadata
-            if (fscanf(mut_fp, "%d %d %d %d", &version, &previous_version, &backward_compatible, &persist) != 4) {
+            // Read method metadata (just version string now)
+            if (fscanf(mut_fp, "%31s", version) != 1) {
                 printf("Error: Malformed version entry in %s\n", METHODOLOGY_FILE_NAME);
                 fclose(mut_fp);
                 // Delete the corrupted file and start fresh
@@ -382,7 +325,7 @@ bool ar_methodology_load_methods(void) {
             
             // Read the instructions
             if (fgets(instructions, MAX_INSTRUCTIONS_LENGTH, mut_fp) == NULL) {
-                printf("Error: Could not read instructions for method %s version %d\n", 
+                printf("Error: Could not read instructions for method %s version %s\n", 
                        name, version);
                 fclose(mut_fp);
                 // Delete the corrupted file and start fresh
@@ -397,9 +340,8 @@ bool ar_methodology_load_methods(void) {
                 instructions[len-1] = '\0';
             }
             
-            // Create a new method with the exact version and previous_version from the file
-            method_t *own_method = ar_method_create(name, instructions, version, previous_version, 
-                                            backward_compatible != 0, persist != 0);
+            // Create a new method with the version from the file
+            method_t *own_method = ar_method_create(name, instructions, version);
             
             if (own_method) {
                 // Store the method directly in the methods array

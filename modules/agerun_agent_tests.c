@@ -25,7 +25,7 @@ static void test_agent_create_destroy(void) {
     const char *instructions = "message -> \"Test Method Response\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(method_name, instructions, 0, 0, false, false);
+    method_t *own_method = ar_method_create(method_name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -33,8 +33,8 @@ static void test_agent_create_destroy(void) {
     ar_methodology_register_method(own_method);
     own_method = NULL; // Mark as transferred
     
-    // For test purposes, we assume registration succeeds and creates version 1
-    version_t version = 1;
+    // For test purposes, we assume registration succeeds and creates version "1.0.0"
+    const char *version = "1.0.0";
     
     // When we create an agent with this method
     agent_id_t agent_id = ar_agent_create(method_name, version, NULL);
@@ -67,7 +67,7 @@ static void test_agent_send(void) {
     const char *instructions = "message -> message";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(method_name, instructions, 0, 0, false, false);
+    method_t *own_method = ar_method_create(method_name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -75,8 +75,8 @@ static void test_agent_send(void) {
     ar_methodology_register_method(own_method);
     own_method = NULL; // Mark as transferred
     
-    // For test purposes, we assume registration succeeds and creates version 1
-    version_t version = 1;
+    // For test purposes, we assume registration succeeds and creates version "1.0.0"
+    const char *version = "1.0.0";
     
     agent_id_t agent_id = ar_agent_create(method_name, version, NULL);
     assert(agent_id > 0);
@@ -109,7 +109,7 @@ static void test_agent_exists(void) {
     const char *instructions = "message -> \"I exist\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(method_name, instructions, 0, 0, false, false);
+    method_t *own_method = ar_method_create(method_name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -117,8 +117,8 @@ static void test_agent_exists(void) {
     ar_methodology_register_method(own_method);
     own_method = NULL; // Mark as transferred
     
-    // For test purposes, we assume registration succeeds and creates version 1
-    version_t version = 1;
+    // For test purposes, we assume registration succeeds and creates version "1.0.0"
+    const char *version = "1.0.0";
     
     agent_id_t agent_id = ar_agent_create(method_name, version, NULL);
     assert(agent_id > 0);
@@ -158,7 +158,7 @@ static void test_agent_persistence(void) {
     const char *instructions = "message -> \"I persist\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(method_name, instructions, 0, 0, false, true);
+    method_t *own_method = ar_method_create(method_name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -166,8 +166,8 @@ static void test_agent_persistence(void) {
     ar_methodology_register_method(own_method);
     own_method = NULL; // Mark as transferred
     
-    // For test purposes, we assume registration succeeds and creates version 1
-    version_t version = 1;
+    // For test purposes, we assume registration succeeds and creates version "1.0.0"
+    const char *version = "1.0.0";
     
     // Create a context with data_t
     data_t *own_context = ar_data_create_map();
@@ -221,7 +221,7 @@ int main(void) {
     const char *instructions = "message -> \"Test\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(method_name, instructions, 0, 0, false, false);
+    method_t *own_method = ar_method_create(method_name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -229,8 +229,8 @@ int main(void) {
     ar_methodology_register_method(own_method);
     own_method = NULL; // Mark as transferred
     
-    // For test purposes, we assume registration succeeds and creates version 1
-    version_t version = 1;
+    // For test purposes, we assume registration succeeds and creates version "1.0.0"
+    const char *version = "1.0.0";
     
     agent_id_t init_agent_id = ar_system_init(method_name, version);
     assert(init_agent_id > 0);

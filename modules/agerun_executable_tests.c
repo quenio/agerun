@@ -89,18 +89,16 @@ int main(void) {
     // Given we have a test method and initialized system
     const char *init_method = "exec_test_method";
     const char *init_instructions = "memory.result = \"Test complete\"";
+    const char *init_version = "1.0.0";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(init_method, init_instructions, 0, 0, false, false);
+    method_t *own_method = ar_method_create(init_method, init_instructions, init_version);
     assert(own_method != NULL);
     
     // Register with methodology
     extern void ar_methodology_register_method(method_t *own_method);
     ar_methodology_register_method(own_method);
     own_method = NULL; // Mark as transferred
-    
-    // For test purposes, we assume registration succeeds and creates version 1
-    version_t init_version = 1;
     
     // When we initialize the system with this method
     ar_system_init(init_method, init_version);

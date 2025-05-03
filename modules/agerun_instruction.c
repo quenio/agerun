@@ -685,30 +685,28 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         }
         (*mut_pos)++; // Skip ')'
         
-        // Extract version information (default to version 1 if not a valid number)
-        version_t version = 1;
-        if (ar_data_get_type(own_version) == DATA_INTEGER) {
-            version = (version_t)ar_data_get_integer(own_version);
-        } else if (ar_data_get_type(own_version) == DATA_STRING) {
-            // Try to parse version string if provided as string
-            // For simplicity, we'll just use the first number found in the string
-            const char *ver_str = ar_data_get_string(own_version);
-            if (ver_str) {
-                version = (version_t)atoi(ver_str);
-            }
+        // Extract version string (default to "1.0.0" if not a valid string)
+        const char *version_str = "1.0.0";
+        if (ar_data_get_type(own_version) == DATA_STRING) {
+            version_str = ar_data_get_string(own_version);
+        } else if (ar_data_get_type(own_version) == DATA_INTEGER) {
+            // If version is provided as a number, convert it to a string "X.0.0"
+            static char version_buffer[16]; // Buffer for conversion
+            snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar_data_get_integer(own_version));
+            version_str = version_buffer;
         }
         
-        // Clean up input data first (we've already extracted the values we need)
+        // Call methodology module directly to create method with just 3 parameters:
+        // name, instructions, version
+        bool success = ar_methodology_create_method(method_name, instructions, version_str);
+        
+        // Clean up input data now that we're done with it
         ar_data_destroy(own_version);
         own_version = NULL; // Mark as destroyed
         ar_data_destroy(own_instr);
         own_instr = NULL; // Mark as destroyed
         ar_data_destroy(own_name);
         own_name = NULL; // Mark as destroyed
-        
-        // Call methodology module directly to create method with just 3 parameters:
-        // name, instructions, version
-        bool success = ar_methodology_create_method(method_name, instructions, version);
         
         // Return success indicator
         *own_result = ar_data_create_integer(success ? 1 : 0);

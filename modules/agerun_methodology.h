@@ -11,27 +11,23 @@
  * Creates a new method object and registers it with the methodology module
  * @param ref_name Method name (borrowed reference)
  * @param ref_instructions The method implementation code (borrowed reference)
- * @param version The version number for this method (pass 0 to auto-increment from previous_version)
+ * @param ref_version Semantic version string for this method (e.g., "1.0.0")
  * @return true if method was created and registered successfully, false otherwise
  * @note Ownership: This function creates and takes ownership of the method.
  *       The caller should not worry about destroying the method.
- *       Default values:
- *       - previous_version: 0 (automatically detected if method with the same name exists)
- *       - backward_compatible: true (methods are backward compatible by default)
- *       - persist: false (methods don't persist by default)
  */
 bool ar_methodology_create_method(const char *ref_name, const char *ref_instructions, 
-                              version_t version);
+                              const char *ref_version);
 
 /**
  * Get a method definition by name and version
  * @param ref_name Method name (borrowed reference)
- * @param version Method version (0 for latest)
+ * @param ref_version Method version string (NULL for latest)
  * @return Pointer to method definition (borrowed reference), or NULL if not found
  * @note Ownership: Returns a borrowed reference to the internal method. The caller
  *       should not modify or free the returned method.
  */
-method_t* ar_methodology_get_method(const char *ref_name, version_t version);
+method_t* ar_methodology_get_method(const char *ref_name, const char *ref_version);
 
 /**
  * Find the index of a method by name in the methods array

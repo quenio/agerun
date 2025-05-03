@@ -8,19 +8,18 @@
 
 /* Constants */
 #define MAX_AGENTS 1024
-#define MAX_METHOD_NAME_LENGTH 64
 
 /* Type definitions */
 typedef int64_t agent_id_t;
-typedef int32_t version_t;
+
+/* Forward declaration for method_t */
+typedef struct method_s method_t;
 
 /* Agent Definition */
 typedef struct agent_s {
     agent_id_t id;
-    char method_name[MAX_METHOD_NAME_LENGTH];
-    version_t method_version;
+    const method_t *ref_method; // Borrowed reference to method
     bool is_active;
-    bool is_persistent;
     list_t *own_message_queue;  // Using list as a message queue, owned by agent
     data_t *own_memory;        // Memory owned by agent
     const data_t *ref_context;  // Context is read-only reference, not owned
@@ -29,12 +28,12 @@ typedef struct agent_s {
 /**
  * Create a new agent instance
  * @param ref_method_name Name of the method to use (borrowed reference)
- * @param version Version of the method (0 for latest)
+ * @param ref_version Version string of the method (NULL for latest)
  * @param ref_context Context data (NULL for empty, borrowed reference, not owned by agent)
  * @return Unique agent ID, or 0 on failure
  * @note Ownership: Function does not take ownership of ref_context, it just references it.
  */
-agent_id_t ar_agent_create(const char *ref_method_name, version_t version, const data_t *ref_context);
+agent_id_t ar_agent_create(const char *ref_method_name, const char *ref_version, const data_t *ref_context);
 
 /**
  * Destroy an agent instance

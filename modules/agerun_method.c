@@ -17,12 +17,11 @@
 #define MAX_METHOD_NAME_LENGTH 64
 
 /* Method Definition (full structure) */
+#define MAX_VERSION_LENGTH 16 // Enough for semver (e.g., "1.2.3")
+
 struct method_s {
     char name[MAX_METHOD_NAME_LENGTH];
-    version_t version;
-    version_t previous_version;
-    bool backward_compatible;
-    bool persist;
+    char version[MAX_VERSION_LENGTH];
     char instructions[MAX_INSTRUCTIONS_LENGTH];
 };
 
@@ -32,25 +31,12 @@ const char* ar_method_get_name(const method_t *ref_method) {
     return ref_method->name;
 }
 
-version_t ar_method_get_version(const method_t *ref_method) {
+const char* ar_method_get_version(const method_t *ref_method) {
     AR_ASSERT(ref_method != NULL, "Method pointer cannot be NULL");
     return ref_method->version;
 }
 
-version_t ar_method_get_previous_version(const method_t *ref_method) {
-    AR_ASSERT(ref_method != NULL, "Method pointer cannot be NULL");
-    return ref_method->previous_version;
-}
-
-bool ar_method_is_backward_compatible(const method_t *ref_method) {
-    AR_ASSERT(ref_method != NULL, "Method pointer cannot be NULL");
-    return ref_method->backward_compatible;
-}
-
-bool ar_method_is_persistent(const method_t *ref_method) {
-    AR_ASSERT(ref_method != NULL, "Method pointer cannot be NULL");
-    return ref_method->persist;
-}
+// Removed ar_method_is_backward_compatible and ar_method_is_persistent implementations
 
 const char* ar_method_get_instructions(const method_t *ref_method) {
     AR_ASSERT(ref_method != NULL, "Method pointer cannot be NULL");
@@ -67,24 +53,15 @@ void ar_method_destroy(method_t *own_method) {
  * Creates a new method with the given parameters
  * @param ref_name Method name (borrowed reference)
  * @param ref_instructions The method implementation code (borrowed reference)
- * @param version The version number for this method (pass 0 to auto-increment from previous_version)
- * @param previous_version Previous version number (0 for first version)
- * @param backward_compatible Whether the method is backward compatible
- * @param persist Whether agents using this method should persist
+ * @param ref_version Semantic version string for this method (e.g., "1.0.0")
  * @return Newly created method object, or NULL on failure
  * @note Ownership: Returns an owned object that the caller must destroy with ar_method_destroy.
- *       The method copies the name and instructions. The original strings remain owned by the caller.
+ *       The method copies the name, instructions, and version. The original strings remain owned by the caller.
  */
 method_t* ar_method_create(const char *ref_name, const char *ref_instructions, 
-                         version_t version, version_t previous_version, 
-                         bool backward_compatible, bool persist) {
-    if (!ref_name || !ref_instructions) {
+                         const char *ref_version) {
+    if (!ref_name || !ref_instructions || !ref_version) {
         return NULL;
-    }
-    
-    // Calculate version if auto-increment requested
-    if (version == 0) {
-        version = previous_version + 1;
     }
     
     // Allocate memory for the new method
@@ -98,38 +75,13 @@ method_t* ar_method_create(const char *ref_name, const char *ref_instructions,
     strncpy(mut_method->name, ref_name, MAX_METHOD_NAME_LENGTH - 1);
     mut_method->name[MAX_METHOD_NAME_LENGTH - 1] = '\0';
     
-    mut_method->version = version;
-    mut_method->previous_version = previous_version;
-    mut_method->backward_compatible = backward_compatible;
-    mut_method->persist = persist;
+    strncpy(mut_method->version, ref_version, MAX_VERSION_LENGTH - 1);
+    mut_method->version[MAX_VERSION_LENGTH - 1] = '\0';
+    
     strncpy(mut_method->instructions, ref_instructions, MAX_INSTRUCTIONS_LENGTH - 1);
     mut_method->instructions[MAX_INSTRUCTIONS_LENGTH - 1] = '\0';
     
     return mut_method;
-}
-
-/**
- * Creates a new method object with simplified parameters (using defaults)
- * @param ref_name Method name (borrowed reference)
- * @param ref_instructions The method implementation code (borrowed reference)
- * @param version The version number for this method (pass 0 to auto-increment based on existing versions)
- * @return Newly created method object, or NULL on failure
- * @note Ownership: Returns an owned object that the caller must destroy with ar_method_destroy.
- *       The method copies the name and instructions. The original strings remain owned by the caller.
- *       Default values are used for other parameters:
- *       - previous_version: 0 (for first version)
- *       - backward_compatible: true (methods are backward compatible by default)
- *       - persist: false (methods don't persist by default)
- */
-method_t* ar_method_create_simple(const char *ref_name, const char *ref_instructions, 
-                               version_t version) {
-    // Use default values for parameters not specified
-    version_t previous_version = 0;  // Default to 0 for first version
-    bool backward_compatible = true; // Default to true for backward compatibility
-    bool persist = false;            // Default to false for persistence
-    
-    return ar_method_create(ref_name, ref_instructions, version, 
-                          previous_version, backward_compatible, persist);
 }
 
 bool ar_method_run(agent_t *mut_agent, const data_t *ref_message, const char *ref_instructions) {

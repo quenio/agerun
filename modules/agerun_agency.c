@@ -3,6 +3,7 @@
 #include "agerun_agent.h"
 #include "agerun_map.h"
 #include "agerun_data.h"
+#include "agerun_method.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,6 +21,7 @@ static void ar_agency_init(void) {
     if (!g_is_initialized) {
         for (int i = 0; i < MAX_AGENTS; i++) {
             g_own_agents[i].is_active = false;
+            g_own_agents[i].ref_method = NULL;
             g_own_agents[i].own_memory = NULL;
             g_own_agents[i].own_message_queue = NULL;
             g_own_agents[i].ref_context = NULL; // Not owned, just initialize reference
@@ -101,10 +103,11 @@ bool ar_agency_save_agents(void) {
         return false;
     }
     
-    // Count how many persistent agents we have
+    // Count how many active agents we have - we don't have persistence flag anymore,
+    // so just save all active agents
     int count = 0;
     for (int i = 0; i < MAX_AGENTS; i++) {
-        if (g_own_agents[i].is_active && g_own_agents[i].is_persistent) {
+        if (g_own_agents[i].is_active && g_own_agents[i].ref_method != NULL) {
             count++;
         }
     }
@@ -113,8 +116,12 @@ bool ar_agency_save_agents(void) {
     
     // Save basic agent info
     for (int i = 0; i < MAX_AGENTS; i++) {
-        if (g_own_agents[i].is_active && g_own_agents[i].is_persistent) {
-            fprintf(fp, "%lld %s %d\n", g_own_agents[i].id, g_own_agents[i].method_name, g_own_agents[i].method_version);
+        if (g_own_agents[i].is_active && g_own_agents[i].ref_method != NULL) {
+            // Get method name and version from the method reference
+            const char *method_name = ar_method_get_name(g_own_agents[i].ref_method);
+            const char *method_version = ar_method_get_version(g_own_agents[i].ref_method);
+            
+            fprintf(fp, "%lld %s %s\n", g_own_agents[i].id, method_name, method_version);
             
             // Save memory map placeholder
             // For now, just save an empty count since we can't access the internal structure
@@ -147,17 +154,17 @@ bool ar_agency_load_agents(void) {
     
     for (int i = 0; i < count; i++) {
         agent_id_t id;
-        char method_name[MAX_METHOD_NAME_LENGTH];
-        version_t version;
+        char method_name[256]; // Increased buffer size for safety
+        char method_version[64]; // Buffer for semver string
         
-        if (fscanf(fp, "%lld %s %d", &id, method_name, &version) != 3) {
+        if (fscanf(fp, "%lld %s %s", &id, method_name, method_version) != 3) {
             printf("Error: Malformed agent entry in %s\n", AGENCY_FILE_NAME);
             fclose(fp);
             return false;
         }
         
         // Create the agent
-        agent_id_t new_id = ar_agent_create(method_name, version, NULL);
+        agent_id_t new_id = ar_agent_create(method_name, method_version, NULL);
         if (new_id == 0) {
             printf("Error: Could not recreate agent %lld\n", id);
             continue;

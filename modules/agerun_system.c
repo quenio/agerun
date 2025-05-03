@@ -36,7 +36,7 @@ static char g_wake_message[] = "__wake__";
 static bool is_initialized = false;
 
 /* Implementation */
-agent_id_t ar_system_init(const char *ref_method_name, version_t version) {
+agent_id_t ar_system_init(const char *ref_method_name, const char *ref_version) {
     if (is_initialized) {
         printf("Agerun already initialized\n");
         return 0;
@@ -58,7 +58,7 @@ agent_id_t ar_system_init(const char *ref_method_name, version_t version) {
     // Create initial agent if ref_method_name is provided
     if (ref_method_name != NULL) {
         // Create initial agent with NULL context
-        agent_id_t initial_agent = ar_agent_create(ref_method_name, version, NULL);
+        agent_id_t initial_agent = ar_agent_create(ref_method_name, ref_version, NULL);
         if (initial_agent != 0) {
             // Send wake message to initial agent
             data_t *own_wake_data = ar_data_create_string(g_wake_message);
@@ -109,7 +109,7 @@ bool ar_system_process_next_message(void) {
             if (own_message) {
                 // Use the interpret_method function from agerun_agent
                 // Since that's now private, we need to call the method directly
-                method_t *ref_method = ar_methodology_get_method(mut_agents[i].method_name, mut_agents[i].method_version);
+                const method_t *ref_method = mut_agents[i].ref_method;
                 if (ref_method) {
                     // Print message based on its type
                     printf("Agent %lld received message: ", mut_agents[i].id);

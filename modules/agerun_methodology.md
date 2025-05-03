@@ -20,12 +20,12 @@ The Methodology module provides functionality for storing, managing, and retriev
 /**
  * Get a method definition by name and version
  * @param ref_name Method name (borrowed reference)
- * @param version Method version (0 for latest)
+ * @param ref_version Method version string (NULL for latest)
  * @return Pointer to method definition (borrowed reference), or NULL if not found
  * @note Ownership: Returns a borrowed reference to the internal method. The caller
  *       should not modify or free the returned method.
  */
-method_t* ar_methodology_get_method(const char *ref_name, version_t version);
+method_t* ar_methodology_get_method(const char *ref_name, const char *ref_version);
 
 /**
  * Find the index of a method by name in the methods array
@@ -82,17 +82,13 @@ int* ar_methodology_get_method_name_count(void);
  * Creates a new method object and registers it with the methodology module
  * @param ref_name Method name (borrowed reference)
  * @param ref_instructions The method implementation code (borrowed reference)
- * @param version The version number for this method (pass 0 to auto-increment from previous_version)
+ * @param ref_version Semantic version string for this method (e.g., "1.0.0")
  * @return true if method was created and registered successfully, false otherwise
  * @note Ownership: This function creates and takes ownership of the method.
  *       The caller should not worry about destroying the method.
- *       Default values:
- *       - previous_version: 0 (automatically detected if method with the same name exists)
- *       - backward_compatible: true (methods are backward compatible by default)
- *       - persist: false (methods don't persist by default)
  */
 bool ar_methodology_create_method(const char *ref_name, const char *ref_instructions, 
-                              version_t version);
+                              const char *ref_version);
 ```
 
 ```c
@@ -143,16 +139,16 @@ void ar_methodology_cleanup(void);
 
 ```c
 // Get the latest version of a method
-method_t *ref_method = ar_methodology_get_method("echo_method", 0);
+method_t *ref_method = ar_methodology_get_method("echo_method", NULL);
 if (ref_method) {
     // Use the method...
     const char *instructions = ar_method_get_instructions(ref_method);
-    version_t version = ar_method_get_version(ref_method);
+    const char *version = ar_method_get_version(ref_method);
     // Note: ref_method is owned by the methodology module, don't free it
 }
 
 // Get a specific version of a method
-method_t *ref_specific_method = ar_methodology_get_method("echo_method", 2);
+method_t *ref_specific_method = ar_methodology_get_method("echo_method", "2.0.0");
 if (ref_specific_method) {
     // Use the specific version...
 }
@@ -161,18 +157,18 @@ if (ref_specific_method) {
 ### Method Creation and Registration
 
 ```c
-// Create and register a method using the simplified API
+// Create and register a method using semantic versioning
 bool created = ar_methodology_create_method("custom_method", 
                                         "memory.result := \"Custom: \" + message.text;", 
-                                        1);
+                                        "1.0.0");
 if (created) {
     printf("Method created and registered successfully\n");
 }
 
 // Alternative approach: Create method object manually and register it
-method_t *own_method = ar_method_create_simple("another_method", 
-                                          "memory.greeting := \"Hello\";",
-                                          1);
+method_t *own_method = ar_method_create("another_method", 
+                                   "memory.greeting := \"Hello\";",
+                                   "1.0.0");
 
 // Register the method with the methodology module (transfers ownership)
 ar_methodology_register_method(own_method);
