@@ -24,23 +24,44 @@ static int method_name_count = 0;
  * @param ref_name Method name (borrowed reference)
  * @param ref_instructions The method implementation code (borrowed reference)
  * @param version The version number for this method (pass 0 to auto-increment from previous_version)
- * @param previous_version Previous version number (0 for first version)
- * @param backward_compatible Whether the method is backward compatible
- * @param persist Whether agents using this method should persist
  * @return true if method was created and registered successfully, false otherwise
  * @note Ownership: This function creates and takes ownership of the method.
  *       The caller should not worry about destroying the method.
+ *       Default values:
+ *       - previous_version: 0 (automatically detected if method with the same name exists)
+ *       - backward_compatible: true (methods are backward compatible by default)
+ *       - persist: false (methods don't persist by default)
  */
 bool ar_methodology_create_method(const char *ref_name, const char *ref_instructions, 
-                              version_t version, version_t previous_version, 
-                              bool backward_compatible, bool persist) {
+                              version_t version) {
     if (!ref_name || !ref_instructions) {
         return false;
     }
     
-    // Create the method
-    method_t *own_method = ar_method_create(ref_name, ref_instructions, version, 
-                                        previous_version, backward_compatible, persist);
+    // We used to set these values, now they are handled by ar_method_create_simple
+    // We'll keep the previous_version detection for auto-incrementing
+    
+    // If the method already exists, find its current version to use as previous_version
+    int method_idx = ar_methodology_find_method_idx(ref_name);
+    if (method_idx >= 0) {
+        // Find the latest version
+        version_t latest_version = 0;
+        for (int i = 0; i < method_counts[method_idx]; i++) {
+            if (methods[method_idx][i] != NULL) {
+                version_t current_version = ar_method_get_version(methods[method_idx][i]);
+                if (current_version > latest_version) {
+                    latest_version = current_version;
+                }
+            }
+        }
+        // Update version to be one more than the latest if auto-incrementing was requested
+        if (latest_version > 0 && version == 0) {
+            version = latest_version + 1;
+        }
+    }
+    
+    // Create the method using the simplified interface
+    method_t *own_method = ar_method_create_simple(ref_name, ref_instructions, version);
     if (!own_method) {
         return false;
     }
@@ -53,12 +74,11 @@ bool ar_methodology_create_method(const char *ref_name, const char *ref_instruct
 }
 
 /* Forward Declarations */
-static int find_method_idx(const char *ref_name);
 static method_t* find_latest_method(const char *ref_name);
 static method_t* find_method(const char *ref_name, version_t version);
 
 /* Method Search Functions */
-static int find_method_idx(const char *ref_name) {
+int ar_methodology_find_method_idx(const char *ref_name) {
     for (int i = 0; i < method_name_count; i++) {
         if (methods[i][0] != NULL && strcmp(ar_method_get_name(methods[i][0]), ref_name) == 0) {
             return i;
@@ -69,7 +89,7 @@ static int find_method_idx(const char *ref_name) {
 }
 
 static method_t* find_latest_method(const char *ref_name) {
-    int method_idx = find_method_idx(ref_name);
+    int method_idx = ar_methodology_find_method_idx(ref_name);
     if (method_idx < 0 || method_counts[method_idx] == 0) {
         return NULL;
     }
@@ -96,7 +116,7 @@ static method_t* find_latest_method(const char *ref_name) {
 }
 
 static method_t* find_method(const char *ref_name, version_t version) {
-    int method_idx = find_method_idx(ref_name);
+    int method_idx = ar_methodology_find_method_idx(ref_name);
     if (method_idx < 0) {
         return NULL;
     }
@@ -132,10 +152,7 @@ static method_t* find_method(const char *ref_name, version_t version) {
     return NULL; // No compatible version found
 }
 
-// Interface functions for agerun_method.c
-int ar_methodology_find_method_idx(const char *ref_name) {
-    return find_method_idx(ref_name);
-}
+// This function is now implemented directly above
 
 method_t* ar_methodology_get_method_storage(int method_idx, int version_idx) {
     AR_ASSERT(method_idx >= 0 && method_idx < MAX_METHODS, "Method index out of bounds");
@@ -242,7 +259,7 @@ void ar_methodology_register_method(method_t *own_method) {
     version_t method_version = ar_method_get_version(own_method);
     
     // Find or create a method index for this name
-    int method_idx = find_method_idx(method_name);
+    int method_idx = ar_methodology_find_method_idx(method_name);
     if (method_idx < 0) {
         // No existing method with this name, create a new entry
         if (method_name_count >= MAX_METHODS) { 

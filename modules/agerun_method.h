@@ -13,9 +13,9 @@ typedef struct method_s method_t;
  * @param ref_name Method name (borrowed reference)
  * @param ref_instructions The method implementation code (borrowed reference)
  * @param version The version number for this method (pass 0 to auto-increment from previous_version)
- * @param previous_version Previous version number (0 for first version)
- * @param backward_compatible Whether the method is backward compatible
- * @param persist Whether agents using this method should persist
+ * @param previous_version Previous version number (0 for first version, default if not specified)
+ * @param backward_compatible Whether the method is backward compatible (default: true)
+ * @param persist Whether agents using this method should persist (default: false)
  * @return Newly created method object, or NULL on failure
  * @note Ownership: Returns an owned object that the caller must destroy with ar_method_destroy.
  *       The method copies the name and instructions. The original strings remain owned by the caller.
@@ -23,6 +23,22 @@ typedef struct method_s method_t;
 method_t* ar_method_create(const char *ref_name, const char *ref_instructions, 
                          version_t version, version_t previous_version, 
                          bool backward_compatible, bool persist);
+
+/**
+ * Creates a new method object with simplified parameters (using defaults)
+ * @param ref_name Method name (borrowed reference)
+ * @param ref_instructions The method implementation code (borrowed reference)
+ * @param version The version number for this method (pass 0 to auto-increment based on existing versions)
+ * @return Newly created method object, or NULL on failure
+ * @note Ownership: Returns an owned object that the caller must destroy with ar_method_destroy.
+ *       The method copies the name and instructions. The original strings remain owned by the caller.
+ *       Default values are used for other parameters:
+ *       - previous_version: 0 (for first version)
+ *       - backward_compatible: true (methods are backward compatible by default)
+ *       - persist: false (methods don't persist by default)
+ */
+method_t* ar_method_create_simple(const char *ref_name, const char *ref_instructions, 
+                               version_t version);
 
 /**
  * Get the name of a method

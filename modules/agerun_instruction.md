@@ -6,11 +6,13 @@ The Instruction module is responsible for parsing and executing instructions in 
 
 ## Key Features
 
+- Dedicated context structure for instruction parsing and execution
 - Recursive descent parsing implementation for instructions
 - Support for assignment operations using memory dot notation
 - Support for function calls with optional assignment
 - Proper memory management and error handling
 - Type-safe operations with clear parsing rules
+- Modular design with no dependency on agent module
 
 ## BNF Grammar
 
@@ -35,7 +37,7 @@ The instruction module implements the following BNF grammar:
 <send-function> ::= 'send' '(' <expression> ',' <expression> ')'
 <parse-function> ::= 'parse' '(' <expression> ',' <expression> ')'
 <build-function> ::= 'build' '(' <expression> ',' <expression> ')'
-<method-function> ::= 'method' '(' <expression> ',' <expression> ',' <expression> ')'
+<method-function> ::= 'method' '(' <expression: name> ',' <expression: instructions> ',' <expression: version> ')'
 <agent-function> ::= 'agent' '(' <expression> ',' <expression> [',' <expression>] ')'
 <destroy-function> ::= 'destroy' '(' <expression> ')'
                      | 'destroy' '(' <expression> ',' <expression> ')'
@@ -46,18 +48,50 @@ The instruction module implements the following BNF grammar:
 
 ## API Reference
 
-### ar_instruction_run
+### Instruction Context
 
 ```c
-bool ar_instruction_run(agent_t *mut_agent, const data_t *ref_message, const char *ref_instruction);
+instruction_context_t* ar_instruction_create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message);
 ```
 
-Parses and executes a single instruction in the agent's context.
+Creates a new instruction context for parsing and executing instructions.
 
 **Parameters:**
-- `mut_agent`: The agent executing the instruction (mutable reference)
+- `mut_memory`: The memory to use for the instruction (mutable reference)
+- `ref_context`: The context data (borrowed reference)
 - `ref_message`: The message being processed (borrowed reference)
-- `ref_instruction`: The instruction string to parse and execute (borrowed reference)
+
+**Returns:**
+- A newly created instruction context (owned by caller), or NULL on failure
+
+**Ownership:**
+- Returns an owned value that caller must destroy
+- Does not take ownership of any parameters
+
+```c
+void ar_instruction_destroy_context(instruction_context_t *own_ctx);
+```
+
+Destroys an instruction context.
+
+**Parameters:**
+- `own_ctx`: The instruction context to destroy (ownership transferred to function)
+
+**Ownership:**
+- Takes ownership of the context parameter and destroys it
+- This only frees the context structure itself, not the memory, context, or message data structures
+
+### Instruction Execution
+
+```c
+bool ar_instruction_run(instruction_context_t *mut_ctx, const char *ref_instruction);
+```
+
+Parses and executes a single instruction in the context.
+
+**Parameters:**
+- `mut_ctx`: The instruction context to use (mutable reference)
+- `ref_instruction`: The instruction to execute (borrowed reference)
 
 **Returns:**
 - `true` if the instruction was successfully executed
@@ -67,39 +101,142 @@ Parses and executes a single instruction in the agent's context.
 - Does not take ownership of any parameters
 - Does not transfer ownership of any objects
 
+### Accessor Functions
+
+```c
+data_t* ar_instruction_get_memory(const instruction_context_t *ref_ctx);
+```
+
+Gets the memory from the instruction context.
+
+**Parameters:**
+- `ref_ctx`: The instruction context (borrowed reference)
+
+**Returns:**
+- Mutable reference to the memory (not owned by caller)
+
+```c
+const data_t* ar_instruction_get_context(const instruction_context_t *ref_ctx);
+```
+
+Gets the context data from the instruction context.
+
+**Parameters:**
+- `ref_ctx`: The instruction context (borrowed reference)
+
+**Returns:**
+- Borrowed reference to the context data (not owned by caller)
+
+```c
+const data_t* ar_instruction_get_message(const instruction_context_t *ref_ctx);
+```
+
+Gets the message from the instruction context.
+
+**Parameters:**
+- `ref_ctx`: The instruction context (borrowed reference)
+
+**Returns:**
+- Borrowed reference to the message (not owned by caller)
+
+### Message Sending
+
+```c
+bool ar_instruction_send_message(agent_id_t target_id, data_t *own_message);
+```
+
+Sends a message to another agent.
+
+**Parameters:**
+- `target_id`: The ID of the agent to send to
+- `own_message`: The message to send (ownership transferred)
+
+**Returns:**
+- `true` if sending was successful, `false` otherwise
+
+**Ownership:**
+- Takes ownership of `own_message`
+- If sending fails, the function will destroy the message
+
 ## Usage Examples
+
+### Context Creation and Instruction Execution
+
+```c
+// Create an instruction context
+instruction_context_t *own_ctx = ar_instruction_create_context(mut_memory, ref_context, ref_message);
+if (!own_ctx) {
+    // Handle error
+    return false;
+}
+
+// Execute an instruction
+bool success = ar_instruction_run(own_ctx, "memory.greeting := \"Hello, World!\"");
+
+// Clean up
+ar_instruction_destroy_context(own_ctx);
+```
 
 ### Assignment Instruction
 
 ```c
 // Store a string in memory
-ar_instruction_run(mut_agent, mut_message, "memory.greeting := \"Hello, World!\"");
+ar_instruction_run(own_ctx, "memory.greeting := \"Hello, World!\"");
 
 // Store a number in memory
-ar_instruction_run(mut_agent, mut_message, "memory.count := 42");
+ar_instruction_run(own_ctx, "memory.count := 42");
 
 // Store an expression result in memory
-ar_instruction_run(mut_agent, mut_message, "memory.sum := 2 + 3 * 4");
+ar_instruction_run(own_ctx, "memory.sum := 2 + 3 * 4");
 
 // Assign a nested value
-ar_instruction_run(mut_agent, mut_message, "memory.user.name := \"John\"");
+ar_instruction_run(own_ctx, "memory.user.name := \"John\"");
 ```
 
 ### Function Call Instruction
 
 ```c
 // Send a message to another agent
-ar_instruction_run(mut_agent, mut_message, "send(target_id, \"Hello\")");
+ar_instruction_run(own_ctx, "send(target_id, \"Hello\")");
 
 // Parse a string into a structured map
-ar_instruction_run(mut_agent, mut_message, "memory.parsed := parse(\"name={name}\", \"name=John\")");
+ar_instruction_run(own_ctx, "memory.parsed := parse(\"name={name}\", \"name=John\")");
 
 // Build a string from a template and values
-ar_instruction_run(mut_agent, mut_message, "memory.greeting := build(\"Hello, {name}!\", memory.user)");
+ar_instruction_run(own_ctx, "memory.greeting := build(\"Hello, {name}!\", memory.user)");
 
 // Conditional evaluation
-ar_instruction_run(mut_agent, mut_message, "memory.result := if(memory.count > 5, \"High\", \"Low\")");
+ar_instruction_run(own_ctx, "memory.result := if(memory.count > 5, \"High\", \"Low\")");
+
+// Create a method
+ar_instruction_run(own_ctx, "memory.created := method(\"greet\", \"memory.message := \\\"Hello\\\";\", 1)");
 ```
+
+## Method Function
+
+The method function allows agents to create and register new methods at runtime:
+
+```c
+// Syntax: method(name, instructions, version)
+method("greet", "memory.greeting := \"Hello\"", 1)
+```
+
+**Parameters:**
+- `name`: The name of the method (string)
+- `instructions`: The instructions for the method (string)
+- `version`: The version number for the method (integer)
+
+**Returns:**
+- 1 if the method was successfully created and registered
+- 0 if an error occurred
+
+**Implementation Notes:**
+- The method function calls `ar_methodology_create_method` directly
+- Default values are used for some parameters:
+  - `previous_version`: 0 (automatically detected if method exists)
+  - `backward_compatible`: true (methods are backward compatible by default)
+  - `persist`: false (methods don't persist by default)
+- This function facilitates the runtime evolution of agent behaviors
 
 ## Implementation Notes
 
@@ -114,6 +251,7 @@ ar_instruction_run(mut_agent, mut_message, "memory.result := if(memory.count > 5
 - Expression contexts are reused within function scopes for better efficiency
 - Context variables follow a create-use-destroy pattern for each expression evaluation
 - The implementation reuses context variables to minimize redundant allocations
+- The instruction context structure encapsulates all needed state, removing dependencies on the agent module
 
 ## Memory Ownership Model
 
@@ -160,3 +298,5 @@ This ownership transfer mechanism ensures that:
 - After transferring ownership of a pointer, it should be set to NULL immediately
 - Variables should always use ownership prefixes to make memory management explicit
 - When an owned object is no longer needed, it should be properly destroyed and set to NULL
+- The instruction module no longer depends on the agent module, making it more modular and reusable
+- An instruction_context structure is used to hold all required state, similar to the expression_context approach

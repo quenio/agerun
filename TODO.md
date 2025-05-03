@@ -149,17 +149,17 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] Update API documentation to reflect the correct parameter semantics (completed 2025-05-01) 
     - [x] Ensure consistency across all list operations (completed 2025-05-01)
 
-- [ ] Instruction module independence improvements:
-  - [ ] Create a dedicated instruction_context structure for the instruction module
-  - [ ] Remove dependency on agent module by using the new context structure
-  - [ ] Refactor instruction functions to use the new context type
-  - [ ] Update tests to use the new context structure
-  - [ ] Update documentation to reflect the new design
+- [x] Instruction module independence improvements: (completed 2025-05-02)
+  - [x] Create a dedicated instruction_context structure for the instruction module (completed 2025-05-02)
+  - [x] Remove dependency on agent module by using the new context structure (completed 2025-05-02)
+  - [x] Refactor instruction functions to use the new context type (completed 2025-05-02)
+  - [x] Update tests to use the new context structure (completed 2025-05-02)
+  - [x] Update documentation to reflect the new design (completed 2025-05-02)
 
-- [ ] Method creation architecture improvements:
-  - [ ] Update instruction module to call methodology module directly for method creation
-  - [ ] Align ar_methodology_create_method parameters with method instruction spec (name, instructions, version)
-  - [ ] Update ar_method_create parameters to match the specification
-  - [ ] Ensure consistent parameter flow from instruction module through methodology module to method module
-  - [ ] Update tests to verify correct parameter passing
-  - [ ] Update documentation to reflect the new interaction between modules
+- [x] Method creation architecture improvements: (completed 2025-05-02)
+  - [x] Update instruction module to call methodology module directly for method creation (completed 2025-05-02)
+  - [x] Align ar_methodology_create_method parameters with method instruction spec (name, instructions, version) (completed 2025-05-02)
+  - [x] Update ar_method_create parameters to match the specification (completed 2025-05-02)
+  - [x] Ensure consistent parameter flow from instruction module through methodology module to method module (completed 2025-05-02)
+  - [x] Update tests to verify correct parameter passing (completed 2025-05-02)
+  - [x] Update documentation to reflect the new interaction between modules (completed 2025-05-02)

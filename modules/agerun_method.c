@@ -108,14 +108,50 @@ method_t* ar_method_create(const char *ref_name, const char *ref_instructions,
     return mut_method;
 }
 
+/**
+ * Creates a new method object with simplified parameters (using defaults)
+ * @param ref_name Method name (borrowed reference)
+ * @param ref_instructions The method implementation code (borrowed reference)
+ * @param version The version number for this method (pass 0 to auto-increment based on existing versions)
+ * @return Newly created method object, or NULL on failure
+ * @note Ownership: Returns an owned object that the caller must destroy with ar_method_destroy.
+ *       The method copies the name and instructions. The original strings remain owned by the caller.
+ *       Default values are used for other parameters:
+ *       - previous_version: 0 (for first version)
+ *       - backward_compatible: true (methods are backward compatible by default)
+ *       - persist: false (methods don't persist by default)
+ */
+method_t* ar_method_create_simple(const char *ref_name, const char *ref_instructions, 
+                               version_t version) {
+    // Use default values for parameters not specified
+    version_t previous_version = 0;  // Default to 0 for first version
+    bool backward_compatible = true; // Default to true for backward compatibility
+    bool persist = false;            // Default to false for persistence
+    
+    return ar_method_create(ref_name, ref_instructions, version, 
+                          previous_version, backward_compatible, persist);
+}
+
 bool ar_method_run(agent_t *mut_agent, const data_t *ref_message, const char *ref_instructions) {
     if (!mut_agent || !ref_instructions) {
+        return false;
+    }
+    
+    // Create an instruction context
+    instruction_context_t *own_ctx = ar_instruction_create_context(
+        mut_agent->own_memory,
+        mut_agent->ref_context,
+        ref_message
+    );
+    
+    if (!own_ctx) {
         return false;
     }
     
     // Make a copy of the instructions for tokenization
     char *own_instructions_copy = strdup(ref_instructions);
     if (!own_instructions_copy) {
+        ar_instruction_destroy_context(own_ctx);
         return false;
     }
     
@@ -128,7 +164,7 @@ bool ar_method_run(agent_t *mut_agent, const data_t *ref_message, const char *re
         
         // Skip empty lines and comments
         if (strlen(mut_instruction) > 0 && mut_instruction[0] != '#') {
-            if (!ar_instruction_run(mut_agent, ref_message, mut_instruction)) {
+            if (!ar_instruction_run(own_ctx, mut_instruction)) {
                 result = false;
                 break;
             }
@@ -137,7 +173,10 @@ bool ar_method_run(agent_t *mut_agent, const data_t *ref_message, const char *re
         mut_instruction = strtok(NULL, "\n");
     }
     
+    // Clean up
+    ar_instruction_destroy_context(own_ctx);
     free(own_instructions_copy);
     own_instructions_copy = NULL; // Mark as freed
+    
     return result;
 }

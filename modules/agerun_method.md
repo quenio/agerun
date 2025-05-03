@@ -28,9 +28,9 @@ typedef struct method_s method_t;
  * @param ref_name Method name (borrowed reference)
  * @param ref_instructions The method implementation code (borrowed reference)
  * @param version The version number for this method (pass 0 to auto-increment from previous_version)
- * @param previous_version Previous version number (0 for first version)
- * @param backward_compatible Whether the method is backward compatible
- * @param persist Whether agents using this method should persist
+ * @param previous_version Previous version number (0 for first version, default if not specified)
+ * @param backward_compatible Whether the method is backward compatible (default: true)
+ * @param persist Whether agents using this method should persist (default: false)
  * @return Newly created method object, or NULL on failure
  * @note Ownership: Returns an owned object that the caller must destroy with ar_method_destroy.
  *       The method copies the name and instructions. The original strings remain owned by the caller.
@@ -38,6 +38,22 @@ typedef struct method_s method_t;
 method_t* ar_method_create(const char *ref_name, const char *ref_instructions, 
                          version_t version, version_t previous_version, 
                          bool backward_compatible, bool persist);
+
+/**
+ * Creates a new method object with simplified parameters (using defaults)
+ * @param ref_name Method name (borrowed reference)
+ * @param ref_instructions The method implementation code (borrowed reference)
+ * @param version The version number for this method (pass 0 to auto-increment based on existing versions)
+ * @return Newly created method object, or NULL on failure
+ * @note Ownership: Returns an owned object that the caller must destroy with ar_method_destroy.
+ *       The method copies the name and instructions. The original strings remain owned by the caller.
+ *       Default values are used for other parameters:
+ *       - previous_version: 0 (for first version)
+ *       - backward_compatible: true (methods are backward compatible by default)
+ *       - persist: false (methods don't persist by default)
+ */
+method_t* ar_method_create_simple(const char *ref_name, const char *ref_instructions, 
+                               version_t version);
 
 /**
  * Destroys a method object and frees its resources
@@ -126,10 +142,10 @@ bool ar_method_run(agent_t *mut_agent, const data_t *ref_message, const char *re
 ### Creating and registering a method
 
 ```c
-// Create a method object
+// Create a method object using the simplified API
 const char *name = "echo_method";
-const char *instructions = "message -> message";
-method_t *own_method = ar_method_create(name, instructions, 0, 0, false, false);
+const char *instructions = "memory.result := message";
+method_t *own_method = ar_method_create_simple(name, instructions, 1);
 
 if (own_method) {
     // Register the method with methodology (methodology takes ownership)
@@ -139,6 +155,20 @@ if (own_method) {
     // Or manage it yourself 
     // (remember to call ar_method_destroy when you're done with it)
 }
+
+// Alternatively, use the full API when you need more control
+method_t *own_custom_method = ar_method_create(
+    "custom_method",
+    "memory.output := \"Custom: \" + message",
+    2,                      // Version 2
+    1,                      // Previous version was 1  
+    true,                   // Backward compatible
+    true                    // Persistent
+);
+
+// Remember to destroy or transfer ownership appropriately
+ar_method_destroy(own_custom_method);
+own_custom_method = NULL; // Mark as destroyed
 ```
 
 ### Creating a new version of a method
@@ -149,21 +179,37 @@ method_t *ref_prev_method = ar_methodology_get_method("echo_method", 0);
 if (ref_prev_method) {
     version_t prev_version = ar_method_get_version(ref_prev_method);
     
-    // Create a new version (auto-increment by passing 0 for version)
-    const char *new_instructions = "message -> \"Echo: \" + message";
-    method_t *own_new_method = ar_method_create(
+    // Two approaches to create a new version:
+    
+    // 1. Using the simplified API (auto-increments from 0)
+    const char *new_instructions = "memory.result := \"Echo: \" + message";
+    method_t *own_new_method = ar_method_create_simple(
         ar_method_get_name(ref_prev_method),
         new_instructions,
-        0, // Auto-increment from previous version
-        prev_version,
-        true, // Backward compatible
-        true  // Persistent
+        0 // Auto-increment (will become 1)
     );
     
     // Register with methodology
     if (own_new_method) {
         ar_methodology_register_method(own_new_method);
         own_new_method = NULL; // Mark as transferred
+    }
+    
+    // 2. Using the full API for more control over versioning
+    const char *custom_instructions = "memory.output := \"Custom Echo: \" + message";
+    method_t *own_custom_method = ar_method_create(
+        ar_method_get_name(ref_prev_method),
+        custom_instructions,
+        prev_version + 1, // Explicit next version
+        prev_version,     // Previous version
+        true,             // Backward compatible
+        true              // Persistent
+    );
+    
+    // Register with methodology
+    if (own_custom_method) {
+        ar_methodology_register_method(own_custom_method);
+        own_custom_method = NULL; // Mark as transferred
     }
 }
 ```
@@ -173,8 +219,8 @@ if (ref_prev_method) {
 ```c
 // Example of using the method function in instructions
 const char *agent_instructions = 
-    "# Create a new echo method\n"
-    "method(\"echo\", \"memory.output := message\", 0, 0, true, true)";
+    "# Create a new echo method with just name, instructions, version\n"
+    "method(\"echo\", \"memory.output := message\", 1)";
 
 // Use these instructions to create an agent that creates methods
 // ...

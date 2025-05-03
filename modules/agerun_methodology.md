@@ -75,7 +75,25 @@ int* ar_methodology_get_method_counts(void);
 int* ar_methodology_get_method_name_count(void);
 ```
 
-#### Method Registration
+#### Method Creation and Registration
+
+```c
+/**
+ * Creates a new method object and registers it with the methodology module
+ * @param ref_name Method name (borrowed reference)
+ * @param ref_instructions The method implementation code (borrowed reference)
+ * @param version The version number for this method (pass 0 to auto-increment from previous_version)
+ * @return true if method was created and registered successfully, false otherwise
+ * @note Ownership: This function creates and takes ownership of the method.
+ *       The caller should not worry about destroying the method.
+ *       Default values:
+ *       - previous_version: 0 (automatically detected if method with the same name exists)
+ *       - backward_compatible: true (methods are backward compatible by default)
+ *       - persist: false (methods don't persist by default)
+ */
+bool ar_methodology_create_method(const char *ref_name, const char *ref_instructions, 
+                              version_t version);
+```
 
 ```c
 /**
@@ -140,13 +158,21 @@ if (ref_specific_method) {
 }
 ```
 
-### Method Registration
+### Method Creation and Registration
 
 ```c
-// Create a method object
-method_t *own_method = ar_method_create("custom_method", 
-                                    "message -> \"Custom: \" + message",
-                                    1, 0, false, false);
+// Create and register a method using the simplified API
+bool created = ar_methodology_create_method("custom_method", 
+                                        "memory.result := \"Custom: \" + message.text;", 
+                                        1);
+if (created) {
+    printf("Method created and registered successfully\n");
+}
+
+// Alternative approach: Create method object manually and register it
+method_t *own_method = ar_method_create_simple("another_method", 
+                                          "memory.greeting := \"Hello\";",
+                                          1);
 
 // Register the method with the methodology module (transfers ownership)
 ar_methodology_register_method(own_method);

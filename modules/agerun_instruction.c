@@ -1,11 +1,11 @@
 #include "agerun_instruction.h"
 #include "agerun_string.h"
 #include "agerun_data.h"
-#include "agerun_agent.h"
 #include "agerun_expression.h"
 #include "agerun_map.h"
 #include "agerun_method.h"
 #include "agerun_methodology.h"
+#include "agerun_agent.h" // Required only for agent_id_t and ar_agent_send
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,25 +14,93 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+// Instruction context structure definition
+struct instruction_context_s {
+    data_t *mut_memory;        // Mutable reference to memory, not owned
+    const data_t *ref_context; // Borrowed reference to context, not owned
+    const data_t *ref_message; // Borrowed reference to message, not owned
+};
+
 // Function prototypes for recursive descent parsing
-static bool parse_instruction(agent_t *mut_agent, const data_t *ref_message, const char *ref_instruction, int *mut_pos);
-static bool parse_assignment(agent_t *mut_agent, const data_t *ref_message, const char *ref_instruction, int *mut_pos);
-static bool parse_function_instruction(agent_t *mut_agent, const data_t *ref_message, const char *ref_instruction, int *mut_pos);
+static bool parse_instruction(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos);
+static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos);
+static bool parse_function_instruction(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos);
 static bool parse_memory_access(const char *ref_instruction, int *mut_pos, char **path);
-static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, const char *ref_instruction, int *mut_pos, data_t **result);
+static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos, data_t **result);
 static bool skip_whitespace(const char *ref_instruction, int *mut_pos);
 static bool extract_identifier(const char *ref_instruction, int *mut_pos, char *mut_identifier, int max_size);
 
+// Create a new instruction context
+instruction_context_t* ar_instruction_create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message) {
+    // Allocate memory for the context
+    instruction_context_t *own_ctx = (instruction_context_t*)malloc(sizeof(instruction_context_t));
+    if (!own_ctx) {
+        return NULL;
+    }
+    
+    // Initialize the context
+    own_ctx->mut_memory = mut_memory;
+    own_ctx->ref_context = ref_context;
+    own_ctx->ref_message = ref_message;
+    
+    // Return the newly created context
+    return own_ctx;
+}
+
+// Destroy an instruction context
+void ar_instruction_destroy_context(instruction_context_t *own_ctx) {
+    if (own_ctx) {
+        // The context doesn't own memory, context, or message, so we just free the structure
+        free(own_ctx);
+    }
+}
+
+// Get the memory from the instruction context
+data_t* ar_instruction_get_memory(const instruction_context_t *ref_ctx) {
+    if (!ref_ctx) {
+        return NULL;
+    }
+    return ref_ctx->mut_memory;
+}
+
+// Get the context data from the instruction context
+const data_t* ar_instruction_get_context(const instruction_context_t *ref_ctx) {
+    if (!ref_ctx) {
+        return NULL;
+    }
+    return ref_ctx->ref_context;
+}
+
+// Get the message from the instruction context
+const data_t* ar_instruction_get_message(const instruction_context_t *ref_ctx) {
+    if (!ref_ctx) {
+        return NULL;
+    }
+    return ref_ctx->ref_message;
+}
+
+// Send a message to another agent
+bool ar_instruction_send_message(agent_id_t target_id, data_t *own_message) {
+    if (target_id == 0) {
+        // Special case: agent_id 0 is a no-op that always returns true
+        ar_data_destroy(own_message);
+        return true;
+    }
+    
+    // Send message (ownership of own_message is transferred to ar_agent_send)
+    return ar_agent_send(target_id, own_message);
+}
+
 // Parse and execute a single instruction
-bool ar_instruction_run(agent_t *mut_agent, const data_t *ref_message, const char *ref_instruction) {
-    if (!mut_agent || !ref_instruction) {
+bool ar_instruction_run(instruction_context_t *mut_ctx, const char *ref_instruction) {
+    if (!mut_ctx || !ref_instruction) {
         return false;
     }
     
     printf("DEBUG: Running instruction: %s\n", ref_instruction);
     
     int pos = 0;
-    bool result = parse_instruction(mut_agent, ref_message, ref_instruction, &pos);
+    bool result = parse_instruction(mut_ctx, ref_instruction, &pos);
     
     printf("DEBUG: Instruction result: %s\n", result ? "success" : "failure");
     
@@ -40,7 +108,7 @@ bool ar_instruction_run(agent_t *mut_agent, const data_t *ref_message, const cha
 }
 
 // <instruction> ::= <assignment> | <function-instruction>
-static bool parse_instruction(agent_t *mut_agent, const data_t *ref_message, const char *ref_instruction, int *mut_pos) {
+static bool parse_instruction(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
     skip_whitespace(ref_instruction, mut_pos);
     
     // Check for assignment or function instruction
@@ -48,17 +116,17 @@ static bool parse_instruction(agent_t *mut_agent, const data_t *ref_message, con
     int save_pos = *mut_pos;
     
     // Try to parse as assignment first
-    if (parse_assignment(mut_agent, ref_message, ref_instruction, mut_pos)) {
+    if (parse_assignment(mut_ctx, ref_instruction, mut_pos)) {
         return true;
     }
     
     // Backtrack and try as function instruction
     *mut_pos = save_pos;
-    return parse_function_instruction(mut_agent, ref_message, ref_instruction, mut_pos);
+    return parse_function_instruction(mut_ctx, ref_instruction, mut_pos);
 }
 
 // <assignment> ::= <memory-access> ':=' <expression>
-static bool parse_assignment(agent_t *mut_agent, const data_t *ref_message, const char *ref_instruction, int *mut_pos) {
+static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
     char *path = NULL;
     
     // Parse memory access (left side)
@@ -80,7 +148,10 @@ static bool parse_assignment(agent_t *mut_agent, const data_t *ref_message, cons
     
     // Evaluate the expression (right side)
     // Create a context that we'll reuse for all expressions in this function
-    expression_context_t *own_context = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
+    expression_context_t *own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+                                                                mut_ctx->ref_context, 
+                                                                mut_ctx->ref_message, 
+                                                                ref_instruction + *mut_pos);
     if (!own_context) {
         free(path);
         path = NULL; // Mark as freed
@@ -103,7 +174,7 @@ static bool parse_assignment(agent_t *mut_agent, const data_t *ref_message, cons
     }
     
     // Store result in agent's memory (transfers ownership of value)
-    bool success = ar_data_set_map_data(mut_agent->own_memory, path, own_value);
+    bool success = ar_data_set_map_data(mut_ctx->mut_memory, path, own_value);
     if (!success) {
         ar_data_destroy(own_value);
     }
@@ -115,7 +186,7 @@ static bool parse_assignment(agent_t *mut_agent, const data_t *ref_message, cons
 }
 
 // <function-instruction> ::= [<memory-access> ':='] <function-call>
-static bool parse_function_instruction(agent_t *mut_agent, const data_t *ref_message, const char *ref_instruction, int *mut_pos) {
+static bool parse_function_instruction(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
     char *path = NULL;
     data_t *own_result = NULL;
     bool has_assignment = false;
@@ -141,7 +212,7 @@ static bool parse_function_instruction(agent_t *mut_agent, const data_t *ref_mes
     }
     
     // Parse function call
-    if (!parse_function_call(mut_agent, ref_message, ref_instruction, mut_pos, &own_result)) {
+    if (!parse_function_call(mut_ctx, ref_instruction, mut_pos, &own_result)) {
         free(path);
         path = NULL; // Mark as freed
         return false;
@@ -150,7 +221,7 @@ static bool parse_function_instruction(agent_t *mut_agent, const data_t *ref_mes
     // Store result in memory if assignment was present
     if (has_assignment && path && own_result) {
         // We're taking ownership of the result
-        bool success = ar_data_set_map_data(mut_agent->own_memory, path, own_result);
+        bool success = ar_data_set_map_data(mut_ctx->mut_memory, path, own_result);
         if (!success) {
             ar_data_destroy(own_result);
         }
@@ -216,7 +287,7 @@ static bool parse_memory_access(const char *ref_instruction, int *mut_pos, char 
 // Parse function call and execute it
 // <function-call> ::= <send-function> | <parse-function> | <build-function> | <method-function> |
 //                     <agent-function> | <destroy-function> | <if-function>
-static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, const char *ref_instruction, int *mut_pos, data_t **own_result) {
+static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos, data_t **own_result) {
     // Extract function name
     char function_name[32];
     if (!extract_identifier(ref_instruction, mut_pos, function_name, sizeof(function_name))) {
@@ -243,7 +314,10 @@ static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, c
         expression_context_t *own_context = NULL;
         
         // Parse agent_id expression
-        own_context = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
+        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+                                              mut_ctx->ref_context, 
+                                              mut_ctx->ref_message, 
+                                              ref_instruction + *mut_pos);
         if (!own_context) {
             return false;
         }
@@ -270,7 +344,10 @@ static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, c
         skip_whitespace(ref_instruction, mut_pos);
         
         // Parse message expression - reusing the context variable
-        own_context = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
+        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+                                              mut_ctx->ref_context, 
+                                              mut_ctx->ref_message, 
+                                              ref_instruction + *mut_pos);
         if (!own_context) {
             ar_data_destroy(own_agent_id);
             own_agent_id = NULL; // Mark as destroyed
@@ -315,13 +392,13 @@ static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, c
             
             // Only destroy the message data if it's not the original message
             // This prevents trying to free the shared message
-            if (own_msg != ref_message) {
+            if (own_msg != mut_ctx->ref_message) {
                 ar_data_destroy(own_msg);
                 own_msg = NULL; // Mark as destroyed
             }
         } else {
             // Ownership of own_msg is transferred to ar_agent_send
-            success = ar_agent_send(target_id, own_msg);
+            success = ar_instruction_send_message(target_id, own_msg);
             own_msg = NULL; // Mark as transferred
         }
         
@@ -340,7 +417,10 @@ static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, c
         expression_context_t *own_context = NULL;
         
         // Parse condition expression
-        own_context = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
+        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+                                              mut_ctx->ref_context, 
+                                              mut_ctx->ref_message, 
+                                              ref_instruction + *mut_pos);
         if (!own_context) {
             return false;
         }
@@ -367,7 +447,10 @@ static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, c
         skip_whitespace(ref_instruction, mut_pos);
         
         // Parse true_value expression - reusing the context variable
-        own_context = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
+        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+                                              mut_ctx->ref_context, 
+                                              mut_ctx->ref_message, 
+                                              ref_instruction + *mut_pos);
         if (!own_context) {
             ar_data_destroy(own_cond);
             own_cond = NULL; // Mark as destroyed
@@ -400,7 +483,10 @@ static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, c
         skip_whitespace(ref_instruction, mut_pos);
         
         // Parse false_value expression - reusing the context variable
-        own_context = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
+        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+                                              mut_ctx->ref_context, 
+                                              mut_ctx->ref_message, 
+                                              ref_instruction + *mut_pos);
         if (!own_context) {
             ar_data_destroy(own_cond);
             own_cond = NULL; // Mark as destroyed
@@ -475,7 +561,10 @@ static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, c
         expression_context_t *own_context = NULL;
         
         // Parse method name expression
-        own_context = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
+        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+                                              mut_ctx->ref_context, 
+                                              mut_ctx->ref_message, 
+                                              ref_instruction + *mut_pos);
         if (!own_context) {
             return false;
         }
@@ -510,7 +599,10 @@ static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, c
         skip_whitespace(ref_instruction, mut_pos);
         
         // Parse instructions expression - reusing the context variable
-        own_context = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
+        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+                                              mut_ctx->ref_context, 
+                                              mut_ctx->ref_message, 
+                                              ref_instruction + *mut_pos);
         if (!own_context) {
             ar_data_destroy(own_name);
             own_name = NULL; // Mark as destroyed
@@ -553,7 +645,10 @@ static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, c
         skip_whitespace(ref_instruction, mut_pos);
         
         // Parse version expression - reusing the context variable
-        own_context = ar_expression_create_context(mut_agent->own_memory, mut_agent->ref_context, ref_message, ref_instruction + *mut_pos);
+        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+                                              mut_ctx->ref_context, 
+                                              mut_ctx->ref_message, 
+                                              ref_instruction + *mut_pos);
         if (!own_context) {
             ar_data_destroy(own_instr);
             own_instr = NULL; // Mark as destroyed
@@ -603,17 +698,7 @@ static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, c
             }
         }
         
-        // Set default values for backward compatibility and persistence
-        // According to the spec, we're not taking these as parameters anymore
-        version_t previous_version = 0;  // Default to 0 for first version
-        bool backward_compatible = true; // Default to true for backward compatibility
-        bool persist = false;            // Default to false for persistence
-        
-        // Create method with specified version (not auto-versioning)
-        method_t *own_method = ar_method_create(method_name, instructions, version, previous_version, 
-                                          backward_compatible, persist);
-        
-        // Clean up input data
+        // Clean up input data first (we've already extracted the values we need)
         ar_data_destroy(own_version);
         own_version = NULL; // Mark as destroyed
         ar_data_destroy(own_instr);
@@ -621,20 +706,12 @@ static bool parse_function_call(agent_t *mut_agent, const data_t *ref_message, c
         ar_data_destroy(own_name);
         own_name = NULL; // Mark as destroyed
         
-        // Check if method creation was successful
-        if (!own_method) {
-            // Method creation failed
-            *own_result = ar_data_create_integer(0);
-            return true;
-        }
-        
-        // Register the method with methodology
-        extern void ar_methodology_register_method(method_t *own_method);
-        ar_methodology_register_method(own_method);
-        own_method = NULL; // Mark as transferred
+        // Call methodology module directly to create method with just 3 parameters:
+        // name, instructions, version
+        bool success = ar_methodology_create_method(method_name, instructions, version);
         
         // Return success indicator
-        *own_result = ar_data_create_integer(1);
+        *own_result = ar_data_create_integer(success ? 1 : 0);
         return true;
     }
     else {

@@ -31,8 +31,8 @@ int ar_executable_main(void) {
     printf("Creating echo method...\n");
     const char *ref_echo_instructions = "send(0, message)";
     
-    // Create method using methodology module
-    if (!ar_methodology_create_method("echo", ref_echo_instructions, 0, 0, true, false)) {
+    // Create method using methodology module (simplified API)
+    if (!ar_methodology_create_method("echo", ref_echo_instructions, 0)) {
         printf("Failed to create echo method\n");
         ar_system_shutdown();
         return 1;
@@ -47,8 +47,8 @@ int ar_executable_main(void) {
     printf("Creating counter method...\n");
     const char *ref_counter_code = "send(0, \"Hello from counter!\")";
     
-    // Create method using methodology module
-    if (!ar_methodology_create_method("counter", ref_counter_code, 0, 0, true, true)) {
+    // Create method using methodology module (simplified API)
+    if (!ar_methodology_create_method("counter", ref_counter_code, 0)) {
         printf("Failed to create counter method\n");
         ar_system_shutdown();
         return 1;
