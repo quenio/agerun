@@ -8,6 +8,11 @@
 
 /**
  * Memory tracking record structure
+ * 
+ * This structure stores metadata about each memory allocation for tracking purposes.
+ * A linked list of these records is maintained to track all active allocations.
+ * When memory is freed, its record is removed from the list.
+ * At program termination, any records still in the list represent memory leaks.
  */
 typedef struct memory_record_s {
     void *ptr;                  // Pointer to allocated memory
@@ -29,6 +34,13 @@ static int g_initialized = 0;
 
 /**
  * Initialize the memory tracking system
+ * 
+ * This function initializes the global tracking state and registers the
+ * memory report function to run at program termination via atexit().
+ * It is automatically called the first time memory is allocated through
+ * the tracking system, so it never needs to be called manually.
+ * 
+ * The initialization is protected against multiple calls with the g_initialized flag.
  */
 static void ar_heap_memory_init(void) {
     if (g_initialized) return;
