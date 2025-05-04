@@ -4,7 +4,7 @@
 #include "agerun_data.h"
 #include "agerun_agent.h"
 #include "agerun_map.h"
-#include "agerun_debug.h"
+#include "agerun_heap.h"
 
 #include <stdio.h>
 #include <stdlib.h>

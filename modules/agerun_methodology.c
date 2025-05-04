@@ -1,7 +1,7 @@
 #include "agerun_methodology.h"
 #include "agerun_method.h"
 #include "agerun_string.h"
-#include "agerun_debug.h"
+#include "agerun_heap.h"
 #include "agerun_semver.h"
 #include "agerun_agency.h"
 

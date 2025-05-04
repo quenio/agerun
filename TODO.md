@@ -101,7 +101,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 - [x] Redesign the memory management approach:
   - [x] Implement Mojo-inspired ownership semantics (LValues, RValues, BValues) instead of reference counting (completed 2025-04-26)
-  - [ ] Consider adding debug-only memory tracking for development builds
+  - [x] Implement debug-only memory tracking for development builds (completed 2025-05-04)
 
 - [ ] Improve test infrastructure:
   - [ ] Add isolated test runners for each module
