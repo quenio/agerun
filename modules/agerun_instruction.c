@@ -275,8 +275,21 @@ static bool parse_memory_access(const char *ref_instruction, int *mut_pos, char 
         if (buffer_pos > 0) {
             buffer[buffer_pos++] = '.';
         }
-        strcpy(buffer + buffer_pos, identifier);
-        buffer_pos += (int)strlen(identifier);
+        // Use safe string copy with bounds checking
+        size_t id_len = strlen(identifier);
+        size_t remaining_space = sizeof(buffer) - (size_t)buffer_pos;
+        
+        if (id_len < remaining_space) {
+            strncpy(buffer + buffer_pos, identifier, remaining_space - 1);
+            size_t index = (size_t)buffer_pos + id_len;
+            buffer[index] = '\0';
+            buffer_pos += (int)id_len;
+        } else {
+            // Not enough space - truncate safely
+            strncpy(buffer + buffer_pos, identifier, remaining_space - 1);
+            buffer[sizeof(buffer) - 1] = '\0';
+            buffer_pos = (int)sizeof(buffer) - 1;
+        }
     }
     
     // Allocate and return the path

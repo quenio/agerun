@@ -413,8 +413,15 @@ static const data_t* parse_memory_access(expression_context_t *mut_ctx) {
             if (path_len > 0) {
                 path[path_len++] = '.';
             }
-            strcpy(path + path_len, own_id);
-            path_len += (int)id_len;
+            // Use strncpy for secure copy with explicit null termination
+            size_t remaining_space = sizeof(path) - (size_t)path_len;
+            strncpy(path + path_len, own_id, remaining_space - 1);
+            
+            // Calculate copy length safely (avoiding signedness conversion warnings)
+            size_t copy_len = (id_len < remaining_space - 1) ? id_len : remaining_space - 1;
+            size_t index = (size_t)path_len + copy_len;
+            path[index] = '\0';
+            path_len += (int)copy_len;
         }
         
         free(own_id);

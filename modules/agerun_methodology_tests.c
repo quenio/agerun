@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <time.h> // For time(NULL) as fallback
 
 // Forward declarations
 static void test_methodology_get_method(void);
@@ -215,7 +216,17 @@ static void test_method_counts(void) {
     
     // When we create a new method with a unique name
     char unique_name[64];
-    sprintf(unique_name, "unique_method_%d", rand());
+    // Use more secure and predictable random number generator instead of rand()
+    unsigned int random_id = 0;
+    #ifdef __APPLE__
+        // On macOS, arc4random is available
+        random_id = arc4random() % 100000;
+    #else
+        // On other platforms, use time-based seed if needed
+        random_id = (unsigned int)time(NULL) % 100000;
+    #endif
+    
+    snprintf(unique_name, sizeof(unique_name), "unique_method_%u", random_id);
     
     // Create method and register it with methodology 
     method_t *own_method = ar_method_create(unique_name, "message -> \"Unique\"", "1.0.0");

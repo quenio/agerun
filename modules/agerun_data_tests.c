@@ -429,6 +429,7 @@ static void test_map_data_setters(void) {
     // Then they should match the set values
     assert(int_value == 42);
     assert(double_value == 3.14159);
+    assert(string_value != NULL);
     assert(strcmp(string_value, "Hello, World!") == 0);
     
     // When we update existing values

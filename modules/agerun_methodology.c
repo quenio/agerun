@@ -181,8 +181,13 @@ bool ar_methodology_save_methods(void) {
         return false;
     }
     
-    // Write the number of method types
-    fprintf(mut_fp, "%d\n", method_name_count);
+    // Use snprintf to safely format the output
+    char buffer[8192]; // Large buffer for instructions
+    int written = snprintf(buffer, sizeof(buffer), "%d\n", method_name_count);
+    if (written < 0 || written >= (int)sizeof(buffer) || fputs(buffer, mut_fp) == EOF) {
+        fclose(mut_fp);
+        return false;
+    }
     
     // For each method type
     for (int i = 0; i < method_name_count; i++) {
@@ -191,7 +196,12 @@ bool ar_methodology_save_methods(void) {
         }
         
         // Write the method name and number of versions
-        fprintf(mut_fp, "%s %d\n", ar_method_get_name(methods[i][0]), method_counts[i]);
+        written = snprintf(buffer, sizeof(buffer), "%s %d\n", 
+                          ar_method_get_name(methods[i][0]), method_counts[i]);
+        if (written < 0 || written >= (int)sizeof(buffer) || fputs(buffer, mut_fp) == EOF) {
+            fclose(mut_fp);
+            return false;
+        }
         
         // For each version
         for (int j = 0; j < method_counts[i]; j++) {
@@ -202,10 +212,18 @@ bool ar_methodology_save_methods(void) {
             const method_t *ref_method = methods[i][j];
             
             // Write method metadata - just version string now
-            fprintf(mut_fp, "%s\n", ar_method_get_version(ref_method));
+            written = snprintf(buffer, sizeof(buffer), "%s\n", ar_method_get_version(ref_method));
+            if (written < 0 || written >= (int)sizeof(buffer) || fputs(buffer, mut_fp) == EOF) {
+                fclose(mut_fp);
+                return false;
+            }
             
-            // Write instructions
-            fprintf(mut_fp, "%s\n", ar_method_get_instructions(ref_method));
+            // Write instructions - these can be large, so make sure buffer is adequate
+            written = snprintf(buffer, sizeof(buffer), "%s\n", ar_method_get_instructions(ref_method));
+            if (written < 0 || written >= (int)sizeof(buffer) || fputs(buffer, mut_fp) == EOF) {
+                fclose(mut_fp);
+                return false;
+            }
         }
     }
     
@@ -317,9 +335,25 @@ bool ar_methodology_load_methods(void) {
         return true;
     }
     
-    // Read the number of method types
+    // Read the first line to get method count
+    char line[256];
+    if (fgets(line, sizeof(line), mut_fp) == NULL) {
+        printf("Error: Empty file %s\n", METHODOLOGY_FILE_NAME);
+        fclose(mut_fp);
+        // Delete the corrupted file and start fresh
+        printf("Deleting corrupted methodology file\n");
+        remove(METHODOLOGY_FILE_NAME);
+        return true;
+    }
+    
+    // Parse the method count from the line using strtol instead of sscanf
     int method_count = 0;
-    if (fscanf(mut_fp, "%d", &method_count) != 1 || method_count <= 0 || method_count > MAX_METHODS) {
+    char *method_count_endptr = NULL;
+    method_count = (int)strtol(line, &method_count_endptr, 10);
+    
+    // Check for conversion errors or invalid values
+    if (method_count_endptr == line || (*method_count_endptr != '\0' && *method_count_endptr != '\n') || 
+        method_count <= 0 || method_count > MAX_METHODS) {
         printf("Error: Invalid method count in %s\n", METHODOLOGY_FILE_NAME);
         fclose(mut_fp);
         // Delete the corrupted file and start fresh
@@ -345,12 +379,62 @@ bool ar_methodology_load_methods(void) {
         char name[MAX_METHOD_NAME_LENGTH];
         int version_count;
         
-        // Read method name and version count
-        if (fscanf(mut_fp, "%63s %d", name, &version_count) != 2 || version_count <= 0 || 
-            version_count > MAX_VERSIONS_PER_METHOD) {
-            printf("Error: Malformed method entry in %s\n", METHODOLOGY_FILE_NAME);
+        // Initialize variables
+        memset(name, 0, sizeof(name));
+        
+        // Read the next line for method name and version count
+        if (fgets(line, sizeof(line), mut_fp) == NULL) {
+            printf("Error: Unexpected end of file in %s\n", METHODOLOGY_FILE_NAME);
             fclose(mut_fp);
             // Delete the corrupted file and start fresh
+            printf("Deleting corrupted methodology file\n");
+            remove(METHODOLOGY_FILE_NAME);
+            return true;
+        }
+        
+        // Parse the method name and version count manually using strtok_r
+        char *token, *next_token = NULL;
+        
+        // Get method name
+        token = strtok_r(line, " \t\n", &next_token);
+        if (token == NULL) {
+            printf("Error: Malformed method entry - missing name in %s\n", METHODOLOGY_FILE_NAME);
+            fclose(mut_fp);
+            printf("Deleting corrupted methodology file\n");
+            remove(METHODOLOGY_FILE_NAME);
+            return true;
+        }
+        
+        // Copy method name with length check
+        if (strlen(token) >= MAX_METHOD_NAME_LENGTH) {
+            printf("Error: Method name too long in %s\n", METHODOLOGY_FILE_NAME);
+            fclose(mut_fp);
+            printf("Deleting corrupted methodology file\n");
+            remove(METHODOLOGY_FILE_NAME);
+            return true;
+        }
+        strncpy(name, token, MAX_METHOD_NAME_LENGTH - 1);
+        name[MAX_METHOD_NAME_LENGTH - 1] = '\0';  // Ensure null-termination
+        
+        // Get version count
+        token = strtok_r(NULL, " \t\n", &next_token);
+        if (token == NULL) {
+            printf("Error: Malformed method entry - missing version count in %s\n", METHODOLOGY_FILE_NAME);
+            fclose(mut_fp);
+            printf("Deleting corrupted methodology file\n");
+            remove(METHODOLOGY_FILE_NAME);
+            return true;
+        }
+        
+        // Convert version count to int
+        char *version_count_endptr = NULL;
+        version_count = (int)strtol(token, &version_count_endptr, 10);
+        
+        // Check for conversion errors or invalid values
+        if (version_count_endptr == token || *version_count_endptr != '\0' || 
+            version_count <= 0 || version_count > MAX_VERSIONS_PER_METHOD) {
+            printf("Error: Invalid version count in %s\n", METHODOLOGY_FILE_NAME);
+            fclose(mut_fp);
             printf("Deleting corrupted methodology file\n");
             remove(METHODOLOGY_FILE_NAME);
             return true;
@@ -368,11 +452,11 @@ bool ar_methodology_load_methods(void) {
                 return false;
             }
             
-            char version[32]; // Buffer for version string
+            char version[32] = {0}; // Buffer for version string, initialized to zeros
             
-            // Read method metadata (just version string now)
-            if (fscanf(mut_fp, "%31s", version) != 1) {
-                printf("Error: Malformed version entry in %s\n", METHODOLOGY_FILE_NAME);
+            // Read method metadata (just version string now) with bounds checking
+            if (fgets(line, sizeof(line), mut_fp) == NULL) {
+                printf("Error: Unexpected end of file in %s when reading version\n", METHODOLOGY_FILE_NAME);
                 fclose(mut_fp);
                 // Delete the corrupted file and start fresh
                 printf("Deleting corrupted methodology file\n");
@@ -380,8 +464,23 @@ bool ar_methodology_load_methods(void) {
                 return true;
             }
             
-            // Skip newline
-            getc(mut_fp);
+            // Remove trailing newline if present
+            size_t len = strlen(line);
+            if (len > 0 && line[len-1] == '\n') {
+                line[len-1] = '\0';
+            }
+            
+            // Copy the version string with bounds checking
+            if (strlen(line) >= sizeof(version)) {
+                printf("Error: Version string too long in %s\n", METHODOLOGY_FILE_NAME);
+                fclose(mut_fp);
+                // Delete the corrupted file and start fresh
+                printf("Deleting corrupted methodology file\n");
+                remove(METHODOLOGY_FILE_NAME);
+                return true;
+            }
+            strncpy(version, line, sizeof(version) - 1);
+            version[sizeof(version) - 1] = '\0'; // Ensure null termination
             
             // Allocate space for instructions
             char instructions[MAX_INSTRUCTIONS_LENGTH];
@@ -398,9 +497,9 @@ bool ar_methodology_load_methods(void) {
             }
             
             // Remove trailing newline if present
-            size_t len = strlen(instructions);
-            if (len > 0 && instructions[len-1] == '\n') {
-                instructions[len-1] = '\0';
+            size_t instr_len = strlen(instructions);
+            if (instr_len > 0 && instructions[instr_len-1] == '\n') {
+                instructions[instr_len-1] = '\0';
             }
             
             // Create a new method with the version from the file
