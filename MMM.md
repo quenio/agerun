@@ -410,7 +410,22 @@ When debugging memory issues:
    ar_data_set_map_value(mut_map, "key", own_value);
    own_value = NULL; // Mark as transferred
    ```
-6. Use consistent prefixes in variable declarations to clearly indicate ownership:
+6. When a function uses another function that might take ownership, always ensure proper cleanup:
+   ```c
+   // INCORRECT: Memory leak if ar_data_set_map_data returns false
+   own_data_t *own_data = ar_data_create_string("value");
+   bool result = ar_data_set_map_data(mut_map, "key", own_data);
+   // If result is false, own_data might be leaked
+
+   // CORRECT: Handle cleanup properly
+   own_data_t *own_data = ar_data_create_string("value");
+   bool result = ar_data_set_map_data(mut_map, "key", own_data);
+   if (!result) {
+       ar_data_destroy(own_data); // Clean up if ownership transfer failed
+   }
+   // or even better, modify ar_data_set_map_data to always take ownership
+   ```
+7. Use consistent prefixes in variable declarations to clearly indicate ownership:
    ```c
    // For owned values (RValues)
    own_data_t *own_data = ar_data_create_integer(42);

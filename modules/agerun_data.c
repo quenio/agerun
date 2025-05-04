@@ -463,7 +463,10 @@ bool ar_data_set_map_integer(data_t *mut_data, const char *ref_key, int value) {
     // Use the common set_map_data function
     bool result = ar_data_set_map_data(mut_data, ref_key, own_int_data);
     
-    // If set_map_data failed, it will have freed own_int_data for us
+    // If set_map_data failed, we need to free own_int_data manually
+    if (!result) {
+        ar_data_destroy(own_int_data);
+    }
     // If successful, ownership is transferred to the map
     
     return result;
@@ -491,7 +494,10 @@ bool ar_data_set_map_double(data_t *mut_data, const char *ref_key, double value)
     // Use the common set_map_data function
     bool result = ar_data_set_map_data(mut_data, ref_key, own_double_data);
     
-    // If set_map_data failed, it will have freed own_double_data for us
+    // If set_map_data failed, we need to free own_double_data manually
+    if (!result) {
+        ar_data_destroy(own_double_data);
+    }
     // If successful, ownership is transferred to the map
     
     return result;
@@ -585,20 +591,12 @@ bool ar_data_set_map_data(data_t *mut_data, const char *ref_key, data_t *own_val
         return false;
     }
     
-    // Create a local variable to track ownership before recursive call
-    data_t *own_value_local = own_value;
-    
     // Recursively call set_map_data with the parent data and final key
-    bool success = ar_data_set_map_data(parent_data, final_key, own_value_local);
+    bool success = ar_data_set_map_data(parent_data, final_key, own_value);
     
+    // The recursive call now completely handles the ownership of own_value
     // If successful, ownership was transferred to parent_data
-    if (success) {
-        // Mark as transferred - ownership now belongs to parent_data
-        own_value_local = NULL; // Don't use after this point
-    } else {
-        // If not successful, we need to destroy the value since ownership wasn't transferred
-        ar_data_destroy(own_value_local);
-    }
+    // If not successful, the recursive call will have freed own_value
     
     free(final_key);
     free(parent_path);
@@ -627,7 +625,10 @@ bool ar_data_set_map_string(data_t *mut_data, const char *ref_key, const char *r
     // Use the common set_map_data function
     bool result = ar_data_set_map_data(mut_data, ref_key, own_string_data);
     
-    // If set_map_data failed, it will have freed own_string_data for us
+    // If set_map_data failed, we need to free own_string_data manually
+    if (!result) {
+        ar_data_destroy(own_string_data);
+    }
     // If successful, ownership is transferred to the map
     
     return result;
