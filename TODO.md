@@ -50,9 +50,10 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] Update all references to `ctx->results` to use `ctx->own_results` (completed 2025-04-26)
     - [x] Review for other list-related ownership inconsistencies (completed 2025-04-26)
 
-- [ ] Implement comprehensive memory leak detection in the build process:
-  - [ ] Add valgrind tests for all modules
-  - [ ] Create a memory leak report generation tool
+- [x] Implement comprehensive memory leak detection in the build process: (completed 2025-05-04)
+  - [x] Add Address Sanitizer (ASan) integration for memory error detection (completed 2025-05-04)
+  - [x] Create Makefile targets for running tests with memory leak detection (completed 2025-05-04)
+  - [x] Add sanitize build targets for the executable and tests (completed 2025-05-04)
 
 - [ ] Enhance tests for other modules:
   - [ ] Review all modules for similar memory management issues

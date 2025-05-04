@@ -170,8 +170,21 @@ IMPORTANT:
    - Inspect memory state at runtime
 
 3. **Memory issues**:
-   - Use valgrind to check for memory leaks
-   - Use AddressSanitizer for detecting memory errors
+   - Use Address Sanitizer (ASan) for detecting memory errors:
+     - Build and run tests with ASan: `make test-sanitize`
+     - Build and run executable with ASan: `make run-sanitize`
+     - ASan can detect:
+       - Use-after-free errors
+       - Heap buffer overflows/underflows
+       - Stack buffer overflows/underflows
+       - Use-after-return issues
+       - Memory leaks (with `ASAN_OPTIONS=detect_leaks=1`)
+       - Double-free errors
+   - Use sanitize build targets for continuous memory error detection:
+     - Use `make sanitize` to build the library with ASan
+     - Use `make executable-sanitize` to build the executable with ASan
+     - Run ASan-enabled builds regularly during development
+     - Fix all issues identified by ASan before committing
    - Add debug print statements before and after critical memory operations
    - When debugging complex memory ownership patterns:
      - Add print statements with object addresses and types
@@ -180,6 +193,12 @@ IMPORTANT:
      - Temporarily skip cleanup in non-critical sections to identify crash points
      - Check for double-free errors by setting pointers to NULL after freeing
      - Be careful with references vs. new objects in expression evaluation
+   - Memory leak detection best practices:
+     - Always run `make test-sanitize` before committing
+     - Pay special attention to error messages from ASan
+     - When ASan identifies an issue, fix it immediately
+     - Use the `ASAN_OPTIONS=halt_on_error=0` environment variable to continue after the first error
+     - For complex memory leaks, use `ASAN_OPTIONS=detect_leaks=1:leak_check_at_exit=1`
 
 ## Code Modification Guidelines
 
@@ -259,6 +278,16 @@ IMPORTANT:
    - Use white-box testing approaches that directly inspect the internal state of modules when needed
    - Encapsulation is about hiding implementation details from client code, not from tests
    - Each test function should implement a single scenario
+   - Run the test suite with Address Sanitizer regularly:
+     - Use `make test-sanitize` to run tests with ASan enabled
+     - Always run this command before committing code
+     - Address all memory issues identified by ASan immediately
+     - Test with both standard tests (`make test`) and sanitized tests (`make test-sanitize`)
+     - For memory-intensive tests, add specific ASan test cases
+   - Test executables with ASan as well:
+     - Run `make run-sanitize` to check the executable for memory issues
+     - This is especially important after making changes to memory management
+     - Fix any issues before committing
    - Each test function should follow the Gherkin-style structure with Given/When/Then comments:
      ```c
      // Given a description of the test setup

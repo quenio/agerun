@@ -41,6 +41,33 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
    make run
    ```
 
+### Memory Safety Testing with Address Sanitizer
+
+AgeRun includes built-in support for memory error detection using Address Sanitizer (ASan):
+
+1. Build with Address Sanitizer enabled:
+   ```
+   make sanitize
+   ```
+
+2. Run tests with memory error detection:
+   ```
+   make test-sanitize
+   ```
+
+3. Run the executable with memory error detection:
+   ```
+   make run-sanitize
+   ```
+
+These targets help detect memory errors such as:
+- Memory leaks
+- Use-after-free errors
+- Buffer overflows
+- Double-free errors
+
+Developers are encouraged to run memory safety tests regularly during development.
+
 ## Usage Examples
 
 ### Basic Usage
@@ -162,6 +189,12 @@ AgeRun implements a consistent memory ownership model inspired by Mojo's ownersh
 - **Owned Values**: Objects with unique ownership that must be explicitly destroyed
 - **Mutable References**: Read-write access to objects without ownership
 - **Borrowed References**: Read-only access to objects without ownership
+
+Memory safety is rigorously enforced through:
+- Strict ownership semantics with explicit prefixes (`own_`, `mut_`, `ref_`)
+- Comprehensive memory leak detection via Address Sanitizer
+- Clear documentation of ownership transfer in all APIs
+- Automated testing with memory error detection
 
 For comprehensive documentation on memory ownership patterns, see the [Memory Management Model](MMM.md).
 

@@ -9,6 +9,8 @@ LDFLAGS = -lm
 DEBUG_CFLAGS = -g -O0 -DDEBUG
 # Release build flags
 RELEASE_CFLAGS = -O3 -DNDEBUG
+# Address Sanitizer flags
+ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
 
 # Source files (excluding test files)
 SRC = $(filter-out modules/*_tests.c,$(wildcard modules/*.c))
@@ -30,6 +32,11 @@ debug: lib
 release: CFLAGS += $(RELEASE_CFLAGS)
 release: lib
 
+# Sanitize target with Address Sanitizer
+sanitize: CFLAGS += $(DEBUG_CFLAGS) $(ASAN_FLAGS)
+sanitize: LDFLAGS += -fsanitize=address
+sanitize: lib
+
 # Create bin directory
 bin:
 	mkdir -p $@
@@ -46,9 +53,17 @@ test_lib: bin $(OBJ) $(TEST_OBJ)
 executable: lib bin
 	$(CC) $(CFLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS)
 
+# Executable application with Address Sanitizer - build only
+executable-sanitize: sanitize bin
+	$(CC) $(CFLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS)
+
 # Run the executable
 run: executable
 	cd bin && ./agerun
+
+# Run the executable with Address Sanitizer
+run-sanitize: executable-sanitize
+	cd bin && ASAN_OPTIONS=detect_leaks=1 ./agerun
 
 # Define test executables without bin/ prefix for use in the bin directory
 TEST_BIN_NAMES = $(notdir $(TEST_BIN))
@@ -58,6 +73,13 @@ test: bin $(TEST_BIN)
 	@cd bin && rm -f *.agerun && for test in $(TEST_BIN_NAMES); do \
 		echo "Running $$test"; \
 		./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+	done
+
+# Build and run tests with Address Sanitizer
+test-sanitize: sanitize bin $(TEST_BIN)
+	@cd bin && rm -f *.agerun && for test in $(TEST_BIN_NAMES); do \
+		echo "Running $$test with Address Sanitizer"; \
+		ASAN_OPTIONS=detect_leaks=1 ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
 	done
 
 # Individual test binaries
@@ -72,4 +94,4 @@ bin/%.o: modules/%.c | bin
 clean:
 	rm -rf bin
 
-.PHONY: all debug release clean test example run-example
+.PHONY: all debug release sanitize clean test test-sanitize executable executable-sanitize run run-sanitize
