@@ -19,6 +19,36 @@ This specification defines a lightweight, message-driven agent system where each
 - **Backward Compatibility**: Compatibility between versions is determined by semantic versioning rules:
   - Existing agents automatically switch to the newest compatible version (same major version).
   - Agents must specify a version, but can use a partial version (e.g., "1") to get the latest matching version (e.g., latest "1.x.x").
+  - When a new compatible method version is registered, agents using an older version will:
+    1. Complete processing their current message
+    2. Receive the `__sleep__` message
+    3. Have their method reference updated to the newest compatible version
+    4. Receive the `__wake__` message to resume operation with the new version
+
+### Version Transition Examples
+
+**Case 1: Latest in Major Version**
+- Method "Greeter" exists in versions: "1.0.0", "1.1.0", "1.2.0", "2.0.0"
+- When an agent requests version "1", it automatically uses "1.2.0" as the latest 1.x.x version
+
+**Case 2: New Compatible Version Added**
+- Agent is using method "Calculator" version "1.2.0"
+- When version "1.2.5" is added:
+  - Agent finishes processing its current message
+  - System sends `__sleep__` message to the agent
+  - Agent's method reference is updated to version "1.2.5"
+  - System sends `__wake__` message to the agent
+  - Agent continues processing with the new version
+
+**Case 3: New Incompatible Version**
+- Agent is using method "DataProcessor" version "1.3.2"
+- When version "2.0.0" is added, the agent continues using "1.3.2"
+- New agents requesting version "2" or "2.0.0" will use the new version
+- Existing agents remain on 1.x.x versions for backward compatibility
+
+**Case 4: Partial Version Matching**
+- Method "Translator" exists in versions: "1.0.0", "1.1.0", "1.1.1", "1.1.2"
+- When an agent requests version "1.1", it automatically uses "1.1.2" as the latest matching version
 
 ### Persistence:
 

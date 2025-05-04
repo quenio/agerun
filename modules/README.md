@@ -70,6 +70,8 @@ agerun_executable
 │   │   └── agerun_string
 │   ├── agerun_methodology
 │   │   ├── agerun_method
+│   │   ├── agerun_semver
+│   │   ├── agerun_agency
 │   │   └── agerun_string
 │   ├── agerun_agency
 │   ├── agerun_data
@@ -77,6 +79,10 @@ agerun_executable
 │   │   └── agerun_list
 │   └── agerun_list
 └── agerun_methodology
+    ├── agerun_method
+    ├── agerun_semver
+    ├── agerun_agency
+    └── agerun_string
 ```
 
 ## Module Layers
@@ -92,7 +98,7 @@ The AgeRun system is organized into hierarchical layers, with each layer buildin
                                ▼
 ┌───────────────────────────────────────────────────────────┐
 │                      Core Modules                         │
-│  (agerun_string, agerun_list, agerun_map)                 │
+│  (agerun_string, agerun_list, agerun_map, agerun_semver)  │
 └───────────────────────────────────────────────────────────┘
 ```
 
@@ -140,6 +146,20 @@ The [map module](agerun_map.md) provides a fundamental key-value storage impleme
 - **No Dependencies**: This is a foundational module with no dependencies on other modules
 - **Opaque Type**: The map structure is opaque, encapsulating implementation details from clients
 
+### Semver Module (`agerun_semver`)
+
+The [semver module](agerun_semver.md) provides semantic versioning support for the method versioning system:
+
+- **Version Parsing**: Parses semantic version strings into major, minor, and patch components
+- **Version Comparison**: Implements comparison operators according to semver rules
+- **Compatibility Checking**: Determines if versions are compatible (same major version)
+- **Pattern Matching**: Supports matching versions against partial patterns (e.g., "1" matches all 1.x.x)
+- **Latest Version Selection**: Finds the latest version matching a specific pattern
+- **No Dependencies**: Functions as a standalone utility module with no external dependencies
+- **Pure Functions**: Provides stateless, pure functions for version manipulation
+- **Strict Validation**: Enforces semver rules like non-negative version components
+- **Extensible Design**: Supports future extensions like pre-release and build metadata
+
 ## Foundation Modules
 
 Foundation modules build upon core modules to provide essential data structures and services that support the execution environment. These modules depend on one or more core modules and add type safety, memory management, and other critical services required by higher-level components.
@@ -166,8 +186,12 @@ The [methodology module](agerun_methodology.md) provides a registry for methods,
 - **Semantic Version Management**: Tracks multiple versions of the same method using semantic versioning
 - **Method Lookup**: Provides efficient lookup of methods by name and version string
 - **Version Resolution**: Handles finding methods when NULL is passed to get the latest version
+- **Partial Version Support**: Resolves partial version strings (e.g., "1" or "1.2") to the latest matching version
+- **Automatic Version Updates**: Updates running agents to newer compatible versions of methods
 - **Persistence**: Saves and loads methods to/from disk for system restarts
 - **Depends on Method**: Uses the method module's opaque type and functions
+- **Depends on Semver**: Uses the semver module for version comparisons and pattern matching
+- **Depends on Agency**: Uses the agency module to update agent method references
 - **Depends on String**: Uses string utilities for method name handling
 - **Proper Encapsulation**: Accesses methods only through their public API
 - **Memory Management**: Properly handles ownership of method objects

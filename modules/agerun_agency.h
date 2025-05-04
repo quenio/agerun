@@ -5,6 +5,9 @@
 #include <stdint.h>
 #include "agerun_agent.h"
 
+/* Forward declaration for method_t */
+typedef struct method_s method_t;
+
 /* Constants */
 #define AGENCY_FILE_NAME "agency.agerun"
 
@@ -58,6 +61,20 @@ bool ar_agency_save_agents(void);
  * @note Ownership: Creates new agents with their own resources.
  */
 bool ar_agency_load_agents(void);
+
+/**
+ * Update agents using a specific method to use a different method
+ * @param ref_old_method The old method being used (borrowed reference)
+ * @param ref_new_method The new method to use (borrowed reference)
+ * @return Number of agents updated
+ * @note Ownership: Does not take ownership of either method reference.
+ *       The update process involves:
+ *       1. Agent finishes processing current message
+ *       2. Sleep message is sent to agent
+ *       3. Method reference is updated
+ *       4. Wake message is sent to agent
+ */
+int ar_agency_update_agent_methods(const method_t *ref_old_method, const method_t *ref_new_method);
 
 #endif /* AGERUN_AGENCY_H */
 

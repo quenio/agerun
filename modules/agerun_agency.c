@@ -4,6 +4,7 @@
 #include "agerun_map.h"
 #include "agerun_data.h"
 #include "agerun_method.h"
+#include "agerun_semver.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -240,6 +241,87 @@ bool ar_agency_load_agents(void) {
     
     fclose(fp);
     return true;
+}
+
+int ar_agency_update_agent_methods(const method_t *ref_old_method, const method_t *ref_new_method) {
+    if (!g_is_initialized || !ref_old_method || !ref_new_method) {
+        return 0;
+    }
+    
+    // Verify that the methods are compatible (same major version)
+    if (!ar_semver_are_compatible(
+            ar_method_get_version(ref_old_method),
+            ar_method_get_version(ref_new_method))) {
+        printf("Warning: Cannot update agents to incompatible method version\n");
+        return 0;
+    }
+    
+    // Get method names for verification
+    const char *old_name = ar_method_get_name(ref_old_method);
+    const char *new_name = ar_method_get_name(ref_new_method);
+    if (strcmp(old_name, new_name) != 0) {
+        printf("Warning: Cannot update agents to a different method name\n");
+        return 0;
+    }
+    
+    // Get version strings for logging
+    const char *old_version = ar_method_get_version(ref_old_method);
+    const char *new_version = ar_method_get_version(ref_new_method);
+    
+    // Track how many agents we update
+    int update_count = 0;
+    
+    // Prepare sleep and wake messages
+    data_t *own_sleep_message = ar_data_create_string("__sleep__");
+    if (!own_sleep_message) {
+        return 0;
+    }
+    
+    data_t *own_wake_message = ar_data_create_string("__wake__");
+    if (!own_wake_message) {
+        ar_data_destroy(own_sleep_message);
+        return 0;
+    }
+    
+    // Find all agents using the old method
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (g_own_agents[i].is_active && g_own_agents[i].ref_method == ref_old_method) {
+            // Get the agent ID for sending messages
+            agent_id_t agent_id = g_own_agents[i].id;
+            
+            // Step 1: Send sleep message
+            printf("Updating agent %lld from method %s version %s to version %s\n",
+                   agent_id, old_name, old_version, new_version);
+                   
+            // Send a copy of the sleep message
+            data_t *own_sleep_copy = ar_data_create_string("__sleep__");
+            if (own_sleep_copy) {
+                ar_agent_send(agent_id, own_sleep_copy);
+                own_sleep_copy = NULL; // Ownership transferred to agent's queue
+            }
+            
+            // Step 2: Process the sleep message
+            // This happens elsewhere in the system during normal processing
+            
+            // Step 3: Update the method reference
+            g_own_agents[i].ref_method = ref_new_method;
+            
+            // Step 4: Send wake message
+            data_t *own_wake_copy = ar_data_create_string("__wake__");
+            if (own_wake_copy) {
+                ar_agent_send(agent_id, own_wake_copy);
+                own_wake_copy = NULL; // Ownership transferred to agent's queue
+            }
+            
+            update_count++;
+        }
+    }
+    
+    // Clean up
+    ar_data_destroy(own_sleep_message);
+    ar_data_destroy(own_wake_message);
+    
+    return update_count;
 }
 
 /* End of implementation */

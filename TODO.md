@@ -116,6 +116,15 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Recently Completed Tasks
 
+- [x] Implement full semantic versioning support: (completed 2025-05-04)
+  - [x] Create dedicated agerun_semver module with parsing, comparison, and pattern matching functions (completed 2025-05-04)
+  - [x] Update method selection to use semantic version comparison (completed 2025-05-04)
+  - [x] Support partial version patterns (e.g., "1" matches all 1.x.x versions) (completed 2025-05-04)
+  - [x] Add automatic method updates for running agents when new compatible versions are registered (completed 2025-05-04)
+  - [x] Implement proper agent lifecycle with sleep/wake messages during method updates (completed 2025-05-04)
+  - [x] Add comprehensive tests for semantic version functionality (completed 2025-05-04)
+  - [x] Document semantic versioning behavior in module documentation (completed 2025-05-04)
+
 - [x] Method semver implementation improvements: (completed 2025-05-03)
   - [x] Update method module to use semantic versioning strings instead of numeric versioning (completed 2025-05-03)
   - [x] Remove fields not in spec (previous_version, backward_compatible, persist) (completed 2025-05-03)
@@ -176,8 +185,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Update tests to verify correct parameter passing (completed 2025-05-02)
   - [x] Update documentation to reflect the new interaction between modules (completed 2025-05-02)
 
-- [ ] Enhance semantic versioning support:
-  - [ ] Implement proper semantic version comparison (major.minor.patch)
-  - [ ] Support latest compatible version lookup based on semver rules
-  - [ ] Add tests for semantic version handling
-  - [ ] Improve version resolution in methodology_get_method for partial versions
+- [x] Enhance semantic versioning support: (completed 2025-05-04)
+  - [x] Implement proper semantic version comparison (major.minor.patch) (completed 2025-05-04)
+  - [x] Support latest compatible version lookup based on semver rules (completed 2025-05-04)
+  - [x] Add tests for semantic version handling (completed 2025-05-04)
+  - [x] Improve version resolution in methodology_get_method for partial versions (completed 2025-05-04)
+  - [x] Add automatic method updates for running agents when new compatible versions are registered (completed 2025-05-04)

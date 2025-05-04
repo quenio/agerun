@@ -2,6 +2,8 @@
 #include "agerun_method.h"
 #include "agerun_string.h"
 #include "agerun_debug.h"
+#include "agerun_semver.h"
+#include "agerun_agency.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -68,10 +70,19 @@ static method_t* find_latest_method(const char *ref_name) {
         return NULL;
     }
     
-    // For now, with string versions, we'll just return the last registered version
-    // In a future implementation, we could parse semantic versions and compare them
-    int latest_idx = method_counts[method_idx] - 1;
-    if (latest_idx >= 0) {
+    // Use semantic versioning to find the latest version
+    int latest_idx = 0;
+    for (int i = 1; i < method_counts[method_idx]; i++) {
+        if (methods[method_idx][i] != NULL && methods[method_idx][latest_idx] != NULL &&
+            ar_semver_compare(
+                ar_method_get_version(methods[method_idx][i]),
+                ar_method_get_version(methods[method_idx][latest_idx])
+            ) > 0) {
+            latest_idx = i;
+        }
+    }
+    
+    if (latest_idx >= 0 && methods[method_idx][latest_idx] != NULL) {
         return methods[method_idx][latest_idx];
     }
     
@@ -84,7 +95,12 @@ static method_t* find_method(const char *ref_name, const char *ref_version) {
         return NULL;
     }
     
-    // Case 1: Exact version match
+    // Case 1: If version is NULL, return the latest method
+    if (ref_version == NULL) {
+        return find_latest_method(ref_name);
+    }
+    
+    // Case 2: Exact version match
     for (int i = 0; i < method_counts[method_idx]; i++) {
         if (methods[method_idx][i] != NULL && 
             strcmp(ar_method_get_version(methods[method_idx][i]), ref_version) == 0) {
@@ -92,9 +108,26 @@ static method_t* find_method(const char *ref_name, const char *ref_version) {
         }
     }
     
-    // Case 2: If version is NULL, return the latest method
-    if (ref_version == NULL) {
-        return find_latest_method(ref_name);
+    // Case 3: Partial version match (e.g., "1" or "1.2")
+    // Collect all versions for this method
+    const char *versions[MAX_VERSIONS_PER_METHOD];
+    int valid_count = 0;
+    for (int i = 0; i < method_counts[method_idx]; i++) {
+        if (methods[method_idx][i] != NULL) {
+            versions[valid_count++] = ar_method_get_version(methods[method_idx][i]);
+        }
+    }
+    
+    // Find the latest version matching the pattern
+    int latest_idx = ar_semver_find_latest_matching(versions, valid_count, ref_version);
+    if (latest_idx >= 0) {
+        // Map back to the original index in methods array
+        for (int i = 0; i < method_counts[method_idx]; i++) {
+            if (methods[method_idx][i] != NULL && 
+                strcmp(ar_method_get_version(methods[method_idx][i]), versions[latest_idx]) == 0) {
+                return methods[method_idx][i];
+            }
+        }
     }
     
     return NULL; // No matching version found
@@ -222,12 +255,9 @@ void ar_methodology_register_method(method_t *own_method) {
         return;
     }
     
-    // Find the next version slot
-    int version_idx = method_counts[method_idx];
-    
-    // Check for version conflicts and adjust if needed
+    // Check for version conflicts
     bool version_conflict = false;
-    for (int i = 0; i < version_idx; i++) {
+    for (int i = 0; i < method_counts[method_idx]; i++) {
         if (methods[method_idx][i] != NULL && 
             strcmp(ar_method_get_version(methods[method_idx][i]), method_version) == 0) {
             version_conflict = true;
@@ -240,11 +270,44 @@ void ar_methodology_register_method(method_t *own_method) {
         printf("Warning: Method %s version %s already exists\n", method_name, method_version);
     }
     
+    // Find the next version slot
+    int version_idx = method_counts[method_idx];
+    
     // Store the method in our methods array, handling any existing method
     ar_methodology_set_method_storage(method_idx, version_idx, own_method);
     method_counts[method_idx]++;
     
     printf("Registered method %s version %s\n", method_name, method_version);
+    
+    // Update agents using compatible older versions to use this new version
+    // We only auto-update if the new version is higher than existing versions
+    for (int i = 0; i < method_counts[method_idx] - 1; i++) {
+        if (methods[method_idx][i] != NULL) {
+            // Check if the old method is compatible with the new one
+            if (ar_semver_are_compatible(
+                    ar_method_get_version(methods[method_idx][i]), 
+                    method_version)) {
+                
+                // Check if the new version is higher
+                if (ar_semver_compare(
+                        method_version,
+                        ar_method_get_version(methods[method_idx][i])) > 0) {
+                    
+                    // Update agents using the old method to use the new one
+                    int updated = ar_agency_update_agent_methods(
+                        methods[method_idx][i], 
+                        own_method);
+                    
+                    if (updated > 0) {
+                        printf("Updated %d agent(s) from method %s version %s to version %s\n",
+                               updated, method_name, 
+                               ar_method_get_version(methods[method_idx][i]),
+                               method_version);
+                    }
+                }
+            }
+        }
+    }
 }
 
 bool ar_methodology_load_methods(void) {
