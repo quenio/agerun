@@ -11,6 +11,8 @@ DEBUG_CFLAGS = -g -O0 -DDEBUG
 RELEASE_CFLAGS = -O3 -DNDEBUG
 # Address Sanitizer flags
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+# Clang Static Analyzer command
+SCAN_BUILD = scan-build -o bin/scan-build-results
 
 # Source files (excluding test files)
 SRC = $(filter-out modules/*_tests.c,$(wildcard modules/*.c))
@@ -94,4 +96,16 @@ bin/%.o: modules/%.c | bin
 clean:
 	rm -rf bin
 
-.PHONY: all debug release sanitize clean test test-sanitize executable executable-sanitize run run-sanitize
+# Static analysis target
+analyze:
+	mkdir -p bin/scan-build-results
+	$(SCAN_BUILD) $(MAKE) lib
+	@echo "Static analysis results are available in bin/scan-build-results"
+
+# Static analysis for tests
+analyze-tests:
+	mkdir -p bin/scan-build-results
+	$(SCAN_BUILD) $(MAKE) test_lib
+	@echo "Static analysis results are available in bin/scan-build-results"
+
+.PHONY: all debug release sanitize clean test test-sanitize executable executable-sanitize run run-sanitize analyze analyze-tests

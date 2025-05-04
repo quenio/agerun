@@ -41,9 +41,11 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
    make run
    ```
 
-### Memory Safety Testing with Address Sanitizer
+### Memory Safety Testing
 
-AgeRun includes built-in support for memory error detection using Address Sanitizer (ASan):
+AgeRun includes built-in support for comprehensive memory error detection:
+
+#### Runtime Detection with Address Sanitizer (ASan)
 
 1. Build with Address Sanitizer enabled:
    ```
@@ -60,13 +62,29 @@ AgeRun includes built-in support for memory error detection using Address Saniti
    make run-sanitize
    ```
 
-These targets help detect memory errors such as:
+#### Static Analysis with Clang Static Analyzer
+
+1. Run static analysis on library code:
+   ```
+   make analyze
+   ```
+
+2. Run static analysis on tests too:
+   ```
+   make analyze-tests
+   ```
+
+3. View HTML reports in `bin/scan-build-results`
+
+These tools help detect memory issues such as:
 - Memory leaks
 - Use-after-free errors
 - Buffer overflows
 - Double-free errors
+- Memory ownership violations
+- Null pointer dereferences
 
-Developers are encouraged to run memory safety tests regularly during development.
+Developers are encouraged to run both dynamic (ASan) and static analysis regularly during development.
 
 ## Usage Examples
 

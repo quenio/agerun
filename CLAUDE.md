@@ -170,7 +170,7 @@ IMPORTANT:
    - Inspect memory state at runtime
 
 3. **Memory issues**:
-   - Use Address Sanitizer (ASan) for detecting memory errors:
+   - Use Address Sanitizer (ASan) for detecting runtime memory errors:
      - Build and run tests with ASan: `make test-sanitize`
      - Build and run executable with ASan: `make run-sanitize`
      - ASan can detect:
@@ -180,6 +180,18 @@ IMPORTANT:
        - Use-after-return issues
        - Memory leaks (with `ASAN_OPTIONS=detect_leaks=1`)
        - Double-free errors
+   - Use Clang Static Analyzer for catching memory issues at compile time:
+     - Run static analysis on library code: `make analyze`
+     - Run static analysis on test code too: `make analyze-tests`
+     - Static analyzer results are stored in `bin/scan-build-results`
+     - Review HTML reports to find potential memory management issues
+     - The analyzer can detect:
+       - Memory leaks
+       - Use-after-free errors
+       - Double-free errors
+       - Memory ownership violations
+       - Missing initialization
+       - Null pointer dereferences
    - Use sanitize build targets for continuous memory error detection:
      - Use `make sanitize` to build the library with ASan
      - Use `make executable-sanitize` to build the executable with ASan
