@@ -49,6 +49,7 @@ When making changes, always follow these steps to ensure code quality:
    ```
 
 IMPORTANT: 
+- When asked to do a clean build, always run the entire workflow (steps 1-7) in order.
 - Always do a clean build before running tests and the executable to ensure all changes are properly incorporated.
 - Always run static analysis after compilation and before running tests to catch potential issues early.
 - Always run the executable after running tests to verify changes work in practical application contexts, not just in test environments.
