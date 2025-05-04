@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Heap Module provides utilities for enforcing system invariants and catching programming errors during development. It's designed to help detect violations of the AgeRun Memory Management Model (MMM), track memory allocations, detect memory leaks, and enforce other programming rules without adding overhead to release builds.
+The Heap Module provides memory management utilities for tracking heap allocations, detecting memory leaks, and enforcing ownership semantics in AgeRun. It implements wrappers around standard memory allocation functions (malloc, calloc, realloc, strdup, and free) that track memory usage during development. The module also provides assertion macros to enforce the AgeRun Memory Management Model (MMM) ownership rules at runtime. All tracking and validation logic is conditionally compiled, ensuring zero overhead in release builds.
 
 ## Key Features
 
@@ -15,15 +15,17 @@ The Heap Module provides utilities for enforcing system invariants and catching 
 - **No Runtime Overhead**: Zero overhead in production when DEBUG is not defined
 - **Clear Error Messages**: Descriptive error messages help identify the source of problems
 
-## Memory Management Model
+## Memory Management Support
 
-The Heap Module provides essential tools for enforcing the AgeRun Memory Management Model:
+The Heap Module is a foundational component of the AgeRun Memory Management Model (MMM), providing the following capabilities:
 
-1. **Owned Values (own_)**: Validate that owned values are properly initialized
-2. **Ownership Transfer**: Verify that pointers are set to NULL after ownership transfer
-3. **Use-After-Free Detection**: Check that freed pointers are not used afterward
-4. **Memory Lifecycle Tracking**: Track all memory allocations from creation to destruction
-5. **Leak Detection**: Identify and report memory that was allocated but never freed
+1. **Heap Allocation Tracking**: Records all memory allocations with source location, size, and purpose
+2. **Allocation Wrappers**: Provides AR_MALLOC, AR_CALLOC, AR_REALLOC, AR_STRDUP, and AR_FREE macros
+3. **Ownership Validation**: Enforces pointer ownership rules with AR_ASSERT_OWNERSHIP macro
+4. **Transfer Verification**: Ensures correct ownership transfer with AR_ASSERT_TRANSFERRED macro
+5. **Use-After-Free Prevention**: Detects illegal pointer usage with AR_ASSERT_NOT_USED_AFTER_FREE
+6. **Memory Leak Detection**: Automatically generates reports of unfreed memory at program exit
+7. **Conditional Instrumentation**: Zero overhead in release builds through conditional compilation
 
 ## API Reference
 
@@ -298,16 +300,31 @@ bool process_data(data_t *own_input) {
 - Memory tracking has some overhead, but only in debug builds
 - Assertions will terminate the program if violated, helping to catch issues early
 
-## Memory Tracking Architecture
+## Heap Management Architecture
 
-The memory tracking system consists of several key components:
+The heap memory management system is designed with these key architectural components:
 
-1. **Record Keeping**: Each allocation creates a record with metadata
-2. **Wrappers**: Memory function wrappers that add tracking information
-3. **Reporting**: Leak detection and detailed reporting at program exit
-4. **Zero Overhead in Release**: All tracking code is conditionally compiled
+1. **Memory Record Tracking**: Each allocation creates a record containing:
+   - Pointer to the allocated memory
+   - Source file and line number where allocation occurred
+   - Size of the allocation in bytes
+   - Description of the allocation purpose
+   - Timestamp of when the allocation occurred
+   
+2. **Linked Data Structure**: Records are organized in a linked list for efficient insertion and removal
+   
+3. **Memory Statistics**: The module tracks:
+   - Total number of allocations made
+   - Currently active allocations
+   - Total memory allocated
+   - Currently active memory
+   
+4. **Automated Reporting**: Memory leak reports are automatically generated:
+   - At program exit via atexit registration
+   - When explicitly requested through ar_heap_memory_report()
+   - Reports are written to heap_memory_report.log
 
-The implementation uses a linked list of records to track each allocation. When memory is freed, its record is removed from the list. At program termination, any records still in the list represent memory leaks.
+5. **Conditional Compilation**: All heap tracking code is wrapped in #ifdef DEBUG directives
 
 ## Debug Builds vs. Release Builds
 
@@ -352,9 +369,15 @@ In release builds (`DEBUG` is not defined):
 
 ## Future Enhancements
 
-- Stack trace capture for allocations to pinpoint leak origins
-- Configurable violation handlers (logging vs. termination)
-- Memory usage statistics and high-water mark tracking
-- Detection of double-free errors
-- Pattern-based memory corruption detection (fence-post checking)
-- Heap fragmentation analysis
+The Heap Module could be enhanced with these additional features:
+
+1. **Allocation Call Stack Capture**: Recording the full call stack for each allocation to provide better context for leak debugging
+2. **Customizable Violation Handlers**: Configurable actions when ownership violations are detected (logging, warning, termination)
+3. **Enhanced Memory Metrics**: Additional statistics including allocation size distribution, high-water mark tracking, and peak usage
+4. **Double-Free Detection**: Automatic detection and reporting of attempts to free the same memory multiple times
+5. **Memory Corruption Guards**: Pattern-based memory corruption detection through fence-post checking around allocations
+6. **Heap Fragmentation Analysis**: Tools to detect and report on heap fragmentation issues
+7. **Memory Pool Integration**: Support for custom memory pools and regions for specialized allocation patterns
+8. **Interactive Leak Browser**: A simple browser-based UI for exploring and analyzing memory leak reports
+9. **Ownership Visualization**: Graphical representation of ownership relationships between objects
+10. **Integration with External Tools**: Export data in formats compatible with tools like Valgrind or AddressSanitizer
