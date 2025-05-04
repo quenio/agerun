@@ -15,26 +15,44 @@ When making changes, always follow these steps to ensure code quality:
    make clean && make
    ```
 
-2. **Build the executable application**:
+2. **Run static analysis**:
+   ```
+   make analyze
+   make analyze-tests
+   ```
+   
+3. **Build the executable application**:
    ```
    make executable
    ```
 
-3. **Run tests**:
+4. **Run tests**:
    ```
    make test
    ```
    (The Makefile handles changing to the bin directory)
 
-4. **Run the executable**:
+5. **Run the executable**:
    ```
    make run
    ```
    (The Makefile handles changing to the bin directory)
 
+6. **Run sanitize tests**:
+   ```
+   make test-sanitize
+   ```
+   
+7. **Run sanitize executable**:
+   ```
+   make run-sanitize
+   ```
+
 IMPORTANT: 
 - Always do a clean build before running tests and the executable to ensure all changes are properly incorporated.
+- Always run static analysis after compilation and before running tests to catch potential issues early.
 - Always run the executable after running tests to verify changes work in practical application contexts, not just in test environments.
+- Always run sanitize tests and executable after regular tests to catch memory-related issues that regular tests might miss.
 - Always run `make` from the top-level of the repository.
 - Always run tests and the executable with the `bin` directory as the current directory.
 - The Makefile has been set up to handle this directory requirement:
