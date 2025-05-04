@@ -19,11 +19,11 @@ ANALYZER_FLAGS = -Xclang -analyze -Xclang -analyzer-checker=core -Xclang -analyz
 
 # Source files (excluding test files)
 SRC = $(filter-out modules/*_tests.c,$(wildcard modules/*.c))
-OBJ = $(patsubst modules/%.c,bin/%.o,$(SRC))
+OBJ = $(patsubst modules/%.c,bin/obj/%.o,$(SRC))
 
 # Test source files
 TEST_SRC = $(wildcard modules/*_tests.c)
-TEST_OBJ = $(patsubst modules/%.c,bin/%.o,$(TEST_SRC))
+TEST_OBJ = $(patsubst modules/%.c,bin/obj/%.o,$(TEST_SRC))
 TEST_BIN = $(patsubst modules/%_tests.c,bin/%_tests,$(TEST_SRC))
 
 # Main target
@@ -42,9 +42,9 @@ sanitize: CFLAGS += $(DEBUG_CFLAGS) $(ASAN_FLAGS)
 sanitize: LDFLAGS += -fsanitize=address
 sanitize: lib
 
-# Create bin directory
+# Create bin and bin/obj directories
 bin:
-	mkdir -p $@
+	mkdir -p $@/obj
 
 # Library target
 lib: bin $(OBJ)
@@ -88,11 +88,11 @@ test-sanitize: sanitize bin $(TEST_BIN)
 	done
 
 # Individual test binaries
-bin/%_tests: bin/%_tests.o test_lib
+bin/%_tests: bin/obj/%_tests.o test_lib
 	$(CC) $(CFLAGS) -o $@ $< bin/libagerun.a $(LDFLAGS)
 
 # Compile source files
-bin/%.o: modules/%.c | bin
+bin/obj/%.o: modules/%.c | bin
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Clean target
