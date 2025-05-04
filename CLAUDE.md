@@ -421,3 +421,10 @@ IMPORTANT:
    - When creating new files, always terminate with a newline
    - Never submit file edits that remove the final newline character
    - This verification step is mandatory for ALL file modifications
+
+14. **Static Analysis and Sanitizer Outputs**:
+   - NEVER EVER attempt to read any object files mentioned in the output of static analysis or sanitizer tools
+   - When running static analyzers (`make analyze`, `make analyze-tests`) or sanitizers (`make test-sanitize`, `make run-sanitize`), focus only on error messages and warnings
+   - Ignore any binary or object file paths mentioned in the tool outputs
+   - Always address the errors and warnings directly from the source code (.c, .h files)
+   - Treat these tools as warning generators only, not as sources of readable files
