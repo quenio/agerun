@@ -130,7 +130,7 @@ void ar_heap_memory_report(void) {
     if (!g_initialized) return;
     
     // Create the report file in the bin directory
-    FILE *report = fopen("debug_memory_report.log", "w");
+    FILE *report = fopen("heap_memory_report.log", "w");
     if (!report) {
         fprintf(stderr, "ERROR: Failed to create memory report file\n");
         return;
@@ -181,7 +181,7 @@ void ar_heap_memory_report(void) {
     
     // If there are leaks, also print to stderr
     if (g_active_allocations > 0) {
-        fprintf(stderr, "WARNING: %zu memory leaks detected. See debug_memory_report.log for details.\n", g_active_allocations);
+        fprintf(stderr, "WARNING: %zu memory leaks detected. See heap_memory_report.log for details.\n", g_active_allocations);
     }
     
     // Cleanup all records (to avoid memory leaks in our leak detector)

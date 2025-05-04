@@ -82,7 +82,7 @@ int ar_heap_memory_remove(void *ptr);
 
 /**
  * Generate a memory leak report
- * Writes detailed information about active allocations to debug_memory_report.log
+ * Writes detailed information about active allocations to heap_memory_report.log
  */
 void ar_heap_memory_report(void);
 

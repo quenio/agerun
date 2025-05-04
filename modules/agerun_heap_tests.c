@@ -166,7 +166,7 @@ static void test_leak_reporting(void) {
     // The memory report at program exit should show this leak
     
     printf("  Note: This test intentionally leaks memory to test the leak detection mechanism.\n");
-    printf("  Check debug_memory_report.log after the tests complete.\n");
+    printf("  Check heap_memory_report.log after the tests complete.\n");
     
     pass_test("test_leak_reporting");
 }
@@ -190,7 +190,7 @@ static void test_memory_report(void) {
     ar_heap_memory_report();
     
     // Check if the report file exists
-    FILE *report = fopen("debug_memory_report.log", "r");
+    FILE *report = fopen("heap_memory_report.log", "r");
     assert(report != NULL);
     fclose(report);
     

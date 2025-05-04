@@ -1,8 +1,8 @@
-# Debug Module (`agerun_debug`)
+# Heap Module (`agerun_heap`)
 
 ## Overview
 
-The Debug Module provides utilities for enforcing system invariants and catching programming errors during development. It's designed to help detect violations of the AgeRun Memory Management Model (MMM), track memory allocations, detect memory leaks, and enforce other programming rules without adding overhead to release builds.
+The Heap Module provides utilities for enforcing system invariants and catching programming errors during development. It's designed to help detect violations of the AgeRun Memory Management Model (MMM), track memory allocations, detect memory leaks, and enforce other programming rules without adding overhead to release builds.
 
 ## Key Features
 
@@ -17,7 +17,7 @@ The Debug Module provides utilities for enforcing system invariants and catching
 
 ## Memory Management Model
 
-The Debug Module provides essential tools for enforcing the AgeRun Memory Management Model:
+The Heap Module provides essential tools for enforcing the AgeRun Memory Management Model:
 
 1. **Owned Values (own_)**: Validate that owned values are properly initialized
 2. **Ownership Transfer**: Verify that pointers are set to NULL after ownership transfer
@@ -183,10 +183,10 @@ AR_FREE(own_buffer);
 own_buffer = NULL;
 ```
 
-#### `ar_debug_memory_report()`
+#### `ar_heap_memory_report()`
 
 ```c
-void ar_debug_memory_report(void)
+void ar_heap_memory_report(void)
 ```
 
 Generates a memory leak report with details of all allocations that have not been freed.
@@ -196,7 +196,7 @@ to check for leaks at specific points in the program.
 **Usage Example:**
 ```c
 // After a test or operation, check for leaks
-ar_debug_memory_report();
+ar_heap_memory_report();
 ```
 
 ## Usage Examples
