@@ -74,7 +74,11 @@ AgeRun includes built-in support for comprehensive memory error detection:
    make analyze-tests
    ```
 
-3. View HTML reports in `bin/scan-build-results`
+3. View results:
+   - If scan-build is installed: HTML reports in `bin/scan-build-results`
+   - Without scan-build: Direct analyzer warnings in the console output
+
+Note: The makefile automatically detects if scan-build is available and falls back to direct clang analysis if needed.
 
 These tools help detect memory issues such as:
 - Memory leaks

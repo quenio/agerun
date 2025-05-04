@@ -183,8 +183,10 @@ IMPORTANT:
    - Use Clang Static Analyzer for catching memory issues at compile time:
      - Run static analysis on library code: `make analyze`
      - Run static analysis on test code too: `make analyze-tests`
-     - Static analyzer results are stored in `bin/scan-build-results`
-     - Review HTML reports to find potential memory management issues
+     - Static analyzer results are available:
+       - With scan-build installed: HTML reports in `bin/scan-build-results`
+       - Without scan-build: Direct console output with warnings
+     - Review analysis results to find potential memory management issues
      - The analyzer can detect:
        - Memory leaks
        - Use-after-free errors
@@ -192,6 +194,12 @@ IMPORTANT:
        - Memory ownership violations
        - Missing initialization
        - Null pointer dereferences
+       - Insecure API usage
+     - Address identified issues promptly:
+       - Fix potential memory leaks (e.g., `agerun_data.c` transfer ownership issues)
+       - Replace unsafe string functions (`strcpy`, `sprintf`) with safe alternatives (`strlcpy`, `snprintf`)
+       - Use secure I/O functions instead of deprecated ones (`fprintf`, `fscanf`)
+       - Replace weak RNG (`rand()`) with cryptographically secure alternatives (`arc4random`)
    - Use sanitize build targets for continuous memory error detection:
      - Use `make sanitize` to build the library with ASan
      - Use `make executable-sanitize` to build the executable with ASan
