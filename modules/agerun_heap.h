@@ -5,10 +5,16 @@
 #include <stddef.h>
 
 /**
- * Heap utilities for the AgeRun system.
+ * Heap memory management utilities for the AgeRun system.
  * 
- * This module provides macros and utilities to help track memory allocations,
- * enforce memory ownership invariants, and detect memory leaks during development.
+ * This module provides:
+ * - Memory allocation tracking and leak detection
+ * - Wrappers for standard memory allocation functions (malloc, calloc, realloc, strdup, free)
+ * - Runtime assertion macros to enforce memory ownership rules
+ * - Detailed memory usage reporting
+ * 
+ * All tracking and validation logic is conditionally compiled using the DEBUG macro,
+ * ensuring zero overhead in release builds.
  */
 
 /**
@@ -64,77 +70,145 @@
 #ifdef DEBUG
 
 /**
- * Add a memory allocation record
+ * Record a new memory allocation in the tracking system
+ * 
+ * Internal function used by the allocation wrapper functions to register
+ * a new allocation with the memory tracking system. This function should
+ * never be called directly except by the allocation wrapper functions.
+ * 
  * @param ptr Pointer to the allocated memory
  * @param file Source file where the allocation occurred
  * @param line Line number where the allocation occurred
  * @param size Size of the allocation in bytes
- * @param description Description of the allocation
+ * @param description Description of the allocation for debugging purposes
+ * @note This function is for internal use by the heap module's allocation wrappers
  */
 void ar_heap_memory_add(void *ptr, const char *file, int line, size_t size, const char *description);
 
 /**
- * Remove a memory allocation record
+ * Remove a memory allocation record from the tracking system
+ * 
+ * Internal function used by ar_heap_free() to remove an allocation record
+ * when memory is freed. This function should never be called directly
+ * except by the ar_heap_free function.
+ * 
  * @param ptr Pointer to the memory being freed
- * @return 1 if found and removed, 0 if not found
+ * @return 1 if the allocation record was found and removed, 0 if not found
+ * @note This function is for internal use by the heap module's free wrapper
  */
 int ar_heap_memory_remove(void *ptr);
 
 /**
- * Generate a memory leak report
- * Writes detailed information about active allocations to heap_memory_report.log
+ * Generate a comprehensive memory leak report
+ * 
+ * Creates a detailed report with information about:
+ * - Total allocations made during program execution
+ * - Currently active (unfreed) allocations
+ * - Total memory allocated
+ * - Currently active memory usage
+ * - Detailed listing of each memory leak with location, size, and timestamp
+ * 
+ * The report is written to heap_memory_report.log in the current directory.
+ * This function is automatically called at program exit, but can also be
+ * manually called to generate reports at specific points during execution.
  */
 void ar_heap_memory_report(void);
 
 /**
- * Wrapper for malloc that tracks memory allocations
- * @param size Size to allocate
- * @param file Source file
- * @param line Line number
- * @param description Description of the allocation
- * @return Pointer to allocated memory
+ * Tracked memory allocation function (wrapper for malloc)
+ * 
+ * Allocates memory while recording allocation metadata for leak detection.
+ * This function should not be called directly - use the AR_MALLOC macro instead.
+ * 
+ * @param size Size in bytes to allocate
+ * @param file Source file where allocation occurs (typically passed via __FILE__ macro)
+ * @param line Line number where allocation occurs (typically passed via __LINE__ macro)
+ * @param description Human-readable description of the memory's purpose
+ * @return Pointer to allocated memory (owned by caller, must be freed with AR_FREE)
+ * @note Ownership: Returns an owned pointer that caller must free with AR_FREE
  */
 void *ar_heap_malloc(size_t size, const char *file, int line, const char *description);
 
 /**
- * Wrapper for calloc that tracks memory allocations
- * @param count Number of elements
- * @param size Size of each element
- * @param file Source file
- * @param line Line number
- * @param description Description of the allocation
- * @return Pointer to allocated memory
+ * Tracked memory allocation with zero-initialization (wrapper for calloc)
+ * 
+ * Allocates and zero-initializes memory while recording allocation metadata.
+ * This function should not be called directly - use the AR_CALLOC macro instead.
+ * 
+ * @param count Number of elements to allocate
+ * @param size Size of each element in bytes
+ * @param file Source file where allocation occurs (typically passed via __FILE__ macro)
+ * @param line Line number where allocation occurs (typically passed via __LINE__ macro)
+ * @param description Human-readable description of the memory's purpose
+ * @return Pointer to zero-initialized allocated memory (owned by caller, must be freed with AR_FREE)
+ * @note Ownership: Returns an owned pointer that caller must free with AR_FREE
  */
 void *ar_heap_calloc(size_t count, size_t size, const char *file, int line, const char *description);
 
 /**
- * Wrapper for realloc that tracks memory allocations
- * @param ptr Original pointer
- * @param size New size
- * @param file Source file
- * @param line Line number
- * @param description Description of the allocation
- * @return Pointer to reallocated memory
+ * Tracked memory reallocation function (wrapper for realloc)
+ * 
+ * Resizes a previously allocated memory block while updating allocation metadata.
+ * This function should not be called directly - use the AR_REALLOC macro instead.
+ * 
+ * @param ptr Pointer to previously allocated memory to resize (must be from AR_MALLOC/AR_CALLOC/AR_REALLOC)
+ * @param size New size in bytes
+ * @param file Source file where reallocation occurs (typically passed via __FILE__ macro)
+ * @param line Line number where reallocation occurs (typically passed via __LINE__ macro)
+ * @param description Human-readable description of the memory's purpose
+ * @return Pointer to resized memory block (owned by caller, must be freed with AR_FREE)
+ * @note Ownership: Returns an owned pointer that caller must free with AR_FREE
+ *       The original ptr should not be used after this call, as it may have been freed
  */
 void *ar_heap_realloc(void *ptr, size_t size, const char *file, int line, const char *description);
 
 /**
- * Wrapper for strdup that tracks memory allocations
- * @param str String to duplicate
- * @param file Source file
- * @param line Line number
- * @param description Description of the allocation
- * @return Pointer to allocated string
+ * Tracked string duplication function (wrapper for strdup)
+ * 
+ * Duplicates a string while recording allocation metadata for leak detection.
+ * This function should not be called directly - use the AR_STRDUP macro instead.
+ * 
+ * @param str String to duplicate (must be null-terminated)
+ * @param file Source file where duplication occurs (typically passed via __FILE__ macro)
+ * @param line Line number where duplication occurs (typically passed via __LINE__ macro)
+ * @param description Human-readable description of the string's purpose
+ * @return Pointer to newly allocated copy of the string (owned by caller, must be freed with AR_FREE)
+ * @note Ownership: Returns an owned pointer that caller must free with AR_FREE
  */
 char *ar_heap_strdup(const char *str, const char *file, int line, const char *description);
 
 /**
- * Wrapper for free that tracks memory deallocations
- * @param ptr Pointer to free
+ * Tracked memory deallocation function (wrapper for free)
+ * 
+ * Frees memory and removes its allocation record from the tracking system.
+ * This function should not be called directly - use the AR_FREE macro instead.
+ * 
+ * @param ptr Pointer to memory to free (must be from AR_MALLOC/AR_CALLOC/AR_REALLOC/AR_STRDUP)
+ * @note After calling AR_FREE, you MUST set the pointer to NULL to prevent use-after-free errors.
+ *       AR_FREE(ptr); ptr = NULL;
  */
+
 void ar_heap_free(void *ptr);
 
-/* Convenience macros for memory tracking */
+/**
+ * Memory allocation and tracking macros
+ * 
+ * These macros provide a consistent interface for memory allocation across
+ * debug and release builds. In debug builds, these map to the tracking wrappers,
+ * while in release builds they map directly to the standard C library functions.
+ * 
+ * Always use these macros instead of direct malloc/calloc/realloc/strdup/free calls.
+ * The 'desc' parameter should be a short, descriptive string explaining the
+ * purpose of the allocation, which helps in tracking down memory leaks.
+ * 
+ * Example usage:
+ *   char *own_buffer = AR_MALLOC(1024, "JSON parse buffer");
+ *   int *own_array = AR_CALLOC(10, sizeof(int), "Score history");
+ *   own_buffer = AR_REALLOC(own_buffer, 2048, "Expanded JSON buffer");
+ *   char *own_copy = AR_STRDUP(original, "Config path");
+ *   AR_FREE(own_buffer);
+ *   own_buffer = NULL;  // IMPORTANT: Always set to NULL after freeing
+ */
 #define AR_MALLOC(size, desc) ar_heap_malloc((size), __FILE__, __LINE__, (desc))
 #define AR_CALLOC(count, size, desc) ar_heap_calloc((count), (size), __FILE__, __LINE__, (desc))
 #define AR_REALLOC(ptr, size, desc) ar_heap_realloc((ptr), (size), __FILE__, __LINE__, (desc))
@@ -143,7 +217,17 @@ void ar_heap_free(void *ptr);
 
 #else
 
-/* In release builds, these macros map directly to standard functions */
+/**
+ * Release build memory allocation macros
+ * 
+ * In release builds, the memory tracking is disabled for performance reasons.
+ * These macros map directly to the standard C library functions without
+ * any tracking overhead. The interface remains identical to the debug build,
+ * ensuring consistent usage across all build configurations.
+ * 
+ * Note that the 'desc' parameter is still required for interface compatibility
+ * but is completely ignored in release builds.
+ */
 #define AR_MALLOC(size, desc) malloc(size)
 #define AR_CALLOC(count, size, desc) calloc(count, size)
 #define AR_REALLOC(ptr, size, desc) realloc(ptr, size)
