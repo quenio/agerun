@@ -17,6 +17,57 @@ static agent_t g_own_agents[MAX_AGENTS]; // Owned by the agency module
 static agent_id_t g_next_agent_id = 1;
 static bool g_is_initialized = false;
 
+/* Helper function for safe file reading */
+static bool ar_agency_safe_read_line(FILE *fp, char *buffer, int buffer_size, const char *filename) {
+    // Initialize buffer with empty string
+    if (buffer_size > 0) {
+        buffer[0] = '\0';
+    } else {
+        return false;
+    }
+    
+    // First check for EOF
+    if (feof(fp)) {
+        printf("Error: Unexpected end of file in %s\n", filename);
+        return false;
+    }
+    
+    // Check for errors and clear them if present
+    clearerr(fp);
+    
+    // Read character by character to avoid the file position warning
+    int i = 0;
+    int c;
+    
+    while (i < buffer_size - 1 && (c = fgetc(fp)) != EOF && c != '\n') {
+        buffer[i++] = (char)c;
+    }
+    
+    // Add null terminator
+    buffer[i] = '\0';
+    
+    // Add newline if we stopped because of it
+    if (c == '\n' && i < buffer_size - 1) {
+        buffer[i] = '\n';
+        buffer[i+1] = '\0';
+    }
+    
+    // Check for errors
+    if (ferror(fp)) {
+        printf("Error: Failed to read file %s\n", filename);
+        clearerr(fp);
+        return false;
+    }
+    
+    // Check if we got any characters
+    if (i == 0 && c == EOF) {
+        printf("Error: Unexpected end of file in %s\n", filename);
+        return false;
+    }
+    
+    return true;
+}
+
 /* Static initialization */
 static void ar_agency_init(void) {
     if (!g_is_initialized) {
@@ -113,7 +164,13 @@ bool ar_agency_save_agents(void) {
         }
     }
     
-    fprintf(fp, "%d\n", count);
+    // Use snprintf to safely format the output
+    char buffer[128];
+    int written = snprintf(buffer, sizeof(buffer), "%d\n", count);
+    if (written < 0 || written >= (int)sizeof(buffer) || fputs(buffer, fp) == EOF) {
+        fclose(fp);
+        return false;
+    }
     
     // Save basic agent info
     for (int i = 0; i < MAX_AGENTS; i++) {
@@ -122,11 +179,20 @@ bool ar_agency_save_agents(void) {
             const char *method_name = ar_method_get_name(g_own_agents[i].ref_method);
             const char *method_version = ar_method_get_version(g_own_agents[i].ref_method);
             
-            fprintf(fp, "%lld %s %s\n", g_own_agents[i].id, method_name, method_version);
+            // Use snprintf to safely format agent data
+            written = snprintf(buffer, sizeof(buffer), "%lld %s %s\n", 
+                              g_own_agents[i].id, method_name, method_version);
+            if (written < 0 || written >= (int)sizeof(buffer) || fputs(buffer, fp) == EOF) {
+                fclose(fp);
+                return false;
+            }
             
             // Save memory map placeholder
             // For now, just save an empty count since we can't access the internal structure
-            fprintf(fp, "0\n");
+            if (fputs("0\n", fp) == EOF) {
+                fclose(fp);
+                return false;
+            }
             // In a complete implementation, we would iterate over the map entries
             // using a new function like ar_map_for_each() to process each key/value pair
         }
@@ -147,22 +213,86 @@ bool ar_agency_load_agents(void) {
         return true;
     }
     
+    // Read the first line to get agent count
+    char line[256];
+    
+    if (!ar_agency_safe_read_line(fp, line, (int)sizeof(line), AGENCY_FILE_NAME)) {
+        fclose(fp);
+        return false;
+    }
+    
     int count = 0;
-    if (fscanf(fp, "%d", &count) != 1) {
+    // Replace sscanf with more secure strtol
+    char *line_endptr;
+    count = (int)strtol(line, &line_endptr, 10);
+    if (line_endptr == line || *line_endptr != '\n' || count < 0) {
         fclose(fp);
         return false;
     }
     
     for (int i = 0; i < count; i++) {
         agent_id_t id;
-        char method_name[256]; // Increased buffer size for safety
-        char method_version[64]; // Buffer for semver string
+        char method_name[256] = {0}; // Increased buffer size for safety, initialized to zeros
+        char method_version[64] = {0}; // Buffer for semver string, initialized to zeros
         
-        if (fscanf(fp, "%lld %s %s", &id, method_name, method_version) != 3) {
-            printf("Error: Malformed agent entry in %s\n", AGENCY_FILE_NAME);
+        if (!ar_agency_safe_read_line(fp, line, (int)sizeof(line), AGENCY_FILE_NAME)) {
             fclose(fp);
             return false;
         }
+        
+        // Parse line manually instead of using sscanf
+        char *token, *next_token = NULL;
+        
+        // Get the ID
+        token = strtok_r(line, " \t\n", &next_token);
+        if (token == NULL) {
+            printf("Error: Malformed agent entry - missing ID in %s\n", AGENCY_FILE_NAME);
+            fclose(fp);
+            return false;
+        }
+        
+        // Convert ID from string to agent_id_t (long long)
+        char *id_endptr = NULL;
+        id = strtoll(token, &id_endptr, 10);
+        if (id_endptr == token || *id_endptr != '\0') {
+            printf("Error: Malformed agent ID in %s\n", AGENCY_FILE_NAME);
+            fclose(fp);
+            return false;
+        }
+        
+        // Get the method name
+        token = strtok_r(NULL, " \t\n", &next_token);
+        if (token == NULL) {
+            printf("Error: Malformed agent entry - missing method name in %s\n", AGENCY_FILE_NAME);
+            fclose(fp);
+            return false;
+        }
+        
+        // Copy method name with length check
+        if (strlen(token) >= sizeof(method_name)) {
+            printf("Error: Method name too long in %s\n", AGENCY_FILE_NAME);
+            fclose(fp);
+            return false;
+        }
+        strncpy(method_name, token, sizeof(method_name) - 1);
+        method_name[sizeof(method_name) - 1] = '\0';  // Ensure null-termination
+        
+        // Get the method version
+        token = strtok_r(NULL, " \t\n", &next_token);
+        if (token == NULL) {
+            printf("Error: Malformed agent entry - missing method version in %s\n", AGENCY_FILE_NAME);
+            fclose(fp);
+            return false;
+        }
+        
+        // Copy method version with length check
+        if (strlen(token) >= sizeof(method_version)) {
+            printf("Error: Method version too long in %s\n", AGENCY_FILE_NAME);
+            fclose(fp);
+            return false;
+        }
+        strncpy(method_version, token, sizeof(method_version) - 1);
+        method_version[sizeof(method_version) - 1] = '\0';  // Ensure null-termination
         
         // Create the agent
         agent_id_t new_id = ar_agent_create(method_name, method_version, NULL);
@@ -177,48 +307,124 @@ bool ar_agency_load_agents(void) {
             if (g_own_agents[j].is_active && g_own_agents[j].id == new_id) {
                 g_own_agents[j].id = id;
                 
-                // Read memory map
+                // Read memory map line for count
+                char mem_line[256];
+                if (!ar_agency_safe_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
+                    printf("Error: Failed to read memory count\n");
+                    break;
+                }
+                
                 int mem_count = 0;
-                if (fscanf(fp, "%d", &mem_count) != 1) {
+                // Parse memory count using strtol instead of sscanf
+                char *mem_count_endptr = NULL;
+                mem_count = (int)strtol(mem_line, &mem_count_endptr, 10);
+                
+                // Check for conversion errors or invalid values
+                if (mem_count_endptr == mem_line || (*mem_count_endptr != '\0' && *mem_count_endptr != '\n') || mem_count < 0) {
                     printf("Error: Could not read memory count\n");
                     break;
                 }
                 
                 for (int k = 0; k < mem_count; k++) {
-                    char key[256];
-                    char type[32];
+                    char key[256] = {0};
+                    char type[32] = {0};
                     
-                    if (fscanf(fp, "%255s %31s", key, type) != 2) {
-                        printf("Error: Malformed memory entry in %s\n", AGENCY_FILE_NAME);
+                    // Read key and type line
+                    if (!ar_agency_safe_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
+                        printf("Error: Failed to read memory key/type\n");
                         break;
                     }
                     
+                    // Parse memory key and type manually using strtok_r
+                    char *mem_token, *mem_next_token = NULL;
+                    
+                    // Get the key
+                    mem_token = strtok_r(mem_line, " \t\n", &mem_next_token);
+                    if (mem_token == NULL) {
+                        printf("Error: Malformed memory entry - missing key in %s\n", AGENCY_FILE_NAME);
+                        break;
+                    }
+                    
+                    // Copy key with length check
+                    if (strlen(mem_token) >= sizeof(key)) {
+                        printf("Error: Memory key too long in %s\n", AGENCY_FILE_NAME);
+                        break;
+                    }
+                    strncpy(key, mem_token, sizeof(key) - 1);
+                    key[sizeof(key) - 1] = '\0';  // Ensure null-termination
+                    
+                    // Get the type
+                    mem_token = strtok_r(NULL, " \t\n", &mem_next_token);
+                    if (mem_token == NULL) {
+                        printf("Error: Malformed memory entry - missing type in %s\n", AGENCY_FILE_NAME);
+                        break;
+                    }
+                    
+                    // Copy type with length check
+                    if (strlen(mem_token) >= sizeof(type)) {
+                        printf("Error: Memory type too long in %s\n", AGENCY_FILE_NAME);
+                        break;
+                    }
+                    strncpy(type, mem_token, sizeof(type) - 1);
+                    type[sizeof(type) - 1] = '\0';  // Ensure null-termination
+                    
                     data_t *own_value = NULL; // Will be an owned value after creation
                     if (strcmp(type, "int") == 0) {
+                        // Read value line
+                        if (!ar_agency_safe_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
+                            printf("Error: Failed to read int value\n");
+                            break;
+                        }
+                        
                         int int_value;
-                        if (fscanf(fp, "%d", &int_value) != 1) {
+                        // Parse int value using strtol instead of sscanf
+                        char *int_value_endptr = NULL;
+                        int_value = (int)strtol(mem_line, &int_value_endptr, 10);
+                        
+                        // Check for conversion errors
+                        if (int_value_endptr == mem_line || (*int_value_endptr != '\0' && *int_value_endptr != '\n')) {
                             printf("Error: Could not read int value\n");
                             break;
                         }
                         own_value = ar_data_create_integer(int_value);
                     } else if (strcmp(type, "double") == 0) {
+                        // Read value line
+                        if (!ar_agency_safe_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
+                            printf("Error: Failed to read double value\n");
+                            break;
+                        }
+                        
                         double double_value;
-                        if (fscanf(fp, "%lf", &double_value) != 1) {
+                        // Parse double value using strtod instead of sscanf
+                        char *double_value_endptr = NULL;
+                        double_value = strtod(mem_line, &double_value_endptr);
+                        
+                        // Check for conversion errors
+                        if (double_value_endptr == mem_line || (*double_value_endptr != '\0' && *double_value_endptr != '\n')) {
                             printf("Error: Could not read double value\n");
                             break;
                         }
                         own_value = ar_data_create_double(double_value);
                     } else if (strcmp(type, "string") == 0) {
-                        char str[1024];
-                        if (fscanf(fp, "%1023s", str) != 1) {
-                            printf("Error: Could not read string value\n");
+                        // Read value line
+                        if (!ar_agency_safe_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
+                            printf("Error: Failed to read string value\n");
                             break;
                         }
-                        own_value = ar_data_create_string(str);
+                        
+                        // Remove trailing newline if present
+                        size_t len = strlen(mem_line);
+                        if (len > 0 && mem_line[len-1] == '\n') {
+                            mem_line[len-1] = '\0';
+                        }
+                        
+                        own_value = ar_data_create_string(mem_line);
                     } else {
-                        // Skip unknown type
-                        char line[1024];
-                        fgets(line, sizeof(line), fp);
+                        // Skip unknown type by reading next line
+                        if (!ar_agency_safe_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
+                            printf("Error: Could not skip unknown type\n");
+                            break;
+                        }
                         continue;
                     }
                     
