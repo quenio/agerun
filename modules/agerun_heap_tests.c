@@ -19,7 +19,14 @@ static void pass_test(const char *test_name) {
 }
 
 /**
- * Test AR_MALLOC and AR_FREE tracking
+ * Test basic memory allocation and freeing with tracking
+ * 
+ * This test verifies that:
+ * 1. Memory can be allocated using AR_MALLOC
+ * 2. The allocated memory can be used normally
+ * 3. The memory can be freed with AR_FREE
+ * 4. The pointer can be set to NULL after freeing
+ * 5. The AR_ASSERT_NOT_USED_AFTER_FREE macro correctly verifies the NULL state
  */
 static void test_malloc_tracking(void) {
     start_test("test_malloc_tracking");
@@ -148,9 +155,16 @@ static void test_ownership_assertions(void) {
 }
 
 /**
- * Test memory leak reporting - this is a special test that intentionally
- * creates a memory leak. The test passes if the leak is reported correctly,
- * but the memory leak itself should be visible in the report.
+ * Test memory leak detection and reporting
+ * 
+ * This test verifies the leak detection capability of the heap module by
+ * intentionally creating a memory leak. The test passes if the allocation
+ * is correctly tracked, but the memory leak itself should appear in the
+ * heap_memory_report.log file generated at program exit.
+ * 
+ * Note: This test is essential for verifying the leak detection system works correctly.
+ * The intentional leak is a necessary part of the test suite and should not be "fixed"
+ * as it would eliminate the test case for the leak detection capability.
  */
 static void test_leak_reporting(void) {
     start_test("test_leak_reporting");
@@ -197,16 +211,37 @@ static void test_memory_report(void) {
     pass_test("test_memory_report");
 }
 
+/**
+ * Main entry point for the heap module test suite
+ * 
+ * This test suite verifies the functionality of the heap module:
+ * - Basic memory allocation tracking (malloc, calloc, realloc, strdup)
+ * - Memory deallocation tracking
+ * - Ownership assertion macros
+ * - Memory leak detection and reporting
+ * 
+ * Note that the test_leak_reporting test intentionally creates a memory leak
+ * to verify the leak detection system. This leak should appear in the
+ * heap_memory_report.log file after tests complete.
+ * 
+ * @return 0 if all tests pass, 1 if any test fails
+ */
 int main(void) {
     printf("Starting Heap Module Tests...\n");
     
-    // Run all tests
+    // Basic memory allocation tests
     test_malloc_tracking();
     test_calloc_tracking();
     test_strdup_tracking();
     test_realloc_tracking();
+    
+    // Ownership assertion tests
     test_ownership_assertions();
+    
+    // Memory leak detection tests
     test_leak_reporting();
+    
+    // Report generation test
     test_memory_report();
     
     // Print summary
