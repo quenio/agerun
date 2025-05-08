@@ -1,4 +1,5 @@
 #include "agerun_list.h"
+#include "agerun_heap.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,9 +44,9 @@ static void test_add_last(void) {
     assert(own_list != NULL);
     
     // And some test string items
-    char *own_item1 = strdup("item1");
-    char *own_item2 = strdup("item2");
-    char *own_item3 = strdup("item3");
+    char *own_item1 = AR_STRDUP("item1", "Test item string");
+    char *own_item2 = AR_STRDUP("item2", "Test item string");
+    char *own_item3 = AR_STRDUP("item3", "Test item string");
     
     // When adding items to the end
     assert(ar_list_add_last(own_list, own_item1) == true);
@@ -69,9 +70,9 @@ static void test_add_last(void) {
     
     // Cleanup
     free(own_items);
-    free(own_item1);
-    free(own_item2);
-    free(own_item3);
+    AR_FREE(own_item1);
+    AR_FREE(own_item2);
+    AR_FREE(own_item3);
     ar_list_destroy(own_list);
     
     printf("test_add_last passed\n");
@@ -88,9 +89,9 @@ static void test_add_first(void) {
     assert(own_list != NULL);
     
     // And some test string items
-    char *own_item1 = strdup("item1");
-    char *own_item2 = strdup("item2");
-    char *own_item3 = strdup("item3");
+    char *own_item1 = AR_STRDUP("item1", "Test item string");
+    char *own_item2 = AR_STRDUP("item2", "Test item string");
+    char *own_item3 = AR_STRDUP("item3", "Test item string");
     
     // When adding items to the beginning
     assert(ar_list_add_first(own_list, own_item1) == true);
@@ -114,9 +115,9 @@ static void test_add_first(void) {
     
     // Cleanup
     free(own_items);
-    free(own_item1);
-    free(own_item2);
-    free(own_item3);
+    AR_FREE(own_item1);
+    AR_FREE(own_item2);
+    AR_FREE(own_item3);
     ar_list_destroy(own_list);
     
     printf("test_add_first passed\n");
@@ -138,9 +139,9 @@ static void test_first_last(void) {
     assert(ar_list_last(own_list) == NULL);
     
     // And some test string items
-    char *own_item1 = strdup("item1");
-    char *own_item2 = strdup("item2");
-    char *own_item3 = strdup("item3");
+    char *own_item1 = AR_STRDUP("item1", "Test item string");
+    char *own_item2 = AR_STRDUP("item2", "Test item string");
+    char *own_item3 = AR_STRDUP("item3", "Test item string");
     
     // When adding items
     assert(ar_list_add_last(own_list, own_item1) == true);
@@ -158,9 +159,9 @@ static void test_first_last(void) {
     assert(ar_list_last(own_list) == own_item3);
     
     // Cleanup
-    free(own_item1);
-    free(own_item2);
-    free(own_item3);
+    AR_FREE(own_item1);
+    AR_FREE(own_item2);
+    AR_FREE(own_item3);
     ar_list_destroy(own_list);
     
     printf("test_first_last passed\n");
@@ -182,9 +183,9 @@ static void test_remove_first_last(void) {
     assert(ar_list_remove_last(own_list) == NULL);
     
     // And some test string items
-    char *own_item1 = strdup("item1");
-    char *own_item2 = strdup("item2");
-    char *own_item3 = strdup("item3");
+    char *own_item1 = AR_STRDUP("item1", "Test item string");
+    char *own_item2 = AR_STRDUP("item2", "Test item string");
+    char *own_item3 = AR_STRDUP("item3", "Test item string");
     
     // When adding items
     assert(ar_list_add_last(own_list, own_item1) == true);
@@ -220,9 +221,9 @@ static void test_remove_first_last(void) {
     assert(ar_list_last(own_list) == NULL);
     
     // Cleanup
-    free(own_item1);
-    free(own_item2);
-    free(own_item3);
+    AR_FREE(own_item1);
+    AR_FREE(own_item2);
+    AR_FREE(own_item3);
     ar_list_destroy(own_list);
     
     printf("test_remove_first_last passed\n");
@@ -239,9 +240,9 @@ static void test_stack_operations(void) {
     assert(own_list != NULL);
     
     // And some test string items
-    char *own_item1 = strdup("item1");
-    char *own_item2 = strdup("item2");
-    char *own_item3 = strdup("item3");
+    char *own_item1 = AR_STRDUP("item1", "Test item string");
+    char *own_item2 = AR_STRDUP("item2", "Test item string");
+    char *own_item3 = AR_STRDUP("item3", "Test item string");
     
     // When using add_first (push) operations
     assert(ar_list_add_first(own_list, own_item1) == true);
@@ -264,9 +265,9 @@ static void test_stack_operations(void) {
     assert(ar_list_empty(own_list) == true);
     
     // Cleanup
-    free(own_item1);
-    free(own_item2);
-    free(own_item3);
+    AR_FREE(own_item1);
+    AR_FREE(own_item2);
+    AR_FREE(own_item3);
     ar_list_destroy(own_list);
     
     printf("test_stack_operations passed\n");
@@ -283,9 +284,9 @@ static void test_queue_operations(void) {
     assert(own_list != NULL);
     
     // And some test string items
-    char *own_item1 = strdup("item1");
-    char *own_item2 = strdup("item2");
-    char *own_item3 = strdup("item3");
+    char *own_item1 = AR_STRDUP("item1", "Test item string");
+    char *own_item2 = AR_STRDUP("item2", "Test item string");
+    char *own_item3 = AR_STRDUP("item3", "Test item string");
     
     // When using add_last (enqueue) operations
     assert(ar_list_add_last(own_list, own_item1) == true);
@@ -309,9 +310,9 @@ static void test_queue_operations(void) {
     assert(ar_list_empty(own_list) == true);
     
     // Cleanup
-    free(own_item1);
-    free(own_item2);
-    free(own_item3);
+    AR_FREE(own_item1);
+    AR_FREE(own_item2);
+    AR_FREE(own_item3);
     ar_list_destroy(own_list);
     
     printf("test_queue_operations passed\n");
@@ -334,8 +335,8 @@ static void test_add_many(void) {
     // When adding many items
     for (int i = 0; i < TEST_COUNT; i++) {
         char buffer[20];
-        sprintf(buffer, "item%d", i);
-        own_expected_items[i] = strdup(buffer);
+        snprintf(buffer, sizeof(buffer), "item%d", i);
+        own_expected_items[i] = AR_STRDUP(buffer, "Test item string");
         assert(ar_list_add_last(own_list, own_expected_items[i]) == true);
     }
     
@@ -357,7 +358,7 @@ static void test_add_many(void) {
     // Cleanup
     free(own_items);
     for (int i = 0; i < TEST_COUNT; i++) {
-        free(own_expected_items[i]);
+        AR_FREE(own_expected_items[i]);
     }
     ar_list_destroy(own_list);
     
@@ -415,11 +416,11 @@ static void test_remove(void) {
     assert(ar_list_remove(own_list, NULL) == NULL);
     
     // And some test string items
-    char *own_item1 = strdup("item1");
-    char *own_item2 = strdup("item2");
-    char *own_item3 = strdup("item3");
-    char *own_item4 = strdup("item4");
-    char *own_item5 = strdup("item5");
+    char *own_item1 = AR_STRDUP("item1", "Test item string");
+    char *own_item2 = AR_STRDUP("item2", "Test item string");
+    char *own_item3 = AR_STRDUP("item3", "Test item string");
+    char *own_item4 = AR_STRDUP("item4", "Test item string");
+    char *own_item5 = AR_STRDUP("item5", "Test item string");
     
     // And a list with items
     assert(ar_list_add_last(own_list, own_item1) == true);
@@ -473,10 +474,10 @@ static void test_remove(void) {
     
     // When removing an item that doesn't exist in the list
     // Then it should return NULL and not modify the list
-    char *own_non_existent = strdup("non_existent");
+    char *own_non_existent = AR_STRDUP("non_existent", "Test non-existent item");
     assert(ar_list_remove(own_list, own_non_existent) == NULL);
     assert(ar_list_count(own_list) == 2);
-    free(own_non_existent);
+    AR_FREE(own_non_existent);
     
     // When adding a duplicate item
     assert(ar_list_add_last(own_list, own_item2) == true);
@@ -493,11 +494,11 @@ static void test_remove(void) {
     assert(ar_list_last(own_list) == own_item2);
     
     // Cleanup
-    free(own_item1);
-    free(own_item2);
-    free(own_item3);
-    free(own_item4);
-    free(own_item5);
+    AR_FREE(own_item1);
+    AR_FREE(own_item2);
+    AR_FREE(own_item3);
+    AR_FREE(own_item4);
+    AR_FREE(own_item5);
     ar_list_destroy(own_list);
     
     printf("test_remove passed\n");

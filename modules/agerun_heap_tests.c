@@ -194,7 +194,7 @@ static void test_memory_report(void) {
     // Allocate and free some memory to have tracking records
     for (int i = 0; i < 5; i++) {
         char desc[64];
-        sprintf(desc, "Test allocation %d", i);
+        snprintf(desc, sizeof(desc), "Test allocation %d", i);
         
         void *ptr = AR_MALLOC(100, desc);
         AR_FREE(ptr);
