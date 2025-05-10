@@ -428,3 +428,19 @@ IMPORTANT:
    - Ignore any binary or object file paths mentioned in the tool outputs
    - Always address the errors and warnings directly from the source code (.c, .h files)
    - Treat these tools as warning generators only, not as sources of readable files
+
+15. **File I/O and Error Handling**:
+   - Always use the IO module (`agerun_io.h`) for file operations instead of direct stdio functions
+   - Never use raw file functions like `fopen`, `fclose`, `fprintf` directly; instead use their safer counterparts:
+     - Use `ar_io_open_file` instead of `fopen`
+     - Use `ar_io_close_file` instead of `fclose`
+     - Use `ar_io_fprintf` instead of `fprintf`
+     - Use `ar_io_read_line` instead of `fgets` or `getline`
+   - Always check return codes from file operations and handle errors appropriately
+   - Use file backup functionality (`ar_io_create_backup`) before modifying critical files
+   - Use atomic file operations (`ar_io_write_file`) when writing important data
+   - Apply secure permissions using `ar_io_set_secure_permissions` for sensitive files
+   - Use detailed error reporting with `ar_io_error` and `ar_io_warning` functions
+   - Handle file validation and error recovery explicitly in code that reads or writes files
+   - Document file error handling strategies in module documentation
+   - Follow the IO module's ownership conventions for file handles and buffers
