@@ -224,3 +224,5 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Fix empty file errors in temporary objects created during analysis
   - [ ] Improve Makefile to handle analysis errors more gracefully
   - [ ] Investigate and resolve "Not a directory" warnings in static analysis
+  - [ ] Install scan-build to use proper static analysis workflow
+  - [ ] Filter or redirect linker errors from static analysis output for cleaner results

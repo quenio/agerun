@@ -4,6 +4,7 @@
 #include "agerun_heap.h"
 #include "agerun_semver.h"
 #include "agerun_agency.h"
+#include "agerun_safe_io.h" /* Include the safe I/O utilities */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,9 +15,189 @@
 #include <ctype.h>
 
 /* Constants */
-#define MAX_METHODS 256
-#define MAX_VERSIONS_PER_METHOD 64
-#define MAX_METHOD_NAME_LENGTH 64
+#define MAX_METHODS 100
+#define MAX_METHOD_NAME_LENGTH 256
+#define MAX_VERSIONS_PER_METHOD 32
+
+/**
+ * Validates the format of a methodology file to ensure it can be loaded
+ * Provides detailed error message in case of validation failure
+ *
+ * @param filename Path to the methodology file
+ * @param error_message Buffer to store error message if validation fails
+ * @param error_size Size of the error message buffer
+ * @return true if file is valid, false if there are formatting issues
+ */
+static bool ar_methodology_validate_file(const char *filename, char *error_message, size_t error_size) {
+    FILE *fp;
+    file_result_t result = ar_safe_open_file(filename, "r", &fp);
+
+    if (result == FILE_ERROR_NOT_FOUND) {
+        snprintf(error_message, error_size, "Methodology file %s not found", filename);
+        return false;
+    } else if (result != FILE_SUCCESS) {
+        snprintf(error_message, error_size, "Failed to open methodology file: %s",
+                ar_safe_error_message(result));
+        return false;
+    }
+
+    // Read and validate method count
+    char line[256] = {0};
+    if (!ar_safe_read_line(fp, line, (int)sizeof(line), filename)) {
+        snprintf(error_message, error_size, "Failed to read method count from %s", filename);
+        ar_safe_close_file(fp, filename);
+        return false;
+    }
+
+    int method_count = 0;
+    char *line_endptr = NULL;
+    errno = 0;
+    method_count = (int)strtol(line, &line_endptr, 10);
+
+    if (errno != 0 || line_endptr == line || (*line_endptr != '\0' && *line_endptr != '\n') ||
+        method_count < 0 || method_count > MAX_METHODS) {
+        snprintf(error_message, error_size, "Invalid method count in %s", filename);
+        ar_safe_close_file(fp, filename);
+        return false;
+    }
+
+    // Validate each method entry
+    for (int i = 0; i < method_count; i++) {
+        // Read method name and version count line
+        if (!ar_safe_read_line(fp, line, (int)sizeof(line), filename)) {
+            snprintf(error_message, error_size,
+                    "Failed to read method entry %d from %s", i+1, filename);
+            ar_safe_close_file(fp, filename);
+            return false;
+        }
+
+        // Count tokens - should be exactly 2 (method_name, version_count)
+        char *token = NULL;
+        char *next_token = NULL;
+        int tokens = 0;
+        char *saveptr = NULL;
+        char line_copy[256];
+
+        // Make a copy of the line since strtok_r modifies it
+        strncpy(line_copy, line, sizeof(line_copy) - 1);
+        line_copy[sizeof(line_copy) - 1] = '\0';
+
+        // Count tokens
+        token = strtok_r(line_copy, " \t\n", &saveptr);
+        while (token != NULL) {
+            tokens++;
+            token = strtok_r(NULL, " \t\n", &saveptr);
+        }
+
+        if (tokens != 2) {
+            snprintf(error_message, error_size,
+                    "Malformed method entry for method %d in %s: expected 2 fields, found %d",
+                    i+1, filename, tokens);
+            ar_safe_close_file(fp, filename);
+            return false;
+        }
+
+        // Validate method name and version count format
+        char method_name[MAX_METHOD_NAME_LENGTH] = {0};
+        token = strtok_r(line, " \t\n", &next_token);
+        if (token == NULL) {
+            snprintf(error_message, error_size,
+                    "Malformed method entry - missing method name in %s for method %d",
+                    filename, i+1);
+            ar_safe_close_file(fp, filename);
+            return false;
+        }
+
+        // Copy method name with secure length check
+        size_t token_len = strlen(token);
+        if (token_len >= MAX_METHOD_NAME_LENGTH) {
+            snprintf(error_message, error_size,
+                    "Method name too long in %s for method %d", filename, i+1);
+            ar_safe_close_file(fp, filename);
+            return false;
+        }
+
+        // Use memcpy with explicit null termination for safer copy
+        memcpy(method_name, token, token_len);
+        method_name[token_len] = '\0';  // Ensure null-termination
+
+        // Validate method name is not empty
+        if (strlen(method_name) == 0) {
+            snprintf(error_message, error_size,
+                    "Empty method name in %s for method %d", filename, i+1);
+            ar_safe_close_file(fp, filename);
+            return false;
+        }
+
+        // Validate version count exists
+        token = strtok_r(NULL, " \t\n", &next_token);
+        if (token == NULL) {
+            snprintf(error_message, error_size,
+                    "Malformed method entry - missing version count in %s for method %d",
+                    filename, i+1);
+            ar_safe_close_file(fp, filename);
+            return false;
+        }
+
+        // Validate version count is a number
+        int version_count = 0;
+        char *version_count_endptr = NULL;
+        errno = 0;
+        version_count = (int)strtol(token, &version_count_endptr, 10);
+        if (errno != 0 || version_count_endptr == token || *version_count_endptr != '\0' ||
+            version_count <= 0 || version_count > MAX_VERSIONS_PER_METHOD) {
+            snprintf(error_message, error_size,
+                    "Invalid version count '%s' for method %s in %s",
+                    token, method_name, filename);
+            ar_safe_close_file(fp, filename);
+            return false;
+        }
+
+        // Validate each version for this method
+        for (int j = 0; j < version_count; j++) {
+            // Read version line
+            if (!ar_safe_read_line(fp, line, (int)sizeof(line), filename)) {
+                snprintf(error_message, error_size,
+                        "Failed to read version for method %s (%d/%d) in %s",
+                        method_name, j+1, version_count, filename);
+                ar_safe_close_file(fp, filename);
+                return false;
+            }
+
+            // Validate version string
+            if (strlen(line) == 0 || (line[0] == '\n' && strlen(line) == 1)) {
+                snprintf(error_message, error_size,
+                        "Empty version string for method %s (%d/%d) in %s",
+                        method_name, j+1, version_count, filename);
+                ar_safe_close_file(fp, filename);
+                return false;
+            }
+
+            // Read instructions line
+            if (!ar_safe_read_line(fp, line, (int)sizeof(line), filename)) {
+                snprintf(error_message, error_size,
+                        "Failed to read instructions for method %s (%d/%d) in %s",
+                        method_name, j+1, version_count, filename);
+                ar_safe_close_file(fp, filename);
+                return false;
+            }
+
+            // Validate instructions are not empty
+            if (strlen(line) == 0 || (line[0] == '\n' && strlen(line) == 1)) {
+                snprintf(error_message, error_size,
+                        "Empty instructions for method %s (%d/%d) in %s",
+                        method_name, j+1, version_count, filename);
+                ar_safe_close_file(fp, filename);
+                return false;
+            }
+        }
+    }
+
+    ar_safe_close_file(fp, filename);
+    return true;
+}
+
+/* Constants */
 #define MAX_INSTRUCTIONS_LENGTH 16384
 
 /* Global State */
@@ -183,8 +364,8 @@ bool ar_methodology_save_methods(void) {
     // Use restricted mode "w" to ensure we only create/write, not execute
     FILE *mut_fp = fopen(temp_filename, "w");
     if (!mut_fp) {
-        // Use fprintf to stderr instead of printf for error reporting
-        fprintf(stderr, "Error: Could not open %s for writing (error: %s)\n", 
+        // Use SAFE_ERROR macro instead of fprintf for error reporting
+        SAFE_ERROR("Could not open %s for writing (error: %s)",
                 temp_filename, strerror(errno));
         return false;
     }
@@ -203,7 +384,7 @@ bool ar_methodology_save_methods(void) {
     // Write method count
     int written = snprintf(buffer, BUFFER_SIZE, "%d\n", method_name_count);
     if (written < 0 || written >= (int)BUFFER_SIZE) {
-        fprintf(stderr, "Error: Buffer too small for method count in %s\n", temp_filename);
+        SAFE_ERROR("Buffer too small for method count in %s", temp_filename);
         fclose(mut_fp);
         remove(temp_filename);
         return false;
@@ -211,7 +392,7 @@ bool ar_methodology_save_methods(void) {
     
     // Write the count to the file with error checking
     if (fputs(buffer, mut_fp) == EOF) {
-        fprintf(stderr, "Error: Failed to write method count to %s\n", temp_filename);
+        SAFE_ERROR("Failed to write method count to %s", temp_filename);
         fclose(mut_fp);
         remove(temp_filename);
         return false;
@@ -226,7 +407,7 @@ bool ar_methodology_save_methods(void) {
         // Get method name with validation
         const char *method_name = ar_method_get_name(methods[i][0]);
         if (!method_name) {
-            fprintf(stderr, "Error: NULL method name at index %d\n", i);
+            SAFE_ERROR("NULL method name at index %d", i);
             fclose(mut_fp);
             remove(temp_filename);
             return false;
@@ -235,7 +416,7 @@ bool ar_methodology_save_methods(void) {
         // Write method name and version count
         written = snprintf(buffer, BUFFER_SIZE, "%s %d\n", method_name, method_counts[i]);
         if (written < 0 || written >= (int)BUFFER_SIZE) {
-            fprintf(stderr, "Error: Buffer too small for method data in %s\n", temp_filename);
+            SAFE_ERROR("Buffer too small for method data in %s", temp_filename);
             fclose(mut_fp);
             remove(temp_filename);
             return false;
@@ -243,7 +424,7 @@ bool ar_methodology_save_methods(void) {
         
         // Write the data to the file with error checking
         if (fputs(buffer, mut_fp) == EOF) {
-            fprintf(stderr, "Error: Failed to write method data to %s\n", temp_filename);
+            SAFE_ERROR("Failed to write method data to %s", temp_filename);
             fclose(mut_fp);
             remove(temp_filename);
             return false;
@@ -260,7 +441,7 @@ bool ar_methodology_save_methods(void) {
             // Get version string with validation
             const char *version = ar_method_get_version(ref_method);
             if (!version) {
-                fprintf(stderr, "Error: NULL version for method %s at index %d\n", method_name, j);
+                SAFE_ERROR("NULL version for method %s at index %d", method_name, j);
                 fclose(mut_fp);
                 remove(temp_filename);
                 return false;
@@ -269,7 +450,7 @@ bool ar_methodology_save_methods(void) {
             // Write version string
             written = snprintf(buffer, BUFFER_SIZE, "%s\n", version);
             if (written < 0 || written >= (int)BUFFER_SIZE) {
-                fprintf(stderr, "Error: Buffer too small for version data in %s\n", temp_filename);
+                SAFE_ERROR("Buffer too small for version data in %s", temp_filename);
                 fclose(mut_fp);
                 remove(temp_filename);
                 return false;
@@ -277,7 +458,7 @@ bool ar_methodology_save_methods(void) {
             
             // Write the version to the file with error checking
             if (fputs(buffer, mut_fp) == EOF) {
-                fprintf(stderr, "Error: Failed to write version data to %s\n", temp_filename);
+                SAFE_ERROR("Failed to write version data to %s", temp_filename);
                 fclose(mut_fp);
                 remove(temp_filename);
                 return false;
@@ -286,7 +467,7 @@ bool ar_methodology_save_methods(void) {
             // Get instructions with validation
             const char *instructions = ar_method_get_instructions(ref_method);
             if (!instructions) {
-                fprintf(stderr, "Error: NULL instructions for method %s version %s\n", 
+                SAFE_ERROR("NULL instructions for method %s version %s",
                         method_name, version);
                 fclose(mut_fp);
                 remove(temp_filename);
@@ -296,7 +477,7 @@ bool ar_methodology_save_methods(void) {
             // Check if instructions will fit in buffer
             size_t instr_len = strlen(instructions);
             if (instr_len >= BUFFER_SIZE - 2) { // -2 for newline and null terminator
-                fprintf(stderr, "Error: Instructions too large for buffer (size: %zu) for method %s version %s\n", 
+                SAFE_ERROR("Instructions too large for buffer (size: %zu) for method %s version %s",
                         instr_len, method_name, version);
                 fclose(mut_fp);
                 remove(temp_filename);
@@ -306,7 +487,7 @@ bool ar_methodology_save_methods(void) {
             // Write instructions - these can be large, so buffer size is critical
             written = snprintf(buffer, BUFFER_SIZE, "%s\n", instructions);
             if (written < 0 || written >= (int)BUFFER_SIZE) {
-                fprintf(stderr, "Error: Buffer overflow writing instructions for method %s version %s\n", 
+                SAFE_ERROR("Buffer overflow writing instructions for method %s version %s",
                         method_name, version);
                 fclose(mut_fp);
                 remove(temp_filename);
@@ -315,7 +496,7 @@ bool ar_methodology_save_methods(void) {
             
             // Write the instructions to the file with error checking
             if (fputs(buffer, mut_fp) == EOF) {
-                fprintf(stderr, "Error: Failed to write instructions to %s\n", temp_filename);
+                SAFE_ERROR("Failed to write instructions to %s", temp_filename);
                 fclose(mut_fp);
                 remove(temp_filename);
                 return false;
@@ -325,7 +506,7 @@ bool ar_methodology_save_methods(void) {
     
     // Flush and close the file
     if (fflush(mut_fp) != 0) {
-        fprintf(stderr, "Error: Failed to flush data to %s\n", temp_filename);
+        SAFE_ERROR("Failed to flush data to %s", temp_filename);
         fclose(mut_fp);
         remove(temp_filename);
         return false;
@@ -335,7 +516,7 @@ bool ar_methodology_save_methods(void) {
     
     // Rename the temporary file to the permanent file
     if (rename(temp_filename, METHODOLOGY_FILE_NAME) != 0) {
-        fprintf(stderr, "Error: Failed to rename %s to %s\n", temp_filename, METHODOLOGY_FILE_NAME);
+        SAFE_ERROR("Failed to rename %s to %s", temp_filename, METHODOLOGY_FILE_NAME);
         remove(temp_filename);
         return false;
     }
@@ -441,29 +622,40 @@ void ar_methodology_register_method(method_t *own_method) {
 }
 
 bool ar_methodology_load_methods(void) {
-    // Securely open the file with error checking
-    FILE *mut_fp = fopen(METHODOLOGY_FILE_NAME, "r");
-    if (!mut_fp) {
-        // Not an error, might be first run
-        return true;
+    // First validate the methodology file format
+    char error_message[512];
+    if (!ar_methodology_validate_file(METHODOLOGY_FILE_NAME, error_message, sizeof(error_message))) {
+        if (strstr(error_message, "not found") != NULL) {
+            // Not an error, might be first run
+            return true;
+        }
+
+        // File exists but has errors
+        SAFE_ERROR("Methodology file validation failed: %s", error_message);
+
+        // Create a backup and remove the corrupted file
+        SAFE_WARNING("Creating backup of corrupted methodology file");
+        ar_safe_create_backup(METHODOLOGY_FILE_NAME);
+        remove(METHODOLOGY_FILE_NAME);
+
+        return true; // Return success but with empty state
     }
-    
+
+    // Securely open the file with proper error handling (now that we know it's valid)
+    FILE *mut_fp;
+    file_result_t result = ar_safe_open_file(METHODOLOGY_FILE_NAME, "r", &mut_fp);
+
+    if (result != FILE_SUCCESS) {
+        SAFE_ERROR("Failed to open methodology file: %s", ar_safe_error_message(result));
+        return false;
+    }
+
     // Verify file permissions (should be readable only by owner)
-    struct stat file_stat;
-    if (stat(METHODOLOGY_FILE_NAME, &file_stat) == 0) {
-        // Check if file has secure permissions (owner read/write only)
-        #ifdef _WIN32
-        // Windows doesn't expose the same permission bits, but we can check if it's readonly
-        if (file_stat.st_mode & _S_IREAD && !(file_stat.st_mode & _S_IWRITE)) {
-            fprintf(stderr, "Warning: Methodology file is read-only\n");
-        }
-        #else
-        // On Unix-like systems, check if file is accessible by others
-        if (file_stat.st_mode & (S_IRWXG | S_IRWXO)) {
-            fprintf(stderr, "Warning: Methodology file has insecure permissions\n");
-            // We continue anyway, but we've warned the user
-        }
-        #endif
+    result = ar_safe_set_secure_permissions(METHODOLOGY_FILE_NAME);
+    if (result != FILE_SUCCESS) {
+        SAFE_WARNING("Failed to set secure permissions on methodology file: %s",
+                   ar_safe_error_message(result));
+        // Continue anyway with a warning
     }
     
     // Define buffer size and initialize line buffer securely
@@ -471,13 +663,16 @@ bool ar_methodology_load_methods(void) {
     char line[LINE_SIZE] = {0}; // Initialize to zeros for security
     
     // Read the first line to get method count with error checking
-    if (fgets(line, LINE_SIZE, mut_fp) == NULL) {
-        fprintf(stderr, "Error: Empty file %s\n", METHODOLOGY_FILE_NAME);
-        fclose(mut_fp);
-        // Delete the corrupted file and start fresh
-        fprintf(stderr, "Deleting corrupted methodology file\n");
+    if (!ar_safe_read_line(mut_fp, line, (int)LINE_SIZE, METHODOLOGY_FILE_NAME)) {
+        SAFE_ERROR("Failed to read method count from %s", METHODOLOGY_FILE_NAME);
+        ar_safe_close_file(mut_fp, METHODOLOGY_FILE_NAME);
+
+        // Create a backup and remove the corrupted file
+        SAFE_WARNING("Creating backup of corrupted methodology file");
+        ar_safe_create_backup(METHODOLOGY_FILE_NAME);
         remove(METHODOLOGY_FILE_NAME);
-        return true;
+
+        return true; // Return success with empty state
     }
     
     // Parse the method count using strtol with error checking
@@ -487,13 +682,15 @@ bool ar_methodology_load_methods(void) {
     method_count = (int)strtol(line, &method_count_endptr, 10);
     
     // Validate conversion success and range
-    if (errno != 0 || method_count_endptr == line || 
-        (*method_count_endptr != '\0' && *method_count_endptr != '\n') || 
+    if (errno != 0 || method_count_endptr == line ||
+        (*method_count_endptr != '\0' && *method_count_endptr != '\n') ||
         method_count <= 0 || method_count > MAX_METHODS) {
-        fprintf(stderr, "Error: Invalid method count in %s\n", METHODOLOGY_FILE_NAME);
-        fclose(mut_fp);
-        // Delete the corrupted file and start fresh
-        fprintf(stderr, "Deleting corrupted methodology file\n");
+        SAFE_ERROR("Invalid method count in %s", METHODOLOGY_FILE_NAME);
+        ar_safe_close_file(mut_fp, METHODOLOGY_FILE_NAME);
+
+        // Create a backup and delete the corrupted file
+        SAFE_WARNING("Creating backup of corrupted methodology file");
+        ar_safe_create_backup(METHODOLOGY_FILE_NAME);
         remove(METHODOLOGY_FILE_NAME);
         return true;
     }
@@ -517,11 +714,11 @@ bool ar_methodology_load_methods(void) {
         
         // Read the next line for method name and version count
         if (fgets(line, LINE_SIZE, mut_fp) == NULL) {
-            fprintf(stderr, "Error: Unexpected end of file in %s (method %d)\n", 
+            SAFE_ERROR("Unexpected end of file in %s (method %d)",
                     METHODOLOGY_FILE_NAME, i+1);
             fclose(mut_fp);
             // Delete the corrupted file and start fresh
-            fprintf(stderr, "Deleting corrupted methodology file\n");
+            SAFE_WARNING("Deleting corrupted methodology file");
             remove(METHODOLOGY_FILE_NAME);
             return true;
         }
@@ -533,10 +730,10 @@ bool ar_methodology_load_methods(void) {
         // Get method name
         token = strtok_r(line, " \t\n", &next_token);
         if (token == NULL) {
-            fprintf(stderr, "Error: Malformed method entry - missing name in %s (method %d)\n", 
+            SAFE_ERROR("Malformed method entry - missing name in %s (method %d)",
                     METHODOLOGY_FILE_NAME, i+1);
             fclose(mut_fp);
-            fprintf(stderr, "Deleting corrupted methodology file\n");
+            SAFE_WARNING("Deleting corrupted methodology file");
             remove(METHODOLOGY_FILE_NAME);
             return true;
         }
@@ -544,10 +741,10 @@ bool ar_methodology_load_methods(void) {
         // Copy method name with secure length check
         size_t token_len = strlen(token);
         if (token_len >= MAX_METHOD_NAME_LENGTH) {
-            fprintf(stderr, "Error: Method name too long in %s (method %d)\n",
+            SAFE_ERROR("Method name too long in %s (method %d)",
                     METHODOLOGY_FILE_NAME, i+1);
             fclose(mut_fp);
-            fprintf(stderr, "Deleting corrupted methodology file\n");
+            SAFE_WARNING("Deleting corrupted methodology file");
             remove(METHODOLOGY_FILE_NAME);
             return true;
         }
@@ -561,10 +758,10 @@ bool ar_methodology_load_methods(void) {
         // Get version count
         token = strtok_r(NULL, " \t\n", &next_token);
         if (token == NULL) {
-            fprintf(stderr, "Error: Malformed method entry - missing version count in %s (method %d)\n", 
+            SAFE_ERROR("Malformed method entry - missing version count in %s (method %d)",
                     METHODOLOGY_FILE_NAME, i+1);
             fclose(mut_fp);
-            fprintf(stderr, "Deleting corrupted methodology file\n");
+            SAFE_WARNING("Deleting corrupted methodology file");
             remove(METHODOLOGY_FILE_NAME);
             return true;
         }
@@ -575,12 +772,12 @@ bool ar_methodology_load_methods(void) {
         version_count = (int)strtol(token, &version_count_endptr, 10);
         
         // Validate conversion success and range
-        if (errno != 0 || version_count_endptr == token || *version_count_endptr != '\0' || 
+        if (errno != 0 || version_count_endptr == token || *version_count_endptr != '\0' ||
             version_count <= 0 || version_count > MAX_VERSIONS_PER_METHOD) {
-            fprintf(stderr, "Error: Invalid version count for method %s in %s\n", 
+            SAFE_ERROR("Invalid version count for method %s in %s",
                     name, METHODOLOGY_FILE_NAME);
             fclose(mut_fp);
-            fprintf(stderr, "Deleting corrupted methodology file\n");
+            SAFE_WARNING("Deleting corrupted methodology file");
             remove(METHODOLOGY_FILE_NAME);
             return true;
         }
@@ -593,7 +790,7 @@ bool ar_methodology_load_methods(void) {
         for (int j = 0; j < version_count; j++) {
             // Verify we don't exceed the maximum versions per method
             if (method_counts[method_idx] >= MAX_VERSIONS_PER_METHOD) {
-                fprintf(stderr, "Error: Maximum versions reached for method %s in %s\n", 
+                SAFE_ERROR("Maximum versions reached for method %s in %s",
                         name, METHODOLOGY_FILE_NAME);
                 fclose(mut_fp);
                 return false;
@@ -604,10 +801,10 @@ bool ar_methodology_load_methods(void) {
             
             // Read version string with error checking
             if (fgets(line, LINE_SIZE, mut_fp) == NULL) {
-                fprintf(stderr, "Error: Unexpected end of file in %s when reading version for method %s\n", 
+                SAFE_ERROR("Unexpected end of file in %s when reading version for method %s",
                         METHODOLOGY_FILE_NAME, name);
                 fclose(mut_fp);
-                fprintf(stderr, "Deleting corrupted methodology file\n");
+                SAFE_WARNING("Deleting corrupted methodology file");
                 remove(METHODOLOGY_FILE_NAME);
                 return true;
             }
@@ -620,20 +817,20 @@ bool ar_methodology_load_methods(void) {
             
             // Validate version string length
             if (len == 0) {
-                fprintf(stderr, "Error: Empty version string for method %s in %s\n", 
+                SAFE_ERROR("Empty version string for method %s in %s",
                         name, METHODOLOGY_FILE_NAME);
                 fclose(mut_fp);
-                fprintf(stderr, "Deleting corrupted methodology file\n");
+                SAFE_WARNING("Deleting corrupted methodology file");
                 remove(METHODOLOGY_FILE_NAME);
                 return true;
             }
             
             // Copy the version string securely
             if (len > sizeof(version) - 1) {
-                fprintf(stderr, "Error: Version string too long for method %s in %s\n", 
+                SAFE_ERROR("Version string too long for method %s in %s",
                         name, METHODOLOGY_FILE_NAME);
                 fclose(mut_fp);
-                fprintf(stderr, "Deleting corrupted methodology file\n");
+                SAFE_WARNING("Deleting corrupted methodology file");
                 remove(METHODOLOGY_FILE_NAME);
                 return true;
             }
@@ -646,10 +843,10 @@ bool ar_methodology_load_methods(void) {
             
             // Read the instructions with error checking
             if (fgets(instructions, MAX_INSTRUCTIONS_LENGTH, mut_fp) == NULL) {
-                fprintf(stderr, "Error: Could not read instructions for method %s version %s in %s\n", 
+                SAFE_ERROR("Could not read instructions for method %s version %s in %s",
                        name, version, METHODOLOGY_FILE_NAME);
                 fclose(mut_fp);
-                fprintf(stderr, "Deleting corrupted methodology file\n");
+                SAFE_WARNING("Deleting corrupted methodology file");
                 remove(METHODOLOGY_FILE_NAME);
                 return true;
             }
@@ -657,10 +854,10 @@ bool ar_methodology_load_methods(void) {
             // Validate instructions
             size_t instr_len = strlen(instructions);
             if (instr_len == 0) {
-                fprintf(stderr, "Error: Empty instructions for method %s version %s in %s\n", 
+                SAFE_ERROR("Empty instructions for method %s version %s in %s",
                         name, version, METHODOLOGY_FILE_NAME);
                 fclose(mut_fp);
-                fprintf(stderr, "Deleting corrupted methodology file\n");
+                SAFE_WARNING("Deleting corrupted methodology file");
                 remove(METHODOLOGY_FILE_NAME);
                 return true;
             }
@@ -672,7 +869,7 @@ bool ar_methodology_load_methods(void) {
             
             // Check for truncation (buffer filled completely)
             if (instr_len >= MAX_INSTRUCTIONS_LENGTH - 1) {
-                fprintf(stderr, "Warning: Instructions for method %s version %s may be truncated in %s\n", 
+                SAFE_WARNING("Instructions for method %s version %s may be truncated in %s",
                         name, version, METHODOLOGY_FILE_NAME);
             }
             
@@ -684,13 +881,13 @@ bool ar_methodology_load_methods(void) {
                 ar_methodology_set_method_storage(method_idx, method_counts[method_idx]++, own_method);
                 own_method = NULL; // Mark as transferred
             } else {
-                fprintf(stderr, "Error: Failed to create method %s version %s\n", name, version);
+                SAFE_ERROR("Failed to create method %s version %s", name, version);
                 fclose(mut_fp);
                 return false;
             }
         }
     }
     
-    fclose(mut_fp);
+    ar_safe_close_file(mut_fp, METHODOLOGY_FILE_NAME);
     return true;
 }
