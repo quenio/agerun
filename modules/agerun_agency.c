@@ -5,7 +5,7 @@
 #include "agerun_data.h"
 #include "agerun_method.h"
 #include "agerun_semver.h"
-#include "agerun_safe_io.h" /* Include the new safe I/O utilities */
+#include "agerun_io.h" /* Include the I/O utilities */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,7 +21,7 @@ static agent_t g_own_agents[MAX_AGENTS]; // Owned by the agency module
 static agent_id_t g_next_agent_id = 1;
 static bool g_is_initialized = false;
 
-// We now use ar_safe_read_line directly from the agerun_safe_io module
+// We now use ar_io_read_line directly from the agerun_io module
 
 /* Static initialization */
 static void ar_agency_init(void) {
@@ -107,7 +107,7 @@ typedef struct {
 static bool agency_write_function(FILE *fp, void *context) {
     agency_save_context_t *ctx = (agency_save_context_t *)context;
     if (!ctx) {
-        SAFE_ERROR("Invalid context for agency_write_function");
+        ar_io_error("Invalid context for agency_write_function");
         return false;
     }
 
@@ -123,13 +123,13 @@ static bool agency_write_function(FILE *fp, void *context) {
     char buffer[128];
     int written = snprintf(buffer, sizeof(buffer), "%d\n", count);
     if (written < 0 || written >= (int)sizeof(buffer)) {
-        SAFE_ERROR("Buffer too small for count in %s", ctx->filename);
+        ar_io_error("Buffer too small for count in %s", ctx->filename);
         return false;
     }
 
     // Write the count to the file with error checking
     if (fputs(buffer, fp) == EOF) {
-        SAFE_ERROR("Failed to write count to %s", ctx->filename);
+        ar_io_error("Failed to write count to %s", ctx->filename);
         return false;
     }
 
@@ -141,7 +141,7 @@ static bool agency_write_function(FILE *fp, void *context) {
             const char *method_version = ar_method_get_version(g_own_agents[i].ref_method);
 
             if (!method_name || !method_version) {
-                SAFE_ERROR("Invalid method reference data for agent %lld", g_own_agents[i].id);
+                ar_io_error("Invalid method reference data for agent %lld", g_own_agents[i].id);
                 return false;
             }
 
@@ -149,19 +149,19 @@ static bool agency_write_function(FILE *fp, void *context) {
             written = snprintf(buffer, sizeof(buffer), "%lld %s %s\n",
                               g_own_agents[i].id, method_name, method_version);
             if (written < 0 || written >= (int)sizeof(buffer)) {
-                SAFE_ERROR("Buffer too small for agent data in %s", ctx->filename);
+                ar_io_error("Buffer too small for agent data in %s", ctx->filename);
                 return false;
             }
 
             // Write the agent data to the file with error checking
             if (fputs(buffer, fp) == EOF) {
-                SAFE_ERROR("Failed to write agent data to %s", ctx->filename);
+                ar_io_error("Failed to write agent data to %s", ctx->filename);
                 return false;
             }
 
             // Save memory map placeholder (0 items for now)
             if (fputs("0\n", fp) == EOF) {
-                SAFE_ERROR("Failed to write memory map count to %s", ctx->filename);
+                ar_io_error("Failed to write memory map count to %s", ctx->filename);
                 return false;
             }
         }
@@ -182,9 +182,9 @@ bool ar_agency_save_agents(void) {
     };
 
     // Use the safe file writing utility
-    file_result_t result = ar_safe_write_file(AGENCY_FILE_NAME, agency_write_function, &context);
+    file_result_t result = ar_io_write_file(AGENCY_FILE_NAME, agency_write_function, &context);
     if (result != FILE_SUCCESS) {
-        SAFE_ERROR("Failed to save agents file: %s", ar_safe_error_message(result));
+        ar_io_error("Failed to save agents file: %s", ar_io_error_message(result));
         return false;
     }
 
@@ -209,22 +209,22 @@ typedef struct {
  */
 static bool ar_agency_validate_file(const char *filename, char *error_message, size_t error_size) {
     FILE *fp;
-    file_result_t result = ar_safe_open_file(filename, "r", &fp);
+    file_result_t result = ar_io_open_file(filename, "r", &fp);
 
     if (result == FILE_ERROR_NOT_FOUND) {
         snprintf(error_message, error_size, "Agency file %s not found", filename);
         return false;
     } else if (result != FILE_SUCCESS) {
         snprintf(error_message, error_size, "Failed to open agency file: %s",
-                ar_safe_error_message(result));
+                ar_io_error_message(result));
         return false;
     }
 
     // Read and validate agent count
     char line[256] = {0};
-    if (!ar_safe_read_line(fp, line, (int)sizeof(line), filename)) {
+    if (!ar_io_read_line(fp, line, (int)sizeof(line), filename)) {
         snprintf(error_message, error_size, "Failed to read agent count from %s", filename);
-        ar_safe_close_file(fp, filename);
+        ar_io_close_file(fp, filename);
         return false;
     }
 
@@ -236,16 +236,16 @@ static bool ar_agency_validate_file(const char *filename, char *error_message, s
     if (errno != 0 || line_endptr == line || (*line_endptr != '\0' && *line_endptr != '\n') ||
         count < 0 || count > MAX_AGENTS) {
         snprintf(error_message, error_size, "Invalid agent count in %s", filename);
-        ar_safe_close_file(fp, filename);
+        ar_io_close_file(fp, filename);
         return false;
     }
 
     // Validate each agent entry
     for (int i = 0; i < count; i++) {
         // Read and validate agent line
-        if (!ar_safe_read_line(fp, line, (int)sizeof(line), filename)) {
+        if (!ar_io_read_line(fp, line, (int)sizeof(line), filename)) {
             snprintf(error_message, error_size, "Failed to read agent entry %d from %s", i+1, filename);
-            ar_safe_close_file(fp, filename);
+            ar_io_close_file(fp, filename);
             return false;
         }
 
@@ -271,7 +271,7 @@ static bool ar_agency_validate_file(const char *filename, char *error_message, s
             snprintf(error_message, error_size,
                     "Malformed agent entry for agent %d in %s: expected 3 fields, found %d",
                     i+1, filename, tokens);
-            ar_safe_close_file(fp, filename);
+            ar_io_close_file(fp, filename);
             return false;
         }
 
@@ -280,7 +280,7 @@ static bool ar_agency_validate_file(const char *filename, char *error_message, s
         if (token == NULL) {
             snprintf(error_message, error_size,
                     "Malformed agent entry - missing ID in %s for agent %d", filename, i+1);
-            ar_safe_close_file(fp, filename);
+            ar_io_close_file(fp, filename);
             return false;
         }
 
@@ -291,7 +291,7 @@ static bool ar_agency_validate_file(const char *filename, char *error_message, s
         if (errno != 0 || id_endptr == token || *id_endptr != '\0' || id <= 0) {
             snprintf(error_message, error_size,
                     "Invalid agent ID '%s' in %s for agent %d", token, filename, i+1);
-            ar_safe_close_file(fp, filename);
+            ar_io_close_file(fp, filename);
             return false;
         }
 
@@ -300,7 +300,7 @@ static bool ar_agency_validate_file(const char *filename, char *error_message, s
         if (token == NULL) {
             snprintf(error_message, error_size,
                     "Malformed agent entry - missing method name in %s for agent %d", filename, i+1);
-            ar_safe_close_file(fp, filename);
+            ar_io_close_file(fp, filename);
             return false;
         }
 
@@ -308,7 +308,7 @@ static bool ar_agency_validate_file(const char *filename, char *error_message, s
         if (strlen(token) == 0) {
             snprintf(error_message, error_size,
                     "Empty method name in %s for agent %d", filename, i+1);
-            ar_safe_close_file(fp, filename);
+            ar_io_close_file(fp, filename);
             return false;
         }
 
@@ -317,7 +317,7 @@ static bool ar_agency_validate_file(const char *filename, char *error_message, s
         if (token == NULL) {
             snprintf(error_message, error_size,
                     "Malformed agent entry - missing method version in %s for agent %d", filename, i+1);
-            ar_safe_close_file(fp, filename);
+            ar_io_close_file(fp, filename);
             return false;
         }
 
@@ -325,15 +325,15 @@ static bool ar_agency_validate_file(const char *filename, char *error_message, s
         if (strlen(token) == 0) {
             snprintf(error_message, error_size,
                     "Empty method version in %s for agent %d", filename, i+1);
-            ar_safe_close_file(fp, filename);
+            ar_io_close_file(fp, filename);
             return false;
         }
 
         // Read memory map count line
-        if (!ar_safe_read_line(fp, line, (int)sizeof(line), filename)) {
+        if (!ar_io_read_line(fp, line, (int)sizeof(line), filename)) {
             snprintf(error_message, error_size,
                     "Failed to read memory count for agent %d in %s", i+1, filename);
-            ar_safe_close_file(fp, filename);
+            ar_io_close_file(fp, filename);
             return false;
         }
 
@@ -346,17 +346,17 @@ static bool ar_agency_validate_file(const char *filename, char *error_message, s
             mem_count < 0 || mem_count > 1000) {
             snprintf(error_message, error_size,
                     "Invalid memory count '%s' for agent %d in %s", line, i+1, filename);
-            ar_safe_close_file(fp, filename);
+            ar_io_close_file(fp, filename);
             return false;
         }
 
         // Skip memory entries (we don't validate them in this pass)
         for (int j = 0; j < mem_count; j++) {
             // Skip key and type line
-            if (!ar_safe_read_line(fp, line, (int)sizeof(line), filename)) {
+            if (!ar_io_read_line(fp, line, (int)sizeof(line), filename)) {
                 snprintf(error_message, error_size,
                         "Failed to read memory key/type for agent %d in %s", i+1, filename);
-                ar_safe_close_file(fp, filename);
+                ar_io_close_file(fp, filename);
                 return false;
             }
 
@@ -369,7 +369,7 @@ static bool ar_agency_validate_file(const char *filename, char *error_message, s
             if (token == NULL) {
                 snprintf(error_message, error_size,
                         "Malformed memory entry - missing key for agent %d in %s", i+1, filename);
-                ar_safe_close_file(fp, filename);
+                ar_io_close_file(fp, filename);
                 return false;
             }
 
@@ -378,29 +378,29 @@ static bool ar_agency_validate_file(const char *filename, char *error_message, s
             if (token == NULL) {
                 snprintf(error_message, error_size,
                         "Malformed memory entry - missing type for agent %d in %s", i+1, filename);
-                ar_safe_close_file(fp, filename);
+                ar_io_close_file(fp, filename);
                 return false;
             }
 
             // Skip value line (for all known types)
             if (strcmp(token, "int") == 0 || strcmp(token, "double") == 0 ||
                 strcmp(token, "string") == 0 || strcmp(token, "unknown") == 0) {
-                if (!ar_safe_read_line(fp, line, (int)sizeof(line), filename)) {
+                if (!ar_io_read_line(fp, line, (int)sizeof(line), filename)) {
                     snprintf(error_message, error_size,
                             "Failed to read memory value for agent %d in %s", i+1, filename);
-                    ar_safe_close_file(fp, filename);
+                    ar_io_close_file(fp, filename);
                     return false;
                 }
             } else {
                 snprintf(error_message, error_size,
                         "Unknown memory type '%s' for agent %d in %s", token, i+1, filename);
-                ar_safe_close_file(fp, filename);
+                ar_io_close_file(fp, filename);
                 return false;
             }
         }
     }
 
-    ar_safe_close_file(fp, filename);
+    ar_io_close_file(fp, filename);
     return true;
 }
 
@@ -418,11 +418,11 @@ bool ar_agency_load_agents(void) {
         }
 
         // File exists but has errors
-        SAFE_ERROR("Agency file validation failed: %s", error_message);
+        ar_io_error("Agency file validation failed: %s", error_message);
 
         // Create a backup and remove the corrupted file
-        SAFE_WARNING("Creating backup of corrupted agency file");
-        ar_safe_create_backup(AGENCY_FILE_NAME);
+        ar_io_warning("Creating backup of corrupted agency file");
+        ar_io_create_backup(AGENCY_FILE_NAME);
         remove(AGENCY_FILE_NAME);
 
         return true; // Return success but with empty state
@@ -430,27 +430,27 @@ bool ar_agency_load_agents(void) {
 
     // Securely open the file with proper error handling (now that we know it's valid)
     FILE *fp;
-    file_result_t result = ar_safe_open_file(AGENCY_FILE_NAME, "r", &fp);
+    file_result_t result = ar_io_open_file(AGENCY_FILE_NAME, "r", &fp);
 
     if (result != FILE_SUCCESS) {
-        SAFE_ERROR("Failed to open agency file: %s", ar_safe_error_message(result));
+        ar_io_error("Failed to open agency file: %s", ar_io_error_message(result));
         return false;
     }
 
     // Verify file permissions (should be readable only by owner)
-    result = ar_safe_set_secure_permissions(AGENCY_FILE_NAME);
+    result = ar_io_set_secure_permissions(AGENCY_FILE_NAME);
     if (result != FILE_SUCCESS) {
-        SAFE_WARNING("Failed to set secure permissions on agency file: %s",
-                   ar_safe_error_message(result));
+        ar_io_warning("Failed to set secure permissions on agency file: %s",
+                   ar_io_error_message(result));
         // Continue anyway with a warning
     }
 
     // Read the first line to get agent count
     char line[256] = {0}; // Initialize to all zeros
 
-    if (!ar_safe_read_line(fp, line, (int)sizeof(line), AGENCY_FILE_NAME)) {
-        SAFE_ERROR("Failed to read agent count from %s", AGENCY_FILE_NAME);
-        ar_safe_close_file(fp, AGENCY_FILE_NAME);
+    if (!ar_io_read_line(fp, line, (int)sizeof(line), AGENCY_FILE_NAME)) {
+        ar_io_error("Failed to read agent count from %s", AGENCY_FILE_NAME);
+        ar_io_close_file(fp, AGENCY_FILE_NAME);
         return false;
     }
 
@@ -463,19 +463,19 @@ bool ar_agency_load_agents(void) {
     // Validate conversion success and range
     if (errno != 0 || line_endptr == line || (*line_endptr != '\0' && *line_endptr != '\n') ||
         count < 0 || count > MAX_AGENTS) {
-        SAFE_ERROR("Invalid agent count in %s", AGENCY_FILE_NAME);
-        ar_safe_close_file(fp, AGENCY_FILE_NAME);
+        ar_io_error("Invalid agent count in %s", AGENCY_FILE_NAME);
+        ar_io_close_file(fp, AGENCY_FILE_NAME);
 
         // File is corrupt, create a backup and potentially delete it
-        SAFE_WARNING("Agency file appears to be corrupt. Creating backup and continuing with empty state.");
-        ar_safe_create_backup(AGENCY_FILE_NAME);
+        ar_io_warning("Agency file appears to be corrupt. Creating backup and continuing with empty state.");
+        ar_io_create_backup(AGENCY_FILE_NAME);
         remove(AGENCY_FILE_NAME);
         return true; // Return success but with empty state
     }
 
     // Check if count is 0, which is valid but no agents to process
     if (count == 0) {
-        ar_safe_close_file(fp, AGENCY_FILE_NAME);
+        ar_io_close_file(fp, AGENCY_FILE_NAME);
         return true;
     }
 
@@ -484,8 +484,8 @@ bool ar_agency_load_agents(void) {
     const size_t agent_info_size = (size_t)count * sizeof(agency_load_agent_info_t);
     agency_load_agent_info_t *agent_info = (agency_load_agent_info_t*)malloc(agent_info_size);
     if (!agent_info) {
-        SAFE_ERROR("Memory allocation failed for agent info");
-        ar_safe_close_file(fp, AGENCY_FILE_NAME);
+        ar_io_error("Memory allocation failed for agent info");
+        ar_io_close_file(fp, AGENCY_FILE_NAME);
         return false;
     }
 
@@ -498,8 +498,8 @@ bool ar_agency_load_agents(void) {
     // First pass: validate basic agent info
     for (int i = 0; i < count; i++) {
         // Read the agent line
-        if (!ar_safe_read_line(fp, line, (int)sizeof(line), AGENCY_FILE_NAME)) {
-            SAFE_ERROR("Failed to read agent entry %d from %s", i+1, AGENCY_FILE_NAME);
+        if (!ar_io_read_line(fp, line, (int)sizeof(line), AGENCY_FILE_NAME)) {
+            ar_io_error("Failed to read agent entry %d from %s", i+1, AGENCY_FILE_NAME);
             validation_error = true;
             break;
         }
@@ -511,7 +511,7 @@ bool ar_agency_load_agents(void) {
         // Get the ID
         token = strtok_r(line, " \t\n", &next_token);
         if (token == NULL) {
-            SAFE_ERROR("Malformed agent entry - missing ID in %s", AGENCY_FILE_NAME);
+            ar_io_error("Malformed agent entry - missing ID in %s", AGENCY_FILE_NAME);
             validation_error = true;
             break;
         }
@@ -523,7 +523,7 @@ bool ar_agency_load_agents(void) {
 
         // Validate conversion
         if (errno != 0 || id_endptr == token || *id_endptr != '\0' || agent_info[i].id <= 0) {
-            SAFE_ERROR("Invalid agent ID in %s", AGENCY_FILE_NAME);
+            ar_io_error("Invalid agent ID in %s", AGENCY_FILE_NAME);
             validation_error = true;
             break;
         }
@@ -531,7 +531,7 @@ bool ar_agency_load_agents(void) {
         // Get the method name
         token = strtok_r(NULL, " \t\n", &next_token);
         if (token == NULL) {
-            SAFE_ERROR("Malformed agent entry - missing method name in %s", AGENCY_FILE_NAME);
+            ar_io_error("Malformed agent entry - missing method name in %s", AGENCY_FILE_NAME);
             validation_error = true;
             break;
         }
@@ -539,7 +539,7 @@ bool ar_agency_load_agents(void) {
         // Copy method name with secure length check
         size_t token_len = strlen(token);
         if (token_len >= sizeof(agent_info[i].method_name)) {
-            SAFE_ERROR("Method name too long in %s", AGENCY_FILE_NAME);
+            ar_io_error("Method name too long in %s", AGENCY_FILE_NAME);
             validation_error = true;
             break;
         }
@@ -551,7 +551,7 @@ bool ar_agency_load_agents(void) {
         // Get the method version
         token = strtok_r(NULL, " \t\n", &next_token);
         if (token == NULL) {
-            SAFE_ERROR("Malformed agent entry - missing method version in %s", AGENCY_FILE_NAME);
+            ar_io_error("Malformed agent entry - missing method version in %s", AGENCY_FILE_NAME);
             validation_error = true;
             break;
         }
@@ -559,7 +559,7 @@ bool ar_agency_load_agents(void) {
         // Copy method version with secure length check
         token_len = strlen(token);
         if (token_len >= sizeof(agent_info[i].method_version)) {
-            SAFE_ERROR("Method version too long in %s", AGENCY_FILE_NAME);
+            ar_io_error("Method version too long in %s", AGENCY_FILE_NAME);
             validation_error = true;
             break;
         }
@@ -570,14 +570,14 @@ bool ar_agency_load_agents(void) {
 
         // Validate the method name and version - basic sanity check
         if (strlen(agent_info[i].method_name) == 0 || strlen(agent_info[i].method_version) == 0) {
-            SAFE_ERROR("Empty method name or version in %s", AGENCY_FILE_NAME);
+            ar_io_error("Empty method name or version in %s", AGENCY_FILE_NAME);
             validation_error = true;
             break;
         }
 
         // Skip memory map placeholder (0 items for now) - validation only
-        if (!ar_safe_read_line(fp, line, (int)sizeof(line), AGENCY_FILE_NAME)) {
-            SAFE_ERROR("Failed to read memory map placeholder for agent %lld", agent_info[i].id);
+        if (!ar_io_read_line(fp, line, (int)sizeof(line), AGENCY_FILE_NAME)) {
+            ar_io_error("Failed to read memory map placeholder for agent %lld", agent_info[i].id);
             validation_error = true;
             break;
         }
@@ -586,11 +586,11 @@ bool ar_agency_load_agents(void) {
     // If we encountered any validation errors, handle gracefully
     if (validation_error) {
         free(agent_info);
-        ar_safe_close_file(fp, AGENCY_FILE_NAME);
+        ar_io_close_file(fp, AGENCY_FILE_NAME);
 
         // File is corrupt, create a backup and potentially delete it
-        SAFE_WARNING("Agency file appears to be corrupt. Creating backup and continuing with empty state.");
-        ar_safe_create_backup(AGENCY_FILE_NAME);
+        ar_io_warning("Agency file appears to be corrupt. Creating backup and continuing with empty state.");
+        ar_io_create_backup(AGENCY_FILE_NAME);
         remove(AGENCY_FILE_NAME);
         return true; // Return success but with empty state
     }
@@ -599,18 +599,18 @@ bool ar_agency_load_agents(void) {
     rewind(fp);
 
     // Skip the agent count line since we already know it
-    if (!ar_safe_read_line(fp, line, (int)sizeof(line), AGENCY_FILE_NAME)) {
-        SAFE_ERROR("Failed to skip agent count line");
+    if (!ar_io_read_line(fp, line, (int)sizeof(line), AGENCY_FILE_NAME)) {
+        ar_io_error("Failed to skip agent count line");
         free(agent_info);
-        ar_safe_close_file(fp, AGENCY_FILE_NAME);
+        ar_io_close_file(fp, AGENCY_FILE_NAME);
         return false;
     }
 
     // Second pass: Actually create the agents now that we know the file structure is valid
     for (int i = 0; i < count; i++) {
         // Skip the agent info line since we already have it
-        if (!ar_safe_read_line(fp, line, (int)sizeof(line), AGENCY_FILE_NAME)) {
-            SAFE_ERROR("Failed to skip agent info line for agent %d", i+1);
+        if (!ar_io_read_line(fp, line, (int)sizeof(line), AGENCY_FILE_NAME)) {
+            ar_io_error("Failed to skip agent info line for agent %d", i+1);
             break; // Continue with agents processed so far
         }
 
@@ -621,12 +621,12 @@ bool ar_agency_load_agents(void) {
             NULL);
 
         if (new_id == 0) {
-            SAFE_ERROR("Could not recreate agent %lld", agent_info[i].id);
+            ar_io_error("Could not recreate agent %lld", agent_info[i].id);
             // Skip this agent but continue processing
 
             // Skip memory map placeholder
-            if (!ar_safe_read_line(fp, line, (int)sizeof(line), AGENCY_FILE_NAME)) {
-                SAFE_ERROR("Failed to skip memory map placeholder for failed agent creation");
+            if (!ar_io_read_line(fp, line, (int)sizeof(line), AGENCY_FILE_NAME)) {
+                ar_io_error("Failed to skip memory map placeholder for failed agent creation");
                 break;
             }
 
@@ -642,8 +642,8 @@ bool ar_agency_load_agents(void) {
 
                 // Read memory map line for count
                 char mem_line[256] = {0};
-                if (!ar_safe_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
-                    SAFE_ERROR("Failed to read memory count for agent %lld", agent_info[i].id);
+                if (!ar_io_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
+                    ar_io_error("Failed to read memory count for agent %lld", agent_info[i].id);
                     break;
                 }
 
@@ -657,7 +657,7 @@ bool ar_agency_load_agents(void) {
                 if (errno != 0 || mem_count_endptr == mem_line ||
                     (*mem_count_endptr != '\0' && *mem_count_endptr != '\n') ||
                     mem_count < 0 || mem_count > 1000) { // Adding reasonable upper limit
-                    SAFE_ERROR("Invalid memory count for agent %lld", agent_info[i].id);
+                    ar_io_error("Invalid memory count for agent %lld", agent_info[i].id);
                     break;
                 }
 
@@ -667,8 +667,8 @@ bool ar_agency_load_agents(void) {
                     char type[32] = {0};
 
                     // Read key and type line
-                    if (!ar_safe_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
-                        SAFE_ERROR("Failed to read memory key/type for agent %lld", agent_info[i].id);
+                    if (!ar_io_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
+                        ar_io_error("Failed to read memory key/type for agent %lld", agent_info[i].id);
                         break;
                     }
 
@@ -679,14 +679,14 @@ bool ar_agency_load_agents(void) {
                     // Get the key
                     mem_token = strtok_r(mem_line, " \t\n", &mem_next_token);
                     if (mem_token == NULL) {
-                        SAFE_ERROR("Malformed memory entry - missing key for agent %lld", agent_info[i].id);
+                        ar_io_error("Malformed memory entry - missing key for agent %lld", agent_info[i].id);
                         break;
                     }
 
                     // Copy key securely
                     size_t token_len = strlen(mem_token);
                     if (token_len >= sizeof(key)) {
-                        SAFE_ERROR("Memory key too long for agent %lld", agent_info[i].id);
+                        ar_io_error("Memory key too long for agent %lld", agent_info[i].id);
                         break;
                     }
 
@@ -697,14 +697,14 @@ bool ar_agency_load_agents(void) {
                     // Get the type
                     mem_token = strtok_r(NULL, " \t\n", &mem_next_token);
                     if (mem_token == NULL) {
-                        SAFE_ERROR("Malformed memory entry - missing type for agent %lld", agent_info[i].id);
+                        ar_io_error("Malformed memory entry - missing type for agent %lld", agent_info[i].id);
                         break;
                     }
 
                     // Copy type securely
                     token_len = strlen(mem_token);
                     if (token_len >= sizeof(type)) {
-                        SAFE_ERROR("Memory type too long for agent %lld", agent_info[i].id);
+                        ar_io_error("Memory type too long for agent %lld", agent_info[i].id);
                         break;
                     }
 
@@ -717,8 +717,8 @@ bool ar_agency_load_agents(void) {
 
                     if (strcmp(type, "int") == 0) {
                         // Read value line
-                        if (!ar_safe_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
-                            SAFE_ERROR("Failed to read int value for agent %lld", agent_info[i].id);
+                        if (!ar_io_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
+                            ar_io_error("Failed to read int value for agent %lld", agent_info[i].id);
                             break;
                         }
 
@@ -731,15 +731,15 @@ bool ar_agency_load_agents(void) {
                         // Validate conversion
                         if (errno != 0 || int_value_endptr == mem_line ||
                             (*int_value_endptr != '\0' && *int_value_endptr != '\n')) {
-                            SAFE_ERROR("Invalid int value for agent %lld", agent_info[i].id);
+                            ar_io_error("Invalid int value for agent %lld", agent_info[i].id);
                             break;
                         }
 
                         own_value = ar_data_create_integer(int_value);
                     } else if (strcmp(type, "double") == 0) {
                         // Read value line
-                        if (!ar_safe_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
-                            SAFE_ERROR("Failed to read double value for agent %lld", agent_info[i].id);
+                        if (!ar_io_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
+                            ar_io_error("Failed to read double value for agent %lld", agent_info[i].id);
                             break;
                         }
 
@@ -752,15 +752,15 @@ bool ar_agency_load_agents(void) {
                         // Validate conversion
                         if (errno != 0 || double_value_endptr == mem_line ||
                             (*double_value_endptr != '\0' && *double_value_endptr != '\n')) {
-                            SAFE_ERROR("Invalid double value for agent %lld", agent_info[i].id);
+                            ar_io_error("Invalid double value for agent %lld", agent_info[i].id);
                             break;
                         }
 
                         own_value = ar_data_create_double(double_value);
                     } else if (strcmp(type, "string") == 0) {
                         // Read value line
-                        if (!ar_safe_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
-                            SAFE_ERROR("Failed to read string value for agent %lld", agent_info[i].id);
+                        if (!ar_io_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
+                            ar_io_error("Failed to read string value for agent %lld", agent_info[i].id);
                             break;
                         }
 
@@ -774,9 +774,9 @@ bool ar_agency_load_agents(void) {
                         own_value = ar_data_create_string(mem_line);
                     } else {
                         // Skip unknown type by reading next line
-                        SAFE_WARNING("Unknown memory type '%s' for agent %lld", type, agent_info[i].id);
-                        if (!ar_safe_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
-                            SAFE_ERROR("Could not skip unknown type for agent %lld", agent_info[i].id);
+                        ar_io_warning("Unknown memory type '%s' for agent %lld", type, agent_info[i].id);
+                        if (!ar_io_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
+                            ar_io_error("Could not skip unknown type for agent %lld", agent_info[i].id);
                             break;
                         }
                         continue;
@@ -785,7 +785,7 @@ bool ar_agency_load_agents(void) {
                     // Add the value to the agent's memory map
                     if (own_value) {
                         if (!g_own_agents[j].own_memory) {
-                            SAFE_ERROR("Agent %lld has no memory map", agent_info[i].id);
+                            ar_io_error("Agent %lld has no memory map", agent_info[i].id);
                             ar_data_destroy(own_value);
                             break;
                         }
@@ -794,7 +794,7 @@ bool ar_agency_load_agents(void) {
                         // Note: Data ownership is transferred, so we don't free value here
                         own_value = NULL; // Mark as transferred
                     } else {
-                        SAFE_ERROR("Failed to create value for agent %lld", agent_info[i].id);
+                        ar_io_error("Failed to create value for agent %lld", agent_info[i].id);
                         break;
                     }
                 }
@@ -805,10 +805,10 @@ bool ar_agency_load_agents(void) {
 
         // If agent was not found (this shouldn't happen normally), skip the memory map data
         if (!agent_found) {
-            SAFE_ERROR("Agent with ID %lld was created but not found in agents array", agent_info[i].id);
+            ar_io_error("Agent with ID %lld was created but not found in agents array", agent_info[i].id);
             // Skip memory map placeholder
-            if (!ar_safe_read_line(fp, line, (int)sizeof(line), AGENCY_FILE_NAME)) {
-                SAFE_ERROR("Failed to skip memory map placeholder for unfound agent");
+            if (!ar_io_read_line(fp, line, (int)sizeof(line), AGENCY_FILE_NAME)) {
+                ar_io_error("Failed to skip memory map placeholder for unfound agent");
                 break;
             }
         }
@@ -821,7 +821,7 @@ bool ar_agency_load_agents(void) {
 
     // Clean up resources
     free(agent_info);
-    ar_safe_close_file(fp, AGENCY_FILE_NAME);
+    ar_io_close_file(fp, AGENCY_FILE_NAME);
 
     return true;
 }

@@ -72,8 +72,10 @@ agerun_executable
 │   │   ├── agerun_method
 │   │   ├── agerun_semver
 │   │   ├── agerun_agency
+│   │   ├── agerun_io
 │   │   └── agerun_string
 │   ├── agerun_agency
+│   │   └── agerun_io
 │   ├── agerun_data
 │   │   ├── agerun_map
 │   │   └── agerun_list
@@ -82,6 +84,7 @@ agerun_executable
     ├── agerun_method
     ├── agerun_semver
     ├── agerun_agency
+    ├── agerun_io
     └── agerun_string
 ```
 
@@ -98,7 +101,8 @@ The AgeRun system is organized into hierarchical layers, with each layer buildin
                                ▼
 ┌───────────────────────────────────────────────────────────┐
 │                      Core Modules                         │
-│  (agerun_string, agerun_list, agerun_map, agerun_semver)  │
+│  (agerun_string, agerun_list, agerun_map, agerun_io,      │
+│   agerun_semver)                                          │
 └───────────────────────────────────────────────────────────┘
 ```
 
@@ -145,6 +149,20 @@ The [map module](agerun_map.md) provides a fundamental key-value storage impleme
 - **No Content Memory Management**: Does not manage memory for either keys or values
 - **No Dependencies**: This is a foundational module with no dependencies on other modules
 - **Opaque Type**: The map structure is opaque, encapsulating implementation details from clients
+
+### IO Module (`agerun_io`)
+
+The [IO module](agerun_io.md) provides secure file I/O operations with comprehensive error handling:
+
+- **Secure File Operations**: Implements safe reading and writing with bounds checking
+- **Error Handling**: Comprehensive error detection, reporting, and recovery mechanisms
+- **File Backup**: Automatic backup and restore functionality for safe file modifications
+- **Atomic Operations**: Uses atomic rename pattern for crash-resistant file updates
+- **Secure Permissions**: Security-first approach to file permissions and access
+- **Cross-Platform**: Consistent API with platform-specific implementations where needed
+- **No Module Dependencies**: Relies only on standard C library and system headers
+- **Error Categorization**: Detailed error types and human-readable messages
+- **Recovery Mechanisms**: Built-in error recovery through backup restoration
 
 ### Semver Module (`agerun_semver`)
 

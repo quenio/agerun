@@ -99,21 +99,21 @@ Developers are encouraged to run both dynamic (ASan) and static analysis regular
 #include <stdio.h>
 
 int main(void) {
-    // Define a simple echo method
-    version_t echo_version = ar_method_create("echo", "send(0, message)", 0, true, false);
-    
+    // Define a simple echo method with semantic version "1.0.0"
+    const char *echo_version = ar_method_create("echo", "send(0, message)", "1.0.0");
+
     // Initialize the runtime with the echo method
     agent_id_t initial_agent = ar_system_init("echo", echo_version);
-    
+
     // Send a message to the echo agent
     ar_agent_send(initial_agent, "Hello, AgeRun!");
-    
+
     // Process all messages
     ar_system_process_all_messages();
-    
+
     // Shutdown the runtime
     ar_system_shutdown();
-    
+
     return 0;
 }
 ```
@@ -122,10 +122,10 @@ int main(void) {
 
 ```c
 // Define a counter method
-version_t counter_version = ar_method_create("counter", 
-    "if(message == \"increment\", memory.count := memory.count + 1, \"\")\n"
-    "if(message == \"get\", send(0, build(\"Count: {}\", memory.count)), \"\")",
-    0, true, true);
+const char *counter_version = ar_method_create("counter",
+    "if(message = \"increment\", memory.count := memory.count + 1, \"\")\n"
+    "if(message = \"get\", send(0, build(\"Count: {}\", memory.count)), \"\")",
+    "1.0.0");
 
 // Create a counter agent
 agent_id_t counter_id = ar_agent_create("counter", counter_version, NULL);
@@ -187,8 +187,8 @@ Agents use a simple expression and instruction language for their methods:
 
 ### Agent Management
 
-- `method(name, instructions, previous_version, backward_compatible, persist)`: Define a new method
-- `create(method_name, version, context)`: Create a new agent
+- `method(method_name, instructions, version)`: Define a new method with semantic versioning
+- `agent(method_name, version, context)`: Create a new agent using a method with specific version
 - `destroy(agent_id)`: Destroy an agent
 
 ## Code Organization
@@ -198,8 +198,11 @@ The AgeRun codebase is organized into modular components, each responsible for a
 - **Map Module**: A foundational key-value store with no dependencies
 - **List Module**: Doubly-linked list implementation that provides stack and queue operations with an opaque type
 - **Data Module**: Type-safe data storage and reference management built on the Map Module
+- **Semver Module**: Semantic versioning support for method versioning and compatibility checking
 - **Agent Module**: Agent lifecycle and message handling
 - **Method Module**: Method definition, versioning, and execution
+- **Expression Module**: Expression parsing and evaluation with proper ownership semantics
+- **Instruction Module**: Instruction execution engine that processes agent method code
 - **System Module**: High-level API for the runtime environment
 
 For more details on the module structure and dependencies, see the [Modules README](modules/README.md).

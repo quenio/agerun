@@ -1,4 +1,4 @@
-#include "agerun_safe_io.h"
+#include "agerun_io.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -16,7 +16,7 @@
  * Prints an error message to stderr
  * @param format Printf-style format string
  */
-void ar_safe_error(const char *format, ...) {
+void ar_io_error(const char *format, ...) {
     // Prepare a buffer for our formatted message with prefix and newline
     char buffer[2048];
     int prefix_len = snprintf(buffer, sizeof(buffer), "Error: ");
@@ -54,7 +54,7 @@ void ar_safe_error(const char *format, ...) {
  * Prints a warning message to stderr
  * @param format Printf-style format string
  */
-void ar_safe_warning(const char *format, ...) {
+void ar_io_warning(const char *format, ...) {
     // Prepare a buffer for our formatted message with prefix and newline
     char buffer[2048];
     int prefix_len = snprintf(buffer, sizeof(buffer), "Warning: ");
@@ -93,9 +93,9 @@ void ar_safe_warning(const char *format, ...) {
  * @param stream Stream to print to
  * @param format Printf-style format string
  */
-void ar_safe_fprintf(FILE *stream, const char *format, ...) {
+void ar_io_fprintf(FILE *stream, const char *format, ...) {
     if (!stream || !format) {
-        fputs("Error: Invalid parameters for ar_safe_fprintf\n", stderr);
+        fputs("Error: Invalid parameters for ar_io_fprintf\n", stderr);
         return;
     }
 
@@ -131,10 +131,10 @@ void ar_safe_fprintf(FILE *stream, const char *format, ...) {
  * @param filename Name of the file being read (for error messages)
  * @return true if a line was read successfully, false otherwise
  */
-bool ar_safe_read_line(FILE *fp, char *buffer, int buffer_size, const char *filename) {
+bool ar_io_read_line(FILE *fp, char *buffer, int buffer_size, const char *filename) {
     // Validate input parameters
     if (!fp || !buffer || buffer_size <= 0 || !filename) {
-        SAFE_ERROR("Invalid parameters for safe_read_line");
+        ar_io_error("Invalid parameters for safe_read_line");
         return false;
     }
 
@@ -143,7 +143,7 @@ bool ar_safe_read_line(FILE *fp, char *buffer, int buffer_size, const char *file
 
     // First check for EOF
     if (feof(fp)) {
-        SAFE_ERROR("Unexpected end of file in %s", filename);
+        ar_io_error("Unexpected end of file in %s", filename);
         return false;
     }
 
@@ -190,14 +190,14 @@ bool ar_safe_read_line(FILE *fp, char *buffer, int buffer_size, const char *file
 
     // Check for file errors
     if (ferror(fp)) {
-        SAFE_ERROR("Failed to read file %s", filename);
+        ar_io_error("Failed to read file %s", filename);
         clearerr(fp);
         return false;
     }
 
     // Check if we hit EOF with no content
     if (i == 0 && c == EOF) {
-        SAFE_ERROR("Unexpected end of file in %s", filename);
+        ar_io_error("Unexpected end of file in %s", filename);
         return false;
     }
 
@@ -208,7 +208,7 @@ bool ar_safe_read_line(FILE *fp, char *buffer, int buffer_size, const char *file
         while ((c = fgetc(fp)) != EOF && c != '\n') {
             // Just consume the characters
         }
-        SAFE_WARNING("Line truncated in %s (buffer size: %d)", filename, buffer_size);
+        ar_io_warning("Line truncated in %s (buffer size: %d)", filename, buffer_size);
         // We still return true as we did read data successfully
     }
 
@@ -223,10 +223,10 @@ bool ar_safe_read_line(FILE *fp, char *buffer, int buffer_size, const char *file
  * @param file_ptr Pointer to store the opened file handle
  * @return FILE_SUCCESS if successful, appropriate error code otherwise
  */
-file_result_t ar_safe_open_file(const char *filename, const char *mode, FILE **file_ptr) {
+file_result_t ar_io_open_file(const char *filename, const char *mode, FILE **file_ptr) {
     // Validate parameters
     if (!filename || !mode || !file_ptr) {
-        SAFE_ERROR("Invalid parameters for safe_open_file");
+        ar_io_error("Invalid parameters for safe_open_file");
         return FILE_ERROR_UNKNOWN;
     }
 
@@ -235,16 +235,16 @@ file_result_t ar_safe_open_file(const char *filename, const char *mode, FILE **f
     if (!(*file_ptr)) {
         // Determine specific error type
         if (errno == EACCES || errno == EPERM) {
-            SAFE_ERROR("Permission denied opening %s: %s", filename, strerror(errno));
+            ar_io_error("Permission denied opening %s: %s", filename, strerror(errno));
             return FILE_ERROR_PERMISSIONS;
         } else if (errno == ENOENT && mode[0] == 'r') {
-            SAFE_ERROR("File not found: %s: %s", filename, strerror(errno));
+            ar_io_error("File not found: %s: %s", filename, strerror(errno));
             return FILE_ERROR_NOT_FOUND;
         } else if (errno == EEXIST && mode[0] == 'w' && mode[1] == 'x') {
-            SAFE_ERROR("File already exists: %s", filename);
+            ar_io_error("File already exists: %s", filename);
             return FILE_ERROR_ALREADY_EXISTS;
         } else {
-            SAFE_ERROR("Failed to open %s: %s", filename, strerror(errno));
+            ar_io_error("Failed to open %s: %s", filename, strerror(errno));
             return FILE_ERROR_OPEN;
         }
     }
@@ -259,20 +259,20 @@ file_result_t ar_safe_open_file(const char *filename, const char *mode, FILE **f
  * @param filename Name of the file (for error reporting)
  * @return FILE_SUCCESS if successful, appropriate error code otherwise
  */
-file_result_t ar_safe_close_file(FILE *fp, const char *filename) {
+file_result_t ar_io_close_file(FILE *fp, const char *filename) {
     if (!fp) {
         return FILE_SUCCESS; // Already closed, not an error
     }
 
     // Flush any buffered data
     if (fflush(fp) != 0) {
-        SAFE_ERROR("Failed to flush data to %s: %s", filename, strerror(errno));
+        ar_io_error("Failed to flush data to %s: %s", filename, strerror(errno));
         // Continue with close even if flush failed
     }
 
     // Close the file
     if (fclose(fp) != 0) {
-        SAFE_ERROR("Failed to close %s: %s", filename, strerror(errno));
+        ar_io_error("Failed to close %s: %s", filename, strerror(errno));
         return FILE_ERROR_UNKNOWN;
     }
 
@@ -285,9 +285,9 @@ file_result_t ar_safe_close_file(FILE *fp, const char *filename) {
  * @param filename Path to the file to backup
  * @return FILE_SUCCESS if backup was created successfully, appropriate error code otherwise
  */
-file_result_t ar_safe_create_backup(const char *filename) {
+file_result_t ar_io_create_backup(const char *filename) {
     if (!filename) {
-        SAFE_ERROR("Invalid parameters for safe_create_backup");
+        ar_io_error("Invalid parameters for safe_create_backup");
         return FILE_ERROR_UNKNOWN;
     }
 
@@ -298,7 +298,7 @@ file_result_t ar_safe_create_backup(const char *filename) {
             // Source file doesn't exist, nothing to backup
             return FILE_SUCCESS;
         }
-        SAFE_ERROR("Failed to stat %s: %s", filename, strerror(errno));
+        ar_io_error("Failed to stat %s: %s", filename, strerror(errno));
         return FILE_ERROR_UNKNOWN;
     }
 
@@ -306,7 +306,7 @@ file_result_t ar_safe_create_backup(const char *filename) {
     size_t backup_name_len = strlen(filename) + strlen(BACKUP_EXTENSION) + 1;
     char *backup_filename = (char*)malloc(backup_name_len);
     if (!backup_filename) {
-        SAFE_ERROR("Memory allocation failed for backup filename");
+        ar_io_error("Memory allocation failed for backup filename");
         return FILE_ERROR_UNKNOWN;
     }
 
@@ -314,7 +314,7 @@ file_result_t ar_safe_create_backup(const char *filename) {
 
     // Open source file
     FILE *source;
-    file_result_t result = ar_safe_open_file(filename, "rb", &source);
+    file_result_t result = ar_io_open_file(filename, "rb", &source);
     if (result != FILE_SUCCESS) {
         free(backup_filename);
         return result;
@@ -322,9 +322,9 @@ file_result_t ar_safe_create_backup(const char *filename) {
 
     // Open backup file
     FILE *backup;
-    result = ar_safe_open_file(backup_filename, "wb", &backup);
+    result = ar_io_open_file(backup_filename, "wb", &backup);
     if (result != FILE_SUCCESS) {
-        ar_safe_close_file(source, filename);
+        ar_io_close_file(source, filename);
         free(backup_filename);
         return result;
     }
@@ -333,9 +333,9 @@ file_result_t ar_safe_create_backup(const char *filename) {
     const size_t buffer_size = 8192;
     char *buffer = (char*)malloc(buffer_size);
     if (!buffer) {
-        SAFE_ERROR("Memory allocation failed for backup buffer");
-        ar_safe_close_file(source, filename);
-        ar_safe_close_file(backup, backup_filename);
+        ar_io_error("Memory allocation failed for backup buffer");
+        ar_io_close_file(source, filename);
+        ar_io_close_file(backup, backup_filename);
         free(backup_filename);
         return FILE_ERROR_UNKNOWN;
     }
@@ -353,7 +353,7 @@ file_result_t ar_safe_create_backup(const char *filename) {
         }
 
         if (fwrite(buffer, 1, bytes_read, backup) != bytes_read) {
-            SAFE_ERROR("Failed to write to backup file %s", backup_filename);
+            ar_io_error("Failed to write to backup file %s", backup_filename);
             success = false;
             break;
         }
@@ -361,14 +361,14 @@ file_result_t ar_safe_create_backup(const char *filename) {
 
     // Check for read error
     if (ferror(source)) {
-        SAFE_ERROR("Failed to read from source file %s", filename);
+        ar_io_error("Failed to read from source file %s", filename);
         success = false;
     }
 
     // Cleanup
     free(buffer);
-    ar_safe_close_file(source, filename);
-    ar_safe_close_file(backup, backup_filename);
+    ar_io_close_file(source, filename);
+    ar_io_close_file(backup, backup_filename);
     free(backup_filename);
 
     return success ? FILE_SUCCESS : FILE_ERROR_UNKNOWN;
@@ -380,9 +380,9 @@ file_result_t ar_safe_create_backup(const char *filename) {
  * @param filename Path to the file to restore
  * @return FILE_SUCCESS if backup was restored successfully, appropriate error code otherwise
  */
-file_result_t ar_safe_restore_backup(const char *filename) {
+file_result_t ar_io_restore_backup(const char *filename) {
     if (!filename) {
-        SAFE_ERROR("Invalid parameters for safe_restore_backup");
+        ar_io_error("Invalid parameters for safe_restore_backup");
         return FILE_ERROR_UNKNOWN;
     }
 
@@ -390,7 +390,7 @@ file_result_t ar_safe_restore_backup(const char *filename) {
     size_t backup_name_len = strlen(filename) + strlen(BACKUP_EXTENSION) + 1;
     char *backup_filename = (char*)malloc(backup_name_len);
     if (!backup_filename) {
-        SAFE_ERROR("Memory allocation failed for backup filename");
+        ar_io_error("Memory allocation failed for backup filename");
         return FILE_ERROR_UNKNOWN;
     }
 
@@ -400,25 +400,25 @@ file_result_t ar_safe_restore_backup(const char *filename) {
     struct stat st;
     if (stat(backup_filename, &st) != 0) {
         if (errno == ENOENT) {
-            SAFE_ERROR("Backup file %s does not exist", backup_filename);
+            ar_io_error("Backup file %s does not exist", backup_filename);
             free(backup_filename);
             return FILE_ERROR_NOT_FOUND;
         }
-        SAFE_ERROR("Failed to stat backup file %s: %s", backup_filename, strerror(errno));
+        ar_io_error("Failed to stat backup file %s: %s", backup_filename, strerror(errno));
         free(backup_filename);
         return FILE_ERROR_UNKNOWN;
     }
 
     // Remove target file if it exists
     if (remove(filename) != 0 && errno != ENOENT) {
-        SAFE_ERROR("Failed to remove target file %s: %s", filename, strerror(errno));
+        ar_io_error("Failed to remove target file %s: %s", filename, strerror(errno));
         free(backup_filename);
         return FILE_ERROR_UNKNOWN;
     }
 
     // Rename backup to original
     if (rename(backup_filename, filename) != 0) {
-        SAFE_ERROR("Failed to restore backup %s to %s: %s", backup_filename, filename, strerror(errno));
+        ar_io_error("Failed to restore backup %s to %s: %s", backup_filename, filename, strerror(errno));
         free(backup_filename);
         return FILE_ERROR_UNKNOWN;
     }
@@ -433,22 +433,22 @@ file_result_t ar_safe_restore_backup(const char *filename) {
  * @param filename Path to the file to secure
  * @return FILE_SUCCESS if permissions were set successfully, appropriate error code otherwise
  */
-file_result_t ar_safe_set_secure_permissions(const char *filename) {
+file_result_t ar_io_set_secure_permissions(const char *filename) {
     if (!filename) {
-        SAFE_ERROR("Invalid parameters for safe_set_secure_permissions");
+        ar_io_error("Invalid parameters for safe_set_secure_permissions");
         return FILE_ERROR_UNKNOWN;
     }
 
 #ifdef _WIN32
     // Windows implementation
     if (_chmod(filename, _S_IREAD | _S_IWRITE) != 0) {
-        SAFE_ERROR("Failed to set secure permissions on %s: %s", filename, strerror(errno));
+        ar_io_error("Failed to set secure permissions on %s: %s", filename, strerror(errno));
         return FILE_ERROR_PERMISSIONS;
     }
 #else
     // Unix/Linux/macOS implementation
     if (chmod(filename, S_IRUSR | S_IWUSR) != 0) {
-        SAFE_ERROR("Failed to set secure permissions on %s: %s", filename, strerror(errno));
+        ar_io_error("Failed to set secure permissions on %s: %s", filename, strerror(errno));
         return FILE_ERROR_PERMISSIONS;
     }
 #endif
@@ -457,7 +457,7 @@ file_result_t ar_safe_set_secure_permissions(const char *filename) {
 }
 
 /**
- * Function prototype for the callback function passed to ar_safe_write_file
+ * Function prototype for the callback function passed to ar_io_write_file
  */
 typedef bool (*write_callback_t)(FILE *fp, void *context);
 
@@ -469,11 +469,11 @@ typedef bool (*write_callback_t)(FILE *fp, void *context);
  * @param context Context passed to the write function
  * @return FILE_SUCCESS if successful, appropriate error code otherwise
  */
-file_result_t ar_safe_write_file(const char *filename,
+file_result_t ar_io_write_file(const char *filename,
                                bool (*write_func)(FILE *fp, void *context),
                                void *context) {
     if (!filename || !write_func) {
-        SAFE_ERROR("Invalid parameters for safe_write_file");
+        ar_io_error("Invalid parameters for safe_write_file");
         return FILE_ERROR_UNKNOWN;
     }
 
@@ -481,14 +481,14 @@ file_result_t ar_safe_write_file(const char *filename,
     size_t temp_name_len = strlen(filename) + strlen(TEMP_EXTENSION) + 1;
     char *temp_filename = (char*)malloc(temp_name_len);
     if (!temp_filename) {
-        SAFE_ERROR("Memory allocation failed for temporary filename");
+        ar_io_error("Memory allocation failed for temporary filename");
         return FILE_ERROR_UNKNOWN;
     }
 
     snprintf(temp_filename, temp_name_len, "%s%s", filename, TEMP_EXTENSION);
 
     // Create backup of original file if it exists
-    file_result_t result = ar_safe_create_backup(filename);
+    file_result_t result = ar_io_create_backup(filename);
     if (result != FILE_SUCCESS) {
         free(temp_filename);
         return result;
@@ -496,16 +496,16 @@ file_result_t ar_safe_write_file(const char *filename,
 
     // Open temporary file
     FILE *temp_file;
-    result = ar_safe_open_file(temp_filename, "w", &temp_file);
+    result = ar_io_open_file(temp_filename, "w", &temp_file);
     if (result != FILE_SUCCESS) {
         free(temp_filename);
         return result;
     }
 
     // Apply secure permissions to the temporary file
-    result = ar_safe_set_secure_permissions(temp_filename);
+    result = ar_io_set_secure_permissions(temp_filename);
     if (result != FILE_SUCCESS) {
-        ar_safe_close_file(temp_file, temp_filename);
+        ar_io_close_file(temp_file, temp_filename);
         remove(temp_filename);
         free(temp_filename);
         return result;
@@ -514,15 +514,15 @@ file_result_t ar_safe_write_file(const char *filename,
     // Call the write function to generate the file content
     bool write_success = write_func(temp_file, context);
     if (!write_success) {
-        SAFE_ERROR("Failed to write content to temporary file %s", temp_filename);
-        ar_safe_close_file(temp_file, temp_filename);
+        ar_io_error("Failed to write content to temporary file %s", temp_filename);
+        ar_io_close_file(temp_file, temp_filename);
         remove(temp_filename);
         free(temp_filename);
         return FILE_ERROR_WRITE;
     }
 
     // Close the temporary file
-    result = ar_safe_close_file(temp_file, temp_filename);
+    result = ar_io_close_file(temp_file, temp_filename);
     if (result != FILE_SUCCESS) {
         remove(temp_filename);
         free(temp_filename);
@@ -531,17 +531,17 @@ file_result_t ar_safe_write_file(const char *filename,
 
     // Rename temporary file to target file
     if (rename(temp_filename, filename) != 0) {
-        SAFE_ERROR("Failed to rename temporary file %s to %s: %s",
+        ar_io_error("Failed to rename temporary file %s to %s: %s",
                  temp_filename, filename, strerror(errno));
         remove(temp_filename);
         free(temp_filename);
 
         // Try to restore from backup
-        SAFE_WARNING("Attempting to restore from backup...");
-        if (ar_safe_restore_backup(filename) != FILE_SUCCESS) {
-            SAFE_ERROR("Failed to restore from backup. Data may be lost.");
+        ar_io_warning("Attempting to restore from backup...");
+        if (ar_io_restore_backup(filename) != FILE_SUCCESS) {
+            ar_io_error("Failed to restore from backup. Data may be lost.");
         } else {
-            SAFE_ERROR("Successfully restored from backup.");
+            ar_io_error("Successfully restored from backup.");
         }
 
         return FILE_ERROR_UNKNOWN;
@@ -557,7 +557,7 @@ file_result_t ar_safe_write_file(const char *filename,
  * @param result The result code to get a message for
  * @return A human-readable error message
  */
-const char* ar_safe_error_message(file_result_t result) {
+const char* ar_io_error_message(file_result_t result) {
     switch (result) {
         case FILE_SUCCESS:
             return "Operation completed successfully";
