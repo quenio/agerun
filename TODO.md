@@ -120,6 +120,12 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Provide examples of correct memory handling for complex structures (completed 2025-04-26)
   - [x] Add troubleshooting section for common memory issues (completed 2025-04-26)
 
+- [ ] Improve module documentation:
+  - [ ] Create detailed API usage examples for each module
+  - [ ] Add diagrams to illustrate complex module interactions
+  - [ ] Review all modules for documentation consistency
+  - [ ] Update memory ownership documentation for IO operations
+
 ## Recently Completed Tasks
 
 - [x] Implement full semantic versioning support: (completed 2025-05-04)
@@ -130,6 +136,12 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Implement proper agent lifecycle with sleep/wake messages during method updates (completed 2025-05-04)
   - [x] Add comprehensive tests for semantic version functionality (completed 2025-05-04)
   - [x] Document semantic versioning behavior in module documentation (completed 2025-05-04)
+
+- [x] Documentation improvements: (completed 2025-05-10)
+  - [x] Create comprehensive documentation for the IO module with examples and API reference (completed 2025-05-10)
+  - [x] Update module dependency tree in modules/README.md to include IO module (completed 2025-05-10)
+  - [x] Add IO module to module layer diagrams for better visualization (completed 2025-05-10)
+  - [x] Update README.md to include IO module in code organization section (completed 2025-05-10)
 
 - [x] Method semver implementation improvements: (completed 2025-05-03)
   - [x] Update method module to use semantic versioning strings instead of numeric versioning (completed 2025-05-03)
@@ -197,6 +209,17 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Add tests for semantic version handling (completed 2025-05-04)
   - [x] Improve version resolution in methodology_get_method for partial versions (completed 2025-05-04)
   - [x] Add automatic method updates for running agents when new compatible versions are registered (completed 2025-05-04)
+
+## Recently Completed Security and Documentation Improvements
+
+- [x] Improve file I/O operations: (completed 2025-05-10)
+  - [x] Rename agerun_safe_io to agerun_io for consistency with other modules (completed 2025-05-10)
+  - [x] Create comprehensive documentation for the IO module (completed 2025-05-10)
+  - [x] Update module dependency tree to include IO module (completed 2025-05-10)
+  - [x] Add IO module to module layer diagrams (completed 2025-05-10)
+  - [x] Update README to reference IO module (completed 2025-05-10)
+  - [x] Remove SAFE_ macros in favor of direct function calls (completed 2025-05-10)
+  - [x] Document all IO module functions with proper ownership semantics (completed 2025-05-10)
 
 ## Security and Code Quality Improvements
 
