@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <errno.h>
+#include <sys/stat.h>
 
 #ifdef DEBUG
 
@@ -141,12 +143,19 @@ int ar_heap_memory_remove(void *ptr) {
 void ar_heap_memory_report(void) {
     if (!g_initialized) return;
     
-    // Create the report file in the bin directory
-    FILE *report = fopen("heap_memory_report.log", "w");
+    // Create the report file in the current directory for consistency with the original code
+    const char *report_path = "heap_memory_report.log";
+
+    // Use restricted mode "w" to ensure we only create/write, not execute
+    FILE *report = fopen(report_path, "w");
     if (!report) {
-        fprintf(stderr, "ERROR: Failed to create memory report file\n");
+        fprintf(stderr, "ERROR: Failed to create memory report file at %s (error: %s)\n",
+                report_path, strerror(errno));
         return;
     }
+
+    // Set secure file permissions for the file (restrict to owner read/write)
+    chmod(report_path, S_IRUSR | S_IWUSR);
     
     fprintf(report, "=====================================\n");
     fprintf(report, "  AgeRun Memory Tracking Report\n");

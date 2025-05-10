@@ -407,9 +407,9 @@ bool ar_agency_load_agents(void) {
             return false;
         }
         
-        // Use strncpy with explicit null termination
-        strncpy(method_name, token, sizeof(method_name) - 1);
-        method_name[sizeof(method_name) - 1] = '\0';  // Ensure null-termination
+        // Use memcpy with explicit null termination for safer copy
+        memcpy(method_name, token, token_len);
+        method_name[token_len] = '\0';  // Ensure null-termination
         
         // Get the method version
         token = strtok_r(NULL, " \t\n", &next_token);
@@ -427,9 +427,9 @@ bool ar_agency_load_agents(void) {
             return false;
         }
         
-        // Use strncpy with explicit null termination
-        strncpy(method_version, token, sizeof(method_version) - 1);
-        method_version[sizeof(method_version) - 1] = '\0';  // Ensure null-termination
+        // Use memcpy with explicit null termination for safer copy
+        memcpy(method_version, token, token_len);
+        method_version[token_len] = '\0';  // Ensure null-termination
         
         // Validate the method name and version - basic sanity check
         if (strlen(method_name) == 0 || strlen(method_version) == 0) {
@@ -500,8 +500,9 @@ bool ar_agency_load_agents(void) {
                         break;
                     }
                     
-                    strncpy(key, mem_token, sizeof(key) - 1);
-                    key[sizeof(key) - 1] = '\0';  // Ensure null-termination
+                    // Use memcpy with explicit null termination for safer copy
+                    memcpy(key, mem_token, token_len);
+                    key[token_len] = '\0';  // Ensure null-termination
                     
                     // Get the type
                     mem_token = strtok_r(NULL, " \t\n", &mem_next_token);
@@ -517,8 +518,9 @@ bool ar_agency_load_agents(void) {
                         break;
                     }
                     
-                    strncpy(type, mem_token, sizeof(type) - 1);
-                    type[sizeof(type) - 1] = '\0';  // Ensure null-termination
+                    // Use memcpy with explicit null termination for safer copy
+                    memcpy(type, mem_token, token_len);
+                    type[token_len] = '\0';  // Ensure null-termination
                     
                     // Process based on type
                     data_t *own_value = NULL; // Will be an owned value after creation

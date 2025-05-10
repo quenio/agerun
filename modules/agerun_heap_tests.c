@@ -203,7 +203,7 @@ static void test_memory_report(void) {
     // Manually generate a report
     ar_heap_memory_report();
     
-    // Check if the report file exists
+    // Check if the report file exists - use the same path as used in agerun_heap.c
     FILE *report = fopen("heap_memory_report.log", "r");
     assert(report != NULL);
     fclose(report);

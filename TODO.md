@@ -173,7 +173,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Ownership prefix consistency improvements:
   - [x] Fix list module parameter naming (completed 2025-05-01)
     - [x] Change non-const `ref_item` parameters to `mut_item` since they are mutable references (completed 2025-05-01)
-    - [x] Update API documentation to reflect the correct parameter semantics (completed 2025-05-01) 
+    - [x] Update API documentation to reflect the correct parameter semantics (completed 2025-05-01)
     - [x] Ensure consistency across all list operations (completed 2025-05-01)
 
 - [x] Instruction module independence improvements: (completed 2025-05-02)
@@ -197,3 +197,30 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Add tests for semantic version handling (completed 2025-05-04)
   - [x] Improve version resolution in methodology_get_method for partial versions (completed 2025-05-04)
   - [x] Add automatic method updates for running agents when new compatible versions are registered (completed 2025-05-04)
+
+## Security and Code Quality Improvements
+
+- [ ] Improve file I/O and error handling security:
+  - [ ] Replace insecure fprintf calls with safer alternatives in agerun_agency.c
+  - [ ] Replace insecure fprintf calls with safer alternatives in agerun_methodology.c
+  - [ ] Use fprintf_s, snprintf, or other safer alternatives that provide buffer bounds checking
+  - [ ] Add consistent error handling for file operations
+  - [ ] Ensure proper resource cleanup on error paths
+
+- [ ] Fix persistence file issues:
+  - [ ] Fix 'Malformed agent entry - missing method name in agency.agerun' error
+  - [ ] Improve error handling in agency file loading
+  - [ ] Add file integrity validation mechanisms
+  - [ ] Add recovery options for corrupted persistence files
+
+- [ ] Debug and memory tracking improvements:
+  - [ ] Investigate memory leak warning discrepancy in heap tests
+  - [ ] Resolve difference between test memory leak detection and heap_memory_report.log
+  - [ ] Enhance the heap tracking mechanism to ensure consistent leak detection
+  - [ ] Address intentional leak test to be more explicit in its purpose and implementation
+
+- [ ] Build improvements:
+  - [ ] Address linker errors during static analysis
+  - [ ] Fix empty file errors in temporary objects created during analysis
+  - [ ] Improve Makefile to handle analysis errors more gracefully
+  - [ ] Investigate and resolve "Not a directory" warnings in static analysis

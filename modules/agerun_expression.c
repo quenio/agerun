@@ -205,8 +205,11 @@ static char* parse_identifier(expression_context_t *mut_ctx) {
         return NULL;
     }
     
-    strncpy(own_identifier, mut_ctx->ref_expr + start, (size_t)length);
-    own_identifier[length] = '\0';
+    // Use memcpy with explicit bounds checking
+    if (length > 0) {
+        memcpy(own_identifier, mut_ctx->ref_expr + start, (size_t)length);
+    }
+    own_identifier[length] = '\0';  // Always ensure null-termination
     
     return own_identifier; // Ownership transferred to caller
 }
@@ -656,7 +659,13 @@ static const data_t* parse_additive(expression_context_t *ctx) {
             if (left_type == DATA_STRING) {
                 const char *str = ar_data_get_string(left);
                 if (str) {
-                    strncpy(left_str, str, sizeof(left_str) - 1);
+                    // Safe string copy with bounds check and explicit null termination
+                    size_t copy_len = strlen(str);
+                    if (copy_len >= sizeof(left_str)) {
+                        copy_len = sizeof(left_str) - 1;
+                    }
+                    memcpy(left_str, str, copy_len);
+                    left_str[copy_len] = '\0';  // Ensure null-termination
                 }
             } else if (left_type == DATA_INTEGER) {
                 snprintf(left_str, sizeof(left_str), "%d", ar_data_get_integer(left));
@@ -668,7 +677,13 @@ static const data_t* parse_additive(expression_context_t *ctx) {
             if (right_type == DATA_STRING) {
                 const char *str = ar_data_get_string(right);
                 if (str) {
-                    strncpy(right_str, str, sizeof(right_str) - 1);
+                    // Safe string copy with bounds check and explicit null termination
+                    size_t copy_len = strlen(str);
+                    if (copy_len >= sizeof(right_str)) {
+                        copy_len = sizeof(right_str) - 1;
+                    }
+                    memcpy(right_str, str, copy_len);
+                    right_str[copy_len] = '\0';  // Ensure null-termination
                 }
             } else if (right_type == DATA_INTEGER) {
                 snprintf(right_str, sizeof(right_str), "%d", ar_data_get_integer(right));
@@ -846,7 +861,13 @@ static const data_t* parse_comparison(expression_context_t *ctx) {
         if (left_type == DATA_STRING) {
             const char *str = ar_data_get_string(left);
             if (str) {
-                strncpy(left_str, str, sizeof(left_str) - 1);
+                // Safe string copy with bounds check and explicit null termination
+                size_t copy_len = strlen(str);
+                if (copy_len >= sizeof(left_str)) {
+                    copy_len = sizeof(left_str) - 1;
+                }
+                memcpy(left_str, str, copy_len);
+                left_str[copy_len] = '\0';  // Ensure null-termination
             }
         } else if (left_type == DATA_INTEGER) {
             snprintf(left_str, sizeof(left_str), "%d", ar_data_get_integer(left));
@@ -858,7 +879,13 @@ static const data_t* parse_comparison(expression_context_t *ctx) {
         if (right_type == DATA_STRING) {
             const char *str = ar_data_get_string(right);
             if (str) {
-                strncpy(right_str, str, sizeof(right_str) - 1);
+                // Safe string copy with bounds check and explicit null termination
+                size_t copy_len = strlen(str);
+                if (copy_len >= sizeof(right_str)) {
+                    copy_len = sizeof(right_str) - 1;
+                }
+                memcpy(right_str, str, copy_len);
+                right_str[copy_len] = '\0';  // Ensure null-termination
             }
         } else if (right_type == DATA_INTEGER) {
             snprintf(right_str, sizeof(right_str), "%d", ar_data_get_integer(right));

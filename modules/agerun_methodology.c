@@ -544,17 +544,19 @@ bool ar_methodology_load_methods(void) {
         // Copy method name with secure length check
         size_t token_len = strlen(token);
         if (token_len >= MAX_METHOD_NAME_LENGTH) {
-            fprintf(stderr, "Error: Method name too long in %s (method %d)\n", 
+            fprintf(stderr, "Error: Method name too long in %s (method %d)\n",
                     METHODOLOGY_FILE_NAME, i+1);
             fclose(mut_fp);
             fprintf(stderr, "Deleting corrupted methodology file\n");
             remove(METHODOLOGY_FILE_NAME);
             return true;
         }
-        
-        // Use strncpy with explicit null termination
-        strncpy(name, token, MAX_METHOD_NAME_LENGTH - 1);
-        name[MAX_METHOD_NAME_LENGTH - 1] = '\0';  // Ensure null-termination
+
+        // Use memcpy for secure copying with guaranteed null termination
+        // token_len is already computed above
+
+        memcpy(name, token, token_len);
+        name[token_len] = '\0';  // Ensure null-termination
         
         // Get version count
         token = strtok_r(NULL, " \t\n", &next_token);
