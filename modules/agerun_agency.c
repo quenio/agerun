@@ -173,6 +173,7 @@ static bool agency_write_function(FILE *fp, void *context) {
 
 bool ar_agency_save_agents(void) {
     if (!g_is_initialized) {
+        ar_io_warning("Cannot save agents - agency not initialized");
         return false;
     }
 
@@ -181,13 +182,46 @@ bool ar_agency_save_agents(void) {
         .filename = AGENCY_FILE_NAME
     };
 
+    // First create a backup of the existing file if it exists
+    struct stat st;
+    if (stat(AGENCY_FILE_NAME, &st) == 0) {
+        file_result_t backup_result = ar_io_create_backup(AGENCY_FILE_NAME);
+        if (backup_result != FILE_SUCCESS) {
+            ar_io_warning("Failed to create backup of agents file: %s",
+                     ar_io_error_message(backup_result));
+            // Continue despite backup failure - better to have a new file than no file
+        } else {
+            ar_io_info("Created backup of agents file before saving");
+        }
+    }
+
     // Use the safe file writing utility
     file_result_t result = ar_io_write_file(AGENCY_FILE_NAME, agency_write_function, &context);
     if (result != FILE_SUCCESS) {
         ar_io_error("Failed to save agents file: %s", ar_io_error_message(result));
+
+        // Try to restore backup if available
+        if (stat(AGENCY_FILE_NAME ".bak", &st) == 0) {
+            ar_io_warning("Attempting to restore backup file after save failure");
+            if (ar_io_restore_backup(AGENCY_FILE_NAME) != FILE_SUCCESS) {
+                ar_io_error("Failed to restore backup file");
+            } else {
+                ar_io_info("Successfully restored backup file after save failure");
+            }
+        }
+
         return false;
     }
 
+    // Set secure permissions on the file
+    result = ar_io_set_secure_permissions(AGENCY_FILE_NAME);
+    if (result != FILE_SUCCESS) {
+        ar_io_warning("Failed to set secure permissions on agents file: %s",
+                 ar_io_error_message(result));
+        // Continue despite permission issues - file was saved successfully
+    }
+
+    ar_io_info("Successfully saved %d agents to file", ar_agency_count_agents());
     return true;
 }
 
@@ -873,7 +907,7 @@ int ar_agency_update_agent_methods(const method_t *ref_old_method, const method_
             agent_id_t agent_id = g_own_agents[i].id;
             
             // Step 1: Send sleep message
-            ar_io_fprintf(stdout, "Updating agent %lld from method %s version %s to version %s\n",
+            ar_io_info("Updating agent %lld from method %s version %s to version %s",
                    agent_id, old_name, old_version, new_version);
 
             // Send a copy of the sleep message

@@ -451,16 +451,16 @@ bool ar_methodology_save_methods(void) {
             written = snprintf(buffer, BUFFER_SIZE, "%s\n", version);
             if (written < 0 || written >= (int)BUFFER_SIZE) {
                 ar_io_error("Buffer too small for version data in %s", temp_filename);
-                ar_io_close_file(mut_fp, METHODOLOGY_FILE_NAME);
-                remove(METHODOLOGY_FILE_NAME);
+                ar_io_close_file(mut_fp, temp_filename);
+                remove(temp_filename);
                 return false;
             }
             
             // Write the version to the file with error checking
             if (fputs(buffer, mut_fp) == EOF) {
                 ar_io_error("Failed to write version data to %s", temp_filename);
-                ar_io_close_file(mut_fp, METHODOLOGY_FILE_NAME);
-                remove(METHODOLOGY_FILE_NAME);
+                ar_io_close_file(mut_fp, temp_filename);
+                remove(temp_filename);
                 return false;
             }
             
@@ -469,8 +469,8 @@ bool ar_methodology_save_methods(void) {
             if (!instructions) {
                 ar_io_error("NULL instructions for method %s version %s",
                         method_name, version);
-                ar_io_close_file(mut_fp, METHODOLOGY_FILE_NAME);
-                remove(METHODOLOGY_FILE_NAME);
+                ar_io_close_file(mut_fp, temp_filename);
+                remove(temp_filename);
                 return false;
             }
             
@@ -479,8 +479,8 @@ bool ar_methodology_save_methods(void) {
             if (instr_len >= BUFFER_SIZE - 2) { // -2 for newline and null terminator
                 ar_io_error("Instructions too large for buffer (size: %zu) for method %s version %s",
                         instr_len, method_name, version);
-                ar_io_close_file(mut_fp, METHODOLOGY_FILE_NAME);
-                remove(METHODOLOGY_FILE_NAME);
+                ar_io_close_file(mut_fp, temp_filename);
+                remove(temp_filename);
                 return false;
             }
             
@@ -489,16 +489,16 @@ bool ar_methodology_save_methods(void) {
             if (written < 0 || written >= (int)BUFFER_SIZE) {
                 ar_io_error("Buffer overflow writing instructions for method %s version %s",
                         method_name, version);
-                ar_io_close_file(mut_fp, METHODOLOGY_FILE_NAME);
-                remove(METHODOLOGY_FILE_NAME);
+                ar_io_close_file(mut_fp, temp_filename);
+                remove(temp_filename);
                 return false;
             }
             
             // Write the instructions to the file with error checking
             if (fputs(buffer, mut_fp) == EOF) {
                 ar_io_error("Failed to write instructions to %s", temp_filename);
-                ar_io_close_file(mut_fp, METHODOLOGY_FILE_NAME);
-                remove(METHODOLOGY_FILE_NAME);
+                ar_io_close_file(mut_fp, temp_filename);
+                remove(temp_filename);
                 return false;
             }
         }
@@ -516,9 +516,17 @@ bool ar_methodology_save_methods(void) {
     
     // Rename the temporary file to the permanent file
     if (rename(temp_filename, METHODOLOGY_FILE_NAME) != 0) {
-        ar_io_error("Failed to rename %s to %s", temp_filename, METHODOLOGY_FILE_NAME);
+        ar_io_error("Failed to rename %s to %s: %s", temp_filename, METHODOLOGY_FILE_NAME, strerror(errno));
         remove(temp_filename);
         return false;
+    }
+
+    // Set secure permissions on the permanent file
+    result = ar_io_set_secure_permissions(METHODOLOGY_FILE_NAME);
+    if (result != FILE_SUCCESS) {
+        ar_io_warning("Failed to set secure permissions on %s: %s",
+                 METHODOLOGY_FILE_NAME, ar_io_error_message(result));
+        // Continue despite permission issues - file was saved successfully
     }
     
     return true;

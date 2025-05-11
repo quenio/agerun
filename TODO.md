@@ -223,18 +223,18 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Security and Code Quality Improvements
 
-- [ ] Improve file I/O and error handling security:
-  - [ ] Replace insecure fprintf calls with safer alternatives in agerun_agency.c
-  - [ ] Replace insecure fprintf calls with safer alternatives in agerun_methodology.c
-  - [ ] Use fprintf_s, snprintf, or other safer alternatives that provide buffer bounds checking
-  - [ ] Add consistent error handling for file operations
-  - [ ] Ensure proper resource cleanup on error paths
+- [x] Improve file I/O and error handling security: (completed 2025-05-10)
+  - [x] Replace insecure fprintf calls with safer alternatives in agerun_agency.c (completed 2025-05-10)
+  - [x] Replace insecure fprintf calls with safer alternatives in agerun_methodology.c (completed 2025-05-10)
+  - [x] Use fprintf_s, snprintf, or other safer alternatives that provide buffer bounds checking (completed 2025-05-10)
+  - [x] Add consistent error handling for file operations (completed 2025-05-10)
+  - [x] Ensure proper resource cleanup on error paths (completed 2025-05-10)
 
-- [ ] Fix persistence file issues:
-  - [ ] Fix 'Malformed agent entry - missing method name in agency.agerun' error
-  - [ ] Improve error handling in agency file loading
-  - [ ] Add file integrity validation mechanisms
-  - [ ] Add recovery options for corrupted persistence files
+- [x] Fix persistence file issues: (completed 2025-05-10)
+  - [x] Fix 'Malformed agent entry - missing method name in agency.agerun' error (completed 2025-05-10)
+  - [x] Improve error handling in agency file loading (completed 2025-05-10)
+  - [x] Add file integrity validation mechanisms (completed 2025-05-10)
+  - [x] Add recovery options for corrupted persistence files (completed 2025-05-10)
 
 - [ ] Debug and memory tracking improvements:
   - [ ] Investigate memory leak warning discrepancy in heap tests
