@@ -17,11 +17,14 @@ This module serves as a foundation for other modules that need to perform file o
 
 ## Key Features
 
-### Error Reporting
+### Message Reporting
 
-- **Consistent Error Formatting**: All errors are presented with a consistent prefix and newline handling
+- **Consistent Message Formatting**: All messages use consistent formatting with proper prefixes and newline handling
 - **Error Categories**: Different error types (permissions, not found, corrupt data) for precise reporting
-- **Warning System**: Separate warning function for non-critical issues
+- **Three-Tier Reporting System**:
+  - Error function for critical issues (to stderr)
+  - Warning function for non-critical issues (to stderr)
+  - Info function for normal operational status (to stdout)
 
 ### File Safety
 
@@ -38,7 +41,7 @@ This module serves as a foundation for other modules that need to perform file o
 
 ## API Reference
 
-### Error and Warning Reporting
+### Error, Warning, and Info Reporting
 
 ```c
 /**
@@ -52,6 +55,12 @@ void ar_io_error(const char *format, ...);
  * @param format Printf-style format string
  */
 void ar_io_warning(const char *format, ...);
+
+/**
+ * Prints an informational message to stdout
+ * @param format Printf-style format string
+ */
+void ar_io_info(const char *format, ...);
 
 /**
  * Safely prints to the specified stream with error checking
@@ -160,6 +169,24 @@ file_result_t ar_io_write_file(const char *filename,
 
 ## Usage Examples
 
+### Message Reporting
+
+```c
+// Informational message (to stdout)
+ar_io_info("Processing file %s", filename);
+
+// Warning message for non-critical issues (to stderr)
+if (file_size > MAX_RECOMMENDED_SIZE) {
+    ar_io_warning("File %s exceeds recommended size (%d bytes)", filename, file_size);
+}
+
+// Error message for critical issues (to stderr)
+if (result != FILE_SUCCESS) {
+    ar_io_error("Failed to process file %s: %s", filename, ar_io_error_message(result));
+    return false;
+}
+```
+
 ### Secure File Reading
 
 ```c
@@ -218,7 +245,10 @@ if (result != FILE_SUCCESS) {
 
 4. **Secure Permissions**: Always call `ar_io_set_secure_permissions` after creating new files with sensitive data. The write function does this automatically.
 
-5. **Error Message Handling**: Use the provided error reporting functions (`ar_io_error`, `ar_io_warning`) for consistent error messaging.
+5. **Message Handling**: Use the provided reporting functions (`ar_io_error`, `ar_io_warning`, `ar_io_info`) for consistent messaging:
+   - `ar_io_error`: For error messages that indicate problems (writes to stderr)
+   - `ar_io_warning`: For warning messages that indicate potential issues (writes to stderr)
+   - `ar_io_info`: For informational messages that track normal operation (writes to stdout)
 
 6. **Atomic Operations**: Use `ar_io_write_file` for all file writes that need to be atomic and secure.
 
@@ -238,7 +268,10 @@ The module provides comprehensive error handling:
 
 1. **Detailed Error Codes**: Each file operation returns a specific error code.
 2. **Human-Readable Messages**: The `ar_io_error_message` function converts error codes to readable messages.
-3. **Error Reporting**: The `ar_io_error` and `ar_io_warning` functions provide consistent error output.
+3. **Message Reporting System**:
+   - `ar_io_error`: Reports critical errors to stderr
+   - `ar_io_warning`: Reports non-critical warnings to stderr
+   - `ar_io_info`: Reports informational status messages to stdout
 4. **Recovery Mechanisms**: Automatic backup and restore functionality for error recovery.
 
 ## Platform Compatibility

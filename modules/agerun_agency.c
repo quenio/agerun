@@ -835,15 +835,15 @@ int ar_agency_update_agent_methods(const method_t *ref_old_method, const method_
     if (!ar_semver_are_compatible(
             ar_method_get_version(ref_old_method),
             ar_method_get_version(ref_new_method))) {
-        printf("Warning: Cannot update agents to incompatible method version\n");
+        ar_io_warning("Cannot update agents to incompatible method version");
         return 0;
     }
-    
+
     // Get method names for verification
     const char *old_name = ar_method_get_name(ref_old_method);
     const char *new_name = ar_method_get_name(ref_new_method);
     if (strcmp(old_name, new_name) != 0) {
-        printf("Warning: Cannot update agents to a different method name\n");
+        ar_io_warning("Cannot update agents to a different method name");
         return 0;
     }
     
@@ -873,9 +873,9 @@ int ar_agency_update_agent_methods(const method_t *ref_old_method, const method_
             agent_id_t agent_id = g_own_agents[i].id;
             
             // Step 1: Send sleep message
-            printf("Updating agent %lld from method %s version %s to version %s\n",
+            ar_io_fprintf(stdout, "Updating agent %lld from method %s version %s to version %s\n",
                    agent_id, old_name, old_version, new_version);
-                   
+
             // Send a copy of the sleep message
             data_t *own_sleep_copy = ar_data_create_string("__sleep__");
             if (own_sleep_copy) {

@@ -89,6 +89,39 @@ void ar_io_warning(const char *format, ...) {
 }
 
 /**
+ * Prints an informational message to stdout
+ * @param format Printf-style format string
+ */
+void ar_io_info(const char *format, ...) {
+    // Prepare a buffer for our formatted message with newline
+    char buffer[2048];
+
+    // No prefix for info messages, just format directly
+    va_list args;
+    va_start(args, format);
+
+    // Disable format-nonliteral warning for this function call
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wformat-nonliteral"
+    int msg_len = vsnprintf(buffer, sizeof(buffer) - 1, format, args); // Reserve space for newline
+    #pragma GCC diagnostic pop
+    va_end(args);
+
+    if (msg_len < 0 || msg_len >= (int)sizeof(buffer) - 2) {
+        // Message truncated, ensure null termination and add newline
+        buffer[sizeof(buffer) - 2] = '\n';
+        buffer[sizeof(buffer) - 1] = '\0';
+    } else {
+        // Add newline and null terminator
+        buffer[msg_len] = '\n';
+        buffer[msg_len + 1] = '\0';
+    }
+
+    // Write the complete message at once
+    fputs(buffer, stdout);
+}
+
+/**
  * Safely prints to the specified stream with error checking
  * @param stream Stream to print to
  * @param format Printf-style format string

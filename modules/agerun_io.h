@@ -20,6 +20,12 @@ void ar_io_error(const char *format, ...);
 void ar_io_warning(const char *format, ...);
 
 /**
+ * Prints an informational message to stdout
+ * @param format Printf-style format string
+ */
+void ar_io_info(const char *format, ...);
+
+/**
  * Safely prints to the specified stream with error checking
  * @param stream Stream to print to
  * @param format Printf-style format string
