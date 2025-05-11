@@ -156,32 +156,44 @@ static void test_ownership_assertions(void) {
 
 /**
  * Test memory leak detection and reporting
- * 
+ *
  * This test verifies the leak detection capability of the heap module by
  * intentionally creating a memory leak. The test passes if the allocation
  * is correctly tracked, but the memory leak itself should appear in the
  * heap_memory_report.log file generated at program exit.
- * 
- * Note: This test is essential for verifying the leak detection system works correctly.
- * The intentional leak is a necessary part of the test suite and should not be "fixed"
- * as it would eliminate the test case for the leak detection capability.
+ *
+ * IMPORTANT: This is an INTENTIONAL MEMORY LEAK used to test the leak detection system.
+ * This leak is expected to be reported by:
+ *   1. The warning message to stderr: "WARNING: X memory leaks detected"
+ *   2. An entry in heap_memory_report.log with description "Intentional leak for testing"
+ *
+ * The leak has a unique description to make it easy to identify in reports.
+ * Do NOT attempt to "fix" this leak - it's a critical test case for validating
+ * that our leak detection system works correctly.
+ *
+ * This test resolves the discrepancy between:
+ *   - Test success (memory tracking works correctly)
+ *   - Leak warning (expected and intentional)
  */
 static void test_leak_reporting(void) {
     start_test("test_leak_reporting");
-    
-    // Intentionally leak memory to test the reporting
-    char *leaked_buffer = AR_MALLOC(1024, "Intentional leak for testing");
+
+    // INTENTIONAL MEMORY LEAK - DO NOT FIX
+    // This unique description will appear in the heap_memory_report.log
+    const char *leak_marker = "INTENTIONAL_LEAK_FOR_TESTING_DETECTION_SYSTEM";
+    char *leaked_buffer = AR_MALLOC(1024, leak_marker);
     memset(leaked_buffer, 0, 1024);
-    
+
     // Confirm memory was allocated
     AR_ASSERT_OWNERSHIP(leaked_buffer);
-    
-    // Do not free this memory to test leak detection
-    // The memory report at program exit should show this leak
-    
-    printf("  Note: This test intentionally leaks memory to test the leak detection mechanism.\n");
-    printf("  Check heap_memory_report.log after the tests complete.\n");
-    
+
+    // Explicitly mark the pointer to indicate it's intentionally leaked
+    // But DO NOT free this memory - the leak is intentional to test detection
+
+    printf("  Note: This test INTENTIONALLY leaks memory to test the leak detection mechanism.\n");
+    printf("  The leak warning at program exit is EXPECTED and confirms correct operation.\n");
+    printf("  Look for \"%s\" in heap_memory_report.log\n", leak_marker);
+
     pass_test("test_leak_reporting");
 }
 

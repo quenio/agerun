@@ -139,10 +139,19 @@ int ar_heap_memory_remove(void *ptr) {
 
 /**
  * Generate a memory leak report
+ *
+ * This function generates a detailed report of all memory allocations and leaks.
+ * It handles several special cases:
+ *
+ * 1. Intentional memory leaks for testing (identified by specific description markers)
+ * 2. Regular memory leaks (requiring investigation and fixing)
+ *
+ * @note The report is written to heap_memory_report.log in the current directory
+ *       It contains detailed information about each allocation including source location
  */
 void ar_heap_memory_report(void) {
     if (!g_initialized) return;
-    
+
     // Create the report file in the current directory for consistency with the original code
     const char *report_path = "heap_memory_report.log";
 
@@ -156,64 +165,145 @@ void ar_heap_memory_report(void) {
 
     // Set secure file permissions for the file (restrict to owner read/write)
     chmod(report_path, S_IRUSR | S_IWUSR);
-    
+
     fprintf(report, "=====================================\n");
     fprintf(report, "  AgeRun Memory Tracking Report\n");
     fprintf(report, "=====================================\n\n");
-    
-    // Print statistics
+
+    // Calculate statistics for different leak categories
+    size_t intentional_leaks = 0;
+    size_t intentional_bytes = 0;
+    size_t actual_leaks = 0;
+    size_t actual_bytes = 0;
+
+    // Scan the records to categorize leaks
+    memory_record_t *curr = g_memory_records;
+    while (curr) {
+        // Check if this is an intentional leak for testing
+        // This pattern matches the marker used in heap_tests.c
+        if (strstr(curr->description, "INTENTIONAL_LEAK_FOR_TESTING") != NULL) {
+            intentional_leaks++;
+            intentional_bytes += curr->size;
+        } else {
+            actual_leaks++;
+            actual_bytes += curr->size;
+        }
+        curr = curr->next;
+    }
+
+    // Print categorized statistics
     fprintf(report, "Total allocations: %zu\n", g_total_allocations);
     fprintf(report, "Active allocations: %zu\n", g_active_allocations);
     fprintf(report, "Total memory allocated: %zu bytes\n", g_total_memory);
-    fprintf(report, "Active memory: %zu bytes\n\n", g_active_memory);
-    
+    fprintf(report, "Active memory: %zu bytes\n", g_active_memory);
+    fprintf(report, "Intentional test leaks: %zu (%zu bytes)\n", intentional_leaks, intentional_bytes);
+    fprintf(report, "Actual memory leaks: %zu (%zu bytes)\n\n", actual_leaks, actual_bytes);
+
     // Print memory leaks if any
     if (g_active_allocations > 0) {
         fprintf(report, "=====================================\n");
         fprintf(report, "  MEMORY LEAKS DETECTED: %zu\n", g_active_allocations);
         fprintf(report, "=====================================\n\n");
-        
-        memory_record_t *curr = g_memory_records;
-        int leak_count = 0;
-        
-        while (curr) {
-            leak_count++;
-            
-            // Format time
-            char time_str[26];
-            struct tm *tm_info = localtime(&curr->timestamp);
-            strftime(time_str, 26, "%Y-%m-%d %H:%M:%S", tm_info);
-            
-            fprintf(report, "Leak #%d:\n", leak_count);
-            fprintf(report, "  Address: %p\n", curr->ptr);
-            fprintf(report, "  Size: %zu bytes\n", curr->size);
-            fprintf(report, "  Allocated at: %s:%d\n", curr->file, curr->line);
-            fprintf(report, "  Description: %s\n", curr->description);
-            fprintf(report, "  Allocated on: %s\n\n", time_str);
-            
-            curr = curr->next;
+
+        // First print actual leaks (if any)
+        if (actual_leaks > 0) {
+            fprintf(report, "--------------------------------------\n");
+            fprintf(report, "  ACTUAL MEMORY LEAKS: %zu\n", actual_leaks);
+            fprintf(report, "  THESE NEED TO BE FIXED\n");
+            fprintf(report, "--------------------------------------\n\n");
+
+            int leak_count = 0;
+            curr = g_memory_records;
+
+            while (curr) {
+                // Skip intentional leaks in this section
+                if (strstr(curr->description, "INTENTIONAL_LEAK_FOR_TESTING") != NULL) {
+                    curr = curr->next;
+                    continue;
+                }
+
+                leak_count++;
+
+                // Format time
+                char time_str[26];
+                struct tm *tm_info = localtime(&curr->timestamp);
+                strftime(time_str, 26, "%Y-%m-%d %H:%M:%S", tm_info);
+
+                fprintf(report, "Leak #%d:\n", leak_count);
+                fprintf(report, "  Address: %p\n", curr->ptr);
+                fprintf(report, "  Size: %zu bytes\n", curr->size);
+                fprintf(report, "  Allocated at: %s:%d\n", curr->file, curr->line);
+                fprintf(report, "  Description: %s\n", curr->description);
+                fprintf(report, "  Allocated on: %s\n\n", time_str);
+
+                curr = curr->next;
+            }
+        }
+
+        // Then print intentional test leaks (if any)
+        if (intentional_leaks > 0) {
+            fprintf(report, "--------------------------------------\n");
+            fprintf(report, "  INTENTIONAL TEST LEAKS: %zu\n", intentional_leaks);
+            fprintf(report, "  THESE ARE EXPECTED - DO NOT FIX\n");
+            fprintf(report, "--------------------------------------\n\n");
+
+            int leak_count = 0;
+            curr = g_memory_records;
+
+            while (curr) {
+                // Only process intentional leaks in this section
+                if (strstr(curr->description, "INTENTIONAL_LEAK_FOR_TESTING") == NULL) {
+                    curr = curr->next;
+                    continue;
+                }
+
+                leak_count++;
+
+                // Format time
+                char time_str[26];
+                struct tm *tm_info = localtime(&curr->timestamp);
+                strftime(time_str, 26, "%Y-%m-%d %H:%M:%S", tm_info);
+
+                fprintf(report, "Intentional Leak #%d:\n", leak_count);
+                fprintf(report, "  Address: %p\n", curr->ptr);
+                fprintf(report, "  Size: %zu bytes\n", curr->size);
+                fprintf(report, "  Allocated at: %s:%d\n", curr->file, curr->line);
+                fprintf(report, "  Description: %s\n", curr->description);
+                fprintf(report, "  Allocated on: %s\n\n", time_str);
+
+                curr = curr->next;
+            }
         }
     } else {
         fprintf(report, "No memory leaks detected.\n");
     }
-    
+
     // Close the report
     fclose(report);
-    
-    // If there are leaks, also print to stderr
-    if (g_active_allocations > 0) {
-        fprintf(stderr, "WARNING: %zu memory leaks detected. See heap_memory_report.log for details.\n", g_active_allocations);
+
+    // Only print warning to stderr for non-intentional leaks
+    if (actual_leaks > 0) {
+        fprintf(stderr, "WARNING: %zu memory leaks detected (%zu bytes). See heap_memory_report.log for details.\n",
+                actual_leaks, actual_bytes);
+
+        if (intentional_leaks > 0) {
+            fprintf(stderr, "NOTE: %zu additional intentional test leaks (%zu bytes) were also detected and are expected.\n",
+                    intentional_leaks, intentional_bytes);
+        }
+    } else if (intentional_leaks > 0) {
+        fprintf(stderr, "NOTE: %zu intentional test leaks (%zu bytes) detected. These are expected and confirm leak detection is working.\n",
+                intentional_leaks, intentional_bytes);
     }
-    
+
     // Cleanup all records (to avoid memory leaks in our leak detector)
-    memory_record_t *curr = g_memory_records;
+    curr = g_memory_records;
     while (curr) {
         memory_record_t *next = curr->next;
         free(curr->description);
         free(curr);
         curr = next;
     }
-    
+
     g_memory_records = NULL;
     g_initialized = 0;
 }

@@ -236,16 +236,17 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Add file integrity validation mechanisms (completed 2025-05-10)
   - [x] Add recovery options for corrupted persistence files (completed 2025-05-10)
 
-- [ ] Debug and memory tracking improvements:
-  - [ ] Investigate memory leak warning discrepancy in heap tests
-  - [ ] Resolve difference between test memory leak detection and heap_memory_report.log
-  - [ ] Enhance the heap tracking mechanism to ensure consistent leak detection
-  - [ ] Address intentional leak test to be more explicit in its purpose and implementation
+- [x] Debug and memory tracking improvements: (completed 2025-05-10)
+  - [x] Investigate memory leak warning discrepancy in heap tests (completed 2025-05-10)
+  - [x] Resolve difference between test memory leak detection and heap_memory_report.log (completed 2025-05-10)
+  - [x] Enhance the heap tracking mechanism to ensure consistent leak detection (completed 2025-05-10)
+  - [x] Address intentional leak test to be more explicit in its purpose and implementation (completed 2025-05-10)
 
 - [ ] Build improvements:
   - [ ] Address linker errors during static analysis
-  - [ ] Fix empty file errors in temporary objects created during analysis
+  - [ ] Fix "file is empty" errors in temporary object files created during analysis
   - [ ] Improve Makefile to handle analysis errors more gracefully
   - [ ] Investigate and resolve "Not a directory" warnings in static analysis
-  - [ ] Install scan-build to use proper static analysis workflow
+  - [ ] Install scan-build to use proper static analysis workflow instead of direct clang analyzer
   - [ ] Filter or redirect linker errors from static analysis output for cleaner results
+  - [ ] Update static analysis to correctly handle mixed output from successful tests and analysis errors
