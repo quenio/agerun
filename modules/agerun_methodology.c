@@ -79,8 +79,7 @@ static bool ar_methodology_validate_file(const char *filename, char *error_messa
         char line_copy[256];
 
         // Make a copy of the line since strtok_r modifies it
-        strncpy(line_copy, line, sizeof(line_copy) - 1);
-        line_copy[sizeof(line_copy) - 1] = '\0';
+        ar_io_string_copy(line_copy, line, sizeof(line_copy));
 
         // Count tokens
         token = strtok_r(line_copy, " \t\n", &saveptr);
@@ -117,9 +116,8 @@ static bool ar_methodology_validate_file(const char *filename, char *error_messa
             return false;
         }
 
-        // Use memcpy with explicit null termination for safer copy
-        memcpy(method_name, token, token_len);
-        method_name[token_len] = '\0';  // Ensure null-termination
+        // Use safer string copy function
+        ar_io_string_copy(method_name, token, sizeof(method_name));
 
         // Validate method name is not empty
         if (strlen(method_name) == 0) {
@@ -843,8 +841,8 @@ bool ar_methodology_load_methods(void) {
                 return true;
             }
             
-            strncpy(version, line, sizeof(version) - 1);
-            version[sizeof(version) - 1] = '\0';  // Ensure null-termination
+            // Use safer string copy function
+            ar_io_string_copy(version, line, sizeof(version));
             
             // Buffer for instructions with security initialization
             char instructions[MAX_INSTRUCTIONS_LENGTH] = {0};

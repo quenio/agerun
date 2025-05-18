@@ -68,9 +68,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Add logging for ownership transfer operations (documented in instruction.md 2025-04-26)
   - [ ] Address issues identified by static analyzer:
     - [x] Fix potential memory leak in agerun_data.c with own_string_data (completed 2025-05-04)
-    - [ ] Replace unsafe string functions (strcpy, sprintf) with secure alternatives
-    - [ ] Fix insecure file I/O operations in agency and methodology modules
-    - [ ] Replace weak RNG (rand) with cryptographically secure alternatives
+    - [x] Replace unsafe string functions (strcpy, sprintf) with secure alternatives (completed 2025-05-18)
+    - [x] Fix insecure file I/O operations in agency and methodology modules (completed 2025-05-18)
+    - [x] Replace weak RNG (rand) with cryptographically secure alternatives (completed 2025-05-18)
 
 ## Long-term Architecture Improvements
 

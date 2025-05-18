@@ -291,8 +291,7 @@ static bool ar_agency_validate_file(const char *filename, char *error_message, s
         char line_copy[256];
 
         // Make a copy of the line since strtok_r modifies it
-        strncpy(line_copy, line, sizeof(line_copy) - 1);
-        line_copy[sizeof(line_copy) - 1] = '\0';
+        ar_io_string_copy(line_copy, line, sizeof(line_copy));
 
         // Count tokens
         token = strtok_r(line_copy, " \t\n", &saveptr);
@@ -578,9 +577,8 @@ bool ar_agency_load_agents(void) {
             break;
         }
 
-        // Use memcpy with explicit null termination for safer copy
-        memcpy(agent_info[i].method_name, token, token_len);
-        agent_info[i].method_name[token_len] = '\0';  // Ensure null-termination
+        // Use safer string copy function
+        ar_io_string_copy(agent_info[i].method_name, token, sizeof(agent_info[i].method_name));
 
         // Get the method version
         token = strtok_r(NULL, " \t\n", &next_token);
@@ -598,9 +596,8 @@ bool ar_agency_load_agents(void) {
             break;
         }
 
-        // Use memcpy with explicit null termination for safer copy
-        memcpy(agent_info[i].method_version, token, token_len);
-        agent_info[i].method_version[token_len] = '\0';  // Ensure null-termination
+        // Use safer string copy function
+        ar_io_string_copy(agent_info[i].method_version, token, sizeof(agent_info[i].method_version));
 
         // Validate the method name and version - basic sanity check
         if (strlen(agent_info[i].method_name) == 0 || strlen(agent_info[i].method_version) == 0) {
@@ -724,9 +721,8 @@ bool ar_agency_load_agents(void) {
                         break;
                     }
 
-                    // Use memcpy with explicit null termination for safer copy
-                    memcpy(key, mem_token, token_len);
-                    key[token_len] = '\0';  // Ensure null-termination
+                    // Use safer string copy function
+                    ar_io_string_copy(key, mem_token, sizeof(key));
 
                     // Get the type
                     mem_token = strtok_r(NULL, " \t\n", &mem_next_token);
@@ -742,9 +738,8 @@ bool ar_agency_load_agents(void) {
                         break;
                     }
 
-                    // Use memcpy with explicit null termination for safer copy
-                    memcpy(type, mem_token, token_len);
-                    type[token_len] = '\0';  // Ensure null-termination
+                    // Use safer string copy function
+                    ar_io_string_copy(type, mem_token, sizeof(type));
 
                     // Process based on type
                     data_t *own_value = NULL; // Will be an owned value after creation

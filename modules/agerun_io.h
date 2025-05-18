@@ -127,4 +127,23 @@ file_result_t ar_io_write_file(const char *filename,
  */
 const char* ar_io_error_message(file_result_t result);
 
+/**
+ * Safely copies a string with proper bounds checking and null termination
+ * @param dest Destination buffer
+ * @param src Source string to copy
+ * @param dest_size Size of the destination buffer (including space for null terminator)
+ * @return true if the copy was successful, false if truncation occurred
+ */
+bool ar_io_string_copy(char *dest, const char *src, size_t dest_size);
+
+/**
+ * Securely formats a string with proper bounds checking and null termination
+ * This is a safer replacement for sprintf
+ * @param dest Destination buffer
+ * @param dest_size Size of the destination buffer (including space for null terminator)
+ * @param format Printf-style format string
+ * @return true if formatting was successful, false if truncation occurred
+ */
+bool ar_io_string_format(char *dest, size_t dest_size, const char *format, ...);
+
 #endif /* AGERUN_IO_H */

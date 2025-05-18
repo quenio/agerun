@@ -614,3 +614,87 @@ const char* ar_io_error_message(file_result_t result) {
     }
 }
 
+/**
+ * Safely copies a string with proper bounds checking and null termination
+ * @param dest Destination buffer
+ * @param src Source string to copy
+ * @param dest_size Size of the destination buffer (including space for null terminator)
+ * @return true if the copy was successful, false if truncation occurred
+ */
+bool ar_io_string_copy(char *dest, const char *src, size_t dest_size) {
+    if (!dest || !src || dest_size == 0) {
+        if (dest && dest_size > 0) {
+            dest[0] = '\0'; // Ensure null termination if buffer exists
+        }
+        return false;
+    }
+
+    // Initialize destination to empty string for safety
+    dest[0] = '\0';
+    
+    // Calculate source length
+    size_t src_len = strlen(src);
+    
+    // Check if destination buffer is large enough
+    if (src_len >= dest_size) {
+        // Truncation required
+        // Copy as many characters as possible and add null terminator
+        memcpy(dest, src, dest_size - 1);
+        dest[dest_size - 1] = '\0';
+        return false; // Indicate truncation occurred
+    }
+    
+    // Copy the full string with null terminator
+    memcpy(dest, src, src_len);
+    dest[src_len] = '\0';
+    
+    return true;
+}
+
+/**
+ * Securely formats a string with proper bounds checking and null termination
+ * This is a safer replacement for sprintf
+ * @param dest Destination buffer
+ * @param dest_size Size of the destination buffer (including space for null terminator)
+ * @param format Printf-style format string
+ * @return true if formatting was successful, false if truncation occurred
+ */
+bool ar_io_string_format(char *dest, size_t dest_size, const char *format, ...) {
+    if (!dest || !format || dest_size == 0) {
+        if (dest && dest_size > 0) {
+            dest[0] = '\0'; // Ensure null termination if buffer exists
+        }
+        return false;
+    }
+
+    // Initialize destination to empty string for safety
+    dest[0] = '\0';
+    
+    va_list args;
+    va_start(args, format);
+    
+    // Format the string with vsnprintf which handles null termination and bounds checking
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wformat-nonliteral"
+    int result = vsnprintf(dest, dest_size, format, args);
+    #pragma GCC diagnostic pop
+    
+    va_end(args);
+    
+    // Check for errors or truncation
+    if (result < 0) {
+        // Formatting error
+        dest[0] = '\0';
+        return false;
+    }
+    
+    if ((size_t)result >= dest_size) {
+        // Truncation occurred
+        // vsnprintf already ensures null termination
+        return false;
+    }
+    
+    // Success
+    return true;
+}
+
