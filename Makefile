@@ -12,7 +12,7 @@ RELEASE_CFLAGS = -O3 -DNDEBUG
 # Address Sanitizer flags
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
 # Clang Static Analyzer command
-SCAN_BUILD = scan-build -o bin/scan-build-results
+SCAN_BUILD = PATH="/opt/homebrew/opt/llvm/bin:$$PATH" scan-build -o bin/scan-build-results
 # Analyzer flags directly for Clang (used when scan-build is not available)
 ANALYZER_FLAGS = -Xclang -analyze -Xclang -analyzer-checker=core -Xclang -analyzer-checker=unix \
                  -Xclang -analyzer-checker=deadcode -Xclang -analyzer-checker=security
@@ -101,32 +101,42 @@ clean:
 
 # Static analysis target
 analyze:
-	@if command -v scan-build >/dev/null 2>&1; then \
+	@if command -v /opt/homebrew/opt/llvm/bin/scan-build >/dev/null 2>&1 || command -v scan-build >/dev/null 2>&1; then \
 		mkdir -p bin/scan-build-results; \
-		$(SCAN_BUILD) $(MAKE) lib; \
+		$(SCAN_BUILD) $(MAKE) clean lib; \
 		echo "Static analysis results are available in bin/scan-build-results"; \
 	else \
 		echo "scan-build not found, using clang analyzer directly"; \
 		for file in $(SRC); do \
 			echo "Analyzing $$file..."; \
-			$(CC) $(CFLAGS) $(ANALYZER_FLAGS) -I./modules $$file; \
+			$(CC) $(CFLAGS) $(ANALYZER_FLAGS) -c -I./modules $$file; \
 		done; \
 		echo "Analysis complete. Look for analyzer warnings above."; \
 	fi
 
 # Static analysis for tests
 analyze-tests:
-	@if command -v scan-build >/dev/null 2>&1; then \
+	@if command -v /opt/homebrew/opt/llvm/bin/scan-build >/dev/null 2>&1 || command -v scan-build >/dev/null 2>&1; then \
 		mkdir -p bin/scan-build-results; \
-		$(SCAN_BUILD) $(MAKE) test_lib; \
+		$(SCAN_BUILD) $(MAKE) clean test_lib; \
 		echo "Static analysis results are available in bin/scan-build-results"; \
 	else \
 		echo "scan-build not found, using clang analyzer directly"; \
 		for file in $(SRC) $(TEST_SRC); do \
 			echo "Analyzing $$file..."; \
-			$(CC) $(CFLAGS) $(ANALYZER_FLAGS) -I./modules $$file; \
+			$(CC) $(CFLAGS) $(ANALYZER_FLAGS) -c -I./modules $$file; \
 		done; \
 		echo "Analysis complete. Look for analyzer warnings above."; \
 	fi
 
 .PHONY: all debug release sanitize clean test test-sanitize executable executable-sanitize run run-sanitize analyze analyze-tests
+
+# Helper to install scan-build
+install-scan-build:
+	@echo "Installing scan-build via Homebrew..."
+	@if command -v brew >/dev/null 2>&1; then \
+		brew install llvm; \
+		echo "LLVM and scan-build installed. Run 'export PATH="/opt/homebrew/opt/llvm/bin:$$PATH"' to use it."; \
+	else \
+		echo "Homebrew not found. Please install LLVM and scan-build manually."; \
+	fi

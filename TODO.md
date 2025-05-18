@@ -242,11 +242,11 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Enhance the heap tracking mechanism to ensure consistent leak detection (completed 2025-05-10)
   - [x] Address intentional leak test to be more explicit in its purpose and implementation (completed 2025-05-10)
 
-- [ ] Build improvements:
-  - [ ] Address linker errors during static analysis
-  - [ ] Fix "file is empty" errors in temporary object files created during analysis
-  - [ ] Improve Makefile to handle analysis errors more gracefully
-  - [ ] Investigate and resolve "Not a directory" warnings in static analysis
-  - [ ] Install scan-build to use proper static analysis workflow instead of direct clang analyzer
-  - [ ] Filter or redirect linker errors from static analysis output for cleaner results
-  - [ ] Update static analysis to correctly handle mixed output from successful tests and analysis errors
+- [x] Build improvements: (completed 2025-05-18)
+  - [x] Address linker errors during static analysis (completed 2025-05-18)
+  - [x] Fix "file is empty" errors in temporary object files created during analysis (completed 2025-05-18)
+  - [x] Improve Makefile to handle analysis errors more gracefully (completed 2025-05-18)
+  - [x] Investigate and resolve "Not a directory" warnings in static analysis (completed 2025-05-18)
+  - [x] Install scan-build to use proper static analysis workflow instead of direct clang analyzer (completed 2025-05-18)
+  - [x] Filter or redirect linker errors from static analysis output for cleaner results (completed 2025-05-18)
+  - [x] Update static analysis to correctly handle mixed output from successful tests and analysis errors (completed 2025-05-18)
