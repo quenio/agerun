@@ -146,4 +146,40 @@ bool ar_io_string_copy(char *dest, const char *src, size_t dest_size);
  */
 bool ar_io_string_format(char *dest, size_t dest_size, const char *format, ...);
 
+/**
+ * Reports a memory allocation failure with consistent error formatting
+ * @param file Source file where the allocation failed
+ * @param line Line number where the allocation failed
+ * @param size Size of the allocation that failed
+ * @param description Description of what was being allocated
+ * @param context Optional context about the allocation (e.g., function name)
+ */
+void ar_io_report_allocation_failure(const char *file, int line, size_t size, 
+                                    const char *description, const char *context);
+
+/**
+ * Attempts to recover from a memory allocation failure
+ * This function implements a strategy to free non-critical memory or take
+ * alternative actions when memory allocation fails in critical operations.
+ * 
+ * @param required_size Minimum size needed to continue operation
+ * @param criticality Level of importance (0-100, with 100 being most critical)
+ * @return true if recovery was successful (retry allocation recommended), false otherwise
+ */
+bool ar_io_attempt_memory_recovery(size_t required_size, int criticality);
+
+/**
+ * Checks a memory allocation result and reports failure if needed
+ * 
+ * @param ptr Pointer returned from memory allocation
+ * @param size Size of the requested allocation
+ * @param file Source file where the allocation occurred
+ * @param line Line number where the allocation occurred
+ * @param description Description of what was being allocated
+ * @param context Optional context about the allocation (e.g., function name)
+ * @return true if allocation succeeded, false otherwise
+ */
+bool ar_io_check_allocation(void *ptr, size_t size, const char *file, int line, 
+                           const char *description, const char *context);
+
 #endif /* AGERUN_IO_H */

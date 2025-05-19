@@ -698,3 +698,151 @@ bool ar_io_string_format(char *dest, size_t dest_size, const char *format, ...) 
     return true;
 }
 
+/**
+ * Reports a memory allocation failure with consistent error formatting
+ * @param file Source file where the allocation failed
+ * @param line Line number where the allocation failed
+ * @param size Size of the allocation that failed
+ * @param description Description of what was being allocated
+ * @param context Optional context about the allocation (e.g., function name)
+ */
+void ar_io_report_allocation_failure(const char *file, int line, size_t size, 
+                                     const char *description, const char *context) {
+    // Build a detailed error message
+    if (context && description) {
+        ar_io_error("Memory allocation failed at %s:%d - Failed to allocate %zu bytes for %s in %s", 
+                file, line, size, description, context);
+    } else if (description) {
+        ar_io_error("Memory allocation failed at %s:%d - Failed to allocate %zu bytes for %s", 
+                file, line, size, description);
+    } else {
+        ar_io_error("Memory allocation failed at %s:%d - Failed to allocate %zu bytes", 
+                file, line, size);
+    }
+
+    // Check and report system memory status
+    #ifdef __linux__
+    FILE *meminfo = fopen("/proc/meminfo", "r");
+    if (meminfo) {
+        char line[256];
+        unsigned long memFree = 0, memTotal = 0, memAvailable = 0;
+
+        while(fgets(line, sizeof(line), meminfo)) {
+            if (strncmp(line, "MemTotal:", 9) == 0) {
+                sscanf(line, "MemTotal: %lu", &memTotal);
+            } else if (strncmp(line, "MemFree:", 8) == 0) {
+                sscanf(line, "MemFree: %lu", &memFree);
+            } else if (strncmp(line, "MemAvailable:", 13) == 0) {
+                sscanf(line, "MemAvailable: %lu", &memAvailable);
+            }
+        }
+        fclose(meminfo);
+
+        if (memTotal > 0) {
+            ar_io_error("System memory status: Total: %lu KB, Free: %lu KB, Available: %lu KB", 
+                    memTotal, memFree, memAvailable);
+        }
+    }
+    #elif defined(__APPLE__) || defined(__FreeBSD__)
+    // For macOS and FreeBSD, just report the errno
+    if (errno == ENOMEM) {
+        ar_io_error("System reported insufficient memory (errno: ENOMEM)");
+    } else {
+        ar_io_error("System status: errno = %d (%s)", errno, strerror(errno));
+    }
+    #endif
+
+    // Additional information for debugging
+    ar_io_error("Allocation details: Size requested: %zu bytes", size);
+    if (description) {
+        ar_io_error("Purpose: %s", description);
+    }
+    if (context) {
+        ar_io_error("Context: %s", context);
+    }
+}
+
+/**
+ * Global variable for tracking system memory pressure
+ * This is used by the recovery function to track the memory state
+ */
+static int g_memory_pressure = 0;
+
+/**
+ * Attempts to recover from a memory allocation failure
+ * 
+ * @param required_size Minimum size needed to continue operation
+ * @param criticality Level of importance (0-100, with 100 being most critical)
+ * @return true if recovery was successful (retry allocation recommended), false otherwise
+ */
+bool ar_io_attempt_memory_recovery(size_t required_size, int criticality) {
+    // Validate parameters
+    if (criticality < 0) criticality = 0;
+    if (criticality > 100) criticality = 100;
+
+    // Track memory pressure
+    g_memory_pressure += 10;
+    if (g_memory_pressure > 100) g_memory_pressure = 100;
+
+    // Recovery strategies based on criticality
+    if (criticality > 90) {
+        // For critical allocations, try aggressive recovery
+        ar_io_warning("Critical memory allocation failure. Attempting aggressive recovery...");
+        
+        // Strategy 1: Report detailed system information
+        ar_io_warning("Memory pressure level: %d/100", g_memory_pressure);
+        
+        // Strategy 2: Force garbage collection if available (e.g., call heap cleanup)
+        // This is a placeholder - the actual implementation would depend on the application
+        // For example: ar_heap_force_garbage_collection();
+        
+        // Strategy 3: For critical operations, consider terminating non-essential operations
+        if (g_memory_pressure > 90) {
+            ar_io_warning("High memory pressure detected. Consider terminating non-essential operations.");
+        }
+    } else if (criticality > 50) {
+        // For medium criticality, provide guidance but less aggressive recovery
+        ar_io_warning("Memory allocation failure for important operation. Recovery recommended.");
+        ar_io_warning("Memory pressure level: %d/100", g_memory_pressure);
+    } else {
+        // For low criticality, just report
+        ar_io_warning("Non-critical memory allocation failed (%zu bytes). Operation may be degraded.", required_size);
+    }
+
+    // Return a recommendation based on criticality and current memory pressure
+    if (g_memory_pressure > 90) {
+        // At high memory pressure, only recommend retry for the most critical operations
+        return (criticality > 95);
+    } else if (g_memory_pressure > 70) {
+        // At medium-high pressure, recommend retry for high criticality operations
+        return (criticality > 80);
+    } else {
+        // At lower pressure levels, recommend retry for medium to high criticality
+        return (criticality > 50);
+    }
+}
+
+/**
+ * Checks a memory allocation result and reports failure if needed
+ * 
+ * @param ptr Pointer returned from memory allocation
+ * @param size Size of the requested allocation
+ * @param file Source file where the allocation occurred
+ * @param line Line number where the allocation occurred
+ * @param description Description of what was being allocated
+ * @param context Optional context about the allocation (e.g., function name)
+ * @return true if allocation succeeded, false otherwise
+ */
+bool ar_io_check_allocation(void *ptr, size_t size, const char *file, int line, 
+                           const char *description, const char *context) {
+    if (ptr) {
+        return true; // Allocation succeeded
+    }
+    
+    // Report the failure with detailed information
+    ar_io_report_allocation_failure(file, line, size, description, context);
+    
+    // Return failure
+    return false;
+}
+

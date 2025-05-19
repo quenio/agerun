@@ -64,7 +64,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [ ] Ensure consistent ownership transfer documentation
 
 - [ ] Improve error handling:
-  - [ ] Add better error reporting for memory allocation failures
+  - [x] Add better error reporting for memory allocation failures (completed 2025-05-19)
   - [x] Add logging for ownership transfer operations (documented in instruction.md 2025-04-26)
   - [ ] Address issues identified by static analyzer:
     - [x] Fix potential memory leak in agerun_data.c with own_string_data (completed 2025-05-04)
