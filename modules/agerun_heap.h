@@ -1,7 +1,7 @@
 #ifndef AGERUN_HEAP_H
 #define AGERUN_HEAP_H
 
-#include <assert.h>
+#include "agerun_assert.h"
 #include <stddef.h>
 
 /**
@@ -10,61 +10,11 @@
  * This module provides:
  * - Memory allocation tracking and leak detection
  * - Wrappers for standard memory allocation functions (malloc, calloc, realloc, strdup, free)
- * - Runtime assertion macros to enforce memory ownership rules
  * - Detailed memory usage reporting
  * 
  * All tracking and validation logic is conditionally compiled using the DEBUG macro,
  * ensuring zero overhead in release builds.
  */
-
-/**
- * General assertion macro for checking conditions in debug builds.
- * In release builds, this becomes a no-op.
- */
-#ifdef DEBUG
-#define AR_ASSERT(cond, msg) assert((cond) && msg)
-#else
-#define AR_ASSERT(cond, msg) ((void)0)
-#endif
-
-/**
- * Helper macro for checking ownership invariants in debug builds.
- * In release builds, this becomes a no-op.
- * 
- * Use this to verify that pointers that should never be NULL (like owned
- * values after creation) actually have valid values.
- */
-#ifdef DEBUG
-#define AR_ASSERT_OWNERSHIP(ptr) assert((ptr) != NULL && "Ownership violation: NULL pointer")
-#else
-#define AR_ASSERT_OWNERSHIP(ptr) ((void)0)
-#endif
-
-/**
- * Helper macro for validating that a pointer is NULL after ownership transfer.
- * In release builds, this becomes a no-op.
- * 
- * Use this to verify that pointers have been properly set to NULL after
- * their ownership has been transferred to another function or container.
- */
-#ifdef DEBUG
-#define AR_ASSERT_TRANSFERRED(ptr) assert((ptr) == NULL && "Ownership violation: Pointer not NULL after transfer")
-#else
-#define AR_ASSERT_TRANSFERRED(ptr) ((void)0)
-#endif
-
-/**
- * Helper macro for checking that a pointer is not used after being freed.
- * In release builds, this becomes a no-op.
- * 
- * This is particularly useful for local variables that are destroyed and
- * should not be accessed afterward.
- */
-#ifdef DEBUG
-#define AR_ASSERT_NOT_USED_AFTER_FREE(ptr) assert((ptr) == NULL && "Usage after free: Pointer accessed after being freed")
-#else
-#define AR_ASSERT_NOT_USED_AFTER_FREE(ptr) ((void)0)
-#endif
 
 /* Memory tracking functions that are only available in debug builds */
 #ifdef DEBUG
@@ -187,7 +137,6 @@ char *ar_heap_strdup(const char *str, const char *file, int line, const char *de
  * @note After calling AR_FREE, you MUST set the pointer to NULL to prevent use-after-free errors.
  *       AR_FREE(ptr); ptr = NULL;
  */
-
 void ar_heap_free(void *ptr);
 
 /**

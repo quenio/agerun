@@ -5,6 +5,7 @@
 #include "agerun_agent.h"
 #include "agerun_map.h"
 #include "agerun_heap.h"
+#include "agerun_assert.h" /* Include the assertion utilities */
 
 #include <stdio.h>
 #include <stdlib.h>

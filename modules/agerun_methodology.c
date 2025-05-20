@@ -5,6 +5,7 @@
 #include "agerun_semver.h"
 #include "agerun_agency.h"
 #include "agerun_io.h" /* Include the I/O utilities */
+#include "agerun_assert.h" /* Include the assertion utilities */
 
 #include <stdio.h>
 #include <stdlib.h>

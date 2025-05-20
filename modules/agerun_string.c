@@ -1,5 +1,6 @@
 #include "agerun_string.h"
 #include "agerun_heap.h"
+#include "agerun_assert.h" /* Include the assertion utilities */
 
 #include <ctype.h>
 #include <string.h>

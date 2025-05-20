@@ -67,13 +67,15 @@ agerun_executable
 │   │   │   ├── agerun_string
 │   │   │   └── agerun_data
 │   │   ├── agerun_data
-│   │   └── agerun_string
+│   │   ├── agerun_string
+│   │   └── agerun_assert
 │   ├── agerun_methodology
 │   │   ├── agerun_method
 │   │   ├── agerun_semver
 │   │   ├── agerun_agency
 │   │   ├── agerun_io
-│   │   └── agerun_string
+│   │   ├── agerun_string
+│   │   └── agerun_assert
 │   ├── agerun_agency
 │   │   └── agerun_io
 │   ├── agerun_data
@@ -85,7 +87,8 @@ agerun_executable
     ├── agerun_semver
     ├── agerun_agency
     ├── agerun_io
-    └── agerun_string
+    ├── agerun_string
+    └── agerun_assert
 ```
 
 ## Module Layers
@@ -101,8 +104,8 @@ The AgeRun system is organized into hierarchical layers, with each layer buildin
                                ▼
 ┌───────────────────────────────────────────────────────────┐
 │                      Core Modules                         │
-│  (agerun_string, agerun_list, agerun_map, agerun_io,      │
-│   agerun_semver)                                          │
+│  (agerun_assert, agerun_string, agerun_list, agerun_map,  │
+│   agerun_io, agerun_semver)                               │
 └───────────────────────────────────────────────────────────┘
 ```
 
@@ -111,6 +114,18 @@ This layering reflects the dependency structure of the system, with higher layer
 ## Core Modules
 
 Core modules have minimal or no dependencies on other modules and provide essential low-level functionality that other modules build upon. These modules form the base layer of the system architecture and are designed to be simple, focused, and highly reusable.
+
+### Assert Module (`agerun_assert`)
+
+The [assert module](agerun_assert.md) provides assertion utilities for runtime validation, particularly focused on memory ownership validation:
+
+- **Runtime Condition Checking**: Provides general assertion macro for checking conditions in debug builds
+- **Ownership Validation**: Includes specialized macros for verifying memory ownership invariants
+- **Zero Runtime Cost**: All assertion macros compile to no-ops in release builds
+- **Ownership Transfer Validation**: Checks that pointers are properly marked as NULL after ownership transfer
+- **Usage-After-Free Detection**: Verifies that freed pointers are not accessed
+- **No Dependencies**: The module depends only on the standard C `assert.h` header
+- **Conditionally Compiled**: All validation checks only run in debug builds for optimal performance
 
 ### String Module (`agerun_string`)
 
