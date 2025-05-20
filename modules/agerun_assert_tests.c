@@ -21,12 +21,14 @@
  */
 static void test_ar_assert_true(void) {
     // Given a condition that evaluates to true
-    int value = 42;
+    int test_value = 42;
+    // Prevent unused variable warning
+    (void)test_value;
     
     // When using AR_ASSERT with this condition
-    AR_ASSERT(value == 42, "Value should be 42");
-    AR_ASSERT(value > 0, "Value should be positive");
-    AR_ASSERT(value != 0, "Value should not be zero");
+    AR_ASSERT(test_value == 42, "Value should be 42");
+    AR_ASSERT(test_value > 0, "Value should be positive");
+    AR_ASSERT(test_value != 0, "Value should not be zero");
     
     // Then the assertions should pass without terminating the program
     printf("AR_ASSERT with true conditions passed\n");
@@ -58,10 +60,12 @@ static void test_ar_assert_ownership(void) {
  */
 static void test_ar_assert_transferred(void) {
     // Given a NULL pointer (representing a transferred pointer)
-    int *own_value = NULL;
+    int *transferred_ptr = NULL;
+    // Prevent unused variable warning
+    (void)transferred_ptr;
     
     // When using AR_ASSERT_TRANSFERRED with this pointer
-    AR_ASSERT_TRANSFERRED(own_value);
+    AR_ASSERT_TRANSFERRED(transferred_ptr);
     
     // Then the assertion should pass without terminating the program
     printf("AR_ASSERT_TRANSFERRED with NULL pointer passed\n");
@@ -72,10 +76,12 @@ static void test_ar_assert_transferred(void) {
  */
 static void test_ar_assert_not_used_after_free(void) {
     // Given a NULL pointer (representing a freed pointer)
-    int *own_value = NULL;
+    int *freed_ptr = NULL;
+    // Prevent unused variable warning
+    (void)freed_ptr;
     
     // When using AR_ASSERT_NOT_USED_AFTER_FREE with this pointer
-    AR_ASSERT_NOT_USED_AFTER_FREE(own_value);
+    AR_ASSERT_NOT_USED_AFTER_FREE(freed_ptr);
     
     // Then the assertion should pass without terminating the program
     printf("AR_ASSERT_NOT_USED_AFTER_FREE with NULL pointer passed\n");
