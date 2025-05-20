@@ -22,8 +22,6 @@
 static void test_ar_assert_true(void) {
     // Given a condition that evaluates to true
     int test_value = 42;
-    // Prevent unused variable warning
-    (void)test_value;
     
     // When using AR_ASSERT with this condition
     AR_ASSERT(test_value == 42, "Value should be 42");
@@ -61,8 +59,6 @@ static void test_ar_assert_ownership(void) {
 static void test_ar_assert_transferred(void) {
     // Given a NULL pointer (representing a transferred pointer)
     int *transferred_ptr = NULL;
-    // Prevent unused variable warning
-    (void)transferred_ptr;
     
     // When using AR_ASSERT_TRANSFERRED with this pointer
     AR_ASSERT_TRANSFERRED(transferred_ptr);
@@ -77,8 +73,6 @@ static void test_ar_assert_transferred(void) {
 static void test_ar_assert_not_used_after_free(void) {
     // Given a NULL pointer (representing a freed pointer)
     int *freed_ptr = NULL;
-    // Prevent unused variable warning
-    (void)freed_ptr;
     
     // When using AR_ASSERT_NOT_USED_AFTER_FREE with this pointer
     AR_ASSERT_NOT_USED_AFTER_FREE(freed_ptr);

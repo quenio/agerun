@@ -94,7 +94,11 @@ test-sanitize: sanitize bin $(TEST_BIN)
 bin/%_tests: bin/obj/%_tests.o test_lib
 	$(CC) $(CFLAGS) -o $@ $< bin/libagerun.a $(LDFLAGS)
 
-# Compile source files
+# Compile source files (always with debug for test files)
+bin/obj/%_tests.o: modules/%_tests.c | bin
+	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
+
+# Compile regular source files
 bin/obj/%.o: modules/%.c | bin
 	$(CC) $(CFLAGS) -c $< -o $@
 
