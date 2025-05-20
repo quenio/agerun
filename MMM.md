@@ -4,6 +4,8 @@ This document describes the memory management model used throughout the AgeRun p
 
 > Inspired by the [Mojo ownership model](https://www.modular.com/blog/deep-dive-into-ownership-in-mojo)
 
+For debugging support and ownership validation, see the [Assert Module Documentation](./modules/agerun_assert.md).
+
 ## Core Concepts
 
 AgeRun implements a memory ownership model with three fundamental value categories:
@@ -64,6 +66,14 @@ AgeRun implements a memory ownership model with three fundamental value categori
    - For non-transferring calls:
      - Use `ref_` prefix for read-only access (always with `const` qualifier)
      - Use `mut_` prefix for mutable access
+
+6. **Ownership Validation with Assertions:**
+   - Debug-only validation is provided through the assert module
+   - For complex resource management, use `AR_ASSERT_OWNERSHIP()` to validate critical allocations
+   - For non-obvious transfers, use `AR_ASSERT_TRANSFERRED()` after setting transferred pointers to NULL
+   - For preventing use-after-free, use `AR_ASSERT_NOT_USED_AFTER_FREE()` before potential reuse points
+   - See the [Assert Module Documentation](./modules/agerun_assert.md) for detailed guidelines
+   - Assertions should be used strategically rather than excessively
 
 ## Module-Specific Ownership Guidelines
 
@@ -436,12 +446,14 @@ When debugging memory issues:
    // For borrowed references (BValues)
    const data_t *ref_data = ar_data_get_map_value(map, "key");
    ```
-7. Add debug assertions to check for null pointers after transfers:
+7. Use assertion macros from the assert module to verify ownership invariants:
    ```c
    own_data_t *own_value = ar_data_create_integer(42);
+   AR_ASSERT_OWNERSHIP(own_value); // Verify ownership after creation
+   
    ar_data_set_map_value(mut_map, "key", own_value);
    own_value = NULL;
-   assert(own_value == NULL); // Verify the transfer marker is applied
+   AR_ASSERT_TRANSFERRED(own_value); // Verify proper transfer marker
    ```
 
 ## Development Guidelines for Ownership
@@ -481,7 +493,11 @@ All developers working on the AgeRun codebase MUST adhere to the following guide
 5. **Code Enforcement:**
    - Regular static analysis runs are MANDATORY
    - Valgrind or similar memory checker runs are REQUIRED before release
-   - Developers MUST add assertions to verify ownership invariants in debug builds
+   - Developers MUST use the assertion macros from the assert module to verify ownership invariants:
+     - `AR_ASSERT_OWNERSHIP()` - Verify pointers are non-NULL after creation
+     - `AR_ASSERT_TRANSFERRED()` - Verify pointers are NULL after ownership transfer
+     - `AR_ASSERT_NOT_USED_AFTER_FREE()` - Verify freed pointers are not accessed
+     - These assertions are automatically disabled in release builds for zero overhead
 
 Violating these guidelines is considered a serious issue. Code that doesn't follow these rules must be fixed immediately, as ownership violations lead to memory corruption, crashes, and security vulnerabilities.
 
@@ -489,8 +505,7 @@ Violating these guidelines is considered a serious issue. Code that doesn't foll
 
 We are considering adding:
 1. Debug-only ownership tracking that logs all ownership transfers
-2. Helper macros to enforce ownership rules at compile time
-3. Reference counting for complex ownership scenarios
-4. Sanitizer options in debug builds to detect ownership violations
-5. Custom static analysis rules to verify ownership transfer patterns
-6. Automated test generation for ownership boundary cases
+2. Reference counting for complex ownership scenarios where needed
+3. Sanitizer options in debug builds to detect ownership violations
+4. Custom static analysis rules to verify ownership transfer patterns
+5. Automated test generation for ownership boundary cases

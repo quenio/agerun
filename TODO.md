@@ -212,6 +212,15 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Recently Completed Security and Documentation Improvements
 
+- [x] Module refactoring for better organization: (completed 2025-05-20)
+  - [x] Create new assert module to centralize assertion utilities (completed 2025-05-20)
+  - [x] Move all assertion macros from heap module to assert module (completed 2025-05-20)
+  - [x] Create comprehensive documentation for the assert module (completed 2025-05-20)
+  - [x] Update module dependency tree to include assert module (completed 2025-05-20)
+  - [x] Add assert module to module layer diagrams (completed 2025-05-20)
+  - [x] Update MMM.md with references to assert module (completed 2025-05-20)
+  - [x] Update existing files to use the new assert module (completed 2025-05-20)
+
 - [x] Improve file I/O operations: (completed 2025-05-10)
   - [x] Rename agerun_safe_io to agerun_io for consistency with other modules (completed 2025-05-10)
   - [x] Create comprehensive documentation for the IO module (completed 2025-05-10)
@@ -250,3 +259,35 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Install scan-build to use proper static analysis workflow instead of direct clang analyzer (completed 2025-05-18)
   - [x] Filter or redirect linker errors from static analysis output for cleaner results (completed 2025-05-18)
   - [x] Update static analysis to correctly handle mixed output from successful tests and analysis errors (completed 2025-05-18)
+
+## Memory Management Improvements (as of 2025-05-19)
+
+- [ ] Memory tracking improvements:
+  - [ ] Convert all direct malloc/free calls to AR_MALLOC/AR_FREE macros for better memory tracking
+  - [ ] Update modules to benefit from debug-mode memory tracking features
+  - [ ] Add memory leak detection to all test modules
+
+- [ ] Memory error handling enhancements:
+  - [ ] Extend IO module error recovery mechanisms to other modules
+  - [ ] Implement recovery strategies for critical memory operations across all modules
+  - [ ] Add memory pressure monitoring to high-memory operations
+
+- [x] Memory ownership safety enhancements: (completed 2025-05-20)
+  - [x] Create dedicated assert module for ownership validation (completed 2025-05-20)
+  - [x] Evaluate need for AR_ASSERT ownership macros across all modules (completed 2025-05-20)
+    - Analysis showed existing code already follows good ownership practices
+    - Ownership is already well-documented with prefixes and comments
+    - Pointers are consistently set to NULL after ownership transfer
+    - Current memory management already addresses most ownership safety concerns
+  - [x] Analyze functions taking owned values for validation needs (completed 2025-05-20)
+  - [x] Evaluate ownership transfer points for assertion needs (completed 2025-05-20)
+
+- [ ] Memory failure testing improvements:
+  - [ ] Create specific test cases for memory allocation failure scenarios
+  - [ ] Implement fault injection for memory allocation testing
+  - [ ] Test cascading cleanup scenarios when nested allocations fail
+
+- [ ] Memory management standardization:
+  - [ ] Create standard cleanup patterns for commonly used data structures
+  - [ ] Formalize rules for when to use NULL pointer checks vs assertions
+  - [ ] Add memory management checklist to contributor guidelines

@@ -1,6 +1,7 @@
 #include "agerun_data.h"
 #include "agerun_string.h"
 #include "agerun_list.h"
+#include "agerun_assert.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>

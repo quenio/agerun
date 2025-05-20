@@ -6,6 +6,7 @@
 #include "agerun_method.h"
 #include "agerun_methodology.h"
 #include "agerun_agent.h" // Required only for agent_id_t and ar_agent_send
+#include "agerun_assert.h" // Include for ownership assertions
 
 #include <stdio.h>
 #include <stdlib.h>

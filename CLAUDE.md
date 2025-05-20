@@ -142,6 +142,14 @@ IMPORTANT:
      - Mark transferred pointers with NULL after ownership transfer (e.g., `own_value = NULL;`)
      - Add a comment at every return statement that returns locally owned memory with the text "// Ownership transferred to caller"
      - This makes ownership transfer points explicitly visible in the implementation
+   - Use debug assertions strategically for memory ownership validation:
+     - Use `AR_ASSERT_OWNERSHIP()` for validating critical resource allocations, but not right after explicit NULL checks
+     - Use `AR_ASSERT_TRANSFERRED()` for complex ownership transfers, especially across module boundaries
+     - Use `AR_ASSERT_NOT_USED_AFTER_FREE()` in functions with complex reuse patterns
+     - Avoid excessive assertions for simple, well-tested ownership patterns
+     - Prefer using assertions for complex resource management paths, non-obvious ownership transfers, and debugging known memory issues
+     - Never use assertions to replace proper error handling for expected failures
+     - See the agerun_assert.md document for complete guidelines on assertion usage
    - For expression evaluation, follow these memory ownership rules:
      - Direct memory access expressions (e.g., `memory.x`) return references that should NOT be destroyed
      - Arithmetic expressions (e.g., `2 + 3`) return new objects that MUST be destroyed
