@@ -30,13 +30,13 @@ When making changes, always follow these steps to ensure code quality:
    ```
    make test
    ```
-   (The Makefile handles changing to the bin directory)
+   (The Makefile handles changing to the bin directory and always builds tests in debug mode)
 
 5. **Run the executable**:
    ```
    make run
    ```
-   (The Makefile handles changing to the bin directory)
+   (The Makefile handles changing to the bin directory and always builds the executable in debug mode)
 
 6. **Run sanitize tests**:
    ```
@@ -56,10 +56,12 @@ IMPORTANT:
 - Always run sanitize tests and executable after regular tests to catch memory-related issues that regular tests might miss.
 - Always run `make` from the top-level of the repository.
 - Always run tests and the executable with the `bin` directory as the current directory.
-- The Makefile has been set up to handle this directory requirement:
-  - The `test` target automatically changes to the `bin` directory before running tests
-  - The `run` target automatically changes to the `bin` directory before running the executable
+- The Makefile has been set up for optimal development:
+  - The `test` target automatically enables debug mode and all assertions
+  - The `executable` and `run` targets automatically enable debug mode
+  - The test and run targets automatically change to the `bin` directory
   - When running these targets, you can simply use `make test` and `make run` from the top level
+  - Debug assertions are always active during development and testing to catch issues early
 - When updating markdown files or other documentation, it is not necessary to run tests and executable as these changes don't affect functionality
 
 ## Project Structure

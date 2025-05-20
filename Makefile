@@ -51,10 +51,12 @@ lib: bin $(OBJ)
 	ar rcs bin/libagerun.a $(OBJ)
 	
 # Test library target (including all obj files but not test files)
+test_lib: CFLAGS += $(DEBUG_CFLAGS)
 test_lib: bin $(OBJ) $(TEST_OBJ)
 	ar rcs bin/libagerun.a $(OBJ)
 
-# Executable application - build only
+# Executable application - build only (always in debug mode)
+executable: CFLAGS += $(DEBUG_CFLAGS)
 executable: lib bin
 	$(CC) $(CFLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS)
 
@@ -62,7 +64,7 @@ executable: lib bin
 executable-sanitize: sanitize bin
 	$(CC) $(CFLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS)
 
-# Run the executable
+# Run the executable (always in debug mode)
 run: executable
 	cd bin && ./agerun
 
@@ -73,7 +75,8 @@ run-sanitize: executable-sanitize
 # Define test executables without bin/ prefix for use in the bin directory
 TEST_BIN_NAMES = $(notdir $(TEST_BIN))
 
-# Build and run tests
+# Build and run tests (always in debug mode)
+test: CFLAGS += $(DEBUG_CFLAGS)
 test: bin $(TEST_BIN)
 	@cd bin && rm -f *.agerun && for test in $(TEST_BIN_NAMES); do \
 		echo "Running $$test"; \
