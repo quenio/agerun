@@ -7,6 +7,7 @@
 #include "agerun_methodology.h"
 #include "agerun_agent.h" // Required only for agent_id_t and ar_agent_send
 #include "agerun_assert.h" // Include for ownership assertions
+#include "agerun_heap.h" // Include for memory allocation macros
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,7 +35,7 @@ static bool extract_identifier(const char *ref_instruction, int *mut_pos, char *
 // Create a new instruction context
 instruction_context_t* ar_instruction_create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message) {
     // Allocate memory for the context
-    instruction_context_t *own_ctx = (instruction_context_t*)malloc(sizeof(instruction_context_t));
+    instruction_context_t *own_ctx = (instruction_context_t*)AR_HEAP_MALLOC(sizeof(instruction_context_t), "Instruction context");
     if (!own_ctx) {
         return NULL;
     }
@@ -52,7 +53,7 @@ instruction_context_t* ar_instruction_create_context(data_t *mut_memory, const d
 void ar_instruction_destroy_context(instruction_context_t *own_ctx) {
     if (own_ctx) {
         // The context doesn't own memory, context, or message, so we just free the structure
-        free(own_ctx);
+        AR_HEAP_FREE(own_ctx);
     }
 }
 
@@ -139,7 +140,7 @@ static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_ins
     
     // Check for ':=' operator
     if (ref_instruction[*mut_pos] != ':' || ref_instruction[*mut_pos + 1] != '=') {
-        free(path);
+        AR_HEAP_FREE(path);
         path = NULL; // Mark as freed
         return false;
     }
@@ -154,7 +155,7 @@ static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_ins
                                                                 mut_ctx->ref_message, 
                                                                 ref_instruction + *mut_pos);
     if (!own_context) {
-        free(path);
+        AR_HEAP_FREE(path);
         path = NULL; // Mark as freed
         return false;
     }
@@ -169,7 +170,7 @@ static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_ins
     
     if (!own_value) {
         // If evaluation or take_ownership returned NULL, we can't use the value
-        free(path);
+        AR_HEAP_FREE(path);
         path = NULL; // Mark as freed
         return false;
     }
@@ -181,7 +182,7 @@ static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_ins
     }
     own_value = NULL; // Mark as transferred
     
-    free(path);
+    AR_HEAP_FREE(path);
     path = NULL; // Mark as freed
     return true;
 }
@@ -204,7 +205,7 @@ static bool parse_function_instruction(instruction_context_t *mut_ctx, const cha
         } else {
             // Not an assignment, backtrack
             *mut_pos = save_pos;
-            free(path);
+            AR_HEAP_FREE(path);
             path = NULL; // Mark as freed
         }
     } else {
@@ -214,7 +215,7 @@ static bool parse_function_instruction(instruction_context_t *mut_ctx, const cha
     
     // Parse function call
     if (!parse_function_call(mut_ctx, ref_instruction, mut_pos, &own_result)) {
-        free(path);
+        AR_HEAP_FREE(path);
         path = NULL; // Mark as freed
         return false;
     }
@@ -233,7 +234,7 @@ static bool parse_function_instruction(instruction_context_t *mut_ctx, const cha
         own_result = NULL; // Mark as destroyed
     }
     
-    free(path);
+    AR_HEAP_FREE(path);
     path = NULL; // Mark as freed
     return true;
 }
@@ -294,7 +295,7 @@ static bool parse_memory_access(const char *ref_instruction, int *mut_pos, char 
     }
     
     // Allocate and return the path
-    *path = strdup(buffer);
+    *path = AR_HEAP_STRDUP(buffer, "Memory path");
     return *path != NULL;
 }
 

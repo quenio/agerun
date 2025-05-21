@@ -262,9 +262,10 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Memory Management Improvements (as of 2025-05-19)
 
-- [ ] Memory tracking improvements:
-  - [ ] Convert all direct malloc/free calls to AR_MALLOC/AR_FREE macros for better memory tracking
-  - [ ] Update modules to benefit from debug-mode memory tracking features
+- [x] Memory tracking improvements: (completed 2025-05-20)
+  - [x] Convert all direct malloc/free calls to AR_HEAP_MALLOC/AR_HEAP_FREE macros for better memory tracking (completed 2025-05-20)
+  - [x] Update modules to benefit from debug-mode memory tracking features (completed 2025-05-20)
+  - [x] Rename AR_* macros to AR_HEAP_* for better naming consistency (completed 2025-05-20)
   - [ ] Add memory leak detection to all test modules
 
 - [ ] Memory error handling enhancements:

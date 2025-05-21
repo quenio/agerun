@@ -2,6 +2,7 @@
 #include "agerun_string.h"
 #include "agerun_list.h"
 #include "agerun_assert.h"
+#include "agerun_heap.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -27,7 +28,7 @@ struct data_s {
  * @return Pointer to the new data, or NULL on failure
  */
 data_t* ar_data_create_integer(int value) {
-    data_t* data = (data_t*)malloc(sizeof(data_t));
+    data_t* data = (data_t*)AR_HEAP_MALLOC(sizeof(data_t), "Integer data");
     if (!data) {
         return NULL;
     }
@@ -44,7 +45,7 @@ data_t* ar_data_create_integer(int value) {
  * @return Pointer to the new data, or NULL on failure
  */
 data_t* ar_data_create_double(double value) {
-    data_t* data = (data_t*)malloc(sizeof(data_t));
+    data_t* data = (data_t*)AR_HEAP_MALLOC(sizeof(data_t), "Integer data");
     if (!data) {
         return NULL;
     }
@@ -70,7 +71,7 @@ data_t* ar_data_create_string(const char *ref_value) {
     own_data->type = DATA_STRING;
     own_data->data.own_string = ref_value ? strdup(ref_value) : NULL;
     if (ref_value && !own_data->data.own_string) {
-        free(own_data);
+        AR_HEAP_FREE(own_data);
         return NULL;
     }
     
@@ -83,7 +84,7 @@ data_t* ar_data_create_string(const char *ref_value) {
  * @return Pointer to the new data, or NULL on failure
  */
 data_t* ar_data_create_list(void) {
-    data_t* data = (data_t*)malloc(sizeof(data_t));
+    data_t* data = (data_t*)AR_HEAP_MALLOC(sizeof(data_t), "Integer data");
     if (!data) {
         return NULL;
     }
@@ -91,7 +92,7 @@ data_t* ar_data_create_list(void) {
     data->type = DATA_LIST;
     data->data.own_list = ar_list_create();
     if (!data->data.own_list) {
-        free(data);
+        AR_HEAP_FREE(data);
         return NULL;
     }
     
@@ -104,7 +105,7 @@ data_t* ar_data_create_list(void) {
  * @return Pointer to the new data, or NULL on failure
  */
 data_t* ar_data_create_map(void) {
-    data_t* data = (data_t*)malloc(sizeof(data_t));
+    data_t* data = (data_t*)AR_HEAP_MALLOC(sizeof(data_t), "Integer data");
     if (!data) {
         return NULL;
     }
@@ -112,7 +113,7 @@ data_t* ar_data_create_map(void) {
     data->type = DATA_MAP;
     data->data.own_map = ar_map_create();
     if (!data->data.own_map) {
-        free(data);
+        AR_HEAP_FREE(data);
         return NULL;
     }
     
@@ -120,7 +121,7 @@ data_t* ar_data_create_map(void) {
     data->own_keys = ar_list_create();
     if (!data->own_keys) {
         ar_map_destroy(data->data.own_map);
-        free(data);
+        AR_HEAP_FREE(data);
         return NULL;
     }
     
@@ -207,7 +208,7 @@ void ar_data_destroy(data_t *own_data) {
         }
     }
     
-    free(own_data);
+    AR_HEAP_FREE(own_data);
     // Ownership consumed completely
 }
 
