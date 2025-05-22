@@ -568,6 +568,239 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         own_cond = NULL; // Mark as destroyed
         return true;
     }
+    else if (strcmp(function_name, "parse") == 0) {
+        // parse(template, input)
+        skip_whitespace(ref_instruction, mut_pos);
+        
+        // Create a single context for all expressions
+        expression_context_t *own_context = NULL;
+        
+        // Parse template expression
+        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+                                              mut_ctx->ref_context, 
+                                              mut_ctx->ref_message, 
+                                              ref_instruction + *mut_pos);
+        if (!own_context) {
+            return false;
+        }
+        data_t *own_template = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
+        *mut_pos += ar_expression_offset(own_context);
+        
+        // Clean up context immediately
+        ar_expression_destroy_context(own_context);
+        own_context = NULL; // Mark as destroyed
+        
+        if (!own_template) {
+            return false;
+        }
+        
+        // Ensure template is a string
+        if (ar_data_get_type(own_template) != DATA_STRING) {
+            ar_data_destroy(own_template);
+            own_template = NULL; // Mark as destroyed
+            return false;
+        }
+        const char *template_str = ar_data_get_string(own_template);
+        
+        skip_whitespace(ref_instruction, mut_pos);
+        
+        // Expect comma
+        if (ref_instruction[*mut_pos] != ',') {
+            ar_data_destroy(own_template);
+            own_template = NULL; // Mark as destroyed
+            return false;
+        }
+        (*mut_pos)++; // Skip ','
+        skip_whitespace(ref_instruction, mut_pos);
+        
+        // Parse input expression - reusing the context variable
+        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+                                              mut_ctx->ref_context, 
+                                              mut_ctx->ref_message, 
+                                              ref_instruction + *mut_pos);
+        if (!own_context) {
+            ar_data_destroy(own_template);
+            own_template = NULL; // Mark as destroyed
+            return false;
+        }
+        data_t *own_input = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
+        *mut_pos += ar_expression_offset(own_context);
+        
+        // Clean up context immediately
+        ar_expression_destroy_context(own_context);
+        own_context = NULL; // Mark as destroyed
+        
+        if (!own_input) {
+            ar_data_destroy(own_template);
+            own_template = NULL; // Mark as destroyed
+            return false;
+        }
+        
+        // Ensure input is a string
+        if (ar_data_get_type(own_input) != DATA_STRING) {
+            ar_data_destroy(own_input);
+            own_input = NULL; // Mark as destroyed
+            ar_data_destroy(own_template);
+            own_template = NULL; // Mark as destroyed
+            return false;
+        }
+        const char *input_str = ar_data_get_string(own_input);
+        
+        skip_whitespace(ref_instruction, mut_pos);
+        
+        // Expect closing parenthesis
+        if (ref_instruction[*mut_pos] != ')') {
+            ar_data_destroy(own_input);
+            own_input = NULL; // Mark as destroyed
+            ar_data_destroy(own_template);
+            own_template = NULL; // Mark as destroyed
+            return false;
+        }
+        (*mut_pos)++; // Skip ')'
+        
+        // Create result map (owned by us)
+        *own_result = ar_data_create_map();
+        if (!*own_result) {
+            ar_data_destroy(own_input);
+            own_input = NULL; // Mark as destroyed
+            ar_data_destroy(own_template);
+            own_template = NULL; // Mark as destroyed
+            return false;
+        }
+        
+        // Parse the template and input to extract values
+        // Template format: "key1={var1}, key2={var2}"
+        // Input format: "key1=value1, key2=value2"
+        
+        // Simple implementation: look for {variable} patterns in template
+        const char *template_ptr = template_str;
+        const char *input_ptr = input_str;
+        
+        while (*template_ptr && *input_ptr) {
+            // Look for placeholder start
+            const char *placeholder_start = strchr(template_ptr, '{');
+            if (!placeholder_start) {
+                // No more placeholders, check if remaining template matches input
+                if (strcmp(template_ptr, input_ptr) != 0) {
+                    // Mismatch - parsing failed, return empty map
+                    ar_data_destroy(*own_result);
+                    *own_result = ar_data_create_map();
+                }
+                break;
+            }
+            
+            // Check if the literal part before placeholder matches
+            size_t literal_len = (size_t)(placeholder_start - template_ptr);
+            if (strncmp(template_ptr, input_ptr, literal_len) != 0) {
+                // Mismatch - parsing failed, return empty map
+                ar_data_destroy(*own_result);
+                *own_result = ar_data_create_map();
+                break;
+            }
+            
+            // Move past the literal part
+            template_ptr = placeholder_start + 1; // Skip '{'
+            input_ptr += literal_len;
+            
+            // Find the end of the placeholder
+            const char *placeholder_end = strchr(template_ptr, '}');
+            if (!placeholder_end) {
+                // Invalid template - no closing brace
+                ar_data_destroy(*own_result);
+                *own_result = ar_data_create_map();
+                break;
+            }
+            
+            // Extract variable name
+            size_t var_len = (size_t)(placeholder_end - template_ptr);
+            char *var_name = (char*)AR_HEAP_MALLOC(var_len + 1, "Parse variable name");
+            if (!var_name) {
+                ar_data_destroy(*own_result);
+                *own_result = ar_data_create_map();
+                break;
+            }
+            strncpy(var_name, template_ptr, var_len);
+            var_name[var_len] = '\0';
+            
+            // Move past the placeholder
+            template_ptr = placeholder_end + 1; // Skip '}'
+            
+            // Find the next literal part or end of template
+            const char *next_literal_start = template_ptr;
+            const char *next_placeholder = strchr(template_ptr, '{');
+            size_t next_literal_len = next_placeholder ? 
+                (size_t)(next_placeholder - next_literal_start) : strlen(next_literal_start);
+            
+            // Extract the value from input
+            const char *value_end = NULL;
+            if (next_literal_len > 0) {
+                // Look for the next literal part in the input
+                value_end = strstr(input_ptr, next_literal_start);
+                if (!value_end || (next_placeholder && value_end > input_ptr + strlen(input_ptr) - next_literal_len)) {
+                    value_end = NULL;
+                }
+            } else {
+                // No more literals, take the rest of the input
+                value_end = input_ptr + strlen(input_ptr);
+            }
+            
+            if (value_end) {
+                // Extract the value
+                size_t value_len = (size_t)(value_end - input_ptr);
+                char *value_str = (char*)AR_HEAP_MALLOC(value_len + 1, "Parse value string");
+                if (value_str) {
+                    strncpy(value_str, input_ptr, value_len);
+                    value_str[value_len] = '\0';
+                    
+                    // Try to parse as integer first, then double, then string
+                    data_t *own_value = NULL;
+                    char *endptr;
+                    
+                    // Try integer
+                    long int_val = strtol(value_str, &endptr, 10);
+                    if (*endptr == '\0' && value_str[0] != '\0') {
+                        own_value = ar_data_create_integer((int)int_val);
+                    } else {
+                        // Try double
+                        double double_val = strtod(value_str, &endptr);
+                        if (*endptr == '\0' && value_str[0] != '\0' && strchr(value_str, '.')) {
+                            own_value = ar_data_create_double(double_val);
+                        } else {
+                            // Use as string
+                            own_value = ar_data_create_string(value_str);
+                        }
+                    }
+                    
+                    // Store in result map
+                    if (own_value) {
+                        ar_data_set_map_data(*own_result, var_name, own_value);
+                        // Ownership of own_value is transferred
+                    }
+                    
+                    AR_HEAP_FREE(value_str);
+                }
+                
+                // Move input pointer past the value
+                input_ptr = value_end;
+            } else {
+                // Could not find the next literal - parsing failed
+                ar_data_destroy(*own_result);
+                *own_result = ar_data_create_map();
+                AR_HEAP_FREE(var_name);
+                break;
+            }
+            
+            AR_HEAP_FREE(var_name);
+        }
+        
+        // Clean up input data
+        ar_data_destroy(own_input);
+        own_input = NULL; // Mark as destroyed
+        ar_data_destroy(own_template);
+        own_template = NULL; // Mark as destroyed
+        
+        return true;
+    }
     else if (strcmp(function_name, "method") == 0) {
         // method(name, instructions, version)
         skip_whitespace(ref_instruction, mut_pos);
@@ -728,7 +961,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         return true;
     }
     else {
-        // For all other functions (parse, build, agent, destroy),
+        // For all other functions (build, agent, destroy),
         // just return a default result for now
         // Skip to closing parenthesis
         int nesting = 1;

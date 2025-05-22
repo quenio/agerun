@@ -212,6 +212,31 @@ ar_instruction_run(own_ctx, "memory.result := if(memory.count > 5, \"High\", \"L
 ar_instruction_run(own_ctx, "memory.created := method(\"greet\", \"memory.message := \\\"Hello\\\";\", 1)");
 ```
 
+## Parse Function
+
+The parse function extracts values from strings based on templates:
+
+```c
+// Syntax: parse(template, input)
+parse("name={name}", "name=John")  // Returns map with name: "John"
+parse("user={user}, age={age}", "user=Alice, age=25")  // Returns map with user: "Alice", age: 25
+```
+
+**Parameters:**
+- `template`: A string containing placeholders in the format `{variable}`
+- `input`: The string to parse according to the template
+
+**Returns:**
+- A map containing the extracted values
+- An empty map if parsing fails (template doesn't match input)
+
+**Implementation Notes:**
+- The parse function matches literal parts of the template exactly with the input
+- Placeholders in the template (e.g., `{name}`) capture values from the input
+- Extracted values are automatically typed: integers, doubles, or strings
+- The function handles multiple placeholders in a single template
+- If the template doesn't match the input structure, an empty map is returned
+
 ## Method Function
 
 The method function allows agents to create and register new methods at runtime:
