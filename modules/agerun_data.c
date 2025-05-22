@@ -63,13 +63,13 @@ data_t* ar_data_create_double(double value) {
  * @note Ownership: Returns an owned value that caller must destroy.
  */
 data_t* ar_data_create_string(const char *ref_value) {
-    data_t* own_data = (data_t*)malloc(sizeof(data_t));
+    data_t* own_data = AR_HEAP_MALLOC(sizeof(data_t), "String data structure");
     if (!own_data) {
         return NULL;
     }
     
     own_data->type = DATA_STRING;
-    own_data->data.own_string = ref_value ? strdup(ref_value) : NULL;
+    own_data->data.own_string = ref_value ? AR_HEAP_STRDUP(ref_value, "String data value") : NULL;
     if (ref_value && !own_data->data.own_string) {
         AR_HEAP_FREE(own_data);
         return NULL;
@@ -1104,7 +1104,7 @@ char *ar_data_list_remove_first_string(data_t *data) {
     }
     
     // Make a copy of the string for the caller
-    char *str_copy = strdup(orig_str);
+    char *str_copy = AR_HEAP_STRDUP(orig_str, "String copy for conversion");
     
     // Free the data structure
     ar_data_destroy(first_data);
@@ -1228,7 +1228,7 @@ char *ar_data_list_remove_last_string(data_t *data) {
     }
     
     // Make a copy of the string for the caller
-    char *str_copy = strdup(orig_str);
+    char *str_copy = AR_HEAP_STRDUP(orig_str, "String copy for conversion");
     
     // Free the data structure
     ar_data_destroy(last_data);

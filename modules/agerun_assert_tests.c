@@ -1,4 +1,5 @@
 #include "agerun_assert.h"
+#include "agerun_heap.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -37,7 +38,7 @@ static void test_ar_assert_true(void) {
  */
 static void test_ar_assert_ownership(void) {
     // Given a non-NULL pointer
-    int *own_value = (int*)malloc(sizeof(int));
+    int *own_value = AR_HEAP_MALLOC(sizeof(int), "Test integer for ownership assertion");
     if (!own_value) {
         printf("Failed to allocate memory for test\n");
         return;
@@ -50,7 +51,7 @@ static void test_ar_assert_ownership(void) {
     printf("AR_ASSERT_OWNERSHIP with non-NULL pointer passed\n");
     
     // Clean up
-    free(own_value);
+    AR_HEAP_FREE(own_value);
 }
 
 /**

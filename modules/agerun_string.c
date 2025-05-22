@@ -91,7 +91,7 @@ char* ar_string_path_segment(const char *ref_str, char separator, size_t index) 
     size_t length = (size_t)(ref_end - ref_start);
     if (length == 0) {
         // Empty segment
-        char *own_result = strdup(""); 
+        char *own_result = AR_HEAP_STRDUP("", "Empty string path segment"); 
         AR_ASSERT_OWNERSHIP(own_result);
         return own_result; // Ownership transferred to caller
     }
@@ -139,7 +139,7 @@ char* ar_string_path_parent(const char *ref_str, char separator) {
     size_t parent_len = (size_t)(ref_last_sep - ref_str);
     if (parent_len == 0) {
         // Edge case: path starts with a separator (e.g., ".key")
-        char *own_result = strdup("");
+        char *own_result = AR_HEAP_STRDUP("", "Empty string path segment");
         AR_ASSERT_OWNERSHIP(own_result);
         return own_result; // Ownership transferred to caller
     }
