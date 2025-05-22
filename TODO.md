@@ -310,3 +310,28 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Memory safety verified through Address Sanitizer and static analysis
   - [x] Automatic memory reporting via heap_memory_report.log
   - [x] Project ready for production use in memory-critical applications
+
+## Core Functionality Implementation
+
+- [ ] Implement remaining instruction functions:
+  - [ ] Implement `parse(template, input)` function to extract values from strings based on templates
+  - [ ] Implement `build(template, values)` function to construct strings by replacing placeholders
+  - [ ] Implement `agent(method_name, version, context)` function to create new agent instances
+  - [ ] Implement `destroy(agent_id)` and `destroy(method_name, version)` functions for lifecycle management
+  - [ ] Add comprehensive tests for all instruction functions
+  - [ ] Update instruction module documentation with implementation details
+
+- [ ] Implement agent persistence feature:
+  - [ ] Add `persist` boolean parameter to agent creation functions
+  - [ ] Implement agent state serialization to agency.agerun file
+  - [ ] Implement agent state restoration on system startup
+  - [ ] Handle persisted agents that reference non-existent methods
+  - [ ] Add tests for agent persistence functionality
+  - [ ] Document persistence behavior and file format
+
+- [ ] Implement horizontal and vertical scaling support:
+  - [ ] Design scaling architecture that keeps agents unaware of scaling mechanisms
+  - [ ] Implement message routing across scaled instances
+  - [ ] Add configuration options for scaling parameters
+  - [ ] Create tests for multi-instance scenarios
+  - [ ] Document scaling configuration and best practices
