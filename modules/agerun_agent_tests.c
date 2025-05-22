@@ -90,6 +90,9 @@ static void test_agent_send(void) {
     // Then the message should be sent successfully
     assert(send_result);
     
+    // Process the message to prevent memory leaks
+    ar_system_process_next_message();
+    
     // Since we can't directly access the message queue in an opaque map,
     // we'll verify the agent was created (which was already tested)
     // and that the message was sent (which was verified by send_result)

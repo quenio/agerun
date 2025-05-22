@@ -7,6 +7,7 @@
 #include "agerun_semver.h"
 #include "agerun_io.h" /* Include the I/O utilities */
 #include "agerun_heap.h"
+#include "agerun_system.h" /* Include for message processing */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -884,18 +885,6 @@ int ar_agency_update_agent_methods(const method_t *ref_old_method, const method_
     // Track how many agents we update
     int update_count = 0;
     
-    // Prepare sleep and wake messages
-    data_t *own_sleep_message = ar_data_create_string("__sleep__");
-    if (!own_sleep_message) {
-        return 0;
-    }
-    
-    data_t *own_wake_message = ar_data_create_string("__wake__");
-    if (!own_wake_message) {
-        ar_data_destroy(own_sleep_message);
-        return 0;
-    }
-    
     // Find all agents using the old method
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (g_own_agents[i].is_active && g_own_agents[i].ref_method == ref_old_method) {
@@ -914,7 +903,7 @@ int ar_agency_update_agent_methods(const method_t *ref_old_method, const method_
             }
             
             // Step 2: Process the sleep message
-            // This happens elsewhere in the system during normal processing
+            ar_system_process_next_message();
             
             // Step 3: Update the method reference
             g_own_agents[i].ref_method = ref_new_method;
@@ -926,13 +915,12 @@ int ar_agency_update_agent_methods(const method_t *ref_old_method, const method_
                 own_wake_copy = NULL; // Ownership transferred to agent's queue
             }
             
+            // Step 5: Process the wake message
+            ar_system_process_next_message();
+            
             update_count++;
         }
     }
-    
-    // Clean up
-    ar_data_destroy(own_sleep_message);
-    ar_data_destroy(own_wake_message);
     
     return update_count;
 }

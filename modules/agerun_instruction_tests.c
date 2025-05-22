@@ -69,6 +69,9 @@ static void test_simple_instructions(void) {
     own_hello_message = NULL; // Mark as transferred
     // We can't directly test the instruction functionality anymore due to opaque agents
     
+    // Process the message to prevent memory leaks
+    ar_system_process_next_message();
+    
     // Then the instruction should execute successfully
     assert(result);
     
@@ -82,6 +85,9 @@ static void test_simple_instructions(void) {
     // Send message (transfers ownership of own_hello_message2)
     result = ar_agent_send(agent_id, own_hello_message2);
     own_hello_message2 = NULL; // Mark as transferred
+    
+    // Process the message to prevent memory leaks
+    ar_system_process_next_message();
     
     // Then the instruction should execute successfully
     assert(result);
@@ -111,6 +117,8 @@ static void test_memory_access_instructions(void) {
     // Send message (transfers ownership of own_wake_message)
     bool result = ar_agent_send(agent_id, own_wake_message);
     own_wake_message = NULL; // Mark as transferred
+    // Process the message to prevent memory leaks
+    ar_system_process_next_message();
     assert(result);
     
     // Since we can't directly access the memory with the new opaque type,
@@ -138,6 +146,8 @@ static void test_condition_instructions(void) {
     // Send message (transfers ownership of own_wake_message2)
     ar_agent_send(agent_id, own_wake_message2);
     own_wake_message2 = NULL; // Mark as transferred
+    // Process the message to prevent memory leaks
+    ar_system_process_next_message();
     
     // Since we can't directly access the memory with the new opaque type,
     // we can only verify that the agent exists and can receive messages
@@ -169,9 +179,13 @@ static void test_message_send_instructions(void) {
     // Send messages (transfers ownership)
     ar_agent_send(sender_id, own_wake_message3_sender);
     own_wake_message3_sender = NULL; // Mark as transferred
+    // Process the message to prevent memory leaks
+    ar_system_process_next_message();
     
     ar_agent_send(receiver_id, own_wake_message3_receiver);
     own_wake_message3_receiver = NULL; // Mark as transferred
+    // Process the message to prevent memory leaks
+    ar_system_process_next_message();
     
     // Since we can't directly access memory or queue with the opaque types,
     // we can only send messages and verify the agents exist

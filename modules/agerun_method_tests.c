@@ -110,6 +110,9 @@ static void test_method_run(void) {
     // Then the method should run successfully
     assert(result);
     
+    // Process the message to prevent memory leaks
+    ar_system_process_next_message();
+    
     // When we clean up the agent
     bool destroy_result = ar_agent_destroy(agent_id);
     

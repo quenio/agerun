@@ -67,6 +67,9 @@ agent_id_t ar_system_init(const char *ref_method_name, const char *ref_version) 
                 ar_agent_send(initial_agent, own_wake_data);
                 // Ownership transferred to agent's message queue
                 // own_wake_data is now NULL
+                
+                // Process the wake message
+                ar_system_process_next_message();
             }
         }
         return initial_agent;
