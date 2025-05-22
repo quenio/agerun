@@ -1,5 +1,6 @@
 #include "agerun_map.h"
 #include "agerun_data.h"
+#include "agerun_heap.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -54,7 +55,7 @@ static void test_map_set_get_simple(void) {
     }
     
     // And a test value (using an integer on the heap for this test)
-    int *own_value = malloc(sizeof(int));
+    int *own_value = AR_HEAP_MALLOC(sizeof(int), "Test integer value");
     *own_value = 42;
     
     // When we set the reference in the map
@@ -79,7 +80,7 @@ static void test_map_set_get_simple(void) {
     // Cleanup
     // Following the guideline to free containers first, then contents
     ar_map_destroy(own_map);
-    free(own_value); // Now free the referenced value after freeing the container
+    AR_HEAP_FREE(own_value); // Now free the referenced value after freeing the container
     
     printf("ar_map_set() and ar_map_get() simple value test passed!\n");
 }
@@ -156,7 +157,7 @@ static void test_map_refs(void) {
     assert(found1 && found2 && found3);
     
     // Cleanup
-    free(own_refs);
+    AR_HEAP_FREE(own_refs);
     ar_map_destroy(own_map);
     
     // Edge case: NULL map

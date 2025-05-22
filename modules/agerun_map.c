@@ -1,4 +1,5 @@
 #include "agerun_map.h"
+#include "agerun_heap.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -29,7 +30,7 @@ struct map_s {
  * @note Ownership: Returns an owned value that caller must destroy.
  */
 map_t* ar_map_create(void) {
-    map_t *own_map = (map_t *)malloc(sizeof(map_t));
+    map_t *own_map = (map_t *)AR_HEAP_MALLOC(sizeof(map_t), "Map structure");
     if (!own_map) return NULL;
     
     for (int i = 0; i < MAP_SIZE; i++) {
@@ -121,7 +122,7 @@ size_t ar_map_count(const map_t *ref_map) {
  * @param ref_map The map to get refs from (borrowed reference)
  * @return Array of pointers to refs, or NULL on failure
  * @note Ownership: Returns an owned array that caller must free.
- *       The caller is responsible for freeing the returned array using free().
+ *       The caller is responsible for freeing the returned array using AR_HEAP_FREE().
  *       The refs themselves are borrowed references and remain owned by their original owners.
  *       The caller can use ar_map_count() to determine the size of the array.
  */
@@ -134,7 +135,7 @@ void** ar_map_refs(const map_t *ref_map) {
         return NULL;
     }
     
-    void **own_refs = (void**)malloc((size_t)ref_map->count * sizeof(void*));
+    void **own_refs = (void**)AR_HEAP_MALLOC((size_t)ref_map->count * sizeof(void*), "Map references array");
     if (!own_refs) {
         return NULL;
     }
@@ -159,6 +160,6 @@ void** ar_map_refs(const map_t *ref_map) {
 void ar_map_destroy(map_t *own_map) {
     if (!own_map) return;
     
-    free(own_map);
+    AR_HEAP_FREE(own_map);
 }
 
