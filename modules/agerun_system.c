@@ -7,6 +7,7 @@
 #include "agerun_agency.h"
 #include "agerun_list.h"
 #include "agerun_map.h"
+#include "agerun_heap.h"
 
 #include <stdio.h>
 #include <stdlib.h>
