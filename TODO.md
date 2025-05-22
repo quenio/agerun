@@ -314,12 +314,12 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ## Core Functionality Implementation
 
 - [ ] Implement remaining instruction functions:
-  - [ ] Implement `parse(template, input)` function to extract values from strings based on templates
+  - [x] Implement `parse(template, input)` function to extract values from strings based on templates (completed 2025-05-22)
   - [ ] Implement `build(template, values)` function to construct strings by replacing placeholders
   - [ ] Implement `agent(method_name, version, context)` function to create new agent instances
   - [ ] Implement `destroy(agent_id)` and `destroy(method_name, version)` functions for lifecycle management
   - [ ] Add comprehensive tests for all instruction functions
-  - [ ] Update instruction module documentation with implementation details
+  - [x] Update instruction module documentation with implementation details for parse function (completed 2025-05-22)
 
 - [ ] Implement agent persistence feature:
   - [ ] Add `persist` boolean parameter to agent creation functions
