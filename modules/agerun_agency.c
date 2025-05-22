@@ -6,6 +6,7 @@
 #include "agerun_method.h"
 #include "agerun_semver.h"
 #include "agerun_io.h" /* Include the I/O utilities */
+#include "agerun_heap.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -515,7 +516,7 @@ bool ar_agency_load_agents(void) {
     // First-pass: Read all agent basic info to validate the file structure
     // Calculate size with proper type to avoid sign conversion
     const size_t agent_info_size = (size_t)count * sizeof(agency_load_agent_info_t);
-    agency_load_agent_info_t *agent_info = (agency_load_agent_info_t*)malloc(agent_info_size);
+    agency_load_agent_info_t *agent_info = (agency_load_agent_info_t*)AR_HEAP_MALLOC(agent_info_size, "Agent info array for loading");
     if (!agent_info) {
         ar_io_error("Memory allocation failed for agent info");
         ar_io_close_file(fp, AGENCY_FILE_NAME);
@@ -616,7 +617,7 @@ bool ar_agency_load_agents(void) {
 
     // If we encountered any validation errors, handle gracefully
     if (validation_error) {
-        free(agent_info);
+        AR_HEAP_FREE(agent_info);
         ar_io_close_file(fp, AGENCY_FILE_NAME);
 
         // File is corrupt, create a backup and potentially delete it
@@ -632,7 +633,7 @@ bool ar_agency_load_agents(void) {
     // Skip the agent count line since we already know it
     if (!ar_io_read_line(fp, line, (int)sizeof(line), AGENCY_FILE_NAME)) {
         ar_io_error("Failed to skip agent count line");
-        free(agent_info);
+        AR_HEAP_FREE(agent_info);
         ar_io_close_file(fp, AGENCY_FILE_NAME);
         return false;
     }
@@ -849,7 +850,7 @@ bool ar_agency_load_agents(void) {
     }
 
     // Clean up resources
-    free(agent_info);
+    AR_HEAP_FREE(agent_info);
     ar_io_close_file(fp, AGENCY_FILE_NAME);
 
     return true;
