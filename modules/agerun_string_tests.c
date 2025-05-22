@@ -1,4 +1,5 @@
 #include "agerun_string.h"
+#include "agerun_heap.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -238,9 +239,9 @@ static void test_path_segment_normal(void) {
     assert(strcmp(own_segment2, "sub_sub_key") == 0);
     
     // Clean up allocated memory
-    free(own_segment0);
-    free(own_segment1);
-    free(own_segment2);
+    AR_HEAP_FREE(own_segment0);
+    AR_HEAP_FREE(own_segment1);
+    AR_HEAP_FREE(own_segment2);
     
     printf("ar_string_path_segment() normal cases test passed!\n");
 }
@@ -285,9 +286,9 @@ static void test_path_segment_edge_cases(void) {
     assert(strcmp(own_key_seg, "key") == 0);
     
     // Clean up allocated memory
-    free(own_empty_seg1);
-    free(own_empty_seg2);
-    free(own_key_seg);
+    AR_HEAP_FREE(own_empty_seg1);
+    AR_HEAP_FREE(own_empty_seg2);
+    AR_HEAP_FREE(own_key_seg);
     
     printf("ar_string_path_segment() edge cases test passed!\n");
 }
@@ -314,9 +315,9 @@ static void test_path_parent_normal(void) {
     assert(strcmp(own_parent3, "key.sub_key.sub_sub_key") == 0);
     
     // Clean up allocated memory
-    free(own_parent1);
-    free(own_parent2);
-    free(own_parent3);
+    AR_HEAP_FREE(own_parent1);
+    AR_HEAP_FREE(own_parent2);
+    AR_HEAP_FREE(own_parent3);
     
     printf("ar_string_path_parent() normal paths test passed!\n");
 }
@@ -360,9 +361,9 @@ static void test_path_parent_edge_cases(void) {
     assert(strcmp(own_only_separators_result, "....") == 0);
     
     // Clean up allocated memory
-    free(own_leading_separator_result);
-    free(own_trailing_separator_result);
-    free(own_only_separators_result);
+    AR_HEAP_FREE(own_leading_separator_result);
+    AR_HEAP_FREE(own_trailing_separator_result);
+    AR_HEAP_FREE(own_only_separators_result);
     
     printf("ar_string_path_parent() edge cases test passed!\n");
 }
