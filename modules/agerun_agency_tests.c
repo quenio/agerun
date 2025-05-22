@@ -135,6 +135,7 @@ static void test_agency_next_id(void) {
     
     // Cleanup
     ar_agent_destroy(agent_id);
+    ar_data_destroy(context); // Clean up the context we created
     
     // Restore the original next ID value
     ar_agency_set_next_id(current_next_id);
