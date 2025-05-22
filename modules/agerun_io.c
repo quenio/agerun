@@ -1,4 +1,5 @@
 #include "agerun_io.h"
+#include "agerun_heap.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -337,7 +338,7 @@ file_result_t ar_io_create_backup(const char *filename) {
 
     // Create backup filename
     size_t backup_name_len = strlen(filename) + strlen(BACKUP_EXTENSION) + 1;
-    char *backup_filename = (char*)malloc(backup_name_len);
+    char *backup_filename = AR_HEAP_MALLOC(backup_name_len, "Backup filename buffer");
     if (!backup_filename) {
         ar_io_error("Memory allocation failed for backup filename");
         return FILE_ERROR_UNKNOWN;
@@ -349,7 +350,7 @@ file_result_t ar_io_create_backup(const char *filename) {
     FILE *source;
     file_result_t result = ar_io_open_file(filename, "rb", &source);
     if (result != FILE_SUCCESS) {
-        free(backup_filename);
+        AR_HEAP_FREE(backup_filename);
         return result;
     }
 
@@ -358,18 +359,18 @@ file_result_t ar_io_create_backup(const char *filename) {
     result = ar_io_open_file(backup_filename, "wb", &backup);
     if (result != FILE_SUCCESS) {
         ar_io_close_file(source, filename);
-        free(backup_filename);
+        AR_HEAP_FREE(backup_filename);
         return result;
     }
 
     // Copy data
     const size_t buffer_size = 8192;
-    char *buffer = (char*)malloc(buffer_size);
+    char *buffer = AR_HEAP_MALLOC(buffer_size, "File copy buffer");
     if (!buffer) {
         ar_io_error("Memory allocation failed for backup buffer");
         ar_io_close_file(source, filename);
         ar_io_close_file(backup, backup_filename);
-        free(backup_filename);
+        AR_HEAP_FREE(backup_filename);
         return FILE_ERROR_UNKNOWN;
     }
 
@@ -399,10 +400,10 @@ file_result_t ar_io_create_backup(const char *filename) {
     }
 
     // Cleanup
-    free(buffer);
+    AR_HEAP_FREE(buffer);
     ar_io_close_file(source, filename);
     ar_io_close_file(backup, backup_filename);
-    free(backup_filename);
+    AR_HEAP_FREE(backup_filename);
 
     return success ? FILE_SUCCESS : FILE_ERROR_UNKNOWN;
 }
@@ -421,7 +422,7 @@ file_result_t ar_io_restore_backup(const char *filename) {
 
     // Create backup filename
     size_t backup_name_len = strlen(filename) + strlen(BACKUP_EXTENSION) + 1;
-    char *backup_filename = (char*)malloc(backup_name_len);
+    char *backup_filename = AR_HEAP_MALLOC(backup_name_len, "Backup filename buffer");
     if (!backup_filename) {
         ar_io_error("Memory allocation failed for backup filename");
         return FILE_ERROR_UNKNOWN;
@@ -434,29 +435,29 @@ file_result_t ar_io_restore_backup(const char *filename) {
     if (stat(backup_filename, &st) != 0) {
         if (errno == ENOENT) {
             ar_io_error("Backup file %s does not exist", backup_filename);
-            free(backup_filename);
+            AR_HEAP_FREE(backup_filename);
             return FILE_ERROR_NOT_FOUND;
         }
         ar_io_error("Failed to stat backup file %s: %s", backup_filename, strerror(errno));
-        free(backup_filename);
+        AR_HEAP_FREE(backup_filename);
         return FILE_ERROR_UNKNOWN;
     }
 
     // Remove target file if it exists
     if (remove(filename) != 0 && errno != ENOENT) {
         ar_io_error("Failed to remove target file %s: %s", filename, strerror(errno));
-        free(backup_filename);
+        AR_HEAP_FREE(backup_filename);
         return FILE_ERROR_UNKNOWN;
     }
 
     // Rename backup to original
     if (rename(backup_filename, filename) != 0) {
         ar_io_error("Failed to restore backup %s to %s: %s", backup_filename, filename, strerror(errno));
-        free(backup_filename);
+        AR_HEAP_FREE(backup_filename);
         return FILE_ERROR_UNKNOWN;
     }
 
-    free(backup_filename);
+    AR_HEAP_FREE(backup_filename);
     return FILE_SUCCESS;
 }
 
@@ -512,7 +513,7 @@ file_result_t ar_io_write_file(const char *filename,
 
     // Create temporary filename
     size_t temp_name_len = strlen(filename) + strlen(TEMP_EXTENSION) + 1;
-    char *temp_filename = (char*)malloc(temp_name_len);
+    char *temp_filename = AR_HEAP_MALLOC(temp_name_len, "Temporary filename buffer");
     if (!temp_filename) {
         ar_io_error("Memory allocation failed for temporary filename");
         return FILE_ERROR_UNKNOWN;
@@ -523,7 +524,7 @@ file_result_t ar_io_write_file(const char *filename,
     // Create backup of original file if it exists
     file_result_t result = ar_io_create_backup(filename);
     if (result != FILE_SUCCESS) {
-        free(temp_filename);
+        AR_HEAP_FREE(temp_filename);
         return result;
     }
 
@@ -531,7 +532,7 @@ file_result_t ar_io_write_file(const char *filename,
     FILE *temp_file;
     result = ar_io_open_file(temp_filename, "w", &temp_file);
     if (result != FILE_SUCCESS) {
-        free(temp_filename);
+        AR_HEAP_FREE(temp_filename);
         return result;
     }
 
@@ -540,7 +541,7 @@ file_result_t ar_io_write_file(const char *filename,
     if (result != FILE_SUCCESS) {
         ar_io_close_file(temp_file, temp_filename);
         remove(temp_filename);
-        free(temp_filename);
+        AR_HEAP_FREE(temp_filename);
         return result;
     }
 
@@ -550,7 +551,7 @@ file_result_t ar_io_write_file(const char *filename,
         ar_io_error("Failed to write content to temporary file %s", temp_filename);
         ar_io_close_file(temp_file, temp_filename);
         remove(temp_filename);
-        free(temp_filename);
+        AR_HEAP_FREE(temp_filename);
         return FILE_ERROR_WRITE;
     }
 
@@ -558,7 +559,7 @@ file_result_t ar_io_write_file(const char *filename,
     result = ar_io_close_file(temp_file, temp_filename);
     if (result != FILE_SUCCESS) {
         remove(temp_filename);
-        free(temp_filename);
+        AR_HEAP_FREE(temp_filename);
         return result;
     }
 
@@ -567,7 +568,7 @@ file_result_t ar_io_write_file(const char *filename,
         ar_io_error("Failed to rename temporary file %s to %s: %s",
                  temp_filename, filename, strerror(errno));
         remove(temp_filename);
-        free(temp_filename);
+        AR_HEAP_FREE(temp_filename);
 
         // Try to restore from backup
         ar_io_warning("Attempting to restore from backup...");
@@ -580,7 +581,7 @@ file_result_t ar_io_write_file(const char *filename,
         return FILE_ERROR_UNKNOWN;
     }
 
-    free(temp_filename);
+    AR_HEAP_FREE(temp_filename);
     return FILE_SUCCESS;
 }
 
