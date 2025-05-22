@@ -40,7 +40,7 @@ expression_context_t* ar_expression_create_context(data_t *mut_memory, const dat
         return NULL;
     }
     
-    expression_context_t *own_ctx = (expression_context_t*)AR_HEAP_MALLOC(sizeof(expression_context_t), "Expression context");
+    expression_context_t *own_ctx = AR_HEAP_MALLOC(sizeof(expression_context_t), "Expression context");
     if (!own_ctx) {
         return NULL;
     }
@@ -201,7 +201,7 @@ static char* parse_identifier(expression_context_t *mut_ctx) {
     }
     
     int length = mut_ctx->offset - start;
-    char *own_identifier = (char*)AR_HEAP_MALLOC((size_t)length + 1, "Expression identifier");
+    char *own_identifier = AR_HEAP_MALLOC((size_t)length + 1, "Expression identifier");
     if (!own_identifier) {
         return NULL;
     }
@@ -276,7 +276,7 @@ static const data_t* parse_string_literal(expression_context_t *mut_ctx) {
     }
     
     // Allocate and create the string
-    char *own_temp_str = (char*)AR_HEAP_MALLOC((size_t)len + 1, "Temporary string buffer");
+    char *own_temp_str = AR_HEAP_MALLOC((size_t)len + 1, "Temporary string buffer");
     if (!own_temp_str) {
         return NULL;
     }

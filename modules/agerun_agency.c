@@ -516,7 +516,7 @@ bool ar_agency_load_agents(void) {
     // First-pass: Read all agent basic info to validate the file structure
     // Calculate size with proper type to avoid sign conversion
     const size_t agent_info_size = (size_t)count * sizeof(agency_load_agent_info_t);
-    agency_load_agent_info_t *agent_info = (agency_load_agent_info_t*)AR_HEAP_MALLOC(agent_info_size, "Agent info array for loading");
+    agency_load_agent_info_t *agent_info = AR_HEAP_MALLOC(agent_info_size, "Agent info array for loading");
     if (!agent_info) {
         ar_io_error("Memory allocation failed for agent info");
         ar_io_close_file(fp, AGENCY_FILE_NAME);
