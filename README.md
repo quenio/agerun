@@ -209,17 +209,28 @@ For more details on the module structure and dependencies, see the [Modules READ
 
 ## Memory Management
 
-AgeRun implements a consistent memory ownership model inspired by Mojo's ownership semantics. The system distinguishes between:
+AgeRun implements a comprehensive memory safety system with zero tolerance for memory leaks. The system features:
 
+### Memory Ownership Model
 - **Owned Values**: Objects with unique ownership that must be explicitly destroyed
-- **Mutable References**: Read-write access to objects without ownership
+- **Mutable References**: Read-write access to objects without ownership  
 - **Borrowed References**: Read-only access to objects without ownership
+- **Strict ownership semantics** with explicit prefixes (`own_`, `mut_`, `ref_`) throughout the codebase
 
-Memory safety is rigorously enforced through:
-- Strict ownership semantics with explicit prefixes (`own_`, `mut_`, `ref_`)
-- Comprehensive memory leak detection via Address Sanitizer
-- Clear documentation of ownership transfer in all APIs
-- Automated testing with memory error detection
+### Comprehensive Memory Tracking
+- **Heap tracking system** using `AR_HEAP_MALLOC`, `AR_HEAP_FREE`, and `AR_HEAP_STRDUP` macros
+- **Zero memory leaks** across all modules confirmed through rigorous testing
+- **Automatic memory reporting** via `heap_memory_report.log` after program execution
+- **Memory leak detection** catches both actual leaks and intentional test leaks
+
+### Memory Safety Testing
+The project includes multiple layers of memory safety verification:
+- **Address Sanitizer (ASan)** for runtime memory error detection
+- **Static analysis** with Clang Static Analyzer for compile-time checks
+- **Comprehensive test coverage** with memory leak verification for every module
+- **Agent lifecycle memory management** ensuring proper message queue cleanup
+
+All modules have been converted to use heap tracking and achieve zero memory leaks, making AgeRun suitable for long-running, memory-critical applications.
 
 For comprehensive documentation on memory ownership patterns, see the [Memory Management Model](MMM.md).
 

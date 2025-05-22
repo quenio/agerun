@@ -76,7 +76,17 @@ The AgeRun system uses a type-safe data model for storing and manipulating value
 - **LIST**: Ordered collections of values (which can be of any data type).
 - **MAP**: Key-value collections where keys are strings and values can be of any data type.
 
-All data types are implemented as opaque structures with proper memory management and type safety. Agent memory and context are implemented as MAPs that can store any of the supported data types, including nested structures.
+All data types are implemented as opaque structures with comprehensive memory management and type safety. Agent memory and context are implemented as MAPs that can store any of the supported data types, including nested structures.
+
+### Memory Safety
+
+The AgeRun system implements zero-tolerance memory management with:
+
+- **Comprehensive heap tracking** using `AR_HEAP_MALLOC`, `AR_HEAP_FREE`, and `AR_HEAP_STRDUP` macros
+- **Zero memory leaks** across all modules verified through rigorous testing
+- **Automatic memory reporting** via `heap_memory_report.log` after program execution
+- **Strict ownership semantics** with explicit prefixes (`own_`, `mut_`, `ref_`) throughout the codebase
+- **Agent lifecycle memory management** ensuring proper message queue cleanup during agent destruction
 
 ## Agent Structure
 
