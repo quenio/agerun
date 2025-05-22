@@ -25,7 +25,7 @@ struct list_s {
  * @return Pointer to the new list, or NULL on failure
  */
 list_t* ar_list_create(void) {
-    list_t *own_list = (list_t*)malloc(sizeof(list_t));
+    list_t *own_list = (list_t*)AR_HEAP_MALLOC(sizeof(list_t), "List structure");
     if (!own_list) {
         return NULL;
     }
@@ -48,7 +48,7 @@ bool ar_list_add_last(list_t *mut_list, void *mut_item) {
         return false;
     }
     
-    struct list_node_s *own_node = (struct list_node_s*)malloc(sizeof(struct list_node_s));
+    struct list_node_s *own_node = (struct list_node_s*)AR_HEAP_MALLOC(sizeof(struct list_node_s), "List node");
     if (!own_node) {
         return false;
     }
@@ -80,7 +80,7 @@ bool ar_list_add_first(list_t *mut_list, void *mut_item) {
         return false;
     }
     
-    struct list_node_s *own_node = (struct list_node_s*)malloc(sizeof(struct list_node_s));
+    struct list_node_s *own_node = (struct list_node_s*)AR_HEAP_MALLOC(sizeof(struct list_node_s), "List node");
     if (!own_node) {
         return false;
     }
@@ -148,7 +148,7 @@ void* ar_list_remove_first(list_t *mut_list) {
         mut_list->own_tail = NULL;       // If list is now empty, update tail too
     }
     
-    free(mut_node);
+    AR_HEAP_FREE(mut_node);
     // Note: Setting mut_node to NULL is technically not needed as it's a local variable
     // but it helps signal that the memory is no longer accessible.
     mut_list->count--;
@@ -177,7 +177,7 @@ void* ar_list_remove_last(list_t *mut_list) {
         mut_list->own_head = NULL;        // If list is now empty, update head too
     }
     
-    free(mut_node);
+    AR_HEAP_FREE(mut_node);
     // Note: Setting mut_node to NULL is technically not needed as it's a local variable
     // but it helps signal that the memory is no longer accessible.
     mut_list->count--;
@@ -215,7 +215,7 @@ bool ar_list_empty(const list_t *ref_list) {
  * Get an array of all items in the list
  * @param list The list to get items from
  * @return Array of pointers to items, or NULL on failure
- * @note The caller is responsible for freeing the returned array using free().
+ * @note The caller is responsible for freeing the returned array using AR_HEAP_FREE().
  *       The items themselves are not copied and remain owned by the caller.
  *       The caller can use ar_list_count() to determine the size of the array.
  */
@@ -228,7 +228,7 @@ void** ar_list_items(const list_t *ref_list) {
         return NULL;
     }
     
-    void **own_items = (void**)malloc(ref_list->count * sizeof(void*));
+    void **own_items = (void**)AR_HEAP_MALLOC(ref_list->count * sizeof(void*), "List items array");
     if (!own_items) {
         return NULL;
     }
@@ -282,7 +282,7 @@ void* ar_list_remove(list_t *mut_list, const void *ref_item) {
             }
             
             // Free the node
-            free(mut_current);
+            AR_HEAP_FREE(mut_current);
             
             // Decrement count
             mut_list->count--;
@@ -312,12 +312,12 @@ void ar_list_destroy(list_t *own_list) {
     struct list_node_s *mut_current = own_list->own_head;
     while (mut_current) {
         struct list_node_s *mut_next = mut_current->mut_next;
-        free(mut_current);
+        AR_HEAP_FREE(mut_current);
         // Move to next node
         mut_current = mut_next;
     }
     
-    free(own_list);
+    AR_HEAP_FREE(own_list);
     // Note: Setting own_list to NULL here doesn't affect the caller's variable,
     // since C passes parameters by value. We rely on the caller to not use the 
     // pointer after calling this function.

@@ -28,6 +28,7 @@ static void test_create_destroy(void) {
     assert(ar_list_count(own_list) == 0);
     
     // Cleanup
+    if (own_items) AR_HEAP_FREE(own_items);  // Free items array if not NULL
     ar_list_destroy(own_list);
     
     printf("test_create_destroy passed\n");
@@ -69,7 +70,7 @@ static void test_add_last(void) {
     assert(strcmp((char*)own_items[2], "item3") == 0);
     
     // Cleanup
-    free(own_items);
+    AR_HEAP_FREE(own_items);
     AR_HEAP_FREE(own_item1);
     AR_HEAP_FREE(own_item2);
     AR_HEAP_FREE(own_item3);
@@ -114,7 +115,7 @@ static void test_add_first(void) {
     assert(strcmp((char*)own_items[2], "item1") == 0);
     
     // Cleanup
-    free(own_items);
+    AR_HEAP_FREE(own_items);
     AR_HEAP_FREE(own_item1);
     AR_HEAP_FREE(own_item2);
     AR_HEAP_FREE(own_item3);
@@ -356,7 +357,7 @@ static void test_add_many(void) {
     }
     
     // Cleanup
-    free(own_items);
+    AR_HEAP_FREE(own_items);
     for (int i = 0; i < TEST_COUNT; i++) {
         AR_HEAP_FREE(own_expected_items[i]);
     }
@@ -443,7 +444,7 @@ static void test_remove(void) {
     assert(own_items[1] == own_item2);
     assert(own_items[2] == own_item4);
     assert(own_items[3] == own_item5);
-    free(own_items);
+    AR_HEAP_FREE(own_items);
     
     // When removing the first item
     // Then it should return the item and update the list
@@ -457,7 +458,7 @@ static void test_remove(void) {
     assert(own_items[0] == own_item2);
     assert(own_items[1] == own_item4);
     assert(own_items[2] == own_item5);
-    free(own_items);
+    AR_HEAP_FREE(own_items);
     
     // When removing the last item
     // Then it should return the item and update the list
@@ -470,7 +471,7 @@ static void test_remove(void) {
     assert(own_items != NULL);
     assert(own_items[0] == own_item2);
     assert(own_items[1] == own_item4);
-    free(own_items);
+    AR_HEAP_FREE(own_items);
     
     // When removing an item that doesn't exist in the list
     // Then it should return NULL and not modify the list
