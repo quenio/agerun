@@ -1,4 +1,5 @@
 #include "agerun_data.h"
+#include "agerun_heap.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -892,7 +893,7 @@ static void test_list_operations(void) {
     char *own_first_string = ar_data_list_remove_first_string(own_typed_list);
     assert(own_first_string != NULL);
     assert(strcmp(own_first_string, "test string") == 0);
-    free(own_first_string); // We must free the owned string
+    AR_HEAP_FREE(own_first_string); // We must free the owned string
     own_first_string = NULL; // Mark as freed
     assert(ar_data_list_count(own_typed_list) == 3);
     
@@ -910,7 +911,7 @@ static void test_list_operations(void) {
     char *own_last_string = ar_data_list_remove_last_string(own_typed_list);
     assert(own_last_string != NULL);
     assert(strcmp(own_last_string, "another string") == 0);
-    free(own_last_string); // We must free the owned string
+    AR_HEAP_FREE(own_last_string); // We must free the owned string
     own_last_string = NULL; // Mark as freed
     assert(ar_data_list_count(own_typed_list) == 0);
     
@@ -943,6 +944,14 @@ static void test_list_operations(void) {
     assert(ar_data_list_count(own_typed_list) == 2);
     assert(ar_data_list_remove_last_double(own_typed_list) == 4.5);
     assert(ar_data_list_count(own_typed_list) == 1);
+    
+    // Remove the remaining string before cleanup
+    char *own_remaining_string = ar_data_list_remove_first_string(own_typed_list);
+    assert(own_remaining_string != NULL);
+    assert(strcmp(own_remaining_string, "string first") == 0);
+    AR_HEAP_FREE(own_remaining_string); // We must free the owned string
+    own_remaining_string = NULL; // Mark as freed
+    assert(ar_data_list_count(own_typed_list) == 0);
     
     // Cleanup typed_list - we own this value
     ar_data_destroy(own_typed_list);
