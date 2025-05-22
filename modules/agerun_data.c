@@ -161,7 +161,7 @@ void ar_data_destroy(data_t *own_data) {
             for (size_t i = 0; i < item_count; i++) {
                 ar_data_destroy((data_t*)own_items[i]); // Ownership transferred to ar_data_destroy
             }
-            free(own_items); // Free the array itself
+            AR_HEAP_FREE(own_items); // Free the array itself
             own_items = NULL; // Mark as freed
         }
     } else if (own_data->type == DATA_MAP && own_data->data.own_map) {
@@ -187,9 +187,9 @@ void ar_data_destroy(data_t *own_data) {
             
             if (own_key_ptrs) {
                 for (size_t i = 0; i < key_count; i++) {
-                    free(own_key_ptrs[i]); // Free each key string
+                    AR_HEAP_FREE(own_key_ptrs[i]); // Free each key string
                 }
-                free(own_key_ptrs); // Free the array itself
+                AR_HEAP_FREE(own_key_ptrs); // Free the array itself
                 own_key_ptrs = NULL; // Mark as freed
             }
             
@@ -203,7 +203,7 @@ void ar_data_destroy(data_t *own_data) {
             for (size_t i = 0; i < ref_count; i++) {
                 ar_data_destroy((data_t*)own_refs[i]); // Ownership transferred to ar_data_destroy
             }
-            free(own_refs); // Free the array itself
+            AR_HEAP_FREE(own_refs); // Free the array itself
             own_refs = NULL; // Mark as freed
         }
     }
@@ -336,7 +336,7 @@ data_t *ar_data_get_map_data(const data_t *ref_data, const char *ref_key) {
         // Get the map from the current data
         map_t *ref_current_map = ar_data_get_map(ref_current_data);
         if (!ref_current_map) {
-            free(segment);
+            AR_HEAP_FREE(segment);
             return NULL;
         }
         
@@ -344,18 +344,18 @@ data_t *ar_data_get_map_data(const data_t *ref_data, const char *ref_key) {
         result = ar_map_get(ref_current_map, segment);
         
         if (!result) {
-            free(segment);
+            AR_HEAP_FREE(segment);
             return NULL;
         }
         
         // For all but the last segment, the value must be a map
         if (i < segment_count - 1 && result->type != DATA_MAP) {
-            free(segment);
+            AR_HEAP_FREE(segment);
             return NULL;
         }
         
         ref_current_data = result;
-        free(segment);
+        AR_HEAP_FREE(segment);
     }
     
     return result;
@@ -537,14 +537,14 @@ bool ar_data_set_map_data(data_t *mut_data, const char *ref_key, data_t *own_val
         data_t *prev_data = ar_map_get(map, ref_key);
         
         // Create a copy of the key
-        char *key_copy = strdup(ref_key);
+        char *key_copy = AR_HEAP_STRDUP(ref_key, "Map key copy");
         if (!key_copy) {
             return false;
         }
         
         // Set the new value
         if (!ar_map_set(map, key_copy, own_value)) {
-            free(key_copy);
+            AR_HEAP_FREE(key_copy);
             return false;
         }
         
@@ -552,7 +552,7 @@ bool ar_data_set_map_data(data_t *mut_data, const char *ref_key, data_t *own_val
         if (!ar_list_add_last(mut_data->own_keys, key_copy)) {
             // Unlikely, but handle failure
             ar_map_set(map, ref_key, prev_data); // Try to restore previous state
-            free(key_copy);
+            AR_HEAP_FREE(key_copy);
             return false;
         }
         
@@ -580,7 +580,7 @@ bool ar_data_set_map_data(data_t *mut_data, const char *ref_key, data_t *own_val
     // Get the final key segment
     char *final_key = ar_string_path_segment(ref_key, '.', segment_count - 1);
     if (!final_key) {
-        free(parent_path);
+        AR_HEAP_FREE(parent_path);
         return false;
     }
     
@@ -588,8 +588,8 @@ bool ar_data_set_map_data(data_t *mut_data, const char *ref_key, data_t *own_val
     // or if any part of the path is not a map
     data_t *parent_data = ar_data_get_map_data(mut_data, parent_path);
     if (!parent_data || ar_data_get_type(parent_data) != DATA_MAP) {
-        free(final_key);
-        free(parent_path);
+        AR_HEAP_FREE(final_key);
+        AR_HEAP_FREE(parent_path);
         return false;
     }
     
@@ -600,8 +600,8 @@ bool ar_data_set_map_data(data_t *mut_data, const char *ref_key, data_t *own_val
     // If successful, ownership was transferred to parent_data
     // If not successful, the recursive call will have freed own_value
     
-    free(final_key);
-    free(parent_path);
+    AR_HEAP_FREE(final_key);
+    AR_HEAP_FREE(parent_path);
     return success;
 }
 
