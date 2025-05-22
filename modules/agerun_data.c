@@ -140,7 +140,7 @@ void ar_data_destroy(data_t *own_data) {
     if (!own_data) return;
     
     if (own_data->type == DATA_STRING && own_data->data.own_string) {
-        free(own_data->data.own_string);
+        AR_HEAP_FREE(own_data->data.own_string);
         own_data->data.own_string = NULL;
     } else if (own_data->type == DATA_LIST && own_data->data.own_list) {
         // For lists, we need to:
