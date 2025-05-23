@@ -2,6 +2,13 @@
 
 This directory contains AgeRun method definitions. Each file represents a single method that can be instantiated and executed by agents in the AgeRun system.
 
+## Available Methods
+
+| Method | Version | Description | Documentation |
+|--------|---------|-------------|---------------|
+| echo | 1.0.0 | Simple echo agent that returns messages to sender | [echo-1.0.0.md](echo-1.0.0.md) |
+| calculator | 1.0.0 | Basic arithmetic calculator supporting add, subtract, multiply, divide | [calculator-1.0.0.md](calculator-1.0.0.md) |
+
 ## File Naming Convention
 
 Method files follow a strict naming convention:
@@ -52,9 +59,7 @@ Instructions can be one of two types:
 
 **Simple Echo Method** (`echo-1.0.0.method`):
 ```
-memory.sender := message.sender
-memory.data := message.data
-send(memory.sender, "Echo: " + memory.data)
+send(sender, message)
 ```
 
 **Calculator Method** (`calculator-1.0.0.method`):

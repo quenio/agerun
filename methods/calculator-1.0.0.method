@@ -1,0 +1,6 @@
+memory.result := 0
+memory.result := if(message.operation = "add", message.a + message.b, memory.result)
+memory.result := if(message.operation = "multiply", message.a * message.b, memory.result)
+memory.result := if(message.operation = "subtract", message.a - message.b, memory.result)
+memory.result := if(message.operation = "divide", message.a / message.b, memory.result)
+send(message.sender, memory.result)
