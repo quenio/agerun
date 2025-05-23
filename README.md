@@ -207,6 +207,17 @@ The AgeRun codebase is organized into modular components, each responsible for a
 
 For more details on the module structure and dependencies, see the [Modules README](modules/README.md).
 
+## Method Files
+
+AgeRun method definitions can be stored as standalone `.method` files in the [methods](methods/) directory. These files provide a way to define and share reusable agent behaviors outside of the runtime environment.
+
+Each method file follows a specific naming convention and format that includes:
+- Semantic versioning in the filename (e.g., `echo-1.0.0.method`)
+- Plain text instruction code using the AgeRun instruction language
+- One instruction per line with proper newline termination
+
+For detailed information about method file format and examples, see the [Methods README](methods/README.md).
+
 ## Memory Management
 
 AgeRun implements a comprehensive memory safety system with zero tolerance for memory leaks. The system features:
