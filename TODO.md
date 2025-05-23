@@ -321,6 +321,17 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Add comprehensive tests for all instruction functions
   - [x] Update instruction module documentation with implementation details for parse function (completed 2025-05-22)
 
+- [x] Method file management and testing: (completed 2025-05-22)
+  - [x] Create methods directory for storing .method files (completed 2025-05-22)
+  - [x] Implement echo-1.0.0.method as a simple message echo agent (completed 2025-05-22)
+  - [x] Implement calculator-1.0.0.method supporting add, subtract, multiply, divide operations (completed 2025-05-22)
+  - [x] Create documentation for each method (.md files) (completed 2025-05-22)
+  - [x] Create test framework for method files (completed 2025-05-22)
+  - [x] Implement echo_tests.c and calculator_tests.c (completed 2025-05-22)
+  - [x] Update Makefile to compile and run method tests (completed 2025-05-22)
+  - [x] Fix test isolation issues by cleaning .agerun files between test runs (completed 2025-05-22)
+  - [x] Update methods/README.md with testing documentation (completed 2025-05-22)
+
 - [ ] Implement agent persistence feature:
   - [ ] Add `persist` boolean parameter to agent creation functions
   - [ ] Implement agent state serialization to agency.agerun file
@@ -335,3 +346,24 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Add configuration options for scaling parameters
   - [ ] Create tests for multi-instance scenarios
   - [ ] Document scaling configuration and best practices
+
+## Method Development and Testing
+
+- [ ] Expand method library:
+  - [ ] Implement additional sample methods demonstrating various AgeRun features
+  - [ ] Create methods that demonstrate message parsing and building
+  - [ ] Create methods that spawn and manage child agents
+  - [ ] Add methods that demonstrate persistence features
+  - [ ] Document best practices for method development
+
+- [ ] Improve method testing infrastructure:
+  - [ ] Add helper functions to capture and verify agent responses in tests
+  - [ ] Create utilities for testing agent-to-agent communication
+  - [ ] Add memory leak detection specific to method execution
+  - [ ] Create performance benchmarks for method execution
+
+- [ ] Method file loading system:
+  - [ ] Implement automatic method loading from the methods directory
+  - [ ] Add support for method file hot reloading during development
+  - [ ] Create method validation tools to check syntax before loading
+  - [ ] Add method versioning best practices documentation

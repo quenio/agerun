@@ -79,6 +79,12 @@ IMPORTANT:
   - Main executable is generated as `bin/agerun`
   - This directory is ignored by git
 
+- **/methods**: Method definition files and tests
+  - `*.method`: Method definition files containing AgeRun instruction code
+  - `*.md`: Documentation for each method
+  - `*_tests.c`: Test files for each method
+  - Files follow naming convention: `<method-name>-<semver>.method`
+
 ## Coding Style Guidelines
 
 1. **Formatting**:
@@ -484,3 +490,24 @@ IMPORTANT:
    - Handle file validation and error recovery explicitly in code that reads or writes files
    - Document file error handling strategies in module documentation
    - Follow the IO module's ownership conventions for file handles and buffers
+
+16. **Method File Development and Testing**:
+   - Method files are stored in the `methods/` directory with the format `<method-name>-<semver>.method`
+   - Each method file should contain valid AgeRun instruction code with one instruction per line
+   - Every method file MUST have a corresponding documentation file (`<method-name>-<semver>.md`)
+   - Every method file MUST have a corresponding test file (`<method-name>_tests.c`)
+   - When creating method tests:
+     - Read the method file using the IO module functions
+     - Register the method with `ar_methodology_create_method`
+     - Create agents using `ar_system_init` or `ar_agent_create`
+     - Send test messages and verify behavior
+     - Clean up all resources to maintain zero memory leaks
+     - Handle system already initialized case (ar_system_init returns 0)
+   - Test isolation is critical:
+     - The Makefile automatically cleans .agerun files between each test
+     - Always call cleanup functions between test cases
+     - Use `ar_agency_reset()` to ensure clean agent state
+   - When running method tests from the bin directory:
+     - Use relative path `../methods/` to access method files
+     - Ensure paths work correctly when tests run during `make test`
+   - Follow the test pattern established in `echo_tests.c` and `calculator_tests.c`
