@@ -26,6 +26,11 @@ TEST_SRC = $(wildcard modules/*_tests.c)
 TEST_OBJ = $(patsubst modules/%.c,bin/obj/%.o,$(TEST_SRC))
 TEST_BIN = $(patsubst modules/%_tests.c,bin/%_tests,$(TEST_SRC))
 
+# Method test source files
+METHOD_TEST_SRC = $(wildcard methods/*_tests.c)
+METHOD_TEST_OBJ = $(patsubst methods/%.c,bin/obj/%.o,$(METHOD_TEST_SRC))
+METHOD_TEST_BIN = $(patsubst methods/%_tests.c,bin/%_tests,$(METHOD_TEST_SRC))
+
 # Main target
 all: debug executable
 
@@ -52,7 +57,7 @@ lib: bin $(OBJ)
 	
 # Test library target (including all obj files but not test files)
 test_lib: CFLAGS += $(DEBUG_CFLAGS)
-test_lib: bin $(OBJ) $(TEST_OBJ)
+test_lib: bin $(OBJ) $(TEST_OBJ) $(METHOD_TEST_OBJ)
 	ar rcs bin/libagerun.a $(OBJ)
 
 # Executable application - build only (always in debug mode)
@@ -74,18 +79,22 @@ run-sanitize: executable-sanitize
 
 # Define test executables without bin/ prefix for use in the bin directory
 TEST_BIN_NAMES = $(notdir $(TEST_BIN))
+METHOD_TEST_BIN_NAMES = $(notdir $(METHOD_TEST_BIN))
+ALL_TEST_BIN_NAMES = $(TEST_BIN_NAMES) $(METHOD_TEST_BIN_NAMES)
 
 # Build and run tests (always in debug mode)
 test: CFLAGS += $(DEBUG_CFLAGS)
-test: bin $(TEST_BIN)
-	@cd bin && rm -f *.agerun && for test in $(TEST_BIN_NAMES); do \
+test: bin $(TEST_BIN) $(METHOD_TEST_BIN)
+	@cd bin && for test in $(ALL_TEST_BIN_NAMES); do \
+		rm -f *.agerun; \
 		echo "Running $$test"; \
 		./$$test || echo "ERROR: Test $$test failed with status $$?"; \
 	done
 
 # Build and run tests with Address Sanitizer
-test-sanitize: sanitize bin $(TEST_BIN)
-	@cd bin && rm -f *.agerun && for test in $(TEST_BIN_NAMES); do \
+test-sanitize: sanitize bin $(TEST_BIN) $(METHOD_TEST_BIN)
+	@cd bin && for test in $(ALL_TEST_BIN_NAMES); do \
+		rm -f *.agerun; \
 		echo "Running $$test with Address Sanitizer"; \
 		ASAN_OPTIONS=detect_leaks=1 ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
 	done
@@ -96,6 +105,10 @@ bin/%_tests: bin/obj/%_tests.o test_lib
 
 # Compile source files (always with debug for test files)
 bin/obj/%_tests.o: modules/%_tests.c | bin
+	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
+
+# Compile method test files (always with debug)
+bin/obj/%_tests.o: methods/%_tests.c | bin
 	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
 
 # Compile regular source files
@@ -129,7 +142,7 @@ analyze-tests:
 		echo "Static analysis results are available in bin/scan-build-results"; \
 	else \
 		echo "scan-build not found, using clang analyzer directly"; \
-		for file in $(SRC) $(TEST_SRC); do \
+		for file in $(SRC) $(TEST_SRC) $(METHOD_TEST_SRC); do \
 			echo "Analyzing $$file..."; \
 			$(CC) $(CFLAGS) $(ANALYZER_FLAGS) -c -I./modules $$file; \
 		done; \
