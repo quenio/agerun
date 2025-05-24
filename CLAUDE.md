@@ -170,6 +170,10 @@ IMPORTANT:
      - Arithmetic expressions with memory access (e.g., `memory.x + 5`) return new objects that MUST be destroyed
      - String expressions (e.g., `"Hello" + " World"`) return new objects that MUST be destroyed
      - String+number concatenation (e.g., `"Price: $" + 42.99`) returns new objects that MUST be destroyed
+     - When using expression results, always check if `ar_expression_take_ownership()` returns NULL:
+       - If it returns NULL, the value is a reference to existing data (use the reference directly)
+       - If it returns non-NULL, the value is newly created and you own it (must destroy it)
+       - This pattern is essential for functions that accept both types of values
    - Follow the AgeRun Memory Management Model (MMM) to ensure memory safety:
      - STRICTLY adhere to all rules in the MMM.md document
      - After transferring ownership of a pointer, NEVER use that pointer again
