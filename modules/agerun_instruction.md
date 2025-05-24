@@ -237,6 +237,36 @@ parse("user={user}, age={age}", "user=Alice, age=25")  // Returns map with user:
 - The function handles multiple placeholders in a single template
 - If the template doesn't match the input structure, an empty map is returned
 
+## Build Function
+
+The build function constructs strings by replacing placeholders in templates with values from a map:
+
+```c
+// Syntax: build(template, values)
+build("Hello {name}!", {"name": "Alice"})  // Returns "Hello Alice!"
+build("Order: {quantity} x {product} at ${price}", {"quantity": 5, "product": "Widget", "price": 19.99})
+// Returns "Order: 5 x Widget at $19.99"
+```
+
+**Parameters:**
+- `template`: A string containing placeholders in the format `{variable}`
+- `values`: A map containing key-value pairs to substitute into the template
+
+**Returns:**
+- A string with all placeholders replaced by their corresponding values
+- Placeholders without matching keys in the values map are left empty
+- The original template text for any unmatched braces
+
+**Implementation Notes:**
+- The build function searches for `{variable}` patterns in the template
+- Values are looked up in the provided map by variable name
+- All data types (string, integer, double) are automatically converted to strings
+- Missing placeholders result in empty substitution (e.g., `{missing}` becomes ``)
+- Unmatched braces (e.g., `{` without closing `}`) are copied literally
+- The function dynamically resizes the result buffer as needed
+- Empty templates return empty strings
+- The function handles nested data structures by accessing map values
+
 ## Method Function
 
 The method function allows agents to create and register new methods at runtime:

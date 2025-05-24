@@ -455,6 +455,7 @@ static const data_t* parse_memory_access(expression_context_t *mut_ctx) {
     data_t *ref_value = NULL;
     data_type_t source_type = ar_data_get_type(ref_source);
     
+    
     if (source_type == DATA_MAP) {
         // For map type, use the map access function
         ref_value = ar_data_get_map_data(ref_source, path);
@@ -939,6 +940,7 @@ const data_t* ar_expression_evaluate(expression_context_t *mut_ctx) {
         return NULL;
     }
     
+    
     // Parse the expression
     const data_t *ref_result = parse_expression(mut_ctx);
     
@@ -947,6 +949,7 @@ const data_t* ar_expression_evaluate(expression_context_t *mut_ctx) {
     if (!ref_result) {
         return NULL;
     }
+    
     
     return ref_result; // Result is owned by context unless ownership is transferred
 }

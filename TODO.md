@@ -315,11 +315,12 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 - [ ] Implement remaining instruction functions:
   - [x] Implement `parse(template, input)` function to extract values from strings based on templates (completed 2025-05-22)
-  - [ ] Implement `build(template, values)` function to construct strings by replacing placeholders
+  - [x] Implement `build(template, values)` function to construct strings by replacing placeholders (completed 2025-05-24)
   - [ ] Implement `agent(method_name, version, context)` function to create new agent instances
   - [ ] Implement `destroy(agent_id)` and `destroy(method_name, version)` functions for lifecycle management
   - [ ] Add comprehensive tests for all instruction functions
   - [x] Update instruction module documentation with implementation details for parse function (completed 2025-05-22)
+  - [x] Update instruction module documentation with implementation details for build function (completed 2025-05-24)
 
 - [x] Method file management and testing: (completed 2025-05-22)
   - [x] Create methods directory for storing .method files (completed 2025-05-22)

@@ -99,7 +99,7 @@ bool ar_instruction_run(instruction_context_t *mut_ctx, const char *ref_instruct
         return false;
     }
     
-    printf("DEBUG: Running instruction: %s\n", ref_instruction);
+    printf("DEBUG ar_instruction_run: instruction=%s\n", ref_instruction);
     
     int pos = 0;
     bool result = parse_instruction(mut_ctx, ref_instruction, &pos);
@@ -113,14 +113,19 @@ bool ar_instruction_run(instruction_context_t *mut_ctx, const char *ref_instruct
 static bool parse_instruction(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
     skip_whitespace(ref_instruction, mut_pos);
     
+    printf("DEBUG parse_instruction: starting at pos=%d\n", *mut_pos);
+    
     // Check for assignment or function instruction
     // Save the current position to backtrack if needed
     int save_pos = *mut_pos;
     
     // Try to parse as assignment first
     if (parse_assignment(mut_ctx, ref_instruction, mut_pos)) {
+        printf("DEBUG parse_instruction: parsed as assignment\n");
         return true;
     }
+    
+    printf("DEBUG parse_instruction: trying function instruction\n");
     
     // Backtrack and try as function instruction
     *mut_pos = save_pos;
@@ -308,6 +313,8 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
     if (!extract_identifier(ref_instruction, mut_pos, function_name, sizeof(function_name))) {
         return false;
     }
+    
+    printf("DEBUG parse_function_call: function_name=%s\n", function_name);
     
     skip_whitespace(ref_instruction, mut_pos);
     
@@ -801,6 +808,253 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         
         return true;
     }
+    else if (strcmp(function_name, "build") == 0) {
+        // build(template, values)
+        skip_whitespace(ref_instruction, mut_pos);
+        
+        // Create a single context for all expressions
+        expression_context_t *own_context = NULL;
+        
+        // Parse template expression
+        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+                                              mut_ctx->ref_context, 
+                                              mut_ctx->ref_message, 
+                                              ref_instruction + *mut_pos);
+        if (!own_context) {
+            return false;
+        }
+        data_t *own_template = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
+        *mut_pos += ar_expression_offset(own_context);
+        
+        // Clean up context immediately
+        ar_expression_destroy_context(own_context);
+        own_context = NULL; // Mark as destroyed
+        
+        if (!own_template) {
+            return false;
+        }
+        
+        // Ensure template is a string
+        if (ar_data_get_type(own_template) != DATA_STRING) {
+            ar_data_destroy(own_template);
+            own_template = NULL; // Mark as destroyed
+            return false;
+        }
+        const char *template_str = ar_data_get_string(own_template);
+        
+        skip_whitespace(ref_instruction, mut_pos);
+        
+        // Expect comma
+        if (ref_instruction[*mut_pos] != ',') {
+            ar_data_destroy(own_template);
+            own_template = NULL; // Mark as destroyed
+            return false;
+        }
+        (*mut_pos)++; // Skip ','
+        skip_whitespace(ref_instruction, mut_pos);
+        
+        // Parse values expression - reusing the context variable
+        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+                                              mut_ctx->ref_context, 
+                                              mut_ctx->ref_message, 
+                                              ref_instruction + *mut_pos);
+        if (!own_context) {
+            ar_data_destroy(own_template);
+            own_template = NULL; // Mark as destroyed
+            return false;
+        }
+        const data_t *ref_values = ar_expression_evaluate(own_context);
+        *mut_pos += ar_expression_offset(own_context);
+        
+        if (!ref_values) {
+            ar_expression_destroy_context(own_context);
+            own_context = NULL; // Mark as destroyed
+            ar_data_destroy(own_template);
+            own_template = NULL; // Mark as destroyed
+            return false;
+        }
+        
+        // Try to take ownership. If it fails, the value is a reference to existing data
+        data_t *own_values = ar_expression_take_ownership(own_context, ref_values);
+        
+        // Clean up context immediately
+        ar_expression_destroy_context(own_context);
+        own_context = NULL; // Mark as destroyed
+        
+        // Use ref_values if we couldn't take ownership
+        const data_t *values_to_use = own_values ? own_values : ref_values;
+        
+        // Ensure values is a map
+        if (ar_data_get_type(values_to_use) != DATA_MAP) {
+            if (own_values) {
+                ar_data_destroy(own_values);
+                own_values = NULL; // Mark as destroyed
+            }
+            ar_data_destroy(own_template);
+            own_template = NULL; // Mark as destroyed
+            return false;
+        }
+        
+        skip_whitespace(ref_instruction, mut_pos);
+        
+        // Expect closing parenthesis
+        if (ref_instruction[*mut_pos] != ')') {
+            ar_data_destroy(own_values);
+            own_values = NULL; // Mark as destroyed
+            ar_data_destroy(own_template);
+            own_template = NULL; // Mark as destroyed
+            return false;
+        }
+        (*mut_pos)++; // Skip ')'
+        
+        // Build the string by replacing placeholders in template
+        // Template format: "Hello {name}, you are {age} years old"
+        // Values: map with keys "name" and "age"
+        
+        // Create a string builder for the result
+        size_t result_size = strlen(template_str) * 2 + 256; // Start with a reasonable size
+        char *own_result_str = (char*)AR_HEAP_MALLOC(result_size, "Build result string");
+        if (!own_result_str) {
+            ar_data_destroy(own_values);
+            own_values = NULL; // Mark as destroyed
+            ar_data_destroy(own_template);
+            own_template = NULL; // Mark as destroyed
+            return false;
+        }
+        
+        size_t result_pos = 0;
+        const char *template_ptr = template_str;
+        
+        while (*template_ptr) {
+            if (*template_ptr == '{') {
+                // Look for the closing brace
+                const char *placeholder_end = strchr(template_ptr + 1, '}');
+                if (placeholder_end) {
+                    // Extract variable name
+                    size_t var_len = (size_t)(placeholder_end - template_ptr - 1);
+                    char *var_name = (char*)AR_HEAP_MALLOC(var_len + 1, "Build variable name");
+                    if (!var_name) {
+                        AR_HEAP_FREE(own_result_str);
+                        if (own_values) {
+                            ar_data_destroy(own_values);
+                            own_values = NULL; // Mark as destroyed
+                        }
+                        ar_data_destroy(own_template);
+                        own_template = NULL; // Mark as destroyed
+                        return false;
+                    }
+                    
+                    strncpy(var_name, template_ptr + 1, var_len);
+                    var_name[var_len] = '\0';
+                    
+                    // Look up value in the map
+                    const data_t *ref_value = ar_data_get_map_data(values_to_use, var_name);
+                    if (ref_value) {
+                        // Convert value to string
+                        char value_buffer[256];
+                        const char *value_str = NULL;
+                        
+                        if (ar_data_get_type(ref_value) == DATA_STRING) {
+                            value_str = ar_data_get_string(ref_value);
+                        } else if (ar_data_get_type(ref_value) == DATA_INTEGER) {
+                            snprintf(value_buffer, sizeof(value_buffer), "%d", ar_data_get_integer(ref_value));
+                            value_str = value_buffer;
+                        } else if (ar_data_get_type(ref_value) == DATA_DOUBLE) {
+                            snprintf(value_buffer, sizeof(value_buffer), "%g", ar_data_get_double(ref_value));
+                            value_str = value_buffer;
+                        }
+                        
+                        if (value_str) {
+                            // Ensure we have enough space
+                            size_t value_len = strlen(value_str);
+                            while (result_pos + value_len >= result_size - 1) {
+                                result_size *= 2;
+                                char *new_result = (char*)AR_HEAP_MALLOC(result_size, "Build result resize");
+                                if (!new_result) {
+                                    AR_HEAP_FREE(var_name);
+                                    AR_HEAP_FREE(own_result_str);
+                                    if (own_values) {
+                                        ar_data_destroy(own_values);
+                                        own_values = NULL; // Mark as destroyed
+                                    }
+                                    ar_data_destroy(own_template);
+                                    own_template = NULL; // Mark as destroyed
+                                    return false;
+                                }
+                                strcpy(new_result, own_result_str);
+                                AR_HEAP_FREE(own_result_str);
+                                own_result_str = new_result;
+                            }
+                            
+                            // Copy value to result
+                            strcpy(own_result_str + result_pos, value_str);
+                            result_pos += value_len;
+                        }
+                    }
+                    
+                    AR_HEAP_FREE(var_name);
+                    
+                    // Move past the placeholder
+                    template_ptr = placeholder_end + 1;
+                } else {
+                    // No closing brace found, copy the '{' literally
+                    if (result_pos >= result_size - 1) {
+                        result_size *= 2;
+                        char *new_result = (char*)AR_HEAP_MALLOC(result_size, "Build result resize");
+                        if (!new_result) {
+                            AR_HEAP_FREE(own_result_str);
+                            if (own_values) {
+                                ar_data_destroy(own_values);
+                                own_values = NULL; // Mark as destroyed
+                            }
+                            ar_data_destroy(own_template);
+                            own_template = NULL; // Mark as destroyed
+                            return false;
+                        }
+                        strcpy(new_result, own_result_str);
+                        AR_HEAP_FREE(own_result_str);
+                        own_result_str = new_result;
+                    }
+                    own_result_str[result_pos++] = *template_ptr++;
+                }
+            } else {
+                // Regular character, copy it
+                if (result_pos >= result_size - 1) {
+                    result_size *= 2;
+                    char *new_result = (char*)AR_HEAP_MALLOC(result_size, "Build result resize");
+                    if (!new_result) {
+                        AR_HEAP_FREE(own_result_str);
+                        ar_data_destroy(own_values);
+                        own_values = NULL; // Mark as destroyed
+                        ar_data_destroy(own_template);
+                        own_template = NULL; // Mark as destroyed
+                        return false;
+                    }
+                    strcpy(new_result, own_result_str);
+                    AR_HEAP_FREE(own_result_str);
+                    own_result_str = new_result;
+                }
+                own_result_str[result_pos++] = *template_ptr++;
+            }
+        }
+        
+        // Null-terminate the result
+        own_result_str[result_pos] = '\0';
+        
+        // Create the result string data object
+        *own_result = ar_data_create_string(own_result_str);
+        
+        // Clean up
+        AR_HEAP_FREE(own_result_str);
+        if (own_values) {
+            ar_data_destroy(own_values);
+            own_values = NULL; // Mark as destroyed
+        }
+        ar_data_destroy(own_template);
+        own_template = NULL; // Mark as destroyed
+        
+        return (*own_result != NULL);
+    }
     else if (strcmp(function_name, "method") == 0) {
         // method(name, instructions, version)
         skip_whitespace(ref_instruction, mut_pos);
@@ -961,8 +1215,9 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         return true;
     }
     else {
-        // For all other functions (build, agent, destroy),
+        // For all other functions (agent, destroy),
         // just return a default result for now
+        printf("DEBUG: Unknown function name: '%s'\n", function_name);
         // Skip to closing parenthesis
         int nesting = 1;
         while (ref_instruction[*mut_pos] && nesting > 0) {

@@ -3,6 +3,7 @@
 #include "agerun_system.h"
 #include "agerun_method.h"
 #include "agerun_agency.h"
+#include "agerun_data.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,6 +18,8 @@ static void test_memory_access_instructions(void);
 static void test_condition_instructions(void);
 static void test_message_send_instructions(void);
 static void test_method_function(void);
+static void test_parse_function(void);
+static void test_build_function(void);
 
 // Helper function to set up an agent for testing
 static agent_id_t setup_test_agent(const char *ref_method_name, const char *ref_instructions) {
@@ -273,6 +276,179 @@ static void test_method_function(void) {
     printf("Method function 3-parameter test passed!\n");
 }
 
+static void test_parse_function(void) {
+    printf("Testing parse function instruction...\n");
+    
+    // Given a test agent for running parse instruction
+    agent_id_t agent_id = setup_test_agent("parse_instruction_agent", "");
+    assert(test_agent_exists(agent_id));
+    
+    // Find our agent
+    extern agent_t* ar_agency_get_agents(void);
+    agent_t* agents = ar_agency_get_agents();
+    agent_t *test_agent = NULL;
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (agents[i].is_active && agents[i].id == agent_id) {
+            test_agent = &agents[i];
+            break;
+        }
+    }
+    assert(test_agent != NULL);
+    
+    // Create instruction context
+    instruction_context_t *own_ctx = ar_instruction_create_context(
+        test_agent->own_memory,
+        test_agent->ref_context,
+        NULL // No message for this test
+    );
+    assert(own_ctx != NULL);
+    
+    // Test parse function with simple template
+    const char *parse_instruction = "memory.result := parse(\"Hello {name}\", \"Hello World\")";
+    bool result = ar_instruction_run(own_ctx, parse_instruction);
+    assert(result);
+    
+    // Verify the result contains the parsed value
+    data_t *ref_result = ar_data_get_map_data(test_agent->own_memory, "result");
+    assert(ref_result != NULL);
+    assert(ar_data_get_type(ref_result) == DATA_MAP);
+    
+    const data_t *ref_name = ar_data_get_map_data(ref_result, "name");
+    assert(ref_name != NULL);
+    assert(ar_data_get_type(ref_name) == DATA_STRING);
+    assert(strcmp(ar_data_get_string(ref_name), "World") == 0);
+    
+    // Clean up context and agent
+    ar_instruction_destroy_context(own_ctx);
+    ar_agent_destroy(agent_id);
+    
+    printf("Parse function test passed!\n");
+}
+
+static void test_build_function(void) {
+    printf("Testing build function instruction...\n");
+    
+    // Given a test agent for running build instruction
+    agent_id_t agent_id = setup_test_agent("build_instruction_agent", "");
+    assert(test_agent_exists(agent_id));
+    
+    // Find our agent
+    extern agent_t* ar_agency_get_agents(void);
+    agent_t* agents = ar_agency_get_agents();
+    agent_t *test_agent = NULL;
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (agents[i].is_active && agents[i].id == agent_id) {
+            test_agent = &agents[i];
+            break;
+        }
+    }
+    assert(test_agent != NULL);
+    
+    
+    // Create instruction context
+    instruction_context_t *own_ctx = ar_instruction_create_context(
+        test_agent->own_memory,
+        test_agent->ref_context,
+        NULL // No message for this test
+    );
+    assert(own_ctx != NULL);
+    
+    // Test 1: Simple string replacement
+    printf("  Test 1: Simple string replacement...\n");
+    // First, create a map with values programmatically
+    data_t *own_values = ar_data_create_map();
+    assert(own_values != NULL);
+    ar_data_set_map_data(own_values, "name", ar_data_create_string("Alice"));
+    ar_data_set_map_data(own_values, "age", ar_data_create_integer(30));
+    ar_data_set_map_data(test_agent->own_memory, "values", own_values);
+    
+    
+    const char *build_instruction2 = "memory.result := build(\"Hello {name}, you are {age} years old\", memory.values)";
+    bool result = ar_instruction_run(own_ctx, build_instruction2);
+    assert(result);
+    
+    // Verify the result
+    data_t *ref_result = ar_data_get_map_data(test_agent->own_memory, "result");
+    assert(ref_result != NULL);
+    assert(ar_data_get_type(ref_result) == DATA_STRING);
+    assert(strcmp(ar_data_get_string(ref_result), "Hello Alice, you are 30 years old") == 0);
+    
+    // Test 2: Mixed data types
+    printf("  Test 2: Mixed data types...\n");
+    // Create a map with mixed data types
+    data_t *own_values2 = ar_data_create_map();
+    assert(own_values2 != NULL);
+    ar_data_set_map_data(own_values2, "product", ar_data_create_string("Widget"));
+    ar_data_set_map_data(own_values2, "price", ar_data_create_double(19.99));
+    ar_data_set_map_data(own_values2, "quantity", ar_data_create_integer(5));
+    ar_data_set_map_data(test_agent->own_memory, "values2", own_values2);
+    
+    const char *build_instruction4 = "memory.result2 := build(\"Order: {quantity} x {product} at ${price} each\", memory.values2)";
+    result = ar_instruction_run(own_ctx, build_instruction4);
+    assert(result);
+    
+    data_t *ref_result2 = ar_data_get_map_data(test_agent->own_memory, "result2");
+    assert(ref_result2 != NULL);
+    assert(ar_data_get_type(ref_result2) == DATA_STRING);
+    assert(strcmp(ar_data_get_string(ref_result2), "Order: 5 x Widget at $19.99 each") == 0);
+    
+    // Test 3: Missing placeholder (should be ignored)
+    printf("  Test 3: Missing placeholder...\n");
+    // Create a map with only greeting
+    data_t *own_values3 = ar_data_create_map();
+    assert(own_values3 != NULL);
+    ar_data_set_map_data(own_values3, "greeting", ar_data_create_string("Hello"));
+    ar_data_set_map_data(test_agent->own_memory, "values3", own_values3);
+    
+    const char *build_instruction6 = "memory.result3 := build(\"{greeting} {name}!\", memory.values3)";
+    result = ar_instruction_run(own_ctx, build_instruction6);
+    assert(result);
+    
+    data_t *ref_result3 = ar_data_get_map_data(test_agent->own_memory, "result3");
+    assert(ref_result3 != NULL);
+    assert(ar_data_get_type(ref_result3) == DATA_STRING);
+    assert(strcmp(ar_data_get_string(ref_result3), "Hello !") == 0);
+    
+    // Test 4: No placeholders
+    printf("  Test 4: No placeholders...\n");
+    const char *build_instruction7 = "memory.result4 := build(\"Plain text with no placeholders\", memory.values)";
+    result = ar_instruction_run(own_ctx, build_instruction7);
+    assert(result);
+    
+    data_t *ref_result4 = ar_data_get_map_data(test_agent->own_memory, "result4");
+    assert(ref_result4 != NULL);
+    assert(ar_data_get_type(ref_result4) == DATA_STRING);
+    assert(strcmp(ar_data_get_string(ref_result4), "Plain text with no placeholders") == 0);
+    
+    // Test 5: Unmatched brace
+    printf("  Test 5: Unmatched brace...\n");
+    const char *build_instruction8 = "memory.result5 := build(\"Unmatched { brace\", memory.values)";
+    result = ar_instruction_run(own_ctx, build_instruction8);
+    assert(result);
+    
+    data_t *ref_result5 = ar_data_get_map_data(test_agent->own_memory, "result5");
+    assert(ref_result5 != NULL);
+    assert(ar_data_get_type(ref_result5) == DATA_STRING);
+    assert(strcmp(ar_data_get_string(ref_result5), "Unmatched { brace") == 0);
+    
+    // Test 6: Empty template
+    printf("  Test 6: Empty template...\n");
+    const char *build_instruction9 = "memory.result6 := build(\"\", memory.values)";
+    result = ar_instruction_run(own_ctx, build_instruction9);
+    assert(result);
+    
+    data_t *ref_result6 = ar_data_get_map_data(test_agent->own_memory, "result6");
+    assert(ref_result6 != NULL);
+    assert(ar_data_get_type(ref_result6) == DATA_STRING);
+    assert(strcmp(ar_data_get_string(ref_result6), "") == 0);
+    
+    // Clean up context and agent
+    ar_instruction_destroy_context(own_ctx);
+    ar_agent_destroy(agent_id);
+    
+    printf("Build function test passed!\n");
+}
+
 int main(void) {
     printf("Starting Instruction Module Tests...\n");
     
@@ -301,6 +477,8 @@ int main(void) {
     test_condition_instructions();
     test_message_send_instructions();
     test_method_function();
+    test_parse_function();
+    test_build_function();
     
     // Then we clean up the system
     ar_system_shutdown();
