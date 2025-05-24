@@ -515,3 +515,53 @@ IMPORTANT:
      - Use relative path `../methods/` to access method files
      - Ensure paths work correctly when tests run during `make test`
    - Follow the test pattern established in `echo_tests.c` and `calculator_tests.c`
+
+17. **Code Smells and Refactoring**:
+   - Be aware of common code smells (adapted from Martin Fowler's catalog for C programming):
+     - **Long Function**: Functions that are too long and do too much
+       - Keep functions focused on a single responsibility
+       - Extract helper functions for distinct logical operations
+       - Aim for functions under 50 lines
+     - **Large Module**: Modules that have too many responsibilities
+       - Split modules that handle multiple unrelated concerns
+       - Each module should have a clear, focused purpose
+     - **Duplicate Code**: Same or similar code in multiple places
+       - Extract common functionality into utility functions
+       - Use the DRY (Don't Repeat Yourself) principle
+     - **Long Parameter List**: Functions with too many parameters
+       - Consider creating a struct to group related parameters
+       - Limit functions to 4-5 parameters maximum
+     - **Divergent Change**: One module changed for many different reasons
+       - Split the module so each has a single reason to change
+     - **Shotgun Surgery**: One change requires edits to many modules
+       - Consolidate related functionality into appropriate modules
+     - **Feature Envy**: Function more interested in another module's data
+       - Move the function to the module whose data it uses most
+     - **Data Clumps**: Same groups of data appearing together repeatedly
+       - Create a struct to represent the grouped data
+     - **Primitive Obsession**: Using primitives instead of small objects
+       - Create appropriate typedefs and structs for domain concepts
+     - **Switch Statements**: Complex switch statements, especially repeated ones
+       - Consider using function pointer tables or dispatch tables
+     - **Lazy Module**: Module that doesn't do enough to justify existence
+       - Merge with related module or expand its responsibilities
+     - **Speculative Generality**: Unused parameters, functions, or flexibility
+       - Remove unused code and parameters
+       - Implement only what's needed now
+     - **Temporary Field**: Struct fields only used in certain circumstances
+       - Extract to separate struct or pass as parameters
+     - **Message Chains**: Long chains of function calls (a->b()->c()->d())
+       - Apply Law of Demeter - modules should only talk to immediate collaborators
+     - **Middle Man**: Module that just delegates to another module
+       - Remove unnecessary delegation layers
+     - **Inappropriate Intimacy**: Modules that know too much about each other
+       - Use proper encapsulation and opaque types
+     - **Data Module**: Module with only data and no behavior
+       - Add relevant functions to the module or merge with behavioral module
+     - **Comments**: Excessive comments explaining bad code
+       - Refactor code to be self-documenting
+       - Comments should explain "why", not "what"
+   - When you identify code smells:
+     - Refactor incrementally, testing after each change
+     - Prioritize smells that impact maintainability most
+     - Document refactoring rationale in commit messages
