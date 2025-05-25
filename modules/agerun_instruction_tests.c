@@ -2,6 +2,7 @@
 #include "agerun_agent.h"
 #include "agerun_system.h"
 #include "agerun_method.h"
+#include "agerun_methodology.h"
 #include "agerun_agency.h"
 #include "agerun_data.h"
 #include <stdio.h>
@@ -571,6 +572,149 @@ static void test_agent_function(void) {
     printf("Agent function test passed!\n");
 }
 
+static void test_destroy_functions(void) {
+    printf("\nTesting Destroy Functions...\n");
+    
+    // Test 1: Destroy agent by ID
+    printf("  Test 1: Destroy agent by ID...\n");
+    
+    // Create context
+    data_t *own_memory = ar_data_create_map();
+    data_t *own_context = ar_data_create_map();
+    ar_data_set_map_data(own_memory, "context", own_context);
+    own_context = NULL; // Ownership transferred
+    
+    instruction_context_t *own_ctx = ar_instruction_create_context(
+        own_memory,
+        ar_data_get_map_data(own_memory, "context"),
+        NULL
+    );
+    
+    // First create a method for testing
+    const char *create_test_method = "memory.method_ok := method(\"destroy_test_method\", \"memory.x := 1\", \"1.0.0\")";
+    bool result = ar_instruction_run(own_ctx, create_test_method);
+    assert(result);
+    
+    // Then create an agent to destroy
+    const char *create_agent_instr = "memory.test_agent_id := agent(\"destroy_test_method\", \"1.0.0\", memory.context)";
+    result = ar_instruction_run(own_ctx, create_agent_instr);
+    assert(result);
+    
+    data_t *ref_agent_id = ar_data_get_map_data(own_memory, "test_agent_id");
+    assert(ref_agent_id != NULL);
+    assert(ar_data_get_type(ref_agent_id) == DATA_INTEGER);
+    int agent_id = ar_data_get_integer(ref_agent_id);
+    assert(agent_id > 0);
+    
+    // Process messages to complete agent creation
+    ar_system_process_next_message();
+    
+    // Verify agent exists before destroying it
+    assert(ar_agent_exists((agent_id_t)agent_id));
+    
+    // Now destroy the agent
+    const char *destroy_agent_instr = "memory.destroy_result := destroy(memory.test_agent_id)";
+    result = ar_instruction_run(own_ctx, destroy_agent_instr);
+    assert(result);
+    
+    data_t *ref_destroy_result = ar_data_get_map_data(own_memory, "destroy_result");
+    assert(ref_destroy_result != NULL);
+    assert(ar_data_get_type(ref_destroy_result) == DATA_INTEGER);
+    assert(ar_data_get_integer(ref_destroy_result) == 1); // Success
+    
+    // Verify agent is destroyed
+    assert(!ar_agent_exists((agent_id_t)agent_id));
+    
+    // Test 2: Try to destroy non-existent agent
+    printf("  Test 2: Destroy non-existent agent...\n");
+    const char *destroy_invalid_instr = "memory.destroy_invalid := destroy(999)";
+    result = ar_instruction_run(own_ctx, destroy_invalid_instr);
+    assert(result);
+    
+    data_t *ref_destroy_invalid = ar_data_get_map_data(own_memory, "destroy_invalid");
+    assert(ref_destroy_invalid != NULL);
+    assert(ar_data_get_type(ref_destroy_invalid) == DATA_INTEGER);
+    assert(ar_data_get_integer(ref_destroy_invalid) == 0); // Failure
+    
+    // Test 3: Create and destroy method
+    printf("  Test 3: Create and destroy method...\n");
+    
+    // First create a new method
+    const char *create_method_instr = "memory.method_result := method(\"test_destroy_method\", \"memory.x := 1\", \"1.0.0\")";
+    result = ar_instruction_run(own_ctx, create_method_instr);
+    assert(result);
+    
+    data_t *ref_method_result = ar_data_get_map_data(own_memory, "method_result");
+    assert(ref_method_result != NULL);
+    assert(ar_data_get_type(ref_method_result) == DATA_INTEGER);
+    assert(ar_data_get_integer(ref_method_result) == 1); // Success
+    
+    // Verify method exists
+    assert(ar_methodology_get_method("test_destroy_method", "1.0.0") != NULL);
+    
+    // Now destroy the method
+    const char *destroy_method_instr = "memory.destroy_method_result := destroy(\"test_destroy_method\", \"1.0.0\")";
+    result = ar_instruction_run(own_ctx, destroy_method_instr);
+    assert(result);
+    
+    data_t *ref_destroy_method_result = ar_data_get_map_data(own_memory, "destroy_method_result");
+    assert(ref_destroy_method_result != NULL);
+    assert(ar_data_get_type(ref_destroy_method_result) == DATA_INTEGER);
+    assert(ar_data_get_integer(ref_destroy_method_result) == 1); // Success
+    
+    // Verify method is destroyed
+    assert(ar_methodology_get_method("test_destroy_method", "1.0.0") == NULL);
+    
+    // Test 4: Try to destroy method with active agents
+    printf("  Test 4: Try to destroy method with active agents...\n");
+    
+    // Create a method and an agent using it
+    const char *create_method2_instr = "memory.method2_result := method(\"test_active_method\", \"memory.y := 2\", \"1.0.0\")";
+    result = ar_instruction_run(own_ctx, create_method2_instr);
+    assert(result);
+    
+    const char *create_agent2_instr = "memory.active_agent_id := agent(\"test_active_method\", \"1.0.0\", memory.context)";
+    result = ar_instruction_run(own_ctx, create_agent2_instr);
+    assert(result);
+    
+    // Process messages to complete agent creation
+    ar_system_process_next_message();
+    
+    data_t *ref_active_agent_id = ar_data_get_map_data(own_memory, "active_agent_id");
+    assert(ref_active_agent_id != NULL);
+    int active_agent_id = ar_data_get_integer(ref_active_agent_id);
+    assert(active_agent_id > 0);
+    
+    // Try to destroy the method (should fail)
+    const char *destroy_active_method_instr = "memory.destroy_active_result := destroy(\"test_active_method\", \"1.0.0\")";
+    result = ar_instruction_run(own_ctx, destroy_active_method_instr);
+    assert(result);
+    
+    data_t *ref_destroy_active_result = ar_data_get_map_data(own_memory, "destroy_active_result");
+    assert(ref_destroy_active_result != NULL);
+    assert(ar_data_get_type(ref_destroy_active_result) == DATA_INTEGER);
+    assert(ar_data_get_integer(ref_destroy_active_result) == 0); // Failure - agent still using it
+    
+    // Clean up the active agent
+    ar_agent_destroy((agent_id_t)active_agent_id);
+    
+    // Now we should be able to destroy the method
+    const char *destroy_active_method2_instr = "memory.destroy_active_result2 := destroy(\"test_active_method\", \"1.0.0\")";
+    result = ar_instruction_run(own_ctx, destroy_active_method2_instr);
+    assert(result);
+    
+    data_t *ref_destroy_active_result2 = ar_data_get_map_data(own_memory, "destroy_active_result2");
+    assert(ref_destroy_active_result2 != NULL);
+    assert(ar_data_get_type(ref_destroy_active_result2) == DATA_INTEGER);
+    assert(ar_data_get_integer(ref_destroy_active_result2) == 1); // Success
+    
+    // Clean up
+    ar_instruction_destroy_context(own_ctx);
+    ar_data_destroy(own_memory);
+    
+    printf("Destroy functions test passed!\n");
+}
+
 int main(void) {
     printf("Starting Instruction Module Tests...\n");
     
@@ -602,6 +746,7 @@ int main(void) {
     test_parse_function();
     test_build_function();
     test_agent_function();
+    test_destroy_functions();
     
     // Then we clean up the system
     ar_system_shutdown();

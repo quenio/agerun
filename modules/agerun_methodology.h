@@ -98,4 +98,13 @@ void ar_methodology_cleanup(void);
  */
 void ar_methodology_register_method(method_t *own_method);
 
+/**
+ * Unregister a method from the methodology
+ * @param ref_name Method name (borrowed reference)
+ * @param ref_version Version string of the method to unregister
+ * @return true if method was successfully unregistered, false otherwise
+ * @note This will fail if there are active agents using this method
+ */
+bool ar_methodology_unregister_method(const char *ref_name, const char *ref_version);
+
 #endif /* AGERUN_METHODOLOGY_H */

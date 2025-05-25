@@ -898,3 +898,83 @@ bool ar_methodology_load_methods(void) {
     ar_io_close_file(mut_fp, METHODOLOGY_FILE_NAME);
     return true;
 }
+
+/**
+ * Unregister a method from the methodology
+ * @param ref_name Method name (borrowed reference)
+ * @param ref_version Version string of the method to unregister
+ * @return true if method was successfully unregistered, false otherwise
+ * @note This will fail if there are active agents using this method
+ */
+bool ar_methodology_unregister_method(const char *ref_name, const char *ref_version) {
+    if (!ref_name || !ref_version) {
+        return false;
+    }
+    
+    // Find the method index
+    int method_idx = ar_methodology_find_method_idx(ref_name);
+    if (method_idx < 0) {
+        ar_io_warning("Method %s not found for unregistration", ref_name);
+        return false;
+    }
+    
+    // Find the specific version
+    int version_idx = -1;
+    for (int i = 0; i < method_counts[method_idx]; i++) {
+        if (methods[method_idx][i] != NULL &&
+            strcmp(ar_method_get_version(methods[method_idx][i]), ref_version) == 0) {
+            version_idx = i;
+            break;
+        }
+    }
+    
+    if (version_idx < 0) {
+        ar_io_warning("Method %s version %s not found for unregistration", ref_name, ref_version);
+        return false;
+    }
+    
+    // Check if any agents are using this method
+    method_t *method_to_remove = methods[method_idx][version_idx];
+    if (ar_agency_count_agents_using_method(method_to_remove) > 0) {
+        ar_io_error("Cannot unregister method %s version %s: agents are still using it", 
+                    ref_name, ref_version);
+        return false;
+    }
+    
+    // Destroy the method
+    ar_method_destroy(method_to_remove);
+    methods[method_idx][version_idx] = NULL;
+    
+    // Compact the versions array by shifting remaining versions
+    for (int i = version_idx; i < method_counts[method_idx] - 1; i++) {
+        methods[method_idx][i] = methods[method_idx][i + 1];
+    }
+    methods[method_idx][method_counts[method_idx] - 1] = NULL;
+    method_counts[method_idx]--;
+    
+    // If this was the last version of this method, compact the method names array
+    if (method_counts[method_idx] == 0) {
+        // Shift all subsequent methods down
+        for (int i = method_idx; i < method_name_count - 1; i++) {
+            // Move all versions
+            for (int j = 0; j < MAX_VERSIONS_PER_METHOD; j++) {
+                methods[i][j] = methods[i + 1][j];
+            }
+            method_counts[i] = method_counts[i + 1];
+        }
+        
+        // Clear the last slot
+        for (int j = 0; j < MAX_VERSIONS_PER_METHOD; j++) {
+            methods[method_name_count - 1][j] = NULL;
+        }
+        method_counts[method_name_count - 1] = 0;
+        method_name_count--;
+    }
+    
+    ar_io_info("Successfully unregistered method %s version %s", ref_name, ref_version);
+    
+    // Save the updated methodology to disk
+    ar_methodology_save_methods();
+    
+    return true;
+}

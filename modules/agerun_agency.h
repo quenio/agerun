@@ -76,5 +76,13 @@ bool ar_agency_load_agents(void);
  */
 int ar_agency_update_agent_methods(const method_t *ref_old_method, const method_t *ref_new_method);
 
+/**
+ * Count the number of agents using a specific method
+ * @param ref_method The method to check (borrowed reference)
+ * @return Number of active agents using the method
+ * @note Ownership: Does not take ownership of the method reference.
+ */
+int ar_agency_count_agents_using_method(const method_t *ref_method);
+
 #endif /* AGERUN_AGENCY_H */
 

@@ -1370,9 +1370,152 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         *own_result = ar_data_create_integer((int)agent_id);
         return true;
     }
+    else if (strcmp(function_name, "destroy") == 0) {
+        // destroy(agent_id) or destroy(method_name, version)
+        skip_whitespace(ref_instruction, mut_pos);
+        
+        // Create a single context for all expressions
+        expression_context_t *own_context = NULL;
+        
+        // Parse first argument
+        own_context = ar_expression_create_context(mut_ctx->mut_memory,
+                                              mut_ctx->ref_context,
+                                              mut_ctx->ref_message,
+                                              ref_instruction + *mut_pos);
+        if (!own_context) {
+            return false;
+        }
+        const data_t *ref_arg1 = ar_expression_evaluate(own_context);
+        if (!ref_arg1) {
+            ar_expression_destroy_context(own_context);
+            return false;
+        }
+        data_t *own_arg1 = ar_expression_take_ownership(own_context, ref_arg1);
+        *mut_pos += ar_expression_offset(own_context);
+        
+        // Clean up context immediately
+        ar_expression_destroy_context(own_context);
+        own_context = NULL; // Mark as destroyed
+        
+        if (!ref_arg1) {
+            return false;
+        }
+        
+        skip_whitespace(ref_instruction, mut_pos);
+        
+        // Check if there's a comma (indicates method destruction)
+        if (ref_instruction[*mut_pos] == ',') {
+            // This is destroy(method_name, version)
+            (*mut_pos)++; // Skip ','
+            skip_whitespace(ref_instruction, mut_pos);
+            
+            // Ensure first argument is a string (method name)
+            const data_t *arg_to_use = own_arg1 ? own_arg1 : ref_arg1;
+            if (ar_data_get_type(arg_to_use) != DATA_STRING) {
+                if (own_arg1) {
+                    ar_data_destroy(own_arg1);
+                    own_arg1 = NULL; // Mark as destroyed
+                }
+                return false;
+            }
+            const char *method_name = ar_data_get_string(arg_to_use);
+            
+            // Parse version expression
+            own_context = ar_expression_create_context(mut_ctx->mut_memory,
+                                                  mut_ctx->ref_context,
+                                                  mut_ctx->ref_message,
+                                                  ref_instruction + *mut_pos);
+            if (!own_context) {
+                ar_data_destroy(own_arg1);
+                own_arg1 = NULL; // Mark as destroyed
+                return false;
+            }
+            data_t *own_version = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
+            *mut_pos += ar_expression_offset(own_context);
+            
+            // Clean up context immediately
+            ar_expression_destroy_context(own_context);
+            own_context = NULL; // Mark as destroyed
+            
+            if (!own_version) {
+                ar_data_destroy(own_arg1);
+                own_arg1 = NULL; // Mark as destroyed
+                return false;
+            }
+            
+            skip_whitespace(ref_instruction, mut_pos);
+            
+            // Expect closing parenthesis
+            if (ref_instruction[*mut_pos] != ')') {
+                ar_data_destroy(own_version);
+                own_version = NULL; // Mark as destroyed
+                ar_data_destroy(own_arg1);
+                own_arg1 = NULL; // Mark as destroyed
+                return false;
+            }
+            (*mut_pos)++; // Skip ')'
+            
+            // Extract version string (default to "1.0.0" if not a valid string)
+            const char *version_str = "1.0.0";
+            if (ar_data_get_type(own_version) == DATA_STRING) {
+                version_str = ar_data_get_string(own_version);
+            } else if (ar_data_get_type(own_version) == DATA_INTEGER) {
+                // If version is provided as a number, convert it to a string "X.0.0"
+                static char version_buffer[16]; // Buffer for conversion
+                snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar_data_get_integer(own_version));
+                version_str = version_buffer;
+            }
+            
+            // Call methodology module to unregister the method
+            bool success = ar_methodology_unregister_method(method_name, version_str);
+            
+            // Clean up
+            ar_data_destroy(own_version);
+            own_version = NULL; // Mark as destroyed
+            ar_data_destroy(own_arg1);
+            own_arg1 = NULL; // Mark as destroyed
+            
+            // Return success indicator
+            *own_result = ar_data_create_integer(success ? 1 : 0);
+            return true;
+        }
+        else if (ref_instruction[*mut_pos] == ')') {
+            // This is destroy(agent_id)
+            (*mut_pos)++; // Skip ')'
+            
+            // Ensure argument is an integer (agent ID)
+            const data_t *arg_to_use = own_arg1 ? own_arg1 : ref_arg1;
+            if (ar_data_get_type(arg_to_use) != DATA_INTEGER) {
+                if (own_arg1) {
+                    ar_data_destroy(own_arg1);
+                    own_arg1 = NULL; // Mark as destroyed
+                }
+                return false;
+            }
+            agent_id_t agent_id = (agent_id_t)ar_data_get_integer(arg_to_use);
+            
+            // Destroy the agent
+            bool success = ar_agent_destroy(agent_id);
+            
+            // Clean up
+            if (own_arg1) {
+                ar_data_destroy(own_arg1);
+                own_arg1 = NULL; // Mark as destroyed
+            }
+            
+            // Return success indicator
+            *own_result = ar_data_create_integer(success ? 1 : 0);
+            return true;
+        }
+        else {
+            // Invalid syntax
+            ar_data_destroy(own_arg1);
+            own_arg1 = NULL; // Mark as destroyed
+            return false;
+        }
+    }
     else {
-        // For all other functions (destroy),
-        // just return a default result for now
+        // Unknown function
         printf("DEBUG: Unknown function name: '%s'\n", function_name);
         // Skip to closing parenthesis
         int nesting = 1;

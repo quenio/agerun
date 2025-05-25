@@ -327,6 +327,67 @@ memory.agent_id2 := agent("calculator", "2.0.1", memory.empty)  // With empty co
 - The returned agent ID can be used to send messages to the new agent
 - Returns 0 if the specified method or version doesn't exist
 
+## Destroy Function
+
+The destroy function provides lifecycle management for agents and methods:
+
+```c
+// Syntax for destroying an agent:
+destroy(agent_id)
+
+// Syntax for unregistering a method:
+destroy(method_name, version)
+```
+
+### Destroying Agents
+
+```c
+// Create an agent
+memory.agent_id := agent("echo", "1.0.0", memory.context)
+
+// Later, destroy the agent
+memory.success := destroy(memory.agent_id)  // Returns 1 on success, 0 on failure
+```
+
+**Parameters:**
+- `agent_id`: The ID of the agent to destroy (integer)
+
+**Returns:**
+- 1 if the agent was successfully destroyed
+- 0 if the agent didn't exist or destruction failed
+
+**Implementation Notes:**
+- The function calls `ar_agent_destroy` with the provided agent ID
+- The agent receives a `__sleep__` message before being destroyed
+- All resources owned by the agent (memory, message queue) are freed
+- Attempting to destroy a non-existent agent returns 0
+
+### Unregistering Methods
+
+```c
+// Create a method
+method("calculator", "memory.result := 0", "1.0.0")
+
+// Later, unregister the method (if no agents are using it)
+memory.success := destroy("calculator", "1.0.0")  // Returns 1 on success, 0 on failure
+```
+
+**Parameters:**
+- `method_name`: The name of the method to unregister (string)
+- `version`: The version of the method to unregister (string)
+
+**Returns:**
+- 1 if the method was successfully unregistered
+- 0 if the method didn't exist, has active agents using it, or unregistration failed
+
+**Implementation Notes:**
+- The function calls `ar_methodology_unregister_method` with the provided parameters
+- Methods can only be unregistered if no agents are currently using them
+- The function checks for active agents before attempting unregistration
+- Attempting to unregister a non-existent method returns 0
+- After successful unregistration, the methodology is automatically saved to disk
+- All resources associated with the method are freed
+
 ## Implementation Notes
 
 - All instructions follow the BNF grammar from the specification

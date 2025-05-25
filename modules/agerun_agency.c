@@ -925,5 +925,26 @@ int ar_agency_update_agent_methods(const method_t *ref_old_method, const method_
     return update_count;
 }
 
+/**
+ * Count the number of agents using a specific method
+ * @param ref_method The method to check (borrowed reference)
+ * @return Number of active agents using the method
+ * @note Ownership: Does not take ownership of the method reference.
+ */
+int ar_agency_count_agents_using_method(const method_t *ref_method) {
+    if (!ref_method) {
+        return 0;
+    }
+    
+    int count = 0;
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (g_own_agents[i].is_active && g_own_agents[i].ref_method == ref_method) {
+            count++;
+        }
+    }
+    
+    return count;
+}
+
 /* End of implementation */
 
