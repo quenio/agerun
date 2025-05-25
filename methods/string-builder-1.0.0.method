@@ -1,0 +1,4 @@
+memory.parsed := parse(message.template, message.input)
+memory.result := build(message.output_template, memory.parsed)
+send(message.sender, memory.result)
+

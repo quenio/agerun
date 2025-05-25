@@ -1,1 +1,2 @@
-send(sender, message)
+memory.message := message
+send(message.sender, message)

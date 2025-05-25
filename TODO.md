@@ -1998,3 +1998,164 @@ Based on discovery during method test implementation (2025-05-25), the following
     - [ ] Update echo_tests.c to use accessor functions
   - [ ] Remove direct access to agent array from all tests
   - [ ] Ensure tests still properly verify method execution
+
+## Test Improvements
+
+Based on observations during method test fixes (2025-05-25), the following improvements are needed:
+
+### Method Test Structure Improvements
+
+- [ ] **Fix test result reporting**:
+  - [ ] Remove "All tests passed" messages that print before all tests have run
+  - [ ] Consider using a test framework or result tracking instead of assertions
+  - [ ] Each test function should return success/failure status
+  - [ ] Main function should track and report aggregate results
+  - [ ] Only print "All tests passed" if all tests actually passed
+
+- [ ] **Fix file not found errors during cleanup**:
+  - [ ] Investigate why "methodology.agerun" and "agency.agerun" files are expected
+  - [ ] Determine if these are persistence files that should be created
+  - [ ] Either create the files during test setup or handle their absence gracefully
+  - [ ] Consider using test-specific file paths to avoid conflicts
+
+- [ ] **Improve test isolation**:
+  - [ ] Ensure each test starts with a completely clean state
+  - [ ] Add cleanup between individual test functions
+  - [ ] Consider using separate directories for each test's files
+  - [ ] Implement proper teardown that doesn't produce errors
+
+## Method Creation Validation
+
+Based on method_creator_tests results (2025-05-25), the following issue needs to be addressed:
+
+### Method Syntax Validation
+
+- [ ] **Fix method() function to validate instruction syntax**:
+  - [ ] The method() function currently accepts invalid syntax and creates methods anyway
+  - [ ] Example: "memory.result = invalid syntax here" should fail but currently succeeds
+  - [ ] Add syntax validation before registering the method
+  - [ ] Return appropriate error value (0 or -1) when syntax is invalid
+  - [ ] Consider validating each instruction line during method creation
+
+## Urgent Tasks - Instruction Module Fixes
+
+These urgent tasks were identified during method test implementation (2025-05-25) and need to be fixed for full functionality:
+
+### Critical Function Fixes
+
+- [ ] **Fix if() function to handle comparison expressions**:
+  - [ ] The if() function is not properly evaluating comparison expressions
+  - [ ] Expression evaluation returns references for memory access (e.g., message.field)
+  - [ ] Need to handle both owned values and references in condition evaluation
+  - [ ] Fix string comparison operations (e.g., message.action = "create")
+  - [ ] Fix numeric comparison operations (e.g., message.value >= 90)
+  - [ ] Many methods depend on this: grade-evaluator, message-router, calculator, agent-manager
+  - [ ] Priority: HIGH - blocking multiple method tests
+
+- [ ] **Fix destroy() function expression parsing**:
+  - [ ] The destroy() function is receiving "message.agent_id)" with closing parenthesis included
+  - [ ] Expression evaluator correctly parses up to "message.agent_id" but offset handling is wrong
+  - [ ] Need to fix how function arguments are parsed in parse_function_call
+  - [ ] Currently failing in agent_manager_tests when trying to destroy agents
+  - [ ] Priority: HIGH - required for agent lifecycle management
+
+### Memory Assignment Enhancement
+
+- [ ] **Fix memory assignment to allow assigning entire maps**:
+  - [ ] Currently cannot do `memory.message := message` when message is a map
+  - [ ] This pattern is used in the echo method
+  - [ ] Need to handle map-to-map assignments in the assignment parsing
+  - [ ] Consider implementing deep copy for map assignments
+  - [ ] Priority: MEDIUM - affects echo method and similar patterns
+
+### Test Completion
+
+- [ ] **Complete testing of remaining methods after fixes**:
+  - [ ] grade_evaluator_tests - depends on if() function fix
+  - [ ] message_router_tests - depends on if() function fix  
+  - [ ] calculator_tests - depends on if() function fix
+  - [ ] Verify all methods work correctly after instruction fixes
+  - [ ] Priority: MEDIUM - needed for full validation
+  - [ ] Update method_creator_tests to properly verify syntax validation
+
+## Method Documentation Updates
+
+These documentation tasks were identified during method test implementation (2025-05-25):
+
+### Method Documentation Files
+
+- [ ] **Update string-builder method documentation**:
+  - [ ] Document the parse() and build() functions
+  - [ ] Add examples of template parsing and string building
+  - [ ] Document how placeholders work in templates
+  - [ ] Add common use cases and patterns
+  - [ ] Update string-builder-1.0.0.md
+
+- [ ] **Update method-creator method documentation**:
+  - [ ] Document the method() function for dynamic method creation
+  - [ ] Add examples of creating methods at runtime
+  - [ ] Document version parameter handling
+  - [ ] Add security considerations for dynamic method creation
+  - [ ] Update method-creator-1.0.0.md
+
+- [ ] **Update agent-manager method documentation**:
+  - [ ] Document agent lifecycle management functions
+  - [ ] Add examples of creating and destroying agents
+  - [ ] Document the agent() and destroy() functions
+  - [ ] Add patterns for agent pool management
+  - [ ] Update agent-manager-1.0.0.md
+
+- [ ] **Update grade-evaluator method documentation**:
+  - [ ] Document the grading logic and thresholds
+  - [ ] Add examples of grade evaluation
+  - [ ] Document support for both grade and status types
+  - [ ] Add test cases showing different grade ranges
+  - [ ] Update grade-evaluator-1.0.0.md
+
+- [ ] **Update message-router method documentation**:
+  - [ ] Document routing logic and supported routes
+  - [ ] Add examples of message routing patterns
+  - [ ] Document how to add new routes
+  - [ ] Add performance considerations for routing
+  - [ ] Update message-router-1.0.0.md
+
+- [ ] **Update calculator method documentation**:
+  - [ ] Document supported operations (add, multiply, subtract, divide)
+  - [ ] Add examples of arithmetic operations
+  - [ ] Document error handling for division by zero
+  - [ ] Add patterns for extending with new operations
+  - [ ] Update calculator-1.0.0.md
+
+- [ ] **Update echo method documentation**:
+  - [ ] Document the simple echo behavior
+  - [ ] Add examples of echo usage
+  - [ ] Document memory storage pattern
+  - [ ] Add use cases for debugging and testing
+  - [ ] Update echo-1.0.0.md
+
+### Method Index Documentation
+
+- [ ] **Update methods/README.md**:
+  - [ ] Add all new methods to the index
+  - [ ] Group methods by category (utilities, management, routing, etc.)
+  - [ ] Add brief descriptions of each method's purpose
+  - [ ] Include version information and dependencies
+  - [ ] Add a quick reference table for all methods
+
+### Instruction Language Documentation
+
+- [ ] **Update instruction language documentation**:
+  - [ ] Document all built-in functions: send(), parse(), build(), method(), agent(), destroy(), if()
+  - [ ] Add comprehensive examples for each function
+  - [ ] Document function parameter requirements
+  - [ ] Add common patterns and idioms
+  - [ ] Update modules/agerun_instruction.md
+
+### Integration Examples
+
+- [ ] **Create integration examples**:
+  - [ ] Show how methods can work together
+  - [ ] Example: router + calculator + echo for a complete system
+  - [ ] Example: agent-manager + method-creator for dynamic systems
+  - [ ] Example: grade-evaluator in an educational context
+  - [ ] Add these to a new examples/ directory or documentation

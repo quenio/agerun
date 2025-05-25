@@ -1,0 +1,13 @@
+memory.is_grade := if(message.type = "grade", 1, 0)
+memory.is_status := if(message.type = "status", 1, 0)
+memory.grade_a := if(message.value >= 90, 1, 0)
+memory.grade_b := if(message.value >= 80, 1, 0)
+memory.grade_c := if(message.value >= 70, 1, 0)
+memory.grade := "F"
+memory.grade := if(memory.grade_c = 1, "C", memory.grade)
+memory.grade := if(memory.grade_b = 1, "B", memory.grade)
+memory.grade := if(memory.grade_a = 1, "A", memory.grade)
+memory.status := if(message.value > 0, "active", "inactive")
+memory.result := if(memory.is_grade = 1, memory.grade, "unknown")
+memory.result := if(memory.is_status = 1, memory.status, memory.result)
+send(message.sender, memory.result)

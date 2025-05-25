@@ -1,0 +1,7 @@
+memory.create_result := agent(message.method_name, message.version, message.context)
+memory.destroy_result := destroy(message.agent_id)
+memory.is_create := if(message.action = "create", 1, 0)
+memory.is_destroy := if(message.action = "destroy", 1, 0)
+memory.result := if(memory.is_create = 1, memory.create_result, 0)
+memory.result := if(memory.is_destroy = 1, memory.destroy_result, memory.result)
+send(message.sender, memory.result)

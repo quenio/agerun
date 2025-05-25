@@ -1,0 +1,6 @@
+memory.is_echo := if(message.route = "echo", 1, 0)
+memory.is_calc := if(message.route = "calc", 1, 0)
+memory.target := if(memory.is_echo = 1, message.echo_agent, 0)
+memory.target := if(memory.is_calc = 1, message.calc_agent, memory.target)
+memory.sent := send(memory.target, message.payload)
+send(message.sender, memory.sent)

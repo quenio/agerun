@@ -577,3 +577,34 @@ IMPORTANT:
    - Always process messages after agent creation to avoid memory leaks
    - Function expressions in instruction code are evaluated by the expression module
    - Memory access expressions may not work correctly in all contexts - use literal values as fallback
+
+19. **AgeRun Method Language Syntax Guidelines**:
+   - **Expressions vs Instructions**: Understand the critical distinction:
+     - Expressions: literals, memory access, arithmetic, comparisons (can be used as function arguments)
+     - Instructions: assignments, function calls (cannot be used as function arguments)
+     - Function calls are NOT expressions and cannot be nested
+   - **Function Argument Rules**:
+     - Function arguments must be expressions, not instructions
+     - Assignments cannot be used as function arguments
+     - Function calls cannot be used as arguments to other functions
+     - The `if()` function cannot be nested within expressions
+   - **The if() Function**:
+     - Can be used as a standalone instruction: `if(condition, true_expr, false_expr)`
+     - Can be used with assignment: `memory.x := if(condition, true_expr, false_expr)`
+     - Arguments must be expressions (no assignments, no function calls)
+     - Cannot be nested: `if(a > 5, if(b > 10, "A", "B"), "C")` is INVALID
+   - **The send() Function**:
+     - `send(0, message)` is a no-op that returns true - use this for conditional sending
+     - Instead of complex conditional logic, leverage the no-op behavior
+     - Example: `memory.sent := send(memory.target, memory.payload)` where target might be 0
+   - **Best Practices**:
+     - Use sequential if() statements instead of trying to nest them
+     - Store intermediate results in memory variables when needed
+     - Leverage the no-op behavior of functions (like send with agent_id 0) to simplify logic
+     - Always verify your method syntax against the BNF grammar in the specification
+   - **Testing Method Execution**:
+     - Method tests MUST verify the agent's memory state after execution
+     - Use `ar_agent_get_memory()` to access the agent's memory map
+     - Check that all expected memory values were set correctly by the method
+     - This ensures all instructions executed successfully, not just the final result
+     - Example: After a grade evaluator runs, check memory.grade, memory.is_grade, etc.
