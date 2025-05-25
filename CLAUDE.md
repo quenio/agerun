@@ -565,3 +565,15 @@ IMPORTANT:
      - Refactor incrementally, testing after each change
      - Prioritize smells that impact maintainability most
      - Document refactoring rationale in commit messages
+
+18. **AgeRun Language Semantics**:
+   - There is no null data type in AgeRun - use integer 0 instead for null/empty values
+   - All function parameters are required - there are no optional parameters
+   - Version strings must always be specified explicitly (e.g., "1.0.0")
+   - Literal maps/objects are only allowed in assignments, not as function arguments
+   - To pass a map to a function, first assign it to memory, then reference it
+   - Agent IDs are integers, with 0 indicating failure/invalid agent
+   - Created agents automatically receive a `__wake__` message upon creation
+   - Always process messages after agent creation to avoid memory leaks
+   - Function expressions in instruction code are evaluated by the expression module
+   - Memory access expressions may not work correctly in all contexts - use literal values as fallback

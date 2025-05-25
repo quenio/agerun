@@ -210,6 +210,10 @@ ar_instruction_run(own_ctx, "memory.result := if(memory.count > 5, \"High\", \"L
 
 // Create a method
 ar_instruction_run(own_ctx, "memory.created := method(\"greet\", \"memory.message := \\\"Hello\\\";\", 1)");
+
+// Create an agent
+ar_instruction_run(own_ctx, "memory.context := {\"name\": \"Worker\"}");
+ar_instruction_run(own_ctx, "memory.worker_id := agent(\"echo\", \"1.0.0\", memory.context)");
 ```
 
 ## Parse Function
@@ -292,6 +296,36 @@ method("greet", "memory.greeting := \"Hello\"", 1)
   - `backward_compatible`: true (methods are backward compatible by default)
   - `persist`: false (methods don't persist by default)
 - This function facilitates the runtime evolution of agent behaviors
+
+## Agent Function
+
+The agent function creates new agent instances at runtime:
+
+```c
+// Syntax: agent(method_name, version, context)
+memory.context := {"name": "Echo Agent"}
+memory.agent_id := agent("echo", "1.0.0", memory.context)  // Returns agent ID
+memory.empty := {}
+memory.agent_id2 := agent("calculator", "2.0.1", memory.empty)  // With empty context
+```
+
+**Parameters:**
+- `method_name`: The name of the method for the agent to use (string)
+- `version`: The version of the method to use (string, required)
+- `context`: Initial context data for the agent (map reference)
+
+**Returns:**
+- An integer agent ID if successful (non-zero)
+- 0 if the agent creation failed (e.g., method not found)
+
+**Implementation Notes:**
+- The agent function calls `ar_agent_create` with the provided parameters
+- All parameters are required; version must be a specific version string
+- The context parameter must be an expression (e.g., memory reference), not a literal map
+- The context is borrowed - the agent will reference it, not take ownership
+- Created agents receive a `__wake__` message upon creation
+- The returned agent ID can be used to send messages to the new agent
+- Returns 0 if the specified method or version doesn't exist
 
 ## Implementation Notes
 

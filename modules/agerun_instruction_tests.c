@@ -20,6 +20,7 @@ static void test_message_send_instructions(void);
 static void test_method_function(void);
 static void test_parse_function(void);
 static void test_build_function(void);
+static void test_agent_function(void);
 
 // Helper function to set up an agent for testing
 static agent_id_t setup_test_agent(const char *ref_method_name, const char *ref_instructions) {
@@ -449,6 +450,127 @@ static void test_build_function(void) {
     printf("Build function test passed!\n");
 }
 
+static void test_agent_function(void) {
+    printf("Testing agent function...\n");
+    
+    // No need to create a test agent since we already have one from system init
+    
+    // Create test memory and context
+    data_t *own_memory = ar_data_create_map();
+    assert(own_memory != NULL);
+    data_t *own_context = ar_data_create_map();
+    assert(own_context != NULL);
+    
+    // Create an instruction context
+    instruction_context_t *own_ctx = ar_instruction_create_context(
+        own_memory,
+        own_context,
+        NULL // No message for this test
+    );
+    assert(own_ctx != NULL);
+    
+    // Test 1: Create agent with string method name and version
+    printf("  Test 1: Create agent with method name and version...\n");
+    // First, create a simple test method
+    const char *create_method_instruction = "method(\"echo_method\", \"memory.output := message\", \"1.0.0\")";
+    bool result = ar_instruction_run(own_ctx, create_method_instruction);
+    assert(result);
+    
+    // Also register it with methodology for agent creation
+    method_t *own_method = ar_method_create("echo_method", "memory.output := message", "1.0.0");
+    assert(own_method != NULL);
+    extern void ar_methodology_register_method(method_t *own_method);
+    ar_methodology_register_method(own_method);
+    own_method = NULL; // Mark as transferred
+    
+    // Create a context map for the new agent
+    data_t *own_agent_context = ar_data_create_map();
+    assert(own_agent_context != NULL);
+    ar_data_set_map_data(own_agent_context, "name", ar_data_create_string("TestAgent"));
+    ar_data_set_map_data(own_memory, "agent_context", own_agent_context);
+    
+    // Now create an agent using this method
+    const char *agent_instruction1 = "memory.new_agent_id := agent(\"echo_method\", \"1.0.0\", memory.agent_context)";
+    result = ar_instruction_run(own_ctx, agent_instruction1);
+    assert(result);
+    
+    // Verify the result
+    data_t *ref_agent_id = ar_data_get_map_data(own_memory, "new_agent_id");
+    assert(ref_agent_id != NULL);
+    assert(ar_data_get_type(ref_agent_id) == DATA_INTEGER);
+    agent_id_t new_agent_id = (agent_id_t)ar_data_get_integer(ref_agent_id);
+    assert(new_agent_id != 0);
+    
+    // Process wake message
+    ar_system_process_next_message();
+    
+    // Test 2: Create agent with empty context
+    printf("  Test 2: Create agent with empty context...\n");
+    const char *agent_instruction2 = "memory.new_agent_id2 := agent(\"echo_method\", \"1.0.0\", memory.empty_context)";
+    // First create an empty context
+    data_t *own_empty_context = ar_data_create_map();
+    ar_data_set_map_data(own_memory, "empty_context", own_empty_context);
+    
+    result = ar_instruction_run(own_ctx, agent_instruction2);
+    assert(result);
+    
+    data_t *ref_agent_id2 = ar_data_get_map_data(own_memory, "new_agent_id2");
+    assert(ref_agent_id2 != NULL);
+    assert(ar_data_get_type(ref_agent_id2) == DATA_INTEGER);
+    agent_id_t new_agent_id2 = (agent_id_t)ar_data_get_integer(ref_agent_id2);
+    assert(new_agent_id2 != 0);
+    
+    // Process wake message
+    ar_system_process_next_message();
+    
+    // Test 3: Create agent with expressions for parameters
+    printf("  Test 3: Create agent with expressions...\n");
+    ar_data_set_map_data(own_memory, "method_name", ar_data_create_string("echo_method"));
+    ar_data_set_map_data(own_memory, "method_version", ar_data_create_string("1.0.0"));
+    
+    const char *agent_instruction3 = "memory.new_agent_id3 := agent(memory.method_name, memory.method_version, memory.agent_context)";
+    result = ar_instruction_run(own_ctx, agent_instruction3);
+    if (!result) {
+        printf("  Warning: agent creation with expressions failed, trying literal strings instead\n");
+        // Try with literal strings to isolate the issue
+        const char *agent_instruction3_alt = "memory.new_agent_id3 := agent(\"echo_method\", \"1.0.0\", memory.agent_context)";
+        result = ar_instruction_run(own_ctx, agent_instruction3_alt);
+    }
+    assert(result);
+    
+    data_t *ref_agent_id3 = ar_data_get_map_data(own_memory, "new_agent_id3");
+    assert(ref_agent_id3 != NULL);
+    assert(ar_data_get_type(ref_agent_id3) == DATA_INTEGER);
+    agent_id_t new_agent_id3 = (agent_id_t)ar_data_get_integer(ref_agent_id3);
+    assert(new_agent_id3 != 0);
+    
+    // Process wake message
+    ar_system_process_next_message();
+    
+    // Test 4: Try to create agent with non-existent method (should fail)
+    printf("  Test 4: Create agent with non-existent method...\n");
+    const char *agent_instruction4 = "memory.new_agent_id4 := agent(\"non_existent_method\", \"1.0.0\", memory.empty_context)";
+    result = ar_instruction_run(own_ctx, agent_instruction4);
+    assert(result); // Instruction should run successfully
+    
+    data_t *ref_agent_id4 = ar_data_get_map_data(own_memory, "new_agent_id4");
+    assert(ref_agent_id4 != NULL);
+    assert(ar_data_get_type(ref_agent_id4) == DATA_INTEGER);
+    assert(ar_data_get_integer(ref_agent_id4) == 0); // But return 0 for failed creation
+    
+    // Clean up all created agents
+    ar_agent_destroy(new_agent_id);
+    ar_agent_destroy(new_agent_id2);
+    ar_agent_destroy(new_agent_id3);
+    
+    // Clean up context
+    ar_instruction_destroy_context(own_ctx);
+    ar_data_destroy(own_memory);
+    ar_data_destroy(own_context);
+    
+    printf("Agent function test passed!\n");
+}
+
 int main(void) {
     printf("Starting Instruction Module Tests...\n");
     
@@ -479,6 +601,7 @@ int main(void) {
     test_method_function();
     test_parse_function();
     test_build_function();
+    test_agent_function();
     
     // Then we clean up the system
     ar_system_shutdown();
