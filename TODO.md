@@ -1954,3 +1954,47 @@ Based on the comprehensive module analysis (2025-05-24), the following architect
    - [ ] Consistent use of IO abstractions
 
 These architectural improvements would significantly enhance maintainability, testability, and extensibility of the codebase.
+
+## Code Quality - Opaque Type Refactoring
+
+Based on discovery during method test implementation (2025-05-25), the following refactoring tasks are needed:
+
+### High Priority Refactoring Tasks
+
+- [ ] **Make agent_t a proper opaque type**:
+  - [ ] Move agent_t struct definition from agerun_agent.h to agerun_agent.c
+  - [ ] Add accessor functions to agent module:
+    - [ ] `ar_agent_get_memory(agent_id)` - returns const data_t* to agent's memory
+    - [ ] `ar_agent_get_id(agent_id)` - returns the agent's ID (for validation)
+    - [ ] `ar_agent_is_active(agent_id)` - returns bool for agent's active status
+    - [ ] `ar_agent_get_method_info(agent_id)` - returns method name/version if needed
+  - [ ] Update all modules that currently access agent fields directly:
+    - [ ] Agency module - use accessor functions instead of direct field access
+    - [ ] System module - use accessor functions for agent operations
+    - [ ] Method module - use accessor functions for memory/context access
+  - [ ] Remove `ar_agency_get_agents()` function that exposes internal array
+
+- [ ] **Audit all modules for opaque type violations**:
+  - [ ] Check each module's header file for struct definitions that should be opaque
+  - [ ] Identify types that are exposed but should be hidden:
+    - [ ] Review if method_t should be opaque (currently defined in header)
+    - [ ] Check if expression_context_t should be opaque
+    - [ ] Verify if instruction_context_t exposure is necessary
+  - [ ] For each exposed type, determine if:
+    - [ ] It's legitimately needed by clients (keep exposed)
+    - [ ] It's only used internally (make opaque)
+    - [ ] It's used for efficiency but could be hidden (consider trade-offs)
+  - [ ] Create accessor functions for any types made opaque
+  - [ ] Update all client code to use accessor functions
+
+- [ ] **Update method tests to use proper API**:
+  - [ ] Once agent accessor functions are implemented:
+    - [ ] Update string_builder_tests.c to use `ar_agent_get_memory()`
+    - [ ] Update method_creator_tests.c to use accessor functions
+    - [ ] Update agent_manager_tests.c to use accessor functions
+    - [ ] Update grade_evaluator_tests.c to use accessor functions
+    - [ ] Update message_router_tests.c to use accessor functions
+    - [ ] Update calculator_tests.c to use accessor functions
+    - [ ] Update echo_tests.c to use accessor functions
+  - [ ] Remove direct access to agent array from all tests
+  - [ ] Ensure tests still properly verify method execution
