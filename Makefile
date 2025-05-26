@@ -61,8 +61,7 @@ test_lib: bin $(OBJ) $(TEST_OBJ) $(METHOD_TEST_OBJ)
 	ar rcs bin/libagerun.a $(OBJ)
 
 # Executable application - build only (always in debug mode)
-executable: CFLAGS += $(DEBUG_CFLAGS)
-executable: lib bin
+executable: debug bin
 	$(CC) $(CFLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS)
 
 # Executable application with Address Sanitizer - build only
@@ -83,7 +82,7 @@ METHOD_TEST_BIN_NAMES = $(notdir $(METHOD_TEST_BIN))
 ALL_TEST_BIN_NAMES = $(TEST_BIN_NAMES) $(METHOD_TEST_BIN_NAMES)
 
 # Build and run tests (always in debug mode)
-test: CFLAGS += $(DEBUG_CFLAGS)
+test: clean debug
 test: bin $(TEST_BIN) $(METHOD_TEST_BIN)
 	@cd bin && for test in $(ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
@@ -92,7 +91,8 @@ test: bin $(TEST_BIN) $(METHOD_TEST_BIN)
 	done
 
 # Build and run tests with Address Sanitizer
-test-sanitize: sanitize bin $(TEST_BIN) $(METHOD_TEST_BIN)
+test-sanitize: clean sanitize
+test-sanitize: bin $(TEST_BIN) $(METHOD_TEST_BIN)
 	@cd bin && for test in $(ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
 		echo "Running $$test with Address Sanitizer"; \
