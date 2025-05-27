@@ -5,6 +5,7 @@
 #include "agerun_methodology.h"
 #include "agerun_agency.h"
 #include "agerun_data.h"
+#include "agerun_heap.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -60,42 +61,54 @@ static void test_simple_instructions(void) {
     agent_id_t agent_id = setup_test_agent("test_agent", "");
     assert(test_agent_exists(agent_id));
     
-    // And a message to send
-    static const char *ref_hello_text = "Hello";
-    data_t *own_hello_message = ar_data_create_string(ref_hello_text);
-    assert(own_hello_message != NULL);
-    // We would test with an instruction, but can't access agent directly
-    // const char *instruction = "message -> \"Test Response\""; // Unused
+    // Get agent memory and context using accessor functions
+    data_t *mut_memory = ar_agent_get_mutable_memory(agent_id);
+    assert(mut_memory != NULL);
+    const data_t *ref_context = ar_agent_get_context(agent_id);
     
-    // We can't access the agent structure directly anymore, so we'll need to
-    // use other system functions to test this instead
-    // Send message (transfers ownership of own_hello_message)
-    bool result = ar_agent_send(agent_id, own_hello_message);
-    own_hello_message = NULL; // Mark as transferred
-    // We can't directly test the instruction functionality anymore due to opaque agents
+    // Test 1: Simple assignment instruction
+    // Create instruction context without message
+    instruction_context_t *own_ctx = ar_instruction_create_context(
+        mut_memory,
+        ref_context,
+        NULL
+    );
+    assert(own_ctx != NULL);
     
-    // Process the message to prevent memory leaks
-    ar_system_process_next_message();
-    
-    // Then the instruction should execute successfully
+    // Test simple assignment
+    const char *instruction = "memory.test := \"Hello World\"";
+    bool result = ar_instruction_run(own_ctx, instruction);
     assert(result);
     
-    // We would test with another instruction, but can't access agent directly
-    // instruction = "message -> message"; // Unused
+    // Verify the value was written
+    data_t *ref_test = ar_data_get_map_data(mut_memory, "test");
+    assert(ref_test != NULL);
+    assert(ar_data_get_type(ref_test) == DATA_STRING);
+    assert(strcmp(ar_data_get_string(ref_test), "Hello World") == 0);
     
-    // We test indirectly by sending another message
-    data_t *own_hello_message2 = ar_data_create_string(ref_hello_text);
-    assert(own_hello_message2 != NULL);
+    // Clean up context
+    ar_instruction_destroy_context(own_ctx);
     
-    // Send message (transfers ownership of own_hello_message2)
-    result = ar_agent_send(agent_id, own_hello_message2);
-    own_hello_message2 = NULL; // Mark as transferred
+    // Test 2: Assignment with expression
+    own_ctx = ar_instruction_create_context(
+        mut_memory,
+        ref_context,
+        NULL
+    );
+    assert(own_ctx != NULL);
     
-    // Process the message to prevent memory leaks
-    ar_system_process_next_message();
-    
-    // Then the instruction should execute successfully
+    instruction = "memory.sum := 2 + 3";
+    result = ar_instruction_run(own_ctx, instruction);
     assert(result);
+    
+    // Verify the result
+    data_t *ref_sum = ar_data_get_map_data(mut_memory, "sum");
+    assert(ref_sum != NULL);
+    assert(ar_data_get_type(ref_sum) == DATA_INTEGER);
+    assert(ar_data_get_integer(ref_sum) == 5);
+    
+    // Clean up context
+    ar_instruction_destroy_context(own_ctx);
     
     // When we clean up the agent
     bool destroy_result = ar_agent_destroy(agent_id);
@@ -126,9 +139,52 @@ static void test_memory_access_instructions(void) {
     ar_system_process_next_message();
     assert(result);
     
-    // Since we can't directly access the memory with the new opaque type,
-    // we can only verify that the agent exists and can receive messages
-    printf("Warning: Memory access not working as expected, skipping result validation\n");
+    // Get agent memory and context using accessor functions
+    data_t *mut_memory = ar_agent_get_mutable_memory(agent_id);
+    assert(mut_memory != NULL);
+    const data_t *ref_context = ar_agent_get_context(agent_id);
+    
+    // Create instruction context without message
+    instruction_context_t *own_ctx = ar_instruction_create_context(
+        mut_memory,
+        ref_context,
+        NULL
+    );
+    assert(own_ctx != NULL);
+    
+    // Test memory write instruction
+    const char *write_instruction = "memory.test_value := 42";
+    result = ar_instruction_run(own_ctx, write_instruction);
+    assert(result);
+    
+    // Verify the value was written
+    data_t *ref_test_value = ar_data_get_map_data(mut_memory, "test_value");
+    assert(ref_test_value != NULL);
+    assert(ar_data_get_type(ref_test_value) == DATA_INTEGER);
+    assert(ar_data_get_integer(ref_test_value) == 42);
+    
+    // Test nested memory write - AgeRun doesn't support auto-creating nested maps
+    // We need to create the parent map programmatically first
+    data_t *own_nested_map = ar_data_create_map();
+    assert(own_nested_map != NULL);
+    ar_data_set_map_data(mut_memory, "nested", own_nested_map);
+    
+    // Now write to nested path
+    const char *nested_instruction = "memory.nested.value := \"nested text\"";
+    result = ar_instruction_run(own_ctx, nested_instruction);
+    assert(result);
+    
+    // Verify nested value
+    data_t *ref_nested = ar_data_get_map_data(mut_memory, "nested");
+    assert(ref_nested != NULL);
+    assert(ar_data_get_type(ref_nested) == DATA_MAP);
+    data_t *ref_nested_value = ar_data_get_map_data(ref_nested, "value");
+    assert(ref_nested_value != NULL);
+    assert(ar_data_get_type(ref_nested_value) == DATA_STRING);
+    assert(strcmp(ar_data_get_string(ref_nested_value), "nested text") == 0);
+    
+    // Clean up context
+    ar_instruction_destroy_context(own_ctx);
     
     // Clean up
     ar_agent_destroy(agent_id);
@@ -154,9 +210,43 @@ static void test_condition_instructions(void) {
     // Process the message to prevent memory leaks
     ar_system_process_next_message();
     
-    // Since we can't directly access the memory with the new opaque type,
-    // we can only verify that the agent exists and can receive messages
-    printf("Warning: Memory access not working as expected, skipping result validation\n");
+    // Get agent memory and context using accessor functions
+    data_t *mut_memory = ar_agent_get_mutable_memory(agent_id);
+    assert(mut_memory != NULL);
+    const data_t *ref_context = ar_agent_get_context(agent_id);
+    
+    // Create instruction context without message
+    instruction_context_t *own_ctx = ar_instruction_create_context(
+        mut_memory,
+        ref_context,
+        NULL
+    );
+    assert(own_ctx != NULL);
+    
+    // Test if-then-else with true condition
+    const char *if_true_instruction = "memory.result := if(1 > 0, \"true\", \"false\")";
+    bool result = ar_instruction_run(own_ctx, if_true_instruction);
+    assert(result);
+    
+    // Verify result
+    data_t *ref_result = ar_data_get_map_data(mut_memory, "result");
+    assert(ref_result != NULL);
+    assert(ar_data_get_type(ref_result) == DATA_STRING);
+    assert(strcmp(ar_data_get_string(ref_result), "true") == 0);
+    
+    // Test if-then-else with false condition
+    const char *if_false_instruction = "memory.result2 := if(0 > 1, \"true\", \"false\")";
+    result = ar_instruction_run(own_ctx, if_false_instruction);
+    assert(result);
+    
+    // Verify result
+    data_t *ref_result2 = ar_data_get_map_data(mut_memory, "result2");
+    assert(ref_result2 != NULL);
+    assert(ar_data_get_type(ref_result2) == DATA_STRING);
+    assert(strcmp(ar_data_get_string(ref_result2), "false") == 0);
+    
+    // Clean up context
+    ar_instruction_destroy_context(own_ctx);
     
     // Clean up
     ar_agent_destroy(agent_id);
@@ -174,27 +264,48 @@ static void test_message_send_instructions(void) {
     agent_id_t receiver_id = setup_test_agent("receiver_agent", "memory.initialized = 1");
     assert(test_agent_exists(receiver_id));
     
-    // Initialize both agents
-    static const char *ref_wake_text3 = "__wake__";
-    data_t *own_wake_message3_sender = ar_data_create_string(ref_wake_text3);
-    data_t *own_wake_message3_receiver = ar_data_create_string(ref_wake_text3);
-    assert(own_wake_message3_sender != NULL);
-    assert(own_wake_message3_receiver != NULL);
+    // Agents already received __wake__ messages when created, no need to send more
+    // Process the automatic wake messages
+    ar_system_process_next_message(); // Process sender's wake
+    ar_system_process_next_message(); // Process receiver's wake
     
-    // Send messages (transfers ownership)
-    ar_agent_send(sender_id, own_wake_message3_sender);
-    own_wake_message3_sender = NULL; // Mark as transferred
-    // Process the message to prevent memory leaks
+    // Get sender's memory and context using accessor functions
+    data_t *mut_sender_memory = ar_agent_get_mutable_memory(sender_id);
+    assert(mut_sender_memory != NULL);
+    const data_t *ref_sender_context = ar_agent_get_context(sender_id);
+    
+    // Store receiver ID in sender's memory
+    ar_data_set_map_data(mut_sender_memory, "receiver_id", ar_data_create_integer((int)receiver_id));
+    
+    // Verify receiver_id was stored
+    data_t *ref_stored_id = ar_data_get_map_data(mut_sender_memory, "receiver_id");
+    assert(ref_stored_id != NULL);
+    
+    // Create instruction context without message
+    instruction_context_t *own_ctx = ar_instruction_create_context(
+        mut_sender_memory,
+        ref_sender_context,
+        NULL
+    );
+    assert(own_ctx != NULL);
+    
+    // Test send instruction with a literal agent ID
+    char literal_send[100];
+    snprintf(literal_send, sizeof(literal_send), "memory.literal_result := send(%lld, \"Test literal\")", receiver_id);
+    bool literal_result = ar_instruction_run(own_ctx, literal_send);
+    assert(literal_result);
+    
+    // Process the sent message
     ar_system_process_next_message();
     
-    ar_agent_send(receiver_id, own_wake_message3_receiver);
-    own_wake_message3_receiver = NULL; // Mark as transferred
-    // Process the message to prevent memory leaks
-    ar_system_process_next_message();
+    // Verify literal send result
+    data_t *ref_literal_result = ar_data_get_map_data(mut_sender_memory, "literal_result");
+    assert(ref_literal_result != NULL);
+    assert(ar_data_get_type(ref_literal_result) == DATA_INTEGER);
+    assert(ar_data_get_integer(ref_literal_result) == 1); // Send successful
     
-    // Since we can't directly access memory or queue with the opaque types,
-    // we can only send messages and verify the agents exist
-    printf("Warning: Cannot directly test message sending with opaque types\n");
+    // Clean up context
+    ar_instruction_destroy_context(own_ctx);
     
     // Clean up
     ar_agent_destroy(sender_id);
@@ -210,22 +321,15 @@ static void test_method_function(void) {
     agent_id_t agent_id = setup_test_agent("method_instruction_agent", "");
     assert(test_agent_exists(agent_id));
     
-    // Find our agent
-    extern agent_t* ar_agency_get_agents(void);
-    agent_t* agents = ar_agency_get_agents();
-    agent_t *test_agent = NULL;
-    for (int i = 0; i < MAX_AGENTS; i++) {
-        if (agents[i].is_active && agents[i].id == agent_id) {
-            test_agent = &agents[i];
-            break;
-        }
-    }
-    assert(test_agent != NULL);
+    // Get agent memory and context using accessor functions
+    data_t *mut_memory = ar_agent_get_mutable_memory(agent_id);
+    assert(mut_memory != NULL);
+    const data_t *ref_context = ar_agent_get_context(agent_id);
     
     // Create instruction context
     instruction_context_t *own_ctx = ar_instruction_create_context(
-        test_agent->own_memory,
-        test_agent->ref_context,
+        mut_memory,
+        ref_context,
         NULL // No message for this test
     );
     assert(own_ctx != NULL);
@@ -285,22 +389,15 @@ static void test_parse_function(void) {
     agent_id_t agent_id = setup_test_agent("parse_instruction_agent", "");
     assert(test_agent_exists(agent_id));
     
-    // Find our agent
-    extern agent_t* ar_agency_get_agents(void);
-    agent_t* agents = ar_agency_get_agents();
-    agent_t *test_agent = NULL;
-    for (int i = 0; i < MAX_AGENTS; i++) {
-        if (agents[i].is_active && agents[i].id == agent_id) {
-            test_agent = &agents[i];
-            break;
-        }
-    }
-    assert(test_agent != NULL);
+    // Get agent memory and context using accessor functions
+    data_t *mut_memory = ar_agent_get_mutable_memory(agent_id);
+    assert(mut_memory != NULL);
+    const data_t *ref_context = ar_agent_get_context(agent_id);
     
     // Create instruction context
     instruction_context_t *own_ctx = ar_instruction_create_context(
-        test_agent->own_memory,
-        test_agent->ref_context,
+        mut_memory,
+        ref_context,
         NULL // No message for this test
     );
     assert(own_ctx != NULL);
@@ -311,7 +408,7 @@ static void test_parse_function(void) {
     assert(result);
     
     // Verify the result contains the parsed value
-    data_t *ref_result = ar_data_get_map_data(test_agent->own_memory, "result");
+    data_t *ref_result = ar_data_get_map_data(mut_memory, "result");
     assert(ref_result != NULL);
     assert(ar_data_get_type(ref_result) == DATA_MAP);
     
@@ -334,23 +431,15 @@ static void test_build_function(void) {
     agent_id_t agent_id = setup_test_agent("build_instruction_agent", "");
     assert(test_agent_exists(agent_id));
     
-    // Find our agent
-    extern agent_t* ar_agency_get_agents(void);
-    agent_t* agents = ar_agency_get_agents();
-    agent_t *test_agent = NULL;
-    for (int i = 0; i < MAX_AGENTS; i++) {
-        if (agents[i].is_active && agents[i].id == agent_id) {
-            test_agent = &agents[i];
-            break;
-        }
-    }
-    assert(test_agent != NULL);
-    
+    // Get agent memory and context using accessor functions
+    data_t *mut_memory = ar_agent_get_mutable_memory(agent_id);
+    assert(mut_memory != NULL);
+    const data_t *ref_context = ar_agent_get_context(agent_id);
     
     // Create instruction context
     instruction_context_t *own_ctx = ar_instruction_create_context(
-        test_agent->own_memory,
-        test_agent->ref_context,
+        mut_memory,
+        ref_context,
         NULL // No message for this test
     );
     assert(own_ctx != NULL);
@@ -362,7 +451,7 @@ static void test_build_function(void) {
     assert(own_values != NULL);
     ar_data_set_map_data(own_values, "name", ar_data_create_string("Alice"));
     ar_data_set_map_data(own_values, "age", ar_data_create_integer(30));
-    ar_data_set_map_data(test_agent->own_memory, "values", own_values);
+    ar_data_set_map_data(mut_memory, "values", own_values);
     
     
     const char *build_instruction2 = "memory.result := build(\"Hello {name}, you are {age} years old\", memory.values)";
@@ -370,7 +459,7 @@ static void test_build_function(void) {
     assert(result);
     
     // Verify the result
-    data_t *ref_result = ar_data_get_map_data(test_agent->own_memory, "result");
+    data_t *ref_result = ar_data_get_map_data(mut_memory, "result");
     assert(ref_result != NULL);
     assert(ar_data_get_type(ref_result) == DATA_STRING);
     assert(strcmp(ar_data_get_string(ref_result), "Hello Alice, you are 30 years old") == 0);
@@ -383,13 +472,13 @@ static void test_build_function(void) {
     ar_data_set_map_data(own_values2, "product", ar_data_create_string("Widget"));
     ar_data_set_map_data(own_values2, "price", ar_data_create_double(19.99));
     ar_data_set_map_data(own_values2, "quantity", ar_data_create_integer(5));
-    ar_data_set_map_data(test_agent->own_memory, "values2", own_values2);
+    ar_data_set_map_data(mut_memory, "values2", own_values2);
     
     const char *build_instruction4 = "memory.result2 := build(\"Order: {quantity} x {product} at ${price} each\", memory.values2)";
     result = ar_instruction_run(own_ctx, build_instruction4);
     assert(result);
     
-    data_t *ref_result2 = ar_data_get_map_data(test_agent->own_memory, "result2");
+    data_t *ref_result2 = ar_data_get_map_data(mut_memory, "result2");
     assert(ref_result2 != NULL);
     assert(ar_data_get_type(ref_result2) == DATA_STRING);
     assert(strcmp(ar_data_get_string(ref_result2), "Order: 5 x Widget at $19.99 each") == 0);
@@ -400,13 +489,13 @@ static void test_build_function(void) {
     data_t *own_values3 = ar_data_create_map();
     assert(own_values3 != NULL);
     ar_data_set_map_data(own_values3, "greeting", ar_data_create_string("Hello"));
-    ar_data_set_map_data(test_agent->own_memory, "values3", own_values3);
+    ar_data_set_map_data(mut_memory, "values3", own_values3);
     
     const char *build_instruction6 = "memory.result3 := build(\"{greeting} {name}!\", memory.values3)";
     result = ar_instruction_run(own_ctx, build_instruction6);
     assert(result);
     
-    data_t *ref_result3 = ar_data_get_map_data(test_agent->own_memory, "result3");
+    data_t *ref_result3 = ar_data_get_map_data(mut_memory, "result3");
     assert(ref_result3 != NULL);
     assert(ar_data_get_type(ref_result3) == DATA_STRING);
     assert(strcmp(ar_data_get_string(ref_result3), "Hello !") == 0);
@@ -417,7 +506,7 @@ static void test_build_function(void) {
     result = ar_instruction_run(own_ctx, build_instruction7);
     assert(result);
     
-    data_t *ref_result4 = ar_data_get_map_data(test_agent->own_memory, "result4");
+    data_t *ref_result4 = ar_data_get_map_data(mut_memory, "result4");
     assert(ref_result4 != NULL);
     assert(ar_data_get_type(ref_result4) == DATA_STRING);
     assert(strcmp(ar_data_get_string(ref_result4), "Plain text with no placeholders") == 0);
@@ -428,7 +517,7 @@ static void test_build_function(void) {
     result = ar_instruction_run(own_ctx, build_instruction8);
     assert(result);
     
-    data_t *ref_result5 = ar_data_get_map_data(test_agent->own_memory, "result5");
+    data_t *ref_result5 = ar_data_get_map_data(mut_memory, "result5");
     assert(ref_result5 != NULL);
     assert(ar_data_get_type(ref_result5) == DATA_STRING);
     assert(strcmp(ar_data_get_string(ref_result5), "Unmatched { brace") == 0);
@@ -439,7 +528,7 @@ static void test_build_function(void) {
     result = ar_instruction_run(own_ctx, build_instruction9);
     assert(result);
     
-    data_t *ref_result6 = ar_data_get_map_data(test_agent->own_memory, "result6");
+    data_t *ref_result6 = ar_data_get_map_data(mut_memory, "result6");
     assert(ref_result6 != NULL);
     assert(ar_data_get_type(ref_result6) == DATA_STRING);
     assert(strcmp(ar_data_get_string(ref_result6), "") == 0);
