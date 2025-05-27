@@ -8,7 +8,33 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 
 ## Build and Test
 
-When making changes, always follow these steps to ensure code quality:
+### Quick Clean Build
+
+For a comprehensive build check with minimal output, use the **clean_build.sh** script:
+```
+./clean_build.sh
+```
+
+This script performs all build steps with streamlined output:
+- Clean and build the project
+- Run static analysis on library and tests  
+- Build the executable
+- Run all tests (shows count only, e.g., "Tests: 22 passed ✓")
+- Run the executable
+- Run sanitizer tests (optional)
+- Report memory leak status
+
+**When to use clean_build.sh**:
+- Before committing changes to ensure everything builds cleanly
+- When you want a quick verification without verbose output
+- To check the overall health of the codebase
+- When context space is limited (generates ~20 lines vs hundreds)
+
+**Note**: The script only shows detailed output if something fails (last 20 lines of error). To see full test output, run tests separately using `make test`.
+
+### Detailed Build Steps
+
+When making changes, follow these steps for detailed output:
 
 1. **Clean and build the project**:
    ```
@@ -50,7 +76,7 @@ When making changes, always follow these steps to ensure code quality:
    ```
 
 IMPORTANT: 
-- When asked to do a clean build, always run the entire workflow (steps 1-7) in order.
+- When asked to do a clean build, use `./clean_build.sh` unless detailed output is specifically needed.
 - Always do a clean build before running tests and the executable to ensure all changes are properly incorporated.
 - Always run static analysis after compilation and before running tests to catch potential issues early.
 - Always run the executable after running tests to verify changes work in practical application contexts, not just in test environments.
