@@ -2,16 +2,16 @@
 
 ## Overview
 
-The Echo method is a simple agent that sends back any message it receives to the original sender. This is the most basic example of an AgeRun agent and demonstrates fundamental message handling.
+The Echo method is a simple agent that sends back the content field of any message it receives to the original sender. This is the most basic example of an AgeRun agent and demonstrates fundamental message handling.
 
 ## Behavior
 
-When the echo agent receives a message, it immediately sends that exact message back to the sender.
+When the echo agent receives a message, it extracts the content field and sends it back to the sender.
 
 ## Implementation
 
 ```
-send(sender, message)
+send(message.sender, message.content)
 ```
 
 ## Usage
@@ -25,22 +25,19 @@ agent_id_t echo_agent = ar_agent_create("echo", "1.0.0", NULL);
 ### Sending Messages
 
 ```c
-// Send a simple text message
-ar_agent_send(echo_agent, "Hello, World!");
+// Send a message with sender and content fields
+data_t *message = ar_data_create_map();
+ar_data_set_map_integer(message, "sender", 0); // 0 = system
+ar_data_set_map_string(message, "content", "Hello, World!");
+ar_agent_send(echo_agent, message);
 // Receives back: "Hello, World!"
-
-// Send a structured message
-ar_agent_send(echo_agent, "{\"type\": \"ping\", \"id\": 123}");
-// Receives back: "{\"type\": \"ping\", \"id\": 123}"
 ```
 
 ## Message Format
 
-The echo method accepts any message format and returns it unchanged:
-- Plain text strings
-- JSON-formatted data
-- Numeric values
-- Any other string representation
+The echo method expects messages with the following structure:
+- `sender`: The ID of the sender (integer)
+- `content`: The actual content to echo back (any type)
 
 ## Special Messages
 

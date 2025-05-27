@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <unistd.h>
 #include "agerun_system.h"
 #include "agerun_agent.h"
 #include "agerun_agency.h"
@@ -53,6 +54,10 @@ static void test_method_creator_create_simple(void) {
     ar_methodology_cleanup();
     ar_agency_reset();
     
+    // Remove any .agerun files from current directory (should be bin/)
+    remove("methodology.agerun");
+    remove("agency.agerun");
+    
     // Given the method-creator method file
     char *own_instructions = read_method_file("../methods/method-creator-1.0.0.method");
     assert(own_instructions != NULL);
@@ -100,12 +105,11 @@ static void test_method_creator_create_simple(void) {
     // 3. Send the result back to the sender
     
     // Get agent memory for verification
-    agent_t *agents = ar_agency_get_agents();
-    assert(agents != NULL);
-    assert(agents[creator_agent - 1].own_memory != NULL);
+    const data_t *agent_memory = ar_agent_get_memory(creator_agent);
+    assert(agent_memory != NULL);
     
     // Check memory.result - should contain the result of method() function
-    const data_t *result = ar_data_get_map_data(agents[creator_agent - 1].own_memory, "result");
+    const data_t *result = ar_data_get_map_data(agent_memory, "result");
     if (result == NULL) {
         printf("FAIL: memory.result not found - method() instruction failed to execute\n");
         printf("NOTE: This indicates the method() function in instruction module needs implementation\n");
@@ -183,12 +187,11 @@ static void test_method_creator_invalid_syntax(void) {
     // The method() function should validate syntax and return 0 for invalid instructions
     
     // Get agent memory for verification
-    agent_t *agents = ar_agency_get_agents();
-    assert(agents != NULL);
-    assert(agents[creator_agent - 1].own_memory != NULL);
+    const data_t *agent_memory = ar_agent_get_memory(creator_agent);
+    assert(agent_memory != NULL);
     
     // Check memory.result - should be 0 for invalid syntax
-    const data_t *result = ar_data_get_map_data(agents[creator_agent - 1].own_memory, "result");
+    const data_t *result = ar_data_get_map_data(agent_memory, "result");
     if (result == NULL) {
         printf("FAIL: memory.result not found - method() instruction failed to execute\n");
         printf("NOTE: This is expected until method() function is implemented in instruction module\n");
@@ -215,6 +218,22 @@ static void test_method_creator_invalid_syntax(void) {
 
 int main(void) {
     printf("Running method-creator method tests...\n\n");
+    
+    // Verify we're running from the bin directory
+    char cwd[1024];
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+        printf("Current directory: %s\n", cwd);
+        // Check if we're in a directory ending with /bin
+        size_t len = strlen(cwd);
+        if (len < 4 || strcmp(cwd + len - 4, "/bin") != 0) {
+            fprintf(stderr, "ERROR: Tests must be run from the bin directory!\n");
+            fprintf(stderr, "Current directory: %s\n", cwd);
+            return 1;
+        }
+    } else {
+        perror("getcwd() error");
+        return 1;
+    }
     
     // Ensure clean state before starting tests
     ar_system_shutdown();

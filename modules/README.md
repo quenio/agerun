@@ -312,10 +312,16 @@ The agent module provides individual agent lifecycle management and message hand
 - **Message Queue**: Each agent maintains its own message queue for asynchronous communication
 - **Memory Management**: Agents have persistent memory maps for state storage
 - **Context Handling**: Supports read-only context data provided at agent creation
-- **Opaque Type**: Agent structure is opaque to maintain encapsulation
+- **Opaque Type**: Agent structure is fully opaque with accessor functions:
+  - `ar_agent_get_memory()`: Returns read-only access to agent's memory
+  - `ar_agent_get_mutable_memory()`: Returns mutable access to agent's memory
+  - `ar_agent_get_context()`: Returns read-only access to agent's context
+  - `ar_agent_get_method()`: Returns agent's method reference
 - **Zero Memory Leaks**: Proper cleanup of agent resources including message queues
 - **Depends on Agency**: Uses agency module for agent ID management and storage
 - **Depends on Map and List**: Uses core data structures for internal state management
+
+For detailed API documentation, see [agerun_agent.md](agerun_agent.md).
 
 ### Agency Module (`agerun_agency`)
 

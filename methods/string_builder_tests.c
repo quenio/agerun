@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <unistd.h>
 #include "agerun_system.h"
 #include "agerun_agent.h"
 #include "agerun_agency.h"
@@ -49,6 +50,15 @@ static char* read_method_file(const char *ref_filename) {
 static void test_string_builder_parse_build(void) {
     printf("Testing string-builder method with parse and build...\n");
     
+    // Clean up from any previous tests
+    ar_system_shutdown();
+    ar_methodology_cleanup();
+    ar_agency_reset();
+    
+    // Remove any .agerun files from current directory (should be bin/)
+    remove("methodology.agerun");
+    remove("agency.agerun");
+    
     // Given the string-builder method file
     char *own_instructions = read_method_file("../methods/string-builder-1.0.0.method");
     assert(own_instructions != NULL);
@@ -93,9 +103,8 @@ static void test_string_builder_parse_build(void) {
     // Expected: "Welcome alice! Your role is: admin"
     
     // Verify agent memory state
-    agent_t *agents = ar_agency_get_agents();
-    assert(agents != NULL);
-    assert(agents[builder_agent - 1].own_memory != NULL);
+    const data_t *agent_memory = ar_agent_get_memory(builder_agent);
+    assert(agent_memory != NULL);
     
     // Verify method execution by checking agent's memory
     // The string-builder method should:
@@ -104,7 +113,7 @@ static void test_string_builder_parse_build(void) {
     // 3. Send the result back to the sender
     
     // Check memory.parsed - should contain extracted values from parse() function
-    const data_t *parsed = ar_data_get_map_data(agents[builder_agent - 1].own_memory, "parsed");
+    const data_t *parsed = ar_data_get_map_data(agent_memory, "parsed");
     if (parsed == NULL) {
         printf("FAIL: memory.parsed not found - parse() instruction failed to execute\n");
         printf("NOTE: This is expected until parse() function is implemented in instruction module\n");
@@ -155,7 +164,7 @@ static void test_string_builder_parse_build(void) {
     }
     
     // Check memory.result - should contain the built string from build() function
-    const data_t *result = ar_data_get_map_data(agents[builder_agent - 1].own_memory, "result");
+    const data_t *result = ar_data_get_map_data(agent_memory, "result");
     if (result == NULL) {
         printf("FAIL: memory.result not found - build() instruction failed to execute\n");
         printf("NOTE: This is expected until build() function is implemented in instruction module\n");
@@ -227,15 +236,14 @@ __attribute__((unused)) static void test_string_builder_parse_failure(void) {
     // Expected: "Hello , you are  years old"
     
     // Verify agent memory state
-    agent_t *agents = ar_agency_get_agents();
-    assert(agents != NULL);
-    assert(agents[builder_agent - 1].own_memory != NULL);
+    const data_t *agent_memory = ar_agent_get_memory(builder_agent);
+    assert(agent_memory != NULL);
     
     // Verify method execution with mismatched template
     // When template doesn't match input, parse() should return empty map or fail gracefully
     
     // Check memory.parsed - should exist but may be empty due to mismatch
-    const data_t *parsed = ar_data_get_map_data(agents[builder_agent - 1].own_memory, "parsed");
+    const data_t *parsed = ar_data_get_map_data(agent_memory, "parsed");
     if (parsed == NULL) {
         printf("FAIL: memory.parsed not found - parse() instruction failed to execute\n");
         printf("NOTE: This is expected until parse() function is implemented in instruction module\n");
@@ -246,7 +254,7 @@ __attribute__((unused)) static void test_string_builder_parse_failure(void) {
     }
     
     // Check memory.result - build() should handle missing values gracefully
-    const data_t *result = ar_data_get_map_data(agents[builder_agent - 1].own_memory, "result");
+    const data_t *result = ar_data_get_map_data(agent_memory, "result");
     if (result == NULL) {
         printf("FAIL: memory.result not found - build() instruction failed to execute\n");
         printf("NOTE: This is expected until build() function is implemented in instruction module\n");
@@ -271,6 +279,22 @@ __attribute__((unused)) static void test_string_builder_parse_failure(void) {
 
 int main(void) {
     printf("Running string-builder method tests...\n\n");
+    
+    // Verify we're running from the bin directory
+    char cwd[1024];
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+        printf("Current directory: %s\n", cwd);
+        // Check if we're in a directory ending with /bin
+        size_t len = strlen(cwd);
+        if (len < 4 || strcmp(cwd + len - 4, "/bin") != 0) {
+            fprintf(stderr, "ERROR: Tests must be run from the bin directory!\n");
+            fprintf(stderr, "Current directory: %s\n", cwd);
+            return 1;
+        }
+    } else {
+        perror("getcwd() error");
+        return 1;
+    }
     
     // Ensure clean state before starting tests
     ar_system_shutdown();

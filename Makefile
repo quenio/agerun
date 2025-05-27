@@ -44,7 +44,7 @@ release: lib
 
 # Sanitize target with Address Sanitizer
 sanitize: CFLAGS += $(DEBUG_CFLAGS) $(ASAN_FLAGS)
-sanitize: LDFLAGS += -fsanitize=address
+sanitize: LDFLAGS += $(ASAN_FLAGS)
 sanitize: lib
 
 # Create bin and bin/obj directories
@@ -65,8 +65,9 @@ executable: debug bin
 	$(CC) $(CFLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS)
 
 # Executable application with Address Sanitizer - build only
-executable-sanitize: sanitize bin
-	$(CC) $(CFLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS)
+executable-sanitize: clean
+	$(MAKE) sanitize
+	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) $(ASAN_FLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS) $(ASAN_FLAGS)
 
 # Run the executable (always in debug mode)
 run: executable
@@ -74,7 +75,7 @@ run: executable
 
 # Run the executable with Address Sanitizer
 run-sanitize: executable-sanitize
-	cd bin && ASAN_OPTIONS=detect_leaks=1 ./agerun
+	cd bin && ./agerun
 
 # Define test executables without bin/ prefix for use in the bin directory
 TEST_BIN_NAMES = $(notdir $(TEST_BIN))
@@ -83,7 +84,8 @@ ALL_TEST_BIN_NAMES = $(TEST_BIN_NAMES) $(METHOD_TEST_BIN_NAMES)
 
 # Build and run tests (always in debug mode)
 test: clean debug
-test: bin $(TEST_BIN) $(METHOD_TEST_BIN)
+	$(MAKE) test_lib
+	$(MAKE) $(TEST_BIN) $(METHOD_TEST_BIN)
 	@cd bin && for test in $(ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
 		echo "Running $$test"; \
@@ -91,12 +93,14 @@ test: bin $(TEST_BIN) $(METHOD_TEST_BIN)
 	done
 
 # Build and run tests with Address Sanitizer
-test-sanitize: clean sanitize
-test-sanitize: bin $(TEST_BIN) $(METHOD_TEST_BIN)
+test-sanitize: clean
+	$(MAKE) sanitize
+	$(MAKE) test_lib CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(ASAN_FLAGS)" LDFLAGS="$(LDFLAGS) $(ASAN_FLAGS)"
+	$(MAKE) $(TEST_BIN) $(METHOD_TEST_BIN) CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(ASAN_FLAGS)" LDFLAGS="$(LDFLAGS) $(ASAN_FLAGS)"
 	@cd bin && for test in $(ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
 		echo "Running $$test with Address Sanitizer"; \
-		ASAN_OPTIONS=detect_leaks=1 ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+		./$$test || echo "ERROR: Test $$test failed with status $$?"; \
 	done
 
 # Individual test binaries

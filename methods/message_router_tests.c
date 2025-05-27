@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <unistd.h>
 #include "agerun_system.h"
 #include "agerun_agent.h"
 #include "agerun_agency.h"
@@ -53,6 +54,10 @@ static void test_message_router_routing(void) {
     ar_methodology_cleanup();
     ar_agency_reset();
     
+    // Remove any .agerun files from current directory (should be bin/)
+    remove("methodology.agerun");
+    remove("agency.agerun");
+    
     // First, ensure the echo and calculator methods exist for testing
     char *own_echo_instructions = read_method_file("../methods/echo-1.0.0.method");
     assert(own_echo_instructions != NULL);
@@ -78,20 +83,20 @@ static void test_message_router_routing(void) {
     AR_HEAP_FREE(own_instructions);
     own_instructions = NULL;
     
+    // Initialize system after creating methods
+    agent_id_t init_result = ar_system_init(NULL, NULL);
+    printf("DEBUG: System init result: %lld\n", (long long)init_result);
+    
     // Always create agent directly since system might be initialized with different method
     agent_id_t router_agent = ar_agent_create("message-router", "1.0.0", NULL);
-    // Send wake message manually
-    data_t *own_wake = ar_data_create_string("__wake__");
-    ar_agent_send(router_agent, own_wake);
     assert(router_agent > 0);
     
     // Process wake message
     ar_system_process_next_message();
     
-    // Get agents for memory verification
-    agent_t *agents = ar_agency_get_agents();
-    assert(agents != NULL);
-    assert(agents[router_agent - 1].own_memory != NULL);
+    // Verify agent memory was initialized
+    const data_t *agent_memory = ar_agent_get_memory(router_agent);
+    assert(agent_memory != NULL);
     
     // Create echo and calculator agents
     agent_id_t echo_agent = ar_agent_create("echo", "1.0.0", NULL);
@@ -120,9 +125,9 @@ static void test_message_router_routing(void) {
     
     // Verify memory for echo routing
     // The message-router method uses if() to determine routing and send() to forward messages
-    const data_t *is_echo = ar_data_get_map_data(agents[router_agent - 1].own_memory, "is_echo");
-    const data_t *target = ar_data_get_map_data(agents[router_agent - 1].own_memory, "target");
-    const data_t *sent_result = ar_data_get_map_data(agents[router_agent - 1].own_memory, "sent");
+    const data_t *is_echo = ar_data_get_map_data(agent_memory, "is_echo");
+    const data_t *target = ar_data_get_map_data(agent_memory, "target");
+    const data_t *sent_result = ar_data_get_map_data(agent_memory, "sent");
     
     if (is_echo == NULL) {
         printf("FAIL: memory.is_echo not found - if() comparison failed\n");
@@ -174,9 +179,9 @@ static void test_message_router_routing(void) {
     assert(processed);
     
     // Verify memory for calc routing
-    const data_t *is_calc = ar_data_get_map_data(agents[router_agent - 1].own_memory, "is_calc");
-    target = ar_data_get_map_data(agents[router_agent - 1].own_memory, "target");
-    sent_result = ar_data_get_map_data(agents[router_agent - 1].own_memory, "sent");
+    const data_t *is_calc = ar_data_get_map_data(agent_memory, "is_calc");
+    target = ar_data_get_map_data(agent_memory, "target");
+    sent_result = ar_data_get_map_data(agent_memory, "sent");
     
     if (is_calc != NULL) {
         assert(ar_data_get_type(is_calc) == DATA_INTEGER);
@@ -213,10 +218,10 @@ static void test_message_router_routing(void) {
     assert(processed);
     
     // Verify memory for invalid route
-    is_echo = ar_data_get_map_data(agents[router_agent - 1].own_memory, "is_echo");
-    is_calc = ar_data_get_map_data(agents[router_agent - 1].own_memory, "is_calc");
-    target = ar_data_get_map_data(agents[router_agent - 1].own_memory, "target");
-    sent_result = ar_data_get_map_data(agents[router_agent - 1].own_memory, "sent");
+    is_echo = ar_data_get_map_data(agent_memory, "is_echo");
+    is_calc = ar_data_get_map_data(agent_memory, "is_calc");
+    target = ar_data_get_map_data(agent_memory, "target");
+    sent_result = ar_data_get_map_data(agent_memory, "sent");
     
     if (is_echo != NULL) {
         assert(ar_data_get_type(is_echo) == DATA_INTEGER);
@@ -249,6 +254,22 @@ static void test_message_router_routing(void) {
 
 int main(void) {
     printf("Running message-router method tests...\n\n");
+    
+    // Verify we're running from the bin directory
+    char cwd[1024];
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+        printf("Current directory: %s\n", cwd);
+        // Check if we're in a directory ending with /bin
+        size_t len = strlen(cwd);
+        if (len < 4 || strcmp(cwd + len - 4, "/bin") != 0) {
+            fprintf(stderr, "ERROR: Tests must be run from the bin directory!\n");
+            fprintf(stderr, "Current directory: %s\n", cwd);
+            return 1;
+        }
+    } else {
+        perror("getcwd() error");
+        return 1;
+    }
     
     // Ensure clean state before starting tests
     ar_system_shutdown();

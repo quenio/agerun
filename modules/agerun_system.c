@@ -92,8 +92,8 @@ void ar_system_shutdown(void) {
     // The memory cleanup is now responsibility of the agency module
     
     is_initialized = false;
-    ar_agency_reset();
     ar_agency_set_initialized(false);
+    ar_agency_reset();
     
     // Clean up methodology resources
     ar_methodology_cleanup();
@@ -101,22 +101,26 @@ void ar_system_shutdown(void) {
 
 bool ar_system_process_next_message(void) {
     if (!is_initialized) {
+        printf("DEBUG: System not initialized\n");
         return false;
     }
     
     // Find an agent with a non-empty message queue
-    agent_t* mut_agents = ar_agency_get_agents();
-    for (int i = 0; i < MAX_AGENTS; i++) {
-        if (mut_agents[i].is_active && !ar_list_empty(mut_agents[i].own_message_queue)) {
+    agent_id_t agent_id = ar_agency_get_first_agent();
+    printf("DEBUG: First agent ID: %lld\n", (long long)agent_id);
+    while (agent_id != 0) {
+        if (ar_agency_agent_has_messages(agent_id)) {
+            printf("DEBUG: Agent %lld has messages\n", (long long)agent_id);
             // Process one message
-            data_t *own_message = ar_list_remove_first(mut_agents[i].own_message_queue);
+            data_t *own_message = ar_agency_get_agent_message(agent_id);
             if (own_message) {
-                // Use the interpret_method function from agerun_agent
-                // Since that's now private, we need to call the method directly
-                const method_t *ref_method = mut_agents[i].ref_method;
+                printf("DEBUG: Got message from agent %lld\n", (long long)agent_id);
+                // Get the agent's method
+                const method_t *ref_method = ar_agent_get_method(agent_id);
                 if (ref_method) {
+                    printf("DEBUG: Agent has method\n");
                     // Print message based on its type
-                    printf("Agent %lld received message: ", mut_agents[i].id);
+                    printf("Agent %lld received message: ", (long long)agent_id);
                     data_type_t msg_type = ar_data_get_type(own_message);
                     if (msg_type == DATA_STRING) {
                         printf("%s\n", ar_data_get_string(own_message));
@@ -128,7 +132,7 @@ bool ar_system_process_next_message(void) {
                         printf("[complex data]\n");
                     }
                     
-                    ar_method_run(&mut_agents[i], (const data_t *)own_message, ar_method_get_instructions(ref_method));
+                    ar_method_run(agent_id, (const data_t *)own_message, ar_method_get_instructions(ref_method));
                     
                     // Free the message as it's now been processed
                     ar_data_destroy(own_message);
@@ -141,6 +145,7 @@ bool ar_system_process_next_message(void) {
                 own_message = NULL; // Mark as freed
             }
         }
+        agent_id = ar_agency_get_next_agent(agent_id);
     }
     
     return false; // No messages to process

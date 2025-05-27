@@ -85,15 +85,23 @@ method_t* ar_method_create(const char *ref_name, const char *ref_instructions,
     return mut_method;
 }
 
-bool ar_method_run(agent_t *mut_agent, const data_t *ref_message, const char *ref_instructions) {
-    if (!mut_agent || !ref_instructions) {
+bool ar_method_run(agent_id_t agent_id, const data_t *ref_message, const char *ref_instructions) {
+    if (agent_id == 0 || !ref_instructions) {
         return false;
+    }
+    
+    // Get agent's memory and context using accessor functions
+    data_t *mut_memory = ar_agent_get_mutable_memory(agent_id);
+    const data_t *ref_context = ar_agent_get_context(agent_id);
+    
+    if (!mut_memory) {
+        return false; // Agent doesn't exist or has no memory
     }
     
     // Create an instruction context
     instruction_context_t *own_ctx = ar_instruction_create_context(
-        mut_agent->own_memory,
-        mut_agent->ref_context,
+        mut_memory,
+        ref_context,
         ref_message
     );
     

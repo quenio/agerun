@@ -5,12 +5,24 @@
 #include "agerun_method.h"
 #include "agerun_methodology.h"
 #include "agerun_list.h"
+#include "agerun_heap.h"
+#include "agerun_map.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+
+/* Agent Definition (moved from header for opaque type) */
+struct agent_s {
+    agent_id_t id;
+    const method_t *ref_method; // Borrowed reference to method
+    bool is_active;
+    list_t *own_message_queue;  // Using list as a message queue, owned by agent
+    data_t *own_memory;        // Memory owned by agent
+    const data_t *ref_context;  // Context is read-only reference, not owned
+};
 
 /* Constants */
 
@@ -35,126 +47,92 @@ agent_id_t ar_agent_create(const char *ref_method_name, const char *ref_version,
         }
     }
     
-    if (agent_idx < 0) {
-        printf("Error: Maximum number of agents reached\n");
+    // No space available
+    if (agent_idx == -1) {
         // No need to free ref_context as we don't own it
         return 0;
     }
     
-    // Find method definition from the method module
+    // Lookup method using methodology
     const method_t *ref_method = ar_methodology_get_method(ref_method_name, ref_version);
-    
     if (!ref_method) {
-        printf("Error: Method %s%s%s not found\n", 
-               ref_method_name, ref_version ? " version " : "", ref_version ? ref_version : "");
         // No need to free ref_context as we don't own it
-        return 0;
+        return 0;  // Method not found
     }
     
-    // Initialize agent structure
-    agent_id_t next_agent_id = ar_agency_get_next_id();
-    mut_agents[agent_idx].id = next_agent_id;
-    ar_agency_set_next_id(next_agent_id + 1);
-    
-    mut_agents[agent_idx].ref_method = ref_method; // Store reference to method
+    // Initialize agent
+    agent_id_t new_id = ar_agency_get_next_id();
+    mut_agents[agent_idx].id = new_id;
     mut_agents[agent_idx].is_active = true;
-    mut_agents[agent_idx].ref_context = ref_context; // Context can be NULL
-    // No ownership transfer for context as it's just a borrowed reference
+    mut_agents[agent_idx].ref_method = ref_method;  // Just store reference
+    ar_agency_set_next_id(new_id + 1);  // Increment for next agent
     
-    // Create memory as an empty map
-    mut_agents[agent_idx].own_memory = ar_data_create_map();
-    if (!mut_agents[agent_idx].own_memory) {
-        printf("Error: Failed to create memory for agent %lld\n", next_agent_id);
-        // No need to free ref_context as we don't own it
-        mut_agents[agent_idx].ref_context = NULL; // Remove the reference
-        mut_agents[agent_idx].ref_method = NULL;  // Remove the reference
-        return 0;
-    }
-    // Ownership of own_memory transferred to agent
-    
-    // Create message queue using list
     mut_agents[agent_idx].own_message_queue = ar_list_create();
-    if (!mut_agents[agent_idx].own_message_queue) {
-        printf("Error: Failed to create message queue for agent %lld\n", next_agent_id);
-        ar_data_destroy(mut_agents[agent_idx].own_memory);
-        mut_agents[agent_idx].own_memory = NULL; // Mark as no longer owned
-        
-        // No need to free ref_context as we don't own it
-        mut_agents[agent_idx].ref_context = NULL; // Remove the reference
-        mut_agents[agent_idx].ref_method = NULL;  // Remove the reference
-        
-        mut_agents[agent_idx].is_active = false;
-        return 0;
+    mut_agents[agent_idx].own_memory = ar_data_create_map();
+    mut_agents[agent_idx].ref_context = ref_context;  // Store reference, we don't own it
+    
+    // Send wake message
+    data_t *own_wake_msg = ar_data_create_string("__wake__");
+    if (own_wake_msg) {
+        ar_agent_send(new_id, own_wake_msg);
+        // Note: The wake message will be processed when the system runs
     }
-    // Ownership of own_message_queue transferred to agent
     
-    printf("Created agent %lld using method %s version %s\n", 
-           mut_agents[agent_idx].id, ar_method_get_name(ref_method), ar_method_get_version(ref_method));
-    
-    return mut_agents[agent_idx].id; // Ownership transferred to caller
+    return new_id;
 }
 
 bool ar_agent_destroy(agent_id_t agent_id) {
     agent_t *mut_agents = ar_agency_get_agents();
     
-    if (mut_agents == NULL || agent_id == 0) {
+    if (mut_agents == NULL) {
         return false;
     }
     
     // Find the agent
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (mut_agents[i].is_active && mut_agents[i].id == agent_id) {
-            // Send sleep message before destroying
-            data_t *own_sleep_data = ar_data_create_string(g_sleep_message);
-            if (own_sleep_data) {
-                ar_agent_send(agent_id, own_sleep_data);
-                own_sleep_data = NULL; // Mark as transferred
-            }
-            
-            // Process the sleep message
-            data_t *own_message = ar_list_remove_first(mut_agents[i].own_message_queue);
-            if (own_message) {
-                // Get the method reference for processing the sleep message
-                const method_t *ref_method = mut_agents[i].ref_method;
-                if (ref_method) {
-                    // Print message based on its type
-                    printf("Agent %lld received message: ", mut_agents[i].id);
-                    data_type_t msg_type = ar_data_get_type(own_message);
-                    if (msg_type == DATA_STRING) {
-                        printf("%s\n", ar_data_get_string(own_message));
-                    } else if (msg_type == DATA_INTEGER) {
-                        printf("%d\n", ar_data_get_integer(own_message));
-                    } else if (msg_type == DATA_DOUBLE) {
-                        printf("%f\n", ar_data_get_double(own_message));
-                    } else if (msg_type == DATA_LIST || msg_type == DATA_MAP) {
-                        printf("[complex data]\n");
-                    }
-                    
-                    ar_method_run(&mut_agents[i], (const data_t *)own_message, ar_method_get_instructions(ref_method));
+            // Send sleep message before destruction
+            data_t *own_sleep_msg = ar_data_create_string(g_sleep_message);
+            if (own_sleep_msg) {
+                bool sent = ar_list_add_last(mut_agents[i].own_message_queue, own_sleep_msg);
+                if (!sent) {
+                    ar_data_destroy(own_sleep_msg);
+                    own_sleep_msg = NULL; // Mark as destroyed
                 }
-                
-                // Free the message data
-                ar_data_destroy(own_message);
-                own_message = NULL; // Mark as destroyed
+                else {
+                    // Note: The sleep message will be processed before the agent is destroyed
+                }
             }
             
-            // Free memory data if it exists
+            // Destroy memory if owned
             if (mut_agents[i].own_memory) {
                 ar_data_destroy(mut_agents[i].own_memory);
                 mut_agents[i].own_memory = NULL; // Mark as destroyed
             }
             
-            // Clear context reference (we don't own it)
+            // We don't own the context, just clear the reference
             mut_agents[i].ref_context = NULL;
             
-            // Free message queue if it exists
+            // Destroy any pending messages and the queue
             if (mut_agents[i].own_message_queue) {
+                // First, destroy any remaining messages in the queue
+                data_t *own_msg = NULL;
+                while ((own_msg = ar_list_remove_first(mut_agents[i].own_message_queue)) != NULL) {
+                    ar_data_destroy(own_msg);
+                    own_msg = NULL; // Mark as destroyed
+                }
+                // Then destroy the queue itself
                 ar_list_destroy(mut_agents[i].own_message_queue);
                 mut_agents[i].own_message_queue = NULL; // Mark as destroyed
             }
             
+            // Mark agent as inactive and clear ID
             mut_agents[i].is_active = false;
-            printf("Destroyed agent %lld\n", agent_id);
+            mut_agents[i].id = 0;
+            
+            // Debug output - agent destroyed
+            printf("Agent %lld destroyed\n", (long long)agent_id);
+            
             return true;
         }
     }
@@ -166,26 +144,17 @@ bool ar_agent_send(agent_id_t agent_id, data_t *own_message) {
     agent_t *mut_agents = ar_agency_get_agents();
     
     if (mut_agents == NULL || !own_message) {
-        // Free own_message if provided since we're failing
+        // Destroy the message if we have one but no agents
         if (own_message) {
             ar_data_destroy(own_message);
+            own_message = NULL; // Mark as destroyed
         }
         return false;
-    }
-    
-    // Special case: agent_id 0 is a no-op
-    if (agent_id == 0) {
-        // Free the message since we're not using it
-        ar_data_destroy(own_message);
-        // Mark as destroyed since we took ownership
-        own_message = NULL;
-        return true;
     }
     
     // Find the agent
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (mut_agents[i].is_active && mut_agents[i].id == agent_id) {
-            // Add message to queue - list borrows the reference but doesn't take ownership
             // Agent module takes ownership of the message and adds to the queue
             bool result = ar_list_add_last(mut_agents[i].own_message_queue, own_message);
             
@@ -221,4 +190,139 @@ bool ar_agent_exists(agent_id_t agent_id) {
     return false;
 }
 
-/* End of implementation */
+/* Accessor functions for opaque type */
+
+const data_t* ar_agent_get_memory(agent_id_t agent_id) {
+    const agent_t *ref_agents = ar_agency_get_agents();
+    
+    if (ref_agents == NULL) {
+        return NULL;
+    }
+    
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (ref_agents[i].is_active && ref_agents[i].id == agent_id) {
+            return ref_agents[i].own_memory;
+        }
+    }
+    
+    return NULL;
+}
+
+data_t* ar_agent_get_mutable_memory(agent_id_t agent_id) {
+    agent_t *mut_agents = ar_agency_get_agents();
+    
+    if (mut_agents == NULL) {
+        return NULL;
+    }
+    
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (mut_agents[i].is_active && mut_agents[i].id == agent_id) {
+            return mut_agents[i].own_memory;
+        }
+    }
+    
+    return NULL;
+}
+
+const data_t* ar_agent_get_context(agent_id_t agent_id) {
+    const agent_t *ref_agents = ar_agency_get_agents();
+    
+    if (ref_agents == NULL) {
+        return NULL;
+    }
+    
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (ref_agents[i].is_active && ref_agents[i].id == agent_id) {
+            return ref_agents[i].ref_context;
+        }
+    }
+    
+    return NULL;
+}
+
+bool ar_agent_is_active(agent_id_t agent_id) {
+    const agent_t *ref_agents = ar_agency_get_agents();
+    
+    if (ref_agents == NULL) {
+        return false;
+    }
+    
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (ref_agents[i].id == agent_id) {
+            return ref_agents[i].is_active;
+        }
+    }
+    
+    return false;
+}
+
+bool ar_agent_get_method_info(agent_id_t agent_id, const char **out_method_name, const char **out_method_version) {
+    const agent_t *ref_agents = ar_agency_get_agents();
+    
+    if (ref_agents == NULL) {
+        return false;
+    }
+    
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (ref_agents[i].is_active && ref_agents[i].id == agent_id && ref_agents[i].ref_method != NULL) {
+            if (out_method_name) {
+                *out_method_name = ar_method_get_name(ref_agents[i].ref_method);
+            }
+            if (out_method_version) {
+                *out_method_version = ar_method_get_version(ref_agents[i].ref_method);
+            }
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+const method_t* ar_agent_get_method(agent_id_t agent_id) {
+    const agent_t *ref_agents = ar_agency_get_agents();
+    
+    if (ref_agents == NULL) {
+        return NULL;
+    }
+    
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (ref_agents[i].is_active && ref_agents[i].id == agent_id) {
+            return ref_agents[i].ref_method;
+        }
+    }
+    
+    return NULL;
+}
+
+bool ar_agent_set_active(agent_id_t agent_id, bool is_active) {
+    agent_t *mut_agents = ar_agency_get_agents();
+    
+    if (mut_agents == NULL) {
+        return false;
+    }
+    
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (mut_agents[i].id == agent_id) {
+            mut_agents[i].is_active = is_active;
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+agent_t* ar_agent_get_internal(agent_id_t agent_id) {
+    agent_t *mut_agents = ar_agency_get_agents();
+    
+    if (mut_agents == NULL) {
+        return NULL;
+    }
+    
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (mut_agents[i].is_active && mut_agents[i].id == agent_id) {
+            return &mut_agents[i];
+        }
+    }
+    
+    return NULL;
+}

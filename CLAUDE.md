@@ -610,3 +610,45 @@ IMPORTANT:
      - Check that all expected memory values were set correctly by the method
      - This ensures all instructions executed successfully, not just the final result
      - Example: After a grade evaluator runs, check memory.grade, memory.is_grade, etc.
+
+20. **Method Test Requirements**:
+   - **Directory Safety Check**: All method tests MUST include a check to ensure they're run from the bin directory:
+     ```c
+     char cwd[1024];
+     if (getcwd(cwd, sizeof(cwd)) != NULL) {
+         size_t len = strlen(cwd);
+         if (len < 4 || strcmp(cwd + len - 4, "/bin") != 0) {
+             fprintf(stderr, "ERROR: Tests must be run from the bin directory!\n");
+             return 1;
+         }
+     }
+     ```
+   - **Clean State Initialization**: Tests must clean up before starting:
+     ```c
+     ar_system_shutdown();
+     ar_methodology_cleanup();
+     ar_agency_reset();
+     remove("methodology.agerun");
+     remove("agency.agerun");
+     ```
+   - **System Initialization**: After creating methods, initialize the system:
+     ```c
+     ar_system_init(NULL, NULL);
+     ```
+   - **Required Includes**: Method tests need `#include <unistd.h>` for getcwd() and remove()
+
+21. **Debug Output Guidelines**:
+   - **Keep DEBUG Messages**: When adding DEBUG output during troubleshooting, keep it in the code
+   - Debug messages provide valuable context for future debugging sessions
+   - Use consistent DEBUG prefix: `printf("DEBUG: message\n");`
+   - Debug output helps understand program flow and state during development
+   - Example: System module's message processing debug output
+
+22. **Building and Running Tests**:
+   - **Always Use Make**: Always use make to build and run tests or the executable
+   - Never compile tests directly with gcc
+   - To build an individual test: `make bin/test_name`
+   - Example: `make bin/grade_evaluator_tests`
+   - The Makefile ensures proper dependencies, flags, and library linking
+   - If the Makefile doesn't support building/running an individual test, update it to support that functionality
+   - This ensures consistent build configuration and avoids linking errors

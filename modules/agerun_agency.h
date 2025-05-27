@@ -84,5 +84,33 @@ int ar_agency_update_agent_methods(const method_t *ref_old_method, const method_
  */
 int ar_agency_count_agents_using_method(const method_t *ref_method);
 
+/**
+ * Get the first active agent ID
+ * @return First active agent ID, or 0 if no active agents
+ */
+agent_id_t ar_agency_get_first_agent(void);
+
+/**
+ * Get the next active agent ID after the given agent
+ * @param current_id Current agent ID
+ * @return Next active agent ID, or 0 if no more active agents
+ */
+agent_id_t ar_agency_get_next_agent(agent_id_t current_id);
+
+/**
+ * Check if an agent has messages in its queue
+ * @param agent_id Agent ID to check
+ * @return true if agent has messages, false otherwise
+ */
+bool ar_agency_agent_has_messages(agent_id_t agent_id);
+
+/**
+ * Get and remove the first message from an agent's queue
+ * @param agent_id Agent ID
+ * @return Message data (ownership transferred), or NULL if no messages
+ * @note Ownership: Returns an owned value that caller must destroy
+ */
+data_t* ar_agency_get_agent_message(agent_id_t agent_id);
+
 #endif /* AGERUN_AGENCY_H */
 

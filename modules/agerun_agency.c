@@ -8,6 +8,17 @@
 #include "agerun_io.h" /* Include the I/O utilities */
 #include "agerun_heap.h"
 #include "agerun_system.h" /* Include for message processing */
+#include "agerun_list.h" /* Include for list operations */
+
+/* Agent Definition (needed by agency as it owns the agent array) */
+struct agent_s {
+    agent_id_t id;
+    const method_t *ref_method; // Borrowed reference to method
+    bool is_active;
+    list_t *own_message_queue;  // Using list as a message queue, owned by agent
+    data_t *own_memory;        // Memory owned by agent
+    const data_t *ref_context;  // Context is read-only reference, not owned
+};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -74,6 +85,13 @@ void ar_agency_reset(void) {
             
             // Free message queue if it exists
             if (g_own_agents[i].own_message_queue) {
+                // First destroy any remaining messages in the queue
+                data_t *own_msg = NULL;
+                while ((own_msg = ar_list_remove_first(g_own_agents[i].own_message_queue)) != NULL) {
+                    ar_data_destroy(own_msg);
+                    own_msg = NULL; // Mark as destroyed
+                }
+                // Then destroy the queue itself
                 ar_list_destroy(g_own_agents[i].own_message_queue);
                 g_own_agents[i].own_message_queue = NULL; // Mark as destroyed
             }
@@ -944,6 +962,86 @@ int ar_agency_count_agents_using_method(const method_t *ref_method) {
     }
     
     return count;
+}
+
+/**
+ * Get the first active agent ID
+ * @return First active agent ID, or 0 if no active agents
+ */
+agent_id_t ar_agency_get_first_agent(void) {
+    if (!g_is_initialized) {
+        ar_agency_init();
+    }
+    
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (g_own_agents[i].is_active) {
+            return g_own_agents[i].id;
+        }
+    }
+    
+    return 0; // No active agents
+}
+
+/**
+ * Get the next active agent ID after the given agent
+ * @param current_id Current agent ID
+ * @return Next active agent ID, or 0 if no more active agents
+ */
+agent_id_t ar_agency_get_next_agent(agent_id_t current_id) {
+    if (!g_is_initialized) {
+        ar_agency_init();
+    }
+    
+    bool found_current = false;
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (found_current && g_own_agents[i].is_active) {
+            return g_own_agents[i].id;
+        }
+        if (g_own_agents[i].id == current_id) {
+            found_current = true;
+        }
+    }
+    
+    return 0; // No more active agents
+}
+
+/**
+ * Check if an agent has messages in its queue
+ * @param agent_id Agent ID to check
+ * @return true if agent has messages, false otherwise
+ */
+bool ar_agency_agent_has_messages(agent_id_t agent_id) {
+    if (!g_is_initialized) {
+        ar_agency_init();
+    }
+    
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (g_own_agents[i].is_active && g_own_agents[i].id == agent_id) {
+            return g_own_agents[i].own_message_queue && !ar_list_empty(g_own_agents[i].own_message_queue);
+        }
+    }
+    
+    return false;
+}
+
+/**
+ * Get and remove the first message from an agent's queue
+ * @param agent_id Agent ID
+ * @return Message data (ownership transferred), or NULL if no messages
+ * @note Ownership: Returns an owned value that caller must destroy
+ */
+data_t* ar_agency_get_agent_message(agent_id_t agent_id) {
+    if (!g_is_initialized) {
+        ar_agency_init();
+    }
+    
+    for (int i = 0; i < MAX_AGENTS; i++) {
+        if (g_own_agents[i].is_active && g_own_agents[i].id == agent_id && g_own_agents[i].own_message_queue) {
+            return ar_list_remove_first(g_own_agents[i].own_message_queue);
+        }
+    }
+    
+    return NULL;
 }
 
 /* End of implementation */

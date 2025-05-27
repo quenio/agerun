@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <unistd.h>
 #include "agerun_system.h"
 #include "agerun_agent.h"
 #include "agerun_agency.h"
@@ -47,6 +48,15 @@ static char* read_method_file(const char *ref_filename) {
 
 static void test_agent_manager_create_destroy(void) {
     printf("Testing agent-manager method with create and destroy...\n");
+    
+    // Clean up from any previous tests
+    ar_system_shutdown();
+    ar_methodology_cleanup();
+    ar_agency_reset();
+    
+    // Remove any .agerun files from current directory (should be bin/)
+    remove("methodology.agerun");
+    remove("agency.agerun");
     
     // First, ensure the echo method exists for testing
     char *own_echo_instructions = read_method_file("../methods/echo-1.0.0.method");
@@ -107,15 +117,14 @@ static void test_agent_manager_create_destroy(void) {
     // 4. Set memory.result to the created agent ID
     // 5. Send the result back to the sender
     
-    agent_t *agents = ar_agency_get_agents();
-    assert(agents != NULL);
-    assert(agents[manager_agent - 1].own_memory != NULL);
+    const data_t *agent_memory = ar_agent_get_memory(manager_agent);
+    assert(agent_memory != NULL);
     
     // Check all memory values set by the method
-    const data_t *create_result = ar_data_get_map_data(agents[manager_agent - 1].own_memory, "create_result");
-    const data_t *is_create = ar_data_get_map_data(agents[manager_agent - 1].own_memory, "is_create");
-    const data_t *is_destroy = ar_data_get_map_data(agents[manager_agent - 1].own_memory, "is_destroy");
-    const data_t *result = ar_data_get_map_data(agents[manager_agent - 1].own_memory, "result");
+    const data_t *create_result = ar_data_get_map_data(agent_memory, "create_result");
+    const data_t *is_create = ar_data_get_map_data(agent_memory, "is_create");
+    const data_t *is_destroy = ar_data_get_map_data(agent_memory, "is_destroy");
+    const data_t *result = ar_data_get_map_data(agent_memory, "result");
     
     if (create_result == NULL) {
         printf("FAIL: memory.create_result not found - agent() instruction failed to execute\n");
@@ -178,10 +187,10 @@ static void test_agent_manager_create_destroy(void) {
     // 5. Send the result back to the sender
     
     // Check memory values for destroy action
-    const data_t *destroy_result = ar_data_get_map_data(agents[manager_agent - 1].own_memory, "destroy_result");
-    is_create = ar_data_get_map_data(agents[manager_agent - 1].own_memory, "is_create");
-    is_destroy = ar_data_get_map_data(agents[manager_agent - 1].own_memory, "is_destroy");
-    result = ar_data_get_map_data(agents[manager_agent - 1].own_memory, "result");
+    const data_t *destroy_result = ar_data_get_map_data(agent_memory, "destroy_result");
+    is_create = ar_data_get_map_data(agent_memory, "is_create");
+    is_destroy = ar_data_get_map_data(agent_memory, "is_destroy");
+    result = ar_data_get_map_data(agent_memory, "result");
     
     if (destroy_result == NULL) {
         printf("FAIL: memory.destroy_result not found - destroy() instruction failed to execute\n");
@@ -275,14 +284,13 @@ static void test_agent_manager_invalid_action(void) {
     // - Both if() conditions should evaluate to 0
     // - memory.result should remain 0 (neither create nor destroy path taken)
     
-    agent_t *agents = ar_agency_get_agents();
-    assert(agents != NULL);
-    assert(agents[manager_agent - 1].own_memory != NULL);
+    const data_t *agent_memory = ar_agent_get_memory(manager_agent);
+    assert(agent_memory != NULL);
     
     // Check memory values for invalid action
-    const data_t *is_create = ar_data_get_map_data(agents[manager_agent - 1].own_memory, "is_create");
-    const data_t *is_destroy = ar_data_get_map_data(agents[manager_agent - 1].own_memory, "is_destroy");
-    const data_t *result = ar_data_get_map_data(agents[manager_agent - 1].own_memory, "result");
+    const data_t *is_create = ar_data_get_map_data(agent_memory, "is_create");
+    const data_t *is_destroy = ar_data_get_map_data(agent_memory, "is_destroy");
+    const data_t *result = ar_data_get_map_data(agent_memory, "result");
     
     if (is_create == NULL) {
         printf("FAIL: memory.is_create not found - if() comparison failed\n");
@@ -320,6 +328,22 @@ static void test_agent_manager_invalid_action(void) {
 
 int main(void) {
     printf("Running agent-manager method tests...\n\n");
+    
+    // Verify we're running from the bin directory
+    char cwd[1024];
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+        printf("Current directory: %s\n", cwd);
+        // Check if we're in a directory ending with /bin
+        size_t len = strlen(cwd);
+        if (len < 4 || strcmp(cwd + len - 4, "/bin") != 0) {
+            fprintf(stderr, "ERROR: Tests must be run from the bin directory!\n");
+            fprintf(stderr, "Current directory: %s\n", cwd);
+            return 1;
+        }
+    } else {
+        perror("getcwd() error");
+        return 1;
+    }
     
     // Ensure clean state before starting tests
     ar_system_shutdown();

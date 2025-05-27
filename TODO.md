@@ -1961,18 +1961,27 @@ Based on discovery during method test implementation (2025-05-25), the following
 
 ### High Priority Refactoring Tasks
 
-- [ ] **Make agent_t a proper opaque type**:
-  - [ ] Move agent_t struct definition from agerun_agent.h to agerun_agent.c
-  - [ ] Add accessor functions to agent module:
-    - [ ] `ar_agent_get_memory(agent_id)` - returns const data_t* to agent's memory
-    - [ ] `ar_agent_get_id(agent_id)` - returns the agent's ID (for validation)
-    - [ ] `ar_agent_is_active(agent_id)` - returns bool for agent's active status
-    - [ ] `ar_agent_get_method_info(agent_id)` - returns method name/version if needed
-  - [ ] Update all modules that currently access agent fields directly:
-    - [ ] Agency module - use accessor functions instead of direct field access
-    - [ ] System module - use accessor functions for agent operations
-    - [ ] Method module - use accessor functions for memory/context access
-  - [ ] Remove `ar_agency_get_agents()` function that exposes internal array
+- [x] **Make agent_t a proper opaque type**: (completed 2025-05-26)
+  - [x] Move agent_t struct definition from agerun_agent.h to agerun_agent.c
+  - [x] Add accessor functions to agent module:
+    - [x] `ar_agent_get_memory(agent_id)` - returns const data_t* to agent's memory
+    - [x] `ar_agent_get_mutable_memory(agent_id)` - returns data_t* for mutable access
+    - [x] `ar_agent_get_context(agent_id)` - returns const data_t* to agent's context
+    - [x] `ar_agent_get_method(agent_id)` - returns const method_t* to agent's method
+  - [x] Update all modules that currently access agent fields directly:
+    - [x] Agency module - uses accessor functions instead of direct field access
+    - [x] System module - uses accessor functions for agent operations
+    - [x] Method module - uses accessor functions for memory/context access
+    - [x] All method tests updated to use opaque API
+  - [x] Keep `ar_agency_get_agents()` but only for internal use by agent module
+
+- [x] **Fix memory leaks in agent lifecycle**: (completed 2025-05-26)
+  - [x] Fix ar_agency_reset() to properly destroy messages before destroying queues
+  - [x] Ensure wake messages are processed to prevent memory leaks
+  - [x] Add proper agent ID increment in ar_agent_create()
+  - [x] Update all method tests to clean up .agerun files
+  - [x] Add directory safety checks to all method tests
+  - [x] All tests now pass with zero memory leaks
 
 - [ ] **Audit all modules for opaque type violations**:
   - [ ] Check each module's header file for struct definitions that should be opaque
