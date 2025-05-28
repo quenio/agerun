@@ -2,12 +2,30 @@
 
 This document tracks pending tasks and improvements for the AgeRun project.
 
+**IMPORTANT**: All development MUST follow the mandatory Parnas Design Principles and Test-Driven Development (TDD) methodology as specified in CLAUDE.md. Pull requests violating these principles will be REJECTED.
+
+## Critical Compliance Tasks (NEW)
+
+- [ ] Ensure all modules comply with Parnas principles:
+  - [ ] Audit existing modules for information hiding violations
+  - [ ] Identify and eliminate any circular dependencies
+  - [ ] Ensure all interfaces expose only abstract models
+  - [ ] Verify complete documentation for each module
+  - [ ] Create missing module design documents
+
+- [ ] Establish TDD compliance:
+  - [ ] Document TDD workflow in contributor guidelines
+  - [ ] Create TDD templates for common scenarios
+  - [ ] Add pre-commit hooks to verify test coverage
+  - [ ] Train contributors on Red-Green-Refactor cycle
+
 ## Immediate Priorities (Next Steps)
 
-- [ ] Fix expression evaluation issues:
-  - [ ] Investigate why memory access expressions fail in agent() function context
+- [ ] Fix expression evaluation issues (REQUIRES TDD):
+  - [ ] Write failing tests for memory access expressions in agent() context
+  - [ ] Investigate why memory access expressions fail
   - [ ] Fix expression evaluator to handle all contexts consistently
-  - [ ] Add tests to verify expression evaluation in various contexts
+  - [ ] Add comprehensive tests verifying all expression contexts
 
 - [ ] Improve test infrastructure:
   - [ ] Fix the memory access instruction tests that are currently skipped
@@ -76,19 +94,19 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Method Development
 
-- [ ] Create additional method files:
+- [ ] Create additional method files (USING TDD):
   - [ ] string-builder-1.0.0.method - concatenate strings with separators
   - [ ] message-router-1.0.0.method - route messages based on type/content
   - [ ] grade-evaluator-1.0.0.method - evaluate numeric grades and return letter grades
   - [ ] agent-manager-1.0.0.method - manage creation/destruction of other agents
   - [ ] method-creator-1.0.0.method - dynamically create new methods
-  - [ ] Add comprehensive tests for each new method
+  - [ ] Write tests FIRST for each new method
   - [ ] Document each method's behavior and use cases
 
 ## Code Quality - Instruction Module Refactoring
 
-### High Priority
-- [ ] Break down the massive ar_instruction_run function (2500+ lines)
+### High Priority (MUST follow Parnas principles)
+- [ ] Break down the massive ar_instruction_run function (2500+ lines) - VIOLATES information hiding
   - [ ] Extract memory access operations
   - [ ] Extract assignment operations  
   - [ ] Extract if conditional logic
@@ -204,6 +222,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ### 2025-05-27
 - ✅ Completed full instruction language implementation (all core functions)
 - ✅ Implemented destroy(agent_id) and destroy(method_name, version) functions
+- ✅ Enforced mandatory Parnas Design Principles in development guidelines
+- ✅ Enforced mandatory Test-Driven Development (TDD) methodology
 
 ### 2025-05-25
 - ✅ Implemented agent(method_name, version, context) function
@@ -261,3 +281,6 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - All core instruction functions are now implemented
 - Memory safety is verified through Address Sanitizer and static analysis
 - Comprehensive memory leak detection and reporting system is in place via heap_memory_report.log
+- **MANDATORY**: All new development must follow TDD methodology (write tests first)
+- **MANDATORY**: All modules must comply with Parnas Design Principles
+- Pull requests violating these principles will be rejected
