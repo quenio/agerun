@@ -596,61 +596,70 @@ IMPORTANT:
      - Prioritize smells that impact maintainability most
      - Document refactoring rationale in commit messages
 
-18. **Parnas Design Principles**:
-   - Apply David Parnas's fundamental principles for modular software design:
-   - **Information Hiding Principle**:
-     - Each module should hide a design decision (its "secret")
-     - The interface should reveal as little as possible about inner workings
-     - Changes to hidden information should not affect other modules
-     - Example: The opaque type pattern we use follows this principle
-   - **Changeability as Primary Criterion**:
-     - Modules should be designed around likely changes
-     - Each module should encapsulate aspects likely to change together
-     - Difficult design decisions should be hidden behind stable interfaces
-   - **Independent Development**:
-     - Modules should be developable and testable independently
-     - Define module interfaces before implementation
-     - This enables parallel development and easier testing
-   - **Black Box Specification**:
-     - Specify what a module does, not how it does it
-     - Define module behavior through input-output assertions
-     - Implementation details should not leak into specifications
-   - **Design for Subset Systems**:
-     - Systems should work with subsets of modules
-     - Avoid designs where all modules must be present
-     - The AgeRun system should function with minimal core modules
-   - **Uses Hierarchy**:
-     - Module A "uses" B if A requires B to function correctly
-     - Design the "uses" relation to be hierarchical (no cycles)
-     - Our module dependency tree should reflect this principle
-   - **Module Guide Principle**:
-     - Document which module hides which design decision
-     - Provide a roadmap for finding information
-     - Our README.md and module documentation serve this purpose
-   - **Separation of Concerns**:
-     - Each module addresses one concern
-     - Concerns should not be scattered across modules
-     - Example: Memory management is in heap module, I/O in io module
-   - **Low Coupling, High Cohesion**:
-     - Minimize dependencies between modules
-     - Maximize relatedness within modules
-     - Use clear, minimal interfaces between modules
-   - **Anticipate Change**:
-     - Identify likely changes early
-     - Structure the system to accommodate these changes
-     - Example: Version management for methods anticipates evolution
-   - **Precise Documentation**:
-     - Every module needs precise, mathematical documentation
-     - Documentation is not optional but essential
-     - Use formal specifications where appropriate
-   - **Design for Maintainability**:
-     - Documentation must be kept synchronized with code
-     - Structure must be preserved during modifications
-     - Prevent "ignorant surgery" through clear documentation
-   - **Abstract Interfaces**:
-     - Use abstract models in specifications
-     - Avoid implementation details in interfaces
-     - Allow multiple implementations of the same interface
+18. **Parnas Design Principles** (MANDATORY):
+   - **STRICTLY ENFORCED**: All modules MUST follow Parnas's fundamental principles:
+   - **Information Hiding Principle** (REQUIRED):
+     - Each module MUST hide its design decisions
+     - Interfaces MUST NOT reveal implementation details
+     - Changes to hidden information MUST NOT affect other modules
+     - MANDATORY: Use opaque types for complex data structures
+   - **Changeability as Primary Criterion** (REQUIRED):
+     - Modules MUST be designed around likely changes
+     - Each module MUST encapsulate aspects likely to change together
+     - Difficult design decisions MUST be hidden behind stable interfaces
+   - **Independent Development** (MANDATORY):
+     - Modules MUST be developable and testable independently
+     - ALWAYS define module interfaces BEFORE implementation
+     - NEVER create circular dependencies between modules
+   - **Black Box Specification** (REQUIRED):
+     - Specifications MUST describe WHAT, not HOW
+     - Module behavior MUST be defined through input-output contracts
+     - Implementation details MUST NOT appear in specifications
+   - **Design for Subset Systems** (MANDATORY):
+     - Systems MUST work with subsets of modules
+     - NEVER design systems requiring all modules to be present
+     - Core functionality MUST work with minimal dependencies
+   - **Uses Hierarchy** (STRICTLY ENFORCED):
+     - NEVER create circular dependencies
+     - The "uses" relation MUST be hierarchical
+     - Dependency cycles will cause pull requests to be REJECTED
+   - **Module Guide Principle** (REQUIRED):
+     - EVERY module MUST document its hidden design decisions
+     - Module documentation MUST provide clear navigation
+     - Missing or inadequate documentation will BLOCK merging
+   - **Separation of Concerns** (MANDATORY):
+     - Each module MUST address exactly ONE concern
+     - NEVER scatter related functionality across modules
+     - NEVER mix unrelated concerns in one module
+   - **Low Coupling, High Cohesion** (STRICTLY ENFORCED):
+     - Module interfaces MUST be minimal
+     - Module internals MUST be highly related
+     - Excessive coupling will cause pull requests to be REJECTED
+   - **Anticipate Change** (REQUIRED):
+     - Design decisions MUST consider future changes
+     - Interfaces MUST be stable even when implementations change
+     - Hard-coded assumptions are FORBIDDEN
+   - **Precise Documentation** (MANDATORY):
+     - EVERY module MUST have complete documentation
+     - Documentation MUST be precise and unambiguous
+     - Pull requests with inadequate documentation will be REJECTED
+   - **Design for Maintainability** (REQUIRED):
+     - Documentation MUST be updated with EVERY code change
+     - Module structure MUST be preserved during modifications
+     - "Ignorant surgery" is grounds for rejection
+   - **Abstract Interfaces** (MANDATORY):
+     - Interfaces MUST use abstract models only
+     - NEVER expose implementation details in interfaces
+     - Interfaces MUST support multiple implementations
+   - **Enforcement Rules**:
+     - Pull requests violating these principles will be REJECTED
+     - Code reviews MUST verify compliance with ALL principles
+     - Module design MUST be reviewed BEFORE implementation begins
+     - Circular dependencies are an AUTOMATIC rejection
+     - Missing or inadequate documentation is an AUTOMATIC rejection
+     - Exposed implementation details in interfaces require immediate refactoring
+     - Each new module MUST have a documented design decision and rationale
+     - Module modifications MUST preserve the original design principles
 
 19. **Test-Driven Development (TDD) Principles**:
    - **MANDATORY**: All new functionality MUST be developed using TDD methodology
