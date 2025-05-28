@@ -313,12 +313,6 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Immediate Priorities (Next Steps)
 
-- [ ] Complete instruction language implementation:
-  - [ ] Implement `destroy(agent_id)` function to destroy agents by ID
-  - [ ] Implement `destroy(method_name, version)` function to unregister methods
-  - [ ] Add tests for both destroy functions
-  - [ ] Update documentation for destroy functions
-  
 - [ ] Fix expression evaluation issues:
   - [ ] Investigate why memory access expressions fail in agent() function context
   - [ ] Fix expression evaluator to handle all contexts consistently
@@ -328,19 +322,25 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Fix the memory access instruction tests that are currently skipped
   - [ ] Add better error reporting for failed instructions
   - [ ] Create helper functions for common test patterns
+  
+- [ ] Create more method files:
+  - [ ] Implement additional method files for testing various agent behaviors
+  - [ ] Create methods that demonstrate different AgeRun features
+  - [ ] Add corresponding tests for each new method
 
 ## Core Functionality Implementation
 
-- [ ] Implement remaining instruction functions:
+- [x] Implement remaining instruction functions: (completed 2025-05-27)
   - [x] Implement `parse(template, input)` function to extract values from strings based on templates (completed 2025-05-22)
   - [x] Implement `build(template, values)` function to construct strings by replacing placeholders (completed 2025-05-24)
   - [x] Implement `agent(method_name, version, context)` function to create new agent instances (completed 2025-05-25)
-  - [ ] Implement `destroy(agent_id)` and `destroy(method_name, version)` functions for lifecycle management
+  - [x] Implement `destroy(agent_id)` and `destroy(method_name, version)` functions for lifecycle management (completed 2025-05-27)
   - [x] Add comprehensive tests for parse, build, and agent functions (completed 2025-05-25)
-  - [ ] Add comprehensive tests for destroy functions
+  - [x] Add comprehensive tests for destroy functions (completed 2025-05-27)
   - [x] Update instruction module documentation with implementation details for parse function (completed 2025-05-22)
   - [x] Update instruction module documentation with implementation details for build function (completed 2025-05-24)
   - [x] Update instruction module documentation with implementation details for agent function (completed 2025-05-25)
+  - [x] Update instruction module documentation with implementation details for destroy functions (completed 2025-05-27)
 
 - [x] Method file management and testing: (completed 2025-05-22)
   - [x] Create methods directory for storing .method files (completed 2025-05-22)
@@ -352,6 +352,12 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Update Makefile to compile and run method tests (completed 2025-05-22)
   - [x] Fix test isolation issues by cleaning .agerun files between test runs (completed 2025-05-22)
   - [x] Update methods/README.md with testing documentation (completed 2025-05-22)
+
+- [x] Complete instruction language implementation: (completed 2025-05-27)
+  - [x] Implement `destroy(agent_id)` function to destroy agents by ID (completed 2025-05-27)
+  - [x] Implement `destroy(method_name, version)` function to unregister methods (completed 2025-05-27)
+  - [x] Add comprehensive tests for both destroy functions (completed 2025-05-27)
+  - [x] Update instruction module documentation with destroy function details (completed 2025-05-27)
 
 - [ ] Implement agent persistence feature:
   - [ ] Add `persist` boolean parameter to agent creation functions
