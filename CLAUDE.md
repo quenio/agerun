@@ -594,7 +594,63 @@ IMPORTANT:
      - Prioritize smells that impact maintainability most
      - Document refactoring rationale in commit messages
 
-18. **AgeRun Language Semantics**:
+18. **Parnas Design Principles**:
+   - Apply David Parnas's fundamental principles for modular software design:
+   - **Information Hiding Principle**:
+     - Each module should hide a design decision (its "secret")
+     - The interface should reveal as little as possible about inner workings
+     - Changes to hidden information should not affect other modules
+     - Example: The opaque type pattern we use follows this principle
+   - **Changeability as Primary Criterion**:
+     - Modules should be designed around likely changes
+     - Each module should encapsulate aspects likely to change together
+     - Difficult design decisions should be hidden behind stable interfaces
+   - **Independent Development**:
+     - Modules should be developable and testable independently
+     - Define module interfaces before implementation
+     - This enables parallel development and easier testing
+   - **Black Box Specification**:
+     - Specify what a module does, not how it does it
+     - Define module behavior through input-output assertions
+     - Implementation details should not leak into specifications
+   - **Design for Subset Systems**:
+     - Systems should work with subsets of modules
+     - Avoid designs where all modules must be present
+     - The AgeRun system should function with minimal core modules
+   - **Uses Hierarchy**:
+     - Module A "uses" B if A requires B to function correctly
+     - Design the "uses" relation to be hierarchical (no cycles)
+     - Our module dependency tree should reflect this principle
+   - **Module Guide Principle**:
+     - Document which module hides which design decision
+     - Provide a roadmap for finding information
+     - Our README.md and module documentation serve this purpose
+   - **Separation of Concerns**:
+     - Each module addresses one concern
+     - Concerns should not be scattered across modules
+     - Example: Memory management is in heap module, I/O in io module
+   - **Low Coupling, High Cohesion**:
+     - Minimize dependencies between modules
+     - Maximize relatedness within modules
+     - Use clear, minimal interfaces between modules
+   - **Anticipate Change**:
+     - Identify likely changes early
+     - Structure the system to accommodate these changes
+     - Example: Version management for methods anticipates evolution
+   - **Precise Documentation**:
+     - Every module needs precise, mathematical documentation
+     - Documentation is not optional but essential
+     - Use formal specifications where appropriate
+   - **Design for Maintainability**:
+     - Documentation must be kept synchronized with code
+     - Structure must be preserved during modifications
+     - Prevent "ignorant surgery" through clear documentation
+   - **Abstract Interfaces**:
+     - Use abstract models in specifications
+     - Avoid implementation details in interfaces
+     - Allow multiple implementations of the same interface
+
+19. **AgeRun Language Semantics**:
    - There is no null data type in AgeRun - use integer 0 instead for null/empty values
    - All function parameters are required - there are no optional parameters
    - Version strings must always be specified explicitly (e.g., "1.0.0")
@@ -606,7 +662,7 @@ IMPORTANT:
    - Function expressions in instruction code are evaluated by the expression module
    - Memory access expressions may not work correctly in all contexts - use literal values as fallback
 
-19. **AgeRun Method Language Syntax Guidelines**:
+20. **AgeRun Method Language Syntax Guidelines**:
    - **Expressions vs Instructions**: Understand the critical distinction:
      - Expressions: literals, memory access, arithmetic, comparisons (can be used as function arguments)
      - Instructions: assignments, function calls (cannot be used as function arguments)
@@ -637,7 +693,7 @@ IMPORTANT:
      - This ensures all instructions executed successfully, not just the final result
      - Example: After a grade evaluator runs, check memory.grade, memory.is_grade, etc.
 
-20. **Method Test Requirements**:
+21. **Method Test Requirements**:
    - **Directory Safety Check**: All method tests MUST include a check to ensure they're run from the bin directory:
      ```c
      char cwd[1024];
@@ -663,14 +719,14 @@ IMPORTANT:
      ```
    - **Required Includes**: Method tests need `#include <unistd.h>` for getcwd() and remove()
 
-21. **Debug Output Guidelines**:
+22. **Debug Output Guidelines**:
    - **Keep DEBUG Messages**: When adding DEBUG output during troubleshooting, keep it in the code
    - Debug messages provide valuable context for future debugging sessions
    - Use consistent DEBUG prefix: `printf("DEBUG: message\n");`
    - Debug output helps understand program flow and state during development
    - Example: System module's message processing debug output
 
-22. **Building and Running Tests**:
+23. **Building and Running Tests**:
    - **Always Use Make**: Always use make to build and run tests or the executable
    - Never compile tests directly with gcc
    - To build an individual test: `make bin/test_name`
