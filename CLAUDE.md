@@ -378,6 +378,8 @@ IMPORTANT:
    - Prefer explicit, well-documented approaches over clever tricks that might trigger warnings
 
 6. **Test extensively**:
+   - **MANDATORY**: Follow Test-Driven Development (TDD) principles (see section 19)
+   - Write tests BEFORE writing implementation code
    - Test changes with both normal and edge cases
    - Verify behavior matches the specification
    - Use the test suite to catch regressions
@@ -650,7 +652,56 @@ IMPORTANT:
      - Avoid implementation details in interfaces
      - Allow multiple implementations of the same interface
 
-19. **AgeRun Language Semantics**:
+19. **Test-Driven Development (TDD) Principles**:
+   - **MANDATORY**: All new functionality MUST be developed using TDD methodology
+   - **Red-Green-Refactor Cycle** (STRICTLY ENFORCED):
+     - **Red**: Write a failing test BEFORE writing any implementation code
+     - **Green**: Write the MINIMUM code necessary to make the test pass
+     - **Refactor**: Improve the code while keeping tests green
+     - NEVER write implementation code without a failing test first
+     - NEVER skip the refactoring step - clean code is not optional
+   - **Test-First Design**:
+     - Writing tests first forces proper interface design
+     - If a function is hard to test, its design is probably wrong
+     - Tests drive the API design, not the other way around
+   - **One Test, One Assertion**:
+     - Each test function should verify ONE specific behavior
+     - Multiple assertions are only allowed if testing the same logical concept
+     - Better to have many small tests than few large ones
+   - **Test Isolation**:
+     - Tests MUST NOT depend on each other
+     - Each test MUST set up its own context
+     - Each test MUST clean up after itself (zero memory leaks in tests)
+     - Test order should not matter
+   - **Triangulation**:
+     - Use multiple test cases to drive general solutions
+     - Don't generalize from a single example
+     - Add tests that approach the problem from different angles
+   - **Fake It Till You Make It**:
+     - Start with hard-coded returns to get tests passing quickly
+     - Generalize only when tests force you to
+     - This maintains momentum and clarifies requirements
+   - **Tests as Documentation**:
+     - Tests demonstrate how to use the code
+     - Test names should describe what they verify
+     - Tests should be readable examples of API usage
+   - **Enforcement Rules**:
+     - Pull requests WITHOUT tests for new functionality will be REJECTED
+     - Code coverage must INCREASE or stay the same, never decrease
+     - All tests must pass before merging
+     - Memory leak detection must show zero leaks
+   - **When to Write Tests**:
+     - BEFORE implementing new functions
+     - BEFORE fixing bugs (write a test that reproduces the bug)
+     - BEFORE refactoring (ensure behavior doesn't change)
+     - AFTER discovering an edge case (add a test for it)
+   - **Test Quality Standards**:
+     - Tests must be deterministic (no random failures)
+     - Tests must be fast (milliseconds, not seconds)
+     - Tests must have clear failure messages
+     - Tests must follow the Given/When/Then structure
+
+20. **AgeRun Language Semantics**:
    - There is no null data type in AgeRun - use integer 0 instead for null/empty values
    - All function parameters are required - there are no optional parameters
    - Version strings must always be specified explicitly (e.g., "1.0.0")
@@ -662,7 +713,7 @@ IMPORTANT:
    - Function expressions in instruction code are evaluated by the expression module
    - Memory access expressions may not work correctly in all contexts - use literal values as fallback
 
-20. **AgeRun Method Language Syntax Guidelines**:
+21. **AgeRun Method Language Syntax Guidelines**:
    - **Expressions vs Instructions**: Understand the critical distinction:
      - Expressions: literals, memory access, arithmetic, comparisons (can be used as function arguments)
      - Instructions: assignments, function calls (cannot be used as function arguments)
@@ -693,7 +744,7 @@ IMPORTANT:
      - This ensures all instructions executed successfully, not just the final result
      - Example: After a grade evaluator runs, check memory.grade, memory.is_grade, etc.
 
-21. **Method Test Requirements**:
+22. **Method Test Requirements**:
    - **Directory Safety Check**: All method tests MUST include a check to ensure they're run from the bin directory:
      ```c
      char cwd[1024];
@@ -719,14 +770,14 @@ IMPORTANT:
      ```
    - **Required Includes**: Method tests need `#include <unistd.h>` for getcwd() and remove()
 
-22. **Debug Output Guidelines**:
+23. **Debug Output Guidelines**:
    - **Keep DEBUG Messages**: When adding DEBUG output during troubleshooting, keep it in the code
    - Debug messages provide valuable context for future debugging sessions
    - Use consistent DEBUG prefix: `printf("DEBUG: message\n");`
    - Debug output helps understand program flow and state during development
    - Example: System module's message processing debug output
 
-23. **Building and Running Tests**:
+24. **Building and Running Tests**:
    - **Always Use Make**: Always use make to build and run tests or the executable
    - Never compile tests directly with gcc
    - To build an individual test: `make bin/test_name`
