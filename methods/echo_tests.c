@@ -2,68 +2,26 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <unistd.h>
+#include "agerun_test_fixture.h"
 #include "agerun_system.h"
 #include "agerun_agent.h"
-#include "agerun_agency.h"
-#include "agerun_methodology.h"
 #include "agerun_data.h"
-#include "agerun_io.h"
-#include "agerun_heap.h"
-
-/**
- * Reads a method file and returns its contents as a string
- * @param ref_filename Path to the method file
- * @return Newly allocated string with file contents, or NULL on error
- * @note Ownership: Returns an owned string that caller must free
- */
-static char* read_method_file(const char *ref_filename) {
-    FILE *fp = NULL;
-    file_result_t result = ar_io_open_file(ref_filename, "r", &fp);
-    if (result != FILE_SUCCESS) {
-        ar_io_error("Failed to open method file %s: %s\n", 
-                    ref_filename, ar_io_error_message(result));
-        return NULL;
-    }
-    
-    // Get file size
-    fseek(fp, 0, SEEK_END);
-    long file_size = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-    
-    // Allocate buffer
-    char *own_content = (char*)AR_HEAP_MALLOC((size_t)(file_size + 1), "Method file content");
-    if (!own_content) {
-        ar_io_close_file(fp, ref_filename);
-        return NULL;
-    }
-    
-    // Read file
-    size_t bytes_read = fread(own_content, 1, (size_t)file_size, fp);
-    own_content[bytes_read] = '\0';
-    
-    ar_io_close_file(fp, ref_filename);
-    return own_content; // Ownership transferred to caller
-}
 
 static void test_echo_simple_message(void) {
     printf("Testing echo method with simple message...\n");
     
-    // Initialize system (if not already initialized)
-    if (ar_system_init(NULL, NULL) == 0) {
-        // System already initialized
-    }
+    // Create test fixture
+    test_fixture_t *own_fixture = ar_test_fixture_create("echo_simple_message");
+    assert(own_fixture != NULL);
     
-    // Read echo method from file
-    char *own_echo_instructions = read_method_file("../methods/echo-1.0.0.method");
-    assert(own_echo_instructions != NULL);
-    printf("Echo method instructions:\n%s\n", own_echo_instructions);
+    // Initialize test environment
+    assert(ar_test_fixture_initialize(own_fixture));
     
-    // Register echo method
-    bool registered = ar_methodology_create_method("echo", own_echo_instructions, "1.0.0");
-    assert(registered);
+    // Verify correct directory
+    assert(ar_test_fixture_verify_directory(own_fixture));
     
-    AR_HEAP_FREE(own_echo_instructions);
+    // Load and register echo method
+    assert(ar_test_fixture_load_method(own_fixture, "echo", "../methods/echo-1.0.0.method", "1.0.0"));
     
     // Create echo agent
     agent_id_t echo_agent = ar_agent_create("echo", "1.0.0", NULL);
@@ -106,23 +64,30 @@ static void test_echo_simple_message(void) {
     // Clean up
     ar_agent_destroy(echo_agent);
     
+    // Check for memory leaks
+    assert(ar_test_fixture_check_memory(own_fixture));
+    
+    // Destroy fixture (handles all cleanup)
+    ar_test_fixture_destroy(own_fixture);
+    
     printf("PASS\n");
 }
 
 static void test_echo_map_message(void) {
     printf("Testing echo method with map message...\n");
     
-    // Initialize system (if not already initialized)
-    if (ar_system_init(NULL, NULL) == 0) {
-        // System already initialized
-    }
+    // Create test fixture
+    test_fixture_t *own_fixture = ar_test_fixture_create("echo_map_message");
+    assert(own_fixture != NULL);
     
-    // Read echo method from file (in case not loaded)
-    char *own_echo_instructions = read_method_file("../methods/echo-1.0.0.method");
-    if (own_echo_instructions) {
-        ar_methodology_create_method("echo", own_echo_instructions, "1.0.0");
-        AR_HEAP_FREE(own_echo_instructions);
-    }
+    // Initialize test environment
+    assert(ar_test_fixture_initialize(own_fixture));
+    
+    // Verify correct directory
+    assert(ar_test_fixture_verify_directory(own_fixture));
+    
+    // Load and register echo method
+    assert(ar_test_fixture_load_method(own_fixture, "echo", "../methods/echo-1.0.0.method", "1.0.0"));
     
     // Create echo agent
     agent_id_t echo_agent = ar_agent_create("echo", "1.0.0", NULL);
@@ -151,13 +116,17 @@ static void test_echo_map_message(void) {
     bool processed = ar_system_process_next_message();
     assert(processed);
     
-    // Echo method now only sends back message.content, doesn't store in memory
-    
     // Process the return message (echo sends it back)
     processed = ar_system_process_next_message();
     
     // Clean up
     ar_agent_destroy(echo_agent);
+    
+    // Check for memory leaks
+    assert(ar_test_fixture_check_memory(own_fixture));
+    
+    // Destroy fixture (handles all cleanup)
+    ar_test_fixture_destroy(own_fixture);
     
     printf("PASS\n");
 }
@@ -165,27 +134,8 @@ static void test_echo_map_message(void) {
 int main(void) {
     printf("Running echo method tests...\n");
     
-    // Verify we're running from the bin directory
-    char cwd[1024];
-    if (getcwd(cwd, sizeof(cwd)) != NULL) {
-        printf("Current directory: %s\n", cwd);
-        // Check if we're in a directory ending with /bin
-        size_t len = strlen(cwd);
-        if (len < 4 || strcmp(cwd + len - 4, "/bin") != 0) {
-            fprintf(stderr, "ERROR: Tests must be run from the bin directory!\n");
-            fprintf(stderr, "Current directory: %s\n", cwd);
-            return 1;
-        }
-    } else {
-        perror("getcwd() error");
-        return 1;
-    }
-    
     test_echo_simple_message();
     test_echo_map_message();
-    
-    // Clean up
-    ar_system_shutdown();
     
     printf("All tests passed!\n");
     return 0;
