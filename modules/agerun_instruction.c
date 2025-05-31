@@ -21,6 +21,8 @@ struct instruction_context_s {
     data_t *mut_memory;        // Mutable reference to memory, not owned
     const data_t *ref_context; // Borrowed reference to context, not owned
     const data_t *ref_message; // Borrowed reference to message, not owned
+    char *own_error_message;   // Owned error message string
+    int error_position;        // Position where error occurred (1-based, 0 if no error)
 };
 
 // Function prototypes for recursive descent parsing
@@ -31,6 +33,10 @@ static bool parse_memory_access(const char *ref_instruction, int *mut_pos, char 
 static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos, data_t **result);
 static bool skip_whitespace(const char *ref_instruction, int *mut_pos);
 static bool extract_identifier(const char *ref_instruction, int *mut_pos, char *mut_identifier, int max_size);
+
+// Error handling helper functions
+static void set_error(instruction_context_t *mut_ctx, const char *ref_message, int position);
+static void clear_error(instruction_context_t *mut_ctx);
 
 // Create a new instruction context
 instruction_context_t* ar_instruction_create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message) {
@@ -44,6 +50,8 @@ instruction_context_t* ar_instruction_create_context(data_t *mut_memory, const d
     own_ctx->mut_memory = mut_memory;
     own_ctx->ref_context = ref_context;
     own_ctx->ref_message = ref_message;
+    own_ctx->own_error_message = NULL;
+    own_ctx->error_position = 0;
     
     // Return the newly created context
     return own_ctx;
@@ -52,6 +60,10 @@ instruction_context_t* ar_instruction_create_context(data_t *mut_memory, const d
 // Destroy an instruction context
 void ar_instruction_destroy_context(instruction_context_t *own_ctx) {
     if (own_ctx) {
+        // Free the owned error message if any
+        if (own_ctx->own_error_message) {
+            AR_HEAP_FREE(own_ctx->own_error_message);
+        }
         // The context doesn't own memory, context, or message, so we just free the structure
         AR_HEAP_FREE(own_ctx);
     }
@@ -102,6 +114,11 @@ bool ar_instruction_run(instruction_context_t *mut_ctx, const char *ref_instruct
     int pos = 0;
     bool result = parse_instruction(mut_ctx, ref_instruction, &pos);
     
+    if (result) {
+        // Clear error state on success
+        clear_error(mut_ctx);
+    }
+    
     return result;
 }
 
@@ -144,6 +161,14 @@ static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_ins
     *mut_pos += 2; // Skip ':='
     skip_whitespace(ref_instruction, mut_pos);
     
+    // Check if there's an expression after ':='
+    if (!ref_instruction[*mut_pos] || ref_instruction[*mut_pos] == '\0') {
+        set_error(mut_ctx, "Expected expression after ':='", *mut_pos);
+        AR_HEAP_FREE(path);
+        path = NULL; // Mark as freed
+        return false;
+    }
+    
     // Evaluate the expression (right side)
     // Create a context that we'll reuse for all expressions in this function
     expression_context_t *own_context = ar_expression_create_context(mut_ctx->mut_memory, 
@@ -158,14 +183,29 @@ static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_ins
     
     // Evaluate the expression
     data_t *own_value = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
-    *mut_pos += ar_expression_offset(own_context);
+    int expr_offset = ar_expression_offset(own_context);
+    *mut_pos += expr_offset;
     
     // Clean up context immediately after we're done with it
     ar_expression_destroy_context(own_context);
     own_context = NULL; // Mark as destroyed
     
     if (!own_value) {
-        // If evaluation or take_ownership returned NULL, we can't use the value
+        // Check what character caused the parse to fail
+        int error_pos = *mut_pos - expr_offset;
+        char invalid_char = ref_instruction[error_pos];
+        
+        if (invalid_char && !isalnum(invalid_char) && invalid_char != '"' && invalid_char != '\'' && 
+            invalid_char != '.' && invalid_char != '_' && invalid_char != '-' && invalid_char != '+' && 
+            invalid_char != '*' && invalid_char != '/' && invalid_char != '(' && invalid_char != ')' &&
+            invalid_char != ' ' && invalid_char != '\t' && invalid_char != '\n' && invalid_char != '\r' &&
+            invalid_char != ',' && invalid_char != ':' && invalid_char != '=' && invalid_char != '\0') {
+            char error_msg[256];
+            snprintf(error_msg, sizeof(error_msg), "Unexpected character '%c'", invalid_char);
+            set_error(mut_ctx, error_msg, error_pos);
+        } else {
+            set_error(mut_ctx, "Failed to evaluate expression", error_pos);
+        }
         AR_HEAP_FREE(path);
         path = NULL; // Mark as freed
         return false;
@@ -1593,6 +1633,13 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         // Create the agent
         agent_id_t agent_id = ar_agent_create(method_name, version_str, ref_agent_context);
         
+        // Check if agent creation failed (method not found)
+        if (agent_id == 0) {
+            char error_msg[512];
+            snprintf(error_msg, sizeof(error_msg), "Method '%s' version '%s' not found", method_name, version_str);
+            set_error(mut_ctx, error_msg, *mut_pos - 1); // Position at closing parenthesis
+        }
+        
         // Clean up input data now that we're done with it
         if (owns_context && own_agent_context) {
             ar_data_destroy(own_agent_context);
@@ -1801,6 +1848,54 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
     }
     
     return false; // Should not reach here
+}
+
+// Error reporting functions
+
+// Gets the last error message from the instruction context
+const char* ar_instruction_get_last_error(const instruction_context_t *ref_ctx) {
+    if (!ref_ctx) {
+        return NULL;
+    }
+    return ref_ctx->own_error_message;
+}
+
+// Gets the position in the instruction string where the last error occurred
+int ar_instruction_get_error_position(const instruction_context_t *ref_ctx) {
+    if (!ref_ctx) {
+        return 0;
+    }
+    return ref_ctx->error_position;
+}
+
+// Helper function to set error in context
+static void set_error(instruction_context_t *mut_ctx, const char *ref_message, int position) {
+    if (!mut_ctx) {
+        return;
+    }
+    
+    // Free existing error message if any
+    if (mut_ctx->own_error_message) {
+        AR_HEAP_FREE(mut_ctx->own_error_message);
+    }
+    
+    // Duplicate the new error message
+    mut_ctx->own_error_message = AR_HEAP_STRDUP(ref_message, "Error message");
+    mut_ctx->error_position = position + 1; // Convert 0-based to 1-based
+}
+
+// Helper function to clear error state
+static void clear_error(instruction_context_t *mut_ctx) {
+    if (!mut_ctx) {
+        return;
+    }
+    
+    // Free existing error message if any
+    if (mut_ctx->own_error_message) {
+        AR_HEAP_FREE(mut_ctx->own_error_message);
+        mut_ctx->own_error_message = NULL;
+    }
+    mut_ctx->error_position = 0;
 }
 
 // Utility functions

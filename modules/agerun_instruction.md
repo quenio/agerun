@@ -158,6 +158,39 @@ Sends a message to another agent.
 - Takes ownership of `own_message`
 - If sending fails, the function will destroy the message
 
+### Error Reporting
+
+```c
+const char* ar_instruction_get_last_error(const instruction_context_t *ref_ctx);
+```
+
+Gets the last error message from the instruction context.
+
+**Parameters:**
+- `ref_ctx`: The instruction context (borrowed reference)
+
+**Returns:**
+- The last error message, or NULL if no error
+
+**Ownership:**
+- Does not take ownership of the context parameter
+- The returned string is owned by the context and should not be freed
+
+```c
+int ar_instruction_get_error_position(const instruction_context_t *ref_ctx);
+```
+
+Gets the position in the instruction string where the last error occurred.
+
+**Parameters:**
+- `ref_ctx`: The instruction context (borrowed reference)
+
+**Returns:**
+- The error position (1-based column), or 0 if no error
+
+**Ownership:**
+- Does not take ownership of the context parameter
+
 ## Usage Examples
 
 ### Context Creation and Instruction Execution
@@ -172,6 +205,15 @@ if (!own_ctx) {
 
 // Execute an instruction
 bool success = ar_instruction_run(own_ctx, "memory.greeting := \"Hello, World!\"");
+
+// Check for errors
+if (!success) {
+    const char *error_msg = ar_instruction_get_last_error(own_ctx);
+    int error_pos = ar_instruction_get_error_position(own_ctx);
+    if (error_msg) {
+        fprintf(stderr, "Error at position %d: %s\n", error_pos, error_msg);
+    }
+}
 
 // Clean up
 ar_instruction_destroy_context(own_ctx);

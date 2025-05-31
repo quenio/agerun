@@ -24,6 +24,8 @@ static void test_parse_function(void);
 static void test_build_function(void);
 static void test_agent_function(void);
 static void test_agent_function_with_message_expressions(void);
+static void test_destroy_functions(void);
+static void test_error_reporting(void);
 
 // Helper function to set up an agent for testing
 static agent_id_t setup_test_agent(const char *ref_method_name, const char *ref_instructions) {
@@ -861,6 +863,87 @@ static void test_agent_function_with_message_expressions(void) {
     printf("Agent function with message expressions test completed.\n");
 }
 
+// Test error reporting functionality
+static void test_error_reporting(void) {
+    printf("Testing error reporting...\n");
+    
+    // Given a test agent and instruction context
+    agent_id_t agent_id = setup_test_agent("error_test_agent", "");
+    assert(test_agent_exists(agent_id));
+    
+    // Process the __wake__ message
+    ar_system_process_next_message();
+    
+    data_t *mut_memory = ar_agent_get_mutable_memory(agent_id);
+    assert(mut_memory != NULL);
+    
+    instruction_context_t *own_ctx = ar_instruction_create_context(mut_memory, NULL, NULL);
+    assert(own_ctx != NULL);
+    
+    // Test 1: Syntax error - missing expression after assignment
+    // When we run an invalid instruction with missing expression
+    const char *invalid_instruction1 = "memory.x := ";
+    printf("  Running invalid instruction: %s\n", invalid_instruction1);
+    bool result = ar_instruction_run(own_ctx, invalid_instruction1);
+    
+    // Then execution should fail
+    printf("  Result: %s\n", result ? "success" : "failure");
+    assert(!result);
+    
+    // And we should get a descriptive error message
+    const char *error_msg = ar_instruction_get_last_error(own_ctx);
+    printf("  Error message: %s\n", error_msg ? error_msg : "(null)");
+    assert(error_msg != NULL);
+    assert(strstr(error_msg, "Expected expression after ':='") != NULL);
+    
+    // And we should get the error position
+    int error_pos = ar_instruction_get_error_position(own_ctx);
+    assert(error_pos == 13); // Position after ":= " (1-based)
+    
+    // Test 2: Parse error - invalid token
+    // When we run an instruction with invalid syntax
+    const char *invalid_instruction2 = "memory.x := @invalid";
+    result = ar_instruction_run(own_ctx, invalid_instruction2);
+    
+    // Then execution should fail
+    assert(!result);
+    
+    // And we should get a descriptive error message
+    error_msg = ar_instruction_get_last_error(own_ctx);
+    assert(error_msg != NULL);
+    assert(strstr(error_msg, "Unexpected character '@'") != NULL);
+    
+    // Test 3: Runtime error - undefined method
+    // When we try to call a non-existent method
+    const char *invalid_instruction3 = "memory.result := method(\"nonexistent\", \"1.0.0\")";
+    result = ar_instruction_run(own_ctx, invalid_instruction3);
+    
+    // Then execution should fail
+    assert(!result);
+    
+    // And we should get a descriptive error message
+    error_msg = ar_instruction_get_last_error(own_ctx);
+    assert(error_msg != NULL);
+    assert(strstr(error_msg, "Method 'nonexistent' version '1.0.0' not found") != NULL);
+    
+    // Test 4: Clear error state on successful execution
+    // When we run a valid instruction
+    const char *valid_instruction = "memory.x := 42";
+    result = ar_instruction_run(own_ctx, valid_instruction);
+    
+    // Then execution should succeed
+    assert(result);
+    
+    // And error message should be cleared
+    error_msg = ar_instruction_get_last_error(own_ctx);
+    assert(error_msg == NULL || strlen(error_msg) == 0);
+    
+    // Clean up
+    ar_instruction_destroy_context(own_ctx);
+    
+    printf("Error reporting tests completed.\n");
+}
+
 int main(void) {
     printf("Starting Instruction Module Tests...\n");
     
@@ -894,6 +977,7 @@ int main(void) {
     test_agent_function();
     test_agent_function_with_message_expressions();
     test_destroy_functions();
+    test_error_reporting();
     
     // Then we clean up the system
     ar_system_shutdown();

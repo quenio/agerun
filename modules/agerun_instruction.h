@@ -114,4 +114,23 @@ const data_t* ar_instruction_get_message(const instruction_context_t *ref_ctx);
  */
 bool ar_instruction_send_message(agent_id_t target_id, data_t *own_message);
 
+/**
+ * Gets the last error message from the instruction context.
+ *
+ * @param ref_ctx The instruction context (borrowed reference)
+ * @return The last error message, or NULL if no error
+ * @note Ownership: Does not take ownership of the context parameter.
+ *       The returned string is owned by the context and should not be freed.
+ */
+const char* ar_instruction_get_last_error(const instruction_context_t *ref_ctx);
+
+/**
+ * Gets the position in the instruction string where the last error occurred.
+ *
+ * @param ref_ctx The instruction context (borrowed reference)
+ * @return The error position (1-based column), or 0 if no error
+ * @note Ownership: Does not take ownership of the context parameter.
+ */
+int ar_instruction_get_error_position(const instruction_context_t *ref_ctx);
+
 #endif /* AGERUN_INSTRUCTION_H */

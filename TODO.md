@@ -29,7 +29,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 - [ ] Improve test infrastructure:
   - [x] Fix the memory access instruction tests that are currently skipped
-  - [ ] Add better error reporting for failed instructions
+  - [x] Add better error reporting for failed instructions
   - [ ] Create helper functions for common test patterns
   
 - [ ] Create more method files:
