@@ -52,6 +52,7 @@ dkms.conf
 # Agent persistence files
 agrun.agents
 agrun.methods
+*.agerun
 
 # IDE files
 .vscode/
