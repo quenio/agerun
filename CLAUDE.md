@@ -199,6 +199,7 @@ make run-sanitize          # Run executable with ASan
 - **Switch Statements**: Consider function pointer tables or dispatch tables
 - **Message Chains**: Apply Law of Demeter (a->b()->c()->d() is bad)
 - **Comments**: Refactor code to be self-documenting; comments explain "why" not "what"
+- **Helper Functions**: No helper functions allowed - they indicate missing modules or data abstractions
 
 ### 6. Method Development
 

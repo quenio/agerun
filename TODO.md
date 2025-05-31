@@ -27,10 +27,10 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Fix expression evaluator to handle all contexts consistently
   - [x] Add comprehensive tests verifying all expression contexts
 
-- [ ] Improve test infrastructure:
+- [x] Improve test infrastructure:
   - [x] Fix the memory access instruction tests that are currently skipped
   - [x] Add better error reporting for failed instructions
-  - [ ] Create helper functions for common test patterns
+  - [x] Create test fixture module for common test patterns (no helper functions)
   
 - [ ] Create more method files:
   - [ ] Implement additional method files for testing various agent behaviors

@@ -155,6 +155,20 @@ The [heap module](agerun_heap.md) provides comprehensive memory tracking and lea
 - **Statistical Reporting**: Provides allocation counts, memory usage, and leak summaries
 - **Production Safety**: All tracking code compiles out in release builds
 
+### Test Fixture Module (`agerun_test_fixture`)
+
+The test fixture module provides a proper abstraction for test setup and teardown operations:
+
+- **Test Lifecycle Management**: Encapsulates complete test lifecycle (setup → execution → teardown)
+- **System State Initialization**: Ensures clean system state for each test run
+- **Method File Loading**: Provides abstraction for loading and registering method files
+- **Directory Verification**: Validates test execution directory requirements
+- **Memory Leak Detection**: Tracks allocations and reports memory leaks per test
+- **Persistence Cleanup**: Automatically removes persistence files between tests
+- **No Helper Functions**: Proper module abstraction eliminating need for scattered helpers
+- **Opaque Type**: Test fixture structure is opaque, following Parnas principles
+- **Depends on Core Modules**: Uses system, methodology, agency, IO, and heap modules
+
 ### String Module (`agerun_string`)
 
 The [string module](agerun_string.md) provides utility functions for string manipulation with the following features:
