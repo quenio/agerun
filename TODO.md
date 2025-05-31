@@ -21,11 +21,11 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Immediate Priorities (Next Steps)
 
-- [ ] Fix expression evaluation issues (REQUIRES TDD):
-  - [ ] Write failing tests for memory access expressions in agent() context
-  - [ ] Investigate why memory access expressions fail
-  - [ ] Fix expression evaluator to handle all contexts consistently
-  - [ ] Add comprehensive tests verifying all expression contexts
+- [x] Fix expression evaluation issues (REQUIRES TDD):
+  - [x] Write failing tests for memory access expressions in agent() context
+  - [x] Investigate why memory access expressions fail
+  - [x] Fix expression evaluator to handle all contexts consistently
+  - [x] Add comprehensive tests verifying all expression contexts
 
 - [ ] Improve test infrastructure:
   - [ ] Fix the memory access instruction tests that are currently skipped

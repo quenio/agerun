@@ -1410,6 +1410,10 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             return false;
         }
         const data_t *ref_method_name_eval = ar_expression_evaluate(own_context);
+        if (!ref_method_name_eval) {
+            ar_expression_destroy_context(own_context);
+            return false;
+        }
         data_t *own_method_name = ar_expression_take_ownership(own_context, ref_method_name_eval);
         *mut_pos += ar_expression_offset(own_context);
         
@@ -1465,6 +1469,14 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             return false;
         }
         const data_t *ref_version_eval = ar_expression_evaluate(own_context);
+        if (!ref_version_eval) {
+            ar_expression_destroy_context(own_context);
+            if (owns_method_name && own_method_name) {
+                ar_data_destroy(own_method_name);
+                own_method_name = NULL; // Mark as destroyed
+            }
+            return false;
+        }
         data_t *own_version = ar_expression_take_ownership(own_context, ref_version_eval);
         *mut_pos += ar_expression_offset(own_context);
         

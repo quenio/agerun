@@ -373,6 +373,7 @@ static const data_t* parse_memory_access(expression_context_t *mut_ctx) {
         ACCESS_TYPE_CONTEXT
     } access_type;
     
+    
     // Determine which type of access we're dealing with
     if (match(mut_ctx, "message")) {
         access_type = ACCESS_TYPE_MESSAGE;
@@ -389,6 +390,7 @@ static const data_t* parse_memory_access(expression_context_t *mut_ctx) {
         switch (access_type) {
             case ACCESS_TYPE_MESSAGE:
                 // Return the message directly as a const pointer
+                fprintf(stderr, "DEBUG: Returning whole message\n");
                 return mut_ctx->ref_message;
             case ACCESS_TYPE_MEMORY:
                 // Return memory as const even though it's mutable internally
@@ -462,8 +464,13 @@ static const data_t* parse_memory_access(expression_context_t *mut_ctx) {
         if (ref_value) {
             // Return the value directly, not a copy
             // The caller is responsible for not destroying this reference
+            fprintf(stderr, "DEBUG: Found value at path '%s'\n", path);
             return ref_value; // Borrowed reference
+        } else {
+            fprintf(stderr, "DEBUG: Path '%s' not found in map\n", path);
         }
+    } else {
+        fprintf(stderr, "DEBUG: Source is not a map (type=%d)\n", source_type);
     }
     
     // Return NULL for missing or invalid paths

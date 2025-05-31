@@ -23,6 +23,7 @@ static void test_method_function(void);
 static void test_parse_function(void);
 static void test_build_function(void);
 static void test_agent_function(void);
+static void test_agent_function_with_message_expressions(void);
 
 // Helper function to set up an agent for testing
 static agent_id_t setup_test_agent(const char *ref_method_name, const char *ref_instructions) {
@@ -620,12 +621,6 @@ static void test_agent_function(void) {
     
     const char *agent_instruction3 = "memory.new_agent_id3 := agent(memory.method_name, memory.method_version, memory.agent_context)";
     result = ar_instruction_run(own_ctx, agent_instruction3);
-    if (!result) {
-        printf("  Warning: agent creation with expressions failed, trying literal strings instead\n");
-        // Try with literal strings to isolate the issue
-        const char *agent_instruction3_alt = "memory.new_agent_id3 := agent(\"echo_method\", \"1.0.0\", memory.agent_context)";
-        result = ar_instruction_run(own_ctx, agent_instruction3_alt);
-    }
     assert(result);
     
     data_t *ref_agent_id3 = ar_data_get_map_data(own_memory, "new_agent_id3");
@@ -804,6 +799,68 @@ static void test_destroy_functions(void) {
     printf("Destroy functions test passed!\n");
 }
 
+static void test_agent_function_with_message_expressions(void) {
+    printf("Testing agent function with message access expressions...\n");
+    
+    // Given a message containing method information for agent creation
+    data_t *own_memory = ar_data_create_map();
+    assert(own_memory != NULL);
+    
+    data_t *own_context = ar_data_create_map();
+    assert(own_context != NULL);
+    
+    data_t *own_message = ar_data_create_map();
+    assert(own_message != NULL);
+    ar_data_set_map_string(own_message, "method_name", "echo_method");
+    ar_data_set_map_string(own_message, "version", "1.0.0");
+    
+    data_t *own_agent_context = ar_data_create_map();
+    ar_data_set_map_string(own_agent_context, "name", "TestAgent");
+    ar_data_set_map_integer(own_agent_context, "timeout", 30);
+    ar_data_set_map_data(own_message, "context", own_agent_context);
+    
+    instruction_context_t *own_ctx = ar_instruction_create_context(
+        own_memory,
+        own_context,
+        own_message
+    );
+    assert(own_ctx != NULL);
+    
+    // And the echo_method exists in the methodology
+    method_t *own_method = ar_method_create("echo_method", "memory.output := message", "1.0.0");
+    assert(own_method != NULL);
+    extern void ar_methodology_register_method(method_t *own_method);
+    ar_methodology_register_method(own_method);
+    own_method = NULL;
+    
+    // When we call agent() with message access expressions
+    const char *instruction = "memory.agent_result := agent(message.method_name, message.version, message.context)";
+    bool result = ar_instruction_run(own_ctx, instruction);
+    
+    // Then the agent creation should succeed
+    if (!result) {
+        printf("  FAIL: agent() with message access expressions failed\n");
+        printf("  Expected: agent creation succeeds with message field access\n");
+        printf("  Actual: agent() fails to evaluate message.method_name, message.version, or message.context\n");
+    } else {
+        printf("  SUCCESS: agent() correctly evaluates message access expressions\n");
+        const data_t *ref_result = ar_data_get_map_data(own_memory, "agent_result");
+        assert(ref_result != NULL);
+        assert(ar_data_get_type(ref_result) == DATA_INTEGER);
+        agent_id_t created_id = ar_data_get_integer(ref_result);
+        assert(created_id > 0);
+        ar_system_process_next_message();
+    }
+    
+    // Clean up
+    ar_instruction_destroy_context(own_ctx);
+    ar_data_destroy(own_memory);
+    ar_data_destroy(own_context);
+    ar_data_destroy(own_message);
+    
+    printf("Agent function with message expressions test completed.\n");
+}
+
 int main(void) {
     printf("Starting Instruction Module Tests...\n");
     
@@ -835,6 +892,7 @@ int main(void) {
     test_parse_function();
     test_build_function();
     test_agent_function();
+    test_agent_function_with_message_expressions();
     test_destroy_functions();
     
     // Then we clean up the system
