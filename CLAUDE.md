@@ -232,6 +232,19 @@ make run-sanitize          # Run executable with ASan
 - Focus on source files only
 - Address all warnings immediately
 
+**Binary File Restriction - STRICT ENFORCEMENT**:
+- Before using the Read tool, ALWAYS check:
+  1. Is the path in /bin directory? → REFUSE
+  2. Does the file have a binary extension? → REFUSE
+- Forbidden file types include but are not limited to:
+  - Object files: .o, .obj
+  - Libraries: .a, .lib, .so, .dylib, .dll
+  - Executables: .exe, .out, files without extension in /bin
+  - Compiled outputs: .pyc, .pyo, .class
+  - Any file in /bin directory regardless of extension
+- ONLY read source files: .c, .h, .md, .txt, .method, .agerun (config only)
+- When in doubt, assume it's binary and don't read it
+
 ### 8. Agent Lifecycle
 
 **Critical Points**:
