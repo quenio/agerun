@@ -28,7 +28,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Add comprehensive tests verifying all expression contexts
 
 - [ ] Improve test infrastructure:
-  - [ ] Fix the memory access instruction tests that are currently skipped
+  - [x] Fix the memory access instruction tests that are currently skipped
   - [ ] Add better error reporting for failed instructions
   - [ ] Create helper functions for common test patterns
   
