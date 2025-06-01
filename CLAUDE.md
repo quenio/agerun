@@ -270,6 +270,41 @@ When reviewing tasks:
 - Check `TODO.md` file in repository
 - Keep CLAUDE.md updated with new guidelines
 
+### 11. Documentation Guidelines
+
+**Understand Documentation Purpose**:
+- **Developer Documentation** (README.md files in directories):
+  - SHOULD contain implementation details, patterns, and examples
+  - Intended for developers working on the codebase
+  - Example: `methods/README.md` should include test writing patterns
+  
+- **API/Module Documentation** (individual .md files):
+  - Should focus on public interface and usage
+  - Should NOT contain implementation details
+  - Example: `echo-1.0.0.md` describes the echo method's behavior, not how to test it
+
+- **Project Documentation** (root-level .md files):
+  - CLAUDE.md: Development guidelines and patterns
+  - TODO.md: Task tracking and project status
+  - README.md: Project overview and quick start
+
+**Before Modifying Documentation**:
+1. Identify the file's purpose and target audience
+2. Consider whether the content is appropriate for that audience
+3. Implementation details belong in developer-facing documentation
+4. Don't remove content without understanding why it's there
+
+**Common Documentation Patterns**:
+- Directory README files often contain implementation guidance
+- Individual component documentation focuses on usage
+- Test patterns belong in developer documentation, not API docs
+
+**Tool Result Interpretation**:
+- Don't act mechanically on tool results without understanding context
+- When tools report "issues", verify they are actually problems
+- Consider the purpose of the file before making changes
+- Question whether reported patterns are appropriate for their location
+
 ## AgeRun Language Notes
 
 - No null type - use integer 0
