@@ -321,16 +321,18 @@ When reviewing tasks:
 - Always process `__wake__` messages
 - Always process messages after sending to prevent memory leaks
 
-## Method Test Template
+## Test Fixture Templates
 
-Method tests should use the test fixture module to handle setup and teardown:
+### Method Test Template
+
+Method tests should use the method test fixture module to handle setup and teardown:
 
 ```c
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "agerun_test_fixture.h"
+#include "agerun_method_test_fixture.h"
 #include "agerun_system.h"
 #include "agerun_agent.h"
 #include "agerun_data.h"
@@ -339,18 +341,18 @@ static void test_method_example(void) {
     printf("Testing method-name functionality...\n");
     
     // Create test fixture
-    test_fixture_t *own_fixture = ar_test_fixture_create("test_name");
+    method_test_fixture_t *own_fixture = ar_method_test_fixture_create("test_name");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar_test_fixture_initialize(own_fixture));
+    assert(ar_method_test_fixture_initialize(own_fixture));
     
     // Verify correct directory
-    assert(ar_test_fixture_verify_directory(own_fixture));
+    assert(ar_method_test_fixture_verify_directory(own_fixture));
     
     // Load required methods
-    assert(ar_test_fixture_load_method(own_fixture, "method-name", 
-                                       "../methods/method-name-1.0.0.method", "1.0.0"));
+    assert(ar_method_test_fixture_load_method(own_fixture, "method-name", 
+                                              "../methods/method-name-1.0.0.method", "1.0.0"));
     
     // Create agent
     agent_id_t agent = ar_agent_create("method-name", "1.0.0", NULL);
@@ -362,10 +364,10 @@ static void test_method_example(void) {
     // ... test code ...
     
     // Check for memory leaks
-    assert(ar_test_fixture_check_memory(own_fixture));
+    assert(ar_method_test_fixture_check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar_test_fixture_destroy(own_fixture);
+    ar_method_test_fixture_destroy(own_fixture);
     
     printf("✓ Test passed\n");
 }
@@ -380,14 +382,65 @@ int main(void) {
 }
 ```
 
+### Module Test Template
+
+Module tests should use the module test fixture for internal API testing:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include "agerun_module_test_fixture.h"
+#include "agerun_system.h"
+#include "agerun_agent.h"
+#include "agerun_data.h"
+
+static void test_module_function(void) {
+    printf("Testing module functionality...\n");
+    
+    // Create test fixture
+    module_test_fixture_t *own_fixture = ar_module_test_fixture_create("test_name");
+    assert(own_fixture != NULL);
+    
+    // Initialize test environment
+    assert(ar_module_test_fixture_initialize(own_fixture));
+    
+    // Register method programmatically
+    method_t *ref_method = ar_module_test_fixture_register_method(
+        own_fixture, "test_method", "send(0, \"Response\")", "1.0.0"
+    );
+    assert(ref_method != NULL);
+    
+    // Create agent
+    agent_id_t agent = ar_agent_create("test_method", "1.0.0", NULL);
+    assert(agent > 0);
+    
+    // Process wake message
+    ar_system_process_next_message();
+    
+    // ... test code ...
+    
+    // Check for memory leaks
+    assert(ar_module_test_fixture_check_memory(own_fixture));
+    
+    // Destroy fixture (handles all cleanup)
+    ar_module_test_fixture_destroy(own_fixture);
+    
+    printf("✓ Test passed\n");
+}
+```
+
 **Key Points**:
-- Use `ar_test_fixture_create()` to create fixture with unique test name
-- Call `ar_test_fixture_initialize()` to set up clean environment
-- Use `ar_test_fixture_verify_directory()` to ensure tests run from bin/
-- Load methods with `ar_test_fixture_load_method()`
-- Always check memory with `ar_test_fixture_check_memory()`
-- Call `ar_test_fixture_destroy()` to clean up everything
-- No manual cleanup code needed - fixture handles it all
+- Method Test Fixture: For testing methods loaded from .method files
+  - Use `ar_method_test_fixture_create()` to create fixture
+  - Call `ar_method_test_fixture_verify_directory()` to ensure correct directory
+  - Load methods with `ar_method_test_fixture_load_method()`
+- Module Test Fixture: For testing internal module APIs
+  - Use `ar_module_test_fixture_create()` to create fixture
+  - Register methods with `ar_module_test_fixture_register_method()`
+  - Use `ar_module_test_fixture_reset_system()` for persistence testing
+- Both fixtures handle all cleanup automatically
 
 ## Quick Reference
 

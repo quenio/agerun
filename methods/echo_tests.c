@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "agerun_test_fixture.h"
+#include "agerun_method_test_fixture.h"
 #include "agerun_system.h"
 #include "agerun_agent.h"
 #include "agerun_data.h"
@@ -11,17 +11,17 @@ static void test_echo_simple_message(void) {
     printf("Testing echo method with simple message...\n");
     
     // Create test fixture
-    test_fixture_t *own_fixture = ar_test_fixture_create("echo_simple_message");
+    method_test_fixture_t *own_fixture = ar_method_test_fixture_create("echo_simple_message");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar_test_fixture_initialize(own_fixture));
+    assert(ar_method_test_fixture_initialize(own_fixture));
     
     // Verify correct directory
-    assert(ar_test_fixture_verify_directory(own_fixture));
+    assert(ar_method_test_fixture_verify_directory(own_fixture));
     
     // Load and register echo method
-    assert(ar_test_fixture_load_method(own_fixture, "echo", "../methods/echo-1.0.0.method", "1.0.0"));
+    assert(ar_method_test_fixture_load_method(own_fixture, "echo", "../methods/echo-1.0.0.method", "1.0.0"));
     
     // Create echo agent
     agent_id_t echo_agent = ar_agent_create("echo", "1.0.0", NULL);
@@ -65,10 +65,10 @@ static void test_echo_simple_message(void) {
     ar_agent_destroy(echo_agent);
     
     // Check for memory leaks
-    assert(ar_test_fixture_check_memory(own_fixture));
+    assert(ar_method_test_fixture_check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar_test_fixture_destroy(own_fixture);
+    ar_method_test_fixture_destroy(own_fixture);
     
     printf("PASS\n");
 }
@@ -77,17 +77,17 @@ static void test_echo_map_message(void) {
     printf("Testing echo method with map message...\n");
     
     // Create test fixture
-    test_fixture_t *own_fixture = ar_test_fixture_create("echo_map_message");
+    method_test_fixture_t *own_fixture = ar_method_test_fixture_create("echo_map_message");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar_test_fixture_initialize(own_fixture));
+    assert(ar_method_test_fixture_initialize(own_fixture));
     
     // Verify correct directory
-    assert(ar_test_fixture_verify_directory(own_fixture));
+    assert(ar_method_test_fixture_verify_directory(own_fixture));
     
     // Load and register echo method
-    assert(ar_test_fixture_load_method(own_fixture, "echo", "../methods/echo-1.0.0.method", "1.0.0"));
+    assert(ar_method_test_fixture_load_method(own_fixture, "echo", "../methods/echo-1.0.0.method", "1.0.0"));
     
     // Create echo agent
     agent_id_t echo_agent = ar_agent_create("echo", "1.0.0", NULL);
@@ -123,10 +123,10 @@ static void test_echo_map_message(void) {
     ar_agent_destroy(echo_agent);
     
     // Check for memory leaks
-    assert(ar_test_fixture_check_memory(own_fixture));
+    assert(ar_method_test_fixture_check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar_test_fixture_destroy(own_fixture);
+    ar_method_test_fixture_destroy(own_fixture);
     
     printf("PASS\n");
 }

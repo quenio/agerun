@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "agerun_test_fixture.h"
+#include "agerun_method_test_fixture.h"
 #include "agerun_system.h"
 #include "agerun_agent.h"
 #include "agerun_data.h"
@@ -11,17 +11,17 @@ static void test_calculator_add(void) {
     printf("Testing calculator method with add operation...\n");
     
     // Create test fixture
-    test_fixture_t *own_fixture = ar_test_fixture_create("calculator_add");
+    method_test_fixture_t *own_fixture = ar_method_test_fixture_create("calculator_add");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar_test_fixture_initialize(own_fixture));
+    assert(ar_method_test_fixture_initialize(own_fixture));
     
     // Verify correct directory
-    assert(ar_test_fixture_verify_directory(own_fixture));
+    assert(ar_method_test_fixture_verify_directory(own_fixture));
     
     // Load and register calculator method
-    assert(ar_test_fixture_load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
+    assert(ar_method_test_fixture_load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
     
     // Create calculator agent
     agent_id_t calc_agent = ar_agent_create("calculator", "1.0.0", NULL);
@@ -65,10 +65,10 @@ static void test_calculator_add(void) {
     ar_agent_destroy(calc_agent);
     
     // Check for memory leaks
-    assert(ar_test_fixture_check_memory(own_fixture));
+    assert(ar_method_test_fixture_check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar_test_fixture_destroy(own_fixture);
+    ar_method_test_fixture_destroy(own_fixture);
     
     printf("✓ Calculator add operation test passed\n");
 }
@@ -77,17 +77,17 @@ static void test_calculator_multiply(void) {
     printf("Testing calculator method with multiply operation...\n");
     
     // Create test fixture
-    test_fixture_t *own_fixture = ar_test_fixture_create("calculator_multiply");
+    method_test_fixture_t *own_fixture = ar_method_test_fixture_create("calculator_multiply");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar_test_fixture_initialize(own_fixture));
+    assert(ar_method_test_fixture_initialize(own_fixture));
     
     // Verify correct directory
-    assert(ar_test_fixture_verify_directory(own_fixture));
+    assert(ar_method_test_fixture_verify_directory(own_fixture));
     
     // Load and register calculator method
-    assert(ar_test_fixture_load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
+    assert(ar_method_test_fixture_load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
     
     // Create calculator agent
     agent_id_t calc_agent = ar_agent_create("calculator", "1.0.0", NULL);
@@ -130,10 +130,10 @@ static void test_calculator_multiply(void) {
     ar_agent_destroy(calc_agent);
     
     // Check for memory leaks
-    assert(ar_test_fixture_check_memory(own_fixture));
+    assert(ar_method_test_fixture_check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar_test_fixture_destroy(own_fixture);
+    ar_method_test_fixture_destroy(own_fixture);
     
     printf("✓ Calculator multiply operation test passed\n");
 }
@@ -142,17 +142,17 @@ static void test_calculator_subtract(void) {
     printf("Testing calculator method with subtract operation...\n");
     
     // Create test fixture
-    test_fixture_t *own_fixture = ar_test_fixture_create("calculator_subtract");
+    method_test_fixture_t *own_fixture = ar_method_test_fixture_create("calculator_subtract");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar_test_fixture_initialize(own_fixture));
+    assert(ar_method_test_fixture_initialize(own_fixture));
     
     // Verify correct directory
-    assert(ar_test_fixture_verify_directory(own_fixture));
+    assert(ar_method_test_fixture_verify_directory(own_fixture));
     
     // Load and register calculator method
-    assert(ar_test_fixture_load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
+    assert(ar_method_test_fixture_load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
     
     // Create calculator agent
     agent_id_t calc_agent = ar_agent_create("calculator", "1.0.0", NULL);
@@ -196,10 +196,10 @@ static void test_calculator_subtract(void) {
     ar_agent_destroy(calc_agent);
     
     // Check for memory leaks
-    assert(ar_test_fixture_check_memory(own_fixture));
+    assert(ar_method_test_fixture_check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar_test_fixture_destroy(own_fixture);
+    ar_method_test_fixture_destroy(own_fixture);
     
     printf("✓ Calculator subtract operation test passed\n");
 }
@@ -208,17 +208,17 @@ static void test_calculator_divide(void) {
     printf("Testing calculator method with divide operation...\n");
     
     // Create test fixture
-    test_fixture_t *own_fixture = ar_test_fixture_create("calculator_divide");
+    method_test_fixture_t *own_fixture = ar_method_test_fixture_create("calculator_divide");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar_test_fixture_initialize(own_fixture));
+    assert(ar_method_test_fixture_initialize(own_fixture));
     
     // Verify correct directory
-    assert(ar_test_fixture_verify_directory(own_fixture));
+    assert(ar_method_test_fixture_verify_directory(own_fixture));
     
     // Load and register calculator method
-    assert(ar_test_fixture_load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
+    assert(ar_method_test_fixture_load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
     
     // Create calculator agent
     agent_id_t calc_agent = ar_agent_create("calculator", "1.0.0", NULL);
@@ -264,10 +264,10 @@ static void test_calculator_divide(void) {
     ar_agent_destroy(calc_agent);
     
     // Check for memory leaks
-    assert(ar_test_fixture_check_memory(own_fixture));
+    assert(ar_method_test_fixture_check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar_test_fixture_destroy(own_fixture);
+    ar_method_test_fixture_destroy(own_fixture);
     
     printf("✓ Calculator divide operation test passed\n");
 }
@@ -276,17 +276,17 @@ static void test_calculator_unknown_operation(void) {
     printf("Testing calculator method with unknown operation...\n");
     
     // Create test fixture
-    test_fixture_t *own_fixture = ar_test_fixture_create("calculator_unknown");
+    method_test_fixture_t *own_fixture = ar_method_test_fixture_create("calculator_unknown");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar_test_fixture_initialize(own_fixture));
+    assert(ar_method_test_fixture_initialize(own_fixture));
     
     // Verify correct directory
-    assert(ar_test_fixture_verify_directory(own_fixture));
+    assert(ar_method_test_fixture_verify_directory(own_fixture));
     
     // Load and register calculator method
-    assert(ar_test_fixture_load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
+    assert(ar_method_test_fixture_load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
     
     // Create calculator agent
     agent_id_t calc_agent = ar_agent_create("calculator", "1.0.0", NULL);
@@ -330,10 +330,10 @@ static void test_calculator_unknown_operation(void) {
     ar_agent_destroy(calc_agent);
     
     // Check for memory leaks
-    assert(ar_test_fixture_check_memory(own_fixture));
+    assert(ar_method_test_fixture_check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar_test_fixture_destroy(own_fixture);
+    ar_method_test_fixture_destroy(own_fixture);
     
     printf("✓ Calculator unknown operation test passed\n");
 }

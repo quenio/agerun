@@ -1,11 +1,11 @@
-#ifndef AGERUN_TEST_FIXTURE_H
-#define AGERUN_TEST_FIXTURE_H
+#ifndef AGERUN_METHOD_TEST_FIXTURE_H
+#define AGERUN_METHOD_TEST_FIXTURE_H
 
 #include <stdbool.h>
 
 /**
- * @file agerun_test_fixture.h
- * @brief Test fixture module for AgeRun testing infrastructure
+ * @file agerun_method_test_fixture.h
+ * @brief Method test fixture module for AgeRun method testing infrastructure
  * 
  * This module provides a proper abstraction for test setup and teardown operations,
  * eliminating the need for helper functions scattered across test files.
@@ -13,8 +13,8 @@
  * a cohesive interface for test management.
  */
 
-/* Opaque test fixture type */
-typedef struct test_fixture_s test_fixture_t;
+/* Opaque method test fixture type */
+typedef struct method_test_fixture_s method_test_fixture_t;
 
 /**
  * Creates a new test fixture for AgeRun tests
@@ -22,14 +22,14 @@ typedef struct test_fixture_s test_fixture_t;
  * @return A newly created test fixture
  * @note Ownership: Returns an owned fixture that caller must destroy
  */
-test_fixture_t* ar_test_fixture_create(const char *ref_test_name);
+method_test_fixture_t* ar_method_test_fixture_create(const char *ref_test_name);
 
 /**
  * Destroys a test fixture and performs cleanup
  * @param own_fixture The fixture to destroy
  * @note Ownership: Takes ownership and destroys the fixture
  */
-void ar_test_fixture_destroy(test_fixture_t *own_fixture);
+void ar_method_test_fixture_destroy(method_test_fixture_t *own_fixture);
 
 /**
  * Initializes the test environment
@@ -37,7 +37,7 @@ void ar_test_fixture_destroy(test_fixture_t *own_fixture);
  * @return true if initialization succeeded, false otherwise
  * @note This ensures system is in clean state and initializes required components
  */
-bool ar_test_fixture_initialize(test_fixture_t *mut_fixture);
+bool ar_method_test_fixture_initialize(method_test_fixture_t *mut_fixture);
 
 /**
  * Loads a method file and registers it with the methodology
@@ -47,7 +47,7 @@ bool ar_test_fixture_initialize(test_fixture_t *mut_fixture);
  * @param ref_version Version string for the method
  * @return true if method was loaded and registered successfully
  */
-bool ar_test_fixture_load_method(test_fixture_t *mut_fixture,
+bool ar_method_test_fixture_load_method(method_test_fixture_t *mut_fixture,
                                 const char *ref_method_name,
                                 const char *ref_method_file,
                                 const char *ref_version);
@@ -57,20 +57,20 @@ bool ar_test_fixture_load_method(test_fixture_t *mut_fixture,
  * @param ref_fixture The fixture to use for verification
  * @return true if in correct directory, false otherwise
  */
-bool ar_test_fixture_verify_directory(const test_fixture_t *ref_fixture);
+bool ar_method_test_fixture_verify_directory(const method_test_fixture_t *ref_fixture);
 
 /**
  * Gets the test name from a fixture
  * @param ref_fixture The fixture to query
  * @return The test name (borrowed reference)
  */
-const char* ar_test_fixture_get_name(const test_fixture_t *ref_fixture);
+const char* ar_method_test_fixture_get_name(const method_test_fixture_t *ref_fixture);
 
 /**
  * Checks if there were any memory leaks during the test
  * @param ref_fixture The fixture to check
  * @return true if no memory leaks, false if leaks detected
  */
-bool ar_test_fixture_check_memory(const test_fixture_t *ref_fixture);
+bool ar_method_test_fixture_check_memory(const method_test_fixture_t *ref_fixture);
 
-#endif /* AGERUN_TEST_FIXTURE_H */
+#endif /* AGERUN_METHOD_TEST_FIXTURE_H */

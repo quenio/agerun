@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "agerun_test_fixture.h"
+#include "agerun_method_test_fixture.h"
 #include "agerun_system.h"
 #include "agerun_agent.h"
 #include "agerun_data.h"
@@ -11,18 +11,18 @@ static void test_agent_manager_create_destroy(void) {
     printf("Testing agent-manager method with create and destroy...\n");
     
     // Create test fixture
-    test_fixture_t *own_fixture = ar_test_fixture_create("agent_manager_create_destroy");
+    method_test_fixture_t *own_fixture = ar_method_test_fixture_create("agent_manager_create_destroy");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar_test_fixture_initialize(own_fixture));
+    assert(ar_method_test_fixture_initialize(own_fixture));
     
     // Verify correct directory
-    assert(ar_test_fixture_verify_directory(own_fixture));
+    assert(ar_method_test_fixture_verify_directory(own_fixture));
     
     // Load required methods
-    assert(ar_test_fixture_load_method(own_fixture, "echo", "../methods/echo-1.0.0.method", "1.0.0"));
-    assert(ar_test_fixture_load_method(own_fixture, "agent-manager", "../methods/agent-manager-1.0.0.method", "1.0.0"));
+    assert(ar_method_test_fixture_load_method(own_fixture, "echo", "../methods/echo-1.0.0.method", "1.0.0"));
+    assert(ar_method_test_fixture_load_method(own_fixture, "agent-manager", "../methods/agent-manager-1.0.0.method", "1.0.0"));
     
     // Create agent-manager agent
     agent_id_t manager_agent = ar_agent_create("agent-manager", "1.0.0", NULL);
@@ -113,10 +113,10 @@ static void test_agent_manager_create_destroy(void) {
     }
     
     // Check for memory leaks
-    assert(ar_test_fixture_check_memory(own_fixture));
+    assert(ar_method_test_fixture_check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar_test_fixture_destroy(own_fixture);
+    ar_method_test_fixture_destroy(own_fixture);
     
     printf("✓ Agent manager create and destroy test passed\n");
 }
@@ -125,17 +125,17 @@ static void test_agent_manager_invalid_action(void) {
     printf("Testing agent-manager method with invalid action...\n");
     
     // Create test fixture
-    test_fixture_t *own_fixture = ar_test_fixture_create("agent_manager_invalid_action");
+    method_test_fixture_t *own_fixture = ar_method_test_fixture_create("agent_manager_invalid_action");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar_test_fixture_initialize(own_fixture));
+    assert(ar_method_test_fixture_initialize(own_fixture));
     
     // Verify correct directory
-    assert(ar_test_fixture_verify_directory(own_fixture));
+    assert(ar_method_test_fixture_verify_directory(own_fixture));
     
     // Load agent-manager method
-    assert(ar_test_fixture_load_method(own_fixture, "agent-manager", "../methods/agent-manager-1.0.0.method", "1.0.0"));
+    assert(ar_method_test_fixture_load_method(own_fixture, "agent-manager", "../methods/agent-manager-1.0.0.method", "1.0.0"));
     
     // Create agent-manager agent
     agent_id_t manager_agent = ar_agent_create("agent-manager", "1.0.0", NULL);
@@ -178,10 +178,10 @@ static void test_agent_manager_invalid_action(void) {
     }
     
     // Check for memory leaks
-    assert(ar_test_fixture_check_memory(own_fixture));
+    assert(ar_method_test_fixture_check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar_test_fixture_destroy(own_fixture);
+    ar_method_test_fixture_destroy(own_fixture);
     
     printf("✓ Agent manager invalid action test passed\n");
 }

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "agerun_test_fixture.h"
+#include "agerun_method_test_fixture.h"
 #include "agerun_system.h"
 #include "agerun_agent.h"
 #include "agerun_agency.h"
@@ -12,17 +12,17 @@ static void test_grade_evaluator_grades(void) {
     printf("Testing grade-evaluator method with grade evaluation...\n");
     
     // Create test fixture
-    test_fixture_t *own_fixture = ar_test_fixture_create("grade_evaluator_grades");
+    method_test_fixture_t *own_fixture = ar_method_test_fixture_create("grade_evaluator_grades");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar_test_fixture_initialize(own_fixture));
+    assert(ar_method_test_fixture_initialize(own_fixture));
     
     // Verify correct directory
-    assert(ar_test_fixture_verify_directory(own_fixture));
+    assert(ar_method_test_fixture_verify_directory(own_fixture));
     
     // Load and register grade-evaluator method
-    assert(ar_test_fixture_load_method(own_fixture, "grade-evaluator", "../methods/grade-evaluator-1.0.0.method", "1.0.0"));
+    assert(ar_method_test_fixture_load_method(own_fixture, "grade-evaluator", "../methods/grade-evaluator-1.0.0.method", "1.0.0"));
     
     // Create grade-evaluator agent
     agent_id_t evaluator_agent = ar_agent_create("grade-evaluator", "1.0.0", NULL);
@@ -143,10 +143,10 @@ static void test_grade_evaluator_grades(void) {
     assert(strcmp(ar_data_get_string(grade), "F") == 0);
     
     // Check for memory leaks
-    assert(ar_test_fixture_check_memory(own_fixture));
+    assert(ar_method_test_fixture_check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar_test_fixture_destroy(own_fixture);
+    ar_method_test_fixture_destroy(own_fixture);
     
     printf("✓ Grade evaluator grades test passed\n");
 }
@@ -155,17 +155,17 @@ static void test_grade_evaluator_status(void) {
     printf("Testing grade-evaluator method with status evaluation...\n");
     
     // Create test fixture
-    test_fixture_t *own_fixture = ar_test_fixture_create("grade_evaluator_status");
+    method_test_fixture_t *own_fixture = ar_method_test_fixture_create("grade_evaluator_status");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar_test_fixture_initialize(own_fixture));
+    assert(ar_method_test_fixture_initialize(own_fixture));
     
     // Verify correct directory
-    assert(ar_test_fixture_verify_directory(own_fixture));
+    assert(ar_method_test_fixture_verify_directory(own_fixture));
     
     // Load and register grade-evaluator method
-    assert(ar_test_fixture_load_method(own_fixture, "grade-evaluator", "../methods/grade-evaluator-1.0.0.method", "1.0.0"));
+    assert(ar_method_test_fixture_load_method(own_fixture, "grade-evaluator", "../methods/grade-evaluator-1.0.0.method", "1.0.0"));
     
     // Create grade-evaluator agent
     agent_id_t evaluator_agent = ar_agent_create("grade-evaluator", "1.0.0", NULL);
@@ -249,10 +249,10 @@ static void test_grade_evaluator_status(void) {
     assert(strcmp(ar_data_get_string(result), "unknown") == 0);
     
     // Check for memory leaks
-    assert(ar_test_fixture_check_memory(own_fixture));
+    assert(ar_method_test_fixture_check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar_test_fixture_destroy(own_fixture);
+    ar_method_test_fixture_destroy(own_fixture);
     
     printf("✓ Grade evaluator status test passed\n");
 }
