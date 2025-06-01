@@ -169,19 +169,20 @@ The method test fixture module provides a proper abstraction for method test set
 - **Opaque Type**: Method test fixture structure is opaque, following Parnas principles
 - **Depends on Core Modules**: Uses system, methodology, agency, IO, and heap modules
 
-### Module Test Fixture Module (`agerun_module_test_fixture`)
+### System Test Fixture Module (`agerun_system_test_fixture`)
 
-The module test fixture module provides a proper abstraction for module test setup and teardown operations:
+The system test fixture module provides a proper abstraction for system module test setup and teardown operations:
 
-- **Module Test Lifecycle Management**: Encapsulates complete test lifecycle for internal module tests
-- **System State Initialization**: Ensures clean system state for each module test run
+- **System Test Lifecycle Management**: Encapsulates complete test lifecycle for system module tests
+- **System State Initialization**: Ensures clean system state for each system module test run
 - **Method Registration**: Provides abstraction for creating and registering methods programmatically
 - **System Reset**: Supports resetting system state for persistence testing scenarios
-- **Memory Leak Detection**: Tracks allocations and reports memory leaks per module test
-- **Persistence Cleanup**: Automatically removes persistence files between module tests
+- **Memory Leak Detection**: Tracks allocations and reports memory leaks per system module test
+- **Persistence Cleanup**: Automatically removes persistence files between system module tests
 - **No Helper Functions**: Proper module abstraction eliminating need for scattered helpers
-- **Opaque Type**: Module test fixture structure is opaque, following Parnas principles
-- **Depends on Core Modules**: Uses system, methodology, agency, and heap modules
+- **Opaque Type**: System test fixture structure is opaque, following Parnas principles
+- **Designed for System Modules**: Used by agent, method, instruction, methodology, and system module tests
+- **Not for Core Modules**: Core modules (string, list, map, etc.) test in isolation without fixtures
 
 ### String Module (`agerun_string`)
 

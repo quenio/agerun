@@ -1,4 +1,4 @@
-#include "agerun_module_test_fixture.h"
+#include "agerun_system_test_fixture.h"
 #include "agerun_heap.h"
 #include "agerun_system.h"
 #include "agerun_agency.h"
@@ -9,22 +9,22 @@
 #include <unistd.h>
 
 /**
- * @file agerun_module_test_fixture.c
- * @brief Implementation of module test fixture for AgeRun module testing
+ * @file agerun_system_test_fixture.c
+ * @brief Implementation of system test fixture for AgeRun system module testing
  */
 
-/* Module test fixture structure */
-struct module_test_fixture_s {
+/* System test fixture structure */
+struct system_test_fixture_s {
     char *own_test_name;          /* Name of the test */
     bool initialized;             /* Whether fixture has been initialized */
 };
 
-module_test_fixture_t* ar_module_test_fixture_create(const char *ref_test_name) {
+system_test_fixture_t* ar_system_test_fixture_create(const char *ref_test_name) {
     if (!ref_test_name) {
         return NULL;
     }
     
-    module_test_fixture_t *own_fixture = AR_HEAP_MALLOC(sizeof(module_test_fixture_t), "Module test fixture");
+    system_test_fixture_t *own_fixture = AR_HEAP_MALLOC(sizeof(system_test_fixture_t), "System test fixture");
     if (!own_fixture) {
         return NULL;
     }
@@ -40,7 +40,7 @@ module_test_fixture_t* ar_module_test_fixture_create(const char *ref_test_name) 
     return own_fixture; // Ownership transferred to caller
 }
 
-void ar_module_test_fixture_destroy(module_test_fixture_t *own_fixture) {
+void ar_system_test_fixture_destroy(system_test_fixture_t *own_fixture) {
     if (!own_fixture) {
         return;
     }
@@ -60,7 +60,7 @@ void ar_module_test_fixture_destroy(module_test_fixture_t *own_fixture) {
     AR_HEAP_FREE(own_fixture);
 }
 
-bool ar_module_test_fixture_initialize(module_test_fixture_t *mut_fixture) {
+bool ar_system_test_fixture_initialize(system_test_fixture_t *mut_fixture) {
     if (!mut_fixture) {
         return false;
     }
@@ -84,7 +84,7 @@ bool ar_module_test_fixture_initialize(module_test_fixture_t *mut_fixture) {
     return true;
 }
 
-method_t* ar_module_test_fixture_register_method(module_test_fixture_t *mut_fixture,
+method_t* ar_system_test_fixture_register_method(system_test_fixture_t *mut_fixture,
                                                 const char *ref_method_name,
                                                 const char *ref_instructions,
                                                 const char *ref_version) {
@@ -111,7 +111,7 @@ method_t* ar_module_test_fixture_register_method(module_test_fixture_t *mut_fixt
     return own_method;
 }
 
-const char* ar_module_test_fixture_get_name(const module_test_fixture_t *ref_fixture) {
+const char* ar_system_test_fixture_get_name(const system_test_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return NULL;
     }
@@ -119,7 +119,7 @@ const char* ar_module_test_fixture_get_name(const module_test_fixture_t *ref_fix
     return ref_fixture->own_test_name;
 }
 
-bool ar_module_test_fixture_check_memory(const module_test_fixture_t *ref_fixture) {
+bool ar_system_test_fixture_check_memory(const system_test_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return false;
     }
@@ -131,7 +131,7 @@ bool ar_module_test_fixture_check_memory(const module_test_fixture_t *ref_fixtur
     return true;
 }
 
-void ar_module_test_fixture_reset_system(module_test_fixture_t *mut_fixture) {
+void ar_system_test_fixture_reset_system(system_test_fixture_t *mut_fixture) {
     if (!mut_fixture || !mut_fixture->initialized) {
         return;
     }

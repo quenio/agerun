@@ -382,32 +382,32 @@ int main(void) {
 }
 ```
 
-### Module Test Template
+### System Module Test Template
 
-Module tests should use the module test fixture for internal API testing:
+System module tests should use the system test fixture for testing modules that require the full runtime:
 
 ```c
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "agerun_module_test_fixture.h"
+#include "agerun_system_test_fixture.h"
 #include "agerun_system.h"
 #include "agerun_agent.h"
 #include "agerun_data.h"
 
-static void test_module_function(void) {
-    printf("Testing module functionality...\n");
+static void test_system_module_function(void) {
+    printf("Testing system module functionality...\n");
     
     // Create test fixture
-    module_test_fixture_t *own_fixture = ar_module_test_fixture_create("test_name");
+    system_test_fixture_t *own_fixture = ar_system_test_fixture_create("test_name");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar_module_test_fixture_initialize(own_fixture));
+    assert(ar_system_test_fixture_initialize(own_fixture));
     
     // Register method programmatically
-    method_t *ref_method = ar_module_test_fixture_register_method(
+    method_t *ref_method = ar_system_test_fixture_register_method(
         own_fixture, "test_method", "send(0, \"Response\")", "1.0.0"
     );
     assert(ref_method != NULL);
@@ -422,10 +422,10 @@ static void test_module_function(void) {
     // ... test code ...
     
     // Check for memory leaks
-    assert(ar_module_test_fixture_check_memory(own_fixture));
+    assert(ar_system_test_fixture_check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar_module_test_fixture_destroy(own_fixture);
+    ar_system_test_fixture_destroy(own_fixture);
     
     printf("✓ Test passed\n");
 }
@@ -436,10 +436,11 @@ static void test_module_function(void) {
   - Use `ar_method_test_fixture_create()` to create fixture
   - Call `ar_method_test_fixture_verify_directory()` to ensure correct directory
   - Load methods with `ar_method_test_fixture_load_method()`
-- Module Test Fixture: For testing internal module APIs
-  - Use `ar_module_test_fixture_create()` to create fixture
-  - Register methods with `ar_module_test_fixture_register_method()`
-  - Use `ar_module_test_fixture_reset_system()` for persistence testing
+- System Test Fixture: For testing system modules (agent, method, instruction, etc.)
+  - Use `ar_system_test_fixture_create()` to create fixture
+  - Register methods with `ar_system_test_fixture_register_method()`
+  - Use `ar_system_test_fixture_reset_system()` for persistence testing
+  - NOT for core modules (string, list, map, heap, assert, semver, data, io)
 - Both fixtures handle all cleanup automatically
 
 ## Quick Reference
