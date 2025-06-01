@@ -165,11 +165,12 @@ make run-sanitize          # Run executable with ASan
 
 **Code Modification Process**:
 1. Check the module's documentation (e.g., `agerun_module.md`) before making changes
-2. Understand codebase structure and dependencies
-3. Make incremental changes with frequent compilation
-4. Complete one functional area before moving to next
-5. Verify each change with tests
-6. Update module documentation if the public API changes
+2. Check the module's tests (e.g., `agerun_module_tests.c`) to understand expected behavior
+3. Understand codebase structure and dependencies
+4. Make incremental changes with frequent compilation
+5. Complete one functional area before moving to next
+6. Verify each change with tests
+7. Update module documentation if the public API changes
 
 **Opaque Types**:
 - Forward declare in header: `typedef struct name_s name_t;`
@@ -183,6 +184,7 @@ make run-sanitize          # Run executable with ASan
 
 **Best Practices**:
 - Always read module documentation before modifying code
+- Always review module tests to understand expected behavior
 - Make incremental changes with frequent compilation
 - Remove unused functions immediately
 - Handle all compiler warnings (-Wall -Werror)
