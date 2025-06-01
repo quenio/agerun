@@ -164,10 +164,12 @@ make run-sanitize          # Run executable with ASan
 ### 5. Module Development
 
 **Code Modification Process**:
-1. Understand codebase structure and dependencies
-2. Make incremental changes with frequent compilation
-3. Complete one functional area before moving to next
-4. Verify each change with tests
+1. Check the module's documentation (e.g., `agerun_module.md`) before making changes
+2. Understand codebase structure and dependencies
+3. Make incremental changes with frequent compilation
+4. Complete one functional area before moving to next
+5. Verify each change with tests
+6. Update module documentation if the public API changes
 
 **Opaque Types**:
 - Forward declare in header: `typedef struct name_s name_t;`
@@ -180,11 +182,13 @@ make run-sanitize          # Run executable with ASan
 - Handle NULL checks consistently
 
 **Best Practices**:
+- Always read module documentation before modifying code
 - Make incremental changes with frequent compilation
 - Remove unused functions immediately
 - Handle all compiler warnings (-Wall -Werror)
 - Update documentation with code changes
   - Update modules/README.md when creating new modules
+  - Update module's .md file if API changes
 - Avoid code smells (see below)
 - When showing code, provide only the raw code without commentary
 
