@@ -94,14 +94,54 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Method Development
 
-- [ ] Create additional method files (USING TDD):
-  - [ ] string-builder-1.0.0.method - concatenate strings with separators
-  - [ ] message-router-1.0.0.method - route messages based on type/content
-  - [ ] grade-evaluator-1.0.0.method - evaluate numeric grades and return letter grades
-  - [ ] agent-manager-1.0.0.method - manage creation/destruction of other agents
-  - [ ] method-creator-1.0.0.method - dynamically create new methods
-  - [ ] Write tests FIRST for each new method
-  - [ ] Document each method's behavior and use cases
+- [x] Create additional method files (USING TDD):
+  - [x] string-builder-1.0.0.method - concatenate strings with separators
+  - [x] message-router-1.0.0.method - route messages based on type/content
+  - [x] grade-evaluator-1.0.0.method - evaluate numeric grades and return letter grades
+  - [x] agent-manager-1.0.0.method - manage creation/destruction of other agents
+  - [x] method-creator-1.0.0.method - dynamically create new methods
+  - [x] Write tests FIRST for each new method
+  - [x] Document each method's behavior and use cases
+
+## Test Infrastructure - System Test Fixture Migration
+
+### High Priority (System modules that need runtime)
+- [ ] Migrate agerun_instruction_tests.c to use system test fixture
+  - [ ] Would eliminate extensive boilerplate for method registration
+  - [ ] Tests create many methods programmatically
+  - [ ] Uses system initialization/shutdown repeatedly
+  
+- [ ] Migrate agerun_agent_tests.c to use system test fixture
+  - [ ] Currently uses manual system init/shutdown
+  - [ ] Creates and registers methods programmatically
+  - [ ] Core system functionality testing
+  
+- [ ] Migrate agerun_method_tests.c to use system test fixture
+  - [ ] Tests method execution requiring full runtime
+  - [ ] Creates multiple test methods programmatically
+  - [ ] Would benefit from fixture's method registration
+
+### Medium Priority
+- [ ] Migrate agerun_methodology_tests.c to use system test fixture
+  - [ ] Tests method registration and versioning
+  - [ ] Tests persistence features needing system reset
+  - [ ] Would benefit from fixture's cleanup handling
+  
+- [ ] Migrate agerun_agency_tests.c to use system test fixture
+  - [ ] Creates agents and methods for testing
+  - [ ] Tests agent registry functionality
+  - [ ] Uses system initialization/shutdown
+  
+- [ ] Migrate agerun_system_tests.c to use system test fixture
+  - [ ] Tests the system module itself
+  - [ ] Creates methods and agents
+  - [ ] Would benefit from consistent environment setup
+
+### Low Priority
+- [ ] Migrate agerun_executable_tests.c to use system test fixture
+  - [ ] Tests process execution
+  - [ ] Uses system initialization/shutdown
+  - [ ] Less complex but would still benefit
 
 ## Code Quality - Instruction Module Refactoring
 
