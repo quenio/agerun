@@ -169,15 +169,17 @@ When creating a new method, also create a corresponding test file. The test shou
 
 1. Include necessary headers:
    ```c
+   #include <stdio.h>
+   #include <stdlib.h>
+   #include <string.h>
+   #include <assert.h>
+   #include "agerun_test_fixture.h"
    #include "agerun_system.h"
    #include "agerun_agent.h"
-   #include "agerun_methodology.h"
    #include "agerun_data.h"
-   #include "agerun_io.h"
-   #include "agerun_heap.h"
    ```
 
-2. Implement a `read_method_file()` helper function to load the method
+2. Use the test fixture module for setup and teardown (no helper functions needed)
 
 3. Create test functions for different scenarios:
    - Basic functionality tests
@@ -186,7 +188,7 @@ When creating a new method, also create a corresponding test file. The test shou
 
 4. Use assertions to verify expected behavior
 
-5. Clean up all resources to maintain zero memory leaks
+5. Use `ar_test_fixture_check_memory()` to ensure zero memory leaks
 
 ### Example Test Pattern
 
@@ -194,16 +196,22 @@ When creating a new method, also create a corresponding test file. The test shou
 static void test_method_basic(void) {
     printf("Testing method basic functionality...\n");
     
-    // Given the method file
-    char *own_instructions = read_method_file("../methods/method-1.0.0.method");
-    assert(own_instructions != NULL);
+    // Create test fixture
+    test_fixture_t *own_fixture = ar_test_fixture_create("method_basic");
+    assert(own_fixture != NULL);
     
-    // When we create the method and initialize the system
-    bool method_created = ar_methodology_create_method("method", own_instructions, "1.0.0");
-    assert(method_created);
-    AR_HEAP_FREE(own_instructions);
+    // Initialize test environment
+    assert(ar_test_fixture_initialize(own_fixture));
     
-    agent_id_t agent = ar_system_init("method", "1.0.0");
+    // Verify correct directory
+    assert(ar_test_fixture_verify_directory(own_fixture));
+    
+    // Load method
+    assert(ar_test_fixture_load_method(own_fixture, "method-name", 
+                                       "../methods/method-name-1.0.0.method", "1.0.0"));
+    
+    // Create agent
+    agent_id_t agent = ar_agent_create("method-name", "1.0.0", NULL);
     assert(agent > 0);
     
     // Process wake message
@@ -213,6 +221,7 @@ static void test_method_basic(void) {
     data_t *own_message = ar_data_create_string("test");
     bool sent = ar_agent_send(agent, own_message);
     assert(sent);
+    own_message = NULL; // Ownership transferred
     
     // Process the message
     bool processed = ar_system_process_next_message();
@@ -221,11 +230,22 @@ static void test_method_basic(void) {
     // Then verify expected behavior
     // ...
     
-    // Cleanup
-    ar_system_shutdown();
-    ar_methodology_cleanup();
+    // Check for memory leaks
+    assert(ar_test_fixture_check_memory(own_fixture));
+    
+    // Destroy fixture (handles all cleanup)
+    ar_test_fixture_destroy(own_fixture);
     
     printf("✓ Method basic test passed\n");
+}
+
+int main(void) {
+    printf("Running method-name tests...\n\n");
+    
+    test_method_basic();
+    
+    printf("\nAll tests passed!\n");
+    return 0;
 }
 ```
 
