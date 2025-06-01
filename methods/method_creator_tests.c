@@ -2,80 +2,29 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <unistd.h>
+#include "agerun_test_fixture.h"
 #include "agerun_system.h"
 #include "agerun_agent.h"
-#include "agerun_agency.h"
-#include "agerun_methodology.h"
 #include "agerun_data.h"
-#include "agerun_io.h"
-#include "agerun_heap.h"
-
-/**
- * Reads a method file and returns its contents as a string
- * @param ref_filename Path to the method file
- * @return Newly allocated string with file contents, or NULL on error
- * @note Ownership: Returns an owned string that caller must free
- */
-static char* read_method_file(const char *ref_filename) {
-    FILE *fp = NULL;
-    file_result_t result = ar_io_open_file(ref_filename, "r", &fp);
-    if (result != FILE_SUCCESS) {
-        ar_io_error("Failed to open method file %s: %s\n", 
-                    ref_filename, ar_io_error_message(result));
-        return NULL;
-    }
-    
-    // Get file size
-    fseek(fp, 0, SEEK_END);
-    long file_size = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-    
-    // Allocate buffer
-    char *own_content = (char*)AR_HEAP_MALLOC((size_t)(file_size + 1), "Method file content");
-    if (!own_content) {
-        ar_io_close_file(fp, ref_filename);
-        return NULL;
-    }
-    
-    // Read file
-    size_t bytes_read = fread(own_content, 1, (size_t)file_size, fp);
-    own_content[bytes_read] = '\0';
-    
-    ar_io_close_file(fp, ref_filename);
-    return own_content; // Ownership transferred to caller
-}
 
 static void test_method_creator_create_simple(void) {
     printf("Testing method-creator method with simple method creation...\n");
     
-    // Clean up from any previous tests
-    ar_system_shutdown();
-    ar_methodology_cleanup();
-    ar_agency_reset();
+    // Create test fixture
+    test_fixture_t *own_fixture = ar_test_fixture_create("method_creator_create_simple");
+    assert(own_fixture != NULL);
     
-    // Remove any .agerun files from current directory (should be bin/)
-    remove("methodology.agerun");
-    remove("agency.agerun");
+    // Initialize test environment
+    assert(ar_test_fixture_initialize(own_fixture));
     
-    // Given the method-creator method file
-    char *own_instructions = read_method_file("../methods/method-creator-1.0.0.method");
-    assert(own_instructions != NULL);
+    // Verify correct directory
+    assert(ar_test_fixture_verify_directory(own_fixture));
     
-    // When we create the method and initialize the system
-    bool method_created = ar_methodology_create_method("method-creator", own_instructions, "1.0.0");
-    assert(method_created);
-    AR_HEAP_FREE(own_instructions);
-    own_instructions = NULL;
+    // Load method-creator method
+    assert(ar_test_fixture_load_method(own_fixture, "method-creator", "../methods/method-creator-1.0.0.method", "1.0.0"));
     
-    agent_id_t creator_agent = ar_system_init("method-creator", "1.0.0");
-    if (creator_agent == 0) {
-        // System already initialized, create agent directly
-        creator_agent = ar_agent_create("method-creator", "1.0.0", NULL);
-        // Send wake message manually
-        data_t *own_wake = ar_data_create_string("__wake__");
-        ar_agent_send(creator_agent, own_wake);
-    }
+    // Create method-creator agent
+    agent_id_t creator_agent = ar_agent_create("method-creator", "1.0.0", NULL);
     assert(creator_agent > 0);
     
     // Process wake message
@@ -127,10 +76,11 @@ static void test_method_creator_create_simple(void) {
         }
     }
     
-    // Cleanup
-    ar_system_shutdown();
-    ar_methodology_cleanup();
-    ar_agency_reset();
+    // Check for memory leaks
+    assert(ar_test_fixture_check_memory(own_fixture));
+    
+    // Destroy fixture (handles all cleanup)
+    ar_test_fixture_destroy(own_fixture);
     
     printf("✓ Method creator create simple test passed\n");
 }
@@ -138,29 +88,21 @@ static void test_method_creator_create_simple(void) {
 static void test_method_creator_invalid_syntax(void) {
     printf("Testing method-creator method with invalid syntax...\n");
     
-    // Clean up from previous test
-    ar_system_shutdown();
-    ar_methodology_cleanup();
-    ar_agency_reset();
+    // Create test fixture
+    test_fixture_t *own_fixture = ar_test_fixture_create("method_creator_invalid_syntax");
+    assert(own_fixture != NULL);
     
-    // Given the method-creator method file
-    char *own_instructions = read_method_file("../methods/method-creator-1.0.0.method");
-    assert(own_instructions != NULL);
+    // Initialize test environment
+    assert(ar_test_fixture_initialize(own_fixture));
     
-    // When we create the method and initialize the system
-    bool method_created = ar_methodology_create_method("method-creator", own_instructions, "1.0.0");
-    assert(method_created);
-    AR_HEAP_FREE(own_instructions);
-    own_instructions = NULL;
+    // Verify correct directory
+    assert(ar_test_fixture_verify_directory(own_fixture));
     
-    agent_id_t creator_agent = ar_system_init("method-creator", "1.0.0");
-    if (creator_agent == 0) {
-        // System already initialized, create agent directly
-        creator_agent = ar_agent_create("method-creator", "1.0.0", NULL);
-        // Send wake message manually
-        data_t *own_wake = ar_data_create_string("__wake__");
-        ar_agent_send(creator_agent, own_wake);
-    }
+    // Load method-creator method
+    assert(ar_test_fixture_load_method(own_fixture, "method-creator", "../methods/method-creator-1.0.0.method", "1.0.0"));
+    
+    // Create method-creator agent
+    agent_id_t creator_agent = ar_agent_create("method-creator", "1.0.0", NULL);
     assert(creator_agent > 0);
     
     // Process wake message
@@ -208,37 +150,17 @@ static void test_method_creator_invalid_syntax(void) {
         }
     }
     
-    // Cleanup
-    ar_system_shutdown();
-    ar_methodology_cleanup();
-    ar_agency_reset();
+    // Check for memory leaks
+    assert(ar_test_fixture_check_memory(own_fixture));
+    
+    // Destroy fixture (handles all cleanup)
+    ar_test_fixture_destroy(own_fixture);
     
     printf("✓ Method creator invalid syntax test passed\n");
 }
 
 int main(void) {
     printf("Running method-creator method tests...\n\n");
-    
-    // Verify we're running from the bin directory
-    char cwd[1024];
-    if (getcwd(cwd, sizeof(cwd)) != NULL) {
-        printf("Current directory: %s\n", cwd);
-        // Check if we're in a directory ending with /bin
-        size_t len = strlen(cwd);
-        if (len < 4 || strcmp(cwd + len - 4, "/bin") != 0) {
-            fprintf(stderr, "ERROR: Tests must be run from the bin directory!\n");
-            fprintf(stderr, "Current directory: %s\n", cwd);
-            return 1;
-        }
-    } else {
-        perror("getcwd() error");
-        return 1;
-    }
-    
-    // Ensure clean state before starting tests
-    ar_system_shutdown();
-    ar_methodology_cleanup();
-    ar_agency_reset();
     
     test_method_creator_create_simple();
     test_method_creator_invalid_syntax();
