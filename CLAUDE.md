@@ -128,6 +128,7 @@ make run-sanitize          # Run executable with ASan
   - C standard requires newline at EOF
   - Missing newlines cause compiler errors with -Wall -Werror
   - Always verify file ends with '\n' after edits
+  - Use `./add_newline.sh <filename>` helper script to ensure proper EOF
 - Function prefix: `ar_`
 - Type suffix: `_t`
 
@@ -281,32 +282,71 @@ When reviewing tasks:
 
 ## Method Test Template
 
-```c
-#include <unistd.h>
-// ... other includes ...
+Method tests should use the test fixture module to handle setup and teardown:
 
-// Directory check
-char cwd[1024];
-if (getcwd(cwd, sizeof(cwd)) != NULL) {
-    size_t len = strlen(cwd);
-    if (len < 4 || strcmp(cwd + len - 4, "/bin") != 0) {
-        fprintf(stderr, "ERROR: Tests must be run from the bin directory!\n");
-        return 1;
-    }
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include "agerun_test_fixture.h"
+#include "agerun_system.h"
+#include "agerun_agent.h"
+#include "agerun_data.h"
+
+static void test_method_example(void) {
+    printf("Testing method-name functionality...\n");
+    
+    // Create test fixture
+    test_fixture_t *own_fixture = ar_test_fixture_create("test_name");
+    assert(own_fixture != NULL);
+    
+    // Initialize test environment
+    assert(ar_test_fixture_initialize(own_fixture));
+    
+    // Verify correct directory
+    assert(ar_test_fixture_verify_directory(own_fixture));
+    
+    // Load required methods
+    assert(ar_test_fixture_load_method(own_fixture, "method-name", 
+                                       "../methods/method-name-1.0.0.method", "1.0.0"));
+    
+    // Create agent
+    agent_id_t agent = ar_agent_create("method-name", "1.0.0", NULL);
+    assert(agent > 0);
+    
+    // Process wake message
+    ar_system_process_next_message();
+    
+    // ... test code ...
+    
+    // Check for memory leaks
+    assert(ar_test_fixture_check_memory(own_fixture));
+    
+    // Destroy fixture (handles all cleanup)
+    ar_test_fixture_destroy(own_fixture);
+    
+    printf("✓ Test passed\n");
 }
 
-// Clean state
-ar_system_shutdown();
-ar_methodology_cleanup();
-ar_agency_reset();
-remove("methodology.agerun");
-remove("agency.agerun");
-
-// ... test code ...
-
-// Initialize system after creating methods
-ar_system_init(NULL, NULL);
+int main(void) {
+    printf("Running method-name tests...\n\n");
+    
+    test_method_example();
+    
+    printf("\nAll tests passed!\n");
+    return 0;
+}
 ```
+
+**Key Points**:
+- Use `ar_test_fixture_create()` to create fixture with unique test name
+- Call `ar_test_fixture_initialize()` to set up clean environment
+- Use `ar_test_fixture_verify_directory()` to ensure tests run from bin/
+- Load methods with `ar_test_fixture_load_method()`
+- Always check memory with `ar_test_fixture_check_memory()`
+- Call `ar_test_fixture_destroy()` to clean up everything
+- No manual cleanup code needed - fixture handles it all
 
 ## Quick Reference
 
