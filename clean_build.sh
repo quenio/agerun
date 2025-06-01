@@ -62,6 +62,8 @@ if output=$(make run 2>&1); then
     echo "Executable: ✓"
     # Show just the program output
     echo "$output" | grep -v "make\[" | head -5
+    # Clean up persistence files created by executable
+    rm -f bin/*.agerun
 else
     echo "Executable: ✗"
 fi
