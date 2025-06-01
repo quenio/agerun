@@ -184,6 +184,21 @@ The system test fixture module provides a proper abstraction for system module t
 - **Designed for System Modules**: Used by agent, method, instruction, methodology, and system module tests
 - **Not for Core Modules**: Core modules (string, list, map, etc.) test in isolation without fixtures
 
+### Foundation Test Fixture Module (`agerun_foundation_test_fixture`)
+
+The foundation test fixture module provides a proper abstraction for foundation module test patterns:
+
+- **Expression Context Management**: Creates and tracks expression contexts with pre-populated test data
+- **Test Data Builders**: Provides common test data structures (maps, lists) with standard values
+- **Resource Tracking**: Automatically tracks and destroys all created data objects and contexts
+- **Memory Leak Detection**: Ensures all test resources are properly cleaned up
+- **No System Dependencies**: Works without system initialization, unlike system test fixture
+- **Lightweight Design**: Focused on data creation patterns common to foundation modules
+- **No Helper Functions**: Proper module abstraction eliminating repetitive setup code
+- **Opaque Type**: Foundation test fixture structure is opaque, following Parnas principles
+- **Designed for Foundation Modules**: Used by data, expression, and instruction module tests
+- **Reduces Boilerplate**: Eliminates 39+ expression context creations and 22+ map creations
+
 ### String Module (`agerun_string`)
 
 The [string module](agerun_string.md) provides utility functions for string manipulation with the following features:

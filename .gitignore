@@ -64,4 +64,5 @@ bin/
 
 # Debug logs
 debug*.log
+heap_memory_report.log
 **/.claude/settings.local.json

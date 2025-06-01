@@ -143,6 +143,30 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Uses system initialization/shutdown
   - [ ] Less complex but would still benefit
 
+## Test Infrastructure - Foundation Test Fixture Migration
+
+**Note**: Foundation test fixture is for foundation modules (data, expression, instruction) that don't require full system initialization. It provides common test data patterns and automatic cleanup without the overhead of system runtime.
+
+### High Priority
+- [ ] Migrate agerun_expression_tests.c to use foundation test fixture
+  - [ ] Currently has 39 expression context creations with repetitive setup
+  - [ ] Many tests create NULL contexts with literals only
+  - [ ] Would eliminate boilerplate for expression evaluation tests
+  - [ ] Would provide consistent test data for memory/context/message access tests
+
+### Medium Priority  
+- [ ] Migrate agerun_data_tests.c to use foundation test fixture
+  - [ ] Currently has 22 map creations with common test patterns
+  - [ ] Would provide standard test maps (user, config, etc.)
+  - [ ] Would simplify list and map manipulation tests
+  - [ ] Would handle cleanup automatically
+
+- [ ] Migrate agerun_instruction_tests.c to use foundation test fixture
+  - [ ] Currently has 12 instruction context creations
+  - [ ] Requires memory maps for assignment tests
+  - [ ] Would complement system test fixture for instruction execution
+  - [ ] Would reduce setup for expression evaluation within instructions
+
 ## Code Quality - Instruction Module Refactoring
 
 ### High Priority (MUST follow Parnas principles)
