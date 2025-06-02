@@ -106,7 +106,7 @@ agerun_executable
     ├── agerun_string
     └── agerun_assert
 
-Test Fixture Modules:
+Fixture Modules:
 agerun_method_fixture
 ├── agerun_system
 ├── agerun_methodology
