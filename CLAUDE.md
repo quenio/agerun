@@ -332,7 +332,7 @@ Method tests should use the method test fixture module to handle setup and teard
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "agerun_method_test_fixture.h"
+#include "agerun_method_fixture.h"
 #include "agerun_system.h"
 #include "agerun_agent.h"
 #include "agerun_data.h"
@@ -341,17 +341,17 @@ static void test_method_example(void) {
     printf("Testing method-name functionality...\n");
     
     // Create test fixture
-    method_test_fixture_t *own_fixture = ar_method_test_fixture_create("test_name");
+    method_fixture_t *own_fixture = ar_method_fixture_create("test_name");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar_method_test_fixture_initialize(own_fixture));
+    assert(ar_method_fixture_initialize(own_fixture));
     
     // Verify correct directory
-    assert(ar_method_test_fixture_verify_directory(own_fixture));
+    assert(ar_method_fixture_verify_directory(own_fixture));
     
     // Load required methods
-    assert(ar_method_test_fixture_load_method(own_fixture, "method-name", 
+    assert(ar_method_fixture_load_method(own_fixture, "method-name", 
                                               "../methods/method-name-1.0.0.method", "1.0.0"));
     
     // Create agent
@@ -364,10 +364,10 @@ static void test_method_example(void) {
     // ... test code ...
     
     // Check for memory leaks
-    assert(ar_method_test_fixture_check_memory(own_fixture));
+    assert(ar_method_fixture_check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar_method_test_fixture_destroy(own_fixture);
+    ar_method_fixture_destroy(own_fixture);
     
     printf("✓ Test passed\n");
 }
@@ -478,9 +478,9 @@ static void test_expression_evaluation(void) {
 
 **Key Points**:
 - Method Test Fixture: For testing methods loaded from .method files
-  - Use `ar_method_test_fixture_create()` to create fixture
-  - Call `ar_method_test_fixture_verify_directory()` to ensure correct directory
-  - Load methods with `ar_method_test_fixture_load_method()`
+  - Use `ar_method_fixture_create()` to create fixture
+  - Call `ar_method_fixture_verify_directory()` to ensure correct directory
+  - Load methods with `ar_method_fixture_load_method()`
 - System Test Fixture: For testing system modules (agent, method, instruction, etc.)
   - Use `ar_system_test_fixture_create()` to create fixture
   - Register methods with `ar_system_test_fixture_register_method()`

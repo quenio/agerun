@@ -1,4 +1,4 @@
-#include "agerun_method_test_fixture.h"
+#include "agerun_method_fixture.h"
 #include "agerun_heap.h"
 #include "agerun_system.h"
 #include "agerun_agency.h"
@@ -10,22 +10,22 @@
 #include <unistd.h>
 
 /**
- * @file agerun_method_test_fixture.c
- * @brief Implementation of method test fixture module for AgeRun method testing
+ * @file agerun_method_fixture.c
+ * @brief Implementation of method fixture module for AgeRun method testing
  */
 
-/* Method test fixture structure */
-struct method_test_fixture_s {
+/* Method fixture structure */
+struct method_fixture_s {
     char *own_test_name;          /* Name of the test */
     bool initialized;             /* Whether fixture has been initialized */
 };
 
-method_test_fixture_t* ar_method_test_fixture_create(const char *ref_test_name) {
+method_fixture_t* ar_method_fixture_create(const char *ref_test_name) {
     if (!ref_test_name) {
         return NULL;
     }
     
-    method_test_fixture_t *own_fixture = AR_HEAP_MALLOC(sizeof(method_test_fixture_t), "Method test fixture");
+    method_fixture_t *own_fixture = AR_HEAP_MALLOC(sizeof(method_fixture_t), "Method fixture");
     if (!own_fixture) {
         return NULL;
     }
@@ -41,7 +41,7 @@ method_test_fixture_t* ar_method_test_fixture_create(const char *ref_test_name) 
     return own_fixture; // Ownership transferred to caller
 }
 
-void ar_method_test_fixture_destroy(method_test_fixture_t *own_fixture) {
+void ar_method_fixture_destroy(method_fixture_t *own_fixture) {
     if (!own_fixture) {
         return;
     }
@@ -61,7 +61,7 @@ void ar_method_test_fixture_destroy(method_test_fixture_t *own_fixture) {
     AR_HEAP_FREE(own_fixture);
 }
 
-bool ar_method_test_fixture_initialize(method_test_fixture_t *mut_fixture) {
+bool ar_method_fixture_initialize(method_fixture_t *mut_fixture) {
     if (!mut_fixture) {
         return false;
     }
@@ -85,7 +85,7 @@ bool ar_method_test_fixture_initialize(method_test_fixture_t *mut_fixture) {
     return true;
 }
 
-bool ar_method_test_fixture_load_method(method_test_fixture_t *mut_fixture,
+bool ar_method_fixture_load_method(method_fixture_t *mut_fixture,
                                 const char *ref_method_name,
                                 const char *ref_method_file,
                                 const char *ref_version) {
@@ -132,7 +132,7 @@ bool ar_method_test_fixture_load_method(method_test_fixture_t *mut_fixture,
     return registered;
 }
 
-bool ar_method_test_fixture_verify_directory(const method_test_fixture_t *ref_fixture) {
+bool ar_method_fixture_verify_directory(const method_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return false;
     }
@@ -152,7 +152,7 @@ bool ar_method_test_fixture_verify_directory(const method_test_fixture_t *ref_fi
     return true;
 }
 
-const char* ar_method_test_fixture_get_name(const method_test_fixture_t *ref_fixture) {
+const char* ar_method_fixture_get_name(const method_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return NULL;
     }
@@ -160,7 +160,7 @@ const char* ar_method_test_fixture_get_name(const method_test_fixture_t *ref_fix
     return ref_fixture->own_test_name;
 }
 
-bool ar_method_test_fixture_check_memory(const method_test_fixture_t *ref_fixture) {
+bool ar_method_fixture_check_memory(const method_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return false;
     }

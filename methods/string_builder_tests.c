@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "agerun_method_test_fixture.h"
+#include "agerun_method_fixture.h"
 #include "agerun_system.h"
 #include "agerun_agent.h"
 #include "agerun_data.h"
@@ -11,17 +11,17 @@ static void test_string_builder_parse_build(void) {
     printf("Testing string-builder method with parse and build...\n");
     
     // Create test fixture
-    method_test_fixture_t *own_fixture = ar_method_test_fixture_create("string_builder_parse_build");
+    method_fixture_t *own_fixture = ar_method_fixture_create("string_builder_parse_build");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar_method_test_fixture_initialize(own_fixture));
+    assert(ar_method_fixture_initialize(own_fixture));
     
     // Verify correct directory
-    assert(ar_method_test_fixture_verify_directory(own_fixture));
+    assert(ar_method_fixture_verify_directory(own_fixture));
     
     // Load string-builder method
-    assert(ar_method_test_fixture_load_method(own_fixture, "string-builder", "../methods/string-builder-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture_load_method(own_fixture, "string-builder", "../methods/string-builder-1.0.0.method", "1.0.0"));
     
     // Create string-builder agent
     agent_id_t builder_agent = ar_agent_create("string-builder", "1.0.0", NULL);
@@ -125,10 +125,10 @@ static void test_string_builder_parse_build(void) {
     }
     
     // Check for memory leaks
-    assert(ar_method_test_fixture_check_memory(own_fixture));
+    assert(ar_method_fixture_check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar_method_test_fixture_destroy(own_fixture);
+    ar_method_fixture_destroy(own_fixture);
     
     printf("✓ String builder parse and build test passed\n");
 }
@@ -137,17 +137,17 @@ __attribute__((unused)) static void test_string_builder_parse_failure(void) {
     printf("Testing string-builder method with parse failure...\n");
     
     // Create test fixture
-    method_test_fixture_t *own_fixture = ar_method_test_fixture_create("string_builder_parse_failure");
+    method_fixture_t *own_fixture = ar_method_fixture_create("string_builder_parse_failure");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar_method_test_fixture_initialize(own_fixture));
+    assert(ar_method_fixture_initialize(own_fixture));
     
     // Verify correct directory
-    assert(ar_method_test_fixture_verify_directory(own_fixture));
+    assert(ar_method_fixture_verify_directory(own_fixture));
     
     // Load string-builder method
-    assert(ar_method_test_fixture_load_method(own_fixture, "string-builder", "../methods/string-builder-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture_load_method(own_fixture, "string-builder", "../methods/string-builder-1.0.0.method", "1.0.0"));
     
     // Create string-builder agent
     agent_id_t builder_agent = ar_agent_create("string-builder", "1.0.0", NULL);
@@ -211,10 +211,10 @@ __attribute__((unused)) static void test_string_builder_parse_failure(void) {
     }
     
     // Check for memory leaks
-    assert(ar_method_test_fixture_check_memory(own_fixture));
+    assert(ar_method_fixture_check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar_method_test_fixture_destroy(own_fixture);
+    ar_method_fixture_destroy(own_fixture);
     
     printf("✓ String builder parse failure test passed\n");
 }

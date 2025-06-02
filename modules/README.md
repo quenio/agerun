@@ -155,7 +155,7 @@ The [heap module](agerun_heap.md) provides comprehensive memory tracking and lea
 - **Statistical Reporting**: Provides allocation counts, memory usage, and leak summaries
 - **Production Safety**: All tracking code compiles out in release builds
 
-### Method Test Fixture Module (`agerun_method_test_fixture`)
+### Method Fixture Module (`agerun_method_fixture`)
 
 The method test fixture module provides a proper abstraction for method test setup and teardown operations:
 
