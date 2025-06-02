@@ -71,20 +71,31 @@ agerun_executable
 ├── agerun_system
 │   ├── agerun_agent
 │   │   ├── agerun_agency
+│   │   ├── agerun_system*
+│   │   ├── agerun_method
+│   │   ├── agerun_methodology
 │   │   ├── agerun_map
 │   │   └── agerun_list
 │   ├── agerun_method
 │   │   ├── agerun_instruction
 │   │   │   ├── agerun_expression
+│   │   │   │   ├── agerun_system*
 │   │   │   │   ├── agerun_string
 │   │   │   │   ├── agerun_data
 │   │   │   │   ├── agerun_map
 │   │   │   │   └── agerun_list
 │   │   │   ├── agerun_string
-│   │   │   └── agerun_data
+│   │   │   ├── agerun_data
+│   │   │   ├── agerun_method*
+│   │   │   ├── agerun_methodology
+│   │   │   ├── agerun_agent
+│   │   │   ├── agerun_map
+│   │   │   └── agerun_assert
 │   │   ├── agerun_data
 │   │   ├── agerun_string
-│   │   └── agerun_assert
+│   │   ├── agerun_assert
+│   │   ├── agerun_agent*
+│   │   └── agerun_map
 │   ├── agerun_methodology
 │   │   ├── agerun_method
 │   │   ├── agerun_semver
@@ -93,18 +104,25 @@ agerun_executable
 │   │   ├── agerun_string
 │   │   └── agerun_assert
 │   ├── agerun_agency
+│   │   ├── agerun_agent*
+│   │   ├── agerun_method
+│   │   ├── agerun_system*
+│   │   ├── agerun_semver
+│   │   ├── agerun_data
+│   │   ├── agerun_map
+│   │   ├── agerun_list
 │   │   └── agerun_io
 │   ├── agerun_data
+│   │   ├── agerun_string
 │   │   ├── agerun_map
-│   │   └── agerun_list
+│   │   ├── agerun_list
+│   │   └── agerun_assert
+│   ├── agerun_map
 │   └── agerun_list
-└── agerun_methodology
-    ├── agerun_method
-    ├── agerun_semver
-    ├── agerun_agency
-    ├── agerun_io
-    ├── agerun_string
-    └── agerun_assert
+├── agerun_methodology
+├── agerun_agency
+├── agerun_method
+└── agerun_agent
 
 Fixture Modules:
 agerun_method_fixture
@@ -127,6 +145,16 @@ agerun_instruction_fixture
 ├── agerun_list
 └── agerun_heap
 ```
+
+**Circular Dependencies** (marked with *):
+- `agerun_agent` → `agerun_system*`: Agent module includes system.h, creating a circular dependency
+- `agerun_expression` → `agerun_system*`: Expression includes system.h (though no system functions are used)
+- `agerun_instruction` → `agerun_method*`: Instruction includes method.h while method depends on instruction
+- `agerun_method` → `agerun_agent*`: Method includes agent.h while agent depends on method via methodology
+- `agerun_agency` → `agerun_agent*`: Agency and agent have mutual dependencies
+- `agerun_agency` → `agerun_system*`: Agency includes system.h, creating another circular dependency
+
+These circular dependencies violate Parnas design principles and should be resolved through refactoring.
 
 ## Module Layers
 
