@@ -112,19 +112,27 @@ The AgeRun system is organized into hierarchical layers, with each layer buildin
 
 ```
 ┌───────────────────────────────────────────────────────────┐
-│                  Foundation Modules                       │
-│  (agerun_data, ...)                                       │
-└──────────────────────────────┬────────────────────────────┘
-                               │
-                               ▼
-┌───────────────────────────────────────────────────────────┐
-│                      Core Modules                         │
-│  (agerun_assert, agerun_heap, agerun_string, agerun_list, │
-│   agerun_map, agerun_io, agerun_semver)                   │
-└───────────────────────────────────────────────────────────┘
+│                    System Modules                         │ ◄──┐
+│  (agerun_agent, agerun_agency, agerun_system,            │    │
+│   agerun_executable)                                      │    │
+└──────────────────────────────┬────────────────────────────┘    │
+                               │                                  │ ┌─────────────────────┐
+                               ▼                                  │ │  Fixture Modules    │
+┌───────────────────────────────────────────────────────────┐    │ │                     │
+│                  Foundation Modules                       │ ◄──┼─┤ agerun_method_      │
+│  (agerun_data, agerun_expression, agerun_instruction,     │    │ │   fixture           │
+│   agerun_method, agerun_methodology)                      │    │ │                     │
+└──────────────────────────────┬────────────────────────────┘    │ │ agerun_instruction_ │
+                               │                                  │ │   fixture           │
+                               ▼                                  │ │                     │
+┌───────────────────────────────────────────────────────────┐    │ │ agerun_system_      │
+│                      Core Modules                         │    │ │   fixture           │
+│  (agerun_assert, agerun_heap, agerun_string, agerun_list, │    │ │                     │
+│   agerun_map, agerun_io, agerun_semver)                   │    │ └─────────────────────┘
+└───────────────────────────────────────────────────────────┘    └───────────────────────┘
 ```
 
-This layering reflects the dependency structure of the system, with higher layers depending on the services provided by lower layers.
+This layering reflects the dependency structure of the system, with higher layers depending on the services provided by lower layers. Fixture modules are test-only modules that sit alongside the main architecture and can depend on modules from any layer to provide testing infrastructure.
 
 ## Core Modules
 
