@@ -1,10 +1,10 @@
-# Foundation Fixture Module
+# Instruction Fixture Module
 
-The foundation fixture provides a proper abstraction for test setup and teardown operations in AgeRun foundation module tests. It encapsulates common patterns for creating and managing data structures and expression contexts, eliminating repetitive code in tests for modules like data, expression, and instruction.
+The instruction fixture provides a proper abstraction for test setup and teardown operations in AgeRun instruction module tests. It encapsulates common patterns for creating and managing data structures and expression contexts, eliminating repetitive code in tests for modules like data, expression, and instruction.
 
 ## Overview
 
-The foundation fixture manages common patterns in foundation module testing:
+The instruction fixture manages common patterns in instruction module testing:
 - Expression context creation with pre-populated test data
 - Data structure creation (maps, lists) with common test values
 - Automatic tracking and cleanup of all created resources
@@ -15,7 +15,7 @@ This module follows Parnas design principles by hiding implementation details be
 
 ## Key Features
 
-- **Opaque Type**: The `foundation_fixture_t` type is opaque, hiding implementation details
+- **Opaque Type**: The `instruction_fixture_t` type is opaque, hiding implementation details
 - **Resource Tracking**: Automatically tracks and destroys all created data and contexts
 - **Expression Context Helpers**: Simplifies creation of expression evaluation contexts
 - **Test Data Builders**: Provides pre-populated test data structures
@@ -27,8 +27,8 @@ This module follows Parnas design principles by hiding implementation details be
 ### Creating and Destroying Fixtures
 
 ```c
-foundation_fixture_t* ar_foundation_fixture_create(const char *ref_test_name);
-void ar_foundation_fixture_destroy(foundation_fixture_t *own_fixture);
+instruction_fixture_t* ar_instruction_fixture_create(const char *ref_test_name);
+void ar_instruction_fixture_destroy(instruction_fixture_t *own_fixture);
 ```
 
 Creates a new test fixture with the given name. The fixture must be destroyed when the test completes to ensure proper cleanup of all tracked resources.
@@ -36,8 +36,8 @@ Creates a new test fixture with the given name. The fixture must be destroyed wh
 ### Expression Context Creation
 
 ```c
-expression_context_t* ar_foundation_fixture_create_expression_context(
-    foundation_fixture_t *mut_fixture,
+expression_context_t* ar_instruction_fixture_create_expression_context(
+    instruction_fixture_t *mut_fixture,
     const char *ref_expression
 );
 ```
@@ -48,8 +48,8 @@ Creates an expression context with standard test data:
 - Message map with: action="test", sender=0
 
 ```c
-expression_context_t* ar_foundation_fixture_create_custom_expression_context(
-    foundation_fixture_t *mut_fixture,
+expression_context_t* ar_instruction_fixture_create_custom_expression_context(
+    instruction_fixture_t *mut_fixture,
     data_t *mut_memory,
     const data_t *ref_context,
     const data_t *ref_message,
@@ -64,8 +64,8 @@ Creates an expression context with custom data maps. The fixture tracks the cont
 ### Test Data Creation
 
 ```c
-data_t* ar_foundation_fixture_create_test_map(
-    foundation_fixture_t *mut_fixture,
+data_t* ar_instruction_fixture_create_test_map(
+    instruction_fixture_t *mut_fixture,
     const char *ref_name
 );
 ```
@@ -76,16 +76,16 @@ Creates a map with test data based on the name:
 - default: test="value", number=42, decimal=3.14
 
 ```c
-data_t* ar_foundation_fixture_create_empty_map(
-    foundation_fixture_t *mut_fixture
+data_t* ar_instruction_fixture_create_empty_map(
+    instruction_fixture_t *mut_fixture
 );
 ```
 
 Creates an empty map for tests that need to populate it manually.
 
 ```c
-data_t* ar_foundation_fixture_create_test_list(
-    foundation_fixture_t *mut_fixture
+data_t* ar_instruction_fixture_create_test_list(
+    instruction_fixture_t *mut_fixture
 );
 ```
 
@@ -94,13 +94,13 @@ Creates a list with sample values: ["first", 42, 3.14]
 ### Resource Tracking
 
 ```c
-void ar_foundation_fixture_track_data(
-    foundation_fixture_t *mut_fixture,
+void ar_instruction_fixture_track_data(
+    instruction_fixture_t *mut_fixture,
     data_t *own_data
 );
 
-void ar_foundation_fixture_track_expression_context(
-    foundation_fixture_t *mut_fixture,
+void ar_instruction_fixture_track_expression_context(
+    instruction_fixture_t *mut_fixture,
     expression_context_t *own_context
 );
 ```
@@ -110,8 +110,8 @@ Tracks resources created outside the fixture helpers for automatic cleanup.
 ### Utility Functions
 
 ```c
-const char* ar_foundation_fixture_get_name(const foundation_fixture_t *ref_fixture);
-bool ar_foundation_fixture_check_memory(const foundation_fixture_t *ref_fixture);
+const char* ar_instruction_fixture_get_name(const instruction_fixture_t *ref_fixture);
+bool ar_instruction_fixture_check_memory(const instruction_fixture_t *ref_fixture);
 ```
 
 ## Usage Example
@@ -121,11 +121,11 @@ bool ar_foundation_fixture_check_memory(const foundation_fixture_t *ref_fixture)
 ```c
 static void test_arithmetic_expression(void) {
     // Create fixture for this test
-    foundation_fixture_t *own_fixture = ar_foundation_fixture_create("test_arithmetic");
+    instruction_fixture_t *own_fixture = ar_instruction_fixture_create("test_arithmetic");
     assert(own_fixture != NULL);
     
     // Create expression context with standard test data
-    expression_context_t *ref_ctx = ar_foundation_fixture_create_expression_context(
+    expression_context_t *ref_ctx = ar_instruction_fixture_create_expression_context(
         own_fixture, "memory.count + 10"
     );
     assert(ref_ctx != NULL);
@@ -140,10 +140,10 @@ static void test_arithmetic_expression(void) {
     ar_data_destroy(own_result);
     
     // Check for memory leaks
-    assert(ar_foundation_fixture_check_memory(own_fixture));
+    assert(ar_instruction_fixture_check_memory(own_fixture));
     
     // Destroy fixture (cleans up context and test data)
-    ar_foundation_fixture_destroy(own_fixture);
+    ar_instruction_fixture_destroy(own_fixture);
 }
 ```
 
@@ -152,11 +152,11 @@ static void test_arithmetic_expression(void) {
 ```c
 static void test_map_operations(void) {
     // Create fixture for this test
-    foundation_fixture_t *own_fixture = ar_foundation_fixture_create("test_map_ops");
+    instruction_fixture_t *own_fixture = ar_instruction_fixture_create("test_map_ops");
     assert(own_fixture != NULL);
     
     // Create test map with user data
-    data_t *ref_user = ar_foundation_fixture_create_test_map(own_fixture, "user");
+    data_t *ref_user = ar_instruction_fixture_create_test_map(own_fixture, "user");
     assert(ref_user != NULL);
     
     // Verify pre-populated values
@@ -164,27 +164,27 @@ static void test_map_operations(void) {
     assert(ar_data_get_map_integer(ref_user, "id") == 123);
     
     // Create another map
-    data_t *ref_config = ar_foundation_fixture_create_test_map(own_fixture, "config");
+    data_t *ref_config = ar_instruction_fixture_create_test_map(own_fixture, "config");
     assert(ref_config != NULL);
     
     // All cleanup handled by fixture
-    ar_foundation_fixture_destroy(own_fixture);
+    ar_instruction_fixture_destroy(own_fixture);
 }
 ```
 
 ## Design Rationale
 
-This module was created to address repetitive patterns in foundation module tests:
+This module was created to address repetitive patterns in instruction module tests:
 
 1. **Expression Context Creation**: Expression tests create contexts 39+ times with similar patterns
 2. **Data Structure Creation**: Data tests create maps 22+ times with test values
 3. **Resource Management**: Ensure all test resources are properly cleaned up
-4. **Consistency**: Provide consistent test data across all foundation tests
+4. **Consistency**: Provide consistent test data across all instruction tests
 5. **Simplification**: Let tests focus on behavior rather than setup/teardown
 
 ## Memory Management
 
-The foundation fixture follows the AgeRun Memory Management Model:
+The instruction fixture follows the AgeRun Memory Management Model:
 - Uses `own_` prefix for owned values that must be destroyed
 - Uses `mut_` prefix for mutable references
 - Uses `ref_` prefix for borrowed references
@@ -196,6 +196,6 @@ The foundation fixture follows the AgeRun Memory Management Model:
 
 - **Method Test Fixture**: For testing methods loaded from .method files with directory requirements
 - **System Test Fixture**: For testing system modules requiring full runtime initialization
-- **Foundation Fixture**: For testing foundation modules with common data patterns but no system dependencies
+- **Instruction Fixture**: For testing instruction modules with common data patterns but no system dependencies
 
-The foundation fixture is lightweight and focused on data creation patterns, making it ideal for modules that work with data structures and expressions without needing the full AgeRun runtime.
+The instruction fixture is lightweight and focused on data creation patterns, making it ideal for modules that work with data structures and expressions without needing the full AgeRun runtime.

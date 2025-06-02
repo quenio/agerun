@@ -431,16 +431,16 @@ static void test_system_module_function(void) {
 }
 ```
 
-### Foundation Module Test Template
+### Instruction Module Test Template
 
-Foundation module tests should use the foundation test fixture for data and expression testing:
+Instruction module tests should use the instruction test fixture for data and expression testing:
 
 ```c
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "agerun_foundation_fixture.h"
+#include "agerun_instruction_fixture.h"
 #include "agerun_expression.h"
 #include "agerun_data.h"
 
@@ -448,11 +448,11 @@ static void test_expression_evaluation(void) {
     printf("Testing expression evaluation...\n");
     
     // Create test fixture
-    foundation_fixture_t *own_fixture = ar_foundation_fixture_create("test_expr");
+    instruction_fixture_t *own_fixture = ar_instruction_fixture_create("test_expr");
     assert(own_fixture != NULL);
     
     // Create expression context with standard test data
-    expression_context_t *ref_ctx = ar_foundation_fixture_create_expression_context(
+    expression_context_t *ref_ctx = ar_instruction_fixture_create_expression_context(
         own_fixture, "memory.count * 2"
     );
     assert(ref_ctx != NULL);
@@ -463,14 +463,14 @@ static void test_expression_evaluation(void) {
     ar_data_destroy(own_result);
     
     // Create test map
-    data_t *ref_user = ar_foundation_fixture_create_test_map(own_fixture, "user");
+    data_t *ref_user = ar_instruction_fixture_create_test_map(own_fixture, "user");
     assert(strcmp(ar_data_get_map_string(ref_user, "username"), "alice") == 0);
     
     // Check for memory leaks
-    assert(ar_foundation_fixture_check_memory(own_fixture));
+    assert(ar_instruction_fixture_check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar_foundation_fixture_destroy(own_fixture);
+    ar_instruction_fixture_destroy(own_fixture);
     
     printf("✓ Test passed\n");
 }
@@ -486,10 +486,10 @@ static void test_expression_evaluation(void) {
   - Register methods with `ar_system_fixture_register_method()`
   - Use `ar_system_fixture_reset_system()` for persistence testing
   - NOT for core modules (string, list, map, heap, assert, semver, io)
-- Foundation Fixture: For testing foundation modules (data, expression, instruction)
-  - Use `ar_foundation_fixture_create()` to create fixture
-  - Create expression contexts with `ar_foundation_fixture_create_expression_context()`
-  - Create test data with `ar_foundation_fixture_create_test_map()` etc.
+- Instruction Fixture: For testing instruction modules (data, expression, instruction)
+  - Use `ar_instruction_fixture_create()` to create fixture
+  - Create expression contexts with `ar_instruction_fixture_create_expression_context()`
+  - Create test data with `ar_instruction_fixture_create_test_map()` etc.
   - No system initialization required
 - All fixtures handle cleanup automatically
 

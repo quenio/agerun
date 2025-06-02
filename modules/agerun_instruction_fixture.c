@@ -1,4 +1,4 @@
-#include "agerun_foundation_fixture.h"
+#include "agerun_instruction_fixture.h"
 #include "agerun_heap.h"
 #include "agerun_list.h"
 #include <stdio.h>
@@ -6,23 +6,23 @@
 #include <string.h>
 
 /**
- * @file agerun_foundation_fixture.c
- * @brief Implementation of foundation fixture for AgeRun foundation module testing
+ * @file agerun_instruction_fixture.c
+ * @brief Implementation of instruction fixture for AgeRun instruction module testing
  */
 
-/* Foundation fixture structure */
-struct foundation_fixture_s {
+/* Instruction fixture structure */
+struct instruction_fixture_s {
     char *own_test_name;                    /* Name of the test */
     list_t *own_tracked_data;               /* List of data objects to destroy */
     list_t *own_tracked_contexts;           /* List of expression contexts to destroy */
 };
 
-foundation_fixture_t* ar_foundation_fixture_create(const char *ref_test_name) {
+instruction_fixture_t* ar_instruction_fixture_create(const char *ref_test_name) {
     if (!ref_test_name) {
         return NULL;
     }
     
-    foundation_fixture_t *own_fixture = AR_HEAP_MALLOC(sizeof(foundation_fixture_t), "Foundation fixture");
+    instruction_fixture_t *own_fixture = AR_HEAP_MALLOC(sizeof(instruction_fixture_t), "Instruction fixture");
     if (!own_fixture) {
         return NULL;
     }
@@ -51,7 +51,7 @@ foundation_fixture_t* ar_foundation_fixture_create(const char *ref_test_name) {
     return own_fixture; // Ownership transferred to caller
 }
 
-void ar_foundation_fixture_destroy(foundation_fixture_t *own_fixture) {
+void ar_instruction_fixture_destroy(instruction_fixture_t *own_fixture) {
     if (!own_fixture) {
         return;
     }
@@ -78,8 +78,8 @@ void ar_foundation_fixture_destroy(foundation_fixture_t *own_fixture) {
     AR_HEAP_FREE(own_fixture);
 }
 
-expression_context_t* ar_foundation_fixture_create_expression_context(
-    foundation_fixture_t *mut_fixture,
+expression_context_t* ar_instruction_fixture_create_expression_context(
+    instruction_fixture_t *mut_fixture,
     const char *ref_expression) {
     
     if (!mut_fixture || !ref_expression) {
@@ -139,8 +139,8 @@ expression_context_t* ar_foundation_fixture_create_expression_context(
     return own_expr_ctx; // Return borrowed reference
 }
 
-expression_context_t* ar_foundation_fixture_create_custom_expression_context(
-    foundation_fixture_t *mut_fixture,
+expression_context_t* ar_instruction_fixture_create_custom_expression_context(
+    instruction_fixture_t *mut_fixture,
     data_t *mut_memory,
     const data_t *ref_context,
     const data_t *ref_message,
@@ -165,8 +165,8 @@ expression_context_t* ar_foundation_fixture_create_custom_expression_context(
     return own_expr_ctx; // Return borrowed reference
 }
 
-data_t* ar_foundation_fixture_create_test_map(
-    foundation_fixture_t *mut_fixture,
+data_t* ar_instruction_fixture_create_test_map(
+    instruction_fixture_t *mut_fixture,
     const char *ref_name) {
     
     if (!mut_fixture) {
@@ -200,8 +200,8 @@ data_t* ar_foundation_fixture_create_test_map(
     return own_map; // Return borrowed reference
 }
 
-data_t* ar_foundation_fixture_create_empty_map(
-    foundation_fixture_t *mut_fixture) {
+data_t* ar_instruction_fixture_create_empty_map(
+    instruction_fixture_t *mut_fixture) {
     
     if (!mut_fixture) {
         return NULL;
@@ -218,8 +218,8 @@ data_t* ar_foundation_fixture_create_empty_map(
     return own_map; // Return borrowed reference
 }
 
-data_t* ar_foundation_fixture_create_test_list(
-    foundation_fixture_t *mut_fixture) {
+data_t* ar_instruction_fixture_create_test_list(
+    instruction_fixture_t *mut_fixture) {
     
     if (!mut_fixture) {
         return NULL;
@@ -255,7 +255,7 @@ data_t* ar_foundation_fixture_create_test_list(
     return own_list; // Return borrowed reference
 }
 
-const char* ar_foundation_fixture_get_name(const foundation_fixture_t *ref_fixture) {
+const char* ar_instruction_fixture_get_name(const instruction_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return NULL;
     }
@@ -263,7 +263,7 @@ const char* ar_foundation_fixture_get_name(const foundation_fixture_t *ref_fixtu
     return ref_fixture->own_test_name;
 }
 
-bool ar_foundation_fixture_check_memory(const foundation_fixture_t *ref_fixture) {
+bool ar_instruction_fixture_check_memory(const instruction_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return false;
     }
@@ -274,8 +274,8 @@ bool ar_foundation_fixture_check_memory(const foundation_fixture_t *ref_fixture)
     return true;
 }
 
-void ar_foundation_fixture_track_data(
-    foundation_fixture_t *mut_fixture,
+void ar_instruction_fixture_track_data(
+    instruction_fixture_t *mut_fixture,
     data_t *own_data) {
     
     if (!mut_fixture || !own_data) {
@@ -285,8 +285,8 @@ void ar_foundation_fixture_track_data(
     ar_list_add_last(mut_fixture->own_tracked_data, own_data);
 }
 
-void ar_foundation_fixture_track_expression_context(
-    foundation_fixture_t *mut_fixture,
+void ar_instruction_fixture_track_expression_context(
+    instruction_fixture_t *mut_fixture,
     expression_context_t *own_context) {
     
     if (!mut_fixture || !own_context) {
