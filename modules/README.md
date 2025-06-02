@@ -66,6 +66,7 @@ This tree illustrates the dependency relationships between modules in the AgeRun
 **Note**: The `agerun_heap` module is used by almost all modules for memory tracking but is not shown in the tree to avoid clutter. It is a cross-cutting concern that provides memory safety to the entire system.
 
 ```
+Main Modules:
 agerun_executable
 ├── agerun_system
 │   ├── agerun_agent
@@ -104,6 +105,27 @@ agerun_executable
     ├── agerun_io
     ├── agerun_string
     └── agerun_assert
+
+Test Fixture Modules:
+agerun_method_fixture
+├── agerun_system
+├── agerun_methodology
+├── agerun_agency
+├── agerun_io
+└── agerun_heap
+
+agerun_system_fixture
+├── agerun_system
+├── agerun_methodology
+├── agerun_agency
+├── agerun_method
+└── agerun_heap
+
+agerun_instruction_fixture
+├── agerun_data
+├── agerun_expression
+├── agerun_list
+└── agerun_heap
 ```
 
 ## Module Layers
