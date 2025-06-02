@@ -36,7 +36,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Improve test infrastructure:
   - [x] Fix the memory access instruction tests that are currently skipped
   - [x] Add better error reporting for failed instructions
-  - [x] Create test fixture module for common test patterns (no helper functions)
+  - [x] Create instruction test fixture module for common test patterns (no helper functions)
+  - [x] Migrate instruction module tests to use the fixture
   
 - [ ] Create more method files:
   - [ ] Implement additional method files for testing various agent behaviors
@@ -109,69 +110,64 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Write tests FIRST for each new method
   - [x] Document each method's behavior and use cases
 
-## Test Infrastructure - System Test Fixture Migration
+## Test Infrastructure - System Test Fixture Strategy
+
+### Analysis Required
+- [ ] Evaluate whether each system module should have its own dedicated fixture module
+  - [ ] Analyze patterns specific to each system module (agent, method, methodology, agency, system, executable)
+  - [ ] Compare benefits of dedicated fixtures vs shared system fixture
+  - [ ] Consider maintenance overhead of multiple fixture modules
+  - [ ] Decision: Follow instruction fixture pattern (dedicated) or use shared system fixture
+  - [ ] Document rationale for chosen approach
 
 ### High Priority (System modules that need runtime)
-- [ ] Migrate agerun_instruction_tests.c to use system test fixture
-  - [ ] Would eliminate extensive boilerplate for method registration
-  - [ ] Tests create many methods programmatically
-  - [ ] Uses system initialization/shutdown repeatedly
+- [x] ~~Migrate agerun_instruction_tests.c to use system test fixture~~ *(Completed using dedicated instruction test fixture)*
+  - [x] ~~Would eliminate extensive boilerplate for method registration~~
+  - [x] ~~Tests create many methods programmatically~~
+  - [x] ~~Uses system initialization/shutdown repeatedly~~
   
-- [ ] Migrate agerun_agent_tests.c to use system test fixture
+- [ ] Migrate agerun_agent_tests.c to use test fixture (type TBD)
   - [ ] Currently uses manual system init/shutdown
   - [ ] Creates and registers methods programmatically
   - [ ] Core system functionality testing
   
-- [ ] Migrate agerun_method_tests.c to use system test fixture
+- [ ] Migrate agerun_method_tests.c to use test fixture (type TBD)
   - [ ] Tests method execution requiring full runtime
   - [ ] Creates multiple test methods programmatically
   - [ ] Would benefit from fixture's method registration
 
 ### Medium Priority
-- [ ] Migrate agerun_methodology_tests.c to use system test fixture
+- [ ] Migrate agerun_methodology_tests.c to use test fixture (type TBD)
   - [ ] Tests method registration and versioning
   - [ ] Tests persistence features needing system reset
   - [ ] Would benefit from fixture's cleanup handling
   
-- [ ] Migrate agerun_agency_tests.c to use system test fixture
+- [ ] Migrate agerun_agency_tests.c to use test fixture (type TBD)
   - [ ] Creates agents and methods for testing
   - [ ] Tests agent registry functionality
   - [ ] Uses system initialization/shutdown
   
-- [ ] Migrate agerun_system_tests.c to use system test fixture
+- [ ] Migrate agerun_system_tests.c to use test fixture (type TBD)
   - [ ] Tests the system module itself
   - [ ] Creates methods and agents
   - [ ] Would benefit from consistent environment setup
 
 ### Low Priority
-- [ ] Migrate agerun_executable_tests.c to use system test fixture
+- [ ] Migrate agerun_executable_tests.c to use test fixture (type TBD)
   - [ ] Tests process execution
   - [ ] Uses system initialization/shutdown
   - [ ] Less complex but would still benefit
 
-## Test Infrastructure - Foundation Test Fixture Migration
+## Test Infrastructure - Instruction Test Fixture Migration
 
-**Note**: Foundation test fixture is for foundation modules (data, expression, instruction) that don't require full system initialization. It provides common test data patterns and automatic cleanup without the overhead of system runtime.
-
-### High Priority
-- [ ] Migrate agerun_expression_tests.c to use foundation test fixture
-  - [ ] Currently has 39 expression context creations with repetitive setup
-  - [ ] Many tests create NULL contexts with literals only
-  - [ ] Would eliminate boilerplate for expression evaluation tests
-  - [ ] Would provide consistent test data for memory/context/message access tests
-
-### Medium Priority  
-- [ ] Migrate agerun_data_tests.c to use foundation test fixture
-  - [ ] Currently has 22 map creations with common test patterns
-  - [ ] Would provide standard test maps (user, config, etc.)
-  - [ ] Would simplify list and map manipulation tests
-  - [ ] Would handle cleanup automatically
-
-- [ ] Migrate agerun_instruction_tests.c to use foundation test fixture
-  - [ ] Currently has 12 instruction context creations
-  - [ ] Requires memory maps for assignment tests
-  - [ ] Would complement system test fixture for instruction execution
-  - [ ] Would reduce setup for expression evaluation within instructions
+### Completed
+- [x] ~~Migrate agerun_instruction_tests.c to use instruction test fixture~~ *(Completed)*
+  - [x] ~~Eliminated 200+ lines of repetitive agent setup and teardown code~~
+  - [x] ~~Added agent management with automatic method registration~~
+  - [x] ~~Integrated system initialization for tests that need full runtime~~
+  - [x] ~~Provided expression contexts with standard test data~~
+  - [x] ~~Added automatic resource tracking and cleanup~~
+  - [x] ~~Fixed pre-existing test bug in error reporting~~
 
 ## Code Quality - Instruction Module Refactoring
 

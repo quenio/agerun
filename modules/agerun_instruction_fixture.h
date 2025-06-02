@@ -4,15 +4,18 @@
 #include <stdbool.h>
 #include "agerun_data.h"
 #include "agerun_expression.h"
+#include "agerun_agent.h"
+#include "agerun_method.h"
+#include "agerun_system.h"
 
 /**
  * @file agerun_instruction_fixture.h
- * @brief Instruction fixture for AgeRun instruction module testing infrastructure
+ * @brief Test fixture for AgeRun instruction module tests
  * 
- * This module provides a proper abstraction for instruction module test setup and
- * teardown operations, eliminating repetitive patterns in data structure creation
- * and expression context setup. It focuses on patterns common to instruction modules
- * like data, expression, and instruction that don't require system initialization.
+ * This module provides test infrastructure specifically for the instruction module's
+ * test suite. It eliminates repetitive patterns in agent creation, method registration,
+ * data structure creation, and expression context setup that are common across 
+ * instruction module tests.
  */
 
 /* Opaque instruction fixture type */
@@ -136,6 +139,55 @@ void ar_instruction_fixture_track_data(
 void ar_instruction_fixture_track_expression_context(
     instruction_fixture_t *mut_fixture,
     expression_context_t *own_context
+);
+
+/**
+ * Creates a test agent with the given method
+ * @param mut_fixture The fixture managing the test  
+ * @param ref_method_name Name for the test method
+ * @param ref_instructions Instructions for the test method
+ * @return Agent ID if successful, 0 on error
+ * @note The fixture handles method registration and agent cleanup
+ * @note Processes the wake message automatically
+ */
+agent_id_t ar_instruction_fixture_create_test_agent(
+    instruction_fixture_t *mut_fixture,
+    const char *ref_method_name,
+    const char *ref_instructions
+);
+
+/**
+ * Gets the agent ID created by the fixture
+ * @param ref_fixture The fixture to query
+ * @return Agent ID if created, 0 otherwise
+ */
+agent_id_t ar_instruction_fixture_get_agent(const instruction_fixture_t *ref_fixture);
+
+/**
+ * Tracks a generic pointer for cleanup with a custom destructor
+ * @param mut_fixture The fixture managing the test
+ * @param own_resource The resource to track
+ * @param destructor Function to call to destroy the resource
+ * @note Ownership: Takes ownership of the resource
+ */
+void ar_instruction_fixture_track_resource(
+    instruction_fixture_t *mut_fixture,
+    void *own_resource,
+    void (*destructor)(void*)
+);
+
+/**
+ * Sets up test system initialization
+ * @param mut_fixture The fixture managing the test
+ * @param ref_init_method_name Initial method name for system
+ * @param ref_init_instructions Initial method instructions
+ * @return true if successful, false on error
+ * @note This must be called before creating agents if system needs initialization
+ */
+bool ar_instruction_fixture_init_system(
+    instruction_fixture_t *mut_fixture,
+    const char *ref_init_method_name,
+    const char *ref_init_instructions
 );
 
 #endif /* AGERUN_INSTRUCTION_FIXTURE_H */

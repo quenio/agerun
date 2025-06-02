@@ -1,6 +1,8 @@
 #include "agerun_instruction_fixture.h"
 #include "agerun_heap.h"
 #include "agerun_list.h"
+#include "agerun_methodology.h"
+#include "agerun_assert.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,11 +12,20 @@
  * @brief Implementation of instruction fixture for AgeRun instruction module testing
  */
 
+/* Resource tracking entry for generic resources */
+typedef struct {
+    void *own_resource;
+    void (*destructor)(void*);
+} resource_entry_t;
+
 /* Instruction fixture structure */
 struct instruction_fixture_s {
     char *own_test_name;                    /* Name of the test */
     list_t *own_tracked_data;               /* List of data objects to destroy */
     list_t *own_tracked_contexts;           /* List of expression contexts to destroy */
+    list_t *own_tracked_resources;          /* List of generic resources to destroy */
+    agent_id_t test_agent_id;               /* Agent created by fixture, 0 if none */
+    bool system_initialized;                /* Whether system was initialized by fixture */
 };
 
 instruction_fixture_t* ar_instruction_fixture_create(const char *ref_test_name) {
@@ -48,12 +59,29 @@ instruction_fixture_t* ar_instruction_fixture_create(const char *ref_test_name) 
         return NULL;
     }
     
+    own_fixture->own_tracked_resources = ar_list_create();
+    if (!own_fixture->own_tracked_resources) {
+        ar_list_destroy(own_fixture->own_tracked_contexts);
+        ar_list_destroy(own_fixture->own_tracked_data);
+        AR_HEAP_FREE(own_fixture->own_test_name);
+        AR_HEAP_FREE(own_fixture);
+        return NULL;
+    }
+    
+    own_fixture->test_agent_id = 0;
+    own_fixture->system_initialized = false;
+    
     return own_fixture; // Ownership transferred to caller
 }
 
 void ar_instruction_fixture_destroy(instruction_fixture_t *own_fixture) {
     if (!own_fixture) {
         return;
+    }
+    
+    // Destroy test agent if created
+    if (own_fixture->test_agent_id > 0) {
+        ar_agent_destroy(own_fixture->test_agent_id);
     }
     
     // Destroy all tracked expression contexts
@@ -73,6 +101,23 @@ void ar_instruction_fixture_destroy(instruction_fixture_t *own_fixture) {
         }
     }
     ar_list_destroy(own_fixture->own_tracked_data);
+    
+    // Destroy all tracked generic resources
+    while (!ar_list_empty(own_fixture->own_tracked_resources)) {
+        resource_entry_t *own_entry = (resource_entry_t*)ar_list_remove_first(own_fixture->own_tracked_resources);
+        if (own_entry) {
+            if (own_entry->destructor && own_entry->own_resource) {
+                own_entry->destructor(own_entry->own_resource);
+            }
+            AR_HEAP_FREE(own_entry);
+        }
+    }
+    ar_list_destroy(own_fixture->own_tracked_resources);
+    
+    // Shutdown system if initialized by fixture
+    if (own_fixture->system_initialized) {
+        ar_system_shutdown();
+    }
     
     AR_HEAP_FREE(own_fixture->own_test_name);
     AR_HEAP_FREE(own_fixture);
@@ -294,4 +339,101 @@ void ar_instruction_fixture_track_expression_context(
     }
     
     ar_list_add_last(mut_fixture->own_tracked_contexts, own_context);
+}
+
+agent_id_t ar_instruction_fixture_create_test_agent(
+    instruction_fixture_t *mut_fixture,
+    const char *ref_method_name,
+    const char *ref_instructions) {
+    
+    if (!mut_fixture || !ref_method_name || !ref_instructions) {
+        return 0;
+    }
+    
+    // Don't create another agent if one already exists
+    if (mut_fixture->test_agent_id > 0) {
+        return 0;
+    }
+    
+    // Create method and register it with methodology
+    method_t *own_method = ar_method_create(ref_method_name, ref_instructions, "1.0.0");
+    if (!own_method) {
+        return 0;
+    }
+    
+    // Register with methodology
+    ar_methodology_register_method(own_method);
+    own_method = NULL; // Ownership transferred
+    
+    // Create agent
+    agent_id_t agent_id = ar_agent_create(ref_method_name, "1.0.0", NULL);
+    if (agent_id <= 0) {
+        return 0;
+    }
+    
+    // Store agent ID
+    mut_fixture->test_agent_id = agent_id;
+    
+    // Process wake message
+    ar_system_process_next_message();
+    
+    return agent_id;
+}
+
+agent_id_t ar_instruction_fixture_get_agent(const instruction_fixture_t *ref_fixture) {
+    if (!ref_fixture) {
+        return 0;
+    }
+    
+    return ref_fixture->test_agent_id;
+}
+
+void ar_instruction_fixture_track_resource(
+    instruction_fixture_t *mut_fixture,
+    void *own_resource,
+    void (*destructor)(void*)) {
+    
+    if (!mut_fixture || !own_resource || !destructor) {
+        return;
+    }
+    
+    resource_entry_t *own_entry = AR_HEAP_MALLOC(sizeof(resource_entry_t), "Resource entry");
+    if (!own_entry) {
+        return;
+    }
+    
+    own_entry->own_resource = own_resource;
+    own_entry->destructor = destructor;
+    
+    ar_list_add_last(mut_fixture->own_tracked_resources, own_entry);
+}
+
+bool ar_instruction_fixture_init_system(
+    instruction_fixture_t *mut_fixture,
+    const char *ref_init_method_name,
+    const char *ref_init_instructions) {
+    
+    if (!mut_fixture || !ref_init_method_name || !ref_init_instructions) {
+        return false;
+    }
+    
+    // Don't initialize twice
+    if (mut_fixture->system_initialized) {
+        return false;
+    }
+    
+    // Create and register initialization method
+    method_t *own_method = ar_method_create(ref_init_method_name, ref_init_instructions, "1.0.0");
+    if (!own_method) {
+        return false;
+    }
+    
+    ar_methodology_register_method(own_method);
+    own_method = NULL; // Ownership transferred
+    
+    // Initialize system
+    ar_system_init(ref_init_method_name, "1.0.0");
+    mut_fixture->system_initialized = true;
+    
+    return true;
 }

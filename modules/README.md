@@ -440,16 +440,17 @@ The method test fixture module provides a proper abstraction for method test set
 
 The instruction fixture module provides a proper abstraction for instruction module test patterns:
 
+- **Agent Management**: Creates and tracks test agents with automatic method registration and cleanup
+- **System Integration**: Optional system initialization for tests that require full runtime environment
 - **Expression Context Management**: Creates and tracks expression contexts with pre-populated test data
 - **Test Data Builders**: Provides common test data structures (maps, lists) with standard values
-- **Resource Tracking**: Automatically tracks and destroys all created data objects and contexts
+- **Resource Tracking**: Automatically tracks and destroys all created data objects, contexts, and agents
+- **Generic Resource Support**: Can track any resource type with custom destructors
 - **Memory Leak Detection**: Ensures all test resources are properly cleaned up
-- **No System Dependencies**: Works without system initialization, unlike system test fixture
-- **Lightweight Design**: Focused on data creation patterns common to instruction modules
 - **No Helper Functions**: Proper module abstraction eliminating repetitive setup code
 - **Opaque Type**: Instruction test fixture structure is opaque, following Parnas principles
-- **Designed for Instruction Modules**: Used by data, expression, and instruction module tests
-- **Reduces Boilerplate**: Eliminates 39+ expression context creations and 22+ map creations
+- **Designed for Instruction Modules**: Used specifically by instruction module tests
+- **Reduces Boilerplate**: Eliminates 200+ lines of repetitive agent setup and teardown code
 
 ### System Fixture Module (`agerun_system_fixture`)
 

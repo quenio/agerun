@@ -1,26 +1,29 @@
 # Instruction Fixture Module
 
-The instruction fixture provides a proper abstraction for test setup and teardown operations in AgeRun instruction module tests. It encapsulates common patterns for creating and managing data structures and expression contexts, eliminating repetitive code in tests for modules like data, expression, and instruction.
+The instruction fixture provides test infrastructure specifically for the AgeRun instruction module's test suite. It encapsulates common patterns for creating and managing test agents, methods, data structures, and expression contexts, eliminating repetitive code in instruction module tests.
 
 ## Overview
 
 The instruction fixture manages common patterns in instruction module testing:
+- Test agent creation with automatic method registration
+- System initialization for tests that require it
 - Expression context creation with pre-populated test data
 - Data structure creation (maps, lists) with common test values
 - Automatic tracking and cleanup of all created resources
 - Memory leak detection support
-- No system initialization requirements
 
-This module follows Parnas design principles by hiding implementation details behind an opaque type and providing a clean, focused interface for foundation module test management.
+This module follows Parnas design principles by hiding implementation details behind an opaque type and providing a clean, focused interface for instruction module test management.
 
 ## Key Features
 
 - **Opaque Type**: The `instruction_fixture_t` type is opaque, hiding implementation details
-- **Resource Tracking**: Automatically tracks and destroys all created data and contexts
+- **Agent Management**: Creates and tracks test agents with automatic cleanup
+- **Method Registration**: Handles method creation and registration for tests
+- **System Initialization**: Optional system initialization for tests that need it
+- **Resource Tracking**: Automatically tracks and destroys all created resources
 - **Expression Context Helpers**: Simplifies creation of expression evaluation contexts
 - **Test Data Builders**: Provides pre-populated test data structures
 - **Memory Safety**: Ensures all resources are cleaned up properly
-- **No System Dependencies**: Works without system initialization
 
 ## API Reference
 
@@ -91,6 +94,38 @@ data_t* ar_instruction_fixture_create_test_list(
 
 Creates a list with sample values: ["first", 42, 3.14]
 
+### Agent and System Management
+
+```c
+bool ar_instruction_fixture_init_system(
+    instruction_fixture_t *mut_fixture,
+    const char *ref_init_method_name,
+    const char *ref_init_instructions
+);
+```
+
+Initializes the system with the specified method. Must be called before creating agents if system initialization is required.
+
+```c
+agent_id_t ar_instruction_fixture_create_test_agent(
+    instruction_fixture_t *mut_fixture,
+    const char *ref_method_name,
+    const char *ref_instructions
+);
+```
+
+Creates a test agent with the specified method. The fixture:
+- Creates and registers the method with version "1.0.0"
+- Creates the agent
+- Processes the wake message automatically
+- Tracks the agent for cleanup
+
+```c
+agent_id_t ar_instruction_fixture_get_agent(const instruction_fixture_t *ref_fixture);
+```
+
+Returns the agent ID created by the fixture, or 0 if no agent was created.
+
 ### Resource Tracking
 
 ```c
@@ -103,9 +138,15 @@ void ar_instruction_fixture_track_expression_context(
     instruction_fixture_t *mut_fixture,
     expression_context_t *own_context
 );
+
+void ar_instruction_fixture_track_resource(
+    instruction_fixture_t *mut_fixture,
+    void *own_resource,
+    void (*destructor)(void*)
+);
 ```
 
-Tracks resources created outside the fixture helpers for automatic cleanup.
+Tracks resources created outside the fixture helpers for automatic cleanup. The generic `track_resource` function allows tracking any resource type with a custom destructor.
 
 ### Utility Functions
 
@@ -114,7 +155,51 @@ const char* ar_instruction_fixture_get_name(const instruction_fixture_t *ref_fix
 bool ar_instruction_fixture_check_memory(const instruction_fixture_t *ref_fixture);
 ```
 
-## Usage Example
+## Usage Examples
+
+### Agent-Based Test Example
+
+```c
+static void test_instruction_with_agent(void) {
+    // Create fixture
+    instruction_fixture_t *own_fixture = ar_instruction_fixture_create("test_agent_instruction");
+    assert(own_fixture != NULL);
+    
+    // Initialize system
+    assert(ar_instruction_fixture_init_system(own_fixture, "init_method", "memory.ready = 1"));
+    
+    // Create test agent
+    agent_id_t agent = ar_instruction_fixture_create_test_agent(
+        own_fixture, "test_method", "memory.value := message"
+    );
+    assert(agent > 0);
+    
+    // Get agent's memory for instruction testing
+    data_t *mut_memory = ar_agent_get_mutable_memory(agent);
+    const data_t *ref_context = ar_agent_get_context(agent);
+    
+    // Create instruction context (manually, as instruction module provides this)
+    instruction_context_t *own_ctx = ar_instruction_create_context(
+        mut_memory, ref_context, NULL
+    );
+    
+    // Run instruction
+    bool result = ar_instruction_run(own_ctx, "memory.test := 42");
+    assert(result);
+    
+    // Verify result
+    assert(ar_data_get_map_integer(mut_memory, "test") == 42);
+    
+    // Clean up instruction context
+    ar_instruction_destroy_context(own_ctx);
+    
+    // Check for memory leaks
+    assert(ar_instruction_fixture_check_memory(own_fixture));
+    
+    // Destroy fixture (cleans up agent and system)
+    ar_instruction_fixture_destroy(own_fixture);
+}
+```
 
 ### Expression Test Example
 
@@ -176,11 +261,13 @@ static void test_map_operations(void) {
 
 This module was created to address repetitive patterns in instruction module tests:
 
-1. **Expression Context Creation**: Expression tests create contexts 39+ times with similar patterns
-2. **Data Structure Creation**: Data tests create maps 22+ times with test values
-3. **Resource Management**: Ensure all test resources are properly cleaned up
-4. **Consistency**: Provide consistent test data across all instruction tests
-5. **Simplification**: Let tests focus on behavior rather than setup/teardown
+1. **Agent Setup**: The pattern of creating method, registering it, creating agent, and processing wake message is repeated 8+ times
+2. **Instruction Context Creation**: Creating contexts from agent memory/context is repeated 15+ times
+3. **Expression Context Creation**: Expression tests create contexts 39+ times with similar patterns
+4. **Data Structure Creation**: Data tests create maps 22+ times with test values
+5. **Resource Management**: Ensure all test resources are properly cleaned up
+6. **Consistency**: Provide consistent test setup across all instruction tests
+7. **Simplification**: Let tests focus on instruction behavior rather than setup/teardown
 
 ## Memory Management
 
@@ -196,6 +283,6 @@ The instruction fixture follows the AgeRun Memory Management Model:
 
 - **Method Test Fixture**: For testing methods loaded from .method files with directory requirements
 - **System Test Fixture**: For testing system modules requiring full runtime initialization
-- **Instruction Fixture**: For testing instruction modules with common data patterns but no system dependencies
+- **Instruction Fixture**: For testing the instruction module itself, providing agent creation, method registration, and data structure helpers
 
-The instruction fixture is lightweight and focused on data creation patterns, making it ideal for modules that work with data structures and expressions without needing the full AgeRun runtime.
+The instruction fixture is specifically designed for the instruction module's test suite, providing the exact patterns needed for comprehensive instruction testing including agent-based tests, expression evaluation tests, and data manipulation tests.

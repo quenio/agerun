@@ -191,6 +191,111 @@ static void test_memory_check(void) {
     printf("✓ Memory check tests passed\n");
 }
 
+static void test_system_initialization(void) {
+    printf("Testing system initialization...\n");
+    
+    // Given an instruction fixture
+    instruction_fixture_t *own_fixture = ar_instruction_fixture_create("system_init_test");
+    assert(own_fixture != NULL);
+    
+    // When we initialize the system
+    bool result = ar_instruction_fixture_init_system(
+        own_fixture, 
+        "test_init_method", 
+        "memory.initialized := 1"
+    );
+    
+    // Then initialization should succeed
+    assert(result == true);
+    
+    // And we shouldn't be able to initialize again
+    result = ar_instruction_fixture_init_system(
+        own_fixture,
+        "another_method",
+        "memory.x := 1"
+    );
+    assert(result == false);
+    
+    // Clean up (fixture handles system shutdown)
+    ar_instruction_fixture_destroy(own_fixture);
+    
+    printf("✓ System initialization tests passed\n");
+}
+
+static void test_agent_creation(void) {
+    printf("Testing agent creation...\n");
+    
+    // Given an instruction fixture with initialized system
+    instruction_fixture_t *own_fixture = ar_instruction_fixture_create("agent_test");
+    assert(own_fixture != NULL);
+    
+    assert(ar_instruction_fixture_init_system(own_fixture, "init_method", "memory.ready := 1"));
+    
+    // When we create a test agent
+    agent_id_t agent_id = ar_instruction_fixture_create_test_agent(
+        own_fixture,
+        "test_agent_method",
+        "memory.value := message"
+    );
+    
+    // Then the agent should be created successfully
+    assert(agent_id > 0);
+    
+    // And we should be able to get the agent ID
+    agent_id_t retrieved_id = ar_instruction_fixture_get_agent(own_fixture);
+    assert(retrieved_id == agent_id);
+    
+    // And we shouldn't be able to create another agent
+    agent_id_t second_agent = ar_instruction_fixture_create_test_agent(
+        own_fixture,
+        "another_method",
+        "memory.x := 1"
+    );
+    assert(second_agent == 0);
+    
+    // Clean up (fixture handles agent destruction)
+    ar_instruction_fixture_destroy(own_fixture);
+    
+    printf("✓ Agent creation tests passed\n");
+}
+
+// Custom destructor for testing generic resource tracking
+static int test_resource_destroyed = 0;
+static void test_destructor(void *resource) {
+    test_resource_destroyed = 1;
+    AR_HEAP_FREE(resource);
+}
+
+static void test_generic_resource_tracking(void) {
+    printf("Testing generic resource tracking...\n");
+    
+    // Reset test flag
+    test_resource_destroyed = 0;
+    
+    // Given an instruction fixture
+    instruction_fixture_t *own_fixture = ar_instruction_fixture_create("generic_tracking");
+    assert(own_fixture != NULL);
+    
+    // When we create a generic resource
+    void *own_resource = AR_HEAP_MALLOC(100, "Test resource");
+    assert(own_resource != NULL);
+    
+    // And track it with a custom destructor
+    ar_instruction_fixture_track_resource(own_fixture, own_resource, test_destructor);
+    own_resource = NULL; // Ownership transferred
+    
+    // Then the destructor should not be called yet
+    assert(test_resource_destroyed == 0);
+    
+    // When we destroy the fixture
+    ar_instruction_fixture_destroy(own_fixture);
+    
+    // Then the destructor should have been called
+    assert(test_resource_destroyed == 1);
+    
+    printf("✓ Generic resource tracking tests passed\n");
+}
+
 int main(void) {
     printf("Running instruction fixture tests...\n\n");
     
@@ -201,6 +306,9 @@ int main(void) {
     test_list_creation();
     test_resource_tracking();
     test_memory_check();
+    test_system_initialization();
+    test_agent_creation();
+    test_generic_resource_tracking();
     
     printf("\nAll instruction fixture tests passed!\n");
     return 0;
