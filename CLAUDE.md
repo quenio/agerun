@@ -493,6 +493,44 @@ static void test_expression_evaluation(void) {
   - No system initialization required
 - All fixtures handle cleanup automatically
 
+## ASCII Diagram Guidelines
+
+When creating ASCII diagrams (especially module architecture diagrams):
+
+**Box Drawing**:
+- Use box-drawing characters: `┌ ┐ └ ┘ ─ │ ┬ ┴ ├ ┤ ┼`
+- Keep vertical lines aligned by counting characters
+- Ensure corners connect properly
+
+**Module Boxes**:
+- List module names in parentheses for compactness
+- Example: `(agerun_data, agerun_expression, agerun_instruction)`
+- Keep consistent spacing inside boxes
+
+**Arrows**:
+- Use `◄` for left-pointing arrows
+- Use `▼` for down-pointing arrows  
+- Connect arrows directly to box edges
+- For branching arrows, use `┬` or `┤` characters
+
+**Alignment**:
+- Count characters to ensure vertical alignment
+- Use spaces (not tabs) for consistent spacing
+- Test diagram rendering in monospace font
+
+**Example Structure**:
+```
+┌─────────────────┐
+│   Box Title     │ ◄──┐
+│ (item1, item2)  │    │
+└────────┬────────┘    │
+         │           ┌─┴──────────┐
+         ▼           │ Side Box   │
+┌─────────────────┐  │ (items)    │
+│  Another Box    │  └────────────┘
+└─────────────────┘
+```
+
 ## Quick Reference
 
 **Never**:
