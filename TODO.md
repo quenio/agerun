@@ -8,7 +8,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 - [ ] Ensure all modules comply with Parnas principles:
   - [ ] Audit existing modules for information hiding violations
-  - [ ] Identify and eliminate any circular dependencies
+  - [ ] Identify and eliminate any circular dependencies:
+    - [ ] Fix `agerun_agent` → `agerun_system` circular dependency
+    - [ ] Remove unnecessary `agerun_expression` → `agerun_system` include
+    - [ ] Fix `agerun_instruction` → `agerun_method` circular dependency
+    - [ ] Fix `agerun_method` → `agerun_agent` circular dependency
+    - [ ] Fix `agerun_agency` ↔ `agerun_agent` mutual dependency
+    - [ ] Fix `agerun_agency` → `agerun_system` circular dependency
   - [ ] Ensure all interfaces expose only abstract models
   - [ ] Verify complete documentation for each module
   - [ ] Create missing module design documents
