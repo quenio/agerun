@@ -1,13 +1,13 @@
-#ifndef AGERUN_FOUNDATION_TEST_FIXTURE_H
-#define AGERUN_FOUNDATION_TEST_FIXTURE_H
+#ifndef AGERUN_FOUNDATION_FIXTURE_H
+#define AGERUN_FOUNDATION_FIXTURE_H
 
 #include <stdbool.h>
 #include "agerun_data.h"
 #include "agerun_expression.h"
 
 /**
- * @file agerun_foundation_test_fixture.h
- * @brief Foundation test fixture for AgeRun foundation module testing infrastructure
+ * @file agerun_foundation_fixture.h
+ * @brief Foundation fixture for AgeRun foundation module testing infrastructure
  * 
  * This module provides a proper abstraction for foundation module test setup and
  * teardown operations, eliminating repetitive patterns in data structure creation
@@ -15,8 +15,8 @@
  * like data, expression, and instruction that don't require system initialization.
  */
 
-/* Opaque foundation test fixture type */
-typedef struct foundation_test_fixture_s foundation_test_fixture_t;
+/* Opaque foundation fixture type */
+typedef struct foundation_fixture_s foundation_fixture_t;
 
 /**
  * Creates a new test fixture for AgeRun foundation module tests
@@ -24,14 +24,14 @@ typedef struct foundation_test_fixture_s foundation_test_fixture_t;
  * @return A newly created test fixture
  * @note Ownership: Returns an owned fixture that caller must destroy
  */
-foundation_test_fixture_t* ar_foundation_test_fixture_create(const char *ref_test_name);
+foundation_fixture_t* ar_foundation_fixture_create(const char *ref_test_name);
 
 /**
  * Destroys a test fixture and performs cleanup
  * @param own_fixture The fixture to destroy
  * @note Ownership: Takes ownership and destroys the fixture and all tracked resources
  */
-void ar_foundation_test_fixture_destroy(foundation_test_fixture_t *own_fixture);
+void ar_foundation_fixture_destroy(foundation_fixture_t *own_fixture);
 
 /**
  * Creates an expression context with standard test data
@@ -41,8 +41,8 @@ void ar_foundation_test_fixture_destroy(foundation_test_fixture_t *own_fixture);
  * @note Ownership: Returns a borrowed reference; fixture owns and will destroy it
  * @note The context is created with pre-populated memory, context, and message maps
  */
-expression_context_t* ar_foundation_test_fixture_create_expression_context(
-    foundation_test_fixture_t *mut_fixture,
+expression_context_t* ar_foundation_fixture_create_expression_context(
+    foundation_fixture_t *mut_fixture,
     const char *ref_expression
 );
 
@@ -59,8 +59,8 @@ expression_context_t* ar_foundation_test_fixture_create_expression_context(
  *       references to memory fields. While expressions don't modify memory, the API
  *       requires mutable access for type correctness when returning these references.
  */
-expression_context_t* ar_foundation_test_fixture_create_custom_expression_context(
-    foundation_test_fixture_t *mut_fixture,
+expression_context_t* ar_foundation_fixture_create_custom_expression_context(
+    foundation_fixture_t *mut_fixture,
     data_t *mut_memory,
     const data_t *ref_context,
     const data_t *ref_message,
@@ -75,8 +75,8 @@ expression_context_t* ar_foundation_test_fixture_create_custom_expression_contex
  * @note Ownership: Returns a borrowed reference; fixture owns and will destroy it
  * @note The map is pre-populated with common test values
  */
-data_t* ar_foundation_test_fixture_create_test_map(
-    foundation_test_fixture_t *mut_fixture,
+data_t* ar_foundation_fixture_create_test_map(
+    foundation_fixture_t *mut_fixture,
     const char *ref_name
 );
 
@@ -86,8 +86,8 @@ data_t* ar_foundation_test_fixture_create_test_map(
  * @return A newly created empty data map
  * @note Ownership: Returns a borrowed reference; fixture owns and will destroy it
  */
-data_t* ar_foundation_test_fixture_create_empty_map(
-    foundation_test_fixture_t *mut_fixture
+data_t* ar_foundation_fixture_create_empty_map(
+    foundation_fixture_t *mut_fixture
 );
 
 /**
@@ -96,8 +96,8 @@ data_t* ar_foundation_test_fixture_create_empty_map(
  * @return A newly created data list
  * @note Ownership: Returns a borrowed reference; fixture owns and will destroy it
  */
-data_t* ar_foundation_test_fixture_create_test_list(
-    foundation_test_fixture_t *mut_fixture
+data_t* ar_foundation_fixture_create_test_list(
+    foundation_fixture_t *mut_fixture
 );
 
 /**
@@ -105,14 +105,14 @@ data_t* ar_foundation_test_fixture_create_test_list(
  * @param ref_fixture The fixture to query
  * @return The test name (borrowed reference)
  */
-const char* ar_foundation_test_fixture_get_name(const foundation_test_fixture_t *ref_fixture);
+const char* ar_foundation_fixture_get_name(const foundation_fixture_t *ref_fixture);
 
 /**
  * Checks if there were any memory leaks during the test
  * @param ref_fixture The fixture to check
  * @return true if no memory leaks, false if leaks detected
  */
-bool ar_foundation_test_fixture_check_memory(const foundation_test_fixture_t *ref_fixture);
+bool ar_foundation_fixture_check_memory(const foundation_fixture_t *ref_fixture);
 
 /**
  * Tracks a data object for automatic cleanup
@@ -121,8 +121,8 @@ bool ar_foundation_test_fixture_check_memory(const foundation_test_fixture_t *re
  * @note Ownership: Takes ownership of the data object
  * @note Use this for data objects created outside the fixture helpers
  */
-void ar_foundation_test_fixture_track_data(
-    foundation_test_fixture_t *mut_fixture,
+void ar_foundation_fixture_track_data(
+    foundation_fixture_t *mut_fixture,
     data_t *own_data
 );
 
@@ -133,9 +133,9 @@ void ar_foundation_test_fixture_track_data(
  * @note Ownership: Takes ownership of the expression context
  * @note Use this for contexts created outside the fixture helpers
  */
-void ar_foundation_test_fixture_track_expression_context(
-    foundation_test_fixture_t *mut_fixture,
+void ar_foundation_fixture_track_expression_context(
+    foundation_fixture_t *mut_fixture,
     expression_context_t *own_context
 );
 
-#endif /* AGERUN_FOUNDATION_TEST_FIXTURE_H */
+#endif /* AGERUN_FOUNDATION_FIXTURE_H */
