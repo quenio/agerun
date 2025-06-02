@@ -155,49 +155,6 @@ The [heap module](agerun_heap.md) provides comprehensive memory tracking and lea
 - **Statistical Reporting**: Provides allocation counts, memory usage, and leak summaries
 - **Production Safety**: All tracking code compiles out in release builds
 
-### Method Fixture Module (`agerun_method_fixture`)
-
-The method test fixture module provides a proper abstraction for method test setup and teardown operations:
-
-- **Method Test Lifecycle Management**: Encapsulates complete test lifecycle for method tests (setup → execution → teardown)
-- **System State Initialization**: Ensures clean system state for each method test run
-- **Method File Loading**: Provides abstraction for loading and registering method files from disk
-- **Directory Verification**: Validates test execution directory requirements for relative path access
-- **Memory Leak Detection**: Tracks allocations and reports memory leaks per method test
-- **Persistence Cleanup**: Automatically removes persistence files between method tests
-- **No Helper Functions**: Proper module abstraction eliminating need for scattered helpers
-- **Opaque Type**: Method test fixture structure is opaque, following Parnas principles
-- **Depends on Core Modules**: Uses system, methodology, agency, IO, and heap modules
-
-### System Fixture Module (`agerun_system_fixture`)
-
-The system test fixture module provides a proper abstraction for system module test setup and teardown operations:
-
-- **System Test Lifecycle Management**: Encapsulates complete test lifecycle for system module tests
-- **System State Initialization**: Ensures clean system state for each system module test run
-- **Method Registration**: Provides abstraction for creating and registering methods programmatically
-- **System Reset**: Supports resetting system state for persistence testing scenarios
-- **Memory Leak Detection**: Tracks allocations and reports memory leaks per system module test
-- **Persistence Cleanup**: Automatically removes persistence files between system module tests
-- **No Helper Functions**: Proper module abstraction eliminating need for scattered helpers
-- **Opaque Type**: System test fixture structure is opaque, following Parnas principles
-- **Designed for System Modules**: Used by agent, method, instruction, methodology, and system module tests
-- **Not for Core Modules**: Core modules (string, list, map, etc.) test in isolation without fixtures
-
-### Instruction Fixture Module (`agerun_instruction_fixture`)
-
-The instruction fixture module provides a proper abstraction for instruction module test patterns:
-
-- **Expression Context Management**: Creates and tracks expression contexts with pre-populated test data
-- **Test Data Builders**: Provides common test data structures (maps, lists) with standard values
-- **Resource Tracking**: Automatically tracks and destroys all created data objects and contexts
-- **Memory Leak Detection**: Ensures all test resources are properly cleaned up
-- **No System Dependencies**: Works without system initialization, unlike system test fixture
-- **Lightweight Design**: Focused on data creation patterns common to instruction modules
-- **No Helper Functions**: Proper module abstraction eliminating repetitive setup code
-- **Opaque Type**: Instruction test fixture structure is opaque, following Parnas principles
-- **Designed for Instruction Modules**: Used by data, expression, and instruction module tests
-- **Reduces Boilerplate**: Eliminates 39+ expression context creations and 22+ map creations
 
 ### String Module (`agerun_string`)
 
@@ -402,3 +359,51 @@ The executable module provides the main application entry point and example usag
 - **Runtime Lifecycle**: Demonstrates proper system initialization and shutdown
 - **Zero Memory Leaks**: Example of leak-free application development with AgeRun
 - **Depends on System and Methodology**: Uses high-level system APIs for demonstration
+
+## Fixture Modules
+
+Fixture modules provide test infrastructure for other modules by encapsulating common test setup and teardown patterns. These modules are designed specifically for testing and follow Parnas design principles with opaque types and focused interfaces.
+
+### Method Fixture Module (`agerun_method_fixture`)
+
+The method test fixture module provides a proper abstraction for method test setup and teardown operations:
+
+- **Method Test Lifecycle Management**: Encapsulates complete test lifecycle for method tests (setup → execution → teardown)
+- **System State Initialization**: Ensures clean system state for each method test run
+- **Method File Loading**: Provides abstraction for loading and registering method files from disk
+- **Directory Verification**: Validates test execution directory requirements for relative path access
+- **Memory Leak Detection**: Tracks allocations and reports memory leaks per method test
+- **Persistence Cleanup**: Automatically removes persistence files between method tests
+- **No Helper Functions**: Proper module abstraction eliminating need for scattered helpers
+- **Opaque Type**: Method test fixture structure is opaque, following Parnas principles
+- **Depends on Core Modules**: Uses system, methodology, agency, IO, and heap modules
+
+### Instruction Fixture Module (`agerun_instruction_fixture`)
+
+The instruction fixture module provides a proper abstraction for instruction module test patterns:
+
+- **Expression Context Management**: Creates and tracks expression contexts with pre-populated test data
+- **Test Data Builders**: Provides common test data structures (maps, lists) with standard values
+- **Resource Tracking**: Automatically tracks and destroys all created data objects and contexts
+- **Memory Leak Detection**: Ensures all test resources are properly cleaned up
+- **No System Dependencies**: Works without system initialization, unlike system test fixture
+- **Lightweight Design**: Focused on data creation patterns common to instruction modules
+- **No Helper Functions**: Proper module abstraction eliminating repetitive setup code
+- **Opaque Type**: Instruction test fixture structure is opaque, following Parnas principles
+- **Designed for Instruction Modules**: Used by data, expression, and instruction module tests
+- **Reduces Boilerplate**: Eliminates 39+ expression context creations and 22+ map creations
+
+### System Fixture Module (`agerun_system_fixture`)
+
+The system test fixture module provides a proper abstraction for system module test setup and teardown operations:
+
+- **System Test Lifecycle Management**: Encapsulates complete test lifecycle for system module tests
+- **System State Initialization**: Ensures clean system state for each system module test run
+- **Method Registration**: Provides abstraction for creating and registering methods programmatically
+- **System Reset**: Supports resetting system state for persistence testing scenarios
+- **Memory Leak Detection**: Tracks allocations and reports memory leaks per system module test
+- **Persistence Cleanup**: Automatically removes persistence files between system module tests
+- **No Helper Functions**: Proper module abstraction eliminating need for scattered helpers
+- **Opaque Type**: System test fixture structure is opaque, following Parnas principles
+- **Designed for System Modules**: Used by agent, method, instruction, methodology, and system module tests
+- **Not for Core Modules**: Core modules (string, list, map, etc.) test in isolation without fixtures
