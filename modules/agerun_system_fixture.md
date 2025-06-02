@@ -1,10 +1,10 @@
-# System Test Fixture Module
+# System Fixture Module
 
-The system test fixture provides a proper abstraction for test setup and teardown operations in AgeRun system module tests. It encapsulates common test patterns for modules that require the full AgeRun runtime environment, eliminating the need for helper functions scattered across test files.
+The system fixture provides a proper abstraction for test setup and teardown operations in AgeRun system module tests. It encapsulates common test patterns for modules that require the full AgeRun runtime environment, eliminating the need for helper functions scattered across test files.
 
 ## Overview
 
-The system test fixture manages the complete lifecycle of a system module test, including:
+The system fixture manages the complete lifecycle of a system module test, including:
 - System state initialization and cleanup
 - Method creation and registration via the methodology API
 - Agent lifecycle support (though not directly managed)
@@ -16,7 +16,7 @@ This module follows Parnas design principles by hiding implementation details be
 
 ## Key Features
 
-- **Opaque Type**: The `system_test_fixture_t` type is opaque, hiding implementation details
+- **Opaque Type**: The `system_fixture_t` type is opaque, hiding implementation details
 - **Lifecycle Management**: Handles complete test setup and teardown automatically
 - **Memory Safety**: Tracks memory allocations to detect leaks within tests
 - **State Isolation**: Ensures clean system state between test runs
@@ -28,8 +28,8 @@ This module follows Parnas design principles by hiding implementation details be
 ### Creating and Destroying Fixtures
 
 ```c
-system_test_fixture_t* ar_system_test_fixture_create(const char *ref_test_name);
-void ar_system_test_fixture_destroy(system_test_fixture_t *own_fixture);
+system_fixture_t* ar_system_fixture_create(const char *ref_test_name);
+void ar_system_fixture_destroy(system_fixture_t *own_fixture);
 ```
 
 Creates a new test fixture with the given name. The fixture must be destroyed when the test completes to ensure proper cleanup.
@@ -37,7 +37,7 @@ Creates a new test fixture with the given name. The fixture must be destroyed wh
 ### Initializing Test Environment
 
 ```c
-bool ar_system_test_fixture_initialize(system_test_fixture_t *mut_fixture);
+bool ar_system_fixture_initialize(system_fixture_t *mut_fixture);
 ```
 
 Initializes the test environment by:
@@ -49,7 +49,7 @@ Initializes the test environment by:
 ### Registering Methods
 
 ```c
-method_t* ar_system_test_fixture_register_method(system_test_fixture_t *mut_fixture,
+method_t* ar_system_fixture_register_method(system_fixture_t *mut_fixture,
                                                 const char *ref_method_name,
                                                 const char *ref_instructions,
                                                 const char *ref_version);
@@ -60,7 +60,7 @@ Creates a method programmatically and registers it with the methodology. This el
 ### System Reset
 
 ```c
-void ar_system_test_fixture_reset_system(system_test_fixture_t *mut_fixture);
+void ar_system_fixture_reset_system(system_fixture_t *mut_fixture);
 ```
 
 Resets the system to a clean state, useful for tests that need to verify persistence by shutting down and reinitializing the system.
@@ -68,7 +68,7 @@ Resets the system to a clean state, useful for tests that need to verify persist
 ### Memory Leak Detection
 
 ```c
-bool ar_system_test_fixture_check_memory(const system_test_fixture_t *ref_fixture);
+bool ar_system_fixture_check_memory(const system_fixture_t *ref_fixture);
 ```
 
 Checks if any memory leaks occurred during the test by relying on the heap module's automatic reporting.
@@ -76,7 +76,7 @@ Checks if any memory leaks occurred during the test by relying on the heap modul
 ### Fixture Information
 
 ```c
-const char* ar_system_test_fixture_get_name(const system_test_fixture_t *ref_fixture);
+const char* ar_system_fixture_get_name(const system_fixture_t *ref_fixture);
 ```
 
 Returns the name of the test associated with the fixture.
@@ -86,14 +86,14 @@ Returns the name of the test associated with the fixture.
 ```c
 static void test_my_system_function(void) {
     // Create fixture for this test
-    system_test_fixture_t *own_fixture = ar_system_test_fixture_create("test_my_function");
+    system_fixture_t *own_fixture = ar_system_fixture_create("test_my_function");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar_system_test_fixture_initialize(own_fixture));
+    assert(ar_system_fixture_initialize(own_fixture));
     
     // Register a test method
-    method_t *ref_method = ar_system_test_fixture_register_method(
+    method_t *ref_method = ar_system_fixture_register_method(
         own_fixture, 
         "test_method", 
         "send(0, \"Hello\")",
@@ -105,10 +105,10 @@ static void test_my_system_function(void) {
     // Create agents, send messages, verify behavior
     
     // Check for memory leaks
-    assert(ar_system_test_fixture_check_memory(own_fixture));
+    assert(ar_system_fixture_check_memory(own_fixture));
     
     // Clean up
-    ar_system_test_fixture_destroy(own_fixture);
+    ar_system_fixture_destroy(own_fixture);
 }
 ```
 
@@ -123,7 +123,7 @@ This module was created to complement the method test fixture by addressing patt
 
 ## Memory Management
 
-The system test fixture follows the AgeRun Memory Management Model:
+The system fixture follows the AgeRun Memory Management Model:
 - Uses `own_` prefix for owned values that must be destroyed
 - Uses `mut_` prefix for mutable references
 - Uses `ref_` prefix for borrowed references
@@ -132,7 +132,7 @@ The system test fixture follows the AgeRun Memory Management Model:
 
 ## Differences from Method Test Fixture
 
-While the method test fixture is designed for testing methods loaded from `.method` files, the system test fixture is designed for testing system modules that require the full runtime:
+While the method test fixture is designed for testing methods loaded from `.method` files, the system fixture is designed for testing system modules that require the full runtime:
 
 - **Method Test Fixture**: Loads methods from disk, verifies directory paths, tests agent behavior
-- **System Test Fixture**: Creates methods programmatically, tests system modules, supports system reset
+- **System Fixture**: Creates methods programmatically, tests system modules, supports system reset

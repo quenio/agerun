@@ -169,7 +169,7 @@ The method test fixture module provides a proper abstraction for method test set
 - **Opaque Type**: Method test fixture structure is opaque, following Parnas principles
 - **Depends on Core Modules**: Uses system, methodology, agency, IO, and heap modules
 
-### System Test Fixture Module (`agerun_system_test_fixture`)
+### System Fixture Module (`agerun_system_fixture`)
 
 The system test fixture module provides a proper abstraction for system module test setup and teardown operations:
 
