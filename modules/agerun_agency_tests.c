@@ -9,31 +9,10 @@
 #include <assert.h>
 
 // Forward declarations
-static void test_agency_init_state(void);
 static void test_agency_count_agents(void);
-static void test_agency_next_id(void);
 static void test_agency_persistence(void);
 static void test_agency_reset(void);
 
-static void test_agency_init_state(void) {
-    printf("Testing agency initialization state...\n");
-    
-    // Given the agency system has been initialized
-    
-    // When we get the agents array
-    agent_t *agents = ar_agency_get_agents();
-    
-    // Then the array should exist
-    assert(agents != NULL);
-    
-    // When we get the next agent ID
-    int64_t next_id = ar_agency_get_next_id();
-    
-    // Then it should be set to a positive value
-    assert(next_id > 0);
-    
-    printf("Agency initialization state test passed!\n");
-}
 
 static void test_agency_count_agents(void) {
     printf("Testing ar_agency_count_agents()...\n");
@@ -92,56 +71,6 @@ static void test_agency_count_agents(void) {
     printf("ar_agency_count_agents() test passed!\n");
 }
 
-static void test_agency_next_id(void) {
-    printf("Testing ar_agency_get_next_id() and ar_agency_set_next_id()...\n");
-    
-    // Given we have the current next agent ID
-    int64_t current_next_id = ar_agency_get_next_id();
-    
-    // When we set a new next ID
-    int64_t new_next_id = current_next_id + 1000;
-    ar_agency_set_next_id(new_next_id);
-    
-    // Then the next ID should be updated correctly
-    int64_t retrieved_next_id = ar_agency_get_next_id();
-    assert(retrieved_next_id == new_next_id);
-    
-    // Given we have a test method
-    const char *method_name = "next_id_test_method";
-    const char *instructions = "message -> \"Next ID Test\"";
-    
-    // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(method_name, instructions, "1.0.0");
-    assert(own_method != NULL);
-    
-    // Register with methodology
-    extern void ar_methodology_register_method(method_t *own_method);
-    ar_methodology_register_method(own_method);
-    own_method = NULL; // Mark as transferred
-    
-    // For test purposes, we assume registration succeeds and creates version "1.0.0"
-    const char *version = "1.0.0";
-    
-    // When we create a new agent
-    data_t *context = ar_data_create_map();
-    int64_t agent_id = ar_agent_create(method_name, version, context);
-    
-    // Then the agent should be assigned the current next ID
-    assert(agent_id == new_next_id);
-    
-    // And the next ID should be incremented
-    retrieved_next_id = ar_agency_get_next_id();
-    assert(retrieved_next_id == new_next_id + 1);
-    
-    // Cleanup
-    ar_agent_destroy(agent_id);
-    ar_data_destroy(context); // Clean up the context we created
-    
-    // Restore the original next ID value
-    ar_agency_set_next_id(current_next_id);
-    
-    printf("ar_agency_get_next_id() and ar_agency_set_next_id() tests passed!\n");
-}
 
 static void test_agency_persistence(void) {
     printf("Testing agency persistence...\n");
@@ -172,15 +101,9 @@ static void test_agency_persistence(void) {
     // Then the save operation should succeed
     assert(save_result);
     
-    // Given we capture the current next ID
-    int64_t next_id = ar_agency_get_next_id();
-    
     // When we simulate a system restart
     ar_system_shutdown();
     ar_system_init("agency_persistence_method", version);
-    
-    // And restore the next ID
-    ar_agency_set_next_id(next_id);
     
     // And load the methods and agents
     bool load_methods_result = ar_methodology_load_methods();
@@ -265,9 +188,7 @@ int main(void) {
     assert(init_agent_id > 0);
     
     // When we run all agency tests
-    test_agency_init_state();
     test_agency_count_agents();
-    test_agency_next_id();
     test_agency_persistence();
     test_agency_reset();
     

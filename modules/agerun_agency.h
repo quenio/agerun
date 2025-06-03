@@ -18,24 +18,6 @@ typedef struct agent_s agent_t;
  */
 void ar_agency_set_initialized(bool initialized);
 
-/**
- * Get agents array - used by system functions
- * @return Pointer to the agents array (borrowed reference)
- * @note Ownership: Returns a borrowed reference that caller must not destroy.
- */
-agent_t* ar_agency_get_agents(void);
-
-/**
- * Get next agent ID - used by system functions
- * @return Next agent ID to be assigned (value type, not a reference)
- */
-int64_t ar_agency_get_next_id(void);
-
-/**
- * Set next agent ID - used by system functions
- * @param id The ID to set as next agent ID (value type, not a reference)
- */
-void ar_agency_set_next_id(int64_t id);
 
 /**
  * Reset agency state (used during shutdown)

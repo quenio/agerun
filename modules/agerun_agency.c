@@ -10,16 +10,6 @@
 #include "agerun_system.h" /* Include for message processing */
 #include "agerun_list.h" /* Include for list operations */
 
-/* Agent Definition (needed by agency as it owns the agent array) */
-struct agent_s {
-    int64_t id;
-    const method_t *ref_method; // Borrowed reference to method
-    bool is_active;
-    list_t *own_message_queue;  // Using list as a message queue, owned by agent
-    data_t *own_memory;        // Memory owned by agent
-    const data_t *ref_context;  // Context is read-only reference, not owned
-};
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,98 +20,99 @@ struct agent_s {
 /* Constants */
 
 /* Global State */
-static agent_t g_own_agents[MAX_AGENTS]; // Owned by the agency module
-static int64_t g_next_agent_id = 1;
 static bool g_is_initialized = false;
 
 // We now use ar_io_read_line directly from the agerun_io module
-
-/* Static initialization */
-static void ar_agency_init(void) {
-    if (!g_is_initialized) {
-        for (int i = 0; i < MAX_AGENTS; i++) {
-            g_own_agents[i].is_active = false;
-            g_own_agents[i].ref_method = NULL;
-            g_own_agents[i].own_memory = NULL;
-            g_own_agents[i].own_message_queue = NULL;
-            g_own_agents[i].ref_context = NULL; // Not owned, just initialize reference
-        }
-        g_is_initialized = true;
-    }
-}
 
 /* Implementation */
 void ar_agency_set_initialized(bool initialized) {
     g_is_initialized = initialized;
 }
 
-agent_t* ar_agency_get_agents(void) {
-    if (!g_is_initialized) {
-        ar_agency_init();
-    }
-    return g_own_agents; // Ownership: Borrowed reference (module retains ownership)
-}
-
-int64_t ar_agency_get_next_id(void) {
-    return g_next_agent_id; // Value type, not a reference
-}
-
-void ar_agency_set_next_id(int64_t id) {
-    g_next_agent_id = id; // Value type, not a reference
-}
 
 void ar_agency_reset(void) {
-    // Reset all agents to inactive
-    for (int i = 0; i < MAX_AGENTS; i++) {
-        if (g_own_agents[i].is_active) {
-            // Free memory data if it exists
-            if (g_own_agents[i].own_memory) {
-                ar_data_destroy(g_own_agents[i].own_memory);
-                g_own_agents[i].own_memory = NULL; // Mark as destroyed
-            }
-            
-            // Clear context reference (we don't own it)
-            g_own_agents[i].ref_context = NULL;
-            
-            // Free message queue if it exists
-            if (g_own_agents[i].own_message_queue) {
-                // First destroy any remaining messages in the queue
-                data_t *own_msg = NULL;
-                while ((own_msg = ar_list_remove_first(g_own_agents[i].own_message_queue)) != NULL) {
-                    ar_data_destroy(own_msg);
-                    own_msg = NULL; // Mark as destroyed
-                }
-                // Then destroy the queue itself
-                ar_list_destroy(g_own_agents[i].own_message_queue);
-                g_own_agents[i].own_message_queue = NULL; // Mark as destroyed
-            }
-        }
-        g_own_agents[i].is_active = false;
-    }
-    
-    // Reset next_agent_id
-    g_next_agent_id = 1;
+    ar_agent_reset_all();
 }
 
 int ar_agency_count_agents(void) {
-    if (!g_is_initialized) {
-        return 0;
-    }
-    
-    int count = 0;
-    for (int i = 0; i < MAX_AGENTS; i++) {
-        if (g_own_agents[i].is_active) {
-            count++;
-        }
-    }
-    
-    return count; // Value type, not a reference
+    return ar_agent_count_active();
 }
 
 // Context structure for agency saving
 typedef struct {
     const char *filename;
 } agency_save_context_t;
+
+// Helper struct for counting agents with methods
+typedef struct {
+    int count;
+} agent_count_context_t;
+
+// Visitor function to count agents with methods
+static bool count_agents_with_methods(int64_t agent_id, const method_t *ref_method, 
+                                    const data_t *ref_memory, void *user_data) {
+    (void)agent_id; // Unused
+    (void)ref_memory; // Unused
+    agent_count_context_t *ctx = (agent_count_context_t *)user_data;
+    if (ref_method != NULL) {
+        ctx->count++;
+    }
+    return true; // Continue iteration
+}
+
+// Helper struct for saving agents
+typedef struct {
+    FILE *fp;
+    const char *filename;
+    bool success;
+} agent_save_context_t;
+
+// Visitor function to save agent data
+static bool save_agent_data(int64_t agent_id, const method_t *ref_method, 
+                           const data_t *ref_memory, void *user_data) {
+    (void)ref_memory; // TODO: Implement full memory persistence when needed
+    agent_save_context_t *ctx = (agent_save_context_t *)user_data;
+    
+    if (!ref_method) {
+        return true; // Skip agents without methods
+    }
+    
+    const char *method_name = ar_method_get_name(ref_method);
+    const char *method_version = ar_method_get_version(ref_method);
+    
+    if (!method_name || !method_version) {
+        ar_io_error("Invalid method reference data for agent %lld", agent_id);
+        ctx->success = false;
+        return false; // Stop iteration
+    }
+    
+    // Use snprintf to safely format agent data
+    char buffer[128];
+    int written = snprintf(buffer, sizeof(buffer), "%lld %s %s\n",
+                          agent_id, method_name, method_version);
+    if (written < 0 || written >= (int)sizeof(buffer)) {
+        ar_io_error("Buffer too small for agent data in %s", ctx->filename);
+        ctx->success = false;
+        return false;
+    }
+    
+    // Write the agent data to the file with error checking
+    if (fputs(buffer, ctx->fp) == EOF) {
+        ar_io_error("Failed to write agent data to %s", ctx->filename);
+        ctx->success = false;
+        return false;
+    }
+    
+    // For now, save memory map placeholder (0 items)
+    // TODO: Implement full memory persistence when needed
+    if (fputs("0\n", ctx->fp) == EOF) {
+        ar_io_error("Failed to write memory map count to %s", ctx->filename);
+        ctx->success = false;
+        return false;
+    }
+    
+    return true; // Continue iteration
+}
 
 // Writer function for agency data
 static bool agency_write_function(FILE *fp, void *context) {
@@ -130,14 +121,11 @@ static bool agency_write_function(FILE *fp, void *context) {
         ar_io_error("Invalid context for agency_write_function");
         return false;
     }
-
-    // Count how many active agents we have
-    int count = 0;
-    for (int i = 0; i < MAX_AGENTS; i++) {
-        if (g_own_agents[i].is_active && g_own_agents[i].ref_method != NULL) {
-            count++;
-        }
-    }
+    
+    // Count how many active agents we have with methods
+    agent_count_context_t count_ctx = { .count = 0 };
+    ar_agent_iterate_active(count_agents_with_methods, &count_ctx);
+    int count = count_ctx.count;
 
     // Use snprintf to safely format the output
     char buffer[128];
@@ -153,38 +141,17 @@ static bool agency_write_function(FILE *fp, void *context) {
         return false;
     }
 
-    // Save basic agent info
-    for (int i = 0; i < MAX_AGENTS; i++) {
-        if (g_own_agents[i].is_active && g_own_agents[i].ref_method != NULL) {
-            // Get method name and version from the method reference
-            const char *method_name = ar_method_get_name(g_own_agents[i].ref_method);
-            const char *method_version = ar_method_get_version(g_own_agents[i].ref_method);
-
-            if (!method_name || !method_version) {
-                ar_io_error("Invalid method reference data for agent %lld", g_own_agents[i].id);
-                return false;
-            }
-
-            // Use snprintf to safely format agent data
-            written = snprintf(buffer, sizeof(buffer), "%lld %s %s\n",
-                              g_own_agents[i].id, method_name, method_version);
-            if (written < 0 || written >= (int)sizeof(buffer)) {
-                ar_io_error("Buffer too small for agent data in %s", ctx->filename);
-                return false;
-            }
-
-            // Write the agent data to the file with error checking
-            if (fputs(buffer, fp) == EOF) {
-                ar_io_error("Failed to write agent data to %s", ctx->filename);
-                return false;
-            }
-
-            // Save memory map placeholder (0 items for now)
-            if (fputs("0\n", fp) == EOF) {
-                ar_io_error("Failed to write memory map count to %s", ctx->filename);
-                return false;
-            }
-        }
+    // Save agent data using visitor pattern
+    agent_save_context_t save_ctx = {
+        .fp = fp,
+        .filename = ctx->filename,  
+        .success = true
+    };
+    
+    ar_agent_iterate_active(save_agent_data, &save_ctx);
+    
+    if (!save_ctx.success) {
+        return false;
     }
 
     // Success
@@ -685,186 +652,177 @@ bool ar_agency_load_agents(void) {
         }
 
         // Update the assigned ID to match the stored one
-        bool agent_found = false;
-        for (int j = 0; j < MAX_AGENTS; j++) {
-            if (g_own_agents[j].is_active && g_own_agents[j].id == new_id) {
-                g_own_agents[j].id = agent_info[i].id;
-                agent_found = true;
-
-                // Read memory map line for count
-                char mem_line[256] = {0};
-                if (!ar_io_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
-                    ar_io_error("Failed to read memory count for agent %lld", agent_info[i].id);
-                    break;
-                }
-
-                // Parse memory count securely
-                int mem_count = 0;
-                char *mem_count_endptr = NULL;
-                errno = 0; // Reset errno to check for conversion errors
-                mem_count = (int)strtol(mem_line, &mem_count_endptr, 10);
-
-                // Validate conversion and range
-                if (errno != 0 || mem_count_endptr == mem_line ||
-                    (*mem_count_endptr != '\0' && *mem_count_endptr != '\n') ||
-                    mem_count < 0 || mem_count > 1000) { // Adding reasonable upper limit
-                    ar_io_error("Invalid memory count for agent %lld", agent_info[i].id);
-                    break;
-                }
-
-                // Process each memory item
-                for (int k = 0; k < mem_count; k++) {
-                    char key[256] = {0};
-                    char type[32] = {0};
-
-                    // Read key and type line
-                    if (!ar_io_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
-                        ar_io_error("Failed to read memory key/type for agent %lld", agent_info[i].id);
-                        break;
-                    }
-
-                    // Parse key and type
-                    char *mem_token = NULL;
-                    char *mem_next_token = NULL;
-
-                    // Get the key
-                    mem_token = strtok_r(mem_line, " \t\n", &mem_next_token);
-                    if (mem_token == NULL) {
-                        ar_io_error("Malformed memory entry - missing key for agent %lld", agent_info[i].id);
-                        break;
-                    }
-
-                    // Copy key securely
-                    size_t token_len = strlen(mem_token);
-                    if (token_len >= sizeof(key)) {
-                        ar_io_error("Memory key too long for agent %lld", agent_info[i].id);
-                        break;
-                    }
-
-                    // Use safer string copy function
-                    ar_io_string_copy(key, mem_token, sizeof(key));
-
-                    // Get the type
-                    mem_token = strtok_r(NULL, " \t\n", &mem_next_token);
-                    if (mem_token == NULL) {
-                        ar_io_error("Malformed memory entry - missing type for agent %lld", agent_info[i].id);
-                        break;
-                    }
-
-                    // Copy type securely
-                    token_len = strlen(mem_token);
-                    if (token_len >= sizeof(type)) {
-                        ar_io_error("Memory type too long for agent %lld", agent_info[i].id);
-                        break;
-                    }
-
-                    // Use safer string copy function
-                    ar_io_string_copy(type, mem_token, sizeof(type));
-
-                    // Process based on type
-                    data_t *own_value = NULL; // Will be an owned value after creation
-
-                    if (strcmp(type, "int") == 0) {
-                        // Read value line
-                        if (!ar_io_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
-                            ar_io_error("Failed to read int value for agent %lld", agent_info[i].id);
-                            break;
-                        }
-
-                        // Parse int value securely
-                        int int_value;
-                        char *int_value_endptr = NULL;
-                        errno = 0; // Reset errno to check for conversion errors
-                        int_value = (int)strtol(mem_line, &int_value_endptr, 10);
-
-                        // Validate conversion
-                        if (errno != 0 || int_value_endptr == mem_line ||
-                            (*int_value_endptr != '\0' && *int_value_endptr != '\n')) {
-                            ar_io_error("Invalid int value for agent %lld", agent_info[i].id);
-                            break;
-                        }
-
-                        own_value = ar_data_create_integer(int_value);
-                    } else if (strcmp(type, "double") == 0) {
-                        // Read value line
-                        if (!ar_io_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
-                            ar_io_error("Failed to read double value for agent %lld", agent_info[i].id);
-                            break;
-                        }
-
-                        // Parse double value securely
-                        double double_value;
-                        char *double_value_endptr = NULL;
-                        errno = 0; // Reset errno to check for conversion errors
-                        double_value = strtod(mem_line, &double_value_endptr);
-
-                        // Validate conversion
-                        if (errno != 0 || double_value_endptr == mem_line ||
-                            (*double_value_endptr != '\0' && *double_value_endptr != '\n')) {
-                            ar_io_error("Invalid double value for agent %lld", agent_info[i].id);
-                            break;
-                        }
-
-                        own_value = ar_data_create_double(double_value);
-                    } else if (strcmp(type, "string") == 0) {
-                        // Read value line
-                        if (!ar_io_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
-                            ar_io_error("Failed to read string value for agent %lld", agent_info[i].id);
-                            break;
-                        }
-
-                        // Remove trailing newline if present
-                        size_t len = strlen(mem_line);
-                        if (len > 0 && mem_line[len-1] == '\n') {
-                            mem_line[len-1] = '\0';
-                        }
-
-                        // Create string data (makes a copy)
-                        own_value = ar_data_create_string(mem_line);
-                    } else {
-                        // Skip unknown type by reading next line
-                        ar_io_warning("Unknown memory type '%s' for agent %lld", type, agent_info[i].id);
-                        if (!ar_io_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
-                            ar_io_error("Could not skip unknown type for agent %lld", agent_info[i].id);
-                            break;
-                        }
-                        continue;
-                    }
-
-                    // Add the value to the agent's memory map
-                    if (own_value) {
-                        if (!g_own_agents[j].own_memory) {
-                            ar_io_error("Agent %lld has no memory map", agent_info[i].id);
-                            ar_data_destroy(own_value);
-                            break;
-                        }
-
-                        ar_data_set_map_data(g_own_agents[j].own_memory, key, own_value);
-                        // Note: Data ownership is transferred, so we don't free value here
-                        own_value = NULL; // Mark as transferred
-                    } else {
-                        ar_io_error("Failed to create value for agent %lld", agent_info[i].id);
-                        break;
-                    }
-                }
-
-                break; // Found the agent, no need to continue searching
-            }
+        if (!ar_agent_set_id(new_id, agent_info[i].id)) {
+            ar_io_error("Failed to update agent ID from %lld to %lld", new_id, agent_info[i].id);
+        }
+        
+        // Read memory map line for count
+        char mem_line[256] = {0};
+        if (!ar_io_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
+            ar_io_error("Failed to read memory count for agent %lld", agent_info[i].id);
+            continue;
         }
 
-        // If agent was not found (this shouldn't happen normally), skip the memory map data
-        if (!agent_found) {
-            ar_io_error("Agent with ID %lld was created but not found in agents array", agent_info[i].id);
-            // Skip memory map placeholder
-            if (!ar_io_read_line(fp, line, (int)sizeof(line), AGENCY_FILE_NAME)) {
-                ar_io_error("Failed to skip memory map placeholder for unfound agent");
+        // Parse memory count securely
+        int mem_count = 0;
+        char *mem_count_endptr = NULL;
+        errno = 0; // Reset errno to check for conversion errors
+        mem_count = (int)strtol(mem_line, &mem_count_endptr, 10);
+
+        // Validate conversion and range
+        if (errno != 0 || mem_count_endptr == mem_line ||
+            (*mem_count_endptr != '\0' && *mem_count_endptr != '\n') ||
+            mem_count < 0 || mem_count > 1000) { // Adding reasonable upper limit
+            ar_io_error("Invalid memory count for agent %lld", agent_info[i].id);
+            continue;
+        }
+        
+        // Get mutable memory for this agent
+        data_t *mut_memory = ar_agent_get_mutable_memory(agent_info[i].id);
+        if (!mut_memory && mem_count > 0) {
+            ar_io_error("Agent %lld has no memory map but file indicates %d items", agent_info[i].id, mem_count);
+            // Skip memory items
+            for (int k = 0; k < mem_count; k++) {
+                if (!ar_io_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) break;
+                if (!ar_io_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) break;
+            }
+            continue;
+        }
+
+        // Process each memory item
+        for (int k = 0; k < mem_count; k++) {
+            char key[256] = {0};
+            char type[32] = {0};
+
+            // Read key and type line
+            if (!ar_io_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
+                ar_io_error("Failed to read memory key/type for agent %lld", agent_info[i].id);
                 break;
+            }
+
+            // Parse key and type
+            char *mem_token = NULL;
+            char *mem_next_token = NULL;
+
+            // Get the key
+            mem_token = strtok_r(mem_line, " \t\n", &mem_next_token);
+            if (mem_token == NULL) {
+                ar_io_error("Malformed memory entry - missing key for agent %lld", agent_info[i].id);
+                break;
+            }
+
+            // Copy key securely
+            size_t token_len = strlen(mem_token);
+            if (token_len >= sizeof(key)) {
+                ar_io_error("Memory key too long for agent %lld", agent_info[i].id);
+                break;
+            }
+
+            // Use safer string copy function
+            ar_io_string_copy(key, mem_token, sizeof(key));
+
+            // Get the type
+            mem_token = strtok_r(NULL, " \t\n", &mem_next_token);
+            if (mem_token == NULL) {
+                ar_io_error("Malformed memory entry - missing type for agent %lld", agent_info[i].id);
+                break;
+            }
+
+            // Copy type securely
+            token_len = strlen(mem_token);
+            if (token_len >= sizeof(type)) {
+                ar_io_error("Memory type too long for agent %lld", agent_info[i].id);
+                break;
+            }
+
+            // Use safer string copy function
+            ar_io_string_copy(type, mem_token, sizeof(type));
+
+            // Process based on type
+            data_t *own_value = NULL; // Will be an owned value after creation
+
+            if (strcmp(type, "int") == 0) {
+                // Read value line
+                if (!ar_io_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
+                    ar_io_error("Failed to read int value for agent %lld", agent_info[i].id);
+                    break;
+                }
+
+                // Parse int value securely
+                int int_value;
+                char *int_value_endptr = NULL;
+                errno = 0; // Reset errno to check for conversion errors
+                int_value = (int)strtol(mem_line, &int_value_endptr, 10);
+
+                // Validate conversion
+                if (errno != 0 || int_value_endptr == mem_line ||
+                    (*int_value_endptr != '\0' && *int_value_endptr != '\n')) {
+                    ar_io_error("Invalid int value for agent %lld", agent_info[i].id);
+                    break;
+                }
+
+                own_value = ar_data_create_integer(int_value);
+            } else if (strcmp(type, "double") == 0) {
+                // Read value line
+                if (!ar_io_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
+                    ar_io_error("Failed to read double value for agent %lld", agent_info[i].id);
+                    break;
+                }
+
+                // Parse double value securely
+                double double_value;
+                char *double_value_endptr = NULL;
+                errno = 0; // Reset errno to check for conversion errors
+                double_value = strtod(mem_line, &double_value_endptr);
+
+                // Validate conversion
+                if (errno != 0 || double_value_endptr == mem_line ||
+                    (*double_value_endptr != '\0' && *double_value_endptr != '\n')) {
+                    ar_io_error("Invalid double value for agent %lld", agent_info[i].id);
+                    break;
+                }
+
+                own_value = ar_data_create_double(double_value);
+            } else if (strcmp(type, "string") == 0) {
+                // Read value line
+                if (!ar_io_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
+                    ar_io_error("Failed to read string value for agent %lld", agent_info[i].id);
+                    break;
+                }
+
+                // Remove trailing newline if present
+                size_t len = strlen(mem_line);
+                if (len > 0 && mem_line[len-1] == '\n') {
+                    mem_line[len-1] = '\0';
+                }
+
+                // Create string data (makes a copy)
+                own_value = ar_data_create_string(mem_line);
+            } else {
+                // Skip unknown type by reading next line
+                ar_io_warning("Unknown memory type '%s' for agent %lld", type, agent_info[i].id);
+                if (!ar_io_read_line(fp, mem_line, (int)sizeof(mem_line), AGENCY_FILE_NAME)) {
+                    ar_io_error("Could not skip unknown type for agent %lld", agent_info[i].id);
+                    break;
+                }
+                continue;
+            }
+
+            // Add the value to the agent's memory map
+            if (own_value && mut_memory) {
+                ar_data_set_map_data(mut_memory, key, own_value);
+                // Note: Data ownership is transferred, so we don't free value here
+                own_value = NULL; // Mark as transferred
+            } else if (own_value) {
+                ar_io_error("Failed to set value for agent %lld", agent_info[i].id);
+                ar_data_destroy(own_value);
             }
         }
 
         // Update next_agent_id if needed to ensure no ID collision
-        if (agent_info[i].id >= g_next_agent_id) {
-            g_next_agent_id = agent_info[i].id + 1;
+        int64_t next_id = ar_agent_get_next_id_internal();
+        if (agent_info[i].id >= next_id) {
+            ar_agent_set_next_id_internal(agent_info[i].id + 1);
         }
     }
 
@@ -876,7 +834,7 @@ bool ar_agency_load_agents(void) {
 }
 
 int ar_agency_update_agent_methods(const method_t *ref_old_method, const method_t *ref_new_method) {
-    if (!g_is_initialized || !ref_old_method || !ref_new_method) {
+    if (!ref_old_method || !ref_new_method) {
         return 0;
     }
     
@@ -900,44 +858,20 @@ int ar_agency_update_agent_methods(const method_t *ref_old_method, const method_
     const char *old_version = ar_method_get_version(ref_old_method);
     const char *new_version = ar_method_get_version(ref_new_method);
     
-    // Track how many agents we update
-    int update_count = 0;
+    ar_io_info("Updating agents from method %s version %s to version %s",
+               old_name, old_version, new_version);
     
-    // Find all agents using the old method
-    for (int i = 0; i < MAX_AGENTS; i++) {
-        if (g_own_agents[i].is_active && g_own_agents[i].ref_method == ref_old_method) {
-            // Get the agent ID for sending messages
-            int64_t agent_id = g_own_agents[i].id;
-            
-            // Step 1: Send sleep message
-            ar_io_info("Updating agent %lld from method %s version %s to version %s",
-                   agent_id, old_name, old_version, new_version);
-
-            // Send a copy of the sleep message
-            data_t *own_sleep_copy = ar_data_create_string("__sleep__");
-            if (own_sleep_copy) {
-                ar_agent_send(agent_id, own_sleep_copy);
-                own_sleep_copy = NULL; // Ownership transferred to agent's queue
-            }
-            
-            // Step 2: Process the sleep message
-            ar_system_process_next_message();
-            
-            // Step 3: Update the method reference
-            g_own_agents[i].ref_method = ref_new_method;
-            
-            // Step 4: Send wake message
-            data_t *own_wake_copy = ar_data_create_string("__wake__");
-            if (own_wake_copy) {
-                ar_agent_send(agent_id, own_wake_copy);
-                own_wake_copy = NULL; // Ownership transferred to agent's queue
-            }
-            
-            // Step 5: Process the wake message
-            ar_system_process_next_message();
-            
-            update_count++;
-        }
+    // Use agent module's update function with sleep/wake message processing
+    int update_count = ar_agent_update_method(ref_old_method, ref_new_method, true);
+    
+    // Process all sleep messages
+    for (int i = 0; i < update_count; i++) {
+        ar_system_process_next_message();
+    }
+    
+    // Process all wake messages
+    for (int i = 0; i < update_count; i++) {
+        ar_system_process_next_message();
     }
     
     return update_count;
@@ -950,18 +884,7 @@ int ar_agency_update_agent_methods(const method_t *ref_old_method, const method_
  * @note Ownership: Does not take ownership of the method reference.
  */
 int ar_agency_count_agents_using_method(const method_t *ref_method) {
-    if (!ref_method) {
-        return 0;
-    }
-    
-    int count = 0;
-    for (int i = 0; i < MAX_AGENTS; i++) {
-        if (g_own_agents[i].is_active && g_own_agents[i].ref_method == ref_method) {
-            count++;
-        }
-    }
-    
-    return count;
+    return ar_agent_count_by_method(ref_method);
 }
 
 /**
@@ -969,17 +892,7 @@ int ar_agency_count_agents_using_method(const method_t *ref_method) {
  * @return First active agent ID, or 0 if no active agents
  */
 int64_t ar_agency_get_first_agent(void) {
-    if (!g_is_initialized) {
-        ar_agency_init();
-    }
-    
-    for (int i = 0; i < MAX_AGENTS; i++) {
-        if (g_own_agents[i].is_active) {
-            return g_own_agents[i].id;
-        }
-    }
-    
-    return 0; // No active agents
+    return ar_agent_get_first_active();
 }
 
 /**
@@ -988,21 +901,7 @@ int64_t ar_agency_get_first_agent(void) {
  * @return Next active agent ID, or 0 if no more active agents
  */
 int64_t ar_agency_get_next_agent(int64_t current_id) {
-    if (!g_is_initialized) {
-        ar_agency_init();
-    }
-    
-    bool found_current = false;
-    for (int i = 0; i < MAX_AGENTS; i++) {
-        if (found_current && g_own_agents[i].is_active) {
-            return g_own_agents[i].id;
-        }
-        if (g_own_agents[i].id == current_id) {
-            found_current = true;
-        }
-    }
-    
-    return 0; // No more active agents
+    return ar_agent_get_next_active(current_id);
 }
 
 /**
@@ -1011,17 +910,7 @@ int64_t ar_agency_get_next_agent(int64_t current_id) {
  * @return true if agent has messages, false otherwise
  */
 bool ar_agency_agent_has_messages(int64_t agent_id) {
-    if (!g_is_initialized) {
-        ar_agency_init();
-    }
-    
-    for (int i = 0; i < MAX_AGENTS; i++) {
-        if (g_own_agents[i].is_active && g_own_agents[i].id == agent_id) {
-            return g_own_agents[i].own_message_queue && !ar_list_empty(g_own_agents[i].own_message_queue);
-        }
-    }
-    
-    return false;
+    return ar_agent_has_messages(agent_id);
 }
 
 /**
@@ -1031,17 +920,7 @@ bool ar_agency_agent_has_messages(int64_t agent_id) {
  * @note Ownership: Returns an owned value that caller must destroy
  */
 data_t* ar_agency_get_agent_message(int64_t agent_id) {
-    if (!g_is_initialized) {
-        ar_agency_init();
-    }
-    
-    for (int i = 0; i < MAX_AGENTS; i++) {
-        if (g_own_agents[i].is_active && g_own_agents[i].id == agent_id && g_own_agents[i].own_message_queue) {
-            return ar_list_remove_first(g_own_agents[i].own_message_queue);
-        }
-    }
-    
-    return NULL;
+    return ar_agent_get_message(agent_id);
 }
 
 /* End of implementation */
