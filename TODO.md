@@ -9,11 +9,11 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [ ] Ensure all modules comply with Parnas principles:
   - [ ] Audit existing modules for information hiding violations
   - [ ] Identify and eliminate any circular dependencies:
-    - [ ] Fix `agerun_agent` → `agerun_system` circular dependency
-    - [ ] Remove unnecessary `agerun_expression` → `agerun_system` include
-    - [ ] Fix `agerun_instruction` → `agerun_method` circular dependency
-    - [ ] Fix `agerun_method` → `agerun_agent` circular dependency
-    - [ ] Fix `agerun_agency` ↔ `agerun_agent` mutual dependency
+    - [x] Fix `agerun_agent` → `agerun_system` circular dependency
+    - [x] Remove unnecessary `agerun_expression` → `agerun_system` include
+    - [x] Fix `agerun_instruction` → `agerun_method` circular dependency
+    - [x] Fix `agerun_method` → `agerun_agent` circular dependency
+    - [x] Fix `agerun_agency` ↔ `agerun_agent` mutual dependency
     - [ ] Fix `agerun_agency` → `agerun_system` circular dependency
   - [ ] Ensure all interfaces expose only abstract models
   - [ ] Verify complete documentation for each module
@@ -53,7 +53,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Handle persisted agents that reference non-existent methods
   - [ ] Add tests for agent persistence functionality
   - [ ] Document persistence behavior and file format
-  - [ ] Complete memory persistence saving (loading already implemented)
+  - [ ] Complete memory persistence saving in agency module (loading already implemented)
 
 - [ ] Implement horizontal and vertical scaling support:
   - [ ] Design API for distributed agent communication
@@ -285,6 +285,12 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [ ] Implement lazy evaluation
 
 ## Completed Major Milestones
+
+### 2025-06-03
+- ✅ Fixed 5 of 6 circular dependencies in the codebase
+- ✅ Refactored agency module from visitor pattern to list-based approach
+- ✅ Fixed memory leak in agency module (using AR_HEAP_FREE instead of free)
+- ✅ Simplified agent iteration interface for better maintainability
 
 ### 2025-05-27
 - ✅ Completed full instruction language implementation (all core functions)
