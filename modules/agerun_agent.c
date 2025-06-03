@@ -1,7 +1,6 @@
 /* Agerun Agent Implementation */
 #include "agerun_agent.h"
 #include "agerun_agency.h"
-#include "agerun_system.h"
 #include "agerun_method.h"
 #include "agerun_methodology.h"
 #include "agerun_list.h"
