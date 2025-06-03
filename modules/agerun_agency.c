@@ -45,16 +45,21 @@ typedef struct {
 
 // Helper function to clean up agent list and items
 static void cleanup_agent_list(list_t *own_agents, void **own_items, size_t count) {
+    // Destroy data_t objects from the items array
     if (own_items) {
-        free(own_items);
-    }
-    // Destroy data_t objects in the list
-    for (size_t i = 0; i < count; i++) {
-        void *item = ar_list_remove_first(own_agents);
-        if (item) {
-            ar_data_destroy((data_t*)item);
+        for (size_t i = 0; i < count; i++) {
+            if (own_items[i]) {
+                ar_data_destroy((data_t*)own_items[i]);
+            }
         }
+        AR_HEAP_FREE(own_items);
     }
+    
+    // Now remove all items from the list (they've been destroyed)
+    while (ar_list_count(own_agents) > 0) {
+        ar_list_remove_first(own_agents);
+    }
+    
     ar_list_destroy(own_agents);
 }
 
@@ -75,8 +80,15 @@ static bool agency_write_function(FILE *fp, void *context) {
     
     // Get array of agent IDs
     size_t total_agents = ar_list_count(own_agents);
+    if (total_agents == 0) {
+        // No agents to save
+        ar_list_destroy(own_agents);
+        fprintf(fp, "0\n");
+        return true;
+    }
+    
     void **own_items = ar_list_items(own_agents);
-    if (!own_items && total_agents > 0) {
+    if (!own_items) {
         ar_io_error("Failed to get agent items array");
         ar_list_destroy(own_agents);
         return false;
