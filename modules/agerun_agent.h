@@ -185,23 +185,11 @@ data_t* ar_agent_get_message(int64_t agent_id);
 int ar_agent_count_active(void);
 
 /**
- * Callback function type for iterating over agents
- * @param agent_id The agent ID
- * @param ref_method The agent's method (borrowed reference)
- * @param ref_memory The agent's memory (borrowed reference)
- * @param user_data User-provided context data
- * @return true to continue iteration, false to stop
+ * Get list of all active agent IDs
+ * @return List of agent IDs (ownership transferred)
+ * @note Ownership: Returns an owned list that caller must destroy with ar_list_destroy()
  */
-typedef bool (*ar_agent_visitor_fn)(int64_t agent_id, const method_t *ref_method, 
-                                   const data_t *ref_memory, void *user_data);
-
-/**
- * Iterate over all active agents
- * @param visitor Function to call for each agent
- * @param user_data User data to pass to the visitor function
- * @return Number of agents visited
- */
-int ar_agent_iterate_active(ar_agent_visitor_fn visitor, void *user_data);
+list_t* ar_agent_get_active_list(void);
 
 /**
  * Count agents using a specific method

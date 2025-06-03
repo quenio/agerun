@@ -43,75 +43,19 @@ typedef struct {
     const char *filename;
 } agency_save_context_t;
 
-// Helper struct for counting agents with methods
-typedef struct {
-    int count;
-} agent_count_context_t;
-
-// Visitor function to count agents with methods
-static bool count_agents_with_methods(int64_t agent_id, const method_t *ref_method, 
-                                    const data_t *ref_memory, void *user_data) {
-    (void)agent_id; // Unused
-    (void)ref_memory; // Unused
-    agent_count_context_t *ctx = (agent_count_context_t *)user_data;
-    if (ref_method != NULL) {
-        ctx->count++;
+// Helper function to clean up agent list and items
+static void cleanup_agent_list(list_t *own_agents, void **own_items, size_t count) {
+    if (own_items) {
+        free(own_items);
     }
-    return true; // Continue iteration
-}
-
-// Helper struct for saving agents
-typedef struct {
-    FILE *fp;
-    const char *filename;
-    bool success;
-} agent_save_context_t;
-
-// Visitor function to save agent data
-static bool save_agent_data(int64_t agent_id, const method_t *ref_method, 
-                           const data_t *ref_memory, void *user_data) {
-    (void)ref_memory; // TODO: Implement full memory persistence when needed
-    agent_save_context_t *ctx = (agent_save_context_t *)user_data;
-    
-    if (!ref_method) {
-        return true; // Skip agents without methods
+    // Destroy data_t objects in the list
+    for (size_t i = 0; i < count; i++) {
+        void *item = ar_list_remove_first(own_agents);
+        if (item) {
+            ar_data_destroy((data_t*)item);
+        }
     }
-    
-    const char *method_name = ar_method_get_name(ref_method);
-    const char *method_version = ar_method_get_version(ref_method);
-    
-    if (!method_name || !method_version) {
-        ar_io_error("Invalid method reference data for agent %lld", agent_id);
-        ctx->success = false;
-        return false; // Stop iteration
-    }
-    
-    // Use snprintf to safely format agent data
-    char buffer[128];
-    int written = snprintf(buffer, sizeof(buffer), "%lld %s %s\n",
-                          agent_id, method_name, method_version);
-    if (written < 0 || written >= (int)sizeof(buffer)) {
-        ar_io_error("Buffer too small for agent data in %s", ctx->filename);
-        ctx->success = false;
-        return false;
-    }
-    
-    // Write the agent data to the file with error checking
-    if (fputs(buffer, ctx->fp) == EOF) {
-        ar_io_error("Failed to write agent data to %s", ctx->filename);
-        ctx->success = false;
-        return false;
-    }
-    
-    // For now, save memory map placeholder (0 items)
-    // TODO: Implement full memory persistence when needed
-    if (fputs("0\n", ctx->fp) == EOF) {
-        ar_io_error("Failed to write memory map count to %s", ctx->filename);
-        ctx->success = false;
-        return false;
-    }
-    
-    return true; // Continue iteration
+    ar_list_destroy(own_agents);
 }
 
 // Writer function for agency data
@@ -122,37 +66,99 @@ static bool agency_write_function(FILE *fp, void *context) {
         return false;
     }
     
-    // Count how many active agents we have with methods
-    agent_count_context_t count_ctx = { .count = 0 };
-    ar_agent_iterate_active(count_agents_with_methods, &count_ctx);
-    int count = count_ctx.count;
-
-    // Use snprintf to safely format the output
+    // Get list of all active agents
+    list_t *own_agents = ar_agent_get_active_list();
+    if (!own_agents) {
+        ar_io_error("Failed to get agent list");
+        return false;
+    }
+    
+    // Get array of agent IDs
+    size_t total_agents = ar_list_count(own_agents);
+    void **own_items = ar_list_items(own_agents);
+    if (!own_items && total_agents > 0) {
+        ar_io_error("Failed to get agent items array");
+        ar_list_destroy(own_agents);
+        return false;
+    }
+    
+    // Count agents with methods
+    int count = 0;
+    for (size_t i = 0; i < total_agents; i++) {
+        data_t *ref_id_data = (data_t*)own_items[i];
+        if (ref_id_data) {
+            int64_t agent_id = ar_data_get_integer(ref_id_data);
+            const method_t *ref_method = ar_agent_get_method(agent_id);
+            if (ref_method != NULL) {
+                count++;
+            }
+        }
+    }
+    
+    // Write the count
     char buffer[128];
     int written = snprintf(buffer, sizeof(buffer), "%d\n", count);
     if (written < 0 || written >= (int)sizeof(buffer)) {
         ar_io_error("Buffer too small for count in %s", ctx->filename);
+        ar_list_destroy(own_agents);
         return false;
     }
-
-    // Write the count to the file with error checking
+    
     if (fputs(buffer, fp) == EOF) {
         ar_io_error("Failed to write count to %s", ctx->filename);
+        cleanup_agent_list(own_agents, own_items, total_agents);
         return false;
     }
-
-    // Save agent data using visitor pattern
-    agent_save_context_t save_ctx = {
-        .fp = fp,
-        .filename = ctx->filename,  
-        .success = true
-    };
     
-    ar_agent_iterate_active(save_agent_data, &save_ctx);
-    
-    if (!save_ctx.success) {
-        return false;
+    // Save each agent's data
+    for (size_t i = 0; i < total_agents; i++) {
+        data_t *ref_id_data = (data_t*)own_items[i];
+        if (!ref_id_data) {
+            continue;
+        }
+        
+        int64_t agent_id = ar_data_get_integer(ref_id_data);
+        const method_t *ref_method = ar_agent_get_method(agent_id);
+        
+        if (ref_method == NULL) {
+            continue; // Skip agents without methods
+        }
+        
+        const char *method_name = ar_method_get_name(ref_method);
+        const char *method_version = ar_method_get_version(ref_method);
+        
+        if (!method_name || !method_version) {
+            ar_io_error("Invalid method reference data for agent %lld", agent_id);
+            cleanup_agent_list(own_agents, own_items, total_agents);
+            return false;
+        }
+        
+        // Write agent data
+        written = snprintf(buffer, sizeof(buffer), "%lld %s %s\n",
+                          agent_id, method_name, method_version);
+        if (written < 0 || written >= (int)sizeof(buffer)) {
+            ar_io_error("Buffer too small for agent data in %s", ctx->filename);
+            cleanup_agent_list(own_agents, own_items, total_agents);
+            return false;
+        }
+        
+        if (fputs(buffer, fp) == EOF) {
+            ar_io_error("Failed to write agent data to %s", ctx->filename);
+            cleanup_agent_list(own_agents, own_items, total_agents);
+            return false;
+        }
+        
+        // For now, save memory map placeholder (0 items)
+        // TODO: Implement full memory persistence when needed
+        if (fputs("0\n", fp) == EOF) {
+            ar_io_error("Failed to write memory map count to %s", ctx->filename);
+            cleanup_agent_list(own_agents, own_items, total_agents);
+            return false;
+        }
     }
+    
+    // Clean up
+    cleanup_agent_list(own_agents, own_items, total_agents);
 
     // Success
     return true;

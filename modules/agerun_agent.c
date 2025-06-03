@@ -464,24 +464,28 @@ int ar_agent_count_active(void) {
     return count;
 }
 
-int ar_agent_iterate_active(ar_agent_visitor_fn visitor, void *user_data) {
-    if (!g_is_initialized || !visitor) {
-        return 0;
+list_t* ar_agent_get_active_list(void) {
+    if (!g_is_initialized) {
+        ar_agent_init();
     }
     
-    int visited = 0;
+    list_t *own_list = ar_list_create();
+    if (!own_list) {
+        return NULL;
+    }
+    
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (g_own_agents[i].is_active) {
-            if (!visitor(g_own_agents[i].id, g_own_agents[i].ref_method, 
-                        g_own_agents[i].own_memory, user_data)) {
-                break;
+            data_t *own_id = ar_data_create_integer((int)g_own_agents[i].id);
+            if (own_id) {
+                ar_list_add_last(own_list, own_id);
             }
-            visited++;
         }
     }
     
-    return visited;
+    return own_list;  // Ownership transferred to caller
 }
+
 
 int ar_agent_count_by_method(const method_t *ref_method) {
     if (!ref_method) {
