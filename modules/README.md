@@ -79,7 +79,6 @@ agerun_executable
 │   ├── agerun_method
 │   │   ├── agerun_instruction
 │   │   │   ├── agerun_expression
-│   │   │   │   ├── agerun_system*
 │   │   │   │   ├── agerun_string
 │   │   │   │   ├── agerun_data
 │   │   │   │   ├── agerun_map
@@ -148,7 +147,6 @@ agerun_instruction_fixture
 
 **Circular Dependencies** (marked with *):
 - `agerun_agent` → `agerun_system*`: Agent module includes system.h, creating a circular dependency
-- `agerun_expression` → `agerun_system*`: Expression includes system.h (though no system functions are used)
 - `agerun_instruction` → `agerun_method*`: Instruction includes method.h while method depends on instruction
 - `agerun_method` → `agerun_agent*`: Method includes agent.h while agent depends on method via methodology
 - `agerun_agency` → `agerun_agent*`: Agency and agent have mutual dependencies
