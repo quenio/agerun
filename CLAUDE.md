@@ -163,14 +163,22 @@ make run-sanitize          # Run executable with ASan
 
 ### 5. Module Development
 
+**Pre-Change Testing Rule (MANDATORY)**:
+Before modifying any module, ALWAYS run its tests first to ensure they pass:
+1. Run the module's test file (e.g., `make bin/agerun_module_tests && bin/agerun_module_tests`)
+2. If tests fail, fix and commit those fixes BEFORE starting planned changes
+3. This ensures you don't accidentally blame existing bugs on your new changes
+4. Creates cleaner commit history with bug fixes separate from new features
+
 **Code Modification Process**:
 1. Check the module's documentation (e.g., `agerun_module.md`) before making changes
 2. Check the module's tests (e.g., `agerun_module_tests.c`) to understand expected behavior
-3. Understand codebase structure and dependencies
-4. Make incremental changes with frequent compilation
-5. Complete one functional area before moving to next
-6. Verify each change with tests
-7. Update module documentation if the public API changes
+3. **Run the module's tests to ensure they pass before making changes**
+4. Understand codebase structure and dependencies
+5. Make incremental changes with frequent compilation
+6. Complete one functional area before moving to next
+7. Verify each change with tests
+8. Update module documentation if the public API changes
 
 **Opaque Types**:
 - Forward declare in header: `typedef struct name_s name_t;`
