@@ -53,6 +53,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Handle persisted agents that reference non-existent methods
   - [ ] Add tests for agent persistence functionality
   - [ ] Document persistence behavior and file format
+  - [ ] Complete memory persistence saving (loading already implemented)
 
 - [ ] Implement horizontal and vertical scaling support:
   - [ ] Design API for distributed agent communication
