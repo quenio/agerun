@@ -284,6 +284,44 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [ ] Add expression optimization
 - [ ] Implement lazy evaluation
 
+## Module Cohesion Improvements
+
+### High Priority - Agency Module Refactoring
+- [ ] Split agerun_agency into focused modules:
+  - [ ] Create agerun_agent_registry module for agent ID management and runtime registry
+  - [ ] Create agerun_agent_persistence module for saving/loading agent state
+  - [ ] Create agerun_agent_updater module for method version updates
+  - [ ] Keep agerun_agency as a facade coordinating these modules
+  - [ ] Move lifecycle event handling (__sleep__/__wake__) to agent module
+
+### High Priority - System Module Refactoring  
+- [ ] Split agerun_system into focused modules:
+  - [ ] Create agerun_message_broker module for inter-agent message processing
+  - [ ] Create agerun_runtime module for system lifecycle management
+  - [ ] Keep agerun_system as high-level API facade
+  - [ ] Move initial agent handling to a dedicated initializer
+
+### Medium Priority - Methodology Module Refactoring
+- [ ] Split agerun_methodology into focused modules:
+  - [ ] Create agerun_method_registry module for storage and retrieval
+  - [ ] Create agerun_version_resolver module for version pattern matching
+  - [ ] Create agerun_method_persistence module for saving/loading methods
+  - [ ] Keep agerun_methodology for high-level coordination
+  - [ ] Move agent update logic to agerun_agent_updater (see agency refactor)
+
+### Medium Priority - String Module Refactoring
+- [ ] Split path operations from string utilities:
+  - [ ] Create agerun_path module for path parsing and manipulation
+  - [ ] Keep agerun_string focused on pure string operations
+  - [ ] Update all modules using path functions to use new module
+
+### Low Priority - Agent Module Refactoring
+- [ ] Consider splitting agent responsibilities:
+  - [ ] Keep core agent identity and lifecycle in agerun_agent
+  - [ ] Create agerun_message_queue module for message handling
+  - [ ] Create agerun_agent_executor module for method execution
+  - [ ] Evaluate if split improves cohesion without adding complexity
+
 ## Completed Major Milestones
 
 ### 2025-06-03
