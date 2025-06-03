@@ -7,7 +7,6 @@
 #include "agerun_semver.h"
 #include "agerun_io.h" /* Include the I/O utilities */
 #include "agerun_heap.h"
-#include "agerun_system.h" /* Include for message processing */
 #include "agerun_list.h" /* Include for list operations */
 
 #include <stdio.h>
@@ -880,17 +879,8 @@ int ar_agency_update_agent_methods(const method_t *ref_old_method, const method_
                old_name, old_version, new_version);
     
     // Use agent module's update function with sleep/wake message processing
+    // Note: The caller is responsible for processing the queued sleep/wake messages
     int update_count = ar_agent_update_method(ref_old_method, ref_new_method, true);
-    
-    // Process all sleep messages
-    for (int i = 0; i < update_count; i++) {
-        ar_system_process_next_message();
-    }
-    
-    // Process all wake messages
-    for (int i = 0; i < update_count; i++) {
-        ar_system_process_next_message();
-    }
     
     return update_count;
 }

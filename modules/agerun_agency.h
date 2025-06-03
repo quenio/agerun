@@ -49,13 +49,15 @@ bool ar_agency_load_agents(void);
  * Update agents using a specific method to use a different method
  * @param ref_old_method The old method being used (borrowed reference)
  * @param ref_new_method The new method to use (borrowed reference)
- * @return Number of agents updated
+ * @return Number of agents updated (each agent will have 2 messages queued)
  * @note Ownership: Does not take ownership of either method reference.
  *       The update process involves:
  *       1. Agent finishes processing current message
  *       2. Sleep message is sent to agent
  *       3. Method reference is updated
  *       4. Wake message is sent to agent
+ *       IMPORTANT: The caller must process 2*update_count messages after this call
+ *       to ensure all sleep and wake messages are processed.
  */
 int ar_agency_update_agent_methods(const method_t *ref_old_method, const method_t *ref_new_method);
 

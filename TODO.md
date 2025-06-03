@@ -14,7 +14,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] Fix `agerun_instruction` → `agerun_method` circular dependency
     - [x] Fix `agerun_method` → `agerun_agent` circular dependency
     - [x] Fix `agerun_agency` ↔ `agerun_agent` mutual dependency
-    - [ ] Fix `agerun_agency` → `agerun_system` circular dependency
+    - [x] Fix `agerun_agency` → `agerun_system` circular dependency
   - [ ] Ensure all interfaces expose only abstract models
   - [ ] Verify complete documentation for each module
   - [ ] Create missing module design documents

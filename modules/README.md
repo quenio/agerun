@@ -100,9 +100,8 @@ agerun_executable
 │   │   ├── agerun_string
 │   │   └── agerun_assert
 │   ├── agerun_agency
-│   │   ├── agerun_agent*
+│   │   ├── agerun_agent
 │   │   ├── agerun_method
-│   │   ├── agerun_system*
 │   │   ├── agerun_semver
 │   │   ├── agerun_data
 │   │   ├── agerun_map
@@ -142,11 +141,7 @@ agerun_instruction_fixture
 └── agerun_heap
 ```
 
-**Circular Dependencies** (marked with *):
-- `agerun_agency` → `agerun_agent*`: Agency and agent have mutual dependencies
-- `agerun_agency` → `agerun_system*`: Agency includes system.h, creating another circular dependency
-
-These circular dependencies violate Parnas design principles and should be resolved through refactoring.
+**Note**: All circular dependencies have been successfully resolved. The system now follows strict Parnas design principles with clean, unidirectional dependencies.
 
 ## Module Layers
 
