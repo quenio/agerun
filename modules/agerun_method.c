@@ -85,7 +85,7 @@ method_t* ar_method_create(const char *ref_name, const char *ref_instructions,
     return mut_method;
 }
 
-bool ar_method_run(agent_id_t agent_id, const data_t *ref_message, const char *ref_instructions) {
+bool ar_method_run(int64_t agent_id, const data_t *ref_message, const char *ref_instructions) {
     if (agent_id == 0 || !ref_instructions) {
         return false;
     }

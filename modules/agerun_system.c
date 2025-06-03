@@ -37,7 +37,7 @@ static char g_wake_message[] = "__wake__";
 static bool is_initialized = false;
 
 /* Implementation */
-agent_id_t ar_system_init(const char *ref_method_name, const char *ref_version) {
+int64_t ar_system_init(const char *ref_method_name, const char *ref_version) {
     if (is_initialized) {
         printf("Agerun already initialized\n");
         return 0;
@@ -59,7 +59,7 @@ agent_id_t ar_system_init(const char *ref_method_name, const char *ref_version) 
     // Create initial agent if ref_method_name is provided
     if (ref_method_name != NULL) {
         // Create initial agent with NULL context
-        agent_id_t initial_agent = ar_agent_create(ref_method_name, ref_version, NULL);
+        int64_t initial_agent = ar_agent_create(ref_method_name, ref_version, NULL);
         if (initial_agent != 0) {
             // Send wake message to initial agent
             data_t *own_wake_data = ar_data_create_string(g_wake_message);
@@ -106,7 +106,7 @@ bool ar_system_process_next_message(void) {
     }
     
     // Find an agent with a non-empty message queue
-    agent_id_t agent_id = ar_agency_get_first_agent();
+    int64_t agent_id = ar_agency_get_first_agent();
     printf("DEBUG: First agent ID: %lld\n", (long long)agent_id);
     while (agent_id != 0) {
         if (ar_agency_agent_has_messages(agent_id)) {

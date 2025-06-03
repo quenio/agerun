@@ -9,9 +9,6 @@
 /* Constants */
 #define MAX_AGENTS 1024
 
-/* Type definitions */
-typedef int64_t agent_id_t;
-
 /* Forward declaration for method_t */
 typedef struct method_s method_t;
 
@@ -26,7 +23,7 @@ typedef struct agent_s agent_t;
  * @return Unique agent ID, or 0 on failure
  * @note Ownership: Function does not take ownership of ref_context, it just references it.
  */
-agent_id_t ar_agent_create(const char *ref_method_name, const char *ref_version, const data_t *ref_context);
+int64_t ar_agent_create(const char *ref_method_name, const char *ref_version, const data_t *ref_context);
 
 /**
  * Destroy an agent instance
@@ -34,7 +31,7 @@ agent_id_t ar_agent_create(const char *ref_method_name, const char *ref_version,
  * @return true if successful, false otherwise
  * @note Ownership: Destroys all resources owned by the agent (memory, message queue, context).
  */
-bool ar_agent_destroy(agent_id_t agent_id);
+bool ar_agent_destroy(int64_t agent_id);
 
 /**
  * Send a message to an agent
@@ -45,14 +42,14 @@ bool ar_agent_destroy(agent_id_t agent_id);
  *       Caller should set own_message = NULL after this call.
  *       If sending fails, function will destroy the message.
  */
-bool ar_agent_send(agent_id_t agent_id, data_t *own_message);
+bool ar_agent_send(int64_t agent_id, data_t *own_message);
 
 /**
  * Check if an agent exists
  * @param agent_id ID of the agent to check (value type, not a reference)
  * @return true if the agent exists, false otherwise
  */
-bool ar_agent_exists(agent_id_t agent_id);
+bool ar_agent_exists(int64_t agent_id);
 
 /**
  * Get the memory data of an agent
@@ -61,7 +58,7 @@ bool ar_agent_exists(agent_id_t agent_id);
  * @note Ownership: Returns a borrowed reference to the agent's memory.
  *       Caller must not modify or destroy the returned data.
  */
-const data_t* ar_agent_get_memory(agent_id_t agent_id);
+const data_t* ar_agent_get_memory(int64_t agent_id);
 
 /**
  * Get the mutable memory data of an agent (for internal use)
@@ -70,7 +67,7 @@ const data_t* ar_agent_get_memory(agent_id_t agent_id);
  * @note Ownership: Returns a mutable reference to the agent's memory.
  *       Caller must not destroy the returned data.
  */
-data_t* ar_agent_get_mutable_memory(agent_id_t agent_id);
+data_t* ar_agent_get_mutable_memory(int64_t agent_id);
 
 /**
  * Get the context data of an agent
@@ -79,14 +76,14 @@ data_t* ar_agent_get_mutable_memory(agent_id_t agent_id);
  * @note Ownership: Returns a borrowed reference to the agent's context.
  *       Caller must not modify or destroy the returned data.
  */
-const data_t* ar_agent_get_context(agent_id_t agent_id);
+const data_t* ar_agent_get_context(int64_t agent_id);
 
 /**
  * Check if an agent is active
  * @param agent_id ID of the agent to check
  * @return true if the agent is active, false otherwise
  */
-bool ar_agent_is_active(agent_id_t agent_id);
+bool ar_agent_is_active(int64_t agent_id);
 
 /**
  * Get the method information of an agent
@@ -97,7 +94,7 @@ bool ar_agent_is_active(agent_id_t agent_id);
  * @note Ownership: The returned strings are borrowed references.
  *       Caller must not modify or free the returned strings.
  */
-bool ar_agent_get_method_info(agent_id_t agent_id, const char **out_method_name, const char **out_method_version);
+bool ar_agent_get_method_info(int64_t agent_id, const char **out_method_name, const char **out_method_version);
 
 /**
  * Get the method reference of an agent (for internal use)
@@ -106,7 +103,7 @@ bool ar_agent_get_method_info(agent_id_t agent_id, const char **out_method_name,
  * @note Ownership: Returns a borrowed reference to the agent's method.
  *       Caller must not modify or destroy the returned method.
  */
-const method_t* ar_agent_get_method(agent_id_t agent_id);
+const method_t* ar_agent_get_method(int64_t agent_id);
 
 /**
  * Set the active status of an agent (for internal use)
@@ -114,7 +111,7 @@ const method_t* ar_agent_get_method(agent_id_t agent_id);
  * @param is_active New active status
  * @return true if successful, false if agent doesn't exist
  */
-bool ar_agent_set_active(agent_id_t agent_id, bool is_active);
+bool ar_agent_set_active(int64_t agent_id, bool is_active);
 
 /**
  * Get direct access to an agent structure (for internal use only)
@@ -123,6 +120,6 @@ bool ar_agent_set_active(agent_id_t agent_id, bool is_active);
  * @note This function is for internal use by closely coupled modules only.
  *       It will be removed once all modules are updated to use accessor functions.
  */
-agent_t* ar_agent_get_internal(agent_id_t agent_id);
+agent_t* ar_agent_get_internal(int64_t agent_id);
 
 #endif /* AGERUN_AGENT_H */

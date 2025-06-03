@@ -19,7 +19,7 @@ int ar_executable_main(void) {
     
     // Initialize the runtime
     printf("Initializing runtime...\n");
-    agent_id_t initial_agent = ar_system_init(NULL, NULL);
+    int64_t initial_agent = ar_system_init(NULL, NULL);
     if (initial_agent != 0) {
         printf("Error: Unexpected agent created during initialization\n");
         ar_system_shutdown();
@@ -80,7 +80,7 @@ int ar_executable_main(void) {
     
     // Create a counter agent
     printf("Creating counter agent...\n");
-    agent_id_t counter_id = ar_agent_create("counter", ref_counter_version, NULL);
+    int64_t counter_id = ar_agent_create("counter", ref_counter_version, NULL);
     if (counter_id == 0) {
         printf("Failed to create counter agent\n");
         ar_system_shutdown();

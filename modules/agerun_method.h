@@ -2,8 +2,8 @@
 #define AGERUN_METHOD_H
 
 #include <stdbool.h>
+#include <stdint.h>
 #include "agerun_data.h"
-#include "agerun_agent.h"
 
 /* Method Definition (opaque type) */
 typedef struct method_s method_t;
@@ -63,6 +63,6 @@ void ar_method_destroy(method_t *own_method);
  * @note Ownership: Function does not take ownership of any parameters.
  *       The message and instructions remain owned by the caller.
  */
-bool ar_method_run(agent_id_t agent_id, const data_t *ref_message, const char *ref_instructions);
+bool ar_method_run(int64_t agent_id, const data_t *ref_message, const char *ref_instructions);
 
 #endif /* AGERUN_METHOD_H */

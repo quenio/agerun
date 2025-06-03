@@ -14,7 +14,7 @@
 #include <unistd.h> // for usleep
 
 // Forward declarations
-static bool test_agent_exists(agent_id_t agent_id);
+static bool test_agent_exists(int64_t agent_id);
 static void test_simple_instructions(void);
 static void test_memory_access_instructions(void);
 static void test_condition_instructions(void);
@@ -30,7 +30,7 @@ static void test_error_reporting(void);
 // Helper function to get an agent by ID
 // We can no longer directly access agent's memory since map_t is now opaque
 // Instead, we'll add a function to the test to validate agent actions indirectly
-static bool test_agent_exists(agent_id_t agent_id) {
+static bool test_agent_exists(int64_t agent_id) {
     if (agent_id <= 0) {
         return false;
     }
@@ -45,7 +45,7 @@ static void test_simple_instructions(void) {
     assert(own_fixture != NULL);
     
     // Create a test agent for running instructions
-    agent_id_t agent_id = ar_instruction_fixture_create_test_agent(own_fixture, "test_agent", "");
+    int64_t agent_id = ar_instruction_fixture_create_test_agent(own_fixture, "test_agent", "");
     assert(agent_id > 0);
     assert(test_agent_exists(agent_id));
     
@@ -112,7 +112,7 @@ static void test_memory_access_instructions(void) {
     assert(own_fixture != NULL);
     
     // Create a test agent with initialization instructions
-    agent_id_t agent_id = ar_instruction_fixture_create_test_agent(
+    int64_t agent_id = ar_instruction_fixture_create_test_agent(
         own_fixture, "memory_agent", "memory.initialized = 1"
     );
     assert(agent_id > 0);
@@ -179,7 +179,7 @@ static void test_condition_instructions(void) {
     assert(own_fixture != NULL);
     
     // Create a test agent with initialization
-    agent_id_t agent_id = ar_instruction_fixture_create_test_agent(
+    int64_t agent_id = ar_instruction_fixture_create_test_agent(
         own_fixture, "condition_agent", "memory.initialized = 1"
     );
     assert(agent_id > 0);
@@ -241,13 +241,13 @@ static void test_message_send_instructions(void) {
     assert(own_receiver_fixture != NULL);
     
     // Create two test agents with initialization
-    agent_id_t sender_id = ar_instruction_fixture_create_test_agent(
+    int64_t sender_id = ar_instruction_fixture_create_test_agent(
         own_sender_fixture, "sender_agent", "memory.initialized = 1"
     );
     assert(sender_id > 0);
     assert(test_agent_exists(sender_id));
     
-    agent_id_t receiver_id = ar_instruction_fixture_create_test_agent(
+    int64_t receiver_id = ar_instruction_fixture_create_test_agent(
         own_receiver_fixture, "receiver_agent", "memory.initialized = 1"
     );
     assert(receiver_id > 0);
@@ -306,7 +306,7 @@ static void test_method_function(void) {
     assert(own_fixture != NULL);
     
     // Create a test agent for running method instruction
-    agent_id_t agent_id = ar_instruction_fixture_create_test_agent(
+    int64_t agent_id = ar_instruction_fixture_create_test_agent(
         own_fixture, "method_instruction_agent", ""
     );
     assert(agent_id > 0);
@@ -341,8 +341,8 @@ static void test_method_function(void) {
     ar_instruction_destroy_context(own_ctx);
     
     // Now try to reference both the newly created methods
-    agent_id_t direct_agent_id = ar_agent_create("test_method_direct", "1.0.0", NULL);
-    agent_id_t test_agent_id = ar_agent_create("test_method_3params", "1.0.0", NULL);
+    int64_t direct_agent_id = ar_agent_create("test_method_direct", "1.0.0", NULL);
+    int64_t test_agent_id = ar_agent_create("test_method_3params", "1.0.0", NULL);
     
     // Check the results for the directly created method
     bool direct_method_created = (direct_agent_id > 0);
@@ -381,7 +381,7 @@ static void test_parse_function(void) {
     assert(own_fixture != NULL);
     
     // Create a test agent for running parse instruction
-    agent_id_t agent_id = ar_instruction_fixture_create_test_agent(
+    int64_t agent_id = ar_instruction_fixture_create_test_agent(
         own_fixture, "parse_instruction_agent", ""
     );
     assert(agent_id > 0);
@@ -432,7 +432,7 @@ static void test_build_function(void) {
     assert(own_fixture != NULL);
     
     // Create a test agent for running build instruction
-    agent_id_t agent_id = ar_instruction_fixture_create_test_agent(
+    int64_t agent_id = ar_instruction_fixture_create_test_agent(
         own_fixture, "build_instruction_agent", ""
     );
     assert(agent_id > 0);
@@ -599,7 +599,7 @@ static void test_agent_function(void) {
     data_t *ref_agent_id = ar_data_get_map_data(own_memory, "new_agent_id");
     assert(ref_agent_id != NULL);
     assert(ar_data_get_type(ref_agent_id) == DATA_INTEGER);
-    agent_id_t new_agent_id = (agent_id_t)ar_data_get_integer(ref_agent_id);
+    int64_t new_agent_id = (int64_t)ar_data_get_integer(ref_agent_id);
     assert(new_agent_id != 0);
     
     // Process wake message
@@ -618,7 +618,7 @@ static void test_agent_function(void) {
     data_t *ref_agent_id2 = ar_data_get_map_data(own_memory, "new_agent_id2");
     assert(ref_agent_id2 != NULL);
     assert(ar_data_get_type(ref_agent_id2) == DATA_INTEGER);
-    agent_id_t new_agent_id2 = (agent_id_t)ar_data_get_integer(ref_agent_id2);
+    int64_t new_agent_id2 = (int64_t)ar_data_get_integer(ref_agent_id2);
     assert(new_agent_id2 != 0);
     
     // Process wake message
@@ -636,7 +636,7 @@ static void test_agent_function(void) {
     data_t *ref_agent_id3 = ar_data_get_map_data(own_memory, "new_agent_id3");
     assert(ref_agent_id3 != NULL);
     assert(ar_data_get_type(ref_agent_id3) == DATA_INTEGER);
-    agent_id_t new_agent_id3 = (agent_id_t)ar_data_get_integer(ref_agent_id3);
+    int64_t new_agent_id3 = (int64_t)ar_data_get_integer(ref_agent_id3);
     assert(new_agent_id3 != 0);
     
     // Process wake message
@@ -708,7 +708,7 @@ static void test_destroy_functions(void) {
     ar_system_process_next_message();
     
     // Verify agent exists before destroying it
-    assert(ar_agent_exists((agent_id_t)agent_id));
+    assert(ar_agent_exists((int64_t)agent_id));
     
     // Now destroy the agent
     const char *destroy_agent_instr = "memory.destroy_result := destroy(memory.test_agent_id)";
@@ -721,7 +721,7 @@ static void test_destroy_functions(void) {
     assert(ar_data_get_integer(ref_destroy_result) == 1); // Success
     
     // Verify agent is destroyed
-    assert(!ar_agent_exists((agent_id_t)agent_id));
+    assert(!ar_agent_exists((int64_t)agent_id));
     
     // Test 2: Try to destroy non-existent agent
     printf("  Test 2: Destroy non-existent agent...\n");
@@ -794,7 +794,7 @@ static void test_destroy_functions(void) {
     assert(ar_data_get_integer(ref_destroy_active_result) == 0); // Failure - agent still using it
     
     // Clean up the active agent
-    ar_agent_destroy((agent_id_t)active_agent_id);
+    ar_agent_destroy((int64_t)active_agent_id);
     
     // Now we should be able to destroy the method
     const char *destroy_active_method2_instr = "memory.destroy_active_result2 := destroy(\"test_active_method\", \"1.0.0\")";
@@ -867,7 +867,7 @@ static void test_agent_function_with_message_expressions(void) {
         const data_t *ref_result = ar_data_get_map_data(own_memory, "agent_result");
         assert(ref_result != NULL);
         assert(ar_data_get_type(ref_result) == DATA_INTEGER);
-        agent_id_t created_id = ar_data_get_integer(ref_result);
+        int64_t created_id = ar_data_get_integer(ref_result);
         assert(created_id > 0);
         ar_system_process_next_message();
     }
@@ -890,7 +890,7 @@ static void test_error_reporting(void) {
     assert(own_fixture != NULL);
     
     // Create a test agent
-    agent_id_t agent_id = ar_instruction_fixture_create_test_agent(
+    int64_t agent_id = ar_instruction_fixture_create_test_agent(
         own_fixture, "error_test_agent", ""
     );
     assert(agent_id > 0);

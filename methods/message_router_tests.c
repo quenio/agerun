@@ -26,15 +26,15 @@ static void test_message_router_routing(void) {
     assert(ar_method_fixture_load_method(own_fixture, "message-router", "../methods/message-router-1.0.0.method", "1.0.0"));
     
     // Create router agent
-    agent_id_t router_agent = ar_agent_create("message-router", "1.0.0", NULL);
+    int64_t router_agent = ar_agent_create("message-router", "1.0.0", NULL);
     assert(router_agent > 0);
     
     // Create echo agent
-    agent_id_t echo_agent = ar_agent_create("echo", "1.0.0", NULL);
+    int64_t echo_agent = ar_agent_create("echo", "1.0.0", NULL);
     assert(echo_agent > 0);
     
     // Create calculator agent
-    agent_id_t calc_agent = ar_agent_create("calculator", "1.0.0", NULL);
+    int64_t calc_agent = ar_agent_create("calculator", "1.0.0", NULL);
     assert(calc_agent > 0);
     
     // Process wake messages

@@ -76,7 +76,7 @@ static void test_agent_creation(void) {
     const char *version = "1.0.0";
     
     // When we create an agent with this method
-    agent_id_t agent_id = ar_agent_create(method_name, version, NULL);
+    int64_t agent_id = ar_agent_create(method_name, version, NULL);
     
     // Then the agent should be created successfully
     assert(agent_id > 0);
@@ -136,12 +136,12 @@ static void test_message_passing(void) {
     const char *receiver_version = "1.0.0";
     
     // And a receiver agent created with the receiver method
-    agent_id_t receiver_id = ar_agent_create("receiver", receiver_version, NULL);
+    int64_t receiver_id = ar_agent_create("receiver", receiver_version, NULL);
     assert(receiver_id > 0);
     
     // And a sender agent created with the sender method
     // Note: In the full implementation, a context with receiver ID would be passed
-    agent_id_t sender_id = ar_agent_create("sender", sender_version, NULL);
+    int64_t sender_id = ar_agent_create("sender", sender_version, NULL);
     assert(sender_id > 0);
     
     // When we send __wake__ messages to both agents
@@ -175,7 +175,7 @@ int main(void) {
     printf("Starting Agerun tests...\n");
     
     // Given we initialize the runtime
-    agent_id_t initial_agent = ar_system_init(NULL, NULL);
+    int64_t initial_agent = ar_system_init(NULL, NULL);
     
     // Then no agent should be created during initialization
     if (initial_agent != 0) {

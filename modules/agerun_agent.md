@@ -19,7 +19,7 @@ The agent module (`agerun_agent.h` and `agerun_agent.c`) provides individual age
 
 #### `ar_agent_create`
 ```c
-agent_id_t ar_agent_create(const char *ref_method_name, const char *ref_version, const data_t *ref_context)
+int64_t ar_agent_create(const char *ref_method_name, const char *ref_version, const data_t *ref_context)
 ```
 Creates a new agent with the specified method and optional context. The agent automatically receives a `__wake__` message upon creation.
 
@@ -34,7 +34,7 @@ Creates a new agent with the specified method and optional context. The agent au
 
 #### `ar_agent_destroy`
 ```c
-bool ar_agent_destroy(agent_id_t agent_id)
+bool ar_agent_destroy(int64_t agent_id)
 ```
 Destroys an agent and cleans up all its resources. Sends a `__sleep__` message before destruction.
 

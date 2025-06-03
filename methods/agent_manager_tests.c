@@ -25,7 +25,7 @@ static void test_agent_manager_create_destroy(void) {
     assert(ar_method_fixture_load_method(own_fixture, "agent-manager", "../methods/agent-manager-1.0.0.method", "1.0.0"));
     
     // Create agent-manager agent
-    agent_id_t manager_agent = ar_agent_create("agent-manager", "1.0.0", NULL);
+    int64_t manager_agent = ar_agent_create("agent-manager", "1.0.0", NULL);
     assert(manager_agent > 0);
     
     // Process wake message
@@ -58,7 +58,7 @@ static void test_agent_manager_create_destroy(void) {
     const data_t *result = ar_data_get_map_data(agent_memory, "result");
     if (result != NULL) {
         assert(ar_data_get_type(result) == DATA_INTEGER);
-        agent_id_t created_agent = (agent_id_t)ar_data_get_integer(result);
+        int64_t created_agent = (int64_t)ar_data_get_integer(result);
         printf("SUCCESS: agent() instruction executed\n");
         printf("  - Created agent ID: %lld\n", (long long)created_agent);
     } else {
@@ -138,7 +138,7 @@ static void test_agent_manager_invalid_action(void) {
     assert(ar_method_fixture_load_method(own_fixture, "agent-manager", "../methods/agent-manager-1.0.0.method", "1.0.0"));
     
     // Create agent-manager agent
-    agent_id_t manager_agent = ar_agent_create("agent-manager", "1.0.0", NULL);
+    int64_t manager_agent = ar_agent_create("agent-manager", "1.0.0", NULL);
     assert(manager_agent > 0);
     
     // Process wake message

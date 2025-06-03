@@ -24,7 +24,7 @@ struct instruction_fixture_s {
     list_t *own_tracked_data;               /* List of data objects to destroy */
     list_t *own_tracked_contexts;           /* List of expression contexts to destroy */
     list_t *own_tracked_resources;          /* List of generic resources to destroy */
-    agent_id_t test_agent_id;               /* Agent created by fixture, 0 if none */
+    int64_t test_agent_id;               /* Agent created by fixture, 0 if none */
     bool system_initialized;                /* Whether system was initialized by fixture */
 };
 
@@ -341,7 +341,7 @@ void ar_instruction_fixture_track_expression_context(
     ar_list_add_last(mut_fixture->own_tracked_contexts, own_context);
 }
 
-agent_id_t ar_instruction_fixture_create_test_agent(
+int64_t ar_instruction_fixture_create_test_agent(
     instruction_fixture_t *mut_fixture,
     const char *ref_method_name,
     const char *ref_instructions) {
@@ -366,7 +366,7 @@ agent_id_t ar_instruction_fixture_create_test_agent(
     own_method = NULL; // Ownership transferred
     
     // Create agent
-    agent_id_t agent_id = ar_agent_create(ref_method_name, "1.0.0", NULL);
+    int64_t agent_id = ar_agent_create(ref_method_name, "1.0.0", NULL);
     if (agent_id <= 0) {
         return 0;
     }
@@ -380,7 +380,7 @@ agent_id_t ar_instruction_fixture_create_test_agent(
     return agent_id;
 }
 
-agent_id_t ar_instruction_fixture_get_agent(const instruction_fixture_t *ref_fixture) {
+int64_t ar_instruction_fixture_get_agent(const instruction_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return 0;
     }

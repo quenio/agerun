@@ -150,7 +150,7 @@ void ar_instruction_fixture_track_expression_context(
  * @note The fixture handles method registration and agent cleanup
  * @note Processes the wake message automatically
  */
-agent_id_t ar_instruction_fixture_create_test_agent(
+int64_t ar_instruction_fixture_create_test_agent(
     instruction_fixture_t *mut_fixture,
     const char *ref_method_name,
     const char *ref_instructions
@@ -161,7 +161,7 @@ agent_id_t ar_instruction_fixture_create_test_agent(
  * @param ref_fixture The fixture to query
  * @return Agent ID if created, 0 otherwise
  */
-agent_id_t ar_instruction_fixture_get_agent(const instruction_fixture_t *ref_fixture);
+int64_t ar_instruction_fixture_get_agent(const instruction_fixture_t *ref_fixture);
 
 /**
  * Tracks a generic pointer for cleanup with a custom destructor

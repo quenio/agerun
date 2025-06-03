@@ -94,7 +94,7 @@ static void test_method_run(void) {
     const char *version = "1.0.0";
     
     // And an agent created with this method
-    agent_id_t agent_id = ar_agent_create(method_name, version, NULL);
+    int64_t agent_id = ar_agent_create(method_name, version, NULL);
     assert(agent_id > 0);
     
     // With map_t now opaque, we can't directly access the agent

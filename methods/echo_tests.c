@@ -24,7 +24,7 @@ static void test_echo_simple_message(void) {
     assert(ar_method_fixture_load_method(own_fixture, "echo", "../methods/echo-1.0.0.method", "1.0.0"));
     
     // Create echo agent
-    agent_id_t echo_agent = ar_agent_create("echo", "1.0.0", NULL);
+    int64_t echo_agent = ar_agent_create("echo", "1.0.0", NULL);
     assert(echo_agent != 0);
     
     // Process wake message
@@ -90,7 +90,7 @@ static void test_echo_map_message(void) {
     assert(ar_method_fixture_load_method(own_fixture, "echo", "../methods/echo-1.0.0.method", "1.0.0"));
     
     // Create echo agent
-    agent_id_t echo_agent = ar_agent_create("echo", "1.0.0", NULL);
+    int64_t echo_agent = ar_agent_create("echo", "1.0.0", NULL);
     assert(echo_agent != 0);
     
     // Process wake message

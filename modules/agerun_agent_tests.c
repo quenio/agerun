@@ -37,7 +37,7 @@ static void test_agent_create_destroy(void) {
     const char *version = "1.0.0";
     
     // When we create an agent with this method
-    agent_id_t agent_id = ar_agent_create(method_name, version, NULL);
+    int64_t agent_id = ar_agent_create(method_name, version, NULL);
     
     // Then the agent should be created successfully
     assert(agent_id > 0);
@@ -78,7 +78,7 @@ static void test_agent_send(void) {
     // For test purposes, we assume registration succeeds and creates version "1.0.0"
     const char *version = "1.0.0";
     
-    agent_id_t agent_id = ar_agent_create(method_name, version, NULL);
+    int64_t agent_id = ar_agent_create(method_name, version, NULL);
     assert(agent_id > 0);
     
     // When we send a message to the agent
@@ -123,7 +123,7 @@ static void test_agent_exists(void) {
     // For test purposes, we assume registration succeeds and creates version "1.0.0"
     const char *version = "1.0.0";
     
-    agent_id_t agent_id = ar_agent_create(method_name, version, NULL);
+    int64_t agent_id = ar_agent_create(method_name, version, NULL);
     assert(agent_id > 0);
     
     // When we check if the valid agent ID exists
@@ -178,7 +178,7 @@ static void test_agent_persistence(void) {
     ar_data_set_map_string(own_context, "test_key", "test_value");
     
     // And an agent created with this persistent method - agent doesn't take ownership
-    agent_id_t agent_id = ar_agent_create(method_name, version, own_context);
+    int64_t agent_id = ar_agent_create(method_name, version, own_context);
     assert(agent_id > 0);
     
     // When we save agents to disk
@@ -235,7 +235,7 @@ int main(void) {
     // For test purposes, we assume registration succeeds and creates version "1.0.0"
     const char *version = "1.0.0";
     
-    agent_id_t init_agent_id = ar_system_init(method_name, version);
+    int64_t init_agent_id = ar_system_init(method_name, version);
     assert(init_agent_id > 0);
     
     // When we run all agent tests

@@ -24,7 +24,7 @@ static void test_calculator_add(void) {
     assert(ar_method_fixture_load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
     
     // Create calculator agent
-    agent_id_t calc_agent = ar_agent_create("calculator", "1.0.0", NULL);
+    int64_t calc_agent = ar_agent_create("calculator", "1.0.0", NULL);
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
@@ -90,7 +90,7 @@ static void test_calculator_multiply(void) {
     assert(ar_method_fixture_load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
     
     // Create calculator agent
-    agent_id_t calc_agent = ar_agent_create("calculator", "1.0.0", NULL);
+    int64_t calc_agent = ar_agent_create("calculator", "1.0.0", NULL);
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
@@ -155,7 +155,7 @@ static void test_calculator_subtract(void) {
     assert(ar_method_fixture_load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
     
     // Create calculator agent
-    agent_id_t calc_agent = ar_agent_create("calculator", "1.0.0", NULL);
+    int64_t calc_agent = ar_agent_create("calculator", "1.0.0", NULL);
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
@@ -221,7 +221,7 @@ static void test_calculator_divide(void) {
     assert(ar_method_fixture_load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
     
     // Create calculator agent
-    agent_id_t calc_agent = ar_agent_create("calculator", "1.0.0", NULL);
+    int64_t calc_agent = ar_agent_create("calculator", "1.0.0", NULL);
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
@@ -289,7 +289,7 @@ static void test_calculator_unknown_operation(void) {
     assert(ar_method_fixture_load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
     
     // Create calculator agent
-    agent_id_t calc_agent = ar_agent_create("calculator", "1.0.0", NULL);
+    int64_t calc_agent = ar_agent_create("calculator", "1.0.0", NULL);
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     

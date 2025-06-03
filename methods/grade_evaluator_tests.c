@@ -25,7 +25,7 @@ static void test_grade_evaluator_grades(void) {
     assert(ar_method_fixture_load_method(own_fixture, "grade-evaluator", "../methods/grade-evaluator-1.0.0.method", "1.0.0"));
     
     // Create grade-evaluator agent
-    agent_id_t evaluator_agent = ar_agent_create("grade-evaluator", "1.0.0", NULL);
+    int64_t evaluator_agent = ar_agent_create("grade-evaluator", "1.0.0", NULL);
     assert(evaluator_agent > 0);
     
     // Process wake message
@@ -168,7 +168,7 @@ static void test_grade_evaluator_status(void) {
     assert(ar_method_fixture_load_method(own_fixture, "grade-evaluator", "../methods/grade-evaluator-1.0.0.method", "1.0.0"));
     
     // Create grade-evaluator agent
-    agent_id_t evaluator_agent = ar_agent_create("grade-evaluator", "1.0.0", NULL);
+    int64_t evaluator_agent = ar_agent_create("grade-evaluator", "1.0.0", NULL);
     assert(evaluator_agent > 0);
     
     // Process wake message

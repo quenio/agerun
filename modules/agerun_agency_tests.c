@@ -27,7 +27,7 @@ static void test_agency_init_state(void) {
     assert(agents != NULL);
     
     // When we get the next agent ID
-    agent_id_t next_id = ar_agency_get_next_id();
+    int64_t next_id = ar_agency_get_next_id();
     
     // Then it should be set to a positive value
     assert(next_id > 0);
@@ -59,7 +59,7 @@ static void test_agency_count_agents(void) {
     
     // When we create several agents
     int num_agents_to_create = 3;
-    agent_id_t agent_ids[3];
+    int64_t agent_ids[3];
     
     for (int i = 0; i < num_agents_to_create; i++) {
         agent_ids[i] = ar_agent_create(method_name, version, NULL);
@@ -96,14 +96,14 @@ static void test_agency_next_id(void) {
     printf("Testing ar_agency_get_next_id() and ar_agency_set_next_id()...\n");
     
     // Given we have the current next agent ID
-    agent_id_t current_next_id = ar_agency_get_next_id();
+    int64_t current_next_id = ar_agency_get_next_id();
     
     // When we set a new next ID
-    agent_id_t new_next_id = current_next_id + 1000;
+    int64_t new_next_id = current_next_id + 1000;
     ar_agency_set_next_id(new_next_id);
     
     // Then the next ID should be updated correctly
-    agent_id_t retrieved_next_id = ar_agency_get_next_id();
+    int64_t retrieved_next_id = ar_agency_get_next_id();
     assert(retrieved_next_id == new_next_id);
     
     // Given we have a test method
@@ -124,7 +124,7 @@ static void test_agency_next_id(void) {
     
     // When we create a new agent
     data_t *context = ar_data_create_map();
-    agent_id_t agent_id = ar_agent_create(method_name, version, context);
+    int64_t agent_id = ar_agent_create(method_name, version, context);
     
     // Then the agent should be assigned the current next ID
     assert(agent_id == new_next_id);
@@ -163,7 +163,7 @@ static void test_agency_persistence(void) {
     const char *version = "1.0.0";
     
     // And an agent created with this method
-    agent_id_t agent_id = ar_agent_create(method_name, version, NULL);
+    int64_t agent_id = ar_agent_create(method_name, version, NULL);
     assert(agent_id > 0);
     
     // When we save agents to disk
@@ -173,7 +173,7 @@ static void test_agency_persistence(void) {
     assert(save_result);
     
     // Given we capture the current next ID
-    agent_id_t next_id = ar_agency_get_next_id();
+    int64_t next_id = ar_agency_get_next_id();
     
     // When we simulate a system restart
     ar_system_shutdown();
@@ -221,7 +221,7 @@ static void test_agency_reset(void) {
     const char *version = "1.0.0";
     
     // And an agent created with this method
-    agent_id_t agent_id = ar_agent_create(method_name, version, NULL);
+    int64_t agent_id = ar_agent_create(method_name, version, NULL);
     assert(agent_id > 0);
     
     // And the agent exists in the system
@@ -261,7 +261,7 @@ int main(void) {
     // For test purposes, we assume registration succeeds and creates version "1.0.0"
     const char *version = "1.0.0";
     
-    agent_id_t init_agent_id = ar_system_init(method_name, version);
+    int64_t init_agent_id = ar_system_init(method_name, version);
     assert(init_agent_id > 0);
     
     // When we run all agency tests

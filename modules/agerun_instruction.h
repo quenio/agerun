@@ -5,9 +5,6 @@
 #include <stdint.h>
 #include "agerun_data.h"
 
-// Include only what's needed from agent.h - forward declaration
-typedef int64_t agent_id_t;
-
 /**
  * Context structure for instruction parsing and execution.
  * Contains all the information needed during instruction parsing and execution.
@@ -112,7 +109,7 @@ const data_t* ar_instruction_get_message(const instruction_context_t *ref_ctx);
  * @note Ownership: Takes ownership of own_message.
  *       If sending fails, the function will destroy the message.
  */
-bool ar_instruction_send_message(agent_id_t target_id, data_t *own_message);
+bool ar_instruction_send_message(int64_t target_id, data_t *own_message);
 
 /**
  * Gets the last error message from the instruction context.

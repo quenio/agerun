@@ -91,7 +91,6 @@ agerun_executable
 │   │   ├── agerun_data
 │   │   ├── agerun_string
 │   │   ├── agerun_assert
-│   │   ├── agerun_agent*
 │   │   └── agerun_map
 │   ├── agerun_methodology
 │   │   ├── agerun_method
@@ -144,7 +143,6 @@ agerun_instruction_fixture
 ```
 
 **Circular Dependencies** (marked with *):
-- `agerun_method` → `agerun_agent*`: Method includes agent.h while agent depends on method via methodology
 - `agerun_agency` → `agerun_agent*`: Agency and agent have mutual dependencies
 - `agerun_agency` → `agerun_system*`: Agency includes system.h, creating another circular dependency
 

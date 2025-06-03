@@ -2,7 +2,7 @@
 #define AGERUN_SYSTEM_H
 
 #include <stdbool.h>
-#include "agerun_agent.h"
+#include <stdint.h>
 
 /**
  * Initialize the Agerun runtime system
@@ -11,7 +11,7 @@
  * @return ID of the created initial agent, or 0 on failure
  * @note Ownership: Function copies the method name; does not take ownership of ref_method_name.
  */
-agent_id_t ar_system_init(const char *ref_method_name, const char *ref_version);
+int64_t ar_system_init(const char *ref_method_name, const char *ref_version);
 
 /**
  * Shut down the Agerun runtime system

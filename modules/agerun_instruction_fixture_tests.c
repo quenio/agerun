@@ -232,7 +232,7 @@ static void test_agent_creation(void) {
     assert(ar_instruction_fixture_init_system(own_fixture, "init_method", "memory.ready := 1"));
     
     // When we create a test agent
-    agent_id_t agent_id = ar_instruction_fixture_create_test_agent(
+    int64_t agent_id = ar_instruction_fixture_create_test_agent(
         own_fixture,
         "test_agent_method",
         "memory.value := message"
@@ -242,11 +242,11 @@ static void test_agent_creation(void) {
     assert(agent_id > 0);
     
     // And we should be able to get the agent ID
-    agent_id_t retrieved_id = ar_instruction_fixture_get_agent(own_fixture);
+    int64_t retrieved_id = ar_instruction_fixture_get_agent(own_fixture);
     assert(retrieved_id == agent_id);
     
     // And we shouldn't be able to create another agent
-    agent_id_t second_agent = ar_instruction_fixture_create_test_agent(
+    int64_t second_agent = ar_instruction_fixture_create_test_agent(
         own_fixture,
         "another_method",
         "memory.x := 1"

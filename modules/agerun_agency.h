@@ -3,10 +3,11 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "agerun_agent.h"
+#include "agerun_data.h"
 
-/* Forward declaration for method_t */
+/* Forward declarations */
 typedef struct method_s method_t;
+typedef struct agent_s agent_t;
 
 /* Constants */
 #define AGENCY_FILE_NAME "agency.agerun"
@@ -28,13 +29,13 @@ agent_t* ar_agency_get_agents(void);
  * Get next agent ID - used by system functions
  * @return Next agent ID to be assigned (value type, not a reference)
  */
-agent_id_t ar_agency_get_next_id(void);
+int64_t ar_agency_get_next_id(void);
 
 /**
  * Set next agent ID - used by system functions
  * @param id The ID to set as next agent ID (value type, not a reference)
  */
-void ar_agency_set_next_id(agent_id_t id);
+void ar_agency_set_next_id(int64_t id);
 
 /**
  * Reset agency state (used during shutdown)
@@ -88,21 +89,21 @@ int ar_agency_count_agents_using_method(const method_t *ref_method);
  * Get the first active agent ID
  * @return First active agent ID, or 0 if no active agents
  */
-agent_id_t ar_agency_get_first_agent(void);
+int64_t ar_agency_get_first_agent(void);
 
 /**
  * Get the next active agent ID after the given agent
  * @param current_id Current agent ID
  * @return Next active agent ID, or 0 if no more active agents
  */
-agent_id_t ar_agency_get_next_agent(agent_id_t current_id);
+int64_t ar_agency_get_next_agent(int64_t current_id);
 
 /**
  * Check if an agent has messages in its queue
  * @param agent_id Agent ID to check
  * @return true if agent has messages, false otherwise
  */
-bool ar_agency_agent_has_messages(agent_id_t agent_id);
+bool ar_agency_agent_has_messages(int64_t agent_id);
 
 /**
  * Get and remove the first message from an agent's queue
@@ -110,7 +111,7 @@ bool ar_agency_agent_has_messages(agent_id_t agent_id);
  * @return Message data (ownership transferred), or NULL if no messages
  * @note Ownership: Returns an owned value that caller must destroy
  */
-data_t* ar_agency_get_agent_message(agent_id_t agent_id);
+data_t* ar_agency_get_agent_message(int64_t agent_id);
 
 #endif /* AGERUN_AGENCY_H */
 

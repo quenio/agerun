@@ -24,7 +24,7 @@ static void test_method_creator_create_simple(void) {
     assert(ar_method_fixture_load_method(own_fixture, "method-creator", "../methods/method-creator-1.0.0.method", "1.0.0"));
     
     // Create method-creator agent
-    agent_id_t creator_agent = ar_agent_create("method-creator", "1.0.0", NULL);
+    int64_t creator_agent = ar_agent_create("method-creator", "1.0.0", NULL);
     assert(creator_agent > 0);
     
     // Process wake message
@@ -102,7 +102,7 @@ static void test_method_creator_invalid_syntax(void) {
     assert(ar_method_fixture_load_method(own_fixture, "method-creator", "../methods/method-creator-1.0.0.method", "1.0.0"));
     
     // Create method-creator agent
-    agent_id_t creator_agent = ar_agent_create("method-creator", "1.0.0", NULL);
+    int64_t creator_agent = ar_agent_create("method-creator", "1.0.0", NULL);
     assert(creator_agent > 0);
     
     // Process wake message

@@ -12,7 +12,7 @@
 
 /* Agent Definition (needed by agency as it owns the agent array) */
 struct agent_s {
-    agent_id_t id;
+    int64_t id;
     const method_t *ref_method; // Borrowed reference to method
     bool is_active;
     list_t *own_message_queue;  // Using list as a message queue, owned by agent
@@ -31,7 +31,7 @@ struct agent_s {
 
 /* Global State */
 static agent_t g_own_agents[MAX_AGENTS]; // Owned by the agency module
-static agent_id_t g_next_agent_id = 1;
+static int64_t g_next_agent_id = 1;
 static bool g_is_initialized = false;
 
 // We now use ar_io_read_line directly from the agerun_io module
@@ -62,11 +62,11 @@ agent_t* ar_agency_get_agents(void) {
     return g_own_agents; // Ownership: Borrowed reference (module retains ownership)
 }
 
-agent_id_t ar_agency_get_next_id(void) {
+int64_t ar_agency_get_next_id(void) {
     return g_next_agent_id; // Value type, not a reference
 }
 
-void ar_agency_set_next_id(agent_id_t id) {
+void ar_agency_set_next_id(int64_t id) {
     g_next_agent_id = id; // Value type, not a reference
 }
 
@@ -247,7 +247,7 @@ bool ar_agency_save_agents(void) {
 
 // Data structure to hold processed agent info during loading
 typedef struct {
-    agent_id_t id;
+    int64_t id;
     char method_name[256];
     char method_version[64];
 } agency_load_agent_info_t;
@@ -340,7 +340,7 @@ static bool ar_agency_validate_file(const char *filename, char *error_message, s
         // Validate ID is a number
         char *id_endptr = NULL;
         errno = 0;
-        agent_id_t id = strtoll(token, &id_endptr, 10);
+        int64_t id = strtoll(token, &id_endptr, 10);
         if (errno != 0 || id_endptr == token || *id_endptr != '\0' || id <= 0) {
             snprintf(error_message, error_size,
                     "Invalid agent ID '%s' in %s for agent %d", token, filename, i+1);
@@ -569,7 +569,7 @@ bool ar_agency_load_agents(void) {
             break;
         }
 
-        // Convert ID from string to agent_id_t (long long) with security checks
+        // Convert ID from string to int64_t (long long) with security checks
         char *id_endptr = NULL;
         errno = 0; // Reset errno to check for conversion errors
         agent_info[i].id = strtoll(token, &id_endptr, 10);
@@ -666,7 +666,7 @@ bool ar_agency_load_agents(void) {
         }
 
         // Create the agent
-        agent_id_t new_id = ar_agent_create(
+        int64_t new_id = ar_agent_create(
             agent_info[i].method_name,
             agent_info[i].method_version,
             NULL);
@@ -907,7 +907,7 @@ int ar_agency_update_agent_methods(const method_t *ref_old_method, const method_
     for (int i = 0; i < MAX_AGENTS; i++) {
         if (g_own_agents[i].is_active && g_own_agents[i].ref_method == ref_old_method) {
             // Get the agent ID for sending messages
-            agent_id_t agent_id = g_own_agents[i].id;
+            int64_t agent_id = g_own_agents[i].id;
             
             // Step 1: Send sleep message
             ar_io_info("Updating agent %lld from method %s version %s to version %s",
@@ -968,7 +968,7 @@ int ar_agency_count_agents_using_method(const method_t *ref_method) {
  * Get the first active agent ID
  * @return First active agent ID, or 0 if no active agents
  */
-agent_id_t ar_agency_get_first_agent(void) {
+int64_t ar_agency_get_first_agent(void) {
     if (!g_is_initialized) {
         ar_agency_init();
     }
@@ -987,7 +987,7 @@ agent_id_t ar_agency_get_first_agent(void) {
  * @param current_id Current agent ID
  * @return Next active agent ID, or 0 if no more active agents
  */
-agent_id_t ar_agency_get_next_agent(agent_id_t current_id) {
+int64_t ar_agency_get_next_agent(int64_t current_id) {
     if (!g_is_initialized) {
         ar_agency_init();
     }
@@ -1010,7 +1010,7 @@ agent_id_t ar_agency_get_next_agent(agent_id_t current_id) {
  * @param agent_id Agent ID to check
  * @return true if agent has messages, false otherwise
  */
-bool ar_agency_agent_has_messages(agent_id_t agent_id) {
+bool ar_agency_agent_has_messages(int64_t agent_id) {
     if (!g_is_initialized) {
         ar_agency_init();
     }
@@ -1030,7 +1030,7 @@ bool ar_agency_agent_has_messages(agent_id_t agent_id) {
  * @return Message data (ownership transferred), or NULL if no messages
  * @note Ownership: Returns an owned value that caller must destroy
  */
-data_t* ar_agency_get_agent_message(agent_id_t agent_id) {
+data_t* ar_agency_get_agent_message(int64_t agent_id) {
     if (!g_is_initialized) {
         ar_agency_init();
     }

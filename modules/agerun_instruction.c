@@ -4,7 +4,7 @@
 #include "agerun_expression.h"
 #include "agerun_map.h"
 #include "agerun_methodology.h"
-#include "agerun_agent.h" // Required only for agent_id_t and ar_agent_send
+#include "agerun_agent.h" // Required for ar_agent_send
 #include "agerun_assert.h" // Include for ownership assertions
 #include "agerun_heap.h" // Include for memory allocation macros
 
@@ -93,7 +93,7 @@ const data_t* ar_instruction_get_message(const instruction_context_t *ref_ctx) {
 }
 
 // Send a message to another agent
-bool ar_instruction_send_message(agent_id_t target_id, data_t *own_message) {
+bool ar_instruction_send_message(int64_t target_id, data_t *own_message) {
     if (target_id == 0) {
         // Special case: agent_id 0 is a no-op that always returns true
         ar_data_destroy(own_message);
@@ -429,9 +429,9 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         (*mut_pos)++; // Skip ')'
         
         // Extract agent_id
-        agent_id_t target_id = 0;
+        int64_t target_id = 0;
         if (ar_data_get_type(own_agent_id) == DATA_INTEGER) {
-            target_id = (agent_id_t)ar_data_get_integer(own_agent_id);
+            target_id = (int64_t)ar_data_get_integer(own_agent_id);
         }
         
         // Send message
@@ -1630,7 +1630,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         (*mut_pos)++; // Skip ')'
         
         // Create the agent
-        agent_id_t agent_id = ar_agent_create(method_name, version_str, ref_agent_context);
+        int64_t agent_id = ar_agent_create(method_name, version_str, ref_agent_context);
         
         // Check if agent creation failed (method not found)
         if (agent_id == 0) {
@@ -1804,7 +1804,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                 }
                 return false;
             }
-            agent_id_t agent_id = (agent_id_t)ar_data_get_integer(arg_to_use);
+            int64_t agent_id = (int64_t)ar_data_get_integer(arg_to_use);
             
             // Destroy the agent
             bool success = ar_agent_destroy(agent_id);

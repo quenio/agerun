@@ -15,7 +15,7 @@
 
 /* Agent Definition (moved from header for opaque type) */
 struct agent_s {
-    agent_id_t id;
+    int64_t id;
     const method_t *ref_method; // Borrowed reference to method
     bool is_active;
     list_t *own_message_queue;  // Using list as a message queue, owned by agent
@@ -29,7 +29,7 @@ struct agent_s {
 static const char g_sleep_message[] = "__sleep__";
 
 /* Implementation */
-agent_id_t ar_agent_create(const char *ref_method_name, const char *ref_version, const data_t *ref_context) {
+int64_t ar_agent_create(const char *ref_method_name, const char *ref_version, const data_t *ref_context) {
     agent_t *mut_agents = ar_agency_get_agents();
     
     if (mut_agents == NULL || !ref_method_name) {
@@ -60,7 +60,7 @@ agent_id_t ar_agent_create(const char *ref_method_name, const char *ref_version,
     }
     
     // Initialize agent
-    agent_id_t new_id = ar_agency_get_next_id();
+    int64_t new_id = ar_agency_get_next_id();
     mut_agents[agent_idx].id = new_id;
     mut_agents[agent_idx].is_active = true;
     mut_agents[agent_idx].ref_method = ref_method;  // Just store reference
@@ -80,7 +80,7 @@ agent_id_t ar_agent_create(const char *ref_method_name, const char *ref_version,
     return new_id;
 }
 
-bool ar_agent_destroy(agent_id_t agent_id) {
+bool ar_agent_destroy(int64_t agent_id) {
     agent_t *mut_agents = ar_agency_get_agents();
     
     if (mut_agents == NULL) {
@@ -139,7 +139,7 @@ bool ar_agent_destroy(agent_id_t agent_id) {
     return false;
 }
 
-bool ar_agent_send(agent_id_t agent_id, data_t *own_message) {
+bool ar_agent_send(int64_t agent_id, data_t *own_message) {
     agent_t *mut_agents = ar_agency_get_agents();
     
     if (mut_agents == NULL || !own_message) {
@@ -173,7 +173,7 @@ bool ar_agent_send(agent_id_t agent_id, data_t *own_message) {
     return false;
 }
 
-bool ar_agent_exists(agent_id_t agent_id) {
+bool ar_agent_exists(int64_t agent_id) {
     const agent_t *ref_agents = ar_agency_get_agents();
     
     if (ref_agents == NULL) {
@@ -191,7 +191,7 @@ bool ar_agent_exists(agent_id_t agent_id) {
 
 /* Accessor functions for opaque type */
 
-const data_t* ar_agent_get_memory(agent_id_t agent_id) {
+const data_t* ar_agent_get_memory(int64_t agent_id) {
     const agent_t *ref_agents = ar_agency_get_agents();
     
     if (ref_agents == NULL) {
@@ -207,7 +207,7 @@ const data_t* ar_agent_get_memory(agent_id_t agent_id) {
     return NULL;
 }
 
-data_t* ar_agent_get_mutable_memory(agent_id_t agent_id) {
+data_t* ar_agent_get_mutable_memory(int64_t agent_id) {
     agent_t *mut_agents = ar_agency_get_agents();
     
     if (mut_agents == NULL) {
@@ -223,7 +223,7 @@ data_t* ar_agent_get_mutable_memory(agent_id_t agent_id) {
     return NULL;
 }
 
-const data_t* ar_agent_get_context(agent_id_t agent_id) {
+const data_t* ar_agent_get_context(int64_t agent_id) {
     const agent_t *ref_agents = ar_agency_get_agents();
     
     if (ref_agents == NULL) {
@@ -239,7 +239,7 @@ const data_t* ar_agent_get_context(agent_id_t agent_id) {
     return NULL;
 }
 
-bool ar_agent_is_active(agent_id_t agent_id) {
+bool ar_agent_is_active(int64_t agent_id) {
     const agent_t *ref_agents = ar_agency_get_agents();
     
     if (ref_agents == NULL) {
@@ -255,7 +255,7 @@ bool ar_agent_is_active(agent_id_t agent_id) {
     return false;
 }
 
-bool ar_agent_get_method_info(agent_id_t agent_id, const char **out_method_name, const char **out_method_version) {
+bool ar_agent_get_method_info(int64_t agent_id, const char **out_method_name, const char **out_method_version) {
     const agent_t *ref_agents = ar_agency_get_agents();
     
     if (ref_agents == NULL) {
@@ -277,7 +277,7 @@ bool ar_agent_get_method_info(agent_id_t agent_id, const char **out_method_name,
     return false;
 }
 
-const method_t* ar_agent_get_method(agent_id_t agent_id) {
+const method_t* ar_agent_get_method(int64_t agent_id) {
     const agent_t *ref_agents = ar_agency_get_agents();
     
     if (ref_agents == NULL) {
@@ -293,7 +293,7 @@ const method_t* ar_agent_get_method(agent_id_t agent_id) {
     return NULL;
 }
 
-bool ar_agent_set_active(agent_id_t agent_id, bool is_active) {
+bool ar_agent_set_active(int64_t agent_id, bool is_active) {
     agent_t *mut_agents = ar_agency_get_agents();
     
     if (mut_agents == NULL) {
@@ -310,7 +310,7 @@ bool ar_agent_set_active(agent_id_t agent_id, bool is_active) {
     return false;
 }
 
-agent_t* ar_agent_get_internal(agent_id_t agent_id) {
+agent_t* ar_agent_get_internal(int64_t agent_id) {
     agent_t *mut_agents = ar_agency_get_agents();
     
     if (mut_agents == NULL) {
