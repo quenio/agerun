@@ -100,13 +100,17 @@ agerun_executable
 │   │   ├── agerun_string
 │   │   └── agerun_assert
 │   ├── agerun_agency
-│   │   ├── agerun_agent
-│   │   ├── agerun_method
-│   │   ├── agerun_semver
-│   │   ├── agerun_data
-│   │   ├── agerun_map
-│   │   ├── agerun_list
-│   │   └── agerun_io
+│   │   ├── agerun_agent_registry
+│   │   ├── agerun_agent_store
+│   │   │   ├── agerun_io
+│   │   │   ├── agerun_agent
+│   │   │   ├── agerun_method
+│   │   │   ├── agerun_data
+│   │   │   └── agerun_list
+│   │   └── agerun_agent_update
+│   │       ├── agerun_agent
+│   │       ├── agerun_method
+│   │       └── agerun_semver
 │   ├── agerun_data
 │   │   ├── agerun_string
 │   │   ├── agerun_map
@@ -116,6 +120,9 @@ agerun_executable
 │   └── agerun_list
 ├── agerun_methodology
 ├── agerun_agency
+│   ├── agerun_agent_registry
+│   ├── agerun_agent_store
+│   └── agerun_agent_update
 ├── agerun_method
 └── agerun_agent
 
@@ -150,7 +157,8 @@ The AgeRun system is organized into hierarchical layers, with each layer buildin
 ```
 ┌───────────────────────────────────────────────────────────┐
 │                    System Modules                         │ 
-│  (agerun_agent, agerun_agency, agerun_system,             │ ◄──┐
+│  (agerun_agent, agerun_agency, agerun_agent_registry,     │ ◄──┐
+│   agerun_agent_store, agerun_agent_update, agerun_system, │    │
 │   agerun_executable)                                      │    │
 └──────────────────────────────┬────────────────────────────┘    │
                                │                                 │ ┌──────────────────────────────┐
@@ -371,16 +379,65 @@ For detailed API documentation, see [agerun_agent.md](agerun_agent.md).
 
 ### Agency Module (`agerun_agency`)
 
-The agency module provides system-wide agent management and persistence:
+The agency module serves as a facade that coordinates agent management operations across specialized modules:
 
-- **Agent Registry**: Maintains a registry of all active agents in the system
-- **Agent ID Management**: Assigns and tracks unique agent identifiers
-- **Persistence Support**: Saves and restores agent state to/from disk
-- **Method Updates**: Handles automatic agent method updates during version transitions
-- **Agent Lifecycle Events**: Manages __sleep__ and __wake__ message sending during transitions
-- **Zero Memory Leaks**: Proper cleanup of agency resources and message processing
-- **Depends on IO**: Uses secure file I/O for persistence operations
-- **Depends on System**: Uses system module for message processing during method updates
+- **Facade Pattern**: Provides a unified interface while delegating to three specialized modules (81 lines)
+- **Agent Registry Operations**: Delegates ID management and iteration to agent_registry module
+- **Persistence Operations**: Delegates save/load functionality to agent_store module
+- **Method Update Operations**: Delegates version updates to agent_update module
+- **Clean Architecture**: Reduced from 850+ lines to 81 lines through proper separation of concerns
+- **Module Cohesion**: Each sub-module has a single, well-defined responsibility:
+  - `agerun_agent_registry`: Agent ID allocation, tracking, and iteration
+  - `agerun_agent_store`: Saving and loading agent state to/from disk
+  - `agerun_agent_update`: Method version updates and compatibility checking
+- **Zero Memory Leaks**: Maintains proper cleanup through coordinated module operations
+- **Depends on New Modules**: Uses agent_registry, agent_store, and agent_update modules
+- **Maintains Compatibility**: Public API unchanged, ensuring no breaking changes
+
+### Agent Registry Module (`agerun_agent_registry`)
+
+The agent registry module manages agent ID allocation and runtime agent tracking:
+
+- **Agent ID Management**: Allocates unique IDs and tracks the next available ID
+- **Active Agent Tracking**: Maintains registry of all active agents in the system
+- **Agent Iteration**: Provides efficient iteration over active agents
+- **Agent Counting**: Reports the number of active agents
+- **System Reset**: Handles registry cleanup during system shutdown
+- **Focused Responsibility**: Single responsibility for agent identification and enumeration
+- **Currently Forwarding**: Implementation temporarily delegates to agent module
+- **Future Enhancement**: Will contain the actual registry implementation after refactoring
+- **Zero Dependencies**: Designed to be a low-level module with minimal dependencies
+- **Opaque Implementation**: Internal registry structure hidden from clients
+
+### Agent Store Module (`agerun_agent_store`)
+
+The agent store module handles persistence of agent state:
+
+- **Agent Persistence**: Saves all active agents to agency.agerun file
+- **Agent Restoration**: Loads agents from disk on system startup
+- **File Format Management**: Handles the agency file format with proper versioning
+- **Backup Support**: Creates backups before modifying persistence files
+- **Memory Persistence**: Saves/loads agent memory (pending map iteration support)
+- **Context Persistence**: Properly saves and restores agent context data
+- **Validation**: Ensures loaded data integrity with comprehensive checks
+- **Error Recovery**: Handles corrupt files gracefully with detailed error messages
+- **Atomic Operations**: Uses atomic file operations for crash resistance
+- **Depends on IO**: Uses secure file operations from IO module
+
+### Agent Update Module (`agerun_agent_update`)
+
+The agent update module manages method version transitions for agents:
+
+- **Method Updates**: Updates agents from one method version to another
+- **Compatibility Checking**: Validates version compatibility before updates
+- **Lifecycle Management**: Controls __sleep__/__wake__ message sending during updates
+- **Agent Counting**: Counts agents using specific method versions
+- **Semantic Versioning**: Uses semver rules for compatibility validation
+- **Safe Transitions**: Ensures agents receive proper lifecycle events
+- **Currently Forwarding**: Implementation temporarily delegates to agent module
+- **Future Enhancement**: Will contain the actual update logic after refactoring
+- **Depends on Semver**: Uses semantic versioning for compatibility checks
+- **Clean Interface**: Provides clear API for method version management
 
 ### System Module (`agerun_system`)
 
