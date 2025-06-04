@@ -4,20 +4,45 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 **IMPORTANT**: All development MUST follow the mandatory Parnas Design Principles and Test-Driven Development (TDD) methodology as specified in CLAUDE.md. Pull requests violating these principles will be REJECTED.
 
-## Critical Compliance Tasks (NEW)
+## Critical Compliance Tasks
 
-- [ ] Ensure all modules comply with Parnas principles:
-  - [ ] Audit existing modules for information hiding violations
-  - [ ] Identify and eliminate any circular dependencies:
-    - [x] Fix `agerun_agent` → `agerun_system` circular dependency
-    - [x] Remove unnecessary `agerun_expression` → `agerun_system` include
-    - [x] Fix `agerun_instruction` → `agerun_method` circular dependency
-    - [x] Fix `agerun_method` → `agerun_agent` circular dependency
-    - [x] Fix `agerun_agency` ↔ `agerun_agent` mutual dependency
-    - [x] Fix `agerun_agency` → `agerun_system` circular dependency
-  - [ ] Ensure all interfaces expose only abstract models
-  - [ ] Verify complete documentation for each module
-  - [ ] Create missing module design documents
+### Parnas Principles - Interface Violations (HIGH PRIORITY)
+
+- [ ] Fix modules exposing internal implementation details:
+  - [ ] **agerun_agent.h** - Create `agerun_agent_internal.h` for agency communication
+    - [ ] Move `ar_agent_get_internal()` to internal header
+    - [ ] Move `ar_agent_get_agents_internal()` to internal header
+    - [ ] Move `ar_agent_get_next_id_internal()` to internal header
+    - [ ] Move `ar_agent_set_next_id_internal()` to internal header
+    - [ ] Move `ar_agent_reset_all()` to internal header
+  - [ ] **agerun_methodology.h** - Redesign interface to hide storage implementation
+    - [ ] Remove or redesign `ar_methodology_find_method_idx()`
+    - [ ] Remove or redesign `ar_methodology_get_method_storage()`
+    - [ ] Remove or redesign `ar_methodology_set_method_storage()`
+    - [ ] Remove or redesign `ar_methodology_get_method_counts()`
+    - [ ] Remove or redesign `ar_methodology_get_method_name_count()`
+  - [ ] **agerun_heap.h** - Hide internal tracking functions
+    - [ ] Move `ar_heap_memory_add()` to internal header or make static
+    - [ ] Move `ar_heap_memory_remove()` to internal header or make static
+  - [ ] **agerun_string.h** - Convert inline function to regular function
+    - [ ] Move `ar_string_isspace()` implementation to .c file
+  - [ ] **agerun_data.h** - Evaluate if `data_type_t` enum should be opaque
+
+### Completed Parnas Tasks
+- [x] Audit existing modules for information hiding violations (see PARNAS_AUDIT_RESULTS.md)
+- [x] Identify and eliminate any circular dependencies:
+  - [x] Fix `agerun_agent` → `agerun_system` circular dependency
+  - [x] Remove unnecessary `agerun_expression` → `agerun_system` include
+  - [x] Fix `agerun_instruction` → `agerun_method` circular dependency
+  - [x] Fix `agerun_method` → `agerun_agent` circular dependency
+  - [x] Fix `agerun_agency` ↔ `agerun_agent` mutual dependency
+  - [x] Fix `agerun_agency` → `agerun_system` circular dependency
+- [x] Ensure all interfaces expose only abstract models (audit complete, fixes pending)
+
+### Documentation and Process Tasks
+- [ ] Verify complete documentation for each module
+- [ ] Create missing module design documents
+- [ ] Remove PARNAS_AUDIT_RESULTS.md once all interface violations are fixed
 
 - [ ] Establish TDD compliance:
   - [ ] Document TDD workflow in contributor guidelines
@@ -325,6 +350,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ## Completed Major Milestones
 
 ### 2025-06-03
+- ✅ Completed Parnas principles compliance audit for all modules
+- ✅ Identified 5 modules with interface violations exposing implementation details
+- ✅ Created PARNAS_AUDIT_RESULTS.md documenting all findings and action items
 - ✅ Fixed 5 of 6 circular dependencies in the codebase
 - ✅ Refactored agency module from visitor pattern to list-based approach
 - ✅ Fixed memory leak in agency module (using AR_HEAP_FREE instead of free)
