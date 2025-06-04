@@ -313,15 +313,19 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Module Cohesion Improvements
 
-### High Priority - Agency Module Refactoring
+### Completed - Agency Module Refactoring (2025-06-03)
 - [x] Split agerun_agency into focused modules:
   - [x] Create agerun_agent_registry module for agent ID management and runtime registry
   - [x] Create agerun_agent_store module for saving/loading agent state
   - [x] Create agerun_agent_update module for method version updates
-  - [x] Keep agerun_agency as a facade coordinating these modules
-  - [ ] Move lifecycle event handling (__sleep__/__wake__) to agent module
+  - [x] Keep agerun_agency as a facade coordinating these modules (reduced from 850+ to 81 lines)
 
 ### High Priority - Move Agent Functionality to New Modules
+- [ ] Move lifecycle event handling (__sleep__/__wake__) to agent module:
+  - [ ] Extract lifecycle event sending into dedicated agent module functions
+  - [ ] Update agent_update module to use new lifecycle functions
+  - [ ] Ensure agent creation still sends __wake__ message
+  - [ ] Test lifecycle event handling after refactoring
 - [ ] Move agent registry implementation from agent to agent_registry module:
   - [ ] Move agent ID allocation and tracking
   - [ ] Move active agent list management
@@ -371,6 +375,11 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - ✅ Refactored agency module from visitor pattern to list-based approach
 - ✅ Fixed memory leak in agency module (using AR_HEAP_FREE instead of free)
 - ✅ Simplified agent iteration interface for better maintainability
+- ✅ Split agency module into 3 focused modules following module cohesion principles:
+  - ✅ Created agerun_agent_registry for agent ID management
+  - ✅ Created agerun_agent_store for persistence operations
+  - ✅ Created agerun_agent_update for method version updates
+  - ✅ Reduced agency module from 850+ lines to 81 lines (facade pattern)
 
 ### 2025-05-27
 - ✅ Completed full instruction language implementation (all core functions)
