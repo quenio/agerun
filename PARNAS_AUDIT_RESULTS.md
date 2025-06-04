@@ -43,11 +43,11 @@ The following modules properly use opaque types and expose only abstract interfa
 ### 4. **agerun_agent.h** - Exposes Internal Functions
 - **Violations**:
   - `ar_agent_get_internal()` - explicitly marked "for internal use only"
-  - `ar_agent_get_agents_internal()` - marked for agency module only
-  - `ar_agent_get_next_id_internal()` - marked for agency module only
-  - `ar_agent_set_next_id_internal()` - marked for agency module only
-  - `ar_agent_reset_all()` - internal function for agency module
-- **Impact**: Breaks encapsulation between agent and agency modules
+  - `ar_agent_get_agents_internal()` - marked for agency module only (now also used by agent_registry, agent_store)
+  - `ar_agent_get_next_id_internal()` - marked for agency module only (now also used by agent_registry)
+  - `ar_agent_set_next_id_internal()` - marked for agency module only (now also used by agent_registry)
+  - `ar_agent_reset_all()` - internal function for agency module (now also used by agent_registry)
+- **Impact**: Breaks encapsulation between agent module and the agency-related modules (agency, agent_registry, agent_store, agent_update)
 - **Fix**: Create a separate internal header file or use friend module pattern
 
 ### 5. **agerun_methodology.h** - Exposes Internal Storage
@@ -85,6 +85,14 @@ The following modules properly use opaque types and expose only abstract interfa
 
 4. **API Stability**: The violations found could cause API compatibility issues if the internal implementations change
 
+## Recent Progress
+
+The agency module has been successfully refactored following Parnas principles:
+- Split from a monolithic 850+ line module into a clean 81-line facade
+- Created three focused modules: agent_registry, agent_store, and agent_update
+- Each new module has a single, well-defined responsibility
+- This refactoring has increased the need for the internal header pattern, as these new modules require access to agent internals
+
 ## Conclusion
 
-The codebase shows good adherence to Parnas principles overall, with 12 out of 17 modules fully compliant. The violations are concentrated in a few modules and can be fixed without major architectural changes. The most critical issues are in the methodology and agent modules where internal implementation details are exposed.
+The codebase shows good adherence to Parnas principles overall, with 12 out of 17 modules fully compliant. The violations are concentrated in a few modules and can be fixed without major architectural changes. The most critical issues are in the methodology and agent modules where internal implementation details are exposed. The recent agency refactoring demonstrates the benefits of applying these principles, though it has highlighted the need for proper internal interfaces.
