@@ -78,7 +78,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Handle persisted agents that reference non-existent methods
   - [ ] Add tests for agent persistence functionality
   - [ ] Document persistence behavior and file format
-  - [ ] Complete memory persistence saving in agency module (loading already implemented)
+  - [ ] Complete memory persistence saving in agent store module (loading already implemented)
+    - [ ] Add ar_data_get_map_keys() function to data module to enable map iteration
+    - [ ] Update agent store to save/load agent memory once map iteration is available
 
 - [ ] Implement horizontal and vertical scaling support:
   - [ ] Design API for distributed agent communication
