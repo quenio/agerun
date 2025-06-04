@@ -9,12 +9,12 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ### Parnas Principles - Interface Violations (HIGH PRIORITY)
 
 - [ ] Fix modules exposing internal implementation details:
-  - [ ] **agerun_agent.h** - Create `agerun_agent_internal.h` for agency communication
-    - [ ] Move `ar_agent_get_internal()` to internal header
-    - [ ] Move `ar_agent_get_agents_internal()` to internal header
-    - [ ] Move `ar_agent_get_next_id_internal()` to internal header
-    - [ ] Move `ar_agent_set_next_id_internal()` to internal header
-    - [ ] Move `ar_agent_reset_all()` to internal header
+  - [ ] **agerun_agent.h** - Create `agerun_agent_internal.h` for agency-related modules communication
+    - [ ] Move `ar_agent_get_internal()` to internal header (used by agency modules)
+    - [ ] Move `ar_agent_get_agents_internal()` to internal header (used by agent_registry, agent_store)
+    - [ ] Move `ar_agent_get_next_id_internal()` to internal header (used by agent_registry)
+    - [ ] Move `ar_agent_set_next_id_internal()` to internal header (used by agent_registry)
+    - [ ] Move `ar_agent_reset_all()` to internal header (used by agent_registry)
   - [ ] **agerun_methodology.h** - Redesign interface to hide storage implementation
     - [ ] Remove or redesign `ar_methodology_find_method_idx()`
     - [ ] Remove or redesign `ar_methodology_get_method_storage()`

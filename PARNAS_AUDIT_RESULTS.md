@@ -63,7 +63,7 @@ The following modules properly use opaque types and expose only abstract interfa
 ## Action Items
 
 ### High Priority
-1. Create `agerun_agent_internal.h` for agent↔agency communication
+1. Create `agerun_agent_internal.h` for communication between agent and agency-related modules (agency, agent_registry, agent_store, agent_update)
 2. Redesign methodology interface to hide storage implementation
 3. Move heap internal functions to separate header or make static
 
