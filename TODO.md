@@ -314,12 +314,24 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ## Module Cohesion Improvements
 
 ### High Priority - Agency Module Refactoring
-- [ ] Split agerun_agency into focused modules:
-  - [ ] Create agerun_agent_registry module for agent ID management and runtime registry
-  - [ ] Create agerun_agent_persistence module for saving/loading agent state
-  - [ ] Create agerun_agent_updater module for method version updates
-  - [ ] Keep agerun_agency as a facade coordinating these modules
+- [x] Split agerun_agency into focused modules:
+  - [x] Create agerun_agent_registry module for agent ID management and runtime registry
+  - [x] Create agerun_agent_store module for saving/loading agent state
+  - [x] Create agerun_agent_update module for method version updates
+  - [x] Keep agerun_agency as a facade coordinating these modules
   - [ ] Move lifecycle event handling (__sleep__/__wake__) to agent module
+
+### High Priority - Move Agent Functionality to New Modules
+- [ ] Move agent registry implementation from agent to agent_registry module:
+  - [ ] Move agent ID allocation and tracking
+  - [ ] Move active agent list management
+  - [ ] Move agent iteration functions
+  - [ ] Update agent module to use registry module
+- [ ] Move agent update implementation from agent to agent_update module:
+  - [ ] Move ar_agent_update_method() logic
+  - [ ] Move ar_agent_count_by_method() logic
+  - [ ] Update agent module to use update module
+- [ ] Consider if agent_store needs any agent module functionality moved
 
 ### High Priority - System Module Refactoring  
 - [ ] Split agerun_system into focused modules:
