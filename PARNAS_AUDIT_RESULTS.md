@@ -47,8 +47,8 @@ The following modules properly use opaque types and expose only abstract interfa
   - `ar_agent_get_next_id_internal()` - marked for agency module only (now also used by agent_registry)
   - `ar_agent_set_next_id_internal()` - marked for agency module only (now also used by agent_registry)
   - `ar_agent_reset_all()` - internal function for agency module (now also used by agent_registry)
-- **Impact**: Breaks encapsulation between agent module and the agency-related modules (agency, agent_registry, agent_store, agent_update)
-- **Fix**: Create a separate internal header file or use friend module pattern
+- **Impact**: Temporarily breaks encapsulation while refactoring is in progress
+- **Fix**: Complete the refactoring by moving implementations to specialized modules, then remove these internal functions entirely
 
 ### 5. **agerun_methodology.h** - Exposes Internal Storage
 - **Violations**:
@@ -63,7 +63,10 @@ The following modules properly use opaque types and expose only abstract interfa
 ## Action Items
 
 ### High Priority
-1. Create `agerun_agent_internal.h` for communication between agent and agency-related modules (agency, agent_registry, agent_store, agent_update)
+1. Complete agent module refactoring to remove internal functions:
+   - Move implementations to agent_registry, agent_store, agent_update modules
+   - Remove internal functions once implementations are moved
+   - This eliminates the need for an internal header
 2. Redesign methodology interface to hide storage implementation
 3. Move heap internal functions to separate header or make static
 

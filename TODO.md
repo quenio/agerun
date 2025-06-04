@@ -9,12 +9,12 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ### Parnas Principles - Interface Violations (HIGH PRIORITY)
 
 - [ ] Fix modules exposing internal implementation details:
-  - [ ] **agerun_agent.h** - Create `agerun_agent_internal.h` for agency-related modules communication
-    - [ ] Move `ar_agent_get_internal()` to internal header (used by agency modules)
-    - [ ] Move `ar_agent_get_agents_internal()` to internal header (used by agent_registry, agent_store)
-    - [ ] Move `ar_agent_get_next_id_internal()` to internal header (used by agent_registry)
-    - [ ] Move `ar_agent_set_next_id_internal()` to internal header (used by agent_registry)
-    - [ ] Move `ar_agent_reset_all()` to internal header (used by agent_registry)
+  - [ ] **agerun_agent.h** - Remove internal functions after moving implementations
+    - [ ] Remove `ar_agent_get_agents_internal()` after moving agent array to agent_registry
+    - [ ] Remove `ar_agent_get_next_id_internal()` after moving ID management to agent_registry
+    - [ ] Remove `ar_agent_set_next_id_internal()` after moving ID management to agent_registry
+    - [ ] Remove `ar_agent_reset_all()` after moving to agent_registry
+    - [ ] Evaluate if `ar_agent_get_internal()` is still needed or can be replaced with accessors
   - [ ] **agerun_methodology.h** - Redesign interface to hide storage implementation
     - [ ] Remove or redesign `ar_methodology_find_method_idx()`
     - [ ] Remove or redesign `ar_methodology_get_method_storage()`
@@ -328,9 +328,10 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Test lifecycle event handling after refactoring
 - [ ] Move agent registry implementation from agent to agent_registry module:
   - [ ] Move agent ID allocation and tracking
-  - [ ] Move active agent list management
+  - [ ] Move active agent list management  
   - [ ] Move agent iteration functions
   - [ ] Update agent module to use registry module
+  - [ ] Remove internal functions that are no longer needed
 - [ ] Move agent update implementation from agent to agent_update module:
   - [ ] Move ar_agent_update_method() logic
   - [ ] Move ar_agent_count_by_method() logic
