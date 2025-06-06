@@ -5,6 +5,7 @@
 
 #include "agerun_agent_store.h"
 #include "agerun_agent.h"
+#include "agerun_agent_registry.h"
 #include "agerun_method.h"
 #include "agerun_data.h"
 #include "agerun_list.h"
@@ -681,9 +682,12 @@ bool ar_agent_store_load(void) {
         }
         
         // Update next_agent_id if needed to prevent ID collision
-        int64_t next_id = ar_agent_get_next_id_internal();
-        if (own_agent_info[i].id >= next_id) {
-            ar_agent_set_next_id_internal(own_agent_info[i].id + 1);
+        agent_registry_t *ref_registry = ar_agent_get_registry();
+        if (ref_registry) {
+            int64_t next_id = ar_agent_registry_get_next_id(ref_registry);
+            if (own_agent_info[i].id >= next_id) {
+                ar_agent_registry_set_next_id(ref_registry, own_agent_info[i].id + 1);
+            }
         }
     }
     

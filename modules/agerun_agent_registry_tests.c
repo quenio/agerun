@@ -8,152 +8,241 @@
 #include <string.h>
 #include <assert.h>
 #include "agerun_agent_registry.h"
-#include "agerun_system_fixture.h"
-#include "agerun_system.h"
-#include "agerun_agent.h"
-#include "agerun_data.h"
-#include "agerun_method.h"
 #include "agerun_heap.h"
 
-static void test_registry_initialization(void) {
-    printf("Testing registry initialization...\n");
+static void test_registry_create_destroy(void) {
+    printf("Testing registry create and destroy...\n");
     
-    // Given an uninitialized registry
-    assert(!ar_agent_registry_is_initialized());
+    // Given a new registry
+    agent_registry_t *own_registry = ar_agent_registry_create();
+    assert(own_registry != NULL);
     
-    // When initializing the registry
-    assert(ar_agent_registry_initialize());
+    // When checking initial state
+    assert(ar_agent_registry_count(own_registry) == 0);
+    assert(ar_agent_registry_get_first(own_registry) == 0);
+    assert(ar_agent_registry_get_next_id(own_registry) == 1);
     
-    // Then the registry should be initialized
-    assert(ar_agent_registry_is_initialized());
+    // When destroying the registry
+    ar_agent_registry_destroy(own_registry);
+    own_registry = NULL;
     
-    // When initializing again
-    assert(ar_agent_registry_initialize());
+    // Then no crash should occur
+    ar_agent_registry_destroy(NULL); // Should handle NULL gracefully
     
-    // Then it should still succeed (idempotent)
-    assert(ar_agent_registry_is_initialized());
-    
-    // When shutting down
-    ar_agent_registry_shutdown();
-    
-    // Then the registry should not be initialized
-    assert(!ar_agent_registry_is_initialized());
-    
-    printf("✓ Registry initialization test passed\n");
+    printf("✓ Registry create/destroy test passed\n");
 }
 
-static void test_registry_operations_uninitialized(void) {
-    printf("Testing registry operations when uninitialized...\n");
+static void test_registry_id_management(void) {
+    printf("Testing registry ID management...\n");
     
-    // Given an uninitialized registry
-    assert(!ar_agent_registry_is_initialized());
+    // Given a new registry
+    agent_registry_t *own_registry = ar_agent_registry_create();
+    assert(own_registry != NULL);
     
-    // When calling registry operations
-    // Then they should return safe defaults
-    assert(ar_agent_registry_count() == 0);
-    assert(ar_agent_registry_get_first() == 0);
-    assert(ar_agent_registry_get_next(1) == 0);
+    // When allocating IDs
+    int64_t id1 = ar_agent_registry_allocate_id(own_registry);
+    assert(id1 == 1);
     
-    // When resetting
-    ar_agent_registry_reset_all(); // Should not crash
+    int64_t id2 = ar_agent_registry_allocate_id(own_registry);
+    assert(id2 == 2);
     
-    printf("✓ Uninitialized operations test passed\n");
+    int64_t id3 = ar_agent_registry_allocate_id(own_registry);
+    assert(id3 == 3);
+    
+    // Then next ID should be updated
+    assert(ar_agent_registry_get_next_id(own_registry) == 4);
+    
+    // When setting next ID
+    ar_agent_registry_set_next_id(own_registry, 100);
+    assert(ar_agent_registry_get_next_id(own_registry) == 100);
+    
+    int64_t id4 = ar_agent_registry_allocate_id(own_registry);
+    assert(id4 == 100);
+    assert(ar_agent_registry_get_next_id(own_registry) == 101);
+    
+    ar_agent_registry_destroy(own_registry);
+    
+    printf("✓ Registry ID management test passed\n");
 }
 
-static void test_registry_with_agents(void) {
-    printf("Testing registry with agents...\n");
+static void test_registry_registration(void) {
+    printf("Testing registry registration...\n");
     
-    // Given an initialized system and registry
-    system_fixture_t *own_fixture = ar_system_fixture_create("test_registry");
-    assert(own_fixture != NULL);
-    assert(ar_system_fixture_initialize(own_fixture));
+    // Given a new registry
+    agent_registry_t *own_registry = ar_agent_registry_create();
+    assert(own_registry != NULL);
     
-    ar_agent_registry_initialize();
+    // When registering agent IDs
+    assert(ar_agent_registry_register_id(own_registry, 10));
+    assert(ar_agent_registry_register_id(own_registry, 20));
+    assert(ar_agent_registry_register_id(own_registry, 30));
     
-    // Register a test method
-    method_t *ref_method = ar_system_fixture_register_method(
-        own_fixture, "test", "send(0, \"ok\")", "1.0.0"
-    );
-    assert(ref_method != NULL);
+    // Then registry should track them
+    assert(ar_agent_registry_count(own_registry) == 3);
+    assert(ar_agent_registry_is_registered(own_registry, 10));
+    assert(ar_agent_registry_is_registered(own_registry, 20));
+    assert(ar_agent_registry_is_registered(own_registry, 30));
+    assert(!ar_agent_registry_is_registered(own_registry, 40));
     
-    // When no agents exist
-    assert(ar_agent_registry_count() == 0);
-    assert(ar_agent_registry_get_first() == 0);
+    // When trying to register duplicate
+    assert(!ar_agent_registry_register_id(own_registry, 20));
+    assert(ar_agent_registry_count(own_registry) == 3);
     
-    // When creating agents
-    int64_t agent1 = ar_agent_create("test", "1.0.0", NULL);
-    assert(agent1 > 0);
+    // When unregistering
+    assert(ar_agent_registry_unregister_id(own_registry, 20));
+    assert(ar_agent_registry_count(own_registry) == 2);
+    assert(!ar_agent_registry_is_registered(own_registry, 20));
     
-    int64_t agent2 = ar_agent_create("test", "1.0.0", NULL);
-    assert(agent2 > 0);
+    // When trying to unregister non-existent
+    assert(!ar_agent_registry_unregister_id(own_registry, 20));
+    assert(!ar_agent_registry_unregister_id(own_registry, 999));
     
-    // Then the registry should track them
-    assert(ar_agent_registry_count() == 2);
+    ar_agent_registry_destroy(own_registry);
     
-    // When iterating through agents
-    int64_t first = ar_agent_registry_get_first();
-    assert(first == agent1);
-    
-    int64_t next = ar_agent_registry_get_next(first);
-    assert(next == agent2);
-    
-    int64_t end = ar_agent_registry_get_next(next);
-    assert(end == 0);
-    
-    // Check for memory leaks
-    assert(ar_system_fixture_check_memory(own_fixture));
-    
-    // Clean up
-    ar_agent_registry_shutdown();
-    ar_system_fixture_destroy(own_fixture);
-    
-    printf("✓ Registry with agents test passed\n");
+    printf("✓ Registry registration test passed\n");
 }
 
+static void test_registry_iteration(void) {
+    printf("Testing registry iteration...\n");
+    
+    // Given a new registry with some agents
+    agent_registry_t *own_registry = ar_agent_registry_create();
+    assert(own_registry != NULL);
+    
+    assert(ar_agent_registry_register_id(own_registry, 5));
+    assert(ar_agent_registry_register_id(own_registry, 3));
+    assert(ar_agent_registry_register_id(own_registry, 8));
+    assert(ar_agent_registry_register_id(own_registry, 1));
+    
+    // When iterating through agents (insertion order)
+    int64_t first = ar_agent_registry_get_first(own_registry);
+    assert(first == 5); // First inserted
+    
+    int64_t next = ar_agent_registry_get_next(own_registry, first);
+    assert(next == 3);
+    
+    next = ar_agent_registry_get_next(own_registry, next);
+    assert(next == 8);
+    
+    next = ar_agent_registry_get_next(own_registry, next);
+    assert(next == 1);
+    
+    next = ar_agent_registry_get_next(own_registry, next);
+    assert(next == 0); // End of iteration
+    
+    ar_agent_registry_destroy(own_registry);
+    
+    printf("✓ Registry iteration test passed\n");
+}
 
-static void test_registry_reset(void) {
-    printf("Testing registry reset...\n");
+static void test_registry_agent_tracking(void) {
+    printf("Testing registry agent tracking...\n");
     
-    // Given an initialized system and registry with agents
-    system_fixture_t *own_fixture = ar_system_fixture_create("test_reset");
-    assert(own_fixture != NULL);
-    assert(ar_system_fixture_initialize(own_fixture));
+    // Given a new registry
+    agent_registry_t *own_registry = ar_agent_registry_create();
+    assert(own_registry != NULL);
     
-    ar_agent_registry_initialize();
+    // Create some dummy agent pointers (not real agents)
+    int dummy_agent1 = 111;
+    int dummy_agent2 = 222;
+    int dummy_agent3 = 333;
     
-    method_t *ref_method = ar_system_fixture_register_method(
-        own_fixture, "test", "send(0, \"ok\")", "1.0.0"
-    );
-    assert(ref_method != NULL);
+    // When tracking agents
+    assert(ar_agent_registry_register_id(own_registry, 10));
+    assert(ar_agent_registry_track_agent(own_registry, 10, &dummy_agent1));
     
-    ar_agent_create("test", "1.0.0", NULL);
-    ar_agent_create("test", "1.0.0", NULL);
-    assert(ar_agent_registry_count() == 2);
+    assert(ar_agent_registry_register_id(own_registry, 20));
+    assert(ar_agent_registry_track_agent(own_registry, 20, &dummy_agent2));
     
-    // When resetting the registry
-    ar_agent_registry_reset_all();
+    assert(ar_agent_registry_register_id(own_registry, 30));
+    assert(ar_agent_registry_track_agent(own_registry, 30, &dummy_agent3));
     
-    // Then all agents should be gone
-    assert(ar_agent_registry_count() == 0);
-    assert(ar_agent_registry_get_first() == 0);
+    // Then we should be able to find them
+    assert(ar_agent_registry_find_agent(own_registry, 10) == &dummy_agent1);
+    assert(ar_agent_registry_find_agent(own_registry, 20) == &dummy_agent2);
+    assert(ar_agent_registry_find_agent(own_registry, 30) == &dummy_agent3);
+    assert(ar_agent_registry_find_agent(own_registry, 40) == NULL);
     
-    // Check for memory leaks
-    assert(ar_system_fixture_check_memory(own_fixture));
+    // When untracking an agent
+    void *untracked = ar_agent_registry_untrack_agent(own_registry, 20);
+    assert(untracked == &dummy_agent2);
+    assert(ar_agent_registry_find_agent(own_registry, 20) == NULL);
     
-    // Clean up
-    ar_agent_registry_shutdown();
-    ar_system_fixture_destroy(own_fixture);
+    // But the ID is still registered
+    assert(ar_agent_registry_is_registered(own_registry, 20));
     
-    printf("✓ Registry reset test passed\n");
+    ar_agent_registry_destroy(own_registry);
+    
+    printf("✓ Registry agent tracking test passed\n");
+}
+
+static void test_registry_clear(void) {
+    printf("Testing registry clear...\n");
+    
+    // Given a registry with agents
+    agent_registry_t *own_registry = ar_agent_registry_create();
+    assert(own_registry != NULL);
+    
+    // Register and track some agents
+    int dummy1 = 1, dummy2 = 2, dummy3 = 3;
+    assert(ar_agent_registry_register_id(own_registry, 10));
+    assert(ar_agent_registry_track_agent(own_registry, 10, &dummy1));
+    assert(ar_agent_registry_register_id(own_registry, 20));
+    assert(ar_agent_registry_track_agent(own_registry, 20, &dummy2));
+    assert(ar_agent_registry_register_id(own_registry, 30));
+    assert(ar_agent_registry_track_agent(own_registry, 30, &dummy3));
+    
+    ar_agent_registry_set_next_id(own_registry, 100);
+    
+    // When clearing the registry
+    ar_agent_registry_clear(own_registry);
+    
+    // Then everything should be reset
+    assert(ar_agent_registry_count(own_registry) == 0);
+    assert(ar_agent_registry_get_first(own_registry) == 0);
+    assert(ar_agent_registry_get_next_id(own_registry) == 1);
+    assert(!ar_agent_registry_is_registered(own_registry, 10));
+    assert(ar_agent_registry_find_agent(own_registry, 10) == NULL);
+    
+    ar_agent_registry_destroy(own_registry);
+    
+    printf("✓ Registry clear test passed\n");
+}
+
+static void test_registry_edge_cases(void) {
+    printf("Testing registry edge cases...\n");
+    
+    // Test NULL registry operations
+    assert(ar_agent_registry_count(NULL) == 0);
+    assert(ar_agent_registry_get_first(NULL) == 0);
+    assert(ar_agent_registry_get_next(NULL, 1) == 0);
+    assert(ar_agent_registry_get_next_id(NULL) == 0);
+    assert(ar_agent_registry_allocate_id(NULL) == 0);
+    assert(!ar_agent_registry_register_id(NULL, 1));
+    assert(!ar_agent_registry_unregister_id(NULL, 1));
+    assert(!ar_agent_registry_is_registered(NULL, 1));
+    assert(!ar_agent_registry_track_agent(NULL, 1, (void*)1));
+    assert(ar_agent_registry_untrack_agent(NULL, 1) == NULL);
+    assert(ar_agent_registry_find_agent(NULL, 1) == NULL);
+    ar_agent_registry_clear(NULL); // Should not crash
+    ar_agent_registry_set_next_id(NULL, 100); // Should not crash
+    
+    printf("✓ Registry edge cases test passed\n");
 }
 
 int main(void) {
     printf("Running agent registry tests...\n\n");
     
-    test_registry_initialization();
-    test_registry_operations_uninitialized();
-    test_registry_with_agents();
-    test_registry_reset();
+    test_registry_create_destroy();
+    test_registry_id_management();
+    test_registry_registration();
+    test_registry_iteration();
+    test_registry_agent_tracking();
+    test_registry_clear();
+    test_registry_edge_cases();
+    
+    // Check for memory leaks
+    ar_heap_memory_report();
     
     printf("\nAll agent registry tests passed!\n");
     return 0;

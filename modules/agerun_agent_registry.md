@@ -2,63 +2,108 @@
 
 ## Overview
 
-The agent registry module (`agerun_agent_registry`) provides centralized management of agent IDs and runtime registry operations. It serves as a lightweight wrapper around agent module functions, focusing specifically on registry-related operations.
+The agent registry module (`agerun_agent_registry`) provides centralized management of agent IDs and runtime registry operations. It implements a dynamic registry with no artificial limits on the number of agents, replacing the previous static array approach.
 
 ## Purpose
 
 This module was created as part of the agency module refactoring to improve cohesion and separate concerns. It handles:
-- Agent ID management
-- Active agent tracking
-- Agent iteration
+- Agent ID allocation and management
+- Active agent tracking with O(1) lookups
+- Agent iteration in insertion order
+- Dynamic growth with no hardcoded limits
 
 ## Key Functions
 
-### Initialization
-- `ar_agent_registry_initialize()` - Initialize the registry
-- `ar_agent_registry_shutdown()` - Shutdown and clean up
-- `ar_agent_registry_is_initialized()` - Check initialization state
+### Lifecycle Management
+- `ar_agent_registry_create()` - Create a new registry instance
+- `ar_agent_registry_destroy()` - Destroy a registry and free all resources
+- `ar_agent_registry_clear()` - Clear all agents but keep registry allocated
 
-### Registry Operations
-- `ar_agent_registry_count()` - Get number of active agents
-- `ar_agent_registry_get_first()` - Get first active agent ID
-- `ar_agent_registry_get_next()` - Get next active agent ID
-- `ar_agent_registry_reset_all()` - Reset all agents
+### ID Management
+- `ar_agent_registry_allocate_id()` - Allocate a new unique agent ID
+- `ar_agent_registry_get_next_id()` - Get the next ID that will be allocated
+- `ar_agent_registry_set_next_id()` - Set the next ID (for persistence)
+
+### Agent Registration
+- `ar_agent_registry_register_id()` - Register an agent ID in the registry
+- `ar_agent_registry_unregister_id()` - Remove an agent ID from the registry
+- `ar_agent_registry_is_registered()` - Check if an ID is registered
+
+### Agent Tracking
+- `ar_agent_registry_track_agent()` - Associate an agent pointer with its ID
+- `ar_agent_registry_untrack_agent()` - Remove agent tracking
+- `ar_agent_registry_find_agent()` - Find agent by ID (O(1) lookup)
+
+### Iteration
+- `ar_agent_registry_count()` - Get number of registered agents
+- `ar_agent_registry_get_first()` - Get first registered agent ID
+- `ar_agent_registry_get_next()` - Get next agent ID in iteration order
 
 ## Design Principles
 
 The module follows Parnas principles:
-- **Information Hiding**: Internal state is not exposed
+- **Information Hiding**: Internal registry structure is opaque
 - **Single Responsibility**: Focused only on registry operations
 - **Clean Interface**: Simple, consistent API
+- **No Artificial Limits**: Dynamic allocation instead of MAX_AGENTS
+
+## Internal Architecture
+
+The registry uses a dual data structure approach:
+- **List**: Stores agent IDs as string data items (provides iteration order)
+- **Map**: Uses string IDs from list as keys for O(1) agent lookups
+
+This design allows:
+- Dynamic growth with no predetermined limits
+- Efficient O(1) agent lookups
+- Iteration in insertion order
+- Persistent string keys for the map (avoiding use-after-free)
 
 ## Dependencies
 
-- `agerun_agent` - For actual agent operations
-- `agerun_data` - For message data types
-- `agerun_heap` - For memory management
+- `agerun_data` - For storing IDs as string data items
+- `agerun_list` - For maintaining ordered list of IDs
+- `agerun_map` - For O(1) agent lookups
+- `agerun_heap` - For memory tracking
 
 ## Usage Example
 
 ```c
-// Initialize the registry
-if (!ar_agent_registry_initialize()) {
+// Create a registry
+agent_registry_t *registry = ar_agent_registry_create();
+if (!registry) {
     // Handle error
 }
 
-// Iterate through all active agents
-int64_t agent_id = ar_agent_registry_get_first();
-while (agent_id != 0) {
+// Allocate and register an agent
+int64_t agent_id = ar_agent_registry_allocate_id(registry);
+ar_agent_registry_register_id(registry, agent_id);
+
+// Track the agent object
+agent_t *agent = create_agent(...);
+ar_agent_registry_track_agent(registry, agent_id, agent);
+
+// Find agent by ID
+agent_t *found = ar_agent_registry_find_agent(registry, agent_id);
+
+// Iterate through all agents
+int64_t id = ar_agent_registry_get_first(registry);
+while (id != 0) {
+    agent_t *agent = ar_agent_registry_find_agent(registry, id);
     // Process agent
-    agent_id = ar_agent_registry_get_next(agent_id);
+    id = ar_agent_registry_get_next(registry, id);
 }
 
-// Shutdown when done
-ar_agent_registry_shutdown();
+// Clean up
+ar_agent_registry_untrack_agent(registry, agent_id);
+ar_agent_registry_unregister_id(registry, agent_id);
+ar_agent_registry_destroy(registry);
 ```
 
 ## Memory Management
 
 The module follows the project's memory management conventions:
-- The module itself maintains minimal state (only initialization flag)
-- No dynamic memory allocation within the module itself
-- All agent lifecycle management is delegated to the agent module
+- **Owned Registry**: The registry owns its internal data structures
+- **String Storage**: Agent IDs stored as strings in the list for persistent map keys
+- **Proper Cleanup**: All allocations tracked and freed on destruction
+- **No Memory Leaks**: Comprehensive testing ensures zero memory leaks

@@ -9,12 +9,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ### Parnas Principles - Interface Violations (HIGH PRIORITY)
 
 - [ ] Fix modules exposing internal implementation details:
-  - [ ] **agerun_agent.h** - Remove internal functions after moving implementations
-    - [ ] Remove `ar_agent_get_agents_internal()` after moving agent array to agent_registry
-    - [ ] Remove `ar_agent_get_next_id_internal()` after moving ID management to agent_registry
-    - [ ] Remove `ar_agent_set_next_id_internal()` after moving ID management to agent_registry
-    - [ ] Remove `ar_agent_reset_all()` after moving to agent_registry
-    - [ ] Evaluate if `ar_agent_get_internal()` is still needed or can be replaced with accessors
+  - [x] **agerun_agent.h** - Remove internal functions after moving implementations
+    - [x] Remove `ar_agent_get_agents_internal()` - moved agent array to agent_registry
+    - [x] Remove `ar_agent_get_next_id_internal()` - moved ID management to agent_registry
+    - [x] Remove `ar_agent_set_next_id_internal()` - moved ID management to agent_registry
+    - [x] Keep `ar_agent_reset_all()` - needed by agency module for shutdown
+    - [x] Remove `ar_agent_get_internal()` - no longer exists
+    - [x] Add `ar_agent_get_registry()` - provides registry access to agency/store modules
   - [ ] **agerun_methodology.h** - Redesign interface to hide storage implementation
     - [ ] Remove or redesign `ar_methodology_find_method_idx()`
     - [ ] Remove or redesign `ar_methodology_get_method_storage()`
@@ -320,23 +321,33 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Create agerun_agent_update module for method version updates
   - [x] Keep agerun_agency as a facade coordinating these modules (reduced from 850+ to 81 lines)
 
+### High Priority - Untangle Agent Registry Circular Dependency
+- [ ] Move agent registry ownership from agent module to agency module:
+  - [ ] Remove registry creation/ownership from agent module
+  - [ ] Add registry initialization to agency module
+  - [ ] Pass registry reference to agent module functions that need it
+  - [ ] Update agent module to accept registry as parameter instead of owning it
+  - [ ] This removes the circular dependency between agent and agent_registry modules
+  - [ ] Agency facade becomes the proper owner of the registry
+
 ### High Priority - Move Agent Functionality to New Modules
 - [ ] Move lifecycle event handling (__sleep__/__wake__) to agent module:
   - [ ] Extract lifecycle event sending into dedicated agent module functions
   - [ ] Update agent_update module to use new lifecycle functions
   - [ ] Ensure agent creation still sends __wake__ message
   - [ ] Test lifecycle event handling after refactoring
-- [ ] Move agent registry implementation from agent to agent_registry module:
-  - [ ] Move agent ID allocation and tracking
-  - [ ] Move active agent list management  
-  - [ ] Move agent iteration functions
-  - [ ] Update agent module to use registry module
-  - [ ] Remove internal functions that are no longer needed
+- [x] Move agent registry implementation from agent to agent_registry module:
+  - [x] Move agent ID allocation and tracking
+  - [x] Move active agent list management  
+  - [x] Move agent iteration functions
+  - [x] Update agent module to use registry module
+  - [x] Remove internal functions that are no longer needed
 - [ ] Move agent update implementation from agent to agent_update module:
   - [ ] Move ar_agent_update_method() logic
   - [ ] Move ar_agent_count_by_method() logic
   - [ ] Update agent module to use update module
-- [ ] Consider if agent_store needs any agent module functionality moved
+- [x] Consider if agent_store needs any agent module functionality moved
+  - [x] Agent_store now uses registry API through ar_agent_get_registry()
 
 ### High Priority - System Module Refactoring  
 - [ ] Split agerun_system into focused modules:
@@ -367,6 +378,22 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Evaluate if split improves cohesion without adding complexity
 
 ## Completed Major Milestones
+
+### 2025-06-06
+- ✅ Completed agent module interface cleanup to fix Parnas violations:
+  - ✅ Removed `ar_agent_get_agents_internal()` - moved to agent_registry
+  - ✅ Removed `ar_agent_get_next_id_internal()` - moved to agent_registry
+  - ✅ Removed `ar_agent_set_next_id_internal()` - moved to agent_registry
+  - ✅ Removed `ar_agent_get_internal()` - no longer needed
+  - ✅ Added `ar_agent_get_registry()` for agency/store access
+  - ✅ Kept `ar_agent_reset_all()` for agency shutdown needs
+- ✅ Implemented dynamic agent registry with no artificial limits:
+  - ✅ Replaced MAX_AGENTS (1024) limit with dynamic list/map structure
+  - ✅ Used string-based IDs in list for persistent map keys
+  - ✅ Achieved O(1) agent lookups with insertion-order iteration
+- ✅ Updated agent module to use registry internally
+- ✅ Updated agent_store and agency to use registry API
+- ✅ Maintained zero memory leaks throughout refactoring
 
 ### 2025-06-03
 - ✅ Completed Parnas principles compliance audit for all modules

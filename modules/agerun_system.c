@@ -161,17 +161,3 @@ int ar_system_process_all_messages(void) {
     return count;
 }
 
-/* This function is now implemented in agerun_agent.c */
-
-/* The functions ar_count_agents, ar_save_agents, ar_load_agents, ar_methodology_save_methods, 
- * ar_methodology_load_methods, and ar_memory_set have been moved to other modules */
-
-// Memory functions are now defined in agerun_map.c
-
-// This function has been moved to agerun_value.c
-
-/* Queue functions are now defined in agerun_queue.c */
-
-/* Memory functions are now defined in agerun_map.c */
-
-// Memory functions are now defined in agerun_map.c

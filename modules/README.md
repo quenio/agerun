@@ -366,13 +366,17 @@ The agent module provides individual agent lifecycle management and message hand
 - **Message Queue**: Each agent maintains its own message queue for asynchronous communication
 - **Memory Management**: Agents have persistent memory maps for state storage
 - **Context Handling**: Supports read-only context data provided at agent creation
+- **Registry Integration**: Uses internal agent_registry for ID management and agent tracking
+- **Registry Access**: Provides `ar_agent_get_registry()` for agency and agent_store modules
+- **Dynamic Agent Limit**: No hardcoded MAX_AGENTS limit - uses dynamic allocation via registry
 - **Opaque Type**: Agent structure is fully opaque with accessor functions:
   - `ar_agent_get_memory()`: Returns read-only access to agent's memory
   - `ar_agent_get_mutable_memory()`: Returns mutable access to agent's memory
   - `ar_agent_get_context()`: Returns read-only access to agent's context
   - `ar_agent_get_method()`: Returns agent's method reference
+  - `ar_agent_get_registry()`: Returns agent registry for persistence/management operations
 - **Zero Memory Leaks**: Proper cleanup of agent resources including message queues
-- **Depends on Agency**: Uses agency module for agent ID management and storage
+- **Depends on Agent Registry**: Uses agent_registry module for ID allocation and tracking
 - **Depends on Map and List**: Uses core data structures for internal state management
 
 For detailed API documentation, see [agerun_agent.md](agerun_agent.md).
@@ -399,15 +403,16 @@ The agency module serves as a facade that coordinates agent management operation
 The agent registry module manages agent ID allocation and runtime agent tracking:
 
 - **Agent ID Management**: Allocates unique IDs and tracks the next available ID
-- **Active Agent Tracking**: Maintains registry of all active agents in the system
-- **Agent Iteration**: Provides efficient iteration over active agents
+- **Active Agent Tracking**: Maintains registry of all active agents in the system using dynamic data structures
+- **Agent Iteration**: Provides efficient iteration over active agents in insertion order
 - **Agent Counting**: Reports the number of active agents
 - **System Reset**: Handles registry cleanup during system shutdown
+- **Dynamic Allocation**: No artificial limits on number of agents (replaced MAX_AGENTS array)
+- **Dual Data Structure**: Uses list for ID tracking and map for O(1) agent lookups
+- **String-Based Keys**: Stores agent IDs as strings in list for use as persistent map keys
 - **Focused Responsibility**: Single responsibility for agent identification and enumeration
-- **Currently Forwarding**: Implementation temporarily delegates to agent module
-- **Future Enhancement**: Will contain the actual registry implementation after refactoring
-- **Zero Dependencies**: Designed to be a low-level module with minimal dependencies
 - **Opaque Implementation**: Internal registry structure hidden from clients
+- **Memory Safe**: Proper cleanup of all dynamic allocations with no memory leaks
 
 ### Agent Store Module (`agerun_agent_store`)
 

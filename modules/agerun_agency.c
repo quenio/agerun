@@ -1,7 +1,6 @@
 /* Agerun Agency Implementation - Refactored to use new modules */
 #include "agerun_agency.h"
 #include "agerun_agent.h"
-#include "agerun_agent_registry.h"
 #include "agerun_agent_store.h"
 #include "agerun_agent_update.h"
 #include "agerun_heap.h"
@@ -12,21 +11,14 @@ static bool g_is_initialized = false;
 /* Implementation */
 void ar_agency_set_initialized(bool initialized) {
     g_is_initialized = initialized;
-    
-    // Initialize the registry when agency is initialized
-    if (initialized) {
-        ar_agent_registry_initialize();
-    } else {
-        ar_agent_registry_shutdown();
-    }
 }
 
 void ar_agency_reset(void) {
-    ar_agent_registry_reset_all();
+    ar_agent_reset_all();
 }
 
 int ar_agency_count_agents(void) {
-    return ar_agent_registry_count();
+    return ar_agent_count_active();
 }
 
 bool ar_agency_save_agents(void) {
@@ -58,11 +50,11 @@ int ar_agency_count_agents_using_method(const method_t *ref_method) {
 }
 
 int64_t ar_agency_get_first_agent(void) {
-    return ar_agent_registry_get_first();
+    return ar_agent_get_first_active();
 }
 
 int64_t ar_agency_get_next_agent(int64_t current_id) {
-    return ar_agent_registry_get_next(current_id);
+    return ar_agent_get_next_active(current_id);
 }
 
 bool ar_agency_agent_has_messages(int64_t agent_id) {

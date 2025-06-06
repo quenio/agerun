@@ -15,6 +15,9 @@ typedef struct method_s method_t;
 /* Opaque agent type */
 typedef struct agent_s agent_t;
 
+/* Forward declaration for agent_registry_t */
+typedef struct agent_registry_s agent_registry_t;
+
 /**
  * Create a new agent instance
  * @param ref_method_name Name of the method to use (borrowed reference)
@@ -113,40 +116,18 @@ const method_t* ar_agent_get_method(int64_t agent_id);
  */
 bool ar_agent_set_active(int64_t agent_id, bool is_active);
 
-/**
- * Get direct access to an agent structure (for internal use only)
- * @param agent_id ID of the agent
- * @return Pointer to agent structure, or NULL if agent doesn't exist
- * @note This function is for internal use by closely coupled modules only.
- *       It will be removed once all modules are updated to use accessor functions.
- */
-agent_t* ar_agent_get_internal(int64_t agent_id);
 
 /**
- * Get agents array - internal use only by agency module
- * @return Pointer to the agents array (borrowed reference)
- * @note Ownership: Returns a borrowed reference that caller must not destroy.
- * @note This is for agency module use only during refactoring.
+ * Get the agent registry
+ * @return The agent registry (borrowed reference), or NULL if not initialized
+ * @note Ownership: Returns a borrowed reference, do not destroy.
+ *       This is provided for agency and agent_store modules to access registry functions.
  */
-agent_t* ar_agent_get_agents_internal(void);
+agent_registry_t* ar_agent_get_registry(void);
 
 /**
- * Get next agent ID - internal use only by agency module
- * @return Next agent ID to be assigned (value type, not a reference)
- * @note This is for agency module use only during refactoring.
- */
-int64_t ar_agent_get_next_id_internal(void);
-
-/**
- * Set next agent ID - internal use only by agency module
- * @param id Next agent ID to set (value type, not a reference)
- * @note This is for agency module use only during refactoring.
- */
-void ar_agent_set_next_id_internal(int64_t id);
-
-/**
- * Reset all agents - internal use only by agency module
- * @note This destroys all agent resources and resets the agent array
+ * Reset all agents - used by agency module during shutdown
+ * @note This destroys all agent resources and clears the registry
  */
 void ar_agent_reset_all(void);
 
