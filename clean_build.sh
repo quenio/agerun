@@ -46,13 +46,22 @@ run_step "Build executable" "make executable"
 # Step 4: Run tests
 echo
 echo "Running tests..."
-if output=$(make test 2>&1); then
-    # Count passed tests
-    passed=$(echo "$output" | grep -c "Running.*_tests")
+output=$(make test 2>&1)
+# Count passed and failed tests
+passed=$(echo "$output" | grep -c "All .* tests passed")
+errors=$(echo "$output" | grep -c "ERROR: Test .* failed")
+if [ $errors -eq 0 ]; then
     echo "Tests: $passed passed ✓"
 else
-    echo "Tests: FAILED ✗"
-    echo "$output" | grep -E "(ERROR:|FAIL:|failed)" | tail -10
+    echo "Tests: $passed passed, $errors FAILED ✗"
+    echo
+    echo "Failed tests:"
+    echo "$output" | grep "ERROR: Test .* failed" | sed 's/ERROR: Test /  - /' | sed 's/ failed.*//'
+    echo
+    echo "Error details (last 10):"
+    echo "$output" | grep -B2 "ERROR: Test .* failed" | grep -E "(Assertion failed|Abort trap)" | head -5
+    echo "$output" | grep -E "(FAIL:|failed)" | tail -10
+    exit 1
 fi
 
 # Step 5: Run executable
