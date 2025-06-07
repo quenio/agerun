@@ -13,3 +13,5 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 When creating new modules, think twice before adding global state to it. Instead, prefer an opaque structure to hold the state.
 
 In the implementation of a module, when using other modules, first read their interface, so you know which functions are available, instead of guessing function names to call.
+
+You must check what is the current dir before you try run a command with a relative path.
