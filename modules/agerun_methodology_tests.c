@@ -10,7 +10,6 @@
 
 // Forward declarations
 static void test_methodology_get_method(void);
-static void test_methodology_find_method_idx(void);
 static void test_methodology_get_method_storage(void);
 static void test_methodology_save_load(void);
 static void test_method_counts(void);
@@ -63,38 +62,6 @@ static void test_methodology_get_method(void) {
     printf("ar_methodology_get_method() test passed!\n");
 }
 
-static void test_methodology_find_method_idx(void) {
-    printf("Testing ar_methodology_find_method_idx()...\n");
-    
-    // Given a test method exists in the system
-    const char *name = "find_method";
-    const char *instructions = "message -> \"Find Method\"";
-    
-    // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(name, instructions, "1.0.0");
-    assert(own_method != NULL);
-    
-    // Register with methodology
-    extern void ar_methodology_register_method(method_t *own_method);
-    ar_methodology_register_method(own_method);
-    own_method = NULL; // Mark as transferred
-    
-    // We would normally keep track of version, but it's not used in this test
-    
-    // When we try to find the method index
-    int idx = ar_methodology_find_method_idx(name);
-    
-    // Then a valid index should be returned
-    assert(idx >= 0);
-    
-    // When we try to find a non-existent method
-    idx = ar_methodology_find_method_idx("non_existent_method");
-    
-    // Then -1 should be returned
-    assert(idx == -1);
-    
-    printf("ar_methodology_find_method_idx() test passed!\n");
-}
 
 static void test_methodology_get_method_storage(void) {
     printf("Testing ar_methodology_get_method_storage()...\n");
@@ -113,10 +80,6 @@ static void test_methodology_get_method_storage(void) {
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we use version "1.0.0" for this test
-    
-    // And we know the index of the method
-    int method_idx = ar_methodology_find_method_idx(name);
-    assert(method_idx >= 0);
     
     // When we get the method
     method_t *method = ar_methodology_get_method(name, "1.0.0");
@@ -243,14 +206,14 @@ static void test_method_counts(void) {
     // And the method name count should increment
     assert(*method_name_count == initial_count + 1);
     
-    // When we find the method index
-    int method_idx = ar_methodology_find_method_idx(unique_name);
+    // When we try to get the method we just registered
+    method_t *registered_method = ar_methodology_get_method(unique_name, "1.0.0");
     
-    // Then we should get a valid index
-    assert(method_idx >= 0);
+    // Then we should get a valid method
+    assert(registered_method != NULL);
     
-    // And the method count for this specific method should be 1
-    assert(method_counts[method_idx] == 1);
+    // And we should be able to retrieve the method we just registered
+    assert(ar_methodology_get_method(unique_name, "1.0.0") != NULL);
     
     // When we create another version of the same method
     method_t *own_method2 = ar_method_create(unique_name, "message -> \"Unique V2\"", "2.0.0");
@@ -263,8 +226,9 @@ static void test_method_counts(void) {
     // For documentation purposes only, version2 would be 2
     // (We don't actually use this variable in assertions)
     
-    // And the method count for this specific method should increase
-    assert(method_counts[method_idx] == 2);
+    // And both versions should be retrievable
+    assert(ar_methodology_get_method(unique_name, "1.0.0") != NULL);
+    assert(ar_methodology_get_method(unique_name, "2.0.0") != NULL);
     
     // But the method name count should remain the same
     assert(*method_name_count == initial_count + 1);
@@ -296,7 +260,6 @@ int main(void) {
     
     // And we run all methodology tests
     test_methodology_get_method();
-    test_methodology_find_method_idx();
     test_methodology_get_method_storage();
     test_methodology_save_load();
     test_method_counts();

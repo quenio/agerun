@@ -52,7 +52,7 @@ The following modules properly use opaque types and expose only abstract interfa
 
 ### 5. **agerun_methodology.h** - Exposes Internal Storage
 - **Violations**:
-  - `ar_methodology_find_method_idx()` - exposes internal indexing
+  - ~~`ar_methodology_find_method_idx()` - exposes internal indexing~~ ✅ FIXED: Made static (internal only)
   - `ar_methodology_get_method_storage()` - exposes internal storage structure
   - `ar_methodology_set_method_storage()` - allows direct manipulation of internals
   - `ar_methodology_get_method_counts()` - exposes internal array

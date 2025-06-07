@@ -237,7 +237,7 @@ static method_t* find_latest_method(const char *ref_name);
 static method_t* find_method(const char *ref_name, const char *ref_version);
 
 /* Method Search Functions */
-int ar_methodology_find_method_idx(const char *ref_name) {
+static int ar_methodology_find_method_idx(const char *ref_name) {
     for (int i = 0; i < method_name_count; i++) {
         if (methods[i][0] != NULL && strcmp(ar_method_get_name(methods[i][0]), ref_name) == 0) {
             return i;

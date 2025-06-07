@@ -29,12 +29,6 @@ bool ar_methodology_create_method(const char *ref_name, const char *ref_instruct
  */
 method_t* ar_methodology_get_method(const char *ref_name, const char *ref_version);
 
-/**
- * Find the index of a method by name in the methods array
- * @param ref_name Method name to search for (borrowed reference)
- * @return Index of the method, or -1 if not found
- */
-int ar_methodology_find_method_idx(const char *ref_name);
 
 /**
  * Get a pointer to a specific method storage location

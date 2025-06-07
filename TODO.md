@@ -17,11 +17,16 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] Remove `ar_agent_get_internal()` - no longer exists
     - [x] Add `ar_agent_get_registry()` - provides registry access to agency/store modules
   - [ ] **agerun_methodology.h** - Redesign interface to hide storage implementation
-    - [ ] Remove or redesign `ar_methodology_find_method_idx()`
-    - [ ] Remove or redesign `ar_methodology_get_method_storage()`
-    - [ ] Remove or redesign `ar_methodology_set_method_storage()`
-    - [ ] Remove or redesign `ar_methodology_get_method_counts()`
-    - [ ] Remove or redesign `ar_methodology_get_method_name_count()`
+    - [x] Task 1: Analyze usage of `ar_methodology_find_method_idx()` and determine replacement strategy
+    - [x] Task 2: Remove `ar_methodology_find_method_idx()` after implementing alternative (made static)
+    - [ ] Task 3: Analyze usage of `ar_methodology_get_method_storage()` and determine replacement strategy
+    - [ ] Task 4: Remove `ar_methodology_get_method_storage()` after implementing alternative
+    - [ ] Task 5: Analyze usage of `ar_methodology_set_method_storage()` and determine replacement strategy
+    - [ ] Task 6: Remove `ar_methodology_set_method_storage()` after implementing alternative
+    - [ ] Task 7: Analyze usage of `ar_methodology_get_method_counts()` and determine replacement strategy
+    - [ ] Task 8: Remove `ar_methodology_get_method_counts()` after implementing alternative
+    - [ ] Task 9: Analyze usage of `ar_methodology_get_method_name_count()` and determine replacement strategy
+    - [ ] Task 10: Remove `ar_methodology_get_method_name_count()` after implementing alternative
   - [ ] **agerun_heap.h** - Hide internal tracking functions
     - [ ] Move `ar_heap_memory_add()` to internal header or make static
     - [ ] Move `ar_heap_memory_remove()` to internal header or make static
