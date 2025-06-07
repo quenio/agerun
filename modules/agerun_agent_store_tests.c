@@ -19,6 +19,11 @@
 static void test_store_basics(void) {
     printf("Testing store basic operations...\n");
     
+    // Given a system
+    system_fixture_t *own_fixture = ar_system_fixture_create("test_basics");
+    assert(own_fixture != NULL);
+    assert(ar_system_fixture_initialize(own_fixture));
+    
     // Given a clean environment
     ar_agent_store_delete();
     assert(!ar_agent_store_exists());
@@ -28,7 +33,7 @@ static void test_store_basics(void) {
     assert(path != NULL);
     assert(strcmp(path, "agency.agerun") == 0);
     
-    // When saving with no agents
+    // When saving with no agents (except the initial agent)
     assert(ar_agent_store_save());
     
     // Then the file should exist
@@ -39,6 +44,12 @@ static void test_store_basics(void) {
     
     // Then the file should not exist
     assert(!ar_agent_store_exists());
+    
+    // Check for memory leaks
+    assert(ar_system_fixture_check_memory(own_fixture));
+    
+    // Clean up
+    ar_system_fixture_destroy(own_fixture);
     
     printf("✓ Store basic operations test passed\n");
 }

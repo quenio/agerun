@@ -412,7 +412,11 @@ int ar_agent_count_active(void) {
 }
 
 list_t* ar_agent_get_active_list(void) {
-    if (!g_is_initialized || !g_own_registry) {
+    if (!g_is_initialized) {
+        ar_agent_init();
+    }
+    
+    if (!g_own_registry) {
         return NULL;
     }
     
