@@ -10,7 +10,7 @@
 #include "agerun_agent_update.h"
 #include "agerun_system_fixture.h"
 #include "agerun_system.h"
-#include "agerun_agent.h"
+#include "agerun_agency.h"
 #include "agerun_data.h"
 #include "agerun_method.h"
 #include "agerun_methodology.h"
@@ -95,9 +95,9 @@ static void test_count_using_method(void) {
     assert(ar_agent_update_count_using_method(ref_calc) == 0);
     
     // When creating agents
-    ar_agent_create("echo", "1.0.0", NULL);
-    ar_agent_create("echo", "1.0.0", NULL);
-    ar_agent_create("calc", "1.0.0", NULL);
+    ar_agency_create_agent("echo", "1.0.0", NULL);
+    ar_agency_create_agent("echo", "1.0.0", NULL);
+    ar_agency_create_agent("calc", "1.0.0", NULL);
     ar_system_process_all_messages(); // Process wake messages
     
     // Then counts should be correct
@@ -141,14 +141,14 @@ static void test_update_without_lifecycle(void) {
     );
     
     // Create agents with v1.0
-    int64_t agent1 = ar_agent_create("echo", "1.0.0", NULL);
-    int64_t agent2 = ar_agent_create("echo", "1.0.0", NULL);
-    ar_agent_create("calc", "1.0.0", NULL); // Different method - won't be updated
+    int64_t agent1 = ar_agency_create_agent("echo", "1.0.0", NULL);
+    int64_t agent2 = ar_agency_create_agent("echo", "1.0.0", NULL);
+    ar_agency_create_agent("calc", "1.0.0", NULL); // Different method - won't be updated
     ar_system_process_all_messages(); // Process wake messages
     
     // Verify initial state
-    assert(ar_agent_get_method(agent1) == ref_v1_0);
-    assert(ar_agent_get_method(agent2) == ref_v1_0);
+    assert(ar_agency_get_agent_method(agent1) == ref_v1_0);
+    assert(ar_agency_get_agent_method(agent2) == ref_v1_0);
     
     // When updating without lifecycle events
     int count = ar_agent_update_methods(ref_v1_0, ref_v1_1, false);
@@ -157,12 +157,12 @@ static void test_update_without_lifecycle(void) {
     assert(count == 2);
     
     // Then methods should be updated
-    assert(ar_agent_get_method(agent1) == ref_v1_1);
-    assert(ar_agent_get_method(agent2) == ref_v1_1);
+    assert(ar_agency_get_agent_method(agent1) == ref_v1_1);
+    assert(ar_agency_get_agent_method(agent2) == ref_v1_1);
     
     // Then no messages should be queued
-    assert(!ar_agent_has_messages(agent1));
-    assert(!ar_agent_has_messages(agent2));
+    assert(!ar_agency_agent_has_messages(agent1));
+    assert(!ar_agency_agent_has_messages(agent2));
     
     // Check for memory leaks
     assert(ar_system_fixture_check_memory(own_fixture));
@@ -197,21 +197,21 @@ static void test_update_with_lifecycle(void) {
     assert(ref_v1_1 != NULL);
     
     // Create agents
-    int64_t agent1 = ar_agent_create("echo", "1.0.0", NULL);
-    int64_t agent2 = ar_agent_create("echo", "1.0.0", NULL);
+    int64_t agent1 = ar_agency_create_agent("echo", "1.0.0", NULL);
+    int64_t agent2 = ar_agency_create_agent("echo", "1.0.0", NULL);
     ar_system_process_all_messages(); // Process initial wake messages
     
     // Verify initial state
-    assert(ar_agent_has_messages(agent1) == false);
-    assert(ar_agent_has_messages(agent2) == false);
+    assert(ar_agency_agent_has_messages(agent1) == false);
+    assert(ar_agency_agent_has_messages(agent2) == false);
     
     // When updating with lifecycle events
     int count = ar_agent_update_methods(ref_v1_0, ref_v1_1, true);
     assert(count == 2);
     
     // Then messages should be queued
-    assert(ar_agent_has_messages(agent1) == true);
-    assert(ar_agent_has_messages(agent2) == true);
+    assert(ar_agency_agent_has_messages(agent1) == true);
+    assert(ar_agency_agent_has_messages(agent2) == true);
     
     // Process sleep messages
     ar_system_process_next_message(); // agent1 sleep
@@ -220,12 +220,12 @@ static void test_update_with_lifecycle(void) {
     ar_system_process_next_message(); // agent2 wake
     
     // Then no more messages should be queued
-    assert(ar_agent_has_messages(agent1) == false);
-    assert(ar_agent_has_messages(agent2) == false);
+    assert(ar_agency_agent_has_messages(agent1) == false);
+    assert(ar_agency_agent_has_messages(agent2) == false);
     
     // And methods should be updated
-    assert(ar_agent_get_method(agent1) == ref_v1_1);
-    assert(ar_agent_get_method(agent2) == ref_v1_1);
+    assert(ar_agency_get_agent_method(agent1) == ref_v1_1);
+    assert(ar_agency_get_agent_method(agent2) == ref_v1_1);
     
     // Check for memory leaks
     assert(ar_system_fixture_check_memory(own_fixture));
@@ -261,8 +261,8 @@ static void test_update_incompatible(void) {
     assert(ref_other != NULL);
     
     // Create agents
-    ar_agent_create("echo", "1.0.0", NULL);
-    ar_agent_create("echo", "1.0.0", NULL);
+    ar_agency_create_agent("echo", "1.0.0", NULL);
+    ar_agency_create_agent("echo", "1.0.0", NULL);
     ar_system_process_all_messages();
     
     // When attempting incompatible updates

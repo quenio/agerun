@@ -3,6 +3,7 @@
 #include "agerun_list.h"
 #include "agerun_methodology.h"
 #include "agerun_assert.h"
+#include "agerun_agency.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -81,7 +82,7 @@ void ar_instruction_fixture_destroy(instruction_fixture_t *own_fixture) {
     
     // Destroy test agent if created
     if (own_fixture->test_agent_id > 0) {
-        ar_agent_destroy(own_fixture->test_agent_id);
+        ar_agency_destroy_agent(own_fixture->test_agent_id);
     }
     
     // Destroy all tracked expression contexts
@@ -366,7 +367,7 @@ int64_t ar_instruction_fixture_create_test_agent(
     own_method = NULL; // Ownership transferred
     
     // Create agent
-    int64_t agent_id = ar_agent_create(ref_method_name, "1.0.0", NULL);
+    int64_t agent_id = ar_agency_create_agent(ref_method_name, "1.0.0", NULL);
     if (agent_id <= 0) {
         return 0;
     }

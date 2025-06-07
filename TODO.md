@@ -326,14 +326,14 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Create agerun_agent_update module for method version updates
   - [x] Keep agerun_agency as a facade coordinating these modules (reduced from 850+ to 81 lines)
 
-### High Priority - Untangle Agent Registry Circular Dependency
-- [ ] Move agent registry ownership from agent module to agency module:
-  - [ ] Remove registry creation/ownership from agent module
-  - [ ] Add registry initialization to agency module
-  - [ ] Pass registry reference to agent module functions that need it
-  - [ ] Update agent module to accept registry as parameter instead of owning it
-  - [ ] This removes the circular dependency between agent and agent_registry modules
-  - [ ] Agency facade becomes the proper owner of the registry
+### Completed - Untangle Agent Registry Circular Dependency (2025-06-07)
+- [x] Move agent registry ownership from agent module to agency module:
+  - [x] Remove registry creation/ownership from agent module
+  - [x] Add registry initialization to agency module
+  - [x] Pass registry reference to agent module functions that need it
+  - [x] Update agent module to accept registry as parameter instead of owning it
+  - [x] This removes the circular dependency between agent and agent_registry modules
+  - [x] Agency facade becomes the proper owner of the registry
 
 ### High Priority - Move Agent Functionality to New Modules
 - [ ] Move lifecycle event handling (__sleep__/__wake__) to agent module:
@@ -347,12 +347,30 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Move agent iteration functions
   - [x] Update agent module to use registry module
   - [x] Remove internal functions that are no longer needed
-- [ ] Move agent update implementation from agent to agent_update module:
-  - [ ] Move ar_agent_update_method() logic
-  - [ ] Move ar_agent_count_by_method() logic
-  - [ ] Update agent module to use update module
+- [x] Move agent update implementation from agent to agent_update module:
+  - [x] Move ar_agent_update_method() logic (delegated through agency)
+  - [x] Move ar_agent_count_by_method() logic (delegated through agency)
+  - [x] Update agent module to use update module (via agency facade)
 - [x] Consider if agent_store needs any agent module functionality moved
   - [x] Agent_store now uses registry API through ar_agent_get_registry()
+
+### High Priority - Resolve Circular Dependencies
+- [ ] Resolve Agency/Agent_Update circular dependency:
+  - [ ] Currently agent_update forwards to ar_agency_update_agent_methods()
+  - [ ] Move the update logic from agency.c to agent_update.c
+  - [ ] Have agency delegate to agent_update instead of the reverse
+  - [ ] This will remove the circular dependency between these modules
+- [ ] Resolve Method/Instruction circular dependency:
+  - [ ] Methods need to execute instructions (method → instruction)
+  - [ ] Instructions need to access methods via methodology (instruction → methodology → method)
+  - [ ] Consider extracting instruction execution into a separate module
+  - [ ] Or use dependency injection to break the cycle
+- [ ] Resolve Instruction/Agent/Methodology cycles:
+  - [ ] Instruction depends on both agent and methodology
+  - [ ] Agent depends on methodology which depends on method
+  - [ ] Method depends on instruction (creating multiple cycles)
+  - [ ] Consider a more layered architecture with clear boundaries
+- [ ] Update the module dependency tree documentation after resolution
 
 ### High Priority - System Module Refactoring  
 - [ ] Split agerun_system into focused modules:
@@ -383,6 +401,21 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Evaluate if split improves cohesion without adding complexity
 
 ## Completed Major Milestones
+
+### 2025-06-07
+- ✅ Fixed failing test in agent_update_tests.c:
+  - ✅ Added `send_lifecycle_events` parameter to `ar_agency_update_agent_methods()`
+  - ✅ Updated all call sites to specify whether lifecycle events should be sent
+  - ✅ Test now correctly verifies lifecycle behavior based on parameter
+- ✅ Fixed memory leaks in system shutdown:
+  - ✅ Reordered `ar_system_shutdown()` to call `ar_agency_reset()` before disabling
+  - ✅ Ensures proper cleanup of all agents before marking system as uninitialized
+- ✅ All tests now pass with zero memory leaks
+- ✅ Completed agency module refactoring tasks:
+  - ✅ Moved agent registry ownership from agent module to agency module
+  - ✅ Removed circular dependency between agent and agent_registry modules
+  - ✅ Created comprehensive documentation for agency module (agerun_agency.md)
+  - ✅ Agency facade now properly owns and manages the registry
 
 ### 2025-06-06
 - ✅ Completed agent module interface cleanup to fix Parnas violations:

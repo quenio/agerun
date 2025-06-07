@@ -57,7 +57,7 @@ int ar_executable_main(void) {
     
     // Create the initial agent
     printf("Creating initial agent...\n");
-    initial_agent = ar_agent_create("echo", ref_echo_version, NULL);
+    initial_agent = ar_agency_create_agent("echo", ref_echo_version, NULL);
     if (initial_agent == 0) {
         printf("Failed to create initial agent\n");
         ar_system_shutdown();
@@ -67,7 +67,7 @@ int ar_executable_main(void) {
     // Send wake message to initial agent
     data_t *own_wake_data = ar_data_create_string(ref_wake_message);
     if (own_wake_data) {
-        ar_agent_send(initial_agent, own_wake_data);
+        ar_agency_send_to_agent(initial_agent, own_wake_data);
         // Ownership transferred to agent
         own_wake_data = NULL; // Mark as transferred
     }
@@ -80,7 +80,7 @@ int ar_executable_main(void) {
     
     // Create a counter agent
     printf("Creating counter agent...\n");
-    int64_t counter_id = ar_agent_create("counter", ref_counter_version, NULL);
+    int64_t counter_id = ar_agency_create_agent("counter", ref_counter_version, NULL);
     if (counter_id == 0) {
         printf("Failed to create counter agent\n");
         ar_system_shutdown();
@@ -96,19 +96,19 @@ int ar_executable_main(void) {
     data_t *own_get_msg1 = ar_data_create_string(ref_get_message);
     
     if (own_incr_msg1 && own_incr_msg2 && own_incr_msg3 && own_get_msg1) {
-        ar_agent_send(counter_id, own_incr_msg1);
+        ar_agency_send_to_agent(counter_id, own_incr_msg1);
         // Ownership transferred to agent
         own_incr_msg1 = NULL; // Mark as transferred
         
-        ar_agent_send(counter_id, own_incr_msg2);
+        ar_agency_send_to_agent(counter_id, own_incr_msg2);
         // Ownership transferred to agent
         own_incr_msg2 = NULL; // Mark as transferred
         
-        ar_agent_send(counter_id, own_incr_msg3);
+        ar_agency_send_to_agent(counter_id, own_incr_msg3);
         // Ownership transferred to agent
         own_incr_msg3 = NULL; // Mark as transferred
         
-        ar_agent_send(counter_id, own_get_msg1);
+        ar_agency_send_to_agent(counter_id, own_get_msg1);
         // Ownership transferred to agent
         own_get_msg1 = NULL; // Mark as transferred
     }
@@ -125,15 +125,15 @@ int ar_executable_main(void) {
     data_t *own_get_msg2 = ar_data_create_string(ref_get_message);
     
     if (own_incr_msg4 && own_incr_msg5 && own_get_msg2) {
-        ar_agent_send(counter_id, own_incr_msg4);
+        ar_agency_send_to_agent(counter_id, own_incr_msg4);
         // Ownership transferred to agent
         own_incr_msg4 = NULL; // Mark as transferred
         
-        ar_agent_send(counter_id, own_incr_msg5);
+        ar_agency_send_to_agent(counter_id, own_incr_msg5);
         // Ownership transferred to agent
         own_incr_msg5 = NULL; // Mark as transferred
         
-        ar_agent_send(counter_id, own_get_msg2);
+        ar_agency_send_to_agent(counter_id, own_get_msg2);
         // Ownership transferred to agent
         own_get_msg2 = NULL; // Mark as transferred
     }
@@ -182,7 +182,7 @@ int ar_executable_main(void) {
         printf("Sending 'get' message to counter agent...\n");
         data_t *own_get_msg3 = ar_data_create_string(ref_get_message);
         if (own_get_msg3) {
-            ar_agent_send(counter_id, own_get_msg3);
+            ar_agency_send_to_agent(counter_id, own_get_msg3);
             // Ownership transferred to agent
             own_get_msg3 = NULL; // Mark as transferred
         }

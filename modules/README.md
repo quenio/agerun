@@ -61,7 +61,7 @@ Both the data module and map module serve as reference implementations of the MM
 
 ## Module Dependency Tree
 
-This tree illustrates the dependency relationships between modules in the AgeRun system. Each module depends on the modules listed under it (its children in the tree). For example, `agerun_executable` depends on both `agerun_system` and `agerun_methodology`, while `agerun_system` has multiple dependencies including `agerun_agent`, `agerun_method`, etc.
+This tree illustrates the dependency relationships between modules in the AgeRun system, including both interface (.h) and implementation (.c) dependencies. Each module depends on the modules listed under it (its children in the tree). For example, `agerun_executable` depends on both `agerun_system` and `agerun_methodology`, while `agerun_system` has multiple dependencies including `agerun_agent`, `agerun_method`, etc.
 
 **Note**: The `agerun_heap` module is used by almost all modules for memory tracking but is not shown in the tree to avoid clutter. It is a cross-cutting concern that provides memory safety to the entire system.
 
@@ -70,13 +70,12 @@ Main Modules:
 agerun_executable
 ├── agerun_system
 │   ├── agerun_agent
-│   │   ├── agerun_agency
 │   │   ├── agerun_method
 │   │   ├── agerun_methodology
 │   │   ├── agerun_map
 │   │   └── agerun_list
 │   ├── agerun_method
-│   │   ├── agerun_instruction
+│   │   ├── agerun_instruction *
 │   │   │   ├── agerun_expression
 │   │   │   │   ├── agerun_string
 │   │   │   │   ├── agerun_data
@@ -84,8 +83,9 @@ agerun_executable
 │   │   │   │   └── agerun_list
 │   │   │   ├── agerun_string
 │   │   │   ├── agerun_data
-│   │   │   ├── agerun_methodology
-│   │   │   ├── agerun_agent
+│   │   │   ├── agerun_methodology *
+│   │   │   ├── agerun_agent *
+│   │   │   ├── agerun_agency
 │   │   │   ├── agerun_map
 │   │   │   └── agerun_assert
 │   │   ├── agerun_data
@@ -100,7 +100,11 @@ agerun_executable
 │   │   ├── agerun_string
 │   │   └── agerun_assert
 │   ├── agerun_agency
+│   │   ├── agerun_agent
 │   │   ├── agerun_agent_registry
+│   │   │   ├── agerun_data
+│   │   │   ├── agerun_list
+│   │   │   └── agerun_map
 │   │   ├── agerun_agent_store
 │   │   │   ├── agerun_io
 │   │   │   ├── agerun_agent
@@ -108,9 +112,10 @@ agerun_executable
 │   │   │   ├── agerun_data
 │   │   │   └── agerun_list
 │   │   └── agerun_agent_update
-│   │       ├── agerun_agent
+│   │       ├── agerun_agency *
 │   │       ├── agerun_method
-│   │       └── agerun_semver
+│   │       ├── agerun_semver
+│   │       └── agerun_io
 │   ├── agerun_data
 │   │   ├── agerun_string
 │   │   ├── agerun_map
@@ -120,6 +125,7 @@ agerun_executable
 │   └── agerun_list
 ├── agerun_methodology
 ├── agerun_agency
+│   ├── agerun_agent
 │   ├── agerun_agent_registry
 │   ├── agerun_agent_store
 │   └── agerun_agent_update
@@ -148,7 +154,13 @@ agerun_instruction_fixture
 └── agerun_heap
 ```
 
-**Note**: All circular dependencies have been successfully resolved. The system now follows strict Parnas design principles with clean, unidirectional dependencies.
+**Note**: Modules marked with an asterisk (*) indicate circular dependencies:
+- `agerun_agency` ↔ `agerun_agent_update`: The update module calls back into the agency facade
+- `agerun_method` ↔ `agerun_instruction`: Methods execute instructions, instructions access methods via methodology
+- `agerun_instruction` → `agerun_methodology` → `agerun_method` → `agerun_instruction`: Forms a dependency cycle
+- `agerun_instruction` → `agerun_agent` → `agerun_methodology` → `agerun_method` → `agerun_instruction`: Another cycle
+
+These circular dependencies violate Parnas principles and should be refactored in the future.
 
 ## Module Layers
 
@@ -397,6 +409,8 @@ The agency module serves as a facade that coordinates agent management operation
 - **Zero Memory Leaks**: Maintains proper cleanup through coordinated module operations
 - **Depends on New Modules**: Uses agent_registry, agent_store, and agent_update modules
 - **Maintains Compatibility**: Public API unchanged, ensuring no breaking changes
+
+For detailed API documentation, see [agerun_agency.md](agerun_agency.md).
 
 ### Agent Registry Module (`agerun_agent_registry`)
 

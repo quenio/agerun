@@ -59,12 +59,12 @@ int64_t ar_system_init(const char *ref_method_name, const char *ref_version) {
     // Create initial agent if ref_method_name is provided
     if (ref_method_name != NULL) {
         // Create initial agent with NULL context
-        int64_t initial_agent = ar_agent_create(ref_method_name, ref_version, NULL);
+        int64_t initial_agent = ar_agency_create_agent(ref_method_name, ref_version, NULL);
         if (initial_agent != 0) {
             // Send wake message to initial agent
             data_t *own_wake_data = ar_data_create_string(g_wake_message);
             if (own_wake_data) {
-                ar_agent_send(initial_agent, own_wake_data);
+                ar_agency_send_to_agent(initial_agent, own_wake_data);
                 // Ownership transferred to agent's message queue
                 // own_wake_data is now NULL
                 
@@ -91,12 +91,15 @@ void ar_system_shutdown(void) {
     
     // The memory cleanup is now responsibility of the agency module
     
-    is_initialized = false;
-    ar_agency_set_initialized(false);
+    // Reset the agency to clean up all agents before disabling
     ar_agency_reset();
     
     // Clean up methodology resources
     ar_methodology_cleanup();
+    
+    // Now mark as uninitialized
+    is_initialized = false;
+    ar_agency_set_initialized(false);
 }
 
 bool ar_system_process_next_message(void) {
@@ -116,7 +119,7 @@ bool ar_system_process_next_message(void) {
             if (own_message) {
                 printf("DEBUG: Got message from agent %lld\n", (long long)agent_id);
                 // Get the agent's method
-                const method_t *ref_method = ar_agent_get_method(agent_id);
+                const method_t *ref_method = ar_agency_get_agent_method(agent_id);
                 if (ref_method) {
                     printf("DEBUG: Agent has method\n");
                     // Print message based on its type

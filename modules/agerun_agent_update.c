@@ -4,7 +4,7 @@
  */
 
 #include "agerun_agent_update.h"
-#include "agerun_agent.h"
+#include "agerun_agency.h"
 #include "agerun_method.h"
 #include "agerun_semver.h"
 #include "agerun_io.h"
@@ -34,8 +34,8 @@ int ar_agent_update_methods(const method_t *ref_old_method,
     ar_io_info("Updating agents from method %s version %s to version %s",
                method_name, old_version, new_version);
     
-    // Use agent module's update function
-    int update_count = ar_agent_update_method(ref_old_method, ref_new_method, send_lifecycle_events);
+    // This function is now implemented in agency module
+    int update_count = ar_agency_update_agent_methods(ref_old_method, ref_new_method, send_lifecycle_events);
     
     if (update_count > 0) {
         ar_io_info("Updated %d agents to new method version", update_count);
@@ -52,7 +52,7 @@ int ar_agent_update_count_using_method(const method_t *ref_method) {
     if (!ref_method) {
         return 0;
     }
-    return ar_agent_count_by_method(ref_method);
+    return ar_agency_count_agents_using_method(ref_method);
 }
 
 /* Check if two method versions are compatible for update */

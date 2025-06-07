@@ -1,5 +1,5 @@
 #include "agerun_method.h"
-#include "agerun_agent.h"
+#include "agerun_agency.h"
 #include "agerun_system.h"
 #include "agerun_methodology.h"
 #include "agerun_agency.h"
@@ -94,18 +94,18 @@ static void test_method_run(void) {
     const char *version = "1.0.0";
     
     // And an agent created with this method
-    int64_t agent_id = ar_agent_create(method_name, version, NULL);
+    int64_t agent_id = ar_agency_create_agent(method_name, version, NULL);
     assert(agent_id > 0);
     
     // With map_t now opaque, we can't directly access the agent
     // We'll test indirectly by sending a message
-    assert(ar_agent_exists(agent_id));
+    assert(ar_agency_agent_exists(agent_id));
     
     // When we send a message to the agent
     static const char *sleep_text = "__sleep__"; // Use a special message that will be handled
     data_t *sleep_message = ar_data_create_string(sleep_text);
     assert(sleep_message != NULL);
-    bool result = ar_agent_send(agent_id, sleep_message);
+    bool result = ar_agency_send_to_agent(agent_id, sleep_message);
     
     // Then the method should run successfully
     assert(result);
@@ -114,10 +114,9 @@ static void test_method_run(void) {
     ar_system_process_next_message();
     
     // When we clean up the agent
-    bool destroy_result = ar_agent_destroy(agent_id);
+    ar_agency_destroy_agent(agent_id);
     
-    // Then the cleanup should succeed
-    assert(destroy_result);
+    // Agency destroy returns void, cleanup is done
     
     printf("ar_method_run() test passed!\n");
 }

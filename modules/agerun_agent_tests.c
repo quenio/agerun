@@ -37,23 +37,23 @@ static void test_agent_create_destroy(void) {
     const char *version = "1.0.0";
     
     // When we create an agent with this method
-    int64_t agent_id = ar_agent_create(method_name, version, NULL);
+    int64_t agent_id = ar_agency_create_agent(method_name, version, NULL);
     
     // Then the agent should be created successfully
     assert(agent_id > 0);
     
     // And the agent should exist in the system
-    bool exists = ar_agent_exists(agent_id);
+    bool exists = ar_agency_agent_exists(agent_id);
     assert(exists);
     
     // When we destroy the agent
-    bool destroy_result = ar_agent_destroy(agent_id);
+    ar_agency_destroy_agent(agent_id);
     
     // Then the agent should be destroyed successfully
-    assert(destroy_result);
+    // Agency destroy returns void
     
     // And the agent should no longer exist in the system
-    exists = ar_agent_exists(agent_id);
+    exists = ar_agency_agent_exists(agent_id);
     assert(!exists);
     
     printf("ar_agent_create() and ar_agent_destroy() tests passed!\n");
@@ -78,13 +78,13 @@ static void test_agent_send(void) {
     // For test purposes, we assume registration succeeds and creates version "1.0.0"
     const char *version = "1.0.0";
     
-    int64_t agent_id = ar_agent_create(method_name, version, NULL);
+    int64_t agent_id = ar_agency_create_agent(method_name, version, NULL);
     assert(agent_id > 0);
     
     // When we send a message to the agent
     data_t *own_message_data = ar_data_create_string(g_hello_message);
     assert(own_message_data != NULL);
-    bool send_result = ar_agent_send(agent_id, own_message_data);
+    bool send_result = ar_agency_send_to_agent(agent_id, own_message_data);
     own_message_data = NULL; // Mark as transferred
     
     // Then the message should be sent successfully
@@ -96,10 +96,10 @@ static void test_agent_send(void) {
     // Since we can't directly access the message queue in an opaque map,
     // we'll verify the agent was created (which was already tested)
     // and that the message was sent (which was verified by send_result)
-    assert(ar_agent_exists(agent_id));
+    assert(ar_agency_agent_exists(agent_id));
     
     // Cleanup
-    ar_agent_destroy(agent_id);
+    ar_agency_destroy_agent(agent_id);
     
     printf("ar_agent_send() test passed!\n");
 }
@@ -123,29 +123,29 @@ static void test_agent_exists(void) {
     // For test purposes, we assume registration succeeds and creates version "1.0.0"
     const char *version = "1.0.0";
     
-    int64_t agent_id = ar_agent_create(method_name, version, NULL);
+    int64_t agent_id = ar_agency_create_agent(method_name, version, NULL);
     assert(agent_id > 0);
     
     // When we check if the valid agent ID exists
-    bool exists = ar_agent_exists(agent_id);
+    bool exists = ar_agency_agent_exists(agent_id);
     
     // Then it should exist
     assert(exists);
     
     // When we check if invalid agent IDs exist
-    bool exists_zero = ar_agent_exists(0);
-    bool exists_large = ar_agent_exists(999999);
+    bool exists_zero = ar_agency_agent_exists(0);
+    bool exists_large = ar_agency_agent_exists(999999);
     
     // Then they should not exist
     assert(!exists_zero);
     assert(!exists_large);
     
     // When we destroy the agent
-    bool destroy_result = ar_agent_destroy(agent_id);
-    assert(destroy_result);
+    ar_agency_destroy_agent(agent_id);
+    // Agency destroy returns void
     
     // And check if it still exists
-    exists = ar_agent_exists(agent_id);
+    exists = ar_agency_agent_exists(agent_id);
     
     // Then it should no longer exist
     assert(!exists);
@@ -178,7 +178,7 @@ static void test_agent_persistence(void) {
     ar_data_set_map_string(own_context, "test_key", "test_value");
     
     // And an agent created with this persistent method - agent doesn't take ownership
-    int64_t agent_id = ar_agent_create(method_name, version, own_context);
+    int64_t agent_id = ar_agency_create_agent(method_name, version, own_context);
     assert(agent_id > 0);
     
     // When we save agents to disk
@@ -201,13 +201,13 @@ static void test_agent_persistence(void) {
     assert(load_agents_result);
     
     // When we check if our persistent agent still exists
-    bool exists = ar_agent_exists(agent_id);
+    bool exists = ar_agency_agent_exists(agent_id);
     
     // Then the agent should still exist
     assert(exists);
     
     // Cleanup
-    ar_agent_destroy(agent_id);
+    ar_agency_destroy_agent(agent_id);
     
     // Since the agent didn't take ownership, we need to cleanup our context
     ar_data_destroy(own_context);

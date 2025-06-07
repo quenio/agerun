@@ -4,7 +4,7 @@
 #include <assert.h>
 #include "agerun_method_fixture.h"
 #include "agerun_system.h"
-#include "agerun_agent.h"
+#include "agerun_agency.h"
 #include "agerun_data.h"
 
 static void test_agent_manager_create_destroy(void) {
@@ -25,7 +25,7 @@ static void test_agent_manager_create_destroy(void) {
     assert(ar_method_fixture_load_method(own_fixture, "agent-manager", "../methods/agent-manager-1.0.0.method", "1.0.0"));
     
     // Create agent-manager agent
-    int64_t manager_agent = ar_agent_create("agent-manager", "1.0.0", NULL);
+    int64_t manager_agent = ar_agency_create_agent("agent-manager", "1.0.0", NULL);
     assert(manager_agent > 0);
     
     // Process wake message
@@ -43,7 +43,7 @@ static void test_agent_manager_create_destroy(void) {
     ar_data_set_map_data(own_message, "context", own_context);
     own_context = NULL; // Ownership transferred
     
-    bool sent = ar_agent_send(manager_agent, own_message);
+    bool sent = ar_agency_send_to_agent(manager_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
@@ -52,7 +52,7 @@ static void test_agent_manager_create_destroy(void) {
     assert(processed);
     
     // Check agent memory for result
-    const data_t *agent_memory = ar_agent_get_memory(manager_agent);
+    const data_t *agent_memory = ar_agency_get_agent_memory(manager_agent);
     assert(agent_memory != NULL);
     
     const data_t *result = ar_data_get_map_data(agent_memory, "result");
@@ -88,7 +88,7 @@ static void test_agent_manager_create_destroy(void) {
     ar_data_set_map_string(own_destroy_message, "action", "destroy");
     ar_data_set_map_integer(own_destroy_message, "agent_id", 2); // Assuming agent 2 was created
     
-    sent = ar_agent_send(manager_agent, own_destroy_message);
+    sent = ar_agency_send_to_agent(manager_agent, own_destroy_message);
     assert(sent);
     own_destroy_message = NULL; // Ownership transferred
     
@@ -138,7 +138,7 @@ static void test_agent_manager_invalid_action(void) {
     assert(ar_method_fixture_load_method(own_fixture, "agent-manager", "../methods/agent-manager-1.0.0.method", "1.0.0"));
     
     // Create agent-manager agent
-    int64_t manager_agent = ar_agent_create("agent-manager", "1.0.0", NULL);
+    int64_t manager_agent = ar_agency_create_agent("agent-manager", "1.0.0", NULL);
     assert(manager_agent > 0);
     
     // Process wake message
@@ -150,7 +150,7 @@ static void test_agent_manager_invalid_action(void) {
     
     ar_data_set_map_string(own_message, "action", "invalid");
     
-    bool sent = ar_agent_send(manager_agent, own_message);
+    bool sent = ar_agency_send_to_agent(manager_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
@@ -158,7 +158,7 @@ static void test_agent_manager_invalid_action(void) {
     ar_system_process_next_message();
     
     // Check agent memory - invalid actions should be handled gracefully
-    const data_t *agent_memory = ar_agent_get_memory(manager_agent);
+    const data_t *agent_memory = ar_agency_get_agent_memory(manager_agent);
     assert(agent_memory != NULL);
     
     // For invalid actions, the method should fail gracefully

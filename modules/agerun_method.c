@@ -3,6 +3,7 @@
 #include "agerun_string.h"
 #include "agerun_data.h"
 #include "agerun_agent.h"
+#include "agerun_agency.h"
 #include "agerun_map.h"
 #include "agerun_heap.h"
 #include "agerun_assert.h" /* Include the assertion utilities */
@@ -91,8 +92,8 @@ bool ar_method_run(int64_t agent_id, const data_t *ref_message, const char *ref_
     }
     
     // Get agent's memory and context using accessor functions
-    data_t *mut_memory = ar_agent_get_mutable_memory(agent_id);
-    const data_t *ref_context = ar_agent_get_context(agent_id);
+    data_t *mut_memory = ar_agency_get_agent_mutable_memory(agent_id);
+    const data_t *ref_context = ar_agency_get_agent_context(agent_id);
     
     if (!mut_memory) {
         return false; // Agent doesn't exist or has no memory

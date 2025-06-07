@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "agerun_data.h"
+#include "agerun_agent_registry.h"
 
 /* Forward declarations */
 typedef struct method_s method_t;
@@ -49,9 +50,10 @@ bool ar_agency_load_agents(void);
  * Update agents using a specific method to use a different method
  * @param ref_old_method The old method being used (borrowed reference)
  * @param ref_new_method The new method to use (borrowed reference)
- * @return Number of agents updated (each agent will have 2 messages queued)
+ * @param send_lifecycle_events If true, send sleep/wake messages for each updated agent
+ * @return Number of agents updated (each agent will have 2 messages queued if lifecycle events are sent)
  * @note Ownership: Does not take ownership of either method reference.
- *       The update process involves:
+ *       If send_lifecycle_events is true, the update process involves:
  *       1. Agent finishes processing current message
  *       2. Sleep message is sent to agent
  *       3. Method reference is updated
@@ -59,7 +61,7 @@ bool ar_agency_load_agents(void);
  *       IMPORTANT: The caller must process 2*update_count messages after this call
  *       to ensure all sleep and wake messages are processed.
  */
-int ar_agency_update_agent_methods(const method_t *ref_old_method, const method_t *ref_new_method);
+int ar_agency_update_agent_methods(const method_t *ref_old_method, const method_t *ref_new_method, bool send_lifecycle_events);
 
 /**
  * Count the number of agents using a specific method
@@ -96,6 +98,127 @@ bool ar_agency_agent_has_messages(int64_t agent_id);
  * @note Ownership: Returns an owned value that caller must destroy
  */
 data_t* ar_agency_get_agent_message(int64_t agent_id);
+
+/**
+ * Create a new agent with ID allocation and tracking
+ * @param ref_method_name Name of the method to use (borrowed reference)
+ * @param ref_version Version string of the method (NULL for latest)
+ * @param ref_context Context data (NULL for empty, borrowed reference)
+ * @return Unique agent ID, or 0 on failure
+ * @note Ownership: Function does not take ownership of ref_context.
+ */
+int64_t ar_agency_create_agent(const char *ref_method_name, const char *ref_version, const data_t *ref_context);
+
+/**
+ * Destroy an agent by ID
+ * @param agent_id ID of the agent to destroy
+ * @return true if successful, false otherwise
+ * @note Ownership: Destroys all resources owned by the agent.
+ */
+bool ar_agency_destroy_agent(int64_t agent_id);
+
+/**
+ * Send a message to an agent by ID
+ * @param agent_id ID of the agent to send to
+ * @param own_message Message data (ownership is transferred on success)
+ * @return true if successful, false otherwise
+ * @note Ownership: Function takes ownership of own_message.
+ */
+bool ar_agency_send_to_agent(int64_t agent_id, data_t *own_message);
+
+/**
+ * Check if an agent exists
+ * @param agent_id ID of the agent to check
+ * @return true if the agent exists, false otherwise
+ */
+bool ar_agency_agent_exists(int64_t agent_id);
+
+/**
+ * Get agent memory by ID
+ * @param agent_id ID of the agent
+ * @return Const pointer to agent's memory data, or NULL if agent doesn't exist
+ * @note Ownership: Returns a borrowed reference.
+ */
+const data_t* ar_agency_get_agent_memory(int64_t agent_id);
+
+/**
+ * Get agent context by ID
+ * @param agent_id ID of the agent
+ * @return Const pointer to agent's context data, or NULL if agent doesn't exist
+ * @note Ownership: Returns a borrowed reference.
+ */
+const data_t* ar_agency_get_agent_context(int64_t agent_id);
+
+/**
+ * Check if an agent is active
+ * @param agent_id ID of the agent to check
+ * @return true if the agent is active, false otherwise
+ */
+bool ar_agency_is_agent_active(int64_t agent_id);
+
+/**
+ * Get agent method by ID
+ * @param agent_id ID of the agent
+ * @return Const pointer to agent's method, or NULL if agent doesn't exist
+ * @note Ownership: Returns a borrowed reference.
+ */
+const method_t* ar_agency_get_agent_method(int64_t agent_id);
+
+/**
+ * Get agent's method info by ID
+ * @param agent_id ID of the agent
+ * @param out_method_name Output pointer for method name (optional, can be NULL)
+ * @param out_method_version Output pointer for method version (optional, can be NULL)
+ * @return true if agent has a method, false otherwise
+ * @note Ownership: The returned strings are borrowed references.
+ */
+bool ar_agency_get_agent_method_info(int64_t agent_id, const char **out_method_name, const char **out_method_version);
+
+/**
+ * Get mutable agent memory by ID (for internal use)
+ * @param agent_id ID of the agent
+ * @return Mutable pointer to agent's memory data
+ * @note Ownership: Returns a mutable reference, do not destroy.
+ */
+data_t* ar_agency_get_agent_mutable_memory(int64_t agent_id);
+
+/**
+ * Update agent method by ID
+ * @param agent_id ID of the agent to update
+ * @param ref_new_method The new method (borrowed reference)
+ * @param send_sleep_wake If true, send sleep/wake messages during update
+ * @return true if successful, false otherwise
+ */
+bool ar_agency_update_agent_method(int64_t agent_id, const method_t *ref_new_method, bool send_sleep_wake);
+
+/**
+ * Set agent active status by ID
+ * @param agent_id ID of the agent
+ * @param is_active New active status
+ * @return true if successful, false otherwise
+ */
+bool ar_agency_set_agent_active(int64_t agent_id, bool is_active);
+
+/**
+ * Count all active agents
+ * @return Number of active agents
+ */
+int ar_agency_count_active_agents(void);
+
+/**
+ * Set agent ID (for persistence restoration)
+ * @param old_id The current agent ID
+ * @param new_id The new agent ID to set
+ * @return true if successful, false if agent not found
+ */
+bool ar_agency_set_agent_id(int64_t old_id, int64_t new_id);
+
+/**
+ * Get the agent registry (for internal modules only)
+ * @return The agent registry (borrowed reference), or NULL if not initialized
+ * @note This is provided for agent_store module to access registry functions.
+ */
+agent_registry_t* ar_agency_get_registry(void);
 
 #endif /* AGERUN_AGENCY_H */
 

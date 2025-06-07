@@ -11,7 +11,7 @@
 #include "agerun_agent_store.h"
 #include "agerun_system_fixture.h"
 #include "agerun_system.h"
-#include "agerun_agent.h"
+#include "agerun_agency.h"
 #include "agerun_data.h"
 #include "agerun_method.h"
 #include "agerun_heap.h"
@@ -73,7 +73,7 @@ static void test_store_empty_save_load(void) {
     assert(ar_agent_store_load());
     
     // Then no agents should exist
-    assert(ar_agent_count_active() == 0);
+    assert(ar_agency_count_active_agents() == 0);
     
     // Check for memory leaks
     assert(ar_system_fixture_check_memory(own_fixture));
@@ -103,14 +103,14 @@ static void test_store_single_agent(void) {
     assert(ref_method != NULL);
     
     // Create an agent
-    int64_t agent_id = ar_agent_create("echo", "1.0.0", NULL);
+    int64_t agent_id = ar_agency_create_agent("echo", "1.0.0", NULL);
     assert(agent_id > 0);
     
     // Process wake message
     ar_system_process_next_message();
     
     // Add some data to agent memory
-    data_t *mut_memory = ar_agent_get_mutable_memory(agent_id);
+    data_t *mut_memory = ar_agency_get_agent_mutable_memory(agent_id);
     assert(mut_memory != NULL);
     ar_data_set_map_string(mut_memory, "name", "Test Agent");
     ar_data_set_map_integer(mut_memory, "count", 42);
@@ -120,22 +120,22 @@ static void test_store_single_agent(void) {
     assert(ar_agent_store_save());
     
     // Destroy all agents
-    ar_agent_destroy(agent_id);
+    ar_agency_destroy_agent(agent_id);
     ar_system_process_next_message(); // Process sleep message
-    assert(ar_agent_count_active() == 0);
+    assert(ar_agency_count_active_agents() == 0);
     
     // When loading
     assert(ar_agent_store_load());
     
     // Then the agent should be restored
-    assert(ar_agent_count_active() == 1);
+    assert(ar_agency_count_active_agents() == 1);
     
     // Find the restored agent
-    int64_t restored_id = ar_agent_get_first_active();
+    int64_t restored_id = ar_agency_get_first_agent();
     assert(restored_id > 0);
     
     // Verify the method
-    const method_t *ref_restored_method = ar_agent_get_method(restored_id);
+    const method_t *ref_restored_method = ar_agency_get_agent_method(restored_id);
     assert(ref_restored_method != NULL);
     assert(strcmp(ar_method_get_name(ref_restored_method), "echo") == 0);
     assert(strcmp(ar_method_get_version(ref_restored_method), "1.0.0") == 0);
@@ -176,28 +176,28 @@ static void test_store_multiple_agents(void) {
     assert(ref_calc != NULL);
     
     // Create agents
-    int64_t echo1 = ar_agent_create("echo", "1.0.0", NULL);
+    int64_t echo1 = ar_agency_create_agent("echo", "1.0.0", NULL);
     assert(echo1 > 0);
     
-    int64_t echo2 = ar_agent_create("echo", "1.0.0", NULL);
+    int64_t echo2 = ar_agency_create_agent("echo", "1.0.0", NULL);
     assert(echo2 > 0);
     
-    int64_t calc1 = ar_agent_create("calc", "2.0.0", NULL);
+    int64_t calc1 = ar_agency_create_agent("calc", "2.0.0", NULL);
     assert(calc1 > 0);
     
     // Process wake messages
     ar_system_process_all_messages();
     
     // Add unique data to each agent
-    data_t *mut_memory1 = ar_agent_get_mutable_memory(echo1);
+    data_t *mut_memory1 = ar_agency_get_agent_mutable_memory(echo1);
     ar_data_set_map_string(mut_memory1, "name", "Echo One");
     ar_data_set_map_integer(mut_memory1, "id", 1);
     
-    data_t *mut_memory2 = ar_agent_get_mutable_memory(echo2);
+    data_t *mut_memory2 = ar_agency_get_agent_mutable_memory(echo2);
     ar_data_set_map_string(mut_memory2, "name", "Echo Two");
     ar_data_set_map_integer(mut_memory2, "id", 2);
     
-    data_t *mut_memory3 = ar_agent_get_mutable_memory(calc1);
+    data_t *mut_memory3 = ar_agency_get_agent_mutable_memory(calc1);
     ar_data_set_map_string(mut_memory3, "name", "Calculator");
     ar_data_set_map_double(mut_memory3, "pi", 3.14159);
     
@@ -205,25 +205,25 @@ static void test_store_multiple_agents(void) {
     assert(ar_agent_store_save());
     
     // Destroy all agents
-    ar_agent_destroy(echo1);
-    ar_agent_destroy(echo2);
-    ar_agent_destroy(calc1);
+    ar_agency_destroy_agent(echo1);
+    ar_agency_destroy_agent(echo2);
+    ar_agency_destroy_agent(calc1);
     ar_system_process_all_messages(); // Process sleep messages
-    assert(ar_agent_count_active() == 0);
+    assert(ar_agency_count_active_agents() == 0);
     
     // When loading
     assert(ar_agent_store_load());
     
     // Then all agents should be restored
-    assert(ar_agent_count_active() == 3);
+    assert(ar_agency_count_active_agents() == 3);
     
     // Memory is not persisted in current implementation
     // Just verify agents were restored with correct methods
     int echo_count = 0, calc_count = 0;
     
-    int64_t agent_id = ar_agent_get_first_active();
+    int64_t agent_id = ar_agency_get_first_agent();
     while (agent_id != 0) {
-        const method_t *ref_method = ar_agent_get_method(agent_id);
+        const method_t *ref_method = ar_agency_get_agent_method(agent_id);
         const char *method_name = ar_method_get_name(ref_method);
         
         if (strcmp(method_name, "echo") == 0) {
@@ -232,7 +232,7 @@ static void test_store_multiple_agents(void) {
             calc_count++;
         }
         
-        agent_id = ar_agent_get_next_active(agent_id);
+        agent_id = ar_agency_get_next_agent(agent_id);
     }
     
     assert(echo_count == 2);
@@ -270,7 +270,7 @@ static void test_store_file_corruption(void) {
     assert(ar_agent_store_load()); // Should succeed but with empty state
     
     // Then no agents should exist
-    assert(ar_agent_count_active() == 0);
+    assert(ar_agency_count_active_agents() == 0);
     
     // And the corrupted file should be gone
     assert(!ar_agent_store_exists());
@@ -309,7 +309,7 @@ static void test_store_missing_method(void) {
     );
     assert(ref_method != NULL);
     
-    int64_t agent_id = ar_agent_create("test", "1.0.0", NULL);
+    int64_t agent_id = ar_agency_create_agent("test", "1.0.0", NULL);
     assert(agent_id > 0);
     ar_system_process_next_message();
     
@@ -323,7 +323,7 @@ static void test_store_missing_method(void) {
     assert(ar_agent_store_load());
     
     // Then no agents should be created (method doesn't exist)
-    assert(ar_agent_count_active() == 0);
+    assert(ar_agency_count_active_agents() == 0);
     
     // Check for memory leaks
     assert(ar_system_fixture_check_memory(own_fixture));
@@ -353,30 +353,30 @@ static void test_store_id_preservation(void) {
     assert(ref_method != NULL);
     
     // Create agents and remember their IDs
-    int64_t id1 = ar_agent_create("test", "1.0.0", NULL);
-    int64_t id2 = ar_agent_create("test", "1.0.0", NULL);
-    int64_t id3 = ar_agent_create("test", "1.0.0", NULL);
+    int64_t id1 = ar_agency_create_agent("test", "1.0.0", NULL);
+    int64_t id2 = ar_agency_create_agent("test", "1.0.0", NULL);
+    int64_t id3 = ar_agency_create_agent("test", "1.0.0", NULL);
     ar_system_process_all_messages();
     
     // Save
     assert(ar_agent_store_save());
     
     // Destroy all agents
-    ar_agent_destroy(id1);
-    ar_agent_destroy(id2);
-    ar_agent_destroy(id3);
+    ar_agency_destroy_agent(id1);
+    ar_agency_destroy_agent(id2);
+    ar_agency_destroy_agent(id3);
     ar_system_process_all_messages();
     
     // Load
     assert(ar_agent_store_load());
     
     // Then the same IDs should be preserved
-    assert(ar_agent_exists(id1));
-    assert(ar_agent_exists(id2));
-    assert(ar_agent_exists(id3));
+    assert(ar_agency_agent_exists(id1));
+    assert(ar_agency_agent_exists(id2));
+    assert(ar_agency_agent_exists(id3));
     
     // And next ID should be set correctly to avoid collisions
-    int64_t new_id = ar_agent_create("test", "1.0.0", NULL);
+    int64_t new_id = ar_agency_create_agent("test", "1.0.0", NULL);
     assert(new_id > id1 && new_id > id2 && new_id > id3);
     
     // Check for memory leaks

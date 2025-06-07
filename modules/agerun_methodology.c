@@ -604,7 +604,8 @@ void ar_methodology_register_method(method_t *own_method) {
                     // Update agents using the old method to use the new one
                     int updated = ar_agency_update_agent_methods(
                         methods[method_idx][i], 
-                        own_method);
+                        own_method,
+                        true);
                     
                     if (updated > 0) {
                         ar_io_info("Updated %d agent(s) from method %s version %s to version %s",
