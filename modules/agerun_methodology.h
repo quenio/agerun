@@ -30,41 +30,7 @@ bool ar_methodology_create_method(const char *ref_name, const char *ref_instruct
 method_t* ar_methodology_get_method(const char *ref_name, const char *ref_version);
 
 
-/**
- * Get a pointer to a specific method storage location
- * @param method_idx Index of the method in the methods array
- * @param version_idx Index of the version for this method
- * @return Pointer to the method storage location (mutable reference)
- * @note Ownership: Returns a mutable reference to internal storage.
- *       The caller should not free the returned method.
- */
-method_t* ar_methodology_get_method_storage(int method_idx, int version_idx);
-
-/**
- * Set a method pointer in the method storage location
- * @param method_idx Index of the method in the methods array
- * @param version_idx Index of the version for this method
- * @param ref_method Method pointer to store (methodology takes ownership)
- * @note Ownership: Methodology takes ownership of the method pointer.
- *       The caller should not use or free the method after this call.
- */
-void ar_methodology_set_method_storage(int method_idx, int version_idx, method_t *ref_method);
-
-/**
- * Get a pointer to the array of method counts
- * @return Pointer to the array of method counts (mutable reference)
- * @note Ownership: Returns a mutable reference to internal storage.
- *       The caller should not free the returned array.
- */
-int* ar_methodology_get_method_counts(void);
-
-/**
- * Get a pointer to the method name count variable
- * @return Pointer to the method name count (mutable reference)
- * @note Ownership: Returns a mutable reference to internal storage.
- *       The caller should not free the returned pointer.
- */
-int* ar_methodology_get_method_name_count(void);
+/* Internal functions removed to comply with Parnas principles */
 
 /**
  * Save all method definitions to disk

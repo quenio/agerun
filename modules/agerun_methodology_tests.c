@@ -10,7 +10,7 @@
 
 // Forward declarations
 static void test_methodology_get_method(void);
-static void test_methodology_get_method_storage(void);
+static void test_methodology_register_and_get(void);
 static void test_methodology_save_load(void);
 static void test_method_counts(void);
 
@@ -63,8 +63,8 @@ static void test_methodology_get_method(void) {
 }
 
 
-static void test_methodology_get_method_storage(void) {
-    printf("Testing ar_methodology_get_method_storage()...\n");
+static void test_methodology_register_and_get(void) {
+    printf("Testing ar_methodology_register_method() and get...\n");
     
     // Given a test method exists in the system
     const char *name = "storage_method";
@@ -92,7 +92,7 @@ static void test_methodology_get_method_storage(void) {
     printf("Found method with version %s (expected version string)\n", 
            ar_method_get_version(method));
     
-    printf("ar_methodology_get_method_storage() test passed!\n");
+    printf("ar_methodology_register_and_get() test passed!\n");
 }
 
 static void test_methodology_save_load(void) {
@@ -164,19 +164,7 @@ static void test_methodology_save_load(void) {
 }
 
 static void test_method_counts(void) {
-    printf("Testing method count accessors...\n");
-    
-    // Given we have access to the method counts
-    int *method_counts = ar_methodology_get_method_counts();
-    assert(method_counts != NULL);
-    
-    // And we have access to the method name count
-    int *method_name_count = ar_methodology_get_method_name_count();
-    assert(method_name_count != NULL);
-    assert(*method_name_count >= 0);
-    
-    // And we note the initial method name count
-    int initial_count = *method_name_count;
+    printf("Testing multiple method registration...\n");
     
     // When we create a new method with a unique name
     char unique_name[64];
@@ -203,8 +191,7 @@ static void test_method_counts(void) {
     
     // For test purposes, we use version "1.0.0" for this test
     
-    // And the method name count should increment
-    assert(*method_name_count == initial_count + 1);
+    // Method should be registered successfully
     
     // When we try to get the method we just registered
     method_t *registered_method = ar_methodology_get_method(unique_name, "1.0.0");
@@ -230,10 +217,9 @@ static void test_method_counts(void) {
     assert(ar_methodology_get_method(unique_name, "1.0.0") != NULL);
     assert(ar_methodology_get_method(unique_name, "2.0.0") != NULL);
     
-    // But the method name count should remain the same
-    assert(*method_name_count == initial_count + 1);
+    // Both versions should be accessible
     
-    printf("Method count accessor tests passed!\n");
+    printf("Multiple method registration tests passed!\n");
 }
 
 int main(void) {
@@ -260,7 +246,7 @@ int main(void) {
     
     // And we run all methodology tests
     test_methodology_get_method();
-    test_methodology_get_method_storage();
+    test_methodology_register_and_get();
     test_methodology_save_load();
     test_method_counts();
     

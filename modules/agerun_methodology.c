@@ -318,13 +318,9 @@ static method_t* find_method(const char *ref_name, const char *ref_version) {
 
 // This function is now implemented directly above
 
-method_t* ar_methodology_get_method_storage(int method_idx, int version_idx) {
-    AR_ASSERT(method_idx >= 0 && method_idx < MAX_METHODS, "Method index out of bounds");
-    AR_ASSERT(version_idx >= 0 && version_idx < MAX_VERSIONS_PER_METHOD, "Version index out of bounds");
-    return methods[method_idx][version_idx];
-}
+// Function removed - was exposing internal storage
 
-void ar_methodology_set_method_storage(int method_idx, int version_idx, method_t *ref_method) {
+static void ar_methodology_set_method_storage(int method_idx, int version_idx, method_t *ref_method) {
     AR_ASSERT(method_idx >= 0 && method_idx < MAX_METHODS, "Method index out of bounds");
     AR_ASSERT(version_idx >= 0 && version_idx < MAX_VERSIONS_PER_METHOD, "Version index out of bounds");
     
@@ -337,13 +333,7 @@ void ar_methodology_set_method_storage(int method_idx, int version_idx, method_t
     methods[method_idx][version_idx] = ref_method;
 }
 
-int* ar_methodology_get_method_counts(void) {
-    return method_counts;
-}
-
-int* ar_methodology_get_method_name_count(void) {
-    return &method_name_count;
-}
+// Functions removed - were exposing internal state
 
 // Main method access function
 method_t* ar_methodology_get_method(const char *ref_name, const char *ref_version) {
