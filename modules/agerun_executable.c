@@ -14,7 +14,7 @@ static const char *ref_wake_message = "__wake__";
 static const char *ref_increment_message = "increment";
 static const char *ref_get_message = "get";
 
-int ar_executable_main(void) {
+int ar__executable__main(void) {
     printf("Agerun Example Application\n");
     printf("==========================\n\n");
     
@@ -212,5 +212,5 @@ int ar_executable_main(void) {
 }
 
 int main(void) {
-    return ar_executable_main();
+    return ar__executable__main();
 }

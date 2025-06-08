@@ -8,6 +8,6 @@
  * @note Ownership: The function manages all memory internally and
  *       cleans up resources before returning.
  */
-int ar_executable_main(void);
+int ar__executable__main(void);
 
 #endif // AGERUN_EXECUTABLE_H

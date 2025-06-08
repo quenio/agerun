@@ -13,7 +13,7 @@
 static void test_executable_run(void);
 
 // Stub function to avoid linking with the actual executable
-int ar_executable_main(void) {
+int ar__executable__main(void) {
     // This is just a stub for testing
     return 0;
 }
@@ -37,7 +37,7 @@ static void test_executable_run(void) {
         alarm(2);
         
         // When we run the executable
-        int result = ar_executable_main();
+        int result = ar__executable__main();
         
         // Then we should exit with the result
         // (though we should actually be terminated by the alarm)
