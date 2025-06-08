@@ -72,18 +72,54 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Immediate Priorities (Next Steps)
 
-- [x] Fix expression evaluation issues (REQUIRES TDD):
-  - [x] Write failing tests for memory access expressions in agent() context
-  - [x] Investigate why memory access expressions fail
-  - [x] Fix expression evaluator to handle all contexts consistently
-  - [x] Add comprehensive tests verifying all expression contexts
+### CRITICAL - Resolve All Circular Dependencies (HIGHEST PRIORITY)
+- [ ] Resolve Agency/Agent_Update circular dependency:
+  - [ ] Currently agent_update forwards to ar_agency_update_agent_methods()
+  - [ ] Move the update logic from agency.c to agent_update.c
+  - [ ] Have agency delegate to agent_update instead of the reverse
+  - [ ] This will remove the circular dependency between these modules
+- [ ] Resolve Method/Instruction circular dependency:
+  - [ ] Methods need to execute instructions (method → instruction)
+  - [ ] Instructions need to access methods via methodology (instruction → methodology → method)
+  - [ ] Consider extracting instruction execution into a separate module
+  - [ ] Or use dependency injection to break the cycle
+- [ ] Resolve Instruction/Agent/Methodology cycles:
+  - [ ] Instruction depends on both agent and methodology
+  - [ ] Agent depends on methodology which depends on method
+  - [ ] Method depends on instruction (creating multiple cycles)
+  - [ ] Consider a more layered architecture with clear boundaries
+- [ ] Update the module dependency tree documentation after resolution
 
-- [x] Improve test infrastructure:
-  - [x] Fix the memory access instruction tests that are currently skipped
-  - [x] Add better error reporting for failed instructions
-  - [x] Create instruction test fixture module for common test patterns (no helper functions)
-  - [x] Migrate instruction module tests to use the fixture
-  
+### HIGH - Fix Code Smells (After Circular Dependencies)
+- [ ] Break down the massive ar_instruction_run function (2500+ lines):
+  - [ ] Extract memory access operations
+  - [ ] Extract assignment operations  
+  - [ ] Extract if conditional logic
+  - [ ] Extract send function logic
+  - [ ] Extract method function logic
+  - [ ] Extract agent function logic
+  - [ ] Extract parse function logic
+  - [ ] Extract build function logic
+  - [ ] Extract destroy function logic
+- [ ] Add MMM.md ownership prefixes throughout modules:
+  - [ ] Agency module - clarify ownership of loaded agent data
+  - [ ] Method module - document memory ownership in ar_method_create
+  - [ ] Methodology module - fix ownership issues in ar_methodology_create_method
+  - [ ] Expression module - document complex ownership patterns
+- [ ] Move agent lifecycle event handling to agent module:
+  - [ ] Extract lifecycle event sending (__sleep__/__wake__) into dedicated agent module functions
+  - [ ] Update agent_update module to use new lifecycle functions
+  - [ ] Ensure agent creation still sends __wake__ message
+  - [ ] Test lifecycle event handling after refactoring
+
+### MEDIUM - Complete Documentation and Testing
+- [ ] Verify complete documentation for each module
+- [ ] Create missing module design documents
+- [ ] Document enum usage guidelines:
+  - [ ] Document which enums are considered part of the abstract model (like `data_type_t`)
+  - [ ] Add comments clarifying the distinction between public and internal APIs
+
+### LOW - Create Method Files (After Architecture is Stable)
 - [ ] Create more method files:
   - [ ] Implement additional method files for testing various agent behaviors
   - [ ] Create methods that demonstrate different AgeRun features
@@ -234,17 +270,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Code Quality - Instruction Module Refactoring
 
-### High Priority (MUST follow Parnas principles)
-- [ ] Break down the massive ar_instruction_run function (2500+ lines) - VIOLATES information hiding
-  - [ ] Extract memory access operations
-  - [ ] Extract assignment operations  
-  - [ ] Extract if conditional logic
-  - [ ] Extract send function logic
-  - [ ] Extract method function logic
-  - [ ] Extract agent function logic
-  - [ ] Extract parse function logic
-  - [ ] Extract build function logic
-  - [ ] Extract destroy function logic
+### High Priority (Included in "Fix Code Smells" above)
+- [x] Break down the massive ar_instruction_run function (2500+ lines) - MOVED TO IMMEDIATE PRIORITIES
 
 ### Medium Priority
 - [ ] Create proper error handling and reporting system
@@ -260,8 +287,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Code Quality - Agency Module Refactoring
 
-### High Priority
-- [ ] Add MMM.md ownership prefixes throughout the agency module
+### High Priority (Included in "Fix Code Smells" above)
+- [x] Add MMM.md ownership prefixes throughout the agency module - MOVED TO IMMEDIATE PRIORITIES
 - [ ] Clarify ownership of loaded agent data
 - [ ] Document where ownership is transferred
 - [ ] Add proper cleanup for error paths
@@ -282,9 +309,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Code Quality - Method Module Refactoring
 
-### High Priority
+### High Priority (Included in "Fix Code Smells" above)
+- [x] Document memory ownership in ar_method_create - MOVED TO IMMEDIATE PRIORITIES
 - [ ] Clarify ownership semantics for method instructions
-- [ ] Document memory ownership in ar_method_create
 - [ ] Add MMM.md prefixes to all variables
 - [ ] Fix potential issues with instruction string handling
 - [ ] Ensure consistent ownership transfer
@@ -304,8 +331,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Code Quality - Methodology Module Refactoring
 
-### High Priority
-- [ ] Fix ownership issues in ar_methodology_create_method
+### High Priority (Included in "Fix Code Smells" above)
+- [x] Fix ownership issues in ar_methodology_create_method - MOVED TO IMMEDIATE PRIORITIES
 - [ ] Document ownership of method objects
 - [ ] Add proper MMM.md prefixes
 - [ ] Clarify map ownership semantics
@@ -326,8 +353,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Code Quality - Expression Module Refactoring
 
-### High Priority
-- [ ] Document complex ownership patterns
+### High Priority (Included in "Fix Code Smells" above)
+- [x] Document complex ownership patterns - MOVED TO IMMEDIATE PRIORITIES
 - [ ] Add more examples for memory management
 - [ ] Clarify when to use ar_expression_take_ownership
 - [ ] Fix edge cases in expression evaluation
@@ -364,12 +391,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] This removes the circular dependency between agent and agent_registry modules
   - [x] Agency facade becomes the proper owner of the registry
 
-### High Priority - Move Agent Functionality to New Modules
-- [ ] Move lifecycle event handling (__sleep__/__wake__) to agent module:
-  - [ ] Extract lifecycle event sending into dedicated agent module functions
-  - [ ] Update agent_update module to use new lifecycle functions
-  - [ ] Ensure agent creation still sends __wake__ message
-  - [ ] Test lifecycle event handling after refactoring
+### Completed - Move Agent Functionality to New Modules
 - [x] Move agent registry implementation from agent to agent_registry module:
   - [x] Move agent ID allocation and tracking
   - [x] Move active agent list management  
@@ -382,24 +404,6 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Update agent module to use update module (via agency facade)
 - [x] Consider if agent_store needs any agent module functionality moved
   - [x] Agent_store now uses registry API through ar_agent_get_registry()
-
-### High Priority - Resolve Circular Dependencies
-- [ ] Resolve Agency/Agent_Update circular dependency:
-  - [ ] Currently agent_update forwards to ar_agency_update_agent_methods()
-  - [ ] Move the update logic from agency.c to agent_update.c
-  - [ ] Have agency delegate to agent_update instead of the reverse
-  - [ ] This will remove the circular dependency between these modules
-- [ ] Resolve Method/Instruction circular dependency:
-  - [ ] Methods need to execute instructions (method → instruction)
-  - [ ] Instructions need to access methods via methodology (instruction → methodology → method)
-  - [ ] Consider extracting instruction execution into a separate module
-  - [ ] Or use dependency injection to break the cycle
-- [ ] Resolve Instruction/Agent/Methodology cycles:
-  - [ ] Instruction depends on both agent and methodology
-  - [ ] Agent depends on methodology which depends on method
-  - [ ] Method depends on instruction (creating multiple cycles)
-  - [ ] Consider a more layered architecture with clear boundaries
-- [ ] Update the module dependency tree documentation after resolution
 
 ### High Priority - System Module Refactoring  
 - [ ] Split agerun_system into focused modules:
