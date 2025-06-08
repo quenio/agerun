@@ -20,13 +20,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] Task 1: Analyze usage of `ar_methodology_find_method_idx()` and determine replacement strategy
     - [x] Task 2: Remove `ar_methodology_find_method_idx()` after implementing alternative (made static)
     - [x] Task 3: Analyze usage of `ar_methodology_get_method_storage()` and determine replacement strategy
-    - [x] Task 4: Remove `ar_methodology_get_method_storage()` after implementing alternative
+    - [x] Task 4: Remove `ar_methodology_get_method_storage()` after implementing alternative (removed)
     - [x] Task 5: Analyze usage of `ar_methodology_set_method_storage()` and determine replacement strategy
     - [x] Task 6: Remove `ar_methodology_set_method_storage()` after implementing alternative (made static)
     - [x] Task 7: Analyze usage of `ar_methodology_get_method_counts()` and determine replacement strategy
-    - [x] Task 8: Remove `ar_methodology_get_method_counts()` after implementing alternative
+    - [x] Task 8: Remove `ar_methodology_get_method_counts()` after implementing alternative (removed)
     - [x] Task 9: Analyze usage of `ar_methodology_get_method_name_count()` and determine replacement strategy
-    - [x] Task 10: Remove `ar_methodology_get_method_name_count()` after implementing alternative
+    - [x] Task 10: Remove `ar_methodology_get_method_name_count()` after implementing alternative (removed)
   - [ ] **agerun_heap.h** - Hide internal tracking functions
     - [ ] Move `ar_heap_memory_add()` to internal header or make static
     - [ ] Move `ar_heap_memory_remove()` to internal header or make static
