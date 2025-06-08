@@ -30,8 +30,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] **agerun_heap.h** - Hide internal tracking functions
     - [ ] Move `ar_heap_memory_add()` to internal header or make static
     - [ ] Move `ar_heap_memory_remove()` to internal header or make static
-  - [ ] **agerun_string.h** - Convert inline function to regular function
-    - [ ] Move `ar_string_isspace()` implementation to .c file
+  - [x] **agerun_string.h** - Convert inline function to regular function
+    - [x] Move `ar_string_isspace()` implementation to .c file
   - [ ] **agerun_data.h** - Evaluate if `data_type_t` enum should be opaque
 
 ### Completed Parnas Tasks

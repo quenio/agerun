@@ -7,6 +7,14 @@
 #include <stdlib.h>
 
 /**
+ * Returns non-zero if c is a whitespace character.
+ * This wrapper safely handles signed char values by casting to unsigned char.
+ */
+int ar_string_isspace(int c) {
+    return isspace((unsigned char)c);
+}
+
+/**
  * Helper function to trim whitespace from a string
  */
 char* ar_string_trim(char *mut_str) {
