@@ -171,7 +171,7 @@ static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_ins
     
     // Evaluate the expression (right side)
     // Create a context that we'll reuse for all expressions in this function
-    expression_context_t *own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+    expression_context_t *own_context = ar__expression__create_context(mut_ctx->mut_memory, 
                                                                 mut_ctx->ref_context, 
                                                                 mut_ctx->ref_message, 
                                                                 ref_instruction + *mut_pos);
@@ -182,12 +182,12 @@ static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_ins
     }
     
     // Evaluate the expression
-    data_t *own_value = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
-    int expr_offset = ar_expression_offset(own_context);
+    data_t *own_value = ar__expression__take_ownership(own_context, ar__expression__evaluate(own_context));
+    int expr_offset = ar__expression__offset(own_context);
     *mut_pos += expr_offset;
     
     // Clean up context immediately after we're done with it
-    ar_expression_destroy_context(own_context);
+    ar__expression__destroy_context(own_context);
     own_context = NULL; // Mark as destroyed
     
     if (!own_value) {
@@ -365,18 +365,18 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         expression_context_t *own_context = NULL;
         
         // Parse agent_id expression
-        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+        own_context = ar__expression__create_context(mut_ctx->mut_memory, 
                                               mut_ctx->ref_context, 
                                               mut_ctx->ref_message, 
                                               ref_instruction + *mut_pos);
         if (!own_context) {
             return false;
         }
-        data_t *own_agent_id = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
-        *mut_pos += ar_expression_offset(own_context);
+        data_t *own_agent_id = ar__expression__take_ownership(own_context, ar__expression__evaluate(own_context));
+        *mut_pos += ar__expression__offset(own_context);
         
         // Clean up context immediately
-        ar_expression_destroy_context(own_context);
+        ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
         if (!own_agent_id) {
@@ -395,7 +395,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         skip_whitespace(ref_instruction, mut_pos);
         
         // Parse message expression - reusing the context variable
-        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+        own_context = ar__expression__create_context(mut_ctx->mut_memory, 
                                               mut_ctx->ref_context, 
                                               mut_ctx->ref_message, 
                                               ref_instruction + *mut_pos);
@@ -404,11 +404,11 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             own_agent_id = NULL; // Mark as destroyed
             return false;
         }
-        data_t *own_msg = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
-        *mut_pos += ar_expression_offset(own_context);
+        data_t *own_msg = ar__expression__take_ownership(own_context, ar__expression__evaluate(own_context));
+        *mut_pos += ar__expression__offset(own_context);
         
         // Clean up context immediately
-        ar_expression_destroy_context(own_context);
+        ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
         if (!own_msg) {
@@ -468,19 +468,19 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         expression_context_t *own_context = NULL;
         
         // Parse condition expression
-        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+        own_context = ar__expression__create_context(mut_ctx->mut_memory, 
                                               mut_ctx->ref_context, 
                                               mut_ctx->ref_message, 
                                               ref_instruction + *mut_pos);
         if (!own_context) {
             return false;
         }
-        const data_t *ref_cond_eval = ar_expression_evaluate(own_context);
-        data_t *own_cond = ar_expression_take_ownership(own_context, ref_cond_eval);
-        *mut_pos += ar_expression_offset(own_context);
+        const data_t *ref_cond_eval = ar__expression__evaluate(own_context);
+        data_t *own_cond = ar__expression__take_ownership(own_context, ref_cond_eval);
+        *mut_pos += ar__expression__offset(own_context);
         
         // Clean up context immediately
-        ar_expression_destroy_context(own_context);
+        ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
         // Handle both owned values and references
@@ -501,7 +501,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         skip_whitespace(ref_instruction, mut_pos);
         
         // Parse true_value expression - reusing the context variable
-        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+        own_context = ar__expression__create_context(mut_ctx->mut_memory, 
                                               mut_ctx->ref_context, 
                                               mut_ctx->ref_message, 
                                               ref_instruction + *mut_pos);
@@ -512,12 +512,12 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             }
             return false;
         }
-        const data_t *ref_true_eval = ar_expression_evaluate(own_context);
-        data_t *own_true = ar_expression_take_ownership(own_context, ref_true_eval);
-        *mut_pos += ar_expression_offset(own_context);
+        const data_t *ref_true_eval = ar__expression__evaluate(own_context);
+        data_t *own_true = ar__expression__take_ownership(own_context, ref_true_eval);
+        *mut_pos += ar__expression__offset(own_context);
         
         // Clean up context immediately
-        ar_expression_destroy_context(own_context);
+        ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
         // Handle both owned values and references
@@ -544,7 +544,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         skip_whitespace(ref_instruction, mut_pos);
         
         // Parse false_value expression - reusing the context variable
-        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+        own_context = ar__expression__create_context(mut_ctx->mut_memory, 
                                               mut_ctx->ref_context, 
                                               mut_ctx->ref_message, 
                                               ref_instruction + *mut_pos);
@@ -559,12 +559,12 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             }
             return false;
         }
-        const data_t *ref_false_eval = ar_expression_evaluate(own_context);
-        data_t *own_false = ar_expression_take_ownership(own_context, ref_false_eval);
-        *mut_pos += ar_expression_offset(own_context);
+        const data_t *ref_false_eval = ar__expression__evaluate(own_context);
+        data_t *own_false = ar__expression__take_ownership(own_context, ref_false_eval);
+        *mut_pos += ar__expression__offset(own_context);
         
         // Clean up context immediately
-        ar_expression_destroy_context(own_context);
+        ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
         // Handle both owned values and references
@@ -672,16 +672,16 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         expression_context_t *own_context = NULL;
         
         // Parse template expression
-        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+        own_context = ar__expression__create_context(mut_ctx->mut_memory, 
                                               mut_ctx->ref_context, 
                                               mut_ctx->ref_message, 
                                               ref_instruction + *mut_pos);
         if (!own_context) {
             return false;
         }
-        const data_t *ref_eval_result = ar_expression_evaluate(own_context);
-        data_t *own_template = ar_expression_take_ownership(own_context, ref_eval_result);
-        *mut_pos += ar_expression_offset(own_context);
+        const data_t *ref_eval_result = ar__expression__evaluate(own_context);
+        data_t *own_template = ar__expression__take_ownership(own_context, ref_eval_result);
+        *mut_pos += ar__expression__offset(own_context);
         
         // Handle both owned values and references
         const char *template_str = NULL;
@@ -690,7 +690,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         if (owns_template) {
             // We own the value
             if (ar_data_get_type(own_template) != DATA_STRING) {
-                ar_expression_destroy_context(own_context);
+                ar__expression__destroy_context(own_context);
                 ar_data_destroy(own_template);
                 return false;
             }
@@ -698,14 +698,14 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         } else {
             // It's a reference - use the evaluation result directly
             if (!ref_eval_result || ar_data_get_type(ref_eval_result) != DATA_STRING) {
-                ar_expression_destroy_context(own_context);
+                ar__expression__destroy_context(own_context);
                 return false;
             }
             template_str = ar_data_get_string(ref_eval_result);
         }
         
         // Clean up context after getting the string
-        ar_expression_destroy_context(own_context);
+        ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
         skip_whitespace(ref_instruction, mut_pos);
@@ -722,7 +722,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         skip_whitespace(ref_instruction, mut_pos);
         
         // Parse input expression - reusing the context variable
-        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+        own_context = ar__expression__create_context(mut_ctx->mut_memory, 
                                               mut_ctx->ref_context, 
                                               mut_ctx->ref_message, 
                                               ref_instruction + *mut_pos);
@@ -731,9 +731,9 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             own_template = NULL; // Mark as destroyed
             return false;
         }
-        const data_t *ref_input_eval = ar_expression_evaluate(own_context);
-        data_t *own_input = ar_expression_take_ownership(own_context, ref_input_eval);
-        *mut_pos += ar_expression_offset(own_context);
+        const data_t *ref_input_eval = ar__expression__evaluate(own_context);
+        data_t *own_input = ar__expression__take_ownership(own_context, ref_input_eval);
+        *mut_pos += ar__expression__offset(own_context);
         
         // Handle both owned values and references for input
         const char *input_str = NULL;
@@ -742,7 +742,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         if (owns_input) {
             // We own the value
             if (ar_data_get_type(own_input) != DATA_STRING) {
-                ar_expression_destroy_context(own_context);
+                ar__expression__destroy_context(own_context);
                 ar_data_destroy(own_input);
                 if (owns_template && own_template) {
                     ar_data_destroy(own_template);
@@ -754,7 +754,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         } else {
             // It's a reference - use the evaluation result directly
             if (!ref_input_eval || ar_data_get_type(ref_input_eval) != DATA_STRING) {
-                ar_expression_destroy_context(own_context);
+                ar__expression__destroy_context(own_context);
                 if (owns_template && own_template) {
                     ar_data_destroy(own_template);
                     own_template = NULL; // Mark as destroyed
@@ -765,7 +765,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         }
         
         // Clean up context after getting the string
-        ar_expression_destroy_context(own_context);
+        ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
         skip_whitespace(ref_instruction, mut_pos);
@@ -948,16 +948,16 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         expression_context_t *own_context = NULL;
         
         // Parse template expression
-        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+        own_context = ar__expression__create_context(mut_ctx->mut_memory, 
                                               mut_ctx->ref_context, 
                                               mut_ctx->ref_message, 
                                               ref_instruction + *mut_pos);
         if (!own_context) {
             return false;
         }
-        const data_t *ref_template_eval = ar_expression_evaluate(own_context);
-        data_t *own_template = ar_expression_take_ownership(own_context, ref_template_eval);
-        *mut_pos += ar_expression_offset(own_context);
+        const data_t *ref_template_eval = ar__expression__evaluate(own_context);
+        data_t *own_template = ar__expression__take_ownership(own_context, ref_template_eval);
+        *mut_pos += ar__expression__offset(own_context);
         
         // Handle both owned values and references for template
         const char *template_str = NULL;
@@ -966,7 +966,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         if (owns_template) {
             // We own the value
             if (ar_data_get_type(own_template) != DATA_STRING) {
-                ar_expression_destroy_context(own_context);
+                ar__expression__destroy_context(own_context);
                 ar_data_destroy(own_template);
                 return false;
             }
@@ -974,14 +974,14 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         } else {
             // It's a reference - use the evaluation result directly
             if (!ref_template_eval || ar_data_get_type(ref_template_eval) != DATA_STRING) {
-                ar_expression_destroy_context(own_context);
+                ar__expression__destroy_context(own_context);
                 return false;
             }
             template_str = ar_data_get_string(ref_template_eval);
         }
         
         // Clean up context after getting the string
-        ar_expression_destroy_context(own_context);
+        ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
         skip_whitespace(ref_instruction, mut_pos);
@@ -998,7 +998,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         skip_whitespace(ref_instruction, mut_pos);
         
         // Parse values expression - reusing the context variable
-        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+        own_context = ar__expression__create_context(mut_ctx->mut_memory, 
                                               mut_ctx->ref_context, 
                                               mut_ctx->ref_message, 
                                               ref_instruction + *mut_pos);
@@ -1009,11 +1009,11 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             }
             return false;
         }
-        const data_t *ref_values = ar_expression_evaluate(own_context);
-        *mut_pos += ar_expression_offset(own_context);
+        const data_t *ref_values = ar__expression__evaluate(own_context);
+        *mut_pos += ar__expression__offset(own_context);
         
         if (!ref_values) {
-            ar_expression_destroy_context(own_context);
+            ar__expression__destroy_context(own_context);
             own_context = NULL; // Mark as destroyed
             if (owns_template && own_template) {
                 ar_data_destroy(own_template);
@@ -1023,10 +1023,10 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         }
         
         // Try to take ownership. If it fails, the value is a reference to existing data
-        data_t *own_values = ar_expression_take_ownership(own_context, ref_values);
+        data_t *own_values = ar__expression__take_ownership(own_context, ref_values);
         
         // Clean up context immediately
-        ar_expression_destroy_context(own_context);
+        ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
         // Use ref_values if we couldn't take ownership
@@ -1225,16 +1225,16 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         expression_context_t *own_context = NULL;
         
         // Parse method name expression
-        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+        own_context = ar__expression__create_context(mut_ctx->mut_memory, 
                                               mut_ctx->ref_context, 
                                               mut_ctx->ref_message, 
                                               ref_instruction + *mut_pos);
         if (!own_context) {
             return false;
         }
-        const data_t *ref_name_eval = ar_expression_evaluate(own_context);
-        data_t *own_name = ar_expression_take_ownership(own_context, ref_name_eval);
-        *mut_pos += ar_expression_offset(own_context);
+        const data_t *ref_name_eval = ar__expression__evaluate(own_context);
+        data_t *own_name = ar__expression__take_ownership(own_context, ref_name_eval);
+        *mut_pos += ar__expression__offset(own_context);
         
         // Handle both owned values and references for method name
         const char *method_name = NULL;
@@ -1243,7 +1243,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         if (owns_name) {
             // We own the value
             if (ar_data_get_type(own_name) != DATA_STRING) {
-                ar_expression_destroy_context(own_context);
+                ar__expression__destroy_context(own_context);
                 ar_data_destroy(own_name);
                 return false;
             }
@@ -1251,14 +1251,14 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         } else {
             // It's a reference - use the evaluation result directly
             if (!ref_name_eval || ar_data_get_type(ref_name_eval) != DATA_STRING) {
-                ar_expression_destroy_context(own_context);
+                ar__expression__destroy_context(own_context);
                 return false;
             }
             method_name = ar_data_get_string(ref_name_eval);
         }
         
         // Clean up context after getting the string
-        ar_expression_destroy_context(own_context);
+        ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
         skip_whitespace(ref_instruction, mut_pos);
@@ -1275,7 +1275,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         skip_whitespace(ref_instruction, mut_pos);
         
         // Parse instructions expression - reusing the context variable
-        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+        own_context = ar__expression__create_context(mut_ctx->mut_memory, 
                                               mut_ctx->ref_context, 
                                               mut_ctx->ref_message, 
                                               ref_instruction + *mut_pos);
@@ -1286,9 +1286,9 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             }
             return false;
         }
-        const data_t *ref_instr_eval = ar_expression_evaluate(own_context);
-        data_t *own_instr = ar_expression_take_ownership(own_context, ref_instr_eval);
-        *mut_pos += ar_expression_offset(own_context);
+        const data_t *ref_instr_eval = ar__expression__evaluate(own_context);
+        data_t *own_instr = ar__expression__take_ownership(own_context, ref_instr_eval);
+        *mut_pos += ar__expression__offset(own_context);
         
         // Handle both owned values and references for instructions
         const char *instructions = NULL;
@@ -1297,7 +1297,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         if (owns_instr) {
             // We own the value
             if (ar_data_get_type(own_instr) != DATA_STRING) {
-                ar_expression_destroy_context(own_context);
+                ar__expression__destroy_context(own_context);
                 ar_data_destroy(own_instr);
                 if (owns_name && own_name) {
                     ar_data_destroy(own_name);
@@ -1309,7 +1309,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         } else {
             // It's a reference - use the evaluation result directly
             if (!ref_instr_eval || ar_data_get_type(ref_instr_eval) != DATA_STRING) {
-                ar_expression_destroy_context(own_context);
+                ar__expression__destroy_context(own_context);
                 if (owns_name && own_name) {
                     ar_data_destroy(own_name);
                     own_name = NULL; // Mark as destroyed
@@ -1320,7 +1320,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         }
         
         // Clean up context after getting the string
-        ar_expression_destroy_context(own_context);
+        ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
         skip_whitespace(ref_instruction, mut_pos);
@@ -1341,7 +1341,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         skip_whitespace(ref_instruction, mut_pos);
         
         // Parse version expression - reusing the context variable
-        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+        own_context = ar__expression__create_context(mut_ctx->mut_memory, 
                                               mut_ctx->ref_context, 
                                               mut_ctx->ref_message, 
                                               ref_instruction + *mut_pos);
@@ -1356,9 +1356,9 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             }
             return false;
         }
-        const data_t *ref_version_eval = ar_expression_evaluate(own_context);
-        data_t *own_version = ar_expression_take_ownership(own_context, ref_version_eval);
-        *mut_pos += ar_expression_offset(own_context);
+        const data_t *ref_version_eval = ar__expression__evaluate(own_context);
+        data_t *own_version = ar__expression__take_ownership(own_context, ref_version_eval);
+        *mut_pos += ar__expression__offset(own_context);
         
         // Handle both owned values and references for version
         const char *version_str = "1.0.0";
@@ -1389,7 +1389,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         }
         
         // Clean up context after getting the version
-        ar_expression_destroy_context(own_context);
+        ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
         skip_whitespace(ref_instruction, mut_pos);
@@ -1442,20 +1442,20 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         expression_context_t *own_context = NULL;
         
         // Parse method name expression
-        own_context = ar_expression_create_context(mut_ctx->mut_memory, 
+        own_context = ar__expression__create_context(mut_ctx->mut_memory, 
                                               mut_ctx->ref_context, 
                                               mut_ctx->ref_message, 
                                               ref_instruction + *mut_pos);
         if (!own_context) {
             return false;
         }
-        const data_t *ref_method_name_eval = ar_expression_evaluate(own_context);
+        const data_t *ref_method_name_eval = ar__expression__evaluate(own_context);
         if (!ref_method_name_eval) {
-            ar_expression_destroy_context(own_context);
+            ar__expression__destroy_context(own_context);
             return false;
         }
-        data_t *own_method_name = ar_expression_take_ownership(own_context, ref_method_name_eval);
-        *mut_pos += ar_expression_offset(own_context);
+        data_t *own_method_name = ar__expression__take_ownership(own_context, ref_method_name_eval);
+        *mut_pos += ar__expression__offset(own_context);
         
         // Handle both owned values and references for method name
         const char *method_name = NULL;
@@ -1464,7 +1464,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         if (owns_method_name) {
             // We own the value
             if (ar_data_get_type(own_method_name) != DATA_STRING) {
-                ar_expression_destroy_context(own_context);
+                ar__expression__destroy_context(own_context);
                 ar_data_destroy(own_method_name);
                 return false;
             }
@@ -1472,14 +1472,14 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         } else {
             // It's a reference - use the evaluation result directly
             if (!ref_method_name_eval || ar_data_get_type(ref_method_name_eval) != DATA_STRING) {
-                ar_expression_destroy_context(own_context);
+                ar__expression__destroy_context(own_context);
                 return false;
             }
             method_name = ar_data_get_string(ref_method_name_eval);
         }
         
         // Clean up context after getting the string
-        ar_expression_destroy_context(own_context);
+        ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
         skip_whitespace(ref_instruction, mut_pos);
@@ -1497,7 +1497,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         skip_whitespace(ref_instruction, mut_pos);
         
         // Parse version expression
-        own_context = ar_expression_create_context(mut_ctx->mut_memory,
+        own_context = ar__expression__create_context(mut_ctx->mut_memory,
                                               mut_ctx->ref_context,
                                               mut_ctx->ref_message,
                                               ref_instruction + *mut_pos);
@@ -1508,17 +1508,17 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             }
             return false;
         }
-        const data_t *ref_version_eval = ar_expression_evaluate(own_context);
+        const data_t *ref_version_eval = ar__expression__evaluate(own_context);
         if (!ref_version_eval) {
-            ar_expression_destroy_context(own_context);
+            ar__expression__destroy_context(own_context);
             if (owns_method_name && own_method_name) {
                 ar_data_destroy(own_method_name);
                 own_method_name = NULL; // Mark as destroyed
             }
             return false;
         }
-        data_t *own_version = ar_expression_take_ownership(own_context, ref_version_eval);
-        *mut_pos += ar_expression_offset(own_context);
+        data_t *own_version = ar__expression__take_ownership(own_context, ref_version_eval);
+        *mut_pos += ar__expression__offset(own_context);
         
         // Handle both owned values and references for version
         const char *version_str = NULL;
@@ -1527,7 +1527,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         if (owns_version) {
             // We own the value
             if (ar_data_get_type(own_version) != DATA_STRING) {
-                ar_expression_destroy_context(own_context);
+                ar__expression__destroy_context(own_context);
                 ar_data_destroy(own_version);
                 if (owns_method_name && own_method_name) {
                     ar_data_destroy(own_method_name);
@@ -1539,7 +1539,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         } else {
             // It's a reference - use the evaluation result directly
             if (!ref_version_eval || ar_data_get_type(ref_version_eval) != DATA_STRING) {
-                ar_expression_destroy_context(own_context);
+                ar__expression__destroy_context(own_context);
                 if (owns_method_name && own_method_name) {
                     ar_data_destroy(own_method_name);
                     own_method_name = NULL; // Mark as destroyed
@@ -1550,7 +1550,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         }
         
         // Clean up context after getting the string
-        ar_expression_destroy_context(own_context);
+        ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
         skip_whitespace(ref_instruction, mut_pos);
@@ -1572,7 +1572,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         skip_whitespace(ref_instruction, mut_pos);
         
         // Parse context expression
-        own_context = ar_expression_create_context(mut_ctx->mut_memory,
+        own_context = ar__expression__create_context(mut_ctx->mut_memory,
                                               mut_ctx->ref_context,
                                               mut_ctx->ref_message,
                                               ref_instruction + *mut_pos);
@@ -1587,15 +1587,15 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             }
             return false;
         }
-        const data_t *ref_agent_context = ar_expression_evaluate(own_context);
-        *mut_pos += ar_expression_offset(own_context);
+        const data_t *ref_agent_context = ar__expression__evaluate(own_context);
+        *mut_pos += ar__expression__offset(own_context);
         
         // Check if we need to take ownership of the context
-        data_t *own_agent_context = ar_expression_take_ownership(own_context, ref_agent_context);
+        data_t *own_agent_context = ar__expression__take_ownership(own_context, ref_agent_context);
         bool owns_context = (own_agent_context != NULL);
         
         // Clean up expression context
-        ar_expression_destroy_context(own_context);
+        ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
         if (!ref_agent_context) {
@@ -1666,25 +1666,25 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         expression_context_t *own_context = NULL;
         
         // Parse first argument
-        own_context = ar_expression_create_context(mut_ctx->mut_memory,
+        own_context = ar__expression__create_context(mut_ctx->mut_memory,
                                               mut_ctx->ref_context,
                                               mut_ctx->ref_message,
                                               ref_instruction + *mut_pos);
         if (!own_context) {
             return false;
         }
-        const data_t *ref_arg1 = ar_expression_evaluate(own_context);
+        const data_t *ref_arg1 = ar__expression__evaluate(own_context);
         
         // Check if we got a valid result
         bool has_result = (ref_arg1 != NULL);
         data_t *own_arg1 = NULL;
         if (has_result) {
-            own_arg1 = ar_expression_take_ownership(own_context, ref_arg1);
+            own_arg1 = ar__expression__take_ownership(own_context, ref_arg1);
         }
-        *mut_pos += ar_expression_offset(own_context);
+        *mut_pos += ar__expression__offset(own_context);
         
         // Clean up context immediately
-        ar_expression_destroy_context(own_context);
+        ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
         // If we didn't get a result, parsing failed
@@ -1712,7 +1712,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             const char *method_name = ar_data_get_string(arg_to_use);
             
             // Parse version expression
-            own_context = ar_expression_create_context(mut_ctx->mut_memory,
+            own_context = ar__expression__create_context(mut_ctx->mut_memory,
                                                   mut_ctx->ref_context,
                                                   mut_ctx->ref_message,
                                                   ref_instruction + *mut_pos);
@@ -1723,9 +1723,9 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                 }
                 return false;
             }
-            const data_t *ref_version_eval = ar_expression_evaluate(own_context);
-            data_t *own_version = ar_expression_take_ownership(own_context, ref_version_eval);
-            *mut_pos += ar_expression_offset(own_context);
+            const data_t *ref_version_eval = ar__expression__evaluate(own_context);
+            data_t *own_version = ar__expression__take_ownership(own_context, ref_version_eval);
+            *mut_pos += ar__expression__offset(own_context);
             
             // Handle both owned values and references for version
             const char *version_str = "1.0.0"; // Default
@@ -1756,7 +1756,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             }
             
             // Clean up context immediately
-            ar_expression_destroy_context(own_context);
+            ar__expression__destroy_context(own_context);
             own_context = NULL; // Mark as destroyed
             
             skip_whitespace(ref_instruction, mut_pos);

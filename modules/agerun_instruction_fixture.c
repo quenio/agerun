@@ -89,7 +89,7 @@ void ar__instruction_fixture__destroy(instruction_fixture_t *own_fixture) {
     while (!ar_list_empty(own_fixture->own_tracked_contexts)) {
         expression_context_t *own_context = (expression_context_t*)ar_list_remove_first(own_fixture->own_tracked_contexts);
         if (own_context) {
-            ar_expression_destroy_context(own_context);
+            ar__expression__destroy_context(own_context);
         }
     }
     ar_list_destroy(own_fixture->own_tracked_contexts);
@@ -171,7 +171,7 @@ expression_context_t* ar__instruction_fixture__create_expression_context(
     ar_list_add_last(mut_fixture->own_tracked_data, own_message);
     
     // Create expression context
-    expression_context_t *own_expr_ctx = ar_expression_create_context(
+    expression_context_t *own_expr_ctx = ar__expression__create_context(
         own_memory, own_context, own_message, ref_expression
     );
     
@@ -197,7 +197,7 @@ expression_context_t* ar__instruction_fixture__create_custom_expression_context(
     }
     
     // Create expression context
-    expression_context_t *own_expr_ctx = ar_expression_create_context(
+    expression_context_t *own_expr_ctx = ar__expression__create_context(
         mut_memory, ref_context, ref_message, ref_expression
     );
     

@@ -24,7 +24,7 @@ typedef struct expression_context_s expression_context_t;
  * @note Ownership: Returns an owned value that caller must destroy.
  *       The function does not take ownership of the memory, context, or message parameters.
  */
-expression_context_t* ar_expression_create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message, const char *ref_expr);
+expression_context_t* ar__expression__create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message, const char *ref_expr);
 
 /**
  * Destroys an expression context.
@@ -34,7 +34,7 @@ expression_context_t* ar_expression_create_context(data_t *mut_memory, const dat
  *       This only frees the context structure itself and the results it owns,
  *       not the memory, context, or message data structures which are owned by the caller.
  */
-void ar_expression_destroy_context(expression_context_t *own_ctx);
+void ar__expression__destroy_context(expression_context_t *own_ctx);
 
 /**
  * Gets the current parsing offset in the expression string.
@@ -43,7 +43,7 @@ void ar_expression_destroy_context(expression_context_t *own_ctx);
  * @return Current offset in the expression string
  * @note Ownership: Does not take ownership of the context parameter.
  */
-int ar_expression_offset(const expression_context_t *ref_ctx);
+int ar__expression__offset(const expression_context_t *ref_ctx);
 
 /**
  * Evaluate an expression in the agent's context using recursive descent parsing.
@@ -82,7 +82,7 @@ int ar_expression_offset(const expression_context_t *ref_ctx);
  *       using ar_expression_take_ownership().
  *       The return value may be const or non-const depending on the type of expression.
  */
-const data_t* ar_expression_evaluate(expression_context_t *mut_ctx);
+const data_t* ar__expression__evaluate(expression_context_t *mut_ctx);
 
 /**
  * Take ownership of a result from the expression context.
@@ -101,6 +101,6 @@ const data_t* ar_expression_evaluate(expression_context_t *mut_ctx);
  *       The const qualifier is removed from ref_result after ownership transfer,
  *       and the returned pointer can be used with functions that take ownership.
  */
-data_t* ar_expression_take_ownership(expression_context_t *mut_ctx, const data_t *ref_result);
+data_t* ar__expression__take_ownership(expression_context_t *mut_ctx, const data_t *ref_result);
 
 #endif /* AGERUN_EXPRESSION_H */

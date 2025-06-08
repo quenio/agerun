@@ -34,7 +34,7 @@ struct expression_context_s {
  * @param ref_expr The expression string to evaluate (borrowed reference)
  * @return Newly created expression context (owned by caller), or NULL on failure
  */
-expression_context_t* ar_expression_create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message, const char *ref_expr) {
+expression_context_t* ar__expression__create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message, const char *ref_expr) {
     if (!ref_expr) {
         return NULL;
     }
@@ -65,7 +65,7 @@ expression_context_t* ar_expression_create_context(data_t *mut_memory, const dat
  * 
  * @param own_ctx The expression context to destroy (ownership transferred to function)
  */
-void ar_expression_destroy_context(expression_context_t *own_ctx) {
+void ar__expression__destroy_context(expression_context_t *own_ctx) {
     if (!own_ctx) {
         return;
     }
@@ -111,7 +111,7 @@ void ar_expression_destroy_context(expression_context_t *own_ctx) {
  * @param ref_ctx The expression context (borrowed reference)
  * @return Current offset in the expression string
  */
-int ar_expression_offset(const expression_context_t *ref_ctx) {
+int ar__expression__offset(const expression_context_t *ref_ctx) {
     if (!ref_ctx) {
         return 0;
     }
@@ -941,7 +941,7 @@ static const data_t* parse_expression(expression_context_t *ctx) {
  * @param mut_ctx Pointer to the expression evaluation context (mutable reference)
  * @return Pointer to the evaluated data result, or NULL on failure
  */
-const data_t* ar_expression_evaluate(expression_context_t *mut_ctx) {
+const data_t* ar__expression__evaluate(expression_context_t *mut_ctx) {
     if (!mut_ctx || !mut_ctx->ref_expr) {
         return NULL;
     }
@@ -971,7 +971,7 @@ const data_t* ar_expression_evaluate(expression_context_t *mut_ctx) {
  * @param ref_result The result to take ownership of (becomes owned by caller)
  * @return true if ownership was successfully transferred, false otherwise
  */
-data_t* ar_expression_take_ownership(expression_context_t *mut_ctx, const data_t *ref_result) {
+data_t* ar__expression__take_ownership(expression_context_t *mut_ctx, const data_t *ref_result) {
     if (!mut_ctx || !ref_result || !mut_ctx->own_results) {
         return NULL;
     }

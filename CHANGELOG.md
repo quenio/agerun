@@ -56,6 +56,10 @@ This document tracks completed milestones and major achievements for the AgeRun 
     - Updated all references in method.c and test files
     - Fixed internal function call within instruction.c itself
     - All tests pass with zero memory leaks
+  - ✅ Completed expression module refactoring:
+    - Changed all 5 expression functions from ar_expression_* to ar__expression__*
+    - Updated all references in instruction.c, instruction_fixture.c, and test files
+    - All tests pass with zero memory leaks
 
 ## 2025-06-08 (Later - Part 2)
 - ✅ Fixed Agency/Agent_Update circular dependency:

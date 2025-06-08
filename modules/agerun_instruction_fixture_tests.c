@@ -45,7 +45,7 @@ static void test_expression_context_creation(void) {
     assert(ref_ctx != NULL);
     
     // And we can evaluate expressions using the test data
-    const data_t *ref_result = ar_expression_evaluate(ref_ctx);
+    const data_t *ref_result = ar__expression__evaluate(ref_ctx);
     assert(ref_result != NULL);
     assert(ar_data_get_type(ref_result) == DATA_INTEGER);
     assert(ar_data_get_integer(ref_result) == 52); // 42 + 10
@@ -73,7 +73,7 @@ static void test_custom_expression_context(void) {
     
     // Then the context should use our custom data
     assert(ref_ctx != NULL);
-    const data_t *ref_result = ar_expression_evaluate(ref_ctx);
+    const data_t *ref_result = ar__expression__evaluate(ref_ctx);
     assert(ref_result != NULL);
     assert(ar_data_get_integer(ref_result) == 200);
     
@@ -151,7 +151,7 @@ static void test_resource_tracking(void) {
     own_external_map = NULL; // Ownership transferred
     
     // When we create an expression context outside
-    expression_context_t *own_external_ctx = ar_expression_create_context(
+    expression_context_t *own_external_ctx = ar__expression__create_context(
         NULL, NULL, NULL, "42"
     );
     ar__instruction_fixture__track_expression_context(own_fixture, own_external_ctx);

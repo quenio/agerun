@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-// Test expression evaluation directly using the ar_expression_evaluate function
+// Test expression evaluation directly using the ar__expression__evaluate function
 static void test_string_literal(void);
 static void test_number_literal(void);
 static void test_memory_access(void);
@@ -94,11 +94,11 @@ static void test_string_literal(void) {
     const char *expr = "\"Hello, World!\"";
     
     // Create expression context
-    expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+    expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
     assert(ctx != NULL);
     
     // When we evaluate the expression
-    const data_t *result = ar_expression_evaluate(ctx);
+    const data_t *result = ar__expression__evaluate(ctx);
     
     // Then the result should be a string with the correct value
     assert(result != NULL);
@@ -106,10 +106,10 @@ static void test_string_literal(void) {
     assert(strcmp(ar_data_get_string(result), "Hello, World!") == 0);
     
     // And the offset should be updated correctly
-    assert(ar_expression_offset(ctx) == (int)strlen(expr));
+    assert(ar__expression__offset(ctx) == (int)strlen(expr));
     
     // Clean up - don't destroy result as it's a borrowed reference
-    ar_expression_destroy_context(ctx);
+    ar__expression__destroy_context(ctx);
     
     printf("String literal test passed.\n");
     fflush(stdout);
@@ -124,19 +124,19 @@ static void test_number_literal(void) {
         const char *expr = "42";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+        expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 42);
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
         // Do not destroy the result - the context will handle cleanup.
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
     }
     
     // Test negative integer literal
@@ -144,19 +144,19 @@ static void test_number_literal(void) {
         const char *expr = "-123";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+        expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == -123);
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
         // Do not destroy the result - the context will handle cleanup.
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
     }
     
     // Test double literal
@@ -164,10 +164,10 @@ static void test_number_literal(void) {
         const char *expr = "3.14159";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+        expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_DOUBLE);
@@ -175,11 +175,11 @@ static void test_number_literal(void) {
         double epsilon = 0.00001;
         assert(ar_data_get_double(result) - 3.14159 < epsilon && 
                ar_data_get_double(result) - 3.14159 > -epsilon);
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
         // Do not destroy the result - the context will handle cleanup.
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
     }
     
     // Test negative double literal
@@ -187,10 +187,10 @@ static void test_number_literal(void) {
         const char *expr = "-2.718";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+        expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_DOUBLE);
@@ -198,11 +198,11 @@ static void test_number_literal(void) {
         double epsilon = 0.00001;
         assert(ar_data_get_double(result) - (-2.718) < epsilon && 
                ar_data_get_double(result) - (-2.718) > -epsilon);
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
         // Do not destroy the result - the context will handle cleanup.
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
     }
     
     printf("Number literal tests passed.\n");
@@ -261,18 +261,18 @@ static void test_memory_access(void) {
         const char *expr = "memory.name";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
+        expression_context_t *ctx = ar__expression__create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_STRING);
         assert(strcmp(ar_data_get_string(result), "Alice") == 0);
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Note: Don't destroy result as it's a direct reference to memory
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
     }
     
     // Test nested memory access
@@ -280,18 +280,18 @@ static void test_memory_access(void) {
         const char *expr = "memory.preferences.theme";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
+        expression_context_t *ctx = ar__expression__create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_STRING);
         assert(strcmp(ar_data_get_string(result), "dark") == 0);
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Note: Don't destroy result as it's a direct reference to memory
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
     }
     
     // Test context access
@@ -299,18 +299,18 @@ static void test_memory_access(void) {
         const char *expr = "context.environment";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
+        expression_context_t *ctx = ar__expression__create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_STRING);
         assert(strcmp(ar_data_get_string(result), "production") == 0);
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Note: Don't destroy result as it's a direct reference to context
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
     }
     
     // Test nested context access
@@ -318,18 +318,18 @@ static void test_memory_access(void) {
         const char *expr = "context.limits.timeout";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
+        expression_context_t *ctx = ar__expression__create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 60);
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Note: Don't destroy result as it's a direct reference to context
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
     }
     
     // Test message access
@@ -337,18 +337,18 @@ static void test_memory_access(void) {
         const char *expr = "message.type";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
+        expression_context_t *ctx = ar__expression__create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_STRING);
         assert(strcmp(ar_data_get_string(result), "command") == 0);
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Note: Don't destroy result as it's a direct reference to message
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
     }
     
     // Test nested message access
@@ -356,18 +356,18 @@ static void test_memory_access(void) {
         const char *expr = "message.payload.field";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
+        expression_context_t *ctx = ar__expression__create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_STRING);
         assert(strcmp(ar_data_get_string(result), "status") == 0);
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Note: Don't destroy result as it's a direct reference to message
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
     }
     
     // Test non-existent path
@@ -375,15 +375,15 @@ static void test_memory_access(void) {
         const char *expr = "memory.nonexistent.field";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
+        expression_context_t *ctx = ar__expression__create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         // Should return NULL for non-existent path
         assert(result == NULL);
         
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
     }
     
     // Cleanup
@@ -424,19 +424,19 @@ static void test_arithmetic_expression(void) {
         const char *expr = "2 + 3";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+        expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 5);
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
         // Do not destroy the result - the context will handle cleanup.
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("Addition test passed\n");
         fflush(stdout);
@@ -450,19 +450,19 @@ static void test_arithmetic_expression(void) {
         const char *expr = "10 - 4";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+        expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 6);
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
         // Do not destroy the result - the context will handle cleanup.
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("Subtraction test passed\n");
         fflush(stdout);
@@ -476,19 +476,19 @@ static void test_arithmetic_expression(void) {
         const char *expr = "5 * 3";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+        expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 15);
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
         // Do not destroy the result - the context will handle cleanup.
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("Multiplication test passed\n");
         fflush(stdout);
@@ -502,19 +502,19 @@ static void test_arithmetic_expression(void) {
         const char *expr = "20 / 4";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+        expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 5);
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
         // Do not destroy the result - the context will handle cleanup.
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("Division test passed\n");
         fflush(stdout);
@@ -528,19 +528,19 @@ static void test_arithmetic_expression(void) {
         const char *expr = "2 + 3";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+        expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 5);
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
         // Do not destroy the result - the context will handle cleanup.
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("Simple addition again test passed\n");
         fflush(stdout);
@@ -554,10 +554,10 @@ static void test_arithmetic_expression(void) {
         const char *expr = "3.5 + 2.5";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+        expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_DOUBLE);
@@ -565,11 +565,11 @@ static void test_arithmetic_expression(void) {
         double epsilon = 0.00001;
         assert(ar_data_get_double(result) - 6.0 < epsilon && 
                ar_data_get_double(result) - 6.0 > -epsilon);
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
         // Do not destroy the result - the context will handle cleanup.
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("Doubles test passed\n");
         fflush(stdout);
@@ -583,10 +583,10 @@ static void test_arithmetic_expression(void) {
         const char *expr = "5 * 2.5";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+        expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_DOUBLE);
@@ -594,11 +594,11 @@ static void test_arithmetic_expression(void) {
         double epsilon = 0.00001;
         assert(ar_data_get_double(result) - 12.5 < epsilon && 
                ar_data_get_double(result) - 12.5 > -epsilon);
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
         // Do not destroy the result - the context will handle cleanup.
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("Mixed int/double test passed\n");
         fflush(stdout);
@@ -612,19 +612,19 @@ static void test_arithmetic_expression(void) {
         const char *expr = "\"Hello, \" + \"World!\"";
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+        expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_STRING);
         assert(strcmp(ar_data_get_string(result), "Hello, World!") == 0);
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
         // Do not destroy the result - the context will handle cleanup.
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("String concatenation test passed\n");
         fflush(stdout);
@@ -638,13 +638,13 @@ static void test_arithmetic_expression(void) {
         fflush(stdout);
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+        expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
         printf("Context created successfully\n");
         fflush(stdout);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         printf("Expression evaluated successfully\n");
         fflush(stdout);
@@ -666,7 +666,7 @@ static void test_arithmetic_expression(void) {
             }
         }
         
-        printf("Offset: %d, Expected: %d\n", ar_expression_offset(ctx), (int)strlen(expr));
+        printf("Offset: %d, Expected: %d\n", ar__expression__offset(ctx), (int)strlen(expr));
         fflush(stdout);
         
         assert(result != NULL);
@@ -674,11 +674,11 @@ static void test_arithmetic_expression(void) {
         const char* str_result = ar_data_get_string(result);
         printf("Got: '%s'\n", str_result);
         assert(strcmp(str_result, "Price: $42.99") == 0);
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
         // Do not destroy the result - the context will handle cleanup.
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("String+number concatenation test passed\n");
         fflush(stdout);
@@ -692,13 +692,13 @@ static void test_arithmetic_expression(void) {
         fflush(stdout);
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
+        expression_context_t *ctx = ar__expression__create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
         printf("Context created successfully\n");
         fflush(stdout);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         printf("Expression evaluated successfully\n");
         fflush(stdout);
@@ -711,17 +711,17 @@ static void test_arithmetic_expression(void) {
             fflush(stdout);
         }
         
-        printf("Offset: %d, Expected: %d\n", ar_expression_offset(ctx), (int)strlen(expr));
+        printf("Offset: %d, Expected: %d\n", ar__expression__offset(ctx), (int)strlen(expr));
         fflush(stdout);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 15); // 10 + 5 = 15
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
         // Do not destroy the result - the context will handle cleanup.
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("Memory access addition test passed\n");
         fflush(stdout);
@@ -735,10 +735,10 @@ static void test_arithmetic_expression(void) {
         fflush(stdout);
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
+        expression_context_t *ctx = ar__expression__create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         printf("Expression evaluated successfully\n");
         fflush(stdout);
@@ -766,12 +766,12 @@ static void test_arithmetic_expression(void) {
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 20); // 10 * 2 = 20
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: For arithmetic operations with memory access, the result is a NEW value, 
         // not a reference, so we need to take ownership if we want to keep it.
         // If we don't need the result after context destruction, we can let the context handle cleanup.
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("Memory access multiplication test passed\n");
         fflush(stdout);
@@ -785,10 +785,10 @@ static void test_arithmetic_expression(void) {
         fflush(stdout);
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
+        expression_context_t *ctx = ar__expression__create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         printf("Expression evaluated successfully\n");
         fflush(stdout);
@@ -804,11 +804,11 @@ static void test_arithmetic_expression(void) {
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 84); // 42 * 2 = 84
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: The result of an arithmetic operation (even with message access)
         // is a NEW value, not a reference to message. The context will handle cleanup.
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("Message access multiplication test passed\n");
         fflush(stdout);
@@ -870,28 +870,28 @@ static void test_comparison_expression(void) {
         fflush(stdout);
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+        expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         printf("Equality test - Expr: '%s'\n", expr);
         if (result) {
             printf("Type: %d, Value: %d, Offset: %d\n", 
                    ar_data_get_type(result), 
                    ar_data_get_integer(result),
-                   ar_expression_offset(ctx));
+                   ar__expression__offset(ctx));
         } else {
-            printf("Offset: %d\n", ar_expression_offset(ctx));
+            printf("Offset: %d\n", ar__expression__offset(ctx));
         }
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 1); // true
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("Equality test passed\n");
         fflush(stdout);
@@ -905,27 +905,27 @@ static void test_comparison_expression(void) {
         fflush(stdout);
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+        expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         printf("String equality test\n");
         if (result) {
             printf("Type: %d, Value: %d, Offset: %d\n", 
                    ar_data_get_type(result), 
                    ar_data_get_integer(result),
-                   ar_expression_offset(ctx));
+                   ar__expression__offset(ctx));
         }
         fflush(stdout);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 1); // true
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("String equality test passed\n");
         fflush(stdout);
@@ -939,18 +939,18 @@ static void test_comparison_expression(void) {
         fflush(stdout);
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+        expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 1); // true
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("Inequality test passed\n");
         fflush(stdout);
@@ -964,18 +964,18 @@ static void test_comparison_expression(void) {
         fflush(stdout);
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+        expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 1); // true
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("String inequality test passed\n");
         fflush(stdout);
@@ -989,18 +989,18 @@ static void test_comparison_expression(void) {
         fflush(stdout);
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+        expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 1); // true
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("Less than test passed\n");
         fflush(stdout);
@@ -1014,18 +1014,18 @@ static void test_comparison_expression(void) {
         fflush(stdout);
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+        expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 1); // true
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("Greater than test passed\n");
         fflush(stdout);
@@ -1039,18 +1039,18 @@ static void test_comparison_expression(void) {
         fflush(stdout);
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+        expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 1); // true
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("Less than or equal test passed\n");
         fflush(stdout);
@@ -1064,18 +1064,18 @@ static void test_comparison_expression(void) {
         fflush(stdout);
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+        expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 0); // false
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("Greater than or equal test passed\n");
         fflush(stdout);
@@ -1089,18 +1089,18 @@ static void test_comparison_expression(void) {
         fflush(stdout);
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
+        expression_context_t *ctx = ar__expression__create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 1); // true (10 > 5)
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("Memory comparison test passed\n");
         fflush(stdout);
@@ -1114,18 +1114,18 @@ static void test_comparison_expression(void) {
         fflush(stdout);
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
+        expression_context_t *ctx = ar__expression__create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 1); // true
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("String memory comparison test passed\n");
         fflush(stdout);
@@ -1139,18 +1139,18 @@ static void test_comparison_expression(void) {
         fflush(stdout);
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
+        expression_context_t *ctx = ar__expression__create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 1); // true (10 > 5)
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("Memory-context comparison test passed\n");
         fflush(stdout);
@@ -1164,18 +1164,18 @@ static void test_comparison_expression(void) {
         fflush(stdout);
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
+        expression_context_t *ctx = ar__expression__create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 1); // true (3 <= 5)
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("Message-context comparison test passed\n");
         fflush(stdout);
@@ -1189,18 +1189,18 @@ static void test_comparison_expression(void) {
         fflush(stdout);
         
         // Create expression context
-        expression_context_t *ctx = ar_expression_create_context(memory, context, message, expr);
+        expression_context_t *ctx = ar__expression__create_context(memory, context, message, expr);
         assert(ctx != NULL);
         
-        const data_t *result = ar_expression_evaluate(ctx);
+        const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
         assert(ar_data_get_type(result) == DATA_INTEGER);
         assert(ar_data_get_integer(result) == 0); // false (10 + 5 = 15, 5 * 3 = 15, 15 > 15 is false)
-        assert(ar_expression_offset(ctx) == (int)strlen(expr));
+        assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
-        ar_expression_destroy_context(ctx);
+        ar__expression__destroy_context(ctx);
         
         printf("Complex comparison test passed\n");
         fflush(stdout);
@@ -1234,37 +1234,37 @@ static void test_function_call_expression(void) {
     const char *expr = "if(1, \"true\", \"false\")";
     
     // Create expression context
-    expression_context_t *ctx = ar_expression_create_context(NULL, NULL, NULL, expr);
+    expression_context_t *ctx = ar__expression__create_context(NULL, NULL, NULL, expr);
     assert(ctx != NULL);
     
     // This should return NULL since function calls are not valid expressions
-    const data_t *result = ar_expression_evaluate(ctx);
+    const data_t *result = ar__expression__evaluate(ctx);
     
     // Verify the result is NULL for invalid syntax
     assert(result == NULL);
     
     // Offset should be at the start of "if"
-    assert(ar_expression_offset(ctx) == 0);
+    assert(ar__expression__offset(ctx) == 0);
     
-    ar_expression_destroy_context(ctx);
+    ar__expression__destroy_context(ctx);
     
     // Test a function call within an arithmetic expression
     const char *expr2 = "5 + if(1, 10, 20)";
     
     // Create expression context
-    expression_context_t *ctx2 = ar_expression_create_context(NULL, NULL, NULL, expr2);
+    expression_context_t *ctx2 = ar__expression__create_context(NULL, NULL, NULL, expr2);
     assert(ctx2 != NULL);
     
     // This should also return NULL when it encounters the "if" function call
-    result = ar_expression_evaluate(ctx2);
+    result = ar__expression__evaluate(ctx2);
     
     // Verify the result is NULL for invalid syntax
     assert(result == NULL);
     
     // Offset should be at the start of "if", which is after "5 + "
-    assert(ar_expression_offset(ctx2) == 4);
+    assert(ar__expression__offset(ctx2) == 4);
     
-    ar_expression_destroy_context(ctx2);
+    ar__expression__destroy_context(ctx2);
     
     printf("Function call expression test passed (verified that function calls are not valid expressions).\n");
     fflush(stdout);
