@@ -35,7 +35,7 @@ static void test_grade_evaluator_grades(void) {
     bool has_messages = ar_agency_agent_has_messages(evaluator_agent);
     printf("DEBUG: Agent has messages: %s\n", has_messages ? "yes" : "no");
     
-    bool wake_processed = ar_system_process_next_message();
+    bool wake_processed = ar__system__process_next_message();
     if (wake_processed) {
         printf("Wake message processed successfully\n");
     } else {
@@ -59,7 +59,7 @@ static void test_grade_evaluator_grades(void) {
     own_message = NULL; // Ownership transferred
     
     // Process the grade message
-    bool processed = ar_system_process_next_message();
+    bool processed = ar__system__process_next_message();
     assert(processed);
     
     // Check the result
@@ -93,7 +93,7 @@ static void test_grade_evaluator_grades(void) {
     assert(sent);
     own_message2 = NULL; // Ownership transferred
     
-    processed = ar_system_process_next_message();
+    processed = ar__system__process_next_message();
     assert(processed);
     
     grade = ar_data_get_map_data(agent_memory, "grade");
@@ -113,7 +113,7 @@ static void test_grade_evaluator_grades(void) {
     assert(sent);
     own_message3 = NULL; // Ownership transferred
     
-    processed = ar_system_process_next_message();
+    processed = ar__system__process_next_message();
     assert(processed);
     
     grade = ar_data_get_map_data(agent_memory, "grade");
@@ -133,7 +133,7 @@ static void test_grade_evaluator_grades(void) {
     assert(sent);
     own_message4 = NULL; // Ownership transferred
     
-    processed = ar_system_process_next_message();
+    processed = ar__system__process_next_message();
     assert(processed);
     
     grade = ar_data_get_map_data(agent_memory, "grade");
@@ -177,7 +177,7 @@ static void test_grade_evaluator_status(void) {
     bool has_messages = ar_agency_agent_has_messages(evaluator_agent);
     printf("DEBUG: Agent has messages: %s\n", has_messages ? "yes" : "no");
     
-    bool wake_processed = ar_system_process_next_message();
+    bool wake_processed = ar__system__process_next_message();
     if (wake_processed) {
         printf("Wake message processed successfully\n");
     } else {
@@ -196,7 +196,7 @@ static void test_grade_evaluator_status(void) {
     assert(sent);
     own_message = NULL; // Ownership transferred
     
-    bool processed = ar_system_process_next_message();
+    bool processed = ar__system__process_next_message();
     assert(processed);
     
     const data_t *agent_memory = ar_agency_get_agent_memory(evaluator_agent);
@@ -219,7 +219,7 @@ static void test_grade_evaluator_status(void) {
     assert(sent);
     own_message2 = NULL; // Ownership transferred
     
-    processed = ar_system_process_next_message();
+    processed = ar__system__process_next_message();
     assert(processed);
     
     status = ar_data_get_map_data(agent_memory, "status");
@@ -239,7 +239,7 @@ static void test_grade_evaluator_status(void) {
     assert(sent);
     own_message3 = NULL; // Ownership transferred
     
-    processed = ar_system_process_next_message();
+    processed = ar__system__process_next_message();
     assert(processed);
     
     const data_t *result = ar_data_get_map_data(agent_memory, "result");

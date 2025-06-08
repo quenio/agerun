@@ -4,6 +4,25 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 **IMPORTANT**: All development MUST follow the mandatory Parnas Design Principles and Test-Driven Development (TDD) methodology as specified in CLAUDE.md. Pull requests violating these principles will be REJECTED.
 
+## In Progress
+
+### Module Function Naming Convention Refactoring
+- [ ] Change all module functions from ar_<module>_<function> to ar__<module>__<function>
+  - [x] Refactor executable module
+  - [x] Refactor system module
+  - [ ] Refactor test fixtures (instruction_fixture, method_fixture, system_fixture)
+  - [ ] Refactor agency module
+  - [ ] Refactor agent_store module
+  - [ ] Refactor agent_update module
+  - [ ] Refactor agent module
+  - [ ] Refactor agent_registry module
+  - [ ] Refactor methodology module
+  - [ ] Refactor method module
+  - [ ] Refactor instruction module
+  - [ ] Refactor expression module
+  - [ ] Refactor data module
+  - [ ] Refactor remaining utility modules (semver, string, map, list, io, heap, assert)
+
 ## Critical Compliance Tasks
 
 ### Parnas Principles - Interface Violations (HIGH PRIORITY)

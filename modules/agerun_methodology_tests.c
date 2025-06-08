@@ -120,7 +120,7 @@ static void test_methodology_save_load(void) {
     assert(save_result);
     
     // When we reset the system
-    ar_system_shutdown();
+    ar__system__shutdown();
     
     // And create a new method for initialization
     const char *init_method = "methodology_save_load_test";
@@ -138,7 +138,7 @@ static void test_methodology_save_load(void) {
     const char *init_version = "1.0.0";
     
     // And re-initialize the system
-    ar_system_init(init_method, init_version);
+    ar__system__init(init_method, init_version);
     
     // And load methods from disk
     bool load_result = ar_methodology_load_methods();
@@ -242,7 +242,7 @@ int main(void) {
     const char *init_version = "1.0.0";
     
     // When we initialize the system
-    ar_system_init(init_method, init_version);
+    ar__system__init(init_method, init_version);
     
     // And we run all methodology tests
     test_methodology_get_method();
@@ -251,7 +251,7 @@ int main(void) {
     test_method_counts();
     
     // Then we clean up the system
-    ar_system_shutdown();
+    ar__system__shutdown();
     
     // And report success
     printf("All methodology tests passed!\n");

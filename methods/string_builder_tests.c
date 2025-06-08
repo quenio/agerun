@@ -28,7 +28,7 @@ static void test_string_builder_parse_build(void) {
     assert(builder_agent > 0);
     
     // Process wake message
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // When we send a message to parse and build
     data_t *own_message = ar_data_create_map();
@@ -44,7 +44,7 @@ static void test_string_builder_parse_build(void) {
     own_message = NULL; // Ownership transferred
     
     // Process the message
-    bool processed = ar_system_process_next_message();
+    bool processed = ar__system__process_next_message();
     assert(processed);
     
     // Then the string-builder agent should have sent back the built string
@@ -154,7 +154,7 @@ __attribute__((unused)) static void test_string_builder_parse_failure(void) {
     assert(builder_agent > 0);
     
     // Process wake message
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // When we send a message where the template doesn't match the input
     data_t *own_message = ar_data_create_map();
@@ -170,7 +170,7 @@ __attribute__((unused)) static void test_string_builder_parse_failure(void) {
     own_message = NULL; // Ownership transferred
     
     // Process the message
-    bool processed = ar_system_process_next_message();
+    bool processed = ar__system__process_next_message();
     assert(processed);
     
     // Then the string-builder agent should have sent back a string with empty placeholders

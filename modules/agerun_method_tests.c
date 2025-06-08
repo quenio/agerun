@@ -111,7 +111,7 @@ static void test_method_run(void) {
     assert(result);
     
     // Process the message to prevent memory leaks
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // When we clean up the agent
     ar_agency_destroy_agent(agent_id);
@@ -160,7 +160,7 @@ static void test_method_persistence(void) {
     assert(save_result);
     
     // Reset system
-    ar_system_shutdown();
+    ar__system__shutdown();
     
     // Re-initialize with a default method - but avoid assertion on agent ID
     // since we're testing method persistence, not agent creation
@@ -179,7 +179,7 @@ static void test_method_persistence(void) {
     const char *init_version = "1.0.0";
     
     // Initialize but don't assert on the agent id
-    ar_system_init(init_method, init_version);
+    ar__system__init(init_method, init_version);
     
     // Load methods from disk
     bool load_result = ar_methodology_load_methods();
@@ -247,7 +247,7 @@ int main(void) {
     const char *init_version = "1.0.0";
     
     // When we initialize the system
-    ar_system_init(init_method, init_version);
+    ar__system__init(init_method, init_version);
     
     // And we run all method tests
     test_method_create();
@@ -256,7 +256,7 @@ int main(void) {
     test_method_persistence();
     
     // Then we clean up the system
-    ar_system_shutdown();
+    ar__system__shutdown();
     
     // And report success
     printf("All method tests passed!\n");

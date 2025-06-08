@@ -38,9 +38,9 @@ static void test_message_router_routing(void) {
     assert(calc_agent > 0);
     
     // Process wake messages
-    ar_system_process_next_message(); // router wake
-    ar_system_process_next_message(); // echo wake
-    ar_system_process_next_message(); // calc wake
+    ar__system__process_next_message(); // router wake
+    ar__system__process_next_message(); // echo wake
+    ar__system__process_next_message(); // calc wake
     
     // Test routing to echo agent
     data_t *own_message = ar_data_create_map();
@@ -56,7 +56,7 @@ static void test_message_router_routing(void) {
     own_message = NULL; // Ownership transferred
     
     // Process the routing message
-    bool processed = ar_system_process_next_message();
+    bool processed = ar__system__process_next_message();
     assert(processed);
     
     // Check router memory
@@ -94,7 +94,7 @@ static void test_message_router_routing(void) {
     own_message2 = NULL; // Ownership transferred
     
     // Process the second routing message
-    processed = ar_system_process_next_message();
+    processed = ar__system__process_next_message();
     assert(processed);
     
     // Test invalid route
@@ -110,7 +110,7 @@ static void test_message_router_routing(void) {
     own_message3 = NULL; // Ownership transferred
     
     // Process the invalid route message
-    processed = ar_system_process_next_message();
+    processed = ar__system__process_next_message();
     assert(processed);
     
     // Check for memory leaks

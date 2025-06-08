@@ -29,7 +29,7 @@ static void test_calculator_add(void) {
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
     // Process wake message
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // Create and send add operation message
     data_t *own_message = ar_data_create_map();
@@ -45,7 +45,7 @@ static void test_calculator_add(void) {
     own_message = NULL; // Ownership transferred
     
     // Process the calculator message
-    bool processed = ar_system_process_next_message();
+    bool processed = ar__system__process_next_message();
     assert(processed);
     
     // Get agent memory to check result
@@ -95,7 +95,7 @@ static void test_calculator_multiply(void) {
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
     // Process wake message
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // Create and send multiply operation message
     data_t *own_message = ar_data_create_map();
@@ -111,7 +111,7 @@ static void test_calculator_multiply(void) {
     own_message = NULL; // Ownership transferred
     
     // Process the calculator message
-    bool processed = ar_system_process_next_message();
+    bool processed = ar__system__process_next_message();
     assert(processed);
     
     // Get agent memory to check result
@@ -160,7 +160,7 @@ static void test_calculator_subtract(void) {
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
     // Process wake message
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // Create and send subtract operation message
     data_t *own_message = ar_data_create_map();
@@ -176,7 +176,7 @@ static void test_calculator_subtract(void) {
     own_message = NULL; // Ownership transferred
     
     // Process the calculator message
-    bool processed = ar_system_process_next_message();
+    bool processed = ar__system__process_next_message();
     assert(processed);
     
     // Get agent memory to check result
@@ -226,7 +226,7 @@ static void test_calculator_divide(void) {
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
     // Process wake message
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // Create and send divide operation message
     data_t *own_message = ar_data_create_map();
@@ -242,7 +242,7 @@ static void test_calculator_divide(void) {
     own_message = NULL; // Ownership transferred
     
     // Process the calculator message
-    bool processed = ar_system_process_next_message();
+    bool processed = ar__system__process_next_message();
     assert(processed);
     
     // Get agent memory to check result
@@ -294,7 +294,7 @@ static void test_calculator_unknown_operation(void) {
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
     // Process wake message
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // Create and send unknown operation message
     data_t *own_message = ar_data_create_map();
@@ -310,7 +310,7 @@ static void test_calculator_unknown_operation(void) {
     own_message = NULL; // Ownership transferred
     
     // Process the calculator message
-    bool processed = ar_system_process_next_message();
+    bool processed = ar__system__process_next_message();
     assert(processed);
     
     // Get agent memory to check result

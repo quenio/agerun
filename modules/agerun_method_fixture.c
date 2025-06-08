@@ -48,7 +48,7 @@ void ar_method_fixture_destroy(method_fixture_t *own_fixture) {
     
     // If initialized, perform cleanup
     if (own_fixture->initialized) {
-        ar_system_shutdown();
+        ar__system__shutdown();
         ar_methodology_cleanup();
         ar_agency_reset();
         
@@ -67,7 +67,7 @@ bool ar_method_fixture_initialize(method_fixture_t *mut_fixture) {
     }
     
     // Clean shutdown of any existing state
-    ar_system_shutdown();
+    ar__system__shutdown();
     ar_methodology_cleanup();
     ar_agency_reset();
     
@@ -76,7 +76,7 @@ bool ar_method_fixture_initialize(method_fixture_t *mut_fixture) {
     remove("agency.agerun");
     
     // Initialize system with no persistence files
-    if (ar_system_init(NULL, NULL) != 1) {
+    if (ar__system__init(NULL, NULL) != 1) {
         // System already initialized is okay
     }
     

@@ -28,7 +28,7 @@ static void test_echo_simple_message(void) {
     assert(echo_agent != 0);
     
     // Process wake message
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // Verify agent memory was initialized
     const data_t *agent_memory = ar_agency_get_agent_memory(echo_agent);
@@ -53,13 +53,13 @@ static void test_echo_simple_message(void) {
     own_message = NULL; // Ownership transferred
     
     // Process the message
-    bool processed = ar_system_process_next_message();
+    bool processed = ar__system__process_next_message();
     assert(processed);
     
     // Echo method now only sends back message.content, doesn't store in memory
     
     // Process the return message (echo sends it back)
-    processed = ar_system_process_next_message();
+    processed = ar__system__process_next_message();
     
     // Clean up
     ar_agency_destroy_agent(echo_agent);
@@ -94,7 +94,7 @@ static void test_echo_map_message(void) {
     assert(echo_agent != 0);
     
     // Process wake message
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // Verify agent memory was initialized
     const data_t *agent_memory = ar_agency_get_agent_memory(echo_agent);
@@ -113,11 +113,11 @@ static void test_echo_map_message(void) {
     own_map_message = NULL; // Ownership transferred
     
     // Process the message
-    bool processed = ar_system_process_next_message();
+    bool processed = ar__system__process_next_message();
     assert(processed);
     
     // Process the return message (echo sends it back)
-    processed = ar_system_process_next_message();
+    processed = ar__system__process_next_message();
     
     // Clean up
     ar_agency_destroy_agent(echo_agent);

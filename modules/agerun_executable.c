@@ -20,10 +20,10 @@ int ar__executable__main(void) {
     
     // Initialize the runtime
     printf("Initializing runtime...\n");
-    int64_t initial_agent = ar_system_init(NULL, NULL);
+    int64_t initial_agent = ar__system__init(NULL, NULL);
     if (initial_agent != 0) {
         printf("Error: Unexpected agent created during initialization\n");
-        ar_system_shutdown();
+        ar__system__shutdown();
         return 1;
     }
     printf("Runtime initialized successfully\n\n");
@@ -36,7 +36,7 @@ int ar__executable__main(void) {
     const char *ref_echo_version = "1.0.0";
     if (!ar_methodology_create_method("echo", ref_echo_instructions, ref_echo_version)) {
         printf("Failed to create echo method\n");
-        ar_system_shutdown();
+        ar__system__shutdown();
         return 1;
     }
     
@@ -50,7 +50,7 @@ int ar__executable__main(void) {
     const char *ref_counter_version = "1.0.0";
     if (!ar_methodology_create_method("counter", ref_counter_code, ref_counter_version)) {
         printf("Failed to create counter method\n");
-        ar_system_shutdown();
+        ar__system__shutdown();
         return 1;
     }
     
@@ -61,7 +61,7 @@ int ar__executable__main(void) {
     initial_agent = ar_agency_create_agent("echo", ref_echo_version, NULL);
     if (initial_agent == 0) {
         printf("Failed to create initial agent\n");
-        ar_system_shutdown();
+        ar__system__shutdown();
         return 1;
     }
     
@@ -76,7 +76,7 @@ int ar__executable__main(void) {
     
     // Process the __wake__ message sent to the initial agent
     printf("Processing initial __wake__ message...\n");
-    int processed = ar_system_process_all_messages();
+    int processed = ar__system__process_all_messages();
     printf("Processed %d messages\n\n", processed);
     
     // Create a counter agent
@@ -84,7 +84,7 @@ int ar__executable__main(void) {
     int64_t counter_id = ar_agency_create_agent("counter", ref_counter_version, NULL);
     if (counter_id == 0) {
         printf("Failed to create counter agent\n");
-        ar_system_shutdown();
+        ar__system__shutdown();
         return 1;
     }
     printf("Counter agent created with ID: %lld\n\n", counter_id);
@@ -116,7 +116,7 @@ int ar__executable__main(void) {
     
     // Process all messages
     printf("Processing messages...\n");
-    processed = ar_system_process_all_messages();
+    processed = ar__system__process_all_messages();
     printf("Processed %d messages\n\n", processed);
     
     // Send more messages
@@ -141,7 +141,7 @@ int ar__executable__main(void) {
     
     // Process all messages
     printf("Processing messages...\n");
-    processed = ar_system_process_all_messages();
+    processed = ar__system__process_all_messages();
     printf("Processed %d messages\n\n", processed);
     
     // Save agents and methods to disk
@@ -153,7 +153,7 @@ int ar__executable__main(void) {
     
     // Shutdown the runtime
     printf("Shutting down runtime...\n");
-    ar_system_shutdown();
+    ar__system__shutdown();
     printf("Runtime shutdown complete\n\n");
     
     // Demonstrate loading from disk in a new runtime session
@@ -163,7 +163,7 @@ int ar__executable__main(void) {
     printf("Methods loaded: %s\n", loaded_methods ? "yes" : "no");
     
     // Initialize with echo method again
-    initial_agent = ar_system_init("echo", ref_echo_version);
+    initial_agent = ar__system__init("echo", ref_echo_version);
     if (initial_agent == 0) {
         printf("Failed to initialize runtime\n");
         return 1;
@@ -190,7 +190,7 @@ int ar__executable__main(void) {
         
         // Process the message
         printf("Processing messages...\n");
-        processed = ar_system_process_all_messages();
+        processed = ar__system__process_all_messages();
         printf("Processed %d messages\n", processed);
     } else {
         printf("Counter agent was not restored\n");
@@ -205,7 +205,7 @@ int ar__executable__main(void) {
     
     // Final shutdown
     printf("\nFinal shutdown...\n");
-    ar_system_shutdown();
+    ar__system__shutdown();
     printf("Runtime shutdown complete\n");
     
     return 0;

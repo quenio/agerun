@@ -91,7 +91,7 @@ static void test_agent_send(void) {
     assert(send_result);
     
     // Process the message to prevent memory leaks
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // Since we can't directly access the message queue in an opaque map,
     // we'll verify the agent was created (which was already tested)
@@ -188,8 +188,8 @@ static void test_agent_persistence(void) {
     assert(save_result);
     
     // When we simulate a system restart
-    ar_system_shutdown();
-    ar_system_init(method_name, version);
+    ar__system__shutdown();
+    ar__system__init(method_name, version);
     
     // And load the methods and agents
     bool load_methods_result = ar_methodology_load_methods();
@@ -235,7 +235,7 @@ int main(void) {
     // For test purposes, we assume registration succeeds and creates version "1.0.0"
     const char *version = "1.0.0";
     
-    int64_t init_agent_id = ar_system_init(method_name, version);
+    int64_t init_agent_id = ar__system__init(method_name, version);
     assert(init_agent_id > 0);
     
     // When we run all agent tests
@@ -245,7 +245,7 @@ int main(void) {
     test_agent_persistence();
     
     // Then clean up the system
-    ar_system_shutdown();
+    ar__system__shutdown();
     
     // And report success
     printf("All agent tests passed!\n");

@@ -280,7 +280,7 @@ static void test_message_send_instructions(void) {
     assert(literal_result);
     
     // Process the sent message
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // Verify literal send result
     data_t *ref_literal_result = ar_data_get_map_data(mut_sender_memory, "literal_result");
@@ -603,7 +603,7 @@ static void test_agent_function(void) {
     assert(new_agent_id != 0);
     
     // Process wake message
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // Test 2: Create agent with empty context
     printf("  Test 2: Create agent with empty context...\n");
@@ -622,7 +622,7 @@ static void test_agent_function(void) {
     assert(new_agent_id2 != 0);
     
     // Process wake message
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // Test 3: Create agent with expressions for parameters
     printf("  Test 3: Create agent with expressions...\n");
@@ -640,7 +640,7 @@ static void test_agent_function(void) {
     assert(new_agent_id3 != 0);
     
     // Process wake message
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // Test 4: Try to create agent with non-existent method (should fail)
     printf("  Test 4: Create agent with non-existent method...\n");
@@ -705,7 +705,7 @@ static void test_destroy_functions(void) {
     assert(agent_id > 0);
     
     // Process messages to complete agent creation
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // Verify agent exists before destroying it
     assert(ar_agency_agent_exists((int64_t)agent_id));
@@ -776,7 +776,7 @@ static void test_destroy_functions(void) {
     assert(result);
     
     // Process messages to complete agent creation
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     data_t *ref_active_agent_id = ar_data_get_map_data(own_memory, "active_agent_id");
     assert(ref_active_agent_id != NULL);
@@ -869,7 +869,7 @@ static void test_agent_function_with_message_expressions(void) {
         assert(ar_data_get_type(ref_result) == DATA_INTEGER);
         int64_t created_id = ar_data_get_integer(ref_result);
         assert(created_id > 0);
-        ar_system_process_next_message();
+        ar__system__process_next_message();
     }
     
     // Clean up context
@@ -989,7 +989,7 @@ int main(void) {
     const char *init_version = "1.0.0";
     
     // When we initialize the system
-    ar_system_init(ref_init_method, init_version);
+    ar__system__init(ref_init_method, init_version);
     
     // And we run all instruction tests
     test_simple_instructions();
@@ -1005,7 +1005,7 @@ int main(void) {
     test_error_reporting();
     
     // Then we clean up the system
-    ar_system_shutdown();
+    ar__system__shutdown();
     
     // And report success
     printf("All instruction tests passed!\n");

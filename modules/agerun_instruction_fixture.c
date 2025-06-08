@@ -117,7 +117,7 @@ void ar_instruction_fixture_destroy(instruction_fixture_t *own_fixture) {
     
     // Shutdown system if initialized by fixture
     if (own_fixture->system_initialized) {
-        ar_system_shutdown();
+        ar__system__shutdown();
     }
     
     AR_HEAP_FREE(own_fixture->own_test_name);
@@ -376,7 +376,7 @@ int64_t ar_instruction_fixture_create_test_agent(
     mut_fixture->test_agent_id = agent_id;
     
     // Process wake message
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     return agent_id;
 }
@@ -433,7 +433,7 @@ bool ar_instruction_fixture_init_system(
     own_method = NULL; // Ownership transferred
     
     // Initialize system
-    ar_system_init(ref_init_method_name, "1.0.0");
+    ar__system__init(ref_init_method_name, "1.0.0");
     mut_fixture->system_initialized = true;
     
     return true;

@@ -107,7 +107,7 @@ static void test_store_single_agent(void) {
     assert(agent_id > 0);
     
     // Process wake message
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // Add some data to agent memory
     data_t *mut_memory = ar_agency_get_agent_mutable_memory(agent_id);
@@ -121,7 +121,7 @@ static void test_store_single_agent(void) {
     
     // Destroy all agents
     ar_agency_destroy_agent(agent_id);
-    ar_system_process_next_message(); // Process sleep message
+    ar__system__process_next_message(); // Process sleep message
     assert(ar_agency_count_active_agents() == 0);
     
     // When loading
@@ -199,7 +199,7 @@ static void test_store_multiple_agents(void) {
     assert(calc1 > 0);
     
     // Process wake messages
-    ar_system_process_all_messages();
+    ar__system__process_all_messages();
     
     // Add unique data to each agent
     data_t *mut_memory1 = ar_agency_get_agent_mutable_memory(echo1);
@@ -221,7 +221,7 @@ static void test_store_multiple_agents(void) {
     ar_agency_destroy_agent(echo1);
     ar_agency_destroy_agent(echo2);
     ar_agency_destroy_agent(calc1);
-    ar_system_process_all_messages(); // Process sleep messages
+    ar__system__process_all_messages(); // Process sleep messages
     assert(ar_agency_count_active_agents() == 0);
     
     // When loading
@@ -349,7 +349,7 @@ static void test_store_missing_method(void) {
     
     int64_t agent_id = ar_agency_create_agent("test", "1.0.0", NULL);
     assert(agent_id > 0);
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // Save the agent
     assert(ar_agent_store_save());
@@ -394,7 +394,7 @@ static void test_store_id_preservation(void) {
     int64_t id1 = ar_agency_create_agent("test", "1.0.0", NULL);
     int64_t id2 = ar_agency_create_agent("test", "1.0.0", NULL);
     int64_t id3 = ar_agency_create_agent("test", "1.0.0", NULL);
-    ar_system_process_all_messages();
+    ar__system__process_all_messages();
     
     // Save
     assert(ar_agent_store_save());
@@ -403,7 +403,7 @@ static void test_store_id_preservation(void) {
     ar_agency_destroy_agent(id1);
     ar_agency_destroy_agent(id2);
     ar_agency_destroy_agent(id3);
-    ar_system_process_all_messages();
+    ar__system__process_all_messages();
     
     // Load
     assert(ar_agent_store_load());

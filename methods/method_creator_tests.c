@@ -28,7 +28,7 @@ static void test_method_creator_create_simple(void) {
     assert(creator_agent > 0);
     
     // Process wake message
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // When we send a message to create a new method
     data_t *own_message = ar_data_create_map();
@@ -44,7 +44,7 @@ static void test_method_creator_create_simple(void) {
     own_message = NULL; // Ownership transferred
     
     // Process the message
-    bool processed = ar_system_process_next_message();
+    bool processed = ar__system__process_next_message();
     assert(processed);
     
     // Verify method execution by checking agent's memory
@@ -106,7 +106,7 @@ static void test_method_creator_invalid_syntax(void) {
     assert(creator_agent > 0);
     
     // Process wake message
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // When we send a message to create a method with invalid syntax
     data_t *own_message = ar_data_create_map();
@@ -122,7 +122,7 @@ static void test_method_creator_invalid_syntax(void) {
     own_message = NULL; // Ownership transferred
     
     // Process the message
-    bool processed = ar_system_process_next_message();
+    bool processed = ar__system__process_next_message();
     assert(processed);
     
     // Verify method execution with invalid syntax

@@ -102,8 +102,8 @@ static void test_agency_persistence(void) {
     assert(save_result);
     
     // When we simulate a system restart
-    ar_system_shutdown();
-    ar_system_init("agency_persistence_method", version);
+    ar__system__shutdown();
+    ar__system__init("agency_persistence_method", version);
     
     // And load the methods and agents
     bool load_methods_result = ar_methodology_load_methods();
@@ -184,7 +184,7 @@ int main(void) {
     // For test purposes, we assume registration succeeds and creates version "1.0.0"
     const char *version = "1.0.0";
     
-    int64_t init_agent_id = ar_system_init(method_name, version);
+    int64_t init_agent_id = ar__system__init(method_name, version);
     assert(init_agent_id > 0);
     
     // When we run all agency tests
@@ -193,7 +193,7 @@ int main(void) {
     test_agency_reset();
     
     // Then clean up the system
-    ar_system_shutdown();
+    ar__system__shutdown();
     
     // And report success
     printf("All agency tests passed!\n");

@@ -94,7 +94,7 @@ static void test_agent_creation(void) {
     
     // When we process the next message in the system
     // With opaque map_t, we can't directly test the processing result
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // When we destroy the agent
     ar_agency_destroy_agent(agent_id);
@@ -158,7 +158,7 @@ static void test_message_passing(void) {
     
     // When we process all pending messages
     // With opaque map_t, we can't rely on the exact count
-    ar_system_process_all_messages();
+    ar__system__process_all_messages();
     
     // When we clean up the agents
     ar_agency_destroy_agent(sender_id);
@@ -174,12 +174,12 @@ int main(void) {
     printf("Starting Agerun tests...\n");
     
     // Given we initialize the runtime
-    int64_t initial_agent = ar_system_init(NULL, NULL);
+    int64_t initial_agent = ar__system__init(NULL, NULL);
     
     // Then no agent should be created during initialization
     if (initial_agent != 0) {
         printf("Error: Unexpected agent created during initialization\n");
-        ar_system_shutdown();
+        ar__system__shutdown();
         return 1;
     }
     
@@ -189,7 +189,7 @@ int main(void) {
     // Then the method should be created successfully
     if (own_method == NULL) {
         printf("Error: Failed to create test_init method\n");
-        ar_system_shutdown();
+        ar__system__shutdown();
         return 1;
     }
     
@@ -207,7 +207,7 @@ int main(void) {
     // Then the agent should be created successfully
     if (initial_agent == 0) {
         printf("Error: Failed to create initial agent\n");
-        ar_system_shutdown();
+        ar__system__shutdown();
         return 1;
     }
     
@@ -219,13 +219,13 @@ int main(void) {
     // Then the message should be sent successfully
     if (!send_result) {
         printf("Error: Failed to send wake message\n");
-        ar_system_shutdown();
+        ar__system__shutdown();
         return 1;
     }
     
     // When we process the message
     // With opaque map_t, we can't directly test the processing result
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // When we run all system tests
     test_method_creation();
@@ -233,7 +233,7 @@ int main(void) {
     test_message_passing();
     
     // Then clean up the system
-    ar_system_shutdown();
+    ar__system__shutdown();
     
     // And report success
     printf("All tests passed!\n");

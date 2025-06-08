@@ -29,7 +29,7 @@ static void test_agent_manager_create_destroy(void) {
     assert(manager_agent > 0);
     
     // Process wake message
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // When we send a message to create an echo agent
     data_t *own_message = ar_data_create_map();
@@ -48,7 +48,7 @@ static void test_agent_manager_create_destroy(void) {
     own_message = NULL; // Ownership transferred
     
     // Process the create message
-    bool processed = ar_system_process_next_message();
+    bool processed = ar__system__process_next_message();
     assert(processed);
     
     // Check agent memory for result
@@ -93,7 +93,7 @@ static void test_agent_manager_create_destroy(void) {
     own_destroy_message = NULL; // Ownership transferred
     
     // Process the destroy message
-    processed = ar_system_process_next_message();
+    processed = ar__system__process_next_message();
     assert(processed);
     
     // Check if destroy worked
@@ -142,7 +142,7 @@ static void test_agent_manager_invalid_action(void) {
     assert(manager_agent > 0);
     
     // Process wake message
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // When we send a message with an invalid action
     data_t *own_message = ar_data_create_map();
@@ -155,7 +155,7 @@ static void test_agent_manager_invalid_action(void) {
     own_message = NULL; // Ownership transferred
     
     // Process the invalid action message
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // Check agent memory - invalid actions should be handled gracefully
     const data_t *agent_memory = ar_agency_get_agent_memory(manager_agent);

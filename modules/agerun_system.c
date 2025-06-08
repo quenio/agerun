@@ -37,7 +37,7 @@ static char g_wake_message[] = "__wake__";
 static bool is_initialized = false;
 
 /* Implementation */
-int64_t ar_system_init(const char *ref_method_name, const char *ref_version) {
+int64_t ar__system__init(const char *ref_method_name, const char *ref_version) {
     if (is_initialized) {
         printf("Agerun already initialized\n");
         return 0;
@@ -69,7 +69,7 @@ int64_t ar_system_init(const char *ref_method_name, const char *ref_version) {
                 // own_wake_data is now NULL
                 
                 // Process the wake message
-                ar_system_process_next_message();
+                ar__system__process_next_message();
             }
         }
         return initial_agent;
@@ -78,7 +78,7 @@ int64_t ar_system_init(const char *ref_method_name, const char *ref_version) {
     return 0;
 }
 
-void ar_system_shutdown(void) {
+void ar__system__shutdown(void) {
     if (!is_initialized) {
         return;
     }
@@ -102,7 +102,7 @@ void ar_system_shutdown(void) {
     ar_agency_set_initialized(false);
 }
 
-bool ar_system_process_next_message(void) {
+bool ar__system__process_next_message(void) {
     if (!is_initialized) {
         printf("DEBUG: System not initialized\n");
         return false;
@@ -154,10 +154,10 @@ bool ar_system_process_next_message(void) {
     return false; // No messages to process
 }
 
-int ar_system_process_all_messages(void) {
+int ar__system__process_all_messages(void) {
     int count = 0;
     
-    while (ar_system_process_next_message()) {
+    while (ar__system__process_next_message()) {
         count++;
     }
     

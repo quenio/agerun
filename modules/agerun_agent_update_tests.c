@@ -98,7 +98,7 @@ static void test_count_using_method(void) {
     ar_agency_create_agent("echo", "1.0.0", NULL);
     ar_agency_create_agent("echo", "1.0.0", NULL);
     ar_agency_create_agent("calc", "1.0.0", NULL);
-    ar_system_process_all_messages(); // Process wake messages
+    ar__system__process_all_messages(); // Process wake messages
     
     // Then counts should be correct
     assert(ar_agency_count_agents_using_method(ref_echo) == 2);
@@ -144,7 +144,7 @@ static void test_update_without_lifecycle(void) {
     int64_t agent1 = ar_agency_create_agent("echo", "1.0.0", NULL);
     int64_t agent2 = ar_agency_create_agent("echo", "1.0.0", NULL);
     ar_agency_create_agent("calc", "1.0.0", NULL); // Different method - won't be updated
-    ar_system_process_all_messages(); // Process wake messages
+    ar__system__process_all_messages(); // Process wake messages
     
     // Verify initial state
     assert(ar_agency_get_agent_method(agent1) == ref_v1_0);
@@ -199,7 +199,7 @@ static void test_update_with_lifecycle(void) {
     // Create agents
     int64_t agent1 = ar_agency_create_agent("echo", "1.0.0", NULL);
     int64_t agent2 = ar_agency_create_agent("echo", "1.0.0", NULL);
-    ar_system_process_all_messages(); // Process initial wake messages
+    ar__system__process_all_messages(); // Process initial wake messages
     
     // Verify initial state
     assert(ar_agency_agent_has_messages(agent1) == false);
@@ -214,10 +214,10 @@ static void test_update_with_lifecycle(void) {
     assert(ar_agency_agent_has_messages(agent2) == true);
     
     // Process sleep messages
-    ar_system_process_next_message(); // agent1 sleep
-    ar_system_process_next_message(); // agent1 wake
-    ar_system_process_next_message(); // agent2 sleep  
-    ar_system_process_next_message(); // agent2 wake
+    ar__system__process_next_message(); // agent1 sleep
+    ar__system__process_next_message(); // agent1 wake
+    ar__system__process_next_message(); // agent2 sleep  
+    ar__system__process_next_message(); // agent2 wake
     
     // Then no more messages should be queued
     assert(ar_agency_agent_has_messages(agent1) == false);
@@ -263,7 +263,7 @@ static void test_update_incompatible(void) {
     // Create agents
     ar_agency_create_agent("echo", "1.0.0", NULL);
     ar_agency_create_agent("echo", "1.0.0", NULL);
-    ar_system_process_all_messages();
+    ar__system__process_all_messages();
     
     // When attempting incompatible updates
     // Then major version change should fail

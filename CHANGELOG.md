@@ -2,6 +2,18 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-06-08 (Later - Part 3)
+- ✅ Started module function naming convention refactoring:
+  - ✅ Changed naming convention from ar_<module>_<function> to ar__<module>__<function>
+  - ✅ Completed executable module refactoring (ar_executable_main → ar__executable__main)
+  - ✅ Completed system module refactoring:
+    - ar_system_init → ar__system__init
+    - ar_system_shutdown → ar__system__shutdown
+    - ar_system_process_next_message → ar__system__process_next_message
+    - ar_system_process_all_messages → ar__system__process_all_messages
+  - ✅ Updated all references in test files and dependent modules
+  - ✅ All 26 tests pass with zero memory leaks
+
 ## 2025-06-08 (Later - Part 2)
 - ✅ Fixed Agency/Agent_Update circular dependency:
   - ✅ Removed agency.h include from agent_update.c

@@ -101,13 +101,13 @@ int main(void) {
     own_method = NULL; // Mark as transferred
     
     // When we initialize the system with this method
-    ar_system_init(init_method, init_version);
+    ar__system__init(init_method, init_version);
     
     // And we run the executable test
     test_executable_run();
     
     // Then we clean up the system
-    ar_system_shutdown();
+    ar__system__shutdown();
     
     // And report success
     printf("All executable tests passed!\n");
