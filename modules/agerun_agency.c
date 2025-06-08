@@ -110,7 +110,7 @@ bool ar__agency__agent_has_messages(int64_t agent_id) {
         return false;
     }
     
-    return ar_agent_has_messages(ref_agent);
+    return ar__agent__has_messages(ref_agent);
 }
 
 data_t* ar__agency__get_agent_message(int64_t agent_id) {
@@ -123,7 +123,7 @@ data_t* ar__agency__get_agent_message(int64_t agent_id) {
         return NULL;
     }
     
-    return ar_agent_get_message(mut_agent);
+    return ar__agent__get_message(mut_agent);
 }
 
 int64_t ar__agency__create_agent(const char *ref_method_name, const char *ref_version, const data_t *ref_context) {
@@ -132,7 +132,7 @@ int64_t ar__agency__create_agent(const char *ref_method_name, const char *ref_ve
     }
     
     // Create the agent using the agent module
-    agent_t *own_agent = ar_agent_create(ref_method_name, ref_version, ref_context);
+    agent_t *own_agent = ar__agent__create(ref_method_name, ref_version, ref_context);
     if (!own_agent) {
         return 0;
     }
@@ -140,23 +140,23 @@ int64_t ar__agency__create_agent(const char *ref_method_name, const char *ref_ve
     // Allocate an ID for the agent
     int64_t agent_id = ar_agent_registry_allocate_id(g_own_registry);
     if (agent_id == 0) {
-        ar_agent_destroy(own_agent);
+        ar__agent__destroy(own_agent);
         return 0;
     }
     
     // Set the agent's ID
-    ar_agent_set_id(own_agent, agent_id);
+    ar__agent__set_id(own_agent, agent_id);
     
     // Register the ID in the registry
     if (!ar_agent_registry_register_id(g_own_registry, agent_id)) {
-        ar_agent_destroy(own_agent);
+        ar__agent__destroy(own_agent);
         return 0;
     }
     
     // Track the agent in the registry
     if (!ar_agent_registry_track_agent(g_own_registry, agent_id, own_agent)) {
         ar_agent_registry_unregister_id(g_own_registry, agent_id);
-        ar_agent_destroy(own_agent);
+        ar__agent__destroy(own_agent);
         return 0;
     }
     
@@ -178,7 +178,7 @@ bool ar__agency__destroy_agent(int64_t agent_id) {
     ar_agent_registry_unregister_id(g_own_registry, agent_id);
     
     // Destroy the agent
-    ar_agent_destroy(own_agent);
+    ar__agent__destroy(own_agent);
     
     return true;
 }
@@ -199,7 +199,7 @@ bool ar__agency__send_to_agent(int64_t agent_id, data_t *own_message) {
         return false;
     }
     
-    return ar_agent_send(mut_agent, own_message);
+    return ar__agent__send(mut_agent, own_message);
 }
 
 bool ar__agency__agent_exists(int64_t agent_id) {
@@ -220,7 +220,7 @@ const data_t* ar__agency__get_agent_memory(int64_t agent_id) {
         return NULL;
     }
     
-    return ar_agent_get_memory(ref_agent);
+    return ar__agent__get_memory(ref_agent);
 }
 
 const data_t* ar__agency__get_agent_context(int64_t agent_id) {
@@ -233,7 +233,7 @@ const data_t* ar__agency__get_agent_context(int64_t agent_id) {
         return NULL;
     }
     
-    return ar_agent_get_context(ref_agent);
+    return ar__agent__get_context(ref_agent);
 }
 
 bool ar__agency__is_agent_active(int64_t agent_id) {
@@ -246,7 +246,7 @@ bool ar__agency__is_agent_active(int64_t agent_id) {
         return false;
     }
     
-    return ar_agent_is_active(ref_agent);
+    return ar__agent__is_active(ref_agent);
 }
 
 const method_t* ar__agency__get_agent_method(int64_t agent_id) {
@@ -259,7 +259,7 @@ const method_t* ar__agency__get_agent_method(int64_t agent_id) {
         return NULL;
     }
     
-    return ar_agent_get_method(ref_agent);
+    return ar__agent__get_method(ref_agent);
 }
 
 bool ar__agency__get_agent_method_info(int64_t agent_id, const char **out_method_name, const char **out_method_version) {
@@ -272,7 +272,7 @@ bool ar__agency__get_agent_method_info(int64_t agent_id, const char **out_method
         return false;
     }
     
-    return ar_agent_get_method_info(ref_agent, out_method_name, out_method_version);
+    return ar__agent__get_method_info(ref_agent, out_method_name, out_method_version);
 }
 
 data_t* ar__agency__get_agent_mutable_memory(int64_t agent_id) {
@@ -285,7 +285,7 @@ data_t* ar__agency__get_agent_mutable_memory(int64_t agent_id) {
         return NULL;
     }
     
-    return ar_agent_get_mutable_memory(mut_agent);
+    return ar__agent__get_mutable_memory(mut_agent);
 }
 
 bool ar__agency__update_agent_method(int64_t agent_id, const method_t *ref_new_method, bool send_sleep_wake) {
@@ -298,7 +298,7 @@ bool ar__agency__update_agent_method(int64_t agent_id, const method_t *ref_new_m
         return false;
     }
     
-    return ar_agent_update_method(mut_agent, ref_new_method, send_sleep_wake);
+    return ar__agent__update_method(mut_agent, ref_new_method, send_sleep_wake);
 }
 
 bool ar__agency__set_agent_active(int64_t agent_id, bool is_active) {
@@ -311,7 +311,7 @@ bool ar__agency__set_agent_active(int64_t agent_id, bool is_active) {
         return false;
     }
     
-    ar_agent_set_active(mut_agent, is_active);
+    ar__agent__set_active(mut_agent, is_active);
     return true;
 }
 
@@ -330,7 +330,7 @@ bool ar__agency__set_agent_id(int64_t old_id, int64_t new_id) {
     }
     
     // Update the agent's ID
-    ar_agent_set_id(mut_agent, new_id);
+    ar__agent__set_id(mut_agent, new_id);
     
     // Update in registry: untrack from old ID, register new ID, track with new ID
     ar_agent_registry_untrack_agent(g_own_registry, old_id);
@@ -338,7 +338,7 @@ bool ar__agency__set_agent_id(int64_t old_id, int64_t new_id) {
     
     if (!ar_agent_registry_register_id(g_own_registry, new_id)) {
         // Restore old ID if registration fails
-        ar_agent_set_id(mut_agent, old_id);
+        ar__agent__set_id(mut_agent, old_id);
         ar_agent_registry_register_id(g_own_registry, old_id);
         ar_agent_registry_track_agent(g_own_registry, old_id, mut_agent);
         return false;
@@ -346,7 +346,7 @@ bool ar__agency__set_agent_id(int64_t old_id, int64_t new_id) {
     
     if (!ar_agent_registry_track_agent(g_own_registry, new_id, mut_agent)) {
         // Restore old ID if tracking fails
-        ar_agent_set_id(mut_agent, old_id);
+        ar__agent__set_id(mut_agent, old_id);
         ar_agent_registry_unregister_id(g_own_registry, new_id);
         ar_agent_registry_register_id(g_own_registry, old_id);
         ar_agent_registry_track_agent(g_own_registry, old_id, mut_agent);

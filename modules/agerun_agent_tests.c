@@ -18,7 +18,7 @@ static void test_agent_exists(void);
 static void test_agent_persistence(void);
 
 static void test_agent_create_destroy(void) {
-    printf("Testing ar_agent_create() and ar_agent_destroy()...\n");
+    printf("Testing ar__agent__create() and ar__agent__destroy()...\n");
     
     // Given a simple method for an agent
     const char *method_name = "test_method";
@@ -56,11 +56,11 @@ static void test_agent_create_destroy(void) {
     exists = ar__agency__agent_exists(agent_id);
     assert(!exists);
     
-    printf("ar_agent_create() and ar_agent_destroy() tests passed!\n");
+    printf("ar__agent__create() and ar__agent__destroy() tests passed!\n");
 }
 
 static void test_agent_send(void) {
-    printf("Testing ar_agent_send()...\n");
+    printf("Testing ar__agent__send()...\n");
     
     // Given an echo method and an agent using it
     const char *method_name = "echo_method";
@@ -101,11 +101,11 @@ static void test_agent_send(void) {
     // Cleanup
     ar__agency__destroy_agent(agent_id);
     
-    printf("ar_agent_send() test passed!\n");
+    printf("ar__agent__send() test passed!\n");
 }
 
 static void test_agent_exists(void) {
-    printf("Testing ar_agent_exists()...\n");
+    printf("Testing ar__agent__exists()...\n");
     
     // Given a method and an agent created with it
     const char *method_name = "exists_method";
@@ -150,7 +150,7 @@ static void test_agent_exists(void) {
     // Then it should no longer exist
     assert(!exists);
     
-    printf("ar_agent_exists() test passed!\n");
+    printf("ar__agent__exists() test passed!\n");
 }
 
 static void test_agent_persistence(void) {

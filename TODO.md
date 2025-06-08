@@ -14,7 +14,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Refactor agency module
   - [x] Refactor agent_store module
   - [x] Refactor agent_update module
-  - [ ] Refactor agent module
+  - [x] Refactor agent module
   - [ ] Refactor agent_registry module
   - [ ] Refactor methodology module
   - [ ] Refactor method module
@@ -22,6 +22,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Refactor expression module
   - [ ] Refactor data module
   - [ ] Refactor remaining utility modules (semver, string, map, list, io, heap, assert)
+  - [ ] Update all documentation files (.md) to reflect new double underscore naming convention
 
 ## Critical Compliance Tasks
 

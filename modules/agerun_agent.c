@@ -29,7 +29,7 @@ static const char g_sleep_message[] = "__sleep__";
 static const char g_wake_message[] = "__wake__";
 
 /* Implementation */
-agent_t* ar_agent_create(const char *ref_method_name, const char *ref_version, const data_t *ref_context) {
+agent_t* ar__agent__create(const char *ref_method_name, const char *ref_version, const data_t *ref_context) {
     if (!ref_method_name) {
         return NULL;
     }
@@ -67,14 +67,14 @@ agent_t* ar_agent_create(const char *ref_method_name, const char *ref_version, c
     // Send wake message
     data_t *own_wake_msg = ar_data_create_string(g_wake_message);
     if (own_wake_msg) {
-        ar_agent_send(own_agent, own_wake_msg);
+        ar__agent__send(own_agent, own_wake_msg);
         // Note: The wake message will be processed when the system runs
     }
     
     return own_agent;
 }
 
-void ar_agent_destroy(agent_t *own_agent) {
+void ar__agent__destroy(agent_t *own_agent) {
     if (!own_agent) {
         return;
     }
@@ -115,7 +115,7 @@ void ar_agent_destroy(agent_t *own_agent) {
     AR_HEAP_FREE(own_agent);
 }
 
-bool ar_agent_send(agent_t *mut_agent, data_t *own_message) {
+bool ar__agent__send(agent_t *mut_agent, data_t *own_message) {
     if (!mut_agent || !own_message) {
         // Destroy the message if we have one but no agent
         if (own_message) {
@@ -144,28 +144,28 @@ bool ar_agent_send(agent_t *mut_agent, data_t *own_message) {
 
 /* Accessor functions for opaque type */
 
-int64_t ar_agent_get_id(const agent_t *ref_agent) {
+int64_t ar__agent__get_id(const agent_t *ref_agent) {
     if (!ref_agent) {
         return 0;
     }
     return ref_agent->id;
 }
 
-const data_t* ar_agent_get_memory(const agent_t *ref_agent) {
+const data_t* ar__agent__get_memory(const agent_t *ref_agent) {
     if (!ref_agent) {
         return NULL;
     }
     return ref_agent->own_memory;
 }
 
-data_t* ar_agent_get_mutable_memory(agent_t *mut_agent) {
+data_t* ar__agent__get_mutable_memory(agent_t *mut_agent) {
     if (!mut_agent) {
         return NULL;
     }
     return mut_agent->own_memory;
 }
 
-const data_t* ar_agent_get_context(const agent_t *ref_agent) {
+const data_t* ar__agent__get_context(const agent_t *ref_agent) {
     if (!ref_agent) {
         return NULL;
     }
@@ -173,14 +173,14 @@ const data_t* ar_agent_get_context(const agent_t *ref_agent) {
     return ref_agent->ref_context;
 }
 
-bool ar_agent_is_active(const agent_t *ref_agent) {
+bool ar__agent__is_active(const agent_t *ref_agent) {
     if (!ref_agent) {
         return false;
     }
     return ref_agent->is_active;
 }
 
-bool ar_agent_get_method_info(const agent_t *ref_agent, const char **out_method_name, const char **out_method_version) {
+bool ar__agent__get_method_info(const agent_t *ref_agent, const char **out_method_name, const char **out_method_version) {
     if (!ref_agent || !ref_agent->ref_method) {
         return false;
     }
@@ -195,7 +195,7 @@ bool ar_agent_get_method_info(const agent_t *ref_agent, const char **out_method_
 }
 
 
-const method_t* ar_agent_get_method(const agent_t *ref_agent) {
+const method_t* ar__agent__get_method(const agent_t *ref_agent) {
     if (!ref_agent) {
         return NULL;
     }
@@ -203,7 +203,7 @@ const method_t* ar_agent_get_method(const agent_t *ref_agent) {
     return ref_agent->ref_method;
 }
 
-void ar_agent_set_active(agent_t *mut_agent, bool is_active) {
+void ar__agent__set_active(agent_t *mut_agent, bool is_active) {
     if (!mut_agent) {
         return;
     }
@@ -211,7 +211,7 @@ void ar_agent_set_active(agent_t *mut_agent, bool is_active) {
 }
 
 
-bool ar_agent_has_messages(const agent_t *ref_agent) {
+bool ar__agent__has_messages(const agent_t *ref_agent) {
     if (!ref_agent || !ref_agent->own_message_queue) {
         return false;
     }
@@ -219,7 +219,7 @@ bool ar_agent_has_messages(const agent_t *ref_agent) {
     return ar_list_count(ref_agent->own_message_queue) > 0;
 }
 
-data_t* ar_agent_get_message(agent_t *mut_agent) {
+data_t* ar__agent__get_message(agent_t *mut_agent) {
     if (!mut_agent || !mut_agent->own_message_queue) {
         return NULL;
     }
@@ -227,7 +227,7 @@ data_t* ar_agent_get_message(agent_t *mut_agent) {
     return ar_list_remove_first(mut_agent->own_message_queue);
 }
 
-bool ar_agent_update_method(agent_t *mut_agent, const method_t *ref_new_method, bool send_sleep_wake) {
+bool ar__agent__update_method(agent_t *mut_agent, const method_t *ref_new_method, bool send_sleep_wake) {
     if (!mut_agent || !ref_new_method) {
         return false;
     }
@@ -254,7 +254,7 @@ bool ar_agent_update_method(agent_t *mut_agent, const method_t *ref_new_method, 
     return true;
 }
 
-void ar_agent_set_id(agent_t *mut_agent, int64_t new_id) {
+void ar__agent__set_id(agent_t *mut_agent, int64_t new_id) {
     if (!mut_agent) {
         return;
     }
