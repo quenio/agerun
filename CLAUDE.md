@@ -15,3 +15,5 @@ When creating new modules, think twice before adding global state to it. Instead
 In the implementation of a module, when using other modules, first read their interface, so you know which functions are available, instead of guessing function names to call.
 
 You must check what is the current dir before you try run a command with a relative path.
+
+Pause before executing build commands like `make` to check if the project has custom scripts or procedures for these tasks.
