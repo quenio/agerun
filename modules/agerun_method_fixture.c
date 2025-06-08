@@ -20,7 +20,7 @@ struct method_fixture_s {
     bool initialized;             /* Whether fixture has been initialized */
 };
 
-method_fixture_t* ar_method_fixture_create(const char *ref_test_name) {
+method_fixture_t* ar__method_fixture__create(const char *ref_test_name) {
     if (!ref_test_name) {
         return NULL;
     }
@@ -41,7 +41,7 @@ method_fixture_t* ar_method_fixture_create(const char *ref_test_name) {
     return own_fixture; // Ownership transferred to caller
 }
 
-void ar_method_fixture_destroy(method_fixture_t *own_fixture) {
+void ar__method_fixture__destroy(method_fixture_t *own_fixture) {
     if (!own_fixture) {
         return;
     }
@@ -61,7 +61,7 @@ void ar_method_fixture_destroy(method_fixture_t *own_fixture) {
     AR_HEAP_FREE(own_fixture);
 }
 
-bool ar_method_fixture_initialize(method_fixture_t *mut_fixture) {
+bool ar__method_fixture__initialize(method_fixture_t *mut_fixture) {
     if (!mut_fixture) {
         return false;
     }
@@ -85,7 +85,7 @@ bool ar_method_fixture_initialize(method_fixture_t *mut_fixture) {
     return true;
 }
 
-bool ar_method_fixture_load_method(method_fixture_t *mut_fixture,
+bool ar__method_fixture__load_method(method_fixture_t *mut_fixture,
                                 const char *ref_method_name,
                                 const char *ref_method_file,
                                 const char *ref_version) {
@@ -132,7 +132,7 @@ bool ar_method_fixture_load_method(method_fixture_t *mut_fixture,
     return registered;
 }
 
-bool ar_method_fixture_verify_directory(const method_fixture_t *ref_fixture) {
+bool ar__method_fixture__verify_directory(const method_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return false;
     }
@@ -152,7 +152,7 @@ bool ar_method_fixture_verify_directory(const method_fixture_t *ref_fixture) {
     return true;
 }
 
-const char* ar_method_fixture_get_name(const method_fixture_t *ref_fixture) {
+const char* ar__method_fixture__get_name(const method_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return NULL;
     }
@@ -160,7 +160,7 @@ const char* ar_method_fixture_get_name(const method_fixture_t *ref_fixture) {
     return ref_fixture->own_test_name;
 }
 
-bool ar_method_fixture_check_memory(const method_fixture_t *ref_fixture) {
+bool ar__method_fixture__check_memory(const method_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return false;
     }

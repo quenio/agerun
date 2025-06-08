@@ -41,11 +41,11 @@ static void test_simple_instructions(void) {
     printf("Testing simple instructions...\n");
     
     // Create fixture for this test
-    instruction_fixture_t *own_fixture = ar_instruction_fixture_create("test_simple_instructions");
+    instruction_fixture_t *own_fixture = ar__instruction_fixture__create("test_simple_instructions");
     assert(own_fixture != NULL);
     
     // Create a test agent for running instructions
-    int64_t agent_id = ar_instruction_fixture_create_test_agent(own_fixture, "test_agent", "");
+    int64_t agent_id = ar__instruction_fixture__create_test_agent(own_fixture, "test_agent", "");
     assert(agent_id > 0);
     assert(test_agent_exists(agent_id));
     
@@ -99,7 +99,7 @@ static void test_simple_instructions(void) {
     ar_instruction_destroy_context(own_ctx);
     
     // Clean up (fixture handles agent destruction)
-    ar_instruction_fixture_destroy(own_fixture);
+    ar__instruction_fixture__destroy(own_fixture);
     
     printf("Simple instructions test passed!\n");
 }
@@ -108,11 +108,11 @@ static void test_memory_access_instructions(void) {
     printf("Testing memory access instructions...\n");
     
     // Create fixture for this test
-    instruction_fixture_t *own_fixture = ar_instruction_fixture_create("test_memory_access");
+    instruction_fixture_t *own_fixture = ar__instruction_fixture__create("test_memory_access");
     assert(own_fixture != NULL);
     
     // Create a test agent with initialization instructions
-    int64_t agent_id = ar_instruction_fixture_create_test_agent(
+    int64_t agent_id = ar__instruction_fixture__create_test_agent(
         own_fixture, "memory_agent", "memory.initialized = 1"
     );
     assert(agent_id > 0);
@@ -166,7 +166,7 @@ static void test_memory_access_instructions(void) {
     ar_instruction_destroy_context(own_ctx);
     
     // Clean up (fixture handles agent destruction)
-    ar_instruction_fixture_destroy(own_fixture);
+    ar__instruction_fixture__destroy(own_fixture);
     
     printf("Memory access instructions test passed!\n");
 }
@@ -175,11 +175,11 @@ static void test_condition_instructions(void) {
     printf("Testing conditional instructions...\n");
     
     // Create fixture for this test
-    instruction_fixture_t *own_fixture = ar_instruction_fixture_create("test_conditions");
+    instruction_fixture_t *own_fixture = ar__instruction_fixture__create("test_conditions");
     assert(own_fixture != NULL);
     
     // Create a test agent with initialization
-    int64_t agent_id = ar_instruction_fixture_create_test_agent(
+    int64_t agent_id = ar__instruction_fixture__create_test_agent(
         own_fixture, "condition_agent", "memory.initialized = 1"
     );
     assert(agent_id > 0);
@@ -224,7 +224,7 @@ static void test_condition_instructions(void) {
     ar_instruction_destroy_context(own_ctx);
     
     // Clean up (fixture handles agent destruction)
-    ar_instruction_fixture_destroy(own_fixture);
+    ar__instruction_fixture__destroy(own_fixture);
     
     printf("Conditional instructions test passed!\n");
 }
@@ -233,21 +233,21 @@ static void test_message_send_instructions(void) {
     printf("Testing message send instructions...\n");
     
     // Create fixture for sender
-    instruction_fixture_t *own_sender_fixture = ar_instruction_fixture_create("test_sender");
+    instruction_fixture_t *own_sender_fixture = ar__instruction_fixture__create("test_sender");
     assert(own_sender_fixture != NULL);
     
     // Create fixture for receiver (since each fixture can only have one agent)
-    instruction_fixture_t *own_receiver_fixture = ar_instruction_fixture_create("test_receiver");
+    instruction_fixture_t *own_receiver_fixture = ar__instruction_fixture__create("test_receiver");
     assert(own_receiver_fixture != NULL);
     
     // Create two test agents with initialization
-    int64_t sender_id = ar_instruction_fixture_create_test_agent(
+    int64_t sender_id = ar__instruction_fixture__create_test_agent(
         own_sender_fixture, "sender_agent", "memory.initialized = 1"
     );
     assert(sender_id > 0);
     assert(test_agent_exists(sender_id));
     
-    int64_t receiver_id = ar_instruction_fixture_create_test_agent(
+    int64_t receiver_id = ar__instruction_fixture__create_test_agent(
         own_receiver_fixture, "receiver_agent", "memory.initialized = 1"
     );
     assert(receiver_id > 0);
@@ -292,8 +292,8 @@ static void test_message_send_instructions(void) {
     ar_instruction_destroy_context(own_ctx);
     
     // Clean up (fixtures handle agent destruction)
-    ar_instruction_fixture_destroy(own_sender_fixture);
-    ar_instruction_fixture_destroy(own_receiver_fixture);
+    ar__instruction_fixture__destroy(own_sender_fixture);
+    ar__instruction_fixture__destroy(own_receiver_fixture);
     
     printf("Message send instructions test passed!\n");
 }
@@ -302,11 +302,11 @@ static void test_method_function(void) {
     printf("Testing method function instruction with 3 parameters...\n");
     
     // Create fixture for this test
-    instruction_fixture_t *own_fixture = ar_instruction_fixture_create("test_method_function");
+    instruction_fixture_t *own_fixture = ar__instruction_fixture__create("test_method_function");
     assert(own_fixture != NULL);
     
     // Create a test agent for running method instruction
-    int64_t agent_id = ar_instruction_fixture_create_test_agent(
+    int64_t agent_id = ar__instruction_fixture__create_test_agent(
         own_fixture, "method_instruction_agent", ""
     );
     assert(agent_id > 0);
@@ -368,7 +368,7 @@ static void test_method_function(void) {
     // are set up. The direct methodology API call should still work.
     
     // Clean up (fixture handles agent destruction)
-    ar_instruction_fixture_destroy(own_fixture);
+    ar__instruction_fixture__destroy(own_fixture);
     
     printf("Method function 3-parameter test passed!\n");
 }
@@ -377,11 +377,11 @@ static void test_parse_function(void) {
     printf("Testing parse function instruction...\n");
     
     // Create fixture for this test
-    instruction_fixture_t *own_fixture = ar_instruction_fixture_create("test_parse_function");
+    instruction_fixture_t *own_fixture = ar__instruction_fixture__create("test_parse_function");
     assert(own_fixture != NULL);
     
     // Create a test agent for running parse instruction
-    int64_t agent_id = ar_instruction_fixture_create_test_agent(
+    int64_t agent_id = ar__instruction_fixture__create_test_agent(
         own_fixture, "parse_instruction_agent", ""
     );
     assert(agent_id > 0);
@@ -419,7 +419,7 @@ static void test_parse_function(void) {
     ar_instruction_destroy_context(own_ctx);
     
     // Clean up (fixture handles agent destruction)
-    ar_instruction_fixture_destroy(own_fixture);
+    ar__instruction_fixture__destroy(own_fixture);
     
     printf("Parse function test passed!\n");
 }
@@ -428,11 +428,11 @@ static void test_build_function(void) {
     printf("Testing build function instruction...\n");
     
     // Create fixture for this test
-    instruction_fixture_t *own_fixture = ar_instruction_fixture_create("test_build_function");
+    instruction_fixture_t *own_fixture = ar__instruction_fixture__create("test_build_function");
     assert(own_fixture != NULL);
     
     // Create a test agent for running build instruction
-    int64_t agent_id = ar_instruction_fixture_create_test_agent(
+    int64_t agent_id = ar__instruction_fixture__create_test_agent(
         own_fixture, "build_instruction_agent", ""
     );
     assert(agent_id > 0);
@@ -544,7 +544,7 @@ static void test_build_function(void) {
     ar_instruction_destroy_context(own_ctx);
     
     // Clean up (fixture handles agent destruction)
-    ar_instruction_fixture_destroy(own_fixture);
+    ar__instruction_fixture__destroy(own_fixture);
     
     printf("Build function test passed!\n");
 }
@@ -553,13 +553,13 @@ static void test_agent_function(void) {
     printf("Testing agent function...\n");
     
     // Create fixture for this test
-    instruction_fixture_t *own_fixture = ar_instruction_fixture_create("test_agent_function");
+    instruction_fixture_t *own_fixture = ar__instruction_fixture__create("test_agent_function");
     assert(own_fixture != NULL);
     
     // Create test memory and context using fixture
-    data_t *own_memory = ar_instruction_fixture_create_empty_map(own_fixture);
+    data_t *own_memory = ar__instruction_fixture__create_empty_map(own_fixture);
     assert(own_memory != NULL);
-    data_t *own_context = ar_instruction_fixture_create_empty_map(own_fixture);
+    data_t *own_context = ar__instruction_fixture__create_empty_map(own_fixture);
     assert(own_context != NULL);
     
     // Create an instruction context
@@ -662,7 +662,7 @@ static void test_agent_function(void) {
     ar_instruction_destroy_context(own_ctx);
     
     // Clean up (fixture handles data destruction)
-    ar_instruction_fixture_destroy(own_fixture);
+    ar__instruction_fixture__destroy(own_fixture);
     
     printf("Agent function test passed!\n");
 }
@@ -671,14 +671,14 @@ static void test_destroy_functions(void) {
     printf("\nTesting Destroy Functions...\n");
     
     // Create fixture for this test
-    instruction_fixture_t *own_fixture = ar_instruction_fixture_create("test_destroy_functions");
+    instruction_fixture_t *own_fixture = ar__instruction_fixture__create("test_destroy_functions");
     assert(own_fixture != NULL);
     
     // Test 1: Destroy agent by ID
     printf("  Test 1: Destroy agent by ID...\n");
     
     // Create context using fixture
-    data_t *own_memory = ar_instruction_fixture_create_empty_map(own_fixture);
+    data_t *own_memory = ar__instruction_fixture__create_empty_map(own_fixture);
     data_t *own_context = ar_data_create_map();  // Create separately since ownership transfers
     ar_data_set_map_data(own_memory, "context", own_context);
     
@@ -810,7 +810,7 @@ static void test_destroy_functions(void) {
     ar_instruction_destroy_context(own_ctx);
     
     // Clean up (fixture handles data destruction)
-    ar_instruction_fixture_destroy(own_fixture);
+    ar__instruction_fixture__destroy(own_fixture);
     
     printf("Destroy functions test passed!\n");
 }
@@ -819,17 +819,17 @@ static void test_agent_function_with_message_expressions(void) {
     printf("Testing agent function with message access expressions...\n");
     
     // Create fixture for this test
-    instruction_fixture_t *own_fixture = ar_instruction_fixture_create("test_agent_message_expressions");
+    instruction_fixture_t *own_fixture = ar__instruction_fixture__create("test_agent_message_expressions");
     assert(own_fixture != NULL);
     
     // Create data structures using fixture
-    data_t *own_memory = ar_instruction_fixture_create_empty_map(own_fixture);
+    data_t *own_memory = ar__instruction_fixture__create_empty_map(own_fixture);
     assert(own_memory != NULL);
     
-    data_t *own_context = ar_instruction_fixture_create_empty_map(own_fixture);
+    data_t *own_context = ar__instruction_fixture__create_empty_map(own_fixture);
     assert(own_context != NULL);
     
-    data_t *own_message = ar_instruction_fixture_create_empty_map(own_fixture);
+    data_t *own_message = ar__instruction_fixture__create_empty_map(own_fixture);
     assert(own_message != NULL);
     ar_data_set_map_string(own_message, "method_name", "echo_method");
     ar_data_set_map_string(own_message, "version", "1.0.0");
@@ -876,7 +876,7 @@ static void test_agent_function_with_message_expressions(void) {
     ar_instruction_destroy_context(own_ctx);
     
     // Clean up (fixture handles data destruction)
-    ar_instruction_fixture_destroy(own_fixture);
+    ar__instruction_fixture__destroy(own_fixture);
     
     printf("Agent function with message expressions test completed.\n");
 }
@@ -886,11 +886,11 @@ static void test_error_reporting(void) {
     printf("Testing error reporting...\n");
     
     // Create fixture for this test
-    instruction_fixture_t *own_fixture = ar_instruction_fixture_create("test_error_reporting");
+    instruction_fixture_t *own_fixture = ar__instruction_fixture__create("test_error_reporting");
     assert(own_fixture != NULL);
     
     // Create a test agent
-    int64_t agent_id = ar_instruction_fixture_create_test_agent(
+    int64_t agent_id = ar__instruction_fixture__create_test_agent(
         own_fixture, "error_test_agent", ""
     );
     assert(agent_id > 0);
@@ -964,7 +964,7 @@ static void test_error_reporting(void) {
     ar_instruction_destroy_context(own_ctx);
     
     // Clean up (fixture handles agent destruction)
-    ar_instruction_fixture_destroy(own_fixture);
+    ar__instruction_fixture__destroy(own_fixture);
     
     printf("Error reporting tests completed.\n");
 }

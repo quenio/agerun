@@ -20,9 +20,9 @@ static void test_store_basics(void) {
     printf("Testing store basic operations...\n");
     
     // Given a system
-    system_fixture_t *own_fixture = ar_system_fixture_create("test_basics");
+    system_fixture_t *own_fixture = ar__system_fixture__create("test_basics");
     assert(own_fixture != NULL);
-    assert(ar_system_fixture_initialize(own_fixture));
+    assert(ar__system_fixture__initialize(own_fixture));
     
     // Given a clean environment
     ar_agent_store_delete();
@@ -46,10 +46,10 @@ static void test_store_basics(void) {
     assert(!ar_agent_store_exists());
     
     // Check for memory leaks
-    assert(ar_system_fixture_check_memory(own_fixture));
+    assert(ar__system_fixture__check_memory(own_fixture));
     
     // Clean up
-    ar_system_fixture_destroy(own_fixture);
+    ar__system_fixture__destroy(own_fixture);
     
     printf("✓ Store basic operations test passed\n");
 }
@@ -58,9 +58,9 @@ static void test_store_empty_save_load(void) {
     printf("Testing empty store save/load...\n");
     
     // Given a system with no agents
-    system_fixture_t *own_fixture = ar_system_fixture_create("test_empty");
+    system_fixture_t *own_fixture = ar__system_fixture__create("test_empty");
     assert(own_fixture != NULL);
-    assert(ar_system_fixture_initialize(own_fixture));
+    assert(ar__system_fixture__initialize(own_fixture));
     
     // Clean up any existing store
     ar_agent_store_delete();
@@ -76,11 +76,11 @@ static void test_store_empty_save_load(void) {
     assert(ar_agency_count_active_agents() == 0);
     
     // Check for memory leaks
-    assert(ar_system_fixture_check_memory(own_fixture));
+    assert(ar__system_fixture__check_memory(own_fixture));
     
     // Clean up
     ar_agent_store_delete();
-    ar_system_fixture_destroy(own_fixture);
+    ar__system_fixture__destroy(own_fixture);
     
     printf("✓ Empty store save/load test passed\n");
 }
@@ -89,15 +89,15 @@ static void test_store_single_agent(void) {
     printf("Testing single agent persistence...\n");
     
     // Given a system with one agent
-    system_fixture_t *own_fixture = ar_system_fixture_create("test_single");
+    system_fixture_t *own_fixture = ar__system_fixture__create("test_single");
     assert(own_fixture != NULL);
-    assert(ar_system_fixture_initialize(own_fixture));
+    assert(ar__system_fixture__initialize(own_fixture));
     
     // Clean up any existing store
     ar_agent_store_delete();
     
     // Register a test method
-    method_t *ref_method = ar_system_fixture_register_method(
+    method_t *ref_method = ar__system_fixture__register_method(
         own_fixture, "echo", "send(sender, message)", "1.0.0"
     );
     assert(ref_method != NULL);
@@ -157,11 +157,11 @@ static void test_store_single_agent(void) {
     assert(value == 3.14);
     
     // Check for memory leaks
-    assert(ar_system_fixture_check_memory(own_fixture));
+    assert(ar__system_fixture__check_memory(own_fixture));
     
     // Clean up
     ar_agent_store_delete();
-    ar_system_fixture_destroy(own_fixture);
+    ar__system_fixture__destroy(own_fixture);
     
     printf("✓ Single agent persistence test passed\n");
 }
@@ -170,20 +170,20 @@ static void test_store_multiple_agents(void) {
     printf("Testing multiple agent persistence...\n");
     
     // Given a system with multiple agents
-    system_fixture_t *own_fixture = ar_system_fixture_create("test_multiple");
+    system_fixture_t *own_fixture = ar__system_fixture__create("test_multiple");
     assert(own_fixture != NULL);
-    assert(ar_system_fixture_initialize(own_fixture));
+    assert(ar__system_fixture__initialize(own_fixture));
     
     // Clean up any existing store
     ar_agent_store_delete();
     
     // Register methods
-    method_t *ref_echo = ar_system_fixture_register_method(
+    method_t *ref_echo = ar__system_fixture__register_method(
         own_fixture, "echo", "send(sender, message)", "1.0.0"
     );
     assert(ref_echo != NULL);
     
-    method_t *ref_calc = ar_system_fixture_register_method(
+    method_t *ref_calc = ar__system_fixture__register_method(
         own_fixture, "calc", "send(sender, \"result: \" + (2 + 2))", "2.0.0"
     );
     assert(ref_calc != NULL);
@@ -277,11 +277,11 @@ static void test_store_multiple_agents(void) {
     assert(found_calculator);
     
     // Check for memory leaks
-    assert(ar_system_fixture_check_memory(own_fixture));
+    assert(ar__system_fixture__check_memory(own_fixture));
     
     // Clean up
     ar_agent_store_delete();
-    ar_system_fixture_destroy(own_fixture);
+    ar__system_fixture__destroy(own_fixture);
     
     printf("✓ Multiple agent persistence test passed\n");
 }
@@ -290,9 +290,9 @@ static void test_store_file_corruption(void) {
     printf("Testing store file corruption handling...\n");
     
     // Given a system
-    system_fixture_t *own_fixture = ar_system_fixture_create("test_corrupt");
+    system_fixture_t *own_fixture = ar__system_fixture__create("test_corrupt");
     assert(own_fixture != NULL);
-    assert(ar_system_fixture_initialize(own_fixture));
+    assert(ar__system_fixture__initialize(own_fixture));
     
     // Clean up any existing store
     ar_agent_store_delete();
@@ -322,10 +322,10 @@ static void test_store_file_corruption(void) {
     remove(backup_path);
     
     // Check for memory leaks
-    assert(ar_system_fixture_check_memory(own_fixture));
+    assert(ar__system_fixture__check_memory(own_fixture));
     
     // Clean up
-    ar_system_fixture_destroy(own_fixture);
+    ar__system_fixture__destroy(own_fixture);
     
     printf("✓ Store file corruption handling test passed\n");
 }
@@ -334,15 +334,15 @@ static void test_store_missing_method(void) {
     printf("Testing store with missing method...\n");
     
     // Given a system with an agent
-    system_fixture_t *own_fixture = ar_system_fixture_create("test_missing");
+    system_fixture_t *own_fixture = ar__system_fixture__create("test_missing");
     assert(own_fixture != NULL);
-    assert(ar_system_fixture_initialize(own_fixture));
+    assert(ar__system_fixture__initialize(own_fixture));
     
     // Clean up any existing store
     ar_agent_store_delete();
     
     // Register a method and create an agent
-    method_t *ref_method = ar_system_fixture_register_method(
+    method_t *ref_method = ar__system_fixture__register_method(
         own_fixture, "test", "send(0, \"ok\")", "1.0.0"
     );
     assert(ref_method != NULL);
@@ -355,7 +355,7 @@ static void test_store_missing_method(void) {
     assert(ar_agent_store_save());
     
     // Reset the system (loses method registration)
-    ar_system_fixture_reset_system(own_fixture);
+    ar__system_fixture__reset_system(own_fixture);
     
     // When loading without the method registered
     assert(ar_agent_store_load());
@@ -364,11 +364,11 @@ static void test_store_missing_method(void) {
     assert(ar_agency_count_active_agents() == 0);
     
     // Check for memory leaks
-    assert(ar_system_fixture_check_memory(own_fixture));
+    assert(ar__system_fixture__check_memory(own_fixture));
     
     // Clean up
     ar_agent_store_delete();
-    ar_system_fixture_destroy(own_fixture);
+    ar__system_fixture__destroy(own_fixture);
     
     printf("✓ Store with missing method test passed\n");
 }
@@ -377,15 +377,15 @@ static void test_store_id_preservation(void) {
     printf("Testing agent ID preservation...\n");
     
     // Given a system
-    system_fixture_t *own_fixture = ar_system_fixture_create("test_ids");
+    system_fixture_t *own_fixture = ar__system_fixture__create("test_ids");
     assert(own_fixture != NULL);
-    assert(ar_system_fixture_initialize(own_fixture));
+    assert(ar__system_fixture__initialize(own_fixture));
     
     // Clean up any existing store
     ar_agent_store_delete();
     
     // Register method
-    method_t *ref_method = ar_system_fixture_register_method(
+    method_t *ref_method = ar__system_fixture__register_method(
         own_fixture, "test", "send(0, \"ok\")", "1.0.0"
     );
     assert(ref_method != NULL);
@@ -418,11 +418,11 @@ static void test_store_id_preservation(void) {
     assert(new_id > id1 && new_id > id2 && new_id > id3);
     
     // Check for memory leaks
-    assert(ar_system_fixture_check_memory(own_fixture));
+    assert(ar__system_fixture__check_memory(own_fixture));
     
     // Clean up
     ar_agent_store_delete();
-    ar_system_fixture_destroy(own_fixture);
+    ar__system_fixture__destroy(own_fixture);
     
     printf("✓ Agent ID preservation test passed\n");
 }

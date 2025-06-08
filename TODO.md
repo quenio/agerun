@@ -10,7 +10,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [ ] Change all module functions from ar_<module>_<function> to ar__<module>__<function>
   - [x] Refactor executable module
   - [x] Refactor system module
-  - [ ] Refactor test fixtures (instruction_fixture, method_fixture, system_fixture)
+  - [x] Refactor test fixtures (instruction_fixture, method_fixture, system_fixture)
   - [ ] Refactor agency module
   - [ ] Refactor agent_store module
   - [ ] Refactor agent_update module

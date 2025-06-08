@@ -20,27 +20,27 @@ static void test_update_compatibility(void) {
     printf("Testing update compatibility checks...\n");
     
     // Given a system with methods
-    system_fixture_t *own_fixture = ar_system_fixture_create("test_compat");
+    system_fixture_t *own_fixture = ar__system_fixture__create("test_compat");
     assert(own_fixture != NULL);
-    assert(ar_system_fixture_initialize(own_fixture));
+    assert(ar__system_fixture__initialize(own_fixture));
     
     // Register different versions
-    method_t *ref_v1_0 = ar_system_fixture_register_method(
+    method_t *ref_v1_0 = ar__system_fixture__register_method(
         own_fixture, "echo", "send(sender, message)", "1.0.0"
     );
     assert(ref_v1_0 != NULL);
     
-    method_t *ref_v1_1 = ar_system_fixture_register_method(
+    method_t *ref_v1_1 = ar__system_fixture__register_method(
         own_fixture, "echo", "send(sender, message)", "1.1.0"
     );
     assert(ref_v1_1 != NULL);
     
-    method_t *ref_v2_0 = ar_system_fixture_register_method(
+    method_t *ref_v2_0 = ar__system_fixture__register_method(
         own_fixture, "echo", "send(sender, message)", "2.0.0"
     );
     assert(ref_v2_0 != NULL);
     
-    method_t *ref_other = ar_system_fixture_register_method(
+    method_t *ref_other = ar__system_fixture__register_method(
         own_fixture, "calc", "send(0, \"result\")", "1.0.0"
     );
     assert(ref_other != NULL);
@@ -63,10 +63,10 @@ static void test_update_compatibility(void) {
     assert(!ar_agent_update_are_compatible(NULL, NULL));
     
     // Check for memory leaks
-    assert(ar_system_fixture_check_memory(own_fixture));
+    assert(ar__system_fixture__check_memory(own_fixture));
     
     // Clean up
-    ar_system_fixture_destroy(own_fixture);
+    ar__system_fixture__destroy(own_fixture);
     
     printf("✓ Update compatibility test passed\n");
 }
@@ -75,17 +75,17 @@ static void test_count_using_method(void) {
     printf("Testing count agents using method...\n");
     
     // Given a system with agents
-    system_fixture_t *own_fixture = ar_system_fixture_create("test_count");
+    system_fixture_t *own_fixture = ar__system_fixture__create("test_count");
     assert(own_fixture != NULL);
-    assert(ar_system_fixture_initialize(own_fixture));
+    assert(ar__system_fixture__initialize(own_fixture));
     
     // Register methods
-    method_t *ref_echo = ar_system_fixture_register_method(
+    method_t *ref_echo = ar__system_fixture__register_method(
         own_fixture, "echo", "send(sender, message)", "1.0.0"
     );
     assert(ref_echo != NULL);
     
-    method_t *ref_calc = ar_system_fixture_register_method(
+    method_t *ref_calc = ar__system_fixture__register_method(
         own_fixture, "calc", "send(0, \"result\")", "1.0.0"
     );
     assert(ref_calc != NULL);
@@ -108,10 +108,10 @@ static void test_count_using_method(void) {
     assert(ar_agency_count_agents_using_method(NULL) == 0);
     
     // Check for memory leaks
-    assert(ar_system_fixture_check_memory(own_fixture));
+    assert(ar__system_fixture__check_memory(own_fixture));
     
     // Clean up
-    ar_system_fixture_destroy(own_fixture);
+    ar__system_fixture__destroy(own_fixture);
     
     printf("✓ Count using method test passed\n");
 }
@@ -120,23 +120,23 @@ static void test_update_without_lifecycle(void) {
     printf("Testing update without lifecycle events...\n");
     
     // Given a system with agents
-    system_fixture_t *own_fixture = ar_system_fixture_create("test_no_lifecycle");
+    system_fixture_t *own_fixture = ar__system_fixture__create("test_no_lifecycle");
     assert(own_fixture != NULL);
-    assert(ar_system_fixture_initialize(own_fixture));
+    assert(ar__system_fixture__initialize(own_fixture));
     
     // Register two versions
-    method_t *ref_v1_0 = ar_system_fixture_register_method(
+    method_t *ref_v1_0 = ar__system_fixture__register_method(
         own_fixture, "echo", "send(sender, \"v1.0: \" + message)", "1.0.0"
     );
     assert(ref_v1_0 != NULL);
     
-    method_t *ref_v1_1 = ar_system_fixture_register_method(
+    method_t *ref_v1_1 = ar__system_fixture__register_method(
         own_fixture, "echo", "send(sender, \"v1.1: \" + message)", "1.1.0"
     );
     assert(ref_v1_1 != NULL);
     
     // Register calc method for the third agent
-    ar_system_fixture_register_method(
+    ar__system_fixture__register_method(
         own_fixture, "calc", "send(0, \"result\")", "1.0.0"
     );
     
@@ -165,10 +165,10 @@ static void test_update_without_lifecycle(void) {
     assert(!ar_agency_agent_has_messages(agent2));
     
     // Check for memory leaks
-    assert(ar_system_fixture_check_memory(own_fixture));
+    assert(ar__system_fixture__check_memory(own_fixture));
     
     // Clean up
-    ar_system_fixture_destroy(own_fixture);
+    ar__system_fixture__destroy(own_fixture);
     
     printf("✓ Update without lifecycle test passed\n");
 }
@@ -177,19 +177,19 @@ static void test_update_with_lifecycle(void) {
     printf("Testing update with lifecycle events...\n");
     
     // Given a system with agents
-    system_fixture_t *own_fixture = ar_system_fixture_create("test_lifecycle");
+    system_fixture_t *own_fixture = ar__system_fixture__create("test_lifecycle");
     assert(own_fixture != NULL);
-    assert(ar_system_fixture_initialize(own_fixture));
+    assert(ar__system_fixture__initialize(own_fixture));
     
     // Register two simple versions
-    method_t *ref_v1_0 = ar_system_fixture_register_method(
+    method_t *ref_v1_0 = ar__system_fixture__register_method(
         own_fixture, "echo", 
         "send(sender, \"v1.0: \" + message)", 
         "1.0.0"
     );
     assert(ref_v1_0 != NULL);
     
-    method_t *ref_v1_1 = ar_system_fixture_register_method(
+    method_t *ref_v1_1 = ar__system_fixture__register_method(
         own_fixture, "echo", 
         "send(sender, \"v1.1: \" + message)", 
         "1.1.0"
@@ -228,10 +228,10 @@ static void test_update_with_lifecycle(void) {
     assert(ar_agency_get_agent_method(agent2) == ref_v1_1);
     
     // Check for memory leaks
-    assert(ar_system_fixture_check_memory(own_fixture));
+    assert(ar__system_fixture__check_memory(own_fixture));
     
     // Clean up
-    ar_system_fixture_destroy(own_fixture);
+    ar__system_fixture__destroy(own_fixture);
     
     printf("✓ Update with lifecycle test passed\n");
 }
@@ -240,22 +240,22 @@ static void test_update_incompatible(void) {
     printf("Testing update with incompatible versions...\n");
     
     // Given a system with agents
-    system_fixture_t *own_fixture = ar_system_fixture_create("test_incompat");
+    system_fixture_t *own_fixture = ar__system_fixture__create("test_incompat");
     assert(own_fixture != NULL);
-    assert(ar_system_fixture_initialize(own_fixture));
+    assert(ar__system_fixture__initialize(own_fixture));
     
     // Register incompatible versions
-    method_t *ref_v1_0 = ar_system_fixture_register_method(
+    method_t *ref_v1_0 = ar__system_fixture__register_method(
         own_fixture, "echo", "send(sender, message)", "1.0.0"
     );
     assert(ref_v1_0 != NULL);
     
-    method_t *ref_v2_0 = ar_system_fixture_register_method(
+    method_t *ref_v2_0 = ar__system_fixture__register_method(
         own_fixture, "echo", "send(sender, message)", "2.0.0"
     );
     assert(ref_v2_0 != NULL);
     
-    method_t *ref_other = ar_system_fixture_register_method(
+    method_t *ref_other = ar__system_fixture__register_method(
         own_fixture, "calc", "send(0, \"result\")", "1.0.0"
     );
     assert(ref_other != NULL);
@@ -277,10 +277,10 @@ static void test_update_incompatible(void) {
     assert(ar_agency_update_agent_methods(ref_v1_0, NULL, false) == 0);
     
     // Check for memory leaks
-    assert(ar_system_fixture_check_memory(own_fixture));
+    assert(ar__system_fixture__check_memory(own_fixture));
     
     // Clean up
-    ar_system_fixture_destroy(own_fixture);
+    ar__system_fixture__destroy(own_fixture);
     
     printf("✓ Update incompatible test passed\n");
 }
@@ -289,17 +289,17 @@ static void test_update_no_agents(void) {
     printf("Testing update with no matching agents...\n");
     
     // Given a system with no agents
-    system_fixture_t *own_fixture = ar_system_fixture_create("test_no_agents");
+    system_fixture_t *own_fixture = ar__system_fixture__create("test_no_agents");
     assert(own_fixture != NULL);
-    assert(ar_system_fixture_initialize(own_fixture));
+    assert(ar__system_fixture__initialize(own_fixture));
     
     // Register methods
-    method_t *ref_v1_0 = ar_system_fixture_register_method(
+    method_t *ref_v1_0 = ar__system_fixture__register_method(
         own_fixture, "echo", "send(sender, message)", "1.0.0"
     );
     assert(ref_v1_0 != NULL);
     
-    method_t *ref_v1_1 = ar_system_fixture_register_method(
+    method_t *ref_v1_1 = ar__system_fixture__register_method(
         own_fixture, "echo", "send(sender, message)", "1.1.0"
     );
     assert(ref_v1_1 != NULL);
@@ -311,10 +311,10 @@ static void test_update_no_agents(void) {
     assert(count == 0);
     
     // Check for memory leaks
-    assert(ar_system_fixture_check_memory(own_fixture));
+    assert(ar__system_fixture__check_memory(own_fixture));
     
     // Clean up
-    ar_system_fixture_destroy(own_fixture);
+    ar__system_fixture__destroy(own_fixture);
     
     printf("✓ Update no agents test passed\n");
 }

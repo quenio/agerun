@@ -13,6 +13,11 @@ This document tracks completed milestones and major achievements for the AgeRun 
     - ar_system_process_all_messages → ar__system__process_all_messages
   - ✅ Updated all references in test files and dependent modules
   - ✅ All 26 tests pass with zero memory leaks
+  - ✅ Completed test fixture refactoring:
+    - instruction_fixture: ar_instruction_fixture_* → ar__instruction_fixture__*
+    - method_fixture: ar_method_fixture_* → ar__method_fixture__*
+    - system_fixture: ar_system_fixture_* → ar__system_fixture__*
+  - ✅ Updated all test files using these fixtures
 
 ## 2025-06-08 (Later - Part 2)
 - ✅ Fixed Agency/Agent_Update circular dependency:

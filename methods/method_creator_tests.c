@@ -11,17 +11,17 @@ static void test_method_creator_create_simple(void) {
     printf("Testing method-creator method with simple method creation...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar_method_fixture_create("method_creator_create_simple");
+    method_fixture_t *own_fixture = ar__method_fixture__create("method_creator_create_simple");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar_method_fixture_initialize(own_fixture));
+    assert(ar__method_fixture__initialize(own_fixture));
     
     // Verify correct directory
-    assert(ar_method_fixture_verify_directory(own_fixture));
+    assert(ar__method_fixture__verify_directory(own_fixture));
     
     // Load method-creator method
-    assert(ar_method_fixture_load_method(own_fixture, "method-creator", "../methods/method-creator-1.0.0.method", "1.0.0"));
+    assert(ar__method_fixture__load_method(own_fixture, "method-creator", "../methods/method-creator-1.0.0.method", "1.0.0"));
     
     // Create method-creator agent
     int64_t creator_agent = ar_agency_create_agent("method-creator", "1.0.0", NULL);
@@ -77,10 +77,10 @@ static void test_method_creator_create_simple(void) {
     }
     
     // Check for memory leaks
-    assert(ar_method_fixture_check_memory(own_fixture));
+    assert(ar__method_fixture__check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar_method_fixture_destroy(own_fixture);
+    ar__method_fixture__destroy(own_fixture);
     
     printf("✓ Method creator create simple test passed\n");
 }
@@ -89,17 +89,17 @@ static void test_method_creator_invalid_syntax(void) {
     printf("Testing method-creator method with invalid syntax...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar_method_fixture_create("method_creator_invalid_syntax");
+    method_fixture_t *own_fixture = ar__method_fixture__create("method_creator_invalid_syntax");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar_method_fixture_initialize(own_fixture));
+    assert(ar__method_fixture__initialize(own_fixture));
     
     // Verify correct directory
-    assert(ar_method_fixture_verify_directory(own_fixture));
+    assert(ar__method_fixture__verify_directory(own_fixture));
     
     // Load method-creator method
-    assert(ar_method_fixture_load_method(own_fixture, "method-creator", "../methods/method-creator-1.0.0.method", "1.0.0"));
+    assert(ar__method_fixture__load_method(own_fixture, "method-creator", "../methods/method-creator-1.0.0.method", "1.0.0"));
     
     // Create method-creator agent
     int64_t creator_agent = ar_agency_create_agent("method-creator", "1.0.0", NULL);
@@ -151,10 +151,10 @@ static void test_method_creator_invalid_syntax(void) {
     }
     
     // Check for memory leaks
-    assert(ar_method_fixture_check_memory(own_fixture));
+    assert(ar__method_fixture__check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar_method_fixture_destroy(own_fixture);
+    ar__method_fixture__destroy(own_fixture);
     
     printf("✓ Method creator invalid syntax test passed\n");
 }
