@@ -13,7 +13,7 @@
 #include <string.h>
 
 /* Update agents using a specific method to use a different method */
-int ar_agent_update_update_methods(agent_registry_t *ref_registry,
+int ar__agent_update__update_methods(agent_registry_t *ref_registry,
                                   const method_t *ref_old_method, 
                                   const method_t *ref_new_method,
                                   bool send_lifecycle_events) {
@@ -22,7 +22,7 @@ int ar_agent_update_update_methods(agent_registry_t *ref_registry,
     }
     
     // Verify that the methods are compatible
-    if (!ar_agent_update_are_compatible(ref_old_method, ref_new_method)) {
+    if (!ar__agent_update__are_compatible(ref_old_method, ref_new_method)) {
         ar_io_warning("Cannot update agents to incompatible method version");
         return 0;
     }
@@ -59,7 +59,7 @@ int ar_agent_update_update_methods(agent_registry_t *ref_registry,
 }
 
 /* Count the number of agents using a specific method */
-int ar_agent_update_count_using_method(agent_registry_t *ref_registry,
+int ar__agent_update__count_using_method(agent_registry_t *ref_registry,
                                       const method_t *ref_method) {
     if (!ref_registry || !ref_method) {
         return 0;
@@ -80,7 +80,7 @@ int ar_agent_update_count_using_method(agent_registry_t *ref_registry,
 }
 
 /* Check if two method versions are compatible for update */
-bool ar_agent_update_are_compatible(const method_t *ref_old_method,
+bool ar__agent_update__are_compatible(const method_t *ref_old_method,
                                    const method_t *ref_new_method) {
     if (!ref_old_method || !ref_new_method) {
         return false;

@@ -47,20 +47,20 @@ static void test_update_compatibility(void) {
     
     // When checking compatibility
     // Then compatible versions should work
-    assert(ar_agent_update_are_compatible(ref_v1_0, ref_v1_1));
-    assert(ar_agent_update_are_compatible(ref_v1_1, ref_v1_0));
+    assert(ar__agent_update__are_compatible(ref_v1_0, ref_v1_1));
+    assert(ar__agent_update__are_compatible(ref_v1_1, ref_v1_0));
     
     // Then incompatible versions should fail
-    assert(!ar_agent_update_are_compatible(ref_v1_0, ref_v2_0));
-    assert(!ar_agent_update_are_compatible(ref_v2_0, ref_v1_0));
+    assert(!ar__agent_update__are_compatible(ref_v1_0, ref_v2_0));
+    assert(!ar__agent_update__are_compatible(ref_v2_0, ref_v1_0));
     
     // Then different methods should fail
-    assert(!ar_agent_update_are_compatible(ref_v1_0, ref_other));
+    assert(!ar__agent_update__are_compatible(ref_v1_0, ref_other));
     
     // Then null checks should work
-    assert(!ar_agent_update_are_compatible(NULL, ref_v1_0));
-    assert(!ar_agent_update_are_compatible(ref_v1_0, NULL));
-    assert(!ar_agent_update_are_compatible(NULL, NULL));
+    assert(!ar__agent_update__are_compatible(NULL, ref_v1_0));
+    assert(!ar__agent_update__are_compatible(ref_v1_0, NULL));
+    assert(!ar__agent_update__are_compatible(NULL, NULL));
     
     // Check for memory leaks
     assert(ar__system_fixture__check_memory(own_fixture));

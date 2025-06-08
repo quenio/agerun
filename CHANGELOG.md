@@ -27,6 +27,11 @@ This document tracks completed milestones and major achievements for the AgeRun 
     - Updated all references in tests and agency module
     - Fixed internal function call within agent_store.c
     - All tests pass with zero memory leaks
+  - ✅ Completed agent_update module refactoring:
+    - Changed all 3 agent_update functions from ar_agent_update_* to ar__agent_update__*
+    - Updated all references in tests and agency module
+    - Fixed internal function call within agent_update.c
+    - All tests pass with zero memory leaks
 
 ## 2025-06-08 (Later - Part 2)
 - ✅ Fixed Agency/Agent_Update circular dependency:

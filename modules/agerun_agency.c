@@ -74,7 +74,7 @@ int ar__agency__update_agent_methods(const method_t *ref_old_method, const metho
     }
     
     // Delegate to agent_update module, passing our registry
-    return ar_agent_update_update_methods(g_own_registry, ref_old_method, ref_new_method, send_lifecycle_events);
+    return ar__agent_update__update_methods(g_own_registry, ref_old_method, ref_new_method, send_lifecycle_events);
 }
 
 int ar__agency__count_agents_using_method(const method_t *ref_method) {
@@ -83,7 +83,7 @@ int ar__agency__count_agents_using_method(const method_t *ref_method) {
     }
     
     // Delegate to agent_update module, passing our registry
-    return ar_agent_update_count_using_method(g_own_registry, ref_method);
+    return ar__agent_update__count_using_method(g_own_registry, ref_method);
 }
 
 int64_t ar__agency__get_first_agent(void) {

@@ -13,7 +13,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Refactor test fixtures (instruction_fixture, method_fixture, system_fixture)
   - [x] Refactor agency module
   - [x] Refactor agent_store module
-  - [ ] Refactor agent_update module
+  - [x] Refactor agent_update module
   - [ ] Refactor agent module
   - [ ] Refactor agent_registry module
   - [ ] Refactor methodology module
