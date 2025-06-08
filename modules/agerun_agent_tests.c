@@ -29,7 +29,6 @@ static void test_agent_create_destroy(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar__methodology__register_method(method_t *own_method);
     ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
@@ -71,7 +70,6 @@ static void test_agent_send(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar__methodology__register_method(method_t *own_method);
     ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
@@ -116,7 +114,6 @@ static void test_agent_exists(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar__methodology__register_method(method_t *own_method);
     ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
@@ -165,7 +162,6 @@ static void test_agent_persistence(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar__methodology__register_method(method_t *own_method);
     ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
@@ -228,7 +224,6 @@ int main(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar__methodology__register_method(method_t *own_method);
     ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     

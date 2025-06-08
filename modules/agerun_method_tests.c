@@ -28,7 +28,6 @@ static void test_method_create(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar__methodology__register_method(method_t *own_method);
     ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
@@ -47,7 +46,6 @@ static void test_method_create_with_previous_version(void) {
     assert(own_method_v1 != NULL);
     
     // Register with methodology
-    extern void ar_methodology_register_method(method_t *own_method);
     ar__methodology__register_method(own_method_v1);
     own_method_v1 = NULL; // Mark as transferred
     
@@ -86,7 +84,6 @@ static void test_method_run(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar__methodology__register_method(method_t *own_method);
     ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
@@ -133,7 +130,6 @@ static void test_method_persistence(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar__methodology__register_method(method_t *own_method);
     ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
@@ -239,7 +235,6 @@ int main(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar__methodology__register_method(method_t *own_method);
     ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     

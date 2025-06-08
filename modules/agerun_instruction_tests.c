@@ -326,7 +326,6 @@ static void test_method_function(void) {
     assert(own_ctx != NULL);
     
     // Create a method using the methodology API directly to ensure it works
-    extern bool ar__methodology__create_method(const char *ref_name, const char *ref_instructions, const char *ref_version);
     bool direct_result = ar__methodology__create_method("test_method_direct", "memory.x := 20", "1.0.0");
     assert(direct_result);
     
@@ -580,7 +579,6 @@ static void test_agent_function(void) {
     // Also register it with methodology for agent creation
     method_t *own_method = ar_method_create("echo_method", "memory.output := message", "1.0.0");
     assert(own_method != NULL);
-    extern void ar__methodology__register_method(method_t *own_method);
     ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
@@ -849,7 +847,6 @@ static void test_agent_function_with_message_expressions(void) {
     // And the echo_method exists in the methodology
     method_t *own_method = ar_method_create("echo_method", "memory.output := message", "1.0.0");
     assert(own_method != NULL);
-    extern void ar__methodology__register_method(method_t *own_method);
     ar__methodology__register_method(own_method);
     own_method = NULL;
     
@@ -981,7 +978,6 @@ int main(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar__methodology__register_method(method_t *own_method);
     ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     

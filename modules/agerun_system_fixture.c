@@ -103,7 +103,6 @@ method_t* ar__system_fixture__register_method(system_fixture_t *mut_fixture,
     }
     
     // Register with methodology
-    extern void ar__methodology__register_method(method_t *own_method);
     ar__methodology__register_method(own_method);
     
     // Note: ownership was transferred to methodology, but we return the pointer

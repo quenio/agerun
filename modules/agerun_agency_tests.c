@@ -29,7 +29,6 @@ static void test_agency_count_agents(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar__methodology__register_method(method_t *own_method);
     ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
@@ -84,7 +83,6 @@ static void test_agency_persistence(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar__methodology__register_method(method_t *own_method);
     ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
@@ -136,7 +134,6 @@ static void test_agency_reset(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar__methodology__register_method(method_t *own_method);
     ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
@@ -177,7 +174,6 @@ int main(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar__methodology__register_method(method_t *own_method);
     ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
