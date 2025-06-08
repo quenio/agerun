@@ -24,15 +24,15 @@ static void test_grade_evaluator_grades(void) {
     assert(ar__method_fixture__load_method(own_fixture, "grade-evaluator", "../methods/grade-evaluator-1.0.0.method", "1.0.0"));
     
     // Create grade-evaluator agent
-    int64_t evaluator_agent = ar_agency_create_agent("grade-evaluator", "1.0.0", NULL);
+    int64_t evaluator_agent = ar__agency__create_agent("grade-evaluator", "1.0.0", NULL);
     assert(evaluator_agent > 0);
     
     // Process wake message
     printf("DEBUG: About to process wake message for agent %lld\n", (long long)evaluator_agent);
-    printf("DEBUG: Agent exists: %s\n", ar_agency_agent_exists(evaluator_agent) ? "yes" : "no");
+    printf("DEBUG: Agent exists: %s\n", ar__agency__agent_exists(evaluator_agent) ? "yes" : "no");
     
     // Check if agent has messages before processing
-    bool has_messages = ar_agency_agent_has_messages(evaluator_agent);
+    bool has_messages = ar__agency__agent_has_messages(evaluator_agent);
     printf("DEBUG: Agent has messages: %s\n", has_messages ? "yes" : "no");
     
     bool wake_processed = ar__system__process_next_message();
@@ -43,7 +43,7 @@ static void test_grade_evaluator_grades(void) {
     }
     
     // Verify agent memory was initialized
-    const data_t *agent_memory = ar_agency_get_agent_memory(evaluator_agent);
+    const data_t *agent_memory = ar__agency__get_agent_memory(evaluator_agent);
     assert(agent_memory != NULL);
     
     // Test case 1: Grade A (90+)
@@ -54,7 +54,7 @@ static void test_grade_evaluator_grades(void) {
     ar_data_set_map_string(own_message, "type", "grade");
     ar_data_set_map_integer(own_message, "value", 95);
     
-    bool sent = ar_agency_send_to_agent(evaluator_agent, own_message);
+    bool sent = ar__agency__send_to_agent(evaluator_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
@@ -89,7 +89,7 @@ static void test_grade_evaluator_grades(void) {
     ar_data_set_map_string(own_message2, "type", "grade");
     ar_data_set_map_integer(own_message2, "value", 85);
     
-    sent = ar_agency_send_to_agent(evaluator_agent, own_message2);
+    sent = ar__agency__send_to_agent(evaluator_agent, own_message2);
     assert(sent);
     own_message2 = NULL; // Ownership transferred
     
@@ -109,7 +109,7 @@ static void test_grade_evaluator_grades(void) {
     ar_data_set_map_string(own_message3, "type", "grade");
     ar_data_set_map_integer(own_message3, "value", 75);
     
-    sent = ar_agency_send_to_agent(evaluator_agent, own_message3);
+    sent = ar__agency__send_to_agent(evaluator_agent, own_message3);
     assert(sent);
     own_message3 = NULL; // Ownership transferred
     
@@ -129,7 +129,7 @@ static void test_grade_evaluator_grades(void) {
     ar_data_set_map_string(own_message4, "type", "grade");
     ar_data_set_map_integer(own_message4, "value", 65);
     
-    sent = ar_agency_send_to_agent(evaluator_agent, own_message4);
+    sent = ar__agency__send_to_agent(evaluator_agent, own_message4);
     assert(sent);
     own_message4 = NULL; // Ownership transferred
     
@@ -167,14 +167,14 @@ static void test_grade_evaluator_status(void) {
     assert(ar__method_fixture__load_method(own_fixture, "grade-evaluator", "../methods/grade-evaluator-1.0.0.method", "1.0.0"));
     
     // Create grade-evaluator agent
-    int64_t evaluator_agent = ar_agency_create_agent("grade-evaluator", "1.0.0", NULL);
+    int64_t evaluator_agent = ar__agency__create_agent("grade-evaluator", "1.0.0", NULL);
     assert(evaluator_agent > 0);
     
     // Process wake message
     printf("DEBUG: About to process wake message for agent %lld\n", (long long)evaluator_agent);
-    printf("DEBUG: Agent exists: %s\n", ar_agency_agent_exists(evaluator_agent) ? "yes" : "no");
+    printf("DEBUG: Agent exists: %s\n", ar__agency__agent_exists(evaluator_agent) ? "yes" : "no");
     
-    bool has_messages = ar_agency_agent_has_messages(evaluator_agent);
+    bool has_messages = ar__agency__agent_has_messages(evaluator_agent);
     printf("DEBUG: Agent has messages: %s\n", has_messages ? "yes" : "no");
     
     bool wake_processed = ar__system__process_next_message();
@@ -192,14 +192,14 @@ static void test_grade_evaluator_status(void) {
     ar_data_set_map_string(own_message, "type", "status");
     ar_data_set_map_integer(own_message, "value", 5);
     
-    bool sent = ar_agency_send_to_agent(evaluator_agent, own_message);
+    bool sent = ar__agency__send_to_agent(evaluator_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
     bool processed = ar__system__process_next_message();
     assert(processed);
     
-    const data_t *agent_memory = ar_agency_get_agent_memory(evaluator_agent);
+    const data_t *agent_memory = ar__agency__get_agent_memory(evaluator_agent);
     assert(agent_memory != NULL);
     
     const data_t *status = ar_data_get_map_data(agent_memory, "status");
@@ -215,7 +215,7 @@ static void test_grade_evaluator_status(void) {
     ar_data_set_map_string(own_message2, "type", "status");
     ar_data_set_map_integer(own_message2, "value", 0);
     
-    sent = ar_agency_send_to_agent(evaluator_agent, own_message2);
+    sent = ar__agency__send_to_agent(evaluator_agent, own_message2);
     assert(sent);
     own_message2 = NULL; // Ownership transferred
     
@@ -235,7 +235,7 @@ static void test_grade_evaluator_status(void) {
     ar_data_set_map_string(own_message3, "type", "unknown");
     ar_data_set_map_integer(own_message3, "value", 100);
     
-    sent = ar_agency_send_to_agent(evaluator_agent, own_message3);
+    sent = ar__agency__send_to_agent(evaluator_agent, own_message3);
     assert(sent);
     own_message3 = NULL; // Ownership transferred
     

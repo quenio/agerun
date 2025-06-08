@@ -35,13 +35,13 @@ static list_t* get_active_agent_list(void) {
         return NULL;
     }
     
-    int64_t agent_id = ar_agency_get_first_agent();
+    int64_t agent_id = ar__agency__get_first_agent();
     while (agent_id != 0) {
         data_t *own_id_data = ar_data_create_integer((int)agent_id);
         if (own_id_data) {
             ar_list_add_last(own_list, own_id_data);
         }
-        agent_id = ar_agency_get_next_agent(agent_id);
+        agent_id = ar__agency__get_next_agent(agent_id);
     }
     
     return own_list;
@@ -105,7 +105,7 @@ static bool store_write_function(FILE *fp, void *context) {
         data_t *ref_id_data = (data_t*)own_items[i];
         if (ref_id_data) {
             int64_t agent_id = ar_data_get_integer(ref_id_data);
-            const method_t *ref_method = ar_agency_get_agent_method(agent_id);
+            const method_t *ref_method = ar__agency__get_agent_method(agent_id);
             if (ref_method != NULL) {
                 count++;
             }
@@ -135,7 +135,7 @@ static bool store_write_function(FILE *fp, void *context) {
         }
         
         int64_t agent_id = ar_data_get_integer(ref_id_data);
-        const method_t *ref_method = ar_agency_get_agent_method(agent_id);
+        const method_t *ref_method = ar__agency__get_agent_method(agent_id);
         
         if (ref_method == NULL) {
             continue; // Skip agents without methods
@@ -166,7 +166,7 @@ static bool store_write_function(FILE *fp, void *context) {
         }
         
         // Get agent memory
-        data_t *ref_memory = ar_agency_get_agent_mutable_memory(agent_id);
+        data_t *ref_memory = ar__agency__get_agent_mutable_memory(agent_id);
         
         if (!ref_memory || ar_data_get_type(ref_memory) != DATA_MAP) {
             // No memory or not a map - write 0 items
@@ -524,7 +524,7 @@ bool ar_agent_store_save(void) {
         // Continue despite permission issues
     }
     
-    ar_io_info("Successfully saved %d agents to file", ar_agency_count_active_agents());
+    ar_io_info("Successfully saved %d agents to file", ar__agency__count_active_agents());
     return true;
 }
 
@@ -703,7 +703,7 @@ bool ar_agent_store_load(void) {
         }
         
         // Create the agent
-        int64_t new_id = ar_agency_create_agent(
+        int64_t new_id = ar__agency__create_agent(
             own_agent_info[i].method_name,
             own_agent_info[i].method_version,
             NULL);
@@ -737,7 +737,7 @@ bool ar_agent_store_load(void) {
         }
         
         // Update the assigned ID to match the stored one
-        bool id_updated = ar_agency_set_agent_id(new_id, own_agent_info[i].id);
+        bool id_updated = ar__agency__set_agent_id(new_id, own_agent_info[i].id);
         ar_io_info("ID update result: %s (from %lld to %lld)", 
                    id_updated ? "success" : "failure", 
                    new_id, own_agent_info[i].id);
@@ -762,7 +762,7 @@ bool ar_agent_store_load(void) {
         }
         
         // Get mutable memory for this agent
-        data_t *mut_memory = ar_agency_get_agent_mutable_memory(own_agent_info[i].id);
+        data_t *mut_memory = ar__agency__get_agent_mutable_memory(own_agent_info[i].id);
         if (!mut_memory && mem_count > 0) {
             ar_io_error("Agent %lld has no memory map but file indicates %d items", 
                        own_agent_info[i].id, mem_count);
@@ -876,7 +876,7 @@ bool ar_agent_store_load(void) {
         }
         
         // Update next_agent_id if needed to prevent ID collision
-        agent_registry_t *ref_registry = ar_agency_get_registry();
+        agent_registry_t *ref_registry = ar__agency__get_registry();
         if (ref_registry) {
             int64_t next_id = ar_agent_registry_get_next_id(ref_registry);
             if (own_agent_info[i].id >= next_id) {

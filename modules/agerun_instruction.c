@@ -101,8 +101,8 @@ bool ar_instruction_send_message(int64_t target_id, data_t *own_message) {
         return true;
     }
     
-    // Send message (ownership of own_message is transferred to ar_agency_send_to_agent)
-    return ar_agency_send_to_agent(target_id, own_message);
+    // Send message (ownership of own_message is transferred to ar__agency__send_to_agent)
+    return ar__agency__send_to_agent(target_id, own_message);
 }
 
 // Parse and execute a single instruction
@@ -1631,7 +1631,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         (*mut_pos)++; // Skip ')'
         
         // Create the agent
-        int64_t agent_id = ar_agency_create_agent(method_name, version_str, ref_agent_context);
+        int64_t agent_id = ar__agency__create_agent(method_name, version_str, ref_agent_context);
         
         // Check if agent creation failed (method not found)
         if (agent_id == 0) {
@@ -1808,7 +1808,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             int64_t agent_id = (int64_t)ar_data_get_integer(arg_to_use);
             
             // Destroy the agent
-            bool success = ar_agency_destroy_agent(agent_id);
+            bool success = ar__agency__destroy_agent(agent_id);
             
             // Clean up
             if (own_arg1) {

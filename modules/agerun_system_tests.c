@@ -76,18 +76,18 @@ static void test_agent_creation(void) {
     const char *version = "1.0.0";
     
     // When we create an agent with this method
-    int64_t agent_id = ar_agency_create_agent(method_name, version, NULL);
+    int64_t agent_id = ar__agency__create_agent(method_name, version, NULL);
     
     // Then the agent should be created successfully
     assert(agent_id > 0);
     
     // And the agent should exist in the system
-    assert(ar_agency_agent_exists(agent_id));
+    assert(ar__agency__agent_exists(agent_id));
     
     // When we send a message to the agent
     data_t *test_message = ar_data_create_string(g_test_message);
     assert(test_message != NULL);
-    bool send_result = ar_agency_send_to_agent(agent_id, test_message);
+    bool send_result = ar__agency__send_to_agent(agent_id, test_message);
     
     // Then the message should be sent successfully
     assert(send_result);
@@ -97,13 +97,13 @@ static void test_agent_creation(void) {
     ar__system__process_next_message();
     
     // When we destroy the agent
-    ar_agency_destroy_agent(agent_id);
+    ar__agency__destroy_agent(agent_id);
     
     // Then the destruction should succeed
     // Agency destroy returns void
     
     // And the agent should no longer exist in the system
-    assert(!ar_agency_agent_exists(agent_id));
+    assert(!ar__agency__agent_exists(agent_id));
     
     printf("Agent creation test passed.\n");
 }
@@ -136,12 +136,12 @@ static void test_message_passing(void) {
     const char *receiver_version = "1.0.0";
     
     // And a receiver agent created with the receiver method
-    int64_t receiver_id = ar_agency_create_agent("receiver", receiver_version, NULL);
+    int64_t receiver_id = ar__agency__create_agent("receiver", receiver_version, NULL);
     assert(receiver_id > 0);
     
     // And a sender agent created with the sender method
     // Note: In the full implementation, a context with receiver ID would be passed
-    int64_t sender_id = ar_agency_create_agent("sender", sender_version, NULL);
+    int64_t sender_id = ar__agency__create_agent("sender", sender_version, NULL);
     assert(sender_id > 0);
     
     // When we send __wake__ messages to both agents
@@ -149,8 +149,8 @@ static void test_message_passing(void) {
     data_t *wake_message2 = ar_data_create_string(g_wake_message);
     assert(wake_message1 != NULL);
     assert(wake_message2 != NULL);
-    bool receiver_send = ar_agency_send_to_agent(receiver_id, wake_message1);
-    bool sender_send = ar_agency_send_to_agent(sender_id, wake_message2);
+    bool receiver_send = ar__agency__send_to_agent(receiver_id, wake_message1);
+    bool sender_send = ar__agency__send_to_agent(sender_id, wake_message2);
     
     // Then the messages should be sent successfully
     assert(receiver_send);
@@ -161,8 +161,8 @@ static void test_message_passing(void) {
     ar__system__process_all_messages();
     
     // When we clean up the agents
-    ar_agency_destroy_agent(sender_id);
-    ar_agency_destroy_agent(receiver_id);
+    ar__agency__destroy_agent(sender_id);
+    ar__agency__destroy_agent(receiver_id);
     
     // Then the destruction should succeed
     // Agency destroy returns void
@@ -202,7 +202,7 @@ int main(void) {
     const char *version = "1.0.0";
     
     // When we create an initial agent with this method
-    initial_agent = ar_agency_create_agent("test_init", version, NULL);
+    initial_agent = ar__agency__create_agent("test_init", version, NULL);
     
     // Then the agent should be created successfully
     if (initial_agent == 0) {
@@ -214,7 +214,7 @@ int main(void) {
     // When we send a wake message to the initial agent
     data_t *wake_message3 = ar_data_create_string(g_wake_message);
     assert(wake_message3 != NULL);
-    bool send_result = ar_agency_send_to_agent(initial_agent, wake_message3);
+    bool send_result = ar__agency__send_to_agent(initial_agent, wake_message3);
     
     // Then the message should be sent successfully
     if (!send_result) {

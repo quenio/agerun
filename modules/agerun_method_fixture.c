@@ -50,7 +50,7 @@ void ar__method_fixture__destroy(method_fixture_t *own_fixture) {
     if (own_fixture->initialized) {
         ar__system__shutdown();
         ar_methodology_cleanup();
-        ar_agency_reset();
+        ar__agency__reset();
         
         // Remove persistence files
         remove("methodology.agerun");
@@ -69,7 +69,7 @@ bool ar__method_fixture__initialize(method_fixture_t *mut_fixture) {
     // Clean shutdown of any existing state
     ar__system__shutdown();
     ar_methodology_cleanup();
-    ar_agency_reset();
+    ar__agency__reset();
     
     // Remove persistence files
     remove("methodology.agerun");

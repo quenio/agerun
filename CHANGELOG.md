@@ -18,6 +18,10 @@ This document tracks completed milestones and major achievements for the AgeRun 
     - method_fixture: ar_method_fixture_* → ar__method_fixture__*
     - system_fixture: ar_system_fixture_* → ar__system_fixture__*
   - ✅ Updated all test files using these fixtures
+  - ✅ Completed agency module refactoring:
+    - Changed all 26 agency functions from ar_agency_* to ar__agency__*
+    - Updated all references in modules/ and methods/ directories
+    - All tests pass with zero memory leaks
 
 ## 2025-06-08 (Later - Part 2)
 - ✅ Fixed Agency/Agent_Update circular dependency:

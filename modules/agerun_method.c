@@ -92,8 +92,8 @@ bool ar_method_run(int64_t agent_id, const data_t *ref_message, const char *ref_
     }
     
     // Get agent's memory and context using accessor functions
-    data_t *mut_memory = ar_agency_get_agent_mutable_memory(agent_id);
-    const data_t *ref_context = ar_agency_get_agent_context(agent_id);
+    data_t *mut_memory = ar__agency__get_agent_mutable_memory(agent_id);
+    const data_t *ref_context = ar__agency__get_agent_context(agent_id);
     
     if (!mut_memory) {
         return false; // Agent doesn't exist or has no memory

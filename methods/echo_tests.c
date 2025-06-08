@@ -24,14 +24,14 @@ static void test_echo_simple_message(void) {
     assert(ar__method_fixture__load_method(own_fixture, "echo", "../methods/echo-1.0.0.method", "1.0.0"));
     
     // Create echo agent
-    int64_t echo_agent = ar_agency_create_agent("echo", "1.0.0", NULL);
+    int64_t echo_agent = ar__agency__create_agent("echo", "1.0.0", NULL);
     assert(echo_agent != 0);
     
     // Process wake message
     ar__system__process_next_message();
     
     // Verify agent memory was initialized
-    const data_t *agent_memory = ar_agency_get_agent_memory(echo_agent);
+    const data_t *agent_memory = ar__agency__get_agent_memory(echo_agent);
     assert(agent_memory != NULL);
     
     // When we send a message with sender field
@@ -48,7 +48,7 @@ static void test_echo_simple_message(void) {
     ar_data_set_map_data(own_message, "content", own_content);
     own_content = NULL; // Ownership transferred
     
-    bool sent = ar_agency_send_to_agent(echo_agent, own_message);
+    bool sent = ar__agency__send_to_agent(echo_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
@@ -62,7 +62,7 @@ static void test_echo_simple_message(void) {
     processed = ar__system__process_next_message();
     
     // Clean up
-    ar_agency_destroy_agent(echo_agent);
+    ar__agency__destroy_agent(echo_agent);
     
     // Check for memory leaks
     assert(ar__method_fixture__check_memory(own_fixture));
@@ -90,14 +90,14 @@ static void test_echo_map_message(void) {
     assert(ar__method_fixture__load_method(own_fixture, "echo", "../methods/echo-1.0.0.method", "1.0.0"));
     
     // Create echo agent
-    int64_t echo_agent = ar_agency_create_agent("echo", "1.0.0", NULL);
+    int64_t echo_agent = ar__agency__create_agent("echo", "1.0.0", NULL);
     assert(echo_agent != 0);
     
     // Process wake message
     ar__system__process_next_message();
     
     // Verify agent memory was initialized
-    const data_t *agent_memory = ar_agency_get_agent_memory(echo_agent);
+    const data_t *agent_memory = ar__agency__get_agent_memory(echo_agent);
     assert(agent_memory != NULL);
     
     // When we send a map message
@@ -108,7 +108,7 @@ static void test_echo_map_message(void) {
     ar_data_set_map_string(own_map_message, "content", "Hello from map!");
     ar_data_set_map_integer(own_map_message, "count", 42);
     
-    bool sent = ar_agency_send_to_agent(echo_agent, own_map_message);
+    bool sent = ar__agency__send_to_agent(echo_agent, own_map_message);
     assert(sent);
     own_map_message = NULL; // Ownership transferred
     
@@ -120,7 +120,7 @@ static void test_echo_map_message(void) {
     processed = ar__system__process_next_message();
     
     // Clean up
-    ar_agency_destroy_agent(echo_agent);
+    ar__agency__destroy_agent(echo_agent);
     
     // Check for memory leaks
     assert(ar__method_fixture__check_memory(own_fixture));

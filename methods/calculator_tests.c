@@ -24,7 +24,7 @@ static void test_calculator_add(void) {
     assert(ar__method_fixture__load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
     
     // Create calculator agent
-    int64_t calc_agent = ar_agency_create_agent("calculator", "1.0.0", NULL);
+    int64_t calc_agent = ar__agency__create_agent("calculator", "1.0.0", NULL);
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
@@ -40,7 +40,7 @@ static void test_calculator_add(void) {
     ar_data_set_map_integer(own_message, "b", 3);
     
     printf("DEBUG: About to process calculator message\n");
-    bool sent = ar_agency_send_to_agent(calc_agent, own_message);
+    bool sent = ar__agency__send_to_agent(calc_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
@@ -49,7 +49,7 @@ static void test_calculator_add(void) {
     assert(processed);
     
     // Get agent memory to check result
-    const data_t *agent_memory = ar_agency_get_agent_memory(calc_agent);
+    const data_t *agent_memory = ar__agency__get_agent_memory(calc_agent);
     assert(agent_memory != NULL);
     assert(ar_data_get_type(agent_memory) == DATA_MAP);
     
@@ -62,7 +62,7 @@ static void test_calculator_add(void) {
     printf("SUCCESS: Calculator add operation: 5 + 3 = 8\n");
     
     // Clean up
-    ar_agency_destroy_agent(calc_agent);
+    ar__agency__destroy_agent(calc_agent);
     
     // Check for memory leaks
     assert(ar__method_fixture__check_memory(own_fixture));
@@ -90,7 +90,7 @@ static void test_calculator_multiply(void) {
     assert(ar__method_fixture__load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
     
     // Create calculator agent
-    int64_t calc_agent = ar_agency_create_agent("calculator", "1.0.0", NULL);
+    int64_t calc_agent = ar__agency__create_agent("calculator", "1.0.0", NULL);
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
@@ -106,7 +106,7 @@ static void test_calculator_multiply(void) {
     ar_data_set_map_integer(own_message, "b", 2);
     
     printf("DEBUG: About to process calculator message\n");
-    bool sent = ar_agency_send_to_agent(calc_agent, own_message);
+    bool sent = ar__agency__send_to_agent(calc_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
@@ -115,7 +115,7 @@ static void test_calculator_multiply(void) {
     assert(processed);
     
     // Get agent memory to check result
-    const data_t *agent_memory = ar_agency_get_agent_memory(calc_agent);
+    const data_t *agent_memory = ar__agency__get_agent_memory(calc_agent);
     assert(agent_memory != NULL);
     
     // Check if result exists
@@ -127,7 +127,7 @@ static void test_calculator_multiply(void) {
     printf("SUCCESS: Calculator multiply operation: 5 * 2 = 10\n");
     
     // Clean up
-    ar_agency_destroy_agent(calc_agent);
+    ar__agency__destroy_agent(calc_agent);
     
     // Check for memory leaks
     assert(ar__method_fixture__check_memory(own_fixture));
@@ -155,7 +155,7 @@ static void test_calculator_subtract(void) {
     assert(ar__method_fixture__load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
     
     // Create calculator agent
-    int64_t calc_agent = ar_agency_create_agent("calculator", "1.0.0", NULL);
+    int64_t calc_agent = ar__agency__create_agent("calculator", "1.0.0", NULL);
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
@@ -171,7 +171,7 @@ static void test_calculator_subtract(void) {
     ar_data_set_map_integer(own_message, "b", 7);
     
     printf("DEBUG: About to process calculator message\n");
-    bool sent = ar_agency_send_to_agent(calc_agent, own_message);
+    bool sent = ar__agency__send_to_agent(calc_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
@@ -180,7 +180,7 @@ static void test_calculator_subtract(void) {
     assert(processed);
     
     // Get agent memory to check result
-    const data_t *agent_memory = ar_agency_get_agent_memory(calc_agent);
+    const data_t *agent_memory = ar__agency__get_agent_memory(calc_agent);
     assert(agent_memory != NULL);
     
     // Check if result exists
@@ -193,7 +193,7 @@ static void test_calculator_subtract(void) {
     assert(subtract_result == 3);
     
     // Clean up
-    ar_agency_destroy_agent(calc_agent);
+    ar__agency__destroy_agent(calc_agent);
     
     // Check for memory leaks
     assert(ar__method_fixture__check_memory(own_fixture));
@@ -221,7 +221,7 @@ static void test_calculator_divide(void) {
     assert(ar__method_fixture__load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
     
     // Create calculator agent
-    int64_t calc_agent = ar_agency_create_agent("calculator", "1.0.0", NULL);
+    int64_t calc_agent = ar__agency__create_agent("calculator", "1.0.0", NULL);
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
@@ -237,7 +237,7 @@ static void test_calculator_divide(void) {
     ar_data_set_map_integer(own_message, "b", 2);
     
     printf("DEBUG: About to process calculator message\n");
-    bool sent = ar_agency_send_to_agent(calc_agent, own_message);
+    bool sent = ar__agency__send_to_agent(calc_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
@@ -246,7 +246,7 @@ static void test_calculator_divide(void) {
     assert(processed);
     
     // Get agent memory to check result
-    const data_t *agent_memory = ar_agency_get_agent_memory(calc_agent);
+    const data_t *agent_memory = ar__agency__get_agent_memory(calc_agent);
     assert(agent_memory != NULL);
     
     // Check if result exists (integer division)
@@ -261,7 +261,7 @@ static void test_calculator_divide(void) {
     assert(divide_result == 5);
     
     // Clean up
-    ar_agency_destroy_agent(calc_agent);
+    ar__agency__destroy_agent(calc_agent);
     
     // Check for memory leaks
     assert(ar__method_fixture__check_memory(own_fixture));
@@ -289,7 +289,7 @@ static void test_calculator_unknown_operation(void) {
     assert(ar__method_fixture__load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
     
     // Create calculator agent
-    int64_t calc_agent = ar_agency_create_agent("calculator", "1.0.0", NULL);
+    int64_t calc_agent = ar__agency__create_agent("calculator", "1.0.0", NULL);
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
@@ -305,7 +305,7 @@ static void test_calculator_unknown_operation(void) {
     ar_data_set_map_integer(own_message, "b", 3);
     
     printf("DEBUG: About to process calculator message\n");
-    bool sent = ar_agency_send_to_agent(calc_agent, own_message);
+    bool sent = ar__agency__send_to_agent(calc_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
@@ -314,7 +314,7 @@ static void test_calculator_unknown_operation(void) {
     assert(processed);
     
     // Get agent memory to check result
-    const data_t *agent_memory = ar_agency_get_agent_memory(calc_agent);
+    const data_t *agent_memory = ar__agency__get_agent_memory(calc_agent);
     assert(agent_memory != NULL);
     
     // Check if result exists (should be 0 for unknown operations)
@@ -327,7 +327,7 @@ static void test_calculator_unknown_operation(void) {
     assert(unknown_result == 0);
     
     // Clean up
-    ar_agency_destroy_agent(calc_agent);
+    ar__agency__destroy_agent(calc_agent);
     
     // Check for memory leaks
     assert(ar__method_fixture__check_memory(own_fixture));

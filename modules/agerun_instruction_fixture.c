@@ -82,7 +82,7 @@ void ar__instruction_fixture__destroy(instruction_fixture_t *own_fixture) {
     
     // Destroy test agent if created
     if (own_fixture->test_agent_id > 0) {
-        ar_agency_destroy_agent(own_fixture->test_agent_id);
+        ar__agency__destroy_agent(own_fixture->test_agent_id);
     }
     
     // Destroy all tracked expression contexts
@@ -367,7 +367,7 @@ int64_t ar__instruction_fixture__create_test_agent(
     own_method = NULL; // Ownership transferred
     
     // Create agent
-    int64_t agent_id = ar_agency_create_agent(ref_method_name, "1.0.0", NULL);
+    int64_t agent_id = ar__agency__create_agent(ref_method_name, "1.0.0", NULL);
     if (agent_id <= 0) {
         return 0;
     }

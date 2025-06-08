@@ -15,10 +15,10 @@ static void test_agency_reset(void);
 
 
 static void test_agency_count_agents(void) {
-    printf("Testing ar_agency_count_agents()...\n");
+    printf("Testing ar__agency__count_agents()...\n");
     
     // Given we have a count of existing agents
-    int initial_count = ar_agency_count_agents();
+    int initial_count = ar__agency__count_agents();
     
     // And we have a test method
     const char *method_name = "count_test_method";
@@ -41,34 +41,34 @@ static void test_agency_count_agents(void) {
     int64_t agent_ids[3];
     
     for (int i = 0; i < num_agents_to_create; i++) {
-        agent_ids[i] = ar_agency_create_agent(method_name, version, NULL);
+        agent_ids[i] = ar__agency__create_agent(method_name, version, NULL);
         assert(agent_ids[i] > 0);
     }
     
     // Then the agent count should increase by the number of agents created
-    int new_count = ar_agency_count_agents();
+    int new_count = ar__agency__count_agents();
     assert(new_count == initial_count + num_agents_to_create);
     
     // When we destroy one agent
-    bool result = ar_agency_destroy_agent(agent_ids[0]);
+    bool result = ar__agency__destroy_agent(agent_ids[0]);
     
     // Then the destruction should succeed
     assert(result);
     
     // And the agent count should decrease by one
-    int after_destroy_count = ar_agency_count_agents();
+    int after_destroy_count = ar__agency__count_agents();
     assert(after_destroy_count == new_count - 1);
     
     // When we destroy the remaining agents
     for (int i = 1; i < num_agents_to_create; i++) {
-        ar_agency_destroy_agent(agent_ids[i]);
+        ar__agency__destroy_agent(agent_ids[i]);
     }
     
     // Then the agent count should return to the initial value
-    int final_count = ar_agency_count_agents();
+    int final_count = ar__agency__count_agents();
     assert(final_count == initial_count);
     
-    printf("ar_agency_count_agents() test passed!\n");
+    printf("ar__agency__count_agents() test passed!\n");
 }
 
 
@@ -92,11 +92,11 @@ static void test_agency_persistence(void) {
     const char *version = "1.0.0";
     
     // And an agent created with this method
-    int64_t agent_id = ar_agency_create_agent(method_name, version, NULL);
+    int64_t agent_id = ar__agency__create_agent(method_name, version, NULL);
     assert(agent_id > 0);
     
     // When we save agents to disk
-    bool save_result = ar_agency_save_agents();
+    bool save_result = ar__agency__save_agents();
     
     // Then the save operation should succeed
     assert(save_result);
@@ -109,23 +109,23 @@ static void test_agency_persistence(void) {
     bool load_methods_result = ar_methodology_load_methods();
     assert(load_methods_result);
     
-    bool load_agents_result = ar_agency_load_agents();
+    bool load_agents_result = ar__agency__load_agents();
     
     // Then the load operations should succeed
     assert(load_agents_result);
     
     // And our persistent agent should still exist
-    bool exists = ar_agency_agent_exists(agent_id);
+    bool exists = ar__agency__agent_exists(agent_id);
     assert(exists);
     
     // Cleanup
-    ar_agency_destroy_agent(agent_id);
+    ar__agency__destroy_agent(agent_id);
     
     printf("Agency persistence test passed!\n");
 }
 
 static void test_agency_reset(void) {
-    printf("Testing ar_agency_reset()...\n");
+    printf("Testing ar__agency__reset()...\n");
     
     // Given a test method
     const char *method_name = "reset_test_method";
@@ -144,25 +144,25 @@ static void test_agency_reset(void) {
     const char *version = "1.0.0";
     
     // And an agent created with this method
-    int64_t agent_id = ar_agency_create_agent(method_name, version, NULL);
+    int64_t agent_id = ar__agency__create_agent(method_name, version, NULL);
     assert(agent_id > 0);
     
     // And the agent exists in the system
-    bool exists = ar_agency_agent_exists(agent_id);
+    bool exists = ar__agency__agent_exists(agent_id);
     assert(exists);
     
     // When we reset the agency state
-    ar_agency_reset();
+    ar__agency__reset();
     
     // Then the agent should no longer exist
-    exists = ar_agency_agent_exists(agent_id);
+    exists = ar__agency__agent_exists(agent_id);
     assert(!exists);
     
     // And the agent count should be zero
-    int count = ar_agency_count_agents();
+    int count = ar__agency__count_agents();
     assert(count == 0);
     
-    printf("ar_agency_reset() test passed!\n");
+    printf("ar__agency__reset() test passed!\n");
 }
 
 int main(void) {

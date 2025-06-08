@@ -602,7 +602,7 @@ void ar_methodology_register_method(method_t *own_method) {
                         ar_method_get_version(methods[method_idx][i])) > 0) {
                     
                     // Update agents using the old method to use the new one
-                    int updated = ar_agency_update_agent_methods(
+                    int updated = ar__agency__update_agent_methods(
                         methods[method_idx][i], 
                         own_method,
                         true);
@@ -926,7 +926,7 @@ bool ar_methodology_unregister_method(const char *ref_name, const char *ref_vers
     
     // Check if any agents are using this method
     method_t *method_to_remove = methods[method_idx][version_idx];
-    if (ar_agency_count_agents_using_method(method_to_remove) > 0) {
+    if (ar__agency__count_agents_using_method(method_to_remove) > 0) {
         ar_io_error("Cannot unregister method %s version %s: agents are still using it", 
                     ref_name, ref_version);
         return false;

@@ -94,18 +94,18 @@ static void test_method_run(void) {
     const char *version = "1.0.0";
     
     // And an agent created with this method
-    int64_t agent_id = ar_agency_create_agent(method_name, version, NULL);
+    int64_t agent_id = ar__agency__create_agent(method_name, version, NULL);
     assert(agent_id > 0);
     
     // With map_t now opaque, we can't directly access the agent
     // We'll test indirectly by sending a message
-    assert(ar_agency_agent_exists(agent_id));
+    assert(ar__agency__agent_exists(agent_id));
     
     // When we send a message to the agent
     static const char *sleep_text = "__sleep__"; // Use a special message that will be handled
     data_t *sleep_message = ar_data_create_string(sleep_text);
     assert(sleep_message != NULL);
-    bool result = ar_agency_send_to_agent(agent_id, sleep_message);
+    bool result = ar__agency__send_to_agent(agent_id, sleep_message);
     
     // Then the method should run successfully
     assert(result);
@@ -114,7 +114,7 @@ static void test_method_run(void) {
     ar__system__process_next_message();
     
     // When we clean up the agent
-    ar_agency_destroy_agent(agent_id);
+    ar__agency__destroy_agent(agent_id);
     
     // Agency destroy returns void, cleanup is done
     

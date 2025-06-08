@@ -34,7 +34,7 @@ static bool test_agent_exists(int64_t agent_id) {
     if (agent_id <= 0) {
         return false;
     }
-    return ar_agency_agent_exists(agent_id);
+    return ar__agency__agent_exists(agent_id);
 }
 
 static void test_simple_instructions(void) {
@@ -50,9 +50,9 @@ static void test_simple_instructions(void) {
     assert(test_agent_exists(agent_id));
     
     // Get agent memory and context using accessor functions
-    data_t *mut_memory = ar_agency_get_agent_mutable_memory(agent_id);
+    data_t *mut_memory = ar__agency__get_agent_mutable_memory(agent_id);
     assert(mut_memory != NULL);
-    const data_t *ref_context = ar_agency_get_agent_context(agent_id);
+    const data_t *ref_context = ar__agency__get_agent_context(agent_id);
     
     // Test 1: Simple assignment instruction
     // Create instruction context without message
@@ -119,9 +119,9 @@ static void test_memory_access_instructions(void) {
     assert(test_agent_exists(agent_id));
     
     // Get agent memory and context using accessor functions
-    data_t *mut_memory = ar_agency_get_agent_mutable_memory(agent_id);
+    data_t *mut_memory = ar__agency__get_agent_mutable_memory(agent_id);
     assert(mut_memory != NULL);
-    const data_t *ref_context = ar_agency_get_agent_context(agent_id);
+    const data_t *ref_context = ar__agency__get_agent_context(agent_id);
     
     // Create instruction context without message
     instruction_context_t *own_ctx = ar_instruction_create_context(
@@ -186,9 +186,9 @@ static void test_condition_instructions(void) {
     assert(test_agent_exists(agent_id));
     
     // Get agent memory and context using accessor functions
-    data_t *mut_memory = ar_agency_get_agent_mutable_memory(agent_id);
+    data_t *mut_memory = ar__agency__get_agent_mutable_memory(agent_id);
     assert(mut_memory != NULL);
-    const data_t *ref_context = ar_agency_get_agent_context(agent_id);
+    const data_t *ref_context = ar__agency__get_agent_context(agent_id);
     
     // Create instruction context without message
     instruction_context_t *own_ctx = ar_instruction_create_context(
@@ -254,9 +254,9 @@ static void test_message_send_instructions(void) {
     assert(test_agent_exists(receiver_id));
     
     // Get sender's memory and context using accessor functions
-    data_t *mut_sender_memory = ar_agency_get_agent_mutable_memory(sender_id);
+    data_t *mut_sender_memory = ar__agency__get_agent_mutable_memory(sender_id);
     assert(mut_sender_memory != NULL);
-    const data_t *ref_sender_context = ar_agency_get_agent_context(sender_id);
+    const data_t *ref_sender_context = ar__agency__get_agent_context(sender_id);
     
     // Store receiver ID in sender's memory
     ar_data_set_map_data(mut_sender_memory, "receiver_id", ar_data_create_integer((int)receiver_id));
@@ -313,9 +313,9 @@ static void test_method_function(void) {
     assert(test_agent_exists(agent_id));
     
     // Get agent memory and context using accessor functions
-    data_t *mut_memory = ar_agency_get_agent_mutable_memory(agent_id);
+    data_t *mut_memory = ar__agency__get_agent_mutable_memory(agent_id);
     assert(mut_memory != NULL);
-    const data_t *ref_context = ar_agency_get_agent_context(agent_id);
+    const data_t *ref_context = ar__agency__get_agent_context(agent_id);
     
     // Create instruction context
     instruction_context_t *own_ctx = ar_instruction_create_context(
@@ -341,14 +341,14 @@ static void test_method_function(void) {
     ar_instruction_destroy_context(own_ctx);
     
     // Now try to reference both the newly created methods
-    int64_t direct_agent_id = ar_agency_create_agent("test_method_direct", "1.0.0", NULL);
-    int64_t test_agent_id = ar_agency_create_agent("test_method_3params", "1.0.0", NULL);
+    int64_t direct_agent_id = ar__agency__create_agent("test_method_direct", "1.0.0", NULL);
+    int64_t test_agent_id = ar__agency__create_agent("test_method_3params", "1.0.0", NULL);
     
     // Check the results for the directly created method
     bool direct_method_created = (direct_agent_id > 0);
     if (direct_method_created) {
         printf("Method directly created successfully\n");
-        ar_agency_destroy_agent(direct_agent_id);
+        ar__agency__destroy_agent(direct_agent_id);
     } else {
         printf("Method directly created failed\n");
     }
@@ -357,7 +357,7 @@ static void test_method_function(void) {
     bool method_created = (test_agent_id > 0);
     if (method_created) {
         printf("Method created via instruction successfully\n");
-        ar_agency_destroy_agent(test_agent_id);
+        ar__agency__destroy_agent(test_agent_id);
     } else {
         printf("Method created via instruction failed\n");
     }
@@ -388,9 +388,9 @@ static void test_parse_function(void) {
     assert(test_agent_exists(agent_id));
     
     // Get agent memory and context using accessor functions
-    data_t *mut_memory = ar_agency_get_agent_mutable_memory(agent_id);
+    data_t *mut_memory = ar__agency__get_agent_mutable_memory(agent_id);
     assert(mut_memory != NULL);
-    const data_t *ref_context = ar_agency_get_agent_context(agent_id);
+    const data_t *ref_context = ar__agency__get_agent_context(agent_id);
     
     // Create instruction context
     instruction_context_t *own_ctx = ar_instruction_create_context(
@@ -439,9 +439,9 @@ static void test_build_function(void) {
     assert(test_agent_exists(agent_id));
     
     // Get agent memory and context using accessor functions
-    data_t *mut_memory = ar_agency_get_agent_mutable_memory(agent_id);
+    data_t *mut_memory = ar__agency__get_agent_mutable_memory(agent_id);
     assert(mut_memory != NULL);
-    const data_t *ref_context = ar_agency_get_agent_context(agent_id);
+    const data_t *ref_context = ar__agency__get_agent_context(agent_id);
     
     // Create instruction context
     instruction_context_t *own_ctx = ar_instruction_create_context(
@@ -654,9 +654,9 @@ static void test_agent_function(void) {
     assert(ar_data_get_integer(ref_agent_id4) == 0); // But return 0 for failed creation
     
     // Clean up all created agents
-    ar_agency_destroy_agent(new_agent_id);
-    ar_agency_destroy_agent(new_agent_id2);
-    ar_agency_destroy_agent(new_agent_id3);
+    ar__agency__destroy_agent(new_agent_id);
+    ar__agency__destroy_agent(new_agent_id2);
+    ar__agency__destroy_agent(new_agent_id3);
     
     // Clean up context
     ar_instruction_destroy_context(own_ctx);
@@ -708,7 +708,7 @@ static void test_destroy_functions(void) {
     ar__system__process_next_message();
     
     // Verify agent exists before destroying it
-    assert(ar_agency_agent_exists((int64_t)agent_id));
+    assert(ar__agency__agent_exists((int64_t)agent_id));
     
     // Now destroy the agent
     const char *destroy_agent_instr = "memory.destroy_result := destroy(memory.test_agent_id)";
@@ -721,7 +721,7 @@ static void test_destroy_functions(void) {
     assert(ar_data_get_integer(ref_destroy_result) == 1); // Success
     
     // Verify agent is destroyed
-    assert(!ar_agency_agent_exists((int64_t)agent_id));
+    assert(!ar__agency__agent_exists((int64_t)agent_id));
     
     // Test 2: Try to destroy non-existent agent
     printf("  Test 2: Destroy non-existent agent...\n");
@@ -794,7 +794,7 @@ static void test_destroy_functions(void) {
     assert(ar_data_get_integer(ref_destroy_active_result) == 0); // Failure - agent still using it
     
     // Clean up the active agent
-    ar_agency_destroy_agent((int64_t)active_agent_id);
+    ar__agency__destroy_agent((int64_t)active_agent_id);
     
     // Now we should be able to destroy the method
     const char *destroy_active_method2_instr = "memory.destroy_active_result2 := destroy(\"test_active_method\", \"1.0.0\")";
@@ -896,7 +896,7 @@ static void test_error_reporting(void) {
     assert(agent_id > 0);
     assert(test_agent_exists(agent_id));
     
-    data_t *mut_memory = ar_agency_get_agent_mutable_memory(agent_id);
+    data_t *mut_memory = ar__agency__get_agent_mutable_memory(agent_id);
     assert(mut_memory != NULL);
     
     instruction_context_t *own_ctx = ar_instruction_create_context(mut_memory, NULL, NULL);

@@ -24,7 +24,7 @@ static void test_method_creator_create_simple(void) {
     assert(ar__method_fixture__load_method(own_fixture, "method-creator", "../methods/method-creator-1.0.0.method", "1.0.0"));
     
     // Create method-creator agent
-    int64_t creator_agent = ar_agency_create_agent("method-creator", "1.0.0", NULL);
+    int64_t creator_agent = ar__agency__create_agent("method-creator", "1.0.0", NULL);
     assert(creator_agent > 0);
     
     // Process wake message
@@ -39,7 +39,7 @@ static void test_method_creator_create_simple(void) {
     ar_data_set_map_string(own_message, "version", "1.0.0");
     ar_data_set_map_integer(own_message, "sender", 888);
     
-    bool sent = ar_agency_send_to_agent(creator_agent, own_message);
+    bool sent = ar__agency__send_to_agent(creator_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
@@ -54,7 +54,7 @@ static void test_method_creator_create_simple(void) {
     // 3. Send the result back to the sender
     
     // Get agent memory for verification
-    const data_t *agent_memory = ar_agency_get_agent_memory(creator_agent);
+    const data_t *agent_memory = ar__agency__get_agent_memory(creator_agent);
     assert(agent_memory != NULL);
     
     // Check memory.result - should contain the result of method() function
@@ -102,7 +102,7 @@ static void test_method_creator_invalid_syntax(void) {
     assert(ar__method_fixture__load_method(own_fixture, "method-creator", "../methods/method-creator-1.0.0.method", "1.0.0"));
     
     // Create method-creator agent
-    int64_t creator_agent = ar_agency_create_agent("method-creator", "1.0.0", NULL);
+    int64_t creator_agent = ar__agency__create_agent("method-creator", "1.0.0", NULL);
     assert(creator_agent > 0);
     
     // Process wake message
@@ -117,7 +117,7 @@ static void test_method_creator_invalid_syntax(void) {
     ar_data_set_map_string(own_message, "version", "1.0.0");
     ar_data_set_map_integer(own_message, "sender", 888);
     
-    bool sent = ar_agency_send_to_agent(creator_agent, own_message);
+    bool sent = ar__agency__send_to_agent(creator_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
@@ -129,7 +129,7 @@ static void test_method_creator_invalid_syntax(void) {
     // The method() function should validate syntax and return 0 for invalid instructions
     
     // Get agent memory for verification
-    const data_t *agent_memory = ar_agency_get_agent_memory(creator_agent);
+    const data_t *agent_memory = ar__agency__get_agent_memory(creator_agent);
     assert(agent_memory != NULL);
     
     // Check memory.result - should be 0 for invalid syntax

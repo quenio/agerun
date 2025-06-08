@@ -26,15 +26,15 @@ static void test_message_router_routing(void) {
     assert(ar__method_fixture__load_method(own_fixture, "message-router", "../methods/message-router-1.0.0.method", "1.0.0"));
     
     // Create router agent
-    int64_t router_agent = ar_agency_create_agent("message-router", "1.0.0", NULL);
+    int64_t router_agent = ar__agency__create_agent("message-router", "1.0.0", NULL);
     assert(router_agent > 0);
     
     // Create echo agent
-    int64_t echo_agent = ar_agency_create_agent("echo", "1.0.0", NULL);
+    int64_t echo_agent = ar__agency__create_agent("echo", "1.0.0", NULL);
     assert(echo_agent > 0);
     
     // Create calculator agent
-    int64_t calc_agent = ar_agency_create_agent("calculator", "1.0.0", NULL);
+    int64_t calc_agent = ar__agency__create_agent("calculator", "1.0.0", NULL);
     assert(calc_agent > 0);
     
     // Process wake messages
@@ -51,7 +51,7 @@ static void test_message_router_routing(void) {
     ar_data_set_map_integer(own_message, "calc_agent", (int)calc_agent);
     ar_data_set_map_string(own_message, "content", "Hello from router!");
     
-    bool sent = ar_agency_send_to_agent(router_agent, own_message);
+    bool sent = ar__agency__send_to_agent(router_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
@@ -60,7 +60,7 @@ static void test_message_router_routing(void) {
     assert(processed);
     
     // Check router memory
-    const data_t *router_memory = ar_agency_get_agent_memory(router_agent);
+    const data_t *router_memory = ar__agency__get_agent_memory(router_agent);
     assert(router_memory != NULL);
     
     const data_t *is_echo = ar_data_get_map_data(router_memory, "is_echo");
@@ -89,7 +89,7 @@ static void test_message_router_routing(void) {
     ar_data_set_map_integer(own_message2, "a", 10);
     ar_data_set_map_integer(own_message2, "b", 20);
     
-    sent = ar_agency_send_to_agent(router_agent, own_message2);
+    sent = ar__agency__send_to_agent(router_agent, own_message2);
     assert(sent);
     own_message2 = NULL; // Ownership transferred
     
@@ -105,7 +105,7 @@ static void test_message_router_routing(void) {
     ar_data_set_map_integer(own_message3, "echo_agent", (int)echo_agent);
     ar_data_set_map_integer(own_message3, "calc_agent", (int)calc_agent);
     
-    sent = ar_agency_send_to_agent(router_agent, own_message3);
+    sent = ar__agency__send_to_agent(router_agent, own_message3);
     assert(sent);
     own_message3 = NULL; // Ownership transferred
     
