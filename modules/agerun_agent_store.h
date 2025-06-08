@@ -23,7 +23,7 @@
  * @note Creates a backup of existing file before saving
  * @note Ownership: Does not affect ownership of any agent resources
  */
-bool ar_agent_store_save(void);
+bool ar__agent_store__save(void);
 
 /**
  * Load all agents from persistent storage
@@ -31,25 +31,25 @@ bool ar_agent_store_save(void);
  * @note Creates agents with their saved state
  * @note Ownership: Creates new agents with their own resources
  */
-bool ar_agent_store_load(void);
+bool ar__agent_store__load(void);
 
 /**
  * Check if agent store file exists
  * @return true if store file exists, false otherwise
  */
-bool ar_agent_store_exists(void);
+bool ar__agent_store__exists(void);
 
 /**
  * Delete the agent store file
  * @return true if successful or file didn't exist, false on error
  * @note Creates a backup before deletion
  */
-bool ar_agent_store_delete(void);
+bool ar__agent_store__delete(void);
 
 /**
  * Get the path to the agent store file
  * @return Path to the store file (constant string)
  */
-const char* ar_agent_store_get_path(void);
+const char* ar__agent_store__get_path(void);
 
 #endif /* AGERUN_AGENT_STORE_H */

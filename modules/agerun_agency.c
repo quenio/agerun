@@ -58,14 +58,14 @@ bool ar__agency__save_agents(void) {
     if (!g_is_initialized) {
         return false;
     }
-    return ar_agent_store_save();
+    return ar__agent_store__save();
 }
 
 bool ar__agency__load_agents(void) {
     if (!g_is_initialized) {
         return false;
     }
-    return ar_agent_store_load();
+    return ar__agent_store__load();
 }
 
 int ar__agency__update_agent_methods(const method_t *ref_old_method, const method_t *ref_new_method, bool send_lifecycle_events) {

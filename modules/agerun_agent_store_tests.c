@@ -25,25 +25,25 @@ static void test_store_basics(void) {
     assert(ar__system_fixture__initialize(own_fixture));
     
     // Given a clean environment
-    ar_agent_store_delete();
-    assert(!ar_agent_store_exists());
+    ar__agent_store__delete();
+    assert(!ar__agent_store__exists());
     
     // When checking the path
-    const char *path = ar_agent_store_get_path();
+    const char *path = ar__agent_store__get_path();
     assert(path != NULL);
     assert(strcmp(path, "agency.agerun") == 0);
     
     // When saving with no agents (except the initial agent)
-    assert(ar_agent_store_save());
+    assert(ar__agent_store__save());
     
     // Then the file should exist
-    assert(ar_agent_store_exists());
+    assert(ar__agent_store__exists());
     
     // When deleting
-    assert(ar_agent_store_delete());
+    assert(ar__agent_store__delete());
     
     // Then the file should not exist
-    assert(!ar_agent_store_exists());
+    assert(!ar__agent_store__exists());
     
     // Check for memory leaks
     assert(ar__system_fixture__check_memory(own_fixture));
@@ -63,14 +63,14 @@ static void test_store_empty_save_load(void) {
     assert(ar__system_fixture__initialize(own_fixture));
     
     // Clean up any existing store
-    ar_agent_store_delete();
+    ar__agent_store__delete();
     
     // When saving empty state
-    assert(ar_agent_store_save());
-    assert(ar_agent_store_exists());
+    assert(ar__agent_store__save());
+    assert(ar__agent_store__exists());
     
     // When loading
-    assert(ar_agent_store_load());
+    assert(ar__agent_store__load());
     
     // Then no agents should exist
     assert(ar__agency__count_active_agents() == 0);
@@ -79,7 +79,7 @@ static void test_store_empty_save_load(void) {
     assert(ar__system_fixture__check_memory(own_fixture));
     
     // Clean up
-    ar_agent_store_delete();
+    ar__agent_store__delete();
     ar__system_fixture__destroy(own_fixture);
     
     printf("✓ Empty store save/load test passed\n");
@@ -94,7 +94,7 @@ static void test_store_single_agent(void) {
     assert(ar__system_fixture__initialize(own_fixture));
     
     // Clean up any existing store
-    ar_agent_store_delete();
+    ar__agent_store__delete();
     
     // Register a test method
     method_t *ref_method = ar__system_fixture__register_method(
@@ -117,7 +117,7 @@ static void test_store_single_agent(void) {
     ar_data_set_map_double(mut_memory, "value", 3.14);
     
     // When saving
-    assert(ar_agent_store_save());
+    assert(ar__agent_store__save());
     
     // Destroy all agents
     ar__agency__destroy_agent(agent_id);
@@ -125,7 +125,7 @@ static void test_store_single_agent(void) {
     assert(ar__agency__count_active_agents() == 0);
     
     // When loading
-    assert(ar_agent_store_load());
+    assert(ar__agent_store__load());
     
     // Then the agent should be restored
     assert(ar__agency__count_active_agents() == 1);
@@ -160,7 +160,7 @@ static void test_store_single_agent(void) {
     assert(ar__system_fixture__check_memory(own_fixture));
     
     // Clean up
-    ar_agent_store_delete();
+    ar__agent_store__delete();
     ar__system_fixture__destroy(own_fixture);
     
     printf("✓ Single agent persistence test passed\n");
@@ -175,7 +175,7 @@ static void test_store_multiple_agents(void) {
     assert(ar__system_fixture__initialize(own_fixture));
     
     // Clean up any existing store
-    ar_agent_store_delete();
+    ar__agent_store__delete();
     
     // Register methods
     method_t *ref_echo = ar__system_fixture__register_method(
@@ -215,7 +215,7 @@ static void test_store_multiple_agents(void) {
     ar_data_set_map_double(mut_memory3, "pi", 3.14159);
     
     // When saving
-    assert(ar_agent_store_save());
+    assert(ar__agent_store__save());
     
     // Destroy all agents
     ar__agency__destroy_agent(echo1);
@@ -225,7 +225,7 @@ static void test_store_multiple_agents(void) {
     assert(ar__agency__count_active_agents() == 0);
     
     // When loading
-    assert(ar_agent_store_load());
+    assert(ar__agent_store__load());
     
     // Then all agents should be restored
     assert(ar__agency__count_active_agents() == 3);
@@ -280,7 +280,7 @@ static void test_store_multiple_agents(void) {
     assert(ar__system_fixture__check_memory(own_fixture));
     
     // Clean up
-    ar_agent_store_delete();
+    ar__agent_store__delete();
     ar__system_fixture__destroy(own_fixture);
     
     printf("✓ Multiple agent persistence test passed\n");
@@ -295,27 +295,27 @@ static void test_store_file_corruption(void) {
     assert(ar__system_fixture__initialize(own_fixture));
     
     // Clean up any existing store
-    ar_agent_store_delete();
+    ar__agent_store__delete();
     
     // Create a corrupted file
-    FILE *fp = fopen(ar_agent_store_get_path(), "w");
+    FILE *fp = fopen(ar__agent_store__get_path(), "w");
     assert(fp != NULL);
     fprintf(fp, "invalid data\n");
     fprintf(fp, "more garbage\n");
     fclose(fp);
     
     // When loading from corrupted file
-    assert(ar_agent_store_load()); // Should succeed but with empty state
+    assert(ar__agent_store__load()); // Should succeed but with empty state
     
     // Then no agents should exist
     assert(ar__agency__count_active_agents() == 0);
     
     // And the corrupted file should be gone
-    assert(!ar_agent_store_exists());
+    assert(!ar__agent_store__exists());
     
     // But a backup should exist
     char backup_path[256];
-    snprintf(backup_path, sizeof(backup_path), "%s.bak", ar_agent_store_get_path());
+    snprintf(backup_path, sizeof(backup_path), "%s.bak", ar__agent_store__get_path());
     assert(access(backup_path, F_OK) == 0);
     
     // Clean up backup
@@ -339,7 +339,7 @@ static void test_store_missing_method(void) {
     assert(ar__system_fixture__initialize(own_fixture));
     
     // Clean up any existing store
-    ar_agent_store_delete();
+    ar__agent_store__delete();
     
     // Register a method and create an agent
     method_t *ref_method = ar__system_fixture__register_method(
@@ -352,13 +352,13 @@ static void test_store_missing_method(void) {
     ar__system__process_next_message();
     
     // Save the agent
-    assert(ar_agent_store_save());
+    assert(ar__agent_store__save());
     
     // Reset the system (loses method registration)
     ar__system_fixture__reset_system(own_fixture);
     
     // When loading without the method registered
-    assert(ar_agent_store_load());
+    assert(ar__agent_store__load());
     
     // Then no agents should be created (method doesn't exist)
     assert(ar__agency__count_active_agents() == 0);
@@ -367,7 +367,7 @@ static void test_store_missing_method(void) {
     assert(ar__system_fixture__check_memory(own_fixture));
     
     // Clean up
-    ar_agent_store_delete();
+    ar__agent_store__delete();
     ar__system_fixture__destroy(own_fixture);
     
     printf("✓ Store with missing method test passed\n");
@@ -382,7 +382,7 @@ static void test_store_id_preservation(void) {
     assert(ar__system_fixture__initialize(own_fixture));
     
     // Clean up any existing store
-    ar_agent_store_delete();
+    ar__agent_store__delete();
     
     // Register method
     method_t *ref_method = ar__system_fixture__register_method(
@@ -397,7 +397,7 @@ static void test_store_id_preservation(void) {
     ar__system__process_all_messages();
     
     // Save
-    assert(ar_agent_store_save());
+    assert(ar__agent_store__save());
     
     // Destroy all agents
     ar__agency__destroy_agent(id1);
@@ -406,7 +406,7 @@ static void test_store_id_preservation(void) {
     ar__system__process_all_messages();
     
     // Load
-    assert(ar_agent_store_load());
+    assert(ar__agent_store__load());
     
     // Then the same IDs should be preserved
     assert(ar__agency__agent_exists(id1));
@@ -421,7 +421,7 @@ static void test_store_id_preservation(void) {
     assert(ar__system_fixture__check_memory(own_fixture));
     
     // Clean up
-    ar_agent_store_delete();
+    ar__agent_store__delete();
     ar__system_fixture__destroy(own_fixture);
     
     printf("✓ Agent ID preservation test passed\n");

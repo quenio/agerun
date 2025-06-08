@@ -479,7 +479,7 @@ static bool validate_store_file(const char *filename, char *error_message, size_
 }
 
 /* Save all agents to persistent storage */
-bool ar_agent_store_save(void) {
+bool ar__agent_store__save(void) {
     // Set up context for writer function
     store_save_context_t context = {
         .filename = AGENT_STORE_FILE_NAME
@@ -529,7 +529,7 @@ bool ar_agent_store_save(void) {
 }
 
 /* Load all agents from persistent storage */
-bool ar_agent_store_load(void) {
+bool ar__agent_store__load(void) {
     // First validate the file format
     char error_message[512];
     if (!validate_store_file(AGENT_STORE_FILE_NAME, error_message, sizeof(error_message))) {
@@ -893,14 +893,14 @@ bool ar_agent_store_load(void) {
 }
 
 /* Check if agent store file exists */
-bool ar_agent_store_exists(void) {
+bool ar__agent_store__exists(void) {
     struct stat st;
     return (stat(AGENT_STORE_FILE_NAME, &st) == 0);
 }
 
 /* Delete the agent store file */
-bool ar_agent_store_delete(void) {
-    if (!ar_agent_store_exists()) {
+bool ar__agent_store__delete(void) {
+    if (!ar__agent_store__exists()) {
         return true; // Already doesn't exist
     }
     
@@ -921,6 +921,6 @@ bool ar_agent_store_delete(void) {
 }
 
 /* Get the path to the agent store file */
-const char* ar_agent_store_get_path(void) {
+const char* ar__agent_store__get_path(void) {
     return AGENT_STORE_FILE_NAME;
 }
