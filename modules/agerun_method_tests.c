@@ -28,8 +28,8 @@ static void test_method_create(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar_methodology_register_method(method_t *own_method);
-    ar_methodology_register_method(own_method);
+    extern void ar__methodology__register_method(method_t *own_method);
+    ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     printf("ar_method_create() test passed!\n");
@@ -48,7 +48,7 @@ static void test_method_create_with_previous_version(void) {
     
     // Register with methodology
     extern void ar_methodology_register_method(method_t *own_method);
-    ar_methodology_register_method(own_method_v1);
+    ar__methodology__register_method(own_method_v1);
     own_method_v1 = NULL; // Mark as transferred
     
     // For test purposes, we assume registration succeeds and creates version 1.0.0
@@ -60,7 +60,7 @@ static void test_method_create_with_previous_version(void) {
     assert(own_method_v2 != NULL);
     
     // Register with methodology
-    ar_methodology_register_method(own_method_v2);
+    ar__methodology__register_method(own_method_v2);
     own_method_v2 = NULL; // Mark as transferred
     
     // Then the new version should be created successfully
@@ -86,8 +86,8 @@ static void test_method_run(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar_methodology_register_method(method_t *own_method);
-    ar_methodology_register_method(own_method);
+    extern void ar__methodology__register_method(method_t *own_method);
+    ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we assume registration succeeds and creates version "1.0.0"
@@ -133,8 +133,8 @@ static void test_method_persistence(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar_methodology_register_method(method_t *own_method);
-    ar_methodology_register_method(own_method);
+    extern void ar__methodology__register_method(method_t *own_method);
+    ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we assume registration succeeds and creates version 1.0.0
@@ -149,14 +149,14 @@ static void test_method_persistence(void) {
     assert(own_method2 != NULL);
     
     // Register with methodology
-    ar_methodology_register_method(own_method2);
+    ar__methodology__register_method(own_method2);
     own_method2 = NULL; // Mark as transferred
     
     // For test purposes, we assume registration succeeds and creates version 1.0.0
     const char *version2 = "1.0.0";
     
     // Save methods to disk
-    bool save_result = ar_methodology_save_methods();
+    bool save_result = ar__methodology__save_methods();
     assert(save_result);
     
     // Reset system
@@ -172,7 +172,7 @@ static void test_method_persistence(void) {
     assert(own_init_method != NULL);
     
     // Register with methodology
-    ar_methodology_register_method(own_init_method);
+    ar__methodology__register_method(own_init_method);
     own_init_method = NULL; // Mark as transferred
     
     // For test purposes, we assume registration succeeds and creates version 1.0.0
@@ -182,11 +182,11 @@ static void test_method_persistence(void) {
     ar__system__init(init_method, init_version);
     
     // Load methods from disk
-    bool load_result = ar_methodology_load_methods();
+    bool load_result = ar__methodology__load_methods();
     assert(load_result);
     
     // Verify methods were loaded correctly
-    method_t *method = ar_methodology_get_method(name, version);
+    method_t *method = ar__methodology__get_method(name, version);
     if (method == NULL) {
         printf("Warning: Method %s not loaded correctly, skipping detailed check\n", name);
     } else {
@@ -205,7 +205,7 @@ static void test_method_persistence(void) {
         // assert(strcmp(ar_method_get_instructions(method), instructions) == 0);
     }
     
-    method_t *method2 = ar_methodology_get_method(name2, version2);
+    method_t *method2 = ar__methodology__get_method(name2, version2);
     if (method2 == NULL) {
         printf("Warning: Method %s not loaded correctly, skipping detailed check\n", name2);
     } else {
@@ -239,8 +239,8 @@ int main(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar_methodology_register_method(method_t *own_method);
-    ar_methodology_register_method(own_method);
+    extern void ar__methodology__register_method(method_t *own_method);
+    ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we assume registration succeeds and creates version 1.0.0

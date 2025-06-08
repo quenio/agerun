@@ -34,7 +34,7 @@ int ar__executable__main(void) {
     
     // Create method using methodology module (simplified API)
     const char *ref_echo_version = "1.0.0";
-    if (!ar_methodology_create_method("echo", ref_echo_instructions, ref_echo_version)) {
+    if (!ar__methodology__create_method("echo", ref_echo_instructions, ref_echo_version)) {
         printf("Failed to create echo method\n");
         ar__system__shutdown();
         return 1;
@@ -48,7 +48,7 @@ int ar__executable__main(void) {
     
     // Create method using methodology module (simplified API)
     const char *ref_counter_version = "1.0.0";
-    if (!ar_methodology_create_method("counter", ref_counter_code, ref_counter_version)) {
+    if (!ar__methodology__create_method("counter", ref_counter_code, ref_counter_version)) {
         printf("Failed to create counter method\n");
         ar__system__shutdown();
         return 1;
@@ -147,7 +147,7 @@ int ar__executable__main(void) {
     // Save agents and methods to disk
     printf("Saving agents and methods to disk...\n");
     bool saved_agents = ar__agency__save_agents();
-    bool saved_methods = ar_methodology_save_methods();
+    bool saved_methods = ar__methodology__save_methods();
     printf("Agents saved: %s\n", saved_agents ? "yes" : "no");
     printf("Methods saved: %s\n\n", saved_methods ? "yes" : "no");
     
@@ -159,7 +159,7 @@ int ar__executable__main(void) {
     // Demonstrate loading from disk in a new runtime session
     printf("Starting new runtime session...\n");
     printf("Loading methods from disk...\n");
-    bool loaded_methods = ar_methodology_load_methods();
+    bool loaded_methods = ar__methodology__load_methods();
     printf("Methods loaded: %s\n", loaded_methods ? "yes" : "no");
     
     // Initialize with echo method again

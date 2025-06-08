@@ -47,7 +47,7 @@ int64_t ar__system__init(const char *ref_method_name, const char *ref_version) {
     ar__agency__set_initialized(true);
     
     // Load methods from file if available
-    if (!ar_methodology_load_methods()) {
+    if (!ar__methodology__load_methods()) {
         printf("Warning: Could not load methods from file\n");
     }
     
@@ -84,7 +84,7 @@ void ar__system__shutdown(void) {
     }
     
     // Save methods to file
-    ar_methodology_save_methods();
+    ar__methodology__save_methods();
     
     // Save persistent agents to file
     ar__agency__save_agents();
@@ -95,7 +95,7 @@ void ar__system__shutdown(void) {
     ar__agency__reset();
     
     // Clean up methodology resources
-    ar_methodology_cleanup();
+    ar__methodology__cleanup();
     
     // Now mark as uninitialized
     is_initialized = false;

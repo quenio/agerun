@@ -48,7 +48,7 @@ void ar__system_fixture__destroy(system_fixture_t *own_fixture) {
     // If initialized, perform cleanup
     if (own_fixture->initialized) {
         ar__system__shutdown();
-        ar_methodology_cleanup();
+        ar__methodology__cleanup();
         ar__agency__reset();
         
         // Remove persistence files
@@ -67,7 +67,7 @@ bool ar__system_fixture__initialize(system_fixture_t *mut_fixture) {
     
     // Clean shutdown of any existing state
     ar__system__shutdown();
-    ar_methodology_cleanup();
+    ar__methodology__cleanup();
     ar__agency__reset();
     
     // Remove persistence files
@@ -103,8 +103,8 @@ method_t* ar__system_fixture__register_method(system_fixture_t *mut_fixture,
     }
     
     // Register with methodology
-    extern void ar_methodology_register_method(method_t *own_method);
-    ar_methodology_register_method(own_method);
+    extern void ar__methodology__register_method(method_t *own_method);
+    ar__methodology__register_method(own_method);
     
     // Note: ownership was transferred to methodology, but we return the pointer
     // for the test to use (as a borrowed reference)
@@ -138,7 +138,7 @@ void ar__system_fixture__reset_system(system_fixture_t *mut_fixture) {
     
     // Clean shutdown of existing state
     ar__system__shutdown();
-    ar_methodology_cleanup();
+    ar__methodology__cleanup();
     ar__agency__reset();
     
     // Remove persistence files

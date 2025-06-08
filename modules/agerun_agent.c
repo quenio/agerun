@@ -35,7 +35,7 @@ agent_t* ar__agent__create(const char *ref_method_name, const char *ref_version,
     }
     
     // Lookup method using methodology
-    const method_t *ref_method = ar_methodology_get_method(ref_method_name, ref_version);
+    const method_t *ref_method = ar__methodology__get_method(ref_method_name, ref_version);
     if (!ref_method) {
         return NULL;  // Method not found
     }

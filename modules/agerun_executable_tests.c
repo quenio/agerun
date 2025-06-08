@@ -96,8 +96,8 @@ int main(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar_methodology_register_method(method_t *own_method);
-    ar_methodology_register_method(own_method);
+    extern void ar__methodology__register_method(method_t *own_method);
+    ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     // When we initialize the system with this method

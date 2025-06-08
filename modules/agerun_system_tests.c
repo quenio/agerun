@@ -29,8 +29,8 @@ static void test_method_creation(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar_methodology_register_method(method_t *own_method);
-    ar_methodology_register_method(own_method);
+    extern void ar__methodology__register_method(method_t *own_method);
+    ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we use version "1.0.0"
@@ -44,7 +44,7 @@ static void test_method_creation(void) {
     assert(own_method2 != NULL);
     
     // Register with methodology
-    ar_methodology_register_method(own_method2);
+    ar__methodology__register_method(own_method2);
     own_method2 = NULL; // Mark as transferred
     
     // For test purposes, we use version "2.0.0"
@@ -68,8 +68,8 @@ static void test_agent_creation(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar_methodology_register_method(method_t *own_method);
-    ar_methodology_register_method(own_method);
+    extern void ar__methodology__register_method(method_t *own_method);
+    ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we use version "1.0.0"
@@ -117,8 +117,8 @@ static void test_message_passing(void) {
     assert(own_sender_method != NULL);
     
     // Register with methodology
-    extern void ar_methodology_register_method(method_t *own_method);
-    ar_methodology_register_method(own_sender_method);
+    extern void ar__methodology__register_method(method_t *own_method);
+    ar__methodology__register_method(own_sender_method);
     own_sender_method = NULL; // Mark as transferred
     
     // For test purposes, we use version "1.0.0"
@@ -129,7 +129,7 @@ static void test_message_passing(void) {
     assert(own_receiver_method != NULL);
     
     // Register with methodology
-    ar_methodology_register_method(own_receiver_method);
+    ar__methodology__register_method(own_receiver_method);
     own_receiver_method = NULL; // Mark as transferred
     
     // For test purposes, we use version "1.0.0"
@@ -194,8 +194,8 @@ int main(void) {
     }
     
     // Register with methodology
-    extern void ar_methodology_register_method(method_t *own_method);
-    ar_methodology_register_method(own_method);
+    extern void ar__methodology__register_method(method_t *own_method);
+    ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we use version "1.0.0"

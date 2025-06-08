@@ -42,6 +42,11 @@ This document tracks completed milestones and major achievements for the AgeRun 
     - Updated all references in agency, agent_update, agent_store, and test files
     - Fixed internal function call within agent_registry.c itself
     - All tests pass with zero memory leaks
+  - ✅ Completed methodology module refactoring:
+    - Changed all 7 methodology functions from ar_methodology_* to ar__methodology__*
+    - Updated all references across 13 modules and test files
+    - Fixed internal function calls within methodology.c itself
+    - All tests pass with zero memory leaks
 
 ## 2025-06-08 (Later - Part 2)
 - ✅ Fixed Agency/Agent_Update circular dependency:

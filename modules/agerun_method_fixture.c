@@ -49,7 +49,7 @@ void ar__method_fixture__destroy(method_fixture_t *own_fixture) {
     // If initialized, perform cleanup
     if (own_fixture->initialized) {
         ar__system__shutdown();
-        ar_methodology_cleanup();
+        ar__methodology__cleanup();
         ar__agency__reset();
         
         // Remove persistence files
@@ -68,7 +68,7 @@ bool ar__method_fixture__initialize(method_fixture_t *mut_fixture) {
     
     // Clean shutdown of any existing state
     ar__system__shutdown();
-    ar_methodology_cleanup();
+    ar__methodology__cleanup();
     ar__agency__reset();
     
     // Remove persistence files
@@ -125,7 +125,7 @@ bool ar__method_fixture__load_method(method_fixture_t *mut_fixture,
     ar_io_close_file(fp, ref_method_file);
     
     // Register method
-    bool registered = ar_methodology_create_method(ref_method_name, own_content, ref_version);
+    bool registered = ar__methodology__create_method(ref_method_name, own_content, ref_version);
     
     AR_HEAP_FREE(own_content);
     

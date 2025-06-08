@@ -1414,7 +1414,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         
         // Call methodology module directly to create method with just 3 parameters:
         // name, instructions, version
-        bool success = ar_methodology_create_method(method_name, instructions, version_str);
+        bool success = ar__methodology__create_method(method_name, instructions, version_str);
         
         // Clean up input data now that we're done with it
         if (owns_version && own_version) {
@@ -1776,7 +1776,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             (*mut_pos)++; // Skip ')'
             
             // Call methodology module to unregister the method
-            bool success = ar_methodology_unregister_method(method_name, version_str);
+            bool success = ar__methodology__unregister_method(method_name, version_str);
             
             // Clean up
             if (owns_version && own_version) {

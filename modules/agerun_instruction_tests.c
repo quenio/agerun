@@ -326,8 +326,8 @@ static void test_method_function(void) {
     assert(own_ctx != NULL);
     
     // Create a method using the methodology API directly to ensure it works
-    extern bool ar_methodology_create_method(const char *ref_name, const char *ref_instructions, const char *ref_version);
-    bool direct_result = ar_methodology_create_method("test_method_direct", "memory.x := 20", "1.0.0");
+    extern bool ar__methodology__create_method(const char *ref_name, const char *ref_instructions, const char *ref_version);
+    bool direct_result = ar__methodology__create_method("test_method_direct", "memory.x := 20", "1.0.0");
     assert(direct_result);
     
     // And a method instruction without assignment
@@ -580,8 +580,8 @@ static void test_agent_function(void) {
     // Also register it with methodology for agent creation
     method_t *own_method = ar_method_create("echo_method", "memory.output := message", "1.0.0");
     assert(own_method != NULL);
-    extern void ar_methodology_register_method(method_t *own_method);
-    ar_methodology_register_method(own_method);
+    extern void ar__methodology__register_method(method_t *own_method);
+    ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     // Create a context map for the new agent
@@ -748,7 +748,7 @@ static void test_destroy_functions(void) {
     assert(ar_data_get_integer(ref_method_result) == 1); // Success
     
     // Verify method exists
-    assert(ar_methodology_get_method("test_destroy_method", "1.0.0") != NULL);
+    assert(ar__methodology__get_method("test_destroy_method", "1.0.0") != NULL);
     
     // Now destroy the method
     const char *destroy_method_instr = "memory.destroy_method_result := destroy(\"test_destroy_method\", \"1.0.0\")";
@@ -761,7 +761,7 @@ static void test_destroy_functions(void) {
     assert(ar_data_get_integer(ref_destroy_method_result) == 1); // Success
     
     // Verify method is destroyed
-    assert(ar_methodology_get_method("test_destroy_method", "1.0.0") == NULL);
+    assert(ar__methodology__get_method("test_destroy_method", "1.0.0") == NULL);
     
     // Test 4: Try to destroy method with active agents
     printf("  Test 4: Try to destroy method with active agents...\n");
@@ -849,8 +849,8 @@ static void test_agent_function_with_message_expressions(void) {
     // And the echo_method exists in the methodology
     method_t *own_method = ar_method_create("echo_method", "memory.output := message", "1.0.0");
     assert(own_method != NULL);
-    extern void ar_methodology_register_method(method_t *own_method);
-    ar_methodology_register_method(own_method);
+    extern void ar__methodology__register_method(method_t *own_method);
+    ar__methodology__register_method(own_method);
     own_method = NULL;
     
     // When we call agent() with message access expressions
@@ -981,8 +981,8 @@ int main(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar_methodology_register_method(method_t *own_method);
-    ar_methodology_register_method(own_method);
+    extern void ar__methodology__register_method(method_t *own_method);
+    ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we assume registration succeeds and creates version "1.0.0"

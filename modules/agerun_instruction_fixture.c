@@ -363,7 +363,7 @@ int64_t ar__instruction_fixture__create_test_agent(
     }
     
     // Register with methodology
-    ar_methodology_register_method(own_method);
+    ar__methodology__register_method(own_method);
     own_method = NULL; // Ownership transferred
     
     // Create agent
@@ -429,7 +429,7 @@ bool ar__instruction_fixture__init_system(
         return false;
     }
     
-    ar_methodology_register_method(own_method);
+    ar__methodology__register_method(own_method);
     own_method = NULL; // Ownership transferred
     
     // Initialize system

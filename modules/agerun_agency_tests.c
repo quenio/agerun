@@ -29,8 +29,8 @@ static void test_agency_count_agents(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar_methodology_register_method(method_t *own_method);
-    ar_methodology_register_method(own_method);
+    extern void ar__methodology__register_method(method_t *own_method);
+    ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we assume registration succeeds and creates version "1.0.0"
@@ -84,8 +84,8 @@ static void test_agency_persistence(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar_methodology_register_method(method_t *own_method);
-    ar_methodology_register_method(own_method);
+    extern void ar__methodology__register_method(method_t *own_method);
+    ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we assume registration succeeds and creates version "1.0.0"
@@ -106,7 +106,7 @@ static void test_agency_persistence(void) {
     ar__system__init("agency_persistence_method", version);
     
     // And load the methods and agents
-    bool load_methods_result = ar_methodology_load_methods();
+    bool load_methods_result = ar__methodology__load_methods();
     assert(load_methods_result);
     
     bool load_agents_result = ar__agency__load_agents();
@@ -136,8 +136,8 @@ static void test_agency_reset(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar_methodology_register_method(method_t *own_method);
-    ar_methodology_register_method(own_method);
+    extern void ar__methodology__register_method(method_t *own_method);
+    ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we assume registration succeeds and creates version "1.0.0"
@@ -177,8 +177,8 @@ int main(void) {
     assert(own_method != NULL);
     
     // Register with methodology
-    extern void ar_methodology_register_method(method_t *own_method);
-    ar_methodology_register_method(own_method);
+    extern void ar__methodology__register_method(method_t *own_method);
+    ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we assume registration succeeds and creates version "1.0.0"

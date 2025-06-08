@@ -213,7 +213,7 @@ static int method_name_count = 0;
  * @note Ownership: This function creates and takes ownership of the method.
  *       The caller should not worry about destroying the method.
  */
-bool ar_methodology_create_method(const char *ref_name, const char *ref_instructions, 
+bool ar__methodology__create_method(const char *ref_name, const char *ref_instructions, 
                               const char *ref_version) {
     if (!ref_name || !ref_instructions) {
         return false;
@@ -226,7 +226,7 @@ bool ar_methodology_create_method(const char *ref_name, const char *ref_instruct
     }
     
     // Register the method (transfers ownership)
-    ar_methodology_register_method(own_method);
+    ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     return true;
@@ -336,7 +336,7 @@ static void ar_methodology_set_method_storage(int method_idx, int version_idx, m
 // Functions removed - were exposing internal state
 
 // Main method access function
-method_t* ar_methodology_get_method(const char *ref_name, const char *ref_version) {
+method_t* ar__methodology__get_method(const char *ref_name, const char *ref_version) {
     if (ref_version == NULL) {
         // Use latest version
         return find_latest_method(ref_name);
@@ -346,7 +346,7 @@ method_t* ar_methodology_get_method(const char *ref_name, const char *ref_versio
     }
 }
 
-bool ar_methodology_save_methods(void) {
+bool ar__methodology__save_methods(void) {
     // Create a temporary file first, then rename it to avoid data corruption
     const char *temp_filename = METHODOLOGY_FILE_NAME ".tmp";
     
@@ -521,7 +521,7 @@ bool ar_methodology_save_methods(void) {
     return true;
 }
 
-void ar_methodology_cleanup(void) {
+void ar__methodology__cleanup(void) {
     // Free all method pointers in the methods array
     for (int i = 0; i < MAX_METHODS; i++) {
         for (int j = 0; j < MAX_VERSIONS_PER_METHOD; j++) {
@@ -535,7 +535,7 @@ void ar_methodology_cleanup(void) {
     method_name_count = 0;
 }
 
-void ar_methodology_register_method(method_t *own_method) {
+void ar__methodology__register_method(method_t *own_method) {
     if (!own_method) {
         return;
     }
@@ -619,7 +619,7 @@ void ar_methodology_register_method(method_t *own_method) {
     }
 }
 
-bool ar_methodology_load_methods(void) {
+bool ar__methodology__load_methods(void) {
     // First validate the methodology file format
     char error_message[512];
     if (!ar_methodology_validate_file(METHODOLOGY_FILE_NAME, error_message, sizeof(error_message))) {
@@ -897,7 +897,7 @@ bool ar_methodology_load_methods(void) {
  * @return true if method was successfully unregistered, false otherwise
  * @note This will fail if there are active agents using this method
  */
-bool ar_methodology_unregister_method(const char *ref_name, const char *ref_version) {
+bool ar__methodology__unregister_method(const char *ref_name, const char *ref_version) {
     if (!ref_name || !ref_version) {
         return false;
     }
@@ -965,7 +965,7 @@ bool ar_methodology_unregister_method(const char *ref_name, const char *ref_vers
     ar_io_info("Successfully unregistered method %s version %s", ref_name, ref_version);
     
     // Save the updated methodology to disk
-    ar_methodology_save_methods();
+    ar__methodology__save_methods();
     
     return true;
 }
