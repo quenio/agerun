@@ -72,12 +72,20 @@ make run-sanitize          # Run executable with ASan
   - Arithmetic (`2 + 3`, `memory.x + 5`): returns new object, MUST destroy
   - String operations (`"Hello" + " World"`): returns new object, MUST destroy
   - Use `ar_expression_take_ownership()` to check ownership
+- Map iteration pattern:
+  - Use `ar_data_get_map_keys()` to get all keys as a list
+  - Remember to destroy both the list and its string elements after use
+  - Write persistence files with key/type on one line, value on the next
 
 **Memory Leak Detection**:
 - Full test suite: Check console for "WARNING: X memory leaks detected"
 - Individual debugging: Check `bin/heap_memory_report.log` after each test
   - **CRITICAL**: The report file is overwritten on each program run
   - Workflow: Run test → Check heap_memory_report.log → Run next test
+- Enhanced per-test reporting: The build system generates unique memory reports for each test
+  - Tests automatically create separate report files (e.g., `agerun_string_tests.memory_report.log`)
+  - Use `AGERUN_MEMORY_REPORT` environment variable to specify custom report filename
+  - Example: `AGERUN_MEMORY_REPORT=my_test.log ./bin/agerun_string_tests`
 - Always run `make test-sanitize` before committing
 - Environment variables for debugging:
   - `ASAN_OPTIONS=halt_on_error=0` to continue after first error
@@ -175,6 +183,12 @@ make run-sanitize          # Run executable with ASan
 
 ### 5. Module Development
 
+**Dependency Management**:
+- **Circular Dependencies**: Always check for and eliminate circular dependencies
+- **Unidirectional Flow**: Ensure dependencies flow in one direction (e.g., agency → agent_update → agent_registry)
+- **Delegation Pattern**: Higher-level modules can pass their dependencies to lower-level modules as parameters
+- **Module Naming**: Follow `ar_<module>_<function>` pattern consistently (e.g., `ar_agent_update_update_methods`)
+
 **Code Modification Process**:
 1. Understand codebase structure and dependencies
 2. Make incremental changes with frequent compilation
@@ -196,6 +210,9 @@ make run-sanitize          # Run executable with ASan
 - **No Friend Modules**: No special access between modules - use public APIs only
 - **Clean Interfaces**: If modules need to communicate, design proper public interfaces
 - **Public Enums**: Enums representing abstract concepts (like `data_type_t`) are acceptable in public APIs when clients need them
+- **No Internal Function Exposure**: Never expose functions with "_internal" suffix in public headers
+- **Registry Pattern**: When modules need to manage collections, use a separate registry module (e.g., agent_registry)
+- **Facade Pattern**: For complex subsystems, use a facade module to coordinate multiple focused modules
 
 **Best Practices**:
 - Make incremental changes with frequent compilation
@@ -207,6 +224,11 @@ make run-sanitize          # Run executable with ASan
 - When showing code, provide only the raw code without commentary
 - Think twice before adding global state to modules - prefer opaque structures
 - When using other modules, read their interface first instead of guessing function names
+- **Module Splitting**: When a module exceeds ~850 lines, consider splitting into focused modules
+- **Dynamic Collections**: Use list/map structures instead of fixed arrays (no MAX_AGENTS limits)
+- **String-Based IDs**: Use string keys in persistent maps for reliable serialization
+- **Parameter Control**: Add boolean parameters to control optional behaviors (e.g., `send_lifecycle_events`)
+- **Shutdown Order**: In system shutdown, call cleanup functions before marking as uninitialized
 
 **Common Code Smells to Avoid**:
 - **Long Function**: Keep functions under 50 lines, single responsibility
@@ -275,6 +297,26 @@ When reviewing tasks:
 - Check session todo list with `TodoRead`
 - Check `TODO.md` file in repository
 - Keep CLAUDE.md updated with new guidelines
+
+**Before Committing**:
+- Update TODO.md to mark completed tasks and add any new tasks identified
+- Update CHANGELOG.md with completed milestones and achievements
+- Ensure both files accurately reflect the current project state
+
+### 11. Refactoring Patterns
+
+**Visitor Pattern to List-Based**:
+- When refactoring from visitor pattern, use list-based approach for better memory management
+- Return lists of data that callers can iterate over and destroy
+- Avoids complex callback memory ownership issues
+
+**Module Cohesion**:
+- Create focused modules with single responsibilities
+- Example: Split agency (850+ lines) into:
+  - agent_registry (ID management)
+  - agent_store (persistence)
+  - agent_update (version updates)
+  - agency (81-line facade coordinating the others)
 
 **File Editing Best Practices**:
 - Always verify file content thoroughly before making edits
