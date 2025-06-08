@@ -112,7 +112,9 @@ make run-sanitize          # Run executable with ASan
   - `cd bin && ./agerun_string_tests`
   - `AGERUN_MEMORY_REPORT=bin/test.memory_report.log ./bin/agerun_string_tests`
 
-### 3. Parnas Design Principles (STRICTLY ENFORCED)
+### 3. Parnas Design Principles (STRICTLY ENFORCED) ✅
+
+**Status**: Full compliance achieved as of 2025-06-08. All interface violations have been fixed.
 
 **Core Principles**:
 - **Information Hiding**: Hide design decisions behind interfaces
@@ -121,6 +123,11 @@ make run-sanitize          # Run executable with ASan
 - **Opaque Types**: Required for complex data structures
 - **Minimal Interfaces**: Expose only what's necessary
 - **Complete Documentation**: Every module must be fully documented
+
+**Important Clarifications**:
+- **Enums in Public APIs**: Some enums (like `data_type_t`) are part of the abstract model, not implementation details. These are acceptable when they represent abstract concepts needed by clients.
+- **Internal Functions**: Never expose functions marked "internal use only" in public headers
+- **Implementation Details**: Keep struct definitions, array indices, and storage mechanisms private
 
 **Enforcement**: Violations result in automatic PR rejection.
 
@@ -183,6 +190,12 @@ make run-sanitize          # Run executable with ASan
 - Avoid size-exposing functions
 - Provide accessor functions for internal state
 - Handle NULL checks consistently
+
+**Module Boundaries** (strict Parnas enforcement):
+- **No Internal Headers**: Functions are either public (in .h) or private (static in .c)
+- **No Friend Modules**: No special access between modules - use public APIs only
+- **Clean Interfaces**: If modules need to communicate, design proper public interfaces
+- **Public Enums**: Enums representing abstract concepts (like `data_type_t`) are acceptable in public APIs when clients need them
 
 **Best Practices**:
 - Make incremental changes with frequent compilation

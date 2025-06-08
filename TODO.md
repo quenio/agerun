@@ -32,7 +32,10 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] Move `ar_heap_memory_remove()` to internal header or make static
   - [x] **agerun_string.h** - Convert inline function to regular function
     - [x] Move `ar_string_isspace()` implementation to .c file
-  - [ ] **agerun_data.h** - Evaluate if `data_type_t` enum should be opaque
+  - [x] **agerun_data.h** - Evaluated `data_type_t` enum (2025-06-08)
+    - [x] Assessment: Enum does NOT violate Parnas principles
+    - [x] Rationale: Exposes abstract type information, not implementation details
+    - [x] Decision: No changes needed - legitimate part of public interface
 
 ### Completed Parnas Tasks
 - [x] Audit existing modules for information hiding violations (see PARNAS_AUDIT_RESULTS.md)
@@ -48,7 +51,18 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ### Documentation and Process Tasks
 - [ ] Verify complete documentation for each module
 - [ ] Create missing module design documents
-- [ ] Remove PARNAS_AUDIT_RESULTS.md once all interface violations are fixed (only data.h evaluation remains)
+- [x] Remove PARNAS_AUDIT_RESULTS.md once all interface violations are fixed (ALL COMPLETE as of 2025-06-08)
+
+### Parnas Architecture Guidelines
+- [x] Architectural decision: NO internal headers or friend modules (2025-06-08)
+  - [x] Functions are either public (in .h files) or private (static in .c files)
+  - [x] No special access between modules - all communication through public APIs
+  - [x] This ensures clean module boundaries and proper information hiding
+- [ ] Document enum usage guidelines:
+  - [ ] Document which enums are considered part of the abstract model (like `data_type_t`)
+  - [ ] Add comments clarifying the distinction between public and internal APIs
+- [ ] Continue enforcing Opaque Type pattern for all complex data structures
+- [ ] Ensure API stability by avoiding exposure of internal implementation details
 
 - [ ] Establish TDD compliance:
   - [ ] Document TDD workflow in contributor guidelines
