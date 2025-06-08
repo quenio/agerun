@@ -6,7 +6,313 @@ This document contains essential instructions for Claude Code to assist with Age
 
 AgeRun is a lightweight, message-driven agent system where each agent is defined by a single method responsible for handling all incoming messages. Agents operate within a persistent runtime environment, allowing dynamic creation, versioning, pausing, resumption, and destruction.
 
-[... rest of the existing content ...]
+## Quick Start
+
+### Clean Build Script
+Use `./clean_build.sh` for comprehensive build verification with minimal output (~20 lines):
+- Cleans, builds, and runs static analysis
+- Runs all tests (shows count only)
+- Runs executable and sanitizer tests
+- Reports memory leak status
+
+**When to use**: Before commits, for quick verification, or when context space is limited.
+
+### Detailed Build Commands
+For detailed output during development:
+```bash
+make clean && make          # Clean and build
+make analyze               # Static analysis on library
+make analyze-tests         # Static analysis on tests
+make test                  # Run tests (auto-cleans and rebuilds in debug)
+make run                   # Run executable (auto-builds in debug)
+make test-sanitize         # Run tests with ASan
+make run-sanitize          # Run executable with ASan
+```
+
+**Key Points**:
+- Always run from repository root
+- Tests and executable run from `bin` directory automatically
+- Debug mode is enabled by default for development
+- Documentation-only changes don't require testing
+- The Makefile automatically:
+  - Runs `make clean debug` before tests to ensure heap tracking
+  - Changes to `bin` directory for test/run targets
+  - Builds with debug assertions active
+
+## Project Structure
+
+- **/modules**: Core implementation (.c/.h files and tests)
+- **/bin**: Generated binaries (ignored by git, NEVER read these files)
+- **/methods**: Method definitions (.method files with docs and tests)
+
+## Critical Development Rules
+
+### 1. Memory Management (ZERO TOLERANCE FOR LEAKS)
+
+**Mandatory Practices**:
+- Use heap tracking macros: `AR_HEAP_MALLOC`, `AR_HEAP_FREE`, `AR_HEAP_STRDUP`
+- Include `#include "agerun_heap.h"` in all .c files that allocate memory
+- Follow ownership naming conventions:
+  - `own_`: Owned values that must be destroyed
+  - `mut_`: Mutable references (read-write access)
+  - `ref_`: Borrowed references (read-only access)
+  - Apply to variables, parameters, and struct fields
+  - Consistent across .h, .c, and _tests.c files
+- Set pointers to NULL after ownership transfer
+- Add `// Ownership transferred to caller` comment at return statements
+- Follow the Memory Management Model (MMM.md) strictly
+- Use debug assertions strategically:
+  - `AR_ASSERT_OWNERSHIP()` for critical resource allocations
+  - `AR_ASSERT_TRANSFERRED()` for complex ownership transfers
+  - `AR_ASSERT_NOT_USED_AFTER_FREE()` for complex reuse patterns
+  - See agerun_assert.md for complete guidelines
+- Expression evaluation ownership rules:
+  - Memory access (`memory.x`): returns reference, do NOT destroy
+  - Arithmetic (`2 + 3`, `memory.x + 5`): returns new object, MUST destroy
+  - String operations (`"Hello" + " World"`): returns new object, MUST destroy
+  - Use `ar_expression_take_ownership()` to check ownership
+
+**Memory Leak Detection**:
+- Full test suite: Check console for "WARNING: X memory leaks detected"
+- Individual debugging: Check `bin/heap_memory_report.log` after each test
+  - **CRITICAL**: The report file is overwritten on each program run
+  - Workflow: Run test → Check heap_memory_report.log → Run next test
+- Always run `make test-sanitize` before committing
+- Environment variables for debugging:
+  - `ASAN_OPTIONS=halt_on_error=0` to continue after first error
+  - `ASAN_OPTIONS=detect_leaks=1:leak_check_at_exit=1` for complex leaks
+
+### 2. Test-Driven Development (MANDATORY)
+
+**Red-Green-Refactor Cycle**:
+1. **Red**: Write failing test FIRST
+2. **Green**: Write MINIMUM code to pass
+3. **Refactor**: Improve while keeping tests green
+
+**Test Requirements**:
+- Every module MUST have tests
+- Use Given/When/Then structure:
+  ```c
+  // Given a description of the test setup
+  /* Setup code here */
+  
+  // When describing the action being tested
+  /* Action code here */
+  
+  // Then describing the expected result
+  /* Assertion code here */
+  ```
+- One test per behavior
+- Tests must be isolated and fast
+- Zero memory leaks in tests
+- Test files: `<module>_tests.c`
+
+### 3. Parnas Design Principles (STRICTLY ENFORCED)
+
+**Core Principles**:
+- **Information Hiding**: Hide design decisions behind interfaces
+- **Single Responsibility**: One module, one concern
+- **No Circular Dependencies**: Uses hierarchy must be strict
+- **Opaque Types**: Required for complex data structures
+- **Minimal Interfaces**: Expose only what's necessary
+- **Complete Documentation**: Every module must be fully documented
+
+**Enforcement**: Violations result in automatic PR rejection.
+
+### 4. Coding Standards
+
+**Formatting**:
+- 4-space indentation (no tabs)
+- 100-character line limit
+- ALL files must end with newline
+  - C standard requires newline at EOF
+  - Missing newlines cause compiler errors with -Wall -Werror
+  - Always verify file ends with '\n' after edits
+- Function prefix: `ar_`
+- Type suffix: `_t`
+
+**Documentation**:
+- Use `/**` style for all public APIs
+- Include `@param`, `@return`, `@note` tags
+- Document ownership semantics clearly
+- Write complete sentences with punctuation
+- Example:
+  ```c
+  /**
+   * Processes data and creates a new result object
+   * @param mut_context The context to use (mutable reference)
+   * @param ref_data The data to process (borrowed reference)
+   * @return A newly created result object
+   * @note Ownership: Returns an owned value that caller must destroy.
+   *       The function does not take ownership of the data parameter.
+   */
+  result_t* ar_module_process(context_t *mut_context, const data_t *ref_data);
+  ```
+
+**File Operations**:
+- Use IO module functions, not raw stdio
+- `ar_io_open_file` instead of `fopen`
+- `ar_io_close_file` instead of `fclose`
+- `ar_io_fprintf` instead of `fprintf`
+- `ar_io_read_line` instead of `fgets` or `getline`
+- Check all return codes
+- Use `ar_io_create_backup` before modifying critical files
+- Use `ar_io_write_file` for atomic operations
+- Use `ar_io_set_secure_permissions` for sensitive files
+
+### 5. Module Development
+
+**Code Modification Process**:
+1. Understand codebase structure and dependencies
+2. Make incremental changes with frequent compilation
+3. Complete one functional area before moving to next
+4. Verify each change with tests
+
+**Opaque Types**:
+- Forward declare in header: `typedef struct name_s name_t;`
+- Define structure in .c file only
+- Provide `ar_name_create()` and `ar_name_destroy()`
+- No separate init functions
+- Update all dependent code to use public API
+- Avoid size-exposing functions
+- Provide accessor functions for internal state
+- Handle NULL checks consistently
+
+**Best Practices**:
+- Make incremental changes with frequent compilation
+- Remove unused functions immediately
+- Handle all compiler warnings (-Wall -Werror)
+- Update documentation with code changes
+  - Update modules/README.md when creating new modules
+- Avoid code smells (see below)
+- When showing code, provide only the raw code without commentary
+
+**Common Code Smells to Avoid**:
+- **Long Function**: Keep functions under 50 lines, single responsibility
+- **Large Module**: Split modules with multiple unrelated concerns
+- **Duplicate Code**: Extract common functionality, follow DRY principle
+- **Long Parameter List**: Limit to 4-5 parameters, use structs for groups
+- **Feature Envy**: Move functions to modules whose data they use most
+- **Primitive Obsession**: Create typedefs/structs for domain concepts
+- **Inappropriate Intimacy**: Use opaque types for proper encapsulation
+- **Speculative Generality**: Remove unused code, implement only what's needed
+- **Switch Statements**: Consider function pointer tables or dispatch tables
+- **Message Chains**: Apply Law of Demeter (a->b()->c()->d() is bad)
+- **Comments**: Refactor code to be self-documenting; comments explain "why" not "what"
+
+### 6. Method Development
+
+**Requirements**:
+- Store in `methods/` as `<name>-<version>.method`
+- Create corresponding `.md` documentation
+- Create `<name>_tests.c` test file
+- Tests must verify memory state after execution
+- Use relative path `../methods/` from bin directory
+
+**Method Language Rules**:
+- Expressions: literals, memory access, arithmetic
+- Instructions: assignments, function calls
+- Function calls cannot be nested
+- `if()` cannot be nested
+- `send(0, message)` is a no-op returning true
+
+### 7. Debug and Analysis
+
+**Memory Debugging**:
+- Use ASan via `make test-sanitize`
+- Check `bin/heap_memory_report.log` for leaks
+- Add DEBUG output (keep it for future sessions)
+- Use static analyzer: `make analyze`
+  - HTML reports in `bin/scan-build-results` (if scan-build installed)
+  - Console output otherwise
+
+**Guidelines**:
+- NEVER read binary files (.o, executables)
+- NEVER access /bin directory contents
+- Focus on source files only
+- Address all warnings immediately
+
+### 8. Agent Lifecycle
+
+**Critical Points**:
+- Agents receive `__wake__` on creation
+- Agents receive `__sleep__` before destruction
+- ALWAYS process messages after sending to prevent leaks
+- Call `ar_system_process_next_message()` after `ar_agent_send()`
+
+### 9. Building Individual Tests
+
+Always use make to build tests:
+```bash
+make bin/test_name  # Build individual test
+```
+Never compile directly with gcc.
+
+### 10. Session Management
+
+When reviewing tasks:
+- Check session todo list with `TodoRead`
+- Check `TODO.md` file in repository
+- Keep CLAUDE.md updated with new guidelines
+
+## AgeRun Language Notes
+
+- No null type - use integer 0
+- All parameters required
+- Version strings explicit (e.g., "1.0.0")
+- Map literals only in assignments
+- Agent ID 0 indicates failure
+- Always process `__wake__` messages
+- Always process messages after sending to prevent memory leaks
+
+## Method Test Template
+
+```c
+#include <unistd.h>
+// ... other includes ...
+
+// Directory check
+char cwd[1024];
+if (getcwd(cwd, sizeof(cwd)) != NULL) {
+    size_t len = strlen(cwd);
+    if (len < 4 || strcmp(cwd + len - 4, "/bin") != 0) {
+        fprintf(stderr, "ERROR: Tests must be run from the bin directory!\n");
+        return 1;
+    }
+}
+
+// Clean state
+ar_system_shutdown();
+ar_methodology_cleanup();
+ar_agency_reset();
+remove("methodology.agerun");
+remove("agency.agerun");
+
+// ... test code ...
+
+// Initialize system after creating methods
+ar_system_init(NULL, NULL);
+```
+
+## Quick Reference
+
+**Never**:
+- Read binary files or /bin contents
+- Create circular dependencies
+- Write code without tests
+- Leave memory leaks
+- Remove final newlines
+- Use raw file operations
+- Create files unless necessary
+
+**Always**:
+- Use heap tracking macros
+- Follow TDD cycle
+- Document ownership
+- Run sanitizer before commit
+- End files with newline
+- Use make for builds
+- Process messages after sending
 
 ## Development Memories
 
@@ -22,3 +328,5 @@ When running tests, ALWAYS check the current working directory first. Tests that
 - Never run tests with relative paths from the project root without considering where output files will be created
 
 Pause before executing build commands like `make` to check if the project has custom scripts or procedures for these tasks.
+
+When making functions static to comply with Parnas principles of information hiding, always update their documentation comments to clearly indicate they are for internal use only. Add "(INTERNAL USE ONLY)" to the first line of the comment and explain that the function should never be called directly by external code.
