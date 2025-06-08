@@ -16,4 +16,9 @@ In the implementation of a module, when using other modules, first read their in
 
 You must check what is the current dir before you try run a command with a relative path.
 
+When running tests, ALWAYS check the current working directory first. Tests that use AGERUN_MEMORY_REPORT will create memory report log files in the current directory. To avoid polluting the project root:
+- Either change to the bin/ directory before running tests: `cd bin && ./agerun_string_tests`
+- Or specify an appropriate path for the memory report: `AGERUN_MEMORY_REPORT=bin/test.memory_report.log ./bin/agerun_string_tests`
+- Never run tests with relative paths from the project root without considering where output files will be created
+
 Pause before executing build commands like `make` to check if the project has custom scripts or procedures for these tasks.
