@@ -14,20 +14,20 @@ static void test_registry_create_destroy(void) {
     printf("Testing registry create and destroy...\n");
     
     // Given a new registry
-    agent_registry_t *own_registry = ar_agent_registry_create();
+    agent_registry_t *own_registry = ar__agent_registry__create();
     assert(own_registry != NULL);
     
     // When checking initial state
-    assert(ar_agent_registry_count(own_registry) == 0);
-    assert(ar_agent_registry_get_first(own_registry) == 0);
-    assert(ar_agent_registry_get_next_id(own_registry) == 1);
+    assert(ar__agent_registry__count(own_registry) == 0);
+    assert(ar__agent_registry__get_first(own_registry) == 0);
+    assert(ar__agent_registry__get_next_id(own_registry) == 1);
     
     // When destroying the registry
-    ar_agent_registry_destroy(own_registry);
+    ar__agent_registry__destroy(own_registry);
     own_registry = NULL;
     
     // Then no crash should occur
-    ar_agent_registry_destroy(NULL); // Should handle NULL gracefully
+    ar__agent_registry__destroy(NULL); // Should handle NULL gracefully
     
     printf("✓ Registry create/destroy test passed\n");
 }
@@ -36,31 +36,31 @@ static void test_registry_id_management(void) {
     printf("Testing registry ID management...\n");
     
     // Given a new registry
-    agent_registry_t *own_registry = ar_agent_registry_create();
+    agent_registry_t *own_registry = ar__agent_registry__create();
     assert(own_registry != NULL);
     
     // When allocating IDs
-    int64_t id1 = ar_agent_registry_allocate_id(own_registry);
+    int64_t id1 = ar__agent_registry__allocate_id(own_registry);
     assert(id1 == 1);
     
-    int64_t id2 = ar_agent_registry_allocate_id(own_registry);
+    int64_t id2 = ar__agent_registry__allocate_id(own_registry);
     assert(id2 == 2);
     
-    int64_t id3 = ar_agent_registry_allocate_id(own_registry);
+    int64_t id3 = ar__agent_registry__allocate_id(own_registry);
     assert(id3 == 3);
     
     // Then next ID should be updated
-    assert(ar_agent_registry_get_next_id(own_registry) == 4);
+    assert(ar__agent_registry__get_next_id(own_registry) == 4);
     
     // When setting next ID
-    ar_agent_registry_set_next_id(own_registry, 100);
-    assert(ar_agent_registry_get_next_id(own_registry) == 100);
+    ar__agent_registry__set_next_id(own_registry, 100);
+    assert(ar__agent_registry__get_next_id(own_registry) == 100);
     
-    int64_t id4 = ar_agent_registry_allocate_id(own_registry);
+    int64_t id4 = ar__agent_registry__allocate_id(own_registry);
     assert(id4 == 100);
-    assert(ar_agent_registry_get_next_id(own_registry) == 101);
+    assert(ar__agent_registry__get_next_id(own_registry) == 101);
     
-    ar_agent_registry_destroy(own_registry);
+    ar__agent_registry__destroy(own_registry);
     
     printf("✓ Registry ID management test passed\n");
 }
@@ -69,35 +69,35 @@ static void test_registry_registration(void) {
     printf("Testing registry registration...\n");
     
     // Given a new registry
-    agent_registry_t *own_registry = ar_agent_registry_create();
+    agent_registry_t *own_registry = ar__agent_registry__create();
     assert(own_registry != NULL);
     
     // When registering agent IDs
-    assert(ar_agent_registry_register_id(own_registry, 10));
-    assert(ar_agent_registry_register_id(own_registry, 20));
-    assert(ar_agent_registry_register_id(own_registry, 30));
+    assert(ar__agent_registry__register_id(own_registry, 10));
+    assert(ar__agent_registry__register_id(own_registry, 20));
+    assert(ar__agent_registry__register_id(own_registry, 30));
     
     // Then registry should track them
-    assert(ar_agent_registry_count(own_registry) == 3);
-    assert(ar_agent_registry_is_registered(own_registry, 10));
-    assert(ar_agent_registry_is_registered(own_registry, 20));
-    assert(ar_agent_registry_is_registered(own_registry, 30));
-    assert(!ar_agent_registry_is_registered(own_registry, 40));
+    assert(ar__agent_registry__count(own_registry) == 3);
+    assert(ar__agent_registry__is_registered(own_registry, 10));
+    assert(ar__agent_registry__is_registered(own_registry, 20));
+    assert(ar__agent_registry__is_registered(own_registry, 30));
+    assert(!ar__agent_registry__is_registered(own_registry, 40));
     
     // When trying to register duplicate
-    assert(!ar_agent_registry_register_id(own_registry, 20));
-    assert(ar_agent_registry_count(own_registry) == 3);
+    assert(!ar__agent_registry__register_id(own_registry, 20));
+    assert(ar__agent_registry__count(own_registry) == 3);
     
     // When unregistering
-    assert(ar_agent_registry_unregister_id(own_registry, 20));
-    assert(ar_agent_registry_count(own_registry) == 2);
-    assert(!ar_agent_registry_is_registered(own_registry, 20));
+    assert(ar__agent_registry__unregister_id(own_registry, 20));
+    assert(ar__agent_registry__count(own_registry) == 2);
+    assert(!ar__agent_registry__is_registered(own_registry, 20));
     
     // When trying to unregister non-existent
-    assert(!ar_agent_registry_unregister_id(own_registry, 20));
-    assert(!ar_agent_registry_unregister_id(own_registry, 999));
+    assert(!ar__agent_registry__unregister_id(own_registry, 20));
+    assert(!ar__agent_registry__unregister_id(own_registry, 999));
     
-    ar_agent_registry_destroy(own_registry);
+    ar__agent_registry__destroy(own_registry);
     
     printf("✓ Registry registration test passed\n");
 }
@@ -106,31 +106,31 @@ static void test_registry_iteration(void) {
     printf("Testing registry iteration...\n");
     
     // Given a new registry with some agents
-    agent_registry_t *own_registry = ar_agent_registry_create();
+    agent_registry_t *own_registry = ar__agent_registry__create();
     assert(own_registry != NULL);
     
-    assert(ar_agent_registry_register_id(own_registry, 5));
-    assert(ar_agent_registry_register_id(own_registry, 3));
-    assert(ar_agent_registry_register_id(own_registry, 8));
-    assert(ar_agent_registry_register_id(own_registry, 1));
+    assert(ar__agent_registry__register_id(own_registry, 5));
+    assert(ar__agent_registry__register_id(own_registry, 3));
+    assert(ar__agent_registry__register_id(own_registry, 8));
+    assert(ar__agent_registry__register_id(own_registry, 1));
     
     // When iterating through agents (insertion order)
-    int64_t first = ar_agent_registry_get_first(own_registry);
+    int64_t first = ar__agent_registry__get_first(own_registry);
     assert(first == 5); // First inserted
     
-    int64_t next = ar_agent_registry_get_next(own_registry, first);
+    int64_t next = ar__agent_registry__get_next(own_registry, first);
     assert(next == 3);
     
-    next = ar_agent_registry_get_next(own_registry, next);
+    next = ar__agent_registry__get_next(own_registry, next);
     assert(next == 8);
     
-    next = ar_agent_registry_get_next(own_registry, next);
+    next = ar__agent_registry__get_next(own_registry, next);
     assert(next == 1);
     
-    next = ar_agent_registry_get_next(own_registry, next);
+    next = ar__agent_registry__get_next(own_registry, next);
     assert(next == 0); // End of iteration
     
-    ar_agent_registry_destroy(own_registry);
+    ar__agent_registry__destroy(own_registry);
     
     printf("✓ Registry iteration test passed\n");
 }
@@ -139,7 +139,7 @@ static void test_registry_agent_tracking(void) {
     printf("Testing registry agent tracking...\n");
     
     // Given a new registry
-    agent_registry_t *own_registry = ar_agent_registry_create();
+    agent_registry_t *own_registry = ar__agent_registry__create();
     assert(own_registry != NULL);
     
     // Create some dummy agent pointers (not real agents)
@@ -148,30 +148,30 @@ static void test_registry_agent_tracking(void) {
     int dummy_agent3 = 333;
     
     // When tracking agents
-    assert(ar_agent_registry_register_id(own_registry, 10));
-    assert(ar_agent_registry_track_agent(own_registry, 10, &dummy_agent1));
+    assert(ar__agent_registry__register_id(own_registry, 10));
+    assert(ar__agent_registry__track_agent(own_registry, 10, &dummy_agent1));
     
-    assert(ar_agent_registry_register_id(own_registry, 20));
-    assert(ar_agent_registry_track_agent(own_registry, 20, &dummy_agent2));
+    assert(ar__agent_registry__register_id(own_registry, 20));
+    assert(ar__agent_registry__track_agent(own_registry, 20, &dummy_agent2));
     
-    assert(ar_agent_registry_register_id(own_registry, 30));
-    assert(ar_agent_registry_track_agent(own_registry, 30, &dummy_agent3));
+    assert(ar__agent_registry__register_id(own_registry, 30));
+    assert(ar__agent_registry__track_agent(own_registry, 30, &dummy_agent3));
     
     // Then we should be able to find them
-    assert(ar_agent_registry_find_agent(own_registry, 10) == &dummy_agent1);
-    assert(ar_agent_registry_find_agent(own_registry, 20) == &dummy_agent2);
-    assert(ar_agent_registry_find_agent(own_registry, 30) == &dummy_agent3);
-    assert(ar_agent_registry_find_agent(own_registry, 40) == NULL);
+    assert(ar__agent_registry__find_agent(own_registry, 10) == &dummy_agent1);
+    assert(ar__agent_registry__find_agent(own_registry, 20) == &dummy_agent2);
+    assert(ar__agent_registry__find_agent(own_registry, 30) == &dummy_agent3);
+    assert(ar__agent_registry__find_agent(own_registry, 40) == NULL);
     
     // When untracking an agent
-    void *untracked = ar_agent_registry_untrack_agent(own_registry, 20);
+    void *untracked = ar__agent_registry__untrack_agent(own_registry, 20);
     assert(untracked == &dummy_agent2);
-    assert(ar_agent_registry_find_agent(own_registry, 20) == NULL);
+    assert(ar__agent_registry__find_agent(own_registry, 20) == NULL);
     
     // But the ID is still registered
-    assert(ar_agent_registry_is_registered(own_registry, 20));
+    assert(ar__agent_registry__is_registered(own_registry, 20));
     
-    ar_agent_registry_destroy(own_registry);
+    ar__agent_registry__destroy(own_registry);
     
     printf("✓ Registry agent tracking test passed\n");
 }
@@ -180,31 +180,31 @@ static void test_registry_clear(void) {
     printf("Testing registry clear...\n");
     
     // Given a registry with agents
-    agent_registry_t *own_registry = ar_agent_registry_create();
+    agent_registry_t *own_registry = ar__agent_registry__create();
     assert(own_registry != NULL);
     
     // Register and track some agents
     int dummy1 = 1, dummy2 = 2, dummy3 = 3;
-    assert(ar_agent_registry_register_id(own_registry, 10));
-    assert(ar_agent_registry_track_agent(own_registry, 10, &dummy1));
-    assert(ar_agent_registry_register_id(own_registry, 20));
-    assert(ar_agent_registry_track_agent(own_registry, 20, &dummy2));
-    assert(ar_agent_registry_register_id(own_registry, 30));
-    assert(ar_agent_registry_track_agent(own_registry, 30, &dummy3));
+    assert(ar__agent_registry__register_id(own_registry, 10));
+    assert(ar__agent_registry__track_agent(own_registry, 10, &dummy1));
+    assert(ar__agent_registry__register_id(own_registry, 20));
+    assert(ar__agent_registry__track_agent(own_registry, 20, &dummy2));
+    assert(ar__agent_registry__register_id(own_registry, 30));
+    assert(ar__agent_registry__track_agent(own_registry, 30, &dummy3));
     
-    ar_agent_registry_set_next_id(own_registry, 100);
+    ar__agent_registry__set_next_id(own_registry, 100);
     
     // When clearing the registry
-    ar_agent_registry_clear(own_registry);
+    ar__agent_registry__clear(own_registry);
     
     // Then everything should be reset
-    assert(ar_agent_registry_count(own_registry) == 0);
-    assert(ar_agent_registry_get_first(own_registry) == 0);
-    assert(ar_agent_registry_get_next_id(own_registry) == 1);
-    assert(!ar_agent_registry_is_registered(own_registry, 10));
-    assert(ar_agent_registry_find_agent(own_registry, 10) == NULL);
+    assert(ar__agent_registry__count(own_registry) == 0);
+    assert(ar__agent_registry__get_first(own_registry) == 0);
+    assert(ar__agent_registry__get_next_id(own_registry) == 1);
+    assert(!ar__agent_registry__is_registered(own_registry, 10));
+    assert(ar__agent_registry__find_agent(own_registry, 10) == NULL);
     
-    ar_agent_registry_destroy(own_registry);
+    ar__agent_registry__destroy(own_registry);
     
     printf("✓ Registry clear test passed\n");
 }
@@ -213,19 +213,19 @@ static void test_registry_edge_cases(void) {
     printf("Testing registry edge cases...\n");
     
     // Test NULL registry operations
-    assert(ar_agent_registry_count(NULL) == 0);
-    assert(ar_agent_registry_get_first(NULL) == 0);
-    assert(ar_agent_registry_get_next(NULL, 1) == 0);
-    assert(ar_agent_registry_get_next_id(NULL) == 0);
-    assert(ar_agent_registry_allocate_id(NULL) == 0);
-    assert(!ar_agent_registry_register_id(NULL, 1));
-    assert(!ar_agent_registry_unregister_id(NULL, 1));
-    assert(!ar_agent_registry_is_registered(NULL, 1));
-    assert(!ar_agent_registry_track_agent(NULL, 1, (void*)1));
-    assert(ar_agent_registry_untrack_agent(NULL, 1) == NULL);
-    assert(ar_agent_registry_find_agent(NULL, 1) == NULL);
-    ar_agent_registry_clear(NULL); // Should not crash
-    ar_agent_registry_set_next_id(NULL, 100); // Should not crash
+    assert(ar__agent_registry__count(NULL) == 0);
+    assert(ar__agent_registry__get_first(NULL) == 0);
+    assert(ar__agent_registry__get_next(NULL, 1) == 0);
+    assert(ar__agent_registry__get_next_id(NULL) == 0);
+    assert(ar__agent_registry__allocate_id(NULL) == 0);
+    assert(!ar__agent_registry__register_id(NULL, 1));
+    assert(!ar__agent_registry__unregister_id(NULL, 1));
+    assert(!ar__agent_registry__is_registered(NULL, 1));
+    assert(!ar__agent_registry__track_agent(NULL, 1, (void*)1));
+    assert(ar__agent_registry__untrack_agent(NULL, 1) == NULL);
+    assert(ar__agent_registry__find_agent(NULL, 1) == NULL);
+    ar__agent_registry__clear(NULL); // Should not crash
+    ar__agent_registry__set_next_id(NULL, 100); // Should not crash
     
     printf("✓ Registry edge cases test passed\n");
 }

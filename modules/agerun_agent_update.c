@@ -37,15 +37,15 @@ int ar__agent_update__update_methods(agent_registry_t *ref_registry,
     
     // Update all agents that use the old method
     int count = 0;
-    int64_t agent_id = ar_agent_registry_get_first(ref_registry);
+    int64_t agent_id = ar__agent_registry__get_first(ref_registry);
     while (agent_id != 0) {
-        agent_t *mut_agent = (agent_t*)ar_agent_registry_find_agent(ref_registry, agent_id);
+        agent_t *mut_agent = (agent_t*)ar__agent_registry__find_agent(ref_registry, agent_id);
         if (mut_agent && ar__agent__get_method(mut_agent) == ref_old_method) {
             if (ar__agent__update_method(mut_agent, ref_new_method, send_lifecycle_events)) {
                 count++;
             }
         }
-        agent_id = ar_agent_registry_get_next(ref_registry, agent_id);
+        agent_id = ar__agent_registry__get_next(ref_registry, agent_id);
     }
     
     if (count > 0) {
@@ -67,13 +67,13 @@ int ar__agent_update__count_using_method(agent_registry_t *ref_registry,
     
     // Count agents using this method
     int count = 0;
-    int64_t agent_id = ar_agent_registry_get_first(ref_registry);
+    int64_t agent_id = ar__agent_registry__get_first(ref_registry);
     while (agent_id != 0) {
-        agent_t *ref_agent = (agent_t*)ar_agent_registry_find_agent(ref_registry, agent_id);
+        agent_t *ref_agent = (agent_t*)ar__agent_registry__find_agent(ref_registry, agent_id);
         if (ref_agent && ar__agent__get_method(ref_agent) == ref_method) {
             count++;
         }
-        agent_id = ar_agent_registry_get_next(ref_registry, agent_id);
+        agent_id = ar__agent_registry__get_next(ref_registry, agent_id);
     }
     
     return count;

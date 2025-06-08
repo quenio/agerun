@@ -17,7 +17,7 @@ void ar__agency__set_initialized(bool initialized) {
     
     if (initialized && !g_own_registry) {
         /* Create the registry when agency is initialized */
-        g_own_registry = ar_agent_registry_create();
+        g_own_registry = ar__agent_registry__create();
         if (!g_own_registry) {
             printf("Error: Failed to create agent registry\n");
             g_is_initialized = false;
@@ -25,7 +25,7 @@ void ar__agency__set_initialized(bool initialized) {
         }
     } else if (!initialized && g_own_registry) {
         /* Destroy the registry when agency is shutdown */
-        ar_agent_registry_destroy(g_own_registry);
+        ar__agent_registry__destroy(g_own_registry);
         g_own_registry = NULL;
     }
 }
@@ -36,22 +36,22 @@ void ar__agency__reset(void) {
     }
     
     // Destroy all agents
-    int64_t agent_id = ar_agent_registry_get_first(g_own_registry);
+    int64_t agent_id = ar__agent_registry__get_first(g_own_registry);
     while (agent_id != 0) {
-        int64_t next_id = ar_agent_registry_get_next(g_own_registry, agent_id);
+        int64_t next_id = ar__agent_registry__get_next(g_own_registry, agent_id);
         ar__agency__destroy_agent(agent_id);
         agent_id = next_id;
     }
     
     // Clear the registry
-    ar_agent_registry_clear(g_own_registry);
+    ar__agent_registry__clear(g_own_registry);
 }
 
 int ar__agency__count_agents(void) {
     if (!g_is_initialized || !g_own_registry) {
         return 0;
     }
-    return ar_agent_registry_count(g_own_registry);
+    return ar__agent_registry__count(g_own_registry);
 }
 
 bool ar__agency__save_agents(void) {
@@ -90,14 +90,14 @@ int64_t ar__agency__get_first_agent(void) {
     if (!g_is_initialized || !g_own_registry) {
         return 0;
     }
-    return ar_agent_registry_get_first(g_own_registry);
+    return ar__agent_registry__get_first(g_own_registry);
 }
 
 int64_t ar__agency__get_next_agent(int64_t current_id) {
     if (!g_is_initialized || !g_own_registry) {
         return 0;
     }
-    return ar_agent_registry_get_next(g_own_registry, current_id);
+    return ar__agent_registry__get_next(g_own_registry, current_id);
 }
 
 bool ar__agency__agent_has_messages(int64_t agent_id) {
@@ -105,7 +105,7 @@ bool ar__agency__agent_has_messages(int64_t agent_id) {
         return false;
     }
     
-    agent_t *ref_agent = (agent_t*)ar_agent_registry_find_agent(g_own_registry, agent_id);
+    agent_t *ref_agent = (agent_t*)ar__agent_registry__find_agent(g_own_registry, agent_id);
     if (!ref_agent) {
         return false;
     }
@@ -118,7 +118,7 @@ data_t* ar__agency__get_agent_message(int64_t agent_id) {
         return NULL;
     }
     
-    agent_t *mut_agent = (agent_t*)ar_agent_registry_find_agent(g_own_registry, agent_id);
+    agent_t *mut_agent = (agent_t*)ar__agent_registry__find_agent(g_own_registry, agent_id);
     if (!mut_agent) {
         return NULL;
     }
@@ -138,7 +138,7 @@ int64_t ar__agency__create_agent(const char *ref_method_name, const char *ref_ve
     }
     
     // Allocate an ID for the agent
-    int64_t agent_id = ar_agent_registry_allocate_id(g_own_registry);
+    int64_t agent_id = ar__agent_registry__allocate_id(g_own_registry);
     if (agent_id == 0) {
         ar__agent__destroy(own_agent);
         return 0;
@@ -148,14 +148,14 @@ int64_t ar__agency__create_agent(const char *ref_method_name, const char *ref_ve
     ar__agent__set_id(own_agent, agent_id);
     
     // Register the ID in the registry
-    if (!ar_agent_registry_register_id(g_own_registry, agent_id)) {
+    if (!ar__agent_registry__register_id(g_own_registry, agent_id)) {
         ar__agent__destroy(own_agent);
         return 0;
     }
     
     // Track the agent in the registry
-    if (!ar_agent_registry_track_agent(g_own_registry, agent_id, own_agent)) {
-        ar_agent_registry_unregister_id(g_own_registry, agent_id);
+    if (!ar__agent_registry__track_agent(g_own_registry, agent_id, own_agent)) {
+        ar__agent_registry__unregister_id(g_own_registry, agent_id);
         ar__agent__destroy(own_agent);
         return 0;
     }
@@ -169,13 +169,13 @@ bool ar__agency__destroy_agent(int64_t agent_id) {
     }
     
     // Find and untrack the agent
-    agent_t *own_agent = (agent_t*)ar_agent_registry_untrack_agent(g_own_registry, agent_id);
+    agent_t *own_agent = (agent_t*)ar__agent_registry__untrack_agent(g_own_registry, agent_id);
     if (!own_agent) {
         return false;
     }
     
     // Unregister the ID
-    ar_agent_registry_unregister_id(g_own_registry, agent_id);
+    ar__agent_registry__unregister_id(g_own_registry, agent_id);
     
     // Destroy the agent
     ar__agent__destroy(own_agent);
@@ -191,7 +191,7 @@ bool ar__agency__send_to_agent(int64_t agent_id, data_t *own_message) {
         return false;
     }
     
-    agent_t *mut_agent = (agent_t*)ar_agent_registry_find_agent(g_own_registry, agent_id);
+    agent_t *mut_agent = (agent_t*)ar__agent_registry__find_agent(g_own_registry, agent_id);
     if (!mut_agent) {
         if (own_message) {
             ar_data_destroy(own_message);
@@ -207,7 +207,7 @@ bool ar__agency__agent_exists(int64_t agent_id) {
         return false;
     }
     
-    return ar_agent_registry_is_registered(g_own_registry, agent_id);
+    return ar__agent_registry__is_registered(g_own_registry, agent_id);
 }
 
 const data_t* ar__agency__get_agent_memory(int64_t agent_id) {
@@ -215,7 +215,7 @@ const data_t* ar__agency__get_agent_memory(int64_t agent_id) {
         return NULL;
     }
     
-    agent_t *ref_agent = (agent_t*)ar_agent_registry_find_agent(g_own_registry, agent_id);
+    agent_t *ref_agent = (agent_t*)ar__agent_registry__find_agent(g_own_registry, agent_id);
     if (!ref_agent) {
         return NULL;
     }
@@ -228,7 +228,7 @@ const data_t* ar__agency__get_agent_context(int64_t agent_id) {
         return NULL;
     }
     
-    agent_t *ref_agent = (agent_t*)ar_agent_registry_find_agent(g_own_registry, agent_id);
+    agent_t *ref_agent = (agent_t*)ar__agent_registry__find_agent(g_own_registry, agent_id);
     if (!ref_agent) {
         return NULL;
     }
@@ -241,7 +241,7 @@ bool ar__agency__is_agent_active(int64_t agent_id) {
         return false;
     }
     
-    agent_t *ref_agent = (agent_t*)ar_agent_registry_find_agent(g_own_registry, agent_id);
+    agent_t *ref_agent = (agent_t*)ar__agent_registry__find_agent(g_own_registry, agent_id);
     if (!ref_agent) {
         return false;
     }
@@ -254,7 +254,7 @@ const method_t* ar__agency__get_agent_method(int64_t agent_id) {
         return NULL;
     }
     
-    agent_t *ref_agent = (agent_t*)ar_agent_registry_find_agent(g_own_registry, agent_id);
+    agent_t *ref_agent = (agent_t*)ar__agent_registry__find_agent(g_own_registry, agent_id);
     if (!ref_agent) {
         return NULL;
     }
@@ -267,7 +267,7 @@ bool ar__agency__get_agent_method_info(int64_t agent_id, const char **out_method
         return false;
     }
     
-    agent_t *ref_agent = (agent_t*)ar_agent_registry_find_agent(g_own_registry, agent_id);
+    agent_t *ref_agent = (agent_t*)ar__agent_registry__find_agent(g_own_registry, agent_id);
     if (!ref_agent) {
         return false;
     }
@@ -280,7 +280,7 @@ data_t* ar__agency__get_agent_mutable_memory(int64_t agent_id) {
         return NULL;
     }
     
-    agent_t *mut_agent = (agent_t*)ar_agent_registry_find_agent(g_own_registry, agent_id);
+    agent_t *mut_agent = (agent_t*)ar__agent_registry__find_agent(g_own_registry, agent_id);
     if (!mut_agent) {
         return NULL;
     }
@@ -293,7 +293,7 @@ bool ar__agency__update_agent_method(int64_t agent_id, const method_t *ref_new_m
         return false;
     }
     
-    agent_t *mut_agent = (agent_t*)ar_agent_registry_find_agent(g_own_registry, agent_id);
+    agent_t *mut_agent = (agent_t*)ar__agent_registry__find_agent(g_own_registry, agent_id);
     if (!mut_agent) {
         return false;
     }
@@ -306,7 +306,7 @@ bool ar__agency__set_agent_active(int64_t agent_id, bool is_active) {
         return false;
     }
     
-    agent_t *mut_agent = (agent_t*)ar_agent_registry_find_agent(g_own_registry, agent_id);
+    agent_t *mut_agent = (agent_t*)ar__agent_registry__find_agent(g_own_registry, agent_id);
     if (!mut_agent) {
         return false;
     }
@@ -324,7 +324,7 @@ bool ar__agency__set_agent_id(int64_t old_id, int64_t new_id) {
         return false;
     }
     
-    agent_t *mut_agent = (agent_t*)ar_agent_registry_find_agent(g_own_registry, old_id);
+    agent_t *mut_agent = (agent_t*)ar__agent_registry__find_agent(g_own_registry, old_id);
     if (!mut_agent) {
         return false;
     }
@@ -333,23 +333,23 @@ bool ar__agency__set_agent_id(int64_t old_id, int64_t new_id) {
     ar__agent__set_id(mut_agent, new_id);
     
     // Update in registry: untrack from old ID, register new ID, track with new ID
-    ar_agent_registry_untrack_agent(g_own_registry, old_id);
-    ar_agent_registry_unregister_id(g_own_registry, old_id);
+    ar__agent_registry__untrack_agent(g_own_registry, old_id);
+    ar__agent_registry__unregister_id(g_own_registry, old_id);
     
-    if (!ar_agent_registry_register_id(g_own_registry, new_id)) {
+    if (!ar__agent_registry__register_id(g_own_registry, new_id)) {
         // Restore old ID if registration fails
         ar__agent__set_id(mut_agent, old_id);
-        ar_agent_registry_register_id(g_own_registry, old_id);
-        ar_agent_registry_track_agent(g_own_registry, old_id, mut_agent);
+        ar__agent_registry__register_id(g_own_registry, old_id);
+        ar__agent_registry__track_agent(g_own_registry, old_id, mut_agent);
         return false;
     }
     
-    if (!ar_agent_registry_track_agent(g_own_registry, new_id, mut_agent)) {
+    if (!ar__agent_registry__track_agent(g_own_registry, new_id, mut_agent)) {
         // Restore old ID if tracking fails
         ar__agent__set_id(mut_agent, old_id);
-        ar_agent_registry_unregister_id(g_own_registry, new_id);
-        ar_agent_registry_register_id(g_own_registry, old_id);
-        ar_agent_registry_track_agent(g_own_registry, old_id, mut_agent);
+        ar__agent_registry__unregister_id(g_own_registry, new_id);
+        ar__agent_registry__register_id(g_own_registry, old_id);
+        ar__agent_registry__track_agent(g_own_registry, old_id, mut_agent);
         return false;
     }
     

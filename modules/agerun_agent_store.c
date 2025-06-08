@@ -878,9 +878,9 @@ bool ar__agent_store__load(void) {
         // Update next_agent_id if needed to prevent ID collision
         agent_registry_t *ref_registry = ar__agency__get_registry();
         if (ref_registry) {
-            int64_t next_id = ar_agent_registry_get_next_id(ref_registry);
+            int64_t next_id = ar__agent_registry__get_next_id(ref_registry);
             if (own_agent_info[i].id >= next_id) {
-                ar_agent_registry_set_next_id(ref_registry, own_agent_info[i].id + 1);
+                ar__agent_registry__set_next_id(ref_registry, own_agent_info[i].id + 1);
             }
         }
     }

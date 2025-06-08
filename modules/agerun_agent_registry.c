@@ -21,7 +21,7 @@ struct agent_registry_s {
 };
 
 /* Create a new agent registry */
-agent_registry_t* ar_agent_registry_create(void) {
+agent_registry_t* ar__agent_registry__create(void) {
     agent_registry_t *own_registry = AR_HEAP_MALLOC(sizeof(agent_registry_t), "agent registry");
     if (!own_registry) {
         return NULL;
@@ -47,7 +47,7 @@ agent_registry_t* ar_agent_registry_create(void) {
 }
 
 /* Destroy an agent registry */
-void ar_agent_registry_destroy(agent_registry_t *own_registry) {
+void ar__agent_registry__destroy(agent_registry_t *own_registry) {
     if (!own_registry) {
         return;
     }
@@ -71,7 +71,7 @@ void ar_agent_registry_destroy(agent_registry_t *own_registry) {
 }
 
 /* Get the number of registered agents */
-int ar_agent_registry_count(const agent_registry_t *ref_registry) {
+int ar__agent_registry__count(const agent_registry_t *ref_registry) {
     if (!ref_registry || !ref_registry->own_registered_ids) {
         return 0;
     }
@@ -79,7 +79,7 @@ int ar_agent_registry_count(const agent_registry_t *ref_registry) {
 }
 
 /* Get the first registered agent ID */
-int64_t ar_agent_registry_get_first(const agent_registry_t *ref_registry) {
+int64_t ar__agent_registry__get_first(const agent_registry_t *ref_registry) {
     if (!ref_registry || !ref_registry->own_registered_ids) {
         return 0;
     }
@@ -102,7 +102,7 @@ int64_t ar_agent_registry_get_first(const agent_registry_t *ref_registry) {
 }
 
 /* Get the next registered agent ID */
-int64_t ar_agent_registry_get_next(const agent_registry_t *ref_registry, int64_t current_id) {
+int64_t ar__agent_registry__get_next(const agent_registry_t *ref_registry, int64_t current_id) {
     if (!ref_registry || !ref_registry->own_registered_ids) {
         return 0;
     }
@@ -143,7 +143,7 @@ int64_t ar_agent_registry_get_next(const agent_registry_t *ref_registry, int64_t
 }
 
 /* Clear all agents from the registry */
-void ar_agent_registry_clear(agent_registry_t *mut_registry) {
+void ar__agent_registry__clear(agent_registry_t *mut_registry) {
     if (!mut_registry || !mut_registry->own_registered_ids) {
         return;
     }
@@ -167,7 +167,7 @@ void ar_agent_registry_clear(agent_registry_t *mut_registry) {
 }
 
 /* Get the next agent ID */
-int64_t ar_agent_registry_get_next_id(const agent_registry_t *ref_registry) {
+int64_t ar__agent_registry__get_next_id(const agent_registry_t *ref_registry) {
     if (!ref_registry) {
         return 0;
     }
@@ -175,7 +175,7 @@ int64_t ar_agent_registry_get_next_id(const agent_registry_t *ref_registry) {
 }
 
 /* Set the next agent ID */
-void ar_agent_registry_set_next_id(agent_registry_t *mut_registry, int64_t id) {
+void ar__agent_registry__set_next_id(agent_registry_t *mut_registry, int64_t id) {
     if (!mut_registry) {
         return;
     }
@@ -183,7 +183,7 @@ void ar_agent_registry_set_next_id(agent_registry_t *mut_registry, int64_t id) {
 }
 
 /* Allocate a new agent ID */
-int64_t ar_agent_registry_allocate_id(agent_registry_t *mut_registry) {
+int64_t ar__agent_registry__allocate_id(agent_registry_t *mut_registry) {
     if (!mut_registry) {
         return 0;
     }
@@ -191,13 +191,13 @@ int64_t ar_agent_registry_allocate_id(agent_registry_t *mut_registry) {
 }
 
 /* Register an agent ID */
-bool ar_agent_registry_register_id(agent_registry_t *mut_registry, int64_t agent_id) {
+bool ar__agent_registry__register_id(agent_registry_t *mut_registry, int64_t agent_id) {
     if (!mut_registry || !mut_registry->own_registered_ids) {
         return false;
     }
     
     // Check if already registered
-    if (ar_agent_registry_is_registered(mut_registry, agent_id)) {
+    if (ar__agent_registry__is_registered(mut_registry, agent_id)) {
         return false;
     }
     
@@ -221,7 +221,7 @@ bool ar_agent_registry_register_id(agent_registry_t *mut_registry, int64_t agent
 }
 
 /* Unregister an agent ID */
-bool ar_agent_registry_unregister_id(agent_registry_t *mut_registry, int64_t agent_id) {
+bool ar__agent_registry__unregister_id(agent_registry_t *mut_registry, int64_t agent_id) {
     if (!mut_registry || !mut_registry->own_registered_ids) {
         return false;
     }
@@ -267,7 +267,7 @@ bool ar_agent_registry_unregister_id(agent_registry_t *mut_registry, int64_t age
 }
 
 /* Check if an agent ID is registered */
-bool ar_agent_registry_is_registered(const agent_registry_t *ref_registry, int64_t agent_id) {
+bool ar__agent_registry__is_registered(const agent_registry_t *ref_registry, int64_t agent_id) {
     if (!ref_registry || !ref_registry->own_registered_ids) {
         return false;
     }
@@ -339,7 +339,7 @@ static const char* get_agent_key_from_list(const agent_registry_t *ref_registry,
 }
 
 /* Track an agent object in the registry */
-bool ar_agent_registry_track_agent(agent_registry_t *mut_registry, int64_t agent_id, void *mut_agent) {
+bool ar__agent_registry__track_agent(agent_registry_t *mut_registry, int64_t agent_id, void *mut_agent) {
     if (!mut_registry || !mut_registry->own_agent_map || !mut_agent) {
         return false;
     }
@@ -356,7 +356,7 @@ bool ar_agent_registry_track_agent(agent_registry_t *mut_registry, int64_t agent
 }
 
 /* Untrack an agent object from the registry */
-void* ar_agent_registry_untrack_agent(agent_registry_t *mut_registry, int64_t agent_id) {
+void* ar__agent_registry__untrack_agent(agent_registry_t *mut_registry, int64_t agent_id) {
     if (!mut_registry || !mut_registry->own_agent_map) {
         return NULL;
     }
@@ -378,7 +378,7 @@ void* ar_agent_registry_untrack_agent(agent_registry_t *mut_registry, int64_t ag
 }
 
 /* Find a tracked agent by ID */
-void* ar_agent_registry_find_agent(const agent_registry_t *ref_registry, int64_t agent_id) {
+void* ar__agent_registry__find_agent(const agent_registry_t *ref_registry, int64_t agent_id) {
     if (!ref_registry || !ref_registry->own_agent_map) {
         return NULL;
     }
