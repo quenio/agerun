@@ -140,8 +140,21 @@ static void test_store_single_agent(void) {
     assert(strcmp(ar_method_get_name(ref_restored_method), "echo") == 0);
     assert(strcmp(ar_method_get_version(ref_restored_method), "1.0.0") == 0);
     
-    // Memory is not persisted in current implementation (no map iteration support)
-    // This is documented as a limitation in the module documentation
+    // Verify the memory was persisted
+    data_t *ref_restored_memory = ar_agency_get_agent_mutable_memory(restored_id);
+    assert(ref_restored_memory != NULL);
+    assert(ar_data_get_type(ref_restored_memory) == DATA_MAP);
+    
+    // Check all persisted values
+    const char *name = ar_data_get_map_string(ref_restored_memory, "name");
+    assert(name != NULL);
+    assert(strcmp(name, "Test Agent") == 0);
+    
+    int count = ar_data_get_map_integer(ref_restored_memory, "count");
+    assert(count == 42);
+    
+    double value = ar_data_get_map_double(ref_restored_memory, "value");
+    assert(value == 3.14);
     
     // Check for memory leaks
     assert(ar_system_fixture_check_memory(own_fixture));
@@ -217,19 +230,41 @@ static void test_store_multiple_agents(void) {
     // Then all agents should be restored
     assert(ar_agency_count_active_agents() == 3);
     
-    // Memory is not persisted in current implementation
-    // Just verify agents were restored with correct methods
+    // Verify agents were restored with correct methods and memory
     int echo_count = 0, calc_count = 0;
+    int found_echo_one = 0, found_echo_two = 0, found_calculator = 0;
     
     int64_t agent_id = ar_agency_get_first_agent();
     while (agent_id != 0) {
         const method_t *ref_method = ar_agency_get_agent_method(agent_id);
         const char *method_name = ar_method_get_name(ref_method);
         
+        // Get agent memory
+        data_t *ref_memory = ar_agency_get_agent_mutable_memory(agent_id);
+        assert(ref_memory != NULL);
+        
         if (strcmp(method_name, "echo") == 0) {
             echo_count++;
+            
+            // Check which echo agent this is based on memory
+            const char *name = ar_data_get_map_string(ref_memory, "name");
+            int id = ar_data_get_map_integer(ref_memory, "id");
+            
+            if (name && strcmp(name, "Echo One") == 0 && id == 1) {
+                found_echo_one = 1;
+            } else if (name && strcmp(name, "Echo Two") == 0 && id == 2) {
+                found_echo_two = 1;
+            }
         } else if (strcmp(method_name, "calc") == 0) {
             calc_count++;
+            
+            // Check calculator memory
+            const char *name = ar_data_get_map_string(ref_memory, "name");
+            double pi = ar_data_get_map_double(ref_memory, "pi");
+            
+            if (name && strcmp(name, "Calculator") == 0 && pi == 3.14159) {
+                found_calculator = 1;
+            }
         }
         
         agent_id = ar_agency_get_next_agent(agent_id);
@@ -237,6 +272,9 @@ static void test_store_multiple_agents(void) {
     
     assert(echo_count == 2);
     assert(calc_count == 1);
+    assert(found_echo_one);
+    assert(found_echo_two);
+    assert(found_calculator);
     
     // Check for memory leaks
     assert(ar_system_fixture_check_memory(own_fixture));

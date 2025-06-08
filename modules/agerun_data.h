@@ -351,4 +351,14 @@ data_t *ar_data_list_last(const data_t *ref_data);
  */
 size_t ar_data_list_count(const data_t *ref_data);
 
+/**
+ * Get all keys from a map data structure
+ * @param ref_data Pointer to the map data to retrieve keys from
+ * @return A list containing string data values for each key, or NULL if data is NULL or not a map
+ * @note Ownership: Returns an owned list that caller must destroy.
+ *       The returned list contains string data values (not raw strings).
+ *       An empty map returns an empty list (not NULL).
+ */
+data_t* ar_data_get_map_keys(const data_t *ref_data);
+
 #endif /* AGERUN_DATA_H */

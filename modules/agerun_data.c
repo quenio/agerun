@@ -1255,3 +1255,67 @@ size_t ar_data_list_count(const data_t *data) {
     // Get the count from the list
     return ar_list_count(list);
 }
+
+/**
+ * Get all keys from a map data structure
+ * @param ref_data Pointer to the map data to retrieve keys from
+ * @return A list containing string data values for each key, or NULL if data is NULL or not a map
+ * @note Ownership: Returns an owned list that caller must destroy.
+ *       The returned list contains string data values (not raw strings).
+ *       An empty map returns an empty list (not NULL).
+ */
+data_t* ar_data_get_map_keys(const data_t *ref_data) {
+    // Check if input is NULL
+    if (!ref_data) {
+        return NULL;
+    }
+    
+    // Check if input is a map type
+    if (ref_data->type != DATA_MAP) {
+        return NULL;
+    }
+    
+    // Create a new list to hold the keys
+    data_t *own_keys_list = ar_data_create_list();
+    if (!own_keys_list) {
+        return NULL;
+    }
+    
+    // Get the internal keys list
+    if (!ref_data->own_keys) {
+        // Return empty list for maps with no keys
+        return own_keys_list;
+    }
+    
+    // Get all keys from the internal list
+    void **own_key_ptrs = ar_list_items(ref_data->own_keys);
+    size_t key_count = ar_list_count(ref_data->own_keys);
+    
+    // Add each key to the result list as a string data value
+    for (size_t i = 0; i < key_count; i++) {
+        const char *ref_key = (const char *)own_key_ptrs[i];
+        
+        // Create a string data value for the key
+        data_t *own_key_data = ar_data_create_string(ref_key);
+        if (!own_key_data) {
+            // Clean up on failure
+            AR_HEAP_FREE(own_key_ptrs);
+            ar_data_destroy(own_keys_list);
+            return NULL;
+        }
+        
+        // Add the key data to the list
+        if (!ar_data_list_add_last_data(own_keys_list, own_key_data)) {
+            // Clean up on failure
+            ar_data_destroy(own_key_data);
+            AR_HEAP_FREE(own_key_ptrs);
+            ar_data_destroy(own_keys_list);
+            return NULL;
+        }
+    }
+    
+    // Free the key array (we own it)
+    AR_HEAP_FREE(own_key_ptrs);
+    
+    return own_keys_list;
+}

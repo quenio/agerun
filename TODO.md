@@ -84,9 +84,17 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Handle persisted agents that reference non-existent methods
   - [ ] Add tests for agent persistence functionality
   - [ ] Document persistence behavior and file format
-  - [ ] Complete memory persistence saving in agent store module (loading already implemented)
-    - [ ] Add ar_data_get_map_keys() function to data module to enable map iteration
-    - [ ] Update agent store to save/load agent memory once map iteration is available
+  - [x] Complete memory persistence saving in agent store module (loading already implemented)
+    - [x] Add ar_data_get_map_keys() function to data module to enable map iteration
+    - [x] Update agent store to save/load agent memory once map iteration is available
+  - [ ] Enhance agent store to support nested maps and lists in agent memory:
+    - [ ] Design a hierarchical format for representing nested data structures
+    - [ ] Implement recursive serialization for nested maps
+    - [ ] Implement recursive deserialization for nested maps
+    - [ ] Add support for list persistence (currently not saved)
+    - [ ] Update file format documentation with nested structure examples
+    - [ ] Add comprehensive tests for complex memory structures
+    - [ ] Consider using JSON or similar format for better structure support
 
 - [ ] Implement horizontal and vertical scaling support:
   - [ ] Design API for distributed agent communication
@@ -408,6 +416,15 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Evaluate if split improves cohesion without adding complexity
 
 ## Completed Major Milestones
+
+### 2025-06-08 (Later)
+- ✅ Implemented ar_data_get_map_keys() function to enable map iteration:
+  - ✅ Added function to retrieve all keys from a map as a list of string data values
+  - ✅ Fixed memory leak by freeing the array from ar_list_items()
+  - ✅ Updated agent store to save agent memory using the new map iteration capability
+  - ✅ Fixed agent store file format to write key/type on one line, value on the next
+  - ✅ All 26 tests pass with zero memory leaks
+  - ✅ Agent persistence is now fully functional with memory state preservation
 
 ### 2025-06-08
 - ✅ Fixed Parnas violations in heap module:

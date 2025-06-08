@@ -178,13 +178,154 @@ static bool store_write_function(FILE *fp, void *context) {
             continue;
         }
         
-        // For now, write 0 items since we don't have a way to get map keys
-        // TODO: Add ar_data_get_map_keys() to data module or iterate differently
-        if (fputs("0\n", fp) == EOF) {
-            ar_io_error("Failed to write memory count to %s", ctx->filename);
+        // Get all keys from the memory map
+        data_t *own_keys = ar_data_get_map_keys(ref_memory);
+        if (!own_keys) {
+            ar_io_error("Failed to get keys from agent memory");
             cleanup_agent_list(own_agents, own_items, total_agents);
             return false;
         }
+        
+        // Write the number of memory items
+        size_t memory_count = ar_data_list_count(own_keys);
+        written = snprintf(buffer, sizeof(buffer), "%zu\n", memory_count);
+        if (written < 0 || written >= (int)sizeof(buffer)) {
+            ar_io_error("Buffer too small for memory count in %s", ctx->filename);
+            ar_data_destroy(own_keys);
+            cleanup_agent_list(own_agents, own_items, total_agents);
+            return false;
+        }
+        
+        if (fputs(buffer, fp) == EOF) {
+            ar_io_error("Failed to write memory count to %s", ctx->filename);
+            ar_data_destroy(own_keys);
+            cleanup_agent_list(own_agents, own_items, total_agents);
+            return false;
+        }
+        
+        // Write each memory key-value pair
+        while (ar_data_list_count(own_keys) > 0) {
+            data_t *own_key_data = ar_data_list_remove_first(own_keys);
+            if (!own_key_data) {
+                break;
+            }
+            
+            const char *key = ar_data_get_string(own_key_data);
+            if (!key) {
+                ar_data_destroy(own_key_data);
+                continue;
+            }
+            
+            // Get the value for this key
+            data_t *ref_value = ar_data_get_map_data(ref_memory, key);
+            if (!ref_value) {
+                ar_data_destroy(own_key_data);
+                continue;
+            }
+            
+            // Write based on the value type
+            data_type_t value_type = ar_data_get_type(ref_value);
+            switch (value_type) {
+                case DATA_INTEGER: {
+                    // Write key and type
+                    written = snprintf(buffer, sizeof(buffer), "%s int\n", key);
+                    if (written < 0 || written >= (int)sizeof(buffer)) {
+                        ar_io_error("Buffer too small for memory key/type in %s", ctx->filename);
+                        ar_data_destroy(own_key_data);
+                        ar_data_destroy(own_keys);
+                        cleanup_agent_list(own_agents, own_items, total_agents);
+                        return false;
+                    }
+                    if (fputs(buffer, fp) == EOF) {
+                        ar_io_error("Failed to write memory key/type to %s", ctx->filename);
+                        ar_data_destroy(own_key_data);
+                        ar_data_destroy(own_keys);
+                        cleanup_agent_list(own_agents, own_items, total_agents);
+                        return false;
+                    }
+                    
+                    // Write value
+                    int value = ar_data_get_integer(ref_value);
+                    written = snprintf(buffer, sizeof(buffer), "%d\n", value);
+                    break;
+                }
+                case DATA_DOUBLE: {
+                    // Write key and type
+                    written = snprintf(buffer, sizeof(buffer), "%s double\n", key);
+                    if (written < 0 || written >= (int)sizeof(buffer)) {
+                        ar_io_error("Buffer too small for memory key/type in %s", ctx->filename);
+                        ar_data_destroy(own_key_data);
+                        ar_data_destroy(own_keys);
+                        cleanup_agent_list(own_agents, own_items, total_agents);
+                        return false;
+                    }
+                    if (fputs(buffer, fp) == EOF) {
+                        ar_io_error("Failed to write memory key/type to %s", ctx->filename);
+                        ar_data_destroy(own_key_data);
+                        ar_data_destroy(own_keys);
+                        cleanup_agent_list(own_agents, own_items, total_agents);
+                        return false;
+                    }
+                    
+                    // Write value
+                    double value = ar_data_get_double(ref_value);
+                    written = snprintf(buffer, sizeof(buffer), "%.6f\n", value);
+                    break;
+                }
+                case DATA_STRING: {
+                    // Write key and type
+                    written = snprintf(buffer, sizeof(buffer), "%s string\n", key);
+                    if (written < 0 || written >= (int)sizeof(buffer)) {
+                        ar_io_error("Buffer too small for memory key/type in %s", ctx->filename);
+                        ar_data_destroy(own_key_data);
+                        ar_data_destroy(own_keys);
+                        cleanup_agent_list(own_agents, own_items, total_agents);
+                        return false;
+                    }
+                    if (fputs(buffer, fp) == EOF) {
+                        ar_io_error("Failed to write memory key/type to %s", ctx->filename);
+                        ar_data_destroy(own_key_data);
+                        ar_data_destroy(own_keys);
+                        cleanup_agent_list(own_agents, own_items, total_agents);
+                        return false;
+                    }
+                    
+                    // Write value
+                    const char *value = ar_data_get_string(ref_value);
+                    if (value) {
+                        written = snprintf(buffer, sizeof(buffer), "%s\n", value);
+                    } else {
+                        written = -1;
+                    }
+                    break;
+                }
+                default:
+                    // Skip unsupported types (LIST, MAP)
+                    ar_data_destroy(own_key_data);
+                    continue;
+            }
+            
+            // Write the value line (written variable contains the result from switch statement)
+            if (written < 0 || written >= (int)sizeof(buffer)) {
+                ar_io_error("Buffer too small for memory value in %s", ctx->filename);
+                ar_data_destroy(own_key_data);
+                ar_data_destroy(own_keys);
+                cleanup_agent_list(own_agents, own_items, total_agents);
+                return false;
+            }
+            
+            if (fputs(buffer, fp) == EOF) {
+                ar_io_error("Failed to write memory value to %s", ctx->filename);
+                ar_data_destroy(own_key_data);
+                ar_data_destroy(own_keys);
+                cleanup_agent_list(own_agents, own_items, total_agents);
+                return false;
+            }
+            
+            ar_data_destroy(own_key_data);
+        }
+        
+        ar_data_destroy(own_keys);
     }
     
     // Clean up
@@ -490,10 +631,42 @@ bool ar_agent_store_load(void) {
         }
         ar_io_string_copy(own_agent_info[i].method_version, token, sizeof(own_agent_info[i].method_version));
         
-        // Skip memory data for now (just validate count)
+        // Read memory count
         if (!ar_io_read_line(fp, line, (int)sizeof(line), AGENT_STORE_FILE_NAME)) {
             ar_io_error("Failed to read memory count for agent %lld", own_agent_info[i].id);
             validation_error = true;
+            break;
+        }
+        
+        // Parse memory count
+        int mem_count = 0;
+        errno = 0;
+        mem_count = (int)strtol(line, &endptr, 10);
+        
+        if (errno != 0 || endptr == line || mem_count < 0 || mem_count > MAX_MEMORY_ITEMS) {
+            ar_io_error("Invalid memory count for agent %lld", own_agent_info[i].id);
+            validation_error = true;
+            break;
+        }
+        
+        // Skip memory entries during validation
+        for (int j = 0; j < mem_count; j++) {
+            // Read key/type line
+            if (!ar_io_read_line(fp, line, (int)sizeof(line), AGENT_STORE_FILE_NAME)) {
+                ar_io_error("Failed to read memory key/type for agent %lld", own_agent_info[i].id);
+                validation_error = true;
+                break;
+            }
+            
+            // Read value line
+            if (!ar_io_read_line(fp, line, (int)sizeof(line), AGENT_STORE_FILE_NAME)) {
+                ar_io_error("Failed to read memory value for agent %lld", own_agent_info[i].id);
+                validation_error = true;
+                break;
+            }
+        }
+        
+        if (validation_error) {
             break;
         }
     }

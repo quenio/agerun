@@ -17,6 +17,7 @@ static void test_map_data_setters(void);
 static void test_map_data_path_getters(void);
 static void test_map_data_path_setters(void);
 static void test_list_operations(void);
+static void test_map_get_keys(void);
 
 static void test_data_creation(void) {
     printf("Testing data creation for different types...\n");
@@ -1005,6 +1006,172 @@ static void test_list_operations(void) {
     printf("List operations tests passed!\n");
 }
 
+static void test_map_get_keys(void) {
+    printf("Testing map get keys function...\n");
+    
+    // Test 1: Empty map should return empty list
+    {
+        // Given an empty map
+        data_t *own_empty_map = ar_data_create_map();
+        assert(own_empty_map != NULL);
+        
+        // When we get the keys
+        data_t *own_keys_list = ar_data_get_map_keys(own_empty_map);
+        
+        // Then we should get an empty list (not NULL)
+        assert(own_keys_list != NULL);
+        assert(ar_data_get_type(own_keys_list) == DATA_LIST);
+        assert(ar_data_list_count(own_keys_list) == 0);
+        
+        // Cleanup
+        ar_data_destroy(own_keys_list);
+        ar_data_destroy(own_empty_map);
+    }
+    
+    // Test 2: Map with single key
+    {
+        // Given a map with one key
+        data_t *own_single_map = ar_data_create_map();
+        assert(own_single_map != NULL);
+        ar_data_set_map_integer(own_single_map, "count", 42);
+        
+        // When we get the keys
+        data_t *own_keys_list = ar_data_get_map_keys(own_single_map);
+        
+        // Then we should get a list with one string item
+        assert(own_keys_list != NULL);
+        assert(ar_data_get_type(own_keys_list) == DATA_LIST);
+        assert(ar_data_list_count(own_keys_list) == 1);
+        
+        // Verify the key is correct
+        data_t *ref_key_data = ar_data_list_first(own_keys_list);
+        assert(ref_key_data != NULL);
+        assert(ar_data_get_type(ref_key_data) == DATA_STRING);
+        assert(strcmp(ar_data_get_string(ref_key_data), "count") == 0);
+        
+        // Cleanup
+        ar_data_destroy(own_keys_list);
+        ar_data_destroy(own_single_map);
+    }
+    
+    // Test 3: Map with multiple keys
+    {
+        // Given a map with multiple keys
+        data_t *own_multi_map = ar_data_create_map();
+        assert(own_multi_map != NULL);
+        ar_data_set_map_integer(own_multi_map, "age", 25);
+        ar_data_set_map_string(own_multi_map, "name", "Alice");
+        ar_data_set_map_double(own_multi_map, "score", 95.5);
+        
+        // When we get the keys
+        data_t *own_keys_list = ar_data_get_map_keys(own_multi_map);
+        
+        // Then we should get a list with three string items
+        assert(own_keys_list != NULL);
+        assert(ar_data_get_type(own_keys_list) == DATA_LIST);
+        assert(ar_data_list_count(own_keys_list) == 3);
+        
+        // Collect all keys to verify they are all present
+        bool found_age = false;
+        bool found_name = false;
+        bool found_score = false;
+        
+        // We need to iterate through the list and check each key
+        // Since we can't iterate directly, we'll remove and check each item
+        while (ar_data_list_count(own_keys_list) > 0) {
+            data_t *own_key_data = ar_data_list_remove_first(own_keys_list);
+            assert(own_key_data != NULL);
+            assert(ar_data_get_type(own_key_data) == DATA_STRING);
+            
+            const char *key = ar_data_get_string(own_key_data);
+            if (strcmp(key, "age") == 0) found_age = true;
+            else if (strcmp(key, "name") == 0) found_name = true;
+            else if (strcmp(key, "score") == 0) found_score = true;
+            
+            ar_data_destroy(own_key_data);
+        }
+        
+        assert(found_age);
+        assert(found_name);
+        assert(found_score);
+        
+        // Cleanup
+        ar_data_destroy(own_keys_list);
+        ar_data_destroy(own_multi_map);
+    }
+    
+    // Test 4: NULL input should return NULL
+    {
+        // When we pass NULL
+        data_t *keys = ar_data_get_map_keys(NULL);
+        
+        // Then we should get NULL
+        assert(keys == NULL);
+    }
+    
+    // Test 5: Non-map data type should return NULL
+    {
+        // Given a non-map data type
+        data_t *own_integer = ar_data_create_integer(42);
+        assert(own_integer != NULL);
+        
+        // When we try to get keys from non-map
+        data_t *keys = ar_data_get_map_keys(own_integer);
+        
+        // Then we should get NULL
+        assert(keys == NULL);
+        
+        // Cleanup
+        ar_data_destroy(own_integer);
+    }
+    
+    // Test 6: Map with nested map value (keys should only be top-level)
+    {
+        // Given a map with a nested map
+        data_t *own_parent_map = ar_data_create_map();
+        data_t *own_child_map = ar_data_create_map();
+        assert(own_parent_map != NULL);
+        assert(own_child_map != NULL);
+        
+        ar_data_set_map_integer(own_child_map, "nested_key", 100);
+        ar_data_set_map_data(own_parent_map, "child", own_child_map);
+        ar_data_set_map_string(own_parent_map, "parent_key", "value");
+        
+        // When we get the keys
+        data_t *own_keys_list = ar_data_get_map_keys(own_parent_map);
+        
+        // Then we should only get top-level keys
+        assert(own_keys_list != NULL);
+        assert(ar_data_list_count(own_keys_list) == 2);
+        
+        // Verify we have "child" and "parent_key" but not "nested_key"
+        bool found_child = false;
+        bool found_parent_key = false;
+        
+        while (ar_data_list_count(own_keys_list) > 0) {
+            data_t *own_key_data = ar_data_list_remove_first(own_keys_list);
+            const char *key = ar_data_get_string(own_key_data);
+            
+            if (strcmp(key, "child") == 0) found_child = true;
+            else if (strcmp(key, "parent_key") == 0) found_parent_key = true;
+            else if (strcmp(key, "nested_key") == 0) {
+                assert(false); // Should not find nested key
+            }
+            
+            ar_data_destroy(own_key_data);
+        }
+        
+        assert(found_child);
+        assert(found_parent_key);
+        
+        // Cleanup
+        ar_data_destroy(own_keys_list);
+        ar_data_destroy(own_parent_map);
+    }
+    
+    printf("Map get keys tests passed!\n");
+}
+
 int main(void) {
     printf("Starting Data Module Tests...\n");
     
@@ -1029,6 +1196,9 @@ int main(void) {
     
     // Run list operations tests
     test_list_operations();
+    
+    // Run map get keys tests
+    test_map_get_keys();
     
     // Then all tests should pass
     printf("All data tests passed!\n");

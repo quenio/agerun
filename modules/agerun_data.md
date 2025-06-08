@@ -17,6 +17,7 @@ The data module (`agerun_data`) provides a type-safe data storage system built o
 - **Path-Based Access**: Support for accessing nested maps using dot-separated paths (e.g., "user.address.city")
 - **Fail-Fast Path Operations**: Path-based setters fail if intermediate maps don't exist, ensuring predictable behavior
 - **List Operations**: Support for adding and removing values from both ends of a list
+- **Map Key Iteration**: Support for retrieving all keys from a map as a list for iteration
 
 ## API Reference
 
@@ -364,6 +365,16 @@ data_t *ar_data_list_last(const data_t *ref_data);
  * @note Ownership: Does not take ownership of the data parameter.
  */
 size_t ar_data_list_count(const data_t *ref_data);
+
+/**
+ * Get all keys from a map data structure
+ * @param ref_data Pointer to the map data to retrieve keys from
+ * @return A list containing string data values for each key, or NULL if data is NULL or not a map
+ * @note Ownership: Returns an owned list that caller must destroy.
+ *       The returned list contains string data values (not raw strings).
+ *       An empty map returns an empty list (not NULL).
+ */
+data_t* ar_data_get_map_keys(const data_t *ref_data);
 ```
 
 ## Usage Examples
@@ -753,6 +764,61 @@ if (!missing_data) {
 // Cleanup
 ar_data_destroy(scores_map);
 ar_data_destroy(root_map);
+```
+
+### Iterating Over Map Keys
+
+```c
+// Create a map with various data
+data_t *own_user_map = ar_data_create_map();
+ar_data_set_map_string(own_user_map, "name", "John Doe");
+ar_data_set_map_integer(own_user_map, "age", 30);
+ar_data_set_map_double(own_user_map, "height", 180.5);
+ar_data_set_map_string(own_user_map, "email", "john@example.com");
+
+// Get all keys from the map
+data_t *own_keys_list = ar_data_get_map_keys(own_user_map);
+if (own_keys_list) {
+    printf("Map contains %zu keys:\n", ar_data_list_count(own_keys_list));
+    
+    // Iterate through all keys
+    while (ar_data_list_count(own_keys_list) > 0) {
+        // Remove and get ownership of the key string data
+        data_t *own_key_data = ar_data_list_remove_first(own_keys_list);
+        if (own_key_data) {
+            const char *key = ar_data_get_string(own_key_data);
+            
+            // Get the value for this key
+            data_t *ref_value = ar_data_get_map_data(own_user_map, key);
+            
+            // Print key and value based on type
+            printf("  %s: ", key);
+            switch (ar_data_get_type(ref_value)) {
+                case DATA_STRING:
+                    printf("%s", ar_data_get_string(ref_value));
+                    break;
+                case DATA_INTEGER:
+                    printf("%d", ar_data_get_integer(ref_value));
+                    break;
+                case DATA_DOUBLE:
+                    printf("%.1f", ar_data_get_double(ref_value));
+                    break;
+                default:
+                    printf("<unknown type>");
+            }
+            printf("\n");
+            
+            // Clean up the key data
+            ar_data_destroy(own_key_data);
+        }
+    }
+    
+    // Clean up the keys list
+    ar_data_destroy(own_keys_list);
+}
+
+// Clean up the map
+ar_data_destroy(own_user_map);
 ```
 
 ## Memory Management Model (MMM) Implementation
