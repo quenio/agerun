@@ -137,8 +137,8 @@ static void test_store_single_agent(void) {
     // Verify the method
     const method_t *ref_restored_method = ar__agency__get_agent_method(restored_id);
     assert(ref_restored_method != NULL);
-    assert(strcmp(ar_method_get_name(ref_restored_method), "echo") == 0);
-    assert(strcmp(ar_method_get_version(ref_restored_method), "1.0.0") == 0);
+    assert(strcmp(ar__method__get_name(ref_restored_method), "echo") == 0);
+    assert(strcmp(ar__method__get_version(ref_restored_method), "1.0.0") == 0);
     
     // Verify the memory was persisted
     data_t *ref_restored_memory = ar__agency__get_agent_mutable_memory(restored_id);
@@ -237,7 +237,7 @@ static void test_store_multiple_agents(void) {
     int64_t agent_id = ar__agency__get_first_agent();
     while (agent_id != 0) {
         const method_t *ref_method = ar__agency__get_agent_method(agent_id);
-        const char *method_name = ar_method_get_name(ref_method);
+        const char *method_name = ar__method__get_name(ref_method);
         
         // Get agent memory
         data_t *ref_memory = ar__agency__get_agent_mutable_memory(agent_id);

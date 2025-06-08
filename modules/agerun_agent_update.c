@@ -28,9 +28,9 @@ int ar__agent_update__update_methods(agent_registry_t *ref_registry,
     }
     
     // Get version strings for logging
-    const char *method_name = ar_method_get_name(ref_old_method);
-    const char *old_version = ar_method_get_version(ref_old_method);
-    const char *new_version = ar_method_get_version(ref_new_method);
+    const char *method_name = ar__method__get_name(ref_old_method);
+    const char *old_version = ar__method__get_version(ref_old_method);
+    const char *new_version = ar__method__get_version(ref_new_method);
     
     ar_io_info("Updating agents from method %s version %s to version %s",
                method_name, old_version, new_version);
@@ -87,8 +87,8 @@ bool ar__agent_update__are_compatible(const method_t *ref_old_method,
     }
     
     // Get method names
-    const char *old_name = ar_method_get_name(ref_old_method);
-    const char *new_name = ar_method_get_name(ref_new_method);
+    const char *old_name = ar__method__get_name(ref_old_method);
+    const char *new_name = ar__method__get_name(ref_new_method);
     
     // Methods must have the same name
     if (!old_name || !new_name || strcmp(old_name, new_name) != 0) {
@@ -96,8 +96,8 @@ bool ar__agent_update__are_compatible(const method_t *ref_old_method,
     }
     
     // Get version strings
-    const char *old_version = ar_method_get_version(ref_old_method);
-    const char *new_version = ar_method_get_version(ref_new_method);
+    const char *old_version = ar__method__get_version(ref_old_method);
+    const char *new_version = ar__method__get_version(ref_new_method);
     
     if (!old_version || !new_version) {
         return false;

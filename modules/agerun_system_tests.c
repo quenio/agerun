@@ -24,7 +24,7 @@ static void test_method_creation(void) {
     const char *method_body = "send(0, \"Hello, World!\")";
     
     // When we create the method
-    method_t *own_method = ar_method_create(method_name, method_body, "1.0.0");
+    method_t *own_method = ar__method__create(method_name, method_body, "1.0.0");
     
     // Then the method should be created successfully
     assert(own_method != NULL);
@@ -38,7 +38,7 @@ static void test_method_creation(void) {
     
     // When we create a new version of the same method
     const char *updated_body = "send(0, \"Hello, Updated World!\")";
-    method_t *own_method2 = ar_method_create(method_name, updated_body, "2.0.0");
+    method_t *own_method2 = ar__method__create(method_name, updated_body, "2.0.0");
     
     // Then the method should be created successfully
     assert(own_method2 != NULL);
@@ -64,7 +64,7 @@ static void test_agent_creation(void) {
     const char *method_body = "send(0, \"Agent created\")";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(method_name, method_body, "1.0.0");
+    method_t *own_method = ar__method__create(method_name, method_body, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -112,7 +112,7 @@ static void test_message_passing(void) {
     
     // Given methods for sender and receiver agents
     // Create and register sender method
-    method_t *own_sender_method = ar_method_create("sender", "send(target_id, \"Hello from sender!\")", "1.0.0");
+    method_t *own_sender_method = ar__method__create("sender", "send(target_id, \"Hello from sender!\")", "1.0.0");
     assert(own_sender_method != NULL);
     
     // Register with methodology
@@ -123,7 +123,7 @@ static void test_message_passing(void) {
     const char *sender_version = "1.0.0";
     
     // Create and register receiver method
-    method_t *own_receiver_method = ar_method_create("receiver", "memory[\"received\"] := \"true\"", "1.0.0");
+    method_t *own_receiver_method = ar__method__create("receiver", "memory[\"received\"] := \"true\"", "1.0.0");
     assert(own_receiver_method != NULL);
     
     // Register with methodology
@@ -182,7 +182,7 @@ int main(void) {
     }
     
     // Given we create a test method
-    method_t *own_method = ar_method_create("test_init", "send(0, \"Runtime initialized\")", "1.0.0");
+    method_t *own_method = ar__method__create("test_init", "send(0, \"Runtime initialized\")", "1.0.0");
     
     // Then the method should be created successfully
     if (own_method == NULL) {

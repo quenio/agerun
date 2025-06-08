@@ -17,8 +17,8 @@ typedef struct method_s method_t;
  * @note Ownership: Returns an owned object that the caller must destroy with ar_method_destroy.
  *       The method copies the name, instructions, and version. The original strings remain owned by the caller.
  */
-method_t* ar_method_create(const char *ref_name, const char *ref_instructions, 
-                         const char *ref_version);
+method_t* ar__method__create(const char *ref_name, const char *ref_instructions, 
+                           const char *ref_version);
 
 /**
  * Get the name of a method
@@ -26,7 +26,7 @@ method_t* ar_method_create(const char *ref_name, const char *ref_instructions,
  * @return Method name (borrowed reference)
  * @note Ownership: Returns a borrowed reference. The caller should not free the result.
  */
-const char* ar_method_get_name(const method_t *ref_method);
+const char* ar__method__get_name(const method_t *ref_method);
 
 /**
  * Get the version of a method
@@ -34,7 +34,7 @@ const char* ar_method_get_name(const method_t *ref_method);
  * @return Method version string (borrowed reference)
  * @note Ownership: Returns a borrowed reference. The caller should not free the result.
  */
-const char* ar_method_get_version(const method_t *ref_method);
+const char* ar__method__get_version(const method_t *ref_method);
 
 // Removed ar_method_is_backward_compatible and ar_method_is_persistent
 
@@ -44,7 +44,7 @@ const char* ar_method_get_version(const method_t *ref_method);
  * @return Method instructions (borrowed reference)
  * @note Ownership: Returns a borrowed reference. The caller should not free the result.
  */
-const char* ar_method_get_instructions(const method_t *ref_method);
+const char* ar__method__get_instructions(const method_t *ref_method);
 
 /**
  * Destroys a method object and frees its resources
@@ -52,7 +52,7 @@ const char* ar_method_get_instructions(const method_t *ref_method);
  * @note Ownership: This function takes ownership of the method and frees it.
  *       The pointer will be invalid after this call.
  */
-void ar_method_destroy(method_t *own_method);
+void ar__method__destroy(method_t *own_method);
 
 /**
  * Interprets and executes a method's instructions in the context of an agent
@@ -63,6 +63,6 @@ void ar_method_destroy(method_t *own_method);
  * @note Ownership: Function does not take ownership of any parameters.
  *       The message and instructions remain owned by the caller.
  */
-bool ar_method_run(int64_t agent_id, const data_t *ref_message, const char *ref_instructions);
+bool ar__method__run(int64_t agent_id, const data_t *ref_message, const char *ref_instructions);
 
 #endif /* AGERUN_METHOD_H */

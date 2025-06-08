@@ -141,8 +141,8 @@ static bool store_write_function(FILE *fp, void *context) {
             continue; // Skip agents without methods
         }
         
-        const char *method_name = ar_method_get_name(ref_method);
-        const char *method_version = ar_method_get_version(ref_method);
+        const char *method_name = ar__method__get_name(ref_method);
+        const char *method_version = ar__method__get_version(ref_method);
         
         if (!method_name || !method_version) {
             ar_io_error("Invalid method reference data for agent %lld", agent_id);

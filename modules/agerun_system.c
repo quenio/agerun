@@ -135,7 +135,7 @@ bool ar__system__process_next_message(void) {
                         printf("[complex data]\n");
                     }
                     
-                    ar_method_run(agent_id, (const data_t *)own_message, ar_method_get_instructions(ref_method));
+                    ar__method__run(agent_id, (const data_t *)own_message, ar__method__get_instructions(ref_method));
                     
                     // Free the message as it's now been processed
                     ar_data_destroy(own_message);

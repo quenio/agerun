@@ -25,7 +25,7 @@ static void test_agent_create_destroy(void) {
     const char *instructions = "message -> \"Test Method Response\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(method_name, instructions, "1.0.0");
+    method_t *own_method = ar__method__create(method_name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -66,7 +66,7 @@ static void test_agent_send(void) {
     const char *instructions = "message -> message";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(method_name, instructions, "1.0.0");
+    method_t *own_method = ar__method__create(method_name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -110,7 +110,7 @@ static void test_agent_exists(void) {
     const char *instructions = "message -> \"I exist\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(method_name, instructions, "1.0.0");
+    method_t *own_method = ar__method__create(method_name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -158,7 +158,7 @@ static void test_agent_persistence(void) {
     const char *instructions = "message -> \"I persist\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(method_name, instructions, "1.0.0");
+    method_t *own_method = ar__method__create(method_name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -220,7 +220,7 @@ int main(void) {
     const char *instructions = "message -> \"Test\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(method_name, instructions, "1.0.0");
+    method_t *own_method = ar__method__create(method_name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology

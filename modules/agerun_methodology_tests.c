@@ -22,7 +22,7 @@ static void test_methodology_get_method(void) {
     const char *instructions = "message -> \"Test Method\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(name, instructions, "1.0.0");
+    method_t *own_method = ar__method__create(name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -38,19 +38,19 @@ static void test_methodology_get_method(void) {
     assert(method != NULL);
     
     // And the method properties should match what we created
-    assert(strcmp(ar_method_get_name(method), name) == 0);
+    assert(strcmp(ar__method__get_name(method), name) == 0);
     // Version is now a string, not an integer
     printf("Found method with version %s (expected version string)\n", 
-           ar_method_get_version(method));
+           ar__method__get_version(method));
     
     // When we get the method by name and request the latest version (version = NULL)
     method = ar__methodology__get_method(name, NULL);
     
     // Then the latest version of the method should be found
     assert(method != NULL);
-    assert(strcmp(ar_method_get_name(method), name) == 0);
+    assert(strcmp(ar__method__get_name(method), name) == 0);
     printf("Found method with version %s (expected version string)\n", 
-           ar_method_get_version(method));
+           ar__method__get_version(method));
     
     // When we try to get a non-existent method
     method = ar__methodology__get_method("non_existent_method", NULL);
@@ -70,7 +70,7 @@ static void test_methodology_register_and_get(void) {
     const char *instructions = "message -> \"Storage Method\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(name, instructions, "1.0.0");
+    method_t *own_method = ar__method__create(name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -86,9 +86,9 @@ static void test_methodology_register_and_get(void) {
     assert(method != NULL);
     
     // And the method properties should match what we created
-    assert(strcmp(ar_method_get_name(method), name) == 0);
+    assert(strcmp(ar__method__get_name(method), name) == 0);
     printf("Found method with version %s (expected version string)\n", 
-           ar_method_get_version(method));
+           ar__method__get_version(method));
     
     printf("ar_methodology_register_and_get() test passed!\n");
 }
@@ -101,7 +101,7 @@ static void test_methodology_save_load(void) {
     const char *instructions = "message -> \"Save Load Method\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(name, instructions, "1.0.0");
+    method_t *own_method = ar__method__create(name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -124,7 +124,7 @@ static void test_methodology_save_load(void) {
     const char *init_instructions = "memory.result = \"Save Load Test\"";
     
     // Create method and register it with methodology 
-    method_t *own_init_method = ar_method_create(init_method, init_instructions, "1.0.0");
+    method_t *own_init_method = ar__method__create(init_method, init_instructions, "1.0.0");
     assert(own_init_method != NULL);
     
     // Register with methodology
@@ -149,10 +149,10 @@ static void test_methodology_save_load(void) {
         printf("Warning: Method %s not loaded correctly, skipping detailed check\n", name);
     } else {
         // And the method properties should match what we created
-        assert(strcmp(ar_method_get_name(method), name) == 0);
+        assert(strcmp(ar__method__get_name(method), name) == 0);
         // Version is now a string, not an integer
-        // assert(ar_method_get_version(method) == version);
-        assert(strcmp(ar_method_get_instructions(method), instructions) == 0);
+        // assert(ar__method__get_version(method) == version);
+        assert(strcmp(ar__method__get_instructions(method), instructions) == 0);
         // Persistent flag is no longer in the spec
         // assert(ar_method_is_persistent(method) == true);
     }
@@ -178,7 +178,7 @@ static void test_method_counts(void) {
     ar_io_string_format(unique_name, sizeof(unique_name), "unique_method_%u", random_id);
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(unique_name, "message -> \"Unique\"", "1.0.0");
+    method_t *own_method = ar__method__create(unique_name, "message -> \"Unique\"", "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -199,7 +199,7 @@ static void test_method_counts(void) {
     assert(ar__methodology__get_method(unique_name, "1.0.0") != NULL);
     
     // When we create another version of the same method
-    method_t *own_method2 = ar_method_create(unique_name, "message -> \"Unique V2\"", "2.0.0");
+    method_t *own_method2 = ar__method__create(unique_name, "message -> \"Unique V2\"", "2.0.0");
     assert(own_method2 != NULL);
     
     // Register with methodology
@@ -226,7 +226,7 @@ int main(void) {
     const char *init_instructions = "memory.result = \"Test methodology\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(init_method, init_instructions, "1.0.0");
+    method_t *own_method = ar__method__create(init_method, init_instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology

@@ -357,7 +357,7 @@ int64_t ar__instruction_fixture__create_test_agent(
     }
     
     // Create method and register it with methodology
-    method_t *own_method = ar_method_create(ref_method_name, ref_instructions, "1.0.0");
+    method_t *own_method = ar__method__create(ref_method_name, ref_instructions, "1.0.0");
     if (!own_method) {
         return 0;
     }
@@ -424,7 +424,7 @@ bool ar__instruction_fixture__init_system(
     }
     
     // Create and register initialization method
-    method_t *own_method = ar_method_create(ref_init_method_name, ref_init_instructions, "1.0.0");
+    method_t *own_method = ar__method__create(ref_init_method_name, ref_init_instructions, "1.0.0");
     if (!own_method) {
         return false;
     }

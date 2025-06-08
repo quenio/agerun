@@ -220,7 +220,7 @@ bool ar__methodology__create_method(const char *ref_name, const char *ref_instru
     }
     
     // Create the method directly with the provided parameters
-    method_t *own_method = ar_method_create(ref_name, ref_instructions, ref_version);
+    method_t *own_method = ar__method__create(ref_name, ref_instructions, ref_version);
     if (!own_method) {
         return false;
     }
@@ -239,7 +239,7 @@ static method_t* find_method(const char *ref_name, const char *ref_version);
 /* Method Search Functions */
 static int ar_methodology_find_method_idx(const char *ref_name) {
     for (int i = 0; i < method_name_count; i++) {
-        if (methods[i][0] != NULL && strcmp(ar_method_get_name(methods[i][0]), ref_name) == 0) {
+        if (methods[i][0] != NULL && strcmp(ar__method__get_name(methods[i][0]), ref_name) == 0) {
             return i;
         }
     }
@@ -258,8 +258,8 @@ static method_t* find_latest_method(const char *ref_name) {
     for (int i = 1; i < method_counts[method_idx]; i++) {
         if (methods[method_idx][i] != NULL && methods[method_idx][latest_idx] != NULL &&
             ar_semver_compare(
-                ar_method_get_version(methods[method_idx][i]),
-                ar_method_get_version(methods[method_idx][latest_idx])
+                ar__method__get_version(methods[method_idx][i]),
+                ar__method__get_version(methods[method_idx][latest_idx])
             ) > 0) {
             latest_idx = i;
         }
@@ -286,7 +286,7 @@ static method_t* find_method(const char *ref_name, const char *ref_version) {
     // Case 2: Exact version match
     for (int i = 0; i < method_counts[method_idx]; i++) {
         if (methods[method_idx][i] != NULL && 
-            strcmp(ar_method_get_version(methods[method_idx][i]), ref_version) == 0) {
+            strcmp(ar__method__get_version(methods[method_idx][i]), ref_version) == 0) {
             return methods[method_idx][i];
         }
     }
@@ -297,7 +297,7 @@ static method_t* find_method(const char *ref_name, const char *ref_version) {
     int valid_count = 0;
     for (int i = 0; i < method_counts[method_idx]; i++) {
         if (methods[method_idx][i] != NULL) {
-            versions[valid_count++] = ar_method_get_version(methods[method_idx][i]);
+            versions[valid_count++] = ar__method__get_version(methods[method_idx][i]);
         }
     }
     
@@ -307,7 +307,7 @@ static method_t* find_method(const char *ref_name, const char *ref_version) {
         // Map back to the original index in methods array
         for (int i = 0; i < method_counts[method_idx]; i++) {
             if (methods[method_idx][i] != NULL && 
-                strcmp(ar_method_get_version(methods[method_idx][i]), versions[latest_idx]) == 0) {
+                strcmp(ar__method__get_version(methods[method_idx][i]), versions[latest_idx]) == 0) {
                 return methods[method_idx][i];
             }
         }
@@ -326,7 +326,7 @@ static void ar_methodology_set_method_storage(int method_idx, int version_idx, m
     
     // If there's already a method at this location, destroy it first
     if (methods[method_idx][version_idx] != NULL) {
-        ar_method_destroy(methods[method_idx][version_idx]);
+        ar__method__destroy(methods[method_idx][version_idx]);
     }
     
     // Store the new method
@@ -394,7 +394,7 @@ bool ar__methodology__save_methods(void) {
         }
         
         // Get method name with validation
-        const char *method_name = ar_method_get_name(methods[i][0]);
+        const char *method_name = ar__method__get_name(methods[i][0]);
         if (!method_name) {
             ar_io_error("NULL method name at index %d", i);
             ar_io_close_file(mut_fp, temp_filename);
@@ -428,7 +428,7 @@ bool ar__methodology__save_methods(void) {
             const method_t *ref_method = methods[i][j];
             
             // Get version string with validation
-            const char *version = ar_method_get_version(ref_method);
+            const char *version = ar__method__get_version(ref_method);
             if (!version) {
                 ar_io_error("NULL version for method %s at index %d", method_name, j);
                 ar_io_close_file(mut_fp, METHODOLOGY_FILE_NAME);
@@ -454,7 +454,7 @@ bool ar__methodology__save_methods(void) {
             }
             
             // Get instructions with validation
-            const char *instructions = ar_method_get_instructions(ref_method);
+            const char *instructions = ar__method__get_instructions(ref_method);
             if (!instructions) {
                 ar_io_error("NULL instructions for method %s version %s",
                         method_name, version);
@@ -526,7 +526,7 @@ void ar__methodology__cleanup(void) {
     for (int i = 0; i < MAX_METHODS; i++) {
         for (int j = 0; j < MAX_VERSIONS_PER_METHOD; j++) {
             if (methods[i][j] != NULL) {
-                ar_method_destroy(methods[i][j]);
+                ar__method__destroy(methods[i][j]);
                 methods[i][j] = NULL;
             }
         }
@@ -540,8 +540,8 @@ void ar__methodology__register_method(method_t *own_method) {
         return;
     }
     
-    const char *method_name = ar_method_get_name(own_method);
-    const char *method_version = ar_method_get_version(own_method);
+    const char *method_name = ar__method__get_name(own_method);
+    const char *method_version = ar__method__get_version(own_method);
     
     // Find or create a method index for this name
     int method_idx = ar_methodology_find_method_idx(method_name);
@@ -549,7 +549,7 @@ void ar__methodology__register_method(method_t *own_method) {
         // No existing method with this name, create a new entry
         if (method_name_count >= MAX_METHODS) {
             ar_io_error("Maximum number of method types reached");
-            ar_method_destroy(own_method); // Clean up the method
+            ar__method__destroy(own_method); // Clean up the method
             return;
         }
         
@@ -559,7 +559,7 @@ void ar__methodology__register_method(method_t *own_method) {
     // Check if we've reached max versions for this method
     if (method_counts[method_idx] >= MAX_VERSIONS_PER_METHOD) {
         ar_io_error("Maximum number of versions reached for method %s", method_name);
-        ar_method_destroy(own_method); // Clean up the method
+        ar__method__destroy(own_method); // Clean up the method
         return;
     }
     
@@ -567,7 +567,7 @@ void ar__methodology__register_method(method_t *own_method) {
     bool version_conflict = false;
     for (int i = 0; i < method_counts[method_idx]; i++) {
         if (methods[method_idx][i] != NULL && 
-            strcmp(ar_method_get_version(methods[method_idx][i]), method_version) == 0) {
+            strcmp(ar__method__get_version(methods[method_idx][i]), method_version) == 0) {
             version_conflict = true;
             break;
         }
@@ -593,13 +593,13 @@ void ar__methodology__register_method(method_t *own_method) {
         if (methods[method_idx][i] != NULL) {
             // Check if the old method is compatible with the new one
             if (ar_semver_are_compatible(
-                    ar_method_get_version(methods[method_idx][i]), 
+                    ar__method__get_version(methods[method_idx][i]), 
                     method_version)) {
                 
                 // Check if the new version is higher
                 if (ar_semver_compare(
                         method_version,
-                        ar_method_get_version(methods[method_idx][i])) > 0) {
+                        ar__method__get_version(methods[method_idx][i])) > 0) {
                     
                     // Update agents using the old method to use the new one
                     int updated = ar__agency__update_agent_methods(
@@ -610,7 +610,7 @@ void ar__methodology__register_method(method_t *own_method) {
                     if (updated > 0) {
                         ar_io_info("Updated %d agent(s) from method %s version %s to version %s",
                                updated, method_name,
-                               ar_method_get_version(methods[method_idx][i]),
+                               ar__method__get_version(methods[method_idx][i]),
                                method_version);
                     }
                 }
@@ -693,11 +693,11 @@ bool ar__methodology__load_methods(void) {
         return true;
     }
     
-    // Clear existing methods to avoid conflicts using ar_method_destroy
+    // Clear existing methods to avoid conflicts using ar__method__destroy
     for (int i = 0; i < MAX_METHODS; i++) {
         for (int j = 0; j < MAX_VERSIONS_PER_METHOD; j++) {
             if (methods[i][j] != NULL) {
-                ar_method_destroy(methods[i][j]);
+                ar__method__destroy(methods[i][j]);
                 methods[i][j] = NULL;
             }
         }
@@ -872,7 +872,7 @@ bool ar__methodology__load_methods(void) {
             }
             
             // Create a new method with data from the file
-            method_t *own_method = ar_method_create(name, instructions, version);
+            method_t *own_method = ar__method__create(name, instructions, version);
             
             if (own_method) {
                 // Store the method in the methods array
@@ -913,7 +913,7 @@ bool ar__methodology__unregister_method(const char *ref_name, const char *ref_ve
     int version_idx = -1;
     for (int i = 0; i < method_counts[method_idx]; i++) {
         if (methods[method_idx][i] != NULL &&
-            strcmp(ar_method_get_version(methods[method_idx][i]), ref_version) == 0) {
+            strcmp(ar__method__get_version(methods[method_idx][i]), ref_version) == 0) {
             version_idx = i;
             break;
         }
@@ -933,7 +933,7 @@ bool ar__methodology__unregister_method(const char *ref_name, const char *ref_ve
     }
     
     // Destroy the method
-    ar_method_destroy(method_to_remove);
+    ar__method__destroy(method_to_remove);
     methods[method_idx][version_idx] = NULL;
     
     // Compact the versions array by shifting remaining versions

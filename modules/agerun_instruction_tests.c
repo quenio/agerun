@@ -577,7 +577,7 @@ static void test_agent_function(void) {
     assert(result);
     
     // Also register it with methodology for agent creation
-    method_t *own_method = ar_method_create("echo_method", "memory.output := message", "1.0.0");
+    method_t *own_method = ar__method__create("echo_method", "memory.output := message", "1.0.0");
     assert(own_method != NULL);
     ar__methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
@@ -845,7 +845,7 @@ static void test_agent_function_with_message_expressions(void) {
     assert(own_ctx != NULL);
     
     // And the echo_method exists in the methodology
-    method_t *own_method = ar_method_create("echo_method", "memory.output := message", "1.0.0");
+    method_t *own_method = ar__method__create("echo_method", "memory.output := message", "1.0.0");
     assert(own_method != NULL);
     ar__methodology__register_method(own_method);
     own_method = NULL;
@@ -974,7 +974,7 @@ int main(void) {
     const char *ref_init_instructions = "memory.result = \"Test complete\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method_create(ref_init_method, ref_init_instructions, "1.0.0");
+    method_t *own_method = ar__method__create(ref_init_method, ref_init_instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology

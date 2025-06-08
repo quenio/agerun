@@ -17,7 +17,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Refactor agent module
   - [x] Refactor agent_registry module
   - [x] Refactor methodology module
-  - [ ] Refactor method module
+  - [x] Refactor method module
   - [ ] Refactor instruction module
   - [ ] Refactor expression module
   - [ ] Refactor data module

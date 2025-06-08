@@ -97,7 +97,7 @@ method_t* ar__system_fixture__register_method(system_fixture_t *mut_fixture,
     }
     
     // Create method
-    method_t *own_method = ar_method_create(ref_method_name, ref_instructions, ref_version);
+    method_t *own_method = ar__method__create(ref_method_name, ref_instructions, ref_version);
     if (!own_method) {
         return NULL;
     }

@@ -186,10 +186,10 @@ bool ar__agent__get_method_info(const agent_t *ref_agent, const char **out_metho
     }
     
     if (out_method_name) {
-        *out_method_name = ar_method_get_name(ref_agent->ref_method);
+        *out_method_name = ar__method__get_name(ref_agent->ref_method);
     }
     if (out_method_version) {
-        *out_method_version = ar_method_get_version(ref_agent->ref_method);
+        *out_method_version = ar__method__get_version(ref_agent->ref_method);
     }
     return true;
 }
