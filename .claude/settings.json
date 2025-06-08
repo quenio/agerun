@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(make:*)",
+      "Bash(make:*)",
+      "Bash(./clean_build.sh:*)"
+    ],
+    "deny": []
+  },
+  "enableAllProjectMcpServers": false
+}
