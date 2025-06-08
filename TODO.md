@@ -27,9 +27,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] Task 8: Remove `ar_methodology_get_method_counts()` after implementing alternative (removed)
     - [x] Task 9: Analyze usage of `ar_methodology_get_method_name_count()` and determine replacement strategy
     - [x] Task 10: Remove `ar_methodology_get_method_name_count()` after implementing alternative (removed)
-  - [ ] **agerun_heap.h** - Hide internal tracking functions
-    - [ ] Move `ar_heap_memory_add()` to internal header or make static
-    - [ ] Move `ar_heap_memory_remove()` to internal header or make static
+  - [x] **agerun_heap.h** - Hide internal tracking functions
+    - [x] Move `ar_heap_memory_add()` to internal header or make static
+    - [x] Move `ar_heap_memory_remove()` to internal header or make static
   - [x] **agerun_string.h** - Convert inline function to regular function
     - [x] Move `ar_string_isspace()` implementation to .c file
   - [ ] **agerun_data.h** - Evaluate if `data_type_t` enum should be opaque
@@ -48,7 +48,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ### Documentation and Process Tasks
 - [ ] Verify complete documentation for each module
 - [ ] Create missing module design documents
-- [ ] Remove PARNAS_AUDIT_RESULTS.md once all interface violations are fixed
+- [ ] Remove PARNAS_AUDIT_RESULTS.md once all interface violations are fixed (only data.h evaluation remains)
 
 - [ ] Establish TDD compliance:
   - [ ] Document TDD workflow in contributor guidelines
@@ -408,6 +408,14 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Evaluate if split improves cohesion without adding complexity
 
 ## Completed Major Milestones
+
+### 2025-06-08
+- ✅ Fixed Parnas violations in heap module:
+  - ✅ Made `ar_heap_memory_add()` static (internal implementation detail)
+  - ✅ Made `ar_heap_memory_remove()` static (internal implementation detail)
+  - ✅ Removed declarations from public header file
+  - ✅ All tests pass with zero impact on functionality
+  - ✅ Only one Parnas evaluation remains (data.h enum evaluation)
 
 ### 2025-06-07
 - ✅ Fixed failing test in agent_update_tests.c:

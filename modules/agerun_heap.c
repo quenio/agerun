@@ -36,9 +36,10 @@ static size_t g_total_memory = 0;
 static int g_initialized = 0;
 
 /**
- * Initialize the memory tracking system
+ * Initialize the memory tracking system (INTERNAL USE ONLY)
  * 
- * This function initializes the global tracking state and registers the
+ * This function is for internal use by the heap module only.
+ * It initializes the global tracking state and registers the
  * memory report function to run at program termination via atexit().
  * It is automatically called the first time memory is allocated through
  * the tracking system, so it never needs to be called manually.
@@ -63,14 +64,18 @@ static void ar_heap_memory_init(void) {
 }
 
 /**
- * Add a memory allocation record
+ * Add a memory allocation record (INTERNAL USE ONLY)
+ * 
+ * This function is for internal use by the heap module's allocation wrappers only.
+ * It should never be called directly by external code.
+ * 
  * @param ptr Pointer to the allocated memory
  * @param file Source file where the allocation occurred
  * @param line Line number where the allocation occurred
  * @param size Size of the allocation in bytes
  * @param description Description of the allocation
  */
-void ar_heap_memory_add(void *ptr, const char *file, int line, size_t size, const char *description) {
+static void ar_heap_memory_add(void *ptr, const char *file, int line, size_t size, const char *description) {
     if (!g_initialized) ar_heap_memory_init();
     
     if (!ptr) return; // Don't track NULL allocations
@@ -125,11 +130,15 @@ void ar_heap_memory_add(void *ptr, const char *file, int line, size_t size, cons
 }
 
 /**
- * Remove a memory allocation record
+ * Remove a memory allocation record (INTERNAL USE ONLY)
+ * 
+ * This function is for internal use by the heap module's ar_heap_free() wrapper only.
+ * It should never be called directly by external code.
+ * 
  * @param ptr Pointer to the memory being freed
  * @return 1 if found and removed, 0 if not found
  */
-int ar_heap_memory_remove(void *ptr) {
+static int ar_heap_memory_remove(void *ptr) {
     if (!g_initialized || !ptr) return 0;
     
     memory_record_t *prev = NULL;

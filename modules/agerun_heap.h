@@ -20,35 +20,6 @@
 #ifdef DEBUG
 
 /**
- * Record a new memory allocation in the tracking system
- * 
- * Internal function used by the allocation wrapper functions to register
- * a new allocation with the memory tracking system. This function should
- * never be called directly except by the allocation wrapper functions.
- * 
- * @param ptr Pointer to the allocated memory
- * @param file Source file where the allocation occurred
- * @param line Line number where the allocation occurred
- * @param size Size of the allocation in bytes
- * @param description Description of the allocation for debugging purposes
- * @note This function is for internal use by the heap module's allocation wrappers
- */
-void ar_heap_memory_add(void *ptr, const char *file, int line, size_t size, const char *description);
-
-/**
- * Remove a memory allocation record from the tracking system
- * 
- * Internal function used by ar_heap_free() to remove an allocation record
- * when memory is freed. This function should never be called directly
- * except by the ar_heap_free function.
- * 
- * @param ptr Pointer to the memory being freed
- * @return 1 if the allocation record was found and removed, 0 if not found
- * @note This function is for internal use by the heap module's free wrapper
- */
-int ar_heap_memory_remove(void *ptr);
-
-/**
  * Generate a comprehensive memory leak report
  * 
  * Creates a detailed report with information about:
