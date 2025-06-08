@@ -110,6 +110,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Testing and Quality
 
+- [x] Improve memory leak detection in build system:
+  - [x] Modified heap module to support custom report filenames via AGERUN_MEMORY_REPORT environment variable
+  - [x] Updated Makefile to generate unique memory reports for each test and executable
+  - [x] Enhanced clean_build.sh to check all memory report files and report specific leaks
+  - [x] Fixed executable build to include DEBUG_CFLAGS for proper heap tracking
+  - [x] Verified system detects and reports memory leaks in all tests and executable
+
 - [ ] Enhance tests for other modules:
   - [ ] Review all modules for similar memory management issues
   - [ ] Ensure test coverage for edge cases in memory management
@@ -121,7 +128,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [ ] Improve test infrastructure:
   - [ ] Add isolated test runners for each module
   - [ ] Create better debug reporting for test failures
-  - [ ] Add memory tracking to tests
+  - [x] Add memory tracking to tests (completed via unique memory reports per test)
 
 - [ ] Memory failure testing improvements:
   - [ ] Create specific test cases for memory allocation failure scenarios

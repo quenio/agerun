@@ -1,5 +1,6 @@
 #include "agerun_heap.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
@@ -216,7 +217,9 @@ static void test_memory_report(void) {
     ar_heap_memory_report();
     
     // Check if the report file exists - use the same path as used in agerun_heap.c
-    FILE *report = fopen("heap_memory_report.log", "r");
+    const char *custom_path = getenv("AGERUN_MEMORY_REPORT");
+    const char *report_path = custom_path ? custom_path : "heap_memory_report.log";
+    FILE *report = fopen(report_path, "r");
     assert(report != NULL);
     fclose(report);
     

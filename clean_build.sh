@@ -67,10 +67,18 @@ fi
 # Step 5: Run executable
 echo
 echo "Running executable..."
-if output=$(make run 2>&1); then
+# Run the executable directly instead of through output capture to ensure memory report is written
+make run >/dev/null 2>&1
+if [ $? -eq 0 ]; then
     echo "Executable: ✓"
-    # Show just the program output
-    echo "$output" | grep -v "make\[" | head -5
+    # Wait a moment for report to be written
+    sleep 1
+    # Check if executable memory report was created
+    if [ -f "bin/memory_report_agerun.log" ]; then
+        echo "Executable memory report created"
+    else
+        echo "Warning: Executable memory report not found"
+    fi
     # Clean up persistence files created by executable
     rm -f bin/*.agerun
 else
@@ -90,11 +98,28 @@ echo
 echo "=== Build Summary ==="
 echo "Completed at $(date)"
 
-# Check for memory leaks in the last log
-if [ -f bin/heap_memory_report.log ]; then
-    if grep -q "No memory leaks detected" bin/heap_memory_report.log; then
+# Check for memory leaks in all memory report logs
+memory_reports=$(find bin -name "memory_report*.log" 2>/dev/null | sort)
+
+if [ -z "$memory_reports" ]; then
+    echo "Memory: No memory reports found"
+else
+    all_clean=true
+    leaky_tests=""
+    
+    for report in $memory_reports; do
+        if [ -f "$report" ] && ! grep -q "No memory leaks detected" "$report" 2>/dev/null; then
+            all_clean=false
+            test_name=$(basename "$report" .log | sed 's/memory_report_//')
+            leaky_tests="$leaky_tests $test_name"
+        fi
+    done
+    
+    if $all_clean; then
         echo "Memory: No leaks detected ✓"
     else
-        echo "Memory: Check bin/heap_memory_report.log"
+        echo "Memory: LEAKS DETECTED in:$leaky_tests"
+        echo "Check memory_report_*.log files in bin/"
+        exit 1
     fi
 fi

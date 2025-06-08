@@ -62,7 +62,7 @@ test_lib: bin $(OBJ) $(TEST_OBJ) $(METHOD_TEST_OBJ)
 
 # Executable application - build only (always in debug mode)
 executable: debug bin
-	$(CC) $(CFLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS)
+	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS)
 
 # Executable application with Address Sanitizer - build only
 executable-sanitize: clean
@@ -71,11 +71,11 @@ executable-sanitize: clean
 
 # Run the executable (always in debug mode)
 run: executable
-	cd bin && ./agerun
+	cd bin && AGERUN_MEMORY_REPORT="memory_report_agerun.log" ./agerun
 
 # Run the executable with Address Sanitizer
 run-sanitize: executable-sanitize
-	cd bin && ./agerun
+	cd bin && AGERUN_MEMORY_REPORT="memory_report_agerun.log" ./agerun
 
 # Define test executables without bin/ prefix for use in the bin directory
 TEST_BIN_NAMES = $(notdir $(TEST_BIN))
@@ -89,7 +89,7 @@ test: clean debug
 	@cd bin && for test in $(ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
 		echo "Running $$test"; \
-		./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+		AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
 	done
 
 # Build and run tests with Address Sanitizer
@@ -100,7 +100,7 @@ test-sanitize: clean
 	@cd bin && for test in $(ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
 		echo "Running $$test with Address Sanitizer"; \
-		./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+		AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
 	done
 
 # Individual test binaries

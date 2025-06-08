@@ -55,7 +55,9 @@ static void ar_heap_memory_init(void) {
     g_total_memory = 0;
     
     // Register cleanup at program exit
-    atexit(ar_heap_memory_report);
+    if (atexit(ar_heap_memory_report) != 0) {
+        fprintf(stderr, "WARNING: Failed to register heap memory report with atexit\n");
+    }
     
     g_initialized = 1;
 }
@@ -177,7 +179,9 @@ void ar_heap_memory_report(void) {
     if (!g_initialized) return;
 
     // Create the report file in the current directory for consistency with the original code
-    const char *report_path = "heap_memory_report.log";
+    // Allow custom report filename via environment variable
+    const char *custom_path = getenv("AGERUN_MEMORY_REPORT");
+    const char *report_path = custom_path ? custom_path : "heap_memory_report.log";
 
     // Use restricted mode "w" to ensure we only create/write, not execute
     FILE *report = fopen(report_path, "w");

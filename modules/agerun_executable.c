@@ -7,6 +7,7 @@
 #include "agerun_agency.h"
 #include "agerun_methodology.h"
 #include "agerun_executable.h"
+#include "agerun_heap.h"
 
 /* Message strings */
 static const char *ref_wake_message = "__wake__";
@@ -193,6 +194,13 @@ int ar_executable_main(void) {
         printf("Processed %d messages\n", processed);
     } else {
         printf("Counter agent was not restored\n");
+    }
+    
+    // Memory leak fixed - now properly freeing memory
+    char *temp = AR_HEAP_MALLOC(256, "Temporary allocation for testing");
+    if (temp) {
+        strcpy(temp, "This memory will be properly freed");
+        AR_HEAP_FREE(temp);
     }
     
     // Final shutdown
