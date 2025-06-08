@@ -56,7 +56,7 @@ static void test_simple_instructions(void) {
     
     // Test 1: Simple assignment instruction
     // Create instruction context without message
-    instruction_context_t *own_ctx = ar_instruction_create_context(
+    instruction_context_t *own_ctx = ar__instruction__create_context(
         mut_memory,
         ref_context,
         NULL
@@ -65,7 +65,7 @@ static void test_simple_instructions(void) {
     
     // Test simple assignment
     const char *instruction = "memory.test := \"Hello World\"";
-    bool result = ar_instruction_run(own_ctx, instruction);
+    bool result = ar__instruction__run(own_ctx, instruction);
     assert(result);
     
     // Verify the value was written
@@ -75,10 +75,10 @@ static void test_simple_instructions(void) {
     assert(strcmp(ar_data_get_string(ref_test), "Hello World") == 0);
     
     // Clean up context
-    ar_instruction_destroy_context(own_ctx);
+    ar__instruction__destroy_context(own_ctx);
     
     // Test 2: Assignment with expression
-    own_ctx = ar_instruction_create_context(
+    own_ctx = ar__instruction__create_context(
         mut_memory,
         ref_context,
         NULL
@@ -86,7 +86,7 @@ static void test_simple_instructions(void) {
     assert(own_ctx != NULL);
     
     instruction = "memory.sum := 2 + 3";
-    result = ar_instruction_run(own_ctx, instruction);
+    result = ar__instruction__run(own_ctx, instruction);
     assert(result);
     
     // Verify the result
@@ -96,7 +96,7 @@ static void test_simple_instructions(void) {
     assert(ar_data_get_integer(ref_sum) == 5);
     
     // Clean up context
-    ar_instruction_destroy_context(own_ctx);
+    ar__instruction__destroy_context(own_ctx);
     
     // Clean up (fixture handles agent destruction)
     ar__instruction_fixture__destroy(own_fixture);
@@ -124,7 +124,7 @@ static void test_memory_access_instructions(void) {
     const data_t *ref_context = ar__agency__get_agent_context(agent_id);
     
     // Create instruction context without message
-    instruction_context_t *own_ctx = ar_instruction_create_context(
+    instruction_context_t *own_ctx = ar__instruction__create_context(
         mut_memory,
         ref_context,
         NULL
@@ -133,7 +133,7 @@ static void test_memory_access_instructions(void) {
     
     // Test memory write instruction
     const char *write_instruction = "memory.test_value := 42";
-    bool result = ar_instruction_run(own_ctx, write_instruction);
+    bool result = ar__instruction__run(own_ctx, write_instruction);
     assert(result);
     
     // Verify the value was written
@@ -150,7 +150,7 @@ static void test_memory_access_instructions(void) {
     
     // Now write to nested path
     const char *nested_instruction = "memory.nested.value := \"nested text\"";
-    result = ar_instruction_run(own_ctx, nested_instruction);
+    result = ar__instruction__run(own_ctx, nested_instruction);
     assert(result);
     
     // Verify nested value
@@ -163,7 +163,7 @@ static void test_memory_access_instructions(void) {
     assert(strcmp(ar_data_get_string(ref_nested_value), "nested text") == 0);
     
     // Clean up context
-    ar_instruction_destroy_context(own_ctx);
+    ar__instruction__destroy_context(own_ctx);
     
     // Clean up (fixture handles agent destruction)
     ar__instruction_fixture__destroy(own_fixture);
@@ -191,7 +191,7 @@ static void test_condition_instructions(void) {
     const data_t *ref_context = ar__agency__get_agent_context(agent_id);
     
     // Create instruction context without message
-    instruction_context_t *own_ctx = ar_instruction_create_context(
+    instruction_context_t *own_ctx = ar__instruction__create_context(
         mut_memory,
         ref_context,
         NULL
@@ -200,7 +200,7 @@ static void test_condition_instructions(void) {
     
     // Test if-then-else with true condition
     const char *if_true_instruction = "memory.result := if(1 > 0, \"true\", \"false\")";
-    bool result = ar_instruction_run(own_ctx, if_true_instruction);
+    bool result = ar__instruction__run(own_ctx, if_true_instruction);
     assert(result);
     
     // Verify result
@@ -211,7 +211,7 @@ static void test_condition_instructions(void) {
     
     // Test if-then-else with false condition
     const char *if_false_instruction = "memory.result2 := if(0 > 1, \"true\", \"false\")";
-    result = ar_instruction_run(own_ctx, if_false_instruction);
+    result = ar__instruction__run(own_ctx, if_false_instruction);
     assert(result);
     
     // Verify result
@@ -221,7 +221,7 @@ static void test_condition_instructions(void) {
     assert(strcmp(ar_data_get_string(ref_result2), "false") == 0);
     
     // Clean up context
-    ar_instruction_destroy_context(own_ctx);
+    ar__instruction__destroy_context(own_ctx);
     
     // Clean up (fixture handles agent destruction)
     ar__instruction_fixture__destroy(own_fixture);
@@ -266,7 +266,7 @@ static void test_message_send_instructions(void) {
     assert(ref_stored_id != NULL);
     
     // Create instruction context without message
-    instruction_context_t *own_ctx = ar_instruction_create_context(
+    instruction_context_t *own_ctx = ar__instruction__create_context(
         mut_sender_memory,
         ref_sender_context,
         NULL
@@ -276,7 +276,7 @@ static void test_message_send_instructions(void) {
     // Test send instruction with a literal agent ID
     char literal_send[100];
     snprintf(literal_send, sizeof(literal_send), "memory.literal_result := send(%lld, \"Test literal\")", receiver_id);
-    bool literal_result = ar_instruction_run(own_ctx, literal_send);
+    bool literal_result = ar__instruction__run(own_ctx, literal_send);
     assert(literal_result);
     
     // Process the sent message
@@ -289,7 +289,7 @@ static void test_message_send_instructions(void) {
     assert(ar_data_get_integer(ref_literal_result) == 1); // Send successful
     
     // Clean up context
-    ar_instruction_destroy_context(own_ctx);
+    ar__instruction__destroy_context(own_ctx);
     
     // Clean up (fixtures handle agent destruction)
     ar__instruction_fixture__destroy(own_sender_fixture);
@@ -318,7 +318,7 @@ static void test_method_function(void) {
     const data_t *ref_context = ar__agency__get_agent_context(agent_id);
     
     // Create instruction context
-    instruction_context_t *own_ctx = ar_instruction_create_context(
+    instruction_context_t *own_ctx = ar__instruction__create_context(
         mut_memory,
         ref_context,
         NULL // No message for this test
@@ -333,11 +333,11 @@ static void test_method_function(void) {
     const char *method_instruction = "method(\"test_method_3params\", \"memory.x := 10\", \"1.0.0\")";
     
     // Run the instruction directly
-    bool instruction_result = ar_instruction_run(own_ctx, method_instruction);
+    bool instruction_result = ar__instruction__run(own_ctx, method_instruction);
     assert(instruction_result);
     
     // Clean up context
-    ar_instruction_destroy_context(own_ctx);
+    ar__instruction__destroy_context(own_ctx);
     
     // Now try to reference both the newly created methods
     int64_t direct_agent_id = ar__agency__create_agent("test_method_direct", "1.0.0", NULL);
@@ -392,7 +392,7 @@ static void test_parse_function(void) {
     const data_t *ref_context = ar__agency__get_agent_context(agent_id);
     
     // Create instruction context
-    instruction_context_t *own_ctx = ar_instruction_create_context(
+    instruction_context_t *own_ctx = ar__instruction__create_context(
         mut_memory,
         ref_context,
         NULL // No message for this test
@@ -401,7 +401,7 @@ static void test_parse_function(void) {
     
     // Test parse function with simple template
     const char *parse_instruction = "memory.result := parse(\"Hello {name}\", \"Hello World\")";
-    bool result = ar_instruction_run(own_ctx, parse_instruction);
+    bool result = ar__instruction__run(own_ctx, parse_instruction);
     assert(result);
     
     // Verify the result contains the parsed value
@@ -415,7 +415,7 @@ static void test_parse_function(void) {
     assert(strcmp(ar_data_get_string(ref_name), "World") == 0);
     
     // Clean up context
-    ar_instruction_destroy_context(own_ctx);
+    ar__instruction__destroy_context(own_ctx);
     
     // Clean up (fixture handles agent destruction)
     ar__instruction_fixture__destroy(own_fixture);
@@ -443,7 +443,7 @@ static void test_build_function(void) {
     const data_t *ref_context = ar__agency__get_agent_context(agent_id);
     
     // Create instruction context
-    instruction_context_t *own_ctx = ar_instruction_create_context(
+    instruction_context_t *own_ctx = ar__instruction__create_context(
         mut_memory,
         ref_context,
         NULL // No message for this test
@@ -461,7 +461,7 @@ static void test_build_function(void) {
     
     
     const char *build_instruction2 = "memory.result := build(\"Hello {name}, you are {age} years old\", memory.values)";
-    bool result = ar_instruction_run(own_ctx, build_instruction2);
+    bool result = ar__instruction__run(own_ctx, build_instruction2);
     assert(result);
     
     // Verify the result
@@ -481,7 +481,7 @@ static void test_build_function(void) {
     ar_data_set_map_data(mut_memory, "values2", own_values2);
     
     const char *build_instruction4 = "memory.result2 := build(\"Order: {quantity} x {product} at ${price} each\", memory.values2)";
-    result = ar_instruction_run(own_ctx, build_instruction4);
+    result = ar__instruction__run(own_ctx, build_instruction4);
     assert(result);
     
     data_t *ref_result2 = ar_data_get_map_data(mut_memory, "result2");
@@ -498,7 +498,7 @@ static void test_build_function(void) {
     ar_data_set_map_data(mut_memory, "values3", own_values3);
     
     const char *build_instruction6 = "memory.result3 := build(\"{greeting} {name}!\", memory.values3)";
-    result = ar_instruction_run(own_ctx, build_instruction6);
+    result = ar__instruction__run(own_ctx, build_instruction6);
     assert(result);
     
     data_t *ref_result3 = ar_data_get_map_data(mut_memory, "result3");
@@ -509,7 +509,7 @@ static void test_build_function(void) {
     // Test 4: No placeholders
     printf("  Test 4: No placeholders...\n");
     const char *build_instruction7 = "memory.result4 := build(\"Plain text with no placeholders\", memory.values)";
-    result = ar_instruction_run(own_ctx, build_instruction7);
+    result = ar__instruction__run(own_ctx, build_instruction7);
     assert(result);
     
     data_t *ref_result4 = ar_data_get_map_data(mut_memory, "result4");
@@ -520,7 +520,7 @@ static void test_build_function(void) {
     // Test 5: Unmatched brace
     printf("  Test 5: Unmatched brace...\n");
     const char *build_instruction8 = "memory.result5 := build(\"Unmatched { brace\", memory.values)";
-    result = ar_instruction_run(own_ctx, build_instruction8);
+    result = ar__instruction__run(own_ctx, build_instruction8);
     assert(result);
     
     data_t *ref_result5 = ar_data_get_map_data(mut_memory, "result5");
@@ -531,7 +531,7 @@ static void test_build_function(void) {
     // Test 6: Empty template
     printf("  Test 6: Empty template...\n");
     const char *build_instruction9 = "memory.result6 := build(\"\", memory.values)";
-    result = ar_instruction_run(own_ctx, build_instruction9);
+    result = ar__instruction__run(own_ctx, build_instruction9);
     assert(result);
     
     data_t *ref_result6 = ar_data_get_map_data(mut_memory, "result6");
@@ -540,7 +540,7 @@ static void test_build_function(void) {
     assert(strcmp(ar_data_get_string(ref_result6), "") == 0);
     
     // Clean up context
-    ar_instruction_destroy_context(own_ctx);
+    ar__instruction__destroy_context(own_ctx);
     
     // Clean up (fixture handles agent destruction)
     ar__instruction_fixture__destroy(own_fixture);
@@ -562,7 +562,7 @@ static void test_agent_function(void) {
     assert(own_context != NULL);
     
     // Create an instruction context
-    instruction_context_t *own_ctx = ar_instruction_create_context(
+    instruction_context_t *own_ctx = ar__instruction__create_context(
         own_memory,
         own_context,
         NULL // No message for this test
@@ -573,7 +573,7 @@ static void test_agent_function(void) {
     printf("  Test 1: Create agent with method name and version...\n");
     // First, create a simple test method
     const char *create_method_instruction = "method(\"echo_method\", \"memory.output := message\", \"1.0.0\")";
-    bool result = ar_instruction_run(own_ctx, create_method_instruction);
+    bool result = ar__instruction__run(own_ctx, create_method_instruction);
     assert(result);
     
     // Also register it with methodology for agent creation
@@ -590,7 +590,7 @@ static void test_agent_function(void) {
     
     // Now create an agent using this method
     const char *agent_instruction1 = "memory.new_agent_id := agent(\"echo_method\", \"1.0.0\", memory.agent_context)";
-    result = ar_instruction_run(own_ctx, agent_instruction1);
+    result = ar__instruction__run(own_ctx, agent_instruction1);
     assert(result);
     
     // Verify the result
@@ -610,7 +610,7 @@ static void test_agent_function(void) {
     data_t *own_empty_context = ar_data_create_map();
     ar_data_set_map_data(own_memory, "empty_context", own_empty_context);
     
-    result = ar_instruction_run(own_ctx, agent_instruction2);
+    result = ar__instruction__run(own_ctx, agent_instruction2);
     assert(result);
     
     data_t *ref_agent_id2 = ar_data_get_map_data(own_memory, "new_agent_id2");
@@ -628,7 +628,7 @@ static void test_agent_function(void) {
     ar_data_set_map_data(own_memory, "method_version", ar_data_create_string("1.0.0"));
     
     const char *agent_instruction3 = "memory.new_agent_id3 := agent(memory.method_name, memory.method_version, memory.agent_context)";
-    result = ar_instruction_run(own_ctx, agent_instruction3);
+    result = ar__instruction__run(own_ctx, agent_instruction3);
     assert(result);
     
     data_t *ref_agent_id3 = ar_data_get_map_data(own_memory, "new_agent_id3");
@@ -643,7 +643,7 @@ static void test_agent_function(void) {
     // Test 4: Try to create agent with non-existent method (should fail)
     printf("  Test 4: Create agent with non-existent method...\n");
     const char *agent_instruction4 = "memory.new_agent_id4 := agent(\"non_existent_method\", \"1.0.0\", memory.empty_context)";
-    result = ar_instruction_run(own_ctx, agent_instruction4);
+    result = ar__instruction__run(own_ctx, agent_instruction4);
     assert(result); // Instruction should run successfully
     
     data_t *ref_agent_id4 = ar_data_get_map_data(own_memory, "new_agent_id4");
@@ -657,7 +657,7 @@ static void test_agent_function(void) {
     ar__agency__destroy_agent(new_agent_id3);
     
     // Clean up context
-    ar_instruction_destroy_context(own_ctx);
+    ar__instruction__destroy_context(own_ctx);
     
     // Clean up (fixture handles data destruction)
     ar__instruction_fixture__destroy(own_fixture);
@@ -680,7 +680,7 @@ static void test_destroy_functions(void) {
     data_t *own_context = ar_data_create_map();  // Create separately since ownership transfers
     ar_data_set_map_data(own_memory, "context", own_context);
     
-    instruction_context_t *own_ctx = ar_instruction_create_context(
+    instruction_context_t *own_ctx = ar__instruction__create_context(
         own_memory,
         ar_data_get_map_data(own_memory, "context"),
         NULL
@@ -688,12 +688,12 @@ static void test_destroy_functions(void) {
     
     // First create a method for testing
     const char *create_test_method = "memory.method_ok := method(\"destroy_test_method\", \"memory.x := 1\", \"1.0.0\")";
-    bool result = ar_instruction_run(own_ctx, create_test_method);
+    bool result = ar__instruction__run(own_ctx, create_test_method);
     assert(result);
     
     // Then create an agent to destroy
     const char *create_agent_instr = "memory.test_agent_id := agent(\"destroy_test_method\", \"1.0.0\", memory.context)";
-    result = ar_instruction_run(own_ctx, create_agent_instr);
+    result = ar__instruction__run(own_ctx, create_agent_instr);
     assert(result);
     
     data_t *ref_agent_id = ar_data_get_map_data(own_memory, "test_agent_id");
@@ -710,7 +710,7 @@ static void test_destroy_functions(void) {
     
     // Now destroy the agent
     const char *destroy_agent_instr = "memory.destroy_result := destroy(memory.test_agent_id)";
-    result = ar_instruction_run(own_ctx, destroy_agent_instr);
+    result = ar__instruction__run(own_ctx, destroy_agent_instr);
     assert(result);
     
     data_t *ref_destroy_result = ar_data_get_map_data(own_memory, "destroy_result");
@@ -724,7 +724,7 @@ static void test_destroy_functions(void) {
     // Test 2: Try to destroy non-existent agent
     printf("  Test 2: Destroy non-existent agent...\n");
     const char *destroy_invalid_instr = "memory.destroy_invalid := destroy(999)";
-    result = ar_instruction_run(own_ctx, destroy_invalid_instr);
+    result = ar__instruction__run(own_ctx, destroy_invalid_instr);
     assert(result);
     
     data_t *ref_destroy_invalid = ar_data_get_map_data(own_memory, "destroy_invalid");
@@ -737,7 +737,7 @@ static void test_destroy_functions(void) {
     
     // First create a new method
     const char *create_method_instr = "memory.method_result := method(\"test_destroy_method\", \"memory.x := 1\", \"1.0.0\")";
-    result = ar_instruction_run(own_ctx, create_method_instr);
+    result = ar__instruction__run(own_ctx, create_method_instr);
     assert(result);
     
     data_t *ref_method_result = ar_data_get_map_data(own_memory, "method_result");
@@ -750,7 +750,7 @@ static void test_destroy_functions(void) {
     
     // Now destroy the method
     const char *destroy_method_instr = "memory.destroy_method_result := destroy(\"test_destroy_method\", \"1.0.0\")";
-    result = ar_instruction_run(own_ctx, destroy_method_instr);
+    result = ar__instruction__run(own_ctx, destroy_method_instr);
     assert(result);
     
     data_t *ref_destroy_method_result = ar_data_get_map_data(own_memory, "destroy_method_result");
@@ -766,11 +766,11 @@ static void test_destroy_functions(void) {
     
     // Create a method and an agent using it
     const char *create_method2_instr = "memory.method2_result := method(\"test_active_method\", \"memory.y := 2\", \"1.0.0\")";
-    result = ar_instruction_run(own_ctx, create_method2_instr);
+    result = ar__instruction__run(own_ctx, create_method2_instr);
     assert(result);
     
     const char *create_agent2_instr = "memory.active_agent_id := agent(\"test_active_method\", \"1.0.0\", memory.context)";
-    result = ar_instruction_run(own_ctx, create_agent2_instr);
+    result = ar__instruction__run(own_ctx, create_agent2_instr);
     assert(result);
     
     // Process messages to complete agent creation
@@ -783,7 +783,7 @@ static void test_destroy_functions(void) {
     
     // Try to destroy the method (should fail)
     const char *destroy_active_method_instr = "memory.destroy_active_result := destroy(\"test_active_method\", \"1.0.0\")";
-    result = ar_instruction_run(own_ctx, destroy_active_method_instr);
+    result = ar__instruction__run(own_ctx, destroy_active_method_instr);
     assert(result);
     
     data_t *ref_destroy_active_result = ar_data_get_map_data(own_memory, "destroy_active_result");
@@ -796,7 +796,7 @@ static void test_destroy_functions(void) {
     
     // Now we should be able to destroy the method
     const char *destroy_active_method2_instr = "memory.destroy_active_result2 := destroy(\"test_active_method\", \"1.0.0\")";
-    result = ar_instruction_run(own_ctx, destroy_active_method2_instr);
+    result = ar__instruction__run(own_ctx, destroy_active_method2_instr);
     assert(result);
     
     data_t *ref_destroy_active_result2 = ar_data_get_map_data(own_memory, "destroy_active_result2");
@@ -805,7 +805,7 @@ static void test_destroy_functions(void) {
     assert(ar_data_get_integer(ref_destroy_active_result2) == 1); // Success
     
     // Clean up context
-    ar_instruction_destroy_context(own_ctx);
+    ar__instruction__destroy_context(own_ctx);
     
     // Clean up (fixture handles data destruction)
     ar__instruction_fixture__destroy(own_fixture);
@@ -837,7 +837,7 @@ static void test_agent_function_with_message_expressions(void) {
     ar_data_set_map_integer(own_agent_context, "timeout", 30);
     ar_data_set_map_data(own_message, "context", own_agent_context);
     
-    instruction_context_t *own_ctx = ar_instruction_create_context(
+    instruction_context_t *own_ctx = ar__instruction__create_context(
         own_memory,
         own_context,
         own_message
@@ -852,7 +852,7 @@ static void test_agent_function_with_message_expressions(void) {
     
     // When we call agent() with message access expressions
     const char *instruction = "memory.agent_result := agent(message.method_name, message.version, message.context)";
-    bool result = ar_instruction_run(own_ctx, instruction);
+    bool result = ar__instruction__run(own_ctx, instruction);
     
     // Then the agent creation should succeed
     if (!result) {
@@ -870,7 +870,7 @@ static void test_agent_function_with_message_expressions(void) {
     }
     
     // Clean up context
-    ar_instruction_destroy_context(own_ctx);
+    ar__instruction__destroy_context(own_ctx);
     
     // Clean up (fixture handles data destruction)
     ar__instruction_fixture__destroy(own_fixture);
@@ -896,69 +896,69 @@ static void test_error_reporting(void) {
     data_t *mut_memory = ar__agency__get_agent_mutable_memory(agent_id);
     assert(mut_memory != NULL);
     
-    instruction_context_t *own_ctx = ar_instruction_create_context(mut_memory, NULL, NULL);
+    instruction_context_t *own_ctx = ar__instruction__create_context(mut_memory, NULL, NULL);
     assert(own_ctx != NULL);
     
     // Test 1: Syntax error - missing expression after assignment
     // When we run an invalid instruction with missing expression
     const char *invalid_instruction1 = "memory.x := ";
     printf("  Running invalid instruction: %s\n", invalid_instruction1);
-    bool result = ar_instruction_run(own_ctx, invalid_instruction1);
+    bool result = ar__instruction__run(own_ctx, invalid_instruction1);
     
     // Then execution should fail
     printf("  Result: %s\n", result ? "success" : "failure");
     assert(!result);
     
     // And we should get a descriptive error message
-    const char *error_msg = ar_instruction_get_last_error(own_ctx);
+    const char *error_msg = ar__instruction__get_last_error(own_ctx);
     printf("  Error message: %s\n", error_msg ? error_msg : "(null)");
     assert(error_msg != NULL);
     assert(strstr(error_msg, "Expected expression after ':='") != NULL);
     
     // And we should get the error position
-    int error_pos = ar_instruction_get_error_position(own_ctx);
+    int error_pos = ar__instruction__get_error_position(own_ctx);
     assert(error_pos == 13); // Position after ":= " (1-based)
     
     // Test 2: Parse error - invalid token
     // When we run an instruction with invalid syntax
     const char *invalid_instruction2 = "memory.x := @invalid";
-    result = ar_instruction_run(own_ctx, invalid_instruction2);
+    result = ar__instruction__run(own_ctx, invalid_instruction2);
     
     // Then execution should fail
     assert(!result);
     
     // And we should get a descriptive error message
-    error_msg = ar_instruction_get_last_error(own_ctx);
+    error_msg = ar__instruction__get_last_error(own_ctx);
     assert(error_msg != NULL);
     assert(strstr(error_msg, "Unexpected character '@'") != NULL);
     
     // Test 3: Syntax error - method() with wrong number of parameters
     // When we try to call method() with only 2 parameters
     const char *invalid_instruction3 = "memory.result := method(\"nonexistent\", \"1.0.0\")";
-    result = ar_instruction_run(own_ctx, invalid_instruction3);
+    result = ar__instruction__run(own_ctx, invalid_instruction3);
     
     // Then execution should fail (syntax error - missing third parameter)
     assert(!result);
     
     // The parser fails when trying to evaluate the expression after the second parameter
-    error_msg = ar_instruction_get_last_error(own_ctx);
+    error_msg = ar__instruction__get_last_error(own_ctx);
     assert(error_msg != NULL);
     assert(strstr(error_msg, "Failed to evaluate expression") != NULL);
     
     // Test 4: Clear error state on successful execution
     // When we run a valid instruction
     const char *valid_instruction = "memory.x := 42";
-    result = ar_instruction_run(own_ctx, valid_instruction);
+    result = ar__instruction__run(own_ctx, valid_instruction);
     
     // Then execution should succeed
     assert(result);
     
     // And error message should be cleared
-    error_msg = ar_instruction_get_last_error(own_ctx);
+    error_msg = ar__instruction__get_last_error(own_ctx);
     assert(error_msg == NULL || strlen(error_msg) == 0);
     
     // Clean up context
-    ar_instruction_destroy_context(own_ctx);
+    ar__instruction__destroy_context(own_ctx);
     
     // Clean up (fixture handles agent destruction)
     ar__instruction_fixture__destroy(own_fixture);

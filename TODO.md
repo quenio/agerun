@@ -18,7 +18,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Refactor agent_registry module
   - [x] Refactor methodology module
   - [x] Refactor method module
-  - [ ] Refactor instruction module
+  - [x] Refactor instruction module
   - [ ] Refactor expression module
   - [ ] Refactor data module
   - [ ] Refactor remaining utility modules (semver, string, map, list, io, heap, assert)

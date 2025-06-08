@@ -39,7 +39,7 @@ static void set_error(instruction_context_t *mut_ctx, const char *ref_message, i
 static void clear_error(instruction_context_t *mut_ctx);
 
 // Create a new instruction context
-instruction_context_t* ar_instruction_create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message) {
+instruction_context_t* ar__instruction__create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message) {
     // Allocate memory for the context
     instruction_context_t *own_ctx = (instruction_context_t*)AR_HEAP_MALLOC(sizeof(instruction_context_t), "Instruction context");
     if (!own_ctx) {
@@ -58,7 +58,7 @@ instruction_context_t* ar_instruction_create_context(data_t *mut_memory, const d
 }
 
 // Destroy an instruction context
-void ar_instruction_destroy_context(instruction_context_t *own_ctx) {
+void ar__instruction__destroy_context(instruction_context_t *own_ctx) {
     if (own_ctx) {
         // Free the owned error message if any
         if (own_ctx->own_error_message) {
@@ -70,7 +70,7 @@ void ar_instruction_destroy_context(instruction_context_t *own_ctx) {
 }
 
 // Get the memory from the instruction context
-data_t* ar_instruction_get_memory(const instruction_context_t *ref_ctx) {
+data_t* ar__instruction__get_memory(const instruction_context_t *ref_ctx) {
     if (!ref_ctx) {
         return NULL;
     }
@@ -78,7 +78,7 @@ data_t* ar_instruction_get_memory(const instruction_context_t *ref_ctx) {
 }
 
 // Get the context data from the instruction context
-const data_t* ar_instruction_get_context(const instruction_context_t *ref_ctx) {
+const data_t* ar__instruction__get_context(const instruction_context_t *ref_ctx) {
     if (!ref_ctx) {
         return NULL;
     }
@@ -86,7 +86,7 @@ const data_t* ar_instruction_get_context(const instruction_context_t *ref_ctx) {
 }
 
 // Get the message from the instruction context
-const data_t* ar_instruction_get_message(const instruction_context_t *ref_ctx) {
+const data_t* ar__instruction__get_message(const instruction_context_t *ref_ctx) {
     if (!ref_ctx) {
         return NULL;
     }
@@ -94,7 +94,7 @@ const data_t* ar_instruction_get_message(const instruction_context_t *ref_ctx) {
 }
 
 // Send a message to another agent
-bool ar_instruction_send_message(int64_t target_id, data_t *own_message) {
+bool ar__instruction__send_message(int64_t target_id, data_t *own_message) {
     if (target_id == 0) {
         // Special case: agent_id 0 is a no-op that always returns true
         ar_data_destroy(own_message);
@@ -106,7 +106,7 @@ bool ar_instruction_send_message(int64_t target_id, data_t *own_message) {
 }
 
 // Parse and execute a single instruction
-bool ar_instruction_run(instruction_context_t *mut_ctx, const char *ref_instruction) {
+bool ar__instruction__run(instruction_context_t *mut_ctx, const char *ref_instruction) {
     if (!mut_ctx || !ref_instruction) {
         return false;
     }
@@ -449,7 +449,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             }
         } else {
             // Ownership of own_msg is transferred to ar__agent__send
-            success = ar_instruction_send_message(target_id, own_msg);
+            success = ar__instruction__send_message(target_id, own_msg);
             own_msg = NULL; // Mark as transferred
         }
         
@@ -1853,7 +1853,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
 // Error reporting functions
 
 // Gets the last error message from the instruction context
-const char* ar_instruction_get_last_error(const instruction_context_t *ref_ctx) {
+const char* ar__instruction__get_last_error(const instruction_context_t *ref_ctx) {
     if (!ref_ctx) {
         return NULL;
     }
@@ -1861,7 +1861,7 @@ const char* ar_instruction_get_last_error(const instruction_context_t *ref_ctx) 
 }
 
 // Gets the position in the instruction string where the last error occurred
-int ar_instruction_get_error_position(const instruction_context_t *ref_ctx) {
+int ar__instruction__get_error_position(const instruction_context_t *ref_ctx) {
     if (!ref_ctx) {
         return 0;
     }

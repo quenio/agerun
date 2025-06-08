@@ -100,7 +100,7 @@ bool ar__method__run(int64_t agent_id, const data_t *ref_message, const char *re
     }
     
     // Create an instruction context
-    instruction_context_t *own_ctx = ar_instruction_create_context(
+    instruction_context_t *own_ctx = ar__instruction__create_context(
         mut_memory,
         ref_context,
         ref_message
@@ -113,7 +113,7 @@ bool ar__method__run(int64_t agent_id, const data_t *ref_message, const char *re
     // Make a copy of the instructions for tokenization
     char *own_instructions_copy = AR_HEAP_STRDUP(ref_instructions, "Method instructions copy");
     if (!own_instructions_copy) {
-        ar_instruction_destroy_context(own_ctx);
+        ar__instruction__destroy_context(own_ctx);
         return false;
     }
     
@@ -126,7 +126,7 @@ bool ar__method__run(int64_t agent_id, const data_t *ref_message, const char *re
         
         // Skip empty lines and comments
         if (strlen(mut_instruction) > 0 && mut_instruction[0] != '#') {
-            if (!ar_instruction_run(own_ctx, mut_instruction)) {
+            if (!ar__instruction__run(own_ctx, mut_instruction)) {
                 result = false;
                 break;
             }
@@ -136,7 +136,7 @@ bool ar__method__run(int64_t agent_id, const data_t *ref_message, const char *re
     }
     
     // Clean up
-    ar_instruction_destroy_context(own_ctx);
+    ar__instruction__destroy_context(own_ctx);
     AR_HEAP_FREE(own_instructions_copy);
     own_instructions_copy = NULL; // Mark as freed
     

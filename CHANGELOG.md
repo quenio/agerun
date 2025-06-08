@@ -51,6 +51,11 @@ This document tracks completed milestones and major achievements for the AgeRun 
     - Changed all 6 method functions from ar_method_* to ar__method__*
     - Updated all references across 12 modules and test files
     - All tests pass with zero memory leaks
+  - ✅ Completed instruction module refactoring:
+    - Changed all 9 instruction functions from ar_instruction_* to ar__instruction__*
+    - Updated all references in method.c and test files
+    - Fixed internal function call within instruction.c itself
+    - All tests pass with zero memory leaks
 
 ## 2025-06-08 (Later - Part 2)
 - ✅ Fixed Agency/Agent_Update circular dependency:

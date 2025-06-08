@@ -24,7 +24,7 @@ typedef struct instruction_context_s instruction_context_t;
  * @note Ownership: Returns an owned value that caller must destroy.
  *       The function does not take ownership of the memory, context, or message parameters.
  */
-instruction_context_t* ar_instruction_create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message);
+instruction_context_t* ar__instruction__create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message);
 
 /**
  * Destroys an instruction context.
@@ -34,7 +34,7 @@ instruction_context_t* ar_instruction_create_context(data_t *mut_memory, const d
  *       This only frees the context structure itself,
  *       not the memory, context, or message data structures which are owned by the caller.
  */
-void ar_instruction_destroy_context(instruction_context_t *own_ctx);
+void ar__instruction__destroy_context(instruction_context_t *own_ctx);
 
 /**
  * Parse and execute a single instruction using recursive descent parsing.
@@ -68,7 +68,7 @@ void ar_instruction_destroy_context(instruction_context_t *own_ctx);
  * @note Ownership: Does not take ownership of any parameters.
  *       The function does not transfer ownership of any objects.
  */
-bool ar_instruction_run(instruction_context_t *mut_ctx, const char *ref_instruction);
+bool ar__instruction__run(instruction_context_t *mut_ctx, const char *ref_instruction);
 
 /**
  * Gets the memory from the instruction context.
@@ -78,7 +78,7 @@ bool ar_instruction_run(instruction_context_t *mut_ctx, const char *ref_instruct
  * @note Ownership: Does not take ownership of the context parameter.
  *       The returned memory is still owned by the context.
  */
-data_t* ar_instruction_get_memory(const instruction_context_t *ref_ctx);
+data_t* ar__instruction__get_memory(const instruction_context_t *ref_ctx);
 
 /**
  * Gets the context data from the instruction context.
@@ -88,7 +88,7 @@ data_t* ar_instruction_get_memory(const instruction_context_t *ref_ctx);
  * @note Ownership: Does not take ownership of the context parameter.
  *       The returned context data is still owned by the context owner.
  */
-const data_t* ar_instruction_get_context(const instruction_context_t *ref_ctx);
+const data_t* ar__instruction__get_context(const instruction_context_t *ref_ctx);
 
 /**
  * Gets the message from the instruction context.
@@ -98,7 +98,7 @@ const data_t* ar_instruction_get_context(const instruction_context_t *ref_ctx);
  * @note Ownership: Does not take ownership of the context parameter.
  *       The returned message is still owned by the context owner.
  */
-const data_t* ar_instruction_get_message(const instruction_context_t *ref_ctx);
+const data_t* ar__instruction__get_message(const instruction_context_t *ref_ctx);
 
 /**
  * Send a message to another agent.
@@ -109,7 +109,7 @@ const data_t* ar_instruction_get_message(const instruction_context_t *ref_ctx);
  * @note Ownership: Takes ownership of own_message.
  *       If sending fails, the function will destroy the message.
  */
-bool ar_instruction_send_message(int64_t target_id, data_t *own_message);
+bool ar__instruction__send_message(int64_t target_id, data_t *own_message);
 
 /**
  * Gets the last error message from the instruction context.
@@ -119,7 +119,7 @@ bool ar_instruction_send_message(int64_t target_id, data_t *own_message);
  * @note Ownership: Does not take ownership of the context parameter.
  *       The returned string is owned by the context and should not be freed.
  */
-const char* ar_instruction_get_last_error(const instruction_context_t *ref_ctx);
+const char* ar__instruction__get_last_error(const instruction_context_t *ref_ctx);
 
 /**
  * Gets the position in the instruction string where the last error occurred.
@@ -128,6 +128,6 @@ const char* ar_instruction_get_last_error(const instruction_context_t *ref_ctx);
  * @return The error position (1-based column), or 0 if no error
  * @note Ownership: Does not take ownership of the context parameter.
  */
-int ar_instruction_get_error_position(const instruction_context_t *ref_ctx);
+int ar__instruction__get_error_position(const instruction_context_t *ref_ctx);
 
 #endif /* AGERUN_INSTRUCTION_H */
