@@ -91,8 +91,8 @@ static void test_count_using_method(void) {
     assert(ref_calc != NULL);
     
     // When no agents exist
-    assert(ar_agent_update_count_using_method(ref_echo) == 0);
-    assert(ar_agent_update_count_using_method(ref_calc) == 0);
+    assert(ar_agency_count_agents_using_method(ref_echo) == 0);
+    assert(ar_agency_count_agents_using_method(ref_calc) == 0);
     
     // When creating agents
     ar_agency_create_agent("echo", "1.0.0", NULL);
@@ -101,11 +101,11 @@ static void test_count_using_method(void) {
     ar_system_process_all_messages(); // Process wake messages
     
     // Then counts should be correct
-    assert(ar_agent_update_count_using_method(ref_echo) == 2);
-    assert(ar_agent_update_count_using_method(ref_calc) == 1);
+    assert(ar_agency_count_agents_using_method(ref_echo) == 2);
+    assert(ar_agency_count_agents_using_method(ref_calc) == 1);
     
     // When checking with null
-    assert(ar_agent_update_count_using_method(NULL) == 0);
+    assert(ar_agency_count_agents_using_method(NULL) == 0);
     
     // Check for memory leaks
     assert(ar_system_fixture_check_memory(own_fixture));
@@ -151,7 +151,7 @@ static void test_update_without_lifecycle(void) {
     assert(ar_agency_get_agent_method(agent2) == ref_v1_0);
     
     // When updating without lifecycle events
-    int count = ar_agent_update_methods(ref_v1_0, ref_v1_1, false);
+    int count = ar_agency_update_agent_methods(ref_v1_0, ref_v1_1, false);
     
     // Then correct number should be updated
     assert(count == 2);
@@ -206,7 +206,7 @@ static void test_update_with_lifecycle(void) {
     assert(ar_agency_agent_has_messages(agent2) == false);
     
     // When updating with lifecycle events
-    int count = ar_agent_update_methods(ref_v1_0, ref_v1_1, true);
+    int count = ar_agency_update_agent_methods(ref_v1_0, ref_v1_1, true);
     assert(count == 2);
     
     // Then messages should be queued
@@ -267,14 +267,14 @@ static void test_update_incompatible(void) {
     
     // When attempting incompatible updates
     // Then major version change should fail
-    assert(ar_agent_update_methods(ref_v1_0, ref_v2_0, false) == 0);
+    assert(ar_agency_update_agent_methods(ref_v1_0, ref_v2_0, false) == 0);
     
     // Then different method should fail
-    assert(ar_agent_update_methods(ref_v1_0, ref_other, false) == 0);
+    assert(ar_agency_update_agent_methods(ref_v1_0, ref_other, false) == 0);
     
     // Then null methods should fail
-    assert(ar_agent_update_methods(NULL, ref_v1_0, false) == 0);
-    assert(ar_agent_update_methods(ref_v1_0, NULL, false) == 0);
+    assert(ar_agency_update_agent_methods(NULL, ref_v1_0, false) == 0);
+    assert(ar_agency_update_agent_methods(ref_v1_0, NULL, false) == 0);
     
     // Check for memory leaks
     assert(ar_system_fixture_check_memory(own_fixture));
@@ -305,7 +305,7 @@ static void test_update_no_agents(void) {
     assert(ref_v1_1 != NULL);
     
     // When updating with no agents
-    int count = ar_agent_update_methods(ref_v1_0, ref_v1_1, true);
+    int count = ar_agency_update_agent_methods(ref_v1_0, ref_v1_1, true);
     
     // Then no agents should be updated
     assert(count == 0);

@@ -69,41 +69,21 @@ bool ar_agency_load_agents(void) {
 }
 
 int ar_agency_update_agent_methods(const method_t *ref_old_method, const method_t *ref_new_method, bool send_lifecycle_events) {
-    if (!g_is_initialized || !g_own_registry || !ref_old_method || !ref_new_method) {
+    if (!g_is_initialized || !g_own_registry) {
         return 0;
     }
     
-    int count = 0;
-    int64_t agent_id = ar_agent_registry_get_first(g_own_registry);
-    while (agent_id != 0) {
-        agent_t *mut_agent = (agent_t*)ar_agent_registry_find_agent(g_own_registry, agent_id);
-        if (mut_agent && ar_agent_get_method(mut_agent) == ref_old_method) {
-            if (ar_agent_update_method(mut_agent, ref_new_method, send_lifecycle_events)) {
-                count++;
-            }
-        }
-        agent_id = ar_agent_registry_get_next(g_own_registry, agent_id);
-    }
-    
-    return count;
+    // Delegate to agent_update module, passing our registry
+    return ar_agent_update_update_methods(g_own_registry, ref_old_method, ref_new_method, send_lifecycle_events);
 }
 
 int ar_agency_count_agents_using_method(const method_t *ref_method) {
-    if (!g_is_initialized || !g_own_registry || !ref_method) {
+    if (!g_is_initialized || !g_own_registry) {
         return 0;
     }
     
-    int count = 0;
-    int64_t agent_id = ar_agent_registry_get_first(g_own_registry);
-    while (agent_id != 0) {
-        agent_t *ref_agent = (agent_t*)ar_agent_registry_find_agent(g_own_registry, agent_id);
-        if (ref_agent && ar_agent_get_method(ref_agent) == ref_method) {
-            count++;
-        }
-        agent_id = ar_agent_registry_get_next(g_own_registry, agent_id);
-    }
-    
-    return count;
+    // Delegate to agent_update module, passing our registry
+    return ar_agent_update_count_using_method(g_own_registry, ref_method);
 }
 
 int64_t ar_agency_get_first_agent(void) {

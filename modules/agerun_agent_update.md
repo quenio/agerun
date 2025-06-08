@@ -15,7 +15,7 @@ This module was created as part of the agency module refactoring to improve cohe
 ## Key Functions
 
 ### Update Operations
-- `ar_agent_update_methods()` - Update agents from one method version to another
+- `ar_agent_update_update_methods()` - Update agents from one method version to another
 - `ar_agent_update_count_using_method()` - Count agents using a specific method
 - `ar_agent_update_are_compatible()` - Check if two methods are compatible for update
 
@@ -53,7 +53,7 @@ const method_t *ref_new = ar_methodology_find_method("echo", "1.1.0");
 // Check compatibility
 if (ar_agent_update_are_compatible(ref_old, ref_new)) {
     // Update agents with lifecycle events
-    int count = ar_agent_update_methods(ref_old, ref_new, true);
+    int count = ar_agent_update_update_methods(registry, ref_old, ref_new, true);
     
     // Process the lifecycle messages
     for (int i = 0; i < count * 2; i++) {
