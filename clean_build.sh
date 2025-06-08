@@ -108,10 +108,23 @@ else
     leaky_tests=""
     
     for report in $memory_reports; do
-        if [ -f "$report" ] && ! grep -q "No memory leaks detected" "$report" 2>/dev/null; then
-            all_clean=false
-            test_name=$(basename "$report" .log | sed 's/memory_report_//')
-            leaky_tests="$leaky_tests $test_name"
+        if [ -f "$report" ]; then
+            # Check if there are actual memory leaks (not just intentional test leaks)
+            actual_leaks=$(grep -E "^Actual memory leaks: ([0-9]+)" "$report" 2>/dev/null | awk '{print $4}')
+            
+            # If we can't find the "Actual memory leaks" line, fall back to old behavior
+            if [ -z "$actual_leaks" ]; then
+                if ! grep -q "No memory leaks detected" "$report" 2>/dev/null; then
+                    all_clean=false
+                    test_name=$(basename "$report" .log | sed 's/memory_report_//')
+                    leaky_tests="$leaky_tests $test_name"
+                fi
+            # If we found it and it's greater than 0, we have real leaks
+            elif [ "$actual_leaks" -gt 0 ]; then
+                all_clean=false
+                test_name=$(basename "$report" .log | sed 's/memory_report_//')
+                leaky_tests="$leaky_tests $test_name"
+            fi
         fi
     done
     
