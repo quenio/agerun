@@ -73,11 +73,11 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ## Immediate Priorities (Next Steps)
 
 ### CRITICAL - Resolve All Circular Dependencies (HIGHEST PRIORITY)
-- [ ] Resolve Agency/Agent_Update circular dependency:
-  - [ ] Currently agent_update forwards to ar_agency_update_agent_methods()
-  - [ ] Move the update logic from agency.c to agent_update.c
-  - [ ] Have agency delegate to agent_update instead of the reverse
-  - [ ] This will remove the circular dependency between these modules
+- [x] Resolve Agency/Agent_Update circular dependency:
+  - [x] Currently agent_update forwards to ar_agency_update_agent_methods()
+  - [x] Move the update logic from agency.c to agent_update.c
+  - [x] Have agency delegate to agent_update instead of the reverse
+  - [x] This will remove the circular dependency between these modules
 - [ ] Resolve Method/Instruction circular dependency:
   - [ ] Methods need to execute instructions (method → instruction)
   - [ ] Instructions need to access methods via methodology (instruction → methodology → method)
@@ -434,6 +434,15 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Evaluate if split improves cohesion without adding complexity
 
 ## Completed Major Milestones
+
+### 2025-06-08 (Later - Part 2)
+- ✅ Fixed Agency/Agent_Update circular dependency:
+  - ✅ Removed agency.h include from agent_update.c
+  - ✅ Added registry parameter to agent_update functions
+  - ✅ Agency now passes its registry when delegating to agent_update
+  - ✅ Fixed naming convention: ar_agent_update_update_methods (follows module prefix pattern)
+  - ✅ Updated all tests and documentation
+  - ✅ Achieved clean unidirectional dependency: agency → agent_update → agent_registry
 
 ### 2025-06-08 (Later)
 - ✅ Implemented ar_data_get_map_keys() function to enable map iteration:
