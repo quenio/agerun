@@ -330,3 +330,10 @@ When running tests, ALWAYS check the current working directory first. Tests that
 Pause before executing build commands like `make` to check if the project has custom scripts or procedures for these tasks.
 
 When making functions static to comply with Parnas principles of information hiding, always update their documentation comments to clearly indicate they are for internal use only. Add "(INTERNAL USE ONLY)" to the first line of the comment and explain that the function should never be called directly by external code.
+
+When editing files, especially CLAUDE.md or other documentation:
+- Always verify file content thoroughly before making edits
+- Be suspicious of placeholder-looking text like "[... rest of ...]" or similar patterns
+- Check file sizes or line counts when something seems off (e.g., wc -l filename)
+- Never assume placeholder text is a display artifact - it might be literal content
+- If a file seems truncated, investigate the git history to find the complete version
