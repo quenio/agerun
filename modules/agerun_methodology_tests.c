@@ -90,7 +90,7 @@ static void test_methodology_register_and_get(void) {
     printf("Found method with version %s (expected version string)\n", 
            ar__method__get_version(method));
     
-    printf("ar_methodology_register_and_get() test passed!\n");
+    printf("ar__methodology__register_and_get() test passed!\n");
 }
 
 static void test_methodology_save_load(void) {

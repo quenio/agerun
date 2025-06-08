@@ -57,7 +57,7 @@ void ar__method__destroy(method_t *own_method) {
  * @param ref_instructions The method implementation code (borrowed reference)
  * @param ref_version Semantic version string for this method (e.g., "1.0.0")
  * @return Newly created method object, or NULL on failure
- * @note Ownership: Returns an owned object that the caller must destroy with ar_method_destroy.
+ * @note Ownership: Returns an owned object that the caller must destroy with ar__method__destroy.
  *       The method copies the name, instructions, and version. The original strings remain owned by the caller.
  */
 method_t* ar__method__create(const char *ref_name, const char *ref_instructions, 

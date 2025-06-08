@@ -4,7 +4,7 @@
 #include "agerun_expression.h"
 #include "agerun_map.h"
 #include "agerun_methodology.h"
-#include "agerun_agent.h" // Required for ar_agent_send
+#include "agerun_agent.h" // Required for ar__agent__send
 #include "agerun_agency.h" // Required for agency functions
 #include "agerun_assert.h" // Include for ownership assertions
 #include "agerun_heap.h" // Include for memory allocation macros
@@ -448,7 +448,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                 own_msg = NULL; // Mark as destroyed
             }
         } else {
-            // Ownership of own_msg is transferred to ar_agent_send
+            // Ownership of own_msg is transferred to ar__agent__send
             success = ar_instruction_send_message(target_id, own_msg);
             own_msg = NULL; // Mark as transferred
         }
