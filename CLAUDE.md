@@ -38,6 +38,7 @@ make run-sanitize          # Run executable with ASan
   - Runs `make clean debug` before tests to ensure heap tracking
   - Changes to `bin` directory for test/run targets
   - Builds with debug assertions active
+- Always pause before executing build commands to check for custom scripts/procedures
 
 ## Project Structure
 
@@ -106,6 +107,10 @@ make run-sanitize          # Run executable with ASan
 - Tests must be isolated and fast
 - Zero memory leaks in tests
 - Test files: `<module>_tests.c`
+- Always check working directory before running tests
+- Run tests from bin/ directory or set AGERUN_MEMORY_REPORT path:
+  - `cd bin && ./agerun_string_tests`
+  - `AGERUN_MEMORY_REPORT=bin/test.memory_report.log ./bin/agerun_string_tests`
 
 ### 3. Parnas Design Principles (STRICTLY ENFORCED)
 
@@ -136,6 +141,7 @@ make run-sanitize          # Run executable with ASan
 - Include `@param`, `@return`, `@note` tags
 - Document ownership semantics clearly
 - Write complete sentences with punctuation
+- When making functions static (Parnas compliance), mark them "(INTERNAL USE ONLY)" in comments
 - Example:
   ```c
   /**
@@ -186,6 +192,8 @@ make run-sanitize          # Run executable with ASan
   - Update modules/README.md when creating new modules
 - Avoid code smells (see below)
 - When showing code, provide only the raw code without commentary
+- Think twice before adding global state to modules - prefer opaque structures
+- When using other modules, read their interface first instead of guessing function names
 
 **Common Code Smells to Avoid**:
 - **Long Function**: Keep functions under 50 lines, single responsibility
@@ -255,6 +263,18 @@ When reviewing tasks:
 - Check `TODO.md` file in repository
 - Keep CLAUDE.md updated with new guidelines
 
+**File Editing Best Practices**:
+- Always verify file content thoroughly before making edits
+- Be suspicious of placeholder-looking text like "[... rest of ...]"
+- Check file sizes or line counts when something seems off (e.g., `wc -l filename`)
+- Never assume placeholder text is a display artifact - it might be literal content
+- If a file seems truncated, investigate the git history to find the complete version
+
+**Git Workflow**:
+- Always run `git status` after `git push` to ensure push completed successfully
+- Verify working tree remains clean after operations
+- Check current directory before running commands with relative paths
+
 ## AgeRun Language Notes
 
 - No null type - use integer 0
@@ -313,27 +333,3 @@ ar_system_init(NULL, NULL);
 - End files with newline
 - Use make for builds
 - Process messages after sending
-
-## Development Memories
-
-When creating new modules, think twice before adding global state to it. Instead, prefer an opaque structure to hold the state.
-
-In the implementation of a module, when using other modules, first read their interface, so you know which functions are available, instead of guessing function names to call.
-
-You must check what is the current dir before you try run a command with a relative path.
-
-When running tests, ALWAYS check the current working directory first. Tests that use AGERUN_MEMORY_REPORT will create memory report log files in the current directory. To avoid polluting the project root:
-- Either change to the bin/ directory before running tests: `cd bin && ./agerun_string_tests`
-- Or specify an appropriate path for the memory report: `AGERUN_MEMORY_REPORT=bin/test.memory_report.log ./bin/agerun_string_tests`
-- Never run tests with relative paths from the project root without considering where output files will be created
-
-Pause before executing build commands like `make` to check if the project has custom scripts or procedures for these tasks.
-
-When making functions static to comply with Parnas principles of information hiding, always update their documentation comments to clearly indicate they are for internal use only. Add "(INTERNAL USE ONLY)" to the first line of the comment and explain that the function should never be called directly by external code.
-
-When editing files, especially CLAUDE.md or other documentation:
-- Always verify file content thoroughly before making edits
-- Be suspicious of placeholder-looking text like "[... rest of ...]" or similar patterns
-- Check file sizes or line counts when something seems off (e.g., wc -l filename)
-- Never assume placeholder text is a display artifact - it might be literal content
-- If a file seems truncated, investigate the git history to find the complete version
