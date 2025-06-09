@@ -59,7 +59,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ### Documentation and Process Tasks
 - [ ] Verify complete documentation for each module
-- [ ] Create missing module design documents
+- [ ] Create missing module design documents:
+  - [ ] Create agerun_executable.md documentation
+  - [ ] Create agerun_system.md documentation
 - [x] Remove PARNAS_AUDIT_RESULTS.md once all interface violations are fixed (ALL COMPLETE as of 2025-06-08)
 
 ### Parnas Architecture Guidelines
