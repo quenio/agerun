@@ -17,7 +17,7 @@
  * Prints an error message to stderr
  * @param format Printf-style format string
  */
-void ar_io_error(const char *format, ...) {
+void ar__io__error(const char *format, ...) {
     // Prepare a buffer for our formatted message with prefix and newline
     char buffer[2048];
     int prefix_len = snprintf(buffer, sizeof(buffer), "Error: ");
@@ -55,7 +55,7 @@ void ar_io_error(const char *format, ...) {
  * Prints a warning message to stderr
  * @param format Printf-style format string
  */
-void ar_io_warning(const char *format, ...) {
+void ar__io__warning(const char *format, ...) {
     // Prepare a buffer for our formatted message with prefix and newline
     char buffer[2048];
     int prefix_len = snprintf(buffer, sizeof(buffer), "Warning: ");
@@ -93,7 +93,7 @@ void ar_io_warning(const char *format, ...) {
  * Prints an informational message to stdout
  * @param format Printf-style format string
  */
-void ar_io_info(const char *format, ...) {
+void ar__io__info(const char *format, ...) {
     // Prepare a buffer for our formatted message with newline
     char buffer[2048];
 
@@ -127,9 +127,9 @@ void ar_io_info(const char *format, ...) {
  * @param stream Stream to print to
  * @param format Printf-style format string
  */
-void ar_io_fprintf(FILE *stream, const char *format, ...) {
+void ar__io__fprintf(FILE *stream, const char *format, ...) {
     if (!stream || !format) {
-        fputs("Error: Invalid parameters for ar_io_fprintf\n", stderr);
+        fputs("Error: Invalid parameters for ar__io__fprintf\n", stderr);
         return;
     }
 
@@ -165,10 +165,10 @@ void ar_io_fprintf(FILE *stream, const char *format, ...) {
  * @param filename Name of the file being read (for error messages)
  * @return true if a line was read successfully, false otherwise
  */
-bool ar_io_read_line(FILE *fp, char *buffer, int buffer_size, const char *filename) {
+bool ar__io__read_line(FILE *fp, char *buffer, int buffer_size, const char *filename) {
     // Validate input parameters
     if (!fp || !buffer || buffer_size <= 0 || !filename) {
-        ar_io_error("Invalid parameters for safe_read_line");
+        ar__io__error("Invalid parameters for safe_read_line");
         return false;
     }
 
@@ -177,7 +177,7 @@ bool ar_io_read_line(FILE *fp, char *buffer, int buffer_size, const char *filena
 
     // First check for EOF
     if (feof(fp)) {
-        ar_io_error("Unexpected end of file in %s", filename);
+        ar__io__error("Unexpected end of file in %s", filename);
         return false;
     }
 
@@ -224,14 +224,14 @@ bool ar_io_read_line(FILE *fp, char *buffer, int buffer_size, const char *filena
 
     // Check for file errors
     if (ferror(fp)) {
-        ar_io_error("Failed to read file %s", filename);
+        ar__io__error("Failed to read file %s", filename);
         clearerr(fp);
         return false;
     }
 
     // Check if we hit EOF with no content
     if (i == 0 && c == EOF) {
-        ar_io_error("Unexpected end of file in %s", filename);
+        ar__io__error("Unexpected end of file in %s", filename);
         return false;
     }
 
@@ -242,7 +242,7 @@ bool ar_io_read_line(FILE *fp, char *buffer, int buffer_size, const char *filena
         while ((c = fgetc(fp)) != EOF && c != '\n') {
             // Just consume the characters
         }
-        ar_io_warning("Line truncated in %s (buffer size: %d)", filename, buffer_size);
+        ar__io__warning("Line truncated in %s (buffer size: %d)", filename, buffer_size);
         // We still return true as we did read data successfully
     }
 
@@ -257,10 +257,10 @@ bool ar_io_read_line(FILE *fp, char *buffer, int buffer_size, const char *filena
  * @param file_ptr Pointer to store the opened file handle
  * @return FILE_SUCCESS if successful, appropriate error code otherwise
  */
-file_result_t ar_io_open_file(const char *filename, const char *mode, FILE **file_ptr) {
+file_result_t ar__io__open_file(const char *filename, const char *mode, FILE **file_ptr) {
     // Validate parameters
     if (!filename || !mode || !file_ptr) {
-        ar_io_error("Invalid parameters for safe_open_file");
+        ar__io__error("Invalid parameters for safe_open_file");
         return FILE_ERROR_UNKNOWN;
     }
 
@@ -269,16 +269,16 @@ file_result_t ar_io_open_file(const char *filename, const char *mode, FILE **fil
     if (!(*file_ptr)) {
         // Determine specific error type
         if (errno == EACCES || errno == EPERM) {
-            ar_io_error("Permission denied opening %s: %s", filename, strerror(errno));
+            ar__io__error("Permission denied opening %s: %s", filename, strerror(errno));
             return FILE_ERROR_PERMISSIONS;
         } else if (errno == ENOENT && mode[0] == 'r') {
-            ar_io_error("File not found: %s: %s", filename, strerror(errno));
+            ar__io__error("File not found: %s: %s", filename, strerror(errno));
             return FILE_ERROR_NOT_FOUND;
         } else if (errno == EEXIST && mode[0] == 'w' && mode[1] == 'x') {
-            ar_io_error("File already exists: %s", filename);
+            ar__io__error("File already exists: %s", filename);
             return FILE_ERROR_ALREADY_EXISTS;
         } else {
-            ar_io_error("Failed to open %s: %s", filename, strerror(errno));
+            ar__io__error("Failed to open %s: %s", filename, strerror(errno));
             return FILE_ERROR_OPEN;
         }
     }
@@ -293,20 +293,20 @@ file_result_t ar_io_open_file(const char *filename, const char *mode, FILE **fil
  * @param filename Name of the file (for error reporting)
  * @return FILE_SUCCESS if successful, appropriate error code otherwise
  */
-file_result_t ar_io_close_file(FILE *fp, const char *filename) {
+file_result_t ar__io__close_file(FILE *fp, const char *filename) {
     if (!fp) {
         return FILE_SUCCESS; // Already closed, not an error
     }
 
     // Flush any buffered data
     if (fflush(fp) != 0) {
-        ar_io_error("Failed to flush data to %s: %s", filename, strerror(errno));
+        ar__io__error("Failed to flush data to %s: %s", filename, strerror(errno));
         // Continue with close even if flush failed
     }
 
     // Close the file
     if (fclose(fp) != 0) {
-        ar_io_error("Failed to close %s: %s", filename, strerror(errno));
+        ar__io__error("Failed to close %s: %s", filename, strerror(errno));
         return FILE_ERROR_UNKNOWN;
     }
 
@@ -319,9 +319,9 @@ file_result_t ar_io_close_file(FILE *fp, const char *filename) {
  * @param filename Path to the file to backup
  * @return FILE_SUCCESS if backup was created successfully, appropriate error code otherwise
  */
-file_result_t ar_io_create_backup(const char *filename) {
+file_result_t ar__io__create_backup(const char *filename) {
     if (!filename) {
-        ar_io_error("Invalid parameters for safe_create_backup");
+        ar__io__error("Invalid parameters for safe_create_backup");
         return FILE_ERROR_UNKNOWN;
     }
 
@@ -332,7 +332,7 @@ file_result_t ar_io_create_backup(const char *filename) {
             // Source file doesn't exist, nothing to backup
             return FILE_SUCCESS;
         }
-        ar_io_error("Failed to stat %s: %s", filename, strerror(errno));
+        ar__io__error("Failed to stat %s: %s", filename, strerror(errno));
         return FILE_ERROR_UNKNOWN;
     }
 
@@ -340,7 +340,7 @@ file_result_t ar_io_create_backup(const char *filename) {
     size_t backup_name_len = strlen(filename) + strlen(BACKUP_EXTENSION) + 1;
     char *backup_filename = AR_HEAP_MALLOC(backup_name_len, "Backup filename buffer");
     if (!backup_filename) {
-        ar_io_error("Memory allocation failed for backup filename");
+        ar__io__error("Memory allocation failed for backup filename");
         return FILE_ERROR_UNKNOWN;
     }
 
@@ -348,7 +348,7 @@ file_result_t ar_io_create_backup(const char *filename) {
 
     // Open source file
     FILE *source;
-    file_result_t result = ar_io_open_file(filename, "rb", &source);
+    file_result_t result = ar__io__open_file(filename, "rb", &source);
     if (result != FILE_SUCCESS) {
         AR_HEAP_FREE(backup_filename);
         return result;
@@ -356,9 +356,9 @@ file_result_t ar_io_create_backup(const char *filename) {
 
     // Open backup file
     FILE *backup;
-    result = ar_io_open_file(backup_filename, "wb", &backup);
+    result = ar__io__open_file(backup_filename, "wb", &backup);
     if (result != FILE_SUCCESS) {
-        ar_io_close_file(source, filename);
+        ar__io__close_file(source, filename);
         AR_HEAP_FREE(backup_filename);
         return result;
     }
@@ -367,9 +367,9 @@ file_result_t ar_io_create_backup(const char *filename) {
     const size_t buffer_size = 8192;
     char *buffer = AR_HEAP_MALLOC(buffer_size, "File copy buffer");
     if (!buffer) {
-        ar_io_error("Memory allocation failed for backup buffer");
-        ar_io_close_file(source, filename);
-        ar_io_close_file(backup, backup_filename);
+        ar__io__error("Memory allocation failed for backup buffer");
+        ar__io__close_file(source, filename);
+        ar__io__close_file(backup, backup_filename);
         AR_HEAP_FREE(backup_filename);
         return FILE_ERROR_UNKNOWN;
     }
@@ -387,7 +387,7 @@ file_result_t ar_io_create_backup(const char *filename) {
         }
 
         if (fwrite(buffer, 1, bytes_read, backup) != bytes_read) {
-            ar_io_error("Failed to write to backup file %s", backup_filename);
+            ar__io__error("Failed to write to backup file %s", backup_filename);
             success = false;
             break;
         }
@@ -395,14 +395,14 @@ file_result_t ar_io_create_backup(const char *filename) {
 
     // Check for read error
     if (ferror(source)) {
-        ar_io_error("Failed to read from source file %s", filename);
+        ar__io__error("Failed to read from source file %s", filename);
         success = false;
     }
 
     // Cleanup
     AR_HEAP_FREE(buffer);
-    ar_io_close_file(source, filename);
-    ar_io_close_file(backup, backup_filename);
+    ar__io__close_file(source, filename);
+    ar__io__close_file(backup, backup_filename);
     AR_HEAP_FREE(backup_filename);
 
     return success ? FILE_SUCCESS : FILE_ERROR_UNKNOWN;
@@ -414,9 +414,9 @@ file_result_t ar_io_create_backup(const char *filename) {
  * @param filename Path to the file to restore
  * @return FILE_SUCCESS if backup was restored successfully, appropriate error code otherwise
  */
-file_result_t ar_io_restore_backup(const char *filename) {
+file_result_t ar__io__restore_backup(const char *filename) {
     if (!filename) {
-        ar_io_error("Invalid parameters for safe_restore_backup");
+        ar__io__error("Invalid parameters for safe_restore_backup");
         return FILE_ERROR_UNKNOWN;
     }
 
@@ -424,7 +424,7 @@ file_result_t ar_io_restore_backup(const char *filename) {
     size_t backup_name_len = strlen(filename) + strlen(BACKUP_EXTENSION) + 1;
     char *backup_filename = AR_HEAP_MALLOC(backup_name_len, "Backup filename buffer");
     if (!backup_filename) {
-        ar_io_error("Memory allocation failed for backup filename");
+        ar__io__error("Memory allocation failed for backup filename");
         return FILE_ERROR_UNKNOWN;
     }
 
@@ -434,25 +434,25 @@ file_result_t ar_io_restore_backup(const char *filename) {
     struct stat st;
     if (stat(backup_filename, &st) != 0) {
         if (errno == ENOENT) {
-            ar_io_error("Backup file %s does not exist", backup_filename);
+            ar__io__error("Backup file %s does not exist", backup_filename);
             AR_HEAP_FREE(backup_filename);
             return FILE_ERROR_NOT_FOUND;
         }
-        ar_io_error("Failed to stat backup file %s: %s", backup_filename, strerror(errno));
+        ar__io__error("Failed to stat backup file %s: %s", backup_filename, strerror(errno));
         AR_HEAP_FREE(backup_filename);
         return FILE_ERROR_UNKNOWN;
     }
 
     // Remove target file if it exists
     if (remove(filename) != 0 && errno != ENOENT) {
-        ar_io_error("Failed to remove target file %s: %s", filename, strerror(errno));
+        ar__io__error("Failed to remove target file %s: %s", filename, strerror(errno));
         AR_HEAP_FREE(backup_filename);
         return FILE_ERROR_UNKNOWN;
     }
 
     // Rename backup to original
     if (rename(backup_filename, filename) != 0) {
-        ar_io_error("Failed to restore backup %s to %s: %s", backup_filename, filename, strerror(errno));
+        ar__io__error("Failed to restore backup %s to %s: %s", backup_filename, filename, strerror(errno));
         AR_HEAP_FREE(backup_filename);
         return FILE_ERROR_UNKNOWN;
     }
@@ -467,22 +467,22 @@ file_result_t ar_io_restore_backup(const char *filename) {
  * @param filename Path to the file to secure
  * @return FILE_SUCCESS if permissions were set successfully, appropriate error code otherwise
  */
-file_result_t ar_io_set_secure_permissions(const char *filename) {
+file_result_t ar__io__set_secure_permissions(const char *filename) {
     if (!filename) {
-        ar_io_error("Invalid parameters for safe_set_secure_permissions");
+        ar__io__error("Invalid parameters for safe_set_secure_permissions");
         return FILE_ERROR_UNKNOWN;
     }
 
 #ifdef _WIN32
     // Windows implementation
     if (_chmod(filename, _S_IREAD | _S_IWRITE) != 0) {
-        ar_io_error("Failed to set secure permissions on %s: %s", filename, strerror(errno));
+        ar__io__error("Failed to set secure permissions on %s: %s", filename, strerror(errno));
         return FILE_ERROR_PERMISSIONS;
     }
 #else
     // Unix/Linux/macOS implementation
     if (chmod(filename, S_IRUSR | S_IWUSR) != 0) {
-        ar_io_error("Failed to set secure permissions on %s: %s", filename, strerror(errno));
+        ar__io__error("Failed to set secure permissions on %s: %s", filename, strerror(errno));
         return FILE_ERROR_PERMISSIONS;
     }
 #endif
@@ -491,7 +491,7 @@ file_result_t ar_io_set_secure_permissions(const char *filename) {
 }
 
 /**
- * Function prototype for the callback function passed to ar_io_write_file
+ * Function prototype for the callback function passed to ar__io__write_file
  */
 typedef bool (*write_callback_t)(FILE *fp, void *context);
 
@@ -503,11 +503,11 @@ typedef bool (*write_callback_t)(FILE *fp, void *context);
  * @param context Context passed to the write function
  * @return FILE_SUCCESS if successful, appropriate error code otherwise
  */
-file_result_t ar_io_write_file(const char *filename,
+file_result_t ar__io__write_file(const char *filename,
                                bool (*write_func)(FILE *fp, void *context),
                                void *context) {
     if (!filename || !write_func) {
-        ar_io_error("Invalid parameters for safe_write_file");
+        ar__io__error("Invalid parameters for safe_write_file");
         return FILE_ERROR_UNKNOWN;
     }
 
@@ -515,14 +515,14 @@ file_result_t ar_io_write_file(const char *filename,
     size_t temp_name_len = strlen(filename) + strlen(TEMP_EXTENSION) + 1;
     char *temp_filename = AR_HEAP_MALLOC(temp_name_len, "Temporary filename buffer");
     if (!temp_filename) {
-        ar_io_error("Memory allocation failed for temporary filename");
+        ar__io__error("Memory allocation failed for temporary filename");
         return FILE_ERROR_UNKNOWN;
     }
 
     snprintf(temp_filename, temp_name_len, "%s%s", filename, TEMP_EXTENSION);
 
     // Create backup of original file if it exists
-    file_result_t result = ar_io_create_backup(filename);
+    file_result_t result = ar__io__create_backup(filename);
     if (result != FILE_SUCCESS) {
         AR_HEAP_FREE(temp_filename);
         return result;
@@ -530,16 +530,16 @@ file_result_t ar_io_write_file(const char *filename,
 
     // Open temporary file
     FILE *temp_file;
-    result = ar_io_open_file(temp_filename, "w", &temp_file);
+    result = ar__io__open_file(temp_filename, "w", &temp_file);
     if (result != FILE_SUCCESS) {
         AR_HEAP_FREE(temp_filename);
         return result;
     }
 
     // Apply secure permissions to the temporary file
-    result = ar_io_set_secure_permissions(temp_filename);
+    result = ar__io__set_secure_permissions(temp_filename);
     if (result != FILE_SUCCESS) {
-        ar_io_close_file(temp_file, temp_filename);
+        ar__io__close_file(temp_file, temp_filename);
         remove(temp_filename);
         AR_HEAP_FREE(temp_filename);
         return result;
@@ -548,15 +548,15 @@ file_result_t ar_io_write_file(const char *filename,
     // Call the write function to generate the file content
     bool write_success = write_func(temp_file, context);
     if (!write_success) {
-        ar_io_error("Failed to write content to temporary file %s", temp_filename);
-        ar_io_close_file(temp_file, temp_filename);
+        ar__io__error("Failed to write content to temporary file %s", temp_filename);
+        ar__io__close_file(temp_file, temp_filename);
         remove(temp_filename);
         AR_HEAP_FREE(temp_filename);
         return FILE_ERROR_WRITE;
     }
 
     // Close the temporary file
-    result = ar_io_close_file(temp_file, temp_filename);
+    result = ar__io__close_file(temp_file, temp_filename);
     if (result != FILE_SUCCESS) {
         remove(temp_filename);
         AR_HEAP_FREE(temp_filename);
@@ -565,17 +565,17 @@ file_result_t ar_io_write_file(const char *filename,
 
     // Rename temporary file to target file
     if (rename(temp_filename, filename) != 0) {
-        ar_io_error("Failed to rename temporary file %s to %s: %s",
+        ar__io__error("Failed to rename temporary file %s to %s: %s",
                  temp_filename, filename, strerror(errno));
         remove(temp_filename);
         AR_HEAP_FREE(temp_filename);
 
         // Try to restore from backup
-        ar_io_warning("Attempting to restore from backup...");
-        if (ar_io_restore_backup(filename) != FILE_SUCCESS) {
-            ar_io_error("Failed to restore from backup. Data may be lost.");
+        ar__io__warning("Attempting to restore from backup...");
+        if (ar__io__restore_backup(filename) != FILE_SUCCESS) {
+            ar__io__error("Failed to restore from backup. Data may be lost.");
         } else {
-            ar_io_error("Successfully restored from backup.");
+            ar__io__error("Successfully restored from backup.");
         }
 
         return FILE_ERROR_UNKNOWN;
@@ -591,7 +591,7 @@ file_result_t ar_io_write_file(const char *filename,
  * @param result The result code to get a message for
  * @return A human-readable error message
  */
-const char* ar_io_error_message(file_result_t result) {
+const char* ar__io__error_message(file_result_t result) {
     switch (result) {
         case FILE_SUCCESS:
             return "Operation completed successfully";
@@ -622,7 +622,7 @@ const char* ar_io_error_message(file_result_t result) {
  * @param dest_size Size of the destination buffer (including space for null terminator)
  * @return true if the copy was successful, false if truncation occurred
  */
-bool ar_io_string_copy(char *dest, const char *src, size_t dest_size) {
+bool ar__io__string_copy(char *dest, const char *src, size_t dest_size) {
     if (!dest || !src || dest_size == 0) {
         if (dest && dest_size > 0) {
             dest[0] = '\0'; // Ensure null termination if buffer exists
@@ -660,7 +660,7 @@ bool ar_io_string_copy(char *dest, const char *src, size_t dest_size) {
  * @param format Printf-style format string
  * @return true if formatting was successful, false if truncation occurred
  */
-bool ar_io_string_format(char *dest, size_t dest_size, const char *format, ...) {
+bool ar__io__string_format(char *dest, size_t dest_size, const char *format, ...) {
     if (!dest || !format || dest_size == 0) {
         if (dest && dest_size > 0) {
             dest[0] = '\0'; // Ensure null termination if buffer exists
@@ -707,17 +707,17 @@ bool ar_io_string_format(char *dest, size_t dest_size, const char *format, ...) 
  * @param description Description of what was being allocated
  * @param context Optional context about the allocation (e.g., function name)
  */
-void ar_io_report_allocation_failure(const char *file, int line, size_t size, 
+void ar__io__report_allocation_failure(const char *file, int line, size_t size, 
                                      const char *description, const char *context) {
     // Build a detailed error message
     if (context && description) {
-        ar_io_error("Memory allocation failed at %s:%d - Failed to allocate %zu bytes for %s in %s", 
+        ar__io__error("Memory allocation failed at %s:%d - Failed to allocate %zu bytes for %s in %s", 
                 file, line, size, description, context);
     } else if (description) {
-        ar_io_error("Memory allocation failed at %s:%d - Failed to allocate %zu bytes for %s", 
+        ar__io__error("Memory allocation failed at %s:%d - Failed to allocate %zu bytes for %s", 
                 file, line, size, description);
     } else {
-        ar_io_error("Memory allocation failed at %s:%d - Failed to allocate %zu bytes", 
+        ar__io__error("Memory allocation failed at %s:%d - Failed to allocate %zu bytes", 
                 file, line, size);
     }
 
@@ -740,26 +740,26 @@ void ar_io_report_allocation_failure(const char *file, int line, size_t size,
         fclose(meminfo);
 
         if (memTotal > 0) {
-            ar_io_error("System memory status: Total: %lu KB, Free: %lu KB, Available: %lu KB", 
+            ar__io__error("System memory status: Total: %lu KB, Free: %lu KB, Available: %lu KB", 
                     memTotal, memFree, memAvailable);
         }
     }
     #elif defined(__APPLE__) || defined(__FreeBSD__)
     // For macOS and FreeBSD, just report the errno
     if (errno == ENOMEM) {
-        ar_io_error("System reported insufficient memory (errno: ENOMEM)");
+        ar__io__error("System reported insufficient memory (errno: ENOMEM)");
     } else {
-        ar_io_error("System status: errno = %d (%s)", errno, strerror(errno));
+        ar__io__error("System status: errno = %d (%s)", errno, strerror(errno));
     }
     #endif
 
     // Additional information for debugging
-    ar_io_error("Allocation details: Size requested: %zu bytes", size);
+    ar__io__error("Allocation details: Size requested: %zu bytes", size);
     if (description) {
-        ar_io_error("Purpose: %s", description);
+        ar__io__error("Purpose: %s", description);
     }
     if (context) {
-        ar_io_error("Context: %s", context);
+        ar__io__error("Context: %s", context);
     }
 }
 
@@ -776,7 +776,7 @@ static int g_memory_pressure = 0;
  * @param criticality Level of importance (0-100, with 100 being most critical)
  * @return true if recovery was successful (retry allocation recommended), false otherwise
  */
-bool ar_io_attempt_memory_recovery(size_t required_size, int criticality) {
+bool ar__io__attempt_memory_recovery(size_t required_size, int criticality) {
     // Validate parameters
     if (criticality < 0) criticality = 0;
     if (criticality > 100) criticality = 100;
@@ -788,10 +788,10 @@ bool ar_io_attempt_memory_recovery(size_t required_size, int criticality) {
     // Recovery strategies based on criticality
     if (criticality > 90) {
         // For critical allocations, try aggressive recovery
-        ar_io_warning("Critical memory allocation failure. Attempting aggressive recovery...");
+        ar__io__warning("Critical memory allocation failure. Attempting aggressive recovery...");
         
         // Strategy 1: Report detailed system information
-        ar_io_warning("Memory pressure level: %d/100", g_memory_pressure);
+        ar__io__warning("Memory pressure level: %d/100", g_memory_pressure);
         
         // Strategy 2: Force garbage collection if available (e.g., call heap cleanup)
         // This is a placeholder - the actual implementation would depend on the application
@@ -799,15 +799,15 @@ bool ar_io_attempt_memory_recovery(size_t required_size, int criticality) {
         
         // Strategy 3: For critical operations, consider terminating non-essential operations
         if (g_memory_pressure > 90) {
-            ar_io_warning("High memory pressure detected. Consider terminating non-essential operations.");
+            ar__io__warning("High memory pressure detected. Consider terminating non-essential operations.");
         }
     } else if (criticality > 50) {
         // For medium criticality, provide guidance but less aggressive recovery
-        ar_io_warning("Memory allocation failure for important operation. Recovery recommended.");
-        ar_io_warning("Memory pressure level: %d/100", g_memory_pressure);
+        ar__io__warning("Memory allocation failure for important operation. Recovery recommended.");
+        ar__io__warning("Memory pressure level: %d/100", g_memory_pressure);
     } else {
         // For low criticality, just report
-        ar_io_warning("Non-critical memory allocation failed (%zu bytes). Operation may be degraded.", required_size);
+        ar__io__warning("Non-critical memory allocation failed (%zu bytes). Operation may be degraded.", required_size);
     }
 
     // Return a recommendation based on criticality and current memory pressure
@@ -834,14 +834,14 @@ bool ar_io_attempt_memory_recovery(size_t required_size, int criticality) {
  * @param context Optional context about the allocation (e.g., function name)
  * @return true if allocation succeeded, false otherwise
  */
-bool ar_io_check_allocation(void *ptr, size_t size, const char *file, int line, 
+bool ar__io__check_allocation(void *ptr, size_t size, const char *file, int line, 
                            const char *description, const char *context) {
     if (ptr) {
         return true; // Allocation succeeded
     }
     
     // Report the failure with detailed information
-    ar_io_report_allocation_failure(file, line, size, description, context);
+    ar__io__report_allocation_failure(file, line, size, description, context);
     
     // Return failure
     return false;

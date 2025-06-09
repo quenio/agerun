@@ -23,7 +23,7 @@ int ar__agent_update__update_methods(agent_registry_t *ref_registry,
     
     // Verify that the methods are compatible
     if (!ar__agent_update__are_compatible(ref_old_method, ref_new_method)) {
-        ar_io_warning("Cannot update agents to incompatible method version");
+        ar__io__warning("Cannot update agents to incompatible method version");
         return 0;
     }
     
@@ -32,7 +32,7 @@ int ar__agent_update__update_methods(agent_registry_t *ref_registry,
     const char *old_version = ar__method__get_version(ref_old_method);
     const char *new_version = ar__method__get_version(ref_new_method);
     
-    ar_io_info("Updating agents from method %s version %s to version %s",
+    ar__io__info("Updating agents from method %s version %s to version %s",
                method_name, old_version, new_version);
     
     // Update all agents that use the old method
@@ -49,9 +49,9 @@ int ar__agent_update__update_methods(agent_registry_t *ref_registry,
     }
     
     if (count > 0) {
-        ar_io_info("Updated %d agents to new method version", count);
+        ar__io__info("Updated %d agents to new method version", count);
         if (send_lifecycle_events) {
-            ar_io_info("Queued %d sleep and %d wake messages", count, count);
+            ar__io__info("Queued %d sleep and %d wake messages", count, count);
         }
     }
     

@@ -175,7 +175,7 @@ static void test_method_counts(void) {
         random_id = (unsigned int)time(NULL) % 100000;
     #endif
     
-    ar_io_string_format(unique_name, sizeof(unique_name), "unique_method_%u", random_id);
+    ar__io__string_format(unique_name, sizeof(unique_name), "unique_method_%u", random_id);
     
     // Create method and register it with methodology 
     method_t *own_method = ar__method__create(unique_name, "message -> \"Unique\"", "1.0.0");

@@ -99,10 +99,10 @@ bool ar__method_fixture__load_method(method_fixture_t *mut_fixture,
     
     // Read method file
     FILE *fp = NULL;
-    file_result_t result = ar_io_open_file(ref_method_file, "r", &fp);
+    file_result_t result = ar__io__open_file(ref_method_file, "r", &fp);
     if (result != FILE_SUCCESS) {
-        ar_io_error("Failed to open method file %s: %s\n", 
-                    ref_method_file, ar_io_error_message(result));
+        ar__io__error("Failed to open method file %s: %s\n", 
+                    ref_method_file, ar__io__error_message(result));
         return false;
     }
     
@@ -114,7 +114,7 @@ bool ar__method_fixture__load_method(method_fixture_t *mut_fixture,
     // Allocate buffer
     char *own_content = AR_HEAP_MALLOC((size_t)(file_size + 1), "Method file content");
     if (!own_content) {
-        ar_io_close_file(fp, ref_method_file);
+        ar__io__close_file(fp, ref_method_file);
         return false;
     }
     
@@ -122,7 +122,7 @@ bool ar__method_fixture__load_method(method_fixture_t *mut_fixture,
     size_t bytes_read = fread(own_content, 1, (size_t)file_size, fp);
     own_content[bytes_read] = '\0';
     
-    ar_io_close_file(fp, ref_method_file);
+    ar__io__close_file(fp, ref_method_file);
     
     // Register method
     bool registered = ar__methodology__create_method(ref_method_name, own_content, ref_version);

@@ -25,7 +25,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Refactor string module
   - [x] Refactor map module
   - [x] Refactor list module
-  - [ ] Refactor io module
+  - [x] Refactor io module
   - [ ] Refactor heap module
   - [ ] Refactor assert module
   - [ ] Update all documentation files (.md) to reflect new double underscore naming convention

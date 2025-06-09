@@ -84,8 +84,8 @@ static void ar_heap_memory_add(void *ptr, const char *file, int line, size_t siz
     memory_record_t *record = (memory_record_t *)malloc(sizeof(memory_record_t));
     if (!record) {
         // Use IO module error reporting instead of raw fprintf
-        ar_io_error("Failed to allocate memory for tracking record at %s:%d", file, line);
-        ar_io_warning("Memory leak detection for allocation at %s:%d (%zu bytes) will be disabled", 
+        ar__io__error("Failed to allocate memory for tracking record at %s:%d", file, line);
+        ar__io__warning("Memory leak detection for allocation at %s:%d (%zu bytes) will be disabled", 
                      file, line, size);
         return;
     }
@@ -104,14 +104,14 @@ static void ar_heap_memory_add(void *ptr, const char *file, int line, size_t siz
             record->description = strdup("Unknown (description allocation failed)");
             // If that also fails, set it to NULL and continue
             if (!record->description) {
-                ar_io_warning("Failed to allocate memory for tracking description at %s:%d", file, line);
+                ar__io__warning("Failed to allocate memory for tracking description at %s:%d", file, line);
             }
         }
     } else {
         record->description = strdup("Unknown");
         // If allocation fails, set to NULL and continue
         if (!record->description) {
-            ar_io_warning("Failed to allocate memory for tracking description at %s:%d", file, line);
+            ar__io__warning("Failed to allocate memory for tracking description at %s:%d", file, line);
         }
     }
     
@@ -360,14 +360,14 @@ void *ar_heap_malloc(size_t size, const char *file, int line, const char *descri
     // If allocation failed, report and try recovery
     if (!ptr) {
         // Report allocation failure with detailed information
-        ar_io_report_allocation_failure(file, line, size, description, "ar_heap_malloc");
+        ar__io__report_allocation_failure(file, line, size, description, "ar_heap_malloc");
         
         // For critical allocations, attempt recovery and retry
-        if (size > 0 && size < 1024 && ar_io_attempt_memory_recovery(size, 75)) {
+        if (size > 0 && size < 1024 && ar__io__attempt_memory_recovery(size, 75)) {
             // Small allocations are often critical and worth retrying
             ptr = malloc(size);
             if (ptr) {
-                ar_io_warning("Memory allocation retry succeeded for %s (%zu bytes) at %s:%d",
+                ar__io__warning("Memory allocation retry succeeded for %s (%zu bytes) at %s:%d",
                            description ? description : "unknown", size, file, line);
                 ar_heap_memory_add(ptr, file, line, size, description);
                 return ptr;
@@ -375,7 +375,7 @@ void *ar_heap_malloc(size_t size, const char *file, int line, const char *descri
         }
         
         // If we got here, allocation failed even after recovery attempts
-        ar_io_error("Memory allocation failed permanently for %s (%zu bytes) at %s:%d",
+        ar__io__error("Memory allocation failed permanently for %s (%zu bytes) at %s:%d",
                  description ? description : "unknown", size, file, line);
                  
         return NULL;
@@ -405,14 +405,14 @@ void *ar_heap_calloc(size_t count, size_t size, const char *file, int line, cons
     // If allocation failed, report and try recovery
     if (!ptr) {
         // Report allocation failure with detailed information
-        ar_io_report_allocation_failure(file, line, total_size, description, "ar_heap_calloc");
+        ar__io__report_allocation_failure(file, line, total_size, description, "ar_heap_calloc");
         
         // For critical allocations or small arrays, attempt recovery and retry
-        if (total_size > 0 && ar_io_attempt_memory_recovery(total_size, 80)) {
+        if (total_size > 0 && ar__io__attempt_memory_recovery(total_size, 80)) {
             // Zero-initialized memory is often for critical data structures, so slightly higher priority
             ptr = calloc(count, size);
             if (ptr) {
-                ar_io_warning("Memory allocation retry succeeded for %s (%zu elements of %zu bytes) at %s:%d",
+                ar__io__warning("Memory allocation retry succeeded for %s (%zu elements of %zu bytes) at %s:%d",
                           description ? description : "unknown", count, size, file, line);
                 ar_heap_memory_add(ptr, file, line, total_size, description);
                 return ptr;
@@ -420,7 +420,7 @@ void *ar_heap_calloc(size_t count, size_t size, const char *file, int line, cons
         }
         
         // If we got here, allocation failed even after recovery attempts
-        ar_io_error("Memory allocation failed permanently for %s (%zu elements of %zu bytes) at %s:%d",
+        ar__io__error("Memory allocation failed permanently for %s (%zu elements of %zu bytes) at %s:%d",
                  description ? description : "unknown", count, size, file, line);
                  
         return NULL;
@@ -461,20 +461,20 @@ void *ar_heap_realloc(void *ptr, size_t size, const char *file, int line, const 
     // If reallocation failed, report and try recovery
     if (!new_ptr) {
         // Report allocation failure with detailed information
-        ar_io_report_allocation_failure(file, line, size, description, "ar_heap_realloc");
+        ar__io__report_allocation_failure(file, line, size, description, "ar_heap_realloc");
         
         // CRITICAL: ptr is now in an indeterminate state - it may or may not be valid!
         // This is why realloc failures are particularly dangerous
-        ar_io_error("CRITICAL: realloc failed at %s:%d - original pointer (%p) may now be invalid!",
+        ar__io__error("CRITICAL: realloc failed at %s:%d - original pointer (%p) may now be invalid!",
                  file, line, ptr);
         
         // For reallocations, we need to be more conservative about recovery attempts
         // since we've already freed the original pointer from our tracking
-        if (size > 0 && ar_io_attempt_memory_recovery(size, 95)) { // High criticality
+        if (size > 0 && ar__io__attempt_memory_recovery(size, 95)) { // High criticality
             // Try again with high criticality
             new_ptr = realloc(ptr, size);
             if (new_ptr) {
-                ar_io_warning("Reallocation retry succeeded for %s (%zu bytes) at %s:%d",
+                ar__io__warning("Reallocation retry succeeded for %s (%zu bytes) at %s:%d",
                            description ? description : "unknown", size, file, line);
                 ar_heap_memory_add(new_ptr, file, line, size, description);
                 return new_ptr;
@@ -482,7 +482,7 @@ void *ar_heap_realloc(void *ptr, size_t size, const char *file, int line, const 
         }
         
         // If we got here, reallocation failed even after recovery attempts
-        ar_io_error("Reallocation failed permanently for %s (%zu bytes) at %s:%d",
+        ar__io__error("Reallocation failed permanently for %s (%zu bytes) at %s:%d",
                  description ? description : "unknown", size, file, line);
                  
         // Return NULL to indicate failure
@@ -506,7 +506,7 @@ void *ar_heap_realloc(void *ptr, size_t size, const char *file, int line, const 
 char *ar_heap_strdup(const char *str, const char *file, int line, const char *description) {
     // Validate input
     if (!str) {
-        ar_io_error("ar_heap_strdup called with NULL string at %s:%d", file, line);
+        ar__io__error("ar_heap_strdup called with NULL string at %s:%d", file, line);
         return NULL;
     }
     
@@ -519,14 +519,14 @@ char *ar_heap_strdup(const char *str, const char *file, int line, const char *de
     // If duplication failed, report and try recovery
     if (!ptr) {
         // Report allocation failure with detailed information
-        ar_io_report_allocation_failure(file, line, len, description, "ar_heap_strdup");
+        ar__io__report_allocation_failure(file, line, len, description, "ar_heap_strdup");
         
         // String duplication often happens for important data, attempt recovery
-        if (len > 0 && ar_io_attempt_memory_recovery(len, 85)) {
+        if (len > 0 && ar__io__attempt_memory_recovery(len, 85)) {
             // Try again with high criticality
             ptr = strdup(str);
             if (ptr) {
-                ar_io_warning("String duplication retry succeeded for %s (%zu bytes) at %s:%d",
+                ar__io__warning("String duplication retry succeeded for %s (%zu bytes) at %s:%d",
                            description ? description : "unknown", len, file, line);
                 ar_heap_memory_add(ptr, file, line, len, description);
                 return ptr;
@@ -534,7 +534,7 @@ char *ar_heap_strdup(const char *str, const char *file, int line, const char *de
         }
         
         // If we got here, duplication failed even after recovery attempts
-        ar_io_error("String duplication failed permanently for %s (%zu bytes) at %s:%d",
+        ar__io__error("String duplication failed permanently for %s (%zu bytes) at %s:%d",
                  description ? description : "unknown", len, file, line);
                  
         // Special fallback for critical strings:
