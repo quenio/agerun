@@ -66,6 +66,18 @@ This document tracks completed milestones and major achievements for the AgeRun 
     - Fixed syntax error in instruction_fixture.c (extra closing brace)
     - Updated internal static function names for consistency
     - All tests pass with zero memory leaks
+  - ✅ Completed semver module refactoring:
+    - Changed all 5 semver functions from ar_semver_* to ar__semver__*
+    - Updated all references in methodology and agent_update modules
+    - Updated all test cases to use new naming convention
+    - Fixed internal function calls within semver.c itself
+    - All tests pass with zero memory leaks
+  - ✅ Completed string module refactoring:
+    - Changed all 5 string functions from ar_string_* to ar__string__*
+    - Updated all references in data, expression, and method modules
+    - Updated all test cases to use new naming convention
+    - Fixed internal function calls within string.c itself
+    - All tests pass with zero memory leaks
 
 ## 2025-06-08 (Later - Part 2)
 - ✅ Fixed Agency/Agent_Update circular dependency:

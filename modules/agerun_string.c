@@ -10,26 +10,26 @@
  * Returns non-zero if c is a whitespace character.
  * This wrapper safely handles signed char values by casting to unsigned char.
  */
-int ar_string_isspace(int c) {
+int ar__string__isspace(int c) {
     return isspace((unsigned char)c);
 }
 
 /**
  * Helper function to trim whitespace from a string
  */
-char* ar_string_trim(char *mut_str) {
+char* ar__string__trim(char *mut_str) {
     if (!mut_str) return NULL;
     
     // Trim leading space
     char *ref_start = mut_str;
-    while (ar_string_isspace(*ref_start)) ref_start++;
+    while (ar__string__isspace(*ref_start)) ref_start++;
     
     if(*ref_start == 0) // All spaces
         return ref_start; // Borrowed reference, not owned by caller
     
     // Trim trailing space
     char *mut_end = ref_start + strlen(ref_start) - 1;
-    while (mut_end > ref_start && ar_string_isspace(*mut_end)) mut_end--;
+    while (mut_end > ref_start && ar__string__isspace(*mut_end)) mut_end--;
     
     // Write new null terminator
     *(mut_end + 1) = 0;
@@ -44,7 +44,7 @@ char* ar_string_trim(char *mut_str) {
  * @param separator The character used as separator (e.g., '.')
  * @return Number of segments in the string (0 if ref_str is NULL)
  */
-size_t ar_string_path_count(const char *ref_str, char separator) {
+size_t ar__string__path_count(const char *ref_str, char separator) {
     if (!ref_str || !*ref_str) {
         return 0;
     }
@@ -69,7 +69,7 @@ size_t ar_string_path_count(const char *ref_str, char separator) {
  * @return OWNER: Heap-allocated string containing the extracted segment, or NULL on error
  *         Caller is responsible for freeing the returned string using AR_HEAP_FREE().
  */
-char* ar_string_path_segment(const char *ref_str, char separator, size_t index) {
+char* ar__string__path_segment(const char *ref_str, char separator, size_t index) {
     if (!ref_str || !*ref_str) {
         return NULL;
     }
@@ -124,13 +124,13 @@ char* ar_string_path_segment(const char *ref_str, char separator, size_t index) 
  * @return OWNER: Heap-allocated string containing the parent path, or NULL if no parent exists
  *         (i.e., for root paths or errors). Caller is responsible for freeing the returned string using AR_HEAP_FREE().
  */
-char* ar_string_path_parent(const char *ref_str, char separator) {
+char* ar__string__path_parent(const char *ref_str, char separator) {
     if (!ref_str || !*ref_str) {
         return NULL;
     }
     
     // Count segments to determine if parent exists
-    size_t segments = ar_string_path_count(ref_str, separator);
+    size_t segments = ar__string__path_count(ref_str, separator);
     if (segments <= 1) {
         // No parent for root paths or single segments
         return NULL;

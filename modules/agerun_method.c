@@ -122,7 +122,7 @@ bool ar__method__run(int64_t agent_id, const data_t *ref_message, const char *re
     bool result = true;
     
     while (mut_instruction != NULL) {
-        mut_instruction = ar_string_trim(mut_instruction);
+        mut_instruction = ar__string__trim(mut_instruction);
         
         // Skip empty lines and comments
         if (strlen(mut_instruction) > 0 && mut_instruction[0] != '#') {

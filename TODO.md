@@ -21,7 +21,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Refactor instruction module
   - [x] Refactor expression module
   - [x] Refactor data module
-  - [ ] Refactor remaining utility modules (semver, string, map, list, io, heap, assert)
+  - [x] Refactor semver module
+  - [x] Refactor string module
+  - [ ] Refactor remaining utility modules (map, list, io, heap, assert)
   - [ ] Update all documentation files (.md) to reflect new double underscore naming convention
 
 ## Critical Compliance Tasks

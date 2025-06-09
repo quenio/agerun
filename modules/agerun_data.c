@@ -319,7 +319,7 @@ data_t *ar__data__get_map_data(const data_t *ref_data, const char *ref_key) {
     }
     
     // Count path segments for multi-segment paths
-    size_t segment_count = ar_string_path_count(ref_key, '.');
+    size_t segment_count = ar__string__path_count(ref_key, '.');
     
     // Keep track of current data as we traverse the path
     data_t *result = NULL;
@@ -328,7 +328,7 @@ data_t *ar__data__get_map_data(const data_t *ref_data, const char *ref_key) {
     // Process each segment
     for (size_t i = 0; i < segment_count; i++) {
         // Get the current segment
-        char *segment = ar_string_path_segment(ref_key, '.', i);
+        char *segment = ar__string__path_segment(ref_key, '.', i);
         if (!segment) {
             return NULL;
         }
@@ -566,19 +566,19 @@ bool ar__data__set_map_data(data_t *mut_data, const char *ref_key, data_t *own_v
     
     // Handle path-based access for keys with dots
     // Extract the parent path and final key
-    size_t segment_count = ar_string_path_count(ref_key, '.');
+    size_t segment_count = ar__string__path_count(ref_key, '.');
     if (segment_count == 0) {
         return false;
     }
     
-    // Get the parent path using ar_string_path_parent
-    char *parent_path = ar_string_path_parent(ref_key, '.');
+    // Get the parent path using ar__string__path_parent
+    char *parent_path = ar__string__path_parent(ref_key, '.');
     if (!parent_path) {
         return false;
     }
     
     // Get the final key segment
-    char *final_key = ar_string_path_segment(ref_key, '.', segment_count - 1);
+    char *final_key = ar__string__path_segment(ref_key, '.', segment_count - 1);
     if (!final_key) {
         AR_HEAP_FREE(parent_path);
         return false;

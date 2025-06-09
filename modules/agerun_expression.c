@@ -163,7 +163,7 @@ static bool is_digit(char c);
 
 // Skip whitespace characters in the expression
 static void skip_whitespace(expression_context_t *mut_ctx) {
-    while (mut_ctx->ref_expr[mut_ctx->offset] && ar_string_isspace(mut_ctx->ref_expr[mut_ctx->offset])) {
+    while (mut_ctx->ref_expr[mut_ctx->offset] && ar__string__isspace(mut_ctx->ref_expr[mut_ctx->offset])) {
         mut_ctx->offset++;
     }
 }
