@@ -145,6 +145,10 @@ make run-sanitize          # Run executable with ASan
 - **Module Functions**: Use double underscore pattern `ar__<module>__<function>`
   - Examples: `ar__data__create_map()`, `ar__agent__send()`, `ar__system__init()`
   - Applied to all 21 modules consistently
+- **Static Functions**: Use single underscore prefix `_<function_name>`
+  - Examples: `_validate_file()`, `_find_method_idx()`, `_allocate_node()`
+  - Indicates internal/private functions within a module
+  - Similar to Python convention for private members
 - **Heap Macros**: Use double underscore pattern `AR__HEAP__<OPERATION>`
   - Examples: `AR__HEAP__MALLOC`, `AR__HEAP__FREE`, `AR__HEAP__STRDUP`
   - Applied to all 5 heap macros consistently
@@ -343,7 +347,8 @@ When reviewing tasks:
 - **Always verify current directory**: Run `pwd` before executing sed commands to ensure correct location
 - **Advantages**: Fast, reliable, handles large codebases efficiently, preserves file structure
 - **Examples from naming convention refactoring**: 
-  - Functions: `sed 's/ar_data_/ar__data__/g'`
+  - Module functions: `sed 's/ar_data_/ar__data__/g'`
+  - Static functions: `sed 's/static \([a-zA-Z_]*\)(/static _\1(/g'`
   - Macros: `sed 's/AR_HEAP_/AR__HEAP__/g'`
 
 **Git Workflow**:
