@@ -28,7 +28,7 @@ struct data_s {
  * @return Pointer to the new data, or NULL on failure
  */
 data_t* ar__data__create_integer(int value) {
-    data_t* data = (data_t*)AR_HEAP_MALLOC(sizeof(data_t), "Integer data");
+    data_t* data = (data_t*)AR__HEAP__MALLOC(sizeof(data_t), "Integer data");
     if (!data) {
         return NULL;
     }
@@ -45,7 +45,7 @@ data_t* ar__data__create_integer(int value) {
  * @return Pointer to the new data, or NULL on failure
  */
 data_t* ar__data__create_double(double value) {
-    data_t* data = (data_t*)AR_HEAP_MALLOC(sizeof(data_t), "Integer data");
+    data_t* data = (data_t*)AR__HEAP__MALLOC(sizeof(data_t), "Integer data");
     if (!data) {
         return NULL;
     }
@@ -63,15 +63,15 @@ data_t* ar__data__create_double(double value) {
  * @note Ownership: Returns an owned value that caller must destroy.
  */
 data_t* ar__data__create_string(const char *ref_value) {
-    data_t* own_data = AR_HEAP_MALLOC(sizeof(data_t), "String data structure");
+    data_t* own_data = AR__HEAP__MALLOC(sizeof(data_t), "String data structure");
     if (!own_data) {
         return NULL;
     }
     
     own_data->type = DATA_STRING;
-    own_data->data.own_string = ref_value ? AR_HEAP_STRDUP(ref_value, "String data value") : NULL;
+    own_data->data.own_string = ref_value ? AR__HEAP__STRDUP(ref_value, "String data value") : NULL;
     if (ref_value && !own_data->data.own_string) {
-        AR_HEAP_FREE(own_data);
+        AR__HEAP__FREE(own_data);
         return NULL;
     }
     
@@ -84,7 +84,7 @@ data_t* ar__data__create_string(const char *ref_value) {
  * @return Pointer to the new data, or NULL on failure
  */
 data_t* ar__data__create_list(void) {
-    data_t* data = (data_t*)AR_HEAP_MALLOC(sizeof(data_t), "Integer data");
+    data_t* data = (data_t*)AR__HEAP__MALLOC(sizeof(data_t), "Integer data");
     if (!data) {
         return NULL;
     }
@@ -92,7 +92,7 @@ data_t* ar__data__create_list(void) {
     data->type = DATA_LIST;
     data->data.own_list = ar__list__create();
     if (!data->data.own_list) {
-        AR_HEAP_FREE(data);
+        AR__HEAP__FREE(data);
         return NULL;
     }
     
@@ -105,7 +105,7 @@ data_t* ar__data__create_list(void) {
  * @return Pointer to the new data, or NULL on failure
  */
 data_t* ar__data__create_map(void) {
-    data_t* data = (data_t*)AR_HEAP_MALLOC(sizeof(data_t), "Integer data");
+    data_t* data = (data_t*)AR__HEAP__MALLOC(sizeof(data_t), "Integer data");
     if (!data) {
         return NULL;
     }
@@ -113,7 +113,7 @@ data_t* ar__data__create_map(void) {
     data->type = DATA_MAP;
     data->data.own_map = ar__map__create();
     if (!data->data.own_map) {
-        AR_HEAP_FREE(data);
+        AR__HEAP__FREE(data);
         return NULL;
     }
     
@@ -121,7 +121,7 @@ data_t* ar__data__create_map(void) {
     data->own_keys = ar__list__create();
     if (!data->own_keys) {
         ar__map__destroy(data->data.own_map);
-        AR_HEAP_FREE(data);
+        AR__HEAP__FREE(data);
         return NULL;
     }
     
@@ -140,7 +140,7 @@ void ar__data__destroy(data_t *own_data) {
     if (!own_data) return;
     
     if (own_data->type == DATA_STRING && own_data->data.own_string) {
-        AR_HEAP_FREE(own_data->data.own_string);
+        AR__HEAP__FREE(own_data->data.own_string);
         own_data->data.own_string = NULL;
     } else if (own_data->type == DATA_LIST && own_data->data.own_list) {
         // For lists, we need to:
@@ -161,7 +161,7 @@ void ar__data__destroy(data_t *own_data) {
             for (size_t i = 0; i < item_count; i++) {
                 ar__data__destroy((data_t*)own_items[i]); // Ownership transferred to ar__data__destroy
             }
-            AR_HEAP_FREE(own_items); // Free the array itself
+            AR__HEAP__FREE(own_items); // Free the array itself
             own_items = NULL; // Mark as freed
         }
     } else if (own_data->type == DATA_MAP && own_data->data.own_map) {
@@ -187,9 +187,9 @@ void ar__data__destroy(data_t *own_data) {
             
             if (own_key_ptrs) {
                 for (size_t i = 0; i < key_count; i++) {
-                    AR_HEAP_FREE(own_key_ptrs[i]); // Free each key string
+                    AR__HEAP__FREE(own_key_ptrs[i]); // Free each key string
                 }
-                AR_HEAP_FREE(own_key_ptrs); // Free the array itself
+                AR__HEAP__FREE(own_key_ptrs); // Free the array itself
                 own_key_ptrs = NULL; // Mark as freed
             }
             
@@ -203,12 +203,12 @@ void ar__data__destroy(data_t *own_data) {
             for (size_t i = 0; i < ref_count; i++) {
                 ar__data__destroy((data_t*)own_refs[i]); // Ownership transferred to ar__data__destroy
             }
-            AR_HEAP_FREE(own_refs); // Free the array itself
+            AR__HEAP__FREE(own_refs); // Free the array itself
             own_refs = NULL; // Mark as freed
         }
     }
     
-    AR_HEAP_FREE(own_data);
+    AR__HEAP__FREE(own_data);
     // Ownership consumed completely
 }
 
@@ -336,7 +336,7 @@ data_t *ar__data__get_map_data(const data_t *ref_data, const char *ref_key) {
         // Get the map from the current data
         map_t *ref_current_map = ar__data__get_map(ref_current_data);
         if (!ref_current_map) {
-            AR_HEAP_FREE(segment);
+            AR__HEAP__FREE(segment);
             return NULL;
         }
         
@@ -344,18 +344,18 @@ data_t *ar__data__get_map_data(const data_t *ref_data, const char *ref_key) {
         result = ar__map__get(ref_current_map, segment);
         
         if (!result) {
-            AR_HEAP_FREE(segment);
+            AR__HEAP__FREE(segment);
             return NULL;
         }
         
         // For all but the last segment, the value must be a map
         if (i < segment_count - 1 && result->type != DATA_MAP) {
-            AR_HEAP_FREE(segment);
+            AR__HEAP__FREE(segment);
             return NULL;
         }
         
         ref_current_data = result;
-        AR_HEAP_FREE(segment);
+        AR__HEAP__FREE(segment);
     }
     
     return result;
@@ -537,14 +537,14 @@ bool ar__data__set_map_data(data_t *mut_data, const char *ref_key, data_t *own_v
         data_t *prev_data = ar__map__get(map, ref_key);
         
         // Create a copy of the key
-        char *key_copy = AR_HEAP_STRDUP(ref_key, "Map key copy");
+        char *key_copy = AR__HEAP__STRDUP(ref_key, "Map key copy");
         if (!key_copy) {
             return false;
         }
         
         // Set the new value
         if (!ar__map__set(map, key_copy, own_value)) {
-            AR_HEAP_FREE(key_copy);
+            AR__HEAP__FREE(key_copy);
             return false;
         }
         
@@ -552,7 +552,7 @@ bool ar__data__set_map_data(data_t *mut_data, const char *ref_key, data_t *own_v
         if (!ar__list__add_last(mut_data->own_keys, key_copy)) {
             // Unlikely, but handle failure
             ar__map__set(map, ref_key, prev_data); // Try to restore previous state
-            AR_HEAP_FREE(key_copy);
+            AR__HEAP__FREE(key_copy);
             return false;
         }
         
@@ -580,7 +580,7 @@ bool ar__data__set_map_data(data_t *mut_data, const char *ref_key, data_t *own_v
     // Get the final key segment
     char *final_key = ar__string__path_segment(ref_key, '.', segment_count - 1);
     if (!final_key) {
-        AR_HEAP_FREE(parent_path);
+        AR__HEAP__FREE(parent_path);
         return false;
     }
     
@@ -588,8 +588,8 @@ bool ar__data__set_map_data(data_t *mut_data, const char *ref_key, data_t *own_v
     // or if any part of the path is not a map
     data_t *parent_data = ar__data__get_map_data(mut_data, parent_path);
     if (!parent_data || ar__data__get_type(parent_data) != DATA_MAP) {
-        AR_HEAP_FREE(final_key);
-        AR_HEAP_FREE(parent_path);
+        AR__HEAP__FREE(final_key);
+        AR__HEAP__FREE(parent_path);
         return false;
     }
     
@@ -600,8 +600,8 @@ bool ar__data__set_map_data(data_t *mut_data, const char *ref_key, data_t *own_v
     // If successful, ownership was transferred to parent_data
     // If not successful, the recursive call will have freed own_value
     
-    AR_HEAP_FREE(final_key);
-    AR_HEAP_FREE(parent_path);
+    AR__HEAP__FREE(final_key);
+    AR__HEAP__FREE(parent_path);
     return success;
 }
 
@@ -1104,7 +1104,7 @@ char *ar__data__list_remove_first_string(data_t *data) {
     }
     
     // Make a copy of the string for the caller
-    char *str_copy = AR_HEAP_STRDUP(orig_str, "String copy for conversion");
+    char *str_copy = AR__HEAP__STRDUP(orig_str, "String copy for conversion");
     
     // Free the data structure
     ar__data__destroy(first_data);
@@ -1228,7 +1228,7 @@ char *ar__data__list_remove_last_string(data_t *data) {
     }
     
     // Make a copy of the string for the caller
-    char *str_copy = AR_HEAP_STRDUP(orig_str, "String copy for conversion");
+    char *str_copy = AR__HEAP__STRDUP(orig_str, "String copy for conversion");
     
     // Free the data structure
     ar__data__destroy(last_data);
@@ -1299,7 +1299,7 @@ data_t* ar__data__get_map_keys(const data_t *ref_data) {
         data_t *own_key_data = ar__data__create_string(ref_key);
         if (!own_key_data) {
             // Clean up on failure
-            AR_HEAP_FREE(own_key_ptrs);
+            AR__HEAP__FREE(own_key_ptrs);
             ar__data__destroy(own_keys_list);
             return NULL;
         }
@@ -1308,14 +1308,14 @@ data_t* ar__data__get_map_keys(const data_t *ref_data) {
         if (!ar__data__list_add_last_data(own_keys_list, own_key_data)) {
             // Clean up on failure
             ar__data__destroy(own_key_data);
-            AR_HEAP_FREE(own_key_ptrs);
+            AR__HEAP__FREE(own_key_ptrs);
             ar__data__destroy(own_keys_list);
             return NULL;
         }
     }
     
     // Free the key array (we own it)
-    AR_HEAP_FREE(own_key_ptrs);
+    AR__HEAP__FREE(own_key_ptrs);
     
     return own_keys_list;
 }

@@ -67,7 +67,7 @@ size_t ar__string__path_count(const char *ref_str, char separator) {
  * @param separator The character used as separator (e.g., '.')
  * @param index The zero-based index of the segment to extract
  * @return OWNER: Heap-allocated string containing the extracted segment, or NULL on error
- *         Caller is responsible for freeing the returned string using AR_HEAP_FREE().
+ *         Caller is responsible for freeing the returned string using AR__HEAP__FREE().
  */
 char* ar__string__path_segment(const char *ref_str, char separator, size_t index) {
     if (!ref_str || !*ref_str) {
@@ -99,13 +99,13 @@ char* ar__string__path_segment(const char *ref_str, char separator, size_t index
     size_t length = (size_t)(ref_end - ref_start);
     if (length == 0) {
         // Empty segment
-        char *own_result = AR_HEAP_STRDUP("", "Empty string path segment"); 
+        char *own_result = AR__HEAP__STRDUP("", "Empty string path segment"); 
         AR_ASSERT_OWNERSHIP(own_result);
         return own_result; // Ownership transferred to caller
     }
     
     // Allocate and copy the segment
-    char *own_segment = (char *)AR_HEAP_MALLOC(length + 1, "String path segment");
+    char *own_segment = (char *)AR__HEAP__MALLOC(length + 1, "String path segment");
     if (!own_segment) {
         return NULL;
     }
@@ -122,7 +122,7 @@ char* ar__string__path_segment(const char *ref_str, char separator, size_t index
  * @param ref_str The path string to extract from (e.g., "key.sub_key.sub_sub_key")
  * @param separator The character used as separator (e.g., '.')
  * @return OWNER: Heap-allocated string containing the parent path, or NULL if no parent exists
- *         (i.e., for root paths or errors). Caller is responsible for freeing the returned string using AR_HEAP_FREE().
+ *         (i.e., for root paths or errors). Caller is responsible for freeing the returned string using AR__HEAP__FREE().
  */
 char* ar__string__path_parent(const char *ref_str, char separator) {
     if (!ref_str || !*ref_str) {
@@ -147,13 +147,13 @@ char* ar__string__path_parent(const char *ref_str, char separator) {
     size_t parent_len = (size_t)(ref_last_sep - ref_str);
     if (parent_len == 0) {
         // Edge case: path starts with a separator (e.g., ".key")
-        char *own_result = AR_HEAP_STRDUP("", "Empty string path segment");
+        char *own_result = AR__HEAP__STRDUP("", "Empty string path segment");
         AR_ASSERT_OWNERSHIP(own_result);
         return own_result; // Ownership transferred to caller
     }
     
     // Allocate and copy the parent path
-    char *own_parent = (char *)AR_HEAP_MALLOC(parent_len + 1, "String path parent");
+    char *own_parent = (char *)AR__HEAP__MALLOC(parent_len + 1, "String path parent");
     if (!own_parent) {
         return NULL;
     }

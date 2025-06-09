@@ -47,7 +47,7 @@ const char* ar__method__get_instructions(const method_t *ref_method) {
 
 void ar__method__destroy(method_t *own_method) {
     if (own_method) {
-        AR_HEAP_FREE(own_method);
+        AR__HEAP__FREE(own_method);
     }
 }
 
@@ -67,7 +67,7 @@ method_t* ar__method__create(const char *ref_name, const char *ref_instructions,
     }
     
     // Allocate memory for the new method
-    method_t *mut_method = AR_HEAP_MALLOC(sizeof(method_t), "Method structure");
+    method_t *mut_method = AR__HEAP__MALLOC(sizeof(method_t), "Method structure");
     if (!mut_method) {
         printf("Error: Failed to allocate memory for method\n");
         return NULL;
@@ -111,7 +111,7 @@ bool ar__method__run(int64_t agent_id, const data_t *ref_message, const char *re
     }
     
     // Make a copy of the instructions for tokenization
-    char *own_instructions_copy = AR_HEAP_STRDUP(ref_instructions, "Method instructions copy");
+    char *own_instructions_copy = AR__HEAP__STRDUP(ref_instructions, "Method instructions copy");
     if (!own_instructions_copy) {
         ar__instruction__destroy_context(own_ctx);
         return false;
@@ -137,7 +137,7 @@ bool ar__method__run(int64_t agent_id, const data_t *ref_message, const char *re
     
     // Clean up
     ar__instruction__destroy_context(own_ctx);
-    AR_HEAP_FREE(own_instructions_copy);
+    AR__HEAP__FREE(own_instructions_copy);
     own_instructions_copy = NULL; // Mark as freed
     
     return result;

@@ -197,10 +197,10 @@ int ar__executable__main(void) {
     }
     
     // Memory leak fixed - now properly freeing memory
-    char *temp = AR_HEAP_MALLOC(256, "Temporary allocation for testing");
+    char *temp = AR__HEAP__MALLOC(256, "Temporary allocation for testing");
     if (temp) {
         strcpy(temp, "This memory will be properly freed");
-        AR_HEAP_FREE(temp);
+        AR__HEAP__FREE(temp);
     }
     
     // Final shutdown

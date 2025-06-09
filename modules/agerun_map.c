@@ -30,7 +30,7 @@ struct map_s {
  * @note Ownership: Returns an owned value that caller must destroy.
  */
 map_t* ar__map__create(void) {
-    map_t *own_map = (map_t *)AR_HEAP_MALLOC(sizeof(map_t), "Map structure");
+    map_t *own_map = (map_t *)AR__HEAP__MALLOC(sizeof(map_t), "Map structure");
     if (!own_map) return NULL;
     
     for (int i = 0; i < MAP_SIZE; i++) {
@@ -122,7 +122,7 @@ size_t ar__map__count(const map_t *ref_map) {
  * @param ref_map The map to get refs from (borrowed reference)
  * @return Array of pointers to refs, or NULL on failure
  * @note Ownership: Returns an owned array that caller must free.
- *       The caller is responsible for freeing the returned array using AR_HEAP_FREE().
+ *       The caller is responsible for freeing the returned array using AR__HEAP__FREE().
  *       The refs themselves are borrowed references and remain owned by their original owners.
  *       The caller can use ar_map_count() to determine the size of the array.
  */
@@ -135,7 +135,7 @@ void** ar__map__refs(const map_t *ref_map) {
         return NULL;
     }
     
-    void **own_refs = (void**)AR_HEAP_MALLOC((size_t)ref_map->count * sizeof(void*), "Map references array");
+    void **own_refs = (void**)AR__HEAP__MALLOC((size_t)ref_map->count * sizeof(void*), "Map references array");
     if (!own_refs) {
         return NULL;
     }
@@ -160,6 +160,6 @@ void** ar__map__refs(const map_t *ref_map) {
 void ar__map__destroy(map_t *own_map) {
     if (!own_map) return;
     
-    AR_HEAP_FREE(own_map);
+    AR__HEAP__FREE(own_map);
 }
 

@@ -25,14 +25,14 @@ method_fixture_t* ar__method_fixture__create(const char *ref_test_name) {
         return NULL;
     }
     
-    method_fixture_t *own_fixture = AR_HEAP_MALLOC(sizeof(method_fixture_t), "Method fixture");
+    method_fixture_t *own_fixture = AR__HEAP__MALLOC(sizeof(method_fixture_t), "Method fixture");
     if (!own_fixture) {
         return NULL;
     }
     
-    own_fixture->own_test_name = AR_HEAP_STRDUP(ref_test_name, "Test name");
+    own_fixture->own_test_name = AR__HEAP__STRDUP(ref_test_name, "Test name");
     if (!own_fixture->own_test_name) {
-        AR_HEAP_FREE(own_fixture);
+        AR__HEAP__FREE(own_fixture);
         return NULL;
     }
     
@@ -57,8 +57,8 @@ void ar__method_fixture__destroy(method_fixture_t *own_fixture) {
         remove("agency.agerun");
     }
     
-    AR_HEAP_FREE(own_fixture->own_test_name);
-    AR_HEAP_FREE(own_fixture);
+    AR__HEAP__FREE(own_fixture->own_test_name);
+    AR__HEAP__FREE(own_fixture);
 }
 
 bool ar__method_fixture__initialize(method_fixture_t *mut_fixture) {
@@ -112,7 +112,7 @@ bool ar__method_fixture__load_method(method_fixture_t *mut_fixture,
     fseek(fp, 0, SEEK_SET);
     
     // Allocate buffer
-    char *own_content = AR_HEAP_MALLOC((size_t)(file_size + 1), "Method file content");
+    char *own_content = AR__HEAP__MALLOC((size_t)(file_size + 1), "Method file content");
     if (!own_content) {
         ar__io__close_file(fp, ref_method_file);
         return false;
@@ -127,7 +127,7 @@ bool ar__method_fixture__load_method(method_fixture_t *mut_fixture,
     // Register method
     bool registered = ar__methodology__create_method(ref_method_name, own_content, ref_version);
     
-    AR_HEAP_FREE(own_content);
+    AR__HEAP__FREE(own_content);
     
     return registered;
 }

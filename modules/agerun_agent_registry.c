@@ -22,21 +22,21 @@ struct agent_registry_s {
 
 /* Create a new agent registry */
 agent_registry_t* ar__agent_registry__create(void) {
-    agent_registry_t *own_registry = AR_HEAP_MALLOC(sizeof(agent_registry_t), "agent registry");
+    agent_registry_t *own_registry = AR__HEAP__MALLOC(sizeof(agent_registry_t), "agent registry");
     if (!own_registry) {
         return NULL;
     }
     
     own_registry->own_registered_ids = ar__list__create();
     if (!own_registry->own_registered_ids) {
-        AR_HEAP_FREE(own_registry);
+        AR__HEAP__FREE(own_registry);
         return NULL;
     }
     
     own_registry->own_agent_map = ar__map__create();
     if (!own_registry->own_agent_map) {
         ar__list__destroy(own_registry->own_registered_ids);
-        AR_HEAP_FREE(own_registry);
+        AR__HEAP__FREE(own_registry);
         return NULL;
     }
     
@@ -67,7 +67,7 @@ void ar__agent_registry__destroy(agent_registry_t *own_registry) {
         ar__map__destroy(own_registry->own_agent_map);
     }
     
-    AR_HEAP_FREE(own_registry);
+    AR__HEAP__FREE(own_registry);
 }
 
 /* Get the number of registered agents */
@@ -138,7 +138,7 @@ int64_t ar__agent_registry__get_next(const agent_registry_t *ref_registry, int64
         }
     }
     
-    AR_HEAP_FREE(items);
+    AR__HEAP__FREE(items);
     return next_id;
 }
 
@@ -253,7 +253,7 @@ bool ar__agent_registry__unregister_id(agent_registry_t *mut_registry, int64_t a
         }
     }
     
-    AR_HEAP_FREE(items);
+    AR__HEAP__FREE(items);
     
     if (target) {
         data_t *own_removed = (data_t*)ar__list__remove(mut_registry->own_registered_ids, target);
@@ -298,7 +298,7 @@ bool ar__agent_registry__is_registered(const agent_registry_t *ref_registry, int
         }
     }
     
-    AR_HEAP_FREE(items);
+    AR__HEAP__FREE(items);
     return found;
 }
 
@@ -334,7 +334,7 @@ static const char* get_agent_key_from_list(const agent_registry_t *ref_registry,
         }
     }
     
-    AR_HEAP_FREE(items);
+    AR__HEAP__FREE(items);
     return key;
 }
 

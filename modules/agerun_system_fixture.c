@@ -24,14 +24,14 @@ system_fixture_t* ar__system_fixture__create(const char *ref_test_name) {
         return NULL;
     }
     
-    system_fixture_t *own_fixture = AR_HEAP_MALLOC(sizeof(system_fixture_t), "System fixture");
+    system_fixture_t *own_fixture = AR__HEAP__MALLOC(sizeof(system_fixture_t), "System fixture");
     if (!own_fixture) {
         return NULL;
     }
     
-    own_fixture->own_test_name = AR_HEAP_STRDUP(ref_test_name, "Test name");
+    own_fixture->own_test_name = AR__HEAP__STRDUP(ref_test_name, "Test name");
     if (!own_fixture->own_test_name) {
-        AR_HEAP_FREE(own_fixture);
+        AR__HEAP__FREE(own_fixture);
         return NULL;
     }
     
@@ -56,8 +56,8 @@ void ar__system_fixture__destroy(system_fixture_t *own_fixture) {
         remove("agency.agerun");
     }
     
-    AR_HEAP_FREE(own_fixture->own_test_name);
-    AR_HEAP_FREE(own_fixture);
+    AR__HEAP__FREE(own_fixture->own_test_name);
+    AR__HEAP__FREE(own_fixture);
 }
 
 bool ar__system_fixture__initialize(system_fixture_t *mut_fixture) {

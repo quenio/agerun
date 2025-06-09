@@ -41,7 +41,7 @@ static void clear_error(instruction_context_t *mut_ctx);
 // Create a new instruction context
 instruction_context_t* ar__instruction__create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message) {
     // Allocate memory for the context
-    instruction_context_t *own_ctx = (instruction_context_t*)AR_HEAP_MALLOC(sizeof(instruction_context_t), "Instruction context");
+    instruction_context_t *own_ctx = (instruction_context_t*)AR__HEAP__MALLOC(sizeof(instruction_context_t), "Instruction context");
     if (!own_ctx) {
         return NULL;
     }
@@ -62,10 +62,10 @@ void ar__instruction__destroy_context(instruction_context_t *own_ctx) {
     if (own_ctx) {
         // Free the owned error message if any
         if (own_ctx->own_error_message) {
-            AR_HEAP_FREE(own_ctx->own_error_message);
+            AR__HEAP__FREE(own_ctx->own_error_message);
         }
         // The context doesn't own memory, context, or message, so we just free the structure
-        AR_HEAP_FREE(own_ctx);
+        AR__HEAP__FREE(own_ctx);
     }
 }
 
@@ -153,7 +153,7 @@ static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_ins
     
     // Check for ':=' operator
     if (ref_instruction[*mut_pos] != ':' || ref_instruction[*mut_pos + 1] != '=') {
-        AR_HEAP_FREE(path);
+        AR__HEAP__FREE(path);
         path = NULL; // Mark as freed
         return false;
     }
@@ -164,7 +164,7 @@ static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_ins
     // Check if there's an expression after ':='
     if (!ref_instruction[*mut_pos] || ref_instruction[*mut_pos] == '\0') {
         set_error(mut_ctx, "Expected expression after ':='", *mut_pos);
-        AR_HEAP_FREE(path);
+        AR__HEAP__FREE(path);
         path = NULL; // Mark as freed
         return false;
     }
@@ -176,7 +176,7 @@ static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_ins
                                                                 mut_ctx->ref_message, 
                                                                 ref_instruction + *mut_pos);
     if (!own_context) {
-        AR_HEAP_FREE(path);
+        AR__HEAP__FREE(path);
         path = NULL; // Mark as freed
         return false;
     }
@@ -206,7 +206,7 @@ static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_ins
         } else {
             set_error(mut_ctx, "Failed to evaluate expression", error_pos);
         }
-        AR_HEAP_FREE(path);
+        AR__HEAP__FREE(path);
         path = NULL; // Mark as freed
         return false;
     }
@@ -218,7 +218,7 @@ static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_ins
     }
     own_value = NULL; // Mark as transferred
     
-    AR_HEAP_FREE(path);
+    AR__HEAP__FREE(path);
     path = NULL; // Mark as freed
     return true;
 }
@@ -241,7 +241,7 @@ static bool parse_function_instruction(instruction_context_t *mut_ctx, const cha
         } else {
             // Not an assignment, backtrack
             *mut_pos = save_pos;
-            AR_HEAP_FREE(path);
+            AR__HEAP__FREE(path);
             path = NULL; // Mark as freed
         }
     } else {
@@ -251,7 +251,7 @@ static bool parse_function_instruction(instruction_context_t *mut_ctx, const cha
     
     // Parse function call
     if (!parse_function_call(mut_ctx, ref_instruction, mut_pos, &own_result)) {
-        AR_HEAP_FREE(path);
+        AR__HEAP__FREE(path);
         path = NULL; // Mark as freed
         return false;
     }
@@ -270,7 +270,7 @@ static bool parse_function_instruction(instruction_context_t *mut_ctx, const cha
         own_result = NULL; // Mark as destroyed
     }
     
-    AR_HEAP_FREE(path);
+    AR__HEAP__FREE(path);
     path = NULL; // Mark as freed
     return true;
 }
@@ -331,7 +331,7 @@ static bool parse_memory_access(const char *ref_instruction, int *mut_pos, char 
     }
     
     // Allocate and return the path
-    *path = AR_HEAP_STRDUP(buffer, "Memory path");
+    *path = AR__HEAP__STRDUP(buffer, "Memory path");
     return *path != NULL;
 }
 
@@ -843,7 +843,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             
             // Extract variable name
             size_t var_len = (size_t)(placeholder_end - template_ptr);
-            char *var_name = (char*)AR_HEAP_MALLOC(var_len + 1, "Parse variable name");
+            char *var_name = (char*)AR__HEAP__MALLOC(var_len + 1, "Parse variable name");
             if (!var_name) {
                 ar__data__destroy(*own_result);
                 *own_result = ar__data__create_map();
@@ -865,14 +865,14 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             const char *value_end = NULL;
             if (next_literal_len > 0) {
                 // Create a temporary string with just the literal part (not including next placeholder)
-                char *literal_to_find = (char*)AR_HEAP_MALLOC(next_literal_len + 1, "Parse literal");
+                char *literal_to_find = (char*)AR__HEAP__MALLOC(next_literal_len + 1, "Parse literal");
                 if (literal_to_find) {
                     strncpy(literal_to_find, next_literal_start, next_literal_len);
                     literal_to_find[next_literal_len] = '\0';
                     
                     // Look for the next literal part in the input
                     value_end = strstr(input_ptr, literal_to_find);
-                    AR_HEAP_FREE(literal_to_find);
+                    AR__HEAP__FREE(literal_to_find);
                 }
             } else {
                 // No more literals, take the rest of the input
@@ -882,7 +882,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             if (value_end) {
                 // Extract the value
                 size_t value_len = (size_t)(value_end - input_ptr);
-                char *value_str = (char*)AR_HEAP_MALLOC(value_len + 1, "Parse value string");
+                char *value_str = (char*)AR__HEAP__MALLOC(value_len + 1, "Parse value string");
                 if (value_str) {
                     strncpy(value_str, input_ptr, value_len);
                     value_str[value_len] = '\0';
@@ -912,7 +912,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                         // Ownership of own_value is transferred
                     }
                     
-                    AR_HEAP_FREE(value_str);
+                    AR__HEAP__FREE(value_str);
                 }
                 
                 // Move input pointer past the value
@@ -921,11 +921,11 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                 // Could not find the next literal - parsing failed
                 ar__data__destroy(*own_result);
                 *own_result = ar__data__create_map();
-                AR_HEAP_FREE(var_name);
+                AR__HEAP__FREE(var_name);
                 break;
             }
             
-            AR_HEAP_FREE(var_name);
+            AR__HEAP__FREE(var_name);
         }
         
         // Clean up
@@ -1067,7 +1067,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         
         // Create a string builder for the result
         size_t result_size = strlen(template_str) * 2 + 256; // Start with a reasonable size
-        char *own_result_str = (char*)AR_HEAP_MALLOC(result_size, "Build result string");
+        char *own_result_str = (char*)AR__HEAP__MALLOC(result_size, "Build result string");
         if (!own_result_str) {
             ar__data__destroy(own_values);
             own_values = NULL; // Mark as destroyed
@@ -1086,9 +1086,9 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                 if (placeholder_end) {
                     // Extract variable name
                     size_t var_len = (size_t)(placeholder_end - template_ptr - 1);
-                    char *var_name = (char*)AR_HEAP_MALLOC(var_len + 1, "Build variable name");
+                    char *var_name = (char*)AR__HEAP__MALLOC(var_len + 1, "Build variable name");
                     if (!var_name) {
-                        AR_HEAP_FREE(own_result_str);
+                        AR__HEAP__FREE(own_result_str);
                         if (own_values) {
                             ar__data__destroy(own_values);
                             own_values = NULL; // Mark as destroyed
@@ -1123,10 +1123,10 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                             size_t value_len = strlen(value_str);
                             while (result_pos + value_len >= result_size - 1) {
                                 result_size *= 2;
-                                char *new_result = (char*)AR_HEAP_MALLOC(result_size, "Build result resize");
+                                char *new_result = (char*)AR__HEAP__MALLOC(result_size, "Build result resize");
                                 if (!new_result) {
-                                    AR_HEAP_FREE(var_name);
-                                    AR_HEAP_FREE(own_result_str);
+                                    AR__HEAP__FREE(var_name);
+                                    AR__HEAP__FREE(own_result_str);
                                     if (own_values) {
                                         ar__data__destroy(own_values);
                                         own_values = NULL; // Mark as destroyed
@@ -1136,7 +1136,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                                     return false;
                                 }
                                 strcpy(new_result, own_result_str);
-                                AR_HEAP_FREE(own_result_str);
+                                AR__HEAP__FREE(own_result_str);
                                 own_result_str = new_result;
                             }
                             
@@ -1146,7 +1146,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                         }
                     }
                     
-                    AR_HEAP_FREE(var_name);
+                    AR__HEAP__FREE(var_name);
                     
                     // Move past the placeholder
                     template_ptr = placeholder_end + 1;
@@ -1154,9 +1154,9 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                     // No closing brace found, copy the '{' literally
                     if (result_pos >= result_size - 1) {
                         result_size *= 2;
-                        char *new_result = (char*)AR_HEAP_MALLOC(result_size, "Build result resize");
+                        char *new_result = (char*)AR__HEAP__MALLOC(result_size, "Build result resize");
                         if (!new_result) {
-                            AR_HEAP_FREE(own_result_str);
+                            AR__HEAP__FREE(own_result_str);
                             if (own_values) {
                                 ar__data__destroy(own_values);
                                 own_values = NULL; // Mark as destroyed
@@ -1168,7 +1168,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                             return false;
                         }
                         strcpy(new_result, own_result_str);
-                        AR_HEAP_FREE(own_result_str);
+                        AR__HEAP__FREE(own_result_str);
                         own_result_str = new_result;
                     }
                     own_result_str[result_pos++] = *template_ptr++;
@@ -1177,9 +1177,9 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                 // Regular character, copy it
                 if (result_pos >= result_size - 1) {
                     result_size *= 2;
-                    char *new_result = (char*)AR_HEAP_MALLOC(result_size, "Build result resize");
+                    char *new_result = (char*)AR__HEAP__MALLOC(result_size, "Build result resize");
                     if (!new_result) {
-                        AR_HEAP_FREE(own_result_str);
+                        AR__HEAP__FREE(own_result_str);
                         if (own_values) {
                             ar__data__destroy(own_values);
                             own_values = NULL; // Mark as destroyed
@@ -1191,7 +1191,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                         return false;
                     }
                     strcpy(new_result, own_result_str);
-                    AR_HEAP_FREE(own_result_str);
+                    AR__HEAP__FREE(own_result_str);
                     own_result_str = new_result;
                 }
                 own_result_str[result_pos++] = *template_ptr++;
@@ -1205,7 +1205,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         *own_result = ar__data__create_string(own_result_str);
         
         // Clean up
-        AR_HEAP_FREE(own_result_str);
+        AR__HEAP__FREE(own_result_str);
         if (own_values) {
             ar__data__destroy(own_values);
             own_values = NULL; // Mark as destroyed
@@ -1876,11 +1876,11 @@ static void set_error(instruction_context_t *mut_ctx, const char *ref_message, i
     
     // Free existing error message if any
     if (mut_ctx->own_error_message) {
-        AR_HEAP_FREE(mut_ctx->own_error_message);
+        AR__HEAP__FREE(mut_ctx->own_error_message);
     }
     
     // Duplicate the new error message
-    mut_ctx->own_error_message = AR_HEAP_STRDUP(ref_message, "Error message");
+    mut_ctx->own_error_message = AR__HEAP__STRDUP(ref_message, "Error message");
     mut_ctx->error_position = position + 1; // Convert 0-based to 1-based
 }
 
@@ -1892,7 +1892,7 @@ static void clear_error(instruction_context_t *mut_ctx) {
     
     // Free existing error message if any
     if (mut_ctx->own_error_message) {
-        AR_HEAP_FREE(mut_ctx->own_error_message);
+        AR__HEAP__FREE(mut_ctx->own_error_message);
         mut_ctx->own_error_message = NULL;
     }
     mut_ctx->error_position = 0;

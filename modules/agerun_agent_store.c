@@ -57,7 +57,7 @@ static void cleanup_agent_list(list_t *own_agents, void **own_items, size_t coun
                 ar__data__destroy((data_t*)own_items[i]);
             }
         }
-        AR_HEAP_FREE(own_items);
+        AR__HEAP__FREE(own_items);
     }
     
     // Now remove all items from the list (they've been destroyed)
@@ -578,7 +578,7 @@ bool ar__agent_store__load(void) {
     }
     
     // Allocate array for agent info
-    agent_load_info_t *own_agent_info = AR_HEAP_MALLOC(sizeof(agent_load_info_t) * (size_t)count, "agent info array");
+    agent_load_info_t *own_agent_info = AR__HEAP__MALLOC(sizeof(agent_load_info_t) * (size_t)count, "agent info array");
     if (!own_agent_info) {
         ar__io__error("Failed to allocate memory for agent info");
         ar__io__close_file(fp, AGENT_STORE_FILE_NAME);
@@ -673,7 +673,7 @@ bool ar__agent_store__load(void) {
     
     // If validation failed, clean up
     if (validation_error) {
-        AR_HEAP_FREE(own_agent_info);
+        AR__HEAP__FREE(own_agent_info);
         ar__io__close_file(fp, AGENT_STORE_FILE_NAME);
         
         // File is corrupt, create backup and delete
@@ -689,7 +689,7 @@ bool ar__agent_store__load(void) {
     // Skip the agent count line
     if (!ar__io__read_line(fp, line, (int)sizeof(line), AGENT_STORE_FILE_NAME)) {
         ar__io__error("Failed to skip agent count line");
-        AR_HEAP_FREE(own_agent_info);
+        AR__HEAP__FREE(own_agent_info);
         ar__io__close_file(fp, AGENT_STORE_FILE_NAME);
         return false;
     }
@@ -886,7 +886,7 @@ bool ar__agent_store__load(void) {
     }
     
     // Clean up
-    AR_HEAP_FREE(own_agent_info);
+    AR__HEAP__FREE(own_agent_info);
     ar__io__close_file(fp, AGENT_STORE_FILE_NAME);
     
     return true;

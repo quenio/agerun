@@ -23,9 +23,9 @@ static void pass_test(const char *test_name) {
  * Test basic memory allocation and freeing with tracking
  * 
  * This test verifies that:
- * 1. Memory can be allocated using AR_HEAP_MALLOC
+ * 1. Memory can be allocated using AR__HEAP__MALLOC
  * 2. The allocated memory can be used normally
- * 3. The memory can be freed with AR_HEAP_FREE
+ * 3. The memory can be freed with AR__HEAP__FREE
  * 4. The pointer can be set to NULL after freeing
  * 5. The AR_ASSERT_NOT_USED_AFTER_FREE macro correctly verifies the NULL state
  */
@@ -33,14 +33,14 @@ static void test_malloc_tracking(void) {
     start_test("test_malloc_tracking");
     
     // Allocate some memory with tracking
-    char *own_buffer = AR_HEAP_MALLOC(1024, "Test buffer");
+    char *own_buffer = AR__HEAP__MALLOC(1024, "Test buffer");
     assert(own_buffer != NULL);
     
     // Use the memory
     memset(own_buffer, 'A', 1024);
     
     // Free the memory with tracking
-    AR_HEAP_FREE(own_buffer);
+    AR__HEAP__FREE(own_buffer);
     own_buffer = NULL;
     
     // Verify that it's marked as freed
@@ -50,13 +50,13 @@ static void test_malloc_tracking(void) {
 }
 
 /**
- * Test AR_HEAP_CALLOC and verify zero initialization
+ * Test AR__HEAP__CALLOC and verify zero initialization
  */
 static void test_calloc_tracking(void) {
     start_test("test_calloc_tracking");
     
     // Allocate some memory with tracking
-    int *own_array = AR_HEAP_CALLOC(10, sizeof(int), "Test array");
+    int *own_array = AR__HEAP__CALLOC(10, sizeof(int), "Test array");
     assert(own_array != NULL);
     
     // Verify zero initialization
@@ -65,7 +65,7 @@ static void test_calloc_tracking(void) {
     }
     
     // Free the memory with tracking
-    AR_HEAP_FREE(own_array);
+    AR__HEAP__FREE(own_array);
     own_array = NULL;
     
     // Verify that it's marked as freed
@@ -75,7 +75,7 @@ static void test_calloc_tracking(void) {
 }
 
 /**
- * Test AR_HEAP_STRDUP
+ * Test AR__HEAP__STRDUP
  */
 static void test_strdup_tracking(void) {
     start_test("test_strdup_tracking");
@@ -83,14 +83,14 @@ static void test_strdup_tracking(void) {
     const char *original = "Hello, World!";
     
     // Duplicate the string with tracking
-    char *own_copy = AR_HEAP_STRDUP(original, "Test string");
+    char *own_copy = AR__HEAP__STRDUP(original, "Test string");
     assert(own_copy != NULL);
     
     // Verify the copy
     assert(strcmp(own_copy, original) == 0);
     
     // Free the memory with tracking
-    AR_HEAP_FREE(own_copy);
+    AR__HEAP__FREE(own_copy);
     own_copy = NULL;
     
     // Verify that it's marked as freed
@@ -100,20 +100,20 @@ static void test_strdup_tracking(void) {
 }
 
 /**
- * Test AR_HEAP_REALLOC
+ * Test AR__HEAP__REALLOC
  */
 static void test_realloc_tracking(void) {
     start_test("test_realloc_tracking");
     
     // Allocate some memory with tracking
-    char *own_buffer = AR_HEAP_MALLOC(10, "Initial buffer");
+    char *own_buffer = AR__HEAP__MALLOC(10, "Initial buffer");
     assert(own_buffer != NULL);
     
     // Fill it with data
     memset(own_buffer, 'A', 10);
     
     // Reallocate with tracking
-    own_buffer = AR_HEAP_REALLOC(own_buffer, 20, "Expanded buffer");
+    own_buffer = AR__HEAP__REALLOC(own_buffer, 20, "Expanded buffer");
     assert(own_buffer != NULL);
     
     // Verify the data is preserved
@@ -125,7 +125,7 @@ static void test_realloc_tracking(void) {
     memset(own_buffer + 10, 'B', 10);
     
     // Free the memory with tracking
-    AR_HEAP_FREE(own_buffer);
+    AR__HEAP__FREE(own_buffer);
     own_buffer = NULL;
     
     // Verify that it's marked as freed
@@ -141,11 +141,11 @@ static void test_ownership_assertions(void) {
     start_test("test_ownership_assertions");
     
     // Test AR_ASSERT_OWNERSHIP
-    void *own_ptr = AR_HEAP_MALLOC(10, "Ownership test");
+    void *own_ptr = AR__HEAP__MALLOC(10, "Ownership test");
     AR_ASSERT_OWNERSHIP(own_ptr);
     
     // Test AR_ASSERT_TRANSFERRED after setting to NULL
-    AR_HEAP_FREE(own_ptr);
+    AR__HEAP__FREE(own_ptr);
     own_ptr = NULL;
     AR_ASSERT_TRANSFERRED(own_ptr);
     
@@ -182,7 +182,7 @@ static void test_leak_reporting(void) {
     // INTENTIONAL MEMORY LEAK - DO NOT FIX
     // This unique description will appear in the heap_memory_report.log
     const char *leak_marker = "INTENTIONAL_LEAK_FOR_TESTING_DETECTION_SYSTEM";
-    char *leaked_buffer = AR_HEAP_MALLOC(1024, leak_marker);
+    char *leaked_buffer = AR__HEAP__MALLOC(1024, leak_marker);
     memset(leaked_buffer, 0, 1024);
 
     // Confirm memory was allocated
@@ -209,12 +209,12 @@ static void test_memory_report(void) {
         char desc[64];
         snprintf(desc, sizeof(desc), "Test allocation %d", i);
         
-        void *ptr = AR_HEAP_MALLOC(100, desc);
-        AR_HEAP_FREE(ptr);
+        void *ptr = AR__HEAP__MALLOC(100, desc);
+        AR__HEAP__FREE(ptr);
     }
     
     // Manually generate a report
-    ar_heap_memory_report();
+    ar__heap__memory_report();
     
     // Check if the report file exists - use the same path as used in agerun_heap.c
     const char *custom_path = getenv("AGERUN_MEMORY_REPORT");

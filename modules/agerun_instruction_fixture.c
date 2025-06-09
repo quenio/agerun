@@ -34,29 +34,29 @@ instruction_fixture_t* ar__instruction_fixture__create(const char *ref_test_name
         return NULL;
     }
     
-    instruction_fixture_t *own_fixture = AR_HEAP_MALLOC(sizeof(instruction_fixture_t), "Instruction fixture");
+    instruction_fixture_t *own_fixture = AR__HEAP__MALLOC(sizeof(instruction_fixture_t), "Instruction fixture");
     if (!own_fixture) {
         return NULL;
     }
     
-    own_fixture->own_test_name = AR_HEAP_STRDUP(ref_test_name, "Test name");
+    own_fixture->own_test_name = AR__HEAP__STRDUP(ref_test_name, "Test name");
     if (!own_fixture->own_test_name) {
-        AR_HEAP_FREE(own_fixture);
+        AR__HEAP__FREE(own_fixture);
         return NULL;
     }
     
     own_fixture->own_tracked_data = ar__list__create();
     if (!own_fixture->own_tracked_data) {
-        AR_HEAP_FREE(own_fixture->own_test_name);
-        AR_HEAP_FREE(own_fixture);
+        AR__HEAP__FREE(own_fixture->own_test_name);
+        AR__HEAP__FREE(own_fixture);
         return NULL;
     }
     
     own_fixture->own_tracked_contexts = ar__list__create();
     if (!own_fixture->own_tracked_contexts) {
         ar__list__destroy(own_fixture->own_tracked_data);
-        AR_HEAP_FREE(own_fixture->own_test_name);
-        AR_HEAP_FREE(own_fixture);
+        AR__HEAP__FREE(own_fixture->own_test_name);
+        AR__HEAP__FREE(own_fixture);
         return NULL;
     }
     
@@ -64,8 +64,8 @@ instruction_fixture_t* ar__instruction_fixture__create(const char *ref_test_name
     if (!own_fixture->own_tracked_resources) {
         ar__list__destroy(own_fixture->own_tracked_contexts);
         ar__list__destroy(own_fixture->own_tracked_data);
-        AR_HEAP_FREE(own_fixture->own_test_name);
-        AR_HEAP_FREE(own_fixture);
+        AR__HEAP__FREE(own_fixture->own_test_name);
+        AR__HEAP__FREE(own_fixture);
         return NULL;
     }
     
@@ -110,7 +110,7 @@ void ar__instruction_fixture__destroy(instruction_fixture_t *own_fixture) {
             if (own_entry->destructor && own_entry->own_resource) {
                 own_entry->destructor(own_entry->own_resource);
             }
-            AR_HEAP_FREE(own_entry);
+            AR__HEAP__FREE(own_entry);
         }
     }
     ar__list__destroy(own_fixture->own_tracked_resources);
@@ -120,8 +120,8 @@ void ar__instruction_fixture__destroy(instruction_fixture_t *own_fixture) {
         ar__system__shutdown();
     }
     
-    AR_HEAP_FREE(own_fixture->own_test_name);
-    AR_HEAP_FREE(own_fixture);
+    AR__HEAP__FREE(own_fixture->own_test_name);
+    AR__HEAP__FREE(own_fixture);
 }
 
 expression_context_t* ar__instruction_fixture__create_expression_context(
@@ -398,7 +398,7 @@ void ar__instruction_fixture__track_resource(
         return;
     }
     
-    resource_entry_t *own_entry = AR_HEAP_MALLOC(sizeof(resource_entry_t), "Resource entry");
+    resource_entry_t *own_entry = AR__HEAP__MALLOC(sizeof(resource_entry_t), "Resource entry");
     if (!own_entry) {
         return;
     }

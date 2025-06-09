@@ -263,7 +263,7 @@ static void test_agent_creation(void) {
 static int test_resource_destroyed = 0;
 static void test_destructor(void *resource) {
     test_resource_destroyed = 1;
-    AR_HEAP_FREE(resource);
+    AR__HEAP__FREE(resource);
 }
 
 static void test_generic_resource_tracking(void) {
@@ -277,7 +277,7 @@ static void test_generic_resource_tracking(void) {
     assert(own_fixture != NULL);
     
     // When we create a generic resource
-    void *own_resource = AR_HEAP_MALLOC(100, "Test resource");
+    void *own_resource = AR__HEAP__MALLOC(100, "Test resource");
     assert(own_resource != NULL);
     
     // And track it with a custom destructor

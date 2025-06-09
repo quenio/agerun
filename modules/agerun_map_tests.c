@@ -55,7 +55,7 @@ static void test_map_set_get_simple(void) {
     }
     
     // And a test value (using an integer on the heap for this test)
-    int *own_value = AR_HEAP_MALLOC(sizeof(int), "Test integer value");
+    int *own_value = AR__HEAP__MALLOC(sizeof(int), "Test integer value");
     *own_value = 42;
     
     // When we set the reference in the map
@@ -80,7 +80,7 @@ static void test_map_set_get_simple(void) {
     // Cleanup
     // Following the guideline to free containers first, then contents
     ar__map__destroy(own_map);
-    AR_HEAP_FREE(own_value); // Now free the referenced value after freeing the container
+    AR__HEAP__FREE(own_value); // Now free the referenced value after freeing the container
     
     printf("ar__map__set() and ar__map__get() simple value test passed!\n");
 }
@@ -157,7 +157,7 @@ static void test_map_refs(void) {
     assert(found1 && found2 && found3);
     
     // Cleanup
-    AR_HEAP_FREE(own_refs);
+    AR__HEAP__FREE(own_refs);
     ar__map__destroy(own_map);
     
     // Edge case: NULL map

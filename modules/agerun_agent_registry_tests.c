@@ -242,7 +242,7 @@ int main(void) {
     test_registry_edge_cases();
     
     // Check for memory leaks
-    ar_heap_memory_report();
+    ar__heap__memory_report();
     
     printf("\nAll agent registry tests passed!\n");
     return 0;

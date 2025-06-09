@@ -93,6 +93,12 @@ This document tracks completed milestones and major achievements for the AgeRun 
     - Updated all references in agent_store, agent_update, methodology, methodology_tests, method_fixture, heap modules
     - Updated comments and documentation to reference new naming convention
     - All tests pass with zero memory leaks
+  - ✅ Completed heap module refactoring:
+    - Changed all 6 heap functions from ar_heap_* to ar__heap__*
+    - Changed all 5 heap macros from AR_HEAP_* to AR__HEAP__*
+    - Updated all macro usage across the entire codebase (24+ files)
+    - Updated direct function calls in heap_tests and agent_registry_tests
+    - All tests pass with zero memory leaks
 
 ## 2025-06-08 (Later - Part 2)
 - ✅ Fixed Agency/Agent_Update circular dependency:

@@ -41,7 +41,7 @@ agent_t* ar__agent__create(const char *ref_method_name, const char *ref_version,
     }
     
     // Create agent structure
-    agent_t *own_agent = AR_HEAP_MALLOC(sizeof(agent_t), "agent");
+    agent_t *own_agent = AR__HEAP__MALLOC(sizeof(agent_t), "agent");
     if (!own_agent) {
         return NULL;
     }
@@ -53,14 +53,14 @@ agent_t* ar__agent__create(const char *ref_method_name, const char *ref_version,
     
     own_agent->own_message_queue = ar__list__create();
     if (!own_agent->own_message_queue) {
-        AR_HEAP_FREE(own_agent);
+        AR__HEAP__FREE(own_agent);
         return NULL;
     }
     
     own_agent->own_memory = ar__data__create_map();
     if (!own_agent->own_memory) {
         ar__list__destroy(own_agent->own_message_queue);
-        AR_HEAP_FREE(own_agent);
+        AR__HEAP__FREE(own_agent);
         return NULL;
     }
     
@@ -112,7 +112,7 @@ void ar__agent__destroy(agent_t *own_agent) {
     }
     
     // Free the agent structure
-    AR_HEAP_FREE(own_agent);
+    AR__HEAP__FREE(own_agent);
 }
 
 bool ar__agent__send(agent_t *mut_agent, data_t *own_message) {

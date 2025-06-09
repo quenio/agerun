@@ -894,7 +894,7 @@ static void test_list_operations(void) {
     char *own_first_string = ar__data__list_remove_first_string(own_typed_list);
     assert(own_first_string != NULL);
     assert(strcmp(own_first_string, "test string") == 0);
-    AR_HEAP_FREE(own_first_string); // We must free the owned string
+    AR__HEAP__FREE(own_first_string); // We must free the owned string
     own_first_string = NULL; // Mark as freed
     assert(ar__data__list_count(own_typed_list) == 3);
     
@@ -912,7 +912,7 @@ static void test_list_operations(void) {
     char *own_last_string = ar__data__list_remove_last_string(own_typed_list);
     assert(own_last_string != NULL);
     assert(strcmp(own_last_string, "another string") == 0);
-    AR_HEAP_FREE(own_last_string); // We must free the owned string
+    AR__HEAP__FREE(own_last_string); // We must free the owned string
     own_last_string = NULL; // Mark as freed
     assert(ar__data__list_count(own_typed_list) == 0);
     
@@ -950,7 +950,7 @@ static void test_list_operations(void) {
     char *own_remaining_string = ar__data__list_remove_first_string(own_typed_list);
     assert(own_remaining_string != NULL);
     assert(strcmp(own_remaining_string, "string first") == 0);
-    AR_HEAP_FREE(own_remaining_string); // We must free the owned string
+    AR__HEAP__FREE(own_remaining_string); // We must free the owned string
     own_remaining_string = NULL; // Mark as freed
     assert(ar__data__list_count(own_typed_list) == 0);
     

@@ -28,7 +28,7 @@ static void test_create_destroy(void) {
     assert(ar__list__count(own_list) == 0);
     
     // Cleanup
-    if (own_items) AR_HEAP_FREE(own_items);  // Free items array if not NULL
+    if (own_items) AR__HEAP__FREE(own_items);  // Free items array if not NULL
     ar__list__destroy(own_list);
     
     printf("test_create_destroy passed\n");
@@ -45,9 +45,9 @@ static void test_add_last(void) {
     assert(own_list != NULL);
     
     // And some test string items
-    char *own_item1 = AR_HEAP_STRDUP("item1", "Test item string");
-    char *own_item2 = AR_HEAP_STRDUP("item2", "Test item string");
-    char *own_item3 = AR_HEAP_STRDUP("item3", "Test item string");
+    char *own_item1 = AR__HEAP__STRDUP("item1", "Test item string");
+    char *own_item2 = AR__HEAP__STRDUP("item2", "Test item string");
+    char *own_item3 = AR__HEAP__STRDUP("item3", "Test item string");
     
     // When adding items to the end
     assert(ar__list__add_last(own_list, own_item1) == true);
@@ -70,10 +70,10 @@ static void test_add_last(void) {
     assert(strcmp((char*)own_items[2], "item3") == 0);
     
     // Cleanup
-    AR_HEAP_FREE(own_items);
-    AR_HEAP_FREE(own_item1);
-    AR_HEAP_FREE(own_item2);
-    AR_HEAP_FREE(own_item3);
+    AR__HEAP__FREE(own_items);
+    AR__HEAP__FREE(own_item1);
+    AR__HEAP__FREE(own_item2);
+    AR__HEAP__FREE(own_item3);
     ar__list__destroy(own_list);
     
     printf("test_add_last passed\n");
@@ -90,9 +90,9 @@ static void test_add_first(void) {
     assert(own_list != NULL);
     
     // And some test string items
-    char *own_item1 = AR_HEAP_STRDUP("item1", "Test item string");
-    char *own_item2 = AR_HEAP_STRDUP("item2", "Test item string");
-    char *own_item3 = AR_HEAP_STRDUP("item3", "Test item string");
+    char *own_item1 = AR__HEAP__STRDUP("item1", "Test item string");
+    char *own_item2 = AR__HEAP__STRDUP("item2", "Test item string");
+    char *own_item3 = AR__HEAP__STRDUP("item3", "Test item string");
     
     // When adding items to the beginning
     assert(ar__list__add_first(own_list, own_item1) == true);
@@ -115,10 +115,10 @@ static void test_add_first(void) {
     assert(strcmp((char*)own_items[2], "item1") == 0);
     
     // Cleanup
-    AR_HEAP_FREE(own_items);
-    AR_HEAP_FREE(own_item1);
-    AR_HEAP_FREE(own_item2);
-    AR_HEAP_FREE(own_item3);
+    AR__HEAP__FREE(own_items);
+    AR__HEAP__FREE(own_item1);
+    AR__HEAP__FREE(own_item2);
+    AR__HEAP__FREE(own_item3);
     ar__list__destroy(own_list);
     
     printf("test_add_first passed\n");
@@ -140,9 +140,9 @@ static void test_first_last(void) {
     assert(ar__list__last(own_list) == NULL);
     
     // And some test string items
-    char *own_item1 = AR_HEAP_STRDUP("item1", "Test item string");
-    char *own_item2 = AR_HEAP_STRDUP("item2", "Test item string");
-    char *own_item3 = AR_HEAP_STRDUP("item3", "Test item string");
+    char *own_item1 = AR__HEAP__STRDUP("item1", "Test item string");
+    char *own_item2 = AR__HEAP__STRDUP("item2", "Test item string");
+    char *own_item3 = AR__HEAP__STRDUP("item3", "Test item string");
     
     // When adding items
     assert(ar__list__add_last(own_list, own_item1) == true);
@@ -160,9 +160,9 @@ static void test_first_last(void) {
     assert(ar__list__last(own_list) == own_item3);
     
     // Cleanup
-    AR_HEAP_FREE(own_item1);
-    AR_HEAP_FREE(own_item2);
-    AR_HEAP_FREE(own_item3);
+    AR__HEAP__FREE(own_item1);
+    AR__HEAP__FREE(own_item2);
+    AR__HEAP__FREE(own_item3);
     ar__list__destroy(own_list);
     
     printf("test_first_last passed\n");
@@ -184,9 +184,9 @@ static void test_remove_first_last(void) {
     assert(ar__list__remove_last(own_list) == NULL);
     
     // And some test string items
-    char *own_item1 = AR_HEAP_STRDUP("item1", "Test item string");
-    char *own_item2 = AR_HEAP_STRDUP("item2", "Test item string");
-    char *own_item3 = AR_HEAP_STRDUP("item3", "Test item string");
+    char *own_item1 = AR__HEAP__STRDUP("item1", "Test item string");
+    char *own_item2 = AR__HEAP__STRDUP("item2", "Test item string");
+    char *own_item3 = AR__HEAP__STRDUP("item3", "Test item string");
     
     // When adding items
     assert(ar__list__add_last(own_list, own_item1) == true);
@@ -222,9 +222,9 @@ static void test_remove_first_last(void) {
     assert(ar__list__last(own_list) == NULL);
     
     // Cleanup
-    AR_HEAP_FREE(own_item1);
-    AR_HEAP_FREE(own_item2);
-    AR_HEAP_FREE(own_item3);
+    AR__HEAP__FREE(own_item1);
+    AR__HEAP__FREE(own_item2);
+    AR__HEAP__FREE(own_item3);
     ar__list__destroy(own_list);
     
     printf("test_remove_first_last passed\n");
@@ -241,9 +241,9 @@ static void test_stack_operations(void) {
     assert(own_list != NULL);
     
     // And some test string items
-    char *own_item1 = AR_HEAP_STRDUP("item1", "Test item string");
-    char *own_item2 = AR_HEAP_STRDUP("item2", "Test item string");
-    char *own_item3 = AR_HEAP_STRDUP("item3", "Test item string");
+    char *own_item1 = AR__HEAP__STRDUP("item1", "Test item string");
+    char *own_item2 = AR__HEAP__STRDUP("item2", "Test item string");
+    char *own_item3 = AR__HEAP__STRDUP("item3", "Test item string");
     
     // When using add_first (push) operations
     assert(ar__list__add_first(own_list, own_item1) == true);
@@ -266,9 +266,9 @@ static void test_stack_operations(void) {
     assert(ar__list__empty(own_list) == true);
     
     // Cleanup
-    AR_HEAP_FREE(own_item1);
-    AR_HEAP_FREE(own_item2);
-    AR_HEAP_FREE(own_item3);
+    AR__HEAP__FREE(own_item1);
+    AR__HEAP__FREE(own_item2);
+    AR__HEAP__FREE(own_item3);
     ar__list__destroy(own_list);
     
     printf("test_stack_operations passed\n");
@@ -285,9 +285,9 @@ static void test_queue_operations(void) {
     assert(own_list != NULL);
     
     // And some test string items
-    char *own_item1 = AR_HEAP_STRDUP("item1", "Test item string");
-    char *own_item2 = AR_HEAP_STRDUP("item2", "Test item string");
-    char *own_item3 = AR_HEAP_STRDUP("item3", "Test item string");
+    char *own_item1 = AR__HEAP__STRDUP("item1", "Test item string");
+    char *own_item2 = AR__HEAP__STRDUP("item2", "Test item string");
+    char *own_item3 = AR__HEAP__STRDUP("item3", "Test item string");
     
     // When using add_last (enqueue) operations
     assert(ar__list__add_last(own_list, own_item1) == true);
@@ -311,9 +311,9 @@ static void test_queue_operations(void) {
     assert(ar__list__empty(own_list) == true);
     
     // Cleanup
-    AR_HEAP_FREE(own_item1);
-    AR_HEAP_FREE(own_item2);
-    AR_HEAP_FREE(own_item3);
+    AR__HEAP__FREE(own_item1);
+    AR__HEAP__FREE(own_item2);
+    AR__HEAP__FREE(own_item3);
     ar__list__destroy(own_list);
     
     printf("test_queue_operations passed\n");
@@ -337,7 +337,7 @@ static void test_add_many(void) {
     for (int i = 0; i < TEST_COUNT; i++) {
         char buffer[20];
         snprintf(buffer, sizeof(buffer), "item%d", i);
-        own_expected_items[i] = AR_HEAP_STRDUP(buffer, "Test item string");
+        own_expected_items[i] = AR__HEAP__STRDUP(buffer, "Test item string");
         assert(ar__list__add_last(own_list, own_expected_items[i]) == true);
     }
     
@@ -357,9 +357,9 @@ static void test_add_many(void) {
     }
     
     // Cleanup
-    AR_HEAP_FREE(own_items);
+    AR__HEAP__FREE(own_items);
     for (int i = 0; i < TEST_COUNT; i++) {
-        AR_HEAP_FREE(own_expected_items[i]);
+        AR__HEAP__FREE(own_expected_items[i]);
     }
     ar__list__destroy(own_list);
     
@@ -417,11 +417,11 @@ static void test_remove(void) {
     assert(ar__list__remove(own_list, NULL) == NULL);
     
     // And some test string items
-    char *own_item1 = AR_HEAP_STRDUP("item1", "Test item string");
-    char *own_item2 = AR_HEAP_STRDUP("item2", "Test item string");
-    char *own_item3 = AR_HEAP_STRDUP("item3", "Test item string");
-    char *own_item4 = AR_HEAP_STRDUP("item4", "Test item string");
-    char *own_item5 = AR_HEAP_STRDUP("item5", "Test item string");
+    char *own_item1 = AR__HEAP__STRDUP("item1", "Test item string");
+    char *own_item2 = AR__HEAP__STRDUP("item2", "Test item string");
+    char *own_item3 = AR__HEAP__STRDUP("item3", "Test item string");
+    char *own_item4 = AR__HEAP__STRDUP("item4", "Test item string");
+    char *own_item5 = AR__HEAP__STRDUP("item5", "Test item string");
     
     // And a list with items
     assert(ar__list__add_last(own_list, own_item1) == true);
@@ -444,7 +444,7 @@ static void test_remove(void) {
     assert(own_items[1] == own_item2);
     assert(own_items[2] == own_item4);
     assert(own_items[3] == own_item5);
-    AR_HEAP_FREE(own_items);
+    AR__HEAP__FREE(own_items);
     
     // When removing the first item
     // Then it should return the item and update the list
@@ -458,7 +458,7 @@ static void test_remove(void) {
     assert(own_items[0] == own_item2);
     assert(own_items[1] == own_item4);
     assert(own_items[2] == own_item5);
-    AR_HEAP_FREE(own_items);
+    AR__HEAP__FREE(own_items);
     
     // When removing the last item
     // Then it should return the item and update the list
@@ -471,14 +471,14 @@ static void test_remove(void) {
     assert(own_items != NULL);
     assert(own_items[0] == own_item2);
     assert(own_items[1] == own_item4);
-    AR_HEAP_FREE(own_items);
+    AR__HEAP__FREE(own_items);
     
     // When removing an item that doesn't exist in the list
     // Then it should return NULL and not modify the list
-    char *own_non_existent = AR_HEAP_STRDUP("non_existent", "Test non-existent item");
+    char *own_non_existent = AR__HEAP__STRDUP("non_existent", "Test non-existent item");
     assert(ar__list__remove(own_list, own_non_existent) == NULL);
     assert(ar__list__count(own_list) == 2);
-    AR_HEAP_FREE(own_non_existent);
+    AR__HEAP__FREE(own_non_existent);
     
     // When adding a duplicate item
     assert(ar__list__add_last(own_list, own_item2) == true);
@@ -495,11 +495,11 @@ static void test_remove(void) {
     assert(ar__list__last(own_list) == own_item2);
     
     // Cleanup
-    AR_HEAP_FREE(own_item1);
-    AR_HEAP_FREE(own_item2);
-    AR_HEAP_FREE(own_item3);
-    AR_HEAP_FREE(own_item4);
-    AR_HEAP_FREE(own_item5);
+    AR__HEAP__FREE(own_item1);
+    AR__HEAP__FREE(own_item2);
+    AR__HEAP__FREE(own_item3);
+    AR__HEAP__FREE(own_item4);
+    AR__HEAP__FREE(own_item5);
     ar__list__destroy(own_list);
     
     printf("test_remove passed\n");

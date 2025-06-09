@@ -39,7 +39,7 @@ expression_context_t* ar__expression__create_context(data_t *mut_memory, const d
         return NULL;
     }
     
-    expression_context_t *own_ctx = AR_HEAP_MALLOC(sizeof(expression_context_t), "Expression context");
+    expression_context_t *own_ctx = AR__HEAP__MALLOC(sizeof(expression_context_t), "Expression context");
     if (!own_ctx) {
         return NULL;
     }
@@ -53,7 +53,7 @@ expression_context_t* ar__expression__create_context(data_t *mut_memory, const d
     // Initialize list to track expression results
     own_ctx->own_results = ar__list__create();
     if (!own_ctx->own_results) {
-        AR_HEAP_FREE(own_ctx);
+        AR__HEAP__FREE(own_ctx);
         return NULL;
     }
     
@@ -91,7 +91,7 @@ void ar__expression__destroy_context(expression_context_t *own_ctx) {
             }
             
             // Free the items array
-            AR_HEAP_FREE(own_items);
+            AR__HEAP__FREE(own_items);
             own_items = NULL; // Mark as transferred
         }
         
@@ -101,7 +101,7 @@ void ar__expression__destroy_context(expression_context_t *own_ctx) {
     }
     
     // Free the context structure
-    AR_HEAP_FREE(own_ctx);
+    AR__HEAP__FREE(own_ctx);
     // No need to set own_ctx to NULL as it's a parameter and not accessible outside
 }
 
@@ -200,7 +200,7 @@ static char* parse_identifier(expression_context_t *mut_ctx) {
     }
     
     int length = mut_ctx->offset - start;
-    char *own_identifier = AR_HEAP_MALLOC((size_t)length + 1, "Expression identifier");
+    char *own_identifier = AR__HEAP__MALLOC((size_t)length + 1, "Expression identifier");
     if (!own_identifier) {
         return NULL;
     }
@@ -275,7 +275,7 @@ static const data_t* parse_string_literal(expression_context_t *mut_ctx) {
     }
     
     // Allocate and create the string
-    char *own_temp_str = AR_HEAP_MALLOC((size_t)len + 1, "Temporary string buffer");
+    char *own_temp_str = AR__HEAP__MALLOC((size_t)len + 1, "Temporary string buffer");
     if (!own_temp_str) {
         return NULL;
     }
@@ -286,7 +286,7 @@ static const data_t* parse_string_literal(expression_context_t *mut_ctx) {
     mut_ctx->offset++; // Skip closing quote
     
     data_t *own_result = ar__data__create_string(own_temp_str);
-    AR_HEAP_FREE(own_temp_str);
+    AR__HEAP__FREE(own_temp_str);
     own_temp_str = NULL; // Mark as transferred
     
     // Track this result since we created it
@@ -429,7 +429,7 @@ static const data_t* parse_memory_access(expression_context_t *mut_ctx) {
             path_len += (int)copy_len;
         }
         
-        AR_HEAP_FREE(own_id);
+        AR__HEAP__FREE(own_id);
         own_id = NULL; // Mark as transferred
     }
     
