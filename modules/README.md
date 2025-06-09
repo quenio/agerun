@@ -61,106 +61,316 @@ Both the data module and map module serve as reference implementations of the MM
 
 ## Module Dependency Tree
 
-This tree illustrates the dependency relationships between modules in the AgeRun system, including both interface (.h) and implementation (.c) dependencies. Each module depends on the modules listed under it (its children in the tree). For example, `agerun_executable` depends on both `agerun_system` and `agerun_methodology`, while `agerun_system` has multiple dependencies including `agerun_agent`, `agerun_method`, etc.
+This tree illustrates the dependency relationships between modules in the AgeRun system. Dependencies are shown with two different arrow types:
+- `--h──>` indicates a header (transitive) dependency - included in the .h file
+- `--c──>` indicates an implementation dependency - included only in the .c file
 
-**Note**: The `agerun_heap` module is used by almost all modules for memory tracking but is not shown in the tree to avoid clutter. It is a cross-cutting concern that provides memory safety to the entire system.
+### Understanding Dependency Types
+
+**Transitive Dependencies (Header Dependencies) `--h──>`:**
+- These are dependencies included in a module's header file (.h)
+- They become visible to any module that includes this header
+- They propagate through the dependency chain (hence "transitive")
+- Example: If A.h includes B.h, and C.c includes A.h, then C also depends on B
+- These create stronger coupling and should be minimized
+- Typically used when types from the dependency are exposed in the public API
+
+**Non-Transitive Dependencies (Implementation Dependencies) `--c──>`:**
+- These are dependencies included only in a module's implementation file (.c)
+- They remain hidden from modules that use this module
+- They don't propagate through the dependency chain
+- Example: If A.c includes B.h, and C.c includes A.h, then C does NOT depend on B
+- These represent weaker coupling and better information hiding
+- Following Parnas principles, most dependencies should be implementation-only
+
+Each module depends on the modules listed under it (its children in the tree). For example, `agerun_executable` depends on both `agerun_system` and `agerun_methodology` in its implementation.
+
+**Note**: The `agerun_heap` module is used by almost all modules for memory tracking but is not shown in the tree to avoid clutter. It is a cross-cutting concern that provides memory safety to the entire system (implementation dependency for all modules).
 
 ```
 Main Modules:
 agerun_executable
-├── agerun_system
-│   ├── agerun_agent
-│   │   ├── agerun_method
-│   │   ├── agerun_methodology
-│   │   ├── agerun_map
-│   │   └── agerun_list
-│   ├── agerun_method
-│   │   ├── agerun_instruction *
-│   │   │   ├── agerun_expression
-│   │   │   │   ├── agerun_string
-│   │   │   │   ├── agerun_data
-│   │   │   │   ├── agerun_map
-│   │   │   │   └── agerun_list
-│   │   │   ├── agerun_string
-│   │   │   ├── agerun_data
-│   │   │   ├── agerun_methodology *
-│   │   │   ├── agerun_agent *
-│   │   │   ├── agerun_agency
-│   │   │   ├── agerun_map
-│   │   │   └── agerun_assert
-│   │   ├── agerun_data
-│   │   ├── agerun_string
-│   │   ├── agerun_assert
-│   │   └── agerun_map
-│   ├── agerun_methodology
-│   │   ├── agerun_method
-│   │   ├── agerun_semver
-│   │   ├── agerun_agency
-│   │   ├── agerun_io
-│   │   ├── agerun_string
-│   │   └── agerun_assert
-│   ├── agerun_agency
-│   │   ├── agerun_agent
-│   │   ├── agerun_agent_registry
-│   │   │   ├── agerun_data
-│   │   │   ├── agerun_list
-│   │   │   └── agerun_map
-│   │   ├── agerun_agent_store
-│   │   │   ├── agerun_io
-│   │   │   ├── agerun_agent
-│   │   │   ├── agerun_method
-│   │   │   ├── agerun_data
-│   │   │   └── agerun_list
-│   │   └── agerun_agent_update
-│   │       ├── agerun_agency *
-│   │       ├── agerun_method
-│   │       ├── agerun_semver
-│   │       └── agerun_io
-│   ├── agerun_data
-│   │   ├── agerun_string
-│   │   ├── agerun_map
-│   │   ├── agerun_list
-│   │   └── agerun_assert
-│   ├── agerun_map
-│   └── agerun_list
-├── agerun_methodology
-├── agerun_agency
-│   ├── agerun_agent
-│   ├── agerun_agent_registry
-│   ├── agerun_agent_store
-│   └── agerun_agent_update
-├── agerun_method
-└── agerun_agent
+├──c──> agerun_system
+├──c──> agerun_methodology
+├──c──> agerun_agency
+├──c──> agerun_method
+└──c──> agerun_agent
+
+agerun_system
+├──c──> agerun_agent
+│       ├──h──> agerun_data
+│       │       ├──h──> agerun_map
+│       │       ├──h──> agerun_list
+│       │       ├──c──> agerun_string
+│       │       └──c──> agerun_assert
+│       ├──h──> agerun_list
+│       ├──c──> agerun_method
+│       │       ├──h──> agerun_data
+│       │       ├──c──> agerun_instruction *
+│       │       │       ├──h──> agerun_data
+│       │       │       ├──h──> agerun_map
+│       │       │       ├──c──> agerun_expression
+│       │       │       │       ├──h──> agerun_data
+│       │       │       │       ├──c──> agerun_string
+│       │       │       │       ├──c──> agerun_list
+│       │       │       │       └──c──> agerun_map
+│       │       │       ├──c──> agerun_string
+│       │       │       ├──c──> agerun_methodology *
+│       │       │       ├──c──> agerun_agent *
+│       │       │       ├──c──> agerun_agency
+│       │       │       └──c──> agerun_assert
+│       │       ├──c──> agerun_string
+│       │       ├──c──> agerun_agent *
+│       │       ├──c──> agerun_agency
+│       │       ├──c──> agerun_map
+│       │       └──c──> agerun_assert
+│       ├──c──> agerun_methodology
+│       └──c──> agerun_map
+├──c──> agerun_method
+├──c──> agerun_methodology
+│       ├──h──> agerun_method
+│       ├──c──> agerun_semver
+│       ├──c──> agerun_agency
+│       ├──c──> agerun_io
+│       ├──c──> agerun_string
+│       └──c──> agerun_assert
+├──c──> agerun_agency
+│       ├──h──> agerun_data
+│       ├──h──> agerun_agent_registry
+│       │       ├──h──> agerun_data
+│       │       ├──c──> agerun_list
+│       │       └──c──> agerun_map
+│       ├──c──> agerun_agent
+│       ├──c──> agerun_agent_store
+│       │       ├──h──> agerun_agent_registry
+│       │       ├──c──> agerun_io
+│       │       ├──c──> agerun_agent
+│       │       ├──c──> agerun_method
+│       │       ├──c──> agerun_data
+│       │       └──c──> agerun_list
+│       └──c──> agerun_agent_update
+│               ├──h──> agerun_agent_registry
+│               ├──h──> agerun_method
+│               ├──c──> agerun_agent
+│               ├──c──> agerun_semver
+│               └──c──> agerun_io
+├──c──> agerun_data
+├──c──> agerun_list
+└──c──> agerun_map
 
 Fixture Modules:
 agerun_method_fixture
-├── agerun_system
-├── agerun_methodology
-├── agerun_agency
-├── agerun_io
-└── agerun_heap
+├──c──> agerun_system
+├──c──> agerun_methodology
+├──c──> agerun_agency
+├──c──> agerun_io
+└──c──> agerun_heap
 
 agerun_system_fixture
-├── agerun_system
-├── agerun_methodology
-├── agerun_agency
-├── agerun_method
-└── agerun_heap
+├──c──> agerun_system
+├──c──> agerun_methodology
+├──c──> agerun_agency
+├──c──> agerun_method
+└──c──> agerun_heap
 
 agerun_instruction_fixture
-├── agerun_data
-├── agerun_expression
-├── agerun_list
-└── agerun_heap
+├──h──> agerun_data
+├──h──> agerun_expression
+├──c──> agerun_list
+└──c──> agerun_heap
 ```
 
 **Note**: Modules marked with an asterisk (*) indicate circular dependencies:
-- `agerun_agency` ↔ `agerun_agent_update`: The update module calls back into the agency facade
-- `agerun_method` ↔ `agerun_instruction`: Methods execute instructions, instructions access methods via methodology
+- `agerun_agency` ↔ `agerun_agent_update`: The update module needs to access agency functions
+- `agerun_method` ↔ `agerun_instruction`: Methods execute instructions, instructions need to call methods
 - `agerun_instruction` → `agerun_methodology` → `agerun_method` → `agerun_instruction`: Forms a dependency cycle
-- `agerun_instruction` → `agerun_agent` → `agerun_methodology` → `agerun_method` → `agerun_instruction`: Another cycle
+- `agerun_instruction` → `agerun_agent` → `agerun_method` → `agerun_instruction`: Another cycle
 
-These circular dependencies violate Parnas principles and should be refactored in the future.
+These circular dependencies violate Parnas principles and should be refactored in the future. Note that many of these are implementation-only dependencies, which makes them slightly less problematic than header-level circular dependencies.
+
+## Test Dependency Tree
+
+Test files often have different dependency patterns than their corresponding modules, as they need to:
+- Test the module's public interface
+- Set up test scenarios requiring additional modules
+- Use fixture modules for common test patterns
+- Access internal implementation details (in some cases)
+
+```
+Core Tests:
+agerun_assert_tests
+├──c──> agerun_assert (module under test)
+└──c──> agerun_heap
+
+agerun_heap_tests
+└──c──> agerun_heap (module under test)
+
+agerun_string_tests
+├──c──> agerun_string (module under test)
+└──c──> agerun_heap
+
+agerun_list_tests
+├──c──> agerun_list (module under test)
+└──c──> agerun_heap
+
+agerun_map_tests
+├──c──> agerun_map (module under test)
+└──c──> agerun_heap
+
+agerun_io_tests (none - uses standard I/O only)
+
+agerun_semver_tests
+├──c──> agerun_semver (module under test)
+└──c──> agerun_heap
+
+Foundation Tests:
+agerun_data_tests
+├──c──> agerun_data (module under test)
+├──c──> agerun_string
+├──c──> agerun_map
+├──c──> agerun_list
+└──c──> agerun_heap
+
+agerun_expression_tests
+├──c──> agerun_expression (module under test)
+├──c──> agerun_data
+├──c──> agerun_string
+├──c──> agerun_list
+├──c──> agerun_map
+└──c──> agerun_heap
+
+agerun_instruction_tests
+├──c──> agerun_instruction (module under test)
+├──c──> agerun_instruction_fixture
+├──c──> agerun_expression
+├──c──> agerun_data
+├──c──> agerun_string
+├──c──> agerun_map
+├──c──> agerun_list
+├──c──> agerun_assert
+└──c──> agerun_heap
+
+agerun_method_tests
+├──c──> agerun_method (module under test)
+├──c──> agerun_system_fixture
+├──c──> agerun_data
+└──c──> agerun_heap
+
+agerun_methodology_tests
+├──c──> agerun_methodology (module under test)
+├──c──> agerun_method
+├──c──> agerun_system
+├──c──> agerun_agency
+├──c──> agerun_io
+└──c──> agerun_heap
+
+System Tests:
+agerun_agent_tests
+├──c──> agerun_agent (module under test)
+├──c──> agerun_agency
+├──c──> agerun_system
+├──c──> agerun_method
+├──c──> agerun_methodology
+├──c──> agerun_data
+└──c──> agerun_heap
+
+agerun_agent_registry_tests
+├──c──> agerun_agent_registry (module under test)
+├──c──> agerun_agent
+├──c──> agerun_data
+└──c──> agerun_heap
+
+agerun_agent_store_tests
+├──c──> agerun_agent_store (module under test)
+├──c──> agerun_agent_registry
+├──c──> agerun_agent
+├──c──> agerun_agency
+├──c──> agerun_system
+├──c──> agerun_method
+├──c──> agerun_methodology
+├──c──> agerun_data
+├──c──> agerun_io
+└──c──> agerun_heap
+
+agerun_agent_update_tests
+├──c──> agerun_agent_update (module under test)
+├──c──> agerun_agent_registry
+├──c──> agerun_agent
+├──c──> agerun_agency
+├──c──> agerun_system
+├──c──> agerun_method
+├──c──> agerun_methodology
+├──c──> agerun_semver
+├──c──> agerun_data
+└──c──> agerun_heap
+
+agerun_agency_tests
+├──c──> agerun_agency (module under test)
+├──c──> agerun_agent
+├──c──> agerun_system
+├──c──> agerun_method
+├──c──> agerun_methodology
+├──c──> agerun_data
+└──c──> agerun_heap
+
+agerun_system_tests
+├──c──> agerun_system (module under test)
+├──c──> agerun_agent
+├──c──> agerun_agency
+├──c──> agerun_method
+├──c──> agerun_methodology
+├──c──> agerun_data
+├──c──> agerun_list
+└──c──> agerun_heap
+
+agerun_executable_tests
+├──c──> agerun_executable (module under test)
+├──c──> agerun_system
+├──c──> agerun_methodology
+├──c──> agerun_agency
+├──c──> agerun_io
+└──c──> agerun_heap
+
+Fixture Tests:
+agerun_method_fixture_tests
+├──c──> agerun_method_fixture (module under test)
+├──c──> agerun_methodology
+├──c──> agerun_system
+├──c──> agerun_agency
+├──c──> agerun_io
+└──c──> agerun_heap
+
+agerun_system_fixture_tests
+├──c──> agerun_system_fixture (module under test)
+├──c──> agerun_system
+├──c──> agerun_methodology
+├──c──> agerun_method
+├──c──> agerun_data
+└──c──> agerun_heap
+
+agerun_instruction_fixture_tests
+├──c──> agerun_instruction_fixture (module under test)
+├──c──> agerun_data
+├──c──> agerun_expression
+├──c──> agerun_list
+└──c──> agerun_heap
+```
+
+**Key Observations:**
+- **Core Tests** (assert, heap, string, list, map, io, semver) typically only depend on the module under test and heap for memory tracking
+- **Foundation Tests** (data, expression, instruction, method, methodology) require core modules and sometimes fixtures to test parsing and execution functionality
+- **System Tests** (agent, agent_registry, agent_store, agent_update, agency, system, executable) need the full runtime environment including methodology and method modules
+- **Fixture Tests** verify the fixture modules themselves work correctly
+- The dependency complexity increases with each layer:
+  - Core tests: 0-1 dependencies (excluding heap)
+  - Foundation tests: 3-8 dependencies 
+  - System tests: 5-10 dependencies
+- All tests depend on `agerun_heap` for memory leak detection (except io_tests which uses standard I/O only)
+- Tests often have more dependencies than their corresponding modules because they need to:
+  - Create realistic test scenarios
+  - Verify module interactions
+  - Set up complete runtime environments
+  - Test both success and failure cases
 
 ## Module Layers
 
