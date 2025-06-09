@@ -104,5 +104,5 @@ bool ar__agent_update__are_compatible(const method_t *ref_old_method,
     }
     
     // Check version compatibility (same major version)
-    return ar_semver_are_compatible(old_version, new_version);
+    return ar__semver__are_compatible(old_version, new_version);
 }

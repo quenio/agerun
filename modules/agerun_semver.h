@@ -13,7 +13,7 @@
  * @note Ownership: Function does not take ownership of ref_version.
  *       Pass NULL for any component you don't need.
  */
-bool ar_semver_parse(const char *ref_version, int *major, int *minor, int *patch);
+bool ar__semver__parse(const char *ref_version, int *major, int *minor, int *patch);
 
 /**
  * Compare two version strings according to semver rules
@@ -22,7 +22,7 @@ bool ar_semver_parse(const char *ref_version, int *major, int *minor, int *patch
  * @return <0 if v1 < v2, 0 if v1 == v2, >0 if v1 > v2
  * @note Ownership: Function does not take ownership of ref_v1 or ref_v2.
  */
-int ar_semver_compare(const char *ref_v1, const char *ref_v2);
+int ar__semver__compare(const char *ref_v1, const char *ref_v2);
 
 /**
  * Check if versions are compatible (same major version)
@@ -31,7 +31,7 @@ int ar_semver_compare(const char *ref_v1, const char *ref_v2);
  * @return true if compatible, false otherwise
  * @note Ownership: Function does not take ownership of ref_v1 or ref_v2.
  */
-bool ar_semver_are_compatible(const char *ref_v1, const char *ref_v2);
+bool ar__semver__are_compatible(const char *ref_v1, const char *ref_v2);
 
 /**
  * Check if a version string matches a partial version pattern
@@ -40,7 +40,7 @@ bool ar_semver_are_compatible(const char *ref_v1, const char *ref_v2);
  * @return true if version matches the pattern, false otherwise
  * @note Ownership: Function does not take ownership of ref_version or ref_pattern.
  */
-bool ar_semver_matches_pattern(const char *ref_version, const char *ref_pattern);
+bool ar__semver__matches_pattern(const char *ref_version, const char *ref_pattern);
 
 /**
  * Find the latest version from an array of version strings that matches a pattern
@@ -50,6 +50,6 @@ bool ar_semver_matches_pattern(const char *ref_version, const char *ref_pattern)
  * @return Index of the latest matching version, or -1 if none found
  * @note Ownership: Function does not take ownership of any parameters.
  */
-int ar_semver_find_latest_matching(const char **ref_versions, int count, const char *ref_pattern);
+int ar__semver__find_latest_matching(const char **ref_versions, int count, const char *ref_pattern);
 
 #endif /* AGERUN_SEMVER_H */

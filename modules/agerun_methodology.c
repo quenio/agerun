@@ -257,7 +257,7 @@ static method_t* find_latest_method(const char *ref_name) {
     int latest_idx = 0;
     for (int i = 1; i < method_counts[method_idx]; i++) {
         if (methods[method_idx][i] != NULL && methods[method_idx][latest_idx] != NULL &&
-            ar_semver_compare(
+            ar__semver__compare(
                 ar__method__get_version(methods[method_idx][i]),
                 ar__method__get_version(methods[method_idx][latest_idx])
             ) > 0) {
@@ -302,7 +302,7 @@ static method_t* find_method(const char *ref_name, const char *ref_version) {
     }
     
     // Find the latest version matching the pattern
-    int latest_idx = ar_semver_find_latest_matching(versions, valid_count, ref_version);
+    int latest_idx = ar__semver__find_latest_matching(versions, valid_count, ref_version);
     if (latest_idx >= 0) {
         // Map back to the original index in methods array
         for (int i = 0; i < method_counts[method_idx]; i++) {
@@ -592,12 +592,12 @@ void ar__methodology__register_method(method_t *own_method) {
     for (int i = 0; i < method_counts[method_idx] - 1; i++) {
         if (methods[method_idx][i] != NULL) {
             // Check if the old method is compatible with the new one
-            if (ar_semver_are_compatible(
+            if (ar__semver__are_compatible(
                     ar__method__get_version(methods[method_idx][i]), 
                     method_version)) {
                 
                 // Check if the new version is higher
-                if (ar_semver_compare(
+                if (ar__semver__compare(
                         method_version,
                         ar__method__get_version(methods[method_idx][i])) > 0) {
                     

@@ -6,7 +6,7 @@
 #include <string.h>
 #include <ctype.h>
 
-bool ar_semver_parse(const char *ref_version, int *major, int *minor, int *patch) {
+bool ar__semver__parse(const char *ref_version, int *major, int *minor, int *patch) {
     if (ref_version == NULL) {
         return false;
     }
@@ -75,7 +75,7 @@ bool ar_semver_parse(const char *ref_version, int *major, int *minor, int *patch
     return true;
 }
 
-int ar_semver_compare(const char *ref_v1, const char *ref_v2) {
+int ar__semver__compare(const char *ref_v1, const char *ref_v2) {
     if (ref_v1 == NULL && ref_v2 == NULL) {
         return 0; // Both null, consider equal
     }
@@ -90,8 +90,8 @@ int ar_semver_compare(const char *ref_v1, const char *ref_v2) {
     int maj1, min1, pat1;
     int maj2, min2, pat2;
     
-    bool valid1 = ar_semver_parse(ref_v1, &maj1, &min1, &pat1);
-    bool valid2 = ar_semver_parse(ref_v2, &maj2, &min2, &pat2);
+    bool valid1 = ar__semver__parse(ref_v1, &maj1, &min1, &pat1);
+    bool valid2 = ar__semver__parse(ref_v2, &maj2, &min2, &pat2);
     
     if (!valid1 && !valid2) {
         return strcmp(ref_v1, ref_v2); // Both invalid, fall back to string comparison
@@ -119,15 +119,15 @@ int ar_semver_compare(const char *ref_v1, const char *ref_v2) {
     return pat1 - pat2;
 }
 
-bool ar_semver_are_compatible(const char *ref_v1, const char *ref_v2) {
+bool ar__semver__are_compatible(const char *ref_v1, const char *ref_v2) {
     if (ref_v1 == NULL || ref_v2 == NULL) {
         return false;
     }
     
     int maj1, maj2;
     
-    if (!ar_semver_parse(ref_v1, &maj1, NULL, NULL) ||
-        !ar_semver_parse(ref_v2, &maj2, NULL, NULL)) {
+    if (!ar__semver__parse(ref_v1, &maj1, NULL, NULL) ||
+        !ar__semver__parse(ref_v2, &maj2, NULL, NULL)) {
         return false; // Invalid version strings
     }
     
@@ -135,7 +135,7 @@ bool ar_semver_are_compatible(const char *ref_v1, const char *ref_v2) {
     return maj1 == maj2;
 }
 
-bool ar_semver_matches_pattern(const char *ref_version, const char *ref_pattern) {
+bool ar__semver__matches_pattern(const char *ref_version, const char *ref_pattern) {
     if (ref_version == NULL || ref_pattern == NULL) {
         return false;
     }
@@ -144,12 +144,12 @@ bool ar_semver_matches_pattern(const char *ref_version, const char *ref_pattern)
     int p_maj, p_min, p_pat;
     
     // Parse version components
-    if (!ar_semver_parse(ref_version, &v_maj, &v_min, &v_pat)) {
+    if (!ar__semver__parse(ref_version, &v_maj, &v_min, &v_pat)) {
         return false; // Invalid version
     }
     
     // Parse pattern components
-    if (!ar_semver_parse(ref_pattern, &p_maj, &p_min, &p_pat)) {
+    if (!ar__semver__parse(ref_pattern, &p_maj, &p_min, &p_pat)) {
         return false; // Invalid pattern
     }
     
@@ -180,7 +180,7 @@ bool ar_semver_matches_pattern(const char *ref_version, const char *ref_pattern)
     return true;
 }
 
-int ar_semver_find_latest_matching(const char **ref_versions, int count, const char *ref_pattern) {
+int ar__semver__find_latest_matching(const char **ref_versions, int count, const char *ref_pattern) {
     if (ref_versions == NULL || count <= 0 || ref_pattern == NULL) {
         return -1;
     }
@@ -193,10 +193,10 @@ int ar_semver_find_latest_matching(const char **ref_versions, int count, const c
         }
         
         // Check if this version matches the pattern
-        if (ar_semver_matches_pattern(ref_versions[i], ref_pattern)) {
+        if (ar__semver__matches_pattern(ref_versions[i], ref_pattern)) {
             // If this is the first match or it's newer than our current latest
             if (latest_idx == -1 || 
-                ar_semver_compare(ref_versions[i], ref_versions[latest_idx]) > 0) {
+                ar__semver__compare(ref_versions[i], ref_versions[latest_idx]) > 0) {
                 latest_idx = i;
             }
         }
