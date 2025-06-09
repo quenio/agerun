@@ -4,31 +4,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 **IMPORTANT**: All development MUST follow the mandatory Parnas Design Principles and Test-Driven Development (TDD) methodology as specified in CLAUDE.md. Pull requests violating these principles will be REJECTED.
 
-## In Progress
+## Completed Tasks
 
-### Module Function Naming Convention Refactoring
-- [x] Change all module functions from ar_<module>_<function> to ar__<module>__<function>
-  - [x] Refactor executable module
-  - [x] Refactor system module
-  - [x] Refactor test fixtures (instruction_fixture, method_fixture, system_fixture)
-  - [x] Refactor agency module
-  - [x] Refactor agent_store module
-  - [x] Refactor agent_update module
-  - [x] Refactor agent module
-  - [x] Refactor agent_registry module
-  - [x] Refactor methodology module
-  - [x] Refactor method module
-  - [x] Refactor instruction module
-  - [x] Refactor expression module
-  - [x] Refactor data module
-  - [x] Refactor semver module
-  - [x] Refactor string module
-  - [x] Refactor map module
-  - [x] Refactor list module
-  - [x] Refactor io module
-  - [x] Refactor heap module
-  - [x] Refactor assert module (no functions, only macros)
-  - [x] Update all documentation files (.md) to reflect new double underscore naming convention
+### Module Function Naming Convention Refactoring (Completed 2025-06-08)
+- [x] Changed all module functions from ar_<module>_<function> to ar__<module>__<function>
+- [x] Changed all heap macros from AR_HEAP_* to AR__HEAP__*
+- [x] Updated all documentation files to reflect new naming conventions
+- [x] Fixed remaining static functions in methodology module to follow consistent naming
 
 ## Critical Compliance Tasks
 
@@ -71,6 +53,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Fix `agerun_instruction` → `agerun_method` circular dependency
   - [x] Fix `agerun_method` → `agerun_agent` circular dependency
   - [x] Fix `agerun_agency` ↔ `agerun_agent` mutual dependency
+- [x] Fix `agerun_agency` ↔ `agerun_agent_update` circular dependency (Completed 2025-06-08)
   - [x] Fix `agerun_agency` → `agerun_system` circular dependency
 - [x] Ensure all interfaces expose only abstract models (audit complete, fixes pending)
 
@@ -99,11 +82,10 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ## Immediate Priorities (Next Steps)
 
 ### CRITICAL - Resolve All Circular Dependencies (HIGHEST PRIORITY)
-- [x] Resolve Agency/Agent_Update circular dependency:
-  - [x] Currently agent_update forwards to ar_agency_update_agent_methods()
-  - [x] Move the update logic from agency.c to agent_update.c
-  - [x] Have agency delegate to agent_update instead of the reverse
-  - [x] This will remove the circular dependency between these modules
+- [x] Resolve Agency/Agent_Update circular dependency (Completed 2025-06-08):
+  - [x] Moved update logic implementation to agent_update.c
+  - [x] Agency now delegates to agent_update module
+  - [x] Removed circular dependency between these modules
 - [ ] Resolve Method/Instruction circular dependency:
   - [ ] Methods need to execute instructions (method → instruction)
   - [ ] Instructions need to access methods via methodology (instruction → methodology → method)
@@ -462,6 +444,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ## Notes
 
 - **Parnas Compliance**: ACHIEVED (as of 2025-06-08) - All interface violations have been fixed
+- **Module Naming Convention**: COMPLETED (as of 2025-06-08) - All modules use ar__<module>__<function> pattern
+- **Heap Macros**: COMPLETED (as of 2025-06-08) - All heap macros use AR__HEAP__* pattern
+- **Assert Macros**: Exception maintained - Continue using AR_ASSERT_* pattern
 - **Current Highest Priority**: Resolve remaining circular dependencies (Method/Instruction, Instruction/Agent/Methodology)
 - **Next Priority**: Fix code smells, especially the 2500+ line ar_instruction_run function
 - The project has achieved zero memory leaks and is ready for production use in memory-critical applications

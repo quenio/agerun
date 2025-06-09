@@ -109,9 +109,14 @@ This document tracks completed milestones and major achievements for the AgeRun 
     - Updated CLAUDE.md development guidelines with new naming convention
     - Fixed file formatting issues (missing newlines)
     - All function references now use double underscore pattern
+  - ✅ Fixed remaining static functions in methodology module to follow consistent naming:
+    - Changed ar_methodology_validate_file → validate_file
+    - Changed ar_methodology_find_method_idx → find_method_idx
+    - Changed ar_methodology_set_method_storage → set_method_storage
   - ✅ **NAMING CONVENTION REFACTORING COMPLETE**:
     - All 21 modules successfully refactored from ar_<module>_<function> to ar__<module>__<function>
     - All heap macros updated from AR_HEAP_* to AR__HEAP__*
+    - Assert macros remain as AR_ASSERT_* (documented exception)
     - All documentation updated to reflect new naming convention
     - All tests pass with zero memory leaks
     - Codebase maintains full backward compatibility through consistent interface
