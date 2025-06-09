@@ -90,7 +90,7 @@ data_t* ar__data__create_list(void) {
     }
     
     data->type = DATA_LIST;
-    data->data.own_list = ar_list_create();
+    data->data.own_list = ar__list__create();
     if (!data->data.own_list) {
         AR_HEAP_FREE(data);
         return NULL;
@@ -118,7 +118,7 @@ data_t* ar__data__create_map(void) {
     }
     
     // Create a list to track keys
-    data->own_keys = ar_list_create();
+    data->own_keys = ar__list__create();
     if (!data->own_keys) {
         ar__map__destroy(data->data.own_map);
         AR_HEAP_FREE(data);
@@ -149,11 +149,11 @@ void ar__data__destroy(data_t *own_data) {
         // 3. Then free all the data values
         
         // Get all data values for later cleanup
-        void **own_items = ar_list_items(own_data->data.own_list);
-        size_t item_count = ar_list_count(own_data->data.own_list);
+        void **own_items = ar__list__items(own_data->data.own_list);
+        size_t item_count = ar__list__count(own_data->data.own_list);
         
         // Destroy the list structure first
-        ar_list_destroy(own_data->data.own_list);
+        ar__list__destroy(own_data->data.own_list);
         own_data->data.own_list = NULL;
         
         // Free all data values
@@ -182,8 +182,8 @@ void ar__data__destroy(data_t *own_data) {
         
         // Free all tracked keys
         if (own_data->own_keys) {
-            void **own_key_ptrs = ar_list_items(own_data->own_keys);
-            size_t key_count = ar_list_count(own_data->own_keys);
+            void **own_key_ptrs = ar__list__items(own_data->own_keys);
+            size_t key_count = ar__list__count(own_data->own_keys);
             
             if (own_key_ptrs) {
                 for (size_t i = 0; i < key_count; i++) {
@@ -194,7 +194,7 @@ void ar__data__destroy(data_t *own_data) {
             }
             
             // Destroy the key tracking list
-            ar_list_destroy(own_data->own_keys);
+            ar__list__destroy(own_data->own_keys);
             own_data->own_keys = NULL;
         }
         
@@ -549,7 +549,7 @@ bool ar__data__set_map_data(data_t *mut_data, const char *ref_key, data_t *own_v
         }
         
         // Add the key to our tracking list
-        if (!ar_list_add_last(mut_data->own_keys, key_copy)) {
+        if (!ar__list__add_last(mut_data->own_keys, key_copy)) {
             // Unlikely, but handle failure
             ar__map__set(map, ref_key, prev_data); // Try to restore previous state
             AR_HEAP_FREE(key_copy);
@@ -662,7 +662,7 @@ bool ar__data__list_add_first_integer(data_t *mut_data, int value) {
     }
     
     // Add the data to the beginning of the list
-    if (!ar_list_add_first(ref_list, own_int_data)) {
+    if (!ar__list__add_first(ref_list, own_int_data)) {
         ar__data__destroy(own_int_data);
         return false;
     }
@@ -696,7 +696,7 @@ bool ar__data__list_add_first_double(data_t *mut_data, double value) {
     }
     
     // Add the data to the beginning of the list
-    if (!ar_list_add_first(ref_list, own_double_data)) {
+    if (!ar__list__add_first(ref_list, own_double_data)) {
         ar__data__destroy(own_double_data);
         return false;
     }
@@ -730,7 +730,7 @@ bool ar__data__list_add_first_string(data_t *mut_data, const char *ref_value) {
     }
     
     // Add the data to the beginning of the list
-    if (!ar_list_add_first(ref_list, own_string_data)) {
+    if (!ar__list__add_first(ref_list, own_string_data)) {
         ar__data__destroy(own_string_data);
         return false;
     }
@@ -745,7 +745,7 @@ bool ar__data__list_add_first_string(data_t *mut_data, const char *ref_value) {
  * @return true if successful, false if data is NULL, not a list, or allocation failure
  * @note Ownership: Takes ownership of the own_value parameter.
  *       The caller should set own_value = NULL after this call.
- *       While ar_list_add_first does not take ownership directly,
+ *       While ar__list__add_first does not take ownership directly,
  *       this function takes ownership as part of the API contract.
  */
 bool ar__data__list_add_first_data(data_t *mut_data, data_t *own_value) {
@@ -760,7 +760,7 @@ bool ar__data__list_add_first_data(data_t *mut_data, data_t *own_value) {
     }
     
     // Add the data to the beginning of the list
-    if (!ar_list_add_first(ref_list, own_value)) {
+    if (!ar__list__add_first(ref_list, own_value)) {
         return false;
     }
     
@@ -796,7 +796,7 @@ bool ar__data__list_add_last_integer(data_t *mut_data, int value) {
     }
     
     // Add the data to the end of the list
-    if (!ar_list_add_last(ref_list, own_int_data)) {
+    if (!ar__list__add_last(ref_list, own_int_data)) {
         ar__data__destroy(own_int_data);
         return false;
     }
@@ -830,7 +830,7 @@ bool ar__data__list_add_last_double(data_t *mut_data, double value) {
     }
     
     // Add the data to the end of the list
-    if (!ar_list_add_last(ref_list, own_double_data)) {
+    if (!ar__list__add_last(ref_list, own_double_data)) {
         ar__data__destroy(own_double_data);
         return false;
     }
@@ -864,7 +864,7 @@ bool ar__data__list_add_last_string(data_t *mut_data, const char *ref_value) {
     }
     
     // Add the data to the end of the list
-    if (!ar_list_add_last(ref_list, own_string_data)) {
+    if (!ar__list__add_last(ref_list, own_string_data)) {
         ar__data__destroy(own_string_data);
         return false;
     }
@@ -879,7 +879,7 @@ bool ar__data__list_add_last_string(data_t *mut_data, const char *ref_value) {
  * @return true if successful, false if data is NULL, not a list, or allocation failure
  * @note Ownership: Takes ownership of the own_value parameter.
  *       The caller should set own_value = NULL after this call.
- *       While ar_list_add_last does not take ownership directly,
+ *       While ar__list__add_last does not take ownership directly,
  *       this function takes ownership as part of the API contract.
  */
 bool ar__data__list_add_last_data(data_t *mut_data, data_t *own_value) {
@@ -894,7 +894,7 @@ bool ar__data__list_add_last_data(data_t *mut_data, data_t *own_value) {
     }
     
     // Add the data to the end of the list
-    if (!ar_list_add_last(ref_list, own_value)) {
+    if (!ar__list__add_last(ref_list, own_value)) {
         return false;
     }
     
@@ -922,7 +922,7 @@ data_t *ar__data__list_remove_first(data_t *mut_data) {
     }
     
     // Remove the first item from the list
-    return (data_t *)ar_list_remove_first(ref_list); // Ownership transferred to caller
+    return (data_t *)ar__list__remove_first(ref_list); // Ownership transferred to caller
 }
 
 /**
@@ -943,7 +943,7 @@ data_t *ar__data__list_remove_last(data_t *mut_data) {
     }
     
     // Remove the last item from the list
-    return (data_t *)ar_list_remove_last(ref_list); // Ownership transferred to caller
+    return (data_t *)ar__list__remove_last(ref_list); // Ownership transferred to caller
 }
 
 /**
@@ -964,7 +964,7 @@ data_t *ar__data__list_first(const data_t *ref_data) {
     }
     
     // Get the first item from the list
-    return (data_t *)ar_list_first(ref_list);
+    return (data_t *)ar__list__first(ref_list);
 }
 
 /**
@@ -985,7 +985,7 @@ data_t *ar__data__list_last(const data_t *ref_data) {
     }
     
     // Get the last item from the list
-    return (data_t *)ar_list_last(ref_list);
+    return (data_t *)ar__list__last(ref_list);
 }
 
 /**
@@ -1006,7 +1006,7 @@ int ar__data__list_remove_first_integer(data_t *data) {
     }
     
     // Remove the first item from the list
-    data_t *first_data = (data_t *)ar_list_remove_first(list);
+    data_t *first_data = (data_t *)ar__list__remove_first(list);
     if (!first_data) {
         return 0;
     }
@@ -1014,7 +1014,7 @@ int ar__data__list_remove_first_integer(data_t *data) {
     // Check if the data is an integer
     if (ar__data__get_type(first_data) != DATA_INTEGER) {
         // Put the item back in the list if it's not an integer
-        ar_list_add_first(list, first_data);
+        ar__list__add_first(list, first_data);
         return 0;
     }
     
@@ -1045,7 +1045,7 @@ double ar__data__list_remove_first_double(data_t *data) {
     }
     
     // Remove the first item from the list
-    data_t *first_data = (data_t *)ar_list_remove_first(list);
+    data_t *first_data = (data_t *)ar__list__remove_first(list);
     if (!first_data) {
         return 0.0;
     }
@@ -1053,7 +1053,7 @@ double ar__data__list_remove_first_double(data_t *data) {
     // Check if the data is a double
     if (ar__data__get_type(first_data) != DATA_DOUBLE) {
         // Put the item back in the list if it's not a double
-        ar_list_add_first(list, first_data);
+        ar__list__add_first(list, first_data);
         return 0.0;
     }
     
@@ -1084,7 +1084,7 @@ char *ar__data__list_remove_first_string(data_t *data) {
     }
     
     // Remove the first item from the list
-    data_t *first_data = (data_t *)ar_list_remove_first(list);
+    data_t *first_data = (data_t *)ar__list__remove_first(list);
     if (!first_data) {
         return NULL;
     }
@@ -1092,7 +1092,7 @@ char *ar__data__list_remove_first_string(data_t *data) {
     // Check if the data is a string
     if (ar__data__get_type(first_data) != DATA_STRING) {
         // Put the item back in the list if it's not a string
-        ar_list_add_first(list, first_data);
+        ar__list__add_first(list, first_data);
         return NULL;
     }
     
@@ -1130,7 +1130,7 @@ int ar__data__list_remove_last_integer(data_t *data) {
     }
     
     // Remove the last item from the list
-    data_t *last_data = (data_t *)ar_list_remove_last(list);
+    data_t *last_data = (data_t *)ar__list__remove_last(list);
     if (!last_data) {
         return 0;
     }
@@ -1138,7 +1138,7 @@ int ar__data__list_remove_last_integer(data_t *data) {
     // Check if the data is an integer
     if (ar__data__get_type(last_data) != DATA_INTEGER) {
         // Put the item back in the list if it's not an integer
-        ar_list_add_last(list, last_data);
+        ar__list__add_last(list, last_data);
         return 0;
     }
     
@@ -1169,7 +1169,7 @@ double ar__data__list_remove_last_double(data_t *data) {
     }
     
     // Remove the last item from the list
-    data_t *last_data = (data_t *)ar_list_remove_last(list);
+    data_t *last_data = (data_t *)ar__list__remove_last(list);
     if (!last_data) {
         return 0.0;
     }
@@ -1177,7 +1177,7 @@ double ar__data__list_remove_last_double(data_t *data) {
     // Check if the data is a double
     if (ar__data__get_type(last_data) != DATA_DOUBLE) {
         // Put the item back in the list if it's not a double
-        ar_list_add_last(list, last_data);
+        ar__list__add_last(list, last_data);
         return 0.0;
     }
     
@@ -1208,7 +1208,7 @@ char *ar__data__list_remove_last_string(data_t *data) {
     }
     
     // Remove the last item from the list
-    data_t *last_data = (data_t *)ar_list_remove_last(list);
+    data_t *last_data = (data_t *)ar__list__remove_last(list);
     if (!last_data) {
         return NULL;
     }
@@ -1216,7 +1216,7 @@ char *ar__data__list_remove_last_string(data_t *data) {
     // Check if the data is a string
     if (ar__data__get_type(last_data) != DATA_STRING) {
         // Put the item back in the list if it's not a string
-        ar_list_add_last(list, last_data);
+        ar__list__add_last(list, last_data);
         return NULL;
     }
     
@@ -1253,7 +1253,7 @@ size_t ar__data__list_count(const data_t *data) {
     }
     
     // Get the count from the list
-    return ar_list_count(list);
+    return ar__list__count(list);
 }
 
 /**
@@ -1288,8 +1288,8 @@ data_t* ar__data__get_map_keys(const data_t *ref_data) {
     }
     
     // Get all keys from the internal list
-    void **own_key_ptrs = ar_list_items(ref_data->own_keys);
-    size_t key_count = ar_list_count(ref_data->own_keys);
+    void **own_key_ptrs = ar__list__items(ref_data->own_keys);
+    size_t key_count = ar__list__count(ref_data->own_keys);
     
     // Add each key to the result list as a string data value
     for (size_t i = 0; i < key_count; i++) {

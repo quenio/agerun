@@ -51,7 +51,7 @@ expression_context_t* ar__expression__create_context(data_t *mut_memory, const d
     own_ctx->offset = 0;
     
     // Initialize list to track expression results
-    own_ctx->own_results = ar_list_create();
+    own_ctx->own_results = ar__list__create();
     if (!own_ctx->own_results) {
         AR_HEAP_FREE(own_ctx);
         return NULL;
@@ -73,8 +73,8 @@ void ar__expression__destroy_context(expression_context_t *own_ctx) {
     // Free all results tracked by this context
     if (own_ctx->own_results) {
         // Get all items in the list
-        void **own_items = ar_list_items(own_ctx->own_results);
-        size_t count = ar_list_count(own_ctx->own_results);
+        void **own_items = ar__list__items(own_ctx->own_results);
+        size_t count = ar__list__count(own_ctx->own_results);
         
         if (own_items && count > 0) {
             // Free each result that isn't a direct reference
@@ -96,7 +96,7 @@ void ar__expression__destroy_context(expression_context_t *own_ctx) {
         }
         
         // Free the list itself
-        ar_list_destroy(own_ctx->own_results);
+        ar__list__destroy(own_ctx->own_results);
         own_ctx->own_results = NULL; // Mark as transferred
     }
     
@@ -291,7 +291,7 @@ static const data_t* parse_string_literal(expression_context_t *mut_ctx) {
     
     // Track this result since we created it
     if (own_result) {
-        ar_list_add_last(mut_ctx->own_results, own_result);
+        ar__list__add_last(mut_ctx->own_results, own_result);
     }
     
     return own_result; // Ownership retained by context
@@ -343,7 +343,7 @@ static const data_t* parse_number_literal(expression_context_t *mut_ctx) {
         
         // Track this result since we created it
         if (own_result) {
-            ar_list_add_last(mut_ctx->own_results, own_result);
+            ar__list__add_last(mut_ctx->own_results, own_result);
         }
         
         return own_result; // Ownership retained by context
@@ -358,7 +358,7 @@ static const data_t* parse_number_literal(expression_context_t *mut_ctx) {
     
     // Track this result since we created it
     if (own_result) {
-        ar_list_add_last(mut_ctx->own_results, own_result);
+        ar__list__add_last(mut_ctx->own_results, own_result);
     }
     
     return own_result; // Ownership retained by context
@@ -616,7 +616,7 @@ static const data_t* parse_multiplicative(expression_context_t *ctx) {
         
         // Track this result since we created it
         if (result) {
-            ar_list_add_last(ctx->own_results, result);
+            ar__list__add_last(ctx->own_results, result);
         }
         
         // The result becomes the new left operand for the next iteration
@@ -749,7 +749,7 @@ static const data_t* parse_additive(expression_context_t *ctx) {
         
         // Track this result since we created it
         if (result) {
-            ar_list_add_last(ctx->own_results, result);
+            ar__list__add_last(ctx->own_results, result);
         }
         
         // The result becomes the new left operand for the next iteration
@@ -924,7 +924,7 @@ static const data_t* parse_comparison(expression_context_t *ctx) {
     
     // Track this result since we created it
     if (comparison_result) {
-        ar_list_add_last(ctx->own_results, comparison_result);
+        ar__list__add_last(ctx->own_results, comparison_result);
     }
     
     return comparison_result;
@@ -987,8 +987,8 @@ data_t* ar__expression__take_ownership(expression_context_t *mut_ctx, const data
     }
     
     // Remove the result from the list
-    // The ar_list_remove function returns the removed item as a non-const pointer
-    data_t *own_result = ar_list_remove(mut_ctx->own_results, ref_result);
+    // The ar__list__remove function returns the removed item as a non-const pointer
+    data_t *own_result = ar__list__remove(mut_ctx->own_results, ref_result);
     
     // If result was found and removed, ownership is now transferred to the caller
     return own_result;

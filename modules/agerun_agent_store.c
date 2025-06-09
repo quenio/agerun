@@ -30,7 +30,7 @@ typedef struct {
 
 /* Helper function to get list of all active agent IDs */
 static list_t* get_active_agent_list(void) {
-    list_t *own_list = ar_list_create();
+    list_t *own_list = ar__list__create();
     if (!own_list) {
         return NULL;
     }
@@ -39,7 +39,7 @@ static list_t* get_active_agent_list(void) {
     while (agent_id != 0) {
         data_t *own_id_data = ar__data__create_integer((int)agent_id);
         if (own_id_data) {
-            ar_list_add_last(own_list, own_id_data);
+            ar__list__add_last(own_list, own_id_data);
         }
         agent_id = ar__agency__get_next_agent(agent_id);
     }
@@ -61,11 +61,11 @@ static void cleanup_agent_list(list_t *own_agents, void **own_items, size_t coun
     }
     
     // Now remove all items from the list (they've been destroyed)
-    while (ar_list_count(own_agents) > 0) {
-        ar_list_remove_first(own_agents);
+    while (ar__list__count(own_agents) > 0) {
+        ar__list__remove_first(own_agents);
     }
     
-    ar_list_destroy(own_agents);
+    ar__list__destroy(own_agents);
 }
 
 /* Writer function for saving agent data */
@@ -84,18 +84,18 @@ static bool store_write_function(FILE *fp, void *context) {
     }
     
     // Get array of agent IDs
-    size_t total_agents = ar_list_count(own_agents);
+    size_t total_agents = ar__list__count(own_agents);
     if (total_agents == 0) {
         // No agents to save
-        ar_list_destroy(own_agents);
+        ar__list__destroy(own_agents);
         fprintf(fp, "0\n");
         return true;
     }
     
-    void **own_items = ar_list_items(own_agents);
+    void **own_items = ar__list__items(own_agents);
     if (!own_items) {
         ar_io_error("Failed to get agent items array");
-        ar_list_destroy(own_agents);
+        ar__list__destroy(own_agents);
         return false;
     }
     

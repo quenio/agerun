@@ -27,7 +27,7 @@ agent_registry_t* ar__agent_registry__create(void) {
         return NULL;
     }
     
-    own_registry->own_registered_ids = ar_list_create();
+    own_registry->own_registered_ids = ar__list__create();
     if (!own_registry->own_registered_ids) {
         AR_HEAP_FREE(own_registry);
         return NULL;
@@ -35,7 +35,7 @@ agent_registry_t* ar__agent_registry__create(void) {
     
     own_registry->own_agent_map = ar__map__create();
     if (!own_registry->own_agent_map) {
-        ar_list_destroy(own_registry->own_registered_ids);
+        ar__list__destroy(own_registry->own_registered_ids);
         AR_HEAP_FREE(own_registry);
         return NULL;
     }
@@ -54,13 +54,13 @@ void ar__agent_registry__destroy(agent_registry_t *own_registry) {
     
     if (own_registry->own_registered_ids) {
         // Destroy all ID data in the list
-        while (ar_list_count(own_registry->own_registered_ids) > 0) {
-            data_t *own_data = ar_list_remove_first(own_registry->own_registered_ids);
+        while (ar__list__count(own_registry->own_registered_ids) > 0) {
+            data_t *own_data = ar__list__remove_first(own_registry->own_registered_ids);
             if (own_data) {
                 ar__data__destroy(own_data);
             }
         }
-        ar_list_destroy(own_registry->own_registered_ids);
+        ar__list__destroy(own_registry->own_registered_ids);
     }
     
     if (own_registry->own_agent_map) {
@@ -75,7 +75,7 @@ int ar__agent_registry__count(const agent_registry_t *ref_registry) {
     if (!ref_registry || !ref_registry->own_registered_ids) {
         return 0;
     }
-    return (int)ar_list_count(ref_registry->own_registered_ids);
+    return (int)ar__list__count(ref_registry->own_registered_ids);
 }
 
 /* Get the first registered agent ID */
@@ -84,11 +84,11 @@ int64_t ar__agent_registry__get_first(const agent_registry_t *ref_registry) {
         return 0;
     }
     
-    if (ar_list_count(ref_registry->own_registered_ids) == 0) {
+    if (ar__list__count(ref_registry->own_registered_ids) == 0) {
         return 0;
     }
     
-    data_t *ref_data = (data_t*)ar_list_first(ref_registry->own_registered_ids);
+    data_t *ref_data = (data_t*)ar__list__first(ref_registry->own_registered_ids);
     if (!ref_data) {
         return 0;
     }
@@ -108,12 +108,12 @@ int64_t ar__agent_registry__get_next(const agent_registry_t *ref_registry, int64
     }
     
     // Since we don't have indexed access to list, we need to iterate through all items
-    void **items = ar_list_items(ref_registry->own_registered_ids);
+    void **items = ar__list__items(ref_registry->own_registered_ids);
     if (!items) {
         return 0;
     }
     
-    size_t count = ar_list_count(ref_registry->own_registered_ids);
+    size_t count = ar__list__count(ref_registry->own_registered_ids);
     bool found_current = false;
     int64_t next_id = 0;
     
@@ -149,8 +149,8 @@ void ar__agent_registry__clear(agent_registry_t *mut_registry) {
     }
     
     // Destroy all ID data in the list
-    while (ar_list_count(mut_registry->own_registered_ids) > 0) {
-        data_t *own_data = ar_list_remove_first(mut_registry->own_registered_ids);
+    while (ar__list__count(mut_registry->own_registered_ids) > 0) {
+        data_t *own_data = ar__list__remove_first(mut_registry->own_registered_ids);
         if (own_data) {
             ar__data__destroy(own_data);
         }
@@ -212,7 +212,7 @@ bool ar__agent_registry__register_id(agent_registry_t *mut_registry, int64_t age
     }
     
     // Add to the list
-    if (!ar_list_add_last(mut_registry->own_registered_ids, own_id_data)) {
+    if (!ar__list__add_last(mut_registry->own_registered_ids, own_id_data)) {
         ar__data__destroy(own_id_data);
         return false;
     }
@@ -227,12 +227,12 @@ bool ar__agent_registry__unregister_id(agent_registry_t *mut_registry, int64_t a
     }
     
     // Find and remove the ID from the list
-    void **items = ar_list_items(mut_registry->own_registered_ids);
+    void **items = ar__list__items(mut_registry->own_registered_ids);
     if (!items) {
         return false;
     }
     
-    size_t count = ar_list_count(mut_registry->own_registered_ids);
+    size_t count = ar__list__count(mut_registry->own_registered_ids);
     data_t *target = NULL;
     
     for (size_t i = 0; i < count; i++) {
@@ -256,7 +256,7 @@ bool ar__agent_registry__unregister_id(agent_registry_t *mut_registry, int64_t a
     AR_HEAP_FREE(items);
     
     if (target) {
-        data_t *own_removed = (data_t*)ar_list_remove(mut_registry->own_registered_ids, target);
+        data_t *own_removed = (data_t*)ar__list__remove(mut_registry->own_registered_ids, target);
         if (own_removed) {
             ar__data__destroy(own_removed);
         }
@@ -272,12 +272,12 @@ bool ar__agent_registry__is_registered(const agent_registry_t *ref_registry, int
         return false;
     }
     
-    void **items = ar_list_items(ref_registry->own_registered_ids);
+    void **items = ar__list__items(ref_registry->own_registered_ids);
     if (!items) {
         return false;
     }
     
-    size_t count = ar_list_count(ref_registry->own_registered_ids);
+    size_t count = ar__list__count(ref_registry->own_registered_ids);
     bool found = false;
     
     for (size_t i = 0; i < count; i++) {
@@ -308,12 +308,12 @@ static const char* get_agent_key_from_list(const agent_registry_t *ref_registry,
         return NULL;
     }
     
-    void **items = ar_list_items(ref_registry->own_registered_ids);
+    void **items = ar__list__items(ref_registry->own_registered_ids);
     if (!items) {
         return NULL;
     }
     
-    size_t count = ar_list_count(ref_registry->own_registered_ids);
+    size_t count = ar__list__count(ref_registry->own_registered_ids);
     const char *key = NULL;
     
     for (size_t i = 0; i < count; i++) {

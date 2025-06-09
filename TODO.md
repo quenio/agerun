@@ -24,7 +24,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Refactor semver module
   - [x] Refactor string module
   - [x] Refactor map module
-  - [ ] Refactor list module
+  - [x] Refactor list module
   - [ ] Refactor io module
   - [ ] Refactor heap module
   - [ ] Refactor assert module

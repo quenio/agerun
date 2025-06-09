@@ -51,7 +51,7 @@ agent_t* ar__agent__create(const char *ref_method_name, const char *ref_version,
     own_agent->ref_method = ref_method;  // Just store reference
     own_agent->ref_context = ref_context;  // Store reference, we don't own it
     
-    own_agent->own_message_queue = ar_list_create();
+    own_agent->own_message_queue = ar__list__create();
     if (!own_agent->own_message_queue) {
         AR_HEAP_FREE(own_agent);
         return NULL;
@@ -59,7 +59,7 @@ agent_t* ar__agent__create(const char *ref_method_name, const char *ref_version,
     
     own_agent->own_memory = ar__data__create_map();
     if (!own_agent->own_memory) {
-        ar_list_destroy(own_agent->own_message_queue);
+        ar__list__destroy(own_agent->own_message_queue);
         AR_HEAP_FREE(own_agent);
         return NULL;
     }
@@ -82,7 +82,7 @@ void ar__agent__destroy(agent_t *own_agent) {
     // Send sleep message before destruction
     data_t *own_sleep_msg = ar__data__create_string(g_sleep_message);
     if (own_sleep_msg) {
-        bool sent = ar_list_add_last(own_agent->own_message_queue, own_sleep_msg);
+        bool sent = ar__list__add_last(own_agent->own_message_queue, own_sleep_msg);
         if (!sent) {
             ar__data__destroy(own_sleep_msg);
         }
@@ -102,12 +102,12 @@ void ar__agent__destroy(agent_t *own_agent) {
     if (own_agent->own_message_queue) {
         // First, destroy any remaining messages in the queue
         data_t *own_msg = NULL;
-        while ((own_msg = ar_list_remove_first(own_agent->own_message_queue)) != NULL) {
+        while ((own_msg = ar__list__remove_first(own_agent->own_message_queue)) != NULL) {
             ar__data__destroy(own_msg);
             own_msg = NULL; // Mark as destroyed
         }
         // Then destroy the queue itself
-        ar_list_destroy(own_agent->own_message_queue);
+        ar__list__destroy(own_agent->own_message_queue);
         own_agent->own_message_queue = NULL; // Mark as destroyed
     }
     
@@ -132,7 +132,7 @@ bool ar__agent__send(agent_t *mut_agent, data_t *own_message) {
     }
     
     // Agent module takes ownership of the message and adds to the queue
-    bool result = ar_list_add_last(mut_agent->own_message_queue, own_message);
+    bool result = ar__list__add_last(mut_agent->own_message_queue, own_message);
     
     // If we couldn't add to the queue, destroy the message
     if (!result) {
@@ -216,7 +216,7 @@ bool ar__agent__has_messages(const agent_t *ref_agent) {
         return false;
     }
     
-    return ar_list_count(ref_agent->own_message_queue) > 0;
+    return ar__list__count(ref_agent->own_message_queue) > 0;
 }
 
 data_t* ar__agent__get_message(agent_t *mut_agent) {
@@ -224,7 +224,7 @@ data_t* ar__agent__get_message(agent_t *mut_agent) {
         return NULL;
     }
     
-    return ar_list_remove_first(mut_agent->own_message_queue);
+    return ar__list__remove_first(mut_agent->own_message_queue);
 }
 
 bool ar__agent__update_method(agent_t *mut_agent, const method_t *ref_new_method, bool send_sleep_wake) {
@@ -236,7 +236,7 @@ bool ar__agent__update_method(agent_t *mut_agent, const method_t *ref_new_method
         // Send sleep message before update
         data_t *own_sleep_msg = ar__data__create_string(g_sleep_message);
         if (own_sleep_msg) {
-            ar_list_add_last(mut_agent->own_message_queue, own_sleep_msg);
+            ar__list__add_last(mut_agent->own_message_queue, own_sleep_msg);
         }
     }
     
@@ -247,7 +247,7 @@ bool ar__agent__update_method(agent_t *mut_agent, const method_t *ref_new_method
         // Send wake message after update
         data_t *own_wake_msg = ar__data__create_string(g_wake_message);
         if (own_wake_msg) {
-            ar_list_add_last(mut_agent->own_message_queue, own_wake_msg);
+            ar__list__add_last(mut_agent->own_message_queue, own_wake_msg);
         }
     }
     
