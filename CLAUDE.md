@@ -141,6 +141,18 @@ make run-sanitize          # Run executable with ASan
 
 ### 4. Coding Standards
 
+**Naming Conventions** (Updated 2025-06-08):
+- **Module Functions**: Use double underscore pattern `ar__<module>__<function>`
+  - Examples: `ar__data__create_map()`, `ar__agent__send()`, `ar__system__init()`
+  - Applied to all 21 modules consistently
+- **Heap Macros**: Use double underscore pattern `AR__HEAP__<OPERATION>`
+  - Examples: `AR__HEAP__MALLOC`, `AR__HEAP__FREE`, `AR__HEAP__STRDUP`
+  - Applied to all 5 heap macros consistently
+- **Assert Macros**: EXCEPTION - Keep original pattern `AR_ASSERT_<TYPE>`
+  - Examples: `AR_ASSERT_OWNERSHIP`, `AR_ASSERT_TRANSFERRED`, `AR_ASSERT_NOT_USED_AFTER_FREE`
+  - Rationale: Assert module contains only macros, not functions; follows different naming pattern
+- **Type suffix**: `_t`
+
 **Formatting**:
 - 4-space indentation (no tabs)
 - 100-character line limit
@@ -148,8 +160,6 @@ make run-sanitize          # Run executable with ASan
   - C standard requires newline at EOF
   - Missing newlines cause compiler errors with -Wall -Werror
   - Always verify file ends with '\n' after edits
-- Function prefix: `ar_`
-- Type suffix: `_t`
 
 **Documentation**:
 - Use `/**` style for all public APIs
@@ -187,7 +197,8 @@ make run-sanitize          # Run executable with ASan
 - **Circular Dependencies**: Always check for and eliminate circular dependencies
 - **Unidirectional Flow**: Ensure dependencies flow in one direction (e.g., agency → agent_update → agent_registry)
 - **Delegation Pattern**: Higher-level modules can pass their dependencies to lower-level modules as parameters
-- **Module Naming**: Follow `ar_<module>_<function>` pattern consistently (e.g., `ar__agent__update_update_methods`)
+- **Module Naming**: Follow `ar__<module>__<function>` pattern consistently (e.g., `ar__agent_update__update_methods`)
+  - **IMPORTANT**: All module functions now use double underscores (updated 2025-06-08)
 
 **Code Modification Process**:
 1. Understand codebase structure and dependencies
@@ -324,6 +335,16 @@ When reviewing tasks:
 - Check file sizes or line counts when something seems off (e.g., `wc -l filename`)
 - Never assume placeholder text is a display artifact - it might be literal content
 - If a file seems truncated, investigate the git history to find the complete version
+
+**Bulk Renaming Guidelines**:
+- **Use `sed` for bulk renaming**: When renaming functions, macros, variables, or parameters across the codebase, `sed` is the most efficient and safe approach
+- **Pattern**: `sed 's/old_name/new_name/g' file > file.tmp && mv file.tmp file`
+- **Batch processing**: Use loops for multiple files: `for file in modules/*.c; do sed 's/pattern/replacement/g' "$file" > "$file.tmp" && mv "$file.tmp" "$file"; done`
+- **Always verify current directory**: Run `pwd` before executing sed commands to ensure correct location
+- **Advantages**: Fast, reliable, handles large codebases efficiently, preserves file structure
+- **Examples from naming convention refactoring**: 
+  - Functions: `sed 's/ar_data_/ar__data__/g'`
+  - Macros: `sed 's/AR_HEAP_/AR__HEAP__/g'`
 
 **Git Workflow**:
 - Always run `git status` after `git push` to ensure push completed successfully
