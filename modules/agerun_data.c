@@ -111,7 +111,7 @@ data_t* ar__data__create_map(void) {
     }
     
     data->type = DATA_MAP;
-    data->data.own_map = ar_map_create();
+    data->data.own_map = ar__map__create();
     if (!data->data.own_map) {
         AR_HEAP_FREE(data);
         return NULL;
@@ -120,7 +120,7 @@ data_t* ar__data__create_map(void) {
     // Create a list to track keys
     data->own_keys = ar_list_create();
     if (!data->own_keys) {
-        ar_map_destroy(data->data.own_map);
+        ar__map__destroy(data->data.own_map);
         AR_HEAP_FREE(data);
         return NULL;
     }
@@ -128,7 +128,7 @@ data_t* ar__data__create_map(void) {
     return data;
 }
 
-// This function has been replaced by ar_map_refs
+// This function has been replaced by ar__map__refs
 
 /**
  * Free resources associated with a data structure and release memory
@@ -173,11 +173,11 @@ void ar__data__destroy(data_t *own_data) {
         // 5. Then free all the data values
         
         // Get all data values for later cleanup
-        void **own_refs = ar_map_refs(own_data->data.own_map);
-        size_t ref_count = ar_map_count(own_data->data.own_map);
+        void **own_refs = ar__map__refs(own_data->data.own_map);
+        size_t ref_count = ar__map__count(own_data->data.own_map);
         
         // Destroy the map structure first
-        ar_map_destroy(own_data->data.own_map);
+        ar__map__destroy(own_data->data.own_map);
         own_data->data.own_map = NULL;
         
         // Free all tracked keys
@@ -315,7 +315,7 @@ data_t *ar__data__get_map_data(const data_t *ref_data, const char *ref_key) {
     // Check if the path contains any dots
     if (strchr(ref_key, '.') == NULL) {
         // No dots, do a direct lookup
-        return ar_map_get(ref_map, ref_key);
+        return ar__map__get(ref_map, ref_key);
     }
     
     // Count path segments for multi-segment paths
@@ -341,7 +341,7 @@ data_t *ar__data__get_map_data(const data_t *ref_data, const char *ref_key) {
         }
         
         // Get the value for this segment
-        result = ar_map_get(ref_current_map, segment);
+        result = ar__map__get(ref_current_map, segment);
         
         if (!result) {
             AR_HEAP_FREE(segment);
@@ -534,7 +534,7 @@ bool ar__data__set_map_data(data_t *mut_data, const char *ref_key, data_t *own_v
         }
         
         // Get the existing data for later cleanup
-        data_t *prev_data = ar_map_get(map, ref_key);
+        data_t *prev_data = ar__map__get(map, ref_key);
         
         // Create a copy of the key
         char *key_copy = AR_HEAP_STRDUP(ref_key, "Map key copy");
@@ -543,7 +543,7 @@ bool ar__data__set_map_data(data_t *mut_data, const char *ref_key, data_t *own_v
         }
         
         // Set the new value
-        if (!ar_map_set(map, key_copy, own_value)) {
+        if (!ar__map__set(map, key_copy, own_value)) {
             AR_HEAP_FREE(key_copy);
             return false;
         }
@@ -551,7 +551,7 @@ bool ar__data__set_map_data(data_t *mut_data, const char *ref_key, data_t *own_v
         // Add the key to our tracking list
         if (!ar_list_add_last(mut_data->own_keys, key_copy)) {
             // Unlikely, but handle failure
-            ar_map_set(map, ref_key, prev_data); // Try to restore previous state
+            ar__map__set(map, ref_key, prev_data); // Try to restore previous state
             AR_HEAP_FREE(key_copy);
             return false;
         }

@@ -33,7 +33,7 @@ agent_registry_t* ar__agent_registry__create(void) {
         return NULL;
     }
     
-    own_registry->own_agent_map = ar_map_create();
+    own_registry->own_agent_map = ar__map__create();
     if (!own_registry->own_agent_map) {
         ar_list_destroy(own_registry->own_registered_ids);
         AR_HEAP_FREE(own_registry);
@@ -64,7 +64,7 @@ void ar__agent_registry__destroy(agent_registry_t *own_registry) {
     }
     
     if (own_registry->own_agent_map) {
-        ar_map_destroy(own_registry->own_agent_map);
+        ar__map__destroy(own_registry->own_agent_map);
     }
     
     AR_HEAP_FREE(own_registry);
@@ -158,8 +158,8 @@ void ar__agent_registry__clear(agent_registry_t *mut_registry) {
     
     // Clear the agent map by destroying and recreating it
     if (mut_registry->own_agent_map) {
-        ar_map_destroy(mut_registry->own_agent_map);
-        mut_registry->own_agent_map = ar_map_create();
+        ar__map__destroy(mut_registry->own_agent_map);
+        mut_registry->own_agent_map = ar__map__create();
     }
     
     // Reset next agent ID
@@ -352,7 +352,7 @@ bool ar__agent_registry__track_agent(agent_registry_t *mut_registry, int64_t age
     
     // Store the agent pointer directly in the map
     // Note: We're storing the pointer value, not taking ownership
-    return ar_map_set(mut_registry->own_agent_map, ref_key, mut_agent);
+    return ar__map__set(mut_registry->own_agent_map, ref_key, mut_agent);
 }
 
 /* Untrack an agent object from the registry */
@@ -368,10 +368,10 @@ void* ar__agent_registry__untrack_agent(agent_registry_t *mut_registry, int64_t 
     }
     
     // Get the agent pointer before removing
-    void *agent = ar_map_get(mut_registry->own_agent_map, ref_key);
+    void *agent = ar__map__get(mut_registry->own_agent_map, ref_key);
     if (agent) {
         // Remove by setting to NULL
-        ar_map_set(mut_registry->own_agent_map, ref_key, NULL);
+        ar__map__set(mut_registry->own_agent_map, ref_key, NULL);
     }
     
     return agent;
@@ -389,5 +389,5 @@ void* ar__agent_registry__find_agent(const agent_registry_t *ref_registry, int64
         return NULL;
     }
     
-    return ar_map_get(ref_registry->own_agent_map, ref_key);
+    return ar__map__get(ref_registry->own_agent_map, ref_key);
 }
