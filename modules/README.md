@@ -217,8 +217,6 @@ agerun_map_tests
 ├──c──> agerun_map (module under test)
 └──c──> agerun_heap
 
-agerun_io_tests (none - uses standard I/O only)
-
 agerun_semver_tests
 ├──c──> agerun_semver (module under test)
 └──c──> agerun_heap
@@ -365,7 +363,7 @@ agerun_instruction_fixture_tests
   - Core tests: 0-1 dependencies (excluding heap)
   - Foundation tests: 3-8 dependencies 
   - System tests: 5-10 dependencies
-- All tests depend on `agerun_heap` for memory leak detection (except io_tests which uses standard I/O only)
+- All tests depend on `agerun_heap` for memory leak detection
 - Tests often have more dependencies than their corresponding modules because they need to:
   - Create realistic test scenarios
   - Verify module interactions
