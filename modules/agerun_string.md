@@ -15,18 +15,18 @@ The String Module provides utility functions for string manipulation in the AgeR
 
 The String Module follows AgeRun's Memory Management Model (MMM) with explicit ownership semantics:
 
-1. **Owned Values (own_)**: Functions like `ar_string_path_segment` and `ar_string_path_parent` return owned values that the caller must destroy
-2. **Mutable References (mut_)**: Functions like `ar_string_trim` work with mutable references and modify strings in-place
+1. **Owned Values (own_)**: Functions like `ar__string__path_segment` and `ar__string__path_parent` return owned values that the caller must destroy
+2. **Mutable References (mut_)**: Functions like `ar__string__trim` work with mutable references and modify strings in-place
 3. **Borrowed References (ref_)**: Parameters marked as `const` represent borrowed references that are read-only
 
 ## API Reference
 
 ### Whitespace Functions
 
-#### `ar_string_isspace`
+#### `ar__string__isspace`
 
 ```c
-static inline int ar_string_isspace(int c);
+static inline int ar__string__isspace(int c);
 ```
 
 Returns non-zero if `c` is a whitespace character. This wrapper safely handles signed char values by casting to unsigned char.
@@ -37,10 +37,10 @@ Returns non-zero if `c` is a whitespace character. This wrapper safely handles s
 **Returns:**
 - Non-zero if the character is whitespace, zero otherwise
 
-#### `ar_string_trim`
+#### `ar__string__trim`
 
 ```c
-char* ar_string_trim(char *mut_str);
+char* ar__string__trim(char *mut_str);
 ```
 
 Trims leading and trailing whitespace from a string.
@@ -61,10 +61,10 @@ Trims leading and trailing whitespace from a string.
 
 These functions handle path-like strings with segments separated by a specific character (like dots in "key.sub_key.value").
 
-#### `ar_string_path_count`
+#### `ar__string__path_count`
 
 ```c
-size_t ar_string_path_count(const char *ref_str, char separator);
+size_t ar__string__path_count(const char *ref_str, char separator);
 ```
 
 Counts the number of segments in a path separated by the given separator.
@@ -80,10 +80,10 @@ Counts the number of segments in a path separated by the given separator.
 **Note:**
 - This function uses a borrowed reference (BValue) and does not transfer ownership
 
-#### `ar_string_path_segment`
+#### `ar__string__path_segment`
 
 ```c
-char* ar_string_path_segment(const char *ref_str, char separator, size_t index);
+char* ar__string__path_segment(const char *ref_str, char separator, size_t index);
 ```
 
 Extracts a segment from a separated string.
@@ -102,10 +102,10 @@ Extracts a segment from a separated string.
 - Empty segments (consecutive separators) are returned as empty strings
 - This function uses a borrowed reference (BValue) as input and returns an owned value (RValue)
 
-#### `ar_string_path_parent`
+#### `ar__string__path_parent`
 
 ```c
-char* ar_string_path_parent(const char *ref_str, char separator);
+char* ar__string__path_parent(const char *ref_str, char separator);
 ```
 
 Extracts the parent path from a path string.
@@ -131,7 +131,7 @@ Extracts the parent path from a path string.
 
 ```c
 char mut_str[] = "  Hello World  ";
-char *trimmed = ar_string_trim(mut_str);
+char *trimmed = ar__string__trim(mut_str);
 // trimmed now points to "Hello World" within the original string
 // Note: trimmed is a borrowed reference, not an owned value
 ```
@@ -141,21 +141,21 @@ char *trimmed = ar_string_trim(mut_str);
 ```c
 // Path counting with borrowed reference
 const char *ref_path = "user.settings.display";
-size_t count = ar_string_path_count(ref_path, '.');
+size_t count = ar__string__path_count(ref_path, '.');
 // count = 3
 
 // Segment extraction (creates owned value)
-char *own_segment = ar_string_path_segment(ref_path, '.', 1);
+char *own_segment = ar__string__path_segment(ref_path, '.', 1);
 // own_segment = "settings" (caller must free this owned value)
 free(own_segment);
 
 // Parent path (creates owned value)
-char *own_parent = ar_string_path_parent(ref_path, '.');
+char *own_parent = ar__string__path_parent(ref_path, '.');
 // own_parent = "user.settings" (caller must free this owned value)
 free(own_parent);
 
 // Checking if a path has a parent
-if (ar_string_path_parent("root_item", '.') == NULL) {
+if (ar__string__path_parent("root_item", '.') == NULL) {
     // Handle root path with no parent
 }
 ```

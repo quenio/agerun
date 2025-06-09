@@ -188,7 +188,7 @@ When creating a new method, also create a corresponding test file. The test shou
 
 4. Use assertions to verify expected behavior
 
-5. Use `ar_method_fixture_check_memory()` to ensure zero memory leaks
+5. Use `ar__method__fixture_check_memory()` to ensure zero memory leaks
 
 ### Example Test Pattern
 
@@ -197,44 +197,44 @@ static void test_method_basic(void) {
     printf("Testing method basic functionality...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar_method_fixture_create("method_basic");
+    method_fixture_t *own_fixture = ar__method__fixture_create("method_basic");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar_method_fixture_initialize(own_fixture));
+    assert(ar__method__fixture_initialize(own_fixture));
     
     // Verify correct directory
-    assert(ar_method_fixture_verify_directory(own_fixture));
+    assert(ar__method__fixture_verify_directory(own_fixture));
     
     // Load method
-    assert(ar_method_fixture_load_method(own_fixture, "method-name", 
+    assert(ar__method__fixture_load_method(own_fixture, "method-name", 
                                        "../methods/method-name-1.0.0.method", "1.0.0"));
     
     // Create agent
-    agent_id_t agent = ar_agent_create("method-name", "1.0.0", NULL);
+    agent_id_t agent = ar__agent__create("method-name", "1.0.0", NULL);
     assert(agent > 0);
     
     // Process wake message
-    ar_system_process_next_message();
+    ar__system__process_next_message();
     
     // When we send a test message
-    data_t *own_message = ar_data_create_string("test");
-    bool sent = ar_agent_send(agent, own_message);
+    data_t *own_message = ar__data__create_string("test");
+    bool sent = ar__agent__send(agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
     // Process the message
-    bool processed = ar_system_process_next_message();
+    bool processed = ar__system__process_next_message();
     assert(processed);
     
     // Then verify expected behavior
     // ...
     
     // Check for memory leaks
-    assert(ar_method_fixture_check_memory(own_fixture));
+    assert(ar__method__fixture_check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar_method_fixture_destroy(own_fixture);
+    ar__method__fixture_destroy(own_fixture);
     
     printf("✓ Method basic test passed\n");
 }

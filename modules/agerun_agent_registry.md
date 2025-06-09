@@ -15,29 +15,29 @@ This module was created as part of the agency module refactoring to improve cohe
 ## Key Functions
 
 ### Lifecycle Management
-- `ar_agent_registry_create()` - Create a new registry instance
-- `ar_agent_registry_destroy()` - Destroy a registry and free all resources
-- `ar_agent_registry_clear()` - Clear all agents but keep registry allocated
+- `ar__agent__registry_create()` - Create a new registry instance
+- `ar__agent__registry_destroy()` - Destroy a registry and free all resources
+- `ar__agent__registry_clear()` - Clear all agents but keep registry allocated
 
 ### ID Management
-- `ar_agent_registry_allocate_id()` - Allocate a new unique agent ID
-- `ar_agent_registry_get_next_id()` - Get the next ID that will be allocated
-- `ar_agent_registry_set_next_id()` - Set the next ID (for persistence)
+- `ar__agent__registry_allocate_id()` - Allocate a new unique agent ID
+- `ar__agent__registry_get_next_id()` - Get the next ID that will be allocated
+- `ar__agent__registry_set_next_id()` - Set the next ID (for persistence)
 
 ### Agent Registration
-- `ar_agent_registry_register_id()` - Register an agent ID in the registry
-- `ar_agent_registry_unregister_id()` - Remove an agent ID from the registry
-- `ar_agent_registry_is_registered()` - Check if an ID is registered
+- `ar__agent__registry_register_id()` - Register an agent ID in the registry
+- `ar__agent__registry_unregister_id()` - Remove an agent ID from the registry
+- `ar__agent__registry_is_registered()` - Check if an ID is registered
 
 ### Agent Tracking
-- `ar_agent_registry_track_agent()` - Associate an agent pointer with its ID
-- `ar_agent_registry_untrack_agent()` - Remove agent tracking
-- `ar_agent_registry_find_agent()` - Find agent by ID (O(1) lookup)
+- `ar__agent__registry_track_agent()` - Associate an agent pointer with its ID
+- `ar__agent__registry_untrack_agent()` - Remove agent tracking
+- `ar__agent__registry_find_agent()` - Find agent by ID (O(1) lookup)
 
 ### Iteration
-- `ar_agent_registry_count()` - Get number of registered agents
-- `ar_agent_registry_get_first()` - Get first registered agent ID
-- `ar_agent_registry_get_next()` - Get next agent ID in iteration order
+- `ar__agent__registry_count()` - Get number of registered agents
+- `ar__agent__registry_get_first()` - Get first registered agent ID
+- `ar__agent__registry_get_next()` - Get next agent ID in iteration order
 
 ## Design Principles
 
@@ -70,34 +70,34 @@ This design allows:
 
 ```c
 // Create a registry
-agent_registry_t *registry = ar_agent_registry_create();
+agent_registry_t *registry = ar__agent__registry_create();
 if (!registry) {
     // Handle error
 }
 
 // Allocate and register an agent
-int64_t agent_id = ar_agent_registry_allocate_id(registry);
-ar_agent_registry_register_id(registry, agent_id);
+int64_t agent_id = ar__agent__registry_allocate_id(registry);
+ar__agent__registry_register_id(registry, agent_id);
 
 // Track the agent object
 agent_t *agent = create_agent(...);
-ar_agent_registry_track_agent(registry, agent_id, agent);
+ar__agent__registry_track_agent(registry, agent_id, agent);
 
 // Find agent by ID
-agent_t *found = ar_agent_registry_find_agent(registry, agent_id);
+agent_t *found = ar__agent__registry_find_agent(registry, agent_id);
 
 // Iterate through all agents
-int64_t id = ar_agent_registry_get_first(registry);
+int64_t id = ar__agent__registry_get_first(registry);
 while (id != 0) {
-    agent_t *agent = ar_agent_registry_find_agent(registry, id);
+    agent_t *agent = ar__agent__registry_find_agent(registry, id);
     // Process agent
-    id = ar_agent_registry_get_next(registry, id);
+    id = ar__agent__registry_get_next(registry, id);
 }
 
 // Clean up
-ar_agent_registry_untrack_agent(registry, agent_id);
-ar_agent_registry_unregister_id(registry, agent_id);
-ar_agent_registry_destroy(registry);
+ar__agent__registry_untrack_agent(registry, agent_id);
+ar__agent__registry_unregister_id(registry, agent_id);
+ar__agent__registry_destroy(registry);
 ```
 
 ## Memory Management

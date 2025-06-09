@@ -20,7 +20,7 @@ The Heap Module provides memory management utilities for tracking heap allocatio
 The Heap Module is a foundational component of the AgeRun Memory Management Model (MMM), providing the following capabilities:
 
 1. **Heap Allocation Tracking**: Records all memory allocations with source location, size, and purpose
-2. **Allocation Wrappers**: Provides AR_HEAP_MALLOC, AR_HEAP_CALLOC, AR_HEAP_REALLOC, AR_HEAP_STRDUP, and AR_HEAP_FREE macros
+2. **Allocation Wrappers**: Provides AR__HEAP__MALLOC, AR__HEAP__CALLOC, AR__HEAP__REALLOC, AR__HEAP__STRDUP, and AR__HEAP__FREE macros
 3. **Ownership Validation**: Enforces pointer ownership rules with AR_ASSERT_OWNERSHIP macro
 4. **Transfer Verification**: Ensures correct ownership transfer with AR_ASSERT_TRANSFERRED macro
 5. **Use-After-Free Prevention**: Detects illegal pointer usage with AR_ASSERT_NOT_USED_AFTER_FREE
@@ -44,7 +44,7 @@ Verifies that a pointer that should have valid ownership actually has a non-NULL
 
 **Usage Example:**
 ```c
-own_data_t *own_data = ar_data_create_integer(42);
+own_data_t *own_data = ar__data__create_integer(42);
 AR_ASSERT_OWNERSHIP(own_data); // Ensures creation succeeded
 ```
 
@@ -61,7 +61,7 @@ Validates that a pointer has been set to NULL after ownership transfer.
 
 **Usage Example:**
 ```c
-ar_data_set_map_value(mut_map, "key", own_value);
+ar__data__set_map_value(mut_map, "key", own_value);
 own_value = NULL; // Mark as transferred
 AR_ASSERT_TRANSFERRED(own_value); // Verify proper transfer marking
 ```
@@ -86,10 +86,10 @@ AR_ASSERT_NOT_USED_AFTER_FREE(own_data); // Will fail if own_data is not NULL
 
 ### Memory Tracking Functions
 
-#### `AR_HEAP_MALLOC(size, desc)`
+#### `AR__HEAP__MALLOC(size, desc)`
 
 ```c
-#define AR_HEAP_MALLOC(size, desc)
+#define AR__HEAP__MALLOC(size, desc)
 ```
 
 Allocates memory with tracking in debug builds, or calls standard malloc in release builds.
@@ -103,13 +103,13 @@ Allocates memory with tracking in debug builds, or calls standard malloc in rele
 
 **Usage Example:**
 ```c
-char *own_buffer = AR_HEAP_MALLOC(1024, "String buffer for parser");
+char *own_buffer = AR__HEAP__MALLOC(1024, "String buffer for parser");
 ```
 
-#### `AR_HEAP_CALLOC(count, size, desc)`
+#### `AR__HEAP__CALLOC(count, size, desc)`
 
 ```c
-#define AR_HEAP_CALLOC(count, size, desc)
+#define AR__HEAP__CALLOC(count, size, desc)
 ```
 
 Allocates zero-initialized memory with tracking in debug builds.
@@ -124,13 +124,13 @@ Allocates zero-initialized memory with tracking in debug builds.
 
 **Usage Example:**
 ```c
-int *own_array = AR_HEAP_CALLOC(10, sizeof(int), "Array of integers");
+int *own_array = AR__HEAP__CALLOC(10, sizeof(int), "Array of integers");
 ```
 
-#### `AR_HEAP_REALLOC(ptr, size, desc)`
+#### `AR__HEAP__REALLOC(ptr, size, desc)`
 
 ```c
-#define AR_HEAP_REALLOC(ptr, size, desc)
+#define AR__HEAP__REALLOC(ptr, size, desc)
 ```
 
 Reallocates memory with tracking in debug builds.
@@ -145,13 +145,13 @@ Reallocates memory with tracking in debug builds.
 
 **Usage Example:**
 ```c
-own_buffer = AR_HEAP_REALLOC(own_buffer, 2048, "Expanded buffer");
+own_buffer = AR__HEAP__REALLOC(own_buffer, 2048, "Expanded buffer");
 ```
 
-#### `AR_HEAP_STRDUP(str, desc)`
+#### `AR__HEAP__STRDUP(str, desc)`
 
 ```c
-#define AR_HEAP_STRDUP(str, desc)
+#define AR__HEAP__STRDUP(str, desc)
 ```
 
 Duplicates a string with memory tracking in debug builds.
@@ -165,13 +165,13 @@ Duplicates a string with memory tracking in debug builds.
 
 **Usage Example:**
 ```c
-char *own_copy = AR_HEAP_STRDUP(original, "Copied configuration string");
+char *own_copy = AR__HEAP__STRDUP(original, "Copied configuration string");
 ```
 
-#### `AR_HEAP_FREE(ptr)`
+#### `AR__HEAP__FREE(ptr)`
 
 ```c
-#define AR_HEAP_FREE(ptr)
+#define AR__HEAP__FREE(ptr)
 ```
 
 Frees memory with tracking in debug builds.
@@ -181,14 +181,14 @@ Frees memory with tracking in debug builds.
 
 **Usage Example:**
 ```c
-AR_HEAP_FREE(own_buffer);
+AR__HEAP__FREE(own_buffer);
 own_buffer = NULL;
 ```
 
-#### `ar_heap_memory_report()`
+#### `ar__heap__memory_report()`
 
 ```c
-void ar_heap_memory_report(void)
+void ar__heap__memory_report(void)
 ```
 
 Generates a memory leak report with details of all allocations that have not been freed.
@@ -198,7 +198,7 @@ to check for leaks at specific points in the program.
 **Usage Example:**
 ```c
 // After a test or operation, check for leaks
-ar_heap_memory_report();
+ar__heap__memory_report();
 ```
 
 ## Usage Examples
@@ -207,7 +207,7 @@ ar_heap_memory_report();
 
 ```c
 // Instead of using standard malloc/free...
-void *own_data = AR_HEAP_MALLOC(sizeof(data_t), "Data structure for parser");
+void *own_data = AR__HEAP__MALLOC(sizeof(data_t), "Data structure for parser");
 if (!own_data) {
     return NULL;
 }
@@ -215,7 +215,7 @@ if (!own_data) {
 // Use the memory...
 
 // Free with tracking
-AR_HEAP_FREE(own_data);
+AR__HEAP__FREE(own_data);
 own_data = NULL;
 AR_ASSERT_NOT_USED_AFTER_FREE(own_data);
 ```
@@ -224,7 +224,7 @@ AR_ASSERT_NOT_USED_AFTER_FREE(own_data);
 
 ```c
 // Instead of standard strdup
-char *own_copy = AR_HEAP_STRDUP(original_string, "Configuration path");
+char *own_copy = AR__HEAP__STRDUP(original_string, "Configuration path");
 if (!own_copy) {
     return NULL;
 }
@@ -232,19 +232,19 @@ if (!own_copy) {
 // Process the string...
 
 // Free with tracking
-AR_HEAP_FREE(own_copy);
+AR__HEAP__FREE(own_copy);
 own_copy = NULL;
 ```
 
 ### Verifying Ownership After Creation
 
 ```c
-own_data_t *own_data = ar_data_create_integer(42);
+own_data_t *own_data = ar__data__create_integer(42);
 AR_ASSERT_OWNERSHIP(own_data);
 
 // Use the data...
 
-ar_data_destroy(own_data);
+ar__data__destroy(own_data);
 own_data = NULL; // Mark as freed
 AR_ASSERT_NOT_USED_AFTER_FREE(own_data);
 ```
@@ -252,11 +252,11 @@ AR_ASSERT_NOT_USED_AFTER_FREE(own_data);
 ### Enforcing Ownership Transfer Rules
 
 ```c
-own_data_t *own_value = ar_data_create_string("test");
+own_data_t *own_value = ar__data__create_string("test");
 AR_ASSERT_OWNERSHIP(own_value);
 
 // Transfer ownership to map
-ar_data_set_map_value(mut_map, "key", own_value);
+ar__data__set_map_value(mut_map, "key", own_value);
 own_value = NULL; // Mark as transferred
 AR_ASSERT_TRANSFERRED(own_value);
 
@@ -270,10 +270,10 @@ bool process_data(data_t *own_input) {
     AR_ASSERT_OWNERSHIP(own_input);
     
     // Allocate additional memory
-    char *own_buffer = AR_HEAP_MALLOC(1024, "Temporary processing buffer");
+    char *own_buffer = AR__HEAP__MALLOC(1024, "Temporary processing buffer");
     if (!own_buffer) {
         // Handle allocation failure
-        ar_data_destroy(own_input);
+        ar__data__destroy(own_input);
         own_input = NULL;
         return false;
     }
@@ -281,10 +281,10 @@ bool process_data(data_t *own_input) {
     // Processing logic...
     
     // Clean up all resources
-    AR_HEAP_FREE(own_buffer);
+    AR__HEAP__FREE(own_buffer);
     own_buffer = NULL;
     
-    ar_data_destroy(own_input);
+    ar__data__destroy(own_input);
     own_input = NULL;
     
     return true;
@@ -321,7 +321,7 @@ The heap memory management system is designed with these key architectural compo
    
 4. **Automated Reporting**: Memory leak reports are automatically generated:
    - At program exit via atexit registration
-   - When explicitly requested through ar_heap_memory_report()
+   - When explicitly requested through ar__heap__memory_report()
    - Reports are written to heap_memory_report.log
 
 5. **Conditional Compilation**: All heap tracking code is wrapped in #ifdef DEBUG directives
@@ -342,20 +342,20 @@ In release builds (`DEBUG` is not defined):
 
 ## Usage Guidelines
 
-1. **Use AR_HEAP_MALLOC Instead of malloc**: Replace all direct calls to malloc/calloc/realloc/strdup with their AR_HEAP_* equivalents to enable tracking.
+1. **Use AR__HEAP__MALLOC Instead of malloc**: Replace all direct calls to malloc/calloc/realloc/strdup with their AR__HEAP__* equivalents to enable tracking.
 
 2. **Always Add Descriptions**: Provide meaningful descriptions for all allocations to make leak reports more useful:
    ```c
    // Bad:
-   char *buffer = AR_HEAP_MALLOC(1024, "buffer");
+   char *buffer = AR__HEAP__MALLOC(1024, "buffer");
    
    // Good:
-   char *buffer = AR_HEAP_MALLOC(1024, "JSON parsing temporary buffer");
+   char *buffer = AR__HEAP__MALLOC(1024, "JSON parsing temporary buffer");
    ```
 
-3. **Set Freed Pointers to NULL**: After calling AR_HEAP_FREE, always set the pointer to NULL to prevent use-after-free:
+3. **Set Freed Pointers to NULL**: After calling AR__HEAP__FREE, always set the pointer to NULL to prevent use-after-free:
    ```c
-   AR_HEAP_FREE(buffer);
+   AR__HEAP__FREE(buffer);
    buffer = NULL;
    ```
 

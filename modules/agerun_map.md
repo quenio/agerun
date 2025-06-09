@@ -14,17 +14,17 @@ The map module (`agerun_map`) provides a fundamental key-value storage implement
 - **Direct Access**: Provides functions to get the count and an array of all refs
 - **No Dependencies**: This is a foundational module with no dependencies on other modules
 - **Opaque Type**: The map structure is opaque, encapsulating implementation details from clients
-- **Simplified API**: Maps are heap-allocated and fully initialized through ar_map_create()
+- **Simplified API**: Maps are heap-allocated and fully initialized through ar__map__create()
 
 ## Ownership Semantics
 
 The map module follows the AgeRun Memory Management Model (MMM) with these key principles:
 
-1. **Creation**: `ar_map_create()` returns an owned map that the caller must eventually destroy
+1. **Creation**: `ar__map__create()` returns an owned map that the caller must eventually destroy
 2. **No Value Ownership**: The map does NOT take ownership of keys or values when they are set
 3. **Borrowed References**: Getting a value from the map returns a borrowed reference
-4. **Owned Return Values**: Only `ar_map_create()` and `ar_map_refs()` return owned values that must be freed
-5. **Destruction**: `ar_map_destroy()` only destroys the map structure, not the keys or values
+4. **Owned Return Values**: Only `ar__map__create()` and `ar__map__refs()` return owned values that must be freed
+5. **Destruction**: `ar__map__destroy()` only destroys the map structure, not the keys or values
 
 ## API Reference
 
@@ -45,7 +45,7 @@ typedef struct map_s map_t;
  * @return Pointer to the new map, or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy.
  */
-map_t* ar_map_create(void);
+map_t* ar__map__create(void);
 ```
 
 #### Getting and Setting Values
@@ -58,7 +58,7 @@ map_t* ar_map_create(void);
  * @return Pointer to the referenced value, or NULL if not found
  * @note Ownership: Returns a borrowed reference. Caller does not own the returned value.
  */
-void* ar_map_get(const map_t *ref_map, const char *ref_key);
+void* ar__map__get(const map_t *ref_map, const char *ref_key);
 
 /**
  * Set a reference in map
@@ -70,7 +70,7 @@ void* ar_map_get(const map_t *ref_map, const char *ref_key);
  *       The caller remains responsible for allocating and freeing the key string.
  *       The key string must remain valid for the lifetime of the map entry.
  */
-bool ar_map_set(map_t *mut_map, const char *ref_key, void *ref_value);
+bool ar__map__set(map_t *mut_map, const char *ref_key, void *ref_value);
 ```
 
 #### Map Information and Access
@@ -81,7 +81,7 @@ bool ar_map_set(map_t *mut_map, const char *ref_key, void *ref_value);
  * @param ref_map The map to count (borrowed reference)
  * @return The number of used entries
  */
-size_t ar_map_count(const map_t *ref_map);
+size_t ar__map__count(const map_t *ref_map);
 
 /**
  * Get an array of all refs in the map
@@ -90,9 +90,9 @@ size_t ar_map_count(const map_t *ref_map);
  * @note Ownership: Returns an owned array that caller must free.
  *       The caller is responsible for freeing the returned array using free().
  *       The refs themselves are borrowed references and remain owned by their original owners.
- *       The caller can use ar_map_count() to determine the size of the array.
+ *       The caller can use ar__map__count() to determine the size of the array.
  */
-void** ar_map_refs(const map_t *ref_map);
+void** ar__map__refs(const map_t *ref_map);
 ```
 
 #### Memory Management
@@ -105,7 +105,7 @@ void** ar_map_refs(const map_t *ref_map);
  *       It does not free memory for keys or referenced values.
  *       The caller remains responsible for freeing all keys and values that were added to the map.
  */
-void ar_map_destroy(map_t *own_map);
+void ar__map__destroy(map_t *own_map);
 ```
 
 ## Usage Examples
@@ -114,7 +114,7 @@ void ar_map_destroy(map_t *own_map);
 
 ```c
 // Create a map (owned by caller)
-own_map_t *own_map = ar_map_create();
+own_map_t *own_map = ar__map__create();
 
 // Key must remain valid for the lifetime of the map entry
 // Using const char* for better compatibility with string literals
@@ -123,15 +123,15 @@ const char *ref_key = "answer";  // Using string literal that has static lifetim
 // Store a value (integer, owned by caller)
 own_int_t *own_value = malloc(sizeof(int));
 *own_value = 42;
-ar_map_set(own_map, ref_key, own_value);
+ar__map__set(own_map, ref_key, own_value);
 
 // Retrieve the value (borrowed reference)
-const int *ref_retrieved = (const int*)ar_map_get(own_map, "answer");
+const int *ref_retrieved = (const int*)ar__map__get(own_map, "answer");
 printf("The answer is: %d\n", *ref_retrieved);
 
 // Clean up (following MMM guidelines)
 // 1. Free the container first
-ar_map_destroy(own_map);
+ar__map__destroy(own_map);
 // 2. Then free the contents
 free(own_value);
 // No need to free ref_key as it's a string literal
@@ -141,17 +141,17 @@ free(own_value);
 
 ```c
 // Create and populate a map
-own_map_t *own_map = ar_map_create();
-ar_map_set(own_map, "key1", value1);
-ar_map_set(own_map, "key2", value2);
-ar_map_set(own_map, "key3", value3);
+own_map_t *own_map = ar__map__create();
+ar__map__set(own_map, "key1", value1);
+ar__map__set(own_map, "key2", value2);
+ar__map__set(own_map, "key3", value3);
 
 // Get count of entries
-size_t count = ar_map_count(own_map);
+size_t count = ar__map__count(own_map);
 printf("Map contains %zu entries\n", count);
 
 // Get all refs (returned array is owned by caller)
-own_refs_t **own_refs = ar_map_refs(own_map);
+own_refs_t **own_refs = ar__map__refs(own_map);
 
 if (own_refs) {
     for (size_t i = 0; i < count; i++) {
@@ -163,28 +163,28 @@ if (own_refs) {
 }
 
 // Clean up map (but not the values, which must be freed separately)
-ar_map_destroy(own_map);
+ar__map__destroy(own_map);
 ```
 
 ### Freeing Map Contents
 
 ```c
 // Create and populate a map with heap-allocated keys and values
-own_map_t *own_map = ar_map_create();
+own_map_t *own_map = ar__map__create();
 own_key1_t *own_key1 = strdup("key1");
 own_key2_t *own_key2 = strdup("key2");
 own_value1_t *own_value1 = malloc(sizeof(int));
 own_value2_t *own_value2 = malloc(sizeof(int));
 
-ar_map_set(own_map, own_key1, own_value1);
-ar_map_set(own_map, own_key2, own_value2);
+ar__map__set(own_map, own_key1, own_value1);
+ar__map__set(own_map, own_key2, own_value2);
 
 // Get all refs to free them
-own_refs_t **own_refs = ar_map_refs(own_map);
-size_t count = ar_map_count(own_map);
+own_refs_t **own_refs = ar__map__refs(own_map);
+size_t count = ar__map__count(own_map);
 
 // We need to manually track which refs correspond to which keys
-// since ar_map_refs() only returns values, not keys
+// since ar__map__refs() only returns values, not keys
 bool freed_value1 = false;
 bool freed_value2 = false;
 
@@ -211,17 +211,17 @@ free(own_key2);
 assert(freed_value1 && freed_value2);
 
 // Then free the map itself
-ar_map_destroy(own_map);
+ar__map__destroy(own_map);
 ```
 
 ### Nested Maps
 
 ```c
 // Create outer map (owned)
-own_outer_map_t *own_outer_map = ar_map_create();
+own_outer_map_t *own_outer_map = ar__map__create();
 
 // Create inner map (owned)
-own_inner_map_t *own_inner_map = ar_map_create();
+own_inner_map_t *own_inner_map = ar__map__create();
 
 // Create keys (must remain valid for the lifetime of the map entries)
 // Using string literals for simplicity
@@ -229,23 +229,23 @@ const char *ref_outer_key = "inner";
 const char *ref_inner_key = "count";
 
 // Store inner map in outer map (both maps remain owned by this code)
-ar_map_set(own_outer_map, ref_outer_key, own_inner_map);
+ar__map__set(own_outer_map, ref_outer_key, own_inner_map);
 
 // Store a value in inner map (value remains owned by this code)
 own_value_t *own_value = malloc(sizeof(int));
 *own_value = 100;
-ar_map_set(own_inner_map, ref_inner_key, own_value);
+ar__map__set(own_inner_map, ref_inner_key, own_value);
 
 // Retrieve through nested structure (borrowed references)
-const map_t *ref_retrieved_inner = (const map_t*)ar_map_get(own_outer_map, "inner");
-const int *ref_retrieved_value = (const int*)ar_map_get(ref_retrieved_inner, "count");
+const map_t *ref_retrieved_inner = (const map_t*)ar__map__get(own_outer_map, "inner");
+const int *ref_retrieved_value = (const int*)ar__map__get(ref_retrieved_inner, "count");
 printf("The count is: %d\n", *ref_retrieved_value);
 
 // Cleanup (following MMM hierarchy)
 // 1. Free the outermost container first
-ar_map_destroy(own_outer_map);
+ar__map__destroy(own_outer_map);
 // 2. Then free inner containers
-ar_map_destroy(own_inner_map);
+ar__map__destroy(own_inner_map);
 // 3. Finally free the leaf value
 free(own_value);
 ```
@@ -265,8 +265,8 @@ free(own_value);
 - No reference counting is implemented - memory management responsibility lies with the caller
 - The map implementation is opaque, hiding its internal structure from clients
 - Clients should use the public API functions rather than accessing the map structure directly
-- Maps are always heap-allocated and fully initialized through ar_map_create()
-- All maps should be freed with ar_map_destroy() when no longer needed
+- Maps are always heap-allocated and fully initialized through ar__map__create()
+- All maps should be freed with ar__map__destroy() when no longer needed
 - MMM ownership prefixes (`own_`, `mut_`, `ref_`) are used consistently throughout the implementation
 
 ### Struct Field Ownership

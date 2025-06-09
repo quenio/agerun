@@ -25,14 +25,14 @@ The Methodology module provides functionality for storing, managing, and retriev
  * @note Ownership: Returns a borrowed reference to the internal method. The caller
  *       should not modify or free the returned method.
  */
-method_t* ar_methodology_get_method(const char *ref_name, const char *ref_version);
+method_t* ar__methodology__get_method(const char *ref_name, const char *ref_version);
 
 /**
  * Find the index of a method by name in the methods array
  * @param ref_name Method name to search for (borrowed reference)
  * @return Index of the method, or -1 if not found
  */
-int ar_methodology_find_method_idx(const char *ref_name);
+int ar__methodology__find_method_idx(const char *ref_name);
 ```
 
 #### Method Storage Management
@@ -46,7 +46,7 @@ int ar_methodology_find_method_idx(const char *ref_name);
  * @note Ownership: Returns a mutable reference to internal storage.
  *       The caller should not free the returned method.
  */
-method_t* ar_methodology_get_method_storage(int method_idx, int version_idx);
+method_t* ar__methodology__get_method_storage(int method_idx, int version_idx);
 
 /**
  * Set a method pointer in the method storage location
@@ -56,7 +56,7 @@ method_t* ar_methodology_get_method_storage(int method_idx, int version_idx);
  * @note Ownership: Methodology takes ownership of the method pointer.
  *       The caller should not use or free the method after this call.
  */
-void ar_methodology_set_method_storage(int method_idx, int version_idx, method_t *ref_method);
+void ar__methodology__set_method_storage(int method_idx, int version_idx, method_t *ref_method);
 
 /**
  * Get a pointer to the array of method counts
@@ -64,7 +64,7 @@ void ar_methodology_set_method_storage(int method_idx, int version_idx, method_t
  * @note Ownership: Returns a mutable reference to internal storage.
  *       The caller should not free the returned array.
  */
-int* ar_methodology_get_method_counts(void);
+int* ar__methodology__get_method_counts(void);
 
 /**
  * Get a pointer to the method name count variable
@@ -72,7 +72,7 @@ int* ar_methodology_get_method_counts(void);
  * @note Ownership: Returns a mutable reference to internal storage.
  *       The caller should not free the returned pointer.
  */
-int* ar_methodology_get_method_name_count(void);
+int* ar__methodology__get_method_name_count(void);
 ```
 
 #### Method Creation and Registration
@@ -87,7 +87,7 @@ int* ar_methodology_get_method_name_count(void);
  * @note Ownership: This function creates and takes ownership of the method.
  *       The caller should not worry about destroying the method.
  */
-bool ar_methodology_create_method(const char *ref_name, const char *ref_instructions, 
+bool ar__methodology__create_method(const char *ref_name, const char *ref_instructions, 
                               const char *ref_version);
 ```
 
@@ -98,7 +98,7 @@ bool ar_methodology_create_method(const char *ref_name, const char *ref_instruct
  * @note Ownership: The methodology module takes ownership of the method.
  *       The caller should not access or free the method after this call.
  */
-void ar_methodology_register_method(method_t *own_method);
+void ar__methodology__register_method(method_t *own_method);
 ```
 
 #### Persistence
@@ -108,19 +108,19 @@ void ar_methodology_register_method(method_t *own_method);
  * Save all method definitions to disk
  * @return true if successful, false otherwise
  */
-bool ar_methodology_save_methods(void);
+bool ar__methodology__save_methods(void);
 
 /**
  * Load all method definitions from disk
  * @return true if successful, false otherwise
  */
-bool ar_methodology_load_methods(void);
+bool ar__methodology__load_methods(void);
 
 /**
  * Clean up all method definitions and free resources
  * This should be called during system shutdown
  */
-void ar_methodology_cleanup(void);
+void ar__methodology__cleanup(void);
 ```
 
 ## Implementation Notes
@@ -131,7 +131,7 @@ void ar_methodology_cleanup(void);
 - The module handles persistence of methods to disk, saving and loading them for system restarts
 - Proper memory management follows the AgeRun Memory Management Model (MMM)
 - The methodology module is responsible for freeing method resources it owns
-- It uses `ar_method_destroy()` to properly clean up method resources
+- It uses `ar__method__destroy()` to properly clean up method resources
 
 ## Usage Examples
 
@@ -139,16 +139,16 @@ void ar_methodology_cleanup(void);
 
 ```c
 // Get the latest version of a method
-method_t *ref_method = ar_methodology_get_method("echo_method", NULL);
+method_t *ref_method = ar__methodology__get_method("echo_method", NULL);
 if (ref_method) {
     // Use the method...
-    const char *instructions = ar_method_get_instructions(ref_method);
-    const char *version = ar_method_get_version(ref_method);
+    const char *instructions = ar__method__get_instructions(ref_method);
+    const char *version = ar__method__get_version(ref_method);
     // Note: ref_method is owned by the methodology module, don't free it
 }
 
 // Get a specific version of a method
-method_t *ref_specific_method = ar_methodology_get_method("echo_method", "2.0.0");
+method_t *ref_specific_method = ar__methodology__get_method("echo_method", "2.0.0");
 if (ref_specific_method) {
     // Use the specific version...
 }
@@ -158,7 +158,7 @@ if (ref_specific_method) {
 
 ```c
 // Create and register a method using semantic versioning
-bool created = ar_methodology_create_method("custom_method", 
+bool created = ar__methodology__create_method("custom_method", 
                                         "memory.result := \"Custom: \" + message.text;", 
                                         "1.0.0");
 if (created) {
@@ -166,12 +166,12 @@ if (created) {
 }
 
 // Alternative approach: Create method object manually and register it
-method_t *own_method = ar_method_create("another_method", 
+method_t *own_method = ar__method__create("another_method", 
                                    "memory.greeting := \"Hello\";",
                                    "1.0.0");
 
 // Register the method with the methodology module (transfers ownership)
-ar_methodology_register_method(own_method);
+ar__methodology__register_method(own_method);
 own_method = NULL; // Mark as transferred
 // After this point, own_method is owned by the methodology module
 ```
@@ -180,17 +180,17 @@ own_method = NULL; // Mark as transferred
 
 ```c
 // Save all methods to disk
-bool save_result = ar_methodology_save_methods();
+bool save_result = ar__methodology__save_methods();
 if (save_result) {
     printf("Methods saved successfully\n");
 }
 
 // Load methods from disk
-bool load_result = ar_methodology_load_methods();
+bool load_result = ar__methodology__load_methods();
 if (load_result) {
     printf("Methods loaded successfully\n");
 }
 
 // Clean up resources during shutdown
-ar_methodology_cleanup();
+ar__methodology__cleanup();
 ```

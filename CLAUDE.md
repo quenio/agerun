@@ -51,7 +51,7 @@ make run-sanitize          # Run executable with ASan
 ### 1. Memory Management (ZERO TOLERANCE FOR LEAKS)
 
 **Mandatory Practices**:
-- Use heap tracking macros: `AR_HEAP_MALLOC`, `AR_HEAP_FREE`, `AR_HEAP_STRDUP`
+- Use heap tracking macros: `AR__HEAP__MALLOC`, `AR__HEAP__FREE`, `AR__HEAP__STRDUP`
 - Include `#include "agerun_heap.h"` in all .c files that allocate memory
 - Follow ownership naming conventions:
   - `own_`: Owned values that must be destroyed
@@ -71,9 +71,9 @@ make run-sanitize          # Run executable with ASan
   - Memory access (`memory.x`): returns reference, do NOT destroy
   - Arithmetic (`2 + 3`, `memory.x + 5`): returns new object, MUST destroy
   - String operations (`"Hello" + " World"`): returns new object, MUST destroy
-  - Use `ar_expression_take_ownership()` to check ownership
+  - Use `ar__expression__take_ownership()` to check ownership
 - Map iteration pattern:
-  - Use `ar_data_get_map_keys()` to get all keys as a list
+  - Use `ar__data__get_map_keys()` to get all keys as a list
   - Remember to destroy both the list and its string elements after use
   - Write persistence files with key/type on one line, value on the next
 
@@ -172,14 +172,14 @@ make run-sanitize          # Run executable with ASan
 
 **File Operations**:
 - Use IO module functions, not raw stdio
-- `ar_io_open_file` instead of `fopen`
-- `ar_io_close_file` instead of `fclose`
-- `ar_io_fprintf` instead of `fprintf`
-- `ar_io_read_line` instead of `fgets` or `getline`
+- `ar__io__open_file` instead of `fopen`
+- `ar__io__close_file` instead of `fclose`
+- `ar__io__fprintf` instead of `fprintf`
+- `ar__io__read_line` instead of `fgets` or `getline`
 - Check all return codes
-- Use `ar_io_create_backup` before modifying critical files
-- Use `ar_io_write_file` for atomic operations
-- Use `ar_io_set_secure_permissions` for sensitive files
+- Use `ar__io__create_backup` before modifying critical files
+- Use `ar__io__write_file` for atomic operations
+- Use `ar__io__set_secure_permissions` for sensitive files
 
 ### 5. Module Development
 
@@ -187,7 +187,7 @@ make run-sanitize          # Run executable with ASan
 - **Circular Dependencies**: Always check for and eliminate circular dependencies
 - **Unidirectional Flow**: Ensure dependencies flow in one direction (e.g., agency → agent_update → agent_registry)
 - **Delegation Pattern**: Higher-level modules can pass their dependencies to lower-level modules as parameters
-- **Module Naming**: Follow `ar_<module>_<function>` pattern consistently (e.g., `ar_agent_update_update_methods`)
+- **Module Naming**: Follow `ar_<module>_<function>` pattern consistently (e.g., `ar__agent__update_update_methods`)
 
 **Code Modification Process**:
 1. Understand codebase structure and dependencies
@@ -281,7 +281,7 @@ make run-sanitize          # Run executable with ASan
 - Agents receive `__wake__` on creation
 - Agents receive `__sleep__` before destruction
 - ALWAYS process messages after sending to prevent leaks
-- Call `ar_system_process_next_message()` after `ar_agent_send()`
+- Call `ar__system__process_next_message()` after `ar__agent__send()`
 
 ### 9. Building Individual Tests
 
@@ -357,16 +357,16 @@ if (getcwd(cwd, sizeof(cwd)) != NULL) {
 }
 
 // Clean state
-ar_system_shutdown();
-ar_methodology_cleanup();
-ar_agency_reset();
+ar__system__shutdown();
+ar__methodology__cleanup();
+ar__agency__reset();
 remove("methodology.agerun");
 remove("agency.agerun");
 
 // ... test code ...
 
 // Initialize system after creating methods
-ar_system_init(NULL, NULL);
+ar__system__init(NULL, NULL);
 ```
 
 ## Quick Reference

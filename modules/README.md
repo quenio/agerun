@@ -10,7 +10,7 @@ Each module typically follows a consistent naming convention with an `agerun_` p
 
 Within modules, consistent naming conventions are used:
 
-- **Functions**: All public functions in a module use the `ar_` prefix followed by the module name and function purpose (e.g., `ar_string_trim`, `ar_data_copy`). This creates a namespace to prevent naming collisions.
+- **Functions**: All public functions in a module use the `ar_` prefix followed by the module name and function purpose (e.g., `ar__string__trim`, `ar__data__copy`). This creates a namespace to prevent naming collisions.
 
 - **Structs**: Data structures typically use lowercase with underscores and the `_t` suffix (e.g., `string_t`, `agent_t`). These are often defined in the header files.
 
@@ -27,7 +27,7 @@ AgeRun implements a comprehensive memory safety system with zero tolerance for m
 **Memory Safety Achievements:**
 
 - **Zero Memory Leaks**: All 26 identified memory leaks (438 bytes) have been eliminated across all modules
-- **Heap Tracking System**: All modules use `AR_HEAP_MALLOC`, `AR_HEAP_FREE`, and `AR_HEAP_STRDUP` macros for comprehensive memory tracking
+- **Heap Tracking System**: All modules use `AR__HEAP__MALLOC`, `AR__HEAP__FREE`, and `AR__HEAP__STRDUP` macros for comprehensive memory tracking
 - **Automatic Reporting**: Memory usage and leak detection reported automatically via `heap_memory_report.log`
 - **Production Ready**: System suitable for memory-critical, long-running applications
 
@@ -39,7 +39,7 @@ AgeRun implements a comprehensive memory safety system with zero tolerance for m
   - **Borrowed References (`ref_` prefix)**: Read-only references that don't own the object
 
 - **Memory Tracking**:
-  - **Heap tracking macros** (`AR_HEAP_*`) used throughout all modules for comprehensive memory tracking
+  - **Heap tracking macros** (`AR__HEAP__*`) used throughout all modules for comprehensive memory tracking
   - **Agent lifecycle memory management** ensuring proper message queue cleanup
   - **Address Sanitizer integration** for runtime memory error detection
   - **Static analysis** with Clang Static Analyzer for compile-time verification
@@ -211,7 +211,7 @@ The [assert module](agerun_assert.md) provides assertion utilities for runtime v
 
 The [heap module](agerun_heap.md) provides comprehensive memory tracking and leak detection for the entire AgeRun system:
 
-- **Memory Tracking Macros**: Provides `AR_HEAP_MALLOC`, `AR_HEAP_FREE`, and `AR_HEAP_STRDUP` macros for tracked memory allocation
+- **Memory Tracking Macros**: Provides `AR__HEAP__MALLOC`, `AR__HEAP__FREE`, and `AR__HEAP__STRDUP` macros for tracked memory allocation
 - **Zero Memory Leaks**: System has achieved zero memory leaks across all modules using this tracking system
 - **Automatic Reporting**: Generates detailed memory usage reports in `heap_memory_report.log`
 - **Debug-Only Tracking**: Memory tracking is enabled only in debug builds for zero production overhead
@@ -379,14 +379,14 @@ The agent module provides individual agent lifecycle management and message hand
 - **Memory Management**: Agents have persistent memory maps for state storage
 - **Context Handling**: Supports read-only context data provided at agent creation
 - **Registry Integration**: Uses internal agent_registry for ID management and agent tracking
-- **Registry Access**: Provides `ar_agent_get_registry()` for agency and agent_store modules
+- **Registry Access**: Provides `ar__agent__get_registry()` for agency and agent_store modules
 - **Dynamic Agent Limit**: No hardcoded MAX_AGENTS limit - uses dynamic allocation via registry
 - **Opaque Type**: Agent structure is fully opaque with accessor functions:
-  - `ar_agent_get_memory()`: Returns read-only access to agent's memory
-  - `ar_agent_get_mutable_memory()`: Returns mutable access to agent's memory
-  - `ar_agent_get_context()`: Returns read-only access to agent's context
-  - `ar_agent_get_method()`: Returns agent's method reference
-  - `ar_agent_get_registry()`: Returns agent registry for persistence/management operations
+  - `ar__agent__get_memory()`: Returns read-only access to agent's memory
+  - `ar__agent__get_mutable_memory()`: Returns mutable access to agent's memory
+  - `ar__agent__get_context()`: Returns read-only access to agent's context
+  - `ar__agent__get_method()`: Returns agent's method reference
+  - `ar__agent__get_registry()`: Returns agent registry for persistence/management operations
 - **Zero Memory Leaks**: Proper cleanup of agent resources including message queues
 - **Depends on Agent Registry**: Uses agent_registry module for ID allocation and tracking
 - **Depends on Map and List**: Uses core data structures for internal state management

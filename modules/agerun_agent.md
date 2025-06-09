@@ -17,9 +17,9 @@ The agent module (`agerun_agent.h` and `agerun_agent.c`) provides individual age
 
 ### Core Functions
 
-#### `ar_agent_create`
+#### `ar__agent__create`
 ```c
-int64_t ar_agent_create(const char *ref_method_name, const char *ref_version, const data_t *ref_context)
+int64_t ar__agent__create(const char *ref_method_name, const char *ref_version, const data_t *ref_context)
 ```
 Creates a new agent with the specified method and optional context. The agent automatically receives a `__wake__` message upon creation.
 
@@ -30,11 +30,11 @@ Creates a new agent with the specified method and optional context. The agent au
 
 **Returns:** Agent ID on success, 0 on failure
 
-**Note:** The wake message should be processed by calling `ar_system_process_next_message()` after creation.
+**Note:** The wake message should be processed by calling `ar__system__process_next_message()` after creation.
 
-#### `ar_agent_destroy`
+#### `ar__agent__destroy`
 ```c
-bool ar_agent_destroy(int64_t agent_id)
+bool ar__agent__destroy(int64_t agent_id)
 ```
 Destroys an agent and cleans up all its resources. Sends a `__sleep__` message before destruction.
 
@@ -43,9 +43,9 @@ Destroys an agent and cleans up all its resources. Sends a `__sleep__` message b
 
 **Returns:** true on success, false if agent not found
 
-#### `ar_agent_send`
+#### `ar__agent__send`
 ```c
-bool ar_agent_send(agent_id_t agent_id, data_t *own_message)
+bool ar__agent__send(agent_id_t agent_id, data_t *own_message)
 ```
 Sends a message to an agent's message queue. Takes ownership of the message.
 
@@ -57,9 +57,9 @@ Sends a message to an agent's message queue. Takes ownership of the message.
 
 **Note:** The function takes ownership of the message regardless of success.
 
-#### `ar_agent_exists`
+#### `ar__agent__exists`
 ```c
-bool ar_agent_exists(agent_id_t agent_id)
+bool ar__agent__exists(agent_id_t agent_id)
 ```
 Checks if an agent with the given ID exists and is active.
 
@@ -70,9 +70,9 @@ Checks if an agent with the given ID exists and is active.
 
 ### Accessor Functions
 
-#### `ar_agent_get_memory`
+#### `ar__agent__get_memory`
 ```c
-const data_t* ar_agent_get_memory(agent_id_t agent_id)
+const data_t* ar__agent__get_memory(agent_id_t agent_id)
 ```
 Returns read-only access to an agent's memory map.
 
@@ -81,9 +81,9 @@ Returns read-only access to an agent's memory map.
 
 **Returns:** Const pointer to agent's memory (borrowed reference), or NULL if agent not found
 
-#### `ar_agent_get_mutable_memory`
+#### `ar__agent__get_mutable_memory`
 ```c
-data_t* ar_agent_get_mutable_memory(agent_id_t agent_id)
+data_t* ar__agent__get_mutable_memory(agent_id_t agent_id)
 ```
 Returns mutable access to an agent's memory map for modification.
 
@@ -92,9 +92,9 @@ Returns mutable access to an agent's memory map for modification.
 
 **Returns:** Mutable pointer to agent's memory (borrowed reference), or NULL if agent not found
 
-#### `ar_agent_get_context`
+#### `ar__agent__get_context`
 ```c
-const data_t* ar_agent_get_context(agent_id_t agent_id)
+const data_t* ar__agent__get_context(agent_id_t agent_id)
 ```
 Returns read-only access to an agent's context data.
 
@@ -103,9 +103,9 @@ Returns read-only access to an agent's context data.
 
 **Returns:** Const pointer to agent's context (borrowed reference), or NULL if agent not found or no context
 
-#### `ar_agent_get_method`
+#### `ar__agent__get_method`
 ```c
-const method_t* ar_agent_get_method(agent_id_t agent_id)
+const method_t* ar__agent__get_method(agent_id_t agent_id)
 ```
 Returns the method associated with an agent.
 
@@ -120,47 +120,47 @@ Returns the method associated with an agent.
 
 ```c
 // Create an agent with the echo method
-agent_id_t echo_agent = ar_agent_create("echo", "1.0.0", NULL);
+agent_id_t echo_agent = ar__agent__create("echo", "1.0.0", NULL);
 if (echo_agent == 0) {
     fprintf(stderr, "Failed to create agent\n");
     return;
 }
 
 // Process the wake message
-ar_system_process_next_message();
+ar__system__process_next_message();
 
 // Send a message to the agent
-data_t *own_message = ar_data_create_map();
-ar_data_set_map_string(own_message, "content", "Hello, Agent!");
-ar_data_set_map_integer(own_message, "sender", 0);
+data_t *own_message = ar__data__create_map();
+ar__data__set_map_string(own_message, "content", "Hello, Agent!");
+ar__data__set_map_integer(own_message, "sender", 0);
 
-if (ar_agent_send(echo_agent, own_message)) {
+if (ar__agent__send(echo_agent, own_message)) {
     // Message sent successfully (ownership transferred)
-    ar_system_process_next_message();
+    ar__system__process_next_message();
 } else {
     // Failed to send (message was still destroyed)
 }
 
 // Access agent's memory
-const data_t *memory = ar_agent_get_memory(echo_agent);
+const data_t *memory = ar__agent__get_memory(echo_agent);
 if (memory) {
     // Read values from memory
-    const data_t *result = ar_data_get_map_data(memory, "result");
+    const data_t *result = ar__data__get_map_data(memory, "result");
 }
 
 // Destroy the agent when done
-ar_agent_destroy(echo_agent);
+ar__agent__destroy(echo_agent);
 ```
 
 ### Modifying Agent Memory
 
 ```c
 // Get mutable access to agent's memory
-data_t *mut_memory = ar_agent_get_mutable_memory(agent_id);
+data_t *mut_memory = ar__agent__get_mutable_memory(agent_id);
 if (mut_memory) {
     // Store a value in memory
-    data_t *own_value = ar_data_create_string("processed");
-    ar_data_set_map_data(mut_memory, "status", own_value);
+    data_t *own_value = ar__data__create_string("processed");
+    ar__data__set_map_data(mut_memory, "status", own_value);
     // Ownership of own_value transferred to the map
 }
 ```

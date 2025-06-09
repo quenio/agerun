@@ -17,7 +17,7 @@ The `agerun_semver` module provides functions for parsing, comparing, and managi
 ### Parsing
 
 ```c
-bool ar_semver_parse(const char *ref_version, int *major, int *minor, int *patch);
+bool ar__semver__parse(const char *ref_version, int *major, int *minor, int *patch);
 ```
 
 Parses a semantic version string into its numeric components. The version string can be in the full form "X.Y.Z" or partial forms like "X" or "X.Y". Missing components default to 0.
@@ -33,7 +33,7 @@ Parses a semantic version string into its numeric components. The version string
 ### Comparison
 
 ```c
-int ar_semver_compare(const char *ref_v1, const char *ref_v2);
+int ar__semver__compare(const char *ref_v1, const char *ref_v2);
 ```
 
 Compares two version strings according to semantic versioning rules.
@@ -50,7 +50,7 @@ Compares two version strings according to semantic versioning rules.
 ### Compatibility Check
 
 ```c
-bool ar_semver_are_compatible(const char *ref_v1, const char *ref_v2);
+bool ar__semver__are_compatible(const char *ref_v1, const char *ref_v2);
 ```
 
 Checks if two versions are compatible (have the same major version).
@@ -64,7 +64,7 @@ Checks if two versions are compatible (have the same major version).
 ### Pattern Matching
 
 ```c
-bool ar_semver_matches_pattern(const char *ref_version, const char *ref_pattern);
+bool ar__semver__matches_pattern(const char *ref_version, const char *ref_pattern);
 ```
 
 Checks if a version string matches a version pattern. A pattern can be a partial version like "1" (matches all 1.x.x versions) or "1.2" (matches all 1.2.x versions).
@@ -77,7 +77,7 @@ Checks if a version string matches a version pattern. A pattern can be a partial
 ### Finding the Latest Matching Version
 
 ```c
-int ar_semver_find_latest_matching(const char **ref_versions, int count, const char *ref_pattern);
+int ar__semver__find_latest_matching(const char **ref_versions, int count, const char *ref_pattern);
 ```
 
 Finds the latest version in an array that matches a specified pattern.
@@ -112,7 +112,7 @@ This process ensures a clean transition between compatible versions while preser
 
 ```c
 int major, minor, patch;
-if (ar_semver_parse("1.2.3", &major, &minor, &patch)) {
+if (ar__semver__parse("1.2.3", &major, &minor, &patch)) {
     printf("Version: %d.%d.%d\n", major, minor, patch);
 }
 ```
@@ -121,7 +121,7 @@ if (ar_semver_parse("1.2.3", &major, &minor, &patch)) {
 
 ```c
 // Check if v2 is newer than v1
-if (ar_semver_compare("1.2.3", "1.3.0") < 0) {
+if (ar__semver__compare("1.2.3", "1.3.0") < 0) {
     printf("Version 1.3.0 is newer than 1.2.3\n");
 }
 ```
@@ -131,7 +131,7 @@ if (ar_semver_compare("1.2.3", "1.3.0") < 0) {
 ```c
 const char *versions[] = {"1.0.0", "1.1.0", "1.2.0", "2.0.0"};
 int count = 4;
-int latest_idx = ar_semver_find_latest_matching(versions, count, "1");
+int latest_idx = ar__semver__find_latest_matching(versions, count, "1");
 if (latest_idx >= 0) {
     printf("Latest 1.x.x version: %s\n", versions[latest_idx]); // 1.2.0
 }

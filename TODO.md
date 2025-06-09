@@ -7,7 +7,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ## In Progress
 
 ### Module Function Naming Convention Refactoring
-- [ ] Change all module functions from ar_<module>_<function> to ar__<module>__<function>
+- [x] Change all module functions from ar_<module>_<function> to ar__<module>__<function>
   - [x] Refactor executable module
   - [x] Refactor system module
   - [x] Refactor test fixtures (instruction_fixture, method_fixture, system_fixture)
@@ -27,8 +27,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Refactor list module
   - [x] Refactor io module
   - [x] Refactor heap module
-  - [ ] Refactor assert module
-  - [ ] Update all documentation files (.md) to reflect new double underscore naming convention
+  - [x] Refactor assert module (no functions, only macros)
+  - [x] Update all documentation files (.md) to reflect new double underscore naming convention
 
 ## Critical Compliance Tasks
 

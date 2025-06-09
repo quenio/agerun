@@ -48,26 +48,26 @@ This module serves as a foundation for other modules that need to perform file o
  * Prints an error message to stderr
  * @param format Printf-style format string
  */
-void ar_io_error(const char *format, ...);
+void ar__io__error(const char *format, ...);
 
 /**
  * Prints a warning message to stderr
  * @param format Printf-style format string
  */
-void ar_io_warning(const char *format, ...);
+void ar__io__warning(const char *format, ...);
 
 /**
  * Prints an informational message to stdout
  * @param format Printf-style format string
  */
-void ar_io_info(const char *format, ...);
+void ar__io__info(const char *format, ...);
 
 /**
  * Safely prints to the specified stream with error checking
  * @param stream Stream to print to
  * @param format Printf-style format string
  */
-void ar_io_fprintf(FILE *stream, const char *format, ...);
+void ar__io__fprintf(FILE *stream, const char *format, ...);
 ```
 
 ### File Result Types
@@ -93,7 +93,7 @@ typedef enum file_result_e {
  * @param result The result code to get a message for
  * @return A human-readable error message
  */
-const char* ar_io_error_message(file_result_t result);
+const char* ar__io__error_message(file_result_t result);
 ```
 
 ### File Operations
@@ -107,7 +107,7 @@ const char* ar_io_error_message(file_result_t result);
  * @param filename Name of the file being read (for error messages)
  * @return true if a line was read successfully, false otherwise
  */
-bool ar_io_read_line(FILE *fp, char *buffer, int buffer_size, const char *filename);
+bool ar__io__read_line(FILE *fp, char *buffer, int buffer_size, const char *filename);
 
 /**
  * Safely opens a file with proper error checking and reporting
@@ -116,7 +116,7 @@ bool ar_io_read_line(FILE *fp, char *buffer, int buffer_size, const char *filena
  * @param file_ptr Pointer to store the opened file handle
  * @return FILE_SUCCESS if successful, appropriate error code otherwise
  */
-file_result_t ar_io_open_file(const char *filename, const char *mode, FILE **file_ptr);
+file_result_t ar__io__open_file(const char *filename, const char *mode, FILE **file_ptr);
 
 /**
  * Safely closes a file with error checking
@@ -124,7 +124,7 @@ file_result_t ar_io_open_file(const char *filename, const char *mode, FILE **fil
  * @param filename Name of the file (for error reporting)
  * @return FILE_SUCCESS if successful, appropriate error code otherwise
  */
-file_result_t ar_io_close_file(FILE *fp, const char *filename);
+file_result_t ar__io__close_file(FILE *fp, const char *filename);
 ```
 
 ### Backup and Security
@@ -135,21 +135,21 @@ file_result_t ar_io_close_file(FILE *fp, const char *filename);
  * @param filename Path to the file to backup
  * @return FILE_SUCCESS if backup was created successfully, appropriate error code otherwise
  */
-file_result_t ar_io_create_backup(const char *filename);
+file_result_t ar__io__create_backup(const char *filename);
 
 /**
  * Restores a backup file if the main operation failed
  * @param filename Path to the file to restore
  * @return FILE_SUCCESS if backup was restored successfully, appropriate error code otherwise
  */
-file_result_t ar_io_restore_backup(const char *filename);
+file_result_t ar__io__restore_backup(const char *filename);
 
 /**
  * Applies secure permissions to a file (owner read/write only)
  * @param filename Path to the file to secure
  * @return FILE_SUCCESS if permissions were set successfully, appropriate error code otherwise
  */
-file_result_t ar_io_set_secure_permissions(const char *filename);
+file_result_t ar__io__set_secure_permissions(const char *filename);
 ```
 
 ### Secure Writing
@@ -162,7 +162,7 @@ file_result_t ar_io_set_secure_permissions(const char *filename);
  * @param context Context passed to the write function
  * @return FILE_SUCCESS if successful, appropriate error code otherwise
  */
-file_result_t ar_io_write_file(const char *filename,
+file_result_t ar__io__write_file(const char *filename,
                            bool (*write_func)(FILE *fp, void *context),
                            void *context);
 ```
@@ -173,16 +173,16 @@ file_result_t ar_io_write_file(const char *filename,
 
 ```c
 // Informational message (to stdout)
-ar_io_info("Processing file %s", filename);
+ar__io__info("Processing file %s", filename);
 
 // Warning message for non-critical issues (to stderr)
 if (file_size > MAX_RECOMMENDED_SIZE) {
-    ar_io_warning("File %s exceeds recommended size (%d bytes)", filename, file_size);
+    ar__io__warning("File %s exceeds recommended size (%d bytes)", filename, file_size);
 }
 
 // Error message for critical issues (to stderr)
 if (result != FILE_SUCCESS) {
-    ar_io_error("Failed to process file %s: %s", filename, ar_io_error_message(result));
+    ar__io__error("Failed to process file %s: %s", filename, ar__io__error_message(result));
     return false;
 }
 ```
@@ -192,21 +192,21 @@ if (result != FILE_SUCCESS) {
 ```c
 // Open file safely
 FILE *file;
-file_result_t result = ar_io_open_file("data.txt", "r", &file);
+file_result_t result = ar__io__open_file("data.txt", "r", &file);
 if (result != FILE_SUCCESS) {
-    // Handle error using ar_io_error_message(result)
+    // Handle error using ar__io__error_message(result)
     return;
 }
 
 // Read file content safely
 char buffer[1024];
-while (ar_io_read_line(file, buffer, sizeof(buffer), "data.txt")) {
+while (ar__io__read_line(file, buffer, sizeof(buffer), "data.txt")) {
     // Process line safely, knowing bounds are checked
     // ...
 }
 
 // Close file safely
-ar_io_close_file(file, "data.txt");
+ar__io__close_file(file, "data.txt");
 ```
 
 ### Secure File Writing with Backups
@@ -218,17 +218,17 @@ bool write_data(FILE *fp, void *context) {
     const char *data = (const char *)context;
     
     // Write data safely
-    ar_io_fprintf(fp, "%s\n", data);
+    ar__io__fprintf(fp, "%s\n", data);
     
     return true; // Return false if writing fails
 }
 
 // Write file with automatic backup and security
 const char *data = "Important data to write securely";
-file_result_t result = ar_io_write_file("important.txt", write_data, (void *)data);
+file_result_t result = ar__io__write_file("important.txt", write_data, (void *)data);
 
 if (result != FILE_SUCCESS) {
-    ar_io_error("Failed to write file: %s", ar_io_error_message(result));
+    ar__io__error("Failed to write file: %s", ar__io__error_message(result));
     
     // Handle failure - the module already attempted backup restoration if needed
     return;
@@ -239,18 +239,18 @@ if (result != FILE_SUCCESS) {
 
 1. **Always Check Return Values**: All functions return either a success/failure boolean or a detailed result code. Always check these values and handle errors appropriately.
 
-2. **Use Buffer Size Constants**: When using `ar_io_read_line`, always use sizeof(buffer) as the buffer size parameter to avoid hard-coding buffer sizes.
+2. **Use Buffer Size Constants**: When using `ar__io__read_line`, always use sizeof(buffer) as the buffer size parameter to avoid hard-coding buffer sizes.
 
 3. **File Backup Strategy**: Use the backup functions before any potentially destructive operations. The module's write functions handle this automatically.
 
-4. **Secure Permissions**: Always call `ar_io_set_secure_permissions` after creating new files with sensitive data. The write function does this automatically.
+4. **Secure Permissions**: Always call `ar__io__set_secure_permissions` after creating new files with sensitive data. The write function does this automatically.
 
-5. **Message Handling**: Use the provided reporting functions (`ar_io_error`, `ar_io_warning`, `ar_io_info`) for consistent messaging:
-   - `ar_io_error`: For error messages that indicate problems (writes to stderr)
-   - `ar_io_warning`: For warning messages that indicate potential issues (writes to stderr)
-   - `ar_io_info`: For informational messages that track normal operation (writes to stdout)
+5. **Message Handling**: Use the provided reporting functions (`ar__io__error`, `ar__io__warning`, `ar__io__info`) for consistent messaging:
+   - `ar__io__error`: For error messages that indicate problems (writes to stderr)
+   - `ar__io__warning`: For warning messages that indicate potential issues (writes to stderr)
+   - `ar__io__info`: For informational messages that track normal operation (writes to stdout)
 
-6. **Atomic Operations**: Use `ar_io_write_file` for all file writes that need to be atomic and secure.
+6. **Atomic Operations**: Use `ar__io__write_file` for all file writes that need to be atomic and secure.
 
 ## Memory Safety
 
@@ -267,11 +267,11 @@ The IO module follows the AgeRun Memory Management Model (MMM) principles:
 The module provides comprehensive error handling:
 
 1. **Detailed Error Codes**: Each file operation returns a specific error code.
-2. **Human-Readable Messages**: The `ar_io_error_message` function converts error codes to readable messages.
+2. **Human-Readable Messages**: The `ar__io__error_message` function converts error codes to readable messages.
 3. **Message Reporting System**:
-   - `ar_io_error`: Reports critical errors to stderr
-   - `ar_io_warning`: Reports non-critical warnings to stderr
-   - `ar_io_info`: Reports informational status messages to stdout
+   - `ar__io__error`: Reports critical errors to stderr
+   - `ar__io__warning`: Reports non-critical warnings to stderr
+   - `ar__io__info`: Reports informational status messages to stdout
 4. **Recovery Mechanisms**: Automatic backup and restore functionality for error recovery.
 
 ## Platform Compatibility

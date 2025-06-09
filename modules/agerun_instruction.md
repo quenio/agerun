@@ -51,7 +51,7 @@ The instruction module implements the following BNF grammar:
 ### Instruction Context
 
 ```c
-instruction_context_t* ar_instruction_create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message);
+instruction_context_t* ar__instruction__create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message);
 ```
 
 Creates a new instruction context for parsing and executing instructions.
@@ -69,7 +69,7 @@ Creates a new instruction context for parsing and executing instructions.
 - Does not take ownership of any parameters
 
 ```c
-void ar_instruction_destroy_context(instruction_context_t *own_ctx);
+void ar__instruction__destroy_context(instruction_context_t *own_ctx);
 ```
 
 Destroys an instruction context.
@@ -84,7 +84,7 @@ Destroys an instruction context.
 ### Instruction Execution
 
 ```c
-bool ar_instruction_run(instruction_context_t *mut_ctx, const char *ref_instruction);
+bool ar__instruction__run(instruction_context_t *mut_ctx, const char *ref_instruction);
 ```
 
 Parses and executes a single instruction in the context.
@@ -104,7 +104,7 @@ Parses and executes a single instruction in the context.
 ### Accessor Functions
 
 ```c
-data_t* ar_instruction_get_memory(const instruction_context_t *ref_ctx);
+data_t* ar__instruction__get_memory(const instruction_context_t *ref_ctx);
 ```
 
 Gets the memory from the instruction context.
@@ -116,7 +116,7 @@ Gets the memory from the instruction context.
 - Mutable reference to the memory (not owned by caller)
 
 ```c
-const data_t* ar_instruction_get_context(const instruction_context_t *ref_ctx);
+const data_t* ar__instruction__get_context(const instruction_context_t *ref_ctx);
 ```
 
 Gets the context data from the instruction context.
@@ -128,7 +128,7 @@ Gets the context data from the instruction context.
 - Borrowed reference to the context data (not owned by caller)
 
 ```c
-const data_t* ar_instruction_get_message(const instruction_context_t *ref_ctx);
+const data_t* ar__instruction__get_message(const instruction_context_t *ref_ctx);
 ```
 
 Gets the message from the instruction context.
@@ -142,7 +142,7 @@ Gets the message from the instruction context.
 ### Message Sending
 
 ```c
-bool ar_instruction_send_message(agent_id_t target_id, data_t *own_message);
+bool ar__instruction__send_message(agent_id_t target_id, data_t *own_message);
 ```
 
 Sends a message to another agent.
@@ -161,7 +161,7 @@ Sends a message to another agent.
 ### Error Reporting
 
 ```c
-const char* ar_instruction_get_last_error(const instruction_context_t *ref_ctx);
+const char* ar__instruction__get_last_error(const instruction_context_t *ref_ctx);
 ```
 
 Gets the last error message from the instruction context.
@@ -177,7 +177,7 @@ Gets the last error message from the instruction context.
 - The returned string is owned by the context and should not be freed
 
 ```c
-int ar_instruction_get_error_position(const instruction_context_t *ref_ctx);
+int ar__instruction__get_error_position(const instruction_context_t *ref_ctx);
 ```
 
 Gets the position in the instruction string where the last error occurred.
@@ -197,65 +197,65 @@ Gets the position in the instruction string where the last error occurred.
 
 ```c
 // Create an instruction context
-instruction_context_t *own_ctx = ar_instruction_create_context(mut_memory, ref_context, ref_message);
+instruction_context_t *own_ctx = ar__instruction__create_context(mut_memory, ref_context, ref_message);
 if (!own_ctx) {
     // Handle error
     return false;
 }
 
 // Execute an instruction
-bool success = ar_instruction_run(own_ctx, "memory.greeting := \"Hello, World!\"");
+bool success = ar__instruction__run(own_ctx, "memory.greeting := \"Hello, World!\"");
 
 // Check for errors
 if (!success) {
-    const char *error_msg = ar_instruction_get_last_error(own_ctx);
-    int error_pos = ar_instruction_get_error_position(own_ctx);
+    const char *error_msg = ar__instruction__get_last_error(own_ctx);
+    int error_pos = ar__instruction__get_error_position(own_ctx);
     if (error_msg) {
         fprintf(stderr, "Error at position %d: %s\n", error_pos, error_msg);
     }
 }
 
 // Clean up
-ar_instruction_destroy_context(own_ctx);
+ar__instruction__destroy_context(own_ctx);
 ```
 
 ### Assignment Instruction
 
 ```c
 // Store a string in memory
-ar_instruction_run(own_ctx, "memory.greeting := \"Hello, World!\"");
+ar__instruction__run(own_ctx, "memory.greeting := \"Hello, World!\"");
 
 // Store a number in memory
-ar_instruction_run(own_ctx, "memory.count := 42");
+ar__instruction__run(own_ctx, "memory.count := 42");
 
 // Store an expression result in memory
-ar_instruction_run(own_ctx, "memory.sum := 2 + 3 * 4");
+ar__instruction__run(own_ctx, "memory.sum := 2 + 3 * 4");
 
 // Assign a nested value
-ar_instruction_run(own_ctx, "memory.user.name := \"John\"");
+ar__instruction__run(own_ctx, "memory.user.name := \"John\"");
 ```
 
 ### Function Call Instruction
 
 ```c
 // Send a message to another agent
-ar_instruction_run(own_ctx, "send(target_id, \"Hello\")");
+ar__instruction__run(own_ctx, "send(target_id, \"Hello\")");
 
 // Parse a string into a structured map
-ar_instruction_run(own_ctx, "memory.parsed := parse(\"name={name}\", \"name=John\")");
+ar__instruction__run(own_ctx, "memory.parsed := parse(\"name={name}\", \"name=John\")");
 
 // Build a string from a template and values
-ar_instruction_run(own_ctx, "memory.greeting := build(\"Hello, {name}!\", memory.user)");
+ar__instruction__run(own_ctx, "memory.greeting := build(\"Hello, {name}!\", memory.user)");
 
 // Conditional evaluation
-ar_instruction_run(own_ctx, "memory.result := if(memory.count > 5, \"High\", \"Low\")");
+ar__instruction__run(own_ctx, "memory.result := if(memory.count > 5, \"High\", \"Low\")");
 
 // Create a method
-ar_instruction_run(own_ctx, "memory.created := method(\"greet\", \"memory.message := \\\"Hello\\\";\", 1)");
+ar__instruction__run(own_ctx, "memory.created := method(\"greet\", \"memory.message := \\\"Hello\\\";\", 1)");
 
 // Create an agent
-ar_instruction_run(own_ctx, "memory.context := {\"name\": \"Worker\"}");
-ar_instruction_run(own_ctx, "memory.worker_id := agent(\"echo\", \"1.0.0\", memory.context)");
+ar__instruction__run(own_ctx, "memory.context := {\"name\": \"Worker\"}");
+ar__instruction__run(own_ctx, "memory.worker_id := agent(\"echo\", \"1.0.0\", memory.context)");
 ```
 
 ## Parse Function
@@ -332,7 +332,7 @@ method("greet", "memory.greeting := \"Hello\"", 1)
 - 0 if an error occurred
 
 **Implementation Notes:**
-- The method function calls `ar_methodology_create_method` directly
+- The method function calls `ar__methodology__create_method` directly
 - Default values are used for some parameters:
   - `previous_version`: 0 (automatically detected if method exists)
   - `backward_compatible`: true (methods are backward compatible by default)
@@ -361,7 +361,7 @@ memory.agent_id2 := agent("calculator", "2.0.1", memory.empty)  // With empty co
 - 0 if the agent creation failed (e.g., method not found)
 
 **Implementation Notes:**
-- The agent function calls `ar_agent_create` with the provided parameters
+- The agent function calls `ar__agent__create` with the provided parameters
 - All parameters are required; version must be a specific version string
 - The context parameter must be an expression (e.g., memory reference), not a literal map
 - The context is borrowed - the agent will reference it, not take ownership
@@ -399,7 +399,7 @@ memory.success := destroy(memory.agent_id)  // Returns 1 on success, 0 on failur
 - 0 if the agent didn't exist or destruction failed
 
 **Implementation Notes:**
-- The function calls `ar_agent_destroy` with the provided agent ID
+- The function calls `ar__agent__destroy` with the provided agent ID
 - The agent receives a `__sleep__` message before being destroyed
 - All resources owned by the agent (memory, message queue) are freed
 - Attempting to destroy a non-existent agent returns 0
@@ -423,7 +423,7 @@ memory.success := destroy("calculator", "1.0.0")  // Returns 1 on success, 0 on 
 - 0 if the method didn't exist, has active agents using it, or unregistration failed
 
 **Implementation Notes:**
-- The function calls `ar_methodology_unregister_method` with the provided parameters
+- The function calls `ar__methodology__unregister_method` with the provided parameters
 - Methods can only be unregistered if no agents are currently using them
 - The function checks for active agents before attempting unregistration
 - Attempting to unregister a non-existent method returns 0
@@ -449,16 +449,16 @@ memory.success := destroy("calculator", "1.0.0")  // Returns 1 on success, 0 on 
 
 The instruction module carefully manages memory ownership when working with expressions:
 
-1. When an expression is evaluated using `ar_expression_evaluate()`, the expression context initially owns the result.
-2. For assignments (e.g., `memory.x := expression`), the instruction module takes ownership of the result using `ar_expression_take_ownership()` BEFORE destroying the context.
+1. When an expression is evaluated using `ar__expression__evaluate()`, the expression context initially owns the result.
+2. For assignments (e.g., `memory.x := expression`), the instruction module takes ownership of the result using `ar__expression__take_ownership()` BEFORE destroying the context.
 3. When a function call returns a result that needs to be stored, the instruction module assumes ownership of that result.
 4. Results that aren't stored (e.g., from functions without assignment) are properly destroyed.
 
 IMPORTANT: The sequence of operations is critical when handling expression results:
-1. Create the expression context (`own_context = ar_expression_create_context(...)`)
-2. Evaluate the expression to get a result (`own_value = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context))`)
-3. Capture the position offset (`*mut_pos += ar_expression_offset(own_context)`)
-4. Immediately destroy the context (`ar_expression_destroy_context(own_context)`)
+1. Create the expression context (`own_context = ar__expression__create_context(...)`)
+2. Evaluate the expression to get a result (`own_value = ar__expression__take_ownership(own_context, ar__expression__evaluate(own_context))`)
+3. Capture the position offset (`*mut_pos += ar__expression__offset(own_context)`)
+4. Immediately destroy the context (`ar__expression__destroy_context(own_context)`)
 5. Mark the destroyed context as NULL (`own_context = NULL;`)
 6. Check if the result is valid
 7. Use the result as needed (store in memory, return from function, etc.)

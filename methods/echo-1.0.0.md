@@ -19,17 +19,17 @@ send(message.sender, message.content)
 ### Creating an Echo Agent
 
 ```c
-agent_id_t echo_agent = ar_agent_create("echo", "1.0.0", NULL);
+agent_id_t echo_agent = ar__agent__create("echo", "1.0.0", NULL);
 ```
 
 ### Sending Messages
 
 ```c
 // Send a message with sender and content fields
-data_t *message = ar_data_create_map();
-ar_data_set_map_integer(message, "sender", 0); // 0 = system
-ar_data_set_map_string(message, "content", "Hello, World!");
-ar_agent_send(echo_agent, message);
+data_t *message = ar__data__create_map();
+ar__data__set_map_integer(message, "sender", 0); // 0 = system
+ar__data__set_map_string(message, "content", "Hello, World!");
+ar__agent__send(echo_agent, message);
 // Receives back: "Hello, World!"
 ```
 
