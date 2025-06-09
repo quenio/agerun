@@ -121,6 +121,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Test lifecycle event handling after refactoring
 
 ### MEDIUM - Complete Documentation and Testing
+- [ ] Create tests for IO module:
+  - [ ] Test file reading and writing operations
+  - [ ] Test error handling and recovery
+  - [ ] Test backup and restore functionality
+  - [ ] Test secure permissions
+  - [ ] Test atomic operations
+  - [ ] Follow TDD methodology - write tests first
 - [ ] Verify complete documentation for each module
 - [ ] Create missing module design documents
 - [ ] Document enum usage guidelines:
