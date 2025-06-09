@@ -57,7 +57,7 @@ void ar__agent_registry__destroy(agent_registry_t *own_registry) {
         while (ar_list_count(own_registry->own_registered_ids) > 0) {
             data_t *own_data = ar_list_remove_first(own_registry->own_registered_ids);
             if (own_data) {
-                ar_data_destroy(own_data);
+                ar__data__destroy(own_data);
             }
         }
         ar_list_destroy(own_registry->own_registered_ids);
@@ -93,7 +93,7 @@ int64_t ar__agent_registry__get_first(const agent_registry_t *ref_registry) {
         return 0;
     }
     
-    const char *id_str = ar_data_get_string(ref_data);
+    const char *id_str = ar__data__get_string(ref_data);
     if (!id_str) {
         return 0;
     }
@@ -123,7 +123,7 @@ int64_t ar__agent_registry__get_next(const agent_registry_t *ref_registry, int64
             continue;
         }
         
-        const char *id_str = ar_data_get_string(ref_data);
+        const char *id_str = ar__data__get_string(ref_data);
         if (!id_str) {
             continue;
         }
@@ -152,7 +152,7 @@ void ar__agent_registry__clear(agent_registry_t *mut_registry) {
     while (ar_list_count(mut_registry->own_registered_ids) > 0) {
         data_t *own_data = ar_list_remove_first(mut_registry->own_registered_ids);
         if (own_data) {
-            ar_data_destroy(own_data);
+            ar__data__destroy(own_data);
         }
     }
     
@@ -205,15 +205,15 @@ bool ar__agent_registry__register_id(agent_registry_t *mut_registry, int64_t age
     char id_str[32];
     snprintf(id_str, sizeof(id_str), "%lld", (long long)agent_id);
     
-    // Create string data for the ID (ar_data_create_string copies the string)
-    data_t *own_id_data = ar_data_create_string(id_str);
+    // Create string data for the ID (ar__data__create_string copies the string)
+    data_t *own_id_data = ar__data__create_string(id_str);
     if (!own_id_data) {
         return false;
     }
     
     // Add to the list
     if (!ar_list_add_last(mut_registry->own_registered_ids, own_id_data)) {
-        ar_data_destroy(own_id_data);
+        ar__data__destroy(own_id_data);
         return false;
     }
     
@@ -241,7 +241,7 @@ bool ar__agent_registry__unregister_id(agent_registry_t *mut_registry, int64_t a
             continue;
         }
         
-        const char *id_str = ar_data_get_string(ref_data);
+        const char *id_str = ar__data__get_string(ref_data);
         if (!id_str) {
             continue;
         }
@@ -258,7 +258,7 @@ bool ar__agent_registry__unregister_id(agent_registry_t *mut_registry, int64_t a
     if (target) {
         data_t *own_removed = (data_t*)ar_list_remove(mut_registry->own_registered_ids, target);
         if (own_removed) {
-            ar_data_destroy(own_removed);
+            ar__data__destroy(own_removed);
         }
         return true;
     }
@@ -286,7 +286,7 @@ bool ar__agent_registry__is_registered(const agent_registry_t *ref_registry, int
             continue;
         }
         
-        const char *id_str = ar_data_get_string(ref_data);
+        const char *id_str = ar__data__get_string(ref_data);
         if (!id_str) {
             continue;
         }
@@ -322,7 +322,7 @@ static const char* get_agent_key_from_list(const agent_registry_t *ref_registry,
             continue;
         }
         
-        const char *id_str = ar_data_get_string(ref_data);
+        const char *id_str = ar__data__get_string(ref_data);
         if (!id_str) {
             continue;
         }

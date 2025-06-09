@@ -35,17 +35,17 @@ static void test_echo_simple_message(void) {
     assert(agent_memory != NULL);
     
     // When we send a message with sender field
-    data_t *own_message = ar_data_create_map();
+    data_t *own_message = ar__data__create_map();
     assert(own_message != NULL);
     
     // Add sender field (0 means system/test)
-    data_t *own_sender = ar_data_create_integer(0);
-    ar_data_set_map_data(own_message, "sender", own_sender);
+    data_t *own_sender = ar__data__create_integer(0);
+    ar__data__set_map_data(own_message, "sender", own_sender);
     own_sender = NULL; // Ownership transferred
     
     // Add the actual message content
-    data_t *own_content = ar_data_create_string("Hello, Echo!");
-    ar_data_set_map_data(own_message, "content", own_content);
+    data_t *own_content = ar__data__create_string("Hello, Echo!");
+    ar__data__set_map_data(own_message, "content", own_content);
     own_content = NULL; // Ownership transferred
     
     bool sent = ar__agency__send_to_agent(echo_agent, own_message);
@@ -101,12 +101,12 @@ static void test_echo_map_message(void) {
     assert(agent_memory != NULL);
     
     // When we send a map message
-    data_t *own_map_message = ar_data_create_map();
+    data_t *own_map_message = ar__data__create_map();
     assert(own_map_message != NULL);
-    ar_data_set_map_integer(own_map_message, "sender", 0); // Add sender field
-    ar_data_set_map_string(own_map_message, "type", "greeting");
-    ar_data_set_map_string(own_map_message, "content", "Hello from map!");
-    ar_data_set_map_integer(own_map_message, "count", 42);
+    ar__data__set_map_integer(own_map_message, "sender", 0); // Add sender field
+    ar__data__set_map_string(own_map_message, "type", "greeting");
+    ar__data__set_map_string(own_map_message, "content", "Hello from map!");
+    ar__data__set_map_integer(own_map_message, "count", 42);
     
     bool sent = ar__agency__send_to_agent(echo_agent, own_map_message);
     assert(sent);

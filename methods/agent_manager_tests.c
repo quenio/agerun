@@ -32,15 +32,15 @@ static void test_agent_manager_create_destroy(void) {
     ar__system__process_next_message();
     
     // When we send a message to create an echo agent
-    data_t *own_message = ar_data_create_map();
+    data_t *own_message = ar__data__create_map();
     assert(own_message != NULL);
     
-    ar_data_set_map_string(own_message, "action", "create");
-    ar_data_set_map_string(own_message, "method_name", "echo");
-    ar_data_set_map_string(own_message, "version", "1.0.0");
-    data_t *own_context = ar_data_create_map();
-    ar_data_set_map_string(own_context, "name", "Test Echo");
-    ar_data_set_map_data(own_message, "context", own_context);
+    ar__data__set_map_string(own_message, "action", "create");
+    ar__data__set_map_string(own_message, "method_name", "echo");
+    ar__data__set_map_string(own_message, "version", "1.0.0");
+    data_t *own_context = ar__data__create_map();
+    ar__data__set_map_string(own_context, "name", "Test Echo");
+    ar__data__set_map_data(own_message, "context", own_context);
     own_context = NULL; // Ownership transferred
     
     bool sent = ar__agency__send_to_agent(manager_agent, own_message);
@@ -55,10 +55,10 @@ static void test_agent_manager_create_destroy(void) {
     const data_t *agent_memory = ar__agency__get_agent_memory(manager_agent);
     assert(agent_memory != NULL);
     
-    const data_t *result = ar_data_get_map_data(agent_memory, "result");
+    const data_t *result = ar__data__get_map_data(agent_memory, "result");
     if (result != NULL) {
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        int64_t created_agent = (int64_t)ar_data_get_integer(result);
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        int64_t created_agent = (int64_t)ar__data__get_integer(result);
         printf("SUCCESS: agent() instruction executed\n");
         printf("  - Created agent ID: %lld\n", (long long)created_agent);
     } else {
@@ -67,12 +67,12 @@ static void test_agent_manager_create_destroy(void) {
     }
     
     // Test checks for memory fields that don't exist yet (implementation incomplete)
-    const data_t *is_create = ar_data_get_map_data(agent_memory, "is_create");
+    const data_t *is_create = ar__data__get_map_data(agent_memory, "is_create");
     if (!is_create) {
         printf("FAIL: memory.is_create not found - if() comparison failed\n");
     }
     
-    const data_t *is_destroy = ar_data_get_map_data(agent_memory, "is_destroy");
+    const data_t *is_destroy = ar__data__get_map_data(agent_memory, "is_destroy");
     if (!is_destroy) {
         printf("FAIL: memory.is_destroy not found - if() comparison failed\n");
     }
@@ -82,11 +82,11 @@ static void test_agent_manager_create_destroy(void) {
     }
     
     // Now test destroy action
-    data_t *own_destroy_message = ar_data_create_map();
+    data_t *own_destroy_message = ar__data__create_map();
     assert(own_destroy_message != NULL);
     
-    ar_data_set_map_string(own_destroy_message, "action", "destroy");
-    ar_data_set_map_integer(own_destroy_message, "agent_id", 2); // Assuming agent 2 was created
+    ar__data__set_map_string(own_destroy_message, "action", "destroy");
+    ar__data__set_map_integer(own_destroy_message, "agent_id", 2); // Assuming agent 2 was created
     
     sent = ar__agency__send_to_agent(manager_agent, own_destroy_message);
     assert(sent);
@@ -97,7 +97,7 @@ static void test_agent_manager_create_destroy(void) {
     assert(processed);
     
     // Check if destroy worked
-    const data_t *destroy_result = ar_data_get_map_data(agent_memory, "destroy_result");
+    const data_t *destroy_result = ar__data__get_map_data(agent_memory, "destroy_result");
     if (!destroy_result) {
         printf("FAIL: memory.destroy_result not found - destroy() instruction failed to execute\n");
         printf("NOTE: This is expected until destroy() function is implemented in instruction module\n");
@@ -145,10 +145,10 @@ static void test_agent_manager_invalid_action(void) {
     ar__system__process_next_message();
     
     // When we send a message with an invalid action
-    data_t *own_message = ar_data_create_map();
+    data_t *own_message = ar__data__create_map();
     assert(own_message != NULL);
     
-    ar_data_set_map_string(own_message, "action", "invalid");
+    ar__data__set_map_string(own_message, "action", "invalid");
     
     bool sent = ar__agency__send_to_agent(manager_agent, own_message);
     assert(sent);
@@ -162,17 +162,17 @@ static void test_agent_manager_invalid_action(void) {
     assert(agent_memory != NULL);
     
     // For invalid actions, the method should fail gracefully
-    const data_t *is_create = ar_data_get_map_data(agent_memory, "is_create");
+    const data_t *is_create = ar__data__get_map_data(agent_memory, "is_create");
     if (!is_create) {
         printf("FAIL: memory.is_create not found - if() comparison failed\n");
     }
     
-    const data_t *is_destroy = ar_data_get_map_data(agent_memory, "is_destroy");
+    const data_t *is_destroy = ar__data__get_map_data(agent_memory, "is_destroy");
     if (!is_destroy) {
         printf("FAIL: memory.is_destroy not found - if() comparison failed\n");
     }
     
-    const data_t *result = ar_data_get_map_data(agent_memory, "result");
+    const data_t *result = ar__data__get_map_data(agent_memory, "result");
     if (!result) {
         printf("FAIL: memory.result not found - conditional assignment failed\n");
     }

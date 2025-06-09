@@ -98,7 +98,7 @@ void ar__instruction_fixture__destroy(instruction_fixture_t *own_fixture) {
     while (!ar_list_empty(own_fixture->own_tracked_data)) {
         data_t *own_data = (data_t*)ar_list_remove_first(own_fixture->own_tracked_data);
         if (own_data) {
-            ar_data_destroy(own_data);
+            ar__data__destroy(own_data);
         }
     }
     ar_list_destroy(own_fixture->own_tracked_data);
@@ -133,37 +133,37 @@ expression_context_t* ar__instruction_fixture__create_expression_context(
     }
     
     // Create standard test maps
-    data_t *own_memory = ar_data_create_map();
+    data_t *own_memory = ar__data__create_map();
     if (!own_memory) {
         return NULL;
     }
     
     // Add common test values to memory
-    ar_data_set_map_string(own_memory, "name", "TestAgent");
-    ar_data_set_map_integer(own_memory, "count", 42);
-    ar_data_set_map_double(own_memory, "value", 3.14);
-    ar_data_set_map_string(own_memory, "status", "active");
+    ar__data__set_map_string(own_memory, "name", "TestAgent");
+    ar__data__set_map_integer(own_memory, "count", 42);
+    ar__data__set_map_double(own_memory, "value", 3.14);
+    ar__data__set_map_string(own_memory, "status", "active");
     
-    data_t *own_context = ar_data_create_map();
+    data_t *own_context = ar__data__create_map();
     if (!own_context) {
-        ar_data_destroy(own_memory);
+        ar__data__destroy(own_memory);
         return NULL;
     }
     
     // Add common test values to context
-    ar_data_set_map_string(own_context, "type", "test");
-    ar_data_set_map_integer(own_context, "version", 1);
+    ar__data__set_map_string(own_context, "type", "test");
+    ar__data__set_map_integer(own_context, "version", 1);
     
-    data_t *own_message = ar_data_create_map();
+    data_t *own_message = ar__data__create_map();
     if (!own_message) {
-        ar_data_destroy(own_memory);
-        ar_data_destroy(own_context);
+        ar__data__destroy(own_memory);
+        ar__data__destroy(own_context);
         return NULL;
     }
     
     // Add common test values to message
-    ar_data_set_map_string(own_message, "action", "test");
-    ar_data_set_map_integer(own_message, "sender", 0);
+    ar__data__set_map_string(own_message, "action", "test");
+    ar__data__set_map_integer(own_message, "sender", 0);
     
     // Track the data objects
     ar_list_add_last(mut_fixture->own_tracked_data, own_memory);
@@ -219,25 +219,25 @@ data_t* ar__instruction_fixture__create_test_map(
         return NULL;
     }
     
-    data_t *own_map = ar_data_create_map();
+    data_t *own_map = ar__data__create_map();
     if (!own_map) {
         return NULL;
     }
     
     // Add test data based on name
     if (ref_name && strcmp(ref_name, "user") == 0) {
-        ar_data_set_map_string(own_map, "username", "alice");
-        ar_data_set_map_string(own_map, "role", "admin");
-        ar_data_set_map_integer(own_map, "id", 123);
+        ar__data__set_map_string(own_map, "username", "alice");
+        ar__data__set_map_string(own_map, "role", "admin");
+        ar__data__set_map_integer(own_map, "id", 123);
     } else if (ref_name && strcmp(ref_name, "config") == 0) {
-        ar_data_set_map_string(own_map, "mode", "test");
-        ar_data_set_map_integer(own_map, "timeout", 30);
-        ar_data_set_map_double(own_map, "threshold", 0.95);
+        ar__data__set_map_string(own_map, "mode", "test");
+        ar__data__set_map_integer(own_map, "timeout", 30);
+        ar__data__set_map_double(own_map, "threshold", 0.95);
     } else {
         // Default test values
-        ar_data_set_map_string(own_map, "test", "value");
-        ar_data_set_map_integer(own_map, "number", 42);
-        ar_data_set_map_double(own_map, "decimal", 3.14);
+        ar__data__set_map_string(own_map, "test", "value");
+        ar__data__set_map_integer(own_map, "number", 42);
+        ar__data__set_map_double(own_map, "decimal", 3.14);
     }
     
     // Track the data object
@@ -253,7 +253,7 @@ data_t* ar__instruction_fixture__create_empty_map(
         return NULL;
     }
     
-    data_t *own_map = ar_data_create_map();
+    data_t *own_map = ar__data__create_map();
     if (!own_map) {
         return NULL;
     }
@@ -271,27 +271,27 @@ data_t* ar__instruction_fixture__create_test_list(
         return NULL;
     }
     
-    data_t *own_list = ar_data_create_list();
+    data_t *own_list = ar__data__create_list();
     if (!own_list) {
         return NULL;
     }
     
     // Add sample values
-    data_t *own_item1 = ar_data_create_string("first");
+    data_t *own_item1 = ar__data__create_string("first");
     if (own_item1) {
-        ar_data_list_add_last_data(own_list, own_item1);
+        ar__data__list_add_last_data(own_list, own_item1);
         own_item1 = NULL; // Ownership transferred
     }
     
-    data_t *own_item2 = ar_data_create_integer(42);
+    data_t *own_item2 = ar__data__create_integer(42);
     if (own_item2) {
-        ar_data_list_add_last_data(own_list, own_item2);
+        ar__data__list_add_last_data(own_list, own_item2);
         own_item2 = NULL; // Ownership transferred
     }
     
-    data_t *own_item3 = ar_data_create_double(3.14);
+    data_t *own_item3 = ar__data__create_double(3.14);
     if (own_item3) {
-        ar_data_list_add_last_data(own_list, own_item3);
+        ar__data__list_add_last_data(own_list, own_item3);
         own_item3 = NULL; // Ownership transferred
     }
     

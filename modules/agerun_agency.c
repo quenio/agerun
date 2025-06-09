@@ -186,7 +186,7 @@ bool ar__agency__destroy_agent(int64_t agent_id) {
 bool ar__agency__send_to_agent(int64_t agent_id, data_t *own_message) {
     if (!g_is_initialized || !g_own_registry) {
         if (own_message) {
-            ar_data_destroy(own_message);
+            ar__data__destroy(own_message);
         }
         return false;
     }
@@ -194,7 +194,7 @@ bool ar__agency__send_to_agent(int64_t agent_id, data_t *own_message) {
     agent_t *mut_agent = (agent_t*)ar__agent_registry__find_agent(g_own_registry, agent_id);
     if (!mut_agent) {
         if (own_message) {
-            ar_data_destroy(own_message);
+            ar__data__destroy(own_message);
         }
         return false;
     }

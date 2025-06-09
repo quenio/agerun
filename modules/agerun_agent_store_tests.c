@@ -112,9 +112,9 @@ static void test_store_single_agent(void) {
     // Add some data to agent memory
     data_t *mut_memory = ar__agency__get_agent_mutable_memory(agent_id);
     assert(mut_memory != NULL);
-    ar_data_set_map_string(mut_memory, "name", "Test Agent");
-    ar_data_set_map_integer(mut_memory, "count", 42);
-    ar_data_set_map_double(mut_memory, "value", 3.14);
+    ar__data__set_map_string(mut_memory, "name", "Test Agent");
+    ar__data__set_map_integer(mut_memory, "count", 42);
+    ar__data__set_map_double(mut_memory, "value", 3.14);
     
     // When saving
     assert(ar__agent_store__save());
@@ -143,17 +143,17 @@ static void test_store_single_agent(void) {
     // Verify the memory was persisted
     data_t *ref_restored_memory = ar__agency__get_agent_mutable_memory(restored_id);
     assert(ref_restored_memory != NULL);
-    assert(ar_data_get_type(ref_restored_memory) == DATA_MAP);
+    assert(ar__data__get_type(ref_restored_memory) == DATA_MAP);
     
     // Check all persisted values
-    const char *name = ar_data_get_map_string(ref_restored_memory, "name");
+    const char *name = ar__data__get_map_string(ref_restored_memory, "name");
     assert(name != NULL);
     assert(strcmp(name, "Test Agent") == 0);
     
-    int count = ar_data_get_map_integer(ref_restored_memory, "count");
+    int count = ar__data__get_map_integer(ref_restored_memory, "count");
     assert(count == 42);
     
-    double value = ar_data_get_map_double(ref_restored_memory, "value");
+    double value = ar__data__get_map_double(ref_restored_memory, "value");
     assert(value == 3.14);
     
     // Check for memory leaks
@@ -203,16 +203,16 @@ static void test_store_multiple_agents(void) {
     
     // Add unique data to each agent
     data_t *mut_memory1 = ar__agency__get_agent_mutable_memory(echo1);
-    ar_data_set_map_string(mut_memory1, "name", "Echo One");
-    ar_data_set_map_integer(mut_memory1, "id", 1);
+    ar__data__set_map_string(mut_memory1, "name", "Echo One");
+    ar__data__set_map_integer(mut_memory1, "id", 1);
     
     data_t *mut_memory2 = ar__agency__get_agent_mutable_memory(echo2);
-    ar_data_set_map_string(mut_memory2, "name", "Echo Two");
-    ar_data_set_map_integer(mut_memory2, "id", 2);
+    ar__data__set_map_string(mut_memory2, "name", "Echo Two");
+    ar__data__set_map_integer(mut_memory2, "id", 2);
     
     data_t *mut_memory3 = ar__agency__get_agent_mutable_memory(calc1);
-    ar_data_set_map_string(mut_memory3, "name", "Calculator");
-    ar_data_set_map_double(mut_memory3, "pi", 3.14159);
+    ar__data__set_map_string(mut_memory3, "name", "Calculator");
+    ar__data__set_map_double(mut_memory3, "pi", 3.14159);
     
     // When saving
     assert(ar__agent_store__save());
@@ -247,8 +247,8 @@ static void test_store_multiple_agents(void) {
             echo_count++;
             
             // Check which echo agent this is based on memory
-            const char *name = ar_data_get_map_string(ref_memory, "name");
-            int id = ar_data_get_map_integer(ref_memory, "id");
+            const char *name = ar__data__get_map_string(ref_memory, "name");
+            int id = ar__data__get_map_integer(ref_memory, "id");
             
             if (name && strcmp(name, "Echo One") == 0 && id == 1) {
                 found_echo_one = 1;
@@ -259,8 +259,8 @@ static void test_store_multiple_agents(void) {
             calc_count++;
             
             // Check calculator memory
-            const char *name = ar_data_get_map_string(ref_memory, "name");
-            double pi = ar_data_get_map_double(ref_memory, "pi");
+            const char *name = ar__data__get_map_string(ref_memory, "name");
+            double pi = ar__data__get_map_double(ref_memory, "pi");
             
             if (name && strcmp(name, "Calculator") == 0 && pi == 3.14159) {
                 found_calculator = 1;

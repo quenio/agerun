@@ -47,8 +47,8 @@ static void test_expression_context_creation(void) {
     // And we can evaluate expressions using the test data
     const data_t *ref_result = ar__expression__evaluate(ref_ctx);
     assert(ref_result != NULL);
-    assert(ar_data_get_type(ref_result) == DATA_INTEGER);
-    assert(ar_data_get_integer(ref_result) == 52); // 42 + 10
+    assert(ar__data__get_type(ref_result) == DATA_INTEGER);
+    assert(ar__data__get_integer(ref_result) == 52); // 42 + 10
     
     // Clean up
     ar__instruction_fixture__destroy(own_fixture);
@@ -63,8 +63,8 @@ static void test_custom_expression_context(void) {
     instruction_fixture_t *own_fixture = ar__instruction_fixture__create("custom_expr");
     assert(own_fixture != NULL);
     
-    data_t *own_memory = ar_data_create_map();
-    ar_data_set_map_integer(own_memory, "x", 100);
+    data_t *own_memory = ar__data__create_map();
+    ar__data__set_map_integer(own_memory, "x", 100);
     
     // When we create a custom expression context
     expression_context_t *ref_ctx = ar__instruction_fixture__create_custom_expression_context(
@@ -75,10 +75,10 @@ static void test_custom_expression_context(void) {
     assert(ref_ctx != NULL);
     const data_t *ref_result = ar__expression__evaluate(ref_ctx);
     assert(ref_result != NULL);
-    assert(ar_data_get_integer(ref_result) == 200);
+    assert(ar__data__get_integer(ref_result) == 200);
     
     // Clean up our custom data (fixture tracks the context)
-    ar_data_destroy(own_memory);
+    ar__data__destroy(own_memory);
     ar__instruction_fixture__destroy(own_fixture);
     
     printf("✓ Custom expression context tests passed\n");
@@ -96,17 +96,17 @@ static void test_map_creation(void) {
     
     // Then it should have the expected values
     assert(ref_user != NULL);
-    assert(strcmp(ar_data_get_map_string(ref_user, "username"), "alice") == 0);
-    assert(strcmp(ar_data_get_map_string(ref_user, "role"), "admin") == 0);
-    assert(ar_data_get_map_integer(ref_user, "id") == 123);
+    assert(strcmp(ar__data__get_map_string(ref_user, "username"), "alice") == 0);
+    assert(strcmp(ar__data__get_map_string(ref_user, "role"), "admin") == 0);
+    assert(ar__data__get_map_integer(ref_user, "id") == 123);
     
     // When we create a config map
     data_t *ref_config = ar__instruction_fixture__create_test_map(own_fixture, "config");
     
     // Then it should have different values
     assert(ref_config != NULL);
-    assert(strcmp(ar_data_get_map_string(ref_config, "mode"), "test") == 0);
-    assert(ar_data_get_map_integer(ref_config, "timeout") == 30);
+    assert(strcmp(ar__data__get_map_string(ref_config, "mode"), "test") == 0);
+    assert(ar__data__get_map_integer(ref_config, "timeout") == 30);
     
     // Clean up (fixture tracks all maps)
     ar__instruction_fixture__destroy(own_fixture);
@@ -127,7 +127,7 @@ static void test_list_creation(void) {
     // Then it should have the expected values
     assert(ref_list != NULL);
     // For now, just verify the list was created
-    assert(ar_data_get_type(ref_list) == DATA_LIST);
+    assert(ar__data__get_type(ref_list) == DATA_LIST);
     
     // Clean up
     ar__instruction_fixture__destroy(own_fixture);
@@ -143,8 +143,8 @@ static void test_resource_tracking(void) {
     assert(own_fixture != NULL);
     
     // When we create data outside the fixture
-    data_t *own_external_map = ar_data_create_map();
-    ar_data_set_map_string(own_external_map, "external", "data");
+    data_t *own_external_map = ar__data__create_map();
+    ar__data__set_map_string(own_external_map, "external", "data");
     
     // And track it with the fixture
     ar__instruction_fixture__track_data(own_fixture, own_external_map);

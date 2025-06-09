@@ -62,7 +62,7 @@ int64_t ar__system__init(const char *ref_method_name, const char *ref_version) {
         int64_t initial_agent = ar__agency__create_agent(ref_method_name, ref_version, NULL);
         if (initial_agent != 0) {
             // Send wake message to initial agent
-            data_t *own_wake_data = ar_data_create_string(g_wake_message);
+            data_t *own_wake_data = ar__data__create_string(g_wake_message);
             if (own_wake_data) {
                 ar__agency__send_to_agent(initial_agent, own_wake_data);
                 // Ownership transferred to agent's message queue
@@ -124,13 +124,13 @@ bool ar__system__process_next_message(void) {
                     printf("DEBUG: Agent has method\n");
                     // Print message based on its type
                     printf("Agent %lld received message: ", (long long)agent_id);
-                    data_type_t msg_type = ar_data_get_type(own_message);
+                    data_type_t msg_type = ar__data__get_type(own_message);
                     if (msg_type == DATA_STRING) {
-                        printf("%s\n", ar_data_get_string(own_message));
+                        printf("%s\n", ar__data__get_string(own_message));
                     } else if (msg_type == DATA_INTEGER) {
-                        printf("%d\n", ar_data_get_integer(own_message));
+                        printf("%d\n", ar__data__get_integer(own_message));
                     } else if (msg_type == DATA_DOUBLE) {
-                        printf("%f\n", ar_data_get_double(own_message));
+                        printf("%f\n", ar__data__get_double(own_message));
                     } else if (msg_type == DATA_LIST || msg_type == DATA_MAP) {
                         printf("[complex data]\n");
                     }
@@ -138,13 +138,13 @@ bool ar__system__process_next_message(void) {
                     ar__method__run(agent_id, (const data_t *)own_message, ar__method__get_instructions(ref_method));
                     
                     // Free the message as it's now been processed
-                    ar_data_destroy(own_message);
+                    ar__data__destroy(own_message);
                     own_message = NULL; // Mark as freed
                     return true;
                 }
                 
                 // Free the message if we couldn't process it
-                ar_data_destroy(own_message);
+                ar__data__destroy(own_message);
                 own_message = NULL; // Mark as freed
             }
         }

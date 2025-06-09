@@ -102,8 +102,8 @@ static void test_string_literal(void) {
     
     // Then the result should be a string with the correct value
     assert(result != NULL);
-    assert(ar_data_get_type(result) == DATA_STRING);
-    assert(strcmp(ar_data_get_string(result), "Hello, World!") == 0);
+    assert(ar__data__get_type(result) == DATA_STRING);
+    assert(strcmp(ar__data__get_string(result), "Hello, World!") == 0);
     
     // And the offset should be updated correctly
     assert(ar__expression__offset(ctx) == (int)strlen(expr));
@@ -130,8 +130,8 @@ static void test_number_literal(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 42);
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 42);
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
@@ -150,8 +150,8 @@ static void test_number_literal(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == -123);
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == -123);
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
@@ -170,11 +170,11 @@ static void test_number_literal(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_DOUBLE);
+        assert(ar__data__get_type(result) == DATA_DOUBLE);
         // Use very small epsilon for floating-point comparison
         double epsilon = 0.00001;
-        assert(ar_data_get_double(result) - 3.14159 < epsilon && 
-               ar_data_get_double(result) - 3.14159 > -epsilon);
+        assert(ar__data__get_double(result) - 3.14159 < epsilon && 
+               ar__data__get_double(result) - 3.14159 > -epsilon);
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
@@ -193,11 +193,11 @@ static void test_number_literal(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_DOUBLE);
+        assert(ar__data__get_type(result) == DATA_DOUBLE);
         // Use very small epsilon for floating-point comparison
         double epsilon = 0.00001;
-        assert(ar_data_get_double(result) - (-2.718) < epsilon && 
-               ar_data_get_double(result) - (-2.718) > -epsilon);
+        assert(ar__data__get_double(result) - (-2.718) < epsilon && 
+               ar__data__get_double(result) - (-2.718) > -epsilon);
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
@@ -216,44 +216,44 @@ static void test_memory_access(void) {
     // Set up memory, context, and message data structures
     
     // Set up memory
-    data_t *memory = ar_data_create_map();
+    data_t *memory = ar__data__create_map();
     assert(memory != NULL);
-    assert(ar_data_set_map_string(memory, "name", "Alice"));
-    assert(ar_data_set_map_integer(memory, "age", 30));
-    assert(ar_data_set_map_double(memory, "balance", 450.75));
+    assert(ar__data__set_map_string(memory, "name", "Alice"));
+    assert(ar__data__set_map_integer(memory, "age", 30));
+    assert(ar__data__set_map_double(memory, "balance", 450.75));
     
     // Set up memory with nested preferences
-    data_t *user_preferences = ar_data_create_map();
+    data_t *user_preferences = ar__data__create_map();
     assert(user_preferences != NULL);
-    assert(ar_data_set_map_string(user_preferences, "theme", "dark"));
-    assert(ar_data_set_map_integer(user_preferences, "notifications", 1));
-    assert(ar_data_set_map_data(memory, "preferences", user_preferences));
+    assert(ar__data__set_map_string(user_preferences, "theme", "dark"));
+    assert(ar__data__set_map_integer(user_preferences, "notifications", 1));
+    assert(ar__data__set_map_data(memory, "preferences", user_preferences));
     // Note: Don't use user_preferences after this point - ownership has been transferred
     
     // Set up context with nested limits
-    data_t *context = ar_data_create_map();
+    data_t *context = ar__data__create_map();
     assert(context != NULL);
-    assert(ar_data_set_map_string(context, "environment", "production"));
-    assert(ar_data_set_map_integer(context, "max_retries", 3));
+    assert(ar__data__set_map_string(context, "environment", "production"));
+    assert(ar__data__set_map_integer(context, "max_retries", 3));
     
-    data_t *system_limits = ar_data_create_map();
+    data_t *system_limits = ar__data__create_map();
     assert(system_limits != NULL);
-    assert(ar_data_set_map_integer(system_limits, "max_memory", 1024));
-    assert(ar_data_set_map_integer(system_limits, "timeout", 60));
-    assert(ar_data_set_map_data(context, "limits", system_limits));
+    assert(ar__data__set_map_integer(system_limits, "max_memory", 1024));
+    assert(ar__data__set_map_integer(system_limits, "timeout", 60));
+    assert(ar__data__set_map_data(context, "limits", system_limits));
     // Note: Don't use system_limits after this point - ownership has been transferred
     
     // Set up message with nested payload
-    data_t *message = ar_data_create_map();
+    data_t *message = ar__data__create_map();
     assert(message != NULL);
-    assert(ar_data_set_map_string(message, "type", "command"));
-    assert(ar_data_set_map_string(message, "action", "update"));
+    assert(ar__data__set_map_string(message, "type", "command"));
+    assert(ar__data__set_map_string(message, "action", "update"));
     
-    data_t *payload = ar_data_create_map();
+    data_t *payload = ar__data__create_map();
     assert(payload != NULL);
-    assert(ar_data_set_map_string(payload, "field", "status"));
-    assert(ar_data_set_map_string(payload, "value", "active"));
-    assert(ar_data_set_map_data(message, "payload", payload));
+    assert(ar__data__set_map_string(payload, "field", "status"));
+    assert(ar__data__set_map_string(payload, "value", "active"));
+    assert(ar__data__set_map_data(message, "payload", payload));
     // Note: Don't use payload after this point - ownership has been transferred
     
     // Test simple memory access
@@ -267,8 +267,8 @@ static void test_memory_access(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_STRING);
-        assert(strcmp(ar_data_get_string(result), "Alice") == 0);
+        assert(ar__data__get_type(result) == DATA_STRING);
+        assert(strcmp(ar__data__get_string(result), "Alice") == 0);
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Note: Don't destroy result as it's a direct reference to memory
@@ -286,8 +286,8 @@ static void test_memory_access(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_STRING);
-        assert(strcmp(ar_data_get_string(result), "dark") == 0);
+        assert(ar__data__get_type(result) == DATA_STRING);
+        assert(strcmp(ar__data__get_string(result), "dark") == 0);
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Note: Don't destroy result as it's a direct reference to memory
@@ -305,8 +305,8 @@ static void test_memory_access(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_STRING);
-        assert(strcmp(ar_data_get_string(result), "production") == 0);
+        assert(ar__data__get_type(result) == DATA_STRING);
+        assert(strcmp(ar__data__get_string(result), "production") == 0);
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Note: Don't destroy result as it's a direct reference to context
@@ -324,8 +324,8 @@ static void test_memory_access(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 60);
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 60);
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Note: Don't destroy result as it's a direct reference to context
@@ -343,8 +343,8 @@ static void test_memory_access(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_STRING);
-        assert(strcmp(ar_data_get_string(result), "command") == 0);
+        assert(ar__data__get_type(result) == DATA_STRING);
+        assert(strcmp(ar__data__get_string(result), "command") == 0);
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Note: Don't destroy result as it's a direct reference to message
@@ -362,8 +362,8 @@ static void test_memory_access(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_STRING);
-        assert(strcmp(ar_data_get_string(result), "status") == 0);
+        assert(ar__data__get_type(result) == DATA_STRING);
+        assert(strcmp(ar__data__get_string(result), "status") == 0);
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Note: Don't destroy result as it's a direct reference to message
@@ -387,9 +387,9 @@ static void test_memory_access(void) {
     }
     
     // Cleanup
-    ar_data_destroy(message);
-    ar_data_destroy(memory);
-    ar_data_destroy(context);
+    ar__data__destroy(message);
+    ar__data__destroy(memory);
+    ar__data__destroy(context);
     
     printf("Memory access tests passed.\n");
     fflush(stdout);
@@ -404,17 +404,17 @@ static void test_arithmetic_expression(void) {
     fflush(stdout);
     
     // We'll create fresh structures for each test
-    data_t *memory = ar_data_create_map();
+    data_t *memory = ar__data__create_map();
     assert(memory != NULL);
-    assert(ar_data_set_map_integer(memory, "x", 10));
-    assert(ar_data_set_map_integer(memory, "y", 5));
+    assert(ar__data__set_map_integer(memory, "x", 10));
+    assert(ar__data__set_map_integer(memory, "y", 5));
     
-    data_t *context = ar_data_create_map();
+    data_t *context = ar__data__create_map();
     assert(context != NULL);
     
-    data_t *message = ar_data_create_map();
+    data_t *message = ar__data__create_map();
     assert(message != NULL);
-    assert(ar_data_set_map_integer(message, "count", 42));
+    assert(ar__data__set_map_integer(message, "count", 42));
     
     // Test addition
     {
@@ -430,8 +430,8 @@ static void test_arithmetic_expression(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 5);
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 5);
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
@@ -456,8 +456,8 @@ static void test_arithmetic_expression(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 6);
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 6);
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
@@ -482,8 +482,8 @@ static void test_arithmetic_expression(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 15);
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 15);
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
@@ -508,8 +508,8 @@ static void test_arithmetic_expression(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 5);
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 5);
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
@@ -534,8 +534,8 @@ static void test_arithmetic_expression(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 5);
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 5);
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
@@ -560,11 +560,11 @@ static void test_arithmetic_expression(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_DOUBLE);
+        assert(ar__data__get_type(result) == DATA_DOUBLE);
         
         double epsilon = 0.00001;
-        assert(ar_data_get_double(result) - 6.0 < epsilon && 
-               ar_data_get_double(result) - 6.0 > -epsilon);
+        assert(ar__data__get_double(result) - 6.0 < epsilon && 
+               ar__data__get_double(result) - 6.0 > -epsilon);
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
@@ -589,11 +589,11 @@ static void test_arithmetic_expression(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_DOUBLE);
+        assert(ar__data__get_type(result) == DATA_DOUBLE);
         
         double epsilon = 0.00001;
-        assert(ar_data_get_double(result) - 12.5 < epsilon && 
-               ar_data_get_double(result) - 12.5 > -epsilon);
+        assert(ar__data__get_double(result) - 12.5 < epsilon && 
+               ar__data__get_double(result) - 12.5 > -epsilon);
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
@@ -618,8 +618,8 @@ static void test_arithmetic_expression(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_STRING);
-        assert(strcmp(ar_data_get_string(result), "Hello, World!") == 0);
+        assert(ar__data__get_type(result) == DATA_STRING);
+        assert(strcmp(ar__data__get_string(result), "Hello, World!") == 0);
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
@@ -650,11 +650,11 @@ static void test_arithmetic_expression(void) {
         fflush(stdout);
         
         if (result) {
-            printf("Result type: %d\n", ar_data_get_type(result));
+            printf("Result type: %d\n", ar__data__get_type(result));
             fflush(stdout);
             
-            if (ar_data_get_type(result) == DATA_STRING) {
-                const char* str_result = ar_data_get_string(result);
+            if (ar__data__get_type(result) == DATA_STRING) {
+                const char* str_result = ar__data__get_string(result);
                 printf("String result: '%s'\n", str_result ? str_result : "NULL");
                 fflush(stdout);
                 
@@ -670,8 +670,8 @@ static void test_arithmetic_expression(void) {
         fflush(stdout);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_STRING);
-        const char* str_result = ar_data_get_string(result);
+        assert(ar__data__get_type(result) == DATA_STRING);
+        const char* str_result = ar__data__get_string(result);
         printf("Got: '%s'\n", str_result);
         assert(strcmp(str_result, "Price: $42.99") == 0);
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
@@ -704,9 +704,9 @@ static void test_arithmetic_expression(void) {
         fflush(stdout);
         
         if (result) {
-            printf("Result type: %d\n", ar_data_get_type(result));
-            if (ar_data_get_type(result) == DATA_INTEGER) {
-                printf("Integer result: %d (expected 15)\n", ar_data_get_integer(result));
+            printf("Result type: %d\n", ar__data__get_type(result));
+            if (ar__data__get_type(result) == DATA_INTEGER) {
+                printf("Integer result: %d (expected 15)\n", ar__data__get_integer(result));
             }
             fflush(stdout);
         }
@@ -715,8 +715,8 @@ static void test_arithmetic_expression(void) {
         fflush(stdout);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 15); // 10 + 5 = 15
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 15); // 10 + 5 = 15
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: Expression results are borrowed references, not owned by the caller.
@@ -744,7 +744,7 @@ static void test_arithmetic_expression(void) {
         fflush(stdout);
         
         if (result) {
-            data_type_t type = ar_data_get_type(result);
+            data_type_t type = ar__data__get_type(result);
             printf("Result type: %d\n", type);
             
             // Print detailed type information
@@ -756,16 +756,16 @@ static void test_arithmetic_expression(void) {
             printf("Type info - Is MAP: %s\n", type == DATA_MAP ? "yes" : "no");
             
             if (type == DATA_INTEGER) {
-                printf("Integer result: %d (expected 20)\n", ar_data_get_integer(result));
+                printf("Integer result: %d (expected 20)\n", ar__data__get_integer(result));
             } else if (type == DATA_DOUBLE) {
-                printf("Double result: %f (expected 20.0)\n", ar_data_get_double(result));
+                printf("Double result: %f (expected 20.0)\n", ar__data__get_double(result));
             }
             fflush(stdout);
         }
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 20); // 10 * 2 = 20
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 20); // 10 * 2 = 20
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: For arithmetic operations with memory access, the result is a NEW value, 
@@ -794,16 +794,16 @@ static void test_arithmetic_expression(void) {
         fflush(stdout);
         
         if (result) {
-            printf("Result type: %d\n", ar_data_get_type(result));
-            if (ar_data_get_type(result) == DATA_INTEGER) {
-                printf("Integer result: %d (expected 84)\n", ar_data_get_integer(result));
+            printf("Result type: %d\n", ar__data__get_type(result));
+            if (ar__data__get_type(result) == DATA_INTEGER) {
+                printf("Integer result: %d (expected 84)\n", ar__data__get_integer(result));
             }
             fflush(stdout);
         }
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 84); // 42 * 2 = 84
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 84); // 42 * 2 = 84
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // IMPORTANT: The result of an arithmetic operation (even with message access)
@@ -816,17 +816,17 @@ static void test_arithmetic_expression(void) {
     
     // Properly clean up allocated objects
     if (message) {
-        ar_data_destroy(message);
+        ar__data__destroy(message);
         message = NULL;
     }
     
     if (context) {
-        ar_data_destroy(context);
+        ar__data__destroy(context);
         context = NULL;
     }
     
     if (memory) {
-        ar_data_destroy(memory);
+        ar__data__destroy(memory);
         memory = NULL;
     }
     
@@ -849,18 +849,18 @@ static void test_comparison_expression(void) {
     fflush(stdout);
     
     // We'll create fresh structures for comparison tests
-    data_t *memory = ar_data_create_map();
+    data_t *memory = ar__data__create_map();
     assert(memory != NULL);
-    assert(ar_data_set_map_integer(memory, "count", 10));
-    assert(ar_data_set_map_string(memory, "status", "active"));
+    assert(ar__data__set_map_integer(memory, "count", 10));
+    assert(ar__data__set_map_string(memory, "status", "active"));
     
-    data_t *context = ar_data_create_map();
+    data_t *context = ar__data__create_map();
     assert(context != NULL);
-    assert(ar_data_set_map_integer(context, "threshold", 5));
+    assert(ar__data__set_map_integer(context, "threshold", 5));
     
-    data_t *message = ar_data_create_map();
+    data_t *message = ar__data__create_map();
     assert(message != NULL);
-    assert(ar_data_set_map_integer(message, "priority", 3));
+    assert(ar__data__set_map_integer(message, "priority", 3));
     
     // Test equality with integers
     {
@@ -878,16 +878,16 @@ static void test_comparison_expression(void) {
         printf("Equality test - Expr: '%s'\n", expr);
         if (result) {
             printf("Type: %d, Value: %d, Offset: %d\n", 
-                   ar_data_get_type(result), 
-                   ar_data_get_integer(result),
+                   ar__data__get_type(result), 
+                   ar__data__get_integer(result),
                    ar__expression__offset(ctx));
         } else {
             printf("Offset: %d\n", ar__expression__offset(ctx));
         }
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 1); // true
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 1); // true
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
@@ -913,15 +913,15 @@ static void test_comparison_expression(void) {
         printf("String equality test\n");
         if (result) {
             printf("Type: %d, Value: %d, Offset: %d\n", 
-                   ar_data_get_type(result), 
-                   ar_data_get_integer(result),
+                   ar__data__get_type(result), 
+                   ar__data__get_integer(result),
                    ar__expression__offset(ctx));
         }
         fflush(stdout);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 1); // true
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 1); // true
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
@@ -945,8 +945,8 @@ static void test_comparison_expression(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 1); // true
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 1); // true
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
@@ -970,8 +970,8 @@ static void test_comparison_expression(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 1); // true
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 1); // true
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
@@ -995,8 +995,8 @@ static void test_comparison_expression(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 1); // true
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 1); // true
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
@@ -1020,8 +1020,8 @@ static void test_comparison_expression(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 1); // true
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 1); // true
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
@@ -1045,8 +1045,8 @@ static void test_comparison_expression(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 1); // true
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 1); // true
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
@@ -1070,8 +1070,8 @@ static void test_comparison_expression(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 0); // false
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 0); // false
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
@@ -1095,8 +1095,8 @@ static void test_comparison_expression(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 1); // true (10 > 5)
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 1); // true (10 > 5)
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
@@ -1120,8 +1120,8 @@ static void test_comparison_expression(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 1); // true
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 1); // true
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
@@ -1145,8 +1145,8 @@ static void test_comparison_expression(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 1); // true (10 > 5)
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 1); // true (10 > 5)
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
@@ -1170,8 +1170,8 @@ static void test_comparison_expression(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 1); // true (3 <= 5)
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 1); // true (3 <= 5)
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
@@ -1195,8 +1195,8 @@ static void test_comparison_expression(void) {
         const data_t *result = ar__expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data_get_type(result) == DATA_INTEGER);
-        assert(ar_data_get_integer(result) == 0); // false (10 + 5 = 15, 5 * 3 = 15, 15 > 15 is false)
+        assert(ar__data__get_type(result) == DATA_INTEGER);
+        assert(ar__data__get_integer(result) == 0); // false (10 + 5 = 15, 5 * 3 = 15, 15 > 15 is false)
         assert(ar__expression__offset(ctx) == (int)strlen(expr));
         
         // Let the context handle cleanup of the result
@@ -1208,17 +1208,17 @@ static void test_comparison_expression(void) {
     
     // Cleanup
     if (message) {
-        ar_data_destroy(message);
+        ar__data__destroy(message);
         message = NULL;
     }
     
     if (context) {
-        ar_data_destroy(context);
+        ar__data__destroy(context);
         context = NULL;
     }
     
     if (memory) {
-        ar_data_destroy(memory);
+        ar__data__destroy(memory);
         memory = NULL;
     }
     

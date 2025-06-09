@@ -97,7 +97,7 @@ const data_t* ar__instruction__get_message(const instruction_context_t *ref_ctx)
 bool ar__instruction__send_message(int64_t target_id, data_t *own_message) {
     if (target_id == 0) {
         // Special case: agent_id 0 is a no-op that always returns true
-        ar_data_destroy(own_message);
+        ar__data__destroy(own_message);
         return true;
     }
     
@@ -212,9 +212,9 @@ static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_ins
     }
     
     // Store result in agent's memory (transfers ownership of value)
-    bool success = ar_data_set_map_data(mut_ctx->mut_memory, path, own_value);
+    bool success = ar__data__set_map_data(mut_ctx->mut_memory, path, own_value);
     if (!success) {
-        ar_data_destroy(own_value);
+        ar__data__destroy(own_value);
     }
     own_value = NULL; // Mark as transferred
     
@@ -259,14 +259,14 @@ static bool parse_function_instruction(instruction_context_t *mut_ctx, const cha
     // Store result in memory if assignment was present
     if (has_assignment && path && own_result) {
         // We're taking ownership of the result
-        bool success = ar_data_set_map_data(mut_ctx->mut_memory, path, own_result);
+        bool success = ar__data__set_map_data(mut_ctx->mut_memory, path, own_result);
         if (!success) {
-            ar_data_destroy(own_result);
+            ar__data__destroy(own_result);
         }
         own_result = NULL; // Mark as transferred
     } else if (own_result) {
         // No assignment, discard the result
-        ar_data_destroy(own_result);
+        ar__data__destroy(own_result);
         own_result = NULL; // Mark as destroyed
     }
     
@@ -387,7 +387,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         
         // Expect comma
         if (ref_instruction[*mut_pos] != ',') {
-            ar_data_destroy(own_agent_id);
+            ar__data__destroy(own_agent_id);
             own_agent_id = NULL; // Mark as destroyed
             return false;
         }
@@ -400,7 +400,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                                               mut_ctx->ref_message, 
                                               ref_instruction + *mut_pos);
         if (!own_context) {
-            ar_data_destroy(own_agent_id);
+            ar__data__destroy(own_agent_id);
             own_agent_id = NULL; // Mark as destroyed
             return false;
         }
@@ -412,7 +412,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         own_context = NULL; // Mark as destroyed
         
         if (!own_msg) {
-            ar_data_destroy(own_agent_id);
+            ar__data__destroy(own_agent_id);
             own_agent_id = NULL; // Mark as destroyed
             return false;
         }
@@ -421,9 +421,9 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         
         // Expect closing parenthesis
         if (ref_instruction[*mut_pos] != ')') {
-            ar_data_destroy(own_agent_id);
+            ar__data__destroy(own_agent_id);
             own_agent_id = NULL; // Mark as destroyed
-            ar_data_destroy(own_msg);
+            ar__data__destroy(own_msg);
             own_msg = NULL; // Mark as destroyed
             return false;
         }
@@ -431,8 +431,8 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         
         // Extract agent_id
         int64_t target_id = 0;
-        if (ar_data_get_type(own_agent_id) == DATA_INTEGER) {
-            target_id = (int64_t)ar_data_get_integer(own_agent_id);
+        if (ar__data__get_type(own_agent_id) == DATA_INTEGER) {
+            target_id = (int64_t)ar__data__get_integer(own_agent_id);
         }
         
         // Send message
@@ -444,7 +444,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             // Only destroy the message data if it's not the original message
             // This prevents trying to free the shared message
             if (own_msg != mut_ctx->ref_message) {
-                ar_data_destroy(own_msg);
+                ar__data__destroy(own_msg);
                 own_msg = NULL; // Mark as destroyed
             }
         } else {
@@ -453,11 +453,11 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             own_msg = NULL; // Mark as transferred
         }
         
-        ar_data_destroy(own_agent_id);
+        ar__data__destroy(own_agent_id);
         own_agent_id = NULL; // Mark as destroyed
         
         // Create a new result (we own it from creation)
-        *own_result = ar_data_create_integer(success ? 1 : 0);
+        *own_result = ar__data__create_integer(success ? 1 : 0);
         return true;
     }
     else if (strcmp(function_name, "if") == 0) {
@@ -493,7 +493,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         
         // Expect comma
         if (ref_instruction[*mut_pos] != ',') {
-            ar_data_destroy(own_cond);
+            ar__data__destroy(own_cond);
             own_cond = NULL; // Mark as destroyed
             return false;
         }
@@ -507,7 +507,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                                               ref_instruction + *mut_pos);
         if (!own_context) {
             if (own_cond) {
-                ar_data_destroy(own_cond);
+                ar__data__destroy(own_cond);
                 own_cond = NULL; // Mark as destroyed
             }
             return false;
@@ -524,7 +524,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         const data_t *true_to_use = own_true ? own_true : ref_true_eval;
         if (!true_to_use) {
             if (own_cond) {
-                ar_data_destroy(own_cond);
+                ar__data__destroy(own_cond);
                 own_cond = NULL; // Mark as destroyed
             }
             return false;
@@ -534,9 +534,9 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         
         // Expect comma
         if (ref_instruction[*mut_pos] != ',') {
-            ar_data_destroy(own_cond);
+            ar__data__destroy(own_cond);
             own_cond = NULL; // Mark as destroyed
-            ar_data_destroy(own_true);
+            ar__data__destroy(own_true);
             own_true = NULL; // Mark as destroyed
             return false;
         }
@@ -550,11 +550,11 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                                               ref_instruction + *mut_pos);
         if (!own_context) {
             if (own_cond) {
-                ar_data_destroy(own_cond);
+                ar__data__destroy(own_cond);
                 own_cond = NULL; // Mark as destroyed
             }
             if (own_true) {
-                ar_data_destroy(own_true);
+                ar__data__destroy(own_true);
                 own_true = NULL; // Mark as destroyed
             }
             return false;
@@ -571,11 +571,11 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         const data_t *false_to_use = own_false ? own_false : ref_false_eval;
         if (!false_to_use) {
             if (own_cond) {
-                ar_data_destroy(own_cond);
+                ar__data__destroy(own_cond);
                 own_cond = NULL; // Mark as destroyed
             }
             if (own_true) {
-                ar_data_destroy(own_true);
+                ar__data__destroy(own_true);
                 own_true = NULL; // Mark as destroyed
             }
             return false;
@@ -585,11 +585,11 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         
         // Expect closing parenthesis
         if (ref_instruction[*mut_pos] != ')') {
-            ar_data_destroy(own_cond);
+            ar__data__destroy(own_cond);
             own_cond = NULL; // Mark as destroyed
-            ar_data_destroy(own_true);
+            ar__data__destroy(own_true);
             own_true = NULL; // Mark as destroyed
-            ar_data_destroy(own_false);
+            ar__data__destroy(own_false);
             own_false = NULL; // Mark as destroyed
             return false;
         }
@@ -597,14 +597,14 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         
         // Evaluate condition
         bool condition = false;
-        data_type_t cond_type = ar_data_get_type(cond_to_use);
+        data_type_t cond_type = ar__data__get_type(cond_to_use);
         
         if (cond_type == DATA_INTEGER) {
-            condition = (ar_data_get_integer(cond_to_use) != 0);
+            condition = (ar__data__get_integer(cond_to_use) != 0);
         } else if (cond_type == DATA_DOUBLE) {
-            condition = (ar_data_get_double(cond_to_use) != 0.0);
+            condition = (ar__data__get_double(cond_to_use) != 0.0);
         } else if (cond_type == DATA_STRING) {
-            const char *str = ar_data_get_string(cond_to_use);
+            const char *str = ar__data__get_string(cond_to_use);
             condition = (str && *str); // True if non-empty string
         }
         
@@ -616,20 +616,20 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                 own_true = NULL; // Mark as transferred
             } else {
                 // Create a copy of the reference
-                if (ar_data_get_type(true_to_use) == DATA_INTEGER) {
-                    *own_result = ar_data_create_integer(ar_data_get_integer(true_to_use));
-                } else if (ar_data_get_type(true_to_use) == DATA_DOUBLE) {
-                    *own_result = ar_data_create_double(ar_data_get_double(true_to_use));
-                } else if (ar_data_get_type(true_to_use) == DATA_STRING) {
-                    *own_result = ar_data_create_string(ar_data_get_string(true_to_use));
+                if (ar__data__get_type(true_to_use) == DATA_INTEGER) {
+                    *own_result = ar__data__create_integer(ar__data__get_integer(true_to_use));
+                } else if (ar__data__get_type(true_to_use) == DATA_DOUBLE) {
+                    *own_result = ar__data__create_double(ar__data__get_double(true_to_use));
+                } else if (ar__data__get_type(true_to_use) == DATA_STRING) {
+                    *own_result = ar__data__create_string(ar__data__get_string(true_to_use));
                 } else {
                     // For maps and other types, we can't easily copy, so return 0
-                    *own_result = ar_data_create_integer(0);
+                    *own_result = ar__data__create_integer(0);
                 }
             }
             // Clean up false value if we own it
             if (own_false) {
-                ar_data_destroy(own_false);
+                ar__data__destroy(own_false);
                 own_false = NULL; // Mark as destroyed
             }
         } else {
@@ -639,27 +639,27 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                 own_false = NULL; // Mark as transferred
             } else {
                 // Create a copy of the reference
-                if (ar_data_get_type(false_to_use) == DATA_INTEGER) {
-                    *own_result = ar_data_create_integer(ar_data_get_integer(false_to_use));
-                } else if (ar_data_get_type(false_to_use) == DATA_DOUBLE) {
-                    *own_result = ar_data_create_double(ar_data_get_double(false_to_use));
-                } else if (ar_data_get_type(false_to_use) == DATA_STRING) {
-                    *own_result = ar_data_create_string(ar_data_get_string(false_to_use));
+                if (ar__data__get_type(false_to_use) == DATA_INTEGER) {
+                    *own_result = ar__data__create_integer(ar__data__get_integer(false_to_use));
+                } else if (ar__data__get_type(false_to_use) == DATA_DOUBLE) {
+                    *own_result = ar__data__create_double(ar__data__get_double(false_to_use));
+                } else if (ar__data__get_type(false_to_use) == DATA_STRING) {
+                    *own_result = ar__data__create_string(ar__data__get_string(false_to_use));
                 } else {
                     // For maps and other types, we can't easily copy, so return 0
-                    *own_result = ar_data_create_integer(0);
+                    *own_result = ar__data__create_integer(0);
                 }
             }
             // Clean up true value if we own it
             if (own_true) {
-                ar_data_destroy(own_true);
+                ar__data__destroy(own_true);
                 own_true = NULL; // Mark as destroyed
             }
         }
         
         // Clean up condition if we own it
         if (own_cond) {
-            ar_data_destroy(own_cond);
+            ar__data__destroy(own_cond);
             own_cond = NULL; // Mark as destroyed
         }
         return true;
@@ -689,19 +689,19 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         
         if (owns_template) {
             // We own the value
-            if (ar_data_get_type(own_template) != DATA_STRING) {
+            if (ar__data__get_type(own_template) != DATA_STRING) {
                 ar__expression__destroy_context(own_context);
-                ar_data_destroy(own_template);
+                ar__data__destroy(own_template);
                 return false;
             }
-            template_str = ar_data_get_string(own_template);
+            template_str = ar__data__get_string(own_template);
         } else {
             // It's a reference - use the evaluation result directly
-            if (!ref_eval_result || ar_data_get_type(ref_eval_result) != DATA_STRING) {
+            if (!ref_eval_result || ar__data__get_type(ref_eval_result) != DATA_STRING) {
                 ar__expression__destroy_context(own_context);
                 return false;
             }
-            template_str = ar_data_get_string(ref_eval_result);
+            template_str = ar__data__get_string(ref_eval_result);
         }
         
         // Clean up context after getting the string
@@ -713,7 +713,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         // Expect comma
         if (ref_instruction[*mut_pos] != ',') {
             if (owns_template && own_template) {
-                ar_data_destroy(own_template);
+                ar__data__destroy(own_template);
                 own_template = NULL; // Mark as destroyed
             }
             return false;
@@ -727,7 +727,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                                               mut_ctx->ref_message, 
                                               ref_instruction + *mut_pos);
         if (!own_context) {
-            ar_data_destroy(own_template);
+            ar__data__destroy(own_template);
             own_template = NULL; // Mark as destroyed
             return false;
         }
@@ -741,27 +741,27 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         
         if (owns_input) {
             // We own the value
-            if (ar_data_get_type(own_input) != DATA_STRING) {
+            if (ar__data__get_type(own_input) != DATA_STRING) {
                 ar__expression__destroy_context(own_context);
-                ar_data_destroy(own_input);
+                ar__data__destroy(own_input);
                 if (owns_template && own_template) {
-                    ar_data_destroy(own_template);
+                    ar__data__destroy(own_template);
                     own_template = NULL; // Mark as destroyed
                 }
                 return false;
             }
-            input_str = ar_data_get_string(own_input);
+            input_str = ar__data__get_string(own_input);
         } else {
             // It's a reference - use the evaluation result directly
-            if (!ref_input_eval || ar_data_get_type(ref_input_eval) != DATA_STRING) {
+            if (!ref_input_eval || ar__data__get_type(ref_input_eval) != DATA_STRING) {
                 ar__expression__destroy_context(own_context);
                 if (owns_template && own_template) {
-                    ar_data_destroy(own_template);
+                    ar__data__destroy(own_template);
                     own_template = NULL; // Mark as destroyed
                 }
                 return false;
             }
-            input_str = ar_data_get_string(ref_input_eval);
+            input_str = ar__data__get_string(ref_input_eval);
         }
         
         // Clean up context after getting the string
@@ -773,11 +773,11 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         // Expect closing parenthesis
         if (ref_instruction[*mut_pos] != ')') {
             if (owns_input && own_input) {
-                ar_data_destroy(own_input);
+                ar__data__destroy(own_input);
                 own_input = NULL; // Mark as destroyed
             }
             if (owns_template && own_template) {
-                ar_data_destroy(own_template);
+                ar__data__destroy(own_template);
                 own_template = NULL; // Mark as destroyed
             }
             return false;
@@ -785,14 +785,14 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         (*mut_pos)++; // Skip ')'
         
         // Create result map (owned by us)
-        *own_result = ar_data_create_map();
+        *own_result = ar__data__create_map();
         if (!*own_result) {
             if (owns_input && own_input) {
-                ar_data_destroy(own_input);
+                ar__data__destroy(own_input);
                 own_input = NULL; // Mark as destroyed
             }
             if (owns_template && own_template) {
-                ar_data_destroy(own_template);
+                ar__data__destroy(own_template);
                 own_template = NULL; // Mark as destroyed
             }
             return false;
@@ -813,8 +813,8 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                 // No more placeholders, check if remaining template matches input
                 if (strcmp(template_ptr, input_ptr) != 0) {
                     // Mismatch - parsing failed, return empty map
-                    ar_data_destroy(*own_result);
-                    *own_result = ar_data_create_map();
+                    ar__data__destroy(*own_result);
+                    *own_result = ar__data__create_map();
                 }
                 break;
             }
@@ -823,8 +823,8 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             size_t literal_len = (size_t)(placeholder_start - template_ptr);
             if (strncmp(template_ptr, input_ptr, literal_len) != 0) {
                 // Mismatch - parsing failed, return empty map
-                ar_data_destroy(*own_result);
-                *own_result = ar_data_create_map();
+                ar__data__destroy(*own_result);
+                *own_result = ar__data__create_map();
                 break;
             }
             
@@ -836,8 +836,8 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             const char *placeholder_end = strchr(template_ptr, '}');
             if (!placeholder_end) {
                 // Invalid template - no closing brace
-                ar_data_destroy(*own_result);
-                *own_result = ar_data_create_map();
+                ar__data__destroy(*own_result);
+                *own_result = ar__data__create_map();
                 break;
             }
             
@@ -845,8 +845,8 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             size_t var_len = (size_t)(placeholder_end - template_ptr);
             char *var_name = (char*)AR_HEAP_MALLOC(var_len + 1, "Parse variable name");
             if (!var_name) {
-                ar_data_destroy(*own_result);
-                *own_result = ar_data_create_map();
+                ar__data__destroy(*own_result);
+                *own_result = ar__data__create_map();
                 break;
             }
             strncpy(var_name, template_ptr, var_len);
@@ -894,21 +894,21 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                     // Try integer
                     long int_val = strtol(value_str, &endptr, 10);
                     if (*endptr == '\0' && value_str[0] != '\0') {
-                        own_value = ar_data_create_integer((int)int_val);
+                        own_value = ar__data__create_integer((int)int_val);
                     } else {
                         // Try double
                         double double_val = strtod(value_str, &endptr);
                         if (*endptr == '\0' && value_str[0] != '\0' && strchr(value_str, '.')) {
-                            own_value = ar_data_create_double(double_val);
+                            own_value = ar__data__create_double(double_val);
                         } else {
                             // Use as string
-                            own_value = ar_data_create_string(value_str);
+                            own_value = ar__data__create_string(value_str);
                         }
                     }
                     
                     // Store in result map
                     if (own_value) {
-                        ar_data_set_map_data(*own_result, var_name, own_value);
+                        ar__data__set_map_data(*own_result, var_name, own_value);
                         // Ownership of own_value is transferred
                     }
                     
@@ -919,8 +919,8 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                 input_ptr = value_end;
             } else {
                 // Could not find the next literal - parsing failed
-                ar_data_destroy(*own_result);
-                *own_result = ar_data_create_map();
+                ar__data__destroy(*own_result);
+                *own_result = ar__data__create_map();
                 AR_HEAP_FREE(var_name);
                 break;
             }
@@ -930,11 +930,11 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         
         // Clean up
         if (owns_input && own_input) {
-            ar_data_destroy(own_input);
+            ar__data__destroy(own_input);
             own_input = NULL; // Mark as destroyed
         }
         if (owns_template && own_template) {
-            ar_data_destroy(own_template);
+            ar__data__destroy(own_template);
             own_template = NULL; // Mark as destroyed
         }
         
@@ -965,19 +965,19 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         
         if (owns_template) {
             // We own the value
-            if (ar_data_get_type(own_template) != DATA_STRING) {
+            if (ar__data__get_type(own_template) != DATA_STRING) {
                 ar__expression__destroy_context(own_context);
-                ar_data_destroy(own_template);
+                ar__data__destroy(own_template);
                 return false;
             }
-            template_str = ar_data_get_string(own_template);
+            template_str = ar__data__get_string(own_template);
         } else {
             // It's a reference - use the evaluation result directly
-            if (!ref_template_eval || ar_data_get_type(ref_template_eval) != DATA_STRING) {
+            if (!ref_template_eval || ar__data__get_type(ref_template_eval) != DATA_STRING) {
                 ar__expression__destroy_context(own_context);
                 return false;
             }
-            template_str = ar_data_get_string(ref_template_eval);
+            template_str = ar__data__get_string(ref_template_eval);
         }
         
         // Clean up context after getting the string
@@ -989,7 +989,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         // Expect comma
         if (ref_instruction[*mut_pos] != ',') {
             if (owns_template && own_template) {
-                ar_data_destroy(own_template);
+                ar__data__destroy(own_template);
                 own_template = NULL; // Mark as destroyed
             }
             return false;
@@ -1004,7 +1004,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                                               ref_instruction + *mut_pos);
         if (!own_context) {
             if (owns_template && own_template) {
-                ar_data_destroy(own_template);
+                ar__data__destroy(own_template);
                 own_template = NULL; // Mark as destroyed
             }
             return false;
@@ -1016,7 +1016,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             ar__expression__destroy_context(own_context);
             own_context = NULL; // Mark as destroyed
             if (owns_template && own_template) {
-                ar_data_destroy(own_template);
+                ar__data__destroy(own_template);
                 own_template = NULL; // Mark as destroyed
             }
             return false;
@@ -1033,13 +1033,13 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         const data_t *values_to_use = own_values ? own_values : ref_values;
         
         // Ensure values is a map
-        if (ar_data_get_type(values_to_use) != DATA_MAP) {
+        if (ar__data__get_type(values_to_use) != DATA_MAP) {
             if (own_values) {
-                ar_data_destroy(own_values);
+                ar__data__destroy(own_values);
                 own_values = NULL; // Mark as destroyed
             }
             if (owns_template && own_template) {
-                ar_data_destroy(own_template);
+                ar__data__destroy(own_template);
                 own_template = NULL; // Mark as destroyed
             }
             return false;
@@ -1050,11 +1050,11 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         // Expect closing parenthesis
         if (ref_instruction[*mut_pos] != ')') {
             if (own_values) {
-                ar_data_destroy(own_values);
+                ar__data__destroy(own_values);
                 own_values = NULL; // Mark as destroyed
             }
             if (owns_template && own_template) {
-                ar_data_destroy(own_template);
+                ar__data__destroy(own_template);
                 own_template = NULL; // Mark as destroyed
             }
             return false;
@@ -1069,9 +1069,9 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         size_t result_size = strlen(template_str) * 2 + 256; // Start with a reasonable size
         char *own_result_str = (char*)AR_HEAP_MALLOC(result_size, "Build result string");
         if (!own_result_str) {
-            ar_data_destroy(own_values);
+            ar__data__destroy(own_values);
             own_values = NULL; // Mark as destroyed
-            ar_data_destroy(own_template);
+            ar__data__destroy(own_template);
             own_template = NULL; // Mark as destroyed
             return false;
         }
@@ -1090,10 +1090,10 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                     if (!var_name) {
                         AR_HEAP_FREE(own_result_str);
                         if (own_values) {
-                            ar_data_destroy(own_values);
+                            ar__data__destroy(own_values);
                             own_values = NULL; // Mark as destroyed
                         }
-                        ar_data_destroy(own_template);
+                        ar__data__destroy(own_template);
                         own_template = NULL; // Mark as destroyed
                         return false;
                     }
@@ -1102,19 +1102,19 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                     var_name[var_len] = '\0';
                     
                     // Look up value in the map
-                    const data_t *ref_value = ar_data_get_map_data(values_to_use, var_name);
+                    const data_t *ref_value = ar__data__get_map_data(values_to_use, var_name);
                     if (ref_value) {
                         // Convert value to string
                         char value_buffer[256];
                         const char *value_str = NULL;
                         
-                        if (ar_data_get_type(ref_value) == DATA_STRING) {
-                            value_str = ar_data_get_string(ref_value);
-                        } else if (ar_data_get_type(ref_value) == DATA_INTEGER) {
-                            snprintf(value_buffer, sizeof(value_buffer), "%d", ar_data_get_integer(ref_value));
+                        if (ar__data__get_type(ref_value) == DATA_STRING) {
+                            value_str = ar__data__get_string(ref_value);
+                        } else if (ar__data__get_type(ref_value) == DATA_INTEGER) {
+                            snprintf(value_buffer, sizeof(value_buffer), "%d", ar__data__get_integer(ref_value));
                             value_str = value_buffer;
-                        } else if (ar_data_get_type(ref_value) == DATA_DOUBLE) {
-                            snprintf(value_buffer, sizeof(value_buffer), "%g", ar_data_get_double(ref_value));
+                        } else if (ar__data__get_type(ref_value) == DATA_DOUBLE) {
+                            snprintf(value_buffer, sizeof(value_buffer), "%g", ar__data__get_double(ref_value));
                             value_str = value_buffer;
                         }
                         
@@ -1128,10 +1128,10 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                                     AR_HEAP_FREE(var_name);
                                     AR_HEAP_FREE(own_result_str);
                                     if (own_values) {
-                                        ar_data_destroy(own_values);
+                                        ar__data__destroy(own_values);
                                         own_values = NULL; // Mark as destroyed
                                     }
-                                    ar_data_destroy(own_template);
+                                    ar__data__destroy(own_template);
                                     own_template = NULL; // Mark as destroyed
                                     return false;
                                 }
@@ -1158,11 +1158,11 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                         if (!new_result) {
                             AR_HEAP_FREE(own_result_str);
                             if (own_values) {
-                                ar_data_destroy(own_values);
+                                ar__data__destroy(own_values);
                                 own_values = NULL; // Mark as destroyed
                             }
                             if (owns_template && own_template) {
-                                ar_data_destroy(own_template);
+                                ar__data__destroy(own_template);
                                 own_template = NULL; // Mark as destroyed
                             }
                             return false;
@@ -1181,11 +1181,11 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                     if (!new_result) {
                         AR_HEAP_FREE(own_result_str);
                         if (own_values) {
-                            ar_data_destroy(own_values);
+                            ar__data__destroy(own_values);
                             own_values = NULL; // Mark as destroyed
                         }
                         if (owns_template && own_template) {
-                            ar_data_destroy(own_template);
+                            ar__data__destroy(own_template);
                             own_template = NULL; // Mark as destroyed
                         }
                         return false;
@@ -1202,16 +1202,16 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         own_result_str[result_pos] = '\0';
         
         // Create the result string data object
-        *own_result = ar_data_create_string(own_result_str);
+        *own_result = ar__data__create_string(own_result_str);
         
         // Clean up
         AR_HEAP_FREE(own_result_str);
         if (own_values) {
-            ar_data_destroy(own_values);
+            ar__data__destroy(own_values);
             own_values = NULL; // Mark as destroyed
         }
         if (owns_template && own_template) {
-            ar_data_destroy(own_template);
+            ar__data__destroy(own_template);
             own_template = NULL; // Mark as destroyed
         }
         
@@ -1242,19 +1242,19 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         
         if (owns_name) {
             // We own the value
-            if (ar_data_get_type(own_name) != DATA_STRING) {
+            if (ar__data__get_type(own_name) != DATA_STRING) {
                 ar__expression__destroy_context(own_context);
-                ar_data_destroy(own_name);
+                ar__data__destroy(own_name);
                 return false;
             }
-            method_name = ar_data_get_string(own_name);
+            method_name = ar__data__get_string(own_name);
         } else {
             // It's a reference - use the evaluation result directly
-            if (!ref_name_eval || ar_data_get_type(ref_name_eval) != DATA_STRING) {
+            if (!ref_name_eval || ar__data__get_type(ref_name_eval) != DATA_STRING) {
                 ar__expression__destroy_context(own_context);
                 return false;
             }
-            method_name = ar_data_get_string(ref_name_eval);
+            method_name = ar__data__get_string(ref_name_eval);
         }
         
         // Clean up context after getting the string
@@ -1266,7 +1266,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         // Expect comma
         if (ref_instruction[*mut_pos] != ',') {
             if (owns_name && own_name) {
-                ar_data_destroy(own_name);
+                ar__data__destroy(own_name);
                 own_name = NULL; // Mark as destroyed
             }
             return false;
@@ -1281,7 +1281,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                                               ref_instruction + *mut_pos);
         if (!own_context) {
             if (owns_name && own_name) {
-                ar_data_destroy(own_name);
+                ar__data__destroy(own_name);
                 own_name = NULL; // Mark as destroyed
             }
             return false;
@@ -1296,27 +1296,27 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         
         if (owns_instr) {
             // We own the value
-            if (ar_data_get_type(own_instr) != DATA_STRING) {
+            if (ar__data__get_type(own_instr) != DATA_STRING) {
                 ar__expression__destroy_context(own_context);
-                ar_data_destroy(own_instr);
+                ar__data__destroy(own_instr);
                 if (owns_name && own_name) {
-                    ar_data_destroy(own_name);
+                    ar__data__destroy(own_name);
                     own_name = NULL; // Mark as destroyed
                 }
                 return false;
             }
-            instructions = ar_data_get_string(own_instr);
+            instructions = ar__data__get_string(own_instr);
         } else {
             // It's a reference - use the evaluation result directly
-            if (!ref_instr_eval || ar_data_get_type(ref_instr_eval) != DATA_STRING) {
+            if (!ref_instr_eval || ar__data__get_type(ref_instr_eval) != DATA_STRING) {
                 ar__expression__destroy_context(own_context);
                 if (owns_name && own_name) {
-                    ar_data_destroy(own_name);
+                    ar__data__destroy(own_name);
                     own_name = NULL; // Mark as destroyed
                 }
                 return false;
             }
-            instructions = ar_data_get_string(ref_instr_eval);
+            instructions = ar__data__get_string(ref_instr_eval);
         }
         
         // Clean up context after getting the string
@@ -1328,11 +1328,11 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         // Expect comma
         if (ref_instruction[*mut_pos] != ',') {
             if (owns_instr && own_instr) {
-                ar_data_destroy(own_instr);
+                ar__data__destroy(own_instr);
                 own_instr = NULL; // Mark as destroyed
             }
             if (owns_name && own_name) {
-                ar_data_destroy(own_name);
+                ar__data__destroy(own_name);
                 own_name = NULL; // Mark as destroyed
             }
             return false;
@@ -1347,11 +1347,11 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                                               ref_instruction + *mut_pos);
         if (!own_context) {
             if (owns_instr && own_instr) {
-                ar_data_destroy(own_instr);
+                ar__data__destroy(own_instr);
                 own_instr = NULL; // Mark as destroyed
             }
             if (owns_name && own_name) {
-                ar_data_destroy(own_name);
+                ar__data__destroy(own_name);
                 own_name = NULL; // Mark as destroyed
             }
             return false;
@@ -1366,23 +1366,23 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         
         if (owns_version) {
             // We own the value
-            if (ar_data_get_type(own_version) == DATA_STRING) {
-                version_str = ar_data_get_string(own_version);
-            } else if (ar_data_get_type(own_version) == DATA_INTEGER) {
+            if (ar__data__get_type(own_version) == DATA_STRING) {
+                version_str = ar__data__get_string(own_version);
+            } else if (ar__data__get_type(own_version) == DATA_INTEGER) {
                 // If version is provided as a number, convert it to a string "X.0.0"
                 static char version_buffer[16]; // Buffer for conversion
-                snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar_data_get_integer(own_version));
+                snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar__data__get_integer(own_version));
                 version_str = version_buffer;
             }
         } else {
             // It's a reference - use the evaluation result directly
             if (ref_version_eval) {
-                if (ar_data_get_type(ref_version_eval) == DATA_STRING) {
-                    version_str = ar_data_get_string(ref_version_eval);
-                } else if (ar_data_get_type(ref_version_eval) == DATA_INTEGER) {
+                if (ar__data__get_type(ref_version_eval) == DATA_STRING) {
+                    version_str = ar__data__get_string(ref_version_eval);
+                } else if (ar__data__get_type(ref_version_eval) == DATA_INTEGER) {
                     // If version is provided as a number, convert it to a string "X.0.0"
                     static char version_buffer[16]; // Buffer for conversion
-                    snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar_data_get_integer(ref_version_eval));
+                    snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar__data__get_integer(ref_version_eval));
                     version_str = version_buffer;
                 }
             }
@@ -1397,15 +1397,15 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         // Expect closing parenthesis
         if (ref_instruction[*mut_pos] != ')') {
             if (owns_version && own_version) {
-                ar_data_destroy(own_version);
+                ar__data__destroy(own_version);
                 own_version = NULL; // Mark as destroyed
             }
             if (owns_instr && own_instr) {
-                ar_data_destroy(own_instr);
+                ar__data__destroy(own_instr);
                 own_instr = NULL; // Mark as destroyed
             }
             if (owns_name && own_name) {
-                ar_data_destroy(own_name);
+                ar__data__destroy(own_name);
                 own_name = NULL; // Mark as destroyed
             }
             return false;
@@ -1418,20 +1418,20 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         
         // Clean up input data now that we're done with it
         if (owns_version && own_version) {
-            ar_data_destroy(own_version);
+            ar__data__destroy(own_version);
             own_version = NULL; // Mark as destroyed
         }
         if (owns_instr && own_instr) {
-            ar_data_destroy(own_instr);
+            ar__data__destroy(own_instr);
             own_instr = NULL; // Mark as destroyed
         }
         if (owns_name && own_name) {
-            ar_data_destroy(own_name);
+            ar__data__destroy(own_name);
             own_name = NULL; // Mark as destroyed
         }
         
         // Return success indicator
-        *own_result = ar_data_create_integer(success ? 1 : 0);
+        *own_result = ar__data__create_integer(success ? 1 : 0);
         return true;
     }
     else if (strcmp(function_name, "agent") == 0) {
@@ -1463,19 +1463,19 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         
         if (owns_method_name) {
             // We own the value
-            if (ar_data_get_type(own_method_name) != DATA_STRING) {
+            if (ar__data__get_type(own_method_name) != DATA_STRING) {
                 ar__expression__destroy_context(own_context);
-                ar_data_destroy(own_method_name);
+                ar__data__destroy(own_method_name);
                 return false;
             }
-            method_name = ar_data_get_string(own_method_name);
+            method_name = ar__data__get_string(own_method_name);
         } else {
             // It's a reference - use the evaluation result directly
-            if (!ref_method_name_eval || ar_data_get_type(ref_method_name_eval) != DATA_STRING) {
+            if (!ref_method_name_eval || ar__data__get_type(ref_method_name_eval) != DATA_STRING) {
                 ar__expression__destroy_context(own_context);
                 return false;
             }
-            method_name = ar_data_get_string(ref_method_name_eval);
+            method_name = ar__data__get_string(ref_method_name_eval);
         }
         
         // Clean up context after getting the string
@@ -1487,7 +1487,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         // Expect comma
         if (ref_instruction[*mut_pos] != ',') {
             if (owns_method_name && own_method_name) {
-                ar_data_destroy(own_method_name);
+                ar__data__destroy(own_method_name);
                 own_method_name = NULL; // Mark as destroyed
             }
             return false;
@@ -1503,7 +1503,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                                               ref_instruction + *mut_pos);
         if (!own_context) {
             if (owns_method_name && own_method_name) {
-                ar_data_destroy(own_method_name);
+                ar__data__destroy(own_method_name);
                 own_method_name = NULL; // Mark as destroyed
             }
             return false;
@@ -1512,7 +1512,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         if (!ref_version_eval) {
             ar__expression__destroy_context(own_context);
             if (owns_method_name && own_method_name) {
-                ar_data_destroy(own_method_name);
+                ar__data__destroy(own_method_name);
                 own_method_name = NULL; // Mark as destroyed
             }
             return false;
@@ -1526,27 +1526,27 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         
         if (owns_version) {
             // We own the value
-            if (ar_data_get_type(own_version) != DATA_STRING) {
+            if (ar__data__get_type(own_version) != DATA_STRING) {
                 ar__expression__destroy_context(own_context);
-                ar_data_destroy(own_version);
+                ar__data__destroy(own_version);
                 if (owns_method_name && own_method_name) {
-                    ar_data_destroy(own_method_name);
+                    ar__data__destroy(own_method_name);
                     own_method_name = NULL; // Mark as destroyed
                 }
                 return false;
             }
-            version_str = ar_data_get_string(own_version);
+            version_str = ar__data__get_string(own_version);
         } else {
             // It's a reference - use the evaluation result directly
-            if (!ref_version_eval || ar_data_get_type(ref_version_eval) != DATA_STRING) {
+            if (!ref_version_eval || ar__data__get_type(ref_version_eval) != DATA_STRING) {
                 ar__expression__destroy_context(own_context);
                 if (owns_method_name && own_method_name) {
-                    ar_data_destroy(own_method_name);
+                    ar__data__destroy(own_method_name);
                     own_method_name = NULL; // Mark as destroyed
                 }
                 return false;
             }
-            version_str = ar_data_get_string(ref_version_eval);
+            version_str = ar__data__get_string(ref_version_eval);
         }
         
         // Clean up context after getting the string
@@ -1558,11 +1558,11 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         // Expect comma
         if (ref_instruction[*mut_pos] != ',') {
             if (owns_version && own_version) {
-                ar_data_destroy(own_version);
+                ar__data__destroy(own_version);
                 own_version = NULL; // Mark as destroyed
             }
             if (owns_method_name && own_method_name) {
-                ar_data_destroy(own_method_name);
+                ar__data__destroy(own_method_name);
                 own_method_name = NULL; // Mark as destroyed
             }
             return false;
@@ -1578,11 +1578,11 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                                               ref_instruction + *mut_pos);
         if (!own_context) {
             if (owns_version && own_version) {
-                ar_data_destroy(own_version);
+                ar__data__destroy(own_version);
                 own_version = NULL; // Mark as destroyed
             }
             if (owns_method_name && own_method_name) {
-                ar_data_destroy(own_method_name);
+                ar__data__destroy(own_method_name);
                 own_method_name = NULL; // Mark as destroyed
             }
             return false;
@@ -1600,11 +1600,11 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         
         if (!ref_agent_context) {
             if (owns_version && own_version) {
-                ar_data_destroy(own_version);
+                ar__data__destroy(own_version);
                 own_version = NULL; // Mark as destroyed
             }
             if (owns_method_name && own_method_name) {
-                ar_data_destroy(own_method_name);
+                ar__data__destroy(own_method_name);
                 own_method_name = NULL; // Mark as destroyed
             }
             return false;
@@ -1615,15 +1615,15 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         // Expect closing parenthesis
         if (ref_instruction[*mut_pos] != ')') {
             if (owns_context && own_agent_context) {
-                ar_data_destroy(own_agent_context);
+                ar__data__destroy(own_agent_context);
                 own_agent_context = NULL; // Mark as destroyed
             }
             if (owns_version && own_version) {
-                ar_data_destroy(own_version);
+                ar__data__destroy(own_version);
                 own_version = NULL; // Mark as destroyed
             }
             if (owns_method_name && own_method_name) {
-                ar_data_destroy(own_method_name);
+                ar__data__destroy(own_method_name);
                 own_method_name = NULL; // Mark as destroyed
             }
             return false;
@@ -1642,20 +1642,20 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         
         // Clean up input data now that we're done with it
         if (owns_context && own_agent_context) {
-            ar_data_destroy(own_agent_context);
+            ar__data__destroy(own_agent_context);
             own_agent_context = NULL; // Mark as destroyed
         }
         if (owns_version && own_version) {
-            ar_data_destroy(own_version);
+            ar__data__destroy(own_version);
             own_version = NULL; // Mark as destroyed
         }
         if (owns_method_name && own_method_name) {
-            ar_data_destroy(own_method_name);
+            ar__data__destroy(own_method_name);
             own_method_name = NULL; // Mark as destroyed
         }
         
         // Return agent ID as result (0 if creation failed)
-        *own_result = ar_data_create_integer((int)agent_id);
+        *own_result = ar__data__create_integer((int)agent_id);
         return true;
     }
     else if (strcmp(function_name, "destroy") == 0) {
@@ -1702,14 +1702,14 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             
             // Ensure first argument is a string (method name)
             const data_t *arg_to_use = own_arg1 ? own_arg1 : ref_arg1;
-            if (ar_data_get_type(arg_to_use) != DATA_STRING) {
+            if (ar__data__get_type(arg_to_use) != DATA_STRING) {
                 if (own_arg1) {
-                    ar_data_destroy(own_arg1);
+                    ar__data__destroy(own_arg1);
                     own_arg1 = NULL; // Mark as destroyed
                 }
                 return false;
             }
-            const char *method_name = ar_data_get_string(arg_to_use);
+            const char *method_name = ar__data__get_string(arg_to_use);
             
             // Parse version expression
             own_context = ar__expression__create_context(mut_ctx->mut_memory,
@@ -1718,7 +1718,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
                                                   ref_instruction + *mut_pos);
             if (!own_context) {
                 if (own_arg1) {
-                    ar_data_destroy(own_arg1);
+                    ar__data__destroy(own_arg1);
                     own_arg1 = NULL; // Mark as destroyed
                 }
                 return false;
@@ -1733,23 +1733,23 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             
             if (owns_version) {
                 // We own the value
-                if (ar_data_get_type(own_version) == DATA_STRING) {
-                    version_str = ar_data_get_string(own_version);
-                } else if (ar_data_get_type(own_version) == DATA_INTEGER) {
+                if (ar__data__get_type(own_version) == DATA_STRING) {
+                    version_str = ar__data__get_string(own_version);
+                } else if (ar__data__get_type(own_version) == DATA_INTEGER) {
                     // If version is provided as a number, convert it to a string "X.0.0"
                     static char version_buffer[16]; // Buffer for conversion
-                    snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar_data_get_integer(own_version));
+                    snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar__data__get_integer(own_version));
                     version_str = version_buffer;
                 }
             } else {
                 // It's a reference - use the evaluation result directly
                 if (ref_version_eval) {
-                    if (ar_data_get_type(ref_version_eval) == DATA_STRING) {
-                        version_str = ar_data_get_string(ref_version_eval);
-                    } else if (ar_data_get_type(ref_version_eval) == DATA_INTEGER) {
+                    if (ar__data__get_type(ref_version_eval) == DATA_STRING) {
+                        version_str = ar__data__get_string(ref_version_eval);
+                    } else if (ar__data__get_type(ref_version_eval) == DATA_INTEGER) {
                         // If version is provided as a number, convert it to a string "X.0.0"
                         static char version_buffer[16]; // Buffer for conversion
-                        snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar_data_get_integer(ref_version_eval));
+                        snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar__data__get_integer(ref_version_eval));
                         version_str = version_buffer;
                     }
                 }
@@ -1764,11 +1764,11 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             // Expect closing parenthesis
             if (ref_instruction[*mut_pos] != ')') {
                 if (owns_version && own_version) {
-                    ar_data_destroy(own_version);
+                    ar__data__destroy(own_version);
                     own_version = NULL; // Mark as destroyed
                 }
                 if (own_arg1) {
-                    ar_data_destroy(own_arg1);
+                    ar__data__destroy(own_arg1);
                     own_arg1 = NULL; // Mark as destroyed
                 }
                 return false;
@@ -1780,16 +1780,16 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             
             // Clean up
             if (owns_version && own_version) {
-                ar_data_destroy(own_version);
+                ar__data__destroy(own_version);
                 own_version = NULL; // Mark as destroyed
             }
             if (own_arg1) {
-                ar_data_destroy(own_arg1);
+                ar__data__destroy(own_arg1);
                 own_arg1 = NULL; // Mark as destroyed
             }
             
             // Return success indicator
-            *own_result = ar_data_create_integer(success ? 1 : 0);
+            *own_result = ar__data__create_integer(success ? 1 : 0);
             return true;
         }
         else if (ref_instruction[*mut_pos] == ')') {
@@ -1798,32 +1798,32 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             
             // Ensure argument is an integer (agent ID)
             const data_t *arg_to_use = own_arg1 ? own_arg1 : ref_arg1;
-            if (ar_data_get_type(arg_to_use) != DATA_INTEGER) {
+            if (ar__data__get_type(arg_to_use) != DATA_INTEGER) {
                 if (own_arg1) {
-                    ar_data_destroy(own_arg1);
+                    ar__data__destroy(own_arg1);
                     own_arg1 = NULL; // Mark as destroyed
                 }
                 return false;
             }
-            int64_t agent_id = (int64_t)ar_data_get_integer(arg_to_use);
+            int64_t agent_id = (int64_t)ar__data__get_integer(arg_to_use);
             
             // Destroy the agent
             bool success = ar__agency__destroy_agent(agent_id);
             
             // Clean up
             if (own_arg1) {
-                ar_data_destroy(own_arg1);
+                ar__data__destroy(own_arg1);
                 own_arg1 = NULL; // Mark as destroyed
             }
             
             // Return success indicator
-            *own_result = ar_data_create_integer(success ? 1 : 0);
+            *own_result = ar__data__create_integer(success ? 1 : 0);
             return true;
         }
         else {
             // Invalid syntax
             if (own_arg1) {
-                ar_data_destroy(own_arg1);
+                ar__data__destroy(own_arg1);
                 own_arg1 = NULL; // Mark as destroyed
             }
             return false;
@@ -1843,7 +1843,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         }
         
         // Create a default result (we own it from creation)
-        *own_result = ar_data_create_integer(0);
+        *own_result = ar__data__create_integer(0);
         return true;
     }
     

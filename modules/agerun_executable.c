@@ -66,7 +66,7 @@ int ar__executable__main(void) {
     }
     
     // Send wake message to initial agent
-    data_t *own_wake_data = ar_data_create_string(ref_wake_message);
+    data_t *own_wake_data = ar__data__create_string(ref_wake_message);
     if (own_wake_data) {
         ar__agency__send_to_agent(initial_agent, own_wake_data);
         // Ownership transferred to agent
@@ -91,10 +91,10 @@ int ar__executable__main(void) {
     
     // Send some messages to the counter agent
     printf("Sending messages to counter agent...\n");
-    data_t *own_incr_msg1 = ar_data_create_string(ref_increment_message);
-    data_t *own_incr_msg2 = ar_data_create_string(ref_increment_message);
-    data_t *own_incr_msg3 = ar_data_create_string(ref_increment_message);
-    data_t *own_get_msg1 = ar_data_create_string(ref_get_message);
+    data_t *own_incr_msg1 = ar__data__create_string(ref_increment_message);
+    data_t *own_incr_msg2 = ar__data__create_string(ref_increment_message);
+    data_t *own_incr_msg3 = ar__data__create_string(ref_increment_message);
+    data_t *own_get_msg1 = ar__data__create_string(ref_get_message);
     
     if (own_incr_msg1 && own_incr_msg2 && own_incr_msg3 && own_get_msg1) {
         ar__agency__send_to_agent(counter_id, own_incr_msg1);
@@ -121,9 +121,9 @@ int ar__executable__main(void) {
     
     // Send more messages
     printf("Sending more messages...\n");
-    data_t *own_incr_msg4 = ar_data_create_string(ref_increment_message);
-    data_t *own_incr_msg5 = ar_data_create_string(ref_increment_message);
-    data_t *own_get_msg2 = ar_data_create_string(ref_get_message);
+    data_t *own_incr_msg4 = ar__data__create_string(ref_increment_message);
+    data_t *own_incr_msg5 = ar__data__create_string(ref_increment_message);
+    data_t *own_get_msg2 = ar__data__create_string(ref_get_message);
     
     if (own_incr_msg4 && own_incr_msg5 && own_get_msg2) {
         ar__agency__send_to_agent(counter_id, own_incr_msg4);
@@ -181,7 +181,7 @@ int ar__executable__main(void) {
         
         // Send a message to get the current count
         printf("Sending 'get' message to counter agent...\n");
-        data_t *own_get_msg3 = ar_data_create_string(ref_get_message);
+        data_t *own_get_msg3 = ar__data__create_string(ref_get_message);
         if (own_get_msg3) {
             ar__agency__send_to_agent(counter_id, own_get_msg3);
             // Ownership transferred to agent
