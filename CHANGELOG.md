@@ -2,6 +2,17 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-06-11
+- ✅ Completed static function naming convention update:
+  - ✅ Changed all static functions to use underscore prefix `_<function_name>`
+  - ✅ Renamed 272 static functions across all non-test modules
+  - ✅ Updated all function calls to use new names
+  - ✅ Excluded test functions from renaming (only implementation functions affected)
+  - ✅ Fixed accidental global variable renaming and reverted appropriately
+  - ✅ All tests pass with zero memory leaks
+  - ✅ Updated CLAUDE.md with bulk renaming workflow and learnings
+  - ✅ **Static function naming convention complete** - internal functions now immediately distinguishable
+
 ## 2025-06-08 (Later - Part 3)
 - ✅ Started module function naming convention refactoring:
   - ✅ Changed naming convention from ar_<module>_<function> to ar__<module>__<function>

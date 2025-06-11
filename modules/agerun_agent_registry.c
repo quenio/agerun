@@ -303,7 +303,7 @@ bool ar__agent_registry__is_registered(const agent_registry_t *ref_registry, int
 }
 
 /* Helper function to get string key for agent_id from the registered list */
-static const char* get_agent_key_from_list(const agent_registry_t *ref_registry, int64_t agent_id) {
+static const char* _get_agent_key_from_list(const agent_registry_t *ref_registry, int64_t agent_id) {
     if (!ref_registry || !ref_registry->own_registered_ids) {
         return NULL;
     }
@@ -345,7 +345,7 @@ bool ar__agent_registry__track_agent(agent_registry_t *mut_registry, int64_t age
     }
     
     // Get the string key from the registered list
-    const char *ref_key = get_agent_key_from_list(mut_registry, agent_id);
+    const char *ref_key = _get_agent_key_from_list(mut_registry, agent_id);
     if (!ref_key) {
         return false; // Agent ID must be registered first
     }
@@ -362,7 +362,7 @@ void* ar__agent_registry__untrack_agent(agent_registry_t *mut_registry, int64_t 
     }
     
     // Get the string key from the registered list
-    const char *ref_key = get_agent_key_from_list(mut_registry, agent_id);
+    const char *ref_key = _get_agent_key_from_list(mut_registry, agent_id);
     if (!ref_key) {
         return NULL;
     }
@@ -384,7 +384,7 @@ void* ar__agent_registry__find_agent(const agent_registry_t *ref_registry, int64
     }
     
     // Get the string key from the registered list
-    const char *ref_key = get_agent_key_from_list(ref_registry, agent_id);
+    const char *ref_key = _get_agent_key_from_list(ref_registry, agent_id);
     if (!ref_key) {
         return NULL;
     }

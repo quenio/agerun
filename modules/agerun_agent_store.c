@@ -29,7 +29,7 @@ typedef struct {
 } store_save_context_t;
 
 /* Helper function to get list of all active agent IDs */
-static list_t* get_active_agent_list(void) {
+static list_t* _get_active_agent_list(void) {
     list_t *own_list = ar__list__create();
     if (!own_list) {
         return NULL;
@@ -49,7 +49,7 @@ static list_t* get_active_agent_list(void) {
 
 
 /* Helper function to clean up agent list and items */
-static void cleanup_agent_list(list_t *own_agents, void **own_items, size_t count) {
+static void _cleanup_agent_list(list_t *own_agents, void **own_items, size_t count) {
     // Destroy data_t objects from the items array
     if (own_items) {
         for (size_t i = 0; i < count; i++) {
@@ -69,15 +69,15 @@ static void cleanup_agent_list(list_t *own_agents, void **own_items, size_t coun
 }
 
 /* Writer function for saving agent data */
-static bool store_write_function(FILE *fp, void *context) {
+static bool _store_write_function(FILE *fp, void *context) {
     store_save_context_t *ctx = (store_save_context_t *)context;
     if (!ctx) {
-        ar__io__error("Invalid context for store_write_function");
+        ar__io__error("Invalid context for _store_write_function");
         return false;
     }
     
     // Get list of all active agents
-    list_t *own_agents = get_active_agent_list();
+    list_t *own_agents = _get_active_agent_list();
     if (!own_agents) {
         ar__io__error("Failed to get agent list");
         return false;
@@ -117,13 +117,13 @@ static bool store_write_function(FILE *fp, void *context) {
     int written = snprintf(buffer, sizeof(buffer), "%d\n", count);
     if (written < 0 || written >= (int)sizeof(buffer)) {
         ar__io__error("Buffer too small for count in %s", ctx->filename);
-        cleanup_agent_list(own_agents, own_items, total_agents);
+        _cleanup_agent_list(own_agents, own_items, total_agents);
         return false;
     }
     
     if (fputs(buffer, fp) == EOF) {
         ar__io__error("Failed to write count to %s", ctx->filename);
-        cleanup_agent_list(own_agents, own_items, total_agents);
+        _cleanup_agent_list(own_agents, own_items, total_agents);
         return false;
     }
     
@@ -146,7 +146,7 @@ static bool store_write_function(FILE *fp, void *context) {
         
         if (!method_name || !method_version) {
             ar__io__error("Invalid method reference data for agent %lld", agent_id);
-            cleanup_agent_list(own_agents, own_items, total_agents);
+            _cleanup_agent_list(own_agents, own_items, total_agents);
             return false;
         }
         
@@ -155,13 +155,13 @@ static bool store_write_function(FILE *fp, void *context) {
                           agent_id, method_name, method_version);
         if (written < 0 || written >= (int)sizeof(buffer)) {
             ar__io__error("Buffer too small for agent data in %s", ctx->filename);
-            cleanup_agent_list(own_agents, own_items, total_agents);
+            _cleanup_agent_list(own_agents, own_items, total_agents);
             return false;
         }
         
         if (fputs(buffer, fp) == EOF) {
             ar__io__error("Failed to write agent data to %s", ctx->filename);
-            cleanup_agent_list(own_agents, own_items, total_agents);
+            _cleanup_agent_list(own_agents, own_items, total_agents);
             return false;
         }
         
@@ -172,7 +172,7 @@ static bool store_write_function(FILE *fp, void *context) {
             // No memory or not a map - write 0 items
             if (fputs("0\n", fp) == EOF) {
                 ar__io__error("Failed to write memory count to %s", ctx->filename);
-                cleanup_agent_list(own_agents, own_items, total_agents);
+                _cleanup_agent_list(own_agents, own_items, total_agents);
                 return false;
             }
             continue;
@@ -182,7 +182,7 @@ static bool store_write_function(FILE *fp, void *context) {
         data_t *own_keys = ar__data__get_map_keys(ref_memory);
         if (!own_keys) {
             ar__io__error("Failed to get keys from agent memory");
-            cleanup_agent_list(own_agents, own_items, total_agents);
+            _cleanup_agent_list(own_agents, own_items, total_agents);
             return false;
         }
         
@@ -192,14 +192,14 @@ static bool store_write_function(FILE *fp, void *context) {
         if (written < 0 || written >= (int)sizeof(buffer)) {
             ar__io__error("Buffer too small for memory count in %s", ctx->filename);
             ar__data__destroy(own_keys);
-            cleanup_agent_list(own_agents, own_items, total_agents);
+            _cleanup_agent_list(own_agents, own_items, total_agents);
             return false;
         }
         
         if (fputs(buffer, fp) == EOF) {
             ar__io__error("Failed to write memory count to %s", ctx->filename);
             ar__data__destroy(own_keys);
-            cleanup_agent_list(own_agents, own_items, total_agents);
+            _cleanup_agent_list(own_agents, own_items, total_agents);
             return false;
         }
         
@@ -233,14 +233,14 @@ static bool store_write_function(FILE *fp, void *context) {
                         ar__io__error("Buffer too small for memory key/type in %s", ctx->filename);
                         ar__data__destroy(own_key_data);
                         ar__data__destroy(own_keys);
-                        cleanup_agent_list(own_agents, own_items, total_agents);
+                        _cleanup_agent_list(own_agents, own_items, total_agents);
                         return false;
                     }
                     if (fputs(buffer, fp) == EOF) {
                         ar__io__error("Failed to write memory key/type to %s", ctx->filename);
                         ar__data__destroy(own_key_data);
                         ar__data__destroy(own_keys);
-                        cleanup_agent_list(own_agents, own_items, total_agents);
+                        _cleanup_agent_list(own_agents, own_items, total_agents);
                         return false;
                     }
                     
@@ -256,14 +256,14 @@ static bool store_write_function(FILE *fp, void *context) {
                         ar__io__error("Buffer too small for memory key/type in %s", ctx->filename);
                         ar__data__destroy(own_key_data);
                         ar__data__destroy(own_keys);
-                        cleanup_agent_list(own_agents, own_items, total_agents);
+                        _cleanup_agent_list(own_agents, own_items, total_agents);
                         return false;
                     }
                     if (fputs(buffer, fp) == EOF) {
                         ar__io__error("Failed to write memory key/type to %s", ctx->filename);
                         ar__data__destroy(own_key_data);
                         ar__data__destroy(own_keys);
-                        cleanup_agent_list(own_agents, own_items, total_agents);
+                        _cleanup_agent_list(own_agents, own_items, total_agents);
                         return false;
                     }
                     
@@ -279,14 +279,14 @@ static bool store_write_function(FILE *fp, void *context) {
                         ar__io__error("Buffer too small for memory key/type in %s", ctx->filename);
                         ar__data__destroy(own_key_data);
                         ar__data__destroy(own_keys);
-                        cleanup_agent_list(own_agents, own_items, total_agents);
+                        _cleanup_agent_list(own_agents, own_items, total_agents);
                         return false;
                     }
                     if (fputs(buffer, fp) == EOF) {
                         ar__io__error("Failed to write memory key/type to %s", ctx->filename);
                         ar__data__destroy(own_key_data);
                         ar__data__destroy(own_keys);
-                        cleanup_agent_list(own_agents, own_items, total_agents);
+                        _cleanup_agent_list(own_agents, own_items, total_agents);
                         return false;
                     }
                     
@@ -310,7 +310,7 @@ static bool store_write_function(FILE *fp, void *context) {
                 ar__io__error("Buffer too small for memory value in %s", ctx->filename);
                 ar__data__destroy(own_key_data);
                 ar__data__destroy(own_keys);
-                cleanup_agent_list(own_agents, own_items, total_agents);
+                _cleanup_agent_list(own_agents, own_items, total_agents);
                 return false;
             }
             
@@ -318,7 +318,7 @@ static bool store_write_function(FILE *fp, void *context) {
                 ar__io__error("Failed to write memory value to %s", ctx->filename);
                 ar__data__destroy(own_key_data);
                 ar__data__destroy(own_keys);
-                cleanup_agent_list(own_agents, own_items, total_agents);
+                _cleanup_agent_list(own_agents, own_items, total_agents);
                 return false;
             }
             
@@ -329,7 +329,7 @@ static bool store_write_function(FILE *fp, void *context) {
     }
     
     // Clean up
-    cleanup_agent_list(own_agents, own_items, total_agents);
+    _cleanup_agent_list(own_agents, own_items, total_agents);
     
     return true;
 }
@@ -342,7 +342,7 @@ typedef struct {
 } agent_load_info_t;
 
 /* Validate the format of an agent store file */
-static bool validate_store_file(const char *filename, char *error_message, size_t error_size) {
+static bool _validate_store_file(const char *filename, char *error_message, size_t error_size) {
     FILE *fp;
     file_result_t result = ar__io__open_file(filename, "r", &fp);
     
@@ -499,7 +499,7 @@ bool ar__agent_store__save(void) {
     }
     
     // Use the safe file writing utility
-    file_result_t result = ar__io__write_file(AGENT_STORE_FILE_NAME, store_write_function, &context);
+    file_result_t result = ar__io__write_file(AGENT_STORE_FILE_NAME, _store_write_function, &context);
     if (result != FILE_SUCCESS) {
         ar__io__error("Failed to save agent store file: %s", ar__io__error_message(result));
         
@@ -532,7 +532,7 @@ bool ar__agent_store__save(void) {
 bool ar__agent_store__load(void) {
     // First validate the file format
     char error_message[512];
-    if (!validate_store_file(AGENT_STORE_FILE_NAME, error_message, sizeof(error_message))) {
+    if (!_validate_store_file(AGENT_STORE_FILE_NAME, error_message, sizeof(error_message))) {
         if (strstr(error_message, "not found") != NULL) {
             // Not an error, might be first run
             return true;

@@ -26,17 +26,17 @@ struct instruction_context_s {
 };
 
 // Function prototypes for recursive descent parsing
-static bool parse_instruction(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos);
-static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos);
-static bool parse_function_instruction(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos);
-static bool parse_memory_access(const char *ref_instruction, int *mut_pos, char **path);
-static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos, data_t **result);
-static bool skip_whitespace(const char *ref_instruction, int *mut_pos);
-static bool extract_identifier(const char *ref_instruction, int *mut_pos, char *mut_identifier, int max_size);
+static bool _parse_instruction(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos);
+static bool _parse_assignment(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos);
+static bool _parse_function_instruction(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos);
+static bool _parse_memory_access(const char *ref_instruction, int *mut_pos, char **path);
+static bool _parse_function_call(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos, data_t **result);
+static bool _skip_whitespace(const char *ref_instruction, int *mut_pos);
+static bool _extract_identifier(const char *ref_instruction, int *mut_pos, char *mut_identifier, int max_size);
 
 // Error handling helper functions
-static void set_error(instruction_context_t *mut_ctx, const char *ref_message, int position);
-static void clear_error(instruction_context_t *mut_ctx);
+static void _set_error(instruction_context_t *mut_ctx, const char *ref_message, int position);
+static void _clear_error(instruction_context_t *mut_ctx);
 
 // Create a new instruction context
 instruction_context_t* ar__instruction__create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message) {
@@ -112,44 +112,44 @@ bool ar__instruction__run(instruction_context_t *mut_ctx, const char *ref_instru
     }
     
     int pos = 0;
-    bool result = parse_instruction(mut_ctx, ref_instruction, &pos);
+    bool result = _parse_instruction(mut_ctx, ref_instruction, &pos);
     
     if (result) {
         // Clear error state on success
-        clear_error(mut_ctx);
+        _clear_error(mut_ctx);
     }
     
     return result;
 }
 
 // <instruction> ::= <assignment> | <function-instruction>
-static bool parse_instruction(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
-    skip_whitespace(ref_instruction, mut_pos);
+static bool _parse_instruction(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
+    _skip_whitespace(ref_instruction, mut_pos);
     
     // Check for assignment or function instruction
     // Save the current position to backtrack if needed
     int save_pos = *mut_pos;
     
     // Try to parse as assignment first
-    if (parse_assignment(mut_ctx, ref_instruction, mut_pos)) {
+    if (_parse_assignment(mut_ctx, ref_instruction, mut_pos)) {
         return true;
     }
     
     // Backtrack and try as function instruction
     *mut_pos = save_pos;
-    return parse_function_instruction(mut_ctx, ref_instruction, mut_pos);
+    return _parse_function_instruction(mut_ctx, ref_instruction, mut_pos);
 }
 
 // <assignment> ::= <memory-access> ':=' <expression>
-static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
+static bool _parse_assignment(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
     char *path = NULL;
     
     // Parse memory access (left side)
-    if (!parse_memory_access(ref_instruction, mut_pos, &path)) {
+    if (!_parse_memory_access(ref_instruction, mut_pos, &path)) {
         return false;
     }
     
-    skip_whitespace(ref_instruction, mut_pos);
+    _skip_whitespace(ref_instruction, mut_pos);
     
     // Check for ':=' operator
     if (ref_instruction[*mut_pos] != ':' || ref_instruction[*mut_pos + 1] != '=') {
@@ -159,11 +159,11 @@ static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_ins
     }
     
     *mut_pos += 2; // Skip ':='
-    skip_whitespace(ref_instruction, mut_pos);
+    _skip_whitespace(ref_instruction, mut_pos);
     
     // Check if there's an expression after ':='
     if (!ref_instruction[*mut_pos] || ref_instruction[*mut_pos] == '\0') {
-        set_error(mut_ctx, "Expected expression after ':='", *mut_pos);
+        _set_error(mut_ctx, "Expected expression after ':='", *mut_pos);
         AR__HEAP__FREE(path);
         path = NULL; // Mark as freed
         return false;
@@ -202,9 +202,9 @@ static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_ins
             invalid_char != ',' && invalid_char != ':' && invalid_char != '=' && invalid_char != '\0') {
             char error_msg[256];
             snprintf(error_msg, sizeof(error_msg), "Unexpected character '%c'", invalid_char);
-            set_error(mut_ctx, error_msg, error_pos);
+            _set_error(mut_ctx, error_msg, error_pos);
         } else {
-            set_error(mut_ctx, "Failed to evaluate expression", error_pos);
+            _set_error(mut_ctx, "Failed to evaluate expression", error_pos);
         }
         AR__HEAP__FREE(path);
         path = NULL; // Mark as freed
@@ -224,20 +224,20 @@ static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_ins
 }
 
 // <function-instruction> ::= [<memory-access> ':='] <function-call>
-static bool parse_function_instruction(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
+static bool _parse_function_instruction(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
     char *path = NULL;
     data_t *own_result = NULL;
     bool has_assignment = false;
     
     // Check if there's an assignment part
     int save_pos = *mut_pos;
-    if (parse_memory_access(ref_instruction, mut_pos, &path)) {
-        skip_whitespace(ref_instruction, mut_pos);
+    if (_parse_memory_access(ref_instruction, mut_pos, &path)) {
+        _skip_whitespace(ref_instruction, mut_pos);
         
         if (ref_instruction[*mut_pos] == ':' && ref_instruction[*mut_pos + 1] == '=') {
             has_assignment = true;
             *mut_pos += 2; // Skip ':='
-            skip_whitespace(ref_instruction, mut_pos);
+            _skip_whitespace(ref_instruction, mut_pos);
         } else {
             // Not an assignment, backtrack
             *mut_pos = save_pos;
@@ -250,7 +250,7 @@ static bool parse_function_instruction(instruction_context_t *mut_ctx, const cha
     }
     
     // Parse function call
-    if (!parse_function_call(mut_ctx, ref_instruction, mut_pos, &own_result)) {
+    if (!_parse_function_call(mut_ctx, ref_instruction, mut_pos, &own_result)) {
         AR__HEAP__FREE(path);
         path = NULL; // Mark as freed
         return false;
@@ -277,8 +277,8 @@ static bool parse_function_instruction(instruction_context_t *mut_ctx, const cha
 
 // <memory-access> ::= 'memory' {'.' <identifier>}
 // Note: According to the spec, in assignments, only 'memory' paths can be used on the left side
-static bool parse_memory_access(const char *ref_instruction, int *mut_pos, char **path) {
-    skip_whitespace(ref_instruction, mut_pos);
+static bool _parse_memory_access(const char *ref_instruction, int *mut_pos, char **path) {
+    _skip_whitespace(ref_instruction, mut_pos);
     
     // Check for 'memory' identifier
     const char *memory_str = "memory";
@@ -305,7 +305,7 @@ static bool parse_memory_access(const char *ref_instruction, int *mut_pos, char 
         (*mut_pos)++; // Skip '.'
         
         char identifier[256];
-        if (!extract_identifier(ref_instruction, mut_pos, identifier, sizeof(identifier))) {
+        if (!_extract_identifier(ref_instruction, mut_pos, identifier, sizeof(identifier))) {
             return false;
         }
         
@@ -338,14 +338,14 @@ static bool parse_memory_access(const char *ref_instruction, int *mut_pos, char 
 // Parse function call and execute it
 // <function-call> ::= <send-function> | <parse-function> | <build-function> | <method-function> |
 //                     <agent-function> | <destroy-function> | <if-function>
-static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos, data_t **own_result) {
+static bool _parse_function_call(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos, data_t **own_result) {
     // Extract function name
     char function_name[32];
-    if (!extract_identifier(ref_instruction, mut_pos, function_name, sizeof(function_name))) {
+    if (!_extract_identifier(ref_instruction, mut_pos, function_name, sizeof(function_name))) {
         return false;
     }
     
-    skip_whitespace(ref_instruction, mut_pos);
+    _skip_whitespace(ref_instruction, mut_pos);
     
     // Expect opening parenthesis
     if (ref_instruction[*mut_pos] != '(') {
@@ -359,7 +359,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
     // Handle different function types
     if (strcmp(function_name, "send") == 0) {
         // send(agent_id, message)
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Create a single context for all expressions
         expression_context_t *own_context = NULL;
@@ -383,7 +383,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             return false;
         }
         
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Expect comma
         if (ref_instruction[*mut_pos] != ',') {
@@ -392,7 +392,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             return false;
         }
         (*mut_pos)++; // Skip ','
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Parse message expression - reusing the context variable
         own_context = ar__expression__create_context(mut_ctx->mut_memory, 
@@ -417,7 +417,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             return false;
         }
         
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Expect closing parenthesis
         if (ref_instruction[*mut_pos] != ')') {
@@ -462,7 +462,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
     }
     else if (strcmp(function_name, "if") == 0) {
         // if(condition, true_value, false_value)
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Create a single context for all expressions
         expression_context_t *own_context = NULL;
@@ -489,7 +489,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             return false;
         }
         
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Expect comma
         if (ref_instruction[*mut_pos] != ',') {
@@ -498,7 +498,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             return false;
         }
         (*mut_pos)++; // Skip ','
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Parse true_value expression - reusing the context variable
         own_context = ar__expression__create_context(mut_ctx->mut_memory, 
@@ -530,7 +530,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             return false;
         }
         
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Expect comma
         if (ref_instruction[*mut_pos] != ',') {
@@ -541,7 +541,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             return false;
         }
         (*mut_pos)++; // Skip ','
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Parse false_value expression - reusing the context variable
         own_context = ar__expression__create_context(mut_ctx->mut_memory, 
@@ -581,7 +581,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             return false;
         }
         
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Expect closing parenthesis
         if (ref_instruction[*mut_pos] != ')') {
@@ -666,7 +666,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
     }
     else if (strcmp(function_name, "parse") == 0) {
         // parse(template, input)
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Create a single context for all expressions
         expression_context_t *own_context = NULL;
@@ -708,7 +708,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Expect comma
         if (ref_instruction[*mut_pos] != ',') {
@@ -719,7 +719,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             return false;
         }
         (*mut_pos)++; // Skip ','
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Parse input expression - reusing the context variable
         own_context = ar__expression__create_context(mut_ctx->mut_memory, 
@@ -768,7 +768,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Expect closing parenthesis
         if (ref_instruction[*mut_pos] != ')') {
@@ -942,7 +942,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
     }
     else if (strcmp(function_name, "build") == 0) {
         // build(template, values)
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Create a single context for all expressions
         expression_context_t *own_context = NULL;
@@ -984,7 +984,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Expect comma
         if (ref_instruction[*mut_pos] != ',') {
@@ -995,7 +995,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             return false;
         }
         (*mut_pos)++; // Skip ','
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Parse values expression - reusing the context variable
         own_context = ar__expression__create_context(mut_ctx->mut_memory, 
@@ -1045,7 +1045,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             return false;
         }
         
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Expect closing parenthesis
         if (ref_instruction[*mut_pos] != ')') {
@@ -1219,7 +1219,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
     }
     else if (strcmp(function_name, "method") == 0) {
         // method(name, instructions, version)
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Create a single context for all expressions
         expression_context_t *own_context = NULL;
@@ -1261,7 +1261,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Expect comma
         if (ref_instruction[*mut_pos] != ',') {
@@ -1272,7 +1272,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             return false;
         }
         (*mut_pos)++; // Skip ','
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Parse instructions expression - reusing the context variable
         own_context = ar__expression__create_context(mut_ctx->mut_memory, 
@@ -1323,7 +1323,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Expect comma
         if (ref_instruction[*mut_pos] != ',') {
@@ -1338,7 +1338,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             return false;
         }
         (*mut_pos)++; // Skip ','
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Parse version expression - reusing the context variable
         own_context = ar__expression__create_context(mut_ctx->mut_memory, 
@@ -1392,7 +1392,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Expect closing parenthesis
         if (ref_instruction[*mut_pos] != ')') {
@@ -1436,7 +1436,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
     }
     else if (strcmp(function_name, "agent") == 0) {
         // agent(method_name, version, context)
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Create a single context for all expressions
         expression_context_t *own_context = NULL;
@@ -1482,7 +1482,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Expect comma
         if (ref_instruction[*mut_pos] != ',') {
@@ -1494,7 +1494,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         }
         (*mut_pos)++; // Skip ','
         
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Parse version expression
         own_context = ar__expression__create_context(mut_ctx->mut_memory,
@@ -1553,7 +1553,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         ar__expression__destroy_context(own_context);
         own_context = NULL; // Mark as destroyed
         
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Expect comma
         if (ref_instruction[*mut_pos] != ',') {
@@ -1569,7 +1569,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         }
         (*mut_pos)++; // Skip ','
         
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Parse context expression
         own_context = ar__expression__create_context(mut_ctx->mut_memory,
@@ -1610,7 +1610,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             return false;
         }
         
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Expect closing parenthesis
         if (ref_instruction[*mut_pos] != ')') {
@@ -1637,7 +1637,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
         if (agent_id == 0) {
             char error_msg[512];
             snprintf(error_msg, sizeof(error_msg), "Method '%s' version '%s' not found", method_name, version_str);
-            set_error(mut_ctx, error_msg, *mut_pos - 1); // Position at closing parenthesis
+            _set_error(mut_ctx, error_msg, *mut_pos - 1); // Position at closing parenthesis
         }
         
         // Clean up input data now that we're done with it
@@ -1660,7 +1660,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
     }
     else if (strcmp(function_name, "destroy") == 0) {
         // destroy(agent_id) or destroy(method_name, version)
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Create a single context for all expressions
         expression_context_t *own_context = NULL;
@@ -1692,13 +1692,13 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             return false;
         }
         
-        skip_whitespace(ref_instruction, mut_pos);
+        _skip_whitespace(ref_instruction, mut_pos);
         
         // Check if there's a comma (indicates method destruction)
         if (ref_instruction[*mut_pos] == ',') {
             // This is destroy(method_name, version)
             (*mut_pos)++; // Skip ','
-            skip_whitespace(ref_instruction, mut_pos);
+            _skip_whitespace(ref_instruction, mut_pos);
             
             // Ensure first argument is a string (method name)
             const data_t *arg_to_use = own_arg1 ? own_arg1 : ref_arg1;
@@ -1759,7 +1759,7 @@ static bool parse_function_call(instruction_context_t *mut_ctx, const char *ref_
             ar__expression__destroy_context(own_context);
             own_context = NULL; // Mark as destroyed
             
-            skip_whitespace(ref_instruction, mut_pos);
+            _skip_whitespace(ref_instruction, mut_pos);
             
             // Expect closing parenthesis
             if (ref_instruction[*mut_pos] != ')') {
@@ -1869,7 +1869,7 @@ int ar__instruction__get_error_position(const instruction_context_t *ref_ctx) {
 }
 
 // Helper function to set error in context
-static void set_error(instruction_context_t *mut_ctx, const char *ref_message, int position) {
+static void _set_error(instruction_context_t *mut_ctx, const char *ref_message, int position) {
     if (!mut_ctx) {
         return;
     }
@@ -1885,7 +1885,7 @@ static void set_error(instruction_context_t *mut_ctx, const char *ref_message, i
 }
 
 // Helper function to clear error state
-static void clear_error(instruction_context_t *mut_ctx) {
+static void _clear_error(instruction_context_t *mut_ctx) {
     if (!mut_ctx) {
         return;
     }
@@ -1900,15 +1900,15 @@ static void clear_error(instruction_context_t *mut_ctx) {
 
 // Utility functions
 
-static bool skip_whitespace(const char *ref_instruction, int *mut_pos) {
+static bool _skip_whitespace(const char *ref_instruction, int *mut_pos) {
     while (ref_instruction[*mut_pos] && isspace((unsigned char)ref_instruction[*mut_pos])) {
         (*mut_pos)++;
     }
     return true;
 }
 
-static bool extract_identifier(const char *ref_instruction, int *mut_pos, char *mut_identifier, int max_size) {
-    skip_whitespace(ref_instruction, mut_pos);
+static bool _extract_identifier(const char *ref_instruction, int *mut_pos, char *mut_identifier, int max_size) {
+    _skip_whitespace(ref_instruction, mut_pos);
     
     int i = 0;
     // First character must be a letter

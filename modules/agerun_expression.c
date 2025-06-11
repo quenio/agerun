@@ -153,34 +153,34 @@ static const data_t* parse_primary(expression_context_t *ctx);
 static const data_t* parse_string_literal(expression_context_t *ctx);
 static const data_t* parse_number_literal(expression_context_t *ctx);
 static const data_t* parse_memory_access(expression_context_t *ctx);
-static void skip_whitespace(expression_context_t *ctx);
-static bool is_comparison_operator(expression_context_t *ctx);
-static bool match(expression_context_t *ctx, const char *to_match);
-static bool is_identifier_start(char c);
-static bool is_identifier_part(char c);
+static void _skip_whitespace(expression_context_t *ctx);
+static bool _is_comparison_operator(expression_context_t *ctx);
+static bool _match(expression_context_t *ctx, const char *to_match);
+static bool _is_identifier_start(char c);
+static bool _is_identifier_part(char c);
 static char* parse_identifier(expression_context_t *ctx);
-static bool is_digit(char c);
+static bool _is_digit(char c);
 
 // Skip whitespace characters in the expression
-static void skip_whitespace(expression_context_t *mut_ctx) {
+static void _skip_whitespace(expression_context_t *mut_ctx) {
     while (mut_ctx->ref_expr[mut_ctx->offset] && ar__string__isspace(mut_ctx->ref_expr[mut_ctx->offset])) {
         mut_ctx->offset++;
     }
 }
 
 // Check if a character is a digit
-static bool is_digit(char c) {
+static bool _is_digit(char c) {
     return c >= '0' && c <= '9';
 }
 
 // Check if a character can start an identifier
-static bool is_identifier_start(char c) {
+static bool _is_identifier_start(char c) {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
 // Check if a character can be part of an identifier
-static bool is_identifier_part(char c) {
-    return is_identifier_start(c) || is_digit(c) || c == '_';
+static bool _is_identifier_part(char c) {
+    return _is_identifier_start(c) || _is_digit(c) || c == '_';
 }
 
 // Parse an identifier from the expression
@@ -188,14 +188,14 @@ static char* parse_identifier(expression_context_t *mut_ctx) {
     int start = mut_ctx->offset;
     
     // First character must be a letter
-    if (!is_identifier_start(mut_ctx->ref_expr[mut_ctx->offset])) {
+    if (!_is_identifier_start(mut_ctx->ref_expr[mut_ctx->offset])) {
         return NULL;
     }
     
     mut_ctx->offset++;
     
     // Rest of identifier can include letters, digits, and underscore
-    while (mut_ctx->ref_expr[mut_ctx->offset] && is_identifier_part(mut_ctx->ref_expr[mut_ctx->offset])) {
+    while (mut_ctx->ref_expr[mut_ctx->offset] && _is_identifier_part(mut_ctx->ref_expr[mut_ctx->offset])) {
         mut_ctx->offset++;
     }
     
@@ -217,12 +217,12 @@ static char* parse_identifier(expression_context_t *mut_ctx) {
 
 // Check if the string at the current offset matches the expected string
 // If it does, advance offset past the matched string and return true
-static bool match(expression_context_t *mut_ctx, const char *ref_to_match) {
+static bool _match(expression_context_t *mut_ctx, const char *ref_to_match) {
     size_t len = strlen(ref_to_match);
     if (strncmp(mut_ctx->ref_expr + mut_ctx->offset, ref_to_match, len) == 0) {
         // Make sure it's not part of a longer identifier
         if (ref_to_match[len-1] == '.' || !mut_ctx->ref_expr[mut_ctx->offset + (int)len] || 
-            !is_identifier_part(mut_ctx->ref_expr[mut_ctx->offset + (int)len])) {
+            !_is_identifier_part(mut_ctx->ref_expr[mut_ctx->offset + (int)len])) {
             mut_ctx->offset += (int)len;
             return true;
         }
@@ -233,7 +233,7 @@ static bool match(expression_context_t *mut_ctx, const char *ref_to_match) {
 
 
 // Check if the next sequence of characters is a comparison operator
-static bool is_comparison_operator(expression_context_t *ref_ctx) {
+static bool _is_comparison_operator(expression_context_t *ref_ctx) {
     if (ref_ctx->ref_expr[ref_ctx->offset] == '=') {
         return true;
     }
@@ -305,13 +305,13 @@ static const data_t* parse_number_literal(expression_context_t *mut_ctx) {
         mut_ctx->offset++;
     }
     
-    if (!is_digit(mut_ctx->ref_expr[mut_ctx->offset])) {
+    if (!_is_digit(mut_ctx->ref_expr[mut_ctx->offset])) {
         return NULL;
     }
     
     // Parse integer part
     int value = 0;
-    while (mut_ctx->ref_expr[mut_ctx->offset] && is_digit(mut_ctx->ref_expr[mut_ctx->offset])) {
+    while (mut_ctx->ref_expr[mut_ctx->offset] && _is_digit(mut_ctx->ref_expr[mut_ctx->offset])) {
         value = value * 10 + (mut_ctx->ref_expr[mut_ctx->offset] - '0');
         mut_ctx->offset++;
     }
@@ -320,7 +320,7 @@ static const data_t* parse_number_literal(expression_context_t *mut_ctx) {
     if (mut_ctx->ref_expr[mut_ctx->offset] == '.') {
         mut_ctx->offset++; // Skip decimal point
         
-        if (!is_digit(mut_ctx->ref_expr[mut_ctx->offset])) {
+        if (!_is_digit(mut_ctx->ref_expr[mut_ctx->offset])) {
             // Malformed double, must have at least one digit after decimal
             return NULL;
         }
@@ -329,7 +329,7 @@ static const data_t* parse_number_literal(expression_context_t *mut_ctx) {
         double decimal_place = 0.1;
         
         // Parse decimal part
-        while (mut_ctx->ref_expr[mut_ctx->offset] && is_digit(mut_ctx->ref_expr[mut_ctx->offset])) {
+        while (mut_ctx->ref_expr[mut_ctx->offset] && _is_digit(mut_ctx->ref_expr[mut_ctx->offset])) {
             double_value += (mut_ctx->ref_expr[mut_ctx->offset] - '0') * decimal_place;
             decimal_place *= 0.1;
             mut_ctx->offset++;
@@ -374,11 +374,11 @@ static const data_t* parse_memory_access(expression_context_t *mut_ctx) {
     
     
     // Determine which type of access we're dealing with
-    if (match(mut_ctx, "message")) {
+    if (_match(mut_ctx, "message")) {
         access_type = ACCESS_TYPE_MESSAGE;
-    } else if (match(mut_ctx, "memory")) {
+    } else if (_match(mut_ctx, "memory")) {
         access_type = ACCESS_TYPE_MEMORY;
-    } else if (match(mut_ctx, "context")) {
+    } else if (_match(mut_ctx, "context")) {
         access_type = ACCESS_TYPE_CONTEXT;
     } else {
         return NULL;
@@ -479,7 +479,7 @@ static const data_t* parse_memory_access(expression_context_t *mut_ctx) {
 
 // Parse a primary expression (literal or memory access)
 static const data_t* parse_primary(expression_context_t *mut_ctx) {
-    skip_whitespace(mut_ctx);
+    _skip_whitespace(mut_ctx);
     
     // Check for string literal
     if (mut_ctx->ref_expr[mut_ctx->offset] == '"') {
@@ -487,9 +487,9 @@ static const data_t* parse_primary(expression_context_t *mut_ctx) {
     }
     
     // Check for number literal (including negative numbers)
-    if (is_digit(mut_ctx->ref_expr[mut_ctx->offset]) || 
+    if (_is_digit(mut_ctx->ref_expr[mut_ctx->offset]) || 
         (mut_ctx->ref_expr[mut_ctx->offset] == '-' && 
-         is_digit(mut_ctx->ref_expr[mut_ctx->offset + 1]))) {
+         _is_digit(mut_ctx->ref_expr[mut_ctx->offset + 1]))) {
         return parse_number_literal(mut_ctx);
     }
     
@@ -501,17 +501,17 @@ static const data_t* parse_primary(expression_context_t *mut_ctx) {
     }
     
     // Check for function call - which is a syntax error in expressions
-    if (is_identifier_start(mut_ctx->ref_expr[mut_ctx->offset])) {
+    if (_is_identifier_start(mut_ctx->ref_expr[mut_ctx->offset])) {
         // Save the position at the start of the function name
         int func_name_start = mut_ctx->offset;
         
         // Skip over function name
         while (mut_ctx->ref_expr[mut_ctx->offset] && 
-               is_identifier_part(mut_ctx->ref_expr[mut_ctx->offset])) {
+               _is_identifier_part(mut_ctx->ref_expr[mut_ctx->offset])) {
             mut_ctx->offset++;
         }
         
-        skip_whitespace(mut_ctx);
+        _skip_whitespace(mut_ctx);
         
         // If we find an opening parenthesis, it's a function call - syntax error
         if (mut_ctx->ref_expr[mut_ctx->offset] == '(') {
@@ -542,7 +542,7 @@ static const data_t* parse_multiplicative(expression_context_t *ctx) {
         return NULL;
     }
     
-    skip_whitespace(ctx);
+    _skip_whitespace(ctx);
     
     // Check if there's a multiplicative operator (*, /)
     while (ctx->ref_expr[ctx->offset] == '*' || ctx->ref_expr[ctx->offset] == '/') {
@@ -550,7 +550,7 @@ static const data_t* parse_multiplicative(expression_context_t *ctx) {
         char op = ctx->ref_expr[ctx->offset];
         ctx->offset++;
         
-        skip_whitespace(ctx);
+        _skip_whitespace(ctx);
         
         // Parse the right operand (which is a primary)
         const data_t *right = parse_primary(ctx);
@@ -622,7 +622,7 @@ static const data_t* parse_multiplicative(expression_context_t *ctx) {
         // The result becomes the new left operand for the next iteration
         left = result;
         
-        skip_whitespace(ctx);
+        _skip_whitespace(ctx);
     }
     
     return left;
@@ -636,7 +636,7 @@ static const data_t* parse_additive(expression_context_t *ctx) {
         return NULL;
     }
     
-    skip_whitespace(ctx);
+    _skip_whitespace(ctx);
     
     // Check if there's an additive operator (+, -)
     while (ctx->ref_expr[ctx->offset] == '+' || ctx->ref_expr[ctx->offset] == '-') {
@@ -644,7 +644,7 @@ static const data_t* parse_additive(expression_context_t *ctx) {
         char op = ctx->ref_expr[ctx->offset];
         ctx->offset++;
         
-        skip_whitespace(ctx);
+        _skip_whitespace(ctx);
         
         // Parse the right operand (which is a multiplicative expression)
         const data_t *right = parse_multiplicative(ctx);
@@ -755,7 +755,7 @@ static const data_t* parse_additive(expression_context_t *ctx) {
         // The result becomes the new left operand for the next iteration
         left = result;
         
-        skip_whitespace(ctx);
+        _skip_whitespace(ctx);
     }
     
     return left;
@@ -769,10 +769,10 @@ static const data_t* parse_comparison(expression_context_t *ctx) {
         return NULL;
     }
     
-    skip_whitespace(ctx);
+    _skip_whitespace(ctx);
     
     // Check if there's a comparison operator
-    if (!is_comparison_operator(ctx)) {
+    if (!_is_comparison_operator(ctx)) {
         return left; // No comparison, just return the left operand
     }
     
@@ -788,7 +788,7 @@ static const data_t* parse_comparison(expression_context_t *ctx) {
         ctx->offset++;
     }
     
-    skip_whitespace(ctx);
+    _skip_whitespace(ctx);
     
     // Parse the right operand (which is an additive expression)
     const data_t *right = parse_additive(ctx);

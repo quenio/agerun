@@ -46,7 +46,7 @@ static int g_initialized = 0;
  * 
  * The initialization is protected against multiple calls with the g_initialized flag.
  */
-static void ar__heap__memory_init(void) {
+static void _ar__heap__memory_init(void) {
     if (g_initialized) return;
     
     g_memory_records = NULL;
@@ -75,8 +75,8 @@ static void ar__heap__memory_init(void) {
  * @param size Size of the allocation in bytes
  * @param description Description of the allocation
  */
-static void ar__heap__memory_add(void *ptr, const char *file, int line, size_t size, const char *description) {
-    if (!g_initialized) ar__heap__memory_init();
+static void _ar__heap__memory_add(void *ptr, const char *file, int line, size_t size, const char *description) {
+    if (!g_initialized) _ar__heap__memory_init();
     
     if (!ptr) return; // Don't track NULL allocations
     
@@ -138,7 +138,7 @@ static void ar__heap__memory_add(void *ptr, const char *file, int line, size_t s
  * @param ptr Pointer to the memory being freed
  * @return 1 if found and removed, 0 if not found
  */
-static int ar__heap__memory_remove(void *ptr) {
+static int _ar__heap__memory_remove(void *ptr) {
     if (!g_initialized || !ptr) return 0;
     
     memory_record_t *prev = NULL;
@@ -369,7 +369,7 @@ void *ar__heap__malloc(size_t size, const char *file, int line, const char *desc
             if (ptr) {
                 ar__io__warning("Memory allocation retry succeeded for %s (%zu bytes) at %s:%d",
                            description ? description : "unknown", size, file, line);
-                ar__heap__memory_add(ptr, file, line, size, description);
+                _ar__heap__memory_add(ptr, file, line, size, description);
                 return ptr;
             }
         }
@@ -382,7 +382,7 @@ void *ar__heap__malloc(size_t size, const char *file, int line, const char *desc
     }
     
     // Track the successful allocation
-    ar__heap__memory_add(ptr, file, line, size, description);
+    _ar__heap__memory_add(ptr, file, line, size, description);
     return ptr;
 }
 
@@ -414,7 +414,7 @@ void *ar__heap__calloc(size_t count, size_t size, const char *file, int line, co
             if (ptr) {
                 ar__io__warning("Memory allocation retry succeeded for %s (%zu elements of %zu bytes) at %s:%d",
                           description ? description : "unknown", count, size, file, line);
-                ar__heap__memory_add(ptr, file, line, total_size, description);
+                _ar__heap__memory_add(ptr, file, line, total_size, description);
                 return ptr;
             }
         }
@@ -427,7 +427,7 @@ void *ar__heap__calloc(size_t count, size_t size, const char *file, int line, co
     }
     
     // Track the successful allocation
-    ar__heap__memory_add(ptr, file, line, total_size, description);
+    _ar__heap__memory_add(ptr, file, line, total_size, description);
     return ptr;
 }
 
@@ -453,7 +453,7 @@ void *ar__heap__realloc(void *ptr, size_t size, const char *file, int line, cons
     }
     
     // Remove the old pointer tracking
-    ar__heap__memory_remove(ptr);
+    _ar__heap__memory_remove(ptr);
     
     // Attempt reallocation
     void *new_ptr = realloc(ptr, size);
@@ -476,7 +476,7 @@ void *ar__heap__realloc(void *ptr, size_t size, const char *file, int line, cons
             if (new_ptr) {
                 ar__io__warning("Reallocation retry succeeded for %s (%zu bytes) at %s:%d",
                            description ? description : "unknown", size, file, line);
-                ar__heap__memory_add(new_ptr, file, line, size, description);
+                _ar__heap__memory_add(new_ptr, file, line, size, description);
                 return new_ptr;
             }
         }
@@ -491,7 +491,7 @@ void *ar__heap__realloc(void *ptr, size_t size, const char *file, int line, cons
     }
     
     // Track the successful reallocation
-    ar__heap__memory_add(new_ptr, file, line, size, description);
+    _ar__heap__memory_add(new_ptr, file, line, size, description);
     return new_ptr;
 }
 
@@ -528,7 +528,7 @@ char *ar__heap__strdup(const char *str, const char *file, int line, const char *
             if (ptr) {
                 ar__io__warning("String duplication retry succeeded for %s (%zu bytes) at %s:%d",
                            description ? description : "unknown", len, file, line);
-                ar__heap__memory_add(ptr, file, line, len, description);
+                _ar__heap__memory_add(ptr, file, line, len, description);
                 return ptr;
             }
         }
@@ -545,7 +545,7 @@ char *ar__heap__strdup(const char *str, const char *file, int line, const char *
     }
     
     // Track the successful allocation
-    ar__heap__memory_add(ptr, file, line, len, description);
+    _ar__heap__memory_add(ptr, file, line, len, description);
     return ptr;
 }
 
@@ -555,7 +555,7 @@ char *ar__heap__strdup(const char *str, const char *file, int line, const char *
  */
 void ar__heap__free(void *ptr) {
     if (ptr) {
-        ar__heap__memory_remove(ptr);
+        _ar__heap__memory_remove(ptr);
         free(ptr);
     }
 }

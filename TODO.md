@@ -4,15 +4,14 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 **IMPORTANT**: All development MUST follow the mandatory Parnas Design Principles and Test-Driven Development (TDD) methodology as specified in CLAUDE.md. Pull requests violating these principles will be REJECTED.
 
-## In Progress
-
-### Static Function Naming Convention Update
-- [ ] Change all static functions to use underscore prefix `_<function_name>`
-- [ ] Update all modules to follow Python-style private function convention
-- [ ] This makes internal functions immediately distinguishable from public APIs
-- [ ] Use sed pattern: `sed 's/static \([a-zA-Z_]*\)(/static _\1(/g'`
-
 ## Completed Tasks
+
+### Static Function Naming Convention Update (Completed 2025-06-11)
+- [x] Changed all static functions to use underscore prefix `_<function_name>`
+- [x] Updated all modules to follow Python-style private function convention
+- [x] This makes internal functions immediately distinguishable from public APIs
+- [x] Used sed patterns to rename functions and update calls
+- [x] Verified compilation and all tests pass with no memory leaks
 
 ### Module Function Naming Convention Refactoring (Completed 2025-06-08)
 - [x] Changed all module functions from ar_<module>_<function> to ar__<module>__<function>

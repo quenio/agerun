@@ -141,14 +141,16 @@ make run-sanitize          # Run executable with ASan
 
 ### 4. Coding Standards
 
-**Naming Conventions** (Updated 2025-06-08):
+**Naming Conventions** (Updated 2025-06-11):
 - **Module Functions**: Use double underscore pattern `ar__<module>__<function>`
   - Examples: `ar__data__create_map()`, `ar__agent__send()`, `ar__system__init()`
   - Applied to all 21 modules consistently
-- **Static Functions**: Use single underscore prefix `_<function_name>`
+- **Static Functions**: Use single underscore prefix `_<function_name>` (Completed 2025-06-11)
   - Examples: `_validate_file()`, `_find_method_idx()`, `_allocate_node()`
   - Indicates internal/private functions within a module
   - Similar to Python convention for private members
+  - **IMPORTANT**: Only applies to static functions in implementation files, NOT test functions
+  - Test functions in `*_tests.c` files keep their original names
 - **Heap Macros**: Use double underscore pattern `AR__HEAP__<OPERATION>`
   - Examples: `AR__HEAP__MALLOC`, `AR__HEAP__FREE`, `AR__HEAP__STRDUP`
   - Applied to all 5 heap macros consistently
@@ -318,6 +320,12 @@ When reviewing tasks:
 - Update CHANGELOG.md with completed milestones and achievements
 - Ensure both files accurately reflect the current project state
 
+**After Completing Major Tasks**:
+- Document completion date in TODO.md (e.g., "Completed 2025-06-11")
+- Move tasks from "In Progress" to "Completed Tasks" section
+- Include brief summary of what was accomplished
+- Update CLAUDE.md with any new patterns or learnings from the session
+
 ### 11. Refactoring Patterns
 
 **Visitor Pattern to List-Based**:
@@ -348,8 +356,35 @@ When reviewing tasks:
 - **Advantages**: Fast, reliable, handles large codebases efficiently, preserves file structure
 - **Examples from naming convention refactoring**: 
   - Module functions: `sed 's/ar_data_/ar__data__/g'`
-  - Static functions: `sed 's/static \([a-zA-Z_]*\)(/static _\1(/g'`
+  - Static functions: `sed -E 's/^static ([a-zA-Z][a-zA-Z0-9_]*)\(/static _\1(/g'`
+  - Function calls: `sed -i.bak 's/\bfunction_name(/\b_function_name(/g'`
   - Macros: `sed 's/AR_HEAP_/AR__HEAP__/g'`
+- **Important Considerations**:
+  - Global variables may get accidentally renamed - revert these manually
+  - Function calls within renamed functions need separate updates
+  - Always compile and test after bulk renaming to catch issues
+  - Use `-i.bak` to create backups when editing in place
+
+**Static Function Renaming Workflow**:
+1. **Identify target files**: Exclude test files when renaming static functions
+   ```bash
+   ls modules/*.c | grep -v '_tests\.c$'
+   ```
+2. **Rename function definitions**:
+   ```bash
+   for file in modules/*.c; do 
+     if [[ ! "$file" == *"_tests.c" ]]; then 
+       sed -E 's/^static ([a-zA-Z][a-zA-Z0-9_]*)\(/static _\1(/g' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
+     fi
+   done
+   ```
+3. **Update function calls**: Use more specific patterns to avoid renaming unrelated items
+   ```bash
+   sed -i.bak 's/\([^_]\)function_name(/\1_function_name(/g' file.c
+   ```
+4. **Fix any double underscores**: Sometimes sed patterns can create `__function` instead of `_function`
+5. **Revert global variable changes**: Check for and fix any accidentally renamed globals
+6. **Compile and test**: Always run `make clean && make` followed by `./clean_build.sh`
 
 **Git Workflow**:
 - Always run `git status` after `git push` to ensure push completed successfully

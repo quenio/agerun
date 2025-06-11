@@ -29,7 +29,7 @@
  * @param error_size Size of the error message buffer
  * @return true if file is valid, false if there are formatting issues
  */
-static bool validate_file(const char *filename, char *error_message, size_t error_size) {
+static bool _validate_file(const char *filename, char *error_message, size_t error_size) {
     FILE *fp;
     file_result_t result = ar__io__open_file(filename, "r", &fp);
 
@@ -233,11 +233,11 @@ bool ar__methodology__create_method(const char *ref_name, const char *ref_instru
 }
 
 /* Forward Declarations */
-static method_t* find_latest_method(const char *ref_name);
-static method_t* find_method(const char *ref_name, const char *ref_version);
+static method_t* _find_latest_method(const char *ref_name);
+static method_t* _find_method(const char *ref_name, const char *ref_version);
 
 /* Method Search Functions */
-static int find_method_idx(const char *ref_name) {
+static int _find_method_idx(const char *ref_name) {
     for (int i = 0; i < method_name_count; i++) {
         if (methods[i][0] != NULL && strcmp(ar__method__get_name(methods[i][0]), ref_name) == 0) {
             return i;
@@ -247,8 +247,8 @@ static int find_method_idx(const char *ref_name) {
     return -1;
 }
 
-static method_t* find_latest_method(const char *ref_name) {
-    int method_idx = find_method_idx(ref_name);
+static method_t* _find_latest_method(const char *ref_name) {
+    int method_idx = _find_method_idx(ref_name);
     if (method_idx < 0 || method_counts[method_idx] == 0) {
         return NULL;
     }
@@ -272,15 +272,15 @@ static method_t* find_latest_method(const char *ref_name) {
     return NULL;
 }
 
-static method_t* find_method(const char *ref_name, const char *ref_version) {
-    int method_idx = find_method_idx(ref_name);
+static method_t* _find_method(const char *ref_name, const char *ref_version) {
+    int method_idx = _find_method_idx(ref_name);
     if (method_idx < 0) {
         return NULL;
     }
     
     // Case 1: If version is NULL, return the latest method
     if (ref_version == NULL) {
-        return find_latest_method(ref_name);
+        return _find_latest_method(ref_name);
     }
     
     // Case 2: Exact version match
@@ -320,7 +320,7 @@ static method_t* find_method(const char *ref_name, const char *ref_version) {
 
 // Function removed - was exposing internal storage
 
-static void set_method_storage(int method_idx, int version_idx, method_t *ref_method) {
+static void _set_method_storage(int method_idx, int version_idx, method_t *ref_method) {
     AR_ASSERT(method_idx >= 0 && method_idx < MAX_METHODS, "Method index out of bounds");
     AR_ASSERT(version_idx >= 0 && version_idx < MAX_VERSIONS_PER_METHOD, "Version index out of bounds");
     
@@ -339,10 +339,10 @@ static void set_method_storage(int method_idx, int version_idx, method_t *ref_me
 method_t* ar__methodology__get_method(const char *ref_name, const char *ref_version) {
     if (ref_version == NULL) {
         // Use latest version
-        return find_latest_method(ref_name);
+        return _find_latest_method(ref_name);
     } else {
         // Use specific version
-        return find_method(ref_name, ref_version);
+        return _find_method(ref_name, ref_version);
     }
 }
 
@@ -544,7 +544,7 @@ void ar__methodology__register_method(method_t *own_method) {
     const char *method_version = ar__method__get_version(own_method);
     
     // Find or create a method index for this name
-    int method_idx = find_method_idx(method_name);
+    int method_idx = _find_method_idx(method_name);
     if (method_idx < 0) {
         // No existing method with this name, create a new entry
         if (method_name_count >= MAX_METHODS) {
@@ -582,7 +582,7 @@ void ar__methodology__register_method(method_t *own_method) {
     int version_idx = method_counts[method_idx];
     
     // Store the method in our methods array, handling any existing method
-    set_method_storage(method_idx, version_idx, own_method);
+    _set_method_storage(method_idx, version_idx, own_method);
     method_counts[method_idx]++;
     
     ar__io__info("Registered method %s version %s", method_name, method_version);
@@ -622,7 +622,7 @@ void ar__methodology__register_method(method_t *own_method) {
 bool ar__methodology__load_methods(void) {
     // First validate the methodology file format
     char error_message[512];
-    if (!validate_file(METHODOLOGY_FILE_NAME, error_message, sizeof(error_message))) {
+    if (!_validate_file(METHODOLOGY_FILE_NAME, error_message, sizeof(error_message))) {
         if (strstr(error_message, "not found") != NULL) {
             // Not an error, might be first run
             return true;
@@ -876,7 +876,7 @@ bool ar__methodology__load_methods(void) {
             
             if (own_method) {
                 // Store the method in the methods array
-                set_method_storage(method_idx, method_counts[method_idx]++, own_method);
+                _set_method_storage(method_idx, method_counts[method_idx]++, own_method);
                 own_method = NULL; // Mark as transferred
             } else {
                 ar__io__error("Failed to create method %s version %s", name, version);
@@ -903,7 +903,7 @@ bool ar__methodology__unregister_method(const char *ref_name, const char *ref_ve
     }
     
     // Find the method index
-    int method_idx = find_method_idx(ref_name);
+    int method_idx = _find_method_idx(ref_name);
     if (method_idx < 0) {
         ar__io__warning("Method %s not found for unregistration", ref_name);
         return false;
