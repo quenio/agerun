@@ -5,7 +5,8 @@
       "Bash(rg:*)",
       "Bash(make:*)",
       "Bash(make:*)",
-      "Bash(./clean_build.sh:*)"
+      "Bash(./clean_build.sh:*)",
+      "Bash(awk:*)"
     ],
     "deny": []
   },
