@@ -54,15 +54,4 @@ const char* ar__method__get_instructions(const method_t *ref_method);
  */
 void ar__method__destroy(method_t *own_method);
 
-/**
- * Interprets and executes a method's instructions in the context of an agent
- * @param agent_id The ID of the agent executing the method
- * @param ref_message The message being processed (borrowed reference, ownership remains with the caller)
- * @param ref_instructions The method instructions to execute (borrowed reference)
- * @return true if execution was successful, false otherwise
- * @note Ownership: Function does not take ownership of any parameters.
- *       The message and instructions remain owned by the caller.
- */
-bool ar__method__run(int64_t agent_id, const data_t *ref_message, const char *ref_instructions);
-
 #endif /* AGERUN_METHOD_H */

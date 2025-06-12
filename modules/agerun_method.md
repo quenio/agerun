@@ -1,12 +1,12 @@
 # AgeRun Method Module
 
-The Method module provides functionality for creating, managing, and running methods within the AgeRun system. A method is a set of instructions that an agent can execute to handle incoming messages.
+The Method module provides functionality for creating and managing methods within the AgeRun system. A method is a set of instructions that an agent can execute to handle incoming messages. Method execution is handled by the interpreter module.
 
 ## Key Features
 
 - Method creation with semantic versioning
-- Method execution in agent context
 - Opaque type for proper encapsulation
+- Simple data structure for storing method name, version, and instructions
 
 ## API Reference
 
@@ -71,20 +71,6 @@ const char* ar__method__get_version(const method_t *ref_method);
 const char* ar__method__get_instructions(const method_t *ref_method);
 ```
 
-#### Method Execution
-
-```c
-/**
- * Interprets and executes a method's instructions in the context of an agent
- * @param mut_agent The agent executing the method (mutable reference)
- * @param ref_message The message being processed (borrowed reference, ownership remains with the caller)
- * @param ref_instructions The method instructions to execute (borrowed reference)
- * @return true if execution was successful, false otherwise
- * @note Ownership: Function does not take ownership of any parameters.
- *       The agent, message, and instructions remain owned by the caller.
- */
-bool ar__method__run(agent_t *mut_agent, const data_t *ref_message, const char *ref_instructions);
-```
 
 ## Implementation Notes
 
@@ -130,21 +116,4 @@ const char *agent_instructions =
 
 ### Running a method
 
-```c
-// Get a method from the methodology module
-method_t *ref_method = ar__methodology__get_method("echo_method", NULL); // NULL for latest version
-if (ref_method) {
-    // Get an agent from the agency module
-    agent_t *mut_agent = /* ... */;
-    
-    // Create a message to process
-    data_t *own_message = ar__data__create_string("Hello, world!");
-    
-    // Run the method
-    bool success = ar__method__run(mut_agent, own_message, 
-                               ar__method__get_instructions(ref_method));
-                               
-    // Clean up
-    ar__data__destroy(own_message);
-}
-```
+Methods are executed through the interpreter module. See the interpreter module documentation for details on method execution.

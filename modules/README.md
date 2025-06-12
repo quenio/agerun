@@ -106,21 +106,26 @@ agerun_system
 │       ├──h──> agerun_list
 │       ├──c──> agerun_method
 │       │       ├──h──> agerun_data
-│       │       ├──c──> agerun_instruction *
-│       │       │       ├──h──> agerun_data
-│       │       │       ├──h──> agerun_map
-│       │       │       ├──c──> agerun_expression
+│       │       ├──c──> agerun_interpreter
+│       │       │       ├──h──> agerun_instruction
 │       │       │       │       ├──h──> agerun_data
+│       │       │       │       ├──c──> agerun_expression
+│       │       │       │       │       ├──h──> agerun_data
+│       │       │       │       │       ├──c──> agerun_string
+│       │       │       │       │       ├──c──> agerun_list
+│       │       │       │       │       └──c──> agerun_map
 │       │       │       │       ├──c──> agerun_string
-│       │       │       │       ├──c──> agerun_list
-│       │       │       │       └──c──> agerun_map
-│       │       │       ├──c──> agerun_string
-│       │       │       ├──c──> agerun_methodology *
-│       │       │       ├──c──> agerun_agent *
+│       │       │       │       └──c──> agerun_assert
 │       │       │       ├──c──> agerun_agency
+│       │       │       ├──c──> agerun_agent
+│       │       │       ├──c──> agerun_string
+│       │       │       ├──c──> agerun_data
+│       │       │       ├──c──> agerun_expression
+│       │       │       ├──c──> agerun_map
+│       │       │       ├──c──> agerun_methodology
 │       │       │       └──c──> agerun_assert
 │       │       ├──c──> agerun_string
-│       │       ├──c──> agerun_agent *
+│       │       ├──c──> agerun_agent
 │       │       ├──c──> agerun_agency
 │       │       ├──c──> agerun_map
 │       │       └──c──> agerun_assert
@@ -178,15 +183,25 @@ agerun_instruction_fixture
 ├──h──> agerun_expression
 ├──c──> agerun_list
 └──c──> agerun_heap
+
+agerun_interpreter_fixture
+├──h──> agerun_interpreter
+├──h──> agerun_instruction
+├──h──> agerun_data
+├──h──> agerun_method
+├──c──> agerun_heap
+├──c──> agerun_list
+├──c──> agerun_agency
+├──c──> agerun_methodology
+└──c──> agerun_system
 ```
 
-**Note**: Modules marked with an asterisk (*) indicate circular dependencies:
-- `agerun_agency` ↔ `agerun_agent_update`: The update module needs to access agency functions
-- `agerun_method` ↔ `agerun_instruction`: Methods execute instructions, instructions need to call methods
-- `agerun_instruction` → `agerun_methodology` → `agerun_method` → `agerun_instruction`: Forms a dependency cycle
-- `agerun_instruction` → `agerun_agent` → `agerun_method` → `agerun_instruction`: Another cycle
+**Note**: The refactoring to separate parsing (instruction module) from execution (interpreter module) has successfully eliminated the circular dependencies that previously existed between:
+- `agerun_method` ↔ `agerun_instruction`: Now method depends on interpreter, which depends on instruction (unidirectional)
+- `agerun_instruction` → `agerun_methodology` → `agerun_method` → `agerun_instruction`: This cycle has been broken
+- `agerun_instruction` → `agerun_agent` → `agerun_method` → `agerun_instruction`: This cycle has been broken
 
-These circular dependencies violate Parnas principles and should be refactored in the future. Note that many of these are implementation-only dependencies, which makes them slightly less problematic than header-level circular dependencies.
+The system now follows proper Parnas principles with clean, unidirectional dependencies.
 
 ## Test Dependency Tree
 
@@ -239,13 +254,18 @@ agerun_expression_tests
 
 agerun_instruction_tests
 ├──c──> agerun_instruction (module under test)
-├──c──> agerun_instruction_fixture
-├──c──> agerun_expression
 ├──c──> agerun_data
-├──c──> agerun_string
-├──c──> agerun_map
-├──c──> agerun_list
-├──c──> agerun_assert
+└──c──> agerun_heap
+
+agerun_interpreter_tests
+├──c──> agerun_interpreter (module under test)
+├──c──> agerun_instruction
+├──c──> agerun_method
+├──c──> agerun_methodology
+├──c──> agerun_agent
+├──c──> agerun_agency
+├──c──> agerun_system
+├──c──> agerun_data
 └──c──> agerun_heap
 
 agerun_method_tests
@@ -352,6 +372,14 @@ agerun_instruction_fixture_tests
 ├──c──> agerun_expression
 ├──c──> agerun_list
 └──c──> agerun_heap
+
+agerun_interpreter_fixture_tests
+├──c──> agerun_interpreter_fixture (module under test)
+├──c──> agerun_agency
+├──c──> agerun_system
+├──c──> agerun_methodology
+├──c──> agerun_data
+└──c──> agerun_heap
 ```
 
 **Key Observations:**
@@ -386,8 +414,8 @@ The AgeRun system is organized into hierarchical layers, with each layer buildin
 ┌───────────────────────────────────────────────────────────┐      │      Fixture Modules         │
 │                  Foundation Modules                       │      │ (agerun_method_fixture,      │
 │  (agerun_data, agerun_expression, agerun_instruction,     │ ◄────┤  agerun_instruction_fixture, │
-│   agerun_method, agerun_methodology)                      │      │  agerun_system_fixture)      │
-└──────────────────────────────┬────────────────────────────┘      │                              │
+│   agerun_interpreter, agerun_method, agerun_methodology)  │      │  agerun_system_fixture,      │
+└──────────────────────────────┬────────────────────────────┘      │  agerun_interpreter_fixture) │
                                │                                   └──────────────────────────────┘
                                ▼                                   
 ┌───────────────────────────────────────────────────────────┐      
@@ -564,15 +592,33 @@ The [expression module](agerun_expression.md) provides a recursive descent parse
 
 ### Instruction Module (`agerun_instruction`)
 
-The [instruction module](agerun_instruction.md) provides a recursive descent parser for executing instructions in the AgeRun agent system:
+The [instruction module](agerun_instruction.md) provides a recursive descent parser for parsing instructions in the AgeRun agent system:
 
 - **Grammar Implementation**: Implements the BNF grammar for instructions defined in the specification
-- **Memory Assignment**: Handles assignment to memory using dot notation
-- **Function Instruction**: Supports function calls with optional assignment
+- **AST Generation**: Parses instructions into Abstract Syntax Tree nodes without executing them
+- **Memory Assignment**: Parses assignment to memory using dot notation
+- **Function Parsing**: Parses function calls with optional assignment
 - **Parser Integration**: Works with the expression evaluator for expression parsing
 - **Memory Safety**: Provides proper memory management and error handling
+- **Separation of Concerns**: Only parses instructions; execution is handled by the interpreter module
 - **Depends on Expression**: Uses the expression module for evaluating expressions
 - **Depends on Data**: Uses the data module for storing and manipulating values
+
+### Interpreter Module (`agerun_interpreter`)
+
+The [interpreter module](agerun_interpreter.md) provides execution capabilities for parsed instructions and methods:
+
+- **Instruction Execution**: Executes single instructions from their AST representation
+- **Method Execution**: Executes entire methods by parsing and running each instruction
+- **AST-Based Execution**: Works with parsed instruction nodes from the instruction module
+- **All Instruction Types**: Supports assignment, send, if, parse, build, method, agent, and destroy
+- **Expression Evaluation**: Handles expression evaluation with proper ownership semantics
+- **Memory Operations**: Updates agent memory based on instruction results
+- **Clean Architecture**: Separates execution logic from parsing logic
+- **Depends on Instruction**: Uses instruction module for parsing and AST access
+- **Depends on Agency**: Uses agency for agent and method operations
+- **Depends on Methodology**: Uses methodology for method management
+- **Zero Circular Dependencies**: Breaks previous circular dependency between instruction and execution
 
 ## System Modules
 
@@ -737,3 +783,19 @@ The system test fixture module provides a proper abstraction for system module t
 - **Opaque Type**: System test fixture structure is opaque, following Parnas principles
 - **Designed for System Modules**: Used by agent, method, instruction, methodology, and system module tests
 - **Not for Core Modules**: Core modules (string, list, map, etc.) test in isolation without fixtures
+
+### Interpreter Fixture Module (`agerun_interpreter_fixture`)
+
+The [interpreter fixture module](agerun_interpreter_fixture.md) provides a proper abstraction for interpreter module test patterns:
+
+- **Interpreter Lifecycle Management**: Creates and manages interpreter instances automatically
+- **Agent Management**: Creates and tracks test agents with automatic method registration and cleanup
+- **Instruction Execution**: Provides simplified APIs for executing instructions in agent contexts
+- **Message Handling**: Supports sending messages to agents and processing them through the interpreter
+- **Test Data Builders**: Provides common test data structures (maps) with standard values
+- **Resource Tracking**: Automatically tracks and destroys all created data objects and agents
+- **Memory Leak Detection**: Ensures all test resources are properly cleaned up
+- **No Helper Functions**: Proper module abstraction eliminating repetitive setup code
+- **Opaque Type**: Interpreter test fixture structure is opaque, following Parnas principles
+- **Based on Interpreter API**: Uses interpreter module functions rather than duplicating instruction fixture logic
+- **Designed for Interpreter Tests**: Specifically tailored for testing interpreter execution behavior

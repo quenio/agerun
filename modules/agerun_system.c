@@ -8,6 +8,7 @@
 #include "agerun_list.h"
 #include "agerun_map.h"
 #include "agerun_heap.h"
+#include "agerun_interpreter.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,6 +36,7 @@ static char g_wake_message[] = "__wake__";
 
 /* Global State */
 static bool is_initialized = false;
+static interpreter_t *g_interpreter = NULL;
 
 /* Implementation */
 int64_t ar__system__init(const char *ref_method_name, const char *ref_version) {
@@ -45,6 +47,15 @@ int64_t ar__system__init(const char *ref_method_name, const char *ref_version) {
     
     is_initialized = true;
     ar__agency__set_initialized(true);
+    
+    // Create the interpreter
+    g_interpreter = ar__interpreter__create();
+    if (!g_interpreter) {
+        printf("Error: Failed to create interpreter\n");
+        is_initialized = false;
+        ar__agency__set_initialized(false);
+        return 0;
+    }
     
     // Load methods from file if available
     if (!ar__methodology__load_methods()) {
@@ -97,6 +108,12 @@ void ar__system__shutdown(void) {
     // Clean up methodology resources
     ar__methodology__cleanup();
     
+    // Destroy the interpreter
+    if (g_interpreter) {
+        ar__interpreter__destroy(g_interpreter);
+        g_interpreter = NULL;
+    }
+    
     // Now mark as uninitialized
     is_initialized = false;
     ar__agency__set_initialized(false);
@@ -135,7 +152,7 @@ bool ar__system__process_next_message(void) {
                         printf("[complex data]\n");
                     }
                     
-                    ar__method__run(agent_id, (const data_t *)own_message, ar__method__get_instructions(ref_method));
+                    ar__interpreter__execute_method(g_interpreter, agent_id, own_message, ref_method);
                     
                     // Free the message as it's now been processed
                     ar__data__destroy(own_message);

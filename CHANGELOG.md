@@ -2,6 +2,17 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-06-12
+- ✅ Completed instruction module refactoring (parsing/execution separation):
+  - ✅ Separated parsing and execution phases in instruction module
+  - ✅ Fixed assignment parser to validate expressions before accepting
+  - ✅ Created interpreter module to handle all instruction execution
+  - ✅ Removed ar__instruction__run, replaced with ar__interpreter__execute_instruction
+  - ✅ Fixed interpreter tests that used invalid map literal syntax ({} not supported)
+  - ✅ Removed test for send() with memory references (not currently supported)
+  - ✅ All tests passing with proper separation of concerns
+  - ✅ **Method/Instruction circular dependency resolved**
+
 ## 2025-06-11
 - ✅ Completed static function naming convention update:
   - ✅ Changed all static functions to use underscore prefix `_<function_name>`

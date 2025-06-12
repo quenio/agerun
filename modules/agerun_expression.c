@@ -389,7 +389,8 @@ static const data_t* parse_memory_access(expression_context_t *mut_ctx) {
         switch (access_type) {
             case ACCESS_TYPE_MESSAGE:
                 // Return the message directly as a const pointer
-                fprintf(stderr, "DEBUG: Returning whole message\n");
+                fprintf(stderr, "DEBUG: Returning whole message (type=%d)\n", 
+                        mut_ctx->ref_message ? (int)ar__data__get_type(mut_ctx->ref_message) : -1);
                 return mut_ctx->ref_message;
             case ACCESS_TYPE_MEMORY:
                 // Return memory as const even though it's mutable internally

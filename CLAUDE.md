@@ -292,6 +292,29 @@ make run-sanitize          # Run executable with ASan
 - Focus on source files only
 - Address all warnings immediately
 
+**Expression Ownership Rules**:
+- Memory access expressions (`memory.x`) return references - do NOT destroy
+- Arithmetic/string operations return new objects - MUST destroy
+- `ar__expression__take_ownership()` returns NULL for references
+- Send instruction requires ownership of message parameter
+- Currently no support for sending memory references directly
+
+**Test Debugging Best Practices**:
+- **ALWAYS verify test output carefully** - don't assume a test is failing based on assertion line numbers alone
+- **Check where you're running tests from** - many tests require being run from the `bin` directory
+- **Add debug output to confirm assumptions** - use fprintf(stderr, ...) to trace execution
+- **Read the FULL error output** - early errors (like directory checks) can mask the real test status
+- **When a test seems to be failing**:
+  1. First check if you're in the correct directory (`pwd`)
+  2. Add debug output to see what's actually happening
+  3. Verify the actual values being compared
+  4. Don't assume the implementation is broken - the test expectations might be wrong
+- **Remember**: A test that exits early due to directory checks is NOT the same as a test that fails assertions
+- **Common pitfalls**:
+  - Seeing "Assertion failed" and assuming the feature doesn't work
+  - Not noticing that later tests are passing when run from correct directory
+  - Jumping to fix code before verifying what's actually happening with debug output
+
 ### 8. Agent Lifecycle
 
 **Critical Points**:
@@ -396,10 +419,12 @@ When reviewing tasks:
 - No null type - use integer 0
 - All parameters required
 - Version strings explicit (e.g., "1.0.0")
-- Map literals only in assignments
+- **No map literals** - `{}` syntax is not supported in AgeRun expressions
 - Agent ID 0 indicates failure
 - Always process `__wake__` messages
 - Always process messages after sending to prevent memory leaks
+- **Function calls are NOT expressions** - per BNF grammar specification
+- **Send with memory references not supported** - send() needs ownership of message
 
 ## Method Test Template
 

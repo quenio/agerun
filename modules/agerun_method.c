@@ -1,10 +1,4 @@
 #include "agerun_method.h"
-#include "agerun_instruction.h"
-#include "agerun_string.h"
-#include "agerun_data.h"
-#include "agerun_agent.h"
-#include "agerun_agency.h"
-#include "agerun_map.h"
 #include "agerun_heap.h"
 #include "agerun_assert.h" /* Include the assertion utilities */
 
@@ -86,59 +80,3 @@ method_t* ar__method__create(const char *ref_name, const char *ref_instructions,
     return mut_method;
 }
 
-bool ar__method__run(int64_t agent_id, const data_t *ref_message, const char *ref_instructions) {
-    if (agent_id == 0 || !ref_instructions) {
-        return false;
-    }
-    
-    // Get agent's memory and context using accessor functions
-    data_t *mut_memory = ar__agency__get_agent_mutable_memory(agent_id);
-    const data_t *ref_context = ar__agency__get_agent_context(agent_id);
-    
-    if (!mut_memory) {
-        return false; // Agent doesn't exist or has no memory
-    }
-    
-    // Create an instruction context
-    instruction_context_t *own_ctx = ar__instruction__create_context(
-        mut_memory,
-        ref_context,
-        ref_message
-    );
-    
-    if (!own_ctx) {
-        return false;
-    }
-    
-    // Make a copy of the instructions for tokenization
-    char *own_instructions_copy = AR__HEAP__STRDUP(ref_instructions, "Method instructions copy");
-    if (!own_instructions_copy) {
-        ar__instruction__destroy_context(own_ctx);
-        return false;
-    }
-    
-    // Split instructions by newlines
-    char *mut_instruction = strtok(own_instructions_copy, "\n");
-    bool result = true;
-    
-    while (mut_instruction != NULL) {
-        mut_instruction = ar__string__trim(mut_instruction);
-        
-        // Skip empty lines and comments
-        if (strlen(mut_instruction) > 0 && mut_instruction[0] != '#') {
-            if (!ar__instruction__run(own_ctx, mut_instruction)) {
-                result = false;
-                break;
-            }
-        }
-        
-        mut_instruction = strtok(NULL, "\n");
-    }
-    
-    // Clean up
-    ar__instruction__destroy_context(own_ctx);
-    AR__HEAP__FREE(own_instructions_copy);
-    own_instructions_copy = NULL; // Mark as freed
-    
-    return result;
-}

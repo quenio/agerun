@@ -88,18 +88,39 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Add pre-commit hooks to verify test coverage
   - [ ] Train contributors on Red-Green-Refactor cycle
 
+## Recent Completions
+
+### Instruction Module Refactoring (Completed 2025-06-12)
+- [x] Separated parsing and execution phases in instruction module
+- [x] Fixed parser to validate expressions during assignment parsing
+- [x] Fixed interpreter tests that used invalid map literal syntax
+- [x] Removed failing test for send() with memory references (not supported)
+- [x] All tests now passing with proper parser/executor separation
+
 ## Immediate Priorities (Next Steps)
+
+### CRITICAL - Standardize Test Output Format (HIGHEST PRIORITY)
+- [ ] Make all test files print "All X tests passed!" message:
+  - [ ] Audit all 22 test files to identify which ones don't print the expected message
+  - [ ] Update test files to follow consistent output format
+  - [ ] Ensure every test file ends with "All [module_name] tests passed!" on success
+  - [ ] Fix clean_build.sh counting - only 11 of 32 tests are being counted
+  - [ ] Verify all tests are properly reported in clean build summary
+  - [ ] This is CRITICAL for build verification and CI/CD integration
 
 ### CRITICAL - Resolve All Circular Dependencies (HIGHEST PRIORITY)
 - [x] Resolve Agency/Agent_Update circular dependency (Completed 2025-06-08):
   - [x] Moved update logic implementation to agent_update.c
   - [x] Agency now delegates to agent_update module
   - [x] Removed circular dependency between these modules
-- [ ] Resolve Method/Instruction circular dependency:
-  - [ ] Methods need to execute instructions (method → instruction)
-  - [ ] Instructions need to access methods via methodology (instruction → methodology → method)
-  - [ ] Consider extracting instruction execution into a separate module
-  - [ ] Or use dependency injection to break the cycle
+- [x] Resolve Method/Instruction circular dependency (COMPLETED 2025-06-12):
+  - [x] Methods need to execute instructions (method → instruction) - REMOVED, method no longer executes
+  - [x] Instructions need to access methods via methodology (instruction → methodology → method)
+  - [x] Created agerun_interpreter module to handle instruction execution
+  - [x] Removed ar__method__run from method module
+  - [x] Updated system module to use interpreter
+  - [x] Moved ar__instruction__run implementation to interpreter module
+  - [x] Removed methodology dependency from instruction module
 - [ ] Resolve Instruction/Agent/Methodology cycles:
   - [ ] Instruction depends on both agent and methodology
   - [ ] Agent depends on methodology which depends on method
@@ -108,6 +129,24 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [ ] Update the module dependency tree documentation after resolution
 
 ### HIGH - Fix Code Smells (After Circular Dependencies)
+- [ ] Implement instruction module tests (BEFORE expression refactoring):
+  - [ ] Create agerun_instruction_tests.c focusing on parsing functionality
+  - [ ] Test parsing of assignment instructions
+  - [ ] Test parsing of function call instructions
+  - [ ] Test parsing of function calls with assignment
+  - [ ] Test error handling and reporting
+  - [ ] Test all instruction types (send, if, parse, build, method, agent, destroy)
+  - [ ] Verify parsed AST structure correctness
+  - [ ] Ensure comprehensive coverage before refactoring expression module
+- [ ] Refactor expression module to separate parsing from execution:
+  - [ ] Create expression AST structures (literal, memory access, arithmetic, comparison)
+  - [ ] Change ar__expression__evaluate to return AST instead of evaluated result
+  - [ ] Move expression execution logic to interpreter module
+  - [ ] Update all callers to use new AST-based API
+  - [ ] Remove ar__expression__take_ownership (no longer needed with AST)
+  - [ ] Simplify expression context to only handle parsing
+  - [ ] Add comprehensive tests for AST generation
+  - [ ] Ensure clean separation between parsing and execution phases
 - [ ] Break down the massive ar_instruction_run function (2500+ lines):
   - [ ] Extract memory access operations
   - [ ] Extract assignment operations  
@@ -128,6 +167,17 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Update agent_update module to use new lifecycle functions
   - [ ] Ensure agent creation still sends __wake__ message
   - [ ] Test lifecycle event handling after refactoring
+
+### MEDIUM - Language Specification and Semantics
+- [ ] Specify reference vs value semantics for AgeRun instructions:
+  - [ ] Define when expressions return references vs new values
+  - [ ] Document ownership transfer rules for function arguments
+  - [ ] Enable memory/message paths in send() and other functions
+  - [ ] Consider copy-on-write or explicit copy operations
+  - [ ] Update expression evaluator to handle reference/value distinction
+  - [ ] Allow send() to work with memory references (e.g., `send(0, memory.user.name)`)
+  - [ ] Update interpreter to handle both owned and borrowed values consistently
+  - [ ] Add tests for reference/value semantics in all instruction types
 
 ### MEDIUM - Complete Documentation and Testing
 - [ ] Create tests for IO module:

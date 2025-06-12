@@ -2,11 +2,11 @@
 
 ## Overview
 
-The Instruction module is responsible for parsing and executing instructions in the AgeRun agent system according to the BNF grammar defined in the specification. It uses a recursive descent parser to handle assignment operations and function calls, working in conjunction with the Expression module to evaluate expressions.
+The Instruction module is responsible for parsing instructions in the AgeRun agent system according to the BNF grammar defined in the specification. It uses a recursive descent parser to handle assignment operations and function calls, working in conjunction with the Expression module to validate expressions. Execution of parsed instructions is handled by the separate Interpreter module.
 
 ## Key Features
 
-- Dedicated context structure for instruction parsing and execution
+- Dedicated context structure for instruction parsing
 - Recursive descent parsing implementation for instructions
 - Support for assignment operations using memory dot notation
 - Support for function calls with optional assignment
@@ -81,25 +81,27 @@ Destroys an instruction context.
 - Takes ownership of the context parameter and destroys it
 - This only frees the context structure itself, not the memory, context, or message data structures
 
-### Instruction Execution
+### Instruction Parsing
 
 ```c
-bool ar__instruction__run(instruction_context_t *mut_ctx, const char *ref_instruction);
+parsed_instruction_t* ar__instruction__parse(const char *ref_instruction, instruction_context_t *mut_ctx);
 ```
 
-Parses and executes a single instruction in the context.
+Parses a single instruction without executing it.
 
 **Parameters:**
-- `mut_ctx`: The instruction context to use (mutable reference)
-- `ref_instruction`: The instruction to execute (borrowed reference)
+- `ref_instruction`: The instruction string to parse (borrowed reference)
+- `mut_ctx`: The instruction context for error reporting (mutable reference)
 
 **Returns:**
-- `true` if the instruction was successfully executed
-- `false` if parsing failed or execution encountered an error
+- Parsed instruction structure on success
+- NULL on parse error
 
 **Ownership:**
+- Returns an owned value that caller must destroy with ar__instruction__destroy_parsed
 - Does not take ownership of any parameters
-- Does not transfer ownership of any objects
+
+**Note:** Execution of parsed instructions is handled by the Interpreter module using ar__interpreter__execute_instruction
 
 ### Accessor Functions
 
@@ -203,59 +205,72 @@ if (!own_ctx) {
     return false;
 }
 
-// Execute an instruction
-bool success = ar__instruction__run(own_ctx, "memory.greeting := \"Hello, World!\"");
+// Parse an instruction
+parsed_instruction_t *own_parsed = ar__instruction__parse("memory.greeting := \"Hello, World!\"", own_ctx);
 
 // Check for errors
-if (!success) {
+if (!own_parsed) {
     const char *error_msg = ar__instruction__get_last_error(own_ctx);
     int error_pos = ar__instruction__get_error_position(own_ctx);
     if (error_msg) {
         fprintf(stderr, "Error at position %d: %s\n", error_pos, error_msg);
     }
+} else {
+    // Use the parsed instruction (typically passed to interpreter)
+    // ar__interpreter__execute_instruction(interpreter, ctx, instruction_string);
+    
+    // Clean up parsed instruction
+    ar__instruction__destroy_parsed(own_parsed);
 }
 
-// Clean up
+// Clean up context
 ar__instruction__destroy_context(own_ctx);
 ```
 
-### Assignment Instruction
+### Assignment Instruction Examples
 
 ```c
+// Parse various assignment instructions
+// (Execution would be handled by the interpreter module)
+
 // Store a string in memory
-ar__instruction__run(own_ctx, "memory.greeting := \"Hello, World!\"");
+parsed_instruction_t *parsed = ar__instruction__parse("memory.greeting := \"Hello, World!\"", ctx);
 
 // Store a number in memory
-ar__instruction__run(own_ctx, "memory.count := 42");
+parsed = ar__instruction__parse("memory.count := 42", ctx);
 
 // Store an expression result in memory
-ar__instruction__run(own_ctx, "memory.sum := 2 + 3 * 4");
+parsed = ar__instruction__parse("memory.sum := 2 + 3 * 4", ctx);
 
 // Assign a nested value
-ar__instruction__run(own_ctx, "memory.user.name := \"John\"");
+parsed = ar__instruction__parse("memory.user.name := \"John\"", ctx);
 ```
 
-### Function Call Instruction
+### Function Call Instruction Examples
 
 ```c
+// Parse various function call instructions
+// (Execution would be handled by the interpreter module)
+
 // Send a message to another agent
-ar__instruction__run(own_ctx, "send(target_id, \"Hello\")");
+parsed_instruction_t *parsed = ar__instruction__parse("send(target_id, \"Hello\")", ctx);
 
 // Parse a string into a structured map
-ar__instruction__run(own_ctx, "memory.parsed := parse(\"name={name}\", \"name=John\")");
+parsed = ar__instruction__parse("memory.parsed := parse(\"name={name}\", \"name=John\")", ctx);
 
 // Build a string from a template and values
-ar__instruction__run(own_ctx, "memory.greeting := build(\"Hello, {name}!\", memory.user)");
+parsed = ar__instruction__parse("memory.greeting := build(\"Hello, {name}!\", memory.user)", ctx);
 
 // Conditional evaluation
-ar__instruction__run(own_ctx, "memory.result := if(memory.count > 5, \"High\", \"Low\")");
+parsed = ar__instruction__parse("memory.result := if(memory.count > 5, \"High\", \"Low\")", ctx);
 
 // Create a method
-ar__instruction__run(own_ctx, "memory.created := method(\"greet\", \"memory.message := \\\"Hello\\\";\", 1)");
+parsed = ar__instruction__parse("memory.created := method(\"greet\", \"memory.message := \\\"Hello\\\";\", 1)", ctx);
 
 // Create an agent
-ar__instruction__run(own_ctx, "memory.context := {\"name\": \"Worker\"}");
-ar__instruction__run(own_ctx, "memory.worker_id := agent(\"echo\", \"1.0.0\", memory.context)");
+// Note: Map literals {} are not supported in AgeRun expressions
+// The context map would need to be created programmatically
+parsed = ar__instruction__parse("memory.worker_id := agent(\"echo\", \"1.0.0\", memory.context)", ctx);
 ```
 
 ## Parse Function

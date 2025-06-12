@@ -15,6 +15,26 @@
 typedef struct instruction_context_s instruction_context_t;
 
 /**
+ * Instruction type enumeration
+ */
+typedef enum {
+    INST_ASSIGNMENT,      // memory.x := expression
+    INST_SEND,           // send(target, message) or result := send(...)
+    INST_IF,             // if(condition, true_val, false_val)
+    INST_METHOD,         // method(name, instructions, version)
+    INST_AGENT,          // agent(method, version, context)
+    INST_DESTROY,        // destroy(type, arg1, arg2)
+    INST_PARSE,          // parse(string)
+    INST_BUILD           // build(template, map)
+} instruction_type_t;
+
+/**
+ * Parsed instruction structure (opaque type)
+ * Contains the parsed representation of an instruction
+ */
+typedef struct parsed_instruction_s parsed_instruction_t;
+
+/**
  * Creates a new instruction context for parsing and executing instructions.
  *
  * @param mut_memory The memory to use for the instruction (mutable reference, can be NULL if not needed)
@@ -36,39 +56,71 @@ instruction_context_t* ar__instruction__create_context(data_t *mut_memory, const
  */
 void ar__instruction__destroy_context(instruction_context_t *own_ctx);
 
+
 /**
- * Parse and execute a single instruction using recursive descent parsing.
+ * Parses an instruction without executing it
  * 
- * The instruction grammar follows the BNF definition:
- * 
- * <instruction> ::= <assignment>
- *                | <function-instruction>
- *                
- * <assignment> ::= <memory-access> ':=' <expression>
- * 
- * <function-instruction> ::= [<memory-access> ':='] <function-call>
- * 
- * <function-call> ::= <send-function>
- *                  | <parse-function>
- *                  | <build-function>
- *                  | <method-function>
- *                  | <agent-function>
- *                  | <destroy-function>
- *                  | <if-function>
- * 
- * <memory-access> ::= 'memory' {'.' <identifier>}
- * 
- * Note: Only 'memory' can be used as the root identifier on the left side of
- * assignments. The ':=' operator is used for all assignments. Memory access
- * uses dot notation (e.g., memory.field.subfield).
- * 
- * @param mut_ctx The instruction context to use (mutable reference)
- * @param ref_instruction The instruction to execute (borrowed reference)
- * @return true if execution was successful, false otherwise
- * @note Ownership: Does not take ownership of any parameters.
- *       The function does not transfer ownership of any objects.
+ * @param ref_instruction The instruction string to parse (borrowed reference)
+ * @param mut_ctx The instruction context for error reporting (mutable reference)
+ * @return Parsed instruction structure, or NULL on parse error
+ * @note Ownership: Returns an owned value that caller must destroy with ar__instruction__destroy_parsed.
+ *       The function does not take ownership of the instruction string.
+ *       Parse errors are reported through the context's error mechanism.
  */
-bool ar__instruction__run(instruction_context_t *mut_ctx, const char *ref_instruction);
+parsed_instruction_t* ar__instruction__parse(const char *ref_instruction, instruction_context_t *mut_ctx);
+
+/**
+ * Destroys a parsed instruction and frees its resources
+ * 
+ * @param own_parsed The parsed instruction to destroy (owned reference, will be freed)
+ * @note Ownership: This function takes ownership of the parsed instruction and frees it.
+ *       The pointer will be invalid after this call.
+ */
+void ar__instruction__destroy_parsed(parsed_instruction_t *own_parsed);
+
+/**
+ * Gets the type of a parsed instruction
+ * 
+ * @param ref_parsed The parsed instruction (borrowed reference)
+ * @return The instruction type
+ * @note Ownership: Does not take ownership of the parsed instruction.
+ */
+instruction_type_t ar__instruction__get_type(const parsed_instruction_t *ref_parsed);
+
+/**
+ * Gets the memory path for an assignment instruction
+ * 
+ * @param ref_parsed The parsed instruction (borrowed reference)
+ * @return The memory path (e.g., "memory.x.y"), or NULL if not an assignment
+ * @note Ownership: Returns a borrowed reference. The caller should not free the result.
+ */
+const char* ar__instruction__get_assignment_path(const parsed_instruction_t *ref_parsed);
+
+/**
+ * Gets the expression for an assignment instruction
+ * 
+ * @param ref_parsed The parsed instruction (borrowed reference)
+ * @return The expression string, or NULL if not an assignment
+ * @note Ownership: Returns a borrowed reference. The caller should not free the result.
+ */
+const char* ar__instruction__get_assignment_expression(const parsed_instruction_t *ref_parsed);
+
+/**
+ * Gets function call details from a parsed instruction
+ * 
+ * @param ref_parsed The parsed instruction (borrowed reference)
+ * @param out_function_name Output: the function name (borrowed reference)
+ * @param out_args Output: array of argument expressions (borrowed references)
+ * @param out_arg_count Output: number of arguments
+ * @param out_result_path Output: result assignment path if any (borrowed reference, may be NULL)
+ * @return true if this is a function call instruction, false otherwise
+ * @note Ownership: All output parameters are borrowed references that remain owned by the parsed instruction.
+ */
+bool ar__instruction__get_function_call(const parsed_instruction_t *ref_parsed,
+                                        const char **out_function_name,
+                                        const char ***out_args,
+                                        int *out_arg_count,
+                                        const char **out_result_path);
 
 /**
  * Gets the memory from the instruction context.
@@ -100,16 +152,6 @@ const data_t* ar__instruction__get_context(const instruction_context_t *ref_ctx)
  */
 const data_t* ar__instruction__get_message(const instruction_context_t *ref_ctx);
 
-/**
- * Send a message to another agent.
- *
- * @param target_id The ID of the agent to send to
- * @param own_message The message to send (ownership transferred)
- * @return true if sending was successful, false otherwise
- * @note Ownership: Takes ownership of own_message.
- *       If sending fails, the function will destroy the message.
- */
-bool ar__instruction__send_message(int64_t target_id, data_t *own_message);
 
 /**
  * Gets the last error message from the instruction context.

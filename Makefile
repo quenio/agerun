@@ -106,6 +106,8 @@ test-sanitize: clean
 # Individual test binaries
 bin/%_tests: bin/obj/%_tests.o test_lib
 	$(CC) $(CFLAGS) -o $@ $< bin/libagerun.a $(LDFLAGS)
+	@echo "Running test: $@"
+	@cd bin && AGERUN_MEMORY_REPORT="memory_report_$(notdir $@).log" ./$(notdir $@)
 
 # Compile source files (always with debug for test files)
 bin/obj/%_tests.o: modules/%_tests.c | bin
