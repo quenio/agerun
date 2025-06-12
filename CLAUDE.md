@@ -81,10 +81,10 @@ make run-sanitize          # Run executable with ASan
 - Full test suite: Check console for "WARNING: X memory leaks detected"
 - Individual debugging: Check `bin/heap_memory_report.log` after each test
   - **CRITICAL**: The report file is overwritten on each program run
-  - Workflow: Run test → Check heap_memory_report.log → Run next test
+  - Workflow: `make bin/test_name` → Check generated memory report
 - Enhanced per-test reporting: The build system generates unique memory reports for each test
-  - Tests automatically create separate report files (e.g., `agerun_string_tests.memory_report.log`)
-  - Use `AGERUN_MEMORY_REPORT` environment variable to specify custom report filename
+  - `make bin/test_name` automatically creates test-specific report files
+  - Manual runs can use `AGERUN_MEMORY_REPORT` environment variable
   - Example: `AGERUN_MEMORY_REPORT=my_test.log ./bin/agerun_string_tests`
 - Always run `make test-sanitize` before committing
 - Environment variables for debugging:
@@ -115,8 +115,9 @@ make run-sanitize          # Run executable with ASan
 - Tests must be isolated and fast
 - Zero memory leaks in tests
 - Test files: `<module>_tests.c`
-- Always check working directory before running tests
-- Run tests from bin/ directory or set AGERUN_MEMORY_REPORT path:
+- Follow the 4-step directory check process (see Section 7) before running tests
+- To run tests, use `make bin/test_name` which automatically builds and runs
+- If you need to run tests manually from bin/ directory:
   - `cd bin && ./agerun_string_tests`
   - `AGERUN_MEMORY_REPORT=bin/test.memory_report.log ./bin/agerun_string_tests`
 
@@ -276,7 +277,22 @@ make run-sanitize          # Run executable with ASan
 - `if()` cannot be nested
 - `send(0, message)` is a no-op returning true
 
-### 7. Debug and Analysis
+### 7. Command Execution Guidelines
+
+**ALWAYS Check Directory Before Running Commands**:
+When executing any command, especially build/test commands, follow this 4-step process:
+1. Check where you are: `pwd`
+2. Change to the directory you want to be in: `cd <directory>`
+3. Verify you're in the correct directory: `pwd`
+4. Only then run the command you want
+
+This prevents common errors like:
+- Running tests from wrong directory
+- File not found errors
+- Incorrect relative paths
+- Wasted time debugging non-existent problems
+
+### 8. Debug and Analysis
 
 **Memory Debugging**:
 - Use ASan via `make test-sanitize`
@@ -301,11 +317,11 @@ make run-sanitize          # Run executable with ASan
 
 **Test Debugging Best Practices**:
 - **ALWAYS verify test output carefully** - don't assume a test is failing based on assertion line numbers alone
-- **Check where you're running tests from** - many tests require being run from the `bin` directory
+- **Follow the 4-step directory check process** - many tests require being run from the `bin` directory (see Section 7)
 - **Add debug output to confirm assumptions** - use fprintf(stderr, ...) to trace execution
 - **Read the FULL error output** - early errors (like directory checks) can mask the real test status
 - **When a test seems to be failing**:
-  1. First check if you're in the correct directory (`pwd`)
+  1. Follow the 4-step directory check process from Section 7
   2. Add debug output to see what's actually happening
   3. Verify the actual values being compared
   4. Don't assume the implementation is broken - the test expectations might be wrong
@@ -315,7 +331,7 @@ make run-sanitize          # Run executable with ASan
   - Not noticing that later tests are passing when run from correct directory
   - Jumping to fix code before verifying what's actually happening with debug output
 
-### 8. Agent Lifecycle
+### 9. Agent Lifecycle
 
 **Critical Points**:
 - Agents receive `__wake__` on creation
@@ -323,7 +339,7 @@ make run-sanitize          # Run executable with ASan
 - ALWAYS process messages after sending to prevent leaks
 - Call `ar__system__process_next_message()` after `ar__agent__send()`
 
-### 9. Building Individual Tests
+### 10. Building Individual Tests
 
 Always use make to build tests:
 ```bash
@@ -331,7 +347,17 @@ make bin/test_name  # Build individual test
 ```
 Never compile directly with gcc.
 
-### 10. Session Management
+**Important Makefile Features**:
+- When building individual tests, the test is automatically executed after building
+- Module changes are automatically rebuilt (no need to rebuild the library separately)
+- The Makefile handles all dependencies and runs the test from the correct directory
+- Example: `make bin/agerun_string_tests` will:
+  1. Rebuild any changed modules
+  2. Rebuild the test
+  3. Run the test automatically from the bin directory
+  4. Generate a memory report specific to that test
+
+### 11. Session Management
 
 When reviewing tasks:
 - Check session todo list with `TodoRead`
@@ -349,7 +375,7 @@ When reviewing tasks:
 - Include brief summary of what was accomplished
 - Update CLAUDE.md with any new patterns or learnings from the session
 
-### 11. Refactoring Patterns
+### 12. Refactoring Patterns
 
 **Visitor Pattern to List-Based**:
 - When refactoring from visitor pattern, use list-based approach for better memory management
@@ -412,7 +438,7 @@ When reviewing tasks:
 **Git Workflow**:
 - Always run `git status` after `git push` to ensure push completed successfully
 - Verify working tree remains clean after operations
-- Check current directory before running commands with relative paths
+- Follow the 4-step directory check process (Section 7) before running commands with relative paths
 
 ## AgeRun Language Notes
 
