@@ -40,6 +40,16 @@ make run-sanitize          # Run executable with ASan
   - Builds with debug assertions active
 - Always pause before executing build commands to check for custom scripts/procedures
 
+## Git Workflow (CRITICAL)
+
+**After Every Git Push**:
+1. **ALWAYS run `git status`** to verify:
+   - Push completed successfully
+   - Working tree remains clean
+   - No uncommitted changes remain
+
+This is a MANDATORY verification step. Never assume a push succeeded without checking.
+
 ## Project Structure
 
 - **/modules**: Core implementation (.c/.h files and tests)
@@ -47,6 +57,25 @@ make run-sanitize          # Run executable with ASan
 - **/methods**: Method definitions (.method files with docs and tests)
 
 ## Critical Development Rules
+
+### 0. Documentation Search Protocol (MANDATORY)
+
+**When asked about procedures or workflows**:
+1. **ALWAYS search CLAUDE.md first** using exact keywords from the question
+2. **Use multiple search strategies**:
+   - Search for exact phrases (e.g., "after push", "after commit")
+   - Search for related terms (e.g., "git", "workflow", "verify")
+   - Check relevant sections based on topic
+3. **Start with the simplest interpretation** of the question
+4. **Do NOT assume complexity** where none exists
+5. **Do NOT jump to related topics** without checking for direct answers first
+
+**Common mistake pattern to avoid**:
+- Question: "What should I do after X?"
+- Wrong approach: Jumping to complex workflow sections
+- Right approach: Search for "after X" first, check simple procedures
+
+This prevents overthinking and ensures accurate responses based on documented procedures.
 
 ### 1. Memory Management (ZERO TOLERANCE FOR LEAKS)
 
@@ -436,6 +465,7 @@ When reviewing tasks:
 6. **Compile and test**: Always run `make clean && make` followed by `./clean_build.sh`
 
 **Git Workflow**:
+- **CRITICAL**: See "Git Workflow (CRITICAL)" section near the top of this document
 - Always run `git status` after `git push` to ensure push completed successfully
 - Verify working tree remains clean after operations
 - Follow the 4-step directory check process (Section 7) before running commands with relative paths
