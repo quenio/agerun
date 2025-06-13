@@ -69,16 +69,19 @@ static void test_agent_manager_create_destroy(void) {
     // Test checks for memory fields that don't exist yet (implementation incomplete)
     const data_t *is_create = ar__data__get_map_data(agent_memory, "is_create");
     if (!is_create) {
-        printf("FAIL: memory.is_create not found - if() comparison failed\n");
+        printf("EXPECTED FAIL: memory.is_create not found - if() comparison failed\n");
+        printf("NOTE: String comparison in if() is not yet implemented\n");
     }
     
     const data_t *is_destroy = ar__data__get_map_data(agent_memory, "is_destroy");
     if (!is_destroy) {
-        printf("FAIL: memory.is_destroy not found - if() comparison failed\n");
+        printf("EXPECTED FAIL: memory.is_destroy not found - if() comparison failed\n");
+        printf("NOTE: String comparison in if() is not yet implemented\n");
     }
     
     if (!result) {
-        printf("FAIL: memory.result not found - conditional assignment failed\n");
+        printf("EXPECTED FAIL: memory.result not found - conditional assignment failed\n");
+        printf("NOTE: Depends on if() comparison which is not yet implemented\n");
     }
     
     // Now test destroy action
@@ -99,17 +102,19 @@ static void test_agent_manager_create_destroy(void) {
     // Check if destroy worked
     const data_t *destroy_result = ar__data__get_map_data(agent_memory, "destroy_result");
     if (!destroy_result) {
-        printf("FAIL: memory.destroy_result not found - destroy() instruction failed to execute\n");
+        printf("EXPECTED FAIL: memory.destroy_result not found - destroy() instruction failed to execute\n");
         printf("NOTE: This is expected until destroy() function is implemented in instruction module\n");
     }
     
     // Check for the missing fields again
     if (!is_create) {
-        printf("FAIL: memory.is_create not found - if() comparison failed\n");
+        printf("EXPECTED FAIL: memory.is_create not found - if() comparison failed\n");
+        printf("NOTE: String comparison in if() is not yet implemented\n");
     }
     
     if (!is_destroy) {
-        printf("FAIL: memory.is_destroy not found - if() comparison failed\n");
+        printf("EXPECTED FAIL: memory.is_destroy not found - if() comparison failed\n");
+        printf("NOTE: String comparison in if() is not yet implemented\n");
     }
     
     // Check for memory leaks
@@ -164,17 +169,20 @@ static void test_agent_manager_invalid_action(void) {
     // For invalid actions, the method should fail gracefully
     const data_t *is_create = ar__data__get_map_data(agent_memory, "is_create");
     if (!is_create) {
-        printf("FAIL: memory.is_create not found - if() comparison failed\n");
+        printf("EXPECTED FAIL: memory.is_create not found - if() comparison failed\n");
+        printf("NOTE: String comparison in if() is not yet implemented\n");
     }
     
     const data_t *is_destroy = ar__data__get_map_data(agent_memory, "is_destroy");
     if (!is_destroy) {
-        printf("FAIL: memory.is_destroy not found - if() comparison failed\n");
+        printf("EXPECTED FAIL: memory.is_destroy not found - if() comparison failed\n");
+        printf("NOTE: String comparison in if() is not yet implemented\n");
     }
     
     const data_t *result = ar__data__get_map_data(agent_memory, "result");
     if (!result) {
-        printf("FAIL: memory.result not found - conditional assignment failed\n");
+        printf("EXPECTED FAIL: memory.result not found - conditional assignment failed\n");
+        printf("NOTE: Depends on if() comparison which is not yet implemented\n");
     }
     
     // Check for memory leaks

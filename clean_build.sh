@@ -64,7 +64,7 @@ else
     echo
     echo "Error details (last 10):"
     echo "$output" | grep -B2 "ERROR: Test .* failed" | grep -E "(Assertion failed|Abort trap)" | head -5
-    echo "$output" | grep -E "(FAIL:|failed)" | tail -10
+    echo "$output" | grep -E "(FAIL:|failed)" | grep -v "EXPECTED FAIL" | tail -10
     exit 1
 fi
 

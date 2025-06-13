@@ -685,14 +685,30 @@ static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t
                 size_t literal_len = (size_t)(var_start - template_ptr);
                 
                 // Find this literal in the input
-                const char *literal_pos = NULL;
                 if (literal_len > 0) {
+                    // Extract the literal text from template
+                    char *literal_text = AR__HEAP__MALLOC(literal_len + 1, "Parse literal");
+                    if (!literal_text) {
+                        ar__data__destroy(own_result);
+                        AR__HEAP__FREE(var_name);
+                        if (owns_input && own_input) {
+                            ar__data__destroy(own_input);
+                        }
+                        if (owns_template && own_template) {
+                            ar__data__destroy(own_template);
+                        }
+                        return false;
+                    }
+                    strncpy(literal_text, template_ptr, literal_len);
+                    literal_text[literal_len] = '\0';
+                    
                     // Look for the literal text in input
-                    literal_pos = strstr(input_ptr, template_ptr);
+                    const char *literal_pos = strstr(input_ptr, literal_text);
                     if (literal_pos && literal_pos == input_ptr) {
                         // Move input pointer past the literal
                         input_ptr += literal_len;
                     }
+                    AR__HEAP__FREE(literal_text);
                 }
                 
                 // Now extract the value until we hit the next literal or end
@@ -700,21 +716,40 @@ static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t
                 size_t next_literal_len = 0;
                 
                 // Find next literal (non-variable) text
-                while (*next_literal_start && *next_literal_start != '{') {
-                    next_literal_len++;
-                    next_literal_start++;
+                const char *next_var_start = strchr(next_literal_start, '{');
+                if (next_var_start) {
+                    next_literal_len = (size_t)(next_var_start - next_literal_start);
+                } else {
+                    next_literal_len = strlen(next_literal_start);
                 }
                 
                 // Extract value from input
                 const char *value_end = input_ptr;
                 if (next_literal_len > 0) {
+                    // Extract the next literal text
+                    char *next_literal = AR__HEAP__MALLOC(next_literal_len + 1, "Parse next literal");
+                    if (!next_literal) {
+                        ar__data__destroy(own_result);
+                        AR__HEAP__FREE(var_name);
+                        if (owns_input && own_input) {
+                            ar__data__destroy(own_input);
+                        }
+                        if (owns_template && own_template) {
+                            ar__data__destroy(own_template);
+                        }
+                        return false;
+                    }
+                    strncpy(next_literal, next_literal_start, next_literal_len);
+                    next_literal[next_literal_len] = '\0';
+                    
                     // Find where the next literal starts in input
-                    const char *next_literal_in_input = strstr(input_ptr, var_end + 1);
+                    const char *next_literal_in_input = strstr(input_ptr, next_literal);
                     if (next_literal_in_input) {
                         value_end = next_literal_in_input;
                     } else {
                         value_end = input_ptr + strlen(input_ptr);
                     }
+                    AR__HEAP__FREE(next_literal);
                 } else {
                     // No more literals, take rest of input
                     value_end = input_ptr + strlen(input_ptr);
@@ -973,6 +1008,33 @@ static bool _execute_build(interpreter_t *mut_interpreter, instruction_context_t
                         strcpy(own_result_str + result_pos, value_str);
                         result_pos += value_len;
                     }
+                } else {
+                    // Variable not found - preserve the placeholder
+                    size_t placeholder_len = var_len + 2; // Length of {var_name}
+                    while (result_pos + placeholder_len >= result_size - 1) {
+                        result_size *= 2;
+                        char *new_result = AR__HEAP__MALLOC(result_size, "Build result resize");
+                        if (!new_result) {
+                            AR__HEAP__FREE(var_name);
+                            AR__HEAP__FREE(own_result_str);
+                            if (own_values) {
+                                ar__data__destroy(own_values);
+                            }
+                            if (owns_template && own_template) {
+                                ar__data__destroy(own_template);
+                            }
+                            return false;
+                        }
+                        strcpy(new_result, own_result_str);
+                        AR__HEAP__FREE(own_result_str);
+                        own_result_str = new_result;
+                    }
+                    
+                    // Copy the placeholder {var_name} to result
+                    own_result_str[result_pos++] = '{';
+                    strcpy(own_result_str + result_pos, var_name);
+                    result_pos += var_len;
+                    own_result_str[result_pos++] = '}';
                 }
                 
                 AR__HEAP__FREE(var_name);

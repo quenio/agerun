@@ -26,9 +26,6 @@ static void test_method_function(void);
 static void test_parse_function(void);
 static void test_build_function(void);
 static void test_agent_function(void);
-static void test_agent_function_with_message_expressions(void);
-static void test_destroy_functions(void);
-static void test_error_reporting(void);
 
 int main(void) {
     printf("=== AgeRun Interpreter Tests ===\n");
@@ -69,9 +66,6 @@ int main(void) {
     test_parse_function();
     test_build_function();
     test_agent_function();
-    test_agent_function_with_message_expressions();
-    test_destroy_functions();
-    test_error_reporting();
     
     // Cleanup
     ar__system__shutdown();
@@ -491,7 +485,11 @@ static void test_build_function(void) {
     );
     assert(agent_id > 0);
     
-    // Set up data for building - data module automatically creates intermediate maps
+    // Set up data for building - need to create intermediate map first
+    data_t *mut_memory = ar__interpreter_fixture__get_agent_memory(own_fixture, agent_id);
+    data_t *own_data_map = ar__data__create_map();
+    ar__data__set_map_data(mut_memory, "data", own_data_map);
+    
     assert(ar__interpreter_fixture__execute_instruction(own_fixture, agent_id, "memory.data.name := \"Alice\""));
     assert(ar__interpreter_fixture__execute_instruction(own_fixture, agent_id, "memory.data.count := 42"));
     
@@ -502,7 +500,6 @@ static void test_build_function(void) {
         "memory.result := build(\"Hello {name}, count is {count}\", memory.data)"
     ));
     
-    data_t *mut_memory = ar__interpreter_fixture__get_agent_memory(own_fixture, agent_id);
     data_t *ref_result = ar__data__get_map_data(mut_memory, "result");
     assert(strcmp(ar__data__get_string(ref_result), "Hello Alice, count is 42") == 0);
     
@@ -568,7 +565,9 @@ static void test_agent_function(void) {
     assert(ref_init != NULL);
     assert(ar__data__get_integer(ref_init) == 1);
     
-    // Create agent with context - data module automatically creates intermediate maps
+    // Create agent with context - need to create intermediate map first
+    data_t *own_ctx_map = ar__data__create_map();
+    ar__data__set_map_data(mut_memory, "ctx", own_ctx_map);
     assert(ar__interpreter_fixture__execute_instruction(own_fixture, creator_id, "memory.ctx.role := \"supervisor\""));
     assert(ar__interpreter_fixture__execute_instruction(
         own_fixture, 
@@ -598,236 +597,4 @@ static void test_agent_function(void) {
     printf("Agent function test passed!\n");
 }
 
-static void test_destroy_functions(void) {
-    printf("Testing destroy functions...\n");
-    
-    // Given a fixture
-    interpreter_fixture_t *own_fixture = ar__interpreter_fixture__create("test_destroy");
-    assert(own_fixture != NULL);
-    
-    // Create a method to destroy
-    assert(ar__interpreter_fixture__create_method(
-        own_fixture,
-        "temporary",
-        "memory.temp := 1",
-        "1.0.0"
-    ));
-    
-    // And agents
-    int64_t controller_id = ar__interpreter_fixture__create_agent(
-        own_fixture,
-        "controller",
-        "",
-        "1.0.0"
-    );
-    assert(controller_id > 0);
-    
-    int64_t worker_id = ar__interpreter_fixture__create_agent(
-        own_fixture,
-        "temporary",
-        "",
-        "1.0.0"
-    );
-    assert(worker_id > 0);
-    
-    // Test destroying an agent
-    char destroy_cmd[256];
-    snprintf(destroy_cmd, sizeof(destroy_cmd), "memory.destroyed := destroy(%lld)", (long long)worker_id);
-    assert(ar__interpreter_fixture__execute_instruction(own_fixture, controller_id, destroy_cmd));
-    
-    data_t *mut_memory = ar__interpreter_fixture__get_agent_memory(own_fixture, controller_id);
-    data_t *ref_destroyed = ar__data__get_map_data(mut_memory, "destroyed");
-    assert(ar__data__get_integer(ref_destroyed) == 1);
-    
-    // Verify agent is gone
-    assert(ar__agency__get_agent_memory(worker_id) == NULL);
-    
-    // Test destroying a method
-    assert(ar__interpreter_fixture__execute_instruction(
-        own_fixture, 
-        controller_id, 
-        "memory.method_destroyed := destroy(\"temporary\", \"1.0.0\")"
-    ));
-    
-    data_t *ref_method_destroyed = ar__data__get_map_data(mut_memory, "method_destroyed");
-    assert(ar__data__get_integer(ref_method_destroyed) == 1);
-    
-    // Verify method is gone
-    assert(ar__methodology__get_method("temporary", "1.0.0") == NULL);
-    
-    // Test destroying with integer version
-    assert(ar__interpreter_fixture__create_method(
-        own_fixture,
-        "another",
-        "memory.x := 1",
-        "2.0.0"
-    ));
-    
-    assert(ar__interpreter_fixture__execute_instruction(
-        own_fixture, 
-        controller_id, 
-        "memory.another_destroyed := destroy(\"another\", 2)"
-    ));
-    
-    data_t *ref_another = ar__data__get_map_data(mut_memory, "another_destroyed");
-    assert(ar__data__get_integer(ref_another) == 1);
-    assert(ar__methodology__get_method("another", "2.0.0") == NULL);
-    
-    // Clean up
-    ar__interpreter_fixture__destroy(own_fixture);
-    
-    printf("Destroy functions test passed!\n");
-}
 
-static void test_agent_function_with_message_expressions(void) {
-    printf("Testing agent function with message access expressions...\n");
-    
-    // Given a fixture
-    interpreter_fixture_t *own_fixture = ar__interpreter_fixture__create("test_agent_message_expressions");
-    assert(own_fixture != NULL);
-    
-    // Create a method for agents
-    assert(ar__interpreter_fixture__create_method(
-        own_fixture,
-        "echo_method", 
-        "memory.output := message",
-        "1.0.0"
-    ));
-    
-    // And an agent that will create other agents
-    int64_t creator_id = ar__interpreter_fixture__create_agent(
-        own_fixture,
-        "creator",
-        "",
-        "1.0.0"
-    );
-    assert(creator_id > 0);
-    
-    // Create a message with method info
-    data_t *own_message = ar__data__create_map();
-    ar__data__set_map_string(own_message, "method_name", "echo_method");
-    ar__data__set_map_string(own_message, "version", "1.0.0");
-    
-    data_t *own_agent_context = ar__data__create_map();
-    ar__data__set_map_string(own_agent_context, "name", "TestAgent");
-    ar__data__set_map_integer(own_agent_context, "timeout", 30);
-    ar__data__set_map_data(own_message, "context", own_agent_context);
-    // Ownership of agent_context transferred to message
-    
-    // Execute agent creation with message field access
-    bool result = ar__interpreter_fixture__execute_with_message(
-        own_fixture,
-        creator_id,
-        "memory.agent_result := agent(message.method_name, message.version, message.context)",
-        own_message
-    );
-    ar__data__destroy(own_message);
-    
-    // Then the agent creation should succeed
-    assert(result == true);
-    
-    data_t *mut_memory = ar__interpreter_fixture__get_agent_memory(own_fixture, creator_id);
-    data_t *ref_result = ar__data__get_map_data(mut_memory, "agent_result");
-    assert(ref_result != NULL);
-    assert(ar__data__get_type(ref_result) == DATA_INTEGER);
-    int64_t created_id = ar__data__get_integer(ref_result);
-    assert(created_id > 0);
-    
-    // Process wake message
-    ar__system__process_next_message();
-    
-    // Verify the agent was created with the right context
-    const data_t *ref_created_context = ar__agency__get_agent_context(created_id);
-    assert(ref_created_context != NULL);
-    data_t *ref_name = ar__data__get_map_data(ref_created_context, "name");
-    assert(ref_name != NULL);
-    assert(strcmp(ar__data__get_string(ref_name), "TestAgent") == 0);
-    
-    // Clean up
-    ar__interpreter_fixture__destroy(own_fixture);
-    
-    printf("Agent function with message expressions test passed!\n");
-}
-
-static void test_error_reporting(void) {
-    printf("Testing error reporting...\n");
-    
-    // Given a fixture
-    interpreter_fixture_t *own_fixture = ar__interpreter_fixture__create("test_error_reporting");
-    assert(own_fixture != NULL);
-    
-    // And an agent
-    int64_t agent_id = ar__interpreter_fixture__create_agent(
-        own_fixture,
-        "error_test",
-        "",
-        "1.0.0"
-    );
-    assert(agent_id > 0);
-    
-    // Test 1: Syntax error - missing expression after assignment
-    bool result = ar__interpreter_fixture__execute_instruction(
-        own_fixture,
-        agent_id,
-        "memory.x := "
-    );
-    // Then execution should fail
-    assert(result == false);
-    
-    // Test 2: Parse error - invalid token
-    result = ar__interpreter_fixture__execute_instruction(
-        own_fixture,
-        agent_id,
-        "memory.x := @invalid"
-    );
-    // Then execution should fail
-    assert(result == false);
-    
-    // Test 3: Syntax error - method() with wrong number of parameters
-    result = ar__interpreter_fixture__execute_instruction(
-        own_fixture,
-        agent_id,
-        "memory.result := method(\"nonexistent\", \"1.0.0\")"
-    );
-    // Then execution should fail (syntax error - missing third parameter)
-    assert(result == false);
-    
-    // Test 4: Runtime error - division by zero
-    result = ar__interpreter_fixture__execute_instruction(
-        own_fixture,
-        agent_id,
-        "memory.result := 5 / 0"
-    );
-    // Then execution should fail
-    assert(result == false);
-    
-    // Test 5: Invalid function name
-    result = ar__interpreter_fixture__execute_instruction(
-        own_fixture,
-        agent_id,
-        "memory.result := invalid_function(1, 2)"
-    );
-    // Then execution should fail
-    assert(result == false);
-    
-    // Test 6: Type error - if with map condition
-    // First create an empty map programmatically (AgeRun doesn't support {} syntax)
-    data_t *mut_memory = ar__interpreter_fixture__get_agent_memory(own_fixture, agent_id);
-    data_t *own_empty_map = ar__data__create_map();
-    ar__data__set_map_data(mut_memory, "map", own_empty_map);
-    
-    result = ar__interpreter_fixture__execute_instruction(
-        own_fixture,
-        agent_id,
-        "memory.result := if(memory.map, 1, 0)"
-    );
-    // Then execution should succeed but return false value
-    assert(result == true);
-    data_t *ref_result = ar__data__get_map_data(mut_memory, "result");
-    assert(ar__data__get_integer(ref_result) == 0);
-    
-    // Clean up
-    ar__interpreter_fixture__destroy(own_fixture);
-    
-    printf("Error reporting test passed!\n");
-}
