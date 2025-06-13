@@ -96,6 +96,6 @@ int main(void) {
     test_fixture_verify_directory();
     test_fixture_check_memory();
     
-    printf("\nAll method fixture tests passed!\n");
+    printf("All 4 tests passed!\n");
     return 0;
 }

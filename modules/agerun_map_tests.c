@@ -182,6 +182,6 @@ int main(void) {
     printf("Running test_map_refs()...\n");
     test_map_refs();
     
-    printf("All map tests passed!\n");
+    printf("All 8 tests passed!\n");
     return 0;
 }

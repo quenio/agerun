@@ -46,17 +46,21 @@ run_step "Build executable" "make executable"
 # Step 4: Run tests
 echo
 echo "Running tests..."
-output=$(make test 2>&1)
-# Count passed and failed tests
+output=$(make -k test 2>&1)
+# Count passed and failed tests by counting test executables that ran
+total_tests=$(echo "$output" | grep -c "^Running test: bin/")
 passed=$(echo "$output" | grep -c "All .* tests passed")
 errors=$(echo "$output" | grep -c "ERROR: Test .* failed")
-if [ $errors -eq 0 ]; then
-    echo "Tests: $passed passed ✓"
+aborts=$(echo "$output" | grep -c "Abort trap")
+failed=$((errors + aborts))
+if [ $failed -eq 0 ]; then
+    echo "Tests: $total_tests run, all passed ✓"
 else
-    echo "Tests: $passed passed, $errors FAILED ✗"
+    echo "Tests: $total_tests run, $passed passed, $failed FAILED ✗"
     echo
     echo "Failed tests:"
     echo "$output" | grep "ERROR: Test .* failed" | sed 's/ERROR: Test /  - /' | sed 's/ failed.*//'
+    echo "$output" | grep -B1 "Abort trap" | grep "^Running test:" | sed 's/Running test: bin\//  - /' | sed 's/ (aborted)$//' | sort -u
     echo
     echo "Error details (last 10):"
     echo "$output" | grep -B2 "ERROR: Test .* failed" | grep -E "(Assertion failed|Abort trap)" | head -5

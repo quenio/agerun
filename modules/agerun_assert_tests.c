@@ -93,7 +93,7 @@ int main(void) {
     test_ar_assert_transferred();
     test_ar_assert_not_used_after_free();
     
-    printf("All agerun_assert tests passed!\n");
+    printf("All 4 tests passed!\n");
     
     return 0;
 }

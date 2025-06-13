@@ -80,7 +80,7 @@ int main(void) {
     remove("methodology.agerun");
     remove("agency.agerun");
     
-    printf("All interpreter tests passed!\n");
+    printf("All 28 tests passed!\n");
     return 0;
 }
 
@@ -433,7 +433,7 @@ static void test_parse_function(void) {
     int64_t agent_id = ar__interpreter_fixture__create_agent(
         own_fixture,
         "parser",
-        "",
+        "memory.initialized := 1",
         "1.0.0"
     );
     assert(agent_id > 0);

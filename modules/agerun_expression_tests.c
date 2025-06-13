@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
     }
     
     // And report success
-    printf("All expression tests passed!\n");
+    printf("All 12 tests passed!\n");
     fflush(stdout);
     
     // Make sure we exit gracefully

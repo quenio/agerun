@@ -1201,7 +1201,7 @@ int main(void) {
     test_map_get_keys();
     
     // Then all tests should pass
-    printf("All data tests passed!\n");
+    printf("All 22 tests passed!\n");
     
     return 0;
 }

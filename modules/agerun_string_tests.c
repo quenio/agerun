@@ -392,6 +392,6 @@ int main(void) {
     test_path_parent_normal();
     test_path_parent_edge_cases();
     
-    printf("All string tests passed!\n");
+    printf("All 30 tests passed!\n");
     return 0;
 }

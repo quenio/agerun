@@ -53,7 +53,7 @@ int main(void) {
     remove("methodology.agerun");
     remove("agency.agerun");
     
-    printf("All interpreter fixture tests passed!\n");
+    printf("All 8 tests passed!\n");
     return 0;
 }
 

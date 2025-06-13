@@ -133,6 +133,6 @@ int main(void) {
     test_fixture_reset_system();
     test_fixture_check_memory();
     
-    printf("\nAll system fixture tests passed!\n");
+    printf("All 5 tests passed!\n");
     return 0;
 }

@@ -310,6 +310,6 @@ int main(void) {
     test_agent_creation();
     test_generic_resource_tracking();
     
-    printf("\nAll instruction fixture tests passed!\n");
+    printf("All 11 tests passed!\n");
     return 0;
 }

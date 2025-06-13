@@ -260,7 +260,11 @@ int main(void) {
     test_memory_report();
     
     // Print summary
-    printf("\nHeap Module Tests: %d of %d tests passed.\n", passed_tests, test_counter);
+    if (passed_tests == test_counter) {
+        printf("All heap tests passed!\n");
+    } else {
+        printf("\nHeap Module Tests: %d of %d tests passed.\n", passed_tests, test_counter);
+    }
     
     // The leak reporting test intentionally leaks memory
     // The leak should be detected by the memory report that's generated at exit

@@ -438,6 +438,6 @@ int main(void) {
     test_store_missing_method();
     test_store_id_preservation();
     
-    printf("\nAll agent store tests passed!\n");
+    printf("All 7 tests passed!\n");
     return 0;
 }

@@ -329,6 +329,6 @@ int main(void) {
     test_update_incompatible();
     test_update_no_agents();
     
-    printf("\nAll agent update tests passed!\n");
+    printf("All 6 tests passed!\n");
     return 0;
 }

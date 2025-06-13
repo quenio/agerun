@@ -243,6 +243,6 @@ int main(void) {
     ar__system__shutdown();
     
     // And report success
-    printf("All agent tests passed!\n");
+    printf("All 8 tests passed!\n");
     return 0;
 }

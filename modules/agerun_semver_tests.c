@@ -176,6 +176,6 @@ int main(void) {
     test_semver_matches_pattern();
     test_semver_find_latest_matching();
     
-    printf("All semver tests passed successfully!\n");
+    printf("All semver tests passed!\n");
     return 0;
 }

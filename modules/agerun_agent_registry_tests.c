@@ -244,6 +244,6 @@ int main(void) {
     // Check for memory leaks
     ar__heap__memory_report();
     
-    printf("\nAll agent registry tests passed!\n");
+    printf("All 7 tests passed!\n");
     return 0;
 }
