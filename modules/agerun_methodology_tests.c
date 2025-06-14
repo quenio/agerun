@@ -96,6 +96,9 @@ static void test_methodology_register_and_get(void) {
 static void test_methodology_save_load(void) {
     printf("Testing ar__methodology__save_methods() and ar__methodology__load_methods()...\n");
     
+    // Note: This test operates on the methodology module directly
+    // without initializing the system, avoiding lifecycle conflicts
+    
     // Given a persistent test method exists in the system
     const char *name = "save_load_method";
     const char *instructions = "message -> \"Save Load Method\"";
@@ -116,26 +119,8 @@ static void test_methodology_save_load(void) {
     // Then the save operation should succeed
     assert(save_result);
     
-    // When we reset the system
-    ar__system__shutdown();
-    
-    // And create a new method for initialization
-    const char *init_method = "methodology_save_load_test";
-    const char *init_instructions = "memory.result = \"Save Load Test\"";
-    
-    // Create method and register it with methodology 
-    method_t *own_init_method = ar__method__create(init_method, init_instructions, "1.0.0");
-    assert(own_init_method != NULL);
-    
-    // Register with methodology
-    ar__methodology__register_method(own_init_method);
-    own_init_method = NULL; // Mark as transferred
-    
-    // For test purposes, we assume registration succeeds and creates version "1.0.0"
-    const char *init_version = "1.0.0";
-    
-    // And re-initialize the system
-    ar__system__init(init_method, init_version);
+    // Clear the methodology to simulate a fresh start
+    ar__methodology__cleanup();
     
     // And load methods from disk
     bool load_result = ar__methodology__load_methods();
@@ -156,6 +141,9 @@ static void test_methodology_save_load(void) {
         // Persistent flag is no longer in the spec
         // assert(ar_method_is_persistent(method) == true);
     }
+    
+    // Clean up loaded methods to prevent memory leaks
+    ar__methodology__cleanup();
     
     printf("ar__methodology__save_methods() and ar__methodology__load_methods() tests passed!\n");
 }
@@ -242,11 +230,13 @@ int main(void) {
     // And we run all methodology tests
     test_methodology_get_method();
     test_methodology_register_and_get();
-    test_methodology_save_load();
     test_method_counts();
     
-    // Then we clean up the system
+    // Shutdown the system to clean up resources
     ar__system__shutdown();
+    
+    // Run persistence test (doesn't need system initialized)
+    test_methodology_save_load();
     
     // And report success
     printf("All 8 tests passed!\n");

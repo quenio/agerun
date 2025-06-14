@@ -121,6 +121,9 @@ static void test_method_run(void) {
 static void test_method_persistence(void) {
     printf("Testing method persistence...\n");
     
+    // Note: This test operates on the methodology module directly
+    // without initializing the system, avoiding lifecycle conflicts
+    
     // Create a persistent method
     const char *name = "persistent_method";
     const char *instructions = "message -> \"I am persistent\"";
@@ -155,27 +158,8 @@ static void test_method_persistence(void) {
     bool save_result = ar__methodology__save_methods();
     assert(save_result);
     
-    // Reset system
-    ar__system__shutdown();
-    
-    // Re-initialize with a default method - but avoid assertion on agent ID
-    // since we're testing method persistence, not agent creation
-    const char *init_method = "persistence_test_init";
-    const char *init_instructions = "memory.result = \"Persistence test\"";
-    
-    // Create method and register it with methodology 
-    method_t *own_init_method = ar__method__create(init_method, init_instructions, "1.0.0");
-    assert(own_init_method != NULL);
-    
-    // Register with methodology
-    ar__methodology__register_method(own_init_method);
-    own_init_method = NULL; // Mark as transferred
-    
-    // For test purposes, we assume registration succeeds and creates version 1.0.0
-    const char *init_version = "1.0.0";
-    
-    // Initialize but don't assert on the agent id
-    ar__system__init(init_method, init_version);
+    // Clear the methodology to simulate a fresh start
+    ar__methodology__cleanup();
     
     // Load methods from disk
     bool load_result = ar__methodology__load_methods();
@@ -220,6 +204,9 @@ static void test_method_persistence(void) {
         // assert(strcmp(ar__method__get_instructions(method2), instructions2) == 0);
     }
     
+    // Clean up loaded methods to prevent memory leaks
+    ar__methodology__cleanup();
+    
     printf("Method persistence tests passed!\n");
 }
 
@@ -248,10 +235,12 @@ int main(void) {
     test_method_create();
     test_method_create_with_previous_version();
     test_method_run();
-    test_method_persistence();
     
-    // Then we clean up the system
+    // Shutdown the system to clean up resources
     ar__system__shutdown();
+    
+    // Run persistence test (doesn't need system initialized)
+    test_method_persistence();
     
     // And report success
     printf("All 8 tests passed!\n");

@@ -83,10 +83,23 @@ bool ar__map__set(map_t *mut_map, const char *ref_key, void *ref_value) {
     for (int i = 0; i < MAP_SIZE; i++) {
         if (mut_map->entries[i].is_used && mut_map->entries[i].ref_key && 
             strcmp(mut_map->entries[i].ref_key, ref_key) == 0) {
-            // Just update the reference pointer
-            mut_map->entries[i].ref_value = ref_value;
+            if (ref_value == NULL) {
+                // Setting to NULL means removing the entry
+                mut_map->entries[i].is_used = false;
+                mut_map->entries[i].ref_key = NULL;
+                mut_map->entries[i].ref_value = NULL;
+                mut_map->count--;
+            } else {
+                // Just update the reference pointer
+                mut_map->entries[i].ref_value = ref_value;
+            }
             return true;
         }
+    }
+    
+    // If value is NULL and key doesn't exist, nothing to remove
+    if (ref_value == NULL) {
+        return true;
     }
     
     // Find empty slot

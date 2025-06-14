@@ -489,6 +489,7 @@ static void test_build_function(void) {
     data_t *mut_memory = ar__interpreter_fixture__get_agent_memory(own_fixture, agent_id);
     data_t *own_data_map = ar__data__create_map();
     ar__data__set_map_data(mut_memory, "data", own_data_map);
+    own_data_map = NULL; // Ownership transferred to memory
     
     assert(ar__interpreter_fixture__execute_instruction(own_fixture, agent_id, "memory.data.name := \"Alice\""));
     assert(ar__interpreter_fixture__execute_instruction(own_fixture, agent_id, "memory.data.count := 42"));

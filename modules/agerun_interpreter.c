@@ -797,6 +797,16 @@ static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t
                     // Could not find the next literal - parsing failed
                     ar__data__destroy(own_result);
                     own_result = ar__data__create_map();
+                    if (!own_result) {
+                        AR__HEAP__FREE(var_name);
+                        if (owns_input && own_input) {
+                            ar__data__destroy(own_input);
+                        }
+                        if (owns_template && own_template) {
+                            ar__data__destroy(own_template);
+                        }
+                        return false;
+                    }
                     AR__HEAP__FREE(var_name);
                     break;
                 }

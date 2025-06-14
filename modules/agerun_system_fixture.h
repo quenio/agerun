@@ -76,4 +76,11 @@ bool ar__system_fixture__check_memory(const system_fixture_t *ref_fixture);
  */
 void ar__system_fixture__reset_system(system_fixture_t *mut_fixture);
 
+/**
+ * Shuts down the system but preserves persistence files
+ * @param mut_fixture The fixture to use
+ * @note This is useful for persistence tests that need to verify data survives restarts
+ */
+void ar__system_fixture__shutdown_preserve_files(system_fixture_t *mut_fixture);
+
 #endif /* AGERUN_SYSTEM_FIXTURE_H */

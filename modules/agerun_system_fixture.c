@@ -147,3 +147,15 @@ void ar__system_fixture__reset_system(system_fixture_t *mut_fixture) {
     // Reinitialize
     ar__system__init(NULL, NULL);
 }
+
+void ar__system_fixture__shutdown_preserve_files(system_fixture_t *mut_fixture) {
+    if (!mut_fixture || !mut_fixture->initialized) {
+        return;
+    }
+    
+    // Just shutdown the system - this will save files
+    ar__system__shutdown();
+    
+    // Mark as not initialized since system is now shut down
+    mut_fixture->initialized = false;
+}

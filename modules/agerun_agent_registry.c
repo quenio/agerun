@@ -226,6 +226,10 @@ bool ar__agent_registry__unregister_id(agent_registry_t *mut_registry, int64_t a
         return false;
     }
     
+    // First, ensure the agent is untracked from the map
+    // This must be done before we destroy the ID string
+    ar__agent_registry__untrack_agent(mut_registry, agent_id);
+    
     // Find and remove the ID from the list
     void **items = ar__list__items(mut_registry->own_registered_ids);
     if (!items) {

@@ -89,13 +89,53 @@ else
     echo "Executable: ✗"
 fi
 
-# Step 6: Sanitize tests (optional)
+# Step 6: Sanitize tests
 echo
-echo "Sanitize tests (optional)..."
-if output=$(make test-sanitize 2>&1); then
-    echo "Sanitize: ✓"
+echo "Running sanitizer tests..."
+output=$(make test-sanitize 2>&1)
+sanitize_exit_code=$?
+
+# Count sanitizer test runs
+sanitize_total=$(echo "$output" | grep -c "^Running test: bin/")
+sanitize_passed=$(echo "$output" | grep -c "All .* tests passed")
+
+# Check if sanitizer tests failed to build
+build_failed=$(echo "$output" | grep -c "Undefined symbols for architecture\|ld: symbol.* not found")
+
+# Check for AddressSanitizer errors
+asan_errors=$(echo "$output" | grep -c "ERROR: AddressSanitizer:")
+heap_use_after_free=$(echo "$output" | grep -c "heap-use-after-free")
+stack_buffer_overflow=$(echo "$output" | grep -c "stack-buffer-overflow")
+heap_buffer_overflow=$(echo "$output" | grep -c "heap-buffer-overflow")
+memory_leaks=$(echo "$output" | grep -c "ERROR: LeakSanitizer:")
+
+if [ $build_failed -gt 0 ]; then
+    echo "Sanitizer: Build failed (missing sanitizer runtime) ⚠️"
+    echo "Note: This is a known issue on some macOS systems"
+elif [ $sanitize_exit_code -eq 0 ] && [ $asan_errors -eq 0 ]; then
+    echo "Sanitizer: $sanitize_total tests run, all passed ✓"
 else
-    echo "Sanitize: Known issue on macOS"
+    echo "Sanitizer: $sanitize_total tests run, ERRORS DETECTED ✗"
+    echo
+    echo "Sanitizer Report:"
+    echo "  - AddressSanitizer errors: $asan_errors"
+    if [ $heap_use_after_free -gt 0 ]; then
+        echo "    • Heap use-after-free: $heap_use_after_free"
+    fi
+    if [ $stack_buffer_overflow -gt 0 ]; then
+        echo "    • Stack buffer overflow: $stack_buffer_overflow"
+    fi
+    if [ $heap_buffer_overflow -gt 0 ]; then
+        echo "    • Heap buffer overflow: $heap_buffer_overflow"
+    fi
+    if [ $memory_leaks -gt 0 ]; then
+        echo "    • Memory leaks detected: $memory_leaks"
+    fi
+    
+    # Show first error details
+    echo
+    echo "First sanitizer error:"
+    echo "$output" | grep -A10 "ERROR: AddressSanitizer:" | head -15
 fi
 
 echo

@@ -82,13 +82,14 @@ void ar__interpreter_fixture__destroy(interpreter_fixture_t *own_fixture) {
         void **items = ar__list__items(own_fixture->own_agent_ids);
         if (items) {
             for (size_t i = 0; i < agent_count; i++) {
-                data_t *ref_id_data = (data_t *)items[i];
-                if (ref_id_data && ar__data__get_type(ref_id_data) == DATA_INTEGER) {
-                    int64_t agent_id = (int64_t)ar__data__get_integer(ref_id_data);
+                data_t *own_id_data = (data_t *)items[i];
+                if (own_id_data && ar__data__get_type(own_id_data) == DATA_INTEGER) {
+                    int64_t agent_id = (int64_t)ar__data__get_integer(own_id_data);
                     ar__agency__destroy_agent(agent_id);
+                    ar__data__destroy(own_id_data); // Destroy the integer data object
                 }
             }
-            free(items); // Free the array but not the items
+            AR__HEAP__FREE(items); // Free the array
         }
     }
     ar__list__destroy(own_fixture->own_agent_ids);
@@ -104,7 +105,7 @@ void ar__interpreter_fixture__destroy(interpreter_fixture_t *own_fixture) {
                     ar__data__destroy(own_data);
                 }
             }
-            free(items); // Free the array but not the items
+            AR__HEAP__FREE(items); // Free the array
         }
     }
     ar__list__destroy(own_fixture->own_tracked_data);

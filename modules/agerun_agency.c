@@ -168,13 +168,13 @@ bool ar__agency__destroy_agent(int64_t agent_id) {
         return false;
     }
     
-    // Find and untrack the agent
-    agent_t *own_agent = (agent_t*)ar__agent_registry__untrack_agent(g_own_registry, agent_id);
+    // Find the agent before unregistering
+    agent_t *own_agent = (agent_t*)ar__agent_registry__find_agent(g_own_registry, agent_id);
     if (!own_agent) {
         return false;
     }
     
-    // Unregister the ID
+    // Unregister the ID (this also untracks the agent)
     ar__agent_registry__unregister_id(g_own_registry, agent_id);
     
     // Destroy the agent

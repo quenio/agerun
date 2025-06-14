@@ -204,6 +204,7 @@ static void test_fixture_data_tracking(void) {
     // When we track additional data
     data_t *own_extra = ar__data__create_string("tracked");
     ar__interpreter_fixture__track_data(own_fixture, own_extra);
+    own_extra = NULL; // Ownership transferred to fixture
     
     // Then the fixture should clean up everything when destroyed
     ar__interpreter_fixture__destroy(own_fixture);
