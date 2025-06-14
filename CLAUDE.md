@@ -470,6 +470,31 @@ When reviewing tasks:
 - Verify working tree remains clean after operations
 - Follow the 4-step directory check process (Section 7) before running commands with relative paths
 
+### 13. Task Tool Usage Guidelines
+
+**Preventing Content Loss When Using Task Tool**:
+
+When working with the Task tool, follow these guidelines to prevent accidentally overwriting valuable content:
+
+1. **Read Before Write**: Always use the `Read` tool to examine files created by the `Task` tool before deciding to modify them. This ensures you know what content exists before making changes.
+
+2. **Use Edit Instead of Write**: When improving existing content, use the `Edit` tool to make specific changes rather than completely rewriting with `Write`. This preserves the original work while allowing improvements.
+
+3. **Clear Task Instructions**: When using the `Task` tool, be specific about whether you want it to:
+   - Create files (and then you'll review them)
+   - Just analyze and report back (and then you'll create files)
+   - Create drafts for you to refine
+
+4. **Document Workflow Intentions**: Before starting a task, clearly state your intended workflow:
+   - "I'll use Task to analyze, then create files myself"
+   - "I'll use Task to create files, then review and edit if needed"
+
+5. **Backup Before Overwrite**: If you do need to completely rewrite a file, first copy its contents to a temporary location or include the original content in your response before overwriting.
+
+6. **Trust Task Tool Output**: The Task tool is designed to create high-quality output. Trust its work and only make targeted improvements rather than assuming you need to rewrite everything.
+
+**Key Principle**: Always read and understand existing content before modifying it, even if you were involved in creating it originally.
+
 ## AgeRun Language Notes
 
 - No null type - use integer 0

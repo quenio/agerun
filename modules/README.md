@@ -714,7 +714,7 @@ The agent update module manages method version transitions for agents:
 
 ### System Module (`agerun_system`)
 
-The system module provides the high-level API and runtime environment for the entire AgeRun system:
+The [system module](agerun_system.md) provides the high-level API and runtime environment for the entire AgeRun system:
 
 - **Runtime Management**: Initializes and manages the overall system runtime
 - **Message Processing**: Processes messages between agents asynchronously
@@ -724,9 +724,11 @@ The system module provides the high-level API and runtime environment for the en
 - **Zero Memory Leaks**: Ensures proper cleanup of all system resources
 - **Depends on Multiple**: Integrates agent, method, methodology, agency, data, and list modules
 
+For detailed API documentation, see [agerun_system.md](agerun_system.md).
+
 ### Executable Module (`agerun_executable`)
 
-The executable module provides the main application entry point and example usage:
+The [executable module](agerun_executable.md) provides the main application entry point and example usage:
 
 - **Application Entry**: Implements the main() function for the AgeRun executable
 - **Example Usage**: Demonstrates how to use the AgeRun system API
@@ -734,6 +736,8 @@ The executable module provides the main application entry point and example usag
 - **Runtime Lifecycle**: Demonstrates proper system initialization and shutdown
 - **Zero Memory Leaks**: Example of leak-free application development with AgeRun
 - **Depends on System and Methodology**: Uses high-level system APIs for demonstration
+
+For detailed API documentation, see [agerun_executable.md](agerun_executable.md).
 
 ## Fixture Modules
 
