@@ -7,6 +7,8 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - ✅ Created agerun_instruction_tests.c with basic test infrastructure
   - ✅ Implemented tests for parsing assignment instructions
   - ✅ Implemented tests for parsing all function call instructions (send, if, parse, build, method, agent, destroy)
+  - ✅ Implemented tests for parsing function calls with assignment (all instruction types)
+  - ✅ Verified correct AST structure for all parsed instructions
   - ✅ All parsing tests pass with no memory leaks
 
 ## 2025-06-14
