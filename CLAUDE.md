@@ -393,12 +393,14 @@ When reviewing tasks:
 - Check `TODO.md` file in repository
 - Keep CLAUDE.md updated with new guidelines
 
-**Before Committing (MANDATORY CHECKLIST)**:
+**Before Committing (MANDATORY CHECKLIST - ALWAYS CHECK THIS)**:
 1. **Run Tests**: Ensure all changes work correctly and no memory leaks
 2. **Update TODO.md**: Mark completed tasks and add any new tasks identified
 3. **Update CHANGELOG.md**: Document completed milestones and achievements (NON-NEGOTIABLE)
 4. **Review Changes**: Use `git diff` to verify all changes are intentional
 5. **Then Commit**: Only after completing steps 1-4
+
+**IMPORTANT**: Always perform steps 1-4 BEFORE running `git commit`. Never skip the checklist.
 
 **Critical Reminders**:
 - CHANGELOG update is MANDATORY for every commit that completes tasks

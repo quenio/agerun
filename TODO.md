@@ -6,6 +6,17 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### Static Analysis Reporting in Makefile (Completed 2025-06-13)
+- [x] Fixed static analysis reporting in clean_build.sh
+- [x] Updated Makefile to run scan-build on individual files for proper analysis
+- [x] Added `--status-bugs` flag to ensure non-zero exit on bugs found
+- [x] Implemented per-file analysis approach for both library and test files
+- [x] Fixed grep pattern to handle both "bug" and "bugs" in scan-build output
+- [x] Enhanced clean_build.sh to show specific files and line numbers for issues
+- [x] Fixed all static analysis issues found in codebase
+- [x] Updated echo tests to reflect known ownership limitations in AgeRun language
+- [x] Achieved clean build with all static analysis passing
+
 ### Static Function Naming Convention Update (Completed 2025-06-11)
 - [x] Changed all static functions to use underscore prefix `_<function_name>`
 - [x] Updated all modules to follow Python-style private function convention
