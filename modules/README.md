@@ -164,6 +164,18 @@ agerun_system
 ├──c──> agerun_list
 └──c──> agerun_map
 
+agerun_expression_ast
+├──c──> agerun_list
+└──c──> agerun_heap
+
+agerun_expression_parser
+├──c──> agerun_expression_ast
+│       ├──c──> agerun_list
+│       └──c──> agerun_heap
+├──c──> agerun_list
+├──c──> agerun_string
+└──c──> agerun_heap
+
 Fixture Modules:
 agerun_method_fixture
 ├──c──> agerun_system
@@ -255,6 +267,12 @@ agerun_expression_tests
 
 agerun_expression_ast_tests
 ├──c──> agerun_expression_ast (module under test)
+├──c──> agerun_list
+└──c──> agerun_heap
+
+agerun_expression_parser_tests
+├──c──> agerun_expression_parser (module under test)
+├──c──> agerun_expression_ast
 ├──c──> agerun_list
 └──c──> agerun_heap
 
@@ -608,6 +626,19 @@ The [expression AST module](agerun_expression_ast.md) provides Abstract Syntax T
 - **Independent Design**: No dependencies on expression module, ensuring clean separation
 - **Opaque Types**: Uses opaque node structure to hide implementation details
 - **Depends on List**: Uses the list module for storing memory access path components
+
+### Expression Parser Module (`agerun_expression_parser`)
+
+The [expression parser module](agerun_expression_parser.md) provides a recursive descent parser for converting expression strings into ASTs:
+
+- **Stateful Parser**: Uses opaque parser structure to track position and errors
+- **Recursive Descent**: Implements proper operator precedence through recursive functions
+- **Error Reporting**: Provides detailed error messages with position information
+- **Complete Coverage**: Supports all AgeRun expression types (literals, memory access, binary ops)
+- **Proper Precedence**: Implements correct operator precedence and associativity
+- **Memory Safety**: Zero memory leaks with proper cleanup of temporary structures
+- **Depends on AST**: Uses expression_ast module for building parse trees
+- **Depends on List**: Uses list module for managing path components during parsing
 
 ### Instruction Module (`agerun_instruction`)
 
