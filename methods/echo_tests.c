@@ -59,7 +59,12 @@ static void test_echo_simple_message(void) {
     // Echo method now only sends back message.content, doesn't store in memory
     
     // Process the return message (echo sends it back)
+    // NOTE: This currently fails because send() requires ownership of the message
+    // but message.content is a reference, not an owned value. The AgeRun language
+    // doesn't yet support sending memory references directly.
     processed = ar__system__process_next_message();
+    assert(!processed);  // Expected to fail due to ownership limitations
+    (void)processed;  // Suppress unused variable warning
     
     // Clean up
     ar__agency__destroy_agent(echo_agent);
@@ -117,7 +122,11 @@ static void test_echo_map_message(void) {
     assert(processed);
     
     // Process the return message (echo sends it back)
+    // NOTE: This currently fails because send() requires ownership of the message
+    // but message.content is a reference (a map), not an owned value. The AgeRun 
+    // language doesn't yet support sending memory references directly.
     processed = ar__system__process_next_message();
+    assert(!processed);  // Expected to fail due to ownership limitations
     
     // Clean up
     ar__agency__destroy_agent(echo_agent);

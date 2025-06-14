@@ -1624,9 +1624,8 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
                 arg_len--;
             }
             
-            const char *arg_name = (i == 0) ? "Method name" : 
-                                   (i == 1) ? "Method instructions" : "Method version";
-            own_result->own_args[i] = AR__HEAP__MALLOC((size_t)(arg_len + 1), arg_name);
+            own_result->own_args[i] = AR__HEAP__MALLOC((size_t)(arg_len + 1), 
+                (i == 0) ? "Method name" : (i == 1) ? "Method instructions" : "Method version");
             if (!own_result->own_args[i]) {
                 ar__instruction__destroy_parsed(own_result);
                 return NULL;
@@ -1918,9 +1917,8 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
                 arg_len--;
             }
             
-            const char *arg_name = (i == 0) ? "Method name" : 
-                                   (i == 1) ? "Version" : "Context";
-            own_result->own_args[i] = AR__HEAP__MALLOC((size_t)(arg_len + 1), arg_name);
+            own_result->own_args[i] = AR__HEAP__MALLOC((size_t)(arg_len + 1), 
+                (i == 0) ? "Method name" : (i == 1) ? "Version" : "Context");
             if (!own_result->own_args[i]) {
                 ar__instruction__destroy_parsed(own_result);
                 return NULL;

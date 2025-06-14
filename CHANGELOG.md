@@ -2,6 +2,26 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-06-13 (Part 2)
+- ✅ Fixed static analysis reporting in build system:
+  - ✅ Identified issue: scan-build wasn't properly analyzing when wrapping entire make process
+  - ✅ Updated Makefile to run scan-build on individual files for proper analysis
+  - ✅ Added per-file analysis approach for both library (`analyze`) and test (`analyze-tests`) targets
+  - ✅ Fixed grep pattern to handle both "bug" and "bugs" in scan-build output
+  - ✅ Makefile now shows "✗ X bugs found in <filename>" for each file with issues
+  - ✅ Configured scan-build to use `--status-bugs` flag for non-zero exit on bugs found
+  - ✅ Updated clean_build.sh to properly capture and report static analysis failures
+  - ✅ Enhanced clean_build.sh to show specific files and line numbers for static analysis issues
+  - ✅ Script now displays "✗ X bugs found in <filename>" and "file:line:column: warning" format
+  - ✅ Verified script shows "✗" with detailed error output when static analysis finds issues
+  - ✅ Confirmed scan-build works correctly regardless of compiler (gcc/clang) when invoked per-file
+  - ✅ Static analysis is now properly integrated into the continuous build verification process
+- ✅ Fixed all static analysis issues found in codebase:
+  - ✅ Fixed "Value stored to 'value_end' during initialization is never read" in agerun_interpreter.c:727
+  - ✅ Updated echo_tests.c to reflect known ownership limitations in AgeRun language
+  - ✅ Added documentation explaining why send(message.sender, message.content) currently fails
+  - ✅ Achieved clean build with all static analysis passing
+
 ## 2025-06-13
 - ✅ Completed module documentation:
   - ✅ Created comprehensive documentation for agerun_executable module

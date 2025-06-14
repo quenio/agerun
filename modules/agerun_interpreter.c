@@ -724,7 +724,7 @@ static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t
                 }
                 
                 // Extract value from input
-                const char *value_end = input_ptr;
+                const char *value_end;
                 if (next_literal_len > 0) {
                     // Extract the next literal text
                     char *next_literal = AR__HEAP__MALLOC(next_literal_len + 1, "Parse next literal");
