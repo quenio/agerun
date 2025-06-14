@@ -189,8 +189,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ### HIGH - Fix Code Smells (After Circular Dependencies)
 - [ ] Implement instruction module tests (BEFORE expression refactoring):
-  - [ ] Create agerun_instruction_tests.c focusing on parsing functionality
-  - [ ] Test parsing of assignment instructions
+  - [x] Create agerun_instruction_tests.c focusing on parsing functionality (Completed 2025-06-14)
+  - [x] Test parsing of assignment instructions (Completed 2025-06-14)
   - [ ] Test parsing of function call instructions
   - [ ] Test parsing of function calls with assignment
   - [ ] Test error handling and reporting
