@@ -203,18 +203,28 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] Implemented accessor functions with proper ownership semantics
     - [x] Added comprehensive tests following TDD methodology
     - [x] Renamed module from expression_ast_node to expression_ast for brevity
-  - [ ] Create expression_parser module for AST generation
-    - [ ] Design opaque expression_parser_t structure to track parsing state
-    - [ ] Implement ar__expression_parser__create(const char*) to create parser instance
-    - [ ] Implement ar__expression_parser__destroy() for cleanup
-    - [ ] Parser functions take only parser instance parameter
-    - [ ] Return AST nodes using expression_ast module
-    - [ ] No dependency on expression module for better separation
-  - [ ] Change ar__expression__evaluate to use parser and interpreter
-  - [ ] Move expression execution logic to interpreter module
+  - [x] Create expression_parser module for AST generation (Completed 2025-06-14)
+    - [x] Design opaque expression_parser_t structure to track parsing state
+    - [x] Implement ar__expression_parser__create(const char*) to create parser instance
+    - [x] Implement ar__expression_parser__destroy() for cleanup
+    - [x] Parser functions take only parser instance parameter
+    - [x] Return AST nodes using expression_ast module
+    - [x] No dependency on expression module for better separation
+    - [x] All 20 tests pass with zero memory leaks
+  - [ ] Extract expression execution from expression module and move to interpreter:
+    - [ ] Add ar__interpreter__evaluate_expression_ast() function to interpreter module
+    - [ ] Move all expression evaluation logic from expression to interpreter
+    - [ ] Update interpreter to handle expression AST nodes as input
+    - [ ] Ensure interpreter can evaluate all expression types (literals, memory access, binary ops)
+    - [ ] Update tests to verify expression evaluation through interpreter
+  - [ ] Integrate parser into expression module:
+    - [ ] Change ar__expression__parse() to use expression_parser module
+    - [ ] Remove old parsing logic from expression module
+    - [ ] Update ar__expression__evaluate() to parse then pass AST to interpreter
+    - [ ] Ensure backward compatibility for existing callers
+    - [ ] Update expression module tests for new implementation
   - [ ] Update all callers to use new AST-based API
   - [ ] Remove ar__expression__take_ownership (no longer needed with AST)
-  - [ ] Add comprehensive tests for parser
   - [ ] Ensure clean separation between parsing and execution phases
 - [ ] Refactor instruction module to separate parsing from execution (similar to expression module):
   - [ ] Create instruction AST structures:
