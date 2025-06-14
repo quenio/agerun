@@ -140,11 +140,12 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Updated system module to use interpreter
   - [x] Moved ar__instruction__run implementation to interpreter module
   - [x] Removed methodology dependency from instruction module
-- [ ] Resolve Instruction/Agent/Methodology cycles:
-  - [ ] Instruction depends on both agent and methodology
-  - [ ] Agent depends on methodology which depends on method
-  - [ ] Method depends on instruction (creating multiple cycles)
-  - [ ] Consider a more layered architecture with clear boundaries
+- [x] Resolve Instruction/Agent/Methodology cycles (Completed 2025-06-14):
+  - [x] Removed disabled code blocks (#if 0) containing methodology calls from instruction module
+  - [x] Instruction module now only handles parsing, no execution
+  - [x] Interpreter module handles all execution including methodology and agent operations
+  - [x] Eliminated circular dependency: Instruction no longer depends on Agent or Methodology
+  - [x] Clean separation achieved between parsing (instruction) and execution (interpreter)
 - [ ] Update the module dependency tree documentation after resolution
 
 ### HIGH - Fix Code Smells (After Circular Dependencies)
