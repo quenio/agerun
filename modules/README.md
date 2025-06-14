@@ -253,6 +253,11 @@ agerun_expression_tests
 ├──c──> agerun_map
 └──c──> agerun_heap
 
+agerun_expression_ast_tests
+├──c──> agerun_expression_ast (module under test)
+├──c──> agerun_list
+└──c──> agerun_heap
+
 agerun_instruction_tests
 ├──c──> agerun_instruction (module under test)
 ├──c──> agerun_data
@@ -590,6 +595,19 @@ The [expression module](agerun_expression.md) provides a recursive descent parse
 - **Opaque Type**: Uses an opaque context structure to encapsulate expression evaluation state
 - **Recursive Parsing**: Uses recursive descent parsing for nested expressions
 - **Depends on Data**: Uses the data module for storing and manipulating values
+
+### Expression AST Module (`agerun_expression_ast`)
+
+The [expression AST module](agerun_expression_ast.md) provides Abstract Syntax Tree structures for representing parsed expressions:
+
+- **AST Node Types**: Defines structures for all expression types (literals, memory access, binary operations)
+- **Type-Safe Creation**: Provides creation functions for each node type with proper ownership semantics
+- **Accessor Functions**: Exposes node data through type-safe accessor functions
+- **Memory Management**: Implements recursive destruction with proper cleanup of all child nodes
+- **Ownership Transfer**: Array accessor follows ar__list__items pattern, transferring ownership to caller
+- **Independent Design**: No dependencies on expression module, ensuring clean separation
+- **Opaque Types**: Uses opaque node structure to hide implementation details
+- **Depends on List**: Uses the list module for storing memory access path components
 
 ### Instruction Module (`agerun_instruction`)
 

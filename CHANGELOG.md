@@ -2,6 +2,18 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-06-14 (Part 2)
+- ✅ Created expression AST module:
+  - ✅ Implemented expression_ast module with comprehensive AST structures
+  - ✅ Defined node types for all expression types: literals (int, double, string), memory access, binary operations
+  - ✅ Created type-safe node creation functions with proper ownership semantics
+  - ✅ Implemented accessor functions that transfer array ownership following ar__list__items pattern
+  - ✅ Added recursive destruction with proper memory cleanup
+  - ✅ Wrote comprehensive tests using Given/When/Then structure
+  - ✅ All 15 tests pass with zero memory leaks
+  - ✅ Module has no dependencies on expression module, ensuring clean separation
+  - ✅ Renamed module from expression_ast_node to expression_ast for brevity
+
 ## 2025-06-14
 - ✅ Completed instruction module tests:
   - ✅ Created agerun_instruction_tests.c with comprehensive test infrastructure

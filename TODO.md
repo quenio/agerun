@@ -197,13 +197,21 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Verify parsed AST structure correctness (Completed 2025-06-14)
   - [x] Initial error handling tests revealed parser is too permissive (Completed 2025-06-14)
 - [ ] Refactor expression module to separate parsing from execution:
-  - [ ] Create expression AST structures (literal, memory access, arithmetic, comparison)
-  - [ ] Change ar__expression__evaluate to return AST instead of evaluated result
+  - [x] Create expression AST structures (literal, memory access, arithmetic, comparison) (Completed 2025-06-14)
+    - [x] Created new expression_ast module (renamed from expression_ast_node) with all AST node types
+    - [x] Implemented creation functions for all node types
+    - [x] Implemented accessor functions with proper ownership semantics
+    - [x] Added comprehensive tests following TDD methodology
+    - [x] Renamed module from expression_ast_node to expression_ast for brevity
+  - [ ] Create expression_parser module for AST generation
+    - [ ] Parser functions take string and offset parameters (not expression context)
+    - [ ] Return AST nodes using expression_ast module
+    - [ ] No dependency on expression module for better separation
+  - [ ] Change ar__expression__evaluate to use parser and interpreter
   - [ ] Move expression execution logic to interpreter module
   - [ ] Update all callers to use new AST-based API
   - [ ] Remove ar__expression__take_ownership (no longer needed with AST)
-  - [ ] Simplify expression context to only handle parsing
-  - [ ] Add comprehensive tests for AST generation
+  - [ ] Add comprehensive tests for parser
   - [ ] Ensure clean separation between parsing and execution phases
 - [ ] Break down the massive ar_instruction_run function (2500+ lines):
   - [ ] Extract memory access operations
