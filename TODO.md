@@ -204,7 +204,10 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] Added comprehensive tests following TDD methodology
     - [x] Renamed module from expression_ast_node to expression_ast for brevity
   - [ ] Create expression_parser module for AST generation
-    - [ ] Parser functions take string and offset parameters (not expression context)
+    - [ ] Design opaque expression_parser_t structure to track parsing state
+    - [ ] Implement ar__expression_parser__create(const char*) to create parser instance
+    - [ ] Implement ar__expression_parser__destroy() for cleanup
+    - [ ] Parser functions take only parser instance parameter
     - [ ] Return AST nodes using expression_ast module
     - [ ] No dependency on expression module for better separation
   - [ ] Change ar__expression__evaluate to use parser and interpreter
@@ -224,7 +227,10 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [ ] Add recursive destruction for proper memory cleanup
     - [ ] Write comprehensive tests following TDD methodology
   - [ ] Create instruction_parser module for AST generation:
-    - [ ] Parser functions take string and offset parameters (not instruction context)
+    - [ ] Design opaque instruction_parser_t structure to track parsing state
+    - [ ] Implement ar__instruction_parser__create(const char*) to create parser instance
+    - [ ] Implement ar__instruction_parser__destroy() for cleanup
+    - [ ] Parser functions take only parser instance parameter
     - [ ] Return AST nodes using instruction_ast module
     - [ ] No dependency on instruction module for better separation
     - [ ] Implement ar__instruction_parser__parse() main entry point
