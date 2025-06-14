@@ -327,7 +327,28 @@ This prevents common errors like:
 - Incorrect relative paths
 - Wasted time debugging non-existent problems
 
-### 8. Debug and Analysis
+### 8. Backup File Handling
+
+**NEVER Create Backup Files**:
+- Git already provides version history - use `git diff` and `git show` instead
+- If you absolutely must create a backup:
+  1. First check `.gitignore` for appropriate patterns
+  2. Use extensions already in `.gitignore` if possible
+  3. Or add the pattern to `.gitignore` BEFORE creating the file
+  4. Delete backup files immediately after use
+
+**Better Alternatives**:
+- Use `git stash` to temporarily save changes
+- Create a branch for experimental changes
+- Use `git diff > changes.patch` to save a patch file (if .patch is in .gitignore)
+- Simply rely on git's reflog for recovery
+
+**If Backup Files Are Accidentally Staged**:
+- Use `git reset HEAD <file>` to unstage
+- Or `git rm --cached <file>` to remove from staging
+- NEVER commit them
+
+### 9. Debug and Analysis
 
 **Memory Debugging**:
 - Use ASan via `make test-sanitize`
@@ -366,7 +387,7 @@ This prevents common errors like:
   - Not noticing that later tests are passing when run from correct directory
   - Jumping to fix code before verifying what's actually happening with debug output
 
-### 9. Agent Lifecycle
+### 10. Agent Lifecycle
 
 **Critical Points**:
 - Agents receive `__wake__` on creation
@@ -374,7 +395,7 @@ This prevents common errors like:
 - ALWAYS process messages after sending to prevent leaks
 - Call `ar__system__process_next_message()` after `ar__agent__send()`
 
-### 10. Building Individual Tests
+### 11. Building Individual Tests
 
 Always use make to build tests:
 ```bash
@@ -392,7 +413,7 @@ Never compile directly with gcc.
   3. Run the test automatically from the bin directory
   4. Generate a memory report specific to that test
 
-### 11. Session Management
+### 12. Session Management
 
 When reviewing tasks:
 - Check session todo list with `TodoRead`
@@ -404,15 +425,17 @@ When reviewing tasks:
 2. **Update TODO.md**: Mark completed tasks and add any new tasks identified
 3. **Update CHANGELOG.md**: Document completed milestones and achievements (NON-NEGOTIABLE)
 4. **Review Changes**: Use `git diff` to verify all changes are intentional
-5. **Then Commit**: Only after completing steps 1-4
+5. **Check for temporary/backup files**: NEVER commit backup files (*.backup, *.bak, *.tmp, etc.)
+6. **Then Commit**: Only after completing steps 1-5
 
-**IMPORTANT**: Always perform steps 1-4 BEFORE running `git commit`. Never skip the checklist.
+**IMPORTANT**: Always perform steps 1-5 BEFORE running `git commit`. Never skip the checklist.
 
 **Critical Reminders**:
 - CHANGELOG update is MANDATORY for every commit that completes tasks
 - Always check this checklist BEFORE running `git commit`
-- Build this mental model: Changes → Tests → CHANGELOG → Commit
+- Build this mental model: Changes → Tests → CHANGELOG → Check for backups → Commit
 - Treat CHANGELOG updates as part of the work, not as optional documentation
+- NEVER commit temporary or backup files to version control
 
 **After Completing Major Tasks**:
 - Document completion date in TODO.md (e.g., "Completed 2025-06-11")
@@ -420,7 +443,7 @@ When reviewing tasks:
 - Include brief summary of what was accomplished
 - Update CLAUDE.md with any new patterns or learnings from the session
 
-### 12. Refactoring Patterns
+### 13. Refactoring Patterns
 
 **Visitor Pattern to List-Based**:
 - When refactoring from visitor pattern, use list-based approach for better memory management
@@ -431,7 +454,7 @@ When reviewing tasks:
 - Create focused modules with single responsibilities
 - Example: Split agency (850+ lines) into:
   - agent_registry (ID management)
-  - agent_store (persistence)
+  - agent_store (persistence)  
   - agent_update (version updates)
   - agency (81-line facade coordinating the others)
 
@@ -451,13 +474,13 @@ When reviewing tasks:
 - **Examples from naming convention refactoring**: 
   - Module functions: `sed 's/ar_data_/ar__data__/g'`
   - Static functions: `sed -E 's/^static ([a-zA-Z][a-zA-Z0-9_]*)\(/static _\1(/g'`
-  - Function calls: `sed -i.bak 's/\bfunction_name(/\b_function_name(/g'`
+  - Function calls: `sed 's/\bfunction_name(/\b_function_name(/g' file > file.tmp && mv file.tmp file`
   - Macros: `sed 's/AR_HEAP_/AR__HEAP__/g'`
 - **Important Considerations**:
   - Global variables may get accidentally renamed - revert these manually
   - Function calls within renamed functions need separate updates
   - Always compile and test after bulk renaming to catch issues
-  - Use `-i.bak` to create backups when editing in place
+  - NEVER use `-i.bak` as it creates backup files - use temporary files instead
 
 **Static Function Renaming Workflow**:
 1. **Identify target files**: Exclude test files when renaming static functions
@@ -474,7 +497,7 @@ When reviewing tasks:
    ```
 3. **Update function calls**: Use more specific patterns to avoid renaming unrelated items
    ```bash
-   sed -i.bak 's/\([^_]\)function_name(/\1_function_name(/g' file.c
+   sed 's/\([^_]\)function_name(/\1_function_name(/g' file.c > file.c.tmp && mv file.c.tmp file.c
    ```
 4. **Fix any double underscores**: Sometimes sed patterns can create `__function` instead of `_function`
 5. **Revert global variable changes**: Check for and fix any accidentally renamed globals
@@ -486,7 +509,7 @@ When reviewing tasks:
 - Verify working tree remains clean after operations
 - Follow the 4-step directory check process (Section 7) before running commands with relative paths
 
-### 13. Task Tool Usage Guidelines
+### 14. Task Tool Usage Guidelines
 
 **Preventing Content Loss When Using Task Tool**:
 
