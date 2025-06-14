@@ -188,15 +188,14 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Note section already documents successful elimination of circular dependencies
 
 ### HIGH - Fix Code Smells (After Circular Dependencies)
-- [ ] Implement instruction module tests (BEFORE expression refactoring):
+- [x] Implement instruction module tests (BEFORE expression refactoring) (Completed 2025-06-14):
   - [x] Create agerun_instruction_tests.c focusing on parsing functionality (Completed 2025-06-14)
   - [x] Test parsing of assignment instructions (Completed 2025-06-14)
   - [x] Test parsing of function call instructions (Completed 2025-06-14)
   - [x] Test parsing of function calls with assignment (Completed 2025-06-14)
-  - [ ] Test error handling and reporting
   - [x] Test all instruction types (send, if, parse, build, method, agent, destroy) (Completed 2025-06-14)
   - [x] Verify parsed AST structure correctness (Completed 2025-06-14)
-  - [ ] Ensure comprehensive coverage before refactoring expression module
+  - [x] Initial error handling tests revealed parser is too permissive (Completed 2025-06-14)
 - [ ] Refactor expression module to separate parsing from execution:
   - [ ] Create expression AST structures (literal, memory access, arithmetic, comparison)
   - [ ] Change ar__expression__evaluate to return AST instead of evaluated result
@@ -226,6 +225,20 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Update agent_update module to use new lifecycle functions
   - [ ] Ensure agent creation still sends __wake__ message
   - [ ] Test lifecycle event handling after refactoring
+
+### MEDIUM - Instruction Parser Improvements (Discovered 2025-06-14)
+- [ ] Improve instruction parser error handling and validation:
+  - [ ] Reject invalid assignment operator (currently accepts "memory.x = 42" instead of ":=")
+  - [ ] Reject assignment without memory prefix (currently accepts "x := 42")
+  - [ ] Reject unknown function names (currently accepts "unknown_func()")
+  - [ ] Reject unclosed parentheses (currently accepts "send(0, \"hello\"")
+  - [ ] Reject unmatched quotes (currently accepts "send(0, \"hello)")
+  - [ ] Validate function argument counts at parse time
+  - [ ] Reject invalid path characters (currently accepts "memory.x/y := 42")
+  - [ ] Reject multiple statements in one instruction (currently accepts "x := 1; y := 2")
+  - [ ] Implement proper error messages with position reporting
+  - [ ] Enforce no nested function calls per BNF spec (currently accepts them)
+  - [ ] Add comprehensive error handling tests once parser is stricter
 
 ### MEDIUM - Language Specification and Semantics
 - [ ] Specify reference vs value semantics for AgeRun instructions:

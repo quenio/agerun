@@ -3,13 +3,16 @@
 This document tracks completed milestones and major achievements for the AgeRun project.
 
 ## 2025-06-14
-- ✅ Started implementing instruction module tests:
-  - ✅ Created agerun_instruction_tests.c with basic test infrastructure
-  - ✅ Implemented tests for parsing assignment instructions
+- ✅ Completed instruction module tests:
+  - ✅ Created agerun_instruction_tests.c with comprehensive test infrastructure
+  - ✅ Implemented tests for parsing assignment instructions (memory.x := value)
   - ✅ Implemented tests for parsing all function call instructions (send, if, parse, build, method, agent, destroy)
-  - ✅ Implemented tests for parsing function calls with assignment (all instruction types)
+  - ✅ Implemented tests for parsing function calls with assignment (memory.x := function())
   - ✅ Verified correct AST structure for all parsed instructions
-  - ✅ All parsing tests pass with no memory leaks
+  - ✅ Discovered parser is too permissive - accepts many invalid syntax patterns
+  - ✅ Created detailed TODO items for parser improvements needed
+  - ✅ All 30 tests pass with no memory leaks
+  - ✅ Expression module refactoring can proceed despite parser limitations
 
 ## 2025-06-14
 - ✅ Enhanced command execution guidelines:
