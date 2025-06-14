@@ -10,6 +10,10 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - ✅ Achieved 100% documentation coverage - all 24 modules now have documentation
   - ✅ Added Task Tool Usage Guidelines to CLAUDE.md to prevent content loss
   - ✅ Established best practices for working with the Task tool
+- ✅ Enhanced commit workflow guidelines:
+  - ✅ Made CHANGELOG updates mandatory for task-completing commits
+  - ✅ Created explicit pre-commit checklist in CLAUDE.md
+  - ✅ Established "Changes → Tests → CHANGELOG → Commit" mental model
 
 ## 2025-06-12
 - ✅ Completed parse() and build() function implementations:
