@@ -6,7 +6,14 @@
       "Bash(make:*)",
       "Bash(make:*)",
       "Bash(./clean_build.sh:*)",
-      "Bash(awk:*)"
+      "Bash(awk:*)",
+      "Bash(nm:*)",
+      "Bash(od:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(make:bin/agerun_*_tests)",
+      "Bash(cd:*)"
     ],
     "deny": []
   },

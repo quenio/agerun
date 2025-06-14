@@ -315,6 +315,12 @@ When executing any command, especially build/test commands, follow this 4-step p
 3. Verify you're in the correct directory: `pwd`
 4. Only then run the command you want
 
+**Directory Navigation Rules**:
+- **ALWAYS use full/absolute paths with `cd`**: Never use relative paths like `cd bin` or `cd ..`
+- **Correct**: `cd /Users/quenio/Repos/agerun/bin`
+- **Incorrect**: `cd bin`, `cd ../modules`, `cd ./tests`
+- **Rationale**: Prevents confusion about current location and ensures commands work regardless of starting directory
+
 This prevents common errors like:
 - Running tests from wrong directory
 - File not found errors

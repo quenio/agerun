@@ -2,6 +2,18 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-06-14
+- ✅ Enhanced command execution guidelines:
+  - ✅ Added mandatory rule to always use full/absolute paths with `cd` command
+  - ✅ Updated CLAUDE.md Section 7 with directory navigation rules
+  - ✅ Added examples of correct usage (e.g., `cd /Users/quenio/Repos/agerun/bin`)
+  - ✅ Added examples of incorrect usage (e.g., `cd bin`, `cd ..`, `cd ./tests`)
+  - ✅ Documented rationale: prevents confusion and ensures commands work from any starting directory
+- ✅ Updated Claude settings to allow additional bash commands:
+  - ✅ Added permissions for `nm`, `od`, `cat`, `head`, `tail` commands
+  - ✅ Added permission for `make bin/agerun_*_tests` pattern
+  - ✅ Added permission for `cd` command
+
 ## 2025-06-13 (Part 2)
 - ✅ Fixed static analysis reporting in build system:
   - ✅ Identified issue: scan-build wasn't properly analyzing when wrapping entire make process
