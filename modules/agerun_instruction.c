@@ -525,7 +525,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
             ar__instruction__destroy_parsed(own_result);
             return NULL;
         }
-        memcpy(own_result->own_args[0], ref_instruction + arg_start, arg_len);
+        memcpy(own_result->own_args[0], ref_instruction + arg_start, (size_t)arg_len);
         own_result->own_args[0][arg_len] = '\0';
         own_result->arg_count = 1;
         
@@ -566,7 +566,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
             ar__instruction__destroy_parsed(own_result);
             return NULL;
         }
-        memcpy(own_result->own_args[1], ref_instruction + arg_start, arg_len);
+        memcpy(own_result->own_args[1], ref_instruction + arg_start, (size_t)arg_len);
         own_result->own_args[1][arg_len] = '\0';
         own_result->arg_count = 2;
         
@@ -639,7 +639,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
                 ar__instruction__destroy_parsed(own_result);
                 return NULL;
             }
-            memcpy(own_result->own_args[i], ref_instruction + arg_start, arg_len);
+            memcpy(own_result->own_args[i], ref_instruction + arg_start, (size_t)arg_len);
             own_result->own_args[i][arg_len] = '\0';
             own_result->arg_count++;
             
@@ -872,7 +872,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
             ar__instruction__destroy_parsed(own_result);
             return NULL;
         }
-        memcpy(own_result->own_args[0], ref_instruction + arg_start, arg_len);
+        memcpy(own_result->own_args[0], ref_instruction + arg_start, (size_t)arg_len);
         own_result->own_args[0][arg_len] = '\0';
         own_result->arg_count = 1;
         
@@ -913,7 +913,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
             ar__instruction__destroy_parsed(own_result);
             return NULL;
         }
-        memcpy(own_result->own_args[1], ref_instruction + arg_start, arg_len);
+        memcpy(own_result->own_args[1], ref_instruction + arg_start, (size_t)arg_len);
         own_result->own_args[1][arg_len] = '\0';
         own_result->arg_count = 2;
         
@@ -1236,7 +1236,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
             ar__instruction__destroy_parsed(own_result);
             return NULL;
         }
-        memcpy(own_result->own_args[0], ref_instruction + arg_start, arg_len);
+        memcpy(own_result->own_args[0], ref_instruction + arg_start, (size_t)arg_len);
         own_result->own_args[0][arg_len] = '\0';
         own_result->arg_count = 1;
         
@@ -1285,7 +1285,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
             ar__instruction__destroy_parsed(own_result);
             return NULL;
         }
-        memcpy(own_result->own_args[1], ref_instruction + arg_start, arg_len);
+        memcpy(own_result->own_args[1], ref_instruction + arg_start, (size_t)arg_len);
         own_result->own_args[1][arg_len] = '\0';
         own_result->arg_count = 2;
         
@@ -1631,7 +1631,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
                 ar__instruction__destroy_parsed(own_result);
                 return NULL;
             }
-            memcpy(own_result->own_args[i], ref_instruction + arg_start, arg_len);
+            memcpy(own_result->own_args[i], ref_instruction + arg_start, (size_t)arg_len);
             own_result->own_args[i][arg_len] = '\0';
             own_result->arg_count++;
             
@@ -1925,7 +1925,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
                 ar__instruction__destroy_parsed(own_result);
                 return NULL;
             }
-            memcpy(own_result->own_args[i], ref_instruction + arg_start, arg_len);
+            memcpy(own_result->own_args[i], ref_instruction + arg_start, (size_t)arg_len);
             own_result->own_args[i][arg_len] = '\0';
             own_result->arg_count++;
             
@@ -2210,7 +2210,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
             ar__instruction__destroy_parsed(own_result);
             return NULL;
         }
-        memcpy(own_result->own_args[0], ref_instruction + arg_start, arg_len);
+        memcpy(own_result->own_args[0], ref_instruction + arg_start, (size_t)arg_len);
         own_result->own_args[0][arg_len] = '\0';
         own_result->arg_count = 1;
         
@@ -2250,7 +2250,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
                 ar__instruction__destroy_parsed(own_result);
                 return NULL;
             }
-            memcpy(own_result->own_args[1], ref_instruction + arg_start, arg_len);
+            memcpy(own_result->own_args[1], ref_instruction + arg_start, (size_t)arg_len);
             own_result->own_args[1][arg_len] = '\0';
             own_result->arg_count = 2;
             

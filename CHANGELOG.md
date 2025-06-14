@@ -14,6 +14,10 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - ✅ Made CHANGELOG updates mandatory for task-completing commits
   - ✅ Created explicit pre-commit checklist in CLAUDE.md
   - ✅ Established "Changes → Tests → CHANGELOG → Commit" mental model
+- ✅ Fixed sign conversion warnings in instruction module:
+  - ✅ Fixed 11 instances of implicit int to size_t conversion in memcpy calls
+  - ✅ Sanitizer build now compiles successfully
+  - ✅ Discovered heap-use-after-free issue in agency tests (needs investigation)
 
 ## 2025-06-12
 - ✅ Completed parse() and build() function implementations:
