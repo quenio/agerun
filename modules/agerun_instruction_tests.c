@@ -9,54 +9,7 @@
 #include "agerun_map.h"
 #include "agerun_heap.h"
 
-// Test helper functions
-#if 0 // Will be used when we add more tests
-static void test_parse_valid_instruction(const char *instruction, instruction_type_t expected_type) {
-    // Given an instruction context with empty memory, context, and message
-    data_t *mut_memory = ar__data__create_map();
-    assert(mut_memory != NULL);
-    
-    instruction_context_t *mut_ctx = ar__instruction__create_context(mut_memory, NULL, NULL);
-    assert(mut_ctx != NULL);
-    
-    // When parsing the instruction
-    parsed_instruction_t *own_parsed = ar__instruction__parse(instruction, mut_ctx);
-    
-    // Then the instruction should be parsed successfully
-    assert(own_parsed != NULL);
-    assert(ar__instruction__get_type(own_parsed) == expected_type);
-    
-    // Cleanup
-    ar__instruction__destroy_parsed(own_parsed);
-    ar__instruction__destroy_context(mut_ctx);
-    ar__data__destroy(mut_memory);
-}
-
-static void test_parse_invalid_instruction(const char *instruction) {
-    // Given an instruction context with empty memory
-    data_t *mut_memory = ar__data__create_map();
-    assert(mut_memory != NULL);
-    
-    instruction_context_t *mut_ctx = ar__instruction__create_context(mut_memory, NULL, NULL);
-    assert(mut_ctx != NULL);
-    
-    // When parsing the invalid instruction
-    parsed_instruction_t *own_parsed = ar__instruction__parse(instruction, mut_ctx);
-    
-    // Then parsing should fail
-    assert(own_parsed == NULL);
-    
-    // And there should be an error message
-    const char *error_msg = ar__instruction__get_last_error(mut_ctx);
-    assert(error_msg != NULL || own_parsed == NULL); // Either error message or just NULL result
-    
-    // Cleanup
-    ar__instruction__destroy_context(mut_ctx);
-    ar__data__destroy(mut_memory);
-}
-#endif
-
-// Test functions will be added here incrementally
+// Test functions
 
 static void test_parse_assignment_instructions(void) {
     // Given an instruction context with memory
@@ -158,6 +111,233 @@ static void test_parse_assignment_instructions(void) {
     ar__data__destroy(mut_memory);
 }
 
+static void test_parse_function_call_instructions(void) {
+    // Given an instruction context with memory
+    data_t *mut_memory = ar__data__create_map();
+    assert(mut_memory != NULL);
+    
+    instruction_context_t *mut_ctx = ar__instruction__create_context(mut_memory, NULL, NULL);
+    assert(mut_ctx != NULL);
+    
+    // Test 1: Simple send function call
+    {
+        // When parsing a send function call
+        parsed_instruction_t *own_parsed = ar__instruction__parse("send(0, \"Hello\")", mut_ctx);
+        
+        // Then it should parse successfully as a function call
+        assert(own_parsed != NULL);
+        assert(ar__instruction__get_type(own_parsed) == INST_SEND);
+        
+        // Verify function call details
+        const char *function_name = NULL;
+        const char **args = NULL;
+        int arg_count = 0;
+        const char *result_path = NULL;
+        
+        bool is_function = ar__instruction__get_function_call(own_parsed, &function_name, &args, &arg_count, &result_path);
+        assert(is_function == true);
+        assert(strcmp(function_name, "send") == 0);
+        assert(arg_count == 2);
+        assert(args != NULL);
+        assert(strcmp(args[0], "0") == 0);
+        assert(strcmp(args[1], "\"Hello\"") == 0);
+        assert(result_path == NULL);  // No assignment
+        
+        ar__instruction__destroy_parsed(own_parsed);
+    }
+    
+    // Test 2: Parse function call
+    {
+        // When parsing a parse function call
+        parsed_instruction_t *own_parsed = ar__instruction__parse("parse(\"name={name}\", \"name=John\")", mut_ctx);
+        
+        // Then it should parse successfully
+        assert(own_parsed != NULL);
+        assert(ar__instruction__get_type(own_parsed) == INST_PARSE);
+        
+        const char *function_name = NULL;
+        const char **args = NULL;
+        int arg_count = 0;
+        const char *result_path = NULL;
+        
+        bool is_function = ar__instruction__get_function_call(own_parsed, &function_name, &args, &arg_count, &result_path);
+        assert(is_function == true);
+        assert(strcmp(function_name, "parse") == 0);
+        assert(arg_count == 2);
+        assert(strcmp(args[0], "\"name={name}\"") == 0);
+        assert(strcmp(args[1], "\"name=John\"") == 0);
+        assert(result_path == NULL);
+        
+        ar__instruction__destroy_parsed(own_parsed);
+    }
+    
+    // Test 3: Build function call
+    {
+        // Add a map value for the build function to reference
+        data_t *own_values = ar__data__create_map();
+        ar__data__set_map_string(own_values, "name", "Alice");
+        ar__data__set_map_data(mut_memory, "values", own_values);
+        
+        // When parsing a build function call
+        parsed_instruction_t *own_parsed = ar__instruction__parse("build(\"Hello {name}\", memory.values)", mut_ctx);
+        
+        // Then it should parse successfully
+        assert(own_parsed != NULL);
+        assert(ar__instruction__get_type(own_parsed) == INST_BUILD);
+        
+        const char *function_name = NULL;
+        const char **args = NULL;
+        int arg_count = 0;
+        const char *result_path = NULL;
+        
+        bool is_function = ar__instruction__get_function_call(own_parsed, &function_name, &args, &arg_count, &result_path);
+        assert(is_function == true);
+        assert(strcmp(function_name, "build") == 0);
+        assert(arg_count == 2);
+        assert(strcmp(args[0], "\"Hello {name}\"") == 0);
+        assert(strcmp(args[1], "memory.values") == 0);
+        assert(result_path == NULL);
+        
+        ar__instruction__destroy_parsed(own_parsed);
+    }
+    
+    // Test 4: Method function call
+    {
+        // When parsing a method function call
+        parsed_instruction_t *own_parsed = ar__instruction__parse("method(\"greet\", \"memory.msg := \\\"Hi\\\"\", \"1.0.0\")", mut_ctx);
+        
+        // Then it should parse successfully
+        assert(own_parsed != NULL);
+        assert(ar__instruction__get_type(own_parsed) == INST_METHOD);
+        
+        const char *function_name = NULL;
+        const char **args = NULL;
+        int arg_count = 0;
+        const char *result_path = NULL;
+        
+        bool is_function = ar__instruction__get_function_call(own_parsed, &function_name, &args, &arg_count, &result_path);
+        assert(is_function == true);
+        assert(strcmp(function_name, "method") == 0);
+        assert(arg_count == 3);
+        assert(strcmp(args[0], "\"greet\"") == 0);
+        assert(strcmp(args[1], "\"memory.msg := \\\"Hi\\\"\"") == 0);
+        assert(strcmp(args[2], "\"1.0.0\"") == 0);
+        assert(result_path == NULL);
+        
+        ar__instruction__destroy_parsed(own_parsed);
+    }
+    
+    // Test 5: Agent function call with context
+    {
+        // Add context for agent creation
+        data_t *own_context = ar__data__create_map();
+        ar__data__set_map_string(own_context, "name", "Test Agent");
+        ar__data__set_map_data(mut_memory, "ctx", own_context);
+        
+        // When parsing an agent function call
+        parsed_instruction_t *own_parsed = ar__instruction__parse("agent(\"echo\", \"1.0.0\", memory.ctx)", mut_ctx);
+        
+        // Then it should parse successfully
+        assert(own_parsed != NULL);
+        assert(ar__instruction__get_type(own_parsed) == INST_AGENT);
+        
+        const char *function_name = NULL;
+        const char **args = NULL;
+        int arg_count = 0;
+        const char *result_path = NULL;
+        
+        bool is_function = ar__instruction__get_function_call(own_parsed, &function_name, &args, &arg_count, &result_path);
+        assert(is_function == true);
+        assert(strcmp(function_name, "agent") == 0);
+        assert(arg_count == 3);
+        assert(strcmp(args[0], "\"echo\"") == 0);
+        assert(strcmp(args[1], "\"1.0.0\"") == 0);
+        assert(strcmp(args[2], "memory.ctx") == 0);
+        assert(result_path == NULL);
+        
+        ar__instruction__destroy_parsed(own_parsed);
+    }
+    
+    // Test 6: Destroy function call (single argument)
+    {
+        // When parsing a destroy agent function call
+        parsed_instruction_t *own_parsed = ar__instruction__parse("destroy(42)", mut_ctx);
+        
+        // Then it should parse successfully
+        assert(own_parsed != NULL);
+        assert(ar__instruction__get_type(own_parsed) == INST_DESTROY);
+        
+        const char *function_name = NULL;
+        const char **args = NULL;
+        int arg_count = 0;
+        const char *result_path = NULL;
+        
+        bool is_function = ar__instruction__get_function_call(own_parsed, &function_name, &args, &arg_count, &result_path);
+        assert(is_function == true);
+        assert(strcmp(function_name, "destroy") == 0);
+        assert(arg_count == 1);
+        assert(strcmp(args[0], "42") == 0);
+        assert(result_path == NULL);
+        
+        ar__instruction__destroy_parsed(own_parsed);
+    }
+    
+    // Test 7: Destroy function call (two arguments)
+    {
+        // When parsing a destroy method function call
+        parsed_instruction_t *own_parsed = ar__instruction__parse("destroy(\"calculator\", \"1.0.0\")", mut_ctx);
+        
+        // Then it should parse successfully
+        assert(own_parsed != NULL);
+        assert(ar__instruction__get_type(own_parsed) == INST_DESTROY);
+        
+        const char *function_name = NULL;
+        const char **args = NULL;
+        int arg_count = 0;
+        const char *result_path = NULL;
+        
+        bool is_function = ar__instruction__get_function_call(own_parsed, &function_name, &args, &arg_count, &result_path);
+        assert(is_function == true);
+        assert(strcmp(function_name, "destroy") == 0);
+        assert(arg_count == 2);
+        assert(strcmp(args[0], "\"calculator\"") == 0);
+        assert(strcmp(args[1], "\"1.0.0\"") == 0);
+        assert(result_path == NULL);
+        
+        ar__instruction__destroy_parsed(own_parsed);
+    }
+    
+    // Test 8: If function call
+    {
+        // When parsing an if function call
+        parsed_instruction_t *own_parsed = ar__instruction__parse("if(5 > 3, \"yes\", \"no\")", mut_ctx);
+        
+        // Then it should parse successfully
+        assert(own_parsed != NULL);
+        assert(ar__instruction__get_type(own_parsed) == INST_IF);
+        
+        const char *function_name = NULL;
+        const char **args = NULL;
+        int arg_count = 0;
+        const char *result_path = NULL;
+        
+        bool is_function = ar__instruction__get_function_call(own_parsed, &function_name, &args, &arg_count, &result_path);
+        assert(is_function == true);
+        assert(strcmp(function_name, "if") == 0);
+        assert(arg_count == 3);
+        assert(strcmp(args[0], "5 > 3") == 0);
+        assert(strcmp(args[1], "\"yes\"") == 0);
+        assert(strcmp(args[2], "\"no\"") == 0);
+        assert(result_path == NULL);
+        
+        ar__instruction__destroy_parsed(own_parsed);
+    }
+    
+    // Cleanup
+    ar__instruction__destroy_context(mut_ctx);
+    ar__data__destroy(mut_memory);
+}
+
 static void test_basic_context_creation(void) {
     // Given empty data structures
     data_t *mut_memory = ar__data__create_map();
@@ -185,6 +365,7 @@ int main(void) {
     // Test functions will be called here incrementally
     test_basic_context_creation();
     test_parse_assignment_instructions();
+    test_parse_function_call_instructions();
     
     printf("All instruction parsing tests passed!\n");
     return 0;

@@ -191,10 +191,10 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [ ] Implement instruction module tests (BEFORE expression refactoring):
   - [x] Create agerun_instruction_tests.c focusing on parsing functionality (Completed 2025-06-14)
   - [x] Test parsing of assignment instructions (Completed 2025-06-14)
-  - [ ] Test parsing of function call instructions
+  - [x] Test parsing of function call instructions (Completed 2025-06-14)
   - [ ] Test parsing of function calls with assignment
   - [ ] Test error handling and reporting
-  - [ ] Test all instruction types (send, if, parse, build, method, agent, destroy)
+  - [x] Test all instruction types (send, if, parse, build, method, agent, destroy) (Completed 2025-06-14)
   - [ ] Verify parsed AST structure correctness
   - [ ] Ensure comprehensive coverage before refactoring expression module
 - [ ] Refactor expression module to separate parsing from execution:
