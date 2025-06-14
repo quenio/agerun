@@ -213,6 +213,30 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Remove ar__expression__take_ownership (no longer needed with AST)
   - [ ] Add comprehensive tests for parser
   - [ ] Ensure clean separation between parsing and execution phases
+- [ ] Refactor instruction module to separate parsing from execution (similar to expression module):
+  - [ ] Create instruction AST structures:
+    - [ ] Create instruction_ast module with node types for all instruction types
+    - [ ] Define AST nodes for assignment instructions
+    - [ ] Define AST nodes for function call instructions (send, if, parse, build, method, agent, destroy)
+    - [ ] Define AST nodes for function calls with assignment
+    - [ ] Implement node creation functions with proper ownership semantics
+    - [ ] Implement accessor functions for retrieving node data
+    - [ ] Add recursive destruction for proper memory cleanup
+    - [ ] Write comprehensive tests following TDD methodology
+  - [ ] Create instruction_parser module for AST generation:
+    - [ ] Parser functions take string and offset parameters (not instruction context)
+    - [ ] Return AST nodes using instruction_ast module
+    - [ ] No dependency on instruction module for better separation
+    - [ ] Implement ar__instruction_parser__parse() main entry point
+    - [ ] Add comprehensive parser tests
+  - [ ] Update instruction module to use parser and interpreter:
+    - [ ] Change ar__instruction__parse to use instruction_parser module
+    - [ ] Remove parsing logic from instruction module
+    - [ ] Keep only AST traversal and coordination logic
+  - [ ] Move instruction execution logic to interpreter module:
+    - [ ] Interpreter already handles execution, ensure it works with new AST
+    - [ ] Update interpreter to use instruction AST nodes
+    - [ ] Ensure clean separation between parsing and execution
 - [ ] Break down the massive ar_instruction_run function (2500+ lines):
   - [ ] Extract memory access operations
   - [ ] Extract assignment operations  
