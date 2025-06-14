@@ -152,7 +152,7 @@ This prevents overthinking and ensures accurate responses based on documented pr
 
 ### 3. Parnas Design Principles (STRICTLY ENFORCED) ✅
 
-**Status**: Full compliance achieved as of 2025-06-08. All interface violations have been fixed.
+**Status**: Full compliance achieved as of 2025-06-08. All interface violations have been fixed. Zero circular dependencies (except heap ↔ io).
 
 **Core Principles**:
 - **Information Hiding**: Hide design decisions behind interfaces
@@ -168,6 +168,186 @@ This prevents overthinking and ensures accurate responses based on documented pr
 - **Implementation Details**: Keep struct definitions, array indices, and storage mechanisms private
 
 **Enforcement**: Violations result in automatic PR rejection.
+
+### Preventing Circular Dependencies (MANDATORY)
+
+**Before Adding Any #include**:
+1. **Check Current Dependencies**: Run `grep -n "#include.*agerun_" module.h module.c` to see existing includes
+2. **Analyze Dependency Direction**: Ensure the new include follows the hierarchical layers:
+   - Foundation (assert, io, list, map, string) → Data (heap, data) → Core (agent, method, expression) → System (agency, methodology, interpreter)
+3. **Question the Need**: If you need to include a "higher" module in a "lower" one, STOP and reconsider the design
+
+**Architectural Patterns to Prevent/Resolve Circular Dependencies** (in order of preference):
+
+1. **Interface Segregation** (PREFERRED - split large modules):
+   ```c
+   // Instead of one large module with bidirectional dependencies:
+   // Split into: core functionality, registry, store, updater
+   // Example: agency split into agency, agent_registry, agent_store, agent_update
+   ```
+
+2. **Registry Pattern** (PREFERRED - for managing collections):
+   ```c
+   // Instead of modules directly managing each other:
+   // Use a registry that owns and manages the lifecycle
+   // Example: agent_registry owns all agents, not individual modules
+   ```
+
+3. **Facade Pattern** (PREFERRED - for complex subsystems):
+   ```c
+   // Instead of exposing internal module interactions:
+   // Provide a simple interface that coordinates multiple modules
+   // Example: agency is a facade for agent_registry, agent_store, agent_update
+   ```
+
+4. **Parser/Executor Separation** (PREFERRED - for language processing):
+   ```c
+   // Instead of mixing parsing and execution in one module:
+   // Separate into parser (returns AST) and executor (processes AST)
+   // Example: instruction parses, interpreter executes
+   ```
+
+5. **Callback Pattern** (LAST RESORT - adds complexity):
+   ```c
+   // Use ONLY when upward communication is absolutely necessary
+   // and other patterns don't work
+   // BAD: in low_module.c
+   #include "high_module.h"
+   void low_function() { high_notify(); }
+   
+   // ACCEPTABLE AS LAST RESORT: in low_module.h
+   typedef void (*notify_callback_t)(int event_type, void *data);
+   void ar__low__register_callback(notify_callback_t callback);
+   // WARNING: Callbacks make code harder to understand and debug
+   ```
+
+6. **Dependency Inversion** (LAST RESORT - adds abstraction layers):
+   ```c
+   // Use ONLY when two modules absolutely must share behavior
+   // and cannot be restructured
+   // Define abstract interface that both modules can use
+   // WARNING: This adds complexity and indirection
+   ```
+
+7. **Event Bus Pattern** (AVOID - too complex for this codebase):
+   ```c
+   // Generally too heavyweight for AgeRun's needs
+   // Consider simpler patterns first
+   ```
+
+**Red Flags to Watch For**:
+- Module A needs to notify Module B of changes (use callbacks)
+- Two modules need to share data structures (extract to common module)
+- Module needs to know about its container (use registry pattern)
+- Parsing and execution in same module (separate concerns)
+- Manager module becoming too large (split into focused modules)
+- Implementation file including a module that uses it (probable circular dependency)
+
+**Testing for Circular Dependencies**:
+```bash
+# Before committing, check for potential circular dependencies:
+grep -r "#include.*agerun_" modules/*.c modules/*.h | sort
+
+# Look for patterns like:
+# - A.c includes B.h and B.c includes A.h
+# - A includes B includes C includes A
+# Update CIRCULAR_DEPS_ANALYSIS.md if adding new modules
+```
+
+**Accepted Exception**:
+- `heap ↔ io`: This fundamental circular dependency exists because memory tracking needs error reporting and error reporting needs memory allocation. This is documented and accepted.
+
+### Preventing Code Duplication (MANDATORY)
+
+**DRY Principle**: Don't Repeat Yourself - every piece of knowledge must have a single, unambiguous, authoritative representation.
+
+**Before Writing Any Code**:
+1. **Search for Similar Functionality**: `grep -r "function_name\|concept" modules/`
+2. **Check Existing Modules**: Review module documentation to find existing implementations
+3. **Question the Duplication**: If you're copying code, STOP and refactor instead
+
+**Strategies to Eliminate Duplication**:
+
+1. **Extract Common Functions** (PREFERRED):
+   ```c
+   // BAD: Same validation logic in multiple places
+   // in module_a.c
+   if (strlen(name) > 0 && strlen(name) < 256 && strchr(name, '/') == NULL) { ... }
+   // in module_b.c  
+   if (strlen(name) > 0 && strlen(name) < 256 && strchr(name, '/') == NULL) { ... }
+   
+   // GOOD: Extract to string module
+   bool ar__string__is_valid_name(const char *name);
+   ```
+
+2. **Create Utility Modules** (PREFERRED):
+   ```c
+   // When multiple modules need similar functionality:
+   // Create a dedicated utility module (e.g., validation, conversion, formatting)
+   // Example: string module provides trim, split, join for all modules
+   ```
+
+3. **Use Data-Driven Approaches** (PREFERRED):
+   ```c
+   // BAD: Repetitive switch/if statements
+   if (type == TYPE_INT) return "integer";
+   else if (type == TYPE_STRING) return "string";
+   else if (type == TYPE_MAP) return "map";
+   
+   // GOOD: Use lookup table
+   static const char* type_names[] = {
+       [TYPE_INT] = "integer",
+       [TYPE_STRING] = "string", 
+       [TYPE_MAP] = "map"
+   };
+   return type_names[type];
+   ```
+
+4. **Parameterize Variations** (PREFERRED):
+   ```c
+   // BAD: Multiple similar functions
+   void process_agent_create() { /* 90% same code */ }
+   void process_agent_update() { /* 90% same code */ }
+   void process_agent_delete() { /* 90% same code */ }
+   
+   // GOOD: Single parameterized function
+   void process_agent_operation(operation_type_t op);
+   ```
+
+5. **Template Pattern with Callbacks** (USE SPARINGLY):
+   ```c
+   // Only when behavior varies in the middle of algorithm
+   void process_file(const char *path, 
+                    bool (*process_line)(const char *line, void *ctx),
+                    void *ctx);
+   ```
+
+**Red Flags for Duplication**:
+- Copy-pasting code between functions/modules
+- Similar function names with slight variations (e.g., `_for_int`, `_for_string`)
+- Repeated error handling patterns
+- Multiple functions with same structure but different types
+- Hardcoded values that appear in multiple places
+- Similar test setup/teardown code
+
+**Acceptable Duplication** (rare cases):
+- Performance-critical code where abstraction overhead matters (document why)
+- When modules must remain independent (no shared dependencies)
+- Test code that needs explicit clarity over DRY
+- When abstraction would be more complex than duplication (document why)
+
+**Testing for Duplication**:
+```bash
+# Find potential duplicate function patterns
+grep -r "^[a-zA-Z_].*(" modules/*.c | sed 's/.*://g' | sort | uniq -c | sort -rn
+
+# Find similar code structures (manual review needed)
+# Look for files with similar sizes that might contain duplicated logic
+ls -la modules/*.c | awk '{print $5, $9}' | sort -n
+
+# Find repeated string literals
+grep -r "\".*\"" modules/*.c | grep -v "printf\|fprintf\|error" | sort | uniq -c | sort -rn
+```
 
 ### 4. Coding Standards
 

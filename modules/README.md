@@ -85,7 +85,8 @@ This tree illustrates the dependency relationships between modules in the AgeRun
 
 Each module depends on the modules listed under it (its children in the tree). For example, `agerun_executable` depends on both `agerun_system` and `agerun_methodology` in its implementation.
 
-**Note**: The `agerun_heap` module is used by almost all modules for memory tracking but is not shown in the tree to avoid clutter. It is a cross-cutting concern that provides memory safety to the entire system (implementation dependency for all modules).
+**Note**: The `agerun_heap` and `agerun_io` modules are not shown as top-level entries in the tree to avoid clutter, as they are used by many modules. However, there is one remaining circular dependency:
+- `agerun_heap` ↔ `agerun_io`*: heap uses io for error reporting, while io uses heap for memory tracking. This is a fundamental design challenge where memory tracking needs error reporting.
 
 ```
 Main Modules:

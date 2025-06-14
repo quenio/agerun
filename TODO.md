@@ -118,6 +118,41 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Immediate Priorities (Next Steps)
 
+### LOW - Remaining circular dependency (heap ↔ io)
+- [ ] Consider resolving the circular dependency between heap and io modules:
+  - [ ] heap uses io for error reporting (ar__io__error, ar__io__warning)
+  - [ ] io uses heap for memory tracking (AR__HEAP__MALLOC, AR__HEAP__FREE)
+  - [ ] This is a fundamental design challenge - memory tracking needs error reporting
+  - [ ] Possible solutions: error callback pattern, or accept this as necessary coupling
+  - [ ] Low priority as it doesn't affect compilation or functionality
+
+### LOW - Architecture improvements from dependency analysis
+- [ ] Consider reducing test fixture dependencies:
+  - [ ] instruction_fixture.h includes 5 modules (data, expression, agent, method, system)
+  - [ ] This creates high coupling for test code
+  - [ ] Consider splitting into smaller, more focused test fixtures
+  - [ ] Or use implementation-only includes where possible
+
+- [ ] Review agent_store → agency dependency:
+  - [ ] agent_store.c includes agency.h creating a backward dependency
+  - [ ] agency owns agent_store, but store needs to access agency
+  - [ ] Consider if this can be refactored to use callbacks or interfaces
+
+- [ ] Document the implementation-only circular patterns:
+  - [ ] agency.c ↔ agent_store.c (implementation only, not a true circular dependency)
+  - [ ] Add comments in code explaining why these patterns are acceptable
+  - [ ] Document that headers remain acyclic
+
+- [ ] Consider creating a dependency visualization:
+  - [ ] The report shows a clean 5-level hierarchy (Level 0-4)
+  - [ ] A visual diagram could help new developers understand the architecture
+  - [ ] Could be added to modules/README.md or as a separate diagram file
+
+### LOW - Clean up temporary analysis files
+- [ ] Remove module_dependency_report.md (temporary file created during analysis)
+  - [ ] This was an intermediate analysis file that's no longer needed
+  - [ ] The official dependency documentation is in CIRCULAR_DEPS_ANALYSIS.md and modules/README.md
+
 ### CRITICAL - Standardize Test Output Format (HIGHEST PRIORITY) - COMPLETED 2025-06-12
 - [x] Make all test files print "All X tests passed!" message:
   - [x] Audit all 22 test files to identify which ones don't print the expected message (found 29 test files)
@@ -146,7 +181,11 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Interpreter module handles all execution including methodology and agent operations
   - [x] Eliminated circular dependency: Instruction no longer depends on Agent or Methodology
   - [x] Clean separation achieved between parsing (instruction) and execution (interpreter)
-- [ ] Update the module dependency tree documentation after resolution
+- [x] Update the module dependency tree documentation after resolution (Completed 2025-06-14):
+  - [x] Updated CIRCULAR_DEPS_ANALYSIS.md showing NO circular dependencies remain
+  - [x] Verified modules/README.md dependency tree is already correct (uses aggregated format)
+  - [x] Tree correctly shows instruction with only data/expression/string/assert dependencies
+  - [x] Note section already documents successful elimination of circular dependencies
 
 ### HIGH - Fix Code Smells (After Circular Dependencies)
 - [ ] Implement instruction module tests (BEFORE expression refactoring):
