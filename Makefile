@@ -18,7 +18,8 @@ ANALYZER_FLAGS = -Xclang -analyze -Xclang -analyzer-checker=core -Xclang -analyz
                  -Xclang -analyzer-checker=deadcode -Xclang -analyzer-checker=security
 
 # Source files (excluding test files)
-SRC = $(filter-out modules/*_tests.c,$(wildcard modules/*.c))
+ALL_C_FILES = $(wildcard modules/*.c)
+SRC = $(filter-out %_tests.c %_fixture_tests.c,$(ALL_C_FILES))
 OBJ = $(patsubst modules/%.c,bin/obj/%.o,$(SRC))
 
 # Test source files
@@ -60,9 +61,9 @@ test_lib: CFLAGS += $(DEBUG_CFLAGS)
 test_lib: bin $(OBJ) $(TEST_OBJ) $(METHOD_TEST_OBJ)
 	ar rcs bin/libagerun.a $(OBJ)
 
-# Executable application - build only (always in debug mode)
-executable: debug bin
-	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS)
+# Executable application - build only
+executable: lib bin
+	$(CC) $(CFLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS)
 
 # Executable application with Address Sanitizer - build only
 executable-sanitize: clean
@@ -70,7 +71,7 @@ executable-sanitize: clean
 	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) $(ASAN_FLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS) $(ASAN_FLAGS)
 
 # Run the executable (always in debug mode)
-run: executable
+run: debug executable
 	cd bin && AGERUN_MEMORY_REPORT="memory_report_agerun.log" ./agerun
 
 # Run the executable with Address Sanitizer
@@ -128,34 +129,102 @@ clean:
 # Static analysis target
 analyze:
 	@if command -v /opt/homebrew/opt/llvm/bin/scan-build >/dev/null 2>&1 || command -v scan-build >/dev/null 2>&1; then \
-		mkdir -p bin/scan-build-results; \
-		$(SCAN_BUILD) $(MAKE) clean lib; \
-		echo "Static analysis results are available in bin/scan-build-results"; \
-	else \
-		echo "scan-build not found, using clang analyzer directly"; \
+		mkdir -p bin/scan-build-results bin/obj; \
+		rm -rf bin/scan-build-results/*; \
+		echo "Running scan-build on source files..."; \
+		total_bugs=0; \
+		rm -f bin/scan-build-analyze.log; \
 		for file in $(SRC); do \
 			echo "Analyzing $$file..."; \
-			$(CC) $(CFLAGS) $(ANALYZER_FLAGS) -c -I./modules $$file; \
+			$(SCAN_BUILD) --status-bugs $(CC) -c -I./modules $$file -o bin/obj/$$(basename $$file .c).o 2>&1 | tee bin/scan-build-temp.log; \
+			if grep -q "scan-build: [0-9]* bug" bin/scan-build-temp.log && ! grep -q "scan-build: 0 bugs found" bin/scan-build-temp.log; then \
+				file_bugs=$$(grep "scan-build: [0-9]* bug" bin/scan-build-temp.log | tail -1 | sed 's/.*scan-build: \([0-9]*\) bug.*/\1/'); \
+				echo "  ✗ $$file_bugs bugs found in $$file"; \
+				total_bugs=$$((total_bugs + file_bugs)); \
+			fi; \
+			cat bin/scan-build-temp.log >> bin/scan-build-analyze.log; \
 		done; \
-		echo "Analysis complete. Look for analyzer warnings above."; \
+		if [ $$total_bugs -gt 0 ]; then \
+			echo "Static analysis FAILED: $$total_bugs total bugs found"; \
+			echo "View detailed reports in: bin/scan-build-results/"; \
+			exit 1; \
+		else \
+			echo "Static analysis passed: no bugs found"; \
+		fi; \
+	else \
+		echo "scan-build not found, using clang analyzer directly"; \
+		analysis_failed=0; \
+		for file in $(SRC); do \
+			echo "Analyzing $$file..."; \
+			if ! $(CC) $(CFLAGS) $(ANALYZER_FLAGS) -c -I./modules $$file 2>&1 | tee -a bin/clang-analyze.log | grep -E "warning:|error:"; then \
+				echo "  ✓ No issues found"; \
+			else \
+				echo "  ✗ Issues found in $$file"; \
+				analysis_failed=1; \
+			fi; \
+		done; \
+		if [ $$analysis_failed -eq 1 ]; then \
+			echo "Static analysis FAILED: issues found"; \
+			exit 1; \
+		else \
+			echo "Static analysis passed: no issues found"; \
+		fi; \
 	fi
 
 # Static analysis for tests
 analyze-tests:
 	@if command -v /opt/homebrew/opt/llvm/bin/scan-build >/dev/null 2>&1 || command -v scan-build >/dev/null 2>&1; then \
-		mkdir -p bin/scan-build-results; \
-		$(SCAN_BUILD) $(MAKE) clean test_lib; \
-		echo "Static analysis results are available in bin/scan-build-results"; \
-	else \
-		echo "scan-build not found, using clang analyzer directly"; \
+		mkdir -p bin/scan-build-results bin/obj; \
+		rm -rf bin/scan-build-results/*; \
+		echo "Running scan-build on test files..."; \
+		total_bugs=0; \
+		rm -f bin/scan-build-analyze-tests.log; \
 		for file in $(SRC) $(TEST_SRC) $(METHOD_TEST_SRC); do \
 			echo "Analyzing $$file..."; \
-			$(CC) $(CFLAGS) $(ANALYZER_FLAGS) -c -I./modules $$file; \
+			$(SCAN_BUILD) --status-bugs $(CC) -c -I./modules $$file -o bin/obj/$$(basename $$file .c).o 2>&1 | tee bin/scan-build-temp-tests.log; \
+			if grep -q "scan-build: [0-9]* bug" bin/scan-build-temp-tests.log && ! grep -q "scan-build: 0 bugs found" bin/scan-build-temp-tests.log; then \
+				file_bugs=$$(grep "scan-build: [0-9]* bug" bin/scan-build-temp-tests.log | tail -1 | sed 's/.*scan-build: \([0-9]*\) bug.*/\1/'); \
+				echo "  ✗ $$file_bugs bugs found in $$file"; \
+				total_bugs=$$((total_bugs + file_bugs)); \
+			fi; \
+			cat bin/scan-build-temp-tests.log >> bin/scan-build-analyze-tests.log; \
 		done; \
-		echo "Analysis complete. Look for analyzer warnings above."; \
+		if [ $$total_bugs -gt 0 ]; then \
+			echo "Static analysis FAILED: $$total_bugs total bugs found in tests"; \
+			echo "View detailed reports in: bin/scan-build-results/"; \
+			exit 1; \
+		else \
+			echo "Static analysis passed: no bugs found in tests"; \
+		fi; \
+	else \
+		echo "scan-build not found, using clang analyzer directly"; \
+		analysis_failed=0; \
+		for file in $(SRC) $(TEST_SRC) $(METHOD_TEST_SRC); do \
+			echo "Analyzing $$file..."; \
+			if ! $(CC) $(CFLAGS) $(ANALYZER_FLAGS) -c -I./modules $$file 2>&1 | tee -a bin/clang-analyze-tests.log | grep -E "warning:|error:"; then \
+				echo "  ✓ No issues found"; \
+			else \
+				echo "  ✗ Issues found in $$file"; \
+				analysis_failed=1; \
+			fi; \
+		done; \
+		if [ $$analysis_failed -eq 1 ]; then \
+			echo "Static analysis FAILED: issues found in tests"; \
+			exit 1; \
+		else \
+			echo "Static analysis passed: no issues found in tests"; \
+		fi; \
 	fi
 
 .PHONY: all debug release sanitize clean test test-sanitize executable executable-sanitize run run-sanitize analyze analyze-tests
+
+# Debug targets
+print-src:
+	@echo "SRC = $(SRC)"
+	@echo "Number of SRC files: $(words $(SRC))"
+print-obj:
+	@echo "OBJ = $(OBJ)"
+	@echo "Number of OBJ files: $(words $(OBJ))"
 
 # Helper to install scan-build
 install-scan-build:

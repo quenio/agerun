@@ -37,16 +37,57 @@ else
 fi
 
 # Step 2: Static analysis
-run_step "Static analysis (lib)" "make analyze"
-run_step "Static analysis (tests)" "make analyze-tests"
+echo -n "Static analysis (lib)...      "
+output=$(make clean analyze 2>&1)
+exit_code=$?
+if [ $exit_code -eq 0 ]; then
+    echo "✓"
+else
+    echo "✗"
+    # Check if it's due to static analysis findings
+    if echo "$output" | grep -q "Static analysis FAILED:"; then
+        echo "Static analysis found issues:"
+        # Extract file-specific errors (e.g., "✗ 1 bugs found in modules/agerun_interpreter.c")
+        echo "$output" | grep "✗.*bugs found in" | sed 's/^/  /'
+        # Extract warnings with file:line:column format
+        echo "$output" | grep -E "^modules/[a-zA-Z0-9_/.-]+\.[ch]:[0-9]+:[0-9]+: warning:" | head -10 | sed 's/^/  /'
+        # Show total summary
+        echo "$output" | grep "Static analysis FAILED:" | sed 's/^/  /'
+    else
+        echo "Build/analysis error:"
+        echo "$output" | tail -20
+    fi
+fi
+
+echo -n "Static analysis (tests)...    "
+output=$(make clean analyze-tests 2>&1)
+exit_code=$?
+if [ $exit_code -eq 0 ]; then
+    echo "✓"
+else
+    echo "✗"
+    # Check if it's due to static analysis findings
+    if echo "$output" | grep -q "Static analysis FAILED:"; then
+        echo "Static analysis found issues:"
+        # Extract file-specific errors (e.g., "✗ 2 bugs found in methods/message_router_tests.c")
+        echo "$output" | grep "✗.*bugs found in" | sed 's/^/  /'
+        # Extract warnings with file:line:column format
+        echo "$output" | grep -E "^(modules|methods)/[a-zA-Z0-9_/.-]+\.[ch]:[0-9]+:[0-9]+: warning:" | head -10 | sed 's/^/  /'
+        # Show total summary
+        echo "$output" | grep "Static analysis FAILED:" | sed 's/^/  /'
+    else
+        echo "Build/analysis error:"
+        echo "$output" | tail -20
+    fi
+fi
 
 # Step 3: Build executable
-run_step "Build executable" "make executable"
+run_step "Build executable" "make clean executable"
 
 # Step 4: Run tests
 echo
 echo "Running tests..."
-output=$(make -k test 2>&1)
+output=$(make clean test 2>&1)
 # Count passed and failed tests by counting test executables that ran
 total_tests=$(echo "$output" | grep -c "^Running test: bin/")
 passed=$(echo "$output" | grep -c "All .* tests passed")
@@ -72,7 +113,7 @@ fi
 echo
 echo "Running executable..."
 # Run the executable directly instead of through output capture to ensure memory report is written
-make run >/dev/null 2>&1
+make clean run >/dev/null 2>&1
 if [ $? -eq 0 ]; then
     echo "Executable: ✓"
     # Wait a moment for report to be written
@@ -92,7 +133,7 @@ fi
 # Step 6: Sanitize tests
 echo
 echo "Running sanitizer tests..."
-output=$(make test-sanitize 2>&1)
+output=$(make clean test-sanitize 2>&1)
 sanitize_exit_code=$?
 
 # Count sanitizer test runs
