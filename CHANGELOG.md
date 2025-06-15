@@ -2,6 +2,24 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-06-15 (Part 10)
+- ✅ Enhanced sanitizer support in build system:
+  - ✅ Added UndefinedBehaviorSanitizer (UBSan) to existing AddressSanitizer (ASan) configuration
+  - ✅ Combined ASan + UBSan in main sanitizer targets for comprehensive error detection
+  - ✅ Added separate ThreadSanitizer (TSan) targets for race condition detection:
+    - ✅ `test-tsan`: Run all tests with ThreadSanitizer
+    - ✅ `executable-tsan`: Build executable with ThreadSanitizer
+    - ✅ `run-tsan`: Run executable with ThreadSanitizer
+  - ✅ Updated clean_build.sh to include full sanitizer coverage:
+    - ✅ Tests and executable now run with ASan + UBSan
+    - ✅ Added TSan test runs for both tests and executable
+    - ✅ Enhanced error detection and reporting for all sanitizer types
+    - ✅ Executable sanitizer runs now properly capture and report errors
+  - ✅ Documented platform differences:
+    - ✅ macOS: ASan works but leak detection (LSan) not supported
+    - ✅ Linux/Ubuntu: Full ASan with leak detection enabled by default
+    - ✅ TSan and UBSan work on both platforms
+
 ## 2025-06-15 (Part 9)
 - ✅ Enhanced Makefile with automatic scan-build installation:
   - ✅ Created `install-scan-build` target that auto-detects OS and installs appropriately

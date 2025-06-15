@@ -23,6 +23,12 @@ DEBUG_CFLAGS = -g -O0 -DDEBUG
 RELEASE_CFLAGS = -O3 -DNDEBUG
 # Address Sanitizer flags
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+# Thread Sanitizer flags
+TSAN_FLAGS = -fsanitize=thread -fno-omit-frame-pointer
+# Undefined Behavior Sanitizer flags
+UBSAN_FLAGS = -fsanitize=undefined -fno-omit-frame-pointer
+# Combined sanitizer flags (ASan + UBSan - TSan must run separately)
+SANITIZER_FLAGS = -fsanitize=address,undefined -fno-omit-frame-pointer
 # Clang Static Analyzer command
 ifeq ($(UNAME_S),Darwin)
     SCAN_BUILD = PATH="/opt/homebrew/opt/llvm/bin:$$PATH" scan-build -o bin/scan-build-results
@@ -56,10 +62,10 @@ debug: lib
 release: CFLAGS += $(RELEASE_CFLAGS)
 release: lib
 
-# Sanitize target with Address Sanitizer
+# Sanitize target with Address + Undefined Behavior Sanitizers
 sanitize: CC = $(SANITIZER_CC)
-sanitize: CFLAGS += $(DEBUG_CFLAGS) $(ASAN_FLAGS)
-sanitize: LDFLAGS += $(ASAN_FLAGS)
+sanitize: CFLAGS += $(DEBUG_CFLAGS) $(SANITIZER_FLAGS)
+sanitize: LDFLAGS += $(SANITIZER_FLAGS)
 sanitize: lib
 
 # Create bin and bin/obj directories
@@ -79,17 +85,26 @@ test_lib: bin $(OBJ) $(TEST_OBJ) $(METHOD_TEST_OBJ)
 executable: lib bin
 	$(CC) $(CFLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS)
 
-# Executable application with Address Sanitizer - build only
+# Executable application with Address + Undefined Behavior Sanitizers - build only
 executable-sanitize: clean
 	$(MAKE) sanitize
-	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(ASAN_FLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS) $(ASAN_FLAGS)
+	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS) $(SANITIZER_FLAGS)
 
 # Run the executable (always in debug mode)
 run: debug executable
 	cd bin && AGERUN_MEMORY_REPORT="memory_report_agerun.log" ./agerun
 
-# Run the executable with Address Sanitizer
+# Run the executable with Address + Undefined Behavior Sanitizers
 run-sanitize: executable-sanitize
+	cd bin && AGERUN_MEMORY_REPORT="memory_report_agerun.log" ./agerun
+
+# Executable application with Thread Sanitizer - build only
+executable-tsan: clean
+	$(MAKE) lib CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS)" LDFLAGS="$(LDFLAGS) $(TSAN_FLAGS)"
+	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS) $(TSAN_FLAGS)
+
+# Run the executable with Thread Sanitizer
+run-tsan: executable-tsan
 	cd bin && AGERUN_MEMORY_REPORT="memory_report_agerun.log" ./agerun
 
 # Define test executables without bin/ prefix for use in the bin directory
@@ -107,14 +122,25 @@ test: clean debug
 		AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
 	done
 
-# Build and run tests with Address Sanitizer
+# Build and run tests with Address + Undefined Behavior Sanitizers
 test-sanitize: clean
 	$(MAKE) sanitize
-	$(MAKE) test_lib CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(ASAN_FLAGS)" LDFLAGS="$(LDFLAGS) $(ASAN_FLAGS)"
-	$(MAKE) $(TEST_BIN) $(METHOD_TEST_BIN) CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(ASAN_FLAGS)" LDFLAGS="$(LDFLAGS) $(ASAN_FLAGS)"
+	$(MAKE) test_lib CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS)" LDFLAGS="$(LDFLAGS) $(SANITIZER_FLAGS)"
+	$(MAKE) $(TEST_BIN) $(METHOD_TEST_BIN) CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS)" LDFLAGS="$(LDFLAGS) $(SANITIZER_FLAGS)"
 	@cd bin && for test in $(ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
-		echo "Running $$test with Address Sanitizer"; \
+		echo "Running $$test with Address + Undefined Behavior Sanitizers"; \
+		AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+	done
+
+# Build and run tests with Thread Sanitizer (must run separately from ASan)
+test-tsan: clean
+	$(MAKE) lib CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS)" LDFLAGS="$(LDFLAGS) $(TSAN_FLAGS)"
+	$(MAKE) test_lib CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS)" LDFLAGS="$(LDFLAGS) $(TSAN_FLAGS)"
+	$(MAKE) $(TEST_BIN) $(METHOD_TEST_BIN) CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS)" LDFLAGS="$(LDFLAGS) $(TSAN_FLAGS)"
+	@cd bin && for test in $(ALL_TEST_BIN_NAMES); do \
+		rm -f *.agerun; \
+		echo "Running $$test with Thread Sanitizer"; \
 		AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
 	done
 

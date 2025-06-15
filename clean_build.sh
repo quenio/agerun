@@ -112,9 +112,9 @@ fi
 # Step 5: Run executable
 echo
 echo "Running executable..."
-# Run the executable directly instead of through output capture to ensure memory report is written
-make clean run >/dev/null 2>&1
-if [ $? -eq 0 ]; then
+output=$(make clean run 2>&1)
+exec_exit_code=$?
+if [ $exec_exit_code -eq 0 ]; then
     echo "Executable: ✓"
     # Wait a moment for report to be written
     sleep 1
@@ -128,11 +128,13 @@ if [ $? -eq 0 ]; then
     rm -f bin/*.agerun
 else
     echo "Executable: ✗"
+    echo "Error output:"
+    echo "$output" | tail -10
 fi
 
-# Step 6: Sanitize tests
+# Step 6: Sanitize tests (ASan + UBSan)
 echo
-echo "Running sanitizer tests..."
+echo "Running sanitizer tests (ASan + UBSan)..."
 output=$(make clean test-sanitize 2>&1)
 sanitize_exit_code=$?
 
@@ -150,33 +152,137 @@ stack_buffer_overflow=$(echo "$output" | grep -c "stack-buffer-overflow")
 heap_buffer_overflow=$(echo "$output" | grep -c "heap-buffer-overflow")
 memory_leaks=$(echo "$output" | grep -c "ERROR: LeakSanitizer:")
 
+# Check for UndefinedBehaviorSanitizer errors
+ubsan_errors=$(echo "$output" | grep -c "runtime error:")
+integer_overflow=$(echo "$output" | grep -c "signed integer overflow")
+array_bounds=$(echo "$output" | grep -c "index.*out of bounds")
+null_pointer=$(echo "$output" | grep -c "null pointer")
+
 if [ $build_failed -gt 0 ]; then
     echo "Sanitizer: Build failed (missing sanitizer runtime) ⚠️"
     echo "Note: This is a known issue on some macOS systems"
-elif [ $sanitize_exit_code -eq 0 ] && [ $asan_errors -eq 0 ]; then
+elif [ $sanitize_exit_code -eq 0 ] && [ $asan_errors -eq 0 ] && [ $ubsan_errors -eq 0 ]; then
     echo "Sanitizer: $sanitize_total tests run, all passed ✓"
 else
     echo "Sanitizer: $sanitize_total tests run, ERRORS DETECTED ✗"
     echo
     echo "Sanitizer Report:"
-    echo "  - AddressSanitizer errors: $asan_errors"
-    if [ $heap_use_after_free -gt 0 ]; then
-        echo "    • Heap use-after-free: $heap_use_after_free"
+    
+    if [ $asan_errors -gt 0 ]; then
+        echo "  - AddressSanitizer errors: $asan_errors"
+        if [ $heap_use_after_free -gt 0 ]; then
+            echo "    • Heap use-after-free: $heap_use_after_free"
+        fi
+        if [ $stack_buffer_overflow -gt 0 ]; then
+            echo "    • Stack buffer overflow: $stack_buffer_overflow"
+        fi
+        if [ $heap_buffer_overflow -gt 0 ]; then
+            echo "    • Heap buffer overflow: $heap_buffer_overflow"
+        fi
+        if [ $memory_leaks -gt 0 ]; then
+            echo "    • Memory leaks detected: $memory_leaks"
+        fi
     fi
-    if [ $stack_buffer_overflow -gt 0 ]; then
-        echo "    • Stack buffer overflow: $stack_buffer_overflow"
-    fi
-    if [ $heap_buffer_overflow -gt 0 ]; then
-        echo "    • Heap buffer overflow: $heap_buffer_overflow"
-    fi
-    if [ $memory_leaks -gt 0 ]; then
-        echo "    • Memory leaks detected: $memory_leaks"
+    
+    if [ $ubsan_errors -gt 0 ]; then
+        echo "  - UndefinedBehavior errors: $ubsan_errors"
+        if [ $integer_overflow -gt 0 ]; then
+            echo "    • Integer overflow: $integer_overflow"
+        fi
+        if [ $array_bounds -gt 0 ]; then
+            echo "    • Array bounds violation: $array_bounds"
+        fi
+        if [ $null_pointer -gt 0 ]; then
+            echo "    • Null pointer dereference: $null_pointer"
+        fi
     fi
     
     # Show first error details
     echo
-    echo "First sanitizer error:"
-    echo "$output" | grep -A10 "ERROR: AddressSanitizer:" | head -15
+    if [ $asan_errors -gt 0 ]; then
+        echo "First AddressSanitizer error:"
+        echo "$output" | grep -A10 "ERROR: AddressSanitizer:" | head -15
+    elif [ $ubsan_errors -gt 0 ]; then
+        echo "First UndefinedBehavior error:"
+        echo "$output" | grep -A2 "runtime error:" | head -5
+    fi
+fi
+
+# Step 7: Run executable with ASan + UBSan
+echo
+echo "Running executable with sanitizers (ASan + UBSan)..."
+output=$(make clean run-sanitize 2>&1)
+exec_san_exit_code=$?
+
+# Check for sanitizer errors in executable
+exec_asan_errors=$(echo "$output" | grep -c "ERROR: AddressSanitizer:")
+exec_ubsan_errors=$(echo "$output" | grep -c "runtime error:")
+
+if [ $exec_san_exit_code -eq 0 ] && [ $exec_asan_errors -eq 0 ] && [ $exec_ubsan_errors -eq 0 ]; then
+    echo "Sanitized Executable: ✓"
+else
+    echo "Sanitized Executable: ERRORS DETECTED ✗"
+    if [ $exec_asan_errors -gt 0 ]; then
+        echo "  - AddressSanitizer errors: $exec_asan_errors"
+    fi
+    if [ $exec_ubsan_errors -gt 0 ]; then
+        echo "  - UndefinedBehavior errors: $exec_ubsan_errors"
+    fi
+    echo
+    echo "First error:"
+    echo "$output" | grep -E "(ERROR: AddressSanitizer:|runtime error:)" -A5 | head -10
+fi
+
+# Step 8: ThreadSanitizer tests
+echo
+echo "Running ThreadSanitizer tests..."
+output=$(make clean test-tsan 2>&1)
+tsan_exit_code=$?
+
+# Count TSan test runs
+tsan_total=$(echo "$output" | grep -c "^Running test: bin/")
+tsan_passed=$(echo "$output" | grep -c "All .* tests passed")
+
+# Check for ThreadSanitizer errors
+tsan_errors=$(echo "$output" | grep -c "WARNING: ThreadSanitizer:")
+data_races=$(echo "$output" | grep -c "data race")
+
+if [ $tsan_exit_code -eq 0 ] && [ $tsan_errors -eq 0 ]; then
+    echo "ThreadSanitizer: $tsan_total tests run, all passed ✓"
+else
+    echo "ThreadSanitizer: $tsan_total tests run, ERRORS DETECTED ✗"
+    echo
+    echo "ThreadSanitizer Report:"
+    echo "  - Data races detected: $data_races"
+    
+    # Show first race details
+    if [ $tsan_errors -gt 0 ]; then
+        echo
+        echo "First data race:"
+        echo "$output" | grep -A15 "WARNING: ThreadSanitizer:" | head -20
+    fi
+fi
+
+# Step 9: ThreadSanitizer executable
+echo
+echo "Running executable with ThreadSanitizer..."
+output=$(make clean run-tsan 2>&1)
+exec_tsan_exit_code=$?
+
+# Check for TSan errors in executable
+exec_tsan_errors=$(echo "$output" | grep -c "WARNING: ThreadSanitizer:")
+exec_data_races=$(echo "$output" | grep -c "data race")
+
+if [ $exec_tsan_exit_code -eq 0 ] && [ $exec_tsan_errors -eq 0 ]; then
+    echo "TSan Executable: ✓"
+else
+    echo "TSan Executable: ERRORS DETECTED ✗"
+    echo "  - Data races detected: $exec_data_races"
+    if [ $exec_tsan_errors -gt 0 ]; then
+        echo
+        echo "First data race:"
+        echo "$output" | grep -A10 "WARNING: ThreadSanitizer:" | head -15
+    fi
 fi
 
 echo
