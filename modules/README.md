@@ -168,6 +168,10 @@ agerun_expression_ast
 ├──c──> agerun_list
 └──c──> agerun_heap
 
+agerun_instruction_ast
+├──c──> agerun_list
+└──c──> agerun_heap
+
 agerun_expression_parser
 ├──c──> agerun_expression_ast
 │       ├──c──> agerun_list
