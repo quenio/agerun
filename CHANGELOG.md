@@ -10,6 +10,11 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - ✅ Added verification steps to confirm scan-build is properly installed
   - ✅ Integrated instructions into Debug and Analysis section
   - ✅ Supports automated installation without user prompts (-y flag)
+- ✅ Enhanced AGENTS.md with build tool requirements:
+  - ✅ Added specific note about scan-build requirement for static analysis
+  - ✅ Listed Makefile targets that require scan-build (analyze, analyze-tests, clean_build.sh)
+  - ✅ Provided quick installation commands for macOS and Ubuntu/Debian
+  - ✅ Referenced CLAUDE.md for detailed setup instructions
 
 ## 2025-06-15 (Part 7)
 - ✅ Fixed scan-build detection on Ubuntu systems:
