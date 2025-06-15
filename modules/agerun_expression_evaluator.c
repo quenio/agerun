@@ -44,14 +44,24 @@ void ar__expression_evaluator__destroy(expression_evaluator_t *own_evaluator)
     }
 }
 
-// Stub implementations for now - will implement with TDD
 data_t* ar__expression_evaluator__evaluate_literal_int(
     expression_evaluator_t *mut_evaluator,
     const expression_ast_t *ref_node)
 {
-    (void)mut_evaluator;
-    (void)ref_node;
-    return NULL;
+    if (!mut_evaluator || !ref_node) {
+        ar__io__error("ar__expression_evaluator__evaluate_literal_int: NULL evaluator or node");
+        return NULL;
+    }
+    
+    // Check if the node is an integer literal
+    if (ar__expression_ast__get_type(ref_node) != EXPR_AST_LITERAL_INT) {
+        // Not an error, just not the right type
+        return NULL;
+    }
+    
+    // Get the integer value and create a data_t
+    int value = ar__expression_ast__get_int_value(ref_node);
+    return ar__data__create_integer(value);
 }
 
 data_t* ar__expression_evaluator__evaluate_literal_double(

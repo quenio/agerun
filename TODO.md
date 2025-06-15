@@ -214,7 +214,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Extract expression execution from expression module and move to interpreter:
     - [x] Create expression_evaluator module with opaque evaluator_t type (Completed 2025-06-15)
     - [x] Implement ar__expression_evaluator__create() and destroy() (Completed 2025-06-15)
-    - [ ] Implement ar__expression_evaluator__evaluate_literal_int()
+    - [x] Implement ar__expression_evaluator__evaluate_literal_int() (Completed 2025-06-15)
     - [ ] Implement ar__expression_evaluator__evaluate_literal_double()
     - [ ] Implement ar__expression_evaluator__evaluate_literal_string()
     - [ ] Implement ar__expression_evaluator__evaluate_memory_access()
