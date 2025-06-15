@@ -140,6 +140,67 @@ static void test_evaluate_literal_int_wrong_type(void) {
     printf("  ✓ Return NULL for non-integer node\n");
 }
 
+/**
+ * Test evaluating double literal
+ */
+static void test_evaluate_literal_double(void) {
+    printf("Testing expression evaluator literal double...\n");
+    
+    // Given a memory map and evaluator
+    data_t *memory = ar__data__create_map();
+    expression_evaluator_t *evaluator = ar__expression_evaluator__create(memory, NULL);
+    assert(evaluator != NULL);
+    
+    // Given a double literal AST node
+    expression_ast_t *ast = ar__expression_ast__create_literal_double(3.14);
+    assert(ast != NULL);
+    
+    // When evaluating the double literal
+    data_t *result = ar__expression_evaluator__evaluate_literal_double(evaluator, ast);
+    
+    // Then it should return the double value
+    assert(result != NULL);
+    assert(ar__data__get_type(result) == DATA_DOUBLE);
+    assert(ar__data__get_double(result) == 3.14);
+    
+    // Clean up
+    ar__data__destroy(result);
+    ar__expression_ast__destroy(ast);
+    ar__expression_evaluator__destroy(evaluator);
+    ar__data__destroy(memory);
+    
+    printf("  ✓ Evaluate double literal\n");
+}
+
+/**
+ * Test evaluating non-double node returns NULL
+ */
+static void test_evaluate_literal_double_wrong_type(void) {
+    printf("Testing expression evaluator literal double with wrong type...\n");
+    
+    // Given a memory map and evaluator
+    data_t *memory = ar__data__create_map();
+    expression_evaluator_t *evaluator = ar__expression_evaluator__create(memory, NULL);
+    assert(evaluator != NULL);
+    
+    // Given an integer literal AST node (wrong type)
+    expression_ast_t *ast = ar__expression_ast__create_literal_int(42);
+    assert(ast != NULL);
+    
+    // When evaluating with double evaluator
+    data_t *result = ar__expression_evaluator__evaluate_literal_double(evaluator, ast);
+    
+    // Then it should return NULL
+    assert(result == NULL);
+    
+    // Clean up
+    ar__expression_ast__destroy(ast);
+    ar__expression_evaluator__destroy(evaluator);
+    ar__data__destroy(memory);
+    
+    printf("  ✓ Return NULL for non-double node\n");
+}
+
 int main(void) {
     printf("\n=== Expression Evaluator Tests ===\n\n");
     
@@ -148,6 +209,8 @@ int main(void) {
     test_create_null_memory();
     test_evaluate_literal_int();
     test_evaluate_literal_int_wrong_type();
+    test_evaluate_literal_double();
+    test_evaluate_literal_double_wrong_type();
     
     printf("\nAll expression_evaluator tests passed!\n");
     return 0;
