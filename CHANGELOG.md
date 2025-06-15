@@ -2,6 +2,9 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-06-15 (Part 11)
+- ✅ Fixed sanitizer false positive by skipping intentional leak test when ASan is enabled
+
 ## 2025-06-15 (Part 10)
 - ✅ Enhanced sanitizer support in build system:
   - ✅ Added UndefinedBehaviorSanitizer (UBSan) to existing AddressSanitizer (ASan) configuration

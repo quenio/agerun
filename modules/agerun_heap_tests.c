@@ -176,6 +176,9 @@ static void test_ownership_assertions(void) {
  *   - Test success (memory tracking works correctly)
  *   - Leak warning (expected and intentional)
  */
+#ifdef __SANITIZE_ADDRESS__
+__attribute__((unused))
+#endif
 static void test_leak_reporting(void) {
     start_test("test_leak_reporting");
 
@@ -254,7 +257,11 @@ int main(void) {
     test_ownership_assertions();
     
     // Memory leak detection tests
+#ifdef __SANITIZE_ADDRESS__
+    printf("Skipping test_leak_reporting under ASan\n");
+#else
     test_leak_reporting();
+#endif
     
     // Report generation test
     test_memory_report();
