@@ -118,6 +118,15 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Immediate Priorities (Next Steps)
 
+### HIGH - Complete Expression Module Refactoring
+Now that expression_parser and expression_evaluator are complete, the next priority is to integrate them:
+1. **First**: Update interpreter to use expression_evaluator for AST evaluation
+2. **Second**: Update expression module to use parser and call interpreter
+3. **Third**: Remove old parsing/evaluation code from expression module
+4. **Fourth**: Update all tests to verify the new architecture works correctly
+
+This will complete the separation of parsing and execution for expressions, setting the pattern for the instruction module refactoring.
+
 ### LOW - Remaining circular dependency (heap ↔ io)
 - [ ] Consider resolving the circular dependency between heap and io modules:
   - [ ] heap uses io for error reporting (ar__io__error, ar__io__warning)
@@ -219,20 +228,41 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] Implement ar__expression_evaluator__evaluate_literal_string() (Completed 2025-06-15)
     - [x] Implement ar__expression_evaluator__evaluate_memory_access() (Completed 2025-06-15)
     - [x] Implement ar__expression_evaluator__evaluate_binary_op() (Completed 2025-06-15)
-    - [ ] Add ar__interpreter__evaluate_expression_ast() function to interpreter module
-    - [ ] Move all expression evaluation logic from expression to interpreter
-    - [ ] Update interpreter to handle expression AST nodes as input
-    - [ ] Ensure interpreter can evaluate all expression types (literals, memory access, binary ops)
-    - [ ] Update tests to verify expression evaluation through interpreter
-  - [ ] Integrate parser into expression module:
+    - [ ] Integrate expression_evaluator into interpreter module:
+      - [ ] Add expression_evaluator as dependency to interpreter module
+      - [ ] Create expression_evaluator instance in interpreter initialization
+      - [ ] Add ar__interpreter__evaluate_expression_ast() function that uses evaluator
+      - [ ] Update _execute_assignment to use expression_evaluator
+      - [ ] Update _execute_send to use expression_evaluator for message parameter
+      - [ ] Update _execute_if to use expression_evaluator for condition
+      - [ ] Update _execute_parse to use expression_evaluator for template and input
+      - [ ] Update _execute_build to use expression_evaluator for template and values
+      - [ ] Update _execute_method to use expression_evaluator for parameters
+      - [ ] Update _execute_agent to use expression_evaluator for parameters
+      - [ ] Update _execute_destroy to use expression_evaluator for parameters
+      - [ ] Remove old expression evaluation code from interpreter
+      - [ ] Update interpreter tests to verify AST-based evaluation
+      - [ ] Ensure proper memory management (references vs owned values)
+      - [ ] Test nested expressions work correctly through interpreter
+  - [ ] Integrate parser and evaluator into expression module:
+    - [ ] Add expression_parser as dependency to expression module
     - [ ] Change ar__expression__parse() to use expression_parser module
     - [ ] Remove old parsing logic from expression module
-    - [ ] Update ar__expression__evaluate() to parse then pass AST to interpreter
-    - [ ] Ensure backward compatibility for existing callers
+    - [ ] Update ar__expression__evaluate() to:
+      - [ ] Parse expression string to AST using expression_parser
+      - [ ] Pass AST to interpreter's evaluate_expression_ast function
+      - [ ] Return the evaluated result maintaining same interface
+    - [ ] Update ar__expression__parse_and_evaluate() similarly
+    - [ ] Ensure backward compatibility - same function signatures
+    - [ ] Remove ar__expression__take_ownership (no longer needed with AST)
     - [ ] Update expression module tests for new implementation
-  - [ ] Update all callers to use new AST-based API
-  - [ ] Remove ar__expression__take_ownership (no longer needed with AST)
-  - [ ] Ensure clean separation between parsing and execution phases
+    - [ ] Verify all existing callers continue to work unchanged
+  - [ ] Clean up expression module after refactoring:
+    - [ ] Remove old evaluation logic (now in expression_evaluator)
+    - [ ] Remove old parsing logic (now in expression_parser)
+    - [ ] Keep only the public interface functions as thin wrappers
+    - [ ] Update module documentation to reflect new architecture
+    - [ ] Ensure clean separation between parsing and execution phases
 - [ ] Refactor instruction module to separate parsing from execution (similar to expression module):
   - [ ] Create instruction AST structures:
     - [ ] Create instruction_ast module with node types for all instruction types
