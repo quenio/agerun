@@ -6,9 +6,9 @@ CC = gcc-13
 
 # Sanitizer compiler selection based on OS
 ifeq ($(UNAME_S),Darwin)
-    SANITIZER_CC = clang
+    SANITIZER_CC := clang
 else
-    SANITIZER_CC = $(CC)
+    SANITIZER_CC := $(CC)
 endif
 
 CFLAGS = -Wall -Wextra -Werror -Wpedantic -Wconversion -Wshadow -Wcast-qual \
