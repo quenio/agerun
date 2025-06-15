@@ -25,9 +25,6 @@ RELEASE_CFLAGS = -O3 -DNDEBUG
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
 # Clang Static Analyzer command
 SCAN_BUILD = PATH="/opt/homebrew/opt/llvm/bin:$$PATH" scan-build -o bin/scan-build-results
-# Analyzer flags directly for Clang (used when scan-build is not available)
-ANALYZER_FLAGS = -Xclang -analyze -Xclang -analyzer-checker=core -Xclang -analyzer-checker=unix \
-                 -Xclang -analyzer-checker=deadcode -Xclang -analyzer-checker=security
 
 # Source files (excluding test files)
 ALL_C_FILES = $(wildcard modules/*.c)
@@ -144,12 +141,12 @@ analyze:
 	@if command -v /opt/homebrew/opt/llvm/bin/scan-build >/dev/null 2>&1 || command -v scan-build >/dev/null 2>&1; then \
 		mkdir -p bin/scan-build-results bin/obj; \
 		rm -rf bin/scan-build-results/*; \
-		echo "Running scan-build on source files..."; \
+		echo "Running scan-build on source files with $(CC)..."; \
 		total_bugs=0; \
 		rm -f bin/scan-build-analyze.log; \
 		for file in $(SRC); do \
 			echo "Analyzing $$file..."; \
-			$(SCAN_BUILD) --status-bugs $(CC) -c -I./modules $$file -o bin/obj/$$(basename $$file .c).o 2>&1 | tee bin/scan-build-temp.log; \
+			$(SCAN_BUILD) --status-bugs --use-cc=$(CC) $(CC) -c -I./modules $$file -o bin/obj/$$(basename $$file .c).o 2>&1 | tee bin/scan-build-temp.log; \
 			if grep -q "scan-build: [0-9]* bug" bin/scan-build-temp.log && ! grep -q "scan-build: 0 bugs found" bin/scan-build-temp.log; then \
 				file_bugs=$$(grep "scan-build: [0-9]* bug" bin/scan-build-temp.log | tail -1 | sed 's/.*scan-build: \([0-9]*\) bug.*/\1/'); \
 				echo "  ✗ $$file_bugs bugs found in $$file"; \
@@ -165,23 +162,11 @@ analyze:
 			echo "Static analysis passed: no bugs found"; \
 		fi; \
 	else \
-		echo "scan-build not found, using clang analyzer directly"; \
-		analysis_failed=0; \
-		for file in $(SRC); do \
-			echo "Analyzing $$file..."; \
-			if ! $(CC) $(CFLAGS) $(ANALYZER_FLAGS) -c -I./modules $$file 2>&1 | tee -a bin/clang-analyze.log | grep -E "warning:|error:"; then \
-				echo "  ✓ No issues found"; \
-			else \
-				echo "  ✗ Issues found in $$file"; \
-				analysis_failed=1; \
-			fi; \
-		done; \
-		if [ $$analysis_failed -eq 1 ]; then \
-			echo "Static analysis FAILED: issues found"; \
-			exit 1; \
-		else \
-			echo "Static analysis passed: no issues found"; \
-		fi; \
+		echo "ERROR: scan-build not found. Static analysis requires Clang Static Analyzer."; \
+		echo "On macOS: brew install llvm"; \
+		echo "On Ubuntu: sudo apt-get install clang-tools"; \
+		echo "On other systems: install clang-tools or llvm package"; \
+		exit 1; \
 	fi
 
 # Static analysis for tests
@@ -189,12 +174,12 @@ analyze-tests:
 	@if command -v /opt/homebrew/opt/llvm/bin/scan-build >/dev/null 2>&1 || command -v scan-build >/dev/null 2>&1; then \
 		mkdir -p bin/scan-build-results bin/obj; \
 		rm -rf bin/scan-build-results/*; \
-		echo "Running scan-build on test files..."; \
+		echo "Running scan-build on test files with $(CC)..."; \
 		total_bugs=0; \
 		rm -f bin/scan-build-analyze-tests.log; \
 		for file in $(SRC) $(TEST_SRC) $(METHOD_TEST_SRC); do \
 			echo "Analyzing $$file..."; \
-			$(SCAN_BUILD) --status-bugs $(CC) -c -I./modules $$file -o bin/obj/$$(basename $$file .c).o 2>&1 | tee bin/scan-build-temp-tests.log; \
+			$(SCAN_BUILD) --status-bugs --use-cc=$(CC) $(CC) -c -I./modules $$file -o bin/obj/$$(basename $$file .c).o 2>&1 | tee bin/scan-build-temp-tests.log; \
 			if grep -q "scan-build: [0-9]* bug" bin/scan-build-temp-tests.log && ! grep -q "scan-build: 0 bugs found" bin/scan-build-temp-tests.log; then \
 				file_bugs=$$(grep "scan-build: [0-9]* bug" bin/scan-build-temp-tests.log | tail -1 | sed 's/.*scan-build: \([0-9]*\) bug.*/\1/'); \
 				echo "  ✗ $$file_bugs bugs found in $$file"; \
@@ -210,23 +195,11 @@ analyze-tests:
 			echo "Static analysis passed: no bugs found in tests"; \
 		fi; \
 	else \
-		echo "scan-build not found, using clang analyzer directly"; \
-		analysis_failed=0; \
-		for file in $(SRC) $(TEST_SRC) $(METHOD_TEST_SRC); do \
-			echo "Analyzing $$file..."; \
-			if ! $(CC) $(CFLAGS) $(ANALYZER_FLAGS) -c -I./modules $$file 2>&1 | tee -a bin/clang-analyze-tests.log | grep -E "warning:|error:"; then \
-				echo "  ✓ No issues found"; \
-			else \
-				echo "  ✗ Issues found in $$file"; \
-				analysis_failed=1; \
-			fi; \
-		done; \
-		if [ $$analysis_failed -eq 1 ]; then \
-			echo "Static analysis FAILED: issues found in tests"; \
-			exit 1; \
-		else \
-			echo "Static analysis passed: no issues found in tests"; \
-		fi; \
+		echo "ERROR: scan-build not found. Static analysis requires Clang Static Analyzer."; \
+		echo "On macOS: brew install llvm"; \
+		echo "On Ubuntu: sudo apt-get install clang-tools"; \
+		echo "On other systems: install clang-tools or llvm package"; \
+		exit 1; \
 	fi
 
 .PHONY: all debug release sanitize clean test test-sanitize executable executable-sanitize run run-sanitize analyze analyze-tests

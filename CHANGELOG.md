@@ -2,6 +2,15 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-06-15 (Part 6)
+- ✅ Improved static analysis configuration in Makefile:
+  - ✅ Added `--use-cc=$(CC)` flag to ensure scan-build uses gcc-13 for compilation
+  - ✅ Removed broken fallback mode that tried to use gcc-13 with Clang-specific flags
+  - ✅ Removed unused `ANALYZER_FLAGS` variable
+  - ✅ Added clear error messages with installation instructions when scan-build is not found
+  - ✅ Static analysis now requires scan-build but uses gcc-13 consistently
+  - ✅ Clarified that scan-build uses clang for analysis while compiling with gcc-13
+
 ## 2025-06-15 (Part 5)
 - ✅ Fixed variable shadowing warning and removed platform-specific code:
   - ✅ Fixed shadowing warning in `ar__io__report_allocation_failure` (renamed `line` buffer to `buffer`)
