@@ -2,6 +2,14 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-06-15 (Part 7)
+- ✅ Fixed scan-build detection on Ubuntu systems:
+  - ✅ Made SCAN_BUILD variable platform-aware using UNAME_S detection
+  - ✅ macOS: Continues to prepend homebrew LLVM path for scan-build
+  - ✅ Linux/Ubuntu: Uses system scan-build without path modification
+  - ✅ Resolves issue where scan-build worked from command line but not in Makefile
+  - ✅ Maintains compatibility with both macOS and Linux build environments
+
 ## 2025-06-15 (Part 6)
 - ✅ Improved static analysis configuration in Makefile:
   - ✅ Added `--use-cc=$(CC)` flag to ensure scan-build uses gcc-13 for compilation

@@ -24,7 +24,11 @@ RELEASE_CFLAGS = -O3 -DNDEBUG
 # Address Sanitizer flags
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
 # Clang Static Analyzer command
-SCAN_BUILD = PATH="/opt/homebrew/opt/llvm/bin:$$PATH" scan-build -o bin/scan-build-results
+ifeq ($(UNAME_S),Darwin)
+    SCAN_BUILD = PATH="/opt/homebrew/opt/llvm/bin:$$PATH" scan-build -o bin/scan-build-results
+else
+    SCAN_BUILD = scan-build -o bin/scan-build-results
+endif
 
 # Source files (excluding test files)
 ALL_C_FILES = $(wildcard modules/*.c)
