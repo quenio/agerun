@@ -1,4 +1,16 @@
-CC = gcc-15
+# Detect OS for sanitizer compiler selection
+UNAME_S := $(shell uname -s)
+
+# Default compiler
+CC = gcc-13
+
+# Sanitizer compiler selection based on OS
+ifeq ($(UNAME_S),Darwin)
+    SANITIZER_CC = clang
+else
+    SANITIZER_CC = $(CC)
+endif
+
 CFLAGS = -Wall -Wextra -Werror -Wpedantic -Wconversion -Wshadow -Wcast-qual \
          -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wstrict-aliasing=2 \
          -Wnull-dereference -Wformat=2 -Wuninitialized -Wpointer-arith \
@@ -44,6 +56,7 @@ release: CFLAGS += $(RELEASE_CFLAGS)
 release: lib
 
 # Sanitize target with Address Sanitizer
+sanitize: CC = $(SANITIZER_CC)
 sanitize: CFLAGS += $(DEBUG_CFLAGS) $(ASAN_FLAGS)
 sanitize: LDFLAGS += $(ASAN_FLAGS)
 sanitize: lib
@@ -68,7 +81,7 @@ executable: lib bin
 # Executable application with Address Sanitizer - build only
 executable-sanitize: clean
 	$(MAKE) sanitize
-	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) $(ASAN_FLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS) $(ASAN_FLAGS)
+	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(ASAN_FLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS) $(ASAN_FLAGS)
 
 # Run the executable (always in debug mode)
 run: debug executable
@@ -96,8 +109,8 @@ test: clean debug
 # Build and run tests with Address Sanitizer
 test-sanitize: clean
 	$(MAKE) sanitize
-	$(MAKE) test_lib CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(ASAN_FLAGS)" LDFLAGS="$(LDFLAGS) $(ASAN_FLAGS)"
-	$(MAKE) $(TEST_BIN) $(METHOD_TEST_BIN) CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(ASAN_FLAGS)" LDFLAGS="$(LDFLAGS) $(ASAN_FLAGS)"
+	$(MAKE) test_lib CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(ASAN_FLAGS)" LDFLAGS="$(LDFLAGS) $(ASAN_FLAGS)"
+	$(MAKE) $(TEST_BIN) $(METHOD_TEST_BIN) CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(ASAN_FLAGS)" LDFLAGS="$(LDFLAGS) $(ASAN_FLAGS)"
 	@cd bin && for test in $(ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
 		echo "Running $$test with Address Sanitizer"; \

@@ -2,6 +2,16 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-06-15 (Part 3)
+- ✅ Updated build system to use gcc-13 and improved sanitizer support:
+  - ✅ Changed default compiler from gcc-15 to gcc-13 for better compatibility
+  - ✅ Added OS detection in Makefile to handle platform-specific sanitizer requirements
+  - ✅ Configured clang as sanitizer compiler on macOS (due to gcc ASan library issues)
+  - ✅ Maintained gcc-13 as sanitizer compiler on Linux
+  - ✅ All 33 tests pass with both regular and sanitizer builds
+  - ✅ Zero memory leaks detected in all test configurations
+  - ✅ Build system now properly supports AddressSanitizer on both macOS and Linux
+
 ## 2025-06-15 (Part 2)
 - ✅ Updated Makefile to use gcc-15 compiler:
   - ✅ Changed CC variable from gcc to gcc-15

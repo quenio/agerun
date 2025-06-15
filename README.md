@@ -15,7 +15,7 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 
 ### Prerequisites
 
-- C compiler (gcc or clang)
+- C compiler (gcc-13)
 - Make
 
 ### Build Steps
@@ -46,6 +46,8 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 AgeRun includes built-in support for comprehensive memory error detection:
 
 #### Runtime Detection with Address Sanitizer (ASan)
+
+Note: On macOS, the build system automatically uses clang for sanitizer builds due to better AddressSanitizer support. On Linux, gcc-13 is used for sanitizer builds.
 
 1. Build with Address Sanitizer enabled:
    ```

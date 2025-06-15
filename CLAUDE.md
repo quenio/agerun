@@ -774,3 +774,4 @@ ar__system__init(NULL, NULL);
 - End files with newline
 - Use make for builds
 - Process messages after sending
+- Read README.md for project overview and user documentation
