@@ -118,14 +118,21 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Immediate Priorities (Next Steps)
 
-### HIGH - Complete Expression Module Refactoring
-Now that expression_parser and expression_evaluator are complete, the next priority is to integrate them:
-1. **First**: Update interpreter to use expression_evaluator for AST evaluation
-2. **Second**: Update expression module to use parser and call interpreter
-3. **Third**: Remove old parsing/evaluation code from expression module
-4. **Fourth**: Update all tests to verify the new architecture works correctly
+### HIGH - Complete Instruction Module Refactoring FIRST
+Before we can complete the expression refactoring, we must extract instruction parsing and evaluation:
+1. **First**: Create instruction_parser module to extract parsing from instruction module
+2. **Second**: Create instruction_evaluator module to extract evaluation from interpreter
+3. **Third**: Update instruction module to use instruction_parser
+4. **Fourth**: Update interpreter to use both expression_evaluator and instruction_evaluator
 
-This will complete the separation of parsing and execution for expressions, setting the pattern for the instruction module refactoring.
+### THEN - Complete Expression Module Integration
+Once instruction refactoring is done, we can properly integrate everything:
+1. Update interpreter to use expression_evaluator for AST evaluation
+2. Update expression module to use parser and call interpreter
+3. Remove old parsing/evaluation code from expression module
+4. Update all tests to verify the new architecture works correctly
+
+This order ensures clean separation of concerns across all modules.
 
 ### LOW - Remaining circular dependency (heap ↔ io)
 - [ ] Consider resolving the circular dependency between heap and io modules:
@@ -205,6 +212,39 @@ This will complete the separation of parsing and execution for expressions, sett
   - [x] Test all instruction types (send, if, parse, build, method, agent, destroy) (Completed 2025-06-14)
   - [x] Verify parsed AST structure correctness (Completed 2025-06-14)
   - [x] Initial error handling tests revealed parser is too permissive (Completed 2025-06-14)
+
+### CRITICAL - Refactor instruction module FIRST (Required before completing expression refactoring)
+- [ ] Create instruction AST structures:
+  - [ ] Create instruction_ast module with node types for all instruction types
+  - [ ] Define AST nodes for assignment instructions (memory.x := expr)
+  - [ ] Define AST nodes for function call instructions (send, if, parse, build, method, agent, destroy)
+  - [ ] Define AST nodes for function calls with assignment (memory.x := func())
+  - [ ] Implement node creation functions with proper ownership semantics
+  - [ ] Implement accessor functions for retrieving node data
+  - [ ] Add recursive destruction for proper memory cleanup
+  - [ ] Write comprehensive tests following TDD methodology
+- [ ] Create instruction_parser module to extract parsing from instruction:
+  - [ ] Create agerun_instruction_parser.h with public interface
+  - [ ] Define opaque instruction_parser_t structure
+  - [ ] Implement ar__instruction_parser__create(const char*) to create parser instance
+  - [ ] Implement ar__instruction_parser__destroy() for cleanup
+  - [ ] Implement ar__instruction_parser__parse() to return instruction AST
+  - [ ] Extract all parsing logic from instruction module
+  - [ ] Write comprehensive tests following TDD methodology
+  - [ ] Ensure parser handles all instruction types correctly
+  - [ ] No dependency on instruction module for clean separation
+- [ ] Create instruction_evaluator module to extract evaluation from interpreter:
+  - [ ] Create agerun_instruction_evaluator.h with public interface
+  - [ ] Define opaque instruction_evaluator_t structure
+  - [ ] Implement ar__instruction_evaluator__create() with agent and memory parameters
+  - [ ] Implement ar__instruction_evaluator__destroy() for cleanup
+  - [ ] Extract all _execute_* functions from interpreter module
+  - [ ] Move expression evaluation logic to use expression_evaluator
+  - [ ] Write comprehensive tests following TDD methodology
+  - [ ] Ensure evaluator handles all instruction types correctly
+  - [ ] Maintain proper memory ownership semantics
+
+### THEN - Complete expression module refactoring:
 - [ ] Refactor expression module to separate parsing from execution:
   - [x] Create expression AST structures (literal, memory access, arithmetic, comparison) (Completed 2025-06-14)
     - [x] Created new expression_ast module (renamed from expression_ast_node) with all AST node types
@@ -263,33 +303,6 @@ This will complete the separation of parsing and execution for expressions, sett
     - [ ] Keep only the public interface functions as thin wrappers
     - [ ] Update module documentation to reflect new architecture
     - [ ] Ensure clean separation between parsing and execution phases
-- [ ] Refactor instruction module to separate parsing from execution (similar to expression module):
-  - [ ] Create instruction AST structures:
-    - [ ] Create instruction_ast module with node types for all instruction types
-    - [ ] Define AST nodes for assignment instructions
-    - [ ] Define AST nodes for function call instructions (send, if, parse, build, method, agent, destroy)
-    - [ ] Define AST nodes for function calls with assignment
-    - [ ] Implement node creation functions with proper ownership semantics
-    - [ ] Implement accessor functions for retrieving node data
-    - [ ] Add recursive destruction for proper memory cleanup
-    - [ ] Write comprehensive tests following TDD methodology
-  - [ ] Create instruction_parser module for AST generation:
-    - [ ] Design opaque instruction_parser_t structure to track parsing state
-    - [ ] Implement ar__instruction_parser__create(const char*) to create parser instance
-    - [ ] Implement ar__instruction_parser__destroy() for cleanup
-    - [ ] Parser functions take only parser instance parameter
-    - [ ] Return AST nodes using instruction_ast module
-    - [ ] No dependency on instruction module for better separation
-    - [ ] Implement ar__instruction_parser__parse() main entry point
-    - [ ] Add comprehensive parser tests
-  - [ ] Update instruction module to use parser and interpreter:
-    - [ ] Change ar__instruction__parse to use instruction_parser module
-    - [ ] Remove parsing logic from instruction module
-    - [ ] Keep only AST traversal and coordination logic
-  - [ ] Move instruction execution logic to interpreter module:
-    - [ ] Interpreter already handles execution, ensure it works with new AST
-    - [ ] Update interpreter to use instruction AST nodes
-    - [ ] Ensure clean separation between parsing and execution
 - [ ] Break down the massive ar_instruction_run function (2500+ lines):
   - [ ] Extract memory access operations
   - [ ] Extract assignment operations  
