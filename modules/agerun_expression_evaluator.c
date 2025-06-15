@@ -108,9 +108,68 @@ data_t* ar__expression_evaluator__evaluate_memory_access(
     expression_evaluator_t *mut_evaluator,
     const expression_ast_t *ref_node)
 {
-    (void)mut_evaluator;
-    (void)ref_node;
-    return NULL;
+    if (!mut_evaluator || !ref_node) {
+        ar__io__error("ar__expression_evaluator__evaluate_memory_access: NULL evaluator or node");
+        return NULL;
+    }
+    
+    // Check if the node is a memory access
+    if (ar__expression_ast__get_type(ref_node) != EXPR_AST_MEMORY_ACCESS) {
+        // Not an error, just not the right type
+        return NULL;
+    }
+    
+    // Get the base accessor (should be "memory" or "context")
+    const char *base = ar__expression_ast__get_memory_base(ref_node);
+    if (!base) {
+        ar__io__error("ar__expression_evaluator__evaluate_memory_access: No base accessor");
+        return NULL;
+    }
+    
+    // Get the path components
+    size_t path_count = 0;
+    char **path = ar__expression_ast__get_memory_path(ref_node, &path_count);
+    
+    // Determine which map to use based on the base
+    data_t *map = NULL;
+    if (strcmp(base, "memory") == 0) {
+        map = mut_evaluator->ref_memory;
+    } else if (strcmp(base, "context") == 0) {
+        map = mut_evaluator->ref_context;
+    } else {
+        ar__io__error("ar__expression_evaluator__evaluate_memory_access: Invalid base accessor '%s'", base);
+        if (path) AR__HEAP__FREE(path);
+        return NULL;
+    }
+    
+    // If context was requested but is NULL, return NULL
+    if (!map) {
+        if (path) AR__HEAP__FREE(path);
+        return NULL;
+    }
+    
+    // Navigate through the path
+    data_t *current = map;
+    for (size_t i = 0; i < path_count; i++) {
+        if (ar__data__get_type(current) != DATA_MAP) {
+            // Can't navigate further if not a map
+            AR__HEAP__FREE(path);
+            return NULL;
+        }
+        
+        current = ar__data__get_map_data(current, path[i]);
+        if (!current) {
+            // Key not found
+            AR__HEAP__FREE(path);
+            return NULL;
+        }
+    }
+    
+    // Clean up the path array (but not the strings - they're borrowed)
+    if (path) AR__HEAP__FREE(path);
+    
+    // Return the found value (it's a reference, not owned)
+    return current;
 }
 
 data_t* ar__expression_evaluator__evaluate_binary_op(
