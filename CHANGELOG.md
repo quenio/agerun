@@ -2,6 +2,15 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-06-15 (Part 8)
+- ✅ Added clang-tools installation instructions to CLAUDE.md:
+  - ✅ Added macOS installation using Homebrew (brew install llvm)
+  - ✅ Added Ubuntu/Debian installation using apt-get
+  - ✅ Included PATH configuration for macOS users
+  - ✅ Added verification steps to confirm scan-build is properly installed
+  - ✅ Integrated instructions into Debug and Analysis section
+  - ✅ Supports automated installation without user prompts (-y flag)
+
 ## 2025-06-15 (Part 7)
 - ✅ Fixed scan-build detection on Ubuntu systems:
   - ✅ Made SCAN_BUILD variable platform-aware using UNAME_S detection

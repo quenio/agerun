@@ -549,6 +549,39 @@ This prevents common errors like:
 
 ### 9. Debug and Analysis
 
+**Installing clang-tools (for Static Analysis)**:
+
+The AgeRun build system uses `scan-build` for static analysis. If `scan-build` is not available on your system, install it using the appropriate package manager:
+
+#### macOS (using Homebrew)
+```bash
+# Install LLVM which includes scan-build
+brew install llvm
+
+# The scan-build command will be available at:
+# /opt/homebrew/opt/llvm/bin/scan-build
+
+# Add to your PATH:
+export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+```
+
+#### Ubuntu/Debian
+```bash
+# Install clang-tools which includes scan-build
+apt-get update && apt-get install -y clang-tools
+
+# scan-build should now be available in your PATH
+```
+
+#### Verifying Installation
+```bash
+which scan-build
+# Should output the path to scan-build
+
+scan-build --version
+# Should show the version information
+```
+
 **Memory Debugging**:
 - Use ASan via `make test-sanitize`
 - Check `bin/heap_memory_report.log` for leaks
