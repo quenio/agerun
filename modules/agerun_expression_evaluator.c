@@ -6,6 +6,7 @@
 #include "agerun_expression_evaluator.h"
 #include "agerun_heap.h"
 #include "agerun_io.h"
+#include <stdlib.h>
 #include <string.h>
 
 /**

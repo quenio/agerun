@@ -176,6 +176,13 @@ agerun_expression_parser
 ├──c──> agerun_string
 └──c──> agerun_heap
 
+agerun_expression_evaluator
+├──h──> agerun_expression_ast
+├──h──> agerun_data
+├──c──> agerun_string
+├──c──> agerun_io
+└──c──> agerun_heap
+
 Fixture Modules:
 agerun_method_fixture
 ├──c──> agerun_system
@@ -274,6 +281,12 @@ agerun_expression_parser_tests
 ├──c──> agerun_expression_parser (module under test)
 ├──c──> agerun_expression_ast
 ├──c──> agerun_list
+└──c──> agerun_heap
+
+agerun_expression_evaluator_tests
+├──c──> agerun_expression_evaluator (module under test)
+├──c──> agerun_expression_ast
+├──c──> agerun_data
 └──c──> agerun_heap
 
 agerun_instruction_tests
@@ -437,9 +450,11 @@ The AgeRun system is organized into hierarchical layers, with each layer buildin
                                ▼                                 └─│                              │
 ┌───────────────────────────────────────────────────────────┐      │      Fixture Modules         │
 │                  Foundation Modules                       │      │ (agerun_method_fixture,      │
-│  (agerun_data, agerun_expression, agerun_instruction,     │ ◄────┤  agerun_instruction_fixture, │
-│   agerun_interpreter, agerun_method, agerun_methodology)  │      │  agerun_system_fixture,      │
-└──────────────────────────────┬────────────────────────────┘      │  agerun_interpreter_fixture) │
+│  (agerun_data, agerun_expression, agerun_expression_ast,  │      │  agerun_instruction_fixture, │
+│   agerun_expression_parser, agerun_expression_evaluator,  │ ◄────┤  agerun_system_fixture,      │
+│   agerun_instruction, agerun_interpreter, agerun_method,  │      │  agerun_interpreter_fixture) │
+│   agerun_methodology)                                     │      │                              │
+└──────────────────────────────┬────────────────────────────┘      │                              │
                                │                                   └──────────────────────────────┘
                                ▼                                   
 ┌───────────────────────────────────────────────────────────┐      
@@ -639,6 +654,22 @@ The [expression parser module](agerun_expression_parser.md) provides a recursive
 - **Memory Safety**: Zero memory leaks with proper cleanup of temporary structures
 - **Depends on AST**: Uses expression_ast module for building parse trees
 - **Depends on List**: Uses list module for managing path components during parsing
+
+### Expression Evaluator Module (`agerun_expression_evaluator`)
+
+The expression evaluator module provides evaluation of expression ASTs against memory and context:
+
+- **AST Evaluation**: Evaluates expression AST nodes to produce data values
+- **Opaque Evaluator**: Uses opaque structure to hold memory and context references
+- **Type-Specific Functions**: Separate evaluation functions for each AST node type
+- **Memory Access**: Evaluates memory.x and context.x paths with nested navigation
+- **Binary Operations**: Supports all arithmetic and comparison operators
+- **Type Conversions**: Handles automatic promotion between integers and doubles
+- **String Operations**: Implements string concatenation and comparison
+- **Ownership Semantics**: Returns references for memory access, owned values for operations
+- **Recursive Evaluation**: Properly evaluates nested expressions
+- **Depends on AST**: Uses expression_ast module for node inspection
+- **Depends on Data**: Uses data module for value creation and manipulation
 
 ### Instruction Module (`agerun_instruction`)
 
