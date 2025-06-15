@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <time.h>
+#include <inttypes.h>
 
 /* Constants are now defined in their respective module header files:
  * - MAX_METHODS, MAX_VERSIONS_PER_METHOD, MAX_METHOD_NAME_LENGTH, MAX_INSTRUCTIONS_LENGTH in agerun_methodology.h
@@ -127,20 +128,20 @@ bool ar__system__process_next_message(void) {
     
     // Find an agent with a non-empty message queue
     int64_t agent_id = ar__agency__get_first_agent();
-    printf("DEBUG: First agent ID: %lld\n", (long long)agent_id);
+    printf("DEBUG: First agent ID: %" PRId64 "\n", agent_id);
     while (agent_id != 0) {
         if (ar__agency__agent_has_messages(agent_id)) {
-            printf("DEBUG: Agent %lld has messages\n", (long long)agent_id);
+            printf("DEBUG: Agent %" PRId64 " has messages\n", agent_id);
             // Process one message
             data_t *own_message = ar__agency__get_agent_message(agent_id);
             if (own_message) {
-                printf("DEBUG: Got message from agent %lld\n", (long long)agent_id);
+                printf("DEBUG: Got message from agent %" PRId64 "\n", agent_id);
                 // Get the agent's method
                 const method_t *ref_method = ar__agency__get_agent_method(agent_id);
                 if (ref_method) {
                     printf("DEBUG: Agent has method\n");
                     // Print message based on its type
-                    printf("Agent %lld received message: ", (long long)agent_id);
+                    printf("Agent %" PRId64 " received message: ", agent_id);
                     data_type_t msg_type = ar__data__get_type(own_message);
                     if (msg_type == DATA_STRING) {
                         printf("%s\n", ar__data__get_string(own_message));

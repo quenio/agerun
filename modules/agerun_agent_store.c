@@ -17,6 +17,7 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <inttypes.h>
 
 /* Maximum reasonable limits */
 #define MAX_STORE_AGENTS 10000
@@ -145,13 +146,13 @@ static bool _store_write_function(FILE *fp, void *context) {
         const char *method_version = ar__method__get_version(ref_method);
         
         if (!method_name || !method_version) {
-            ar__io__error("Invalid method reference data for agent %lld", agent_id);
+            ar__io__error("Invalid method reference data for agent %" PRId64, agent_id);
             _cleanup_agent_list(own_agents, own_items, total_agents);
             return false;
         }
         
         // Write agent data
-        written = snprintf(buffer, sizeof(buffer), "%lld %s %s\n",
+        written = snprintf(buffer, sizeof(buffer), "%" PRId64 " %s %s\n",
                           agent_id, method_name, method_version);
         if (written < 0 || written >= (int)sizeof(buffer)) {
             ar__io__error("Buffer too small for agent data in %s", ctx->filename);
@@ -633,7 +634,7 @@ bool ar__agent_store__load(void) {
         
         // Read memory count
         if (!ar__io__read_line(fp, line, (int)sizeof(line), AGENT_STORE_FILE_NAME)) {
-            ar__io__error("Failed to read memory count for agent %lld", own_agent_info[i].id);
+            ar__io__error("Failed to read memory count for agent %" PRId64 "", own_agent_info[i].id);
             validation_error = true;
             break;
         }
@@ -644,7 +645,7 @@ bool ar__agent_store__load(void) {
         mem_count = (int)strtol(line, &endptr, 10);
         
         if (errno != 0 || endptr == line || mem_count < 0 || mem_count > MAX_MEMORY_ITEMS) {
-            ar__io__error("Invalid memory count for agent %lld", own_agent_info[i].id);
+            ar__io__error("Invalid memory count for agent %" PRId64 "", own_agent_info[i].id);
             validation_error = true;
             break;
         }
@@ -653,14 +654,14 @@ bool ar__agent_store__load(void) {
         for (int j = 0; j < mem_count; j++) {
             // Read key/type line
             if (!ar__io__read_line(fp, line, (int)sizeof(line), AGENT_STORE_FILE_NAME)) {
-                ar__io__error("Failed to read memory key/type for agent %lld", own_agent_info[i].id);
+                ar__io__error("Failed to read memory key/type for agent %" PRId64 "", own_agent_info[i].id);
                 validation_error = true;
                 break;
             }
             
             // Read value line
             if (!ar__io__read_line(fp, line, (int)sizeof(line), AGENT_STORE_FILE_NAME)) {
-                ar__io__error("Failed to read memory value for agent %lld", own_agent_info[i].id);
+                ar__io__error("Failed to read memory value for agent %" PRId64 "", own_agent_info[i].id);
                 validation_error = true;
                 break;
             }
@@ -708,14 +709,14 @@ bool ar__agent_store__load(void) {
             own_agent_info[i].method_version,
             NULL);
         
-        ar__io__info("Creating agent: method=%s, version=%s, new_id=%lld, target_id=%lld",
+        ar__io__info("Creating agent: method=%s, version=%s, new_id=%" PRId64 ", target_id=%" PRId64 "",
                    own_agent_info[i].method_name,
                    own_agent_info[i].method_version,
                    new_id,
                    own_agent_info[i].id);
         
         if (new_id == 0) {
-            ar__io__error("Could not recreate agent %lld", own_agent_info[i].id);
+            ar__io__error("Could not recreate agent %" PRId64 "", own_agent_info[i].id);
             
             // Skip memory data
             if (!ar__io__read_line(fp, line, (int)sizeof(line), AGENT_STORE_FILE_NAME)) {
@@ -738,16 +739,16 @@ bool ar__agent_store__load(void) {
         
         // Update the assigned ID to match the stored one
         bool id_updated = ar__agency__set_agent_id(new_id, own_agent_info[i].id);
-        ar__io__info("ID update result: %s (from %lld to %lld)", 
+        ar__io__info("ID update result: %s (from %" PRId64 " to %" PRId64 ")", 
                    id_updated ? "success" : "failure", 
                    new_id, own_agent_info[i].id);
         if (!id_updated) {
-            ar__io__error("Failed to update agent ID from %lld to %lld", new_id, own_agent_info[i].id);
+            ar__io__error("Failed to update agent ID from %" PRId64 " to %" PRId64 "", new_id, own_agent_info[i].id);
         }
         
         // Read memory count
         if (!ar__io__read_line(fp, line, (int)sizeof(line), AGENT_STORE_FILE_NAME)) {
-            ar__io__error("Failed to read memory count for agent %lld", own_agent_info[i].id);
+            ar__io__error("Failed to read memory count for agent %" PRId64 "", own_agent_info[i].id);
             continue;
         }
         
@@ -757,14 +758,14 @@ bool ar__agent_store__load(void) {
         mem_count = (int)strtol(line, &endptr, 10);
         
         if (errno != 0 || endptr == line || mem_count < 0 || mem_count > MAX_MEMORY_ITEMS) {
-            ar__io__error("Invalid memory count for agent %lld", own_agent_info[i].id);
+            ar__io__error("Invalid memory count for agent %" PRId64 "", own_agent_info[i].id);
             continue;
         }
         
         // Get mutable memory for this agent
         data_t *mut_memory = ar__agency__get_agent_mutable_memory(own_agent_info[i].id);
         if (!mut_memory && mem_count > 0) {
-            ar__io__error("Agent %lld has no memory map but file indicates %d items", 
+            ar__io__error("Agent %" PRId64 " has no memory map but file indicates %d items", 
                        own_agent_info[i].id, mem_count);
             // Skip memory items
             for (int k = 0; k < mem_count; k++) {
@@ -781,7 +782,7 @@ bool ar__agent_store__load(void) {
             
             // Read key and type line
             if (!ar__io__read_line(fp, line, (int)sizeof(line), AGENT_STORE_FILE_NAME)) {
-                ar__io__error("Failed to read memory key/type for agent %lld", own_agent_info[i].id);
+                ar__io__error("Failed to read memory key/type for agent %" PRId64 "", own_agent_info[i].id);
                 break;
             }
             
@@ -789,14 +790,14 @@ bool ar__agent_store__load(void) {
             char *saveptr = NULL;
             char *token = strtok_r(line, " \t\n", &saveptr);
             if (token == NULL) {
-                ar__io__error("Malformed memory entry - missing key for agent %lld", own_agent_info[i].id);
+                ar__io__error("Malformed memory entry - missing key for agent %" PRId64 "", own_agent_info[i].id);
                 break;
             }
             ar__io__string_copy(key, token, sizeof(key));
             
             token = strtok_r(NULL, " \t\n", &saveptr);
             if (token == NULL) {
-                ar__io__error("Malformed memory entry - missing type for agent %lld", own_agent_info[i].id);
+                ar__io__error("Malformed memory entry - missing type for agent %" PRId64 "", own_agent_info[i].id);
                 break;
             }
             ar__io__string_copy(type, token, sizeof(type));
@@ -807,7 +808,7 @@ bool ar__agent_store__load(void) {
             if (strcmp(type, "int") == 0) {
                 // Read value line
                 if (!ar__io__read_line(fp, line, (int)sizeof(line), AGENT_STORE_FILE_NAME)) {
-                    ar__io__error("Failed to read int value for agent %lld", own_agent_info[i].id);
+                    ar__io__error("Failed to read int value for agent %" PRId64 "", own_agent_info[i].id);
                     break;
                 }
                 
@@ -817,7 +818,7 @@ bool ar__agent_store__load(void) {
                 int_value = (int)strtol(line, &endptr, 10);
                 
                 if (errno != 0 || endptr == line) {
-                    ar__io__error("Invalid int value for agent %lld", own_agent_info[i].id);
+                    ar__io__error("Invalid int value for agent %" PRId64 "", own_agent_info[i].id);
                     break;
                 }
                 
@@ -825,7 +826,7 @@ bool ar__agent_store__load(void) {
             } else if (strcmp(type, "double") == 0) {
                 // Read value line
                 if (!ar__io__read_line(fp, line, (int)sizeof(line), AGENT_STORE_FILE_NAME)) {
-                    ar__io__error("Failed to read double value for agent %lld", own_agent_info[i].id);
+                    ar__io__error("Failed to read double value for agent %" PRId64 "", own_agent_info[i].id);
                     break;
                 }
                 
@@ -835,7 +836,7 @@ bool ar__agent_store__load(void) {
                 double_value = strtod(line, &endptr);
                 
                 if (errno != 0 || endptr == line) {
-                    ar__io__error("Invalid double value for agent %lld", own_agent_info[i].id);
+                    ar__io__error("Invalid double value for agent %" PRId64 "", own_agent_info[i].id);
                     break;
                 }
                 
@@ -843,7 +844,7 @@ bool ar__agent_store__load(void) {
             } else if (strcmp(type, "string") == 0) {
                 // Read value line
                 if (!ar__io__read_line(fp, line, (int)sizeof(line), AGENT_STORE_FILE_NAME)) {
-                    ar__io__error("Failed to read string value for agent %lld", own_agent_info[i].id);
+                    ar__io__error("Failed to read string value for agent %" PRId64 "", own_agent_info[i].id);
                     break;
                 }
                 
@@ -856,9 +857,9 @@ bool ar__agent_store__load(void) {
                 own_value = ar__data__create_string(line);
             } else {
                 // Skip unknown type
-                ar__io__warning("Unknown memory type '%s' for agent %lld", type, own_agent_info[i].id);
+                ar__io__warning("Unknown memory type '%s' for agent %" PRId64 "", type, own_agent_info[i].id);
                 if (!ar__io__read_line(fp, line, (int)sizeof(line), AGENT_STORE_FILE_NAME)) {
-                    ar__io__error("Could not skip unknown type for agent %lld", own_agent_info[i].id);
+                    ar__io__error("Could not skip unknown type for agent %" PRId64 "", own_agent_info[i].id);
                     break;
                 }
                 continue;
@@ -870,7 +871,7 @@ bool ar__agent_store__load(void) {
                 // Ownership transferred
                 own_value = NULL;
             } else if (own_value) {
-                ar__io__error("Failed to set value for agent %lld", own_agent_info[i].id);
+                ar__io__error("Failed to set value for agent %" PRId64 "", own_agent_info[i].id);
                 ar__data__destroy(own_value);
             }
         }

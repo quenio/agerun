@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <inttypes.h>
 
 /* Agent registry structure */
 struct agent_registry_s {
@@ -203,7 +204,7 @@ bool ar__agent_registry__register_id(agent_registry_t *mut_registry, int64_t age
     
     // Create string representation of the ID
     char id_str[32];
-    snprintf(id_str, sizeof(id_str), "%lld", (long long)agent_id);
+    snprintf(id_str, sizeof(id_str), "%" PRId64, agent_id);
     
     // Create string data for the ID (ar__data__create_string copies the string)
     data_t *own_id_data = ar__data__create_string(id_str);

@@ -407,6 +407,20 @@ grep -r "\".*\"" modules/*.c | grep -v "printf\|fprintf\|error" | sort | uniq -c
 - Use `ar__io__write_file` for atomic operations
 - Use `ar__io__set_secure_permissions` for sensitive files
 
+**Portable Format Specifiers**:
+- Always use portable format specifiers for fixed-width integer types
+- Include `<inttypes.h>` when formatting `int64_t`, `uint64_t`, etc.
+- Use `PRId64` for `int64_t`: `printf("%" PRId64 "\n", value);`
+- Use `PRIu64` for `uint64_t`: `printf("%" PRIu64 "\n", value);`
+- NEVER use `%lld` or cast to `(long long)` - this breaks on Linux where `int64_t` is `long`
+- Example:
+  ```c
+  #include <inttypes.h>
+  int64_t agent_id = 42;
+  printf("Agent ID: %" PRId64 "\n", agent_id);  // Correct
+  printf("Agent ID: %lld\n", (long long)agent_id);  // Wrong - not portable
+  ```
+
 ### 5. Module Development
 
 **Dependency Management**:

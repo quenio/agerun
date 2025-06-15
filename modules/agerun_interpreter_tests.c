@@ -13,6 +13,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <string.h>
+#include <inttypes.h>
 
 // Forward declarations
 static void test_interpreter_create_destroy(void);
@@ -336,7 +337,7 @@ static void test_message_send_instructions(void) {
     
     // Send message from sender to receiver
     char send_cmd[256];
-    snprintf(send_cmd, sizeof(send_cmd), "send(%lld, \"Test message\")", (long long)receiver_id);
+    snprintf(send_cmd, sizeof(send_cmd), "send(%" PRId64 ", \"Test message\")", receiver_id);
     assert(ar__interpreter_fixture__execute_instruction(own_fixture, sender_id, send_cmd));
     
     // Process the message
@@ -349,7 +350,7 @@ static void test_message_send_instructions(void) {
     assert(strcmp(ar__data__get_string(ref_received), "Got: Test message") == 0);
     
     // Test send with assignment
-    snprintf(send_cmd, sizeof(send_cmd), "memory.sent := send(%lld, \"Another message\")", (long long)receiver_id);
+    snprintf(send_cmd, sizeof(send_cmd), "memory.sent := send(%" PRId64 ", \"Another message\")", receiver_id);
     assert(ar__interpreter_fixture__execute_instruction(own_fixture, sender_id, send_cmd));
     
     data_t *sender_memory = ar__interpreter_fixture__get_agent_memory(own_fixture, sender_id);

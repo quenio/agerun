@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <inttypes.h>
 
 /**
  * Interpreter structure (private implementation)
@@ -137,13 +138,13 @@ bool ar__interpreter__execute_method(interpreter_t *mut_interpreter,
     const data_t *ref_context = ar__agency__get_agent_context(agent_id);
     
     if (!mut_memory) {
-        fprintf(stderr, "DEBUG: Agent %lld has no memory\n", (long long)agent_id);
+        fprintf(stderr, "DEBUG: Agent %" PRId64 " has no memory\n", agent_id);
         return false;
     }
     
     // Context can be NULL - that's valid
-    fprintf(stderr, "DEBUG: execute_method - agent %lld, memory=%p, context=%p, message=%p\n", 
-            (long long)agent_id, (void*)mut_memory, (const void*)ref_context, (const void*)ref_message);
+    fprintf(stderr, "DEBUG: execute_method - agent %" PRId64 ", memory=%p, context=%p, message=%p\n", 
+            agent_id, (void*)mut_memory, (const void*)ref_context, (const void*)ref_message);
     
     // Create an instruction context
     instruction_context_t *own_ctx = ar__instruction__create_context(
@@ -348,7 +349,7 @@ static bool _execute_send(interpreter_t *mut_interpreter, instruction_context_t 
     
     // Send the message (ownership transferred)
     bool send_result = _send_message(agent_id, own_msg);
-    fprintf(stderr, "DEBUG: _send_message(%lld, ...) returned: %s\n", (long long)agent_id, send_result ? "true" : "false");
+    fprintf(stderr, "DEBUG: _send_message(%" PRId64 ", ...) returned: %s\n", agent_id, send_result ? "true" : "false");
     
     // If there's a result path, store the result
     if (ref_result_path) {

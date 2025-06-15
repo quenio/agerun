@@ -2,6 +2,15 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-06-15 (Part 4)
+- ✅ Fixed platform-specific format specifier issues for int64_t:
+  - ✅ Added `<inttypes.h>` header to modules using int64_t formatting
+  - ✅ Replaced all `%lld` format specifiers with portable `PRId64` macro
+  - ✅ Updated 6 modules to use consistent portable format specifiers
+  - ✅ Removed all `(long long)` casts in favor of type-safe macros
+  - ✅ Fixed compilation errors on Linux where int64_t is `long` not `long long`
+  - ✅ Added coding guidelines for portable format specifiers in CLAUDE.md
+
 ## 2025-06-15 (Part 3)
 - ✅ Updated build system to use gcc-13 and improved sanitizer support:
   - ✅ Changed default compiler from gcc-15 to gcc-13 for better compatibility

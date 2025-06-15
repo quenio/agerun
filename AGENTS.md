@@ -1,0 +1,1 @@
+Read the guidelines in the CLAUDE.md file, and follow them strictly.
