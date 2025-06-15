@@ -2,6 +2,16 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-06-15 (Part 2)
+- ✅ Updated Makefile to use gcc-15 compiler:
+  - ✅ Changed CC variable from gcc to gcc-15
+  - ✅ Fixed compilation errors due to stricter pedantic warnings in gcc-15
+  - ✅ Moved VLA size constants (BUFFER_SIZE, LINE_SIZE) to #define directives
+  - ✅ Added proper integer casts for fgets() calls to avoid conversion warnings
+  - ✅ All modules compile successfully with gcc-15's stricter standards
+  - ✅ All 33 tests pass with zero memory leaks
+  - ✅ Build system now enforces higher code quality standards with gcc-15
+
 ## 2025-06-15
 - ✅ Completed expression evaluator module implementation:
   - ✅ Fixed missing stdlib.h include in expression_evaluator.c for release builds

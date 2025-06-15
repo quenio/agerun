@@ -19,6 +19,8 @@
 #define MAX_METHODS 100
 #define MAX_METHOD_NAME_LENGTH 256
 #define MAX_VERSIONS_PER_METHOD 32
+#define BUFFER_SIZE 16384  /* Buffer size for save operations */
+#define LINE_SIZE 256      /* Line buffer size for load operations */
 
 /**
  * Validates the format of a methodology file to ensure it can be loaded
@@ -366,9 +368,8 @@ bool ar__methodology__save_methods(void) {
     chmod(temp_filename, S_IRUSR | S_IWUSR);
     #endif
     
-    // Define buffer size constant for clarity and maintainability
-    const size_t BUFFER_SIZE = 16384; // Increased buffer size for larger instructions
-    char buffer[BUFFER_SIZE]; // Buffer for formatted output
+    // Buffer for formatted output
+    char buffer[BUFFER_SIZE];
     
     // Write method count
     int written = snprintf(buffer, BUFFER_SIZE, "%d\n", method_name_count);
@@ -656,8 +657,7 @@ bool ar__methodology__load_methods(void) {
         // Continue anyway with a warning
     }
     
-    // Define buffer size and initialize line buffer securely
-    const size_t LINE_SIZE = 256;
+    // Initialize line buffer securely
     char line[LINE_SIZE] = {0}; // Initialize to zeros for security
     
     // Read the first line to get method count with error checking
@@ -711,7 +711,7 @@ bool ar__methodology__load_methods(void) {
         int version_count = 0;
         
         // Read the next line for method name and version count
-        if (fgets(line, LINE_SIZE, mut_fp) == NULL) {
+        if (fgets(line, (int)LINE_SIZE, mut_fp) == NULL) {
             ar__io__error("Unexpected end of file in %s (method %d)",
                     METHODOLOGY_FILE_NAME, i+1);
             ar__io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
@@ -798,7 +798,7 @@ bool ar__methodology__load_methods(void) {
             char version[64] = {0}; 
             
             // Read version string with error checking
-            if (fgets(line, LINE_SIZE, mut_fp) == NULL) {
+            if (fgets(line, (int)LINE_SIZE, mut_fp) == NULL) {
                 ar__io__error("Unexpected end of file in %s when reading version for method %s",
                         METHODOLOGY_FILE_NAME, name);
                 ar__io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
