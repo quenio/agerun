@@ -141,7 +141,7 @@ clean:
 	rm -rf bin
 
 # Static analysis target
-analyze:
+analyze: install-scan-build
 	@if command -v /opt/homebrew/opt/llvm/bin/scan-build >/dev/null 2>&1 || command -v scan-build >/dev/null 2>&1; then \
 		mkdir -p bin/scan-build-results bin/obj; \
 		rm -rf bin/scan-build-results/*; \
@@ -174,7 +174,7 @@ analyze:
 	fi
 
 # Static analysis for tests
-analyze-tests:
+analyze-tests: install-scan-build
 	@if command -v /opt/homebrew/opt/llvm/bin/scan-build >/dev/null 2>&1 || command -v scan-build >/dev/null 2>&1; then \
 		mkdir -p bin/scan-build-results bin/obj; \
 		rm -rf bin/scan-build-results/*; \
@@ -216,12 +216,46 @@ print-obj:
 	@echo "OBJ = $(OBJ)"
 	@echo "Number of OBJ files: $(words $(OBJ))"
 
-# Helper to install scan-build
+# Helper to install scan-build based on OS
 install-scan-build:
-	@echo "Installing scan-build via Homebrew..."
-	@if command -v brew >/dev/null 2>&1; then \
-		brew install llvm; \
-		echo "LLVM and scan-build installed. Run 'export PATH="/opt/homebrew/opt/llvm/bin:$$PATH"' to use it."; \
+	@if command -v /opt/homebrew/opt/llvm/bin/scan-build >/dev/null 2>&1 || command -v scan-build >/dev/null 2>&1; then \
+		echo "scan-build is already installed."; \
 	else \
-		echo "Homebrew not found. Please install LLVM and scan-build manually."; \
-	fi
+		echo "Installing clang-tools for static analysis..."; \
+		if [ "$(UNAME_S)" = "Darwin" ]; then \
+			if command -v brew >/dev/null 2>&1; then \
+				echo "Updating Homebrew..."; \
+				brew update || { echo "Failed to update Homebrew"; exit 1; }; \
+				echo "Installing LLVM via Homebrew..."; \
+				brew install llvm || { echo "Failed to install LLVM"; exit 1; }; \
+				echo ""; \
+				echo "LLVM installed successfully!"; \
+				echo "To use scan-build, add LLVM to your PATH:"; \
+				echo "  export PATH=\"/opt/homebrew/opt/llvm/bin:\$$PATH\""; \
+				echo ""; \
+				echo "After adding to PATH, run 'make analyze' again."; \
+			else \
+				echo "Homebrew not found. Please install Homebrew first:"; \
+				echo "  /bin/bash -c \"\$$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""; \
+				exit 1; \
+			fi; \
+	elif [ -f /etc/os-release ] && (grep -q "ubuntu\|debian" /etc/os-release 2>/dev/null); then \
+		if command -v apt-get >/dev/null 2>&1; then \
+			echo "Installing clang-tools via apt-get..."; \
+			echo "This requires sudo access."; \
+			sudo apt-get update && sudo apt-get install -y clang-tools || { echo "Failed to install clang-tools"; exit 1; }; \
+			echo ""; \
+			echo "clang-tools installed successfully!"; \
+			echo "scan-build should now be available in your PATH."; \
+		else \
+			echo "apt-get not found on Ubuntu/Debian system."; \
+			exit 1; \
+		fi; \
+	else \
+		echo "Unable to auto-install. Please install manually:"; \
+		echo "- On macOS: brew install llvm"; \
+		echo "- On Ubuntu/Debian: sudo apt-get install clang-tools"; \
+		echo "- On other systems: install clang-tools or llvm package"; \
+		exit 1; \
+	fi; \
+fi

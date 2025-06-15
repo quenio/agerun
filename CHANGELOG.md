@@ -2,6 +2,16 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-06-15 (Part 9)
+- ✅ Enhanced Makefile with automatic scan-build installation:
+  - ✅ Created `install-scan-build` target that auto-detects OS and installs appropriately
+  - ✅ macOS: Automatically runs `brew update` and `brew install llvm` if Homebrew is available
+  - ✅ Ubuntu/Debian: Detects via `/etc/os-release` and runs `apt-get update && apt-get install clang-tools`
+  - ✅ Other Linux distros: Shows manual installation instructions
+  - ✅ Skips installation if scan-build is already available
+  - ✅ Made `install-scan-build` a dependency of `analyze` and `analyze-tests` targets
+  - ✅ Build system now handles scan-build installation transparently
+
 ## 2025-06-15 (Part 8)
 - ✅ Added clang-tools installation instructions to CLAUDE.md:
   - ✅ Added macOS installation using Homebrew (brew install llvm)
