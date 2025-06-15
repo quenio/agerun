@@ -2,6 +2,15 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-06-15 (Part 5)
+- ✅ Fixed variable shadowing warning and removed platform-specific code:
+  - ✅ Fixed shadowing warning in `ar__io__report_allocation_failure` (renamed `line` buffer to `buffer`)
+  - ✅ Removed Linux-specific `/proc/meminfo` reading code
+  - ✅ Replaced platform-specific memory reporting with portable errno-based approach
+  - ✅ Eliminated all `#ifdef __linux__` and `#ifdef __APPLE__` preprocessor checks
+  - ✅ Added guideline to CLAUDE.md to avoid platform-specific code
+  - ✅ Improved code portability and maintainability
+
 ## 2025-06-15 (Part 4)
 - ✅ Fixed platform-specific format specifier issues for int64_t:
   - ✅ Added `<inttypes.h>` header to modules using int64_t formatting

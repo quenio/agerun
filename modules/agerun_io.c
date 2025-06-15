@@ -721,37 +721,12 @@ void ar__io__report_allocation_failure(const char *file, int line, size_t size,
                 file, line, size);
     }
 
-    // Check and report system memory status
-    #ifdef __linux__
-    FILE *meminfo = fopen("/proc/meminfo", "r");
-    if (meminfo) {
-        char line[256];
-        unsigned long memFree = 0, memTotal = 0, memAvailable = 0;
-
-        while(fgets(line, sizeof(line), meminfo)) {
-            if (strncmp(line, "MemTotal:", 9) == 0) {
-                sscanf(line, "MemTotal: %lu", &memTotal);
-            } else if (strncmp(line, "MemFree:", 8) == 0) {
-                sscanf(line, "MemFree: %lu", &memFree);
-            } else if (strncmp(line, "MemAvailable:", 13) == 0) {
-                sscanf(line, "MemAvailable: %lu", &memAvailable);
-            }
-        }
-        fclose(meminfo);
-
-        if (memTotal > 0) {
-            ar__io__error("System memory status: Total: %lu KB, Free: %lu KB, Available: %lu KB", 
-                    memTotal, memFree, memAvailable);
-        }
-    }
-    #elif defined(__APPLE__) || defined(__FreeBSD__)
-    // For macOS and FreeBSD, just report the errno
+    // Report system error status (portable across all platforms)
     if (errno == ENOMEM) {
         ar__io__error("System reported insufficient memory (errno: ENOMEM)");
-    } else {
-        ar__io__error("System status: errno = %d (%s)", errno, strerror(errno));
+    } else if (errno != 0) {
+        ar__io__error("System error: errno = %d (%s)", errno, strerror(errno));
     }
-    #endif
 
     // Additional information for debugging
     ar__io__error("Allocation details: Size requested: %zu bytes", size);

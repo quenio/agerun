@@ -470,6 +470,11 @@ grep -r "\".*\"" modules/*.c | grep -v "printf\|fprintf\|error" | sort | uniq -c
 - **String-Based IDs**: Use string keys in persistent maps for reliable serialization
 - **Parameter Control**: Add boolean parameters to control optional behaviors (e.g., `send_lifecycle_events`)
 - **Shutdown Order**: In system shutdown, call cleanup functions before marking as uninitialized
+- **Avoid Platform-Specific Code**: Write portable C code that works across all platforms
+  - NO `#ifdef __linux__`, `#ifdef __APPLE__`, or similar platform checks
+  - Use standard POSIX/C library functions that work everywhere
+  - If platform differences seem necessary, find a portable solution instead
+  - Example: Use `errno` for error reporting instead of reading `/proc/meminfo`
 
 **Common Code Smells to Avoid**:
 - **Long Function**: Keep functions under 50 lines, single responsibility
