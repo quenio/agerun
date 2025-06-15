@@ -425,6 +425,184 @@ static void test_evaluate_memory_access_missing(void) {
     printf("  ✓ Return NULL for missing memory key\n");
 }
 
+/**
+ * Test evaluating binary addition of integers
+ */
+static void test_evaluate_binary_op_add_integers(void) {
+    printf("Testing expression evaluator binary op add integers...\n");
+    
+    // Given a memory map and evaluator
+    data_t *memory = ar__data__create_map();
+    expression_evaluator_t *evaluator = ar__expression_evaluator__create(memory, NULL);
+    assert(evaluator != NULL);
+    
+    // Given a binary addition AST node for "5 + 3"
+    expression_ast_t *left = ar__expression_ast__create_literal_int(5);
+    expression_ast_t *right = ar__expression_ast__create_literal_int(3);
+    expression_ast_t *ast = ar__expression_ast__create_binary_op(OP_ADD, left, right);
+    assert(ast != NULL);
+    
+    // When evaluating the binary operation
+    data_t *result = ar__expression_evaluator__evaluate_binary_op(evaluator, ast);
+    
+    // Then it should return the sum (a new owned value)
+    assert(result != NULL);
+    assert(ar__data__get_type(result) == DATA_INTEGER);
+    assert(ar__data__get_integer(result) == 8);
+    
+    // Clean up (MUST destroy result - it's owned)
+    ar__data__destroy(result);
+    ar__expression_ast__destroy(ast);
+    ar__expression_evaluator__destroy(evaluator);
+    ar__data__destroy(memory);
+    
+    printf("  ✓ Evaluate binary addition of integers\n");
+}
+
+/**
+ * Test evaluating binary multiplication of doubles
+ */
+static void test_evaluate_binary_op_multiply_doubles(void) {
+    printf("Testing expression evaluator binary op multiply doubles...\n");
+    
+    // Given a memory map and evaluator
+    data_t *memory = ar__data__create_map();
+    expression_evaluator_t *evaluator = ar__expression_evaluator__create(memory, NULL);
+    assert(evaluator != NULL);
+    
+    // Given a binary multiplication AST node for "2.5 * 4.0"
+    expression_ast_t *left = ar__expression_ast__create_literal_double(2.5);
+    expression_ast_t *right = ar__expression_ast__create_literal_double(4.0);
+    expression_ast_t *ast = ar__expression_ast__create_binary_op(OP_MULTIPLY, left, right);
+    assert(ast != NULL);
+    
+    // When evaluating the binary operation
+    data_t *result = ar__expression_evaluator__evaluate_binary_op(evaluator, ast);
+    
+    // Then it should return the product (a new owned value)
+    assert(result != NULL);
+    assert(ar__data__get_type(result) == DATA_DOUBLE);
+    assert(ar__data__get_double(result) == 10.0);
+    
+    // Clean up (MUST destroy result - it's owned)
+    ar__data__destroy(result);
+    ar__expression_ast__destroy(ast);
+    ar__expression_evaluator__destroy(evaluator);
+    ar__data__destroy(memory);
+    
+    printf("  ✓ Evaluate binary multiplication of doubles\n");
+}
+
+/**
+ * Test evaluating binary string concatenation
+ */
+static void test_evaluate_binary_op_concatenate_strings(void) {
+    printf("Testing expression evaluator binary op concatenate strings...\n");
+    
+    // Given a memory map and evaluator
+    data_t *memory = ar__data__create_map();
+    expression_evaluator_t *evaluator = ar__expression_evaluator__create(memory, NULL);
+    assert(evaluator != NULL);
+    
+    // Given a binary addition AST node for "Hello" + " World"
+    expression_ast_t *left = ar__expression_ast__create_literal_string("Hello");
+    expression_ast_t *right = ar__expression_ast__create_literal_string(" World");
+    expression_ast_t *ast = ar__expression_ast__create_binary_op(OP_ADD, left, right);
+    assert(ast != NULL);
+    
+    // When evaluating the binary operation
+    data_t *result = ar__expression_evaluator__evaluate_binary_op(evaluator, ast);
+    
+    // Then it should return the concatenated string (a new owned value)
+    assert(result != NULL);
+    assert(ar__data__get_type(result) == DATA_STRING);
+    assert(strcmp(ar__data__get_string(result), "Hello World") == 0);
+    
+    // Clean up (MUST destroy result - it's owned)
+    ar__data__destroy(result);
+    ar__expression_ast__destroy(ast);
+    ar__expression_evaluator__destroy(evaluator);
+    ar__data__destroy(memory);
+    
+    printf("  ✓ Evaluate binary string concatenation\n");
+}
+
+/**
+ * Test evaluating non-binary-op node returns NULL
+ */
+static void test_evaluate_binary_op_wrong_type(void) {
+    printf("Testing expression evaluator binary op with wrong type...\n");
+    
+    // Given a memory map and evaluator
+    data_t *memory = ar__data__create_map();
+    expression_evaluator_t *evaluator = ar__expression_evaluator__create(memory, NULL);
+    assert(evaluator != NULL);
+    
+    // Given an integer literal AST node (wrong type)
+    expression_ast_t *ast = ar__expression_ast__create_literal_int(42);
+    assert(ast != NULL);
+    
+    // When evaluating with binary op evaluator
+    data_t *result = ar__expression_evaluator__evaluate_binary_op(evaluator, ast);
+    
+    // Then it should return NULL
+    assert(result == NULL);
+    
+    // Clean up
+    ar__expression_ast__destroy(ast);
+    ar__expression_evaluator__destroy(evaluator);
+    ar__data__destroy(memory);
+    
+    printf("  ✓ Return NULL for non-binary-op node\n");
+}
+
+/**
+ * Test evaluating nested binary operations
+ */
+static void test_evaluate_binary_op_nested(void) {
+    printf("Testing expression evaluator nested binary operations...\n");
+    
+    // Given a memory map with some values
+    data_t *memory = ar__data__create_map();
+    ar__data__set_map_integer(memory, "x", 10);
+    ar__data__set_map_integer(memory, "y", 5);
+    expression_evaluator_t *evaluator = ar__expression_evaluator__create(memory, NULL);
+    assert(evaluator != NULL);
+    
+    // Given a nested binary operation AST node for "(memory.x + 2) * memory.y"
+    // First create memory.x
+    const char *path_x[] = {"x"};
+    expression_ast_t *mem_x = ar__expression_ast__create_memory_access("memory", path_x, 1);
+    
+    // Create memory.x + 2
+    expression_ast_t *two = ar__expression_ast__create_literal_int(2);
+    expression_ast_t *add = ar__expression_ast__create_binary_op(OP_ADD, mem_x, two);
+    
+    // Create memory.y
+    const char *path_y[] = {"y"};
+    expression_ast_t *mem_y = ar__expression_ast__create_memory_access("memory", path_y, 1);
+    
+    // Create (memory.x + 2) * memory.y
+    expression_ast_t *ast = ar__expression_ast__create_binary_op(OP_MULTIPLY, add, mem_y);
+    assert(ast != NULL);
+    
+    // When evaluating the nested binary operation
+    data_t *result = ar__expression_evaluator__evaluate_binary_op(evaluator, ast);
+    
+    // Then it should return (10 + 2) * 5 = 60 (a new owned value)
+    assert(result != NULL);
+    assert(ar__data__get_type(result) == DATA_INTEGER);
+    assert(ar__data__get_integer(result) == 60);
+    
+    // Clean up (MUST destroy result - it's owned)
+    ar__data__destroy(result);
+    ar__expression_ast__destroy(ast);
+    ar__expression_evaluator__destroy(evaluator);
+    ar__data__destroy(memory);
+    
+    printf("  ✓ Evaluate nested binary operations\n");
+}
+
 int main(void) {
     printf("\n=== Expression Evaluator Tests ===\n\n");
     
@@ -442,6 +620,11 @@ int main(void) {
     test_evaluate_memory_access_wrong_type();
     test_evaluate_memory_access_nested();
     test_evaluate_memory_access_missing();
+    test_evaluate_binary_op_add_integers();
+    test_evaluate_binary_op_multiply_doubles();
+    test_evaluate_binary_op_concatenate_strings();
+    test_evaluate_binary_op_wrong_type();
+    test_evaluate_binary_op_nested();
     
     printf("\nAll expression_evaluator tests passed!\n");
     return 0;

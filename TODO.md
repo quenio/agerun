@@ -218,7 +218,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] Implement ar__expression_evaluator__evaluate_literal_double() (Completed 2025-06-15)
     - [x] Implement ar__expression_evaluator__evaluate_literal_string() (Completed 2025-06-15)
     - [x] Implement ar__expression_evaluator__evaluate_memory_access() (Completed 2025-06-15)
-    - [ ] Implement ar__expression_evaluator__evaluate_binary_op()
+    - [x] Implement ar__expression_evaluator__evaluate_binary_op() (Completed 2025-06-15)
     - [ ] Add ar__interpreter__evaluate_expression_ast() function to interpreter module
     - [ ] Move all expression evaluation logic from expression to interpreter
     - [ ] Update interpreter to handle expression AST nodes as input
