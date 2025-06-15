@@ -212,6 +212,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] No dependency on expression module for better separation
     - [x] All 20 tests pass with zero memory leaks
   - [ ] Extract expression execution from expression module and move to interpreter:
+    - [x] Create expression_evaluator module with opaque evaluator_t type (Completed 2025-06-15)
+    - [x] Implement ar__expression_evaluator__create() and destroy() (Completed 2025-06-15)
+    - [ ] Implement ar__expression_evaluator__evaluate_literal_int()
+    - [ ] Implement ar__expression_evaluator__evaluate_literal_double()
+    - [ ] Implement ar__expression_evaluator__evaluate_literal_string()
+    - [ ] Implement ar__expression_evaluator__evaluate_memory_access()
+    - [ ] Implement ar__expression_evaluator__evaluate_binary_op()
     - [ ] Add ar__interpreter__evaluate_expression_ast() function to interpreter module
     - [ ] Move all expression evaluation logic from expression to interpreter
     - [ ] Update interpreter to handle expression AST nodes as input
