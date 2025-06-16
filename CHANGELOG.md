@@ -2,6 +2,31 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-06-16
+- ✅ Created instruction_ast module for instruction Abstract Syntax Tree representation:
+  - ✅ Implemented AST node types for all instruction types (assignment, send, if, method, agent, destroy, parse, build)
+  - ✅ Created opaque type with proper encapsulation following Parnas principles
+  - ✅ Added comprehensive accessor functions with clear ownership semantics
+  - ✅ Integrated list module for returning function arguments with ownership transfer
+  - ✅ Achieved zero memory leaks with proper destruction handling
+  - ✅ Created comprehensive test suite following TDD methodology
+  - ✅ Created complete documentation (agerun_instruction_ast.md)
+- ✅ Created instruction_parser module to extract parsing from instruction module:
+  - ✅ Implemented reusable parser design (created once, used multiple times)
+  - ✅ Created specific parse functions for each instruction type (no general parse function)
+  - ✅ Each parse method takes instruction string as parameter for reusability
+  - ✅ Extracted all parsing logic from instruction module while maintaining functionality
+  - ✅ Added proper error handling with position tracking
+  - ✅ Achieved clean separation between parsing and execution
+  - ✅ Created comprehensive test suite with edge case handling
+  - ✅ Created complete documentation (agerun_instruction_parser.md)
+- ✅ Fixed Clang-specific newline-eof warnings in Makefile:
+  - ✅ Added CLANG_FLAGS variable with -Wno-newline-eof flag
+  - ✅ Created SANITIZER_EXTRA_FLAGS that applies Clang flags only on Darwin (macOS)
+  - ✅ Updated all sanitizer targets to use SANITIZER_EXTRA_FLAGS consistently
+  - ✅ Simplified Makefile by avoiding redundant flag definitions
+  - ✅ Resolved sanitizer build failures caused by missing newlines at end of files
+
 ## 2025-06-15 (Part 11)
 - ✅ Fixed sanitizer false positive by skipping intentional leak test when ASan is enabled
 

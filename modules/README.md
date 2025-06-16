@@ -172,6 +172,14 @@ agerun_instruction_ast
 ├──c──> agerun_list
 └──c──> agerun_heap
 
+agerun_instruction_parser
+├──c──> agerun_instruction_ast
+│       ├──c──> agerun_list
+│       └──c──> agerun_heap
+├──c──> agerun_list
+├──c──> agerun_string
+└──c──> agerun_heap
+
 agerun_expression_parser
 ├──c──> agerun_expression_ast
 │       ├──c──> agerun_list
@@ -296,6 +304,17 @@ agerun_expression_evaluator_tests
 agerun_instruction_tests
 ├──c──> agerun_instruction (module under test)
 ├──c──> agerun_data
+└──c──> agerun_heap
+
+agerun_instruction_ast_tests
+├──c──> agerun_instruction_ast (module under test)
+├──c──> agerun_list
+└──c──> agerun_heap
+
+agerun_instruction_parser_tests
+├──c──> agerun_instruction_parser (module under test)
+├──c──> agerun_instruction_ast
+├──c──> agerun_list
 └──c──> agerun_heap
 
 agerun_interpreter_tests
@@ -688,6 +707,33 @@ The [instruction module](agerun_instruction.md) provides a recursive descent par
 - **Separation of Concerns**: Only parses instructions; execution is handled by the interpreter module
 - **Depends on Expression**: Uses the expression module for evaluating expressions
 - **Depends on Data**: Uses the data module for storing and manipulating values
+
+### Instruction AST Module (`agerun_instruction_ast`)
+
+The [instruction AST module](agerun_instruction_ast.md) provides Abstract Syntax Tree representations for AgeRun instructions:
+
+- **AST Node Types**: Defines node types for all instruction types (assignment, send, if, method, agent, destroy, parse, build)
+- **Type-Safe Creation**: Provides functions to create nodes with proper type safety and memory management
+- **Accessor Functions**: Offers accessor functions with clear ownership semantics
+- **Function Arguments**: Returns lists for function arguments with ownership transferred to caller
+- **Memory Safety**: Implements proper destruction with recursive cleanup of child nodes
+- **Opaque Types**: Uses opaque types following Parnas principles for information hiding
+- **Depends on List**: Uses the list module for managing function arguments
+- **Depends on Heap**: Uses heap tracking for comprehensive memory management
+
+### Instruction Parser Module (`agerun_instruction_parser`)
+
+The [instruction parser module](agerun_instruction_parser.md) extracts parsing logic from the instruction module:
+
+- **Reusable Parser**: Parser instance can be created once and used to parse multiple instructions
+- **Specific Parse Methods**: Provides individual parse functions for each instruction type (no general parse function)
+- **AST Generation**: Creates instruction AST nodes using the instruction_ast module
+- **Error Handling**: Tracks parsing errors with position information
+- **Expression Extraction**: Extracts and preserves expression strings for later evaluation
+- **Clean Separation**: No dependency on instruction module, achieving clean separation of concerns
+- **Depends on Instruction AST**: Uses instruction_ast module for creating AST nodes
+- **Depends on List**: Uses list module for parsing function arguments
+- **Depends on String**: Uses string utilities for parsing operations
 
 ### Interpreter Module (`agerun_interpreter`)
 

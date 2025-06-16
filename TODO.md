@@ -214,25 +214,26 @@ This order ensures clean separation of concerns across all modules.
   - [x] Initial error handling tests revealed parser is too permissive (Completed 2025-06-14)
 
 ### CRITICAL - Refactor instruction module FIRST (Required before completing expression refactoring)
-- [ ] Create instruction AST structures:
-  - [ ] Create instruction_ast module with node types for all instruction types
-  - [ ] Define AST nodes for assignment instructions (memory.x := expr)
-  - [ ] Define AST nodes for function call instructions (send, if, parse, build, method, agent, destroy)
-  - [ ] Define AST nodes for function calls with assignment (memory.x := func())
-  - [ ] Implement node creation functions with proper ownership semantics
-  - [ ] Implement accessor functions for retrieving node data
-  - [ ] Add recursive destruction for proper memory cleanup
-  - [ ] Write comprehensive tests following TDD methodology
-- [ ] Create instruction_parser module to extract parsing from instruction:
-  - [ ] Create agerun_instruction_parser.h with public interface
-  - [ ] Define opaque instruction_parser_t structure
-  - [ ] Implement ar__instruction_parser__create(const char*) to create parser instance
-  - [ ] Implement ar__instruction_parser__destroy() for cleanup
-  - [ ] Implement ar__instruction_parser__parse() to return instruction AST
-  - [ ] Extract all parsing logic from instruction module
-  - [ ] Write comprehensive tests following TDD methodology
-  - [ ] Ensure parser handles all instruction types correctly
-  - [ ] No dependency on instruction module for clean separation
+- [x] Create instruction AST structures (Completed 2025-06-16):
+  - [x] Create instruction_ast module with node types for all instruction types
+  - [x] Define AST nodes for assignment instructions (memory.x := expr)
+  - [x] Define AST nodes for function call instructions (send, if, parse, build, method, agent, destroy)
+  - [x] Define AST nodes for function calls with assignment (memory.x := func())
+  - [x] Implement node creation functions with proper ownership semantics
+  - [x] Implement accessor functions for retrieving node data
+  - [x] Add recursive destruction for proper memory cleanup
+  - [x] Write comprehensive tests following TDD methodology
+- [x] Create instruction_parser module to extract parsing from instruction (Completed 2025-06-16):
+  - [x] Create agerun_instruction_parser.h with public interface
+  - [x] Define opaque instruction_parser_t structure
+  - [x] Implement ar__instruction_parser__create() to create parser instance (no parameter - reusable)
+  - [x] Implement ar__instruction_parser__destroy() for cleanup
+  - [x] Implement specific parse methods for each instruction type (no general parse function)
+  - [x] Extract parsing logic from instruction module
+  - [x] Write comprehensive tests following TDD methodology
+  - [x] Ensure parser handles all instruction types correctly
+  - [x] No dependency on instruction module for clean separation
+  - [x] Created comprehensive documentation (agerun_instruction_parser.md)
 - [ ] Create instruction_evaluator module to extract evaluation from interpreter:
   - [ ] Create agerun_instruction_evaluator.h with public interface
   - [ ] Define opaque instruction_evaluator_t structure

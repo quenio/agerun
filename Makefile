@@ -15,6 +15,17 @@ CFLAGS = -Wall -Wextra -Werror -Wpedantic -Wconversion -Wshadow -Wcast-qual \
          -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wstrict-aliasing=2 \
          -Wnull-dereference -Wformat=2 -Wuninitialized -Wpointer-arith \
          -Wunused -Wunused-parameter -Wwrite-strings -std=c11 -I./modules -D_GNU_SOURCE
+
+# Define Clang-specific flags (will be added when using clang)
+CLANG_FLAGS = -Wno-newline-eof
+
+# Define SANITIZER_EXTRA_FLAGS based on OS (for use with sanitizer targets)
+ifeq ($(UNAME_S),Darwin)
+SANITIZER_EXTRA_FLAGS = $(CLANG_FLAGS)
+else
+SANITIZER_EXTRA_FLAGS =
+endif
+
 LDFLAGS = -lm
 
 # Debug build flags
@@ -64,7 +75,7 @@ release: lib
 
 # Sanitize target with Address + Undefined Behavior Sanitizers
 sanitize: CC = $(SANITIZER_CC)
-sanitize: CFLAGS += $(DEBUG_CFLAGS) $(SANITIZER_FLAGS)
+sanitize: CFLAGS += $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS)
 sanitize: LDFLAGS += $(SANITIZER_FLAGS)
 sanitize: lib
 
@@ -86,9 +97,8 @@ executable: lib bin
 	$(CC) $(CFLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS)
 
 # Executable application with Address + Undefined Behavior Sanitizers - build only
-executable-sanitize: clean
-	$(MAKE) sanitize
-	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS) $(SANITIZER_FLAGS)
+executable-sanitize: sanitize
+	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS) $(SANITIZER_FLAGS)
 
 # Run the executable (always in debug mode)
 run: debug executable
@@ -100,8 +110,8 @@ run-sanitize: executable-sanitize
 
 # Executable application with Thread Sanitizer - build only
 executable-tsan: clean
-	$(MAKE) lib CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS)" LDFLAGS="$(LDFLAGS) $(TSAN_FLAGS)"
-	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS) $(TSAN_FLAGS)
+	$(MAKE) lib CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS)" LDFLAGS="$(LDFLAGS) $(TSAN_FLAGS)"
+	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS) $(TSAN_FLAGS)
 
 # Run the executable with Thread Sanitizer
 run-tsan: executable-tsan
@@ -125,8 +135,8 @@ test: clean debug
 # Build and run tests with Address + Undefined Behavior Sanitizers
 test-sanitize: clean
 	$(MAKE) sanitize
-	$(MAKE) test_lib CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS)" LDFLAGS="$(LDFLAGS) $(SANITIZER_FLAGS)"
-	$(MAKE) $(TEST_BIN) $(METHOD_TEST_BIN) CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS)" LDFLAGS="$(LDFLAGS) $(SANITIZER_FLAGS)"
+	$(MAKE) test_lib CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS)" LDFLAGS="$(LDFLAGS) $(SANITIZER_FLAGS)"
+	$(MAKE) $(TEST_BIN) $(METHOD_TEST_BIN) CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS)" LDFLAGS="$(LDFLAGS) $(SANITIZER_FLAGS)"
 	@cd bin && for test in $(ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
 		echo "Running $$test with Address + Undefined Behavior Sanitizers"; \
@@ -135,9 +145,9 @@ test-sanitize: clean
 
 # Build and run tests with Thread Sanitizer (must run separately from ASan)
 test-tsan: clean
-	$(MAKE) lib CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS)" LDFLAGS="$(LDFLAGS) $(TSAN_FLAGS)"
-	$(MAKE) test_lib CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS)" LDFLAGS="$(LDFLAGS) $(TSAN_FLAGS)"
-	$(MAKE) $(TEST_BIN) $(METHOD_TEST_BIN) CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS)" LDFLAGS="$(LDFLAGS) $(TSAN_FLAGS)"
+	$(MAKE) lib CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS)" LDFLAGS="$(LDFLAGS) $(TSAN_FLAGS)"
+	$(MAKE) test_lib CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS)" LDFLAGS="$(LDFLAGS) $(TSAN_FLAGS)"
+	$(MAKE) $(TEST_BIN) $(METHOD_TEST_BIN) CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS)" LDFLAGS="$(LDFLAGS) $(TSAN_FLAGS)"
 	@cd bin && for test in $(ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
 		echo "Running $$test with Thread Sanitizer"; \
