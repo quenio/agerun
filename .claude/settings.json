@@ -15,7 +15,8 @@
       "Bash(make:bin/agerun_*_tests)",
       "Bash(cd:*)",
       "Bash(ls:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(find:*)"
     ],
     "deny": []
   },
