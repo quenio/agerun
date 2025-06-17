@@ -2,6 +2,13 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-06-17
+- ✅ Started implementation of instruction_evaluator module:
+  - ✅ Created agerun_instruction_evaluator.h with public interface
+  - ✅ Designed to avoid circular dependencies by taking memory/context/message directly
+  - ✅ Follows expression_evaluator pattern with individual evaluate functions per instruction type
+  - ✅ Interface supports all instruction types: assignment, send, if, parse, build, method, agent, destroy
+
 ## 2025-06-16
 - ✅ Created instruction_ast module for instruction Abstract Syntax Tree representation:
   - ✅ Implemented AST node types for all instruction types (assignment, send, if, method, agent, destroy, parse, build)

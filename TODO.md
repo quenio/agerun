@@ -235,12 +235,12 @@ This order ensures clean separation of concerns across all modules.
   - [x] No dependency on instruction module for clean separation
   - [x] Created comprehensive documentation (agerun_instruction_parser.md)
 - [ ] Create instruction_evaluator module to extract evaluation from interpreter:
-  - [ ] Create agerun_instruction_evaluator.h with public interface
-  - [ ] Define opaque instruction_evaluator_t structure
-  - [ ] Implement ar__instruction_evaluator__create() with agent and memory parameters
+  - [x] Create agerun_instruction_evaluator.h with public interface (Completed 2025-06-17)
+  - [x] Define opaque instruction_evaluator_t structure (Completed 2025-06-17)
+  - [ ] Implement ar__instruction_evaluator__create() with expression evaluator and data parameters
   - [ ] Implement ar__instruction_evaluator__destroy() for cleanup
-  - [ ] Extract all _execute_* functions from interpreter module
-  - [ ] Move expression evaluation logic to use expression_evaluator
+  - [ ] Copy all _execute_* functions from interpreter module (not extract yet)
+  - [ ] Adapt expression evaluation logic to use expression_evaluator
   - [ ] Write comprehensive tests following TDD methodology
   - [ ] Ensure evaluator handles all instruction types correctly
   - [ ] Maintain proper memory ownership semantics
