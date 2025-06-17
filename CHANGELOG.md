@@ -8,6 +8,9 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - ✅ Designed to avoid circular dependencies by taking memory/context/message directly
   - ✅ Follows expression_evaluator pattern with individual evaluate functions per instruction type
   - ✅ Interface supports all instruction types: assignment, send, if, parse, build, method, agent, destroy
+  - ✅ Implemented create/destroy functions following TDD methodology
+  - ✅ Tests verify proper NULL handling and memory management
+  - ✅ No memory leaks in implementation
 - ✅ Established test function naming convention:
   - ✅ Test functions now use pattern: `test_<module>__<test_name>`
   - ✅ Updated CLAUDE.md guidelines with new convention
