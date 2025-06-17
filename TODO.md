@@ -24,6 +24,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Used sed patterns to rename functions and update calls
 - [x] Verified compilation and all tests pass with no memory leaks
 
+### Test Function Naming Convention Update (Completed 2025-06-17)
+- [x] Established test function naming pattern: `test_<module>__<test_name>`
+- [x] Test functions use double underscore between module and test name
+- [x] Consistent with module function naming convention
+- [x] Updated CLAUDE.md guidelines with new convention
+- [x] Applied to new instruction_evaluator tests
+
 ### Module Function Naming Convention Refactoring (Completed 2025-06-08)
 - [x] Changed all module functions from ar_<module>_<function> to ar__<module>__<function>
 - [x] Changed all heap macros from AR_HEAP_* to AR__HEAP__*

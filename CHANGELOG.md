@@ -8,6 +8,10 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - ✅ Designed to avoid circular dependencies by taking memory/context/message directly
   - ✅ Follows expression_evaluator pattern with individual evaluate functions per instruction type
   - ✅ Interface supports all instruction types: assignment, send, if, parse, build, method, agent, destroy
+- ✅ Established test function naming convention:
+  - ✅ Test functions now use pattern: `test_<module>__<test_name>`
+  - ✅ Updated CLAUDE.md guidelines with new convention
+  - ✅ Consistent with module function naming for better uniformity
 
 ## 2025-06-16
 - ✅ Created instruction_ast module for instruction Abstract Syntax Tree representation:

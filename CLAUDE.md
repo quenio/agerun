@@ -360,7 +360,10 @@ grep -r "\".*\"" modules/*.c | grep -v "printf\|fprintf\|error" | sort | uniq -c
   - Indicates internal/private functions within a module
   - Similar to Python convention for private members
   - **IMPORTANT**: Only applies to static functions in implementation files, NOT test functions
-  - Test functions in `*_tests.c` files keep their original names
+- **Test Functions**: Use double underscore pattern `test_<module>__<test_name>` (Updated 2025-06-17)
+  - Examples: `test_instruction_evaluator__create_destroy()`, `test_string__trim_whitespace()`
+  - Test functions are static but do NOT use underscore prefix
+  - Follows module function naming pattern for consistency
 - **Heap Macros**: Use double underscore pattern `AR__HEAP__<OPERATION>`
   - Examples: `AR__HEAP__MALLOC`, `AR__HEAP__FREE`, `AR__HEAP__STRDUP`
   - Applied to all 5 heap macros consistently
