@@ -247,9 +247,10 @@ This order ensures clean separation of concerns across all modules.
   - [x] Implement ar__instruction_evaluator__create() with expression evaluator and data parameters (Completed 2025-06-17)
   - [x] Implement ar__instruction_evaluator__destroy() for cleanup (Completed 2025-06-17)
   - [x] Write TDD tests for create/destroy functions (Completed 2025-06-17)
-  - [ ] Copy all _execute_* functions from interpreter module (not extract yet)
-  - [ ] Adapt expression evaluation logic to use expression_evaluator
-  - [ ] Write comprehensive tests following TDD methodology for each evaluate function
+  - [x] Implement evaluate_assignment with TDD (tests, implementation, no leaks) (Completed 2025-06-17)
+  - [ ] Copy remaining _execute_* functions from interpreter module (not extract yet)
+  - [ ] Adapt expression evaluation logic to use expression_evaluator for remaining functions
+  - [ ] Write comprehensive tests following TDD methodology for each remaining evaluate function
   - [ ] Ensure evaluator handles all instruction types correctly
   - [ ] Maintain proper memory ownership semantics
 

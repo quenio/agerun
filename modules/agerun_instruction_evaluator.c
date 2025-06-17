@@ -5,7 +5,10 @@
 
 #include "agerun_instruction_evaluator.h"
 #include "agerun_heap.h"
+#include "agerun_expression_parser.h"
+#include "agerun_expression_ast.h"
 #include <assert.h>
+#include <string.h>
 
 /**
  * Internal structure for instruction evaluator
@@ -58,16 +61,92 @@ void ar__instruction_evaluator__destroy(instruction_evaluator_t *own_evaluator) 
     AR__HEAP__FREE(own_evaluator);
 }
 
-/* Placeholder implementations for evaluate functions - to be implemented later */
+/* Helper function to evaluate an expression AST node using the expression evaluator */
+static data_t* _evaluate_expression_ast(instruction_evaluator_t *mut_evaluator, expression_ast_t *ref_ast) {
+    if (!ref_ast) {
+        return NULL;
+    }
+    
+    expression_ast_type_t type = ar__expression_ast__get_type(ref_ast);
+    
+    switch (type) {
+        case EXPR_AST_LITERAL_INT:
+            return ar__expression_evaluator__evaluate_literal_int(mut_evaluator->ref_expr_evaluator, ref_ast);
+            
+        case EXPR_AST_LITERAL_DOUBLE:
+            return ar__expression_evaluator__evaluate_literal_double(mut_evaluator->ref_expr_evaluator, ref_ast);
+            
+        case EXPR_AST_LITERAL_STRING:
+            return ar__expression_evaluator__evaluate_literal_string(mut_evaluator->ref_expr_evaluator, ref_ast);
+            
+        case EXPR_AST_MEMORY_ACCESS:
+            return ar__expression_evaluator__evaluate_memory_access(mut_evaluator->ref_expr_evaluator, ref_ast);
+            
+        case EXPR_AST_BINARY_OP:
+            return ar__expression_evaluator__evaluate_binary_op(mut_evaluator->ref_expr_evaluator, ref_ast);
+            
+        default:
+            return NULL;
+    }
+}
 
 bool ar__instruction_evaluator__evaluate_assignment(
     instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 ) {
-    (void)mut_evaluator;
-    (void)ref_ast;
-    assert(false && "Not implemented yet");
-    return false;
+    if (!mut_evaluator || !ref_ast) {
+        return false;
+    }
+    
+    // Verify this is an assignment AST node
+    if (ar__instruction_ast__get_type(ref_ast) != INST_AST_ASSIGNMENT) {
+        return false;
+    }
+    
+    // Get assignment details
+    const char *ref_path = ar__instruction_ast__get_assignment_path(ref_ast);
+    const char *ref_expression = ar__instruction_ast__get_assignment_expression(ref_ast);
+    
+    if (!ref_path || !ref_expression) {
+        return false;
+    }
+    
+    // Check that path starts with "memory."
+    if (strncmp(ref_path, "memory.", 7) != 0) {
+        return false;
+    }
+    
+    // Strip "memory." prefix to get the actual key path
+    const char *key_path = ref_path + 7;
+    
+    // Parse the expression to get an AST
+    expression_parser_t *parser = ar__expression_parser__create(ref_expression);
+    if (!parser) {
+        return false;
+    }
+    
+    expression_ast_t *expr_ast = ar__expression_parser__parse_expression(parser);
+    ar__expression_parser__destroy(parser);
+    
+    if (!expr_ast) {
+        return false;
+    }
+    
+    // Evaluate the expression AST
+    data_t *own_value = _evaluate_expression_ast(mut_evaluator, expr_ast);
+    ar__expression_ast__destroy(expr_ast);
+    
+    if (!own_value) {
+        return false;
+    }
+    
+    // Store the value in memory (transfers ownership)
+    bool success = ar__data__set_map_data(mut_evaluator->mut_memory, key_path, own_value);
+    if (!success) {
+        ar__data__destroy(own_value);
+    }
+    
+    return success;
 }
 
 bool ar__instruction_evaluator__evaluate_send(
