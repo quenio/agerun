@@ -24,6 +24,14 @@ This document tracks completed milestones and major achievements for the AgeRun 
     - ✅ Correctly implements send(0, msg) as no-op returning true
     - ✅ Supports result assignment with proper memory path handling
     - ✅ No memory leaks in implementation
+  - ✅ Implemented evaluate_if following TDD methodology:
+    - ✅ Tests cover true/false conditions, expression evaluation, nested conditions, and error cases
+    - ✅ Evaluates condition expression to determine which branch to execute
+    - ✅ Only evaluates the selected branch (true or false expression), not both
+    - ✅ Supports any expression type in condition and branches
+    - ✅ Non-zero integer values are treated as true, zero as false
+    - ✅ Supports result assignment with proper memory path handling
+    - ✅ No memory leaks in implementation
 - ✅ Established test function naming convention:
   - ✅ Test functions now use pattern: `test_<module>__<test_name>`
   - ✅ Updated CLAUDE.md guidelines with new convention

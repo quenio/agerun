@@ -249,6 +249,7 @@ This order ensures clean separation of concerns across all modules.
   - [x] Write TDD tests for create/destroy functions (Completed 2025-06-17)
   - [x] Implement evaluate_assignment with TDD (tests, implementation, no leaks) (Completed 2025-06-17)
   - [x] Implement evaluate_send with TDD (tests, implementation, no leaks) (Completed 2025-06-17)
+  - [x] Implement evaluate_if with TDD (tests, implementation, no leaks) (Completed 2025-06-18)
   - [ ] Copy remaining _execute_* functions from interpreter module (not extract yet)
   - [ ] Adapt expression evaluation logic to use expression_evaluator for remaining functions
   - [ ] Write comprehensive tests following TDD methodology for each remaining evaluate function

@@ -313,10 +313,135 @@ bool ar__instruction_evaluator__evaluate_if(
     instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 ) {
-    (void)mut_evaluator;
-    (void)ref_ast;
-    assert(false && "Not implemented yet");
-    return false;
+    if (!mut_evaluator || !ref_ast) {
+        return false;
+    }
+    
+    // Verify this is an if AST node
+    if (ar__instruction_ast__get_type(ref_ast) != INST_AST_IF) {
+        return false;
+    }
+    
+    // Get function arguments
+    list_t *own_args = ar__instruction_ast__get_function_args(ref_ast);
+    if (!own_args) {
+        return false;
+    }
+    
+    // if requires exactly 3 arguments: condition, true_value, false_value
+    if (ar__list__count(own_args) != 3) {
+        ar__list__destroy(own_args);
+        return false;
+    }
+    
+    // Get argument strings (borrowed references from the list)
+    void **items = ar__list__items(own_args);
+    if (!items) {
+        ar__list__destroy(own_args);
+        return false;
+    }
+    
+    const char *ref_condition_expr = (const char*)items[0];
+    const char *ref_true_expr = (const char*)items[1];
+    const char *ref_false_expr = (const char*)items[2];
+    
+    if (!ref_condition_expr || !ref_true_expr || !ref_false_expr) {
+        AR__HEAP__FREE(items);
+        ar__list__destroy(own_args);
+        return false;
+    }
+    
+    // Parse and evaluate condition expression
+    expression_parser_t *parser = ar__expression_parser__create(ref_condition_expr);
+    if (!parser) {
+        AR__HEAP__FREE(items);
+        ar__list__destroy(own_args);
+        return false;
+    }
+    
+    expression_ast_t *condition_ast = ar__expression_parser__parse_expression(parser);
+    ar__expression_parser__destroy(parser);
+    
+    if (!condition_ast) {
+        AR__HEAP__FREE(items);
+        ar__list__destroy(own_args);
+        return false;
+    }
+    
+    data_t *own_condition_data = _evaluate_expression_ast(mut_evaluator, condition_ast);
+    ar__expression_ast__destroy(condition_ast);
+    
+    if (!own_condition_data) {
+        AR__HEAP__FREE(items);
+        ar__list__destroy(own_args);
+        return false;
+    }
+    
+    // Check condition value (0 is false, non-zero is true)
+    bool condition_is_true = false;
+    if (ar__data__get_type(own_condition_data) == DATA_INTEGER) {
+        condition_is_true = (ar__data__get_integer(own_condition_data) != 0);
+    }
+    ar__data__destroy(own_condition_data);
+    
+    // Select which expression to evaluate based on condition
+    const char *ref_expr_to_eval = condition_is_true ? ref_true_expr : ref_false_expr;
+    
+    // Parse and evaluate the selected expression
+    parser = ar__expression_parser__create(ref_expr_to_eval);
+    if (!parser) {
+        AR__HEAP__FREE(items);
+        ar__list__destroy(own_args);
+        return false;
+    }
+    
+    expression_ast_t *value_ast = ar__expression_parser__parse_expression(parser);
+    ar__expression_parser__destroy(parser);
+    
+    if (!value_ast) {
+        AR__HEAP__FREE(items);
+        ar__list__destroy(own_args);
+        return false;
+    }
+    
+    data_t *own_result = _evaluate_expression_ast(mut_evaluator, value_ast);
+    ar__expression_ast__destroy(value_ast);
+    
+    if (!own_result) {
+        AR__HEAP__FREE(items);
+        ar__list__destroy(own_args);
+        return false;
+    }
+    
+    // Clean up items array and args list
+    AR__HEAP__FREE(items);
+    ar__list__destroy(own_args);
+    
+    // Handle result assignment if present
+    const char *ref_result_path = ar__instruction_ast__get_function_result_path(ref_ast);
+    if (ref_result_path) {
+        // Check that path starts with "memory."
+        if (strncmp(ref_result_path, "memory.", 7) != 0) {
+            ar__data__destroy(own_result);
+            return false;
+        }
+        
+        // Strip "memory." prefix
+        const char *key_path = ref_result_path + 7;
+        
+        // Store the result value (transfers ownership)
+        bool store_success = ar__data__set_map_data(mut_evaluator->mut_memory, key_path, own_result);
+        if (!store_success) {
+            ar__data__destroy(own_result);
+        }
+        
+        // For assignments, return true to indicate the instruction succeeded
+        return true;
+    } else {
+        // No assignment, just return success (expression was evaluated for side effects)
+        ar__data__destroy(own_result);
+        return true;
+    }
 }
 
 bool ar__instruction_evaluator__evaluate_parse(
