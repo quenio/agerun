@@ -444,14 +444,299 @@ bool ar__instruction_evaluator__evaluate_if(
     }
 }
 
+/* Helper function to parse a value string and determine its type */
+static data_t* _parse_value_string(const char *value_str) {
+    if (!value_str || *value_str == '\0') {
+        return ar__data__create_string("");
+    }
+    
+    // Try to parse as integer first
+    char *endptr;
+    long int_val = strtol(value_str, &endptr, 10);
+    if (*endptr == '\0' && value_str[0] != '\0') {
+        return ar__data__create_integer((int)int_val);
+    }
+    
+    // Try to parse as double
+    double double_val = strtod(value_str, &endptr);
+    if (*endptr == '\0' && value_str[0] != '\0' && strchr(value_str, '.')) {
+        return ar__data__create_double(double_val);
+    }
+    
+    // Otherwise treat as string
+    return ar__data__create_string(value_str);
+}
+
 bool ar__instruction_evaluator__evaluate_parse(
     instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 ) {
-    (void)mut_evaluator;
-    (void)ref_ast;
-    assert(false && "Not implemented yet");
-    return false;
+    if (!mut_evaluator || !ref_ast) {
+        return false;
+    }
+    
+    // Verify this is a parse AST node
+    if (ar__instruction_ast__get_type(ref_ast) != INST_AST_PARSE) {
+        return false;
+    }
+    
+    // Get function arguments
+    list_t *own_args = ar__instruction_ast__get_function_args(ref_ast);
+    if (!own_args) {
+        return false;
+    }
+    
+    // parse requires exactly 2 arguments: template and input
+    if (ar__list__count(own_args) != 2) {
+        ar__list__destroy(own_args);
+        return false;
+    }
+    
+    // Get argument strings (borrowed references from the list)
+    void **items = ar__list__items(own_args);
+    if (!items) {
+        ar__list__destroy(own_args);
+        return false;
+    }
+    
+    const char *ref_template_expr = (const char*)items[0];
+    const char *ref_input_expr = (const char*)items[1];
+    
+    if (!ref_template_expr || !ref_input_expr) {
+        AR__HEAP__FREE(items);
+        ar__list__destroy(own_args);
+        return false;
+    }
+    
+    // Parse and evaluate template expression
+    expression_parser_t *parser = ar__expression_parser__create(ref_template_expr);
+    if (!parser) {
+        AR__HEAP__FREE(items);
+        ar__list__destroy(own_args);
+        return false;
+    }
+    
+    expression_ast_t *template_ast = ar__expression_parser__parse_expression(parser);
+    ar__expression_parser__destroy(parser);
+    
+    if (!template_ast) {
+        AR__HEAP__FREE(items);
+        ar__list__destroy(own_args);
+        return false;
+    }
+    
+    data_t *own_template_data = _evaluate_expression_ast(mut_evaluator, template_ast);
+    ar__expression_ast__destroy(template_ast);
+    
+    if (!own_template_data || ar__data__get_type(own_template_data) != DATA_STRING) {
+        if (own_template_data) ar__data__destroy(own_template_data);
+        AR__HEAP__FREE(items);
+        ar__list__destroy(own_args);
+        return false;
+    }
+    
+    const char *template_str = ar__data__get_string(own_template_data);
+    
+    // Parse and evaluate input expression
+    parser = ar__expression_parser__create(ref_input_expr);
+    if (!parser) {
+        ar__data__destroy(own_template_data);
+        AR__HEAP__FREE(items);
+        ar__list__destroy(own_args);
+        return false;
+    }
+    
+    expression_ast_t *input_ast = ar__expression_parser__parse_expression(parser);
+    ar__expression_parser__destroy(parser);
+    
+    if (!input_ast) {
+        ar__data__destroy(own_template_data);
+        AR__HEAP__FREE(items);
+        ar__list__destroy(own_args);
+        return false;
+    }
+    
+    data_t *own_input_data = _evaluate_expression_ast(mut_evaluator, input_ast);
+    ar__expression_ast__destroy(input_ast);
+    
+    if (!own_input_data || ar__data__get_type(own_input_data) != DATA_STRING) {
+        if (own_input_data) ar__data__destroy(own_input_data);
+        ar__data__destroy(own_template_data);
+        AR__HEAP__FREE(items);
+        ar__list__destroy(own_args);
+        return false;
+    }
+    
+    const char *input_str = ar__data__get_string(own_input_data);
+    
+    // Clean up items array and args list
+    AR__HEAP__FREE(items);
+    ar__list__destroy(own_args);
+    
+    // Create result map
+    data_t *own_result = ar__data__create_map();
+    if (!own_result) {
+        ar__data__destroy(own_input_data);
+        ar__data__destroy(own_template_data);
+        return false;
+    }
+    
+    // Parse the template and input to extract values
+    const char *template_ptr = template_str;
+    const char *input_ptr = input_str;
+    
+    while (*template_ptr && *input_ptr) {
+        // Look for {variable} pattern
+        const char *var_start = strchr(template_ptr, '{');
+        if (!var_start) {
+            // No more variables, check if remaining template matches input
+            if (strcmp(template_ptr, input_ptr) != 0) {
+                // Template doesn't match input
+                ar__data__destroy(own_result);
+                own_result = ar__data__create_map(); // Return empty map
+            }
+            break;
+        }
+        
+        const char *var_end = strchr(var_start + 1, '}');
+        if (!var_end) {
+            // Invalid template - no closing brace
+            break;
+        }
+        
+        // Extract variable name
+        size_t var_len = (size_t)(var_end - var_start - 1);
+        char *var_name = AR__HEAP__MALLOC(var_len + 1, "Parse variable name");
+        if (!var_name) {
+            ar__data__destroy(own_result);
+            ar__data__destroy(own_input_data);
+            ar__data__destroy(own_template_data);
+            return false;
+        }
+        memcpy(var_name, var_start + 1, var_len);
+        var_name[var_len] = '\0';
+        
+        // Get the literal text between current position and {
+        size_t literal_len = (size_t)(var_start - template_ptr);
+        
+        // Match literal text in input
+        if (literal_len > 0) {
+            if (strncmp(template_ptr, input_ptr, literal_len) != 0) {
+                // Literal doesn't match
+                AR__HEAP__FREE(var_name);
+                ar__data__destroy(own_result);
+                own_result = ar__data__create_map(); // Return empty map
+                break;
+            }
+            input_ptr += literal_len;
+        }
+        
+        // Find the next literal after the variable
+        template_ptr = var_end + 1;
+        const char *next_var_start = strchr(template_ptr, '{');
+        size_t next_literal_len = 0;
+        
+        if (next_var_start) {
+            next_literal_len = (size_t)(next_var_start - template_ptr);
+        } else {
+            next_literal_len = strlen(template_ptr);
+        }
+        
+        // Extract value from input
+        const char *value_end;
+        if (next_literal_len > 0) {
+            // Extract next literal text to search for
+            char *next_literal = AR__HEAP__MALLOC(next_literal_len + 1, "Parse next literal");
+            if (!next_literal) {
+                AR__HEAP__FREE(var_name);
+                ar__data__destroy(own_result);
+                ar__data__destroy(own_input_data);
+                ar__data__destroy(own_template_data);
+                return false;
+            }
+            memcpy(next_literal, template_ptr, next_literal_len);
+            next_literal[next_literal_len] = '\0';
+            
+            // Find where the next literal starts in input
+            const char *next_literal_pos = strstr(input_ptr, next_literal);
+            AR__HEAP__FREE(next_literal);
+            
+            if (next_literal_pos) {
+                value_end = next_literal_pos;
+            } else {
+                // Next literal not found
+                AR__HEAP__FREE(var_name);
+                ar__data__destroy(own_result);
+                own_result = ar__data__create_map(); // Return empty map
+                break;
+            }
+        } else {
+            // No more literals, take rest of input
+            value_end = input_ptr + strlen(input_ptr);
+        }
+        
+        // Extract the value string
+        size_t value_len = (size_t)(value_end - input_ptr);
+        char *value_str = AR__HEAP__MALLOC(value_len + 1, "Parse value");
+        if (!value_str) {
+            AR__HEAP__FREE(var_name);
+            ar__data__destroy(own_result);
+            ar__data__destroy(own_input_data);
+            ar__data__destroy(own_template_data);
+            return false;
+        }
+        memcpy(value_str, input_ptr, value_len);
+        value_str[value_len] = '\0';
+        
+        // Parse the value and store in result map
+        data_t *own_value = _parse_value_string(value_str);
+        AR__HEAP__FREE(value_str);
+        
+        if (own_value) {
+            ar__data__set_map_data(own_result, var_name, own_value);
+            // Ownership transferred
+        }
+        
+        AR__HEAP__FREE(var_name);
+        
+        // Move input pointer past the value
+        input_ptr = value_end;
+        
+        // Move template pointer past the literal (if any)
+        if (next_literal_len > 0) {
+            input_ptr += next_literal_len;
+            template_ptr += next_literal_len;
+        }
+    }
+    
+    // Clean up
+    ar__data__destroy(own_input_data);
+    ar__data__destroy(own_template_data);
+    
+    // Handle result assignment if present
+    const char *ref_result_path = ar__instruction_ast__get_function_result_path(ref_ast);
+    if (ref_result_path) {
+        // Check that path starts with "memory."
+        if (strncmp(ref_result_path, "memory.", 7) != 0) {
+            ar__data__destroy(own_result);
+            return false;
+        }
+        
+        // Strip "memory." prefix
+        const char *key_path = ref_result_path + 7;
+        
+        // Store the result value (transfers ownership)
+        bool store_success = ar__data__set_map_data(mut_evaluator->mut_memory, key_path, own_result);
+        if (!store_success) {
+            ar__data__destroy(own_result);
+        }
+        
+        return true;
+    } else {
+        // No assignment, just return success
+        ar__data__destroy(own_result);
+        return true;
+    }
 }
 
 bool ar__instruction_evaluator__evaluate_build(
