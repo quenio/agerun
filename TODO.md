@@ -241,7 +241,7 @@ This order ensures clean separation of concerns across all modules.
   - [x] Ensure parser handles all instruction types correctly
   - [x] No dependency on instruction module for clean separation
   - [x] Created comprehensive documentation (agerun_instruction_parser.md)
-- [ ] Create instruction_evaluator module to extract evaluation from interpreter:
+- [x] Create instruction_evaluator module to extract evaluation from interpreter (Completed 2025-06-19):
   - [x] Create agerun_instruction_evaluator.h with public interface (Completed 2025-06-17)
   - [x] Define opaque instruction_evaluator_t structure (Completed 2025-06-17)
   - [x] Implement ar__instruction_evaluator__create() with expression evaluator and data parameters (Completed 2025-06-17)
@@ -257,9 +257,22 @@ This order ensures clean separation of concerns across all modules.
   - [x] Implement evaluate_destroy with TDD (tests, implementation, refactoring) (Completed 2025-06-19)
   - [x] Fix memory leaks in instruction_evaluator tests (30 → 0 leaks) (Completed 2025-06-19)
   - [x] Separate test groups into individual test files (Completed 2025-06-19)
-  - [ ] Update interpreter module to use instruction_evaluator
-  - [ ] Remove old _execute_* functions from interpreter after integration
-  - [ ] Ensure proper memory ownership semantics throughout
+  - [x] Create module documentation (agerun_instruction_evaluator.md) (Completed 2025-06-19)
+  - [x] Update modules/README.md to include instruction_evaluator (Completed 2025-06-19)
+- [ ] Integrate instruction_evaluator into interpreter module:
+  - [ ] Add instruction_evaluator as dependency to interpreter module
+  - [ ] Create instruction_evaluator instance in interpreter initialization
+  - [ ] Replace _execute_assignment with call to instruction_evaluator
+  - [ ] Replace _execute_send with call to instruction_evaluator
+  - [ ] Replace _execute_if with call to instruction_evaluator
+  - [ ] Replace _execute_parse with call to instruction_evaluator
+  - [ ] Replace _execute_build with call to instruction_evaluator
+  - [ ] Replace _execute_method with call to instruction_evaluator
+  - [ ] Replace _execute_agent with call to instruction_evaluator
+  - [ ] Replace _execute_destroy with call to instruction_evaluator
+  - [ ] Remove old _execute_* functions from interpreter
+  - [ ] Update interpreter tests to verify instruction_evaluator integration
+  - [ ] Ensure proper memory management throughout
 
 ### THEN - Complete expression module refactoring:
 - [ ] Refactor expression module to separate parsing from execution:

@@ -195,6 +195,19 @@ agerun_expression_evaluator
 ├──c──> agerun_io
 └──c──> agerun_heap
 
+agerun_instruction_evaluator
+├──h──> agerun_expression_evaluator
+├──h──> agerun_instruction_ast
+├──h──> agerun_data
+├──c──> agerun_agency
+├──c──> agerun_methodology
+├──c──> agerun_method
+├──c──> agerun_expression_parser
+├──c──> agerun_expression_ast
+├──c──> agerun_instruction
+├──c──> agerun_string
+└──c──> agerun_heap
+
 Fixture Modules:
 agerun_method_fixture
 ├──c──> agerun_system
@@ -298,6 +311,17 @@ agerun_expression_parser_tests
 agerun_expression_evaluator_tests
 ├──c──> agerun_expression_evaluator (module under test)
 ├──c──> agerun_expression_ast
+├──c──> agerun_data
+└──c──> agerun_heap
+
+agerun_instruction_evaluator_tests
+├──c──> agerun_instruction_evaluator (module under test)
+├──c──> agerun_expression_evaluator
+├──c──> agerun_instruction_ast
+├──c──> agerun_agency
+├──c──> agerun_methodology
+├──c──> agerun_method
+├──c──> agerun_system
 ├──c──> agerun_data
 └──c──> agerun_heap
 
@@ -693,6 +717,23 @@ The expression evaluator module provides evaluation of expression ASTs against m
 - **Recursive Evaluation**: Properly evaluates nested expressions
 - **Depends on AST**: Uses expression_ast module for node inspection
 - **Depends on Data**: Uses data module for value creation and manipulation
+
+### Instruction Evaluator Module (`agerun_instruction_evaluator`)
+
+The [instruction evaluator module](agerun_instruction_evaluator.md) provides execution of parsed instruction AST nodes:
+
+- **Instruction Execution**: Evaluates all instruction types from their AST representation
+- **Expression Integration**: Uses expression evaluator for evaluating expressions within instructions
+- **Assignment Operations**: Handles memory assignment with nested path support
+- **Agent Operations**: Manages agent creation, destruction, and messaging
+- **Method Operations**: Handles method creation and registration
+- **Control Flow**: Implements conditional execution with if instructions
+- **Template Operations**: Performs parse and build operations for string templating
+- **Memory Safety**: Strict ownership semantics with proper cleanup
+- **No Circular Dependencies**: Takes dependencies as parameters rather than importing high-level modules
+- **Depends on Expression Evaluator**: Uses for evaluating expressions within instructions
+- **Depends on Instruction AST**: Uses for accessing parsed instruction structures
+- **Depends on Agency/Methodology**: Uses for agent and method operations
 
 ### Instruction Module (`agerun_instruction`)
 
