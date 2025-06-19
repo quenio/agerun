@@ -15,6 +15,35 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - ✅ Removed tests using undefined "null" identifier
   - ✅ Added TODO task to support optional context parameter in future
   - ✅ All tests pass with no memory leaks
+- ✅ Implemented evaluate_destroy in instruction_evaluator module:
+  - ✅ Tests cover agent destruction and method destruction with all edge cases
+  - ✅ Evaluates one or two arguments based on destroy type
+  - ✅ For agent destruction: validates agent ID is integer, destroys via ar__agency__destroy_agent()
+  - ✅ For method destruction: validates method name is string and version is integer
+  - ✅ Converts integer version to string for ar__methodology__destroy_method() call
+  - ✅ Returns true on successful destruction, false on failure
+  - ✅ Follows full TDD methodology with comprehensive error handling
+  - ✅ All tests pass with no memory leaks
+- ✅ Fixed ALL memory leaks in instruction_evaluator tests:
+  - ✅ Identified and fixed leak in evaluate_destroy where ar__instruction_ast__get_function_args() returns owned list
+  - ✅ Updated variable naming from ref_args to own_args to clarify ownership
+  - ✅ Added proper cleanup with ar__list__destroy() after use
+  - ✅ Updated documentation for get_function_args() to clarify it returns owned list
+  - ✅ Fixed leak in build tests where ar__data__list_remove_first() returns owned values
+  - ✅ Added proper destruction of removed keys during map iteration
+  - ✅ Reduced memory leaks from 30 (582 bytes) to 0
+  - ✅ All 44 tests now pass with zero memory leaks
+- ✅ Separated instruction_evaluator test groups into individual files:
+  - ✅ Created agerun_assignment_instruction_evaluator_tests.c (6 tests, 0 leaks)
+  - ✅ Created agerun_send_instruction_evaluator_tests.c (6 tests, 0 leaks)
+  - ✅ Created agerun_condition_instruction_evaluator_tests.c (5 tests, 0 leaks)
+  - ✅ Created agerun_parse_instruction_evaluator_tests.c (5 tests, 0 leaks)
+  - ✅ Created agerun_build_instruction_evaluator_tests.c (5 tests, 0 leaks)
+  - ✅ Created agerun_method_instruction_evaluator_tests.c (4 tests, 0 leaks)
+  - ✅ Created agerun_agent_instruction_evaluator_tests.c (4 tests, 0 leaks)
+  - ✅ Created agerun_destroy_instruction_evaluator_tests.c (5 tests, 0 leaks)
+  - ✅ Kept create/destroy tests in main instruction_evaluator_tests.c (4 tests, 0 leaks)
+  - ✅ Better organization and easier maintenance of test groups
 
 ## 2025-06-18
 - ✅ Continued implementation of instruction_evaluator module:

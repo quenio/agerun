@@ -165,6 +165,38 @@ static void _cleanup_function_args(void **items, list_t *own_args) {
     }
 }
 
+/* Helper function to get a reference to memory/context without copying */
+static const data_t* _get_memory_or_context_reference(
+    instruction_evaluator_t *mut_evaluator,
+    const char *ref_expr
+) {
+    if (!mut_evaluator || !ref_expr) {
+        return NULL;
+    }
+    
+    // Check if it's a simple "memory" or "context" expression
+    if (strcmp(ref_expr, "memory") == 0) {
+        return mut_evaluator->mut_memory;
+    } else if (strcmp(ref_expr, "context") == 0) {
+        return mut_evaluator->ref_context;
+    }
+    
+    // Check if it's a memory.path or context.path expression
+    if (strncmp(ref_expr, "memory.", 7) == 0) {
+        const char *key_path = ref_expr + 7;
+        return ar__data__get_map_data(mut_evaluator->mut_memory, key_path);
+    } else if (strncmp(ref_expr, "context.", 8) == 0) {
+        if (!mut_evaluator->ref_context) {
+            return NULL;
+        }
+        const char *key_path = ref_expr + 8;
+        return ar__data__get_map_data(mut_evaluator->ref_context, key_path);
+    }
+    
+    // Not a simple memory/context access
+    return NULL;
+}
+
 /* Helper function to create a deep copy of data value */
 static data_t* _copy_data_value(const data_t *ref_value) {
     if (!ref_value) {
@@ -200,7 +232,8 @@ static data_t* _copy_data_value(const data_t *ref_value) {
                     
                     const char *key = ar__data__get_string(key_data);
                     if (!key) {
-                        ar__data__list_remove_first(keys);
+                        data_t *removed = ar__data__list_remove_first(keys);
+                        ar__data__destroy(removed);
                         continue;
                     }
                     
@@ -210,12 +243,17 @@ static data_t* _copy_data_value(const data_t *ref_value) {
                         // Recursively copy the value
                         data_t *copy_value = _copy_data_value(orig_value);
                         if (copy_value) {
-                            ar__data__set_map_data(new_map, key, copy_value);
+                            bool success = ar__data__set_map_data(new_map, key, copy_value);
+                            if (!success) {
+                                fprintf(stderr, "ERROR: Failed to set map data for key '%s'\n", key);
+                                ar__data__destroy(copy_value);
+                            }
                         }
                     }
                     
-                    // Remove the processed key
-                    ar__data__list_remove_first(keys);
+                    // Remove and destroy the processed key
+                    data_t *removed_key = ar__data__list_remove_first(keys);
+                    ar__data__destroy(removed_key);
                 }
                 
                 // Clean up the keys list
@@ -1134,7 +1172,16 @@ bool ar__instruction_evaluator__evaluate_agent(
     
     data_t *own_method_name = _parse_and_evaluate_expression(mut_evaluator, ref_method_expr);
     data_t *own_version = _parse_and_evaluate_expression(mut_evaluator, ref_version_expr);
-    data_t *own_context = _parse_and_evaluate_expression(mut_evaluator, ref_context_expr);
+    
+    // For context, first try to get a direct reference to avoid copying
+    const data_t *ref_context = _get_memory_or_context_reference(mut_evaluator, ref_context_expr);
+    data_t *own_context = NULL;
+    
+    if (!ref_context) {
+        // Not a simple memory/context access, evaluate the expression
+        own_context = _parse_and_evaluate_expression(mut_evaluator, ref_context_expr);
+        ref_context = own_context; // Use the evaluated result
+    }
     
     _cleanup_function_args(items, own_args);
     
@@ -1148,7 +1195,7 @@ bool ar__instruction_evaluator__evaluate_agent(
         
         // Validate context - must be a map (since parser requires 3 args)
         bool context_valid = false;
-        if (own_context && ar__data__get_type(own_context) == DATA_MAP) {
+        if (ref_context && ar__data__get_type(ref_context) == DATA_MAP) {
             context_valid = true;
         }
         
@@ -1159,12 +1206,10 @@ bool ar__instruction_evaluator__evaluate_agent(
             // Check if method exists
             method_t *ref_method = ar__methodology__get_method(method_name, version);
             if (ref_method) {
-                // Create the agent - context is passed as-is (may be NULL)
-                agent_id = ar__agency__create_agent(method_name, version, own_context);
+                // Create the agent - context is borrowed, not owned
+                agent_id = ar__agency__create_agent(method_name, version, ref_context);
                 if (agent_id > 0) {
                     success = true;
-                    // Note: ownership of context is transferred to agency
-                    own_context = NULL;
                 }
             }
         }
@@ -1173,7 +1218,7 @@ bool ar__instruction_evaluator__evaluate_agent(
     // Clean up evaluated arguments
     if (own_method_name) ar__data__destroy(own_method_name);
     if (own_version) ar__data__destroy(own_version);
-    if (own_context) ar__data__destroy(own_context);
+    if (own_context) ar__data__destroy(own_context); // Only destroy if we created a copy
     
     // Store result if assigned
     if (ar__instruction_ast__has_result_assignment(ref_ast)) {
@@ -1190,8 +1235,132 @@ bool ar__instruction_evaluator__evaluate_destroy(
     instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 ) {
-    (void)mut_evaluator;
-    (void)ref_ast;
-    assert(false && "Not implemented yet");
-    return false;
+    if (!mut_evaluator || !ref_ast) {
+        return false;
+    }
+    
+    // Validate AST type
+    if (ar__instruction_ast__get_type(ref_ast) != INST_AST_DESTROY) {
+        return false;
+    }
+    
+    // Get function arguments
+    list_t *own_args = ar__instruction_ast__get_function_args(ref_ast);
+    if (!own_args) {
+        return false;
+    }
+    
+    size_t arg_count = ar__list__count(own_args);
+    if (arg_count != 1 && arg_count != 2) {
+        ar__list__destroy(own_args);
+        return false;
+    }
+    
+    bool success = false;
+    bool destroy_result = false;
+    
+    // Get array of arguments
+    void **items = ar__list__items(own_args);
+    if (!items) {
+        ar__list__destroy(own_args);
+        return false;
+    }
+    
+    if (arg_count == 1) {
+        // destroy(agent_id)
+        // Extract and evaluate agent ID argument
+        const char *ref_agent_expr = (const char*)items[0];
+        data_t *own_agent_id = _parse_and_evaluate_expression(mut_evaluator, ref_agent_expr);
+        
+        if (own_agent_id && ar__data__get_type(own_agent_id) == DATA_INTEGER) {
+            int64_t agent_id = (int64_t)ar__data__get_integer(own_agent_id);
+            destroy_result = ar__agency__destroy_agent(agent_id);
+            success = true;
+        }
+        
+        if (own_agent_id) {
+            ar__data__destroy(own_agent_id);
+        }
+    } else {
+        // destroy(method_name, method_version)
+        // Extract arguments
+        const char *ref_name_expr = (const char*)items[0];
+        const char *ref_version_expr = (const char*)items[1];
+        
+        // Evaluate method name
+        data_t *own_name = _parse_and_evaluate_expression(mut_evaluator, ref_name_expr);
+        data_t *own_version = _parse_and_evaluate_expression(mut_evaluator, ref_version_expr);
+        
+        if (own_name && own_version &&
+            ar__data__get_type(own_name) == DATA_STRING &&
+            ar__data__get_type(own_version) == DATA_STRING) {
+            
+            const char *method_name = ar__data__get_string(own_name);
+            const char *method_version = ar__data__get_string(own_version);
+            
+            // Get the method to check if agents are using it
+            method_t *ref_method = ar__methodology__get_method(method_name, method_version);
+            if (ref_method) {
+                // Count agents using this method
+                int agent_count = ar__agency__count_agents_using_method(ref_method);
+                
+                if (agent_count > 0) {
+                    // Send __sleep__ messages to all agents using this method
+                    int64_t agent_id = ar__agency__get_first_agent();
+                    while (agent_id > 0) {
+                        const method_t *agent_method = ar__agency__get_agent_method(agent_id);
+                        if (agent_method == ref_method) {
+                            data_t *sleep_msg = ar__data__create_string("__sleep__");
+                            if (sleep_msg) {
+                                bool sent = ar__agency__send_to_agent(agent_id, sleep_msg);
+                                if (!sent) {
+                                    // If send fails, we need to destroy the message ourselves
+                                    ar__data__destroy(sleep_msg);
+                                }
+                            }
+                        }
+                        agent_id = ar__agency__get_next_agent(agent_id);
+                    }
+                    
+                    // Now destroy each agent
+                    agent_id = ar__agency__get_first_agent();
+                    while (agent_id > 0) {
+                        int64_t next_id = ar__agency__get_next_agent(agent_id);
+                        const method_t *agent_method = ar__agency__get_agent_method(agent_id);
+                        if (agent_method == ref_method) {
+                            ar__agency__destroy_agent(agent_id);
+                        }
+                        agent_id = next_id;
+                    }
+                }
+                
+                // Now unregister the method
+                destroy_result = ar__methodology__unregister_method(method_name, method_version);
+                success = true;
+            } else {
+                // Method doesn't exist
+                success = true;
+                destroy_result = false;
+            }
+        }
+        
+        if (own_name) ar__data__destroy(own_name);
+        if (own_version) ar__data__destroy(own_version);
+    }
+    
+    // Free the items array (but not the items themselves)
+    AR__HEAP__FREE(items);
+    
+    // Destroy the args list
+    ar__list__destroy(own_args);
+    
+    // Store result if assigned
+    if (success && ar__instruction_ast__has_result_assignment(ref_ast)) {
+        data_t *own_result = ar__data__create_integer(destroy_result ? 1 : 0);
+        if (own_result) {
+            _store_result_if_assigned(mut_evaluator, ref_ast, own_result);
+        }
+    }
+    
+    return success;
 }

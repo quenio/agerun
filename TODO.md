@@ -254,11 +254,12 @@ This order ensures clean separation of concerns across all modules.
   - [x] Implement evaluate_build with TDD (tests, implementation, refactoring) (Completed 2025-06-18)
   - [x] Implement evaluate_method with TDD (tests, implementation, refactoring) (Completed 2025-06-18)
   - [x] Implement evaluate_agent with TDD (tests, implementation, refactoring) (Completed 2025-06-19)
-  - [ ] Copy remaining _execute_* functions from interpreter module (not extract yet)
-  - [ ] Adapt expression evaluation logic to use expression_evaluator for remaining functions
-  - [ ] Write comprehensive tests following TDD methodology for each remaining evaluate function
-  - [ ] Ensure evaluator handles all instruction types correctly
-  - [ ] Maintain proper memory ownership semantics
+  - [x] Implement evaluate_destroy with TDD (tests, implementation, refactoring) (Completed 2025-06-19)
+  - [x] Fix memory leaks in instruction_evaluator tests (30 → 0 leaks) (Completed 2025-06-19)
+  - [x] Separate test groups into individual test files (Completed 2025-06-19)
+  - [ ] Update interpreter module to use instruction_evaluator
+  - [ ] Remove old _execute_* functions from interpreter after integration
+  - [ ] Ensure proper memory ownership semantics throughout
 
 ### THEN - Complete expression module refactoring:
 - [ ] Refactor expression module to separate parsing from execution:

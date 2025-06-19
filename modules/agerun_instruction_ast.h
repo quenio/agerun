@@ -109,12 +109,14 @@ const char* ar__instruction_ast__get_assignment_expression(const instruction_ast
 const char* ar__instruction_ast__get_function_name(const instruction_ast_t *ref_node);
 
 /**
- * Get arguments from a function call node.
+ * Get arguments from a function call node as a new list.
  * 
  * @param ref_node The AST node (borrowed reference)
- * @return List of argument strings (owned by caller), or NULL if not a function call
- * @note Ownership: Returns an owned list that caller must destroy with ar__list__destroy.
- *       The strings in the list are borrowed references and should not be freed.
+ * @return A newly created list containing argument strings, or NULL if not a function call
+ * @note Ownership: IMPORTANT - This function creates and returns a NEW list that the
+ *       caller MUST destroy with ar__list__destroy() to avoid memory leaks.
+ *       The strings in the list are borrowed references and should not be freed individually.
+ * @note Despite the "get" in the name, this function allocates memory.
  */
 list_t* ar__instruction_ast__get_function_args(const instruction_ast_t *ref_node);
 
