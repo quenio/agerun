@@ -392,6 +392,10 @@ grep -r "\".*\"" modules/*.c | grep -v "printf\|fprintf\|error" | sort | uniq -c
   - Examples: `ar_data__create_map()`, `ar_agent__send()`, `ar_system__init()`
   - **IMPORTANT**: Changed prefix from `ar__` to `ar_` (2025-06-19)
   - This applies to all public functions in module headers
+- **Module File Names**: Use `ar_` prefix instead of `agerun_` (Updated 2025-06-19)
+  - Examples: `ar_data.h`, `ar_agent.c`, `ar_system_tests.c`
+  - **IMPORTANT**: Only rename files when they need to be modified for other reasons
+  - Do not proactively rename all files at once
 - **Static Functions**: Use single underscore prefix `_<function_name>` (Completed 2025-06-11)
   - Examples: `_validate_file()`, `_find_method_idx()`, `_allocate_node()`
   - Indicates internal/private functions within a module

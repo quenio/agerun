@@ -4,13 +4,13 @@
 
 In the AgeRun system, a module is a self-contained unit of functionality that consists of an implementation file (`.c`) and a header file (`.h`). Each module encapsulates a specific set of related functions and data structures that work together to provide a particular capability to the system. Modules are designed to have clear interfaces and dependencies, making the system more maintainable and easier to understand.
 
-Each module typically follows a consistent naming convention with an `agerun_` prefix (e.g., `agerun_data`, `agerun_string`), and has its own test file (`agerun_*_tests.c`) that verifies its functionality.
+Each module typically follows a consistent naming convention with an `ar_` prefix (e.g., `ar_data`, `ar_string`), and has its own test file (`ar_*_tests.c`) that verifies its functionality. Note: File names are being transitioned from `agerun_` to `ar_` prefix gradually as files are modified for other reasons.
 
 ### Naming Conventions
 
 Within modules, consistent naming conventions are used:
 
-- **Functions**: All public functions in a module use the `ar_` prefix followed by the module name and function purpose (e.g., `ar__string__trim`, `ar__data__copy`). This creates a namespace to prevent naming collisions.
+- **Functions**: All public functions in a module use the `ar_` prefix followed by the module name and function purpose (e.g., `ar_string__trim`, `ar_data__copy`). This creates a namespace to prevent naming collisions.
 
 - **Structs**: Data structures typically use lowercase with underscores and the `_t` suffix (e.g., `string_t`, `agent_t`). These are often defined in the header files.
 
