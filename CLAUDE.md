@@ -406,6 +406,12 @@ grep -r "\".*\"" modules/*.c | grep -v "printf\|fprintf\|error" | sort | uniq -c
 - **Assert Macros**: EXCEPTION - Keep original pattern `AR_ASSERT_<TYPE>`
   - Examples: `AR_ASSERT_OWNERSHIP`, `AR_ASSERT_TRANSFERRED`, `AR_ASSERT_NOT_USED_AFTER_FREE`
   - Rationale: Assert module contains only macros, not functions; follows different naming pattern
+- **Opaque Structs** (Added 2025-06-19):
+  - **Public Interface**: Use `ar_` prefix for opaque structs declared in header files
+    - Examples: `typedef struct ar_agent_s ar_agent_t;`
+  - **Internal Implementation**: Use `_` prefix for internal structs in .c files
+    - Examples: `struct _internal_node { ... };`
+  - This clearly distinguishes public API types from internal implementation details
 - **Type suffix**: `_t`
 
 **Formatting**:
