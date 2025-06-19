@@ -69,7 +69,7 @@ void ar__instruction_evaluator__destroy(instruction_evaluator_t *own_evaluator) 
 static data_t* _evaluate_expression_ast(instruction_evaluator_t *mut_evaluator, expression_ast_t *ref_ast);
 
 /* Helper function to ensure a dynamic buffer has enough capacity */
-static char* _ensure_buffer_capacity(char *own_buffer, size_t *mut_capacity, size_t required_size, const char *tag) {
+static char* _ensure_buffer_capacity(char *own_buffer, size_t *mut_capacity, size_t required_size) {
     if (required_size <= *mut_capacity) {
         return own_buffer;
     }
@@ -80,7 +80,7 @@ static char* _ensure_buffer_capacity(char *own_buffer, size_t *mut_capacity, siz
         new_capacity *= 2;
     }
     
-    char *new_buffer = AR__HEAP__MALLOC(new_capacity, tag);
+    char *new_buffer = AR__HEAP__MALLOC(new_capacity, "Buffer resize");
     if (!new_buffer) {
         return NULL;
     }
@@ -897,7 +897,7 @@ static bool _process_placeholder(
     
     // Ensure buffer capacity
     char *new_buffer = _ensure_buffer_capacity(*mut_result_str, mut_result_size, 
-                                               *mut_result_pos + append_len + 1, "Build result");
+                                               *mut_result_pos + append_len + 1);
     if (!new_buffer) {
         AR__HEAP__FREE(var_name);
         // Note: caller still owns *mut_result_str and must free it
@@ -995,7 +995,7 @@ bool ar__instruction_evaluator__evaluate_build(
             if (!_process_placeholder(template_ptr, own_values_data, 
                                       &own_result_str, &result_size, &result_pos, &template_ptr)) {
                 // If no closing brace found, just copy the '{' character
-                char *new_buffer = _ensure_buffer_capacity(own_result_str, &result_size, result_pos + 2, "Build result");
+                char *new_buffer = _ensure_buffer_capacity(own_result_str, &result_size, result_pos + 2);
                 if (!new_buffer) {
                     AR__HEAP__FREE(own_result_str);
                     ar__data__destroy(own_values_data);
@@ -1008,7 +1008,7 @@ bool ar__instruction_evaluator__evaluate_build(
             }
         } else {
             // Regular character, ensure capacity and copy
-            char *new_buffer = _ensure_buffer_capacity(own_result_str, &result_size, result_pos + 2, "Build result");
+            char *new_buffer = _ensure_buffer_capacity(own_result_str, &result_size, result_pos + 2);
             if (!new_buffer) {
                 AR__HEAP__FREE(own_result_str);
                 ar__data__destroy(own_values_data);
