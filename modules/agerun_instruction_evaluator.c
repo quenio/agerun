@@ -10,6 +10,7 @@
 #include "agerun_agency.h"
 #include "agerun_method.h"
 #include "agerun_methodology.h"
+#include "agerun_assignment_instruction_evaluator.h"
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
@@ -414,53 +415,12 @@ bool ar__instruction_evaluator__evaluate_assignment(
         return false;
     }
     
-    // Verify this is an assignment AST node
-    if (ar__instruction_ast__get_type(ref_ast) != INST_AST_ASSIGNMENT) {
-        return false;
-    }
-    
-    // Get assignment details
-    const char *ref_path = ar__instruction_ast__get_assignment_path(ref_ast);
-    const char *ref_expression = ar__instruction_ast__get_assignment_expression(ref_ast);
-    
-    if (!ref_path || !ref_expression) {
-        return false;
-    }
-    
-    // Get memory key path
-    const char *key_path = _get_memory_key_path(ref_path);
-    if (!key_path) {
-        return false;
-    }
-    
-    // Parse the expression to get an AST
-    expression_parser_t *parser = ar__expression_parser__create(ref_expression);
-    if (!parser) {
-        return false;
-    }
-    
-    expression_ast_t *expr_ast = ar__expression_parser__parse_expression(parser);
-    ar__expression_parser__destroy(parser);
-    
-    if (!expr_ast) {
-        return false;
-    }
-    
-    // Evaluate the expression AST
-    data_t *own_value = _evaluate_expression_ast(mut_evaluator, expr_ast);
-    ar__expression_ast__destroy(expr_ast);
-    
-    if (!own_value) {
-        return false;
-    }
-    
-    // Store the value in memory (transfers ownership)
-    bool success = ar__data__set_map_data(mut_evaluator->mut_memory, key_path, own_value);
-    if (!success) {
-        ar__data__destroy(own_value);
-    }
-    
-    return success;
+    // Delegate to the assignment instruction evaluator module
+    return ar__assignment_instruction_evaluator__evaluate(
+        mut_evaluator->ref_expr_evaluator,
+        mut_evaluator->mut_memory,
+        ref_ast
+    );
 }
 
 bool ar__instruction_evaluator__evaluate_send(

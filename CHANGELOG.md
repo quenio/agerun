@@ -3,6 +3,15 @@
 This document tracks completed milestones and major achievements for the AgeRun project.
 
 ## 2025-06-19
+- ✅ Started refactoring instruction_evaluator into specialized modules:
+  - ✅ Created assignment_instruction_evaluator module for evaluate_assignment
+  - ✅ Moved evaluate_assignment function and required helper functions
+  - ✅ Updated instruction_evaluator to delegate assignment evaluation
+  - ✅ Maintained clean separation with dedicated module for assignment instructions
+  - ✅ All tests pass with refactored structure (44 tests, 0 leaks)
+  - ✅ Established pattern for remaining instruction type modules
+
+## 2025-06-19 (Earlier)
 - ✅ Implemented evaluate_agent in instruction_evaluator module:
   - ✅ Tests cover agent creation with context, result assignment, invalid method, and error cases
   - ✅ Evaluates three arguments: method name, version, and context (all required by parser)

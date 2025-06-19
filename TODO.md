@@ -259,6 +259,17 @@ This order ensures clean separation of concerns across all modules.
   - [x] Separate test groups into individual test files (Completed 2025-06-19)
   - [x] Create module documentation (agerun_instruction_evaluator.md) (Completed 2025-06-19)
   - [x] Update modules/README.md to include instruction_evaluator (Completed 2025-06-19)
+- [ ] Extract instruction evaluator functions into dedicated modules (In Progress 2025-06-19):
+  - [x] Create assignment_instruction_evaluator module for evaluate_assignment
+  - [ ] Create send_instruction_evaluator module for evaluate_send
+  - [ ] Create condition_instruction_evaluator module for evaluate_if
+  - [ ] Create parse_instruction_evaluator module for evaluate_parse
+  - [ ] Create build_instruction_evaluator module for evaluate_build
+  - [ ] Create method_instruction_evaluator module for evaluate_method
+  - [ ] Create agent_instruction_evaluator module for evaluate_agent
+  - [ ] Create destroy_instruction_evaluator module for evaluate_destroy
+  - [ ] Update instruction_evaluator to delegate to specialized modules
+  - [ ] Ensure all tests continue to pass with refactored structure
 - [ ] Integrate instruction_evaluator into interpreter module:
   - [ ] Add instruction_evaluator as dependency to interpreter module
   - [ ] Create instruction_evaluator instance in interpreter initialization
