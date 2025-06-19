@@ -65,8 +65,128 @@ void ar__instruction_evaluator__destroy(instruction_evaluator_t *own_evaluator) 
     AR__HEAP__FREE(own_evaluator);
 }
 
-/* Forward declaration */
+/* Forward declarations */
 static data_t* _evaluate_expression_ast(instruction_evaluator_t *mut_evaluator, expression_ast_t *ref_ast);
+
+/* Constants */
+static const char* MEMORY_PREFIX = "memory.";
+static const size_t MEMORY_PREFIX_LEN = 7;
+
+/* Helper function to check if a path starts with "memory." and return the key path */
+static const char* _get_memory_key_path(const char *ref_path) {
+    if (!ref_path) {
+        return NULL;
+    }
+    
+    if (strncmp(ref_path, MEMORY_PREFIX, MEMORY_PREFIX_LEN) != 0) {
+        return NULL;
+    }
+    
+    return ref_path + MEMORY_PREFIX_LEN;
+}
+
+/* Helper function to extract function arguments and validate count */
+static void** _extract_function_args(const instruction_ast_t *ref_ast, size_t expected_count, list_t **out_args_list) {
+    if (!ref_ast || !out_args_list) {
+        return NULL;
+    }
+    
+    *out_args_list = ar__instruction_ast__get_function_args(ref_ast);
+    if (!*out_args_list) {
+        return NULL;
+    }
+    
+    if (ar__list__count(*out_args_list) != expected_count) {
+        ar__list__destroy(*out_args_list);
+        *out_args_list = NULL;
+        return NULL;
+    }
+    
+    void **items = ar__list__items(*out_args_list);
+    if (!items) {
+        ar__list__destroy(*out_args_list);
+        *out_args_list = NULL;
+        return NULL;
+    }
+    
+    return items;
+}
+
+/* Helper function to clean up function args */
+static void _cleanup_function_args(void **items, list_t *own_args) {
+    if (items) {
+        AR__HEAP__FREE(items);
+    }
+    if (own_args) {
+        ar__list__destroy(own_args);
+    }
+}
+
+/* Helper function to create a deep copy of data value */
+static data_t* _copy_data_value(const data_t *ref_value) {
+    if (!ref_value) {
+        return NULL;
+    }
+    
+    switch (ar__data__get_type(ref_value)) {
+        case DATA_INTEGER:
+            return ar__data__create_integer(ar__data__get_integer(ref_value));
+        case DATA_DOUBLE:
+            return ar__data__create_double(ar__data__get_double(ref_value));
+        case DATA_STRING:
+            return ar__data__create_string(ar__data__get_string(ref_value));
+        case DATA_MAP:
+            {
+                // Create a new map and copy all key-value pairs
+                data_t *new_map = ar__data__create_map();
+                if (!new_map) return NULL;
+                
+                // Get all keys from the original map
+                data_t *keys = ar__data__get_map_keys(ref_value);
+                if (!keys) {
+                    ar__data__destroy(new_map);
+                    return NULL;
+                }
+                
+                // Copy each key-value pair
+                size_t count = ar__data__list_count(keys);
+                for (size_t i = 0; i < count; i++) {
+                    // Get the key
+                    data_t *key_data = ar__data__list_first(keys);
+                    if (!key_data) break;
+                    
+                    const char *key = ar__data__get_string(key_data);
+                    if (!key) {
+                        ar__data__list_remove_first(keys);
+                        continue;
+                    }
+                    
+                    // Get the value from the original map
+                    data_t *orig_value = ar__data__get_map_data(ref_value, key);
+                    if (orig_value) {
+                        // Recursively copy the value
+                        data_t *copy_value = _copy_data_value(orig_value);
+                        if (copy_value) {
+                            ar__data__set_map_data(new_map, key, copy_value);
+                        }
+                    }
+                    
+                    // Remove the processed key
+                    ar__data__list_remove_first(keys);
+                }
+                
+                // Clean up the keys list
+                ar__data__destroy(keys);
+                
+                return new_map;
+            }
+        case DATA_LIST:
+            // TODO: Implement deep copy for lists
+            return ar__data__create_list();
+        default:
+            return NULL;
+    }
+}
 
 /* Helper function to ensure a dynamic buffer has enough capacity */
 static char* _ensure_buffer_capacity(char *own_buffer, size_t *mut_capacity, size_t required_size) {
@@ -108,14 +228,14 @@ static bool _store_result_if_assigned(
         return true;
     }
     
-    // Check that path starts with "memory."
-    if (strncmp(ref_result_path, "memory.", 7) != 0) {
+    // Get memory key path
+    const char *key_path = _get_memory_key_path(ref_result_path);
+    if (!key_path) {
         ar__data__destroy(own_result);
         return false;
     }
     
-    // Strip "memory." prefix and store
-    const char *key_path = ref_result_path + 7;
+    // Store the result (transfers ownership)
     bool store_success = ar__data__set_map_data(mut_evaluator->mut_memory, key_path, own_result);
     if (!store_success) {
         ar__data__destroy(own_result);
@@ -193,88 +313,8 @@ static data_t* _evaluate_expression_ast(instruction_evaluator_t *mut_evaluator, 
                 data_t *ref_value = ar__expression_evaluator__evaluate_memory_access(mut_evaluator->ref_expr_evaluator, ref_ast);
                 if (!ref_value) return NULL;
                 
-                // Create a copy based on type
-                switch (ar__data__get_type(ref_value)) {
-                    case DATA_INTEGER:
-                        return ar__data__create_integer(ar__data__get_integer(ref_value));
-                    case DATA_DOUBLE:
-                        return ar__data__create_double(ar__data__get_double(ref_value));
-                    case DATA_STRING:
-                        return ar__data__create_string(ar__data__get_string(ref_value));
-                    case DATA_MAP:
-                        {
-                            // Create a new map and copy all key-value pairs
-                            data_t *new_map = ar__data__create_map();
-                            if (!new_map) return NULL;
-                            
-                            // Get all keys from the original map
-                            data_t *keys = ar__data__get_map_keys(ref_value);
-                            if (!keys) {
-                                ar__data__destroy(new_map);
-                                return NULL;
-                            }
-                            
-                            // Copy each key-value pair
-                            size_t count = ar__data__list_count(keys);
-                            for (size_t i = 0; i < count; i++) {
-                                // Get the key
-                                data_t *key_data = ar__data__list_first(keys);
-                                if (!key_data) break;
-                                
-                                const char *key = ar__data__get_string(key_data);
-                                if (!key) {
-                                    ar__data__list_remove_first(keys);
-                                    continue;
-                                }
-                                
-                                // Get the value from the original map
-                                data_t *orig_value = ar__data__get_map_data(ref_value, key);
-                                if (orig_value) {
-                                    // Recursively copy the value
-                                    data_t *copy_value = NULL;
-                                    switch (ar__data__get_type(orig_value)) {
-                                        case DATA_INTEGER:
-                                            copy_value = ar__data__create_integer(ar__data__get_integer(orig_value));
-                                            break;
-                                        case DATA_DOUBLE:
-                                            copy_value = ar__data__create_double(ar__data__get_double(orig_value));
-                                            break;
-                                        case DATA_STRING:
-                                            copy_value = ar__data__create_string(ar__data__get_string(orig_value));
-                                            break;
-                                        case DATA_MAP:
-                                            // For nested maps, we would need recursive copying
-                                            // For now, we'll create an empty map
-                                            copy_value = ar__data__create_map();
-                                            break;
-                                        case DATA_LIST:
-                                            // For lists, we would need recursive copying
-                                            // For now, we'll create an empty list
-                                            copy_value = ar__data__create_list();
-                                            break;
-                                    }
-                                    
-                                    if (copy_value) {
-                                        ar__data__set_map_data(new_map, key, copy_value);
-                                    }
-                                }
-                                
-                                // Remove the processed key
-                                ar__data__list_remove_first(keys);
-                            }
-                            
-                            // Clean up the keys list
-                            ar__data__destroy(keys);
-                            
-                            return new_map;
-                        }
-                    case DATA_LIST:
-                        // For lists, create an empty list for now
-                        return ar__data__create_list();
-                    default:
-                        // For any other unsupported types
-                        return NULL;
-                }
+                // Create a deep copy of the value
+                return _copy_data_value(ref_value);
             }
             
         case EXPR_AST_BINARY_OP:
@@ -306,13 +346,11 @@ bool ar__instruction_evaluator__evaluate_assignment(
         return false;
     }
     
-    // Check that path starts with "memory."
-    if (strncmp(ref_path, "memory.", 7) != 0) {
+    // Get memory key path
+    const char *key_path = _get_memory_key_path(ref_path);
+    if (!key_path) {
         return false;
     }
-    
-    // Strip "memory." prefix to get the actual key path
-    const char *key_path = ref_path + 7;
     
     // Parse the expression to get an AST
     expression_parser_t *parser = ar__expression_parser__create(ref_expression);
@@ -358,21 +396,9 @@ bool ar__instruction_evaluator__evaluate_send(
     }
     
     // Get function arguments
-    list_t *own_args = ar__instruction_ast__get_function_args(ref_ast);
-    if (!own_args) {
-        return false;
-    }
-    
-    // Send requires exactly 2 arguments
-    if (ar__list__count(own_args) != 2) {
-        ar__list__destroy(own_args);
-        return false;
-    }
-    
-    // Get argument strings (borrowed references from the list)
-    void **items = ar__list__items(own_args);
+    list_t *own_args = NULL;
+    void **items = _extract_function_args(ref_ast, 2, &own_args);
     if (!items) {
-        ar__list__destroy(own_args);
         return false;
     }
     
@@ -380,16 +406,14 @@ bool ar__instruction_evaluator__evaluate_send(
     const char *ref_message_expr = (const char*)items[1];
     
     if (!ref_agent_id_expr || !ref_message_expr) {
-        AR__HEAP__FREE(items);
-        ar__list__destroy(own_args);
+        _cleanup_function_args(items, own_args);
         return false;
     }
     
     // Parse and evaluate agent ID expression
     expression_parser_t *parser = ar__expression_parser__create(ref_agent_id_expr);
     if (!parser) {
-        AR__HEAP__FREE(items);
-        ar__list__destroy(own_args);
+        _cleanup_function_args(items, own_args);
         return false;
     }
     
@@ -397,8 +421,7 @@ bool ar__instruction_evaluator__evaluate_send(
     ar__expression_parser__destroy(parser);
     
     if (!agent_id_ast) {
-        AR__HEAP__FREE(items);
-        ar__list__destroy(own_args);
+        _cleanup_function_args(items, own_args);
         return false;
     }
     
@@ -406,8 +429,7 @@ bool ar__instruction_evaluator__evaluate_send(
     ar__expression_ast__destroy(agent_id_ast);
     
     if (!own_agent_id_data) {
-        AR__HEAP__FREE(items);
-        ar__list__destroy(own_args);
+        _cleanup_function_args(items, own_args);
         return false;
     }
     
@@ -421,8 +443,7 @@ bool ar__instruction_evaluator__evaluate_send(
     // Parse and evaluate message expression
     parser = ar__expression_parser__create(ref_message_expr);
     if (!parser) {
-        AR__HEAP__FREE(items);
-        ar__list__destroy(own_args);
+        _cleanup_function_args(items, own_args);
         return false;
     }
     
@@ -430,8 +451,7 @@ bool ar__instruction_evaluator__evaluate_send(
     ar__expression_parser__destroy(parser);
     
     if (!message_ast) {
-        AR__HEAP__FREE(items);
-        ar__list__destroy(own_args);
+        _cleanup_function_args(items, own_args);
         return false;
     }
     
@@ -439,14 +459,12 @@ bool ar__instruction_evaluator__evaluate_send(
     ar__expression_ast__destroy(message_ast);
     
     if (!own_message) {
-        AR__HEAP__FREE(items);
-        ar__list__destroy(own_args);
+        _cleanup_function_args(items, own_args);
         return false;
     }
     
     // Clean up items array and args list (we're done with them)
-    AR__HEAP__FREE(items);
-    ar__list__destroy(own_args);
+    _cleanup_function_args(items, own_args);
     
     // Send the message
     bool send_result;
@@ -462,13 +480,11 @@ bool ar__instruction_evaluator__evaluate_send(
     // Handle result assignment if present
     const char *ref_result_path = ar__instruction_ast__get_function_result_path(ref_ast);
     if (ref_result_path) {
-        // Check that path starts with "memory."
-        if (strncmp(ref_result_path, "memory.", 7) != 0) {
+        // Get memory key path
+        const char *key_path = _get_memory_key_path(ref_result_path);
+        if (!key_path) {
             return false;
         }
-        
-        // Strip "memory." prefix
-        const char *key_path = ref_result_path + 7;
         
         // Create result value (true = 1, false = 0)
         data_t *own_result = ar__data__create_integer(send_result ? 1 : 0);
@@ -498,21 +514,9 @@ bool ar__instruction_evaluator__evaluate_if(
     }
     
     // Get function arguments
-    list_t *own_args = ar__instruction_ast__get_function_args(ref_ast);
-    if (!own_args) {
-        return false;
-    }
-    
-    // if requires exactly 3 arguments: condition, true_value, false_value
-    if (ar__list__count(own_args) != 3) {
-        ar__list__destroy(own_args);
-        return false;
-    }
-    
-    // Get argument strings (borrowed references from the list)
-    void **items = ar__list__items(own_args);
+    list_t *own_args = NULL;
+    void **items = _extract_function_args(ref_ast, 3, &own_args);
     if (!items) {
-        ar__list__destroy(own_args);
         return false;
     }
     
@@ -521,16 +525,14 @@ bool ar__instruction_evaluator__evaluate_if(
     const char *ref_false_expr = (const char*)items[2];
     
     if (!ref_condition_expr || !ref_true_expr || !ref_false_expr) {
-        AR__HEAP__FREE(items);
-        ar__list__destroy(own_args);
+        _cleanup_function_args(items, own_args);
         return false;
     }
     
     // Parse and evaluate condition expression
     expression_parser_t *parser = ar__expression_parser__create(ref_condition_expr);
     if (!parser) {
-        AR__HEAP__FREE(items);
-        ar__list__destroy(own_args);
+        _cleanup_function_args(items, own_args);
         return false;
     }
     
@@ -538,8 +540,7 @@ bool ar__instruction_evaluator__evaluate_if(
     ar__expression_parser__destroy(parser);
     
     if (!condition_ast) {
-        AR__HEAP__FREE(items);
-        ar__list__destroy(own_args);
+        _cleanup_function_args(items, own_args);
         return false;
     }
     
@@ -547,8 +548,7 @@ bool ar__instruction_evaluator__evaluate_if(
     ar__expression_ast__destroy(condition_ast);
     
     if (!own_condition_data) {
-        AR__HEAP__FREE(items);
-        ar__list__destroy(own_args);
+        _cleanup_function_args(items, own_args);
         return false;
     }
     
@@ -565,8 +565,7 @@ bool ar__instruction_evaluator__evaluate_if(
     // Parse and evaluate the selected expression
     parser = ar__expression_parser__create(ref_expr_to_eval);
     if (!parser) {
-        AR__HEAP__FREE(items);
-        ar__list__destroy(own_args);
+        _cleanup_function_args(items, own_args);
         return false;
     }
     
@@ -574,8 +573,7 @@ bool ar__instruction_evaluator__evaluate_if(
     ar__expression_parser__destroy(parser);
     
     if (!value_ast) {
-        AR__HEAP__FREE(items);
-        ar__list__destroy(own_args);
+        _cleanup_function_args(items, own_args);
         return false;
     }
     
@@ -583,26 +581,22 @@ bool ar__instruction_evaluator__evaluate_if(
     ar__expression_ast__destroy(value_ast);
     
     if (!own_result) {
-        AR__HEAP__FREE(items);
-        ar__list__destroy(own_args);
+        _cleanup_function_args(items, own_args);
         return false;
     }
     
     // Clean up items array and args list
-    AR__HEAP__FREE(items);
-    ar__list__destroy(own_args);
+    _cleanup_function_args(items, own_args);
     
     // Handle result assignment if present
     const char *ref_result_path = ar__instruction_ast__get_function_result_path(ref_ast);
     if (ref_result_path) {
-        // Check that path starts with "memory."
-        if (strncmp(ref_result_path, "memory.", 7) != 0) {
+        // Get memory key path
+        const char *key_path = _get_memory_key_path(ref_result_path);
+        if (!key_path) {
             ar__data__destroy(own_result);
             return false;
         }
-        
-        // Strip "memory." prefix
-        const char *key_path = ref_result_path + 7;
         
         // Store the result value (transfers ownership)
         bool store_success = ar__data__set_map_data(mut_evaluator->mut_memory, key_path, own_result);
@@ -656,21 +650,9 @@ bool ar__instruction_evaluator__evaluate_parse(
     }
     
     // Get function arguments
-    list_t *own_args = ar__instruction_ast__get_function_args(ref_ast);
-    if (!own_args) {
-        return false;
-    }
-    
-    // parse requires exactly 2 arguments: template and input
-    if (ar__list__count(own_args) != 2) {
-        ar__list__destroy(own_args);
-        return false;
-    }
-    
-    // Get argument strings (borrowed references from the list)
-    void **items = ar__list__items(own_args);
+    list_t *own_args = NULL;
+    void **items = _extract_function_args(ref_ast, 2, &own_args);
     if (!items) {
-        ar__list__destroy(own_args);
         return false;
     }
     
@@ -678,8 +660,7 @@ bool ar__instruction_evaluator__evaluate_parse(
     const char *ref_input_expr = (const char*)items[1];
     
     if (!ref_template_expr || !ref_input_expr) {
-        AR__HEAP__FREE(items);
-        ar__list__destroy(own_args);
+        _cleanup_function_args(items, own_args);
         return false;
     }
     
@@ -687,8 +668,7 @@ bool ar__instruction_evaluator__evaluate_parse(
     data_t *own_template_data = _parse_and_evaluate_expression(mut_evaluator, ref_template_expr);
     if (!own_template_data || ar__data__get_type(own_template_data) != DATA_STRING) {
         if (own_template_data) ar__data__destroy(own_template_data);
-        AR__HEAP__FREE(items);
-        ar__list__destroy(own_args);
+        _cleanup_function_args(items, own_args);
         return false;
     }
     
@@ -697,8 +677,7 @@ bool ar__instruction_evaluator__evaluate_parse(
     if (!own_input_data || ar__data__get_type(own_input_data) != DATA_STRING) {
         if (own_input_data) ar__data__destroy(own_input_data);
         ar__data__destroy(own_template_data);
-        AR__HEAP__FREE(items);
-        ar__list__destroy(own_args);
+        _cleanup_function_args(items, own_args);
         return false;
     }
     
@@ -706,8 +685,7 @@ bool ar__instruction_evaluator__evaluate_parse(
     const char *input_str = ar__data__get_string(own_input_data);
     
     // Clean up items array and args list
-    AR__HEAP__FREE(items);
-    ar__list__destroy(own_args);
+    _cleanup_function_args(items, own_args);
     
     // Create result map
     data_t *own_result = ar__data__create_map();
@@ -930,16 +908,9 @@ bool ar__instruction_evaluator__evaluate_build(
     }
     
     // Get function arguments
-    list_t *own_args = ar__instruction_ast__get_function_args(ref_ast);
-    if (!own_args || ar__list__count(own_args) != 2) {
-        if (own_args) ar__list__destroy(own_args);
-        return false;
-    }
-    
-    // Get argument strings (borrowed references from the list)
-    void **items = ar__list__items(own_args);
+    list_t *own_args = NULL;
+    void **items = _extract_function_args(ref_ast, 2, &own_args);
     if (!items) {
-        ar__list__destroy(own_args);
         return false;
     }
     
@@ -947,8 +918,7 @@ bool ar__instruction_evaluator__evaluate_build(
     const char *ref_values_expr = (const char*)items[1];
     
     if (!ref_template_expr || !ref_values_expr) {
-        AR__HEAP__FREE(items);
-        ar__list__destroy(own_args);
+        _cleanup_function_args(items, own_args);
         return false;
     }
     
@@ -956,8 +926,7 @@ bool ar__instruction_evaluator__evaluate_build(
     data_t *own_template_data = _parse_and_evaluate_expression(mut_evaluator, ref_template_expr);
     if (!own_template_data || ar__data__get_type(own_template_data) != DATA_STRING) {
         if (own_template_data) ar__data__destroy(own_template_data);
-        AR__HEAP__FREE(items);
-        ar__list__destroy(own_args);
+        _cleanup_function_args(items, own_args);
         return false;
     }
     
@@ -966,14 +935,12 @@ bool ar__instruction_evaluator__evaluate_build(
     if (!own_values_data || ar__data__get_type(own_values_data) != DATA_MAP) {
         if (own_values_data) ar__data__destroy(own_values_data);
         ar__data__destroy(own_template_data);
-        AR__HEAP__FREE(items);
-        ar__list__destroy(own_args);
+        _cleanup_function_args(items, own_args);
         return false;
     }
     
     // Clean up items array and args list
-    AR__HEAP__FREE(items);
-    ar__list__destroy(own_args);
+    _cleanup_function_args(items, own_args);
     
     const char *template_str = ar__data__get_string(own_template_data);
     

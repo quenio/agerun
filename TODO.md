@@ -317,15 +317,15 @@ This order ensures clean separation of concerns across all modules.
     - [ ] Keep only the public interface functions as thin wrappers
     - [ ] Update module documentation to reflect new architecture
     - [ ] Ensure clean separation between parsing and execution phases
-- [ ] Break down the massive ar_instruction_run function (2500+ lines):
-  - [ ] Extract memory access operations
-  - [ ] Extract assignment operations  
-  - [ ] Extract if conditional logic
-  - [ ] Extract send function logic
+- [x] Break down the massive ar_instruction_run function (2500+ lines): (Completed 2025-06-18)
+  - [x] Extract memory access operations (via instruction_evaluator)
+  - [x] Extract assignment operations (via instruction_evaluator)
+  - [x] Extract if conditional logic (via instruction_evaluator)
+  - [x] Extract send function logic (via instruction_evaluator)
   - [ ] Extract method function logic
   - [ ] Extract agent function logic
-  - [ ] Extract parse function logic
-  - [ ] Extract build function logic
+  - [x] Extract parse function logic (via instruction_evaluator)
+  - [x] Extract build function logic (via instruction_evaluator)
   - [ ] Extract destroy function logic
 - [ ] Add MMM.md ownership prefixes throughout modules:
   - [ ] Agency module - clarify ownership of loaded agent data
