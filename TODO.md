@@ -253,6 +253,7 @@ This order ensures clean separation of concerns across all modules.
   - [x] Implement evaluate_parse with TDD (tests, implementation, no leaks) (Completed 2025-06-18)
   - [x] Implement evaluate_build with TDD (tests, implementation, refactoring) (Completed 2025-06-18)
   - [x] Implement evaluate_method with TDD (tests, implementation, refactoring) (Completed 2025-06-18)
+  - [x] Implement evaluate_agent with TDD (tests, implementation, refactoring) (Completed 2025-06-19)
   - [ ] Copy remaining _execute_* functions from interpreter module (not extract yet)
   - [ ] Adapt expression evaluation logic to use expression_evaluator for remaining functions
   - [ ] Write comprehensive tests following TDD methodology for each remaining evaluate function
@@ -324,7 +325,7 @@ This order ensures clean separation of concerns across all modules.
   - [x] Extract if conditional logic (via instruction_evaluator)
   - [x] Extract send function logic (via instruction_evaluator)
   - [x] Extract method function logic (via instruction_evaluator) (Completed 2025-06-18)
-  - [ ] Extract agent function logic
+  - [x] Extract agent function logic (via instruction_evaluator) (Completed 2025-06-19)
   - [x] Extract parse function logic (via instruction_evaluator)
   - [x] Extract build function logic (via instruction_evaluator)
   - [ ] Extract destroy function logic
@@ -363,6 +364,11 @@ This order ensures clean separation of concerns across all modules.
   - [ ] Allow send() to work with memory references (e.g., `send(0, memory.user.name)`)
   - [ ] Update interpreter to handle both owned and borrowed values consistently
   - [ ] Add tests for reference/value semantics in all instruction types
+- [ ] Support optional parameters in agent() function:
+  - [ ] Allow agent() to be called with 2 parameters (omitting context)
+  - [ ] Update instruction parser to handle optional parameters
+  - [ ] Update instruction evaluator to provide NULL context when omitted
+  - [ ] Add tests for both 2-parameter and 3-parameter agent calls
 
 ### MEDIUM - Complete Documentation and Testing
 - [ ] Create tests for IO module:

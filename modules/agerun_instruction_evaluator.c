@@ -1111,10 +1111,79 @@ bool ar__instruction_evaluator__evaluate_agent(
     instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 ) {
-    (void)mut_evaluator;
-    (void)ref_ast;
-    assert(false && "Not implemented yet");
-    return false;
+    if (!mut_evaluator || !ref_ast) {
+        return false;
+    }
+    
+    // Validate AST type
+    if (ar__instruction_ast__get_type(ref_ast) != INST_AST_AGENT) {
+        return false;
+    }
+    
+    // Extract arguments
+    list_t *own_args = NULL;
+    void **items = _extract_function_args(ref_ast, 3, &own_args);
+    if (!items) {
+        return false;
+    }
+    
+    // Parse and evaluate arguments
+    const char *ref_method_expr = (const char*)items[0];
+    const char *ref_version_expr = (const char*)items[1];
+    const char *ref_context_expr = (const char*)items[2];
+    
+    data_t *own_method_name = _parse_and_evaluate_expression(mut_evaluator, ref_method_expr);
+    data_t *own_version = _parse_and_evaluate_expression(mut_evaluator, ref_version_expr);
+    data_t *own_context = _parse_and_evaluate_expression(mut_evaluator, ref_context_expr);
+    
+    _cleanup_function_args(items, own_args);
+    
+    int64_t agent_id = 0;
+    bool success = false;
+    
+    // Validate method name and version are strings
+    if (own_method_name && own_version &&
+        ar__data__get_type(own_method_name) == DATA_STRING &&
+        ar__data__get_type(own_version) == DATA_STRING) {
+        
+        // Validate context - must be a map (since parser requires 3 args)
+        bool context_valid = false;
+        if (own_context && ar__data__get_type(own_context) == DATA_MAP) {
+            context_valid = true;
+        }
+        
+        if (context_valid) {
+            const char *method_name = ar__data__get_string(own_method_name);
+            const char *version = ar__data__get_string(own_version);
+            
+            // Check if method exists
+            method_t *ref_method = ar__methodology__get_method(method_name, version);
+            if (ref_method) {
+                // Create the agent - context is passed as-is (may be NULL)
+                agent_id = ar__agency__create_agent(method_name, version, own_context);
+                if (agent_id > 0) {
+                    success = true;
+                    // Note: ownership of context is transferred to agency
+                    own_context = NULL;
+                }
+            }
+        }
+    }
+    
+    // Clean up evaluated arguments
+    if (own_method_name) ar__data__destroy(own_method_name);
+    if (own_version) ar__data__destroy(own_version);
+    if (own_context) ar__data__destroy(own_context);
+    
+    // Store result if assigned
+    if (ar__instruction_ast__has_result_assignment(ref_ast)) {
+        data_t *own_result = ar__data__create_integer((int)agent_id);
+        if (own_result) {
+            _store_result_if_assigned(mut_evaluator, ref_ast, own_result);
+        }
+    }
+    
+    return success;
 }
 
 bool ar__instruction_evaluator__evaluate_destroy(
