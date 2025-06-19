@@ -896,6 +896,244 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     ar__data__destroy(memory);
 }
 
+static void test_instruction_evaluator__evaluate_build_simple(void) {
+    // Given an evaluator with memory containing a map
+    data_t *memory = ar__data__create_map();
+    assert(memory != NULL);
+    
+    // Create a map with values to use in building
+    data_t *values = ar__data__create_map();
+    assert(values != NULL);
+    assert(ar__data__set_map_data(values, "name", ar__data__create_string("Alice")));
+    assert(ar__data__set_map_data(memory, "data", values));
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    assert(expr_eval != NULL);
+    
+    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+        expr_eval, memory, NULL, NULL
+    );
+    assert(evaluator != NULL);
+    
+    // When creating a build AST node with simple template
+    const char *args[] = {"\"Hello {name}!\"", "memory.data"};
+    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        INST_AST_BUILD, "build", args, 2, "memory.result"
+    );
+    assert(ast != NULL);
+    
+    // When evaluating the build instruction
+    bool result = ar__instruction_evaluator__evaluate_build(evaluator, ast);
+    
+    // Then it should succeed and build the string
+    if (!result) {
+        fprintf(stderr, "evaluate_build returned false\n");
+    }
+    assert(result == true);
+    data_t *result_value = ar__data__get_map_data(memory, "result");
+    assert(result_value != NULL);
+    assert(ar__data__get_type(result_value) == DATA_STRING);
+    assert(strcmp(ar__data__get_string(result_value), "Hello Alice!") == 0);
+    
+    // Cleanup
+    ar__instruction_ast__destroy(ast);
+    ar__instruction_evaluator__destroy(evaluator);
+    ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(memory);
+}
+
+static void test_instruction_evaluator__evaluate_build_multiple_variables(void) {
+    // Given an evaluator with memory containing a map
+    data_t *memory = ar__data__create_map();
+    assert(memory != NULL);
+    
+    // Create a map with multiple values
+    data_t *values = ar__data__create_map();
+    assert(values != NULL);
+    assert(ar__data__set_map_data(values, "firstName", ar__data__create_string("Bob")));
+    assert(ar__data__set_map_data(values, "lastName", ar__data__create_string("Smith")));
+    assert(ar__data__set_map_data(values, "role", ar__data__create_string("Admin")));
+    assert(ar__data__set_map_data(memory, "user", values));
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    assert(expr_eval != NULL);
+    
+    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+        expr_eval, memory, NULL, NULL
+    );
+    assert(evaluator != NULL);
+    
+    // When creating a build AST node with multiple variables
+    const char *args[] = {"\"User: {firstName} {lastName}, Role: {role}\"", "memory.user"};
+    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        INST_AST_BUILD, "build", args, 2, "memory.result"
+    );
+    assert(ast != NULL);
+    
+    // When evaluating the build instruction
+    bool result = ar__instruction_evaluator__evaluate_build(evaluator, ast);
+    
+    // Then it should succeed and build the string with all values
+    assert(result == true);
+    data_t *result_value = ar__data__get_map_data(memory, "result");
+    assert(result_value != NULL);
+    assert(ar__data__get_type(result_value) == DATA_STRING);
+    assert(strcmp(ar__data__get_string(result_value), "User: Bob Smith, Role: Admin") == 0);
+    
+    // Cleanup
+    ar__instruction_ast__destroy(ast);
+    ar__instruction_evaluator__destroy(evaluator);
+    ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(memory);
+}
+
+static void test_instruction_evaluator__evaluate_build_with_types(void) {
+    // Given an evaluator with memory containing a map with different types
+    data_t *memory = ar__data__create_map();
+    assert(memory != NULL);
+    
+    // Create a map with values of different types
+    data_t *values = ar__data__create_map();
+    assert(values != NULL);
+    assert(ar__data__set_map_data(values, "name", ar__data__create_string("Charlie")));
+    assert(ar__data__set_map_data(values, "age", ar__data__create_integer(30)));
+    assert(ar__data__set_map_data(values, "score", ar__data__create_double(95.5)));
+    assert(ar__data__set_map_data(memory, "stats", values));
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    assert(expr_eval != NULL);
+    
+    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+        expr_eval, memory, NULL, NULL
+    );
+    assert(evaluator != NULL);
+    
+    // When creating a build AST node with different value types
+    const char *args[] = {"\"Name: {name}, Age: {age}, Score: {score}\"", "memory.stats"};
+    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        INST_AST_BUILD, "build", args, 2, "memory.result"
+    );
+    assert(ast != NULL);
+    
+    // When evaluating the build instruction
+    bool result = ar__instruction_evaluator__evaluate_build(evaluator, ast);
+    
+    // Then it should succeed and convert all types to strings
+    assert(result == true);
+    data_t *result_value = ar__data__get_map_data(memory, "result");
+    assert(result_value != NULL);
+    assert(ar__data__get_type(result_value) == DATA_STRING);
+    assert(strcmp(ar__data__get_string(result_value), "Name: Charlie, Age: 30, Score: 95.5") == 0);
+    
+    // Cleanup
+    ar__instruction_ast__destroy(ast);
+    ar__instruction_evaluator__destroy(evaluator);
+    ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(memory);
+}
+
+static void test_instruction_evaluator__evaluate_build_missing_values(void) {
+    // Given an evaluator with memory containing a map with some missing values
+    data_t *memory = ar__data__create_map();
+    assert(memory != NULL);
+    
+    // Create a map with only some values
+    data_t *values = ar__data__create_map();
+    assert(values != NULL);
+    assert(ar__data__set_map_data(values, "firstName", ar__data__create_string("David")));
+    // Note: lastName is missing
+    assert(ar__data__set_map_data(memory, "person", values));
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    assert(expr_eval != NULL);
+    
+    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+        expr_eval, memory, NULL, NULL
+    );
+    assert(evaluator != NULL);
+    
+    // When creating a build AST node with a missing variable
+    const char *args[] = {"\"Name: {firstName} {lastName}\"", "memory.person"};
+    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        INST_AST_BUILD, "build", args, 2, "memory.result"
+    );
+    assert(ast != NULL);
+    
+    // When evaluating the build instruction
+    bool result = ar__instruction_evaluator__evaluate_build(evaluator, ast);
+    
+    // Then it should succeed but preserve the placeholder for missing value
+    assert(result == true);
+    data_t *result_value = ar__data__get_map_data(memory, "result");
+    assert(result_value != NULL);
+    assert(ar__data__get_type(result_value) == DATA_STRING);
+    assert(strcmp(ar__data__get_string(result_value), "Name: David {lastName}") == 0);
+    
+    // Cleanup
+    ar__instruction_ast__destroy(ast);
+    ar__instruction_evaluator__destroy(evaluator);
+    ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(memory);
+}
+
+static void test_instruction_evaluator__evaluate_build_invalid_args(void) {
+    // Given an evaluator with memory
+    data_t *memory = ar__data__create_map();
+    assert(memory != NULL);
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    assert(expr_eval != NULL);
+    
+    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+        expr_eval, memory, NULL, NULL
+    );
+    assert(evaluator != NULL);
+    
+    // Test case 1: Wrong number of arguments (1 instead of 2)
+    const char *args1[] = {"\"template {value}\""};
+    instruction_ast_t *ast1 = ar__instruction_ast__create_function_call(
+        INST_AST_BUILD, "build", args1, 1, NULL
+    );
+    assert(ast1 != NULL);
+    
+    bool result1 = ar__instruction_evaluator__evaluate_build(evaluator, ast1);
+    assert(result1 == false);
+    
+    ar__instruction_ast__destroy(ast1);
+    
+    // Test case 2: Non-string template argument
+    data_t *dummy_map = ar__data__create_map();
+    assert(ar__data__set_map_data(memory, "dummy", dummy_map));
+    
+    const char *args2[] = {"123", "memory.dummy"};
+    instruction_ast_t *ast2 = ar__instruction_ast__create_function_call(
+        INST_AST_BUILD, "build", args2, 2, NULL
+    );
+    assert(ast2 != NULL);
+    
+    bool result2 = ar__instruction_evaluator__evaluate_build(evaluator, ast2);
+    assert(result2 == false);
+    
+    ar__instruction_ast__destroy(ast2);
+    
+    // Test case 3: Non-map values argument
+    const char *args3[] = {"\"template {value}\"", "\"not a map\""};
+    instruction_ast_t *ast3 = ar__instruction_ast__create_function_call(
+        INST_AST_BUILD, "build", args3, 2, NULL
+    );
+    assert(ast3 != NULL);
+    
+    bool result3 = ar__instruction_evaluator__evaluate_build(evaluator, ast3);
+    assert(result3 == false);
+    
+    ar__instruction_ast__destroy(ast3);
+    
+    // Cleanup
+    ar__instruction_evaluator__destroy(evaluator);
+    ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(memory);
+}
+
 int main(void) {
     printf("Starting instruction_evaluator create/destroy tests...\n");
     
@@ -989,6 +1227,25 @@ int main(void) {
     
     test_instruction_evaluator__evaluate_parse_invalid_args();
     printf("test_instruction_evaluator__evaluate_parse_invalid_args passed!\n");
+    
+    printf("All instruction_evaluator parse tests passed!\n");
+    
+    printf("\nStarting instruction_evaluator build tests...\n");
+    
+    test_instruction_evaluator__evaluate_build_simple();
+    printf("test_instruction_evaluator__evaluate_build_simple passed!\n");
+    
+    test_instruction_evaluator__evaluate_build_multiple_variables();
+    printf("test_instruction_evaluator__evaluate_build_multiple_variables passed!\n");
+    
+    test_instruction_evaluator__evaluate_build_with_types();
+    printf("test_instruction_evaluator__evaluate_build_with_types passed!\n");
+    
+    test_instruction_evaluator__evaluate_build_missing_values();
+    printf("test_instruction_evaluator__evaluate_build_missing_values passed!\n");
+    
+    test_instruction_evaluator__evaluate_build_invalid_args();
+    printf("test_instruction_evaluator__evaluate_build_invalid_args passed!\n");
     
     printf("All instruction_evaluator tests passed!\n");
     
