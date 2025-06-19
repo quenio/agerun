@@ -3,6 +3,14 @@
 This document tracks completed milestones and major achievements for the AgeRun project.
 
 ## 2025-06-19
+- ✅ Created send_instruction_evaluator module:
+  - ✅ Extracted evaluate_send function from instruction_evaluator 
+  - ✅ Moved all required helper functions to the new module
+  - ✅ Fixed memory leak by properly freeing items array from ar__list__items()
+  - ✅ Updated _cleanup_function_args to use ownership naming (own_items)
+  - ✅ Added stdlib.h to agerun_heap.h to prevent future compilation errors
+  - ✅ Updated instruction_evaluator to delegate to send module
+  - ✅ All tests pass with zero memory leaks
 - ✅ Started refactoring instruction_evaluator into specialized modules:
   - ✅ Created assignment_instruction_evaluator module for evaluate_assignment
   - ✅ Moved evaluate_assignment function and required helper functions

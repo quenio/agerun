@@ -3,6 +3,7 @@
 
 #include "agerun_assert.h"
 #include <stddef.h>
+#include <stdlib.h>
 
 /**
  * Heap memory management utilities for the AgeRun system.

@@ -11,6 +11,7 @@
 #include "agerun_method.h"
 #include "agerun_methodology.h"
 #include "agerun_assignment_instruction_evaluator.h"
+#include "agerun_send_instruction_evaluator.h"
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
@@ -431,114 +432,12 @@ bool ar__instruction_evaluator__evaluate_send(
         return false;
     }
     
-    // Verify this is a send AST node
-    if (ar__instruction_ast__get_type(ref_ast) != INST_AST_SEND) {
-        return false;
-    }
-    
-    // Get function arguments
-    list_t *own_args = NULL;
-    void **items = _extract_function_args(ref_ast, 2, &own_args);
-    if (!items) {
-        return false;
-    }
-    
-    const char *ref_agent_id_expr = (const char*)items[0];
-    const char *ref_message_expr = (const char*)items[1];
-    
-    if (!ref_agent_id_expr || !ref_message_expr) {
-        _cleanup_function_args(items, own_args);
-        return false;
-    }
-    
-    // Parse and evaluate agent ID expression
-    expression_parser_t *parser = ar__expression_parser__create(ref_agent_id_expr);
-    if (!parser) {
-        _cleanup_function_args(items, own_args);
-        return false;
-    }
-    
-    expression_ast_t *agent_id_ast = ar__expression_parser__parse_expression(parser);
-    ar__expression_parser__destroy(parser);
-    
-    if (!agent_id_ast) {
-        _cleanup_function_args(items, own_args);
-        return false;
-    }
-    
-    data_t *own_agent_id_data = _evaluate_expression_ast(mut_evaluator, agent_id_ast);
-    ar__expression_ast__destroy(agent_id_ast);
-    
-    if (!own_agent_id_data) {
-        _cleanup_function_args(items, own_args);
-        return false;
-    }
-    
-    // Extract agent ID as integer
-    int64_t agent_id = 0;
-    if (ar__data__get_type(own_agent_id_data) == DATA_INTEGER) {
-        agent_id = ar__data__get_integer(own_agent_id_data);
-    }
-    ar__data__destroy(own_agent_id_data);
-    
-    // Parse and evaluate message expression
-    parser = ar__expression_parser__create(ref_message_expr);
-    if (!parser) {
-        _cleanup_function_args(items, own_args);
-        return false;
-    }
-    
-    expression_ast_t *message_ast = ar__expression_parser__parse_expression(parser);
-    ar__expression_parser__destroy(parser);
-    
-    if (!message_ast) {
-        _cleanup_function_args(items, own_args);
-        return false;
-    }
-    
-    data_t *own_message = _evaluate_expression_ast(mut_evaluator, message_ast);
-    ar__expression_ast__destroy(message_ast);
-    
-    if (!own_message) {
-        _cleanup_function_args(items, own_args);
-        return false;
-    }
-    
-    // Clean up items array and args list (we're done with them)
-    _cleanup_function_args(items, own_args);
-    
-    // Send the message
-    bool send_result;
-    if (agent_id == 0) {
-        // Special case: agent_id 0 is a no-op that always returns true
-        ar__data__destroy(own_message);
-        send_result = true;
-    } else {
-        // Send message (ownership transferred to ar__agency__send_to_agent)
-        send_result = ar__agency__send_to_agent(agent_id, own_message);
-    }
-    
-    // Handle result assignment if present
-    const char *ref_result_path = ar__instruction_ast__get_function_result_path(ref_ast);
-    if (ref_result_path) {
-        // Get memory key path
-        const char *key_path = _get_memory_key_path(ref_result_path);
-        if (!key_path) {
-            return false;
-        }
-        
-        // Create result value (true = 1, false = 0)
-        data_t *own_result = ar__data__create_integer(send_result ? 1 : 0);
-        bool store_success = ar__data__set_map_data(mut_evaluator->mut_memory, key_path, own_result);
-        if (!store_success) {
-            ar__data__destroy(own_result);
-        }
-        
-        // For assignments, return true to indicate the instruction succeeded
-        return true;
-    }
-    
-    return send_result;
+    // Delegate to the send instruction evaluator module
+    return ar__send_instruction_evaluator__evaluate(
+        mut_evaluator->ref_expr_evaluator,
+        mut_evaluator->mut_memory,
+        ref_ast
+    );
 }
 
 bool ar__instruction_evaluator__evaluate_if(
