@@ -253,7 +253,7 @@ This prevents overthinking and ensures accurate responses based on documented pr
    
    // ACCEPTABLE AS LAST RESORT: in low_module.h
    typedef void (*notify_callback_t)(int event_type, void *data);
-   void ar__low__register_callback(notify_callback_t callback);
+   void ar_low__register_callback(notify_callback_t callback);
    // WARNING: Callbacks make code harder to understand and debug
    ```
 
@@ -387,10 +387,11 @@ grep -r "\".*\"" modules/*.c | grep -v "printf\|fprintf\|error" | sort | uniq -c
 
 ### 4. Coding Standards
 
-**Naming Conventions** (Updated 2025-06-11):
-- **Module Functions**: Use double underscore pattern `ar__<module>__<function>`
-  - Examples: `ar__data__create_map()`, `ar__agent__send()`, `ar__system__init()`
-  - Applied to all 21 modules consistently
+**Naming Conventions** (Updated 2025-06-19):
+- **Module Functions**: Use `ar_` prefix with double underscore pattern `ar_<module>__<function>`
+  - Examples: `ar_data__create_map()`, `ar_agent__send()`, `ar_system__init()`
+  - **IMPORTANT**: Changed prefix from `ar__` to `ar_` (2025-06-19)
+  - This applies to all public functions in module headers
 - **Static Functions**: Use single underscore prefix `_<function_name>` (Completed 2025-06-11)
   - Examples: `_validate_file()`, `_find_method_idx()`, `_allocate_node()`
   - Indicates internal/private functions within a module
@@ -443,14 +444,14 @@ grep -r "\".*\"" modules/*.c | grep -v "printf\|fprintf\|error" | sort | uniq -c
 
 **File Operations**:
 - Use IO module functions, not raw stdio
-- `ar__io__open_file` instead of `fopen`
-- `ar__io__close_file` instead of `fclose`
-- `ar__io__fprintf` instead of `fprintf`
-- `ar__io__read_line` instead of `fgets` or `getline`
+- `ar_io__open_file` instead of `fopen`
+- `ar_io__close_file` instead of `fclose`
+- `ar_io__fprintf` instead of `fprintf`
+- `ar_io__read_line` instead of `fgets` or `getline`
 - Check all return codes
-- Use `ar__io__create_backup` before modifying critical files
-- Use `ar__io__write_file` for atomic operations
-- Use `ar__io__set_secure_permissions` for sensitive files
+- Use `ar_io__create_backup` before modifying critical files
+- Use `ar_io__write_file` for atomic operations
+- Use `ar_io__set_secure_permissions` for sensitive files
 
 **Portable Format Specifiers**:
 - Always use portable format specifiers for fixed-width integer types
@@ -472,8 +473,8 @@ grep -r "\".*\"" modules/*.c | grep -v "printf\|fprintf\|error" | sort | uniq -c
 - **Circular Dependencies**: Always check for and eliminate circular dependencies
 - **Unidirectional Flow**: Ensure dependencies flow in one direction (e.g., agency → agent_update → agent_registry)
 - **Delegation Pattern**: Higher-level modules can pass their dependencies to lower-level modules as parameters
-- **Module Naming**: Follow `ar__<module>__<function>` pattern consistently (e.g., `ar__agent_update__update_methods`)
-  - **IMPORTANT**: All module functions now use double underscores (updated 2025-06-08)
+- **Module Naming**: Follow `ar_<module>__<function>` pattern consistently (e.g., `ar_agent_update__update_methods`)
+  - **IMPORTANT**: Prefix changed from `ar__` to `ar_` (updated 2025-06-19)
 
 **Code Modification Process**:
 1. Understand codebase structure and dependencies
