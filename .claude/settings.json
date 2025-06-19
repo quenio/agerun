@@ -16,7 +16,10 @@
       "Bash(cd:*)",
       "Bash(ls:*)",
       "Bash(echo:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(sed:*)",
+      "Bash(uniq:*)",
+      "Bash(sort:*)"
     ],
     "deny": []
   },

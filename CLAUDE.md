@@ -120,6 +120,42 @@ This prevents overthinking and ensures accurate responses based on documented pr
   - `ASAN_OPTIONS=halt_on_error=0` to continue after first error
   - `ASAN_OPTIONS=detect_leaks=1:leak_check_at_exit=1` for complex leaks
 
+**Common Memory Leak Patterns to Watch For**:
+1. **Function Return Ownership Mismatches**:
+   - **Pattern**: Function returns newly allocated data but caller treats it as borrowed
+   - **Example**: `ar__instruction_ast__get_function_args()` returns a new list
+   - **Prevention**: Check function documentation for ownership semantics
+   - **Fix**: Update variable naming (`ref_` → `own_`) and add proper cleanup
+   
+2. **List/Map Removal Operations**:
+   - **Pattern**: Functions like `ar__data__list_remove_first()` return owned values
+   - **Example**: Removed keys from lists must be destroyed after use
+   - **Prevention**: Always check if removal functions transfer ownership
+   - **Fix**: Capture returned value and destroy it:
+     ```c
+     data_t *removed = ar__data__list_remove_first(list);
+     ar__data__destroy(removed);  // Don't forget this!
+     ```
+
+3. **Misleading Function Names**:
+   - **Pattern**: Function names suggest borrowing but actually create new objects
+   - **Example**: `get_function_args()` sounds like a getter but creates a new list
+   - **Prevention**: Don't trust function names - always check documentation/implementation
+   - **Fix**: Update documentation to clearly state ownership semantics
+
+4. **Iterator Pattern Leaks**:
+   - **Pattern**: Getting keys/values for iteration without destroying them
+   - **Example**: `ar__data__get_map_keys()` returns a list that must be destroyed
+   - **Prevention**: Remember that iteration helpers often create new collections
+   - **Fix**: Destroy both the collection and its elements after iteration
+
+5. **Debugging Memory Leaks**:
+   - **Step 1**: Isolate to specific test function (disable others)
+   - **Step 2**: Add debug output to trace allocations/deallocations
+   - **Step 3**: Check ownership documentation for all called functions
+   - **Step 4**: Verify removal/extraction functions don't leave owned data
+   - **Step 5**: Use heap memory reports to identify leaked data types
+
 ### 2. Test-Driven Development (MANDATORY)
 
 **Red-Green-Refactor Cycle**:
