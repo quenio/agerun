@@ -252,6 +252,7 @@ This order ensures clean separation of concerns across all modules.
   - [x] Implement evaluate_if with TDD (tests, implementation, no leaks) (Completed 2025-06-18)
   - [x] Implement evaluate_parse with TDD (tests, implementation, no leaks) (Completed 2025-06-18)
   - [x] Implement evaluate_build with TDD (tests, implementation, refactoring) (Completed 2025-06-18)
+  - [x] Implement evaluate_method with TDD (tests, implementation, refactoring) (Completed 2025-06-18)
   - [ ] Copy remaining _execute_* functions from interpreter module (not extract yet)
   - [ ] Adapt expression evaluation logic to use expression_evaluator for remaining functions
   - [ ] Write comprehensive tests following TDD methodology for each remaining evaluate function
@@ -322,7 +323,7 @@ This order ensures clean separation of concerns across all modules.
   - [x] Extract assignment operations (via instruction_evaluator)
   - [x] Extract if conditional logic (via instruction_evaluator)
   - [x] Extract send function logic (via instruction_evaluator)
-  - [ ] Extract method function logic
+  - [x] Extract method function logic (via instruction_evaluator) (Completed 2025-06-18)
   - [ ] Extract agent function logic
   - [x] Extract parse function logic (via instruction_evaluator)
   - [x] Extract build function logic (via instruction_evaluator)
