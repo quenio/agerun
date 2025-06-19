@@ -12,6 +12,7 @@
 #include "agerun_methodology.h"
 #include "agerun_assignment_instruction_evaluator.h"
 #include "agerun_send_instruction_evaluator.h"
+#include "agerun_condition_instruction_evaluator.h"
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
@@ -448,109 +449,12 @@ bool ar__instruction_evaluator__evaluate_if(
         return false;
     }
     
-    // Verify this is an if AST node
-    if (ar__instruction_ast__get_type(ref_ast) != INST_AST_IF) {
-        return false;
-    }
-    
-    // Get function arguments
-    list_t *own_args = NULL;
-    void **items = _extract_function_args(ref_ast, 3, &own_args);
-    if (!items) {
-        return false;
-    }
-    
-    const char *ref_condition_expr = (const char*)items[0];
-    const char *ref_true_expr = (const char*)items[1];
-    const char *ref_false_expr = (const char*)items[2];
-    
-    if (!ref_condition_expr || !ref_true_expr || !ref_false_expr) {
-        _cleanup_function_args(items, own_args);
-        return false;
-    }
-    
-    // Parse and evaluate condition expression
-    expression_parser_t *parser = ar__expression_parser__create(ref_condition_expr);
-    if (!parser) {
-        _cleanup_function_args(items, own_args);
-        return false;
-    }
-    
-    expression_ast_t *condition_ast = ar__expression_parser__parse_expression(parser);
-    ar__expression_parser__destroy(parser);
-    
-    if (!condition_ast) {
-        _cleanup_function_args(items, own_args);
-        return false;
-    }
-    
-    data_t *own_condition_data = _evaluate_expression_ast(mut_evaluator, condition_ast);
-    ar__expression_ast__destroy(condition_ast);
-    
-    if (!own_condition_data) {
-        _cleanup_function_args(items, own_args);
-        return false;
-    }
-    
-    // Check condition value (0 is false, non-zero is true)
-    bool condition_is_true = false;
-    if (ar__data__get_type(own_condition_data) == DATA_INTEGER) {
-        condition_is_true = (ar__data__get_integer(own_condition_data) != 0);
-    }
-    ar__data__destroy(own_condition_data);
-    
-    // Select which expression to evaluate based on condition
-    const char *ref_expr_to_eval = condition_is_true ? ref_true_expr : ref_false_expr;
-    
-    // Parse and evaluate the selected expression
-    parser = ar__expression_parser__create(ref_expr_to_eval);
-    if (!parser) {
-        _cleanup_function_args(items, own_args);
-        return false;
-    }
-    
-    expression_ast_t *value_ast = ar__expression_parser__parse_expression(parser);
-    ar__expression_parser__destroy(parser);
-    
-    if (!value_ast) {
-        _cleanup_function_args(items, own_args);
-        return false;
-    }
-    
-    data_t *own_result = _evaluate_expression_ast(mut_evaluator, value_ast);
-    ar__expression_ast__destroy(value_ast);
-    
-    if (!own_result) {
-        _cleanup_function_args(items, own_args);
-        return false;
-    }
-    
-    // Clean up items array and args list
-    _cleanup_function_args(items, own_args);
-    
-    // Handle result assignment if present
-    const char *ref_result_path = ar__instruction_ast__get_function_result_path(ref_ast);
-    if (ref_result_path) {
-        // Get memory key path
-        const char *key_path = _get_memory_key_path(ref_result_path);
-        if (!key_path) {
-            ar__data__destroy(own_result);
-            return false;
-        }
-        
-        // Store the result value (transfers ownership)
-        bool store_success = ar__data__set_map_data(mut_evaluator->mut_memory, key_path, own_result);
-        if (!store_success) {
-            ar__data__destroy(own_result);
-        }
-        
-        // For assignments, return true to indicate the instruction succeeded
-        return true;
-    } else {
-        // No assignment, just return success (expression was evaluated for side effects)
-        ar__data__destroy(own_result);
-        return true;
-    }
+    // Delegate to the condition instruction evaluator module
+    return ar__condition_instruction_evaluator__evaluate(
+        mut_evaluator->ref_expr_evaluator,
+        mut_evaluator->mut_memory,
+        ref_ast
+    );
 }
 
 /* Helper function to parse a value string and determine its type */

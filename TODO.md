@@ -262,7 +262,7 @@ This order ensures clean separation of concerns across all modules.
 - [ ] Extract instruction evaluator functions into dedicated modules (In Progress 2025-06-19):
   - [x] Create assignment_instruction_evaluator module for evaluate_assignment
   - [x] Create send_instruction_evaluator module for evaluate_send
-  - [ ] Create condition_instruction_evaluator module for evaluate_if
+  - [x] Create condition_instruction_evaluator module for evaluate_if
   - [ ] Create parse_instruction_evaluator module for evaluate_parse
   - [ ] Create build_instruction_evaluator module for evaluate_build
   - [ ] Create method_instruction_evaluator module for evaluate_method
