@@ -1,0 +1,1 @@
+Let's work on the next task. First, explain your strategy and wait for my feedback before proceeding to execute it.
