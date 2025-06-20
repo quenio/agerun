@@ -101,8 +101,8 @@ bool ar__instruction_evaluator__evaluate_send(
         return false;
     }
     
-    // Delegate to the send instruction evaluator module
-    return ar_send_instruction_evaluator__evaluate(
+    // Delegate to the send instruction evaluator module (using legacy interface for now)
+    return ar_send_instruction_evaluator__evaluate_legacy(
         mut_evaluator->ref_expr_evaluator,
         mut_evaluator->mut_memory,
         ref_ast

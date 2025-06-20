@@ -15,15 +15,53 @@
 #include "agerun_expression_evaluator.h"
 
 /**
- * Evaluates a send instruction AST node
- * @param mut_expr_evaluator The expression evaluator to use (mutable reference)
- * @param mut_memory The memory map containing variables (mutable reference)
+ * Opaque type for send instruction evaluator
+ */
+typedef struct ar_send_instruction_evaluator_s send_instruction_evaluator_t;
+
+/**
+ * Creates a new send instruction evaluator
+ * @param ref_expr_evaluator The expression evaluator to use (borrowed reference)
+ * @param mut_memory The memory map to use (mutable reference)
+ * @return A new send instruction evaluator, or NULL on error
+ * @note Ownership: Returns an owned value that caller must destroy
+ */
+send_instruction_evaluator_t* ar_send_instruction_evaluator__create(
+    expression_evaluator_t *ref_expr_evaluator,
+    data_t *mut_memory
+);
+
+/**
+ * Destroys a send instruction evaluator
+ * @param own_evaluator The evaluator to destroy (takes ownership)
+ */
+void ar_send_instruction_evaluator__destroy(
+    send_instruction_evaluator_t *own_evaluator
+);
+
+/**
+ * Evaluates a send instruction AST node using stored dependencies
+ * @param mut_evaluator The send instruction evaluator to use (mutable reference)
  * @param ref_ast The AST node to evaluate (borrowed reference)
  * @return true if evaluation succeeded, false otherwise
  * @note The send instruction transfers ownership of the message to the target agent.
  *       If the send has a result assignment, it will modify the memory map.
  */
 bool ar_send_instruction_evaluator__evaluate(
+    send_instruction_evaluator_t *mut_evaluator,
+    const instruction_ast_t *ref_ast
+);
+
+/**
+ * Evaluates a send instruction AST node (legacy interface)
+ * @param mut_expr_evaluator The expression evaluator to use (mutable reference)
+ * @param mut_memory The memory map containing variables (mutable reference)
+ * @param ref_ast The AST node to evaluate (borrowed reference)
+ * @return true if evaluation succeeded, false otherwise
+ * @note This is a legacy interface for backward compatibility.
+ *       It will be removed once instruction_evaluator is updated.
+ */
+bool ar_send_instruction_evaluator__evaluate_legacy(
     expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory,
     const instruction_ast_t *ref_ast

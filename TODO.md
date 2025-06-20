@@ -297,7 +297,7 @@ This order ensures clean separation of concerns across all modules.
   - [x] Ensure all tests continue to pass with refactored structure
 - [ ] Refactor specialized evaluators to be instantiable modules:
   - [x] Update assignment_instruction_evaluator to have create/destroy functions
-  - [ ] Update send_instruction_evaluator to have create/destroy functions
+  - [x] Update send_instruction_evaluator to have create/destroy functions
   - [ ] Update condition_instruction_evaluator to have create/destroy functions
   - [ ] Update parse_instruction_evaluator to have create/destroy functions
   - [ ] Update build_instruction_evaluator to have create/destroy functions
@@ -308,6 +308,13 @@ This order ensures clean separation of concerns across all modules.
   - [ ] Update evaluate functions to use stored dependencies instead of parameters
   - [ ] Write tests for create/destroy lifecycle of each evaluator
   - [ ] Ensure all evaluators use ar_<module>_s naming for opaque structs (per new guideline)
+- [ ] Remove legacy wrapper functions from specialized evaluators:
+  - [ ] Remove ar_assignment_instruction_evaluator__evaluate_legacy after integration
+  - [ ] Remove ar_send_instruction_evaluator__evaluate_legacy after integration
+  - [ ] Remove similar legacy functions from other evaluators once added
+- [ ] Ensure consistent opaque struct naming pattern:
+  - [ ] All evaluator structs should use ar_<module>_s pattern
+  - [ ] Update any inconsistent naming across modules
 - [ ] Update instruction_evaluator to create and manage specialized evaluators:
   - [ ] Add fields to instruction_evaluator struct for all specialized evaluators
   - [ ] Create all specialized evaluators in ar__instruction_evaluator__create()
