@@ -299,22 +299,24 @@ This order ensures clean separation of concerns across all modules.
   - [x] Update assignment_instruction_evaluator to have create/destroy functions
   - [x] Update send_instruction_evaluator to have create/destroy functions
   - [x] Update condition_instruction_evaluator to have create/destroy functions (Completed 2025-06-20)
-  - [ ] Update parse_instruction_evaluator to have create/destroy functions
+  - [x] Update parse_instruction_evaluator to have create/destroy functions (Completed 2025-06-20)
   - [ ] Update build_instruction_evaluator to have create/destroy functions
   - [ ] Update method_instruction_evaluator to have create/destroy functions
   - [ ] Update agent_instruction_evaluator to have create/destroy functions
   - [ ] Update destroy_instruction_evaluator to have create/destroy functions
-  - [ ] Each evaluator should store its dependencies (expression_evaluator, memory, context)
-  - [ ] Update evaluate functions to use stored dependencies instead of parameters
-  - [ ] Write tests for create/destroy lifecycle of each evaluator
-  - [ ] Ensure all evaluators use ar_<module>_s naming for opaque structs (per new guideline)
+  - [x] Each evaluator should store its dependencies (expression_evaluator, memory, context) (Completed for assignment, send, condition, parse)
+  - [x] Update evaluate functions to use stored dependencies instead of parameters (Completed for assignment, send, condition, parse)
+  - [x] Write tests for create/destroy lifecycle of each evaluator (Completed for assignment, send, condition, parse)
+  - [x] Ensure all evaluators use ar_<module>_s naming for opaque structs (per new guideline) (Completed for all 4 refactored evaluators)
 - [ ] Remove legacy wrapper functions from specialized evaluators:
   - [ ] Remove ar_assignment_instruction_evaluator__evaluate_legacy after integration
   - [ ] Remove ar_send_instruction_evaluator__evaluate_legacy after integration
+  - [ ] Remove ar_condition_instruction_evaluator__evaluate_legacy after integration
+  - [ ] Remove ar_parse_instruction_evaluator__evaluate_legacy after integration
   - [ ] Remove similar legacy functions from other evaluators once added
-- [ ] Ensure consistent opaque struct naming pattern:
-  - [ ] All evaluator structs should use ar_<module>_s pattern
-  - [ ] Update any inconsistent naming across modules
+- [x] Ensure consistent opaque struct naming pattern: (Completed 2025-06-20)
+  - [x] All evaluator structs should use ar_<module>_s pattern (All 4 refactored evaluators follow this)
+  - [x] Update any inconsistent naming across modules (No inconsistencies found in refactored modules)
 - [ ] Update instruction_evaluator to create and manage specialized evaluators:
   - [ ] Add fields to instruction_evaluator struct for all specialized evaluators
   - [ ] Create all specialized evaluators in ar__instruction_evaluator__create()

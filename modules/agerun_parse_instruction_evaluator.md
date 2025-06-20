@@ -4,21 +4,55 @@
 
 The parse instruction evaluator module is responsible for evaluating parse instructions in the AgeRun language. It extracts values from strings using template patterns with placeholders.
 
+This module follows an instantiable design pattern where evaluators are created with their dependencies and can be reused for multiple evaluations.
+
 ## Purpose
 
 This module extracts the parse instruction evaluation logic from the main instruction evaluator, following the single responsibility principle. It provides specialized handling for template-based string parsing and value extraction.
 
 ## Key Components
 
+### Types
+
+```c
+typedef struct ar_parse_instruction_evaluator_s parse_instruction_evaluator_t;
+```
+
+An opaque type representing a parse instruction evaluator instance.
+
 ### Public Interface
 
 ```c
-bool ar_parse_instruction_evaluator__evaluate(
+parse_instruction_evaluator_t* ar__parse_instruction_evaluator__create(
+    expression_evaluator_t *ref_expr_evaluator,
+    data_t *mut_memory
+);
+```
+Creates a new parse instruction evaluator that stores its dependencies.
+
+```c
+void ar__parse_instruction_evaluator__destroy(
+    parse_instruction_evaluator_t *own_evaluator
+);
+```
+Destroys a parse instruction evaluator and frees all resources.
+
+```c
+bool ar__parse_instruction_evaluator__evaluate(
+    parse_instruction_evaluator_t *mut_evaluator,
+    const instruction_ast_t *ref_ast
+);
+```
+Evaluates a parse instruction using the stored dependencies.
+
+```c
+bool ar_parse_instruction_evaluator__evaluate_legacy(
     expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory,
     const instruction_ast_t *ref_ast
 );
 ```
+Legacy interface for backward compatibility (will be removed once instruction_evaluator is updated).
 
 ### Functionality
 
@@ -41,10 +75,14 @@ Templates use curly braces to mark placeholders:
 ### Memory Management
 
 The module follows strict memory ownership rules:
+- The evaluator instance owns its internal structure but not the dependencies
+- Expression evaluator and memory are borrowed references stored in the instance
 - Template and input string evaluations are owned temporarily
 - Extracted values are stored in a new map
 - Map ownership is transferred to memory storage
 - All intermediate values properly cleaned up
+- The create function returns ownership to the caller
+- The destroy function takes ownership and frees all resources
 
 ## Dependencies
 
@@ -69,18 +107,27 @@ The module:
 ## Usage Example
 
 ```c
-// Create evaluator
+// Create memory and expression evaluator
+data_t *memory = ar__data__create_map();
 expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+
+// Create parse instruction evaluator
+parse_instruction_evaluator_t *parse_eval = ar__parse_instruction_evaluator__create(
+    expr_eval, memory
+);
 
 // Parse instruction: memory.data := parse("Hello {name}!", "Hello World!")
 instruction_ast_t *ast = ar__instruction_parser__parse_parse(parser);
 
 // Evaluate the parse
-bool success = ar_parse_instruction_evaluator__evaluate(
-    expr_eval, memory, ast
-);
+bool success = ar__parse_instruction_evaluator__evaluate(parse_eval, ast);
 
 // memory["data"]["name"] now contains "World"
+
+// Cleanup
+ar__parse_instruction_evaluator__destroy(parse_eval);
+ar__expression_evaluator__destroy(expr_eval);
+ar__data__destroy(memory);
 ```
 
 ## Testing

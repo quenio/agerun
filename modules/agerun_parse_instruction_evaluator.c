@@ -15,6 +15,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+/* Struct definition for parse instruction evaluator */
+struct ar_parse_instruction_evaluator_s {
+    expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
+    data_t *mut_memory;                          /* Memory map (mutable reference) */
+};
+
 /* Constants */
 static const char* MEMORY_PREFIX = "memory.";
 static const size_t MEMORY_PREFIX_LEN = 7;
@@ -262,6 +268,78 @@ static data_t* _parse_value_string(const char *value_str) {
     
     // Otherwise treat as string
     return ar__data__create_string(value_str);
+}
+
+/**
+ * Creates a new parse instruction evaluator
+ */
+parse_instruction_evaluator_t* ar__parse_instruction_evaluator__create(
+    expression_evaluator_t *ref_expr_evaluator,
+    data_t *mut_memory
+) {
+    if (!ref_expr_evaluator || !mut_memory) {
+        return NULL;
+    }
+    
+    parse_instruction_evaluator_t *own_evaluator = AR__HEAP__MALLOC(
+        sizeof(parse_instruction_evaluator_t),
+        "parse_instruction_evaluator"
+    );
+    if (!own_evaluator) {
+        return NULL;
+    }
+    
+    own_evaluator->ref_expr_evaluator = ref_expr_evaluator;
+    own_evaluator->mut_memory = mut_memory;
+    
+    // Ownership transferred to caller
+    return own_evaluator;
+}
+
+/**
+ * Destroys a parse instruction evaluator
+ */
+void ar__parse_instruction_evaluator__destroy(
+    parse_instruction_evaluator_t *own_evaluator
+) {
+    if (!own_evaluator) {
+        return;
+    }
+    
+    AR__HEAP__FREE(own_evaluator);
+}
+
+/**
+ * Evaluates a parse instruction using the stored dependencies
+ */
+bool ar__parse_instruction_evaluator__evaluate(
+    parse_instruction_evaluator_t *mut_evaluator,
+    const instruction_ast_t *ref_ast
+) {
+    if (!mut_evaluator || !ref_ast) {
+        return false;
+    }
+    
+    return ar_parse_instruction_evaluator__evaluate_legacy(
+        mut_evaluator->ref_expr_evaluator,
+        mut_evaluator->mut_memory,
+        ref_ast
+    );
+}
+
+/**
+ * Evaluates a parse instruction (legacy interface)
+ */
+bool ar_parse_instruction_evaluator__evaluate_legacy(
+    expression_evaluator_t *mut_expr_evaluator,
+    data_t *mut_memory,
+    const instruction_ast_t *ref_ast
+) {
+    return ar_parse_instruction_evaluator__evaluate(
+        mut_expr_evaluator,
+        mut_memory,
+        ref_ast
+    );
 }
 
 /**

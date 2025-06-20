@@ -6,6 +6,113 @@
 #include "agerun_expression_evaluator.h"
 #include "agerun_instruction_ast.h"
 #include "agerun_data.h"
+#include "agerun_parse_instruction_evaluator.h"
+
+static void test_parse_instruction_evaluator__create_destroy(void) {
+    // Given memory and expression evaluator
+    data_t *own_memory = ar__data__create_map();
+    assert(own_memory != NULL);
+    expression_evaluator_t *own_expr_eval = ar__expression_evaluator__create(own_memory, NULL);
+    assert(own_expr_eval != NULL);
+    
+    // When creating a parse instruction evaluator
+    parse_instruction_evaluator_t *own_evaluator = ar__parse_instruction_evaluator__create(
+        own_expr_eval, own_memory
+    );
+    
+    // Then it should create successfully
+    assert(own_evaluator != NULL);
+    
+    // When destroying the evaluator
+    ar__parse_instruction_evaluator__destroy(own_evaluator);
+    
+    // Cleanup
+    ar__expression_evaluator__destroy(own_expr_eval);
+    ar__data__destroy(own_memory);
+}
+
+static void test_parse_instruction_evaluator__evaluate_with_instance(void) {
+    // Given memory and an evaluator instance
+    data_t *own_memory = ar__data__create_map();
+    assert(own_memory != NULL);
+    
+    expression_evaluator_t *own_expr_eval = ar__expression_evaluator__create(own_memory, NULL);
+    assert(own_expr_eval != NULL);
+    
+    parse_instruction_evaluator_t *own_evaluator = ar__parse_instruction_evaluator__create(
+        own_expr_eval, own_memory
+    );
+    assert(own_evaluator != NULL);
+    
+    // When creating a parse AST node
+    const char *args[] = {"\"name={name}\"", "\"name=John\""};
+    instruction_ast_t *own_ast = ar__instruction_ast__create_function_call(
+        INST_AST_PARSE, "parse", args, 2, "memory.result"
+    );
+    assert(own_ast != NULL);
+    
+    // When evaluating using the instance
+    bool result = ar__parse_instruction_evaluator__evaluate(own_evaluator, own_ast);
+    
+    // Then it should succeed and store the parsed value
+    assert(result == true);
+    data_t *ref_result_value = ar__data__get_map_data(own_memory, "result");
+    assert(ref_result_value != NULL);
+    assert(ar__data__get_type(ref_result_value) == DATA_MAP);
+    
+    data_t *ref_name_value = ar__data__get_map_data(ref_result_value, "name");
+    assert(ref_name_value != NULL);
+    assert(ar__data__get_type(ref_name_value) == DATA_STRING);
+    assert(strcmp(ar__data__get_string(ref_name_value), "John") == 0);
+    
+    // Cleanup
+    ar__instruction_ast__destroy(own_ast);
+    ar__parse_instruction_evaluator__destroy(own_evaluator);
+    ar__expression_evaluator__destroy(own_expr_eval);
+    ar__data__destroy(own_memory);
+}
+
+static void test_parse_instruction_evaluator__legacy_wrapper(void) {
+    // Given memory and expression evaluator
+    data_t *own_memory = ar__data__create_map();
+    assert(own_memory != NULL);
+    
+    expression_evaluator_t *own_expr_eval = ar__expression_evaluator__create(own_memory, NULL);
+    assert(own_expr_eval != NULL);
+    
+    // When creating a parse AST node
+    const char *args[] = {"\"user={username}, role={role}\"", "\"user=alice, role=admin\""};
+    instruction_ast_t *own_ast = ar__instruction_ast__create_function_call(
+        INST_AST_PARSE, "parse", args, 2, "memory.result"
+    );
+    assert(own_ast != NULL);
+    
+    // When evaluating using the legacy interface directly
+    bool result = ar_parse_instruction_evaluator__evaluate_legacy(
+        own_expr_eval, own_memory, own_ast
+    );
+    
+    // Then it should succeed and store the parsed values
+    assert(result == true);
+    data_t *ref_result_value = ar__data__get_map_data(own_memory, "result");
+    assert(ref_result_value != NULL);
+    assert(ar__data__get_type(ref_result_value) == DATA_MAP);
+    
+    data_t *ref_username_value = ar__data__get_map_data(ref_result_value, "username");
+    assert(ref_username_value != NULL);
+    assert(ar__data__get_type(ref_username_value) == DATA_STRING);
+    assert(strcmp(ar__data__get_string(ref_username_value), "alice") == 0);
+    
+    data_t *ref_role_value = ar__data__get_map_data(ref_result_value, "role");
+    assert(ref_role_value != NULL);
+    assert(ar__data__get_type(ref_role_value) == DATA_STRING);
+    assert(strcmp(ar__data__get_string(ref_role_value), "admin") == 0);
+    
+    // Cleanup
+    ar__instruction_ast__destroy(own_ast);
+    ar__expression_evaluator__destroy(own_expr_eval);
+    ar__data__destroy(own_memory);
+}
 
 static void test_instruction_evaluator__evaluate_parse_simple(void) {
     // Given an evaluator with memory
@@ -246,6 +353,15 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
 
 int main(void) {
     printf("Starting parse instruction_evaluator tests...\n");
+    
+    test_parse_instruction_evaluator__create_destroy();
+    printf("test_parse_instruction_evaluator__create_destroy passed!\n");
+    
+    test_parse_instruction_evaluator__evaluate_with_instance();
+    printf("test_parse_instruction_evaluator__evaluate_with_instance passed!\n");
+    
+    test_parse_instruction_evaluator__legacy_wrapper();
+    printf("test_parse_instruction_evaluator__legacy_wrapper passed!\n");
     
     test_instruction_evaluator__evaluate_parse_simple();
     printf("test_instruction_evaluator__evaluate_parse_simple passed!\n");

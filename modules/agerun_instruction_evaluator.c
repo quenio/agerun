@@ -134,8 +134,8 @@ bool ar__instruction_evaluator__evaluate_parse(
         return false;
     }
     
-    // Delegate to the parse instruction evaluator module
-    return ar_parse_instruction_evaluator__evaluate(
+    // Delegate to the parse instruction evaluator module (using legacy interface for now)
+    return ar_parse_instruction_evaluator__evaluate_legacy(
         mut_evaluator->ref_expr_evaluator,
         mut_evaluator->mut_memory,
         ref_ast
