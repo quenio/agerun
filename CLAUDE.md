@@ -159,11 +159,52 @@ This prevents overthinking and ensures accurate responses based on documented pr
 
 ### 2. Test-Driven Development (MANDATORY)
 
-**Red-Green-Refactor Cycle**:
-1. **Red**: Write failing test FIRST
-2. **Green**: Write MINIMUM code to pass
-3. **Refactor**: Improve while keeping tests green
-4. **IMPORTANT**: Complete the FULL cycle before committing - don't commit after just Red-Green!
+**Red-Green-Refactor Cycle (ALL THREE PHASES REQUIRED)**:
+
+**CRITICAL**: This is a CYCLE that repeats for each new behavior/feature. NO commits during the cycle!
+
+For each new behavior/feature:
+1. **Red Phase**: Write failing test FIRST
+   - Write test for ONE specific behavior
+   - Run test to confirm it fails
+   - Do NOT commit
+   
+2. **Green Phase**: Write MINIMUM code to pass
+   - Make the test pass with simplest implementation
+   - Run test to confirm it passes
+   - Check memory report for leaks
+   - Do NOT commit
+   
+3. **Refactor Phase (MANDATORY - DO NOT SKIP)**: Improve while keeping tests green
+   - Look for improvements:
+     - Remove code duplication
+     - Improve naming
+     - Extract helper functions
+     - Simplify complex logic
+     - Apply consistent patterns
+   - Run tests after each change
+   - Even if no refactoring needed, you MUST explicitly state: "Refactor phase: No improvements identified"
+   - Do NOT commit
+
+**REPEAT THE CYCLE** for next behavior/feature
+
+**Only after ALL cycles are complete**:
+- Update documentation
+- Update TODO.md
+- Update CHANGELOG.md
+- THEN commit all changes together
+
+**IMPORTANT**: 
+- The cycle is NOT complete after just Red-Green
+- Refactor phase is MANDATORY, not optional
+- NO commits until ALL TDD cycles for the feature are done
+- One commit per feature, not per cycle
+
+**Example - Making a module instantiable**:
+- Cycle 1: Red (test create/destroy) → Green (implement) → Refactor (check for improvements)
+- Cycle 2: Red (test evaluate with instance) → Green (implement) → Refactor (check for improvements)
+- Cycle 3: Red (test legacy wrapper) → Green (implement) → Refactor (check for improvements)
+- Only NOW: Update docs → Update TODO.md → Update CHANGELOG.md → Commit once
 
 **Test Requirements**:
 - Every module MUST have tests
@@ -721,7 +762,9 @@ When reviewing tasks:
 **Critical Reminders**:
 - CHANGELOG update is MANDATORY for every commit that completes tasks
 - Always check this checklist BEFORE running `git commit`
-- Build this mental model: TDD Cycle → Documentation → TODO → CHANGELOG → Check for backups → Commit
+- Build this mental model: Complete ALL TDD Cycles (Red→Green→Refactor) → Documentation → TODO → CHANGELOG → Check for backups → Commit
+- TDD Cycle means: Red (test fails) → Green (test passes) → Refactor (improve code) → REPEAT for next behavior
+- NEVER skip the Refactor phase - it's mandatory even if you find nothing to improve
 - Treat CHANGELOG updates as part of the work, not as optional documentation
 - NEVER commit temporary or backup files to version control
 
