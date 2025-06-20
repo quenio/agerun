@@ -262,14 +262,6 @@ agerun_instruction_evaluator
 │       ├──c──> agerun_methodology
 │       ├──c──> agerun_string
 │       └──c──> agerun_heap
-├──c──> agerun_destroy_instruction_evaluator
-│       ├──h──> agerun_expression_evaluator
-│       ├──h──> agerun_instruction_ast
-│       ├──h──> agerun_data
-│       ├──c──> agerun_destroy_agent_instruction_evaluator
-│       ├──c──> agerun_destroy_method_instruction_evaluator
-│       ├──c──> agerun_list
-│       └──c──> agerun_heap
 ├──c──> agerun_destroy_agent_instruction_evaluator
 │       ├──h──> agerun_expression_evaluator
 │       ├──h──> agerun_instruction_ast
@@ -449,17 +441,6 @@ agerun_method_instruction_evaluator_tests
 
 agerun_agent_instruction_evaluator_tests
 ├──c──> agerun_agent_instruction_evaluator (module under test)
-├──c──> agerun_instruction_evaluator
-├──c──> agerun_expression_evaluator
-├──c──> agerun_instruction_ast
-├──c──> agerun_agency
-├──c──> agerun_methodology
-├──c──> agerun_system
-├──c──> agerun_data
-└──c──> agerun_heap
-
-agerun_destroy_instruction_evaluator_tests
-├──c──> agerun_destroy_instruction_evaluator (module under test)
 ├──c──> agerun_instruction_evaluator
 ├──c──> agerun_expression_evaluator
 ├──c──> agerun_instruction_ast
@@ -934,12 +915,20 @@ The [agent instruction evaluator module](agerun_agent_instruction_evaluator.md) 
 - **Context Handling**: Supports both memory and context references
 - **Wake Messages**: Agents receive `__wake__` message on creation
 
-#### Destroy Instruction Evaluator Module (`agerun_destroy_instruction_evaluator`)
+#### Destroy Agent Instruction Evaluator Module (`agerun_destroy_agent_instruction_evaluator`)
 
-The [destroy instruction evaluator module](agerun_destroy_instruction_evaluator.md) handles destruction operations:
+The [destroy agent instruction evaluator module](agerun_destroy_agent_instruction_evaluator.md) handles agent destruction:
 - **Agent Destruction**: Destroys agents by ID
+- **Result Storage**: Stores success/failure result when assignment specified
+- **Instantiable Design**: Follows instantiable pattern with create/destroy lifecycle
+
+#### Destroy Method Instruction Evaluator Module (`agerun_destroy_method_instruction_evaluator`)
+
+The [destroy method instruction evaluator module](agerun_destroy_method_instruction_evaluator.md) handles method destruction:
 - **Method Destruction**: Unregisters methods and destroys associated agents
-- **Sleep Messages**: Sends `__sleep__` to agents before method destruction
+- **Agent Lifecycle**: Sends `__sleep__` messages to agents before destruction
+- **Result Storage**: Stores success/failure result when assignment specified
+- **Instantiable Design**: Follows instantiable pattern with create/destroy lifecycle
 
 ### Instruction Module (`agerun_instruction`)
 

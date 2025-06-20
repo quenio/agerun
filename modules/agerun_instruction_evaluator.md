@@ -36,6 +36,9 @@ The instruction evaluator serves as the execution engine for AgeRun instructions
 - `agerun_agency`: For agent operations (create, destroy, send)
 - `agerun_methodology`: For method operations
 - `agerun_method`: For method creation
+- `agerun_destroy_agent_instruction_evaluator`: For agent destruction
+- `agerun_destroy_method_instruction_evaluator`: For method destruction
+- `agerun_list`: For argument counting in destroy dispatch
 - `agerun_heap`: For memory tracking
 
 ## API Reference
@@ -220,13 +223,14 @@ bool ar__instruction_evaluator__evaluate_destroy(
 );
 ```
 
-Evaluates destroy instructions for agents and methods.
+Evaluates destroy instructions for agents and methods by dispatching to the appropriate specialized evaluator based on argument count.
 
 **Behavior:**
-- `destroy(agent_id)`: Destroys specified agent
-- `destroy(method_name, version)`: Destroys method and all agents using it
-- Sends `__sleep__` messages before destroying agents
-- Returns true on success, false on failure
+- `destroy(agent_id)`: Dispatches to `destroy_agent_instruction_evaluator` (1 argument)
+- `destroy(method_name, version)`: Dispatches to `destroy_method_instruction_evaluator` (2 arguments)
+- The agent evaluator destroys the specified agent
+- The method evaluator sends `__sleep__` messages before destroying agents using the method
+- Returns true on success, false on failure or invalid argument count
 
 ## Usage Examples
 
@@ -336,7 +340,8 @@ The module has comprehensive test coverage split into focused test files:
 - `agerun_build_instruction_evaluator_tests.c`: Build function tests
 - `agerun_method_instruction_evaluator_tests.c`: Method creation tests
 - `agerun_agent_instruction_evaluator_tests.c`: Agent creation tests
-- `agerun_destroy_instruction_evaluator_tests.c`: Destroy function tests
+- `agerun_destroy_agent_instruction_evaluator_tests.c`: Agent destruction tests
+- `agerun_destroy_method_instruction_evaluator_tests.c`: Method destruction tests
 
 All tests follow TDD methodology with Given/When/Then structure and zero memory leaks.
 

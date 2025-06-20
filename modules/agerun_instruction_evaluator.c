@@ -17,7 +17,9 @@
 #include "agerun_build_instruction_evaluator.h"
 #include "agerun_method_instruction_evaluator.h"
 #include "agerun_agent_instruction_evaluator.h"
-#include "agerun_destroy_instruction_evaluator.h"
+#include "agerun_destroy_agent_instruction_evaluator.h"
+#include "agerun_destroy_method_instruction_evaluator.h"
+#include "agerun_list.h"
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
@@ -200,10 +202,36 @@ bool ar__instruction_evaluator__evaluate_destroy(
         return false;
     }
     
-    // Delegate to the destroy instruction evaluator module
-    return ar__destroy_instruction_evaluator__evaluate(
-        mut_evaluator->ref_expr_evaluator,
-        mut_evaluator->mut_memory,
-        ref_ast
-    );
+    // Validate AST type
+    if (ar__instruction_ast__get_type(ref_ast) != INST_AST_DESTROY) {
+        return false;
+    }
+    
+    // Get function arguments to determine which evaluator to use
+    list_t *own_args = ar__instruction_ast__get_function_args(ref_ast);
+    if (!own_args) {
+        return false;
+    }
+    
+    size_t arg_count = ar__list__count(own_args);
+    ar__list__destroy(own_args);
+    
+    if (arg_count == 1) {
+        // destroy(agent_id) - dispatch to destroy agent evaluator
+        return ar__destroy_agent_instruction_evaluator__evaluate_legacy(
+            mut_evaluator->ref_expr_evaluator,
+            mut_evaluator->mut_memory,
+            ref_ast
+        );
+    } else if (arg_count == 2) {
+        // destroy(method_name, method_version) - dispatch to destroy method evaluator
+        return ar__destroy_method_instruction_evaluator__evaluate_legacy(
+            mut_evaluator->ref_expr_evaluator,
+            mut_evaluator->mut_memory,
+            ref_ast
+        );
+    } else {
+        // Invalid argument count
+        return false;
+    }
 }

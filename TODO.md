@@ -305,6 +305,7 @@ This order ensures clean separation of concerns across all modules.
     - [x] Split into destroy_agent_instruction_evaluator and destroy_method_instruction_evaluator (Completed 2025-06-20)
     - [x] Updated destroy_instruction_evaluator to dispatch based on argument count
     - [x] Both new modules follow instantiable pattern with create/destroy functions
+    - [x] Moved destroy dispatcher logic to instruction_evaluator and removed destroy_instruction_evaluator module (Completed 2025-06-20)
   - [x] Update instruction_evaluator to delegate to specialized modules
   - [x] Ensure all tests continue to pass with refactored structure
 - [x] Refactor specialized evaluators to be instantiable modules (Completed 2025-06-20):
@@ -348,6 +349,7 @@ This order ensures clean separation of concerns across all modules.
   - [ ] Pass dependencies (expression_evaluator, memory, context) to each specialized evaluator
   - [ ] Destroy all specialized evaluators in ar__instruction_evaluator__destroy()
   - [ ] Update delegation functions to use created evaluator instances
+  - [ ] Note: destroy() dispatch logic is already integrated in evaluate_destroy function
   - [ ] Ensure proper initialization order and cleanup
   - [ ] Remove legacy wrapper functions from specialized evaluators once integration is complete
 - [ ] Add main evaluate function to instruction_evaluator module:
