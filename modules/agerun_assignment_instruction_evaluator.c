@@ -11,9 +11,46 @@
 #include <string.h>
 #include <stdio.h>
 
+/* Internal structure for the assignment instruction evaluator */
+struct ar_assignment_instruction_evaluator_s {
+    expression_evaluator_t *ref_expr_evaluator;  /* Borrowed reference to expression evaluator */
+    data_t *mut_memory;                          /* Mutable reference to memory map */
+};
+
 /* Constants */
 static const char* MEMORY_PREFIX = "memory.";
 static const size_t MEMORY_PREFIX_LEN = 7;
+
+assignment_instruction_evaluator_t* ar_assignment_instruction_evaluator__create(
+    expression_evaluator_t *ref_expr_evaluator,
+    data_t *mut_memory
+) {
+    if (!ref_expr_evaluator || !mut_memory) {
+        return NULL;
+    }
+    
+    assignment_instruction_evaluator_t *own_evaluator = AR__HEAP__MALLOC(sizeof(assignment_instruction_evaluator_t), "assignment_instruction_evaluator");
+    if (!own_evaluator) {
+        return NULL;
+    }
+    
+    own_evaluator->ref_expr_evaluator = ref_expr_evaluator;
+    own_evaluator->mut_memory = mut_memory;
+    
+    // Ownership transferred to caller
+    return own_evaluator;
+}
+
+void ar_assignment_instruction_evaluator__destroy(
+    assignment_instruction_evaluator_t *own_evaluator
+) {
+    if (!own_evaluator) {
+        return;
+    }
+    
+    // Just free the struct, we don't own the expression evaluator or memory
+    AR__HEAP__FREE(own_evaluator);
+}
 
 /* Helper function to check if a path starts with "memory." and return the key path */
 static const char* _get_memory_key_path(const char *ref_path) {
@@ -140,11 +177,10 @@ static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluat
  * Evaluates an assignment instruction AST node
  */
 bool ar_assignment_instruction_evaluator__evaluate(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
+    assignment_instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 ) {
-    if (!mut_expr_evaluator || !mut_memory || !ref_ast) {
+    if (!mut_evaluator || !ref_ast) {
         return false;
     }
     
@@ -181,7 +217,7 @@ bool ar_assignment_instruction_evaluator__evaluate(
     }
     
     // Evaluate the expression AST
-    data_t *own_value = _evaluate_expression_ast(mut_expr_evaluator, expr_ast);
+    data_t *own_value = _evaluate_expression_ast(mut_evaluator->ref_expr_evaluator, expr_ast);
     ar__expression_ast__destroy(expr_ast);
     
     if (!own_value) {
@@ -189,10 +225,36 @@ bool ar_assignment_instruction_evaluator__evaluate(
     }
     
     // Store the value in memory (transfers ownership)
-    bool success = ar__data__set_map_data(mut_memory, key_path, own_value);
+    bool success = ar__data__set_map_data(mut_evaluator->mut_memory, key_path, own_value);
     if (!success) {
         ar__data__destroy(own_value);
     }
     
     return success;
+}
+
+bool ar_assignment_instruction_evaluator__evaluate_legacy(
+    expression_evaluator_t *mut_expr_evaluator,
+    data_t *mut_memory,
+    const instruction_ast_t *ref_ast
+) {
+    if (!mut_expr_evaluator || !mut_memory || !ref_ast) {
+        return false;
+    }
+    
+    // Create a temporary evaluator
+    assignment_instruction_evaluator_t *own_evaluator = ar_assignment_instruction_evaluator__create(
+        mut_expr_evaluator, mut_memory
+    );
+    if (!own_evaluator) {
+        return false;
+    }
+    
+    // Evaluate using the instance
+    bool result = ar_assignment_instruction_evaluator__evaluate(own_evaluator, ref_ast);
+    
+    // Cleanup
+    ar_assignment_instruction_evaluator__destroy(own_evaluator);
+    
+    return result;
 }

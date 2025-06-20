@@ -296,7 +296,7 @@ This order ensures clean separation of concerns across all modules.
   - [x] Update instruction_evaluator to delegate to specialized modules
   - [x] Ensure all tests continue to pass with refactored structure
 - [ ] Refactor specialized evaluators to be instantiable modules:
-  - [ ] Update assignment_instruction_evaluator to have create/destroy functions
+  - [x] Update assignment_instruction_evaluator to have create/destroy functions
   - [ ] Update send_instruction_evaluator to have create/destroy functions
   - [ ] Update condition_instruction_evaluator to have create/destroy functions
   - [ ] Update parse_instruction_evaluator to have create/destroy functions

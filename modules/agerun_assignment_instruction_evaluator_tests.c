@@ -6,6 +6,60 @@
 #include "agerun_expression_evaluator.h"
 #include "agerun_instruction_ast.h"
 #include "agerun_data.h"
+#include "agerun_assignment_instruction_evaluator.h"
+
+static void test_assignment_instruction_evaluator__create_destroy(void) {
+    // Given expression evaluator and memory
+    data_t *own_memory = ar__data__create_map();
+    assert(own_memory != NULL);
+    
+    expression_evaluator_t *own_expr_eval = ar__expression_evaluator__create(own_memory, NULL);
+    assert(own_expr_eval != NULL);
+    
+    // When creating an assignment instruction evaluator
+    assignment_instruction_evaluator_t *own_evaluator = ar_assignment_instruction_evaluator__create(own_expr_eval, own_memory);
+    
+    // Then it should be created successfully
+    assert(own_evaluator != NULL);
+    
+    // When destroying the evaluator
+    ar_assignment_instruction_evaluator__destroy(own_evaluator);
+    
+    // Then cleanup other resources
+    ar__expression_evaluator__destroy(own_expr_eval);
+    ar__data__destroy(own_memory);
+}
+
+static void test_assignment_instruction_evaluator__evaluate_with_instance(void) {
+    // Given an assignment instruction evaluator
+    data_t *own_memory = ar__data__create_map();
+    assert(own_memory != NULL);
+    
+    expression_evaluator_t *own_expr_eval = ar__expression_evaluator__create(own_memory, NULL);
+    assert(own_expr_eval != NULL);
+    
+    assignment_instruction_evaluator_t *own_evaluator = ar_assignment_instruction_evaluator__create(own_expr_eval, own_memory);
+    assert(own_evaluator != NULL);
+    
+    // When evaluating an assignment instruction: memory.count := 42
+    instruction_ast_t *own_ast = ar__instruction_ast__create_assignment("memory.count", "42");
+    assert(own_ast != NULL);
+    
+    bool result = ar_assignment_instruction_evaluator__evaluate(own_evaluator, own_ast);
+    
+    // Then it should return true
+    assert(result == true);
+    
+    // And the value should be stored in memory
+    int count = ar__data__get_map_integer(own_memory, "count");
+    assert(count == 42);
+    
+    // Cleanup
+    ar__instruction_ast__destroy(own_ast);
+    ar_assignment_instruction_evaluator__destroy(own_evaluator);
+    ar__expression_evaluator__destroy(own_expr_eval);
+    ar__data__destroy(own_memory);
+}
 
 static void test_instruction_evaluator__evaluate_assignment_integer(void) {
     // Given an evaluator with empty memory
@@ -179,6 +233,12 @@ static void test_instruction_evaluator__evaluate_assignment_invalid_path(void) {
 
 int main(void) {
     printf("Starting assignment instruction_evaluator tests...\n");
+    
+    test_assignment_instruction_evaluator__create_destroy();
+    printf("test_assignment_instruction_evaluator__create_destroy passed!\n");
+    
+    test_assignment_instruction_evaluator__evaluate_with_instance();
+    printf("test_assignment_instruction_evaluator__evaluate_with_instance passed!\n");
     
     test_instruction_evaluator__evaluate_assignment_integer();
     printf("test_instruction_evaluator__evaluate_assignment_integer passed!\n");
