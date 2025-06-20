@@ -317,6 +317,13 @@ This order ensures clean separation of concerns across all modules.
 - [x] Ensure consistent opaque struct naming pattern: (Completed 2025-06-20)
   - [x] All evaluator structs should use ar_<module>_s pattern (All 4 refactored evaluators follow this)
   - [x] Update any inconsistent naming across modules (No inconsistencies found in refactored modules)
+- [ ] Fix incorrect typedef naming in refactored evaluators (HIGH PRIORITY):
+  - [ ] Update assignment_instruction_evaluator_t to ar_assignment_instruction_evaluator_t
+  - [ ] Update send_instruction_evaluator_t to ar_send_instruction_evaluator_t
+  - [ ] Update condition_instruction_evaluator_t to ar_condition_instruction_evaluator_t
+  - [ ] Update parse_instruction_evaluator_t to ar_parse_instruction_evaluator_t
+  - [ ] Update all function signatures and variable declarations that use these types
+  - [ ] Ensure all new evaluators follow the correct ar_<module>_t pattern from the start
 - [ ] Update instruction_evaluator to create and manage specialized evaluators:
   - [ ] Add fields to instruction_evaluator struct for all specialized evaluators
   - [ ] Create all specialized evaluators in ar__instruction_evaluator__create()
