@@ -266,12 +266,27 @@ agerun_instruction_evaluator
 │       ├──h──> agerun_expression_evaluator
 │       ├──h──> agerun_instruction_ast
 │       ├──h──> agerun_data
+│       ├──c──> agerun_destroy_agent_instruction_evaluator
+│       ├──c──> agerun_destroy_method_instruction_evaluator
+│       ├──c──> agerun_list
+│       └──c──> agerun_heap
+├──c──> agerun_destroy_agent_instruction_evaluator
+│       ├──h──> agerun_expression_evaluator
+│       ├──h──> agerun_instruction_ast
+│       ├──h──> agerun_data
+│       ├──c──> agerun_expression_parser
+│       ├──c──> agerun_expression_ast
+│       ├──c──> agerun_agency
+│       └──c──> agerun_heap
+├──c──> agerun_destroy_method_instruction_evaluator
+│       ├──h──> agerun_expression_evaluator
+│       ├──h──> agerun_instruction_ast
+│       ├──h──> agerun_data
 │       ├──c──> agerun_expression_parser
 │       ├──c──> agerun_expression_ast
 │       ├──c──> agerun_agency
 │       ├──c──> agerun_method
 │       ├──c──> agerun_methodology
-│       ├──c──> agerun_string
 │       └──c──> agerun_heap
 └──c──> agerun_heap
 

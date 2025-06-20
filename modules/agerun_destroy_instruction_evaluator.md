@@ -2,14 +2,11 @@
 
 ## Overview
 
-The destroy instruction evaluator module is responsible for evaluating destroy instructions in the AgeRun language. It handles both agent destruction (single argument) and method destruction with associated agents (two arguments).
+The destroy instruction evaluator module serves as a dispatcher for destruction operations in the AgeRun language. It determines whether to destroy an agent or a method based on the number of arguments and delegates to the appropriate specialized evaluator.
 
 ## Purpose
 
-This module extracts the destroy instruction evaluation logic from the main instruction evaluator, following the single responsibility principle. It provides specialized handling for:
-- Agent destruction by ID
-- Method destruction with automatic agent cleanup
-- Result assignment for destroy operations
+This module acts as the main entry point for destroy instruction evaluation, routing requests to either the destroy agent evaluator or destroy method evaluator based on argument count. This design follows the single responsibility principle by separating agent and method destruction logic into dedicated modules.
 
 ## Key Components
 
@@ -23,48 +20,46 @@ bool ar__destroy_instruction_evaluator__evaluate(
 );
 ```
 
-### Functionality
+### Dispatcher Functionality
 
-1. **Agent Destruction** (`destroy(agent_id)`):
-   - Evaluates the agent ID expression
-   - Validates it's an integer
-   - Calls `ar__agency__destroy_agent()`
-   - Returns success/failure status
+The module examines destroy instructions and routes them based on argument count:
+1. **One argument** (`destroy(agent_id)`) - Routes to `destroy_agent_instruction_evaluator`
+2. **Two arguments** (`destroy(method_name, version)`) - Routes to `destroy_method_instruction_evaluator`
+3. **Other counts** - Returns false (invalid)
 
-2. **Method Destruction** (`destroy(method_name, method_version)`):
-   - Evaluates method name and version expressions
-   - Validates both are strings
-   - Checks if any agents are using the method
-   - Sends `__sleep__` messages to all affected agents
-   - Destroys all agents using the method
-   - Unregisters the method from methodology
-   - Returns true if method existed, false otherwise
+### Architecture
 
-### Memory Management
+The module follows a clean dispatcher pattern:
+```
+destroy_instruction_evaluator (dispatcher)
+    ├── destroy_agent_instruction_evaluator (1 argument)
+    │   └── Handles agent destruction
+    └── destroy_method_instruction_evaluator (2 arguments)
+        └── Handles method destruction with agent cleanup
+```
 
-The module follows strict memory ownership rules:
-- Expression evaluation results are owned and must be destroyed
-- Helper functions create deep copies when needed
-- All allocated memory is properly freed on all code paths
+This separation provides:
+- Independent testing of agent and method destruction
+- Clear separation of concerns
+- Easier maintenance and extension
+- Reusable components
 
 ## Dependencies
 
-- `agerun_expression_evaluator`: For evaluating expressions
-- `agerun_expression_parser`: For parsing expression strings
-- `agerun_expression_ast`: For expression AST nodes
-- `agerun_agency`: For agent management
-- `agerun_methodology`: For method registration
-- `agerun_method`: For method references
+- `agerun_destroy_agent_instruction_evaluator`: For agent destruction
+- `agerun_destroy_method_instruction_evaluator`: For method destruction
+- `agerun_list`: For argument counting
 - `agerun_heap`: For memory tracking
 
 ## Implementation Details
 
-The module includes several helper functions:
-- `_parse_and_evaluate_expression()`: Parses and evaluates expression strings
-- `_evaluate_expression_ast()`: Evaluates parsed expression AST nodes
-- `_store_result_if_assigned()`: Stores results when assignment is specified
-- `_copy_data_value()`: Creates deep copies of data values
-- `_get_memory_key_path()`: Extracts memory key paths
+The dispatcher implementation is straightforward:
+1. Validates input parameters and AST type
+2. Gets function arguments to count them
+3. Based on count, delegates to appropriate evaluator
+4. Returns the result from the delegated evaluator
+
+The actual destruction logic is handled by the specialized modules, keeping this module focused solely on routing.
 
 ## Usage Example
 

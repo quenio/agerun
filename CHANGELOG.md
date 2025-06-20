@@ -79,6 +79,33 @@ This document tracks completed milestones and major achievements for the AgeRun 
       - ✅ Cycle 2: Instance-based evaluation using stored dependencies  
       - ✅ Cycle 3: Legacy function backward compatibility
     - ✅ Clean function naming: evaluate (instance-based) and evaluate_legacy (backward compatibility)
+  - ✅ Split destroy_instruction_evaluator into two specialized modules:
+    - ✅ Created destroy_agent_instruction_evaluator for agent destruction:
+      - ✅ Added opaque struct ar_destroy_agent_instruction_evaluator_s with correct typedef
+      - ✅ Implemented create function that stores dependencies (expression_evaluator, memory)
+      - ✅ Implemented destroy function for proper cleanup
+      - ✅ Updated evaluate function to use stored dependencies from instance
+      - ✅ Added legacy wrapper for backward compatibility with destroy_instruction_evaluator
+      - ✅ All tests pass with zero memory leaks (293 allocations, 0 active)
+      - ✅ Handles destroy(agent_id) instruction form
+    - ✅ Created destroy_method_instruction_evaluator for method destruction:
+      - ✅ Added opaque struct ar_destroy_method_instruction_evaluator_s with correct typedef
+      - ✅ Implemented create function that stores dependencies (expression_evaluator, memory)
+      - ✅ Implemented destroy function for proper cleanup
+      - ✅ Updated evaluate function to use stored dependencies from instance
+      - ✅ Added legacy wrapper for backward compatibility with destroy_instruction_evaluator
+      - ✅ All tests pass with zero memory leaks (315 allocations, 0 active)
+      - ✅ Handles destroy(method_name, version) instruction form
+      - ✅ Sends __sleep__ messages to agents before destroying their methods
+    - ✅ Updated destroy_instruction_evaluator to act as a dispatcher:
+      - ✅ Routes 1-argument calls to destroy_agent_instruction_evaluator
+      - ✅ Routes 2-argument calls to destroy_method_instruction_evaluator
+      - ✅ Returns false for invalid argument counts
+      - ✅ All original tests continue to pass (411 allocations, 0 active)
+    - ✅ Updated module documentation to reflect new architecture
+    - ✅ Updated modules/README.md with new dependency relationships
+    - ✅ Follows complete TDD methodology for both new modules
+    - ✅ Completed refactoring of ALL specialized evaluators to be instantiable
 
 ## 2025-06-20 (Earlier)
 - ✅ Completed extraction of instruction evaluator functions into dedicated modules:

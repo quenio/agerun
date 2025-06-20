@@ -1,0 +1,408 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <string.h>
+#include <inttypes.h>
+#include <unistd.h>
+#include "agerun_destroy_method_instruction_evaluator.h"
+#include "agerun_expression_evaluator.h"
+#include "agerun_instruction_ast.h"
+#include "agerun_data.h"
+#include "agerun_methodology.h"
+#include "agerun_agency.h"
+#include "agerun_system.h"
+#include "agerun_method.h"
+#include "agerun_heap.h"
+
+// Test create/destroy lifecycle
+static void test_destroy_method_instruction_evaluator__create_destroy(void) {
+    // Given dependencies
+    data_t *memory = ar__data__create_map();
+    assert(memory != NULL);
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    assert(expr_eval != NULL);
+    
+    // When creating a destroy method evaluator
+    ar_destroy_method_instruction_evaluator_t *evaluator = ar__destroy_method_instruction_evaluator__create(
+        expr_eval, memory
+    );
+    
+    // Then it should be created successfully
+    assert(evaluator != NULL);
+    
+    // When destroying the evaluator
+    ar__destroy_method_instruction_evaluator__destroy(evaluator);
+    
+    // Then no memory leaks should occur (verified by test framework)
+    
+    // Cleanup
+    ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(memory);
+}
+
+// Test evaluate with instance
+static void test_destroy_method_instruction_evaluator__evaluate_with_instance(void) {
+    // Clean up any existing persistence files
+    remove("methodology.agerun");
+    remove("agency.agerun");
+    
+    // Initialize system for method operations
+    ar__system__init(NULL, NULL);
+    
+    // Given an evaluator instance with a registered method
+    data_t *memory = ar__data__create_map();
+    assert(memory != NULL);
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    assert(expr_eval != NULL);
+    
+    ar_destroy_method_instruction_evaluator_t *evaluator = ar__destroy_method_instruction_evaluator__create(
+        expr_eval, memory
+    );
+    assert(evaluator != NULL);
+    
+    // Create a test method
+    ar__methodology__create_method("test_destroyer", "memory.x := 1", "1.0.0");
+    
+    // Verify method exists
+    method_t *method = ar__methodology__get_method("test_destroyer", "1.0.0");
+    assert(method != NULL);
+    
+    // Create destroy AST with method name and version
+    const char *args[] = {"\"test_destroyer\"", "\"1.0.0\""};
+    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        INST_AST_DESTROY, "destroy", args, 2, NULL
+    );
+    assert(ast != NULL);
+    
+    // When evaluating the destroy call using instance
+    bool result = ar__destroy_method_instruction_evaluator__evaluate(evaluator, ast);
+    
+    // Then it should succeed
+    assert(result == true);
+    
+    // And the method should be destroyed (not exist anymore)
+    method = ar__methodology__get_method("test_destroyer", "1.0.0");
+    assert(method == NULL);
+    
+    // Cleanup
+    ar__instruction_ast__destroy(ast);
+    ar__destroy_method_instruction_evaluator__destroy(evaluator);
+    ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(memory);
+    
+    // Clean up agency before shutting down
+    ar__agency__reset();
+    
+    // Shutdown system
+    ar__system__shutdown();
+    
+    // Clean up methodology after each test to prevent accumulation
+    ar__methodology__cleanup();
+}
+
+// Test legacy function
+static void test_destroy_method_instruction_evaluator__evaluate_legacy(void) {
+    // Clean up any existing persistence files
+    remove("methodology.agerun");
+    remove("agency.agerun");
+    
+    // Initialize system for method operations
+    ar__system__init(NULL, NULL);
+    
+    // Given dependencies
+    data_t *memory = ar__data__create_map();
+    assert(memory != NULL);
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    assert(expr_eval != NULL);
+    
+    // Create a test method
+    ar__methodology__create_method("test_destroyer", "memory.x := 1", "1.0.0");
+    
+    // Create destroy AST with method name and version
+    const char *args[] = {"\"test_destroyer\"", "\"1.0.0\""};
+    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        INST_AST_DESTROY, "destroy", args, 2, NULL
+    );
+    assert(ast != NULL);
+    
+    // When evaluating using legacy function
+    bool result = ar__destroy_method_instruction_evaluator__evaluate_legacy(
+        expr_eval, memory, ast
+    );
+    
+    // Then it should succeed
+    assert(result == true);
+    
+    // And the method should be destroyed
+    method_t *method = ar__methodology__get_method("test_destroyer", "1.0.0");
+    assert(method == NULL);
+    
+    // Cleanup
+    ar__instruction_ast__destroy(ast);
+    ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(memory);
+    
+    // Clean up agency before shutting down
+    ar__agency__reset();
+    
+    // Shutdown system
+    ar__system__shutdown();
+    
+    // Clean up methodology after each test to prevent accumulation
+    ar__methodology__cleanup();
+}
+
+// Test destroy method with agents using it
+static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void) {
+    // Clean up any existing persistence files
+    remove("methodology.agerun");
+    remove("agency.agerun");
+    
+    // Initialize system for method operations
+    ar__system__init(NULL, NULL);
+    
+    // Given an evaluator instance with a method and agents using it
+    data_t *memory = ar__data__create_map();
+    assert(memory != NULL);
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    assert(expr_eval != NULL);
+    
+    ar_destroy_method_instruction_evaluator_t *evaluator = ar__destroy_method_instruction_evaluator__create(
+        expr_eval, memory
+    );
+    assert(evaluator != NULL);
+    
+    // Create a test method and agents using it
+    ar__methodology__create_method("test_destroyer", "memory.x := 1", "1.0.0");
+    int64_t agent1 = ar__agency__create_agent("test_destroyer", "1.0.0", NULL);
+    int64_t agent2 = ar__agency__create_agent("test_destroyer", "1.0.0", NULL);
+    assert(agent1 > 0);
+    assert(agent2 > 0);
+    
+    // Process wake messages to avoid leaks
+    ar__system__process_next_message();
+    ar__system__process_next_message();
+    
+    // Create destroy AST with method name and version
+    const char *args[] = {"\"test_destroyer\"", "\"1.0.0\""};
+    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        INST_AST_DESTROY, "destroy", args, 2, "memory.result"
+    );
+    assert(ast != NULL);
+    
+    // When evaluating the destroy call
+    bool result = ar__destroy_method_instruction_evaluator__evaluate(evaluator, ast);
+    
+    // Then it should succeed
+    assert(result == true);
+    
+    // And the result should be true (1)
+    data_t *result_value = ar__data__get_map_data(memory, "result");
+    assert(result_value != NULL);
+    assert(ar__data__get_type(result_value) == DATA_INTEGER);
+    assert(ar__data__get_integer(result_value) == 1);
+    
+    // The agents should already be destroyed
+    // (In the current implementation, destroy() handles agent destruction immediately)
+    assert(ar__agency__agent_exists(agent1) == false);
+    assert(ar__agency__agent_exists(agent2) == false);
+    
+    // And the method should be destroyed
+    method_t *method = ar__methodology__get_method("test_destroyer", "1.0.0");
+    assert(method == NULL);
+    
+    // Cleanup
+    ar__instruction_ast__destroy(ast);
+    ar__destroy_method_instruction_evaluator__destroy(evaluator);
+    ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(memory);
+    
+    // Clean up agency before shutting down
+    ar__agency__reset();
+    
+    // Shutdown system
+    ar__system__shutdown();
+    
+    // Clean up methodology after each test to prevent accumulation
+    ar__methodology__cleanup();
+}
+
+// Test destroy nonexistent method
+static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void) {
+    // Clean up any existing persistence files
+    remove("methodology.agerun");
+    remove("agency.agerun");
+    
+    // Initialize system for method operations
+    ar__system__init(NULL, NULL);
+    
+    // Given an evaluator instance with no methods
+    data_t *memory = ar__data__create_map();
+    assert(memory != NULL);
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    assert(expr_eval != NULL);
+    
+    ar_destroy_method_instruction_evaluator_t *evaluator = ar__destroy_method_instruction_evaluator__create(
+        expr_eval, memory
+    );
+    assert(evaluator != NULL);
+    
+    // Create destroy AST with non-existent method
+    const char *args[] = {"\"nonexistent\"", "\"1.0.0\""};
+    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        INST_AST_DESTROY, "destroy", args, 2, "memory.result"
+    );
+    assert(ast != NULL);
+    
+    // When evaluating the destroy call
+    bool result = ar__destroy_method_instruction_evaluator__evaluate(evaluator, ast);
+    
+    // Then it should succeed (no error)
+    assert(result == true);
+    
+    // But the result should be false (0) since method doesn't exist
+    data_t *result_value = ar__data__get_map_data(memory, "result");
+    assert(result_value != NULL);
+    assert(ar__data__get_type(result_value) == DATA_INTEGER);
+    assert(ar__data__get_integer(result_value) == 0);
+    
+    // Cleanup
+    ar__instruction_ast__destroy(ast);
+    ar__destroy_method_instruction_evaluator__destroy(evaluator);
+    ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(memory);
+    
+    // Clean up agency before shutting down
+    ar__agency__reset();
+    
+    // Shutdown system
+    ar__system__shutdown();
+    
+    // Clean up methodology after each test to prevent accumulation
+    ar__methodology__cleanup();
+}
+
+// Test destroy with invalid method name type
+static void test_destroy_method_instruction_evaluator__evaluate_invalid_name_type(void) {
+    // Given an evaluator instance
+    data_t *memory = ar__data__create_map();
+    assert(memory != NULL);
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    assert(expr_eval != NULL);
+    
+    ar_destroy_method_instruction_evaluator_t *evaluator = ar__destroy_method_instruction_evaluator__create(
+        expr_eval, memory
+    );
+    assert(evaluator != NULL);
+    
+    // Create destroy AST with non-string method name (integer)
+    const char *args[] = {"123", "\"1.0.0\""};
+    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        INST_AST_DESTROY, "destroy", args, 2, NULL
+    );
+    assert(ast != NULL);
+    
+    // When evaluating the destroy call
+    bool result = ar__destroy_method_instruction_evaluator__evaluate(evaluator, ast);
+    
+    // Then it should fail due to invalid argument type
+    assert(result == false);
+    
+    // Cleanup
+    ar__instruction_ast__destroy(ast);
+    ar__destroy_method_instruction_evaluator__destroy(evaluator);
+    ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(memory);
+}
+
+// Test destroy with wrong number of arguments
+static void test_destroy_method_instruction_evaluator__evaluate_wrong_arg_count(void) {
+    // Given an evaluator instance
+    data_t *memory = ar__data__create_map();
+    assert(memory != NULL);
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    assert(expr_eval != NULL);
+    
+    ar_destroy_method_instruction_evaluator_t *evaluator = ar__destroy_method_instruction_evaluator__create(
+        expr_eval, memory
+    );
+    assert(evaluator != NULL);
+    
+    // Create destroy AST with 1 arg (should be 2 for method)
+    const char *args[] = {"\"method_name\""};
+    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        INST_AST_DESTROY, "destroy", args, 1, NULL
+    );
+    assert(ast != NULL);
+    
+    // When evaluating the destroy call
+    bool result = ar__destroy_method_instruction_evaluator__evaluate(evaluator, ast);
+    
+    // Then it should fail due to wrong argument count
+    assert(result == false);
+    
+    // Cleanup
+    ar__instruction_ast__destroy(ast);
+    ar__destroy_method_instruction_evaluator__destroy(evaluator);
+    ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(memory);
+}
+
+int main(void) {
+    printf("Starting destroy method instruction evaluator tests...\n");
+    
+    // Check if running from bin directory
+    char cwd[1024];
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+        size_t len = strlen(cwd);
+        if (len < 4 || strcmp(cwd + len - 4, "/bin") != 0) {
+            fprintf(stderr, "ERROR: Tests must be run from the bin directory!\n");
+            fprintf(stderr, "Current directory: %s\n", cwd);
+            fprintf(stderr, "Please run: cd bin && ./agerun_destroy_method_instruction_evaluator_tests\n");
+            return 1;
+        }
+    }
+    
+    // Clean up any existing state at the start
+    ar__system__shutdown();
+    ar__methodology__cleanup();
+    ar__agency__reset();
+    remove("methodology.agerun");
+    remove("agency.agerun");
+    
+    test_destroy_method_instruction_evaluator__create_destroy();
+    printf("test_destroy_method_instruction_evaluator__create_destroy passed!\n");
+    
+    test_destroy_method_instruction_evaluator__evaluate_with_instance();
+    printf("test_destroy_method_instruction_evaluator__evaluate_with_instance passed!\n");
+    
+    test_destroy_method_instruction_evaluator__evaluate_legacy();
+    printf("test_destroy_method_instruction_evaluator__evaluate_legacy passed!\n");
+    
+    test_destroy_method_instruction_evaluator__evaluate_with_agents();
+    printf("test_destroy_method_instruction_evaluator__evaluate_with_agents passed!\n");
+    
+    test_destroy_method_instruction_evaluator__evaluate_nonexistent();
+    printf("test_destroy_method_instruction_evaluator__evaluate_nonexistent passed!\n");
+    
+    test_destroy_method_instruction_evaluator__evaluate_invalid_name_type();
+    printf("test_destroy_method_instruction_evaluator__evaluate_invalid_name_type passed!\n");
+    
+    test_destroy_method_instruction_evaluator__evaluate_wrong_arg_count();
+    printf("test_destroy_method_instruction_evaluator__evaluate_wrong_arg_count passed!\n");
+    
+    printf("All destroy method instruction evaluator tests passed!\n");
+    
+    // Clean up after tests
+    ar__methodology__cleanup();
+    ar__agency__reset();
+    
+    return 0;
+}

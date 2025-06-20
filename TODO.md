@@ -302,9 +302,12 @@ This order ensures clean separation of concerns across all modules.
   - [x] Create method_instruction_evaluator module for evaluate_method (Completed 2025-06-20)
   - [x] Create agent_instruction_evaluator module for evaluate_agent (Completed 2025-06-20)
   - [x] Create destroy_instruction_evaluator module for evaluate_destroy (Completed 2025-06-20)
+    - [x] Split into destroy_agent_instruction_evaluator and destroy_method_instruction_evaluator (Completed 2025-06-20)
+    - [x] Updated destroy_instruction_evaluator to dispatch based on argument count
+    - [x] Both new modules follow instantiable pattern with create/destroy functions
   - [x] Update instruction_evaluator to delegate to specialized modules
   - [x] Ensure all tests continue to pass with refactored structure
-- [ ] Refactor specialized evaluators to be instantiable modules:
+- [x] Refactor specialized evaluators to be instantiable modules (Completed 2025-06-20):
   - [x] Update assignment_instruction_evaluator to have create/destroy functions
   - [x] Update send_instruction_evaluator to have create/destroy functions
   - [x] Update condition_instruction_evaluator to have create/destroy functions (Completed 2025-06-20)
@@ -312,17 +315,23 @@ This order ensures clean separation of concerns across all modules.
   - [x] Update build_instruction_evaluator to have create/destroy functions (Completed 2025-06-20)
   - [x] Update method_instruction_evaluator to have create/destroy functions (Completed 2025-06-20)
   - [x] Update agent_instruction_evaluator to have create/destroy functions (Completed 2025-06-20)
-  - [ ] Update destroy_instruction_evaluator to have create/destroy functions
-  - [x] Each evaluator should store its dependencies (expression_evaluator, memory, context) (Completed for assignment, send, condition, parse, build, method, agent)
-  - [x] Update evaluate functions to use stored dependencies instead of parameters (Completed for assignment, send, condition, parse, build, method, agent)
-  - [x] Write tests for create/destroy lifecycle of each evaluator (Completed for assignment, send, condition, parse, build, method, agent)
-  - [x] Ensure all evaluators use ar_<module>_s naming for opaque structs (per new guideline) (Completed for all 4 refactored evaluators)
+  - [x] Update destroy_instruction_evaluator - split into instantiable modules:
+    - [x] destroy_agent_instruction_evaluator with create/destroy functions (Completed 2025-06-20)
+    - [x] destroy_method_instruction_evaluator with create/destroy functions (Completed 2025-06-20)
+  - [x] Each evaluator should store its dependencies (expression_evaluator, memory, context) (Completed for all evaluators)
+  - [x] Update evaluate functions to use stored dependencies instead of parameters (Completed for all evaluators)
+  - [x] Write tests for create/destroy lifecycle of each evaluator (Completed for all evaluators)
+  - [x] Ensure all evaluators use ar_<module>_s naming for opaque structs (per new guideline) (Completed for all evaluators)
 - [ ] Remove legacy wrapper functions from specialized evaluators:
   - [ ] Remove ar_assignment_instruction_evaluator__evaluate_legacy after integration
   - [ ] Remove ar_send_instruction_evaluator__evaluate_legacy after integration
   - [ ] Remove ar_condition_instruction_evaluator__evaluate_legacy after integration
   - [ ] Remove ar_parse_instruction_evaluator__evaluate_legacy after integration
-  - [ ] Remove similar legacy functions from other evaluators once added
+  - [ ] Remove ar_build_instruction_evaluator__evaluate_legacy after integration
+  - [ ] Remove ar_method_instruction_evaluator__evaluate_legacy after integration
+  - [ ] Remove ar_agent_instruction_evaluator__evaluate_legacy after integration
+  - [ ] Remove ar_destroy_agent_instruction_evaluator__evaluate_legacy after integration
+  - [ ] Remove ar_destroy_method_instruction_evaluator__evaluate_legacy after integration
 - [x] Ensure consistent opaque struct naming pattern: (Completed 2025-06-20)
   - [x] All evaluator structs should use ar_<module>_s pattern (All 4 refactored evaluators follow this)
   - [x] Update any inconsistent naming across modules (No inconsistencies found in refactored modules)
