@@ -862,18 +862,69 @@ The expression evaluator module provides evaluation of expression ASTs against m
 
 The [instruction evaluator module](agerun_instruction_evaluator.md) provides execution of parsed instruction AST nodes:
 
-- **Instruction Execution**: Evaluates all instruction types from their AST representation
-- **Expression Integration**: Uses expression evaluator for evaluating expressions within instructions
-- **Assignment Operations**: Handles memory assignment with nested path support
-- **Agent Operations**: Manages agent creation, destruction, and messaging
-- **Method Operations**: Handles method creation and registration
-- **Control Flow**: Implements conditional execution with if instructions
-- **Template Operations**: Performs parse and build operations for string templating
-- **Memory Safety**: Strict ownership semantics with proper cleanup
-- **No Circular Dependencies**: Takes dependencies as parameters rather than importing high-level modules
-- **Depends on Expression Evaluator**: Uses for evaluating expressions within instructions
-- **Depends on Instruction AST**: Uses for accessing parsed instruction structures
-- **Depends on Agency/Methodology**: Uses for agent and method operations
+- **Instruction Execution**: Delegates evaluation to specialized modules for each instruction type
+- **Expression Integration**: Passes expression evaluator to specialized modules
+- **Modular Architecture**: Each instruction type handled by its own dedicated module
+- **Memory Safety**: Maintains strict ownership semantics across all modules
+- **No Direct Implementation**: All evaluation logic delegated to specialized modules
+
+The instruction evaluator now serves as a facade that delegates to the following specialized modules:
+
+#### Assignment Instruction Evaluator Module (`agerun_assignment_instruction_evaluator`)
+
+The [assignment instruction evaluator module](agerun_assignment_instruction_evaluator.md) handles memory assignment operations:
+- **Memory Assignment**: Supports nested path assignments (e.g., `memory.data.value`)
+- **Expression Evaluation**: Evaluates right-hand side expressions
+- **Ownership Transfer**: Properly transfers ownership of evaluated values
+
+#### Send Instruction Evaluator Module (`agerun_send_instruction_evaluator`)
+
+The [send instruction evaluator module](agerun_send_instruction_evaluator.md) handles agent messaging:
+- **Message Sending**: Sends messages to agents by ID
+- **Agent ID 0**: Special case for logging/no-op sends
+- **Memory Management**: Transfers message ownership to agency
+
+#### Condition Instruction Evaluator Module (`agerun_condition_instruction_evaluator`)
+
+The [condition instruction evaluator module](agerun_condition_instruction_evaluator.md) handles conditional execution:
+- **Boolean Evaluation**: Evaluates condition expressions to boolean
+- **Branch Selection**: Executes appropriate instruction list based on condition
+- **Truthiness**: Non-zero integers and non-empty strings are truthy
+
+#### Parse Instruction Evaluator Module (`agerun_parse_instruction_evaluator`)
+
+The [parse instruction evaluator module](agerun_parse_instruction_evaluator.md) handles template parsing:
+- **Template Parsing**: Extracts values from strings using templates
+- **Pattern Matching**: Supports placeholder extraction with `{name}` syntax
+- **Result Storage**: Stores extracted values in memory map
+
+#### Build Instruction Evaluator Module (`agerun_build_instruction_evaluator`)
+
+The [build instruction evaluator module](agerun_build_instruction_evaluator.md) handles string building:
+- **Template Building**: Constructs strings from templates with placeholders
+- **Value Substitution**: Replaces `{key}` with values from provided map
+- **Type Conversion**: Converts all value types to strings
+
+#### Method Instruction Evaluator Module (`agerun_method_instruction_evaluator`)
+
+The [method instruction evaluator module](agerun_method_instruction_evaluator.md) handles method creation:
+- **Method Registration**: Creates and registers new methods
+- **Version Management**: Supports semantic versioning
+- **Instruction Body**: Associates instruction strings with methods
+
+#### Agent Instruction Evaluator Module (`agerun_agent_instruction_evaluator`)
+
+The [agent instruction evaluator module](agerun_agent_instruction_evaluator.md) handles agent creation:
+- **Agent Creation**: Creates agents with specified method and context
+- **Context Handling**: Supports both memory and context references
+- **Wake Messages**: Agents receive `__wake__` message on creation
+
+#### Destroy Instruction Evaluator Module (`agerun_destroy_instruction_evaluator`)
+
+The [destroy instruction evaluator module](agerun_destroy_instruction_evaluator.md) handles destruction operations:
+- **Agent Destruction**: Destroys agents by ID
+- **Method Destruction**: Unregisters methods and destroys associated agents
+- **Sleep Messages**: Sends `__sleep__` to agents before method destruction
 
 ### Instruction Module (`agerun_instruction`)
 
