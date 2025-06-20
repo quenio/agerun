@@ -12,6 +12,59 @@
 #include <string.h>
 #include <stdio.h>
 
+/**
+ * Internal structure for method instruction evaluator
+ * 
+ * Note: This struct does not store a methodology reference because
+ * ar__methodology__register_method() uses a global singleton internally.
+ */
+struct ar_method_instruction_evaluator_s {
+    expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
+    data_t *mut_memory;                          /* Memory map (mutable reference) */
+};
+
+/**
+ * Creates a new method instruction evaluator instance
+ */
+ar_method_instruction_evaluator_t* ar__method_instruction_evaluator__create(
+    expression_evaluator_t *ref_expr_evaluator,
+    data_t *mut_memory
+) {
+    // Validate required parameters
+    if (ref_expr_evaluator == NULL || mut_memory == NULL) {
+        return NULL;
+    }
+    
+    // Allocate evaluator structure
+    ar_method_instruction_evaluator_t *evaluator = AR__HEAP__MALLOC(
+        sizeof(ar_method_instruction_evaluator_t), 
+        "method_instruction_evaluator"
+    );
+    if (evaluator == NULL) {
+        return NULL;
+    }
+    
+    // Initialize fields
+    evaluator->ref_expr_evaluator = ref_expr_evaluator;
+    evaluator->mut_memory = mut_memory;
+    
+    return evaluator;
+}
+
+/**
+ * Destroys a method instruction evaluator instance
+ */
+void ar__method_instruction_evaluator__destroy(
+    ar_method_instruction_evaluator_t *own_evaluator
+) {
+    if (own_evaluator == NULL) {
+        return;
+    }
+    
+    // Free the evaluator structure
+    AR__HEAP__FREE(own_evaluator);
+}
+
 /* Constants */
 static const char* MEMORY_PREFIX = "memory.";
 static const size_t MEMORY_PREFIX_LEN = 7;
@@ -272,12 +325,19 @@ static bool _evaluate_three_string_args(
     return false;
 }
 
-bool ar_method_instruction_evaluator__evaluate(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
+bool ar__method_instruction_evaluator__evaluate(
+    ar_method_instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 ) {
-    if (!mut_expr_evaluator || !mut_memory || !ref_ast) {
+    if (!mut_evaluator || !ref_ast) {
+        return false;
+    }
+    
+    // Extract dependencies from the evaluator instance
+    expression_evaluator_t *mut_expr_evaluator = mut_evaluator->ref_expr_evaluator;
+    data_t *mut_memory = mut_evaluator->mut_memory;
+    
+    if (!mut_expr_evaluator || !mut_memory) {
         return false;
     }
     
@@ -327,4 +387,26 @@ bool ar_method_instruction_evaluator__evaluate(
     }
     
     return success;
+}
+
+bool ar_method_instruction_evaluator__evaluate_legacy(
+    expression_evaluator_t *mut_expr_evaluator,
+    data_t *mut_memory,
+    const instruction_ast_t *ref_ast
+) {
+    // Create a temporary evaluator instance
+    ar_method_instruction_evaluator_t *evaluator = ar__method_instruction_evaluator__create(
+        mut_expr_evaluator, mut_memory
+    );
+    if (!evaluator) {
+        return false;
+    }
+    
+    // Call the new evaluate function
+    bool result = ar__method_instruction_evaluator__evaluate(evaluator, ref_ast);
+    
+    // Destroy the temporary instance
+    ar__method_instruction_evaluator__destroy(evaluator);
+    
+    return result;
 }

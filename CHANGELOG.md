@@ -48,6 +48,15 @@ This document tracks completed milestones and major achievements for the AgeRun 
     - ✅ All tests pass (existing memory leak in original tests persists)
     - ✅ Updated module documentation to reflect instantiable design
     - ✅ Follows complete TDD methodology with 3 cycles:
+  - ✅ Updated method_instruction_evaluator with create/destroy functions:
+    - ✅ Added opaque struct ar_method_instruction_evaluator_s
+    - ✅ Implemented create function that stores dependencies (expression_evaluator, memory)
+    - ✅ Implemented destroy function for proper cleanup
+    - ✅ Updated evaluate function to use stored dependencies from instance
+    - ✅ Added legacy wrapper for backward compatibility with instruction_evaluator
+    - ✅ All tests pass with zero memory leaks (7 tests, 341 allocations)
+    - ✅ Updated module documentation to reflect instantiable design
+    - ✅ Follows complete TDD methodology with 3 cycles:
       - ✅ Cycle 1: Create/destroy lifecycle
       - ✅ Cycle 2: Evaluate with instance
       - ✅ Cycle 3: Legacy wrapper

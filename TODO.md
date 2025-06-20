@@ -310,7 +310,7 @@ This order ensures clean separation of concerns across all modules.
   - [x] Update condition_instruction_evaluator to have create/destroy functions (Completed 2025-06-20)
   - [x] Update parse_instruction_evaluator to have create/destroy functions (Completed 2025-06-20)
   - [x] Update build_instruction_evaluator to have create/destroy functions (Completed 2025-06-20)
-  - [ ] Update method_instruction_evaluator to have create/destroy functions
+  - [x] Update method_instruction_evaluator to have create/destroy functions (Completed 2025-06-20)
   - [ ] Update agent_instruction_evaluator to have create/destroy functions
   - [ ] Update destroy_instruction_evaluator to have create/destroy functions
   - [x] Each evaluator should store its dependencies (expression_evaluator, memory, context) (Completed for assignment, send, condition, parse, build)

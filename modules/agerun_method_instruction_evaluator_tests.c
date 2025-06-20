@@ -4,6 +4,7 @@
 #include <string.h>
 #include <inttypes.h>
 #include <unistd.h>
+#include "agerun_method_instruction_evaluator.h"
 #include "agerun_instruction_evaluator.h"
 #include "agerun_expression_evaluator.h"
 #include "agerun_instruction_ast.h"
@@ -11,6 +12,103 @@
 #include "agerun_methodology.h"
 #include "agerun_agency.h"
 #include "agerun_system.h"
+
+static void test_method_instruction_evaluator__create_destroy(void) {
+    // Given memory and expression evaluator
+    data_t *memory = ar__data__create_map();
+    assert(memory != NULL);
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    assert(expr_eval != NULL);
+    
+    // When creating a method instruction evaluator
+    ar_method_instruction_evaluator_t *evaluator = ar__method_instruction_evaluator__create(
+        expr_eval, memory
+    );
+    
+    // Then it should be created successfully
+    assert(evaluator != NULL);
+    
+    // When destroying the evaluator
+    ar__method_instruction_evaluator__destroy(evaluator);
+    
+    // Then cleanup dependencies
+    ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(memory);
+}
+
+static void test_method_instruction_evaluator__evaluate_with_instance(void) {
+    // Given memory and expression evaluator
+    data_t *memory = ar__data__create_map();
+    assert(memory != NULL);
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    assert(expr_eval != NULL);
+    
+    // When creating a method instruction evaluator instance
+    ar_method_instruction_evaluator_t *evaluator = ar__method_instruction_evaluator__create(
+        expr_eval, memory
+    );
+    assert(evaluator != NULL);
+    
+    // When creating a method AST node
+    const char *args[] = {"\"test_method\"", "\"send(0, 42)\"", "\"1.0.0\""};
+    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        INST_AST_METHOD, "method", args, 3, NULL
+    );
+    assert(ast != NULL);
+    
+    // When evaluating using the instance
+    bool result = ar__method_instruction_evaluator__evaluate(evaluator, ast);
+    
+    // Then it should succeed
+    assert(result == true);
+    
+    // Cleanup
+    ar__instruction_ast__destroy(ast);
+    ar__method_instruction_evaluator__destroy(evaluator);
+    ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(memory);
+    
+    // Clean up the method we registered
+    ar__methodology__cleanup();
+}
+
+static void test_method_instruction_evaluator__evaluate_legacy(void) {
+    // Given memory and expression evaluator
+    data_t *memory = ar__data__create_map();
+    assert(memory != NULL);
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    assert(expr_eval != NULL);
+    
+    // When creating a method AST node with result assignment
+    const char *args[] = {"\"legacy_test\"", "\"send(0, 99)\"", "\"2.0.0\""};
+    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        INST_AST_METHOD, "method", args, 3, "memory.result"
+    );
+    assert(ast != NULL);
+    
+    // When evaluating using the legacy interface
+    bool result = ar_method_instruction_evaluator__evaluate_legacy(
+        expr_eval, memory, ast
+    );
+    
+    // Then it should succeed
+    assert(result == true);
+    
+    // And the result should be stored in memory
+    int created = ar__data__get_map_integer(memory, "result");
+    assert(created == 1);  // true is stored as 1
+    
+    // Cleanup
+    ar__instruction_ast__destroy(ast);
+    ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(memory);
+    
+    // Clean up the method we registered
+    ar__methodology__cleanup();
+}
 
 static void test_instruction_evaluator__evaluate_method_simple(void) {
     // Given an instruction evaluator with memory
@@ -213,6 +311,15 @@ int main(void) {
     ar__agency__reset();
     remove("methodology.agerun");
     remove("agency.agerun");
+    
+    test_method_instruction_evaluator__create_destroy();
+    printf("test_method_instruction_evaluator__create_destroy passed!\n");
+    
+    test_method_instruction_evaluator__evaluate_with_instance();
+    printf("test_method_instruction_evaluator__evaluate_with_instance passed!\n");
+    
+    test_method_instruction_evaluator__evaluate_legacy();
+    printf("test_method_instruction_evaluator__evaluate_legacy passed!\n");
     
     test_instruction_evaluator__evaluate_method_simple();
     printf("test_instruction_evaluator__evaluate_method_simple passed!\n");

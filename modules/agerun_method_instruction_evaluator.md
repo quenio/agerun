@@ -4,21 +4,55 @@
 
 The method instruction evaluator module is responsible for evaluating method creation instructions in the AgeRun language. It handles the registration of new methods with their associated instruction code.
 
+This module follows an instantiable design pattern where evaluators are created with their dependencies and can be reused for multiple evaluations.
+
 ## Purpose
 
 This module extracts the method instruction evaluation logic from the main instruction evaluator, following the single responsibility principle. It provides specialized handling for method creation and registration in the methodology.
 
 ## Key Components
 
+### Types
+
+```c
+typedef struct ar_method_instruction_evaluator_s ar_method_instruction_evaluator_t;
+```
+
+An opaque type representing a method instruction evaluator instance.
+
 ### Public Interface
 
 ```c
-bool ar_method_instruction_evaluator__evaluate(
+ar_method_instruction_evaluator_t* ar__method_instruction_evaluator__create(
+    expression_evaluator_t *ref_expr_evaluator,
+    data_t *mut_memory
+);
+```
+Creates a new method instruction evaluator that stores its dependencies.
+
+```c
+void ar__method_instruction_evaluator__destroy(
+    ar_method_instruction_evaluator_t *own_evaluator
+);
+```
+Destroys a method instruction evaluator and frees all resources.
+
+```c
+bool ar__method_instruction_evaluator__evaluate(
+    ar_method_instruction_evaluator_t *mut_evaluator,
+    const instruction_ast_t *ref_ast
+);
+```
+Evaluates a method instruction using the stored dependencies.
+
+```c
+bool ar_method_instruction_evaluator__evaluate_legacy(
     expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory,
     const instruction_ast_t *ref_ast
 );
 ```
+Legacy interface for backward compatibility (will be removed once instruction_evaluator is updated).
 
 ### Functionality
 
@@ -34,10 +68,14 @@ Key features:
 ### Memory Management
 
 The module follows strict memory ownership rules:
+- The evaluator instance owns its internal structure but not the dependencies
+- Expression evaluator and memory are borrowed references stored in the instance
 - Method name, instructions, and version are evaluated to owned strings
 - Method creation takes ownership of the instruction string
 - Method registration transfers ownership to methodology
 - All temporary values properly cleaned up
+- The create function returns ownership to the caller
+- The destroy function takes ownership and frees all resources
 
 ## Dependencies
 
@@ -63,18 +101,27 @@ The module:
 ## Usage Example
 
 ```c
-// Create evaluator
+// Create memory and expression evaluator
+data_t *memory = ar__data__create_map();
 expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+
+// Create method instruction evaluator
+ar_method_instruction_evaluator_t *method_eval = ar__method_instruction_evaluator__create(
+    expr_eval, memory
+);
 
 // Parse method instruction: method("echo", "send(0, message)", "1.0.0")
 instruction_ast_t *ast = ar__instruction_parser__parse_method(parser);
 
 // Evaluate the method creation
-bool success = ar_method_instruction_evaluator__evaluate(
-    expr_eval, memory, ast
-);
+bool success = ar__method_instruction_evaluator__evaluate(method_eval, ast);
 
 // Method "echo" version "1.0.0" is now registered
+
+// Cleanup
+ar__method_instruction_evaluator__destroy(method_eval);
+ar__expression_evaluator__destroy(expr_eval);
+ar__data__destroy(memory);
 ```
 
 ## Testing

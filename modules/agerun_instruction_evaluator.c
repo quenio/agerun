@@ -167,8 +167,8 @@ bool ar__instruction_evaluator__evaluate_method(
         return false;
     }
     
-    // Delegate to the method instruction evaluator module
-    return ar_method_instruction_evaluator__evaluate(
+    // Delegate to the method instruction evaluator module (using legacy interface for now)
+    return ar_method_instruction_evaluator__evaluate_legacy(
         mut_evaluator->ref_expr_evaluator,
         mut_evaluator->mut_memory,
         ref_ast
