@@ -148,7 +148,12 @@ Extract each instruction type evaluation into its own module:
   - [x] Moved all necessary helper functions for method evaluation
   - [x] Updated instruction_evaluator to delegate to new module
   - [x] All tests pass with no memory leaks
-- [ ] Create agent_instruction_evaluator module for evaluate_agent
+- [x] Create agent_instruction_evaluator module for evaluate_agent (Completed 2025-06-20)
+  - [x] Extracted evaluate_agent function from instruction_evaluator
+  - [x] Moved all necessary helper functions including _get_memory_or_context_reference
+  - [x] Updated instruction_evaluator to delegate to new module with context parameter
+  - [x] Fixed test cleanup to add ar__system__shutdown() at end of main
+  - [x] All tests pass with no memory leaks
 - [ ] Create destroy_instruction_evaluator module for evaluate_destroy
 - [ ] Update instruction_evaluator to use all new modules
 

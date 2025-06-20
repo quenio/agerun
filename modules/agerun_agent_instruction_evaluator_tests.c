@@ -271,9 +271,12 @@ int main(void) {
     
     printf("All agent instruction evaluator tests passed!\n");
     
-    // Clean up after tests
+    // Final cleanup to ensure no agents are left running
+    ar__system__shutdown();
     ar__methodology__cleanup();
     ar__agency__reset();
+    remove("methodology.agerun");
+    remove("agency.agerun");
     
     return 0;
 }

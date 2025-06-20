@@ -3,6 +3,14 @@
 This document tracks completed milestones and major achievements for the AgeRun project.
 
 ## 2025-06-20
+- ✅ Created agent_instruction_evaluator module:
+  - ✅ Extracted evaluate_agent function from instruction_evaluator
+  - ✅ Moved all necessary helper functions including _get_memory_or_context_reference
+  - ✅ Updated module interface to accept context parameter for proper memory/context access
+  - ✅ Updated instruction_evaluator to delegate to new module passing context
+  - ✅ Fixed test file to add ar__system__shutdown() at end of main to prevent agent execution after tests
+  - ✅ All tests pass with zero memory leaks (4 tests, 156 allocations)
+  - ✅ Follows established pattern from other instruction modules
 - ✅ Created method_instruction_evaluator module:
   - ✅ Extracted evaluate_method function from instruction_evaluator
   - ✅ Moved all necessary helper functions for method evaluation
