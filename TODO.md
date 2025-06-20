@@ -664,11 +664,17 @@ This order ensures clean separation of concerns across all modules.
   - [ ] Update after completing instantiable refactoring to avoid conflicts
 - [ ] Extract shared helper functions from specialized evaluators:
   - [ ] _evaluate_expression_ast appears in multiple evaluators
-  - [ ] Consider creating shared utility module for common evaluation helpers
-  - [ ] Avoid duplication across evaluator modules
+  - [ ] Discover proper abstractions that could become their own modules
+  - [ ] Avoid creating generic "utility" modules - find the right domain concepts
+  - [ ] Possible abstractions to consider:
+    - [ ] Expression evaluation orchestration (coordinating parser and evaluator)
+    - [ ] AST traversal and evaluation strategies
+    - [ ] Value ownership transformation patterns
+  - [ ] Each new module should have a clear, single responsibility
 - [ ] Eliminate _copy_data_value duplication across evaluators:
   - [ ] This function likely exists in multiple evaluator modules
-  - [ ] Should be moved to data module or a shared utility module
+  - [ ] Consider if this belongs in the data module as ar__data__deep_copy()
+  - [ ] Or identify if there's a missing abstraction around value cloning/ownership transfer
   - [ ] Ensure consistent implementation across all uses
 
 ### Low Priority
