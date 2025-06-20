@@ -109,6 +109,47 @@ else
     exit 1
 fi
 
+# Check for memory leaks in all memory report logs
+echo
+echo "Checking for memory leaks..."
+memory_reports=$(find bin -name "memory_report*.log" 2>/dev/null | sort)
+
+if [ -z "$memory_reports" ]; then
+    echo "Memory: No memory reports found"
+else
+    all_clean=true
+    leaky_tests=""
+    
+    for report in $memory_reports; do
+        if [ -f "$report" ]; then
+            # Check if there are actual memory leaks (not just intentional test leaks)
+            actual_leaks=$(grep -E "^Actual memory leaks: ([0-9]+)" "$report" 2>/dev/null | awk '{print $4}')
+            
+            # If we can't find the "Actual memory leaks" line, fall back to old behavior
+            if [ -z "$actual_leaks" ]; then
+                if ! grep -q "No memory leaks detected" "$report" 2>/dev/null; then
+                    all_clean=false
+                    test_name=$(basename "$report" .log | sed 's/memory_report_//')
+                    leaky_tests="$leaky_tests $test_name"
+                fi
+            # If we found it and it's greater than 0, we have real leaks
+            elif [ "$actual_leaks" -gt 0 ]; then
+                all_clean=false
+                test_name=$(basename "$report" .log | sed 's/memory_report_//')
+                leaky_tests="$leaky_tests $test_name"
+            fi
+        fi
+    done
+    
+    if $all_clean; then
+        echo "Memory: No leaks detected ✓"
+    else
+        echo "Memory: LEAKS DETECTED in:$leaky_tests"
+        echo "Check memory_report_*.log files in bin/"
+        exit 1
+    fi
+fi
+
 # Step 5: Run executable
 echo
 echo "Running executable..."
@@ -288,42 +329,3 @@ fi
 echo
 echo "=== Build Summary ==="
 echo "Completed at $(date)"
-
-# Check for memory leaks in all memory report logs
-memory_reports=$(find bin -name "memory_report*.log" 2>/dev/null | sort)
-
-if [ -z "$memory_reports" ]; then
-    echo "Memory: No memory reports found"
-else
-    all_clean=true
-    leaky_tests=""
-    
-    for report in $memory_reports; do
-        if [ -f "$report" ]; then
-            # Check if there are actual memory leaks (not just intentional test leaks)
-            actual_leaks=$(grep -E "^Actual memory leaks: ([0-9]+)" "$report" 2>/dev/null | awk '{print $4}')
-            
-            # If we can't find the "Actual memory leaks" line, fall back to old behavior
-            if [ -z "$actual_leaks" ]; then
-                if ! grep -q "No memory leaks detected" "$report" 2>/dev/null; then
-                    all_clean=false
-                    test_name=$(basename "$report" .log | sed 's/memory_report_//')
-                    leaky_tests="$leaky_tests $test_name"
-                fi
-            # If we found it and it's greater than 0, we have real leaks
-            elif [ "$actual_leaks" -gt 0 ]; then
-                all_clean=false
-                test_name=$(basename "$report" .log | sed 's/memory_report_//')
-                leaky_tests="$leaky_tests $test_name"
-            fi
-        fi
-    done
-    
-    if $all_clean; then
-        echo "Memory: No leaks detected ✓"
-    else
-        echo "Memory: LEAKS DETECTED in:$leaky_tests"
-        echo "Check memory_report_*.log files in bin/"
-        exit 1
-    fi
-fi
