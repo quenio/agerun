@@ -3,6 +3,11 @@
 This document tracks completed milestones and major achievements for the AgeRun project.
 
 ## 2025-06-20
+- ✅ Fixed memory leak in build_instruction_evaluator:
+  - ✅ Added _get_memory_reference() helper function to check for simple memory references
+  - ✅ Only destroy values_data if it was created (not a borrowed reference)
+  - ✅ Pattern adopted from agent_instruction_evaluator module
+  - ✅ All 44 tests now pass with zero memory leaks
 - ✅ Continuing refactoring of specialized evaluators to be instantiable modules:
   - ✅ Updated assignment_instruction_evaluator with create/destroy functions:
     - ✅ Added opaque struct ar_assignment_instruction_evaluator_s

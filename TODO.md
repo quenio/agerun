@@ -125,14 +125,14 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Immediate Priorities (Next Steps)
 
-### CRITICAL - Fix Memory Leak in build_instruction_evaluator Tests
-- [ ] Investigate and fix memory leak detected in build_instruction_evaluator tests
-  - [ ] Memory leak: 34 bytes (string data structure + string value)
-  - [ ] Allocated at: modules/agerun_data.c:66 and :72
-  - [ ] Leak exists in original tests (not caused by refactoring)
-  - [ ] Check all test paths for proper cleanup of created strings
-  - [ ] Verify ar__data__destroy() is called for all created data objects
-  - [ ] Focus on test_instruction_evaluator__evaluate_build_invalid_args function
+### CRITICAL - Fix Memory Leak in build_instruction_evaluator Tests (Completed 2025-06-20)
+- [x] Investigated and fixed memory leak detected in build_instruction_evaluator tests
+  - [x] Memory leak: 34 bytes (string data structure + string value)
+  - [x] Allocated at: modules/agerun_data.c:66 and :72
+  - [x] Leak existed in original code when evaluating non-map values
+  - [x] Added _get_memory_reference() helper to check for simple memory references
+  - [x] Only destroy values_data if it was created (not a borrowed reference)
+  - [x] Pattern adopted from agent_instruction_evaluator module
 
 ### HIGH - Complete Instruction Module Refactoring FIRST (In Progress)
 Before we can complete the expression refactoring, we must extract instruction parsing and evaluation:

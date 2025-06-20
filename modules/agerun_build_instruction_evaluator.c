@@ -300,6 +300,37 @@ static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluat
 }
 
 /**
+ * Checks if an expression is a simple memory reference
+ * 
+ * @param mut_memory The memory map (mutable reference)
+ * @param ref_expr The expression string (borrowed reference)
+ * @return The referenced data or NULL if not a simple reference
+ * @note Ownership: Returns borrowed reference
+ */
+static const data_t* _get_memory_reference(
+    data_t *mut_memory,
+    const char *ref_expr
+) {
+    if (!ref_expr || !mut_memory) {
+        return NULL;
+    }
+    
+    // Check if it's a simple "memory" expression
+    if (strcmp(ref_expr, "memory") == 0) {
+        return mut_memory;
+    }
+    
+    // Check if it's a memory.path expression
+    if (strncmp(ref_expr, MEMORY_PREFIX, MEMORY_PREFIX_LEN) == 0) {
+        const char *key_path = ref_expr + MEMORY_PREFIX_LEN;
+        return ar__data__get_map_data(mut_memory, key_path);
+    }
+    
+    // Not a simple memory access
+    return NULL;
+}
+
+/**
  * Parses and evaluates an expression string
  * 
  * @param mut_expr_evaluator Expression evaluator (mutable reference)
@@ -413,11 +444,19 @@ bool ar__build_instruction_evaluator__evaluate(
         return false;
     }
     
-    // Parse and evaluate values expression (should be a map)
-    // NOTE: This might return a reference to existing memory data, not a new object
-    data_t *values_data = _parse_and_evaluate_expression(mut_expr_evaluator, ref_values_expr);
-    if (!values_data || ar__data__get_type(values_data) != DATA_MAP) {
-        // We don't know if we own this, so we can't destroy it
+    // Check if values expression is a simple memory reference
+    const data_t *ref_values_data = _get_memory_reference(mut_memory, ref_values_expr);
+    data_t *own_values_data = NULL;
+    
+    if (!ref_values_data) {
+        // Not a simple memory access, evaluate the expression
+        own_values_data = _parse_and_evaluate_expression(mut_expr_evaluator, ref_values_expr);
+        ref_values_data = own_values_data; // Use the evaluated result
+    }
+    
+    // Validate it's a map
+    if (!ref_values_data || ar__data__get_type(ref_values_data) != DATA_MAP) {
+        if (own_values_data) ar__data__destroy(own_values_data);
         ar__data__destroy(own_template_data);
         _cleanup_function_args(items, own_args);
         return false;
@@ -432,7 +471,7 @@ bool ar__build_instruction_evaluator__evaluate(
     size_t result_size = strlen(template_str) * 2 + 256;
     char *own_result_str = AR__HEAP__MALLOC(result_size, "Build result");
     if (!own_result_str) {
-        // values_data is a reference, don't destroy it
+        if (own_values_data) ar__data__destroy(own_values_data);
         ar__data__destroy(own_template_data);
         return false;
     }
@@ -443,13 +482,13 @@ bool ar__build_instruction_evaluator__evaluate(
     while (*template_ptr) {
         if (*template_ptr == '{') {
             // Process placeholder
-            if (!_process_placeholder(template_ptr, values_data, 
+            if (!_process_placeholder(template_ptr, ref_values_data, 
                                       &own_result_str, &result_size, &result_pos, &template_ptr)) {
                 // If no closing brace found, just copy the '{' character
                 char *new_buffer = _ensure_buffer_capacity(own_result_str, &result_size, result_pos + 2);
                 if (!new_buffer) {
                     AR__HEAP__FREE(own_result_str);
-                    // values_data is a reference, don't destroy it
+                    if (own_values_data) ar__data__destroy(own_values_data);
                     ar__data__destroy(own_template_data);
                     return false;
                 }
@@ -462,7 +501,7 @@ bool ar__build_instruction_evaluator__evaluate(
             char *new_buffer = _ensure_buffer_capacity(own_result_str, &result_size, result_pos + 2);
             if (!new_buffer) {
                 AR__HEAP__FREE(own_result_str);
-                // values_data is a reference, don't destroy it
+                if (own_values_data) ar__data__destroy(own_values_data);
                 ar__data__destroy(own_template_data);
                 return false;
             }
@@ -479,12 +518,13 @@ bool ar__build_instruction_evaluator__evaluate(
     AR__HEAP__FREE(own_result_str);
     
     if (!own_result) {
-        // values_data is a reference, don't destroy it
+        if (own_values_data) ar__data__destroy(own_values_data);
         ar__data__destroy(own_template_data);
         return false;
     }
     
-    // Clean up (values_data is a reference, don't destroy it)
+    // Clean up
+    if (own_values_data) ar__data__destroy(own_values_data);
     ar__data__destroy(own_template_data);
     
     // Store result if assigned, otherwise just destroy it
