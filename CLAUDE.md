@@ -721,7 +721,7 @@ When reviewing tasks:
 **Critical Reminders**:
 - CHANGELOG update is MANDATORY for every commit that completes tasks
 - Always check this checklist BEFORE running `git commit`
-- Build this mental model: Changes → Tests → Documentation → TODO → CHANGELOG → Check for backups → Commit
+- Build this mental model: TDD Cycle → Documentation → TODO → CHANGELOG → Check for backups → Commit
 - Treat CHANGELOG updates as part of the work, not as optional documentation
 - NEVER commit temporary or backup files to version control
 
