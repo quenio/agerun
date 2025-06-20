@@ -658,6 +658,18 @@ This order ensures clean separation of concerns across all modules.
 - [ ] Reduce code duplication
 - [ ] Improve function naming consistency
 - [ ] Add comprehensive unit tests for each extracted function
+- [ ] Update specialized evaluator function names to use ar_ prefix instead of ar__:
+  - [ ] All public functions should follow ar_<module>__<function> pattern (per 2025-06-19 update)
+  - [ ] This affects all instruction evaluator modules
+  - [ ] Update after completing instantiable refactoring to avoid conflicts
+- [ ] Extract shared helper functions from specialized evaluators:
+  - [ ] _evaluate_expression_ast appears in multiple evaluators
+  - [ ] Consider creating shared utility module for common evaluation helpers
+  - [ ] Avoid duplication across evaluator modules
+- [ ] Eliminate _copy_data_value duplication across evaluators:
+  - [ ] This function likely exists in multiple evaluator modules
+  - [ ] Should be moved to data module or a shared utility module
+  - [ ] Ensure consistent implementation across all uses
 
 ### Low Priority
 - [ ] Add performance benchmarks
