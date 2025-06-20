@@ -22,6 +22,47 @@
 static const char MEMORY_PREFIX[] = "memory.";
 static const size_t MEMORY_PREFIX_LEN = sizeof(MEMORY_PREFIX) - 1;
 
+/* Opaque struct definition */
+struct ar_build_instruction_evaluator_s {
+    expression_evaluator_t *ref_expr_evaluator;
+    data_t *mut_memory;
+};
+
+/**
+ * Creates a new build instruction evaluator
+ */
+ar_build_instruction_evaluator_t* ar__build_instruction_evaluator__create(
+    expression_evaluator_t *ref_expr_evaluator,
+    data_t *mut_memory
+) {
+    if (!ref_expr_evaluator || !mut_memory) {
+        return NULL;
+    }
+    
+    ar_build_instruction_evaluator_t *own_evaluator = AR__HEAP__MALLOC(sizeof(ar_build_instruction_evaluator_t), "build_instruction_evaluator");
+    if (!own_evaluator) {
+        return NULL;
+    }
+    
+    own_evaluator->ref_expr_evaluator = ref_expr_evaluator;
+    own_evaluator->mut_memory = mut_memory;
+    
+    return own_evaluator;  // Ownership transferred to caller
+}
+
+/**
+ * Destroys a build instruction evaluator
+ */
+void ar__build_instruction_evaluator__destroy(
+    ar_build_instruction_evaluator_t *own_evaluator
+) {
+    if (!own_evaluator) {
+        return;
+    }
+    
+    AR__HEAP__FREE(own_evaluator);
+}
+
 /**
  * Extracts function arguments from AST node
  * 
@@ -331,16 +372,18 @@ static bool _store_result_if_assigned(
 }
 
 /**
- * Evaluates a build instruction
+ * Evaluates a build instruction using the stored dependencies
  */
-bool ar_build_instruction_evaluator__evaluate(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
+bool ar__build_instruction_evaluator__evaluate(
+    ar_build_instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 ) {
-    if (!mut_expr_evaluator || !mut_memory || !ref_ast) {
+    if (!mut_evaluator || !ref_ast) {
         return false;
     }
+    
+    expression_evaluator_t *mut_expr_evaluator = mut_evaluator->ref_expr_evaluator;
+    data_t *mut_memory = mut_evaluator->mut_memory;
     
     // Verify this is a build AST node
     if (ar__instruction_ast__get_type(ref_ast) != INST_AST_BUILD) {
@@ -446,4 +489,40 @@ bool ar_build_instruction_evaluator__evaluate(
     
     // Store result if assigned, otherwise just destroy it
     return _store_result_if_assigned(mut_memory, ref_ast, own_result);
+}
+
+/**
+ * Evaluates a build instruction (legacy interface)
+ */
+bool ar_build_instruction_evaluator__evaluate_legacy(
+    expression_evaluator_t *mut_expr_evaluator,
+    data_t *mut_memory,
+    const instruction_ast_t *ref_ast
+) {
+    ar_build_instruction_evaluator_t *evaluator = ar__build_instruction_evaluator__create(
+        mut_expr_evaluator, mut_memory
+    );
+    if (!evaluator) {
+        return false;
+    }
+    
+    bool result = ar__build_instruction_evaluator__evaluate(evaluator, ref_ast);
+    ar__build_instruction_evaluator__destroy(evaluator);
+    
+    return result;
+}
+
+/**
+ * Evaluates a build instruction (old name for compatibility)
+ */
+bool ar_build_instruction_evaluator__evaluate(
+    expression_evaluator_t *mut_expr_evaluator,
+    data_t *mut_memory,
+    const instruction_ast_t *ref_ast
+) {
+    return ar_build_instruction_evaluator__evaluate_legacy(
+        mut_expr_evaluator,
+        mut_memory,
+        ref_ast
+    );
 }

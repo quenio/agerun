@@ -125,6 +125,15 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Immediate Priorities (Next Steps)
 
+### CRITICAL - Fix Memory Leak in build_instruction_evaluator Tests
+- [ ] Investigate and fix memory leak detected in build_instruction_evaluator tests
+  - [ ] Memory leak: 34 bytes (string data structure + string value)
+  - [ ] Allocated at: modules/agerun_data.c:66 and :72
+  - [ ] Leak exists in original tests (not caused by refactoring)
+  - [ ] Check all test paths for proper cleanup of created strings
+  - [ ] Verify ar__data__destroy() is called for all created data objects
+  - [ ] Focus on test_instruction_evaluator__evaluate_build_invalid_args function
+
 ### HIGH - Complete Instruction Module Refactoring FIRST (In Progress)
 Before we can complete the expression refactoring, we must extract instruction parsing and evaluation:
 1. **First**: Create instruction_parser module to extract parsing from instruction module (Completed)
@@ -154,8 +163,8 @@ Extract each instruction type evaluation into its own module:
   - [x] Updated instruction_evaluator to delegate to new module with context parameter
   - [x] Fixed test cleanup to add ar__system__shutdown() at end of main
   - [x] All tests pass with no memory leaks
-- [ ] Create destroy_instruction_evaluator module for evaluate_destroy
-- [ ] Update instruction_evaluator to use all new modules
+- [x] Create destroy_instruction_evaluator module for evaluate_destroy (Completed 2025-06-20)
+- [x] Update instruction_evaluator to use all new modules (Completed 2025-06-20)
 
 ### THEN - Complete Expression Module Integration
 Once instruction refactoring is done, we can properly integrate everything:
@@ -300,13 +309,13 @@ This order ensures clean separation of concerns across all modules.
   - [x] Update send_instruction_evaluator to have create/destroy functions
   - [x] Update condition_instruction_evaluator to have create/destroy functions (Completed 2025-06-20)
   - [x] Update parse_instruction_evaluator to have create/destroy functions (Completed 2025-06-20)
-  - [ ] Update build_instruction_evaluator to have create/destroy functions
+  - [x] Update build_instruction_evaluator to have create/destroy functions (Completed 2025-06-20)
   - [ ] Update method_instruction_evaluator to have create/destroy functions
   - [ ] Update agent_instruction_evaluator to have create/destroy functions
   - [ ] Update destroy_instruction_evaluator to have create/destroy functions
-  - [x] Each evaluator should store its dependencies (expression_evaluator, memory, context) (Completed for assignment, send, condition, parse)
-  - [x] Update evaluate functions to use stored dependencies instead of parameters (Completed for assignment, send, condition, parse)
-  - [x] Write tests for create/destroy lifecycle of each evaluator (Completed for assignment, send, condition, parse)
+  - [x] Each evaluator should store its dependencies (expression_evaluator, memory, context) (Completed for assignment, send, condition, parse, build)
+  - [x] Update evaluate functions to use stored dependencies instead of parameters (Completed for assignment, send, condition, parse, build)
+  - [x] Write tests for create/destroy lifecycle of each evaluator (Completed for assignment, send, condition, parse, build)
   - [x] Ensure all evaluators use ar_<module>_s naming for opaque structs (per new guideline) (Completed for all 4 refactored evaluators)
 - [ ] Remove legacy wrapper functions from specialized evaluators:
   - [ ] Remove ar_assignment_instruction_evaluator__evaluate_legacy after integration
