@@ -3,6 +3,23 @@
 This document tracks completed milestones and major achievements for the AgeRun project.
 
 ## 2025-06-20
+- ✅ Removed destroy_instruction_evaluator module:
+  - ✅ Moved dispatcher logic directly into instruction_evaluator's evaluate_destroy function
+  - ✅ Dispatcher routes based on argument count:
+    - 1 argument: calls destroy_agent_instruction_evaluator
+    - 2 arguments: calls destroy_method_instruction_evaluator
+  - ✅ Deleted destroy_instruction_evaluator module files (.h, .c, _tests.c, .md)
+  - ✅ Updated modules/README.md to remove references
+  - ✅ Updated instruction_evaluator.md to document dispatcher behavior
+  - ✅ All tests continue to pass with zero memory leaks
+- ✅ Started updating instruction_evaluator to manage specialized evaluator instances:
+  - ✅ TDD Cycle 1: Add assignment evaluator instance storage
+    - ✅ Red phase: Added failing test for getter function
+    - ✅ Green phase: Added instance field, creation, destruction, and getter
+    - ✅ Refactor phase: Code is clean, follows patterns
+  - ✅ instruction_evaluator now creates and stores assignment_evaluator instance
+  - ✅ Added ar__instruction_evaluator__get_assignment_evaluator() getter function
+  - ✅ All tests pass with zero memory leaks
 - ✅ Fixed memory leak in build_instruction_evaluator:
   - ✅ Added _get_memory_reference() helper function to check for simple memory references
   - ✅ Only destroy values_data if it was created (not a borrowed reference)

@@ -11,6 +11,7 @@
 #include "agerun_methodology.h"
 #include "agerun_agency.h"
 #include "agerun_system.h"
+#include "agerun_assignment_instruction_evaluator.h"
 
 static void test_instruction_evaluator__create_destroy(void) {
     // Given an expression evaluator and memory/context/message data
@@ -110,6 +111,31 @@ static void test_instruction_evaluator__create_with_null_memory(void) {
     ar__data__destroy(dummy_memory);
 }
 
+static void test_instruction_evaluator__stores_assignment_evaluator_instance(void) {
+    // Given an instruction evaluator
+    data_t *memory = ar__data__create_map();
+    assert(memory != NULL);
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    assert(expr_eval != NULL);
+    
+    // When creating an instruction evaluator
+    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+        expr_eval, memory, NULL, NULL
+    );
+    assert(evaluator != NULL);
+    
+    // Then it should have created and stored an assignment evaluator instance
+    // This test will fail until we add the instance storage
+    assignment_instruction_evaluator_t *assignment_eval = ar__instruction_evaluator__get_assignment_evaluator(evaluator);
+    assert(assignment_eval != NULL);
+    
+    // Cleanup
+    ar__instruction_evaluator__destroy(evaluator);
+    ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(memory);
+}
+
 int main(void) {
     printf("Starting instruction_evaluator create/destroy tests...\n");
     
@@ -127,6 +153,9 @@ int main(void) {
     
     test_instruction_evaluator__create_with_null_memory();
     printf("test_instruction_evaluator__create_with_null_memory passed!\n");
+    
+    test_instruction_evaluator__stores_assignment_evaluator_instance();
+    printf("test_instruction_evaluator__stores_assignment_evaluator_instance passed!\n");
     
     printf("All instruction_evaluator create/destroy tests passed!\n");
     

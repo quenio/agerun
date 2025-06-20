@@ -35,6 +35,7 @@ struct instruction_evaluator_s {
     data_t *mut_memory;                          /* Memory map (mutable reference) */
     data_t *ref_context;                         /* Context map (borrowed reference, can be NULL) */
     data_t *ref_message;                         /* Message data (borrowed reference, can be NULL) */
+    assignment_instruction_evaluator_t *own_assignment_evaluator;  /* Assignment evaluator instance (owned) */
 };
 
 /**
@@ -63,6 +64,16 @@ instruction_evaluator_t* ar__instruction_evaluator__create(
     evaluator->ref_context = ref_context;
     evaluator->ref_message = ref_message;
     
+    // Create assignment evaluator instance
+    evaluator->own_assignment_evaluator = ar_assignment_instruction_evaluator__create(
+        ref_expr_evaluator,
+        mut_memory
+    );
+    if (evaluator->own_assignment_evaluator == NULL) {
+        AR__HEAP__FREE(evaluator);
+        return NULL;
+    }
+    
     return evaluator;
 }
 
@@ -74,8 +85,25 @@ void ar__instruction_evaluator__destroy(instruction_evaluator_t *own_evaluator) 
         return;
     }
     
+    // Destroy owned evaluator instances
+    if (own_evaluator->own_assignment_evaluator != NULL) {
+        ar_assignment_instruction_evaluator__destroy(own_evaluator->own_assignment_evaluator);
+    }
+    
     // Free the evaluator structure
     AR__HEAP__FREE(own_evaluator);
+}
+
+/**
+ * Gets the assignment evaluator instance
+ */
+assignment_instruction_evaluator_t* ar__instruction_evaluator__get_assignment_evaluator(
+    const instruction_evaluator_t *ref_evaluator
+) {
+    if (ref_evaluator == NULL) {
+        return NULL;
+    }
+    return ref_evaluator->own_assignment_evaluator;
 }
 
 

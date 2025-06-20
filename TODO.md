@@ -344,11 +344,21 @@ This order ensures clean separation of concerns across all modules.
   - [ ] Update all function signatures and variable declarations that use these types
   - [ ] Ensure all new evaluators follow the correct ar_<module>_t pattern from the start
 - [ ] Update instruction_evaluator to create and manage specialized evaluators:
-  - [ ] Add fields to instruction_evaluator struct for all specialized evaluators
-  - [ ] Create all specialized evaluators in ar__instruction_evaluator__create()
-  - [ ] Pass dependencies (expression_evaluator, memory, context) to each specialized evaluator
-  - [ ] Destroy all specialized evaluators in ar__instruction_evaluator__destroy()
+  - [x] Add fields to instruction_evaluator struct for all specialized evaluators (Started 2025-06-20)
+    - [x] Added assignment_instruction_evaluator_t field
+    - [ ] Add remaining evaluator fields (send, condition, parse, build, method, agent, destroy_agent, destroy_method)
+  - [x] Create all specialized evaluators in ar__instruction_evaluator__create() (Started 2025-06-20)
+    - [x] Create assignment evaluator instance
+    - [ ] Create remaining evaluator instances
+  - [x] Pass dependencies (expression_evaluator, memory, context) to each specialized evaluator (Started 2025-06-20)
+    - [x] Pass dependencies to assignment evaluator
+    - [ ] Pass dependencies to remaining evaluators
+  - [x] Destroy all specialized evaluators in ar__instruction_evaluator__destroy() (Started 2025-06-20)
+    - [x] Destroy assignment evaluator instance
+    - [ ] Destroy remaining evaluator instances
   - [ ] Update delegation functions to use created evaluator instances
+    - [ ] Update evaluate_assignment to use instance
+    - [ ] Update other evaluate functions to use instances
   - [ ] Note: destroy() dispatch logic is already integrated in evaluate_destroy function
   - [ ] Ensure proper initialization order and cleanup
   - [ ] Remove legacy wrapper functions from specialized evaluators once integration is complete

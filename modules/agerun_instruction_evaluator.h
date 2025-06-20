@@ -18,6 +18,7 @@
 #include "agerun_instruction_ast.h"
 #include "agerun_data.h"
 #include "agerun_expression_evaluator.h"
+#include "agerun_assignment_instruction_evaluator.h"
 
 /**
  * Opaque type for instruction evaluator
@@ -47,6 +48,16 @@ instruction_evaluator_t* ar__instruction_evaluator__create(
  * @note Ownership: Takes ownership and destroys the evaluator
  */
 void ar__instruction_evaluator__destroy(instruction_evaluator_t *own_evaluator);
+
+/**
+ * Gets the assignment evaluator instance
+ * @param ref_evaluator The instruction evaluator (borrowed reference)
+ * @return The assignment evaluator instance (borrowed reference)
+ * @note Ownership: Returns a borrowed reference, do not destroy
+ */
+assignment_instruction_evaluator_t* ar__instruction_evaluator__get_assignment_evaluator(
+    const instruction_evaluator_t *ref_evaluator
+);
 
 /**
  * Evaluates an assignment instruction AST node
