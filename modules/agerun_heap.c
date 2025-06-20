@@ -320,8 +320,8 @@ void ar__heap__memory_report(void) {
 
     // Only print warning to stderr for non-intentional leaks
     if (actual_leaks > 0) {
-        fprintf(stderr, "WARNING: %zu memory leaks detected (%zu bytes). See heap_memory_report.log for details.\n",
-                actual_leaks, actual_bytes);
+        fprintf(stderr, "WARNING: %zu memory leaks detected (%zu bytes). See %s for details.\n",
+                actual_leaks, actual_bytes, report_path);
 
         if (intentional_leaks > 0) {
             fprintf(stderr, "NOTE: %zu additional intentional test leaks (%zu bytes) were also detected and are expected.\n",
