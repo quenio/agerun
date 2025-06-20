@@ -65,6 +65,20 @@ This document tracks completed milestones and major achievements for the AgeRun 
       - ✅ Cycle 1: Create/destroy lifecycle
       - ✅ Cycle 2: Evaluate with instance
       - ✅ Cycle 3: Legacy wrapper
+  - ✅ Updated agent_instruction_evaluator with create/destroy functions:
+    - ✅ Added opaque struct ar_agent_instruction_evaluator_s with correct typedef naming
+    - ✅ Implemented create function that stores dependencies (expression_evaluator, memory)
+    - ✅ Implemented destroy function for proper cleanup
+    - ✅ Updated evaluate function to use stored dependencies from instance
+    - ✅ Renamed original function to evaluate_legacy for backward compatibility
+    - ✅ Updated instruction_evaluator to use legacy function
+    - ✅ All tests pass with zero memory leaks (511 allocations, 0 active)
+    - ✅ Updated module documentation to reflect instantiable design
+    - ✅ Follows complete TDD methodology with 3 cycles:
+      - ✅ Cycle 1: Create/destroy lifecycle functions
+      - ✅ Cycle 2: Instance-based evaluation using stored dependencies  
+      - ✅ Cycle 3: Legacy function backward compatibility
+    - ✅ Clean function naming: evaluate (instance-based) and evaluate_legacy (backward compatibility)
 
 ## 2025-06-20 (Earlier)
 - ✅ Completed extraction of instruction evaluator functions into dedicated modules:

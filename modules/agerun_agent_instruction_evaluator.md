@@ -10,10 +10,33 @@ This module extracts the agent instruction evaluation logic from the main instru
 
 ## Key Components
 
-### Public Interface
+### Instantiable Design
+
+The module follows an instantiable design pattern with lifecycle management:
 
 ```c
+// Create evaluator instance with dependencies
+ar_agent_instruction_evaluator_t* ar__agent_instruction_evaluator__create(
+    expression_evaluator_t *mut_expr_evaluator,
+    data_t *mut_memory
+);
+
+// Evaluate using stored dependencies
 bool ar__agent_instruction_evaluator__evaluate(
+    const ar_agent_instruction_evaluator_t *ref_evaluator,
+    data_t *ref_context,
+    const instruction_ast_t *ref_ast
+);
+
+// Clean up instance
+void ar__agent_instruction_evaluator__destroy(ar_agent_instruction_evaluator_t *own_evaluator);
+```
+
+### Legacy Interface (Backward Compatibility)
+
+```c
+// Legacy function for backward compatibility
+bool ar__agent_instruction_evaluator__evaluate_legacy(
     expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory,
     data_t *ref_context,
@@ -71,28 +94,50 @@ The module:
 4. Creates agent via agency
 5. Stores agent ID if assignment specified
 
-## Usage Example
+## Usage Examples
+
+### Modern Instance-Based Approach (Recommended)
 
 ```c
-// Create evaluator with context
-data_t *context = ar__data__create_map();
-ar__data__set_map_string(context, "mode", "production");
-expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, context);
+// Create dependencies
+data_t *memory = ar__data__create_map();
+expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+
+// Create agent evaluator instance
+ar_agent_instruction_evaluator_t *evaluator = ar__agent_instruction_evaluator__create(
+    expr_eval, memory
+);
 
 // Parse agent instruction: memory.worker := agent("processor", "1.0.0", context)
 instruction_ast_t *ast = ar__instruction_parser__parse_agent(parser);
 
-// Evaluate the agent creation
-bool success = ar__agent_instruction_evaluator__evaluate(
+// Evaluate using instance
+bool success = ar__agent_instruction_evaluator__evaluate(evaluator, context, ast);
+
+// Clean up
+ar__agent_instruction_evaluator__destroy(evaluator);
+// New agent created with ID stored in memory["worker"]
+```
+
+### Legacy Approach (Backward Compatibility)
+
+```c
+// Direct evaluation with explicit dependencies
+bool success = ar__agent_instruction_evaluator__evaluate_legacy(
     expr_eval, memory, context, ast
 );
-
-// New agent created with ID stored in memory["worker"]
 ```
 
 ## Testing
 
 The module includes comprehensive tests covering:
+
+### Instance-Based Interface Tests
+- Create/destroy lifecycle functions
+- Instance-based evaluation using stored dependencies
+- Legacy function backward compatibility
+
+### Functional Tests  
 - Agent creation with context
 - Agent ID result assignment
 - Invalid method detection
@@ -100,4 +145,4 @@ The module includes comprehensive tests covering:
 - Invalid argument handling
 - Memory leak verification
 
-All tests pass with zero memory leaks.
+All tests pass with zero memory leaks (511 allocations, 0 active). The test suite follows TDD methodology with Red-Green-Refactor cycles.

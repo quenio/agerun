@@ -311,11 +311,11 @@ This order ensures clean separation of concerns across all modules.
   - [x] Update parse_instruction_evaluator to have create/destroy functions (Completed 2025-06-20)
   - [x] Update build_instruction_evaluator to have create/destroy functions (Completed 2025-06-20)
   - [x] Update method_instruction_evaluator to have create/destroy functions (Completed 2025-06-20)
-  - [ ] Update agent_instruction_evaluator to have create/destroy functions
+  - [x] Update agent_instruction_evaluator to have create/destroy functions (Completed 2025-06-20)
   - [ ] Update destroy_instruction_evaluator to have create/destroy functions
-  - [x] Each evaluator should store its dependencies (expression_evaluator, memory, context) (Completed for assignment, send, condition, parse, build)
-  - [x] Update evaluate functions to use stored dependencies instead of parameters (Completed for assignment, send, condition, parse, build)
-  - [x] Write tests for create/destroy lifecycle of each evaluator (Completed for assignment, send, condition, parse, build)
+  - [x] Each evaluator should store its dependencies (expression_evaluator, memory, context) (Completed for assignment, send, condition, parse, build, method, agent)
+  - [x] Update evaluate functions to use stored dependencies instead of parameters (Completed for assignment, send, condition, parse, build, method, agent)
+  - [x] Write tests for create/destroy lifecycle of each evaluator (Completed for assignment, send, condition, parse, build, method, agent)
   - [x] Ensure all evaluators use ar_<module>_s naming for opaque structs (per new guideline) (Completed for all 4 refactored evaluators)
 - [ ] Remove legacy wrapper functions from specialized evaluators:
   - [ ] Remove ar_assignment_instruction_evaluator__evaluate_legacy after integration

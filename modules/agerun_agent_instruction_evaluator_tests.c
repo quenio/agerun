@@ -5,6 +5,7 @@
 #include <inttypes.h>
 #include <unistd.h>
 #include "agerun_instruction_evaluator.h"
+#include "agerun_agent_instruction_evaluator.h"
 #include "agerun_expression_evaluator.h"
 #include "agerun_instruction_ast.h"
 #include "agerun_data.h"
@@ -235,6 +236,128 @@ static void test_instruction_evaluator__evaluate_agent_invalid_args(void) {
     ar__system__shutdown();
 }
 
+static void test_agent_instruction_evaluator__create_destroy(void) {
+    // Given expression evaluator and memory dependencies
+    data_t *memory = ar__data__create_map();
+    assert(memory != NULL);
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    assert(expr_eval != NULL);
+    
+    // When creating an agent instruction evaluator instance
+    ar_agent_instruction_evaluator_t *evaluator = ar__agent_instruction_evaluator__create(expr_eval, memory);
+    
+    // Then it should be created successfully
+    assert(evaluator != NULL);
+    
+    // When destroying the evaluator
+    ar__agent_instruction_evaluator__destroy(evaluator);
+    
+    // Then it should not crash (no assertion needed)
+    
+    // Cleanup dependencies
+    ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(memory);
+}
+
+static void test_agent_instruction_evaluator__evaluate_with_instance(void) {
+    // Initialize system for agent creation
+    ar__system__init(NULL, NULL);
+    
+    // Given an agent instruction evaluator instance with dependencies
+    data_t *memory = ar__data__create_map();
+    assert(memory != NULL);
+    ar__data__set_map_string(memory, "config", "test");
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    assert(expr_eval != NULL);
+    
+    ar_agent_instruction_evaluator_t *evaluator = ar__agent_instruction_evaluator__create(expr_eval, memory);
+    assert(evaluator != NULL);
+    
+    // Register a method to create agents with
+    method_t *method = ar__method__create("tester", "send(0, memory.config)", "1.0.0");
+    assert(method != NULL);
+    ar__methodology__register_method(method);
+    
+    // When evaluating an agent instruction with the instance: agent("tester", "1.0.0", memory)
+    const char *args[] = {"\"tester\"", "\"1.0.0\"", "memory"};
+    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        INST_AST_AGENT, "agent", args, 3, NULL
+    );
+    assert(ast != NULL);
+    
+    bool result = ar__agent_instruction_evaluator__evaluate(evaluator, NULL, ast);
+    
+    // Then it should return true
+    assert(result == true);
+    
+    // Process wake message to avoid leak
+    ar__system__process_next_message();
+    
+    // Cleanup
+    ar__instruction_ast__destroy(ast);
+    ar__agent_instruction_evaluator__destroy(evaluator);
+    ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(memory);
+    
+    // Clean up agency before shutting down
+    ar__agency__reset();
+    
+    // Shutdown system
+    ar__system__shutdown();
+    
+    // Clean up methodology after test
+    ar__methodology__cleanup();
+}
+
+static void test_agent_instruction_evaluator__legacy_evaluate_function(void) {
+    // Initialize system for agent creation
+    ar__system__init(NULL, NULL);
+    
+    // Given legacy-style usage of evaluate function with explicit parameters
+    data_t *memory = ar__data__create_map();
+    assert(memory != NULL);
+    ar__data__set_map_string(memory, "status", "legacy");
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    assert(expr_eval != NULL);
+    
+    // Register a method to create agents with
+    method_t *method = ar__method__create("legacy_worker", "send(0, memory.status)", "1.0.0");
+    assert(method != NULL);
+    ar__methodology__register_method(method);
+    
+    // When calling the legacy evaluate function directly: agent("legacy_worker", "1.0.0", memory)
+    const char *args[] = {"\"legacy_worker\"", "\"1.0.0\"", "memory"};
+    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        INST_AST_AGENT, "agent", args, 3, NULL
+    );
+    assert(ast != NULL);
+    
+    bool result = ar__agent_instruction_evaluator__evaluate_legacy(expr_eval, memory, NULL, ast);
+    
+    // Then it should return true (legacy function still works)
+    assert(result == true);
+    
+    // Process wake message to avoid leak
+    ar__system__process_next_message();
+    
+    // Cleanup
+    ar__instruction_ast__destroy(ast);
+    ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(memory);
+    
+    // Clean up agency before shutting down
+    ar__agency__reset();
+    
+    // Shutdown system
+    ar__system__shutdown();
+    
+    // Clean up methodology after test
+    ar__methodology__cleanup();
+}
+
 int main(void) {
     printf("Starting agent instruction evaluator tests...\n");
     
@@ -268,6 +391,15 @@ int main(void) {
     
     test_instruction_evaluator__evaluate_agent_invalid_args();
     printf("test_instruction_evaluator__evaluate_agent_invalid_args passed!\n");
+    
+    test_agent_instruction_evaluator__create_destroy();
+    printf("test_agent_instruction_evaluator__create_destroy passed!\n");
+    
+    test_agent_instruction_evaluator__evaluate_with_instance();
+    printf("test_agent_instruction_evaluator__evaluate_with_instance passed!\n");
+    
+    test_agent_instruction_evaluator__legacy_evaluate_function();
+    printf("test_agent_instruction_evaluator__legacy_evaluate_function passed!\n");
     
     printf("All agent instruction evaluator tests passed!\n");
     

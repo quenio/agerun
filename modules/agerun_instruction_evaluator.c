@@ -184,7 +184,7 @@ bool ar__instruction_evaluator__evaluate_agent(
     }
     
     // Delegate to the agent instruction evaluator module
-    return ar__agent_instruction_evaluator__evaluate(
+    return ar__agent_instruction_evaluator__evaluate_legacy(
         mut_evaluator->ref_expr_evaluator,
         mut_evaluator->mut_memory,
         mut_evaluator->ref_context,

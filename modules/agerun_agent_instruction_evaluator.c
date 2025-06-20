@@ -14,6 +14,57 @@
 #include <stdio.h>
 #include <inttypes.h>
 
+/* Opaque struct definition */
+struct ar_agent_instruction_evaluator_s {
+    expression_evaluator_t *mut_expr_evaluator;
+    data_t *mut_memory;
+};
+
+ar_agent_instruction_evaluator_t* ar__agent_instruction_evaluator__create(
+    expression_evaluator_t *mut_expr_evaluator,
+    data_t *mut_memory
+) {
+    if (!mut_expr_evaluator || !mut_memory) {
+        return NULL;
+    }
+    
+    ar_agent_instruction_evaluator_t *own_evaluator = AR__HEAP__MALLOC(sizeof(ar_agent_instruction_evaluator_t), "agent_instruction_evaluator");
+    if (!own_evaluator) {
+        return NULL;
+    }
+    
+    own_evaluator->mut_expr_evaluator = mut_expr_evaluator;
+    own_evaluator->mut_memory = mut_memory;
+    
+    return own_evaluator;
+}
+
+void ar__agent_instruction_evaluator__destroy(ar_agent_instruction_evaluator_t *own_evaluator) {
+    if (!own_evaluator) {
+        return;
+    }
+    
+    AR__HEAP__FREE(own_evaluator);
+}
+
+bool ar__agent_instruction_evaluator__evaluate(
+    const ar_agent_instruction_evaluator_t *ref_evaluator,
+    data_t *ref_context,
+    const instruction_ast_t *ref_ast
+) {
+    if (!ref_evaluator || !ref_ast) {
+        return false;
+    }
+    
+    // Delegate to the legacy function using stored dependencies
+    return ar__agent_instruction_evaluator__evaluate_legacy(
+        ref_evaluator->mut_expr_evaluator,
+        ref_evaluator->mut_memory,
+        ref_context,
+        ref_ast
+    );
+}
+
 /* Constants */
 static const char* MEMORY_PREFIX = "memory.";
 static const size_t MEMORY_PREFIX_LEN = 7;
@@ -270,7 +321,7 @@ static const data_t* _get_memory_or_context_reference(
     return NULL;
 }
 
-bool ar__agent_instruction_evaluator__evaluate(
+bool ar__agent_instruction_evaluator__evaluate_legacy(
     expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory,
     data_t *ref_context,
