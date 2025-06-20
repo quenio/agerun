@@ -86,7 +86,8 @@ This prevents overthinking and ensures accurate responses based on documented pr
   - `own_`: Owned values that must be destroyed
   - `mut_`: Mutable references (read-write access)
   - `ref_`: Borrowed references (read-only access)
-  - Apply to variables, parameters, and struct fields
+  - Apply to ALL variables, parameters, and struct fields (including local variables)
+  - **IMPORTANT**: When receiving ownership (e.g., from malloc/create functions), use `own_` prefix immediately
   - Consistent across .h, .c, and _tests.c files
 - Set pointers to NULL after ownership transfer
 - Add `// Ownership transferred to caller` comment at return statements
@@ -162,6 +163,7 @@ This prevents overthinking and ensures accurate responses based on documented pr
 1. **Red**: Write failing test FIRST
 2. **Green**: Write MINIMUM code to pass
 3. **Refactor**: Improve while keeping tests green
+4. **IMPORTANT**: Complete the FULL cycle before committing - don't commit after just Red-Green!
 
 **Test Requirements**:
 - Every module MUST have tests
@@ -634,7 +636,10 @@ scan-build --version
 
 **Memory Debugging**:
 - Use ASan via `make test-sanitize`
-- Check `bin/heap_memory_report.log` for leaks
+- **IMPORTANT**: Memory reports are at `bin/memory_report_<test_name>.log` (NOT heap_memory_report.log)
+  - Example: `bin/memory_report_agerun_string_tests.log`
+  - Each test generates its own memory report file
+  - Check these after running individual tests with `make bin/<test_name>`
 - Add DEBUG output (keep it for future sessions)
 - Use static analyzer: `make analyze`
   - HTML reports in `bin/scan-build-results` (if scan-build installed)
