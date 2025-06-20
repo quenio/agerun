@@ -3,6 +3,30 @@
 This document tracks completed milestones and major achievements for the AgeRun project.
 
 ## 2025-06-20
+- ✅ Completed extraction of instruction evaluator functions into dedicated modules:
+  - ✅ Created destroy_instruction_evaluator module:
+    - ✅ Extracted evaluate_destroy function from instruction_evaluator
+    - ✅ Moved all necessary helper functions for destroy evaluation
+    - ✅ Handles both agent destruction (1 arg) and method destruction (2 args)
+    - ✅ Sends __sleep__ messages to agents before destroying methods they use
+    - ✅ All tests pass with zero memory leaks (6 tests, 397 allocations)
+  - ✅ All 8 evaluate functions now delegated to specialized modules:
+    - ✅ assignment_instruction_evaluator (created 2025-06-19)
+    - ✅ send_instruction_evaluator (created 2025-06-19)
+    - ✅ condition_instruction_evaluator (created 2025-06-19)
+    - ✅ parse_instruction_evaluator (created 2025-06-19)
+    - ✅ build_instruction_evaluator (created 2025-06-19)
+    - ✅ method_instruction_evaluator (created 2025-06-20)
+    - ✅ agent_instruction_evaluator (created 2025-06-20)
+    - ✅ destroy_instruction_evaluator (created 2025-06-20)
+  - ✅ Updated instruction_evaluator to remove all implementation code
+  - ✅ Removed unused helper functions from instruction_evaluator
+  - ✅ Created documentation for all new modules
+  - ✅ Updated modules/README.md with complete dependency information
+  - ✅ All 44 tests pass with zero memory leaks
+  - ✅ Clean build passes all static analysis and sanitizers
+
+## 2025-06-20 (Earlier)
 - ✅ Created agent_instruction_evaluator module:
   - ✅ Extracted evaluate_agent function from instruction_evaluator
   - ✅ Moved all necessary helper functions including _get_memory_or_context_reference

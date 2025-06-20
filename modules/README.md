@@ -199,13 +199,80 @@ agerun_instruction_evaluator
 ├──h──> agerun_expression_evaluator
 ├──h──> agerun_instruction_ast
 ├──h──> agerun_data
-├──c──> agerun_agency
-├──c──> agerun_methodology
-├──c──> agerun_method
-├──c──> agerun_expression_parser
-├──c──> agerun_expression_ast
-├──c──> agerun_instruction
-├──c──> agerun_string
+├──c──> agerun_assignment_instruction_evaluator
+│       ├──h──> agerun_expression_evaluator
+│       ├──h──> agerun_instruction_ast
+│       ├──h──> agerun_data
+│       ├──c──> agerun_expression_parser
+│       ├──c──> agerun_expression_ast
+│       ├──c──> agerun_string
+│       └──c──> agerun_heap
+├──c──> agerun_send_instruction_evaluator
+│       ├──h──> agerun_expression_evaluator
+│       ├──h──> agerun_instruction_ast
+│       ├──h──> agerun_data
+│       ├──c──> agerun_expression_parser
+│       ├──c──> agerun_expression_ast
+│       ├──c──> agerun_agency
+│       ├──c──> agerun_string
+│       └──c──> agerun_heap
+├──c──> agerun_condition_instruction_evaluator
+│       ├──h──> agerun_expression_evaluator
+│       ├──h──> agerun_instruction_ast
+│       ├──h──> agerun_data
+│       ├──c──> agerun_expression_parser
+│       ├──c──> agerun_expression_ast
+│       ├──c──> agerun_string
+│       └──c──> agerun_heap
+├──c──> agerun_parse_instruction_evaluator
+│       ├──h──> agerun_expression_evaluator
+│       ├──h──> agerun_instruction_ast
+│       ├──h──> agerun_data
+│       ├──c──> agerun_expression_parser
+│       ├──c──> agerun_expression_ast
+│       ├──c──> agerun_instruction
+│       ├──c──> agerun_string
+│       └──c──> agerun_heap
+├──c──> agerun_build_instruction_evaluator
+│       ├──h──> agerun_expression_evaluator
+│       ├──h──> agerun_instruction_ast
+│       ├──h──> agerun_data
+│       ├──c──> agerun_expression_parser
+│       ├──c──> agerun_expression_ast
+│       ├──c──> agerun_string
+│       └──c──> agerun_heap
+├──c──> agerun_method_instruction_evaluator
+│       ├──h──> agerun_expression_evaluator
+│       ├──h──> agerun_instruction_ast
+│       ├──h──> agerun_data
+│       ├──c──> agerun_expression_parser
+│       ├──c──> agerun_expression_ast
+│       ├──c──> agerun_methodology
+│       ├──c──> agerun_method
+│       ├──c──> agerun_string
+│       └──c──> agerun_heap
+├──c──> agerun_agent_instruction_evaluator
+│       ├──h──> agerun_expression_evaluator
+│       ├──h──> agerun_instruction_ast
+│       ├──h──> agerun_data
+│       ├──c──> agerun_expression_parser
+│       ├──c──> agerun_expression_ast
+│       ├──c──> agerun_agency
+│       ├──c──> agerun_method
+│       ├──c──> agerun_methodology
+│       ├──c──> agerun_string
+│       └──c──> agerun_heap
+├──c──> agerun_destroy_instruction_evaluator
+│       ├──h──> agerun_expression_evaluator
+│       ├──h──> agerun_instruction_ast
+│       ├──h──> agerun_data
+│       ├──c──> agerun_expression_parser
+│       ├──c──> agerun_expression_ast
+│       ├──c──> agerun_agency
+│       ├──c──> agerun_method
+│       ├──c──> agerun_methodology
+│       ├──c──> agerun_string
+│       └──c──> agerun_heap
 └──c──> agerun_heap
 
 Fixture Modules:
@@ -311,6 +378,79 @@ agerun_expression_parser_tests
 agerun_expression_evaluator_tests
 ├──c──> agerun_expression_evaluator (module under test)
 ├──c──> agerun_expression_ast
+├──c──> agerun_data
+└──c──> agerun_heap
+
+agerun_assignment_instruction_evaluator_tests
+├──c──> agerun_assignment_instruction_evaluator (module under test)
+├──c──> agerun_instruction_evaluator
+├──c──> agerun_expression_evaluator
+├──c──> agerun_instruction_ast
+├──c──> agerun_data
+└──c──> agerun_heap
+
+agerun_send_instruction_evaluator_tests
+├──c──> agerun_send_instruction_evaluator (module under test)
+├──c──> agerun_instruction_evaluator
+├──c──> agerun_expression_evaluator
+├──c──> agerun_instruction_ast
+├──c──> agerun_agency
+├──c──> agerun_data
+└──c──> agerun_heap
+
+agerun_condition_instruction_evaluator_tests
+├──c──> agerun_condition_instruction_evaluator (module under test)
+├──c──> agerun_instruction_evaluator
+├──c──> agerun_expression_evaluator
+├──c──> agerun_instruction_ast
+├──c──> agerun_data
+└──c──> agerun_heap
+
+agerun_parse_instruction_evaluator_tests
+├──c──> agerun_parse_instruction_evaluator (module under test)
+├──c──> agerun_instruction_evaluator
+├──c──> agerun_expression_evaluator
+├──c──> agerun_instruction_ast
+├──c──> agerun_data
+└──c──> agerun_heap
+
+agerun_build_instruction_evaluator_tests
+├──c──> agerun_build_instruction_evaluator (module under test)
+├──c──> agerun_instruction_evaluator
+├──c──> agerun_expression_evaluator
+├──c──> agerun_instruction_ast
+├──c──> agerun_data
+└──c──> agerun_heap
+
+agerun_method_instruction_evaluator_tests
+├──c──> agerun_method_instruction_evaluator (module under test)
+├──c──> agerun_instruction_evaluator
+├──c──> agerun_expression_evaluator
+├──c──> agerun_instruction_ast
+├──c──> agerun_methodology
+├──c──> agerun_system
+├──c──> agerun_data
+└──c──> agerun_heap
+
+agerun_agent_instruction_evaluator_tests
+├──c──> agerun_agent_instruction_evaluator (module under test)
+├──c──> agerun_instruction_evaluator
+├──c──> agerun_expression_evaluator
+├──c──> agerun_instruction_ast
+├──c──> agerun_agency
+├──c──> agerun_methodology
+├──c──> agerun_system
+├──c──> agerun_data
+└──c──> agerun_heap
+
+agerun_destroy_instruction_evaluator_tests
+├──c──> agerun_destroy_instruction_evaluator (module under test)
+├──c──> agerun_instruction_evaluator
+├──c──> agerun_expression_evaluator
+├──c──> agerun_instruction_ast
+├──c──> agerun_agency
+├──c──> agerun_methodology
+├──c──> agerun_system
 ├──c──> agerun_data
 └──c──> agerun_heap
 
