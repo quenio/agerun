@@ -2,10 +2,116 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include "agerun_build_instruction_evaluator.h"
 #include "agerun_instruction_evaluator.h"
 #include "agerun_expression_evaluator.h"
 #include "agerun_instruction_ast.h"
 #include "agerun_data.h"
+
+static void test_build_instruction_evaluator__create_destroy(void) {
+    // Given memory and expression evaluator
+    data_t *memory = ar__data__create_map();
+    assert(memory != NULL);
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    assert(expr_eval != NULL);
+    
+    // When creating a build instruction evaluator
+    ar_build_instruction_evaluator_t *evaluator = ar__build_instruction_evaluator__create(
+        expr_eval, memory
+    );
+    
+    // Then it should be created successfully
+    assert(evaluator != NULL);
+    
+    // When destroying the evaluator
+    ar__build_instruction_evaluator__destroy(evaluator);
+    
+    // Then cleanup dependencies
+    ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(memory);
+}
+
+static void test_build_instruction_evaluator__evaluate_with_instance(void) {
+    // Given memory with a map of values
+    data_t *memory = ar__data__create_map();
+    assert(memory != NULL);
+    
+    data_t *values = ar__data__create_map();
+    assert(values != NULL);
+    assert(ar__data__set_map_data(values, "name", ar__data__create_string("Alice")));
+    assert(ar__data__set_map_data(memory, "data", values));
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    assert(expr_eval != NULL);
+    
+    // When creating a build instruction evaluator instance
+    ar_build_instruction_evaluator_t *evaluator = ar__build_instruction_evaluator__create(
+        expr_eval, memory
+    );
+    assert(evaluator != NULL);
+    
+    // When creating a build AST node
+    const char *args[] = {"\"Hello {name}!\"", "memory.data"};
+    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        INST_AST_BUILD, "build", args, 2, "memory.result"
+    );
+    assert(ast != NULL);
+    
+    // When evaluating using the instance
+    bool result = ar__build_instruction_evaluator__evaluate(evaluator, ast);
+    
+    // Then it should succeed and build the string
+    assert(result == true);
+    data_t *result_value = ar__data__get_map_data(memory, "result");
+    assert(result_value != NULL);
+    assert(ar__data__get_type(result_value) == DATA_STRING);
+    assert(strcmp(ar__data__get_string(result_value), "Hello Alice!") == 0);
+    
+    // Cleanup
+    ar__instruction_ast__destroy(ast);
+    ar__build_instruction_evaluator__destroy(evaluator);
+    ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(memory);
+}
+
+static void test_build_instruction_evaluator__evaluate_legacy(void) {
+    // Given memory with a map of values
+    data_t *memory = ar__data__create_map();
+    assert(memory != NULL);
+    
+    data_t *values = ar__data__create_map();
+    assert(values != NULL);
+    assert(ar__data__set_map_data(values, "greeting", ar__data__create_string("Hi")));
+    assert(ar__data__set_map_data(memory, "vars", values));
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    assert(expr_eval != NULL);
+    
+    // When creating a build AST node
+    const char *args[] = {"\"{greeting} there!\"", "memory.vars"};
+    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        INST_AST_BUILD, "build", args, 2, "memory.message"
+    );
+    assert(ast != NULL);
+    
+    // When evaluating using the legacy interface
+    bool result = ar_build_instruction_evaluator__evaluate_legacy(
+        expr_eval, memory, ast
+    );
+    
+    // Then it should succeed and build the string
+    assert(result == true);
+    data_t *result_value = ar__data__get_map_data(memory, "message");
+    assert(result_value != NULL);
+    assert(ar__data__get_type(result_value) == DATA_STRING);
+    assert(strcmp(ar__data__get_string(result_value), "Hi there!") == 0);
+    
+    // Cleanup
+    ar__instruction_ast__destroy(ast);
+    ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(memory);
+}
 
 static void test_instruction_evaluator__evaluate_build_simple(void) {
     // Given an evaluator with memory containing a map
@@ -244,6 +350,15 @@ static void test_instruction_evaluator__evaluate_build_invalid_args(void) {
 
 int main(void) {
     printf("Starting build instruction_evaluator tests...\n");
+    
+    test_build_instruction_evaluator__create_destroy();
+    printf("test_build_instruction_evaluator__create_destroy passed!\n");
+    
+    test_build_instruction_evaluator__evaluate_with_instance();
+    printf("test_build_instruction_evaluator__evaluate_with_instance passed!\n");
+    
+    test_build_instruction_evaluator__evaluate_legacy();
+    printf("test_build_instruction_evaluator__evaluate_legacy passed!\n");
     
     test_instruction_evaluator__evaluate_build_simple();
     printf("test_instruction_evaluator__evaluate_build_simple passed!\n");
