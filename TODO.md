@@ -295,18 +295,39 @@ This order ensures clean separation of concerns across all modules.
   - [x] Create destroy_instruction_evaluator module for evaluate_destroy (Completed 2025-06-20)
   - [x] Update instruction_evaluator to delegate to specialized modules
   - [x] Ensure all tests continue to pass with refactored structure
+- [ ] Refactor specialized evaluators to be instantiable modules:
+  - [ ] Update assignment_instruction_evaluator to have create/destroy functions
+  - [ ] Update send_instruction_evaluator to have create/destroy functions
+  - [ ] Update condition_instruction_evaluator to have create/destroy functions
+  - [ ] Update parse_instruction_evaluator to have create/destroy functions
+  - [ ] Update build_instruction_evaluator to have create/destroy functions
+  - [ ] Update method_instruction_evaluator to have create/destroy functions
+  - [ ] Update agent_instruction_evaluator to have create/destroy functions
+  - [ ] Update destroy_instruction_evaluator to have create/destroy functions
+  - [ ] Each evaluator should store its dependencies (expression_evaluator, memory, context)
+  - [ ] Update evaluate functions to use stored dependencies instead of parameters
+  - [ ] Write tests for create/destroy lifecycle of each evaluator
+- [ ] Update instruction_evaluator to create and manage specialized evaluators:
+  - [ ] Add fields to instruction_evaluator struct for all specialized evaluators
+  - [ ] Create all specialized evaluators in ar__instruction_evaluator__create()
+  - [ ] Pass dependencies (expression_evaluator, memory, context) to each specialized evaluator
+  - [ ] Destroy all specialized evaluators in ar__instruction_evaluator__destroy()
+  - [ ] Update delegation functions to use created evaluator instances
+  - [ ] Ensure proper initialization order and cleanup
+- [ ] Add main evaluate function to instruction_evaluator module:
+  - [ ] Create ar__instruction_evaluator__evaluate() that takes instruction AST
+  - [ ] Implement dispatch logic based on instruction type
+  - [ ] Call appropriate specialized evaluator for each instruction type
+  - [ ] Handle all instruction types: assignment, send, if, parse, build, method, agent, destroy
+  - [ ] Return bool indicating success/failure
+  - [ ] Write comprehensive tests for the main evaluate function
+  - [ ] Ensure proper error handling for unknown instruction types
 - [ ] Integrate instruction_evaluator into interpreter module:
   - [ ] Add instruction_evaluator as dependency to interpreter module
   - [ ] Create instruction_evaluator instance in interpreter initialization
-  - [ ] Replace _execute_assignment with call to instruction_evaluator
-  - [ ] Replace _execute_send with call to instruction_evaluator
-  - [ ] Replace _execute_if with call to instruction_evaluator
-  - [ ] Replace _execute_parse with call to instruction_evaluator
-  - [ ] Replace _execute_build with call to instruction_evaluator
-  - [ ] Replace _execute_method with call to instruction_evaluator
-  - [ ] Replace _execute_agent with call to instruction_evaluator
-  - [ ] Replace _execute_destroy with call to instruction_evaluator
-  - [ ] Remove old _execute_* functions from interpreter
+  - [ ] Replace _execute_instruction with call to ar__instruction_evaluator__evaluate()
+  - [ ] Remove all _execute_* functions from interpreter
+  - [ ] Update interpreter to simply parse and delegate to instruction_evaluator
   - [ ] Update interpreter tests to verify instruction_evaluator integration
   - [ ] Ensure proper memory management throughout
 
