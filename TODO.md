@@ -143,7 +143,11 @@ Extract each instruction type evaluation into its own module:
   - [x] Moved helper functions including _ensure_buffer_capacity, _process_placeholder, _data_to_string
   - [x] Fixed memory ownership issue where borrowed reference was incorrectly destroyed
   - [x] All tests pass with no memory leaks
-- [ ] Create method_instruction_evaluator module for evaluate_method
+- [x] Created method_instruction_evaluator module for evaluate_method (Completed 2025-06-20)
+  - [x] Extracted evaluate_method function from instruction_evaluator
+  - [x] Moved all necessary helper functions for method evaluation
+  - [x] Updated instruction_evaluator to delegate to new module
+  - [x] All tests pass with no memory leaks
 - [ ] Create agent_instruction_evaluator module for evaluate_agent
 - [ ] Create destroy_instruction_evaluator module for evaluate_destroy
 - [ ] Update instruction_evaluator to use all new modules
@@ -275,13 +279,13 @@ This order ensures clean separation of concerns across all modules.
   - [x] Separate test groups into individual test files (Completed 2025-06-19)
   - [x] Create module documentation (agerun_instruction_evaluator.md) (Completed 2025-06-19)
   - [x] Update modules/README.md to include instruction_evaluator (Completed 2025-06-19)
-- [ ] Extract instruction evaluator functions into dedicated modules (In Progress 2025-06-19):
+- [ ] Extract instruction evaluator functions into dedicated modules (In Progress 2025-06-20):
   - [x] Create assignment_instruction_evaluator module for evaluate_assignment
   - [x] Create send_instruction_evaluator module for evaluate_send
   - [x] Create condition_instruction_evaluator module for evaluate_if
   - [x] Create parse_instruction_evaluator module for evaluate_parse
   - [x] Create build_instruction_evaluator module for evaluate_build (Completed 2025-06-19)
-  - [ ] Create method_instruction_evaluator module for evaluate_method
+  - [x] Create method_instruction_evaluator module for evaluate_method (Completed 2025-06-20)
   - [ ] Create agent_instruction_evaluator module for evaluate_agent
   - [ ] Create destroy_instruction_evaluator module for evaluate_destroy
   - [ ] Update instruction_evaluator to delegate to specialized modules

@@ -15,6 +15,7 @@
 #include "agerun_condition_instruction_evaluator.h"
 #include "agerun_parse_instruction_evaluator.h"
 #include "agerun_build_instruction_evaluator.h"
+#include "agerun_method_instruction_evaluator.h"
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
@@ -95,43 +96,6 @@ static const char* _get_memory_key_path(const char *ref_path) {
     return ref_path + MEMORY_PREFIX_LEN;
 }
 
-/* Helper function to evaluate three string arguments from a function call */
-static bool _evaluate_three_string_args(
-    instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast,
-    size_t expected_arg_count,
-    data_t **out_arg1,
-    data_t **out_arg2,
-    data_t **out_arg3
-) {
-    // Extract arguments
-    list_t *own_args = NULL;
-    void **items = _extract_function_args(ref_ast, expected_arg_count, &own_args);
-    if (!items) {
-        return false;
-    }
-    
-    // Parse and evaluate arguments
-    const char *ref_expr1 = (const char*)items[0];
-    const char *ref_expr2 = (const char*)items[1];
-    const char *ref_expr3 = (const char*)items[2];
-    
-    *out_arg1 = _parse_and_evaluate_expression(mut_evaluator, ref_expr1);
-    *out_arg2 = _parse_and_evaluate_expression(mut_evaluator, ref_expr2);
-    *out_arg3 = _parse_and_evaluate_expression(mut_evaluator, ref_expr3);
-    
-    _cleanup_function_args(items, own_args);
-    
-    // Validate all arguments are strings
-    if (*out_arg1 && *out_arg2 && *out_arg3 &&
-        ar__data__get_type(*out_arg1) == DATA_STRING &&
-        ar__data__get_type(*out_arg2) == DATA_STRING &&
-        ar__data__get_type(*out_arg3) == DATA_STRING) {
-        return true;
-    }
-    
-    return false;
-}
 
 /* Helper function to extract function arguments and validate count */
 static void** _extract_function_args(const instruction_ast_t *ref_ast, size_t expected_count, list_t **out_args_list) {
@@ -456,52 +420,12 @@ bool ar__instruction_evaluator__evaluate_method(
         return false;
     }
     
-    // Validate AST type
-    if (ar__instruction_ast__get_type(ref_ast) != INST_AST_METHOD) {
-        return false;
-    }
-    
-    // Evaluate three string arguments
-    data_t *own_method_name = NULL;
-    data_t *own_instructions = NULL;
-    data_t *own_version = NULL;
-    
-    bool args_valid = _evaluate_three_string_args(
-        mut_evaluator, ref_ast, 3,
-        &own_method_name, &own_instructions, &own_version
+    // Delegate to the method instruction evaluator module
+    return ar_method_instruction_evaluator__evaluate(
+        mut_evaluator->ref_expr_evaluator,
+        mut_evaluator->mut_memory,
+        ref_ast
     );
-    
-    bool success = false;
-    
-    if (args_valid) {
-        const char *method_name = ar__data__get_string(own_method_name);
-        const char *instructions = ar__data__get_string(own_instructions);
-        const char *version = ar__data__get_string(own_version);
-        
-        // Create and register the method
-        method_t *own_method = ar__method__create(method_name, instructions, version);
-        if (own_method) {
-            ar__methodology__register_method(own_method);
-            // Ownership transferred to methodology
-            own_method = NULL;
-            success = true;
-        }
-    }
-    
-    // Clean up evaluated arguments
-    if (own_method_name) ar__data__destroy(own_method_name);
-    if (own_instructions) ar__data__destroy(own_instructions);
-    if (own_version) ar__data__destroy(own_version);
-    
-    // Store result if assigned
-    if (ar__instruction_ast__has_result_assignment(ref_ast)) {
-        data_t *own_result = ar__data__create_integer(success ? 1 : 0);
-        if (own_result) {
-            _store_result_if_assigned(mut_evaluator, ref_ast, own_result);
-        }
-    }
-    
-    return success;
 }
 
 bool ar__instruction_evaluator__evaluate_agent(
