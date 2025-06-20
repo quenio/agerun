@@ -1,1 +1,1 @@
-Let's work on the next task. First, explain your strategy and wait for my feedback before proceeding to execute it.
+Read the guidelines in order to prepare yourself for this new session, Then, let's work on the next task found in the todos list. Before proceeding to execute the task, explain your strategy and wait for my feedback.
