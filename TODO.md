@@ -125,12 +125,28 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Immediate Priorities (Next Steps)
 
-### HIGH - Complete Instruction Module Refactoring FIRST
+### HIGH - Complete Instruction Module Refactoring FIRST (In Progress)
 Before we can complete the expression refactoring, we must extract instruction parsing and evaluation:
-1. **First**: Create instruction_parser module to extract parsing from instruction module
-2. **Second**: Create instruction_evaluator module to extract evaluation from interpreter
-3. **Third**: Update instruction module to use instruction_parser
-4. **Fourth**: Update interpreter to use both expression_evaluator and instruction_evaluator
+1. **First**: Create instruction_parser module to extract parsing from instruction module (Completed)
+2. **Second**: Create instruction_evaluator module to extract evaluation from interpreter (Completed)
+3. **Third**: Update instruction module to use instruction_parser (Completed)
+4. **Fourth**: Update interpreter to use both expression_evaluator and instruction_evaluator (Completed)
+
+### HIGH - Refactor instruction_evaluator into specialized modules (In Progress)
+Extract each instruction type evaluation into its own module:
+- [x] Created assignment_instruction_evaluator module for evaluate_assignment
+- [x] Created send_instruction_evaluator module for evaluate_send
+- [x] Created condition_instruction_evaluator module for evaluate_if
+- [x] Created parse_instruction_evaluator module for evaluate_parse
+- [x] Created build_instruction_evaluator module for evaluate_build:
+  - [x] Extracted evaluate_build function from instruction_evaluator
+  - [x] Moved helper functions including _ensure_buffer_capacity, _process_placeholder, _data_to_string
+  - [x] Fixed memory ownership issue where borrowed reference was incorrectly destroyed
+  - [x] All tests pass with no memory leaks
+- [ ] Create method_instruction_evaluator module for evaluate_method
+- [ ] Create agent_instruction_evaluator module for evaluate_agent
+- [ ] Create destroy_instruction_evaluator module for evaluate_destroy
+- [ ] Update instruction_evaluator to use all new modules
 
 ### THEN - Complete Expression Module Integration
 Once instruction refactoring is done, we can properly integrate everything:
@@ -263,8 +279,8 @@ This order ensures clean separation of concerns across all modules.
   - [x] Create assignment_instruction_evaluator module for evaluate_assignment
   - [x] Create send_instruction_evaluator module for evaluate_send
   - [x] Create condition_instruction_evaluator module for evaluate_if
-  - [ ] Create parse_instruction_evaluator module for evaluate_parse
-  - [ ] Create build_instruction_evaluator module for evaluate_build
+  - [x] Create parse_instruction_evaluator module for evaluate_parse
+  - [x] Create build_instruction_evaluator module for evaluate_build (Completed 2025-06-19)
   - [ ] Create method_instruction_evaluator module for evaluate_method
   - [ ] Create agent_instruction_evaluator module for evaluate_agent
   - [ ] Create destroy_instruction_evaluator module for evaluate_destroy

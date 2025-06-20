@@ -36,7 +36,7 @@ typedef struct instruction_ast_s instruction_ast_t;
  * @note Returns empty map if template doesn't match input
  * @note Supports optional result assignment: result = parse(template, input)
  */
-bool ar_parse_instruction_evaluator_evaluate(
+bool ar_parse_instruction_evaluator__evaluate(
     expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory,
     const instruction_ast_t *ref_ast

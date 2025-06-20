@@ -2,6 +2,18 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-06-20
+- ✅ Created build_instruction_evaluator module:
+  - ✅ Extracted evaluate_build function from instruction_evaluator
+  - ✅ Moved helper functions: _ensure_buffer_capacity, _process_placeholder, _data_to_string
+  - ✅ Fixed memory ownership issue where borrowed reference from expression evaluator was incorrectly destroyed
+  - ✅ Updated variable naming from own_values_data to values_data to clarify borrowed reference
+  - ✅ Added comments documenting that expression evaluation for memory access returns references
+  - ✅ Removed debug messages from test file before commit
+  - ✅ Updated instruction_evaluator to delegate to build module
+  - ✅ All tests pass with zero memory leaks (5 tests, 274 allocations)
+  - ✅ Follows established pattern from other instruction modules
+
 ## 2025-06-19
 - ✅ Created parse_instruction_evaluator module:
   - ✅ Extracted evaluate_parse function from instruction_evaluator

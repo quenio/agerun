@@ -14,6 +14,7 @@
 #include "agerun_send_instruction_evaluator.h"
 #include "agerun_condition_instruction_evaluator.h"
 #include "agerun_parse_instruction_evaluator.h"
+#include "agerun_build_instruction_evaluator.h"
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
@@ -273,32 +274,6 @@ static data_t* _copy_data_value(const data_t *ref_value) {
     }
 }
 
-/* Helper function to ensure a dynamic buffer has enough capacity */
-static char* _ensure_buffer_capacity(char *own_buffer, size_t *mut_capacity, size_t required_size) {
-    if (required_size <= *mut_capacity) {
-        return own_buffer;
-    }
-    
-    // Double the capacity until it's sufficient
-    size_t new_capacity = *mut_capacity;
-    while (new_capacity < required_size) {
-        new_capacity *= 2;
-    }
-    
-    char *new_buffer = AR__HEAP__MALLOC(new_capacity, "Buffer resize");
-    if (!new_buffer) {
-        return NULL;
-    }
-    
-    // Copy existing content
-    if (own_buffer) {
-        memcpy(new_buffer, own_buffer, *mut_capacity);
-        AR__HEAP__FREE(own_buffer);
-    }
-    
-    *mut_capacity = new_capacity;
-    return new_buffer;
-}
 
 /* Helper function to store result in memory if assignment path is provided */
 static bool _store_result_if_assigned(
@@ -330,25 +305,6 @@ static bool _store_result_if_assigned(
     return true;
 }
 
-/* Helper function to convert data value to string representation */
-static const char* _data_to_string(const data_t *ref_data, char *buffer, size_t buffer_size) {
-    if (!ref_data || !buffer || buffer_size == 0) {
-        return NULL;
-    }
-    
-    switch (ar__data__get_type(ref_data)) {
-        case DATA_STRING:
-            return ar__data__get_string(ref_data);
-        case DATA_INTEGER:
-            snprintf(buffer, buffer_size, "%d", ar__data__get_integer(ref_data));
-            return buffer;
-        case DATA_DOUBLE:
-            snprintf(buffer, buffer_size, "%g", ar__data__get_double(ref_data));
-            return buffer;
-        default:
-            return NULL;
-    }
-}
 
 /* Helper function to parse and evaluate an expression string */
 static data_t* _parse_and_evaluate_expression(instruction_evaluator_t *mut_evaluator, const char *ref_expr) {
@@ -419,7 +375,7 @@ bool ar__instruction_evaluator__evaluate_assignment(
     }
     
     // Delegate to the assignment instruction evaluator module
-    return ar__assignment_instruction_evaluator__evaluate(
+    return ar_assignment_instruction_evaluator__evaluate(
         mut_evaluator->ref_expr_evaluator,
         mut_evaluator->mut_memory,
         ref_ast
@@ -435,7 +391,7 @@ bool ar__instruction_evaluator__evaluate_send(
     }
     
     // Delegate to the send instruction evaluator module
-    return ar__send_instruction_evaluator__evaluate(
+    return ar_send_instruction_evaluator__evaluate(
         mut_evaluator->ref_expr_evaluator,
         mut_evaluator->mut_memory,
         ref_ast
@@ -451,7 +407,7 @@ bool ar__instruction_evaluator__evaluate_if(
     }
     
     // Delegate to the condition instruction evaluator module
-    return ar__condition_instruction_evaluator__evaluate(
+    return ar_condition_instruction_evaluator__evaluate(
         mut_evaluator->ref_expr_evaluator,
         mut_evaluator->mut_memory,
         ref_ast
@@ -468,75 +424,13 @@ bool ar__instruction_evaluator__evaluate_parse(
     }
     
     // Delegate to the parse instruction evaluator module
-    return ar__parse_instruction_evaluator__evaluate(
+    return ar_parse_instruction_evaluator__evaluate(
         mut_evaluator->ref_expr_evaluator,
         mut_evaluator->mut_memory,
         ref_ast
     );
 }
 
-/* Helper function to process a template placeholder */
-static bool _process_placeholder(
-    const char *ref_template_ptr,
-    const data_t *ref_values,
-    char **mut_result_str,
-    size_t *mut_result_size,
-    size_t *mut_result_pos,
-    const char **mut_template_ptr
-) {
-    // Find closing brace
-    const char *placeholder_end = strchr(ref_template_ptr + 1, '}');
-    if (!placeholder_end) {
-        return false;
-    }
-    
-    // Extract variable name
-    size_t var_len = (size_t)(placeholder_end - ref_template_ptr - 1);
-    char *var_name = AR__HEAP__MALLOC(var_len + 1, "Build variable name");
-    if (!var_name) {
-        return false;
-    }
-    
-    memcpy(var_name, ref_template_ptr + 1, var_len);
-    var_name[var_len] = '\0';
-    
-    // Look up value and convert to string
-    const data_t *ref_value = ar__data__get_map_data(ref_values, var_name);
-    char value_buffer[256];
-    const char *value_str = ref_value ? _data_to_string(ref_value, value_buffer, sizeof(value_buffer)) : NULL;
-    
-    // Determine what to append (value or original placeholder)
-    const char *append_str;
-    size_t append_len;
-    if (value_str) {
-        append_str = value_str;
-        append_len = strlen(value_str);
-    } else {
-        // Keep original placeholder
-        append_str = ref_template_ptr;
-        append_len = var_len + 2;  // {varname}
-    }
-    
-    // Ensure buffer capacity
-    char *new_buffer = _ensure_buffer_capacity(*mut_result_str, mut_result_size, 
-                                               *mut_result_pos + append_len + 1);
-    if (!new_buffer) {
-        AR__HEAP__FREE(var_name);
-        // Note: caller still owns *mut_result_str and must free it
-        return false;
-    }
-    *mut_result_str = new_buffer;
-    
-    // Append to result
-    memcpy(*mut_result_str + *mut_result_pos, append_str, append_len);
-    *mut_result_pos += append_len;
-    
-    // Update template pointer
-    *mut_template_ptr = value_str ? placeholder_end + 1 : placeholder_end + 1;
-    
-    AR__HEAP__FREE(var_name);
-    return true;
-}
 
 bool ar__instruction_evaluator__evaluate_build(
     instruction_evaluator_t *mut_evaluator,
@@ -546,110 +440,12 @@ bool ar__instruction_evaluator__evaluate_build(
         return false;
     }
     
-    // Verify this is a build AST node
-    if (ar__instruction_ast__get_type(ref_ast) != INST_AST_BUILD) {
-        return false;
-    }
-    
-    // Get function arguments
-    list_t *own_args = NULL;
-    void **items = _extract_function_args(ref_ast, 2, &own_args);
-    if (!items) {
-        return false;
-    }
-    
-    const char *ref_template_expr = (const char*)items[0];
-    const char *ref_values_expr = (const char*)items[1];
-    
-    if (!ref_template_expr || !ref_values_expr) {
-        _cleanup_function_args(items, own_args);
-        return false;
-    }
-    
-    // Parse and evaluate template expression
-    data_t *own_template_data = _parse_and_evaluate_expression(mut_evaluator, ref_template_expr);
-    if (!own_template_data || ar__data__get_type(own_template_data) != DATA_STRING) {
-        if (own_template_data) ar__data__destroy(own_template_data);
-        _cleanup_function_args(items, own_args);
-        return false;
-    }
-    
-    // Parse and evaluate values expression (should be a map)
-    data_t *own_values_data = _parse_and_evaluate_expression(mut_evaluator, ref_values_expr);
-    if (!own_values_data || ar__data__get_type(own_values_data) != DATA_MAP) {
-        if (own_values_data) ar__data__destroy(own_values_data);
-        ar__data__destroy(own_template_data);
-        _cleanup_function_args(items, own_args);
-        return false;
-    }
-    
-    // Clean up items array and args list
-    _cleanup_function_args(items, own_args);
-    
-    const char *template_str = ar__data__get_string(own_template_data);
-    
-    // Build the string by replacing placeholders in template
-    size_t result_size = strlen(template_str) * 2 + 256;
-    char *own_result_str = AR__HEAP__MALLOC(result_size, "Build result");
-    if (!own_result_str) {
-        ar__data__destroy(own_values_data);
-        ar__data__destroy(own_template_data);
-        return false;
-    }
-    
-    size_t result_pos = 0;
-    const char *template_ptr = template_str;
-    
-    while (*template_ptr) {
-        if (*template_ptr == '{') {
-            // Process placeholder
-            if (!_process_placeholder(template_ptr, own_values_data, 
-                                      &own_result_str, &result_size, &result_pos, &template_ptr)) {
-                // If no closing brace found, just copy the '{' character
-                char *new_buffer = _ensure_buffer_capacity(own_result_str, &result_size, result_pos + 2);
-                if (!new_buffer) {
-                    AR__HEAP__FREE(own_result_str);
-                    ar__data__destroy(own_values_data);
-                    ar__data__destroy(own_template_data);
-                    return false;
-                }
-                own_result_str = new_buffer;
-                own_result_str[result_pos++] = '{';
-                template_ptr++;
-            }
-        } else {
-            // Regular character, ensure capacity and copy
-            char *new_buffer = _ensure_buffer_capacity(own_result_str, &result_size, result_pos + 2);
-            if (!new_buffer) {
-                AR__HEAP__FREE(own_result_str);
-                ar__data__destroy(own_values_data);
-                ar__data__destroy(own_template_data);
-                return false;
-            }
-            own_result_str = new_buffer;
-            own_result_str[result_pos++] = *template_ptr++;
-        }
-    }
-    
-    // Null-terminate the result
-    own_result_str[result_pos] = '\0';
-    
-    // Create result data object
-    data_t *own_result = ar__data__create_string(own_result_str);
-    AR__HEAP__FREE(own_result_str);
-    
-    if (!own_result) {
-        ar__data__destroy(own_values_data);
-        ar__data__destroy(own_template_data);
-        return false;
-    }
-    
-    // Clean up
-    ar__data__destroy(own_values_data);
-    ar__data__destroy(own_template_data);
-    
-    // Store result if assigned, otherwise just destroy it
-    return _store_result_if_assigned(mut_evaluator, ref_ast, own_result);
+    // Delegate to the build instruction evaluator module
+    return ar_build_instruction_evaluator__evaluate(
+        mut_evaluator->ref_expr_evaluator,
+        mut_evaluator->mut_memory,
+        ref_ast
+    );
 }
 
 bool ar__instruction_evaluator__evaluate_method(

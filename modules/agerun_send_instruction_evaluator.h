@@ -23,7 +23,7 @@
  * @note The send instruction transfers ownership of the message to the target agent.
  *       If the send has a result assignment, it will modify the memory map.
  */
-bool ar__send_instruction_evaluator__evaluate(
+bool ar_send_instruction_evaluator__evaluate(
     expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory,
     const instruction_ast_t *ref_ast

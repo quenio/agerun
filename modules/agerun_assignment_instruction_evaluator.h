@@ -22,7 +22,7 @@
  * @return true if evaluation succeeded, false otherwise
  * @note The assignment will modify the memory map by storing the evaluated expression result
  */
-bool ar__assignment_instruction_evaluator__evaluate(
+bool ar_assignment_instruction_evaluator__evaluate(
     expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory,
     const instruction_ast_t *ref_ast

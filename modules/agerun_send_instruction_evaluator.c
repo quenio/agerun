@@ -179,7 +179,7 @@ static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluat
 /**
  * Evaluates a send instruction AST node
  */
-bool ar__send_instruction_evaluator__evaluate(
+bool ar_send_instruction_evaluator__evaluate(
     expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory,
     const instruction_ast_t *ref_ast

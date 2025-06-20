@@ -37,9 +37,6 @@ static void test_instruction_evaluator__evaluate_build_simple(void) {
     bool result = ar__instruction_evaluator__evaluate_build(evaluator, ast);
     
     // Then it should succeed and build the string
-    if (!result) {
-        fprintf(stderr, "evaluate_build returned false\n");
-    }
     assert(result == true);
     data_t *result_value = ar__data__get_map_data(memory, "result");
     assert(result_value != NULL);

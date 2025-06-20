@@ -34,7 +34,7 @@
  * @note Only the selected branch (true or false) is evaluated
  * @note If a result path is specified, the evaluated value is stored in memory
  */
-bool ar__condition_instruction_evaluator__evaluate(
+bool ar_condition_instruction_evaluator__evaluate(
     expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory,
     const instruction_ast_t *ref_ast
