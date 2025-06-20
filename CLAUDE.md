@@ -709,18 +709,19 @@ When reviewing tasks:
 
 **Before Committing (MANDATORY CHECKLIST - ALWAYS CHECK THIS)**:
 1. **Run Tests**: Ensure all changes work correctly and no memory leaks
-2. **Update TODO.md**: Mark completed tasks and add any new tasks identified
-3. **Update CHANGELOG.md**: Document completed milestones and achievements (NON-NEGOTIABLE)
-4. **Review Changes**: Use `git diff` to verify all changes are intentional
-5. **Check for temporary/backup files**: NEVER commit backup files (*.backup, *.bak, *.tmp, etc.)
-6. **Then Commit**: Only after completing steps 1-5
+2. **Update Module Documentation**: If you changed a module's interface, update its .md file
+3. **Update TODO.md**: Mark completed tasks and add any new tasks identified
+4. **Update CHANGELOG.md**: Document completed milestones and achievements (NON-NEGOTIABLE)
+5. **Review Changes**: Use `git diff` to verify all changes are intentional
+6. **Check for temporary/backup files**: NEVER commit backup files (*.backup, *.bak, *.tmp, etc.)
+7. **Then Commit**: Only after completing steps 1-6
 
-**IMPORTANT**: Always perform steps 1-5 BEFORE running `git commit`. Never skip the checklist.
+**IMPORTANT**: Always perform steps 1-6 BEFORE running `git commit`. Never skip the checklist.
 
 **Critical Reminders**:
 - CHANGELOG update is MANDATORY for every commit that completes tasks
 - Always check this checklist BEFORE running `git commit`
-- Build this mental model: Changes → Tests → CHANGELOG → Check for backups → Commit
+- Build this mental model: Changes → Tests → Documentation → TODO → CHANGELOG → Check for backups → Commit
 - Treat CHANGELOG updates as part of the work, not as optional documentation
 - NEVER commit temporary or backup files to version control
 
