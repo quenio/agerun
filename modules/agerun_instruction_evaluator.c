@@ -118,7 +118,7 @@ bool ar__instruction_evaluator__evaluate_if(
     }
     
     // Delegate to the condition instruction evaluator module
-    return ar_condition_instruction_evaluator__evaluate(
+    return ar_condition_instruction_evaluator__evaluate_legacy(
         mut_evaluator->ref_expr_evaluator,
         mut_evaluator->mut_memory,
         ref_ast

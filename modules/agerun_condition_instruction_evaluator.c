@@ -12,6 +12,14 @@
 #include <string.h>
 #include <stdio.h>
 
+/**
+ * Internal structure for condition instruction evaluator
+ */
+struct ar_condition_instruction_evaluator_s {
+    expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
+    data_t *mut_memory;                          /* Memory map (mutable reference) */
+};
+
 /* Constants */
 static const char* MEMORY_PREFIX = "memory.";
 static const size_t MEMORY_PREFIX_LEN = 7;
@@ -175,9 +183,68 @@ static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluat
 }
 
 /**
- * Evaluates a condition (if) instruction AST node
+ * Creates a new condition instruction evaluator
  */
-bool ar_condition_instruction_evaluator__evaluate(
+condition_instruction_evaluator_t* ar__condition_instruction_evaluator__create(
+    expression_evaluator_t *ref_expr_evaluator,
+    data_t *mut_memory
+) {
+    if (!ref_expr_evaluator || !mut_memory) {
+        return NULL;
+    }
+    
+    condition_instruction_evaluator_t *own_evaluator = AR__HEAP__MALLOC(
+        sizeof(condition_instruction_evaluator_t),
+        "condition_instruction_evaluator"
+    );
+    if (!own_evaluator) {
+        return NULL;
+    }
+    
+    own_evaluator->ref_expr_evaluator = ref_expr_evaluator;
+    own_evaluator->mut_memory = mut_memory;
+    
+    // Ownership transferred to caller
+    return own_evaluator;
+}
+
+/**
+ * Destroys a condition instruction evaluator
+ */
+void ar__condition_instruction_evaluator__destroy(
+    condition_instruction_evaluator_t *own_evaluator
+) {
+    if (!own_evaluator) {
+        return;
+    }
+    
+    // Note: We don't destroy the dependencies as they are borrowed references
+    AR__HEAP__FREE(own_evaluator);
+}
+
+/**
+ * Evaluates a condition (if) instruction using stored dependencies
+ */
+bool ar__condition_instruction_evaluator__evaluate(
+    condition_instruction_evaluator_t *mut_evaluator,
+    const instruction_ast_t *ref_ast
+) {
+    if (!mut_evaluator || !ref_ast) {
+        return false;
+    }
+    
+    // Delegate to the legacy function with stored dependencies
+    return ar_condition_instruction_evaluator__evaluate_legacy(
+        mut_evaluator->ref_expr_evaluator,
+        mut_evaluator->mut_memory,
+        ref_ast
+    );
+}
+
+/**
+ * Evaluates a condition (if) instruction AST node (legacy interface)
+ */
+bool ar_condition_instruction_evaluator__evaluate_legacy(
     expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory,
     const instruction_ast_t *ref_ast

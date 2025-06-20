@@ -2,45 +2,80 @@
 
 ## Overview
 
-The condition instruction evaluator module is responsible for evaluating if/else instructions in the AgeRun language. It handles conditional execution based on boolean expressions.
+The condition instruction evaluator module is responsible for evaluating if/condition instructions in the AgeRun language. It handles conditional expressions that select between two values based on a condition.
+
+This module follows an instantiable design pattern where evaluators are created with their dependencies and can be reused for multiple evaluations.
 
 ## Purpose
 
-This module extracts the conditional instruction evaluation logic from the main instruction evaluator, following the single responsibility principle. It provides specialized handling for control flow with proper instruction list execution.
+This module extracts the conditional instruction evaluation logic from the main instruction evaluator, following the single responsibility principle. It provides specialized handling for ternary conditional expressions (if(condition, true_value, false_value)).
 
 ## Key Components
+
+### Types
+
+```c
+typedef struct ar_condition_instruction_evaluator_s condition_instruction_evaluator_t;
+```
+
+An opaque type representing a condition instruction evaluator instance.
 
 ### Public Interface
 
 ```c
-bool ar_condition_instruction_evaluator__evaluate(
+condition_instruction_evaluator_t* ar__condition_instruction_evaluator__create(
+    expression_evaluator_t *ref_expr_evaluator,
+    data_t *mut_memory
+);
+```
+Creates a new condition instruction evaluator that stores its dependencies.
+
+```c
+void ar__condition_instruction_evaluator__destroy(
+    condition_instruction_evaluator_t *own_evaluator
+);
+```
+Destroys a condition instruction evaluator and frees all resources.
+
+```c
+bool ar__condition_instruction_evaluator__evaluate(
+    condition_instruction_evaluator_t *mut_evaluator,
+    const instruction_ast_t *ref_ast
+);
+```
+Evaluates a condition instruction using the stored dependencies.
+
+```c
+bool ar_condition_instruction_evaluator__evaluate_legacy(
     expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory,
     const instruction_ast_t *ref_ast
 );
 ```
+Legacy interface for backward compatibility (will be removed once instruction_evaluator is updated).
 
 ### Functionality
 
-The module evaluates if instructions of the form:
-- `if(condition) { instructions }`
-- `if(condition) { instructions } else { instructions }`
+The module evaluates conditional instructions of the form:
+- `if(condition, true_expr, false_expr)`
+- `memory.result := if(condition, true_expr, false_expr)`
 
 Key features:
-1. **Condition Evaluation**: Evaluates the condition expression
-2. **Truthiness Rules**: 
-   - Integers: 0 is false, non-zero is true
-   - Strings: empty is false, non-empty is true
-   - Other types: false
-3. **Branch Selection**: Executes then-branch if true, else-branch if false
-4. **Instruction List Execution**: Evaluates all instructions in selected branch
+1. **Condition Evaluation**: Evaluates the condition expression to determine which branch to take
+2. **Branch Selection**: Only evaluates the selected branch (true or false), not both
+3. **Result Assignment**: Stores the evaluated value when assignment is specified
+4. **Type Flexibility**: Can return any data type from either branch
+5. **Short-circuit Evaluation**: Only the selected expression is evaluated
 
 ### Memory Management
 
 The module follows strict memory ownership rules:
+- The evaluator instance owns its internal structure but not the dependencies
+- Expression evaluator and memory are borrowed references stored in the instance
 - Condition evaluation results are owned and must be destroyed
-- Each instruction in the selected branch is evaluated
-- Proper cleanup on all code paths
+- Branch evaluation results are owned by the caller when assigned
+- The create function returns ownership to the caller
+- The destroy function takes ownership and frees all resources
 
 ## Dependencies
 
@@ -54,29 +89,37 @@ The module follows strict memory ownership rules:
 
 ## Implementation Details
 
-The module:
-1. Extracts and evaluates the condition expression
-2. Determines truthiness based on data type and value
-3. Selects appropriate instruction list (then or else)
-4. Creates instruction evaluator for executing the branch
-5. Evaluates each instruction in sequence
-6. Returns true only if all instructions succeed
+The module evaluates all three arguments:
+1. Condition must evaluate to an integer (0 = false, non-zero = true)
+2. True expression is evaluated only if condition is true
+3. False expression is evaluated only if condition is false
+4. Uses helper functions for expression parsing and evaluation
+5. Handles result storage for assigned conditionals
 
 ## Usage Example
 
 ```c
-// Create evaluator
+// Create memory and expression evaluator
+data_t *memory = ar__data__create_map();
 expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
 
-// Parse if instruction: if(memory.count > 0) { send(1, "positive") }
+// Create condition instruction evaluator
+condition_instruction_evaluator_t *cond_eval = ar__condition_instruction_evaluator__create(
+    expr_eval, memory
+);
+
+// Parse if instruction: result := if(x > 5, 100, 200)
 instruction_ast_t *ast = ar__instruction_parser__parse_if(parser);
 
 // Evaluate the condition
-bool success = ar_condition_instruction_evaluator__evaluate(
-    expr_eval, memory, ast
-);
+bool success = ar__condition_instruction_evaluator__evaluate(cond_eval, ast);
 
-// Instructions in the appropriate branch have been executed
+// The appropriate value (100 or 200) has been stored in memory.result
+
+// Cleanup
+ar__condition_instruction_evaluator__destroy(cond_eval);
+ar__expression_evaluator__destroy(expr_eval);
+ar__data__destroy(memory);
 ```
 
 ## Testing

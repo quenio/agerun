@@ -298,7 +298,7 @@ This order ensures clean separation of concerns across all modules.
 - [ ] Refactor specialized evaluators to be instantiable modules:
   - [x] Update assignment_instruction_evaluator to have create/destroy functions
   - [x] Update send_instruction_evaluator to have create/destroy functions
-  - [ ] Update condition_instruction_evaluator to have create/destroy functions
+  - [x] Update condition_instruction_evaluator to have create/destroy functions (Completed 2025-06-20)
   - [ ] Update parse_instruction_evaluator to have create/destroy functions
   - [ ] Update build_instruction_evaluator to have create/destroy functions
   - [ ] Update method_instruction_evaluator to have create/destroy functions

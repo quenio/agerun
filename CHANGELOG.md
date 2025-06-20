@@ -3,7 +3,7 @@
 This document tracks completed milestones and major achievements for the AgeRun project.
 
 ## 2025-06-20
-- ✅ Started refactoring specialized evaluators to be instantiable modules:
+- ✅ Continuing refactoring of specialized evaluators to be instantiable modules:
   - ✅ Updated assignment_instruction_evaluator with create/destroy functions:
     - ✅ Added opaque struct ar_assignment_instruction_evaluator_s
     - ✅ Implemented create function that stores dependencies (expression_evaluator, memory)
@@ -21,6 +21,15 @@ This document tracks completed milestones and major achievements for the AgeRun 
     - ✅ All tests pass with zero memory leaks (7 tests, 172 allocations)
     - ✅ Updated module documentation to reflect instantiable design
     - ✅ Follows TDD methodology: Red (failing test) → Green (implementation) → documentation
+  - ✅ Updated condition_instruction_evaluator with create/destroy functions:
+    - ✅ Added opaque struct ar_condition_instruction_evaluator_s
+    - ✅ Implemented create function that stores dependencies (expression_evaluator, memory)
+    - ✅ Implemented destroy function for proper cleanup
+    - ✅ Updated evaluate function to use stored dependencies
+    - ✅ Added legacy wrapper for backward compatibility with instruction_evaluator
+    - ✅ All tests pass with zero memory leaks (8 tests, 360 allocations)
+    - ✅ Updated module documentation to reflect instantiable design
+    - ✅ Follows complete TDD methodology: Red → Green → Refactor for all 3 cycles
 
 ## 2025-06-20 (Earlier)
 - ✅ Completed extraction of instruction evaluator functions into dedicated modules:

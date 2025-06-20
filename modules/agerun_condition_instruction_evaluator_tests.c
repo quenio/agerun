@@ -6,6 +6,102 @@
 #include "agerun_expression_evaluator.h"
 #include "agerun_instruction_ast.h"
 #include "agerun_data.h"
+#include "agerun_condition_instruction_evaluator.h"
+
+static void test_condition_instruction_evaluator__create_destroy(void) {
+    // Given memory and expression evaluator
+    data_t *own_memory = ar__data__create_map();
+    assert(own_memory != NULL);
+    expression_evaluator_t *own_expr_eval = ar__expression_evaluator__create(own_memory, NULL);
+    assert(own_expr_eval != NULL);
+    
+    // When creating a condition instruction evaluator
+    condition_instruction_evaluator_t *own_evaluator = ar__condition_instruction_evaluator__create(
+        own_expr_eval, own_memory
+    );
+    
+    // Then it should create successfully
+    assert(own_evaluator != NULL);
+    
+    // When destroying the evaluator
+    ar__condition_instruction_evaluator__destroy(own_evaluator);
+    
+    // Cleanup
+    ar__expression_evaluator__destroy(own_expr_eval);
+    ar__data__destroy(own_memory);
+}
+
+static void test_condition_instruction_evaluator__evaluate_with_instance(void) {
+    // Given memory with a condition value and an evaluator instance
+    data_t *own_memory = ar__data__create_map();
+    assert(own_memory != NULL);
+    assert(ar__data__set_map_data(own_memory, "x", ar__data__create_integer(10)));
+    
+    expression_evaluator_t *own_expr_eval = ar__expression_evaluator__create(own_memory, NULL);
+    assert(own_expr_eval != NULL);
+    
+    condition_instruction_evaluator_t *own_evaluator = ar__condition_instruction_evaluator__create(
+        own_expr_eval, own_memory
+    );
+    assert(own_evaluator != NULL);
+    
+    // When creating an if AST node with true condition
+    const char *args[] = {"memory.x > 5", "100", "200"};
+    instruction_ast_t *own_ast = ar__instruction_ast__create_function_call(
+        INST_AST_IF, "if", args, 3, "memory.result"
+    );
+    assert(own_ast != NULL);
+    
+    // When evaluating using the instance
+    bool result = ar__condition_instruction_evaluator__evaluate(own_evaluator, own_ast);
+    
+    // Then it should succeed and store the true value
+    assert(result == true);
+    data_t *ref_result_value = ar__data__get_map_data(own_memory, "result");
+    assert(ref_result_value != NULL);
+    assert(ar__data__get_type(ref_result_value) == DATA_INTEGER);
+    assert(ar__data__get_integer(ref_result_value) == 100);
+    
+    // Cleanup
+    ar__instruction_ast__destroy(own_ast);
+    ar__condition_instruction_evaluator__destroy(own_evaluator);
+    ar__expression_evaluator__destroy(own_expr_eval);
+    ar__data__destroy(own_memory);
+}
+
+static void test_condition_instruction_evaluator__legacy_wrapper(void) {
+    // Given memory and expression evaluator
+    data_t *own_memory = ar__data__create_map();
+    assert(own_memory != NULL);
+    assert(ar__data__set_map_data(own_memory, "flag", ar__data__create_integer(0)));
+    
+    expression_evaluator_t *own_expr_eval = ar__expression_evaluator__create(own_memory, NULL);
+    assert(own_expr_eval != NULL);
+    
+    // When creating an if AST node with false condition
+    const char *args[] = {"memory.flag", "\"yes\"", "\"no\""};
+    instruction_ast_t *own_ast = ar__instruction_ast__create_function_call(
+        INST_AST_IF, "if", args, 3, "memory.result"
+    );
+    assert(own_ast != NULL);
+    
+    // When evaluating using the legacy interface directly
+    bool result = ar_condition_instruction_evaluator__evaluate_legacy(
+        own_expr_eval, own_memory, own_ast
+    );
+    
+    // Then it should succeed and store the false value
+    assert(result == true);
+    data_t *ref_result_value = ar__data__get_map_data(own_memory, "result");
+    assert(ref_result_value != NULL);
+    assert(ar__data__get_type(ref_result_value) == DATA_STRING);
+    assert(strcmp(ar__data__get_string(ref_result_value), "no") == 0);
+    
+    // Cleanup
+    ar__instruction_ast__destroy(own_ast);
+    ar__expression_evaluator__destroy(own_expr_eval);
+    ar__data__destroy(own_memory);
+}
 
 static void test_instruction_evaluator__evaluate_if_true_condition(void) {
     // Given an evaluator with memory containing a condition
@@ -208,6 +304,15 @@ static void test_instruction_evaluator__evaluate_if_invalid_args(void) {
 
 int main(void) {
     printf("Starting condition instruction_evaluator tests...\n");
+    
+    test_condition_instruction_evaluator__create_destroy();
+    printf("test_condition_instruction_evaluator__create_destroy passed!\n");
+    
+    test_condition_instruction_evaluator__evaluate_with_instance();
+    printf("test_condition_instruction_evaluator__evaluate_with_instance passed!\n");
+    
+    test_condition_instruction_evaluator__legacy_wrapper();
+    printf("test_condition_instruction_evaluator__legacy_wrapper passed!\n");
     
     test_instruction_evaluator__evaluate_if_true_condition();
     printf("test_instruction_evaluator__evaluate_if_true_condition passed!\n");
