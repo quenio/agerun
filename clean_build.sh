@@ -159,9 +159,26 @@ if [ $exec_exit_code -eq 0 ]; then
     echo "Executable: ✓"
     # Wait a moment for report to be written
     sleep 1
-    # Check if executable memory report was created
+    # Check if executable memory report was created and check for leaks
     if [ -f "bin/memory_report_agerun.log" ]; then
-        echo "Executable memory report created"
+        # Check for memory leaks in executable
+        actual_leaks=$(grep -E "^Actual memory leaks: ([0-9]+)" "bin/memory_report_agerun.log" 2>/dev/null | awk '{print $4}')
+        
+        # If we can't find the "Actual memory leaks" line, fall back to old behavior
+        if [ -z "$actual_leaks" ]; then
+            if grep -q "No memory leaks detected" "bin/memory_report_agerun.log" 2>/dev/null; then
+                echo "Executable memory: No leaks detected ✓"
+            else
+                echo "Executable memory: LEAKS DETECTED ✗"
+                echo "Check bin/memory_report_agerun.log for details"
+            fi
+        # If we found it and it's greater than 0, we have real leaks
+        elif [ "$actual_leaks" -gt 0 ]; then
+            echo "Executable memory: LEAKS DETECTED ($actual_leaks leaks) ✗"
+            echo "Check bin/memory_report_agerun.log for details"
+        else
+            echo "Executable memory: No leaks detected ✓"
+        fi
     else
         echo "Warning: Executable memory report not found"
     fi
