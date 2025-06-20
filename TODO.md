@@ -307,6 +307,7 @@ This order ensures clean separation of concerns across all modules.
   - [ ] Each evaluator should store its dependencies (expression_evaluator, memory, context)
   - [ ] Update evaluate functions to use stored dependencies instead of parameters
   - [ ] Write tests for create/destroy lifecycle of each evaluator
+  - [ ] Ensure all evaluators use ar_<module>_s naming for opaque structs (per new guideline)
 - [ ] Update instruction_evaluator to create and manage specialized evaluators:
   - [ ] Add fields to instruction_evaluator struct for all specialized evaluators
   - [ ] Create all specialized evaluators in ar__instruction_evaluator__create()
@@ -314,6 +315,7 @@ This order ensures clean separation of concerns across all modules.
   - [ ] Destroy all specialized evaluators in ar__instruction_evaluator__destroy()
   - [ ] Update delegation functions to use created evaluator instances
   - [ ] Ensure proper initialization order and cleanup
+  - [ ] Remove legacy wrapper functions from specialized evaluators once integration is complete
 - [ ] Add main evaluate function to instruction_evaluator module:
   - [ ] Create ar__instruction_evaluator__evaluate() that takes instruction AST
   - [ ] Implement dispatch logic based on instruction type
