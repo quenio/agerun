@@ -173,7 +173,17 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Consider expression evaluation orchestration module
   - [ ] Identify proper abstractions for value ownership transformation
 
-#### Phase 5: Parser Integration (MEDIUM)
+#### Phase 5: Expression AST Integration (HIGH)
+- [ ] **Integrate expression parser into instruction parser**:
+  - [ ] Update instruction parser to use expression_parser for parsing expressions
+  - [ ] Store parsed expression ASTs directly in instruction AST nodes instead of string literals
+  - [ ] Eliminate need for instruction evaluators to parse expressions at evaluation time
+  - [ ] Update instruction_ast module to hold expression AST references instead of strings
+  - [ ] Ensure proper memory management for embedded expression ASTs
+  - [ ] Update all instruction evaluators to use pre-parsed expression ASTs
+  - [ ] This achieves complete separation: parse once during instruction parsing, evaluate during execution
+
+#### Phase 6: Parser Integration (MEDIUM)
 - [ ] **Integrate specialized parsers into interpreter**:
   - [ ] Update interpreter to use instruction_parser with specialized modules
   - [ ] Remove any remaining direct parsing logic from interpreter
@@ -181,6 +191,19 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [ ] **Update instruction module to use specialized parsers**:
   - [ ] Replace remaining parsing logic with parser module calls
   - [ ] Ensure instruction module becomes thin facade over parsers
+
+#### Phase 7: Module Responsibility Review (HIGH)
+- [ ] **Review instruction and expression module roles after integration**:
+  - [ ] Analyze if instruction module still has clear responsibility once interpreter uses instruction_parser directly
+  - [ ] Analyze if expression module still has clear responsibility once interpreter uses expression_parser and expression_evaluator directly
+  - [ ] Determine if these modules are needed as facades or can be eliminated:
+    - [ ] If instruction module becomes redundant: migrate any remaining functionality and deprecate
+    - [ ] If expression module becomes redundant: migrate any remaining functionality and deprecate
+    - [ ] If modules provide value as facades: document clear responsibilities and maintain
+  - [ ] Ensure no circular dependencies are introduced during integration
+  - [ ] Update module dependency tree to reflect final architecture
+  - [ ] Consider impact on existing callers and provide migration path if needed
+  - [ ] This review ensures clean final architecture with no redundant facade modules
 
 #### Completed Foundation Work:
 - [x] Created 9 specialized instruction evaluator modules (assignment, send, condition, parse, build, method, agent, destroy_agent, destroy_method)
