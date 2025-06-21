@@ -860,6 +860,15 @@ When refactoring functions that have similar implementations:
   - Wrapper removal: Merge wrapped function into wrapper by updating parameter references
   - Consolidation: Merge similar functions by parameterizing differences
   - Instance migration: Convert functions using parameters to use instance fields
+- **Complex Merges with Helper Functions**:
+  - When merging functions with many helper functions, first move helpers to be adjacent to the target function
+  - This makes the merge cleaner and easier to verify
+  - Always move helpers without changing them - only relocate, don't modify
+  - Then perform the merge with the helper functions already in the right location
+- **Error Recovery Pattern**:
+  - If complex refactoring goes wrong, use "Step 0: revert to known state"
+  - Start from clean state rather than trying to fix broken intermediate state
+  - Better to lose work and restart cleanly than to debug complex merge conflicts
 - **Example**: Converting from parameters to instance variables:
   - Replace parameter `expr_eval` with `self->ref_expr_evaluator`
   - Replace parameter `memory` with `self->mut_memory`
