@@ -93,60 +93,7 @@ static void test_parse_expression_assignment(void) {
     ar__instruction_parser__destroy(own_parser);
 }
 
-static void test_parse_simple_send(void) {
-    printf("Testing simple send parsing...\n");
-    
-    // Given a send function call
-    const char *instruction = "send(0, \"Hello\")";
-    
-    // When creating a parser and parsing the instruction
-    instruction_parser_t *own_parser = ar__instruction_parser__create();
-    assert(own_parser != NULL);
-    
-    instruction_ast_t *own_ast = ar__instruction_parser__parse_send(own_parser, instruction, NULL);
-    
-    // Then it should parse as a send function
-    assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_SEND);
-    assert(strcmp(ar__instruction_ast__get_function_name(own_ast), "send") == 0);
-    assert(ar__instruction_ast__has_result_assignment(own_ast) == false);
-    
-    // Verify arguments
-    list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
-    assert(own_args != NULL);
-    assert(ar__list__count(own_args) == 2);
-    void **own_items = ar__list__items(own_args);
-    assert(own_items != NULL);
-    assert(strcmp((const char*)own_items[0], "0") == 0);
-    assert(strcmp((const char*)own_items[1], "\"Hello\"") == 0);
-    AR__HEAP__FREE(own_items);
-    ar__list__destroy(own_args);
-    
-    ar__instruction_ast__destroy(own_ast);
-    ar__instruction_parser__destroy(own_parser);
-}
-
-static void test_parse_send_with_assignment(void) {
-    printf("Testing send with assignment parsing...\n");
-    
-    // Given a send with result assignment
-    const char *instruction = "memory.result := send(1, \"Test\")";
-    
-    // When creating a parser and parsing the instruction
-    instruction_parser_t *own_parser = ar__instruction_parser__create();
-    assert(own_parser != NULL);
-    
-    instruction_ast_t *own_ast = ar__instruction_parser__parse_send(own_parser, instruction, "memory.result");
-    
-    // Then it should parse with result assignment
-    assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_SEND);
-    assert(ar__instruction_ast__has_result_assignment(own_ast) == true);
-    assert(strcmp(ar__instruction_ast__get_function_result_path(own_ast), "memory.result") == 0);
-    
-    ar__instruction_ast__destroy(own_ast);
-    ar__instruction_parser__destroy(own_parser);
-}
+// Send tests moved to agerun_send_instruction_parser_tests.c
 
 static void test_parse_if_function(void) {
     printf("Testing if function parsing...\n");
@@ -366,17 +313,7 @@ static void test_parse_error_handling(void) {
         ar__instruction_parser__destroy(own_parser);
     }
     
-    // Test 3: Malformed send function
-    {
-        const char *instruction = "send(";
-        instruction_parser_t *own_parser = ar__instruction_parser__create();
-        assert(own_parser != NULL);
-        
-        instruction_ast_t *own_ast = ar__instruction_parser__parse_send(own_parser, instruction, NULL);
-        assert(own_ast == NULL);
-        
-        ar__instruction_parser__destroy(own_parser);
-    }
+    // Test 3: Send error tests moved to agerun_send_instruction_parser_tests.c
 }
 
 static void test_parse_empty_instruction(void) {
@@ -431,8 +368,7 @@ int main(void) {
     test_parse_expression_assignment();
     
     // Function call tests
-    test_parse_simple_send();
-    test_parse_send_with_assignment();
+    // Send tests moved to agerun_send_instruction_parser_tests.c
     test_parse_if_function();
     test_parse_method_function();
     test_parse_agent_function();

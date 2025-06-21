@@ -192,6 +192,13 @@ agerun_assignment_instruction_parser
 │       └──c──> agerun_heap
 └──c──> agerun_heap
 
+agerun_send_instruction_parser
+├──c──> agerun_instruction_ast
+│       ├──c──> agerun_list
+│       └──c──> agerun_heap
+├──c──> agerun_string
+└──c──> agerun_heap
+
 agerun_expression_parser
 ├──c──> agerun_expression_ast
 │       ├──c──> agerun_list
@@ -492,6 +499,12 @@ agerun_instruction_parser_tests
 agerun_assignment_instruction_parser_tests
 ├──c──> agerun_assignment_instruction_parser (module under test)
 ├──c──> agerun_instruction_ast
+└──c──> agerun_heap
+
+agerun_send_instruction_parser_tests
+├──c──> agerun_send_instruction_parser (module under test)
+├──c──> agerun_instruction_ast
+├──c──> agerun_list
 └──c──> agerun_heap
 
 agerun_interpreter_tests
