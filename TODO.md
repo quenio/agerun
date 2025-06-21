@@ -342,13 +342,13 @@ This order ensures clean separation of concerns across all modules.
     - [x] Remove function declaration from header
     - [x] Remove function implementation from source
     - [x] Run tests to ensure nothing breaks
-  - [ ] Remove ar_condition_instruction_evaluator__evaluate_legacy (TDD Cycle 3)
-    - [ ] Verify no usage of this legacy function in codebase
-    - [ ] Replace any found usage with instance-based approach
-    - [ ] Write test to verify module works without legacy function
-    - [ ] Remove function declaration from header
-    - [ ] Remove function implementation from source
-    - [ ] Run tests to ensure nothing breaks
+  - [x] Remove ar_condition_instruction_evaluator__evaluate_legacy (TDD Cycle 3) (Completed 2025-06-21)
+    - [x] Verify no usage of this legacy function in codebase
+    - [x] Replace any found usage with instance-based approach
+    - [x] Write test to verify module works without legacy function
+    - [x] Remove function declaration from header
+    - [x] Remove function implementation from source
+    - [x] Run tests to ensure nothing breaks
   - [ ] Remove ar_parse_instruction_evaluator__evaluate_legacy (TDD Cycle 4)
     - [ ] Verify no usage of this legacy function in codebase
     - [ ] Replace any found usage with instance-based approach

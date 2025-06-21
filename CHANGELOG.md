@@ -10,8 +10,14 @@ This document tracks completed milestones and major achievements for the AgeRun 
     - ✅ Updated parameter references to use instance variables
     - ✅ All 7 send instruction evaluator tests pass
     - ✅ Zero memory leaks (217 allocations, all freed)
+  - ✅ Removed ar_condition_instruction_evaluator__evaluate_legacy (TDD Cycle 3)
+    - ✅ Updated test to use instance-based approach
+    - ✅ Merged legacy implementation into main evaluate function
+    - ✅ Updated parameter references: mut_expr_evaluator → mut_evaluator->ref_expr_evaluator, mut_memory → mut_evaluator->mut_memory
+    - ✅ All 8 condition instruction evaluator tests pass
+    - ✅ Zero memory leaks (406 allocations, all freed)
   - ✅ All tests continue to pass with no memory leaks (45 tests total)
-  - ✅ 2 of 9 legacy wrapper functions have been removed
+  - ✅ 3 of 9 legacy wrapper functions have been removed
 
 ## 2025-06-20
 - ✅ Fixed naming conflict in parse_instruction_evaluator causing abort trap:

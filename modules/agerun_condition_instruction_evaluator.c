@@ -12,12 +12,6 @@
 #include <string.h>
 #include <stdio.h>
 
-/* Forward declaration of legacy function */
-bool ar_condition_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
-    const instruction_ast_t *ref_ast
-);
 
 /**
  * Internal structure for condition instruction evaluator
@@ -240,26 +234,6 @@ bool ar_condition_instruction_evaluator__evaluate(
         return false;
     }
     
-    // Delegate to the legacy function with stored dependencies
-    return ar_condition_instruction_evaluator__evaluate_legacy(
-        mut_evaluator->ref_expr_evaluator,
-        mut_evaluator->mut_memory,
-        ref_ast
-    );
-}
-
-/**
- * Evaluates a condition (if) instruction AST node (legacy interface)
- */
-bool ar_condition_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
-    const instruction_ast_t *ref_ast
-) {
-    if (!mut_expr_evaluator || !mut_memory || !ref_ast) {
-        return false;
-    }
-    
     // Verify this is an if AST node
     if (ar__instruction_ast__get_type(ref_ast) != INST_AST_IF) {
         return false;
@@ -296,7 +270,7 @@ bool ar_condition_instruction_evaluator__evaluate_legacy(
         return false;
     }
     
-    data_t *own_condition_data = _evaluate_expression_ast(mut_expr_evaluator, condition_ast);
+    data_t *own_condition_data = _evaluate_expression_ast(mut_evaluator->ref_expr_evaluator, condition_ast);
     ar__expression_ast__destroy(condition_ast);
     
     if (!own_condition_data) {
@@ -329,7 +303,7 @@ bool ar_condition_instruction_evaluator__evaluate_legacy(
         return false;
     }
     
-    data_t *own_result = _evaluate_expression_ast(mut_expr_evaluator, value_ast);
+    data_t *own_result = _evaluate_expression_ast(mut_evaluator->ref_expr_evaluator, value_ast);
     ar__expression_ast__destroy(value_ast);
     
     if (!own_result) {
@@ -351,7 +325,7 @@ bool ar_condition_instruction_evaluator__evaluate_legacy(
         }
         
         // Store the result value (transfers ownership)
-        bool store_success = ar__data__set_map_data(mut_memory, key_path, own_result);
+        bool store_success = ar__data__set_map_data(mut_evaluator->mut_memory, key_path, own_result);
         if (!store_success) {
             ar__data__destroy(own_result);
         }
