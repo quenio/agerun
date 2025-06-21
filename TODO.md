@@ -129,6 +129,18 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 **Status**: Critical refactoring work remains to complete the modular architecture. While specialized evaluators have been created and legacy functions removed, several key integration and refactoring tasks are incomplete.
 
+**Critical Order of Implementation**:
+1. Phase 1: Create Specialized Parser Modules ✅ (COMPLETED)
+2. Phase 2: Expression AST Integration Prerequisites (MUST DO FIRST)
+3. Phase 3: Unified Instruction Evaluator Interface 
+4. Phase 4: Parser Integration into Interpreter
+5. Phase 5: Method Parsing Refactoring
+6. Phase 6: Legacy Code Removal
+7. Phase 7: Extract Common Helper Functions
+8. Phase 8: Module Responsibility Review
+
+**Key Principle**: The interpreter will ONLY use facade methods - never specialized parsers/evaluators directly.
+
 #### Phase 1: Create Specialized Parser Modules (CRITICAL - HIGHEST PRIORITY)
 - [ ] **Extract instruction parsing into specialized modules** (mirror evaluator pattern):
   - [x] Create `assignment_instruction_parser` module with create/destroy lifecycle (Completed 2025-06-21)
@@ -152,23 +164,67 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Delegate ALL actual parsing to specialized parsers
   - [ ] Ensure facade only dispatches, never parses
 
-#### Phase 2: Unified Instruction Evaluator Interface (CRITICAL - SECOND PRIORITY)
+#### Phase 2: Expression AST Integration Prerequisites (CRITICAL - MUST DO FIRST)
+- [ ] **Integrate expression parser into instruction parser**:
+  - [ ] TDD Cycle 1: Update assignment_instruction_parser to parse expressions as ASTs
+    - [ ] Red: Test that assignment parser creates expression ASTs instead of storing strings
+    - [ ] Green: Integrate expression_parser, store expression_ast_t* in instruction AST
+    - [ ] Refactor: Ensure proper memory management for embedded ASTs
+  - [ ] TDD Cycle 2-9: Update each specialized parser (send, condition, parse, build, method, agent, destroy) to use expression ASTs
+  - [ ] TDD Cycle 10: Update instruction_ast module to hold expression AST references
+    - [ ] Add expression_ast_t* fields alongside or replacing string fields
+    - [ ] Update accessors to work with ASTs
+    - [ ] Ensure proper ownership and destruction of embedded ASTs
+  - [ ] TDD Cycle 11: Update all instruction evaluators to use pre-parsed expression ASTs
+    - [ ] Remove expression parsing from evaluators
+    - [ ] Use expression ASTs directly
+    - [ ] This achieves complete separation: parse once during instruction parsing, evaluate during execution
+
+#### Phase 3: Unified Instruction Evaluator Interface (CRITICAL - SECOND PRIORITY)
 - [ ] **Create single `ar_instruction_evaluator__evaluate()` function**:
-  - [ ] Accept instruction AST and dispatch to appropriate specialized evaluator
-  - [ ] Use instruction type from AST to determine which evaluator to call
-  - [ ] Maintain proper error handling and memory management
-  - [ ] Replace direct calls to specialized evaluator functions with unified interface
-- [ ] **Update interpreter to use unified instruction evaluation interface**:
-  - [ ] Replace individual specialized evaluator calls with single evaluate function
-  - [ ] Simplify interpreter instruction evaluation logic
-  - [ ] Ensure all instruction types work through unified interface
+  - [ ] TDD Cycle 1: Create the unified evaluate method
+    - [ ] Red: Test that ar_instruction_evaluator__evaluate() exists and works for assignment
+    - [ ] Green: Implement switch dispatch based on AST type
+    - [ ] Refactor: Ensure all AST types are covered
+  - [ ] TDD Cycle 2: Test all instruction types through unified interface
+    - [ ] Red: Test each instruction type works through unified method
+    - [ ] Green: Add all cases to switch statement
+    - [ ] Refactor: Extract common patterns
+  - [ ] IMPORTANT: This is a facade method that ONLY dispatches, never evaluates directly
 
-#### Phase 3: Parser Integration into Interpreter (CRITICAL - THIRD PRIORITY)
-- [ ] **Integrate unified instruction_parser into interpreter (REPLACE legacy parsing)**:
-  - [ ] Update interpreter to use `ar_instruction_parser__parse()` instead of `ar__instruction__parse()`
-  - [ ] Replace legacy parsing with modern `instruction_parser` + `instruction_ast` approach
+#### Phase 4: Parser Integration into Interpreter (CRITICAL - THIRD PRIORITY)
+- [ ] **Detailed integration plan using FACADES ONLY**:
+  - [ ] TDD Cycle 1: Add parser/evaluator instances to interpreter struct
+    - [ ] Red: Test that interpreter has parser instances
+    - [ ] Green: Add fields: instruction_parser_t*, expression_parser_t*, expression_evaluator_t*
+    - [ ] Refactor: Ensure proper ownership prefixes
+  - [ ] TDD Cycle 2: Update includes and create/destroy lifecycle
+    - [ ] Red: Test parser lifecycle
+    - [ ] Green: Create parsers in create(), destroy in destroy()
+    - [ ] Refactor: Add error handling for creation failures
+  - [ ] TDD Cycle 3: Replace execute_instruction to use facades only
+    - [ ] Red: Test new implementation pattern
+    - [ ] Green: Parse with ar_instruction_parser__parse(), evaluate with ar_instruction_evaluator__evaluate()
+    - [ ] Refactor: Extract common error handling
+  - [ ] TDD Cycle 4-10: Test each instruction type through facades
+    - [ ] Assignment: memory.x := 42
+    - [ ] Send: send(1, "hello") and memory.result := send(...)
+    - [ ] If: memory.x := if(cond, 1, 2)
+    - [ ] Parse/Build: parse("{x}", "x=42"), build("{x}", map)
+    - [ ] Method/Agent: method("test", "code", "1.0"), agent("echo", "1.0")
+    - [ ] Destroy: destroy(1), destroy("method", "1.0")
+  - [ ] TDD Cycle 11: Remove legacy execute functions
+    - [ ] Red: Remove all _execute_* functions
+    - [ ] Green: Ensure tests still pass
+    - [ ] Refactor: Remove legacy includes/structs
+  - [ ] TDD Cycle 12: Update method execution to use facades
+    - [ ] Red: Test multi-line method execution
+    - [ ] Green: Parse each line with facade, evaluate with facade
+    - [ ] Refactor: Consider performance optimizations
+  - [ ] CRITICAL: NEVER include specialized parser/evaluator headers in interpreter
+  - [ ] CRITICAL: ONLY use facade methods: ar_instruction_parser__parse() and ar_instruction_evaluator__evaluate()
 
-#### Phase 4: Method Parsing Refactoring (CRITICAL - DEPENDS ON PHASE 3)
+#### Phase 5: Method Parsing Refactoring (CRITICAL - DEPENDS ON PHASE 4)
 - [ ] **Move parsing responsibility from interpreter to methodology**:
   - [ ] Create a method parser module that parses entire method definitions
   - [ ] Method parser should use instruction_parser for parsing individual instructions
@@ -176,22 +232,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Update method storage to store AST instead of source code
   - [ ] Interpreter should only evaluate, never parse
   - [ ] This ensures clean separation: methodology handles parsing, interpreter handles evaluation
-  - [ ] Update interpreter to work with `instruction_ast_t` nodes instead of legacy parsed structures
-  - [ ] Ensure all instruction types (assignment, send, if, parse, build, method, agent, destroy) work with new parser
-  - [ ] Remove dependency on legacy `agerun_instruction` module from interpreter
-  - [ ] Verify all existing functionality preserved during integration
 
-#### Phase 4: Expression AST Integration (HIGH)
-- [ ] **Integrate expression parser into instruction parser**:
-  - [ ] Update instruction parser to use expression_parser for parsing expressions
-  - [ ] Store parsed expression ASTs directly in instruction AST nodes instead of string literals
-  - [ ] Eliminate need for instruction evaluators to parse expressions at evaluation time
-  - [ ] Update instruction_ast module to hold expression AST references instead of strings
-  - [ ] Ensure proper memory management for embedded expression ASTs
-  - [ ] Update all instruction evaluators to use pre-parsed expression ASTs
-  - [ ] This achieves complete separation: parse once during instruction parsing, evaluate during execution
-
-#### Phase 5: Legacy Code Removal (HIGH)
+#### Phase 6: Legacy Code Removal (HIGH)
 - [ ] **Remove legacy parsing code from instruction module**:
   - [ ] Remove the 704-line `_parse_function_call` function entirely
   - [ ] Remove `_parse_instruction`, `_parse_function_instruction`, and related legacy parsing functions
@@ -207,7 +249,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Update any remaining callers to use modern parser/evaluator modules
   - [ ] Update module dependency tree documentation
 
-#### Phase 6: Extract Common Helper Functions (MEDIUM)
+#### Phase 7: Extract Common Helper Functions (MEDIUM)
 - [ ] **Eliminate `_copy_data_value` duplication across evaluators**:
   - [ ] Evaluate if this belongs in data module as `ar_data__deep_copy()`
   - [ ] Or create dedicated value transformation module
@@ -217,7 +259,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Consider expression evaluation orchestration module
   - [ ] Identify proper abstractions for value ownership transformation
 
-#### Phase 7: Module Responsibility Review and Final Architecture (HIGH)
+#### Phase 8: Module Responsibility Review and Final Architecture (HIGH)
 - [ ] **Review instruction and expression module roles after integration**:
   - [ ] Analyze if instruction module still has clear responsibility once interpreter uses instruction_parser directly
   - [ ] Analyze if expression module still has clear responsibility once interpreter uses expression_parser and expression_evaluator directly
