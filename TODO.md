@@ -129,51 +129,44 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 **Status**: Critical refactoring work remains to complete the modular architecture. While specialized evaluators have been created and legacy functions removed, several key integration and refactoring tasks are incomplete.
 
-#### Phase 1: Complete Parser Refactoring (CRITICAL)
-- [ ] **Refactor the 704-line `_parse_function_call` function in `agerun_instruction.c`**:
-  - [ ] Extract individual function parsers: `_parse_send()`, `_parse_if()`, `_parse_parse()`, etc.
-  - [ ] Extract common argument parsing helpers: `_parse_function_arguments()`, `_extract_argument_between_delimiters()`
-  - [ ] Use dispatch pattern based on function name instead of massive conditional logic
-  - [ ] Follow TDD methodology: write tests first, ensure no memory leaks
-  - [ ] Target: All functions under 50 lines
-
-#### Phase 2: Create Specialized Parser Modules (HIGH)
+#### Phase 1: Create Specialized Parser Modules (CRITICAL - HIGHEST PRIORITY)
 - [ ] **Extract instruction parsing into specialized modules** (mirror evaluator pattern):
-  - [ ] Create `assignment_instruction_parser` module
-  - [ ] Create `send_instruction_parser` module  
-  - [ ] Create `condition_instruction_parser` module
-  - [ ] Create `parse_instruction_parser` module
-  - [ ] Create `build_instruction_parser` module
-  - [ ] Create `method_instruction_parser` module
-  - [ ] Create `agent_instruction_parser` module
-  - [ ] Create `destroy_instruction_parser` module
-- [ ] **Update `instruction_parser` to coordinate specialized parsers**:
-  - [ ] Add parser instances to instruction_parser struct
-  - [ ] Implement dispatch pattern for parsing different instruction types
-  - [ ] Ensure consistent error handling across all parsers
+  - [ ] Create `assignment_instruction_parser` module with create/destroy lifecycle
+  - [ ] Create `send_instruction_parser` module with create/destroy lifecycle  
+  - [ ] Create `condition_instruction_parser` module with create/destroy lifecycle
+  - [ ] Create `parse_instruction_parser` module with create/destroy lifecycle
+  - [ ] Create `build_instruction_parser` module with create/destroy lifecycle
+  - [ ] Create `method_instruction_parser` module with create/destroy lifecycle
+  - [ ] Create `agent_instruction_parser` module with create/destroy lifecycle
+  - [ ] Create `destroy_instruction_parser` module with create/destroy lifecycle
+- [ ] **Update `instruction_parser` to become a facade coordinating specialized parsers**:
+  - [ ] Add parser instances to instruction_parser struct (like instruction_evaluator does)
+  - [ ] Create single `ar_instruction_parser__parse()` method that dispatches to appropriate specialized parser
+  - [ ] Remove individual `parse_send()`, `parse_if()`, etc. functions from main parser
+  - [ ] Implement dispatch pattern based on instruction content analysis (detect assignment vs function call vs other)
+  - [ ] Ensure consistent error handling across all specialized parsers
 
-#### Phase 3: Unified Instruction Evaluator Interface (HIGH)
+#### Phase 2: Unified Instruction Evaluator Interface (CRITICAL - SECOND PRIORITY)
 - [ ] **Create single `ar_instruction_evaluator__evaluate()` function**:
   - [ ] Accept instruction AST and dispatch to appropriate specialized evaluator
-  - [ ] Deprecate direct calls to specialized evaluator functions
-  - [ ] Maintain backward compatibility during transition
   - [ ] Use instruction type from AST to determine which evaluator to call
-- [ ] **Update interpreter to use unified interface**:
-  - [ ] Replace specialized evaluator calls with single evaluate function
-  - [ ] Simplify interpreter logic with unified instruction evaluation
-  - [ ] Ensure proper error handling and memory management
+  - [ ] Maintain proper error handling and memory management
+  - [ ] Replace direct calls to specialized evaluator functions with unified interface
+- [ ] **Update interpreter to use unified instruction evaluation interface**:
+  - [ ] Replace individual specialized evaluator calls with single evaluate function
+  - [ ] Simplify interpreter instruction evaluation logic
+  - [ ] Ensure all instruction types work through unified interface
 
-#### Phase 4: Extract Common Helper Functions (MEDIUM)
-- [ ] **Eliminate `_copy_data_value` duplication across evaluators**:
-  - [ ] Evaluate if this belongs in data module as `ar_data__deep_copy()`
-  - [ ] Or create dedicated value transformation module
-  - [ ] Update all evaluators to use shared implementation
-- [ ] **Extract shared expression evaluation patterns**:
-  - [ ] `_evaluate_expression_ast` appears in multiple evaluators
-  - [ ] Consider expression evaluation orchestration module
-  - [ ] Identify proper abstractions for value ownership transformation
+#### Phase 3: Parser Integration into Interpreter (CRITICAL - THIRD PRIORITY)
+- [ ] **Integrate unified instruction_parser into interpreter (REPLACE legacy parsing)**:
+  - [ ] Update interpreter to use `ar_instruction_parser__parse()` instead of `ar__instruction__parse()`
+  - [ ] Replace legacy parsing with modern `instruction_parser` + `instruction_ast` approach
+  - [ ] Update interpreter to work with `instruction_ast_t` nodes instead of legacy parsed structures
+  - [ ] Ensure all instruction types (assignment, send, if, parse, build, method, agent, destroy) work with new parser
+  - [ ] Remove dependency on legacy `agerun_instruction` module from interpreter
+  - [ ] Verify all existing functionality preserved during integration
 
-#### Phase 5: Expression AST Integration (HIGH)
+#### Phase 4: Expression AST Integration (HIGH)
 - [ ] **Integrate expression parser into instruction parser**:
   - [ ] Update instruction parser to use expression_parser for parsing expressions
   - [ ] Store parsed expression ASTs directly in instruction AST nodes instead of string literals
@@ -183,16 +176,33 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Update all instruction evaluators to use pre-parsed expression ASTs
   - [ ] This achieves complete separation: parse once during instruction parsing, evaluate during execution
 
-#### Phase 6: Parser Integration (MEDIUM)
-- [ ] **Integrate specialized parsers into interpreter**:
-  - [ ] Update interpreter to use instruction_parser with specialized modules
-  - [ ] Remove any remaining direct parsing logic from interpreter
-  - [ ] Ensure clean separation between parsing and evaluation phases
-- [ ] **Update instruction module to use specialized parsers**:
-  - [ ] Replace remaining parsing logic with parser module calls
-  - [ ] Ensure instruction module becomes thin facade over parsers
+#### Phase 5: Legacy Code Removal (HIGH)
+- [ ] **Remove legacy parsing code from instruction module**:
+  - [ ] Remove the 704-line `_parse_function_call` function entirely
+  - [ ] Remove `_parse_instruction`, `_parse_function_instruction`, and related legacy parsing functions
+  - [ ] Remove legacy `parsed_instruction_t` structures and related types
+  - [ ] Keep only functions still needed by other modules (if any)
+  - [ ] Update or remove `ar__instruction__parse()` public function
+- [ ] **Remove legacy execution code from expression module**:
+  - [ ] Remove old parsing/evaluation code that duplicates expression_parser/expression_evaluator functionality  
+  - [ ] Remove legacy expression execution functions that are replaced by expression_evaluator
+  - [ ] Keep only functions still needed by other modules (if any)
+- [ ] **Update module dependencies**:
+  - [ ] Remove interpreter dependency on legacy instruction module
+  - [ ] Update any remaining callers to use modern parser/evaluator modules
+  - [ ] Update module dependency tree documentation
 
-#### Phase 7: Module Responsibility Review (HIGH)
+#### Phase 6: Extract Common Helper Functions (MEDIUM)
+- [ ] **Eliminate `_copy_data_value` duplication across evaluators**:
+  - [ ] Evaluate if this belongs in data module as `ar_data__deep_copy()`
+  - [ ] Or create dedicated value transformation module
+  - [ ] Update all evaluators to use shared implementation
+- [ ] **Extract shared expression evaluation patterns**:
+  - [ ] `_evaluate_expression_ast` appears in multiple evaluators
+  - [ ] Consider expression evaluation orchestration module
+  - [ ] Identify proper abstractions for value ownership transformation
+
+#### Phase 7: Module Responsibility Review and Final Architecture (HIGH)
 - [ ] **Review instruction and expression module roles after integration**:
   - [ ] Analyze if instruction module still has clear responsibility once interpreter uses instruction_parser directly
   - [ ] Analyze if expression module still has clear responsibility once interpreter uses expression_parser and expression_evaluator directly
