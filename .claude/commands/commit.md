@@ -60,3 +60,10 @@ After completing the checklist above, follow these steps precisely:
    - Confirm the working tree is clean and branch is up to date
 
 **Important:** Never skip the final `git status` verification - this is a critical step per CLAUDE.md.
+
+## Custom Instructions
+
+If available, the instructions below may override some of the instructions above.
+
+$ARGUMENTS
+
