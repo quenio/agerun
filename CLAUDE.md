@@ -157,6 +157,19 @@ This prevents overthinking and ensures accurate responses based on documented pr
    - **Step 4**: Verify removal/extraction functions don't leave owned data
    - **Step 5**: Use heap memory reports to identify leaked data types
 
+6. **Buffer Overflow Prevention**:
+   - **Pattern**: Miscounting buffer size for strings with escape sequences
+   - **Example**: Counting `\"` as 1 character but writing 2 characters
+   - **Prevention**: When calculating buffer sizes, count actual bytes written, not logical characters
+   - **Fix**: For escape sequences, add the full escape length to the buffer size:
+     ```c
+     if (str[i] == '\\' && str[i+1]) {
+         len += 2;  // Both backslash and escaped character
+     }
+     ```
+   - **Detection**: AddressSanitizer catches these errors - always run `./clean_build.sh`
+   - **Key Rule**: Buffer size = sum of all characters that will be written
+
 ### 2. Test-Driven Development (MANDATORY)
 
 **Red-Green-Refactor Cycle (ALL THREE PHASES REQUIRED)**:
@@ -757,7 +770,10 @@ When reviewing tasks:
 - Keep CLAUDE.md updated with new guidelines
 
 **Before Committing (MANDATORY CHECKLIST - ALWAYS CHECK THIS)**:
-1. **Run Tests**: Ensure all changes work correctly and no memory leaks
+1. **Run Tests**: Use `./clean_build.sh` for comprehensive verification (MANDATORY)
+   - Runs all tests including sanitizers (ASan, UBSan, TSan)
+   - Catches memory leaks, buffer overflows, and undefined behavior
+   - If clean build fails, STOP - fix all issues before proceeding
 2. **Update Module Documentation**: If you changed a module's interface, update its .md file
 3. **Update TODO.md**: Mark completed tasks and add any new tasks identified
 4. **Update CHANGELOG.md**: Document completed milestones and achievements (NON-NEGOTIABLE)
@@ -879,6 +895,8 @@ When refactoring functions that have similar implementations:
 **Creating Specialized Modules from Existing Code**:
 When extracting functionality into specialized modules (e.g., parsers, evaluators):
 - **Always verify code migration**: Use `diff` to compare implementations and ensure you're moving/adapting code, not reimplementing
+  - **CRITICAL**: For parser modules, diff both tests AND implementation against originals
+  - Missing tests or reimplementing code introduces bugs and inconsistencies
 - **Follow established patterns**: Mirror existing specialized module patterns for consistency (e.g., evaluators → parsers)
 - **Instantiable modules**: Create modules with create/destroy lifecycle, not just static functions
 - **TDD with existing code**:
