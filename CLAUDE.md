@@ -293,6 +293,11 @@ For each new behavior/feature:
    // Provide a simple interface that coordinates multiple modules
    // Example: agency is a facade for agent_registry, agent_store, agent_update
    ```
+   - **CRITICAL**: Facades should ONLY coordinate, never implement business logic
+   - **Pure dispatch**: Use minimal lookahead to determine which module to delegate to
+   - **No parsing in facades**: All parsing logic belongs in specialized modules
+   - **Example violation**: instruction_parser parsing assignments instead of delegating to assignment_parser
+   - **Correct approach**: Facade identifies instruction type, delegates ALL parsing to appropriate specialized parser
 
 4. **Parser/Executor Separation** (PREFERRED - for language processing):
    ```c
@@ -445,6 +450,25 @@ grep -r "\".*\"" modules/*.c | grep -v "printf\|fprintf\|error" | sort | uniq -c
 
 ### 4. Coding Standards
 
+**String Parsing Guidelines**:
+- **Quote-Aware Operator Scanning**: When searching for operators (like `:=`, `=`, etc.) in strings, MUST consider quoted contexts
+- **Implementation pattern**:
+  ```c
+  // Track quote state while scanning
+  bool in_quotes = false;
+  while (*p) {
+      if (*p == '"' && (p == start || *(p-1) != '\\')) {
+          in_quotes = !in_quotes;
+      } else if (!in_quotes && /* check for operator */) {
+          // Only process operator if not inside quotes
+      }
+      p++;
+  }
+  ```
+- **Common cases**: Assignment operators (`:=`), function delimiters (`(`, `)`), argument separators (`,`)
+- **Example bug**: `method("greet", "memory.msg := \"Hello\"", "1.0.0")` - the `:=` inside the string literal must not be treated as an assignment operator
+- **Testing**: Always test with strings containing the operators you're scanning for
+
 **Naming Conventions** (Updated 2025-06-19):
 - **Module Functions**: Use `ar_` prefix with double underscore pattern `ar_<module>__<function>`
   - Examples: `ar_data__create_map()`, `ar_agent__send()`, `ar_system__init()`
@@ -545,6 +569,22 @@ grep -r "\".*\"" modules/*.c | grep -v "printf\|fprintf\|error" | sort | uniq -c
 - **Delegation Pattern**: Higher-level modules can pass their dependencies to lower-level modules as parameters
 - **Module Naming**: Follow `ar_<module>__<function>` pattern consistently (e.g., `ar_agent_update__update_methods`)
   - **IMPORTANT**: Prefix changed from `ar__` to `ar_` (updated 2025-06-19)
+
+**Architectural Separation of Concerns**:
+- **Parsing vs Evaluation**: Separate parsing from evaluation responsibilities
+- **Data Owner Parses**: The module that owns data should handle parsing it
+  - Example: `methodology` module should parse methods, not `interpreter`
+- **Consumer Evaluates**: The module that uses data should only evaluate it
+  - Example: `interpreter` should evaluate ASTs, not parse source code
+- **Benefits**:
+  - Clean module boundaries
+  - Single responsibility principle
+  - Better testability
+  - Clearer error handling
+- **Implementation pattern**:
+  - Store parsed representations (ASTs) instead of source code
+  - Parse once when data is created/loaded
+  - Evaluate many times as needed
 
 **Code Modification Process**:
 1. Understand codebase structure and dependencies
@@ -897,6 +937,14 @@ When refactoring functions that have similar implementations:
   - Replace parameter `memory` with `self->mut_memory`
   - Keep parameters that vary per call
 - **Benefits**: Preserves tested code, reduces duplication, maintains behavior
+
+**Test Behavior Preservation During Refactoring**:
+- **CRITICAL**: When refactoring, tests document expected behavior - do NOT change test assertions
+- **Verify before changing**: Always check if test expectations are correct before modifying them
+- **Refactoring principle**: The system should behave identically before and after refactoring
+- **Common mistake**: Assuming refactored code should return different types/values
+- **Example**: Function instructions with assignment (e.g., `memory.x := send(...)`) should maintain their instruction type, not become ASSIGNMENT type
+- **If tests fail**: Fix the implementation, not the tests (unless tests are genuinely wrong)
 - **Principle**: "Make the change easy, then make the easy change"
 
 **Creating Specialized Modules from Existing Code**:
