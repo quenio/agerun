@@ -591,6 +591,11 @@ grep -r "\".*\"" modules/*.c | grep -v "printf\|fprintf\|error" | sort | uniq -c
   - Use standard POSIX/C library functions that work everywhere
   - If platform differences seem necessary, find a portable solution instead
   - Example: Use `errno` for error reporting instead of reading `/proc/meminfo`
+- **Variable Argument Parsing**: For functions with optional parameters, create specialized parsers
+  - **Pattern**: Create custom `_parse_functionname_arguments()` instead of forcing generic parsers to be flexible
+  - **Example**: agent() supports both 2 and 3 parameters - custom parser handles both forms gracefully
+  - **Compatibility**: Add default values (like "null") to maintain compatibility with fixed-argument evaluators
+  - **Rationale**: Keeps generic argument parsers simple while supporting flexible user syntax
 
 **Common Code Smells to Avoid**:
 - **Long Function**: Keep functions under 50 lines, single responsibility
@@ -897,10 +902,12 @@ When refactoring functions that have similar implementations:
 **Creating Specialized Modules from Existing Code**:
 When extracting functionality into specialized modules (e.g., parsers, evaluators):
 - **MANDATORY diff verification**: Always compare implementations to ensure code is moved, not reimplemented
-  - **Red Phase**: Copy existing tests and verify with diff they match originals
-  - **Green Phase**: Copy implementation and verify with diff it matches original
+  - **CRITICAL**: Copy code FIRST, then verify with diff - never verify before copying
+  - **Red Phase**: Copy existing tests, then verify with diff they match originals
+  - **Green Phase**: Copy implementation, then verify with diff it matches original
   - **Why**: Reimplementing introduces bugs, inconsistencies, and wastes time
   - **Example**: "Missing diff verification" is a critical error that must be corrected
+  - **Timing**: Always perform verification AFTER copying to ensure actual code movement
 - **Follow established patterns**: Mirror existing specialized module patterns for consistency (e.g., evaluators → parsers)
 - **Instantiable modules**: Create modules with create/destroy lifecycle, not just static functions
 - **TDD with existing code**:
