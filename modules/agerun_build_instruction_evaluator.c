@@ -18,6 +18,13 @@
 #include "agerun_heap.h"
 #include "agerun_io.h"
 
+/* Forward declaration of legacy function */
+bool ar_build_instruction_evaluator__evaluate_legacy(
+    expression_evaluator_t *mut_expr_evaluator,
+    data_t *mut_memory,
+    const instruction_ast_t *ref_ast
+);
+
 /* Memory prefix for path extraction */
 static const char MEMORY_PREFIX[] = "memory.";
 static const size_t MEMORY_PREFIX_LEN = sizeof(MEMORY_PREFIX) - 1;
@@ -31,7 +38,7 @@ struct ar_build_instruction_evaluator_s {
 /**
  * Creates a new build instruction evaluator
  */
-ar_build_instruction_evaluator_t* ar__build_instruction_evaluator__create(
+ar_build_instruction_evaluator_t* ar_build_instruction_evaluator__create(
     expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 ) {
@@ -53,7 +60,7 @@ ar_build_instruction_evaluator_t* ar__build_instruction_evaluator__create(
 /**
  * Destroys a build instruction evaluator
  */
-void ar__build_instruction_evaluator__destroy(
+void ar_build_instruction_evaluator__destroy(
     ar_build_instruction_evaluator_t *own_evaluator
 ) {
     if (!own_evaluator) {
@@ -405,7 +412,7 @@ static bool _store_result_if_assigned(
 /**
  * Evaluates a build instruction using the stored dependencies
  */
-bool ar__build_instruction_evaluator__evaluate(
+bool ar_build_instruction_evaluator__evaluate(
     ar_build_instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 ) {
@@ -539,30 +546,16 @@ bool ar_build_instruction_evaluator__evaluate_legacy(
     data_t *mut_memory,
     const instruction_ast_t *ref_ast
 ) {
-    ar_build_instruction_evaluator_t *evaluator = ar__build_instruction_evaluator__create(
+    ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
         mut_expr_evaluator, mut_memory
     );
     if (!evaluator) {
         return false;
     }
     
-    bool result = ar__build_instruction_evaluator__evaluate(evaluator, ref_ast);
-    ar__build_instruction_evaluator__destroy(evaluator);
+    bool result = ar_build_instruction_evaluator__evaluate(evaluator, ref_ast);
+    ar_build_instruction_evaluator__destroy(evaluator);
     
     return result;
 }
 
-/**
- * Evaluates a build instruction (old name for compatibility)
- */
-bool ar_build_instruction_evaluator__evaluate(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
-    const instruction_ast_t *ref_ast
-) {
-    return ar_build_instruction_evaluator__evaluate_legacy(
-        mut_expr_evaluator,
-        mut_memory,
-        ref_ast
-    );
-}

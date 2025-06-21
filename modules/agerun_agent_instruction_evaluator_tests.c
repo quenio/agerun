@@ -25,7 +25,7 @@ static void test_instruction_evaluator__evaluate_agent_with_context(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -42,7 +42,7 @@ static void test_instruction_evaluator__evaluate_agent_with_context(void) {
     );
     assert(ast != NULL);
     
-    bool result = ar__instruction_evaluator__evaluate_agent(evaluator, ast);
+    bool result = ar_instruction_evaluator__evaluate_agent(evaluator, ast);
     
     // Then it should return true
     assert(result == true);
@@ -52,7 +52,7 @@ static void test_instruction_evaluator__evaluate_agent_with_context(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
     
@@ -76,7 +76,7 @@ static void test_instruction_evaluator__evaluate_agent_with_result(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -93,7 +93,7 @@ static void test_instruction_evaluator__evaluate_agent_with_result(void) {
     );
     assert(ast != NULL);
     
-    bool result = ar__instruction_evaluator__evaluate_agent(evaluator, ast);
+    bool result = ar_instruction_evaluator__evaluate_agent(evaluator, ast);
     
     // Then it should return true
     assert(result == true);
@@ -107,7 +107,7 @@ static void test_instruction_evaluator__evaluate_agent_with_result(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
     
@@ -131,7 +131,7 @@ static void test_instruction_evaluator__evaluate_agent_invalid_method(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -143,14 +143,14 @@ static void test_instruction_evaluator__evaluate_agent_invalid_method(void) {
     );
     assert(ast != NULL);
     
-    bool result = ar__instruction_evaluator__evaluate_agent(evaluator, ast);
+    bool result = ar_instruction_evaluator__evaluate_agent(evaluator, ast);
     
     // Then it should return false (method not found)
     assert(result == false);
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
     
@@ -174,7 +174,7 @@ static void test_instruction_evaluator__evaluate_agent_invalid_args(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -186,7 +186,7 @@ static void test_instruction_evaluator__evaluate_agent_invalid_args(void) {
     );
     assert(ast1 != NULL);
     
-    bool result1 = ar__instruction_evaluator__evaluate_agent(evaluator, ast1);
+    bool result1 = ar_instruction_evaluator__evaluate_agent(evaluator, ast1);
     assert(result1 == false);
     
     ar__instruction_ast__destroy(ast1);
@@ -198,7 +198,7 @@ static void test_instruction_evaluator__evaluate_agent_invalid_args(void) {
     );
     assert(ast2 != NULL);
     
-    bool result2 = ar__instruction_evaluator__evaluate_agent(evaluator, ast2);
+    bool result2 = ar_instruction_evaluator__evaluate_agent(evaluator, ast2);
     assert(result2 == false);
     
     ar__instruction_ast__destroy(ast2);
@@ -210,7 +210,7 @@ static void test_instruction_evaluator__evaluate_agent_invalid_args(void) {
     );
     assert(ast3 != NULL);
     
-    bool result3 = ar__instruction_evaluator__evaluate_agent(evaluator, ast3);
+    bool result3 = ar_instruction_evaluator__evaluate_agent(evaluator, ast3);
     assert(result3 == false);
     
     ar__instruction_ast__destroy(ast3);
@@ -222,13 +222,13 @@ static void test_instruction_evaluator__evaluate_agent_invalid_args(void) {
     );
     assert(ast4 != NULL);
     
-    bool result4 = ar__instruction_evaluator__evaluate_agent(evaluator, ast4);
+    bool result4 = ar_instruction_evaluator__evaluate_agent(evaluator, ast4);
     assert(result4 == false);
     
     ar__instruction_ast__destroy(ast4);
     
     // Cleanup
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
     
@@ -245,13 +245,13 @@ static void test_agent_instruction_evaluator__create_destroy(void) {
     assert(expr_eval != NULL);
     
     // When creating an agent instruction evaluator instance
-    ar_agent_instruction_evaluator_t *evaluator = ar__agent_instruction_evaluator__create(expr_eval, memory);
+    ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(expr_eval, memory);
     
     // Then it should be created successfully
     assert(evaluator != NULL);
     
     // When destroying the evaluator
-    ar__agent_instruction_evaluator__destroy(evaluator);
+    ar_agent_instruction_evaluator__destroy(evaluator);
     
     // Then it should not crash (no assertion needed)
     
@@ -272,7 +272,7 @@ static void test_agent_instruction_evaluator__evaluate_with_instance(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    ar_agent_instruction_evaluator_t *evaluator = ar__agent_instruction_evaluator__create(expr_eval, memory);
+    ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(expr_eval, memory);
     assert(evaluator != NULL);
     
     // Register a method to create agents with
@@ -287,7 +287,7 @@ static void test_agent_instruction_evaluator__evaluate_with_instance(void) {
     );
     assert(ast != NULL);
     
-    bool result = ar__agent_instruction_evaluator__evaluate(evaluator, NULL, ast);
+    bool result = ar_agent_instruction_evaluator__evaluate(evaluator, NULL, ast);
     
     // Then it should return true
     assert(result == true);
@@ -297,7 +297,7 @@ static void test_agent_instruction_evaluator__evaluate_with_instance(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__agent_instruction_evaluator__destroy(evaluator);
+    ar_agent_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
     
@@ -335,7 +335,7 @@ static void test_agent_instruction_evaluator__legacy_evaluate_function(void) {
     );
     assert(ast != NULL);
     
-    bool result = ar__agent_instruction_evaluator__evaluate_legacy(expr_eval, memory, NULL, ast);
+    bool result = ar_agent_instruction_evaluator__evaluate_legacy(expr_eval, memory, NULL, ast);
     
     // Then it should return true (legacy function still works)
     assert(result == true);

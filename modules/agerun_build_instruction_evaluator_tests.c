@@ -17,7 +17,7 @@ static void test_build_instruction_evaluator__create_destroy(void) {
     assert(expr_eval != NULL);
     
     // When creating a build instruction evaluator
-    ar_build_instruction_evaluator_t *evaluator = ar__build_instruction_evaluator__create(
+    ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
         expr_eval, memory
     );
     
@@ -25,7 +25,7 @@ static void test_build_instruction_evaluator__create_destroy(void) {
     assert(evaluator != NULL);
     
     // When destroying the evaluator
-    ar__build_instruction_evaluator__destroy(evaluator);
+    ar_build_instruction_evaluator__destroy(evaluator);
     
     // Then cleanup dependencies
     ar__expression_evaluator__destroy(expr_eval);
@@ -46,7 +46,7 @@ static void test_build_instruction_evaluator__evaluate_with_instance(void) {
     assert(expr_eval != NULL);
     
     // When creating a build instruction evaluator instance
-    ar_build_instruction_evaluator_t *evaluator = ar__build_instruction_evaluator__create(
+    ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
         expr_eval, memory
     );
     assert(evaluator != NULL);
@@ -59,7 +59,7 @@ static void test_build_instruction_evaluator__evaluate_with_instance(void) {
     assert(ast != NULL);
     
     // When evaluating using the instance
-    bool result = ar__build_instruction_evaluator__evaluate(evaluator, ast);
+    bool result = ar_build_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should succeed and build the string
     assert(result == true);
@@ -70,7 +70,7 @@ static void test_build_instruction_evaluator__evaluate_with_instance(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__build_instruction_evaluator__destroy(evaluator);
+    ar_build_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -127,7 +127,7 @@ static void test_instruction_evaluator__evaluate_build_simple(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -140,7 +140,7 @@ static void test_instruction_evaluator__evaluate_build_simple(void) {
     assert(ast != NULL);
     
     // When evaluating the build instruction
-    bool result = ar__instruction_evaluator__evaluate_build(evaluator, ast);
+    bool result = ar_instruction_evaluator__evaluate_build(evaluator, ast);
     
     // Then it should succeed and build the string
     assert(result == true);
@@ -151,7 +151,7 @@ static void test_instruction_evaluator__evaluate_build_simple(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     
     ar__data__destroy(memory);
@@ -172,7 +172,7 @@ static void test_instruction_evaluator__evaluate_build_multiple_variables(void) 
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -185,7 +185,7 @@ static void test_instruction_evaluator__evaluate_build_multiple_variables(void) 
     assert(ast != NULL);
     
     // When evaluating the build instruction
-    bool result = ar__instruction_evaluator__evaluate_build(evaluator, ast);
+    bool result = ar_instruction_evaluator__evaluate_build(evaluator, ast);
     
     // Then it should succeed and build the string with all values
     assert(result == true);
@@ -196,7 +196,7 @@ static void test_instruction_evaluator__evaluate_build_multiple_variables(void) 
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -217,7 +217,7 @@ static void test_instruction_evaluator__evaluate_build_with_types(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -230,7 +230,7 @@ static void test_instruction_evaluator__evaluate_build_with_types(void) {
     assert(ast != NULL);
     
     // When evaluating the build instruction
-    bool result = ar__instruction_evaluator__evaluate_build(evaluator, ast);
+    bool result = ar_instruction_evaluator__evaluate_build(evaluator, ast);
     
     // Then it should succeed and convert all types to strings
     assert(result == true);
@@ -241,7 +241,7 @@ static void test_instruction_evaluator__evaluate_build_with_types(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -261,7 +261,7 @@ static void test_instruction_evaluator__evaluate_build_missing_values(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -274,7 +274,7 @@ static void test_instruction_evaluator__evaluate_build_missing_values(void) {
     assert(ast != NULL);
     
     // When evaluating the build instruction
-    bool result = ar__instruction_evaluator__evaluate_build(evaluator, ast);
+    bool result = ar_instruction_evaluator__evaluate_build(evaluator, ast);
     
     // Then it should succeed but preserve the placeholder for missing value
     assert(result == true);
@@ -285,7 +285,7 @@ static void test_instruction_evaluator__evaluate_build_missing_values(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -298,7 +298,7 @@ static void test_instruction_evaluator__evaluate_build_invalid_args(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -310,7 +310,7 @@ static void test_instruction_evaluator__evaluate_build_invalid_args(void) {
     );
     assert(ast1 != NULL);
     
-    bool result1 = ar__instruction_evaluator__evaluate_build(evaluator, ast1);
+    bool result1 = ar_instruction_evaluator__evaluate_build(evaluator, ast1);
     assert(result1 == false);
     
     ar__instruction_ast__destroy(ast1);
@@ -325,7 +325,7 @@ static void test_instruction_evaluator__evaluate_build_invalid_args(void) {
     );
     assert(ast2 != NULL);
     
-    bool result2 = ar__instruction_evaluator__evaluate_build(evaluator, ast2);
+    bool result2 = ar_instruction_evaluator__evaluate_build(evaluator, ast2);
     assert(result2 == false);
     
     ar__instruction_ast__destroy(ast2);
@@ -337,13 +337,13 @@ static void test_instruction_evaluator__evaluate_build_invalid_args(void) {
     );
     assert(ast3 != NULL);
     
-    bool result3 = ar__instruction_evaluator__evaluate_build(evaluator, ast3);
+    bool result3 = ar_instruction_evaluator__evaluate_build(evaluator, ast3);
     assert(result3 == false);
     
     ar__instruction_ast__destroy(ast3);
     
     // Cleanup
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }

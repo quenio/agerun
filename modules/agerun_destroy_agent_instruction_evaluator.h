@@ -21,7 +21,7 @@ typedef struct ar_destroy_agent_instruction_evaluator_s ar_destroy_agent_instruc
  * @return New evaluator instance, or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy
  */
-ar_destroy_agent_instruction_evaluator_t* ar__destroy_agent_instruction_evaluator__create(
+ar_destroy_agent_instruction_evaluator_t* ar_destroy_agent_instruction_evaluator__create(
     expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory
 );
@@ -31,7 +31,7 @@ ar_destroy_agent_instruction_evaluator_t* ar__destroy_agent_instruction_evaluato
  * @param own_evaluator The evaluator to destroy (owned value)
  * @note Ownership: Takes ownership and destroys the evaluator
  */
-void ar__destroy_agent_instruction_evaluator__destroy(ar_destroy_agent_instruction_evaluator_t *own_evaluator);
+void ar_destroy_agent_instruction_evaluator__destroy(ar_destroy_agent_instruction_evaluator_t *own_evaluator);
 
 /**
  * Evaluates a destroy agent instruction using stored dependencies
@@ -40,21 +40,20 @@ void ar__destroy_agent_instruction_evaluator__destroy(ar_destroy_agent_instructi
  * @return true if evaluation succeeded, false otherwise
  * @note Ownership: Borrows all parameters, does not take ownership
  */
-bool ar__destroy_agent_instruction_evaluator__evaluate(
+bool ar_destroy_agent_instruction_evaluator__evaluate(
     const ar_destroy_agent_instruction_evaluator_t *ref_evaluator,
     const instruction_ast_t *ref_ast
 );
 
 /**
- * Legacy function for backward compatibility
- * Evaluates a destroy agent instruction with explicit dependencies
- * @param mut_expr_evaluator Expression evaluator to use (mutable reference)
- * @param mut_memory Memory data structure (mutable reference)
- * @param ref_ast The instruction AST to evaluate (borrowed reference)
+ * Evaluates a destroy agent instruction (legacy interface)
+ * @param mut_expr_evaluator The expression evaluator
+ * @param mut_memory The memory map
+ * @param ref_ast The instruction AST node
  * @return true if evaluation succeeded, false otherwise
- * @note Ownership: Borrows all parameters, does not take ownership
+ * @note Ownership: Does not take ownership of any parameters
  */
-bool ar__destroy_agent_instruction_evaluator__evaluate_legacy(
+bool ar_destroy_agent_instruction_evaluator__evaluate_legacy(
     expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory,
     const instruction_ast_t *ref_ast

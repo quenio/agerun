@@ -147,6 +147,10 @@ Extract each instruction type evaluation into its own module:
 - [x] Created send_instruction_evaluator module for evaluate_send
 - [x] Created condition_instruction_evaluator module for evaluate_if
 - [x] Created parse_instruction_evaluator module for evaluate_parse
+  - [x] Fixed naming conflict causing abort trap in tests (Completed 2025-06-20)
+    - [x] Removed conflicting ar__parse_instruction_evaluator__evaluate function
+    - [x] Adapted ar_parse_instruction_evaluator__evaluate to use instance parameters
+    - [x] Updated legacy wrapper to create temporary instance
 - [x] Created build_instruction_evaluator module for evaluate_build:
   - [x] Extracted evaluate_build function from instruction_evaluator
   - [x] Moved helper functions including _ensure_buffer_capacity, _process_placeholder, _data_to_string
@@ -343,24 +347,24 @@ This order ensures clean separation of concerns across all modules.
   - [ ] Update parse_instruction_evaluator_t to ar_parse_instruction_evaluator_t
   - [ ] Update all function signatures and variable declarations that use these types
   - [ ] Ensure all new evaluators follow the correct ar_<module>_t pattern from the start
-- [ ] Update instruction_evaluator to create and manage specialized evaluators:
-  - [x] Add fields to instruction_evaluator struct for all specialized evaluators (Started 2025-06-20)
-    - [x] Added assignment_instruction_evaluator_t field
-    - [ ] Add remaining evaluator fields (send, condition, parse, build, method, agent, destroy_agent, destroy_method)
-  - [x] Create all specialized evaluators in ar__instruction_evaluator__create() (Started 2025-06-20)
-    - [x] Create assignment evaluator instance
-    - [ ] Create remaining evaluator instances
-  - [x] Pass dependencies (expression_evaluator, memory, context) to each specialized evaluator (Started 2025-06-20)
-    - [x] Pass dependencies to assignment evaluator
-    - [ ] Pass dependencies to remaining evaluators
-  - [x] Destroy all specialized evaluators in ar__instruction_evaluator__destroy() (Started 2025-06-20)
-    - [x] Destroy assignment evaluator instance
-    - [ ] Destroy remaining evaluator instances
-  - [ ] Update delegation functions to use created evaluator instances
-    - [ ] Update evaluate_assignment to use instance
-    - [ ] Update other evaluate functions to use instances
-  - [ ] Note: destroy() dispatch logic is already integrated in evaluate_destroy function
-  - [ ] Ensure proper initialization order and cleanup
+- [x] Update instruction_evaluator to create and manage specialized evaluators: (Completed 2025-06-20)
+  - [x] Add fields to instruction_evaluator struct for all specialized evaluators
+    - [x] Added assignment_instruction_evaluator_t field (TDD Cycle 1)
+    - [x] Added remaining evaluator fields (send, condition, parse, build, method, agent, destroy_agent, destroy_method) (TDD Cycle 3)
+  - [x] Create all specialized evaluators in ar__instruction_evaluator__create()
+    - [x] Create assignment evaluator instance (TDD Cycle 1)
+    - [x] Create remaining evaluator instances with proper error handling (TDD Cycle 3)
+  - [x] Pass dependencies (expression_evaluator, memory, context) to each specialized evaluator
+    - [x] Pass dependencies to assignment evaluator (TDD Cycle 1)
+    - [x] Pass dependencies to remaining evaluators (TDD Cycle 3)
+  - [x] Destroy all specialized evaluators in ar__instruction_evaluator__destroy()
+    - [x] Destroy assignment evaluator instance (TDD Cycle 1)
+    - [x] Destroy remaining evaluator instances (TDD Cycle 3)
+  - [x] Update delegation functions to use created evaluator instances
+    - [x] Update evaluate_assignment to use instance (TDD Cycle 2)
+    - [x] Update all other evaluate functions to use instances (TDD Cycle 4)
+  - [x] Note: destroy() dispatch logic is already integrated in evaluate_destroy function
+  - [x] Ensure proper initialization order and cleanup
   - [ ] Remove legacy wrapper functions from specialized evaluators once integration is complete
 - [ ] Add main evaluate function to instruction_evaluator module:
   - [ ] Create ar__instruction_evaluator__evaluate() that takes instruction AST

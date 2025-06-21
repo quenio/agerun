@@ -12,6 +12,13 @@
 #include <string.h>
 #include <stdio.h>
 
+/* Forward declaration of legacy function */
+bool ar_method_instruction_evaluator__evaluate_legacy(
+    expression_evaluator_t *mut_expr_evaluator,
+    data_t *mut_memory,
+    const instruction_ast_t *ref_ast
+);
+
 /**
  * Internal structure for method instruction evaluator
  * 
@@ -26,7 +33,7 @@ struct ar_method_instruction_evaluator_s {
 /**
  * Creates a new method instruction evaluator instance
  */
-ar_method_instruction_evaluator_t* ar__method_instruction_evaluator__create(
+ar_method_instruction_evaluator_t* ar_method_instruction_evaluator__create(
     expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 ) {
@@ -54,7 +61,7 @@ ar_method_instruction_evaluator_t* ar__method_instruction_evaluator__create(
 /**
  * Destroys a method instruction evaluator instance
  */
-void ar__method_instruction_evaluator__destroy(
+void ar_method_instruction_evaluator__destroy(
     ar_method_instruction_evaluator_t *own_evaluator
 ) {
     if (own_evaluator == NULL) {
@@ -325,7 +332,7 @@ static bool _evaluate_three_string_args(
     return false;
 }
 
-bool ar__method_instruction_evaluator__evaluate(
+bool ar_method_instruction_evaluator__evaluate(
     ar_method_instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 ) {
@@ -395,7 +402,7 @@ bool ar_method_instruction_evaluator__evaluate_legacy(
     const instruction_ast_t *ref_ast
 ) {
     // Create a temporary evaluator instance
-    ar_method_instruction_evaluator_t *evaluator = ar__method_instruction_evaluator__create(
+    ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
         mut_expr_evaluator, mut_memory
     );
     if (!evaluator) {
@@ -403,10 +410,10 @@ bool ar_method_instruction_evaluator__evaluate_legacy(
     }
     
     // Call the new evaluate function
-    bool result = ar__method_instruction_evaluator__evaluate(evaluator, ref_ast);
+    bool result = ar_method_instruction_evaluator__evaluate(evaluator, ref_ast);
     
     // Destroy the temporary instance
-    ar__method_instruction_evaluator__destroy(evaluator);
+    ar_method_instruction_evaluator__destroy(evaluator);
     
     return result;
 }

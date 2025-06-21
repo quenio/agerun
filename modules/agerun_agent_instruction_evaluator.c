@@ -14,13 +14,21 @@
 #include <stdio.h>
 #include <inttypes.h>
 
+/* Forward declaration of legacy function */
+bool ar_agent_instruction_evaluator__evaluate_legacy(
+    expression_evaluator_t *mut_expr_evaluator,
+    data_t *mut_memory,
+    data_t *ref_context,
+    const instruction_ast_t *ref_ast
+);
+
 /* Opaque struct definition */
 struct ar_agent_instruction_evaluator_s {
     expression_evaluator_t *mut_expr_evaluator;
     data_t *mut_memory;
 };
 
-ar_agent_instruction_evaluator_t* ar__agent_instruction_evaluator__create(
+ar_agent_instruction_evaluator_t* ar_agent_instruction_evaluator__create(
     expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory
 ) {
@@ -39,7 +47,7 @@ ar_agent_instruction_evaluator_t* ar__agent_instruction_evaluator__create(
     return own_evaluator;
 }
 
-void ar__agent_instruction_evaluator__destroy(ar_agent_instruction_evaluator_t *own_evaluator) {
+void ar_agent_instruction_evaluator__destroy(ar_agent_instruction_evaluator_t *own_evaluator) {
     if (!own_evaluator) {
         return;
     }
@@ -47,7 +55,7 @@ void ar__agent_instruction_evaluator__destroy(ar_agent_instruction_evaluator_t *
     AR__HEAP__FREE(own_evaluator);
 }
 
-bool ar__agent_instruction_evaluator__evaluate(
+bool ar_agent_instruction_evaluator__evaluate(
     const ar_agent_instruction_evaluator_t *ref_evaluator,
     data_t *ref_context,
     const instruction_ast_t *ref_ast
@@ -57,7 +65,7 @@ bool ar__agent_instruction_evaluator__evaluate(
     }
     
     // Delegate to the legacy function using stored dependencies
-    return ar__agent_instruction_evaluator__evaluate_legacy(
+    return ar_agent_instruction_evaluator__evaluate_legacy(
         ref_evaluator->mut_expr_evaluator,
         ref_evaluator->mut_memory,
         ref_context,
@@ -321,7 +329,7 @@ static const data_t* _get_memory_or_context_reference(
     return NULL;
 }
 
-bool ar__agent_instruction_evaluator__evaluate_legacy(
+bool ar_agent_instruction_evaluator__evaluate_legacy(
     expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory,
     data_t *ref_context,

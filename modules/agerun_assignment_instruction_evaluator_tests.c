@@ -69,7 +69,7 @@ static void test_instruction_evaluator__evaluate_assignment_integer(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -78,7 +78,7 @@ static void test_instruction_evaluator__evaluate_assignment_integer(void) {
     instruction_ast_t *ast = ar__instruction_ast__create_assignment("memory.count", "42");
     assert(ast != NULL);
     
-    bool result = ar__instruction_evaluator__evaluate_assignment(evaluator, ast);
+    bool result = ar_instruction_evaluator__evaluate_assignment(evaluator, ast);
     
     // Then it should return true
     assert(result == true);
@@ -89,7 +89,7 @@ static void test_instruction_evaluator__evaluate_assignment_integer(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -102,7 +102,7 @@ static void test_instruction_evaluator__evaluate_assignment_string(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -111,7 +111,7 @@ static void test_instruction_evaluator__evaluate_assignment_string(void) {
     instruction_ast_t *ast = ar__instruction_ast__create_assignment("memory.name", "\"Alice\"");
     assert(ast != NULL);
     
-    bool result = ar__instruction_evaluator__evaluate_assignment(evaluator, ast);
+    bool result = ar_instruction_evaluator__evaluate_assignment(evaluator, ast);
     
     // Then it should return true
     assert(result == true);
@@ -123,7 +123,7 @@ static void test_instruction_evaluator__evaluate_assignment_string(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -140,7 +140,7 @@ static void test_instruction_evaluator__evaluate_assignment_nested_path(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -149,7 +149,7 @@ static void test_instruction_evaluator__evaluate_assignment_nested_path(void) {
     instruction_ast_t *ast = ar__instruction_ast__create_assignment("memory.user.age", "25");
     assert(ast != NULL);
     
-    bool result = ar__instruction_evaluator__evaluate_assignment(evaluator, ast);
+    bool result = ar_instruction_evaluator__evaluate_assignment(evaluator, ast);
     
     // Then it should return true
     assert(result == true);
@@ -162,7 +162,7 @@ static void test_instruction_evaluator__evaluate_assignment_nested_path(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -177,7 +177,7 @@ static void test_instruction_evaluator__evaluate_assignment_expression(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -186,7 +186,7 @@ static void test_instruction_evaluator__evaluate_assignment_expression(void) {
     instruction_ast_t *ast = ar__instruction_ast__create_assignment("memory.sum", "memory.x + memory.y");
     assert(ast != NULL);
     
-    bool result = ar__instruction_evaluator__evaluate_assignment(evaluator, ast);
+    bool result = ar_instruction_evaluator__evaluate_assignment(evaluator, ast);
     
     // Then it should return true
     assert(result == true);
@@ -197,7 +197,7 @@ static void test_instruction_evaluator__evaluate_assignment_expression(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -210,7 +210,7 @@ static void test_instruction_evaluator__evaluate_assignment_invalid_path(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -219,14 +219,14 @@ static void test_instruction_evaluator__evaluate_assignment_invalid_path(void) {
     instruction_ast_t *ast = ar__instruction_ast__create_assignment("invalid.path", "42");
     assert(ast != NULL);
     
-    bool result = ar__instruction_evaluator__evaluate_assignment(evaluator, ast);
+    bool result = ar_instruction_evaluator__evaluate_assignment(evaluator, ast);
     
     // Then it should return false
     assert(result == false);
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }

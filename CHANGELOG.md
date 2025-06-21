@@ -2,6 +2,21 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-06-20 (Latest)
+- ✅ Fixed naming conflict in parse_instruction_evaluator causing abort trap:
+  - ✅ Reverted file to last known good state
+  - ✅ Removed conflicting ar__parse_instruction_evaluator__evaluate function
+  - ✅ Adapted ar_parse_instruction_evaluator__evaluate to use instance parameters
+  - ✅ Updated legacy wrapper to create temporary instance following same pattern as assignment_evaluator
+  - ✅ All parse instruction evaluator tests now pass (9 tests)
+  - ✅ All 45 tests pass with zero memory leaks in clean build
+- ✅ Completed integration of specialized evaluators in instruction_evaluator:
+  - ✅ instruction_evaluator now creates and manages all 9 specialized evaluator instances
+  - ✅ All evaluate functions updated to use the created instances instead of calling legacy functions
+  - ✅ Proper initialization and cleanup of all evaluator instances
+  - ✅ Dependencies (expression_evaluator, memory, context) passed to each specialized evaluator
+  - ✅ All tests continue to pass with the integrated architecture
+
 ## 2025-06-20
 - ✅ Removed destroy_instruction_evaluator module:
   - ✅ Moved dispatcher logic directly into instruction_evaluator's evaluate_destroy function

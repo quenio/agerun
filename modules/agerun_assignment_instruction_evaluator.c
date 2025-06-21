@@ -11,6 +11,13 @@
 #include <string.h>
 #include <stdio.h>
 
+/* Forward declaration of legacy function */
+bool ar_assignment_instruction_evaluator__evaluate_legacy(
+    expression_evaluator_t *mut_expr_evaluator,
+    data_t *mut_memory,
+    const instruction_ast_t *ref_ast
+);
+
 /* Internal structure for the assignment instruction evaluator */
 struct ar_assignment_instruction_evaluator_s {
     expression_evaluator_t *ref_expr_evaluator;  /* Borrowed reference to expression evaluator */

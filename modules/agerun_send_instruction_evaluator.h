@@ -1,7 +1,7 @@
 /**
  * @file agerun_send_instruction_evaluator.h
  * @brief Send instruction evaluator module for AgeRun
- * 
+ *
  * This module provides functionality to evaluate send instruction AST nodes.
  * It handles message sending between agents in the form "send(agent_id, message)".
  */
@@ -49,21 +49,6 @@ void ar_send_instruction_evaluator__destroy(
  */
 bool ar_send_instruction_evaluator__evaluate(
     send_instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
-);
-
-/**
- * Evaluates a send instruction AST node (legacy interface)
- * @param mut_expr_evaluator The expression evaluator to use (mutable reference)
- * @param mut_memory The memory map containing variables (mutable reference)
- * @param ref_ast The AST node to evaluate (borrowed reference)
- * @return true if evaluation succeeded, false otherwise
- * @note This is a legacy interface for backward compatibility.
- *       It will be removed once instruction_evaluator is updated.
- */
-bool ar_send_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
     const instruction_ast_t *ref_ast
 );
 

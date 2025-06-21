@@ -19,6 +19,14 @@
 #include "agerun_data.h"
 #include "agerun_expression_evaluator.h"
 #include "agerun_assignment_instruction_evaluator.h"
+#include "agerun_send_instruction_evaluator.h"
+#include "agerun_condition_instruction_evaluator.h"
+#include "agerun_parse_instruction_evaluator.h"
+#include "agerun_build_instruction_evaluator.h"
+#include "agerun_method_instruction_evaluator.h"
+#include "agerun_agent_instruction_evaluator.h"
+#include "agerun_destroy_agent_instruction_evaluator.h"
+#include "agerun_destroy_method_instruction_evaluator.h"
 
 /**
  * Opaque type for instruction evaluator
@@ -35,7 +43,7 @@ typedef struct instruction_evaluator_s instruction_evaluator_t;
  * @note Ownership: Returns an owned value that caller must destroy.
  *       The function does not take ownership of any parameters.
  */
-instruction_evaluator_t* ar__instruction_evaluator__create(
+instruction_evaluator_t* ar_instruction_evaluator__create(
     expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory,
     data_t *ref_context,
@@ -47,7 +55,7 @@ instruction_evaluator_t* ar__instruction_evaluator__create(
  * @param own_evaluator The evaluator to destroy
  * @note Ownership: Takes ownership and destroys the evaluator
  */
-void ar__instruction_evaluator__destroy(instruction_evaluator_t *own_evaluator);
+void ar_instruction_evaluator__destroy(instruction_evaluator_t *own_evaluator);
 
 /**
  * Gets the assignment evaluator instance
@@ -55,7 +63,87 @@ void ar__instruction_evaluator__destroy(instruction_evaluator_t *own_evaluator);
  * @return The assignment evaluator instance (borrowed reference)
  * @note Ownership: Returns a borrowed reference, do not destroy
  */
-assignment_instruction_evaluator_t* ar__instruction_evaluator__get_assignment_evaluator(
+assignment_instruction_evaluator_t* ar_instruction_evaluator__get_assignment_evaluator(
+    const instruction_evaluator_t *ref_evaluator
+);
+
+/**
+ * Gets the send evaluator instance
+ * @param ref_evaluator The instruction evaluator (borrowed reference)
+ * @return The send evaluator instance (borrowed reference)
+ * @note Ownership: Returns a borrowed reference, do not destroy
+ */
+send_instruction_evaluator_t* ar_instruction_evaluator__get_send_evaluator(
+    const instruction_evaluator_t *ref_evaluator
+);
+
+/**
+ * Gets the condition evaluator instance
+ * @param ref_evaluator The instruction evaluator (borrowed reference)
+ * @return The condition evaluator instance (borrowed reference)
+ * @note Ownership: Returns a borrowed reference, do not destroy
+ */
+condition_instruction_evaluator_t* ar_instruction_evaluator__get_condition_evaluator(
+    const instruction_evaluator_t *ref_evaluator
+);
+
+/**
+ * Gets the parse evaluator instance
+ * @param ref_evaluator The instruction evaluator (borrowed reference)
+ * @return The parse evaluator instance (borrowed reference)
+ * @note Ownership: Returns a borrowed reference, do not destroy
+ */
+parse_instruction_evaluator_t* ar_instruction_evaluator__get_parse_evaluator(
+    const instruction_evaluator_t *ref_evaluator
+);
+
+/**
+ * Gets the build evaluator instance
+ * @param ref_evaluator The instruction evaluator (borrowed reference)
+ * @return The build evaluator instance (borrowed reference)
+ * @note Ownership: Returns a borrowed reference, do not destroy
+ */
+ar_build_instruction_evaluator_t* ar_instruction_evaluator__get_build_evaluator(
+    const instruction_evaluator_t *ref_evaluator
+);
+
+/**
+ * Gets the method evaluator instance
+ * @param ref_evaluator The instruction evaluator (borrowed reference)
+ * @return The method evaluator instance (borrowed reference)
+ * @note Ownership: Returns a borrowed reference, do not destroy
+ */
+ar_method_instruction_evaluator_t* ar_instruction_evaluator__get_method_evaluator(
+    const instruction_evaluator_t *ref_evaluator
+);
+
+/**
+ * Gets the agent evaluator instance
+ * @param ref_evaluator The instruction evaluator (borrowed reference)
+ * @return The agent evaluator instance (borrowed reference)
+ * @note Ownership: Returns a borrowed reference, do not destroy
+ */
+ar_agent_instruction_evaluator_t* ar_instruction_evaluator__get_agent_evaluator(
+    const instruction_evaluator_t *ref_evaluator
+);
+
+/**
+ * Gets the destroy agent evaluator instance
+ * @param ref_evaluator The instruction evaluator (borrowed reference)
+ * @return The destroy agent evaluator instance (borrowed reference)
+ * @note Ownership: Returns a borrowed reference, do not destroy
+ */
+ar_destroy_agent_instruction_evaluator_t* ar_instruction_evaluator__get_destroy_agent_evaluator(
+    const instruction_evaluator_t *ref_evaluator
+);
+
+/**
+ * Gets the destroy method evaluator instance
+ * @param ref_evaluator The instruction evaluator (borrowed reference)
+ * @return The destroy method evaluator instance (borrowed reference)
+ * @note Ownership: Returns a borrowed reference, do not destroy
+ */
+ar_destroy_method_instruction_evaluator_t* ar_instruction_evaluator__get_destroy_method_evaluator(
     const instruction_evaluator_t *ref_evaluator
 );
 
@@ -66,7 +154,7 @@ assignment_instruction_evaluator_t* ar__instruction_evaluator__get_assignment_ev
  * @return true if evaluation succeeded, false otherwise
  * @note The assignment will modify the memory stored in the evaluator
  */
-bool ar__instruction_evaluator__evaluate_assignment(
+bool ar_instruction_evaluator__evaluate_assignment(
     instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 );
@@ -78,7 +166,7 @@ bool ar__instruction_evaluator__evaluate_assignment(
  * @return true if evaluation succeeded, false otherwise
  * @note If the send has a result assignment, it will modify the memory stored in the evaluator
  */
-bool ar__instruction_evaluator__evaluate_send(
+bool ar_instruction_evaluator__evaluate_send(
     instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 );
@@ -90,7 +178,7 @@ bool ar__instruction_evaluator__evaluate_send(
  * @return true if evaluation succeeded, false otherwise
  * @note If the if has a result assignment, it will modify the memory stored in the evaluator
  */
-bool ar__instruction_evaluator__evaluate_if(
+bool ar_instruction_evaluator__evaluate_if(
     instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 );
@@ -102,7 +190,7 @@ bool ar__instruction_evaluator__evaluate_if(
  * @return true if evaluation succeeded, false otherwise
  * @note If the parse has a result assignment, it will modify the memory stored in the evaluator
  */
-bool ar__instruction_evaluator__evaluate_parse(
+bool ar_instruction_evaluator__evaluate_parse(
     instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 );
@@ -114,7 +202,7 @@ bool ar__instruction_evaluator__evaluate_parse(
  * @return true if evaluation succeeded, false otherwise
  * @note If the build has a result assignment, it will modify the memory stored in the evaluator
  */
-bool ar__instruction_evaluator__evaluate_build(
+bool ar_instruction_evaluator__evaluate_build(
     instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 );
@@ -126,7 +214,7 @@ bool ar__instruction_evaluator__evaluate_build(
  * @return true if evaluation succeeded, false otherwise
  * @note If the method has a result assignment, it will modify the memory stored in the evaluator
  */
-bool ar__instruction_evaluator__evaluate_method(
+bool ar_instruction_evaluator__evaluate_method(
     instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 );
@@ -138,7 +226,7 @@ bool ar__instruction_evaluator__evaluate_method(
  * @return true if evaluation succeeded, false otherwise
  * @note If the agent has a result assignment, it will modify the memory stored in the evaluator
  */
-bool ar__instruction_evaluator__evaluate_agent(
+bool ar_instruction_evaluator__evaluate_agent(
     instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 );
@@ -150,7 +238,7 @@ bool ar__instruction_evaluator__evaluate_agent(
  * @return true if evaluation succeeded, false otherwise
  * @note If the destroy has a result assignment, it will modify the memory stored in the evaluator
  */
-bool ar__instruction_evaluator__evaluate_destroy(
+bool ar_instruction_evaluator__evaluate_destroy(
     instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 );

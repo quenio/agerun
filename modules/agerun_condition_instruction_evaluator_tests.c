@@ -16,7 +16,7 @@ static void test_condition_instruction_evaluator__create_destroy(void) {
     assert(own_expr_eval != NULL);
     
     // When creating a condition instruction evaluator
-    condition_instruction_evaluator_t *own_evaluator = ar__condition_instruction_evaluator__create(
+    condition_instruction_evaluator_t *own_evaluator = ar_condition_instruction_evaluator__create(
         own_expr_eval, own_memory
     );
     
@@ -24,7 +24,7 @@ static void test_condition_instruction_evaluator__create_destroy(void) {
     assert(own_evaluator != NULL);
     
     // When destroying the evaluator
-    ar__condition_instruction_evaluator__destroy(own_evaluator);
+    ar_condition_instruction_evaluator__destroy(own_evaluator);
     
     // Cleanup
     ar__expression_evaluator__destroy(own_expr_eval);
@@ -40,7 +40,7 @@ static void test_condition_instruction_evaluator__evaluate_with_instance(void) {
     expression_evaluator_t *own_expr_eval = ar__expression_evaluator__create(own_memory, NULL);
     assert(own_expr_eval != NULL);
     
-    condition_instruction_evaluator_t *own_evaluator = ar__condition_instruction_evaluator__create(
+    condition_instruction_evaluator_t *own_evaluator = ar_condition_instruction_evaluator__create(
         own_expr_eval, own_memory
     );
     assert(own_evaluator != NULL);
@@ -53,7 +53,7 @@ static void test_condition_instruction_evaluator__evaluate_with_instance(void) {
     assert(own_ast != NULL);
     
     // When evaluating using the instance
-    bool result = ar__condition_instruction_evaluator__evaluate(own_evaluator, own_ast);
+    bool result = ar_condition_instruction_evaluator__evaluate(own_evaluator, own_ast);
     
     // Then it should succeed and store the true value
     assert(result == true);
@@ -64,7 +64,7 @@ static void test_condition_instruction_evaluator__evaluate_with_instance(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(own_ast);
-    ar__condition_instruction_evaluator__destroy(own_evaluator);
+    ar_condition_instruction_evaluator__destroy(own_evaluator);
     ar__expression_evaluator__destroy(own_expr_eval);
     ar__data__destroy(own_memory);
 }
@@ -112,7 +112,7 @@ static void test_instruction_evaluator__evaluate_if_true_condition(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -125,7 +125,7 @@ static void test_instruction_evaluator__evaluate_if_true_condition(void) {
     assert(ast != NULL);
     
     // When evaluating the if instruction
-    bool result = ar__instruction_evaluator__evaluate_if(evaluator, ast);
+    bool result = ar_instruction_evaluator__evaluate_if(evaluator, ast);
     
     // Then it should succeed and store the true value
     assert(result == true);
@@ -136,7 +136,7 @@ static void test_instruction_evaluator__evaluate_if_true_condition(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -150,7 +150,7 @@ static void test_instruction_evaluator__evaluate_if_false_condition(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -163,7 +163,7 @@ static void test_instruction_evaluator__evaluate_if_false_condition(void) {
     assert(ast != NULL);
     
     // When evaluating the if instruction
-    bool result = ar__instruction_evaluator__evaluate_if(evaluator, ast);
+    bool result = ar_instruction_evaluator__evaluate_if(evaluator, ast);
     
     // Then it should succeed and store the false value
     assert(result == true);
@@ -174,7 +174,7 @@ static void test_instruction_evaluator__evaluate_if_false_condition(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -190,7 +190,7 @@ static void test_instruction_evaluator__evaluate_if_with_expressions(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -203,7 +203,7 @@ static void test_instruction_evaluator__evaluate_if_with_expressions(void) {
     assert(ast != NULL);
     
     // When evaluating the if instruction
-    bool result = ar__instruction_evaluator__evaluate_if(evaluator, ast);
+    bool result = ar_instruction_evaluator__evaluate_if(evaluator, ast);
     
     // Then it should succeed and evaluate the true expression
     assert(result == true);
@@ -214,7 +214,7 @@ static void test_instruction_evaluator__evaluate_if_with_expressions(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -228,7 +228,7 @@ static void test_instruction_evaluator__evaluate_if_nested(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -243,7 +243,7 @@ static void test_instruction_evaluator__evaluate_if_nested(void) {
     assert(ast != NULL);
     
     // When evaluating the if instruction
-    bool result = ar__instruction_evaluator__evaluate_if(evaluator, ast);
+    bool result = ar_instruction_evaluator__evaluate_if(evaluator, ast);
     
     // Then it should succeed and return the correct string
     assert(result == true);
@@ -254,7 +254,7 @@ static void test_instruction_evaluator__evaluate_if_nested(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -267,7 +267,7 @@ static void test_instruction_evaluator__evaluate_if_invalid_args(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -279,7 +279,7 @@ static void test_instruction_evaluator__evaluate_if_invalid_args(void) {
     );
     assert(ast1 != NULL);
     
-    bool result1 = ar__instruction_evaluator__evaluate_if(evaluator, ast1);
+    bool result1 = ar_instruction_evaluator__evaluate_if(evaluator, ast1);
     assert(result1 == false);
     
     ar__instruction_ast__destroy(ast1);
@@ -291,13 +291,13 @@ static void test_instruction_evaluator__evaluate_if_invalid_args(void) {
     );
     assert(ast2 != NULL);
     
-    bool result2 = ar__instruction_evaluator__evaluate_if(evaluator, ast2);
+    bool result2 = ar_instruction_evaluator__evaluate_if(evaluator, ast2);
     assert(result2 == false);
     
     ar__instruction_ast__destroy(ast2);
     
     // Cleanup
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }

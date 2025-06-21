@@ -14,6 +14,13 @@
 #include <stdio.h>
 #include <inttypes.h>
 
+/* Forward declaration of legacy function */
+bool ar_send_instruction_evaluator__evaluate_legacy(
+    expression_evaluator_t *mut_expr_evaluator,
+    data_t *mut_memory,
+    const instruction_ast_t *ref_ast
+);
+
 /**
  * Internal structure for send instruction evaluator
  */

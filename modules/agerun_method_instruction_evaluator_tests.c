@@ -22,7 +22,7 @@ static void test_method_instruction_evaluator__create_destroy(void) {
     assert(expr_eval != NULL);
     
     // When creating a method instruction evaluator
-    ar_method_instruction_evaluator_t *evaluator = ar__method_instruction_evaluator__create(
+    ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
         expr_eval, memory
     );
     
@@ -30,7 +30,7 @@ static void test_method_instruction_evaluator__create_destroy(void) {
     assert(evaluator != NULL);
     
     // When destroying the evaluator
-    ar__method_instruction_evaluator__destroy(evaluator);
+    ar_method_instruction_evaluator__destroy(evaluator);
     
     // Then cleanup dependencies
     ar__expression_evaluator__destroy(expr_eval);
@@ -46,7 +46,7 @@ static void test_method_instruction_evaluator__evaluate_with_instance(void) {
     assert(expr_eval != NULL);
     
     // When creating a method instruction evaluator instance
-    ar_method_instruction_evaluator_t *evaluator = ar__method_instruction_evaluator__create(
+    ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
         expr_eval, memory
     );
     assert(evaluator != NULL);
@@ -59,14 +59,14 @@ static void test_method_instruction_evaluator__evaluate_with_instance(void) {
     assert(ast != NULL);
     
     // When evaluating using the instance
-    bool result = ar__method_instruction_evaluator__evaluate(evaluator, ast);
+    bool result = ar_method_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should succeed
     assert(result == true);
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__method_instruction_evaluator__destroy(evaluator);
+    ar_method_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
     
@@ -118,7 +118,7 @@ static void test_instruction_evaluator__evaluate_method_simple(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -130,14 +130,14 @@ static void test_instruction_evaluator__evaluate_method_simple(void) {
     );
     assert(ast != NULL);
     
-    bool result = ar__instruction_evaluator__evaluate_method(evaluator, ast);
+    bool result = ar_instruction_evaluator__evaluate_method(evaluator, ast);
     
     // Then it should return true (method creation successful)
     assert(result == true);
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
     
@@ -153,7 +153,7 @@ static void test_instruction_evaluator__evaluate_method_with_result(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -165,7 +165,7 @@ static void test_instruction_evaluator__evaluate_method_with_result(void) {
     );
     assert(ast != NULL);
     
-    bool result = ar__instruction_evaluator__evaluate_method(evaluator, ast);
+    bool result = ar_instruction_evaluator__evaluate_method(evaluator, ast);
     
     // Then it should return true
     assert(result == true);
@@ -176,7 +176,7 @@ static void test_instruction_evaluator__evaluate_method_with_result(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
     
@@ -192,7 +192,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_instructions(voi
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -204,7 +204,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_instructions(voi
     );
     assert(ast != NULL);
     
-    bool result = ar__instruction_evaluator__evaluate_method(evaluator, ast);
+    bool result = ar_instruction_evaluator__evaluate_method(evaluator, ast);
     
     // Then it should return true (method creation succeeds even with invalid instructions)
     // The validation happens when the method is actually executed
@@ -212,7 +212,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_instructions(voi
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
     
@@ -228,7 +228,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar__instruction_evaluator__create(
+    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
         expr_eval, memory, NULL, NULL
     );
     assert(evaluator != NULL);
@@ -240,7 +240,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     );
     assert(ast1 != NULL);
     
-    bool result1 = ar__instruction_evaluator__evaluate_method(evaluator, ast1);
+    bool result1 = ar_instruction_evaluator__evaluate_method(evaluator, ast1);
     assert(result1 == false);
     
     ar__instruction_ast__destroy(ast1);
@@ -252,7 +252,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     );
     assert(ast2 != NULL);
     
-    bool result2 = ar__instruction_evaluator__evaluate_method(evaluator, ast2);
+    bool result2 = ar_instruction_evaluator__evaluate_method(evaluator, ast2);
     assert(result2 == false);
     
     ar__instruction_ast__destroy(ast2);
@@ -264,7 +264,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     );
     assert(ast3 != NULL);
     
-    bool result3 = ar__instruction_evaluator__evaluate_method(evaluator, ast3);
+    bool result3 = ar_instruction_evaluator__evaluate_method(evaluator, ast3);
     assert(result3 == false);
     
     ar__instruction_ast__destroy(ast3);
@@ -276,13 +276,13 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     );
     assert(ast4 != NULL);
     
-    bool result4 = ar__instruction_evaluator__evaluate_method(evaluator, ast4);
+    bool result4 = ar_instruction_evaluator__evaluate_method(evaluator, ast4);
     assert(result4 == false);
     
     ar__instruction_ast__destroy(ast4);
     
     // Cleanup
-    ar__instruction_evaluator__destroy(evaluator);
+    ar_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
     

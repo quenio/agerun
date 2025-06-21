@@ -24,7 +24,7 @@ static void test_destroy_method_instruction_evaluator__create_destroy(void) {
     assert(expr_eval != NULL);
     
     // When creating a destroy method evaluator
-    ar_destroy_method_instruction_evaluator_t *evaluator = ar__destroy_method_instruction_evaluator__create(
+    ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
         expr_eval, memory
     );
     
@@ -32,7 +32,7 @@ static void test_destroy_method_instruction_evaluator__create_destroy(void) {
     assert(evaluator != NULL);
     
     // When destroying the evaluator
-    ar__destroy_method_instruction_evaluator__destroy(evaluator);
+    ar_destroy_method_instruction_evaluator__destroy(evaluator);
     
     // Then no memory leaks should occur (verified by test framework)
     
@@ -57,7 +57,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_instance(vo
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    ar_destroy_method_instruction_evaluator_t *evaluator = ar__destroy_method_instruction_evaluator__create(
+    ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
         expr_eval, memory
     );
     assert(evaluator != NULL);
@@ -77,7 +77,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_instance(vo
     assert(ast != NULL);
     
     // When evaluating the destroy call using instance
-    bool result = ar__destroy_method_instruction_evaluator__evaluate(evaluator, ast);
+    bool result = ar_destroy_method_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should succeed
     assert(result == true);
@@ -88,7 +88,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_instance(vo
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__destroy_method_instruction_evaluator__destroy(evaluator);
+    ar_destroy_method_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
     
@@ -129,7 +129,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_legacy(void) {
     assert(ast != NULL);
     
     // When evaluating using legacy function
-    bool result = ar__destroy_method_instruction_evaluator__evaluate_legacy(
+    bool result = ar_destroy_method_instruction_evaluator__evaluate_legacy(
         expr_eval, memory, ast
     );
     
@@ -171,7 +171,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    ar_destroy_method_instruction_evaluator_t *evaluator = ar__destroy_method_instruction_evaluator__create(
+    ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
         expr_eval, memory
     );
     assert(evaluator != NULL);
@@ -195,7 +195,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void
     assert(ast != NULL);
     
     // When evaluating the destroy call
-    bool result = ar__destroy_method_instruction_evaluator__evaluate(evaluator, ast);
+    bool result = ar_destroy_method_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should succeed
     assert(result == true);
@@ -217,7 +217,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__destroy_method_instruction_evaluator__destroy(evaluator);
+    ar_destroy_method_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
     
@@ -247,7 +247,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    ar_destroy_method_instruction_evaluator_t *evaluator = ar__destroy_method_instruction_evaluator__create(
+    ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
         expr_eval, memory
     );
     assert(evaluator != NULL);
@@ -260,7 +260,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void
     assert(ast != NULL);
     
     // When evaluating the destroy call
-    bool result = ar__destroy_method_instruction_evaluator__evaluate(evaluator, ast);
+    bool result = ar_destroy_method_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should succeed (no error)
     assert(result == true);
@@ -273,7 +273,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__destroy_method_instruction_evaluator__destroy(evaluator);
+    ar_destroy_method_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
     
@@ -296,7 +296,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_invalid_name_typ
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    ar_destroy_method_instruction_evaluator_t *evaluator = ar__destroy_method_instruction_evaluator__create(
+    ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
         expr_eval, memory
     );
     assert(evaluator != NULL);
@@ -309,14 +309,14 @@ static void test_destroy_method_instruction_evaluator__evaluate_invalid_name_typ
     assert(ast != NULL);
     
     // When evaluating the destroy call
-    bool result = ar__destroy_method_instruction_evaluator__evaluate(evaluator, ast);
+    bool result = ar_destroy_method_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should fail due to invalid argument type
     assert(result == false);
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__destroy_method_instruction_evaluator__destroy(evaluator);
+    ar_destroy_method_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -330,7 +330,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_wrong_arg_count(
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    ar_destroy_method_instruction_evaluator_t *evaluator = ar__destroy_method_instruction_evaluator__create(
+    ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
         expr_eval, memory
     );
     assert(evaluator != NULL);
@@ -343,14 +343,14 @@ static void test_destroy_method_instruction_evaluator__evaluate_wrong_arg_count(
     assert(ast != NULL);
     
     // When evaluating the destroy call
-    bool result = ar__destroy_method_instruction_evaluator__evaluate(evaluator, ast);
+    bool result = ar_destroy_method_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should fail due to wrong argument count
     assert(result == false);
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar__destroy_method_instruction_evaluator__destroy(evaluator);
+    ar_destroy_method_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }

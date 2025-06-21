@@ -1,7 +1,7 @@
 /**
  * @file agerun_agent_instruction_evaluator.h
  * @brief Public interface for the agent instruction evaluator module
- * 
+ *
  * This module is responsible for evaluating agent instructions (agent()).
  * It handles agent creation with methods and context.
  */
@@ -24,7 +24,7 @@ typedef struct ar_agent_instruction_evaluator_s ar_agent_instruction_evaluator_t
  * @return A newly created evaluator instance or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy
  */
-ar_agent_instruction_evaluator_t* ar__agent_instruction_evaluator__create(
+ar_agent_instruction_evaluator_t* ar_agent_instruction_evaluator__create(
     expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory
 );
@@ -34,7 +34,7 @@ ar_agent_instruction_evaluator_t* ar__agent_instruction_evaluator__create(
  * @param own_evaluator The evaluator to destroy (owned)
  * @note Ownership: Takes ownership of the evaluator
  */
-void ar__agent_instruction_evaluator__destroy(ar_agent_instruction_evaluator_t *own_evaluator);
+void ar_agent_instruction_evaluator__destroy(ar_agent_instruction_evaluator_t *own_evaluator);
 
 /**
  * Evaluates an agent instruction using stored dependencies from instance
@@ -44,30 +44,22 @@ void ar__agent_instruction_evaluator__destroy(ar_agent_instruction_evaluator_t *
  * @return true if evaluation succeeded, false otherwise
  * @note Ownership: Does not take ownership of any parameters
  */
-bool ar__agent_instruction_evaluator__evaluate(
+bool ar_agent_instruction_evaluator__evaluate(
     const ar_agent_instruction_evaluator_t *ref_evaluator,
     data_t *ref_context,
     const instruction_ast_t *ref_ast
 );
 
 /**
- * Evaluates an agent instruction (legacy function for backward compatibility)
- * 
- * The agent() instruction takes three arguments:
- * - method_name: The name of the method to use (string)
- * - version: The version of the method (string)
- * - context: The initial context for the agent (map)
- * 
- * Returns the agent ID (integer > 0) on success, 0 on failure when assigned to a variable.
- * 
- * @param mut_expr_evaluator The expression evaluator to use
- * @param mut_memory The memory map to access/modify
+ * Evaluates an agent instruction (legacy interface)
+ * @param mut_expr_evaluator The expression evaluator
+ * @param mut_memory The memory map  
  * @param ref_context The context map (can be NULL)
  * @param ref_ast The instruction AST node
  * @return true if evaluation succeeded, false otherwise
- * @note This function is deprecated in favor of the instance-based approach
+ * @note Ownership: Does not take ownership of any parameters
  */
-bool ar__agent_instruction_evaluator__evaluate_legacy(
+bool ar_agent_instruction_evaluator__evaluate_legacy(
     expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory,
     data_t *ref_context,

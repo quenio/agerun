@@ -273,7 +273,7 @@ static data_t* _parse_value_string(const char *value_str) {
 /**
  * Creates a new parse instruction evaluator
  */
-parse_instruction_evaluator_t* ar__parse_instruction_evaluator__create(
+parse_instruction_evaluator_t* ar_parse_instruction_evaluator__create(
     expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 ) {
@@ -299,7 +299,7 @@ parse_instruction_evaluator_t* ar__parse_instruction_evaluator__create(
 /**
  * Destroys a parse instruction evaluator
  */
-void ar__parse_instruction_evaluator__destroy(
+void ar_parse_instruction_evaluator__destroy(
     parse_instruction_evaluator_t *own_evaluator
 ) {
     if (!own_evaluator) {
@@ -312,45 +312,11 @@ void ar__parse_instruction_evaluator__destroy(
 /**
  * Evaluates a parse instruction using the stored dependencies
  */
-bool ar__parse_instruction_evaluator__evaluate(
+bool ar_parse_instruction_evaluator__evaluate(
     parse_instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 ) {
     if (!mut_evaluator || !ref_ast) {
-        return false;
-    }
-    
-    return ar_parse_instruction_evaluator__evaluate_legacy(
-        mut_evaluator->ref_expr_evaluator,
-        mut_evaluator->mut_memory,
-        ref_ast
-    );
-}
-
-/**
- * Evaluates a parse instruction (legacy interface)
- */
-bool ar_parse_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
-    const instruction_ast_t *ref_ast
-) {
-    return ar_parse_instruction_evaluator__evaluate(
-        mut_expr_evaluator,
-        mut_memory,
-        ref_ast
-    );
-}
-
-/**
- * Evaluates a parse instruction
- */
-bool ar_parse_instruction_evaluator__evaluate(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
-    const instruction_ast_t *ref_ast
-) {
-    if (!mut_expr_evaluator || !mut_memory || !ref_ast) {
         return false;
     }
     
@@ -375,7 +341,7 @@ bool ar_parse_instruction_evaluator__evaluate(
     }
     
     // Parse and evaluate template expression
-    data_t *own_template_data = _parse_and_evaluate_expression(mut_expr_evaluator, ref_template_expr);
+    data_t *own_template_data = _parse_and_evaluate_expression(mut_evaluator->ref_expr_evaluator, ref_template_expr);
     if (!own_template_data || ar__data__get_type(own_template_data) != DATA_STRING) {
         if (own_template_data) ar__data__destroy(own_template_data);
         _cleanup_function_args(items, own_args);
@@ -383,7 +349,7 @@ bool ar_parse_instruction_evaluator__evaluate(
     }
     
     // Parse and evaluate input expression
-    data_t *own_input_data = _parse_and_evaluate_expression(mut_expr_evaluator, ref_input_expr);
+    data_t *own_input_data = _parse_and_evaluate_expression(mut_evaluator->ref_expr_evaluator, ref_input_expr);
     if (!own_input_data || ar__data__get_type(own_input_data) != DATA_STRING) {
         if (own_input_data) ar__data__destroy(own_input_data);
         ar__data__destroy(own_template_data);
@@ -538,5 +504,34 @@ bool ar_parse_instruction_evaluator__evaluate(
     ar__data__destroy(own_template_data);
     
     // Store result if assigned, otherwise just destroy it
-    return _store_result_if_assigned(mut_memory, ref_ast, own_result);
+    return _store_result_if_assigned(mut_evaluator->mut_memory, ref_ast, own_result);
+}
+
+/**
+ * Evaluates a parse instruction (legacy interface)
+ */
+bool ar_parse_instruction_evaluator__evaluate_legacy(
+    expression_evaluator_t *mut_expr_evaluator,
+    data_t *mut_memory,
+    const instruction_ast_t *ref_ast
+) {
+    if (!mut_expr_evaluator || !mut_memory || !ref_ast) {
+        return false;
+    }
+    
+    // Create a temporary evaluator
+    parse_instruction_evaluator_t *own_evaluator = ar_parse_instruction_evaluator__create(
+        mut_expr_evaluator, mut_memory
+    );
+    if (!own_evaluator) {
+        return false;
+    }
+    
+    // Evaluate using the instance
+    bool result = ar_parse_instruction_evaluator__evaluate(own_evaluator, ref_ast);
+    
+    // Cleanup
+    ar_parse_instruction_evaluator__destroy(own_evaluator);
+    
+    return result;
 }

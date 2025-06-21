@@ -52,19 +52,4 @@ bool ar_assignment_instruction_evaluator__evaluate(
     const instruction_ast_t *ref_ast
 );
 
-/**
- * Evaluates an assignment instruction AST node (legacy interface)
- * @param mut_expr_evaluator The expression evaluator to use (mutable reference)
- * @param mut_memory The memory map to modify (mutable reference)
- * @param ref_ast The AST node to evaluate (borrowed reference)
- * @return true if evaluation succeeded, false otherwise
- * @note This is a temporary wrapper for backward compatibility
- * @deprecated Use the instance-based evaluate function instead
- */
-bool ar_assignment_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
-    const instruction_ast_t *ref_ast
-);
-
 #endif /* AGERUN_ASSIGNMENT_INSTRUCTION_EVALUATOR_H */

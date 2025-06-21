@@ -14,6 +14,13 @@
 #include <stdio.h>
 #include <inttypes.h>
 
+/* Forward declaration of legacy function */
+bool ar_destroy_method_instruction_evaluator__evaluate_legacy(
+    expression_evaluator_t *mut_expr_evaluator,
+    data_t *mut_memory,
+    const instruction_ast_t *ref_ast
+);
+
 /* Constants */
 static const char* MEMORY_PREFIX = "memory.";
 static const size_t MEMORY_PREFIX_LEN = 7;
@@ -208,7 +215,7 @@ static bool _store_result_if_assigned(
 /**
  * Creates a new destroy method instruction evaluator instance
  */
-ar_destroy_method_instruction_evaluator_t* ar__destroy_method_instruction_evaluator__create(
+ar_destroy_method_instruction_evaluator_t* ar_destroy_method_instruction_evaluator__create(
     expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory
 ) {
@@ -233,7 +240,7 @@ ar_destroy_method_instruction_evaluator_t* ar__destroy_method_instruction_evalua
 /**
  * Destroys a destroy method instruction evaluator instance
  */
-void ar__destroy_method_instruction_evaluator__destroy(ar_destroy_method_instruction_evaluator_t *own_evaluator) {
+void ar_destroy_method_instruction_evaluator__destroy(ar_destroy_method_instruction_evaluator_t *own_evaluator) {
     if (!own_evaluator) {
         return;
     }
@@ -244,7 +251,7 @@ void ar__destroy_method_instruction_evaluator__destroy(ar_destroy_method_instruc
 /**
  * Evaluates a destroy method instruction using stored dependencies
  */
-bool ar__destroy_method_instruction_evaluator__evaluate(
+bool ar_destroy_method_instruction_evaluator__evaluate(
     const ar_destroy_method_instruction_evaluator_t *ref_evaluator,
     const instruction_ast_t *ref_ast
 ) {
@@ -253,7 +260,7 @@ bool ar__destroy_method_instruction_evaluator__evaluate(
     }
     
     // Delegate to the legacy function using stored dependencies
-    return ar__destroy_method_instruction_evaluator__evaluate_legacy(
+    return ar_destroy_method_instruction_evaluator__evaluate_legacy(
         ref_evaluator->mut_expr_evaluator,
         ref_evaluator->mut_memory,
         ref_ast
@@ -263,7 +270,7 @@ bool ar__destroy_method_instruction_evaluator__evaluate(
 /**
  * Legacy function for backward compatibility
  */
-bool ar__destroy_method_instruction_evaluator__evaluate_legacy(
+bool ar_destroy_method_instruction_evaluator__evaluate_legacy(
     expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory,
     const instruction_ast_t *ref_ast
