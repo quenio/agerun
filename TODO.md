@@ -327,16 +327,75 @@ This order ensures clean separation of concerns across all modules.
   - [x] Update evaluate functions to use stored dependencies instead of parameters (Completed for all evaluators)
   - [x] Write tests for create/destroy lifecycle of each evaluator (Completed for all evaluators)
   - [x] Ensure all evaluators use ar_<module>_s naming for opaque structs (per new guideline) (Completed for all evaluators)
-- [ ] Remove legacy wrapper functions from specialized evaluators:
-  - [ ] Remove ar_assignment_instruction_evaluator__evaluate_legacy after integration
-  - [ ] Remove ar_send_instruction_evaluator__evaluate_legacy after integration
-  - [ ] Remove ar_condition_instruction_evaluator__evaluate_legacy after integration
-  - [ ] Remove ar_parse_instruction_evaluator__evaluate_legacy after integration
-  - [ ] Remove ar_build_instruction_evaluator__evaluate_legacy after integration
-  - [ ] Remove ar_method_instruction_evaluator__evaluate_legacy after integration
-  - [ ] Remove ar_agent_instruction_evaluator__evaluate_legacy after integration
-  - [ ] Remove ar_destroy_agent_instruction_evaluator__evaluate_legacy after integration
-  - [ ] Remove ar_destroy_method_instruction_evaluator__evaluate_legacy after integration
+- [ ] Remove legacy wrapper functions from specialized evaluators (TDD approach):
+  - [x] Remove ar_assignment_instruction_evaluator__evaluate_legacy (TDD Cycle 1) (Completed 2025-06-20)
+    - [x] Verify no usage of this legacy function in codebase
+    - [x] Replace any found usage with instance-based approach
+    - [x] Write test to verify module works without legacy function
+    - [x] Remove function declaration from header
+    - [x] Remove function implementation from source
+    - [x] Run tests to ensure nothing breaks
+  - [ ] Remove ar_send_instruction_evaluator__evaluate_legacy (TDD Cycle 2)
+    - [ ] Verify no usage of this legacy function in codebase
+    - [ ] Replace any found usage with instance-based approach
+    - [ ] Write test to verify module works without legacy function
+    - [ ] Remove function declaration from header
+    - [ ] Remove function implementation from source
+    - [ ] Run tests to ensure nothing breaks
+  - [ ] Remove ar_condition_instruction_evaluator__evaluate_legacy (TDD Cycle 3)
+    - [ ] Verify no usage of this legacy function in codebase
+    - [ ] Replace any found usage with instance-based approach
+    - [ ] Write test to verify module works without legacy function
+    - [ ] Remove function declaration from header
+    - [ ] Remove function implementation from source
+    - [ ] Run tests to ensure nothing breaks
+  - [ ] Remove ar_parse_instruction_evaluator__evaluate_legacy (TDD Cycle 4)
+    - [ ] Verify no usage of this legacy function in codebase
+    - [ ] Replace any found usage with instance-based approach
+    - [ ] Write test to verify module works without legacy function
+    - [ ] Remove function declaration from header
+    - [ ] Remove function implementation from source
+    - [ ] Run tests to ensure nothing breaks
+  - [ ] Remove ar_build_instruction_evaluator__evaluate_legacy (TDD Cycle 5)
+    - [ ] Verify no usage of this legacy function in codebase
+    - [ ] Replace any found usage with instance-based approach
+    - [ ] Write test to verify module works without legacy function
+    - [ ] Remove function declaration from header
+    - [ ] Remove function implementation from source
+    - [ ] Run tests to ensure nothing breaks
+  - [ ] Remove ar_method_instruction_evaluator__evaluate_legacy (TDD Cycle 6)
+    - [ ] Verify no usage of this legacy function in codebase
+    - [ ] Replace any found usage with instance-based approach
+    - [ ] Write test to verify module works without legacy function
+    - [ ] Remove function declaration from header
+    - [ ] Remove function implementation from source
+    - [ ] Run tests to ensure nothing breaks
+  - [ ] Remove ar_agent_instruction_evaluator__evaluate_legacy (TDD Cycle 7)
+    - [ ] Verify no usage of this legacy function in codebase
+    - [ ] Replace any found usage with instance-based approach
+    - [ ] Write test to verify module works without legacy function
+    - [ ] Remove function declaration from header
+    - [ ] Remove function implementation from source
+    - [ ] Run tests to ensure nothing breaks
+  - [ ] Remove ar_destroy_agent_instruction_evaluator__evaluate_legacy (TDD Cycle 8)
+    - [ ] Verify no usage of this legacy function in codebase
+    - [ ] Replace any found usage with instance-based approach
+    - [ ] Write test to verify module works without legacy function
+    - [ ] Remove function declaration from header
+    - [ ] Remove function implementation from source
+    - [ ] Run tests to ensure nothing breaks
+  - [ ] Remove ar_destroy_method_instruction_evaluator__evaluate_legacy (TDD Cycle 9)
+    - [ ] Verify no usage of this legacy function in codebase
+    - [ ] Replace any found usage with instance-based approach
+    - [ ] Write test to verify module works without legacy function
+    - [ ] Remove function declaration from header
+    - [ ] Remove function implementation from source
+    - [ ] Run tests to ensure nothing breaks
+  - [ ] Final verification and commit
+    - [ ] Run full test suite (./clean_build.sh)
+    - [ ] Update documentation if needed
+    - [ ] Update CHANGELOG.md
+    - [ ] Commit all changes
 - [x] Ensure consistent opaque struct naming pattern: (Completed 2025-06-20)
   - [x] All evaluator structs should use ar_<module>_s pattern (All 4 refactored evaluators follow this)
   - [x] Update any inconsistent naming across modules (No inconsistencies found in refactored modules)

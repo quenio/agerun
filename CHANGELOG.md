@@ -2,7 +2,15 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
-## 2025-06-20 (Latest)
+## 2025-06-21 (Latest)
+- ✅ Started removing legacy wrapper functions from specialized evaluators:
+  - ✅ Removed ar_assignment_instruction_evaluator__evaluate_legacy (TDD Cycle 1)
+  - ✅ Verified the function was not used anywhere in the codebase
+  - ✅ Removed both forward declaration and implementation
+  - ✅ All tests continue to pass with no memory leaks
+  - ✅ This is the first of 9 legacy wrapper functions to be removed
+
+## 2025-06-20
 - ✅ Fixed naming conflict in parse_instruction_evaluator causing abort trap:
   - ✅ Reverted file to last known good state
   - ✅ Removed conflicting ar__parse_instruction_evaluator__evaluate function
