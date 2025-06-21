@@ -140,12 +140,17 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Create `agent_instruction_parser` module with create/destroy lifecycle (Completed 2025-06-21)
   - [x] Create `destroy_agent_instruction_parser` module with create/destroy lifecycle (Completed 2025-06-21)
   - [x] Create `destroy_method_instruction_parser` module with create/destroy lifecycle (Completed 2025-06-21)
-- [ ] **Update `instruction_parser` to become a facade coordinating specialized parsers**:
-  - [ ] Add parser instances to instruction_parser struct (like instruction_evaluator does)
-  - [ ] Create single `ar_instruction_parser__parse()` method that dispatches to appropriate specialized parser
-  - [ ] Remove individual `parse_send()`, `parse_if()`, etc. functions from main parser
-  - [ ] Implement dispatch pattern based on instruction content analysis (detect assignment vs function call vs other)
-  - [ ] Ensure consistent error handling across all specialized parsers
+- [x] **Update `instruction_parser` to become a facade coordinating specialized parsers** (Completed 2025-06-21):
+  - [x] Add parser instances to instruction_parser struct (like instruction_evaluator does)
+  - [x] Create single `ar_instruction_parser__parse()` method that dispatches to appropriate specialized parser
+  - [x] Remove individual `parse_send()`, `parse_if()`, etc. functions from main parser
+  - [x] Implement dispatch pattern based on instruction content analysis (detect assignment vs function call vs other)
+  - [x] Ensure consistent error handling across all specialized parsers
+- [ ] **CRITICAL: Refactor instruction_parser to use pure lookahead approach**:
+  - [ ] Remove all parsing logic from instruction_parser (including assignment parsing)
+  - [ ] Implement minimal lookahead to determine instruction type only
+  - [ ] Delegate ALL actual parsing to specialized parsers
+  - [ ] Ensure facade only dispatches, never parses
 
 #### Phase 2: Unified Instruction Evaluator Interface (CRITICAL - SECOND PRIORITY)
 - [ ] **Create single `ar_instruction_evaluator__evaluate()` function**:

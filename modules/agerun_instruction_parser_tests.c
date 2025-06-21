@@ -59,11 +59,14 @@ static void test_instruction_parser__parse_send(void) {
     assert(own_ast != NULL);
     assert(ar__instruction_ast__get_type(own_ast) == INST_AST_SEND);
     
-    list_t *ref_args = ar__instruction_ast__get_function_args(own_ast);
-    assert(ref_args != NULL);
-    assert(ar__list__count(ref_args) == 2);
-    assert(strcmp((const char*)ar__list__items(ref_args)[0], "1") == 0);
-    assert(strcmp((const char*)ar__list__items(ref_args)[1], "\"Hello\"") == 0);
+    list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
+    assert(own_args != NULL);
+    assert(ar__list__count(own_args) == 2);
+    void **items = ar__list__items(own_args);
+    assert(strcmp((const char*)items[0], "1") == 0);
+    assert(strcmp((const char*)items[1], "\"Hello\"") == 0);
+    AR__HEAP__FREE(items);
+    ar__list__destroy(own_args);
     
     ar__instruction_ast__destroy(own_ast);
     ar__instruction_parser__destroy(own_parser);
@@ -81,11 +84,17 @@ static void test_instruction_parser__parse_send_with_assignment(void) {
     
     instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
-    // Then it should parse successfully as an assignment with send function
+    // Then it should parse successfully as a send instruction with result assignment
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_ASSIGNMENT);
-    assert(strcmp(ar__instruction_ast__get_assignment_path(own_ast), "memory.result") == 0);
-    assert(strcmp(ar__instruction_ast__get_assignment_expression(own_ast), "send(1, \"Hello\")") == 0);
+    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_SEND);
+    assert(ar__instruction_ast__has_result_assignment(own_ast) == true);
+    assert(strcmp(ar__instruction_ast__get_function_result_path(own_ast), "memory.result") == 0);
+    
+    // Verify arguments
+    list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
+    assert(own_args != NULL);
+    assert(ar__list__count(own_args) == 2);
+    ar__list__destroy(own_args);
     
     ar__instruction_ast__destroy(own_ast);
     ar__instruction_parser__destroy(own_parser);
@@ -301,7 +310,7 @@ static void test_parse_simple_assignment(void) {
     instruction_parser_t *own_parser = ar__instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar__instruction_parser__parse_assignment(own_parser, instruction);
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
     // Then it should parse successfully as an assignment
     assert(own_ast != NULL);
@@ -323,7 +332,7 @@ static void test_parse_string_assignment(void) {
     instruction_parser_t *own_parser = ar__instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar__instruction_parser__parse_assignment(own_parser, instruction);
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
     // Then it should parse the string correctly
     assert(own_ast != NULL);
@@ -345,7 +354,7 @@ static void test_parse_nested_assignment(void) {
     instruction_parser_t *own_parser = ar__instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar__instruction_parser__parse_assignment(own_parser, instruction);
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
     // Then it should parse the nested path
     assert(own_ast != NULL);
@@ -367,7 +376,7 @@ static void test_parse_expression_assignment(void) {
     instruction_parser_t *own_parser = ar__instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar__instruction_parser__parse_assignment(own_parser, instruction);
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
     // Then it should preserve the full expression
     assert(own_ast != NULL);
@@ -390,7 +399,7 @@ static void test_parse_if_function(void) {
     instruction_parser_t *own_parser = ar__instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar__instruction_parser__parse_if(own_parser, instruction, "memory.level");
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
     // Then it should parse as an if function
     assert(own_ast != NULL);
@@ -422,7 +431,7 @@ static void test_parse_method_function(void) {
     instruction_parser_t *own_parser = ar__instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar__instruction_parser__parse_method(own_parser, instruction, NULL);
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
     // Then it should parse as a method function
     assert(own_ast != NULL);
@@ -442,7 +451,7 @@ static void test_parse_agent_function(void) {
     instruction_parser_t *own_parser = ar__instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar__instruction_parser__parse_agent(own_parser, instruction, "memory.agent_id");
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
     // Then it should parse as an agent function
     assert(own_ast != NULL);
@@ -467,11 +476,11 @@ static void test_parse_destroy_one_arg(void) {
     instruction_parser_t *own_parser = ar__instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar__instruction_parser__parse_destroy(own_parser, instruction, NULL);
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
-    // Then it should parse as a destroy function
+    // Then it should parse as a destroy agent function
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_DESTROY);
+    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_DESTROY_AGENT);
     
     list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
     assert(ar__list__count(own_args) == 1);
@@ -491,11 +500,11 @@ static void test_parse_destroy_two_args(void) {
     instruction_parser_t *own_parser = ar__instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar__instruction_parser__parse_destroy(own_parser, instruction, NULL);
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
-    // Then it should parse as a destroy function
+    // Then it should parse as a destroy method function
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_DESTROY);
+    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_DESTROY_METHOD);
     
     list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
     assert(ar__list__count(own_args) == 2);
@@ -515,7 +524,7 @@ static void test_parse_parse_function(void) {
     instruction_parser_t *own_parser = ar__instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar__instruction_parser__parse_parse(own_parser, instruction, "memory.parsed");
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
     // Then it should parse as a parse function
     assert(own_ast != NULL);
@@ -535,7 +544,7 @@ static void test_parse_build_function(void) {
     instruction_parser_t *own_parser = ar__instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar__instruction_parser__parse_build(own_parser, instruction, "memory.greeting");
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
     // Then it should parse as a build function
     assert(own_ast != NULL);
@@ -555,7 +564,7 @@ static void test_parse_whitespace_handling(void) {
     instruction_parser_t *own_parser = ar__instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar__instruction_parser__parse_assignment(own_parser, instruction);
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
     // Then it should handle whitespace correctly
     assert(own_ast != NULL);
@@ -576,7 +585,7 @@ static void test_parse_error_handling(void) {
         instruction_parser_t *own_parser = ar__instruction_parser__create();
         assert(own_parser != NULL);
         
-        instruction_ast_t *own_ast = ar__instruction_parser__parse_assignment(own_parser, instruction);
+        instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
         assert(own_ast == NULL);
         
         const char *error = ar__instruction_parser__get_error(own_parser);
@@ -592,7 +601,7 @@ static void test_parse_error_handling(void) {
         instruction_parser_t *own_parser = ar__instruction_parser__create();
         assert(own_parser != NULL);
         
-        instruction_ast_t *own_ast = ar__instruction_parser__parse_assignment(own_parser, instruction);
+        instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
         assert(own_ast == NULL);
         
         ar__instruction_parser__destroy(own_parser);
@@ -611,7 +620,7 @@ static void test_parse_empty_instruction(void) {
     instruction_parser_t *own_parser = ar__instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar__instruction_parser__parse_assignment(own_parser, instruction);
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
     // Then it should return NULL
     assert(own_ast == NULL);
@@ -628,14 +637,14 @@ static void test_parser_reusability(void) {
     
     // First parse
     const char *instruction1 = "memory.x := 42";
-    instruction_ast_t *own_ast1 = ar__instruction_parser__parse_assignment(own_parser, instruction1);
+    instruction_ast_t *own_ast1 = ar_instruction_parser__parse(own_parser, instruction1);
     assert(own_ast1 != NULL);
     assert(strcmp(ar__instruction_ast__get_assignment_path(own_ast1), "memory.x") == 0);
     ar__instruction_ast__destroy(own_ast1);
     
     // Second parse with same parser
     const char *instruction2 = "memory.y := 100";
-    instruction_ast_t *own_ast2 = ar__instruction_parser__parse_assignment(own_parser, instruction2);
+    instruction_ast_t *own_ast2 = ar_instruction_parser__parse(own_parser, instruction2);
     assert(own_ast2 != NULL);
     assert(strcmp(ar__instruction_ast__get_assignment_path(own_ast2), "memory.y") == 0);
     ar__instruction_ast__destroy(own_ast2);

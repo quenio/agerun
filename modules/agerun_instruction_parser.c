@@ -220,16 +220,58 @@ static size_t _skip_whitespace(const char *str, size_t pos) {
 }
 
 /**
- * Internal: Check if instruction is an assignment.
+ * Internal: Check if instruction is a pure assignment (not a function with assignment).
  */
-static bool _is_assignment(const char *ref_instruction) {
+static bool _is_pure_assignment(const char *ref_instruction) {
     if (!ref_instruction) {
         return false;
     }
     
-    // Look for := operator
-    const char *assign_op = strstr(ref_instruction, ":=");
-    return assign_op != NULL;
+    // Look for := operator (but not inside quotes)
+    const char *p = ref_instruction;
+    bool in_quotes = false;
+    const char *assign_op = NULL;
+    
+    while (*p) {
+        if (*p == '"' && (p == ref_instruction || *(p-1) != '\\')) {
+            in_quotes = !in_quotes;
+        } else if (!in_quotes && *p == ':' && *(p+1) == '=') {
+            assign_op = p;
+            break;
+        }
+        p++;
+    }
+    
+    if (!assign_op) {
+        return false;
+    }
+    
+    // Skip whitespace after :=
+    const char *expr_start = assign_op + 2;
+    while (*expr_start && isspace((unsigned char)*expr_start)) {
+        expr_start++;
+    }
+    
+    // Check if the expression is a function call
+    // Function calls have the pattern: name(args)
+    const char *paren = strchr(expr_start, '(');
+    if (paren) {
+        // Check if this looks like a function name before the paren
+        const char *ptr = expr_start;
+        while (ptr < paren && (isalnum((unsigned char)*ptr) || *ptr == '_')) {
+            ptr++;
+        }
+        // Skip whitespace between name and paren
+        while (ptr < paren && isspace((unsigned char)*ptr)) {
+            ptr++;
+        }
+        // If we reached the paren, it's a function call
+        if (ptr == paren) {
+            return false; // Not a pure assignment, it's a function with assignment
+        }
+    }
+    
+    return true; // Pure assignment
 }
 
 /**
@@ -243,16 +285,94 @@ static void _propagate_error(instruction_parser_t *mut_parser,
 }
 
 /**
+ * Internal: Extract result path from instruction if it has assignment.
+ * Returns allocated string that must be freed, or NULL if no assignment.
+ */
+static char* _extract_result_path(const char *ref_instruction) {
+    if (!ref_instruction) {
+        return NULL;
+    }
+    
+    // Look for := operator (but not inside quotes)
+    const char *p = ref_instruction;
+    bool in_quotes = false;
+    const char *assign_op = NULL;
+    
+    while (*p) {
+        if (*p == '"' && (p == ref_instruction || *(p-1) != '\\')) {
+            in_quotes = !in_quotes;
+        } else if (!in_quotes && *p == ':' && *(p+1) == '=') {
+            assign_op = p;
+            break;
+        }
+        p++;
+    }
+    
+    if (!assign_op) {
+        return NULL;
+    }
+    
+    // Find start of instruction
+    size_t start_pos = _skip_whitespace(ref_instruction, 0);
+    const char *start = ref_instruction + start_pos;
+    
+    // Calculate length of result path
+    size_t len = (size_t)(assign_op - start);
+    
+    // Trim trailing whitespace
+    while (len > 0 && isspace((unsigned char)start[len - 1])) {
+        len--;
+    }
+    
+    if (len == 0) {
+        return NULL;
+    }
+    
+    // Allocate and copy result path
+    char *result_path = AR__HEAP__MALLOC(len + 1, "result path");
+    if (!result_path) {
+        return NULL;
+    }
+    
+    memcpy(result_path, start, len);
+    result_path[len] = '\0';
+    
+    return result_path;
+}
+
+/**
  * Internal: Get function name from instruction.
  * Returns pointer to start of function name or NULL if not a function call.
+ * If instruction has assignment, starts search after :=
  */
 static const char* _get_function_name(const char *ref_instruction, size_t *out_name_len) {
     if (!ref_instruction || !out_name_len) {
         return NULL;
     }
     
-    size_t pos = _skip_whitespace(ref_instruction, 0);
-    const char *start = ref_instruction + pos;
+    const char *search_start = ref_instruction;
+    
+    // If there's an assignment, start search after := (but not inside quotes)
+    const char *p = ref_instruction;
+    bool in_quotes = false;
+    const char *assign_op = NULL;
+    
+    while (*p) {
+        if (*p == '"' && (p == ref_instruction || *(p-1) != '\\')) {
+            in_quotes = !in_quotes;
+        } else if (!in_quotes && *p == ':' && *(p+1) == '=') {
+            assign_op = p;
+            break;
+        }
+        p++;
+    }
+    
+    if (assign_op) {
+        search_start = assign_op + 2;
+    }
+    
+    size_t pos = _skip_whitespace(search_start, 0);
+    const char *start = search_start + pos;
     
     // Find the opening parenthesis
     const char *paren = strchr(start, '(');
@@ -287,8 +407,8 @@ instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser
     // Skip leading whitespace
     size_t pos = _skip_whitespace(ref_instruction, 0);
     
-    // Check if it's an assignment
-    if (_is_assignment(ref_instruction)) {
+    // Check if it's a pure assignment (not a function with assignment)
+    if (_is_pure_assignment(ref_instruction)) {
         instruction_ast_t *own_ast = ar_assignment_instruction_parser__parse(
             mut_parser->own_assignment_parser, 
             ref_instruction
@@ -307,16 +427,21 @@ instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser
         return own_ast;
     }
     
-    // Check if it's a function call
+    // Check if it's a function call (with or without assignment)
     size_t name_len = 0;
     const char *func_name = _get_function_name(ref_instruction, &name_len);
+    char *own_result_path = NULL;
+    
     if (func_name) {
+        // Extract result path if there's an assignment
+        own_result_path = _extract_result_path(ref_instruction);
+        
         // Check for send
         if (name_len == 4 && strncmp(func_name, "send", 4) == 0) {
             instruction_ast_t *own_ast = ar_send_instruction_parser__parse(
                 mut_parser->own_send_parser,
                 ref_instruction,
-                NULL  // No result path for direct function calls
+                own_result_path
             );
             
             if (!own_ast) {
@@ -328,6 +453,7 @@ instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser
                 );
             }
             
+            AR__HEAP__FREE(own_result_path);
             return own_ast;
         }
         
@@ -336,7 +462,7 @@ instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser
             instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(
                 mut_parser->own_condition_parser,
                 ref_instruction,
-                NULL  // No result path for direct function calls
+                own_result_path
             );
             
             if (!own_ast) {
@@ -348,6 +474,7 @@ instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser
                 );
             }
             
+            AR__HEAP__FREE(own_result_path);
             return own_ast;
         }
         
@@ -356,7 +483,7 @@ instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser
             instruction_ast_t *own_ast = ar_parse_instruction_parser__parse(
                 mut_parser->own_parse_parser,
                 ref_instruction,
-                NULL
+                own_result_path
             );
             
             if (!own_ast) {
@@ -368,6 +495,7 @@ instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser
                 );
             }
             
+            AR__HEAP__FREE(own_result_path);
             return own_ast;
         }
         
@@ -376,7 +504,7 @@ instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser
             instruction_ast_t *own_ast = ar_build_instruction_parser__parse(
                 mut_parser->own_build_parser,
                 ref_instruction,
-                NULL
+                own_result_path
             );
             
             if (!own_ast) {
@@ -388,6 +516,7 @@ instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser
                 );
             }
             
+            AR__HEAP__FREE(own_result_path);
             return own_ast;
         }
         
@@ -396,7 +525,7 @@ instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser
             instruction_ast_t *own_ast = ar_method_instruction_parser__parse(
                 mut_parser->own_method_parser,
                 ref_instruction,
-                NULL
+                own_result_path
             );
             
             if (!own_ast) {
@@ -408,6 +537,7 @@ instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser
                 );
             }
             
+            AR__HEAP__FREE(own_result_path);
             return own_ast;
         }
         
@@ -416,7 +546,7 @@ instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser
             instruction_ast_t *own_ast = ar_agent_instruction_parser__parse(
                 mut_parser->own_agent_parser,
                 ref_instruction,
-                NULL
+                own_result_path
             );
             
             if (!own_ast) {
@@ -428,6 +558,7 @@ instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser
                 );
             }
             
+            AR__HEAP__FREE(own_result_path);
             return own_ast;
         }
         
@@ -438,10 +569,11 @@ instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser
             instruction_ast_t *own_ast = ar_destroy_method_instruction_parser__parse(
                 mut_parser->own_destroy_method_parser,
                 ref_instruction,
-                NULL
+                own_result_path
             );
             
             if (own_ast) {
+                AR__HEAP__FREE(own_result_path);
                 return own_ast;
             }
             
@@ -450,7 +582,7 @@ instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser
             own_ast = ar_destroy_agent_instruction_parser__parse(
                 mut_parser->own_destroy_agent_parser,
                 ref_instruction,
-                NULL
+                own_result_path
             );
             
             if (!own_ast) {
@@ -462,832 +594,27 @@ instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser
                 );
             }
             
+            AR__HEAP__FREE(own_result_path);
             return own_ast;
         }
     }
     
+    // Check if it looks like an assignment attempt with wrong operator
+    const char *p = ref_instruction;
+    while (*p) {
+        if (*p == '=' && (p == ref_instruction || *(p-1) != ':') && (p+1 == ref_instruction + strlen(ref_instruction) || *(p+1) != '=')) {
+            // Found a single = that's not part of := or ==
+            AR__HEAP__FREE(own_result_path);
+            _set_error(mut_parser, "Invalid assignment operator, expected ':='", (size_t)(p - ref_instruction));
+            return NULL;
+        }
+        p++;
+    }
+    
     // Unknown instruction type
+    AR__HEAP__FREE(own_result_path);
     _set_error(mut_parser, "Unknown instruction type", pos);
     return NULL;
 }
 
-/**
- * Internal: Find the end of a memory path.
- */
-static size_t _find_path_end(const char *str, size_t pos) {
-    while (str[pos] && (isalnum((unsigned char)str[pos]) || str[pos] == '.' || str[pos] == '_')) {
-        pos++;
-    }
-    return pos;
-}
 
-/**
- * Internal: Find the end of an expression (everything after :=).
- */
-static size_t _find_expression_end(const char *str, size_t pos) {
-    size_t len = strlen(str);
-    
-    /* Find the end, trimming trailing whitespace */
-    size_t end = len;
-    while (end > pos && isspace((unsigned char)str[end - 1])) {
-        end--;
-    }
-    
-    return end;
-}
-
-/**
- * Parse an assignment instruction.
- */
-instruction_ast_t* ar__instruction_parser__parse_assignment(instruction_parser_t *mut_parser, const char *ref_instruction) {
-    if (!mut_parser || !ref_instruction) {
-        return NULL;
-    }
-    
-    _clear_error(mut_parser);
-    
-    size_t pos = 0;
-    size_t len = strlen(ref_instruction);
-    
-    /* Skip leading whitespace */
-    pos = _skip_whitespace(ref_instruction, pos);
-    
-    /* Check for empty instruction */
-    if (pos >= len) {
-        _set_error(mut_parser, "Empty instruction", pos);
-        return NULL;
-    }
-    
-    /* Find memory path */
-    size_t path_start = pos;
-    pos = _find_path_end(ref_instruction, pos);
-    size_t path_end = pos;
-    
-    if (path_start == path_end) {
-        _set_error(mut_parser, "Expected memory path", pos);
-        return NULL;
-    }
-    
-    /* Check that path starts with "memory" */
-    if (path_end - path_start < 6 || strncmp(ref_instruction + path_start, "memory", 6) != 0) {
-        _set_error(mut_parser, "Path must start with 'memory'", path_start);
-        return NULL;
-    }
-    
-    /* Skip whitespace */
-    pos = _skip_whitespace(ref_instruction, pos);
-    
-    /* Check for assignment operator */
-    if (pos + 1 >= len || ref_instruction[pos] != ':' || ref_instruction[pos + 1] != '=') {
-        _set_error(mut_parser, "Expected ':=' operator", pos);
-        return NULL;
-    }
-    pos += 2;
-    
-    /* Skip whitespace after := */
-    pos = _skip_whitespace(ref_instruction, pos);
-    
-    /* Find expression */
-    size_t expr_start = pos;
-    size_t expr_end = _find_expression_end(ref_instruction, pos);
-    
-    if (expr_start == expr_end) {
-        _set_error(mut_parser, "Expected expression after ':='", pos);
-        return NULL;
-    }
-    
-    /* Extract path and expression */
-    char *own_path = AR__HEAP__MALLOC(path_end - path_start + 1, "assignment path");
-    if (!own_path) {
-        _set_error(mut_parser, "Memory allocation failed", 0);
-        return NULL;
-    }
-    memcpy(own_path, ref_instruction + path_start, path_end - path_start);
-    own_path[path_end - path_start] = '\0';
-    
-    char *own_expr = AR__HEAP__MALLOC(expr_end - expr_start + 1, "assignment expression");
-    if (!own_expr) {
-        AR__HEAP__FREE(own_path);
-        _set_error(mut_parser, "Memory allocation failed", 0);
-        return NULL;
-    }
-    memcpy(own_expr, ref_instruction + expr_start, expr_end - expr_start);
-    own_expr[expr_end - expr_start] = '\0';
-    
-    /* Create AST node */
-    instruction_ast_t *own_ast = ar__instruction_ast__create_assignment(own_path, own_expr);
-    
-    AR__HEAP__FREE(own_path);
-    AR__HEAP__FREE(own_expr);
-    
-    if (!own_ast) {
-        _set_error(mut_parser, "Failed to create AST node", 0);
-    }
-    
-    return own_ast;
-}
-
-/**
- * Internal: Extract a single argument from function call.
- * Handles nested parentheses and quoted strings.
- */
-static char* _extract_argument(const char *str, size_t *pos, char delimiter) {
-    size_t start = *pos;
-    int paren_depth = 0;
-    bool in_quotes = false;
-    
-    /* Skip leading whitespace */
-    while (str[*pos] && isspace((unsigned char)str[*pos])) {
-        (*pos)++;
-        start++;
-    }
-    
-    /* Find delimiter or end */
-    while (str[*pos]) {
-        char c = str[*pos];
-        
-        if (c == '"' && (*pos == 0 || str[*pos - 1] != '\\')) {
-            in_quotes = !in_quotes;
-        } else if (!in_quotes) {
-            if (c == '(') paren_depth++;
-            else if (c == ')') {
-                if (paren_depth > 0) paren_depth--;
-                else if (delimiter == ')') break;
-            }
-            else if (c == delimiter && paren_depth == 0) break;
-        }
-        (*pos)++;
-    }
-    
-    if (str[*pos] != delimiter) {
-        return NULL;
-    }
-    
-    /* Trim trailing whitespace */
-    size_t end = *pos;
-    while (end > start && isspace((unsigned char)str[end - 1])) {
-        end--;
-    }
-    
-    /* Extract argument */
-    size_t len = end - start;
-    char *arg = AR__HEAP__MALLOC(len + 1, "function argument");
-    if (!arg) {
-        return NULL;
-    }
-    memcpy(arg, str + start, len);
-    arg[len] = '\0';
-    
-    return arg;
-}
-
-/**
- * Internal: Parse function arguments into an array.
- */
-static bool _parse_arguments(const char *str, size_t *pos, char ***out_args, size_t *out_count, size_t expected_count) {
-    *out_args = AR__HEAP__MALLOC(expected_count * sizeof(char*), "function arguments array");
-    if (!*out_args) {
-        return false;
-    }
-    
-    *out_count = 0;
-    
-    for (size_t i = 0; i < expected_count; i++) {
-        char delimiter = (i < expected_count - 1) ? ',' : ')';
-        char *arg = _extract_argument(str, pos, delimiter);
-        if (!arg) {
-            /* Clean up on failure */
-            for (size_t j = 0; j < *out_count; j++) {
-                AR__HEAP__FREE((*out_args)[j]);
-            }
-            AR__HEAP__FREE(*out_args);
-            *out_args = NULL;
-            return false;
-        }
-        (*out_args)[i] = arg;
-        (*out_count)++;
-        
-        if (i < expected_count - 1) {
-            (*pos)++; /* Skip comma */
-            /* Skip whitespace after comma */
-            while (str[*pos] && isspace((unsigned char)str[*pos])) {
-                (*pos)++;
-            }
-        }
-    }
-    
-    return true;
-}
-
-/**
- * Parse a send function.
- */
-instruction_ast_t* ar__instruction_parser__parse_send(instruction_parser_t *mut_parser, const char *ref_instruction, const char *ref_result_path) {
-    if (!mut_parser || !ref_instruction) {
-        return NULL;
-    }
-    
-    _clear_error(mut_parser);
-    
-    size_t pos = 0;
-    
-    /* Skip whitespace */
-    pos = _skip_whitespace(ref_instruction, pos);
-    
-    /* Handle optional assignment */
-    if (ref_result_path) {
-        /* Find where the function call starts after the assignment */
-        const char *assign_pos = strstr(ref_instruction, ":=");
-        if (assign_pos) {
-            pos = (size_t)(assign_pos - ref_instruction) + 2;
-            pos = _skip_whitespace(ref_instruction, pos);
-        }
-    }
-    
-    /* Check for "send" */
-    if (strncmp(ref_instruction + pos, "send", 4) != 0) {
-        _set_error(mut_parser, "Expected 'send' function", pos);
-        return NULL;
-    }
-    pos += 4;
-    
-    /* Skip whitespace */
-    pos = _skip_whitespace(ref_instruction, pos);
-    
-    /* Expect opening parenthesis */
-    if (ref_instruction[pos] != '(') {
-        _set_error(mut_parser, "Expected '(' after 'send'", pos);
-        return NULL;
-    }
-    pos++;
-    
-    /* Parse arguments */
-    char **args = NULL;
-    size_t arg_count = 0;
-    if (!_parse_arguments(ref_instruction, &pos, &args, &arg_count, 2)) {
-        _set_error(mut_parser, "Failed to parse send arguments", pos);
-        return NULL;
-    }
-    
-    /* Skip closing parenthesis */
-    pos++;
-    
-    /* Create AST node - need to copy args to const array to avoid cast-qual warning */
-    const char **const_args = AR__HEAP__MALLOC(arg_count * sizeof(const char*), "const args");
-    if (!const_args) {
-        for (size_t i = 0; i < arg_count; i++) {
-            AR__HEAP__FREE(args[i]);
-        }
-        AR__HEAP__FREE(args);
-        _set_error(mut_parser, "Memory allocation failed", 0);
-        return NULL;
-    }
-    for (size_t i = 0; i < arg_count; i++) {
-        const_args[i] = args[i];
-    }
-    
-    instruction_ast_t *own_ast = ar__instruction_ast__create_function_call(
-        INST_AST_SEND, "send", const_args, arg_count, ref_result_path
-    );
-    
-    AR__HEAP__FREE(const_args);
-    
-    /* Clean up arguments */
-    for (size_t i = 0; i < arg_count; i++) {
-        AR__HEAP__FREE(args[i]);
-    }
-    AR__HEAP__FREE(args);
-    
-    if (!own_ast) {
-        _set_error(mut_parser, "Failed to create AST node", 0);
-    }
-    
-    return own_ast;
-}
-
-/**
- * Parse an if function.
- */
-instruction_ast_t* ar__instruction_parser__parse_if(instruction_parser_t *mut_parser, const char *ref_instruction, const char *ref_result_path) {
-    if (!mut_parser || !ref_instruction) {
-        return NULL;
-    }
-    
-    _clear_error(mut_parser);
-    
-    size_t pos = 0;
-    
-    /* Skip whitespace */
-    pos = _skip_whitespace(ref_instruction, pos);
-    
-    /* Handle optional assignment */
-    if (ref_result_path) {
-        /* Find where the function call starts after the assignment */
-        const char *assign_pos = strstr(ref_instruction, ":=");
-        if (assign_pos) {
-            pos = (size_t)(assign_pos - ref_instruction) + 2;
-            pos = _skip_whitespace(ref_instruction, pos);
-        }
-    }
-    
-    /* Check for "if" */
-    if (strncmp(ref_instruction + pos, "if", 2) != 0) {
-        _set_error(mut_parser, "Expected 'if' function", pos);
-        return NULL;
-    }
-    pos += 2;
-    
-    /* Skip whitespace */
-    pos = _skip_whitespace(ref_instruction, pos);
-    
-    /* Expect opening parenthesis */
-    if (ref_instruction[pos] != '(') {
-        _set_error(mut_parser, "Expected '(' after 'if'", pos);
-        return NULL;
-    }
-    pos++;
-    
-    /* Parse arguments */
-    char **args = NULL;
-    size_t arg_count = 0;
-    if (!_parse_arguments(ref_instruction, &pos, &args, &arg_count, 3)) {
-        _set_error(mut_parser, "Failed to parse if arguments", pos);
-        return NULL;
-    }
-    
-    /* Skip closing parenthesis */
-    pos++;
-    
-    /* Create AST node - need to copy args to const array to avoid cast-qual warning */
-    const char **const_args = AR__HEAP__MALLOC(arg_count * sizeof(const char*), "const args");
-    if (!const_args) {
-        for (size_t i = 0; i < arg_count; i++) {
-            AR__HEAP__FREE(args[i]);
-        }
-        AR__HEAP__FREE(args);
-        _set_error(mut_parser, "Memory allocation failed", 0);
-        return NULL;
-    }
-    for (size_t i = 0; i < arg_count; i++) {
-        const_args[i] = args[i];
-    }
-    
-    instruction_ast_t *own_ast = ar__instruction_ast__create_function_call(
-        INST_AST_IF, "if", const_args, arg_count, ref_result_path
-    );
-    
-    AR__HEAP__FREE(const_args);
-    
-    /* Clean up arguments */
-    for (size_t i = 0; i < arg_count; i++) {
-        AR__HEAP__FREE(args[i]);
-    }
-    AR__HEAP__FREE(args);
-    
-    if (!own_ast) {
-        _set_error(mut_parser, "Failed to create AST node", 0);
-    }
-    
-    return own_ast;
-}
-
-/**
- * Parse a method function.
- */
-instruction_ast_t* ar__instruction_parser__parse_method(instruction_parser_t *mut_parser, const char *ref_instruction, const char *ref_result_path) {
-    if (!mut_parser || !ref_instruction) {
-        return NULL;
-    }
-    
-    _clear_error(mut_parser);
-    
-    size_t pos = 0;
-    
-    /* Skip whitespace */
-    pos = _skip_whitespace(ref_instruction, pos);
-    
-    /* Handle optional assignment */
-    if (ref_result_path) {
-        /* Find where the function call starts after the assignment */
-        const char *assign_pos = strstr(ref_instruction, ":=");
-        if (assign_pos) {
-            pos = (size_t)(assign_pos - ref_instruction) + 2;
-            pos = _skip_whitespace(ref_instruction, pos);
-        }
-    }
-    
-    /* Check for "method" */
-    if (strncmp(ref_instruction + pos, "method", 6) != 0) {
-        _set_error(mut_parser, "Expected 'method' function", pos);
-        return NULL;
-    }
-    pos += 6;
-    
-    /* Skip whitespace */
-    pos = _skip_whitespace(ref_instruction, pos);
-    
-    /* Expect opening parenthesis */
-    if (ref_instruction[pos] != '(') {
-        _set_error(mut_parser, "Expected '(' after 'method'", pos);
-        return NULL;
-    }
-    pos++;
-    
-    /* Parse arguments */
-    char **args = NULL;
-    size_t arg_count = 0;
-    if (!_parse_arguments(ref_instruction, &pos, &args, &arg_count, 3)) {
-        _set_error(mut_parser, "Failed to parse method arguments", pos);
-        return NULL;
-    }
-    
-    /* Skip closing parenthesis */
-    pos++;
-    
-    /* Create AST node - need to copy args to const array to avoid cast-qual warning */
-    const char **const_args = AR__HEAP__MALLOC(arg_count * sizeof(const char*), "const args");
-    if (!const_args) {
-        for (size_t i = 0; i < arg_count; i++) {
-            AR__HEAP__FREE(args[i]);
-        }
-        AR__HEAP__FREE(args);
-        _set_error(mut_parser, "Memory allocation failed", 0);
-        return NULL;
-    }
-    for (size_t i = 0; i < arg_count; i++) {
-        const_args[i] = args[i];
-    }
-    
-    instruction_ast_t *own_ast = ar__instruction_ast__create_function_call(
-        INST_AST_METHOD, "method", const_args, arg_count, ref_result_path
-    );
-    
-    AR__HEAP__FREE(const_args);
-    
-    /* Clean up arguments */
-    for (size_t i = 0; i < arg_count; i++) {
-        AR__HEAP__FREE(args[i]);
-    }
-    AR__HEAP__FREE(args);
-    
-    if (!own_ast) {
-        _set_error(mut_parser, "Failed to create AST node", 0);
-    }
-    
-    return own_ast;
-}
-
-/**
- * Parse an agent function.
- */
-instruction_ast_t* ar__instruction_parser__parse_agent(instruction_parser_t *mut_parser, const char *ref_instruction, const char *ref_result_path) {
-    if (!mut_parser || !ref_instruction) {
-        return NULL;
-    }
-    
-    _clear_error(mut_parser);
-    
-    size_t pos = 0;
-    
-    /* Skip whitespace */
-    pos = _skip_whitespace(ref_instruction, pos);
-    
-    /* Handle optional assignment */
-    if (ref_result_path) {
-        /* Find where the function call starts after the assignment */
-        const char *assign_pos = strstr(ref_instruction, ":=");
-        if (assign_pos) {
-            pos = (size_t)(assign_pos - ref_instruction) + 2;
-            pos = _skip_whitespace(ref_instruction, pos);
-        }
-    }
-    
-    /* Check for "agent" */
-    if (strncmp(ref_instruction + pos, "agent", 5) != 0) {
-        _set_error(mut_parser, "Expected 'agent' function", pos);
-        return NULL;
-    }
-    pos += 5;
-    
-    /* Skip whitespace */
-    pos = _skip_whitespace(ref_instruction, pos);
-    
-    /* Expect opening parenthesis */
-    if (ref_instruction[pos] != '(') {
-        _set_error(mut_parser, "Expected '(' after 'agent'", pos);
-        return NULL;
-    }
-    pos++;
-    
-    /* Parse arguments */
-    char **args = NULL;
-    size_t arg_count = 0;
-    if (!_parse_arguments(ref_instruction, &pos, &args, &arg_count, 3)) {
-        _set_error(mut_parser, "Failed to parse agent arguments", pos);
-        return NULL;
-    }
-    
-    /* Skip closing parenthesis */
-    pos++;
-    
-    /* Create AST node - need to copy args to const array to avoid cast-qual warning */
-    const char **const_args = AR__HEAP__MALLOC(arg_count * sizeof(const char*), "const args");
-    if (!const_args) {
-        for (size_t i = 0; i < arg_count; i++) {
-            AR__HEAP__FREE(args[i]);
-        }
-        AR__HEAP__FREE(args);
-        _set_error(mut_parser, "Memory allocation failed", 0);
-        return NULL;
-    }
-    for (size_t i = 0; i < arg_count; i++) {
-        const_args[i] = args[i];
-    }
-    
-    instruction_ast_t *own_ast = ar__instruction_ast__create_function_call(
-        INST_AST_AGENT, "agent", const_args, arg_count, ref_result_path
-    );
-    
-    AR__HEAP__FREE(const_args);
-    
-    /* Clean up arguments */
-    for (size_t i = 0; i < arg_count; i++) {
-        AR__HEAP__FREE(args[i]);
-    }
-    AR__HEAP__FREE(args);
-    
-    if (!own_ast) {
-        _set_error(mut_parser, "Failed to create AST node", 0);
-    }
-    
-    return own_ast;
-}
-
-/**
- * Parse a destroy function.
- */
-instruction_ast_t* ar__instruction_parser__parse_destroy(instruction_parser_t *mut_parser, const char *ref_instruction, const char *ref_result_path) {
-    if (!mut_parser || !ref_instruction) {
-        return NULL;
-    }
-    
-    _clear_error(mut_parser);
-    
-    size_t pos = 0;
-    
-    /* Skip whitespace */
-    pos = _skip_whitespace(ref_instruction, pos);
-    
-    /* Handle optional assignment */
-    if (ref_result_path) {
-        /* Find where the function call starts after the assignment */
-        const char *assign_pos = strstr(ref_instruction, ":=");
-        if (assign_pos) {
-            pos = (size_t)(assign_pos - ref_instruction) + 2;
-            pos = _skip_whitespace(ref_instruction, pos);
-        }
-    }
-    
-    /* Check for "destroy" */
-    if (strncmp(ref_instruction + pos, "destroy", 7) != 0) {
-        _set_error(mut_parser, "Expected 'destroy' function", pos);
-        return NULL;
-    }
-    pos += 7;
-    
-    /* Skip whitespace */
-    pos = _skip_whitespace(ref_instruction, pos);
-    
-    /* Expect opening parenthesis */
-    if (ref_instruction[pos] != '(') {
-        _set_error(mut_parser, "Expected '(' after 'destroy'", pos);
-        return NULL;
-    }
-    pos++;
-    
-    /* Destroy can have 1 or 2 arguments - try parsing 2 first */
-    char **args = NULL;
-    size_t arg_count = 0;
-    
-    /* Save position in case we need to backtrack */
-    size_t save_pos = pos;
-    
-    /* Try parsing 2 arguments */
-    if (_parse_arguments(ref_instruction, &pos, &args, &arg_count, 2)) {
-        /* Success with 2 args */
-    } else {
-        /* Try 1 argument */
-        pos = save_pos;
-        if (!_parse_arguments(ref_instruction, &pos, &args, &arg_count, 1)) {
-            _set_error(mut_parser, "Failed to parse destroy arguments", pos);
-            return NULL;
-        }
-    }
-    
-    /* Skip closing parenthesis */
-    pos++;
-    
-    /* Create AST node - need to copy args to const array to avoid cast-qual warning */
-    const char **const_args = AR__HEAP__MALLOC(arg_count * sizeof(const char*), "const args");
-    if (!const_args) {
-        for (size_t i = 0; i < arg_count; i++) {
-            AR__HEAP__FREE(args[i]);
-        }
-        AR__HEAP__FREE(args);
-        _set_error(mut_parser, "Memory allocation failed", 0);
-        return NULL;
-    }
-    for (size_t i = 0; i < arg_count; i++) {
-        const_args[i] = args[i];
-    }
-    
-    instruction_ast_t *own_ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY, "destroy", const_args, arg_count, ref_result_path
-    );
-    
-    AR__HEAP__FREE(const_args);
-    
-    /* Clean up arguments */
-    for (size_t i = 0; i < arg_count; i++) {
-        AR__HEAP__FREE(args[i]);
-    }
-    AR__HEAP__FREE(args);
-    
-    if (!own_ast) {
-        _set_error(mut_parser, "Failed to create AST node", 0);
-    }
-    
-    return own_ast;
-}
-
-/**
- * Parse a parse function.
- */
-instruction_ast_t* ar__instruction_parser__parse_parse(instruction_parser_t *mut_parser, const char *ref_instruction, const char *ref_result_path) {
-    if (!mut_parser || !ref_instruction) {
-        return NULL;
-    }
-    
-    _clear_error(mut_parser);
-    
-    size_t pos = 0;
-    
-    /* Skip whitespace */
-    pos = _skip_whitespace(ref_instruction, pos);
-    
-    /* Handle optional assignment */
-    if (ref_result_path) {
-        /* Find where the function call starts after the assignment */
-        const char *assign_pos = strstr(ref_instruction, ":=");
-        if (assign_pos) {
-            pos = (size_t)(assign_pos - ref_instruction) + 2;
-            pos = _skip_whitespace(ref_instruction, pos);
-        }
-    }
-    
-    /* Check for "parse" */
-    if (strncmp(ref_instruction + pos, "parse", 5) != 0) {
-        _set_error(mut_parser, "Expected 'parse' function", pos);
-        return NULL;
-    }
-    pos += 5;
-    
-    /* Skip whitespace */
-    pos = _skip_whitespace(ref_instruction, pos);
-    
-    /* Expect opening parenthesis */
-    if (ref_instruction[pos] != '(') {
-        _set_error(mut_parser, "Expected '(' after 'parse'", pos);
-        return NULL;
-    }
-    pos++;
-    
-    /* Parse arguments */
-    char **args = NULL;
-    size_t arg_count = 0;
-    if (!_parse_arguments(ref_instruction, &pos, &args, &arg_count, 2)) {
-        _set_error(mut_parser, "Failed to parse parse arguments", pos);
-        return NULL;
-    }
-    
-    /* Skip closing parenthesis */
-    pos++;
-    
-    /* Create AST node - need to copy args to const array to avoid cast-qual warning */
-    const char **const_args = AR__HEAP__MALLOC(arg_count * sizeof(const char*), "const args");
-    if (!const_args) {
-        for (size_t i = 0; i < arg_count; i++) {
-            AR__HEAP__FREE(args[i]);
-        }
-        AR__HEAP__FREE(args);
-        _set_error(mut_parser, "Memory allocation failed", 0);
-        return NULL;
-    }
-    for (size_t i = 0; i < arg_count; i++) {
-        const_args[i] = args[i];
-    }
-    
-    instruction_ast_t *own_ast = ar__instruction_ast__create_function_call(
-        INST_AST_PARSE, "parse", const_args, arg_count, ref_result_path
-    );
-    
-    AR__HEAP__FREE(const_args);
-    
-    /* Clean up arguments */
-    for (size_t i = 0; i < arg_count; i++) {
-        AR__HEAP__FREE(args[i]);
-    }
-    AR__HEAP__FREE(args);
-    
-    if (!own_ast) {
-        _set_error(mut_parser, "Failed to create AST node", 0);
-    }
-    
-    return own_ast;
-}
-
-/**
- * Parse a build function.
- */
-instruction_ast_t* ar__instruction_parser__parse_build(instruction_parser_t *mut_parser, const char *ref_instruction, const char *ref_result_path) {
-    if (!mut_parser || !ref_instruction) {
-        return NULL;
-    }
-    
-    _clear_error(mut_parser);
-    
-    size_t pos = 0;
-    
-    /* Skip whitespace */
-    pos = _skip_whitespace(ref_instruction, pos);
-    
-    /* Handle optional assignment */
-    if (ref_result_path) {
-        /* Find where the function call starts after the assignment */
-        const char *assign_pos = strstr(ref_instruction, ":=");
-        if (assign_pos) {
-            pos = (size_t)(assign_pos - ref_instruction) + 2;
-            pos = _skip_whitespace(ref_instruction, pos);
-        }
-    }
-    
-    /* Check for "build" */
-    if (strncmp(ref_instruction + pos, "build", 5) != 0) {
-        _set_error(mut_parser, "Expected 'build' function", pos);
-        return NULL;
-    }
-    pos += 5;
-    
-    /* Skip whitespace */
-    pos = _skip_whitespace(ref_instruction, pos);
-    
-    /* Expect opening parenthesis */
-    if (ref_instruction[pos] != '(') {
-        _set_error(mut_parser, "Expected '(' after 'build'", pos);
-        return NULL;
-    }
-    pos++;
-    
-    /* Parse arguments */
-    char **args = NULL;
-    size_t arg_count = 0;
-    if (!_parse_arguments(ref_instruction, &pos, &args, &arg_count, 2)) {
-        _set_error(mut_parser, "Failed to parse build arguments", pos);
-        return NULL;
-    }
-    
-    /* Skip closing parenthesis */
-    pos++;
-    
-    /* Create AST node - need to copy args to const array to avoid cast-qual warning */
-    const char **const_args = AR__HEAP__MALLOC(arg_count * sizeof(const char*), "const args");
-    if (!const_args) {
-        for (size_t i = 0; i < arg_count; i++) {
-            AR__HEAP__FREE(args[i]);
-        }
-        AR__HEAP__FREE(args);
-        _set_error(mut_parser, "Memory allocation failed", 0);
-        return NULL;
-    }
-    for (size_t i = 0; i < arg_count; i++) {
-        const_args[i] = args[i];
-    }
-    
-    instruction_ast_t *own_ast = ar__instruction_ast__create_function_call(
-        INST_AST_BUILD, "build", const_args, arg_count, ref_result_path
-    );
-    
-    AR__HEAP__FREE(const_args);
-    
-    /* Clean up arguments */
-    for (size_t i = 0; i < arg_count; i++) {
-        AR__HEAP__FREE(args[i]);
-    }
-    AR__HEAP__FREE(args);
-    
-    if (!own_ast) {
-        _set_error(mut_parser, "Failed to create AST node", 0);
-    }
-    
-    return own_ast;
-}
