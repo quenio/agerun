@@ -3,7 +3,7 @@
 This document tracks completed milestones and major achievements for the AgeRun project.
 
 ## 2025-06-21 (Latest)
-- ✅ **Created specialized parser modules (Phase 1 progress: 7/8 completed)**:
+- ✅ **COMPLETED Phase 1: Created all 9 specialized parser modules**:
   - ✅ **assignment_instruction_parser module completed**:
     - ✅ Implemented instantiable parser with create/destroy lifecycle
     - ✅ Moved and adapted implementation from main instruction_parser
@@ -64,6 +64,23 @@ This document tracks completed milestones and major achievements for the AgeRun 
     - ✅ Zero memory leaks (39 allocations, 0 active)
     - ✅ Module documentation created
     - ✅ Updated modules README with parser description
+  - ✅ **destroy_agent_instruction_parser module completed**:
+    - ✅ Implemented instantiable parser with create/destroy lifecycle
+    - ✅ Moved and adapted implementation from main instruction_parser (lines 657-748)
+    - ✅ Handles destroy(agent_id) syntax for single-argument agent destruction
+    - ✅ Supports integer literals and memory references
+    - ✅ Comprehensive tests including assignment and error handling
+    - ✅ Zero memory leaks (41 allocations, 0 active)
+    - ✅ Module documentation created
+  - ✅ **destroy_method_instruction_parser module completed**:
+    - ✅ Implemented instantiable parser with create/destroy lifecycle
+    - ✅ Moved and adapted implementation from main instruction_parser
+    - ✅ Handles destroy("method", "version") syntax for two-argument method destruction
+    - ✅ Validates two arguments with proper comma separation
+    - ✅ Comprehensive tests including complex strings with escaped quotes
+    - ✅ Zero memory leaks (49 allocations, 0 active)
+    - ✅ Module documentation created
+    - ✅ Updated modules README with both destroy parser descriptions
 - ✅ **COMPLETED: All 9 legacy wrapper functions removed from specialized evaluators**:
   - ✅ TDD Cycle 1: Removed ar_assignment_instruction_evaluator__evaluate_legacy
   - ✅ TDD Cycle 2: Removed ar_send_instruction_evaluator__evaluate_legacy

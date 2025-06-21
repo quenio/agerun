@@ -138,7 +138,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Create `build_instruction_parser` module with create/destroy lifecycle (Completed 2025-06-21)
   - [x] Create `method_instruction_parser` module with create/destroy lifecycle (Completed 2025-06-21)
   - [x] Create `agent_instruction_parser` module with create/destroy lifecycle (Completed 2025-06-21)
-  - [ ] Create `destroy_instruction_parser` module with create/destroy lifecycle
+  - [x] Create `destroy_agent_instruction_parser` module with create/destroy lifecycle (Completed 2025-06-21)
+  - [x] Create `destroy_method_instruction_parser` module with create/destroy lifecycle (Completed 2025-06-21)
 - [ ] **Update `instruction_parser` to become a facade coordinating specialized parsers**:
   - [ ] Add parser instances to instruction_parser struct (like instruction_evaluator does)
   - [ ] Create single `ar_instruction_parser__parse()` method that dispatches to appropriate specialized parser

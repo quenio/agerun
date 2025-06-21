@@ -1136,6 +1136,24 @@ The [condition instruction parser module](agerun_condition_instruction_parser.md
 - **Complex Conditions**: Parses boolean expressions with operators
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
+#### Destroy Agent Instruction Parser Module (`agerun_destroy_agent_instruction_parser`)
+
+The [destroy agent instruction parser module](agerun_destroy_agent_instruction_parser.md) handles parsing of agent destruction:
+- **Single Argument**: Parses `destroy(agent_id)` format for agent termination
+- **Agent ID Types**: Accepts integer literals or memory references (e.g., `memory.agent_id`)
+- **Optional Assignment**: Supports `memory.result := destroy(agent_id)` syntax
+- **Return Value**: Destroy operations return 1 (true) on success, 0 (false) on failure
+- **Instantiable Parser**: Follows create/destroy lifecycle pattern
+
+#### Destroy Method Instruction Parser Module (`agerun_destroy_method_instruction_parser`)
+
+The [destroy method instruction parser module](agerun_destroy_method_instruction_parser.md) handles parsing of method destruction:
+- **Two Arguments**: Parses `destroy("method_name", "version")` format for method removal
+- **String Arguments**: Both arguments must be quoted strings in evaluator validation
+- **Version Format**: Accepts semantic version strings (e.g., "1.0.0")
+- **Optional Assignment**: Supports `memory.result := destroy(...)` syntax
+- **Instantiable Parser**: Follows create/destroy lifecycle pattern
+
 ### Interpreter Module (`agerun_interpreter`)
 
 The [interpreter module](agerun_interpreter.md) provides execution capabilities for parsed instructions and methods:

@@ -1,0 +1,184 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <string.h>
+#include <unistd.h>
+#include "agerun_destroy_agent_instruction_parser.h"
+#include "agerun_instruction_ast.h"
+#include "agerun_heap.h"
+#include "agerun_list.h"
+
+/**
+ * Test create/destroy lifecycle
+ */
+static void test_destroy_agent_parser__create_destroy(void) {
+    printf("Testing destroy agent parser create/destroy...\n");
+    
+    // When creating a parser
+    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create();
+    
+    // Then it should be created successfully
+    assert(own_parser != NULL);
+    
+    // When destroying the parser
+    ar_destroy_agent_instruction_parser__destroy(own_parser);
+    
+    // Then no memory leaks should occur (verified by test runner)
+}
+
+/**
+ * Test parsing destroy function with integer agent ID
+ */
+static void test_destroy_agent_parser__parse_integer_id(void) {
+    printf("Testing destroy agent parsing with integer ID...\n");
+    
+    // Given a destroy function call with integer agent ID
+    const char *instruction = "destroy(123)";
+    
+    // When creating a parser and parsing the instruction
+    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create();
+    assert(own_parser != NULL);
+    
+    instruction_ast_t *own_ast = ar_destroy_agent_instruction_parser__parse(own_parser, instruction, NULL);
+    
+    // Then it should parse as a destroy agent function
+    assert(own_ast != NULL);
+    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_DESTROY_AGENT);
+    assert(ar__instruction_ast__has_result_assignment(own_ast) == false);
+    
+    list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
+    assert(ar__list__count(own_args) == 1);
+    
+    void **items = ar__list__items(own_args);
+    assert(items != NULL);
+    const char *arg = (const char*)items[0];
+    assert(strcmp(arg, "123") == 0);
+    AR__HEAP__FREE(items);
+    
+    ar__list__destroy(own_args);
+    ar__instruction_ast__destroy(own_ast);
+    ar_destroy_agent_instruction_parser__destroy(own_parser);
+}
+
+/**
+ * Test parsing destroy function with memory reference
+ */
+static void test_destroy_agent_parser__parse_memory_reference(void) {
+    printf("Testing destroy agent parsing with memory reference...\n");
+    
+    // Given a destroy function call with memory reference
+    const char *instruction = "destroy(memory.agent_id)";
+    
+    // When creating a parser and parsing the instruction
+    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create();
+    assert(own_parser != NULL);
+    
+    instruction_ast_t *own_ast = ar_destroy_agent_instruction_parser__parse(own_parser, instruction, NULL);
+    
+    // Then it should parse as a destroy agent function
+    assert(own_ast != NULL);
+    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_DESTROY_AGENT);
+    
+    list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
+    assert(ar__list__count(own_args) == 1);
+    
+    void **items = ar__list__items(own_args);
+    assert(items != NULL);
+    const char *arg = (const char*)items[0];
+    assert(strcmp(arg, "memory.agent_id") == 0);
+    AR__HEAP__FREE(items);
+    
+    ar__list__destroy(own_args);
+    ar__instruction_ast__destroy(own_ast);
+    ar_destroy_agent_instruction_parser__destroy(own_parser);
+}
+
+/**
+ * Test parsing destroy function with assignment
+ */
+static void test_destroy_agent_parser__parse_with_assignment(void) {
+    printf("Testing destroy agent parsing with assignment...\n");
+    
+    // Given a destroy function call with assignment
+    const char *instruction = "memory.result := destroy(memory.agent_id)";
+    
+    // When creating a parser and parsing the instruction
+    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create();
+    assert(own_parser != NULL);
+    
+    instruction_ast_t *own_ast = ar_destroy_agent_instruction_parser__parse(own_parser, instruction, "memory.result");
+    
+    // Then it should parse as a destroy agent function with assignment
+    assert(own_ast != NULL);
+    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_DESTROY_AGENT);
+    assert(ar__instruction_ast__has_result_assignment(own_ast) == true);
+    
+    list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
+    assert(ar__list__count(own_args) == 1);
+    
+    void **items = ar__list__items(own_args);
+    assert(items != NULL);
+    const char *arg = (const char*)items[0];
+    assert(strcmp(arg, "memory.agent_id") == 0);
+    AR__HEAP__FREE(items);
+    
+    ar__list__destroy(own_args);
+    ar__instruction_ast__destroy(own_ast);
+    ar_destroy_agent_instruction_parser__destroy(own_parser);
+}
+
+/**
+ * Test error handling for various invalid inputs
+ */
+static void test_destroy_agent_parser__error_handling(void) {
+    printf("Testing destroy agent parser error handling...\n");
+    
+    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create();
+    assert(own_parser != NULL);
+    
+    // Test 1: Missing parentheses
+    instruction_ast_t *ast = ar_destroy_agent_instruction_parser__parse(own_parser, "destroy 123", NULL);
+    assert(ast == NULL);
+    assert(ar_destroy_agent_instruction_parser__get_error(own_parser) != NULL);
+    assert(strstr(ar_destroy_agent_instruction_parser__get_error(own_parser), "Expected '(' after 'destroy'") != NULL);
+    
+    // Test 2: Wrong function name
+    ast = ar_destroy_agent_instruction_parser__parse(own_parser, "delete(123)", NULL);
+    assert(ast == NULL);
+    assert(strstr(ar_destroy_agent_instruction_parser__get_error(own_parser), "Expected 'destroy' function") != NULL);
+    
+    // Test 3: Empty arguments
+    ast = ar_destroy_agent_instruction_parser__parse(own_parser, "destroy()", NULL);
+    assert(ast == NULL);
+    assert(strstr(ar_destroy_agent_instruction_parser__get_error(own_parser), "Failed to parse destroy argument") != NULL);
+    
+    // Test 4: Multiple arguments - parser will accept first arg and ignore rest
+    // This matches the behavior of the original parser which accepts "123, 456" as the argument
+    ast = ar_destroy_agent_instruction_parser__parse(own_parser, "destroy(123, 456)", NULL);
+    assert(ast != NULL);
+    
+    list_t *own_args = ar__instruction_ast__get_function_args(ast);
+    assert(ar__list__count(own_args) == 1);
+    
+    void **items = ar__list__items(own_args);
+    assert(items != NULL);
+    const char *arg = (const char*)items[0];
+    assert(strcmp(arg, "123, 456") == 0);  // The whole thing is treated as one argument
+    AR__HEAP__FREE(items);
+    
+    ar__list__destroy(own_args);
+    ar__instruction_ast__destroy(ast);
+    
+    ar_destroy_agent_instruction_parser__destroy(own_parser);
+}
+
+int main(void) {
+    test_destroy_agent_parser__create_destroy();
+    test_destroy_agent_parser__parse_integer_id();
+    test_destroy_agent_parser__parse_memory_reference();
+    test_destroy_agent_parser__parse_with_assignment();
+    test_destroy_agent_parser__error_handling();
+    
+    printf("All destroy agent instruction parser tests passed!\n");
+    return 0;
+}

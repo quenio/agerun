@@ -1,0 +1,146 @@
+# Destroy Method Instruction Parser Module
+
+## Overview
+
+The `agerun_destroy_method_instruction_parser` module provides specialized parsing for `destroy()` function instructions with two string arguments in the AgeRun language. This parser handles destroy instructions that target methods by their name and version.
+
+## Features
+
+- **Instantiable Design**: Create parser instances with `ar_destroy_method_instruction_parser__create()` and destroy with `ar_destroy_method_instruction_parser__destroy()`
+- **Two Argument Parsing**: Specifically handles `destroy("method_name", "version")` syntax
+- **Error Handling**: Comprehensive error reporting with specific error messages and position tracking
+- **Memory Safety**: Zero memory leaks with proper ownership management following MMM guidelines
+- **Assignment Support**: Handles both direct calls and assignment forms (e.g., `memory.result := destroy("method", "version")`)
+
+## Usage
+
+### Basic Usage
+
+```c
+#include "agerun_destroy_method_instruction_parser.h"
+
+// Create parser instance
+ar_destroy_method_instruction_parser_t *parser = ar_destroy_method_instruction_parser__create();
+
+// Parse destroy method instruction
+const char *instruction = "destroy(\"calculator\", \"1.0.0\")";
+instruction_ast_t *ast = ar_destroy_method_instruction_parser__parse(parser, instruction, NULL);
+
+if (ast) {
+    // Successfully parsed
+    assert(ar__instruction_ast__get_type(ast) == INST_AST_DESTROY_METHOD);
+    // ... use AST ...
+    ar__instruction_ast__destroy(ast);
+} else {
+    // Parse error occurred
+    const char *error = ar_destroy_method_instruction_parser__get_error(parser);
+    size_t pos = ar_destroy_method_instruction_parser__get_error_position(parser);
+    printf("Parse error at position %zu: %s\n", pos, error);
+}
+
+// Cleanup
+ar_destroy_method_instruction_parser__destroy(parser);
+```
+
+### Assignment Form
+
+```c
+// Parse destroy instruction with assignment
+const char *instruction = "memory.result := destroy(\"test_method\", \"2.0.0\")";
+instruction_ast_t *ast = ar_destroy_method_instruction_parser__parse(parser, instruction, "memory.result");
+
+if (ast) {
+    assert(ar__instruction_ast__has_result_assignment(ast) == true);
+    // ... use AST ...
+}
+```
+
+## Supported Forms
+
+### Basic Form
+```
+destroy("method_name", "version")
+```
+
+### With Assignment
+```
+memory.result := destroy("method_name", "version")
+memory.success := destroy("calculator", "1.0.0")
+```
+
+### Complex Strings
+Handles escaped quotes and special characters:
+```
+destroy("test\"method", "1.0.0-beta")
+destroy("multi\nline", "1.0.0")
+```
+
+## Error Handling
+
+The parser provides detailed error reporting for common issues:
+
+- **Missing parentheses**: `"Expected '(' after 'destroy'"`
+- **Wrong function name**: `"Expected 'destroy' function"`
+- **Missing second argument**: `"Failed to parse method name argument"` (when only one arg provided)
+- **Invalid version argument**: `"Failed to parse version argument"`
+- **Memory allocation failures**: `"Memory allocation failed"`
+
+Access error information using:
+- `ar_destroy_method_instruction_parser__get_error()` - Get error message
+- `ar_destroy_method_instruction_parser__get_error_position()` - Get error position
+
+## Implementation Details
+
+### Architecture
+- **Opaque Type**: `ar_destroy_method_instruction_parser_t` hides implementation details
+- **Error State**: Tracks last error message and position
+- **Instance-Based**: Each parser instance maintains its own state
+- **AST Type**: Creates `INST_AST_DESTROY_METHOD` nodes
+
+### Memory Management
+- **Heap Tracking**: Uses `AR__HEAP__MALLOC`, `AR__HEAP__FREE`, `AR__HEAP__STRDUP`
+- **Ownership Naming**: Follows `own_`, `mut_`, `ref_` prefixes consistently
+- **Zero Leaks**: All allocations are properly tracked and freed
+
+### Argument Parsing
+The parser uses `_extract_argument()` to parse two arguments:
+1. First argument up to comma delimiter
+2. Second argument up to closing parenthesis
+
+Both arguments are expected to be quoted strings for method destruction, though the parser itself doesn't validate string format (that's done by the evaluator).
+
+## Validation
+
+The parser performs syntactic validation:
+- Requires exactly 2 arguments separated by comma
+- Checks for proper parentheses and delimiters
+
+Semantic validation (e.g., arguments must be quoted strings) is performed by the destroy method instruction evaluator.
+
+## Dependencies
+
+- `agerun_instruction_ast.h` - For creating AST nodes
+- `agerun_heap.h` - For memory tracking
+- Standard C libraries: `string.h`, `stdio.h`, `ctype.h`, `stdbool.h`
+
+## Testing
+
+The module includes comprehensive tests covering:
+- Create/destroy lifecycle
+- Two string argument parsing
+- Assignment forms
+- Error handling for various invalid inputs
+- Complex string handling with escaped quotes
+
+Run tests with:
+```bash
+make bin/agerun_destroy_method_instruction_parser_tests
+```
+
+## Integration
+
+This module is part of the specialized parser architecture where the main `instruction_parser` acts as a facade coordinating multiple specialized parsers. It will be integrated into the main parser once all specialized parsers are complete.
+
+## Relationship to Destroy Agent Parser
+
+This parser handles two-argument destroy instructions targeting methods. The companion `destroy_agent_instruction_parser` handles single-argument destroy instructions targeting agents. The instruction evaluator will dispatch to the appropriate destroy evaluator based on the AST type.
