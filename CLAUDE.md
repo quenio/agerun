@@ -848,6 +848,25 @@ When reviewing tasks:
 - Verify working tree remains clean after operations
 - Follow the 4-step directory check process (Section 7) before running commands with relative paths
 
+**Function Refactoring and Merging**:
+When refactoring functions that have similar implementations:
+- **Don't re-implement** - reuse existing tested code
+- **Merging approach**:
+  1. Identify which function has the implementation you want to keep
+  2. Remove the function you're eliminating (declaration and header)
+  3. Adapt the kept implementation to work in its new context
+  4. Update variable/parameter references as needed
+- **Common patterns**:
+  - Wrapper removal: Merge wrapped function into wrapper by updating parameter references
+  - Consolidation: Merge similar functions by parameterizing differences
+  - Instance migration: Convert functions using parameters to use instance fields
+- **Example**: Converting from parameters to instance variables:
+  - Replace parameter `expr_eval` with `self->ref_expr_evaluator`
+  - Replace parameter `memory` with `self->mut_memory`
+  - Keep parameters that vary per call
+- **Benefits**: Preserves tested code, reduces duplication, maintains behavior
+- **Principle**: "Make the change easy, then make the easy change"
+
 ### 14. Task Tool Usage Guidelines
 
 **Preventing Content Loss When Using Task Tool**:
