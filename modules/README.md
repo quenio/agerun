@@ -220,6 +220,13 @@ agerun_build_instruction_parser
 ├──c──> agerun_string
 └──c──> agerun_heap
 
+agerun_method_instruction_parser
+├──c──> agerun_instruction_ast
+│       ├──c──> agerun_list
+│       └──c──> agerun_heap
+├──c──> agerun_string
+└──c──> agerun_heap
+
 agerun_expression_parser
 ├──c──> agerun_expression_ast
 │       ├──c──> agerun_list
@@ -542,6 +549,12 @@ agerun_parse_instruction_parser_tests
 
 agerun_build_instruction_parser_tests
 ├──c──> agerun_build_instruction_parser (module under test)
+├──c──> agerun_instruction_ast
+├──c──> agerun_list
+└──c──> agerun_heap
+
+agerun_method_instruction_parser_tests
+├──c──> agerun_method_instruction_parser (module under test)
 ├──c──> agerun_instruction_ast
 ├──c──> agerun_list
 └──c──> agerun_heap
@@ -1077,6 +1090,17 @@ The [build instruction parser module](agerun_build_instruction_parser.md) handle
 - **Map Expression**: Second argument must be a map expression
 - **Optional Assignment**: Supports `memory.result := build(...)` syntax
 - **String Handling**: Manages quoted templates with escape sequences
+- **Instantiable Parser**: Follows create/destroy lifecycle pattern
+
+#### Method Instruction Parser Module (`agerun_method_instruction_parser`)
+
+The [method instruction parser module](agerun_method_instruction_parser.md) handles parsing of method function calls:
+- **Method Function Syntax**: Parses `method(name, code, version)` format
+- **Three String Arguments**: Validates all arguments are quoted strings
+- **Method Creation**: Creates INST_AST_METHOD nodes for method definitions
+- **Code Parameter**: Handles AgeRun instructions in code with escape sequences
+- **Version Strings**: Accepts semantic version format (e.g., "1.0.0")
+- **Optional Assignment**: Supports `memory.ref := method(...)` syntax
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
 #### Condition Instruction Parser Module (`agerun_condition_instruction_parser`)
