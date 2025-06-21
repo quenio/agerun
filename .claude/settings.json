@@ -19,7 +19,8 @@
       "Bash(find:*)",
       "Bash(sed:*)",
       "Bash(uniq:*)",
-      "Bash(sort:*)"
+      "Bash(sort:*)",
+      "Bash(diff:*)"
     ],
     "deny": []
   },
