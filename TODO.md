@@ -134,7 +134,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Create `assignment_instruction_parser` module with create/destroy lifecycle (Completed 2025-06-21)
   - [x] Create `send_instruction_parser` module with create/destroy lifecycle (Completed 2025-06-21)  
   - [x] Create `condition_instruction_parser` module with create/destroy lifecycle (Completed 2025-06-21)
-  - [ ] Create `parse_instruction_parser` module with create/destroy lifecycle
+  - [x] Create `parse_instruction_parser` module with create/destroy lifecycle (Completed 2025-06-21)
   - [ ] Create `build_instruction_parser` module with create/destroy lifecycle
   - [ ] Create `method_instruction_parser` module with create/destroy lifecycle
   - [ ] Create `agent_instruction_parser` module with create/destroy lifecycle

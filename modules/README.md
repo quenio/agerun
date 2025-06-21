@@ -206,6 +206,13 @@ agerun_condition_instruction_parser
 ├──c──> agerun_string
 └──c──> agerun_heap
 
+agerun_parse_instruction_parser
+├──c──> agerun_instruction_ast
+│       ├──c──> agerun_list
+│       └──c──> agerun_heap
+├──c──> agerun_string
+└──c──> agerun_heap
+
 agerun_expression_parser
 ├──c──> agerun_expression_ast
 │       ├──c──> agerun_list
@@ -516,6 +523,12 @@ agerun_send_instruction_parser_tests
 
 agerun_condition_instruction_parser_tests
 ├──c──> agerun_condition_instruction_parser (module under test)
+├──c──> agerun_instruction_ast
+├──c──> agerun_list
+└──c──> agerun_heap
+
+agerun_parse_instruction_parser_tests
+├──c──> agerun_parse_instruction_parser (module under test)
 ├──c──> agerun_instruction_ast
 ├──c──> agerun_list
 └──c──> agerun_heap
@@ -1032,6 +1045,15 @@ The [send instruction parser module](agerun_send_instruction_parser.md) handles 
 - **Send Function Syntax**: Parses `send(agent_id, message)` format
 - **Optional Assignment**: Supports `memory.result := send(...)` syntax
 - **Argument Extraction**: Handles quoted strings and nested expressions
+- **Instantiable Parser**: Follows create/destroy lifecycle pattern
+
+#### Parse Instruction Parser Module (`agerun_parse_instruction_parser`)
+
+The [parse instruction parser module](agerun_parse_instruction_parser.md) handles parsing of parse function calls:
+- **Parse Function Syntax**: Parses `parse(template, input)` format
+- **Template Placeholders**: Extracts values using `{variable}` syntax
+- **Optional Assignment**: Supports `memory.result := parse(...)` syntax
+- **String Handling**: Manages quoted strings with escape sequences
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
 #### Condition Instruction Parser Module (`agerun_condition_instruction_parser`)

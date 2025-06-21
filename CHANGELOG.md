@@ -3,7 +3,7 @@
 This document tracks completed milestones and major achievements for the AgeRun project.
 
 ## 2025-06-21 (Latest)
-- ✅ **Created specialized parser modules (Phase 1 progress: 3/8 completed)**:
+- ✅ **Created specialized parser modules (Phase 1 progress: 4/8 completed)**:
   - ✅ **assignment_instruction_parser module completed**:
     - ✅ Implemented instantiable parser with create/destroy lifecycle
     - ✅ Moved and adapted implementation from main instruction_parser
@@ -27,6 +27,15 @@ This document tracks completed milestones and major achievements for the AgeRun 
     - ✅ Zero memory leaks (101 allocations, 0 active)
     - ✅ Module documentation created
     - ✅ Updated modules README with all 3 specialized parser descriptions
+  - ✅ **parse_instruction_parser module completed**:
+    - ✅ Implemented instantiable parser with create/destroy lifecycle
+    - ✅ Moved and adapted implementation from main instruction_parser
+    - ✅ Handles parse(template, input) syntax for value extraction
+    - ✅ Supports template placeholders with {variable} syntax
+    - ✅ Comprehensive tests including complex templates and escaped quotes
+    - ✅ Zero memory leaks (96 allocations, 0 active)
+    - ✅ Module documentation created
+    - ✅ Updated modules README with parser description
 - ✅ **COMPLETED: All 9 legacy wrapper functions removed from specialized evaluators**:
   - ✅ TDD Cycle 1: Removed ar_assignment_instruction_evaluator__evaluate_legacy
   - ✅ TDD Cycle 2: Removed ar_send_instruction_evaluator__evaluate_legacy
