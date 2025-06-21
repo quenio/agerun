@@ -133,7 +133,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [ ] **Extract instruction parsing into specialized modules** (mirror evaluator pattern):
   - [x] Create `assignment_instruction_parser` module with create/destroy lifecycle (Completed 2025-06-21)
   - [x] Create `send_instruction_parser` module with create/destroy lifecycle (Completed 2025-06-21)  
-  - [ ] Create `condition_instruction_parser` module with create/destroy lifecycle
+  - [x] Create `condition_instruction_parser` module with create/destroy lifecycle (Completed 2025-06-21)
   - [ ] Create `parse_instruction_parser` module with create/destroy lifecycle
   - [ ] Create `build_instruction_parser` module with create/destroy lifecycle
   - [ ] Create `method_instruction_parser` module with create/destroy lifecycle

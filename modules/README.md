@@ -199,6 +199,13 @@ agerun_send_instruction_parser
 ├──c──> agerun_string
 └──c──> agerun_heap
 
+agerun_condition_instruction_parser
+├──c──> agerun_instruction_ast
+│       ├──c──> agerun_list
+│       └──c──> agerun_heap
+├──c──> agerun_string
+└──c──> agerun_heap
+
 agerun_expression_parser
 ├──c──> agerun_expression_ast
 │       ├──c──> agerun_list
@@ -503,6 +510,12 @@ agerun_assignment_instruction_parser_tests
 
 agerun_send_instruction_parser_tests
 ├──c──> agerun_send_instruction_parser (module under test)
+├──c──> agerun_instruction_ast
+├──c──> agerun_list
+└──c──> agerun_heap
+
+agerun_condition_instruction_parser_tests
+├──c──> agerun_condition_instruction_parser (module under test)
 ├──c──> agerun_instruction_ast
 ├──c──> agerun_list
 └──c──> agerun_heap
@@ -1002,6 +1015,33 @@ The [instruction parser module](agerun_instruction_parser.md) extracts parsing l
 - **Depends on Instruction AST**: Uses instruction_ast module for creating AST nodes
 - **Depends on List**: Uses list module for parsing function arguments
 - **Depends on String**: Uses string utilities for parsing operations
+
+The instruction parser is being refactored to become a facade that coordinates the following specialized parser modules:
+
+#### Assignment Instruction Parser Module (`agerun_assignment_instruction_parser`)
+
+The [assignment instruction parser module](agerun_assignment_instruction_parser.md) handles parsing of memory assignment instructions:
+- **Memory Assignment Syntax**: Parses `memory.path := expression` format
+- **Path Validation**: Ensures paths start with "memory" prefix
+- **Expression Extraction**: Preserves expression strings for later evaluation
+- **Instantiable Parser**: Follows create/destroy lifecycle pattern
+
+#### Send Instruction Parser Module (`agerun_send_instruction_parser`)
+
+The [send instruction parser module](agerun_send_instruction_parser.md) handles parsing of send function calls:
+- **Send Function Syntax**: Parses `send(agent_id, message)` format
+- **Optional Assignment**: Supports `memory.result := send(...)` syntax
+- **Argument Extraction**: Handles quoted strings and nested expressions
+- **Instantiable Parser**: Follows create/destroy lifecycle pattern
+
+#### Condition Instruction Parser Module (`agerun_condition_instruction_parser`)
+
+The [condition instruction parser module](agerun_condition_instruction_parser.md) handles parsing of conditional (if) instructions:
+- **If Function Syntax**: Parses `if(condition, then_value, else_value)` format
+- **Optional Assignment**: Supports `memory.result := if(...)` syntax
+- **Nested Function Support**: Handles nested function calls in arguments
+- **Complex Conditions**: Parses boolean expressions with operators
+- **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
 ### Interpreter Module (`agerun_interpreter`)
 

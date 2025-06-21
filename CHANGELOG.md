@@ -3,7 +3,7 @@
 This document tracks completed milestones and major achievements for the AgeRun project.
 
 ## 2025-06-21 (Latest)
-- ✅ **Created specialized parser modules (Phase 1 progress: 2/8 completed)**:
+- ✅ **Created specialized parser modules (Phase 1 progress: 3/8 completed)**:
   - ✅ **assignment_instruction_parser module completed**:
     - ✅ Implemented instantiable parser with create/destroy lifecycle
     - ✅ Moved and adapted implementation from main instruction_parser
@@ -18,6 +18,15 @@ This document tracks completed milestones and major achievements for the AgeRun 
     - ✅ Zero memory leaks (88 allocations, 0 active)
     - ✅ Module documentation created
     - ✅ Removed send tests from instruction_parser_tests.c
+  - ✅ **condition_instruction_parser module completed**:
+    - ✅ Implemented instantiable parser with create/destroy lifecycle
+    - ✅ Moved and adapted implementation from main instruction_parser
+    - ✅ Handles if(condition, then_value, else_value) syntax
+    - ✅ Supports nested function calls and complex boolean conditions
+    - ✅ Comprehensive tests including error handling for wrong function/args
+    - ✅ Zero memory leaks (101 allocations, 0 active)
+    - ✅ Module documentation created
+    - ✅ Updated modules README with all 3 specialized parser descriptions
 - ✅ **COMPLETED: All 9 legacy wrapper functions removed from specialized evaluators**:
   - ✅ TDD Cycle 1: Removed ar_assignment_instruction_evaluator__evaluate_legacy
   - ✅ TDD Cycle 2: Removed ar_send_instruction_evaluator__evaluate_legacy
