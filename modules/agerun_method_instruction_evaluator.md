@@ -15,7 +15,7 @@ This module extracts the method instruction evaluation logic from the main instr
 ### Types
 
 ```c
-typedef struct ar_method_instruction_evaluator_s ar_method_instruction_evaluator_t;
+typedef struct ar_method_instruction_evaluator_s method_instruction_evaluator_t;
 ```
 
 An opaque type representing a method instruction evaluator instance.
@@ -23,7 +23,7 @@ An opaque type representing a method instruction evaluator instance.
 ### Public Interface
 
 ```c
-ar_method_instruction_evaluator_t* ar__method_instruction_evaluator__create(
+method_instruction_evaluator_t* ar_method_instruction_evaluator__create(
     expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
@@ -31,28 +31,20 @@ ar_method_instruction_evaluator_t* ar__method_instruction_evaluator__create(
 Creates a new method instruction evaluator that stores its dependencies.
 
 ```c
-void ar__method_instruction_evaluator__destroy(
-    ar_method_instruction_evaluator_t *own_evaluator
+void ar_method_instruction_evaluator__destroy(
+    method_instruction_evaluator_t *own_evaluator
 );
 ```
 Destroys a method instruction evaluator and frees all resources.
 
 ```c
-bool ar__method_instruction_evaluator__evaluate(
-    ar_method_instruction_evaluator_t *mut_evaluator,
+bool ar_method_instruction_evaluator__evaluate(
+    method_instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 );
 ```
 Evaluates a method instruction using the stored dependencies.
 
-```c
-bool ar_method_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
-    const instruction_ast_t *ref_ast
-);
-```
-Legacy interface for backward compatibility (will be removed once instruction_evaluator is updated).
 
 ### Functionality
 
@@ -106,7 +98,7 @@ data_t *memory = ar__data__create_map();
 expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
 
 // Create method instruction evaluator
-ar_method_instruction_evaluator_t *method_eval = ar__method_instruction_evaluator__create(
+method_instruction_evaluator_t *method_eval = ar_method_instruction_evaluator__create(
     expr_eval, memory
 );
 
@@ -114,14 +106,14 @@ ar_method_instruction_evaluator_t *method_eval = ar__method_instruction_evaluato
 instruction_ast_t *ast = ar__instruction_parser__parse_method(parser);
 
 // Evaluate the method creation
-bool success = ar__method_instruction_evaluator__evaluate(method_eval, ast);
+bool success = ar_method_instruction_evaluator__evaluate(method_eval, ast);
 
 // Method "echo" version "1.0.0" is now registered
 
 // Cleanup
-ar__method_instruction_evaluator__destroy(method_eval);
-ar__expression_evaluator__destroy(expr_eval);
-ar__data__destroy(memory);
+ar_method_instruction_evaluator__destroy(method_eval);
+ar_expression_evaluator__destroy(expr_eval);
+ar_data__destroy(memory);
 ```
 
 ## Testing

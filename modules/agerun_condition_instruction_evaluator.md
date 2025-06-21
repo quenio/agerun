@@ -23,7 +23,7 @@ An opaque type representing a condition instruction evaluator instance.
 ### Public Interface
 
 ```c
-condition_instruction_evaluator_t* ar__condition_instruction_evaluator__create(
+condition_instruction_evaluator_t* ar_condition_instruction_evaluator__create(
     expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
@@ -31,28 +31,19 @@ condition_instruction_evaluator_t* ar__condition_instruction_evaluator__create(
 Creates a new condition instruction evaluator that stores its dependencies.
 
 ```c
-void ar__condition_instruction_evaluator__destroy(
+void ar_condition_instruction_evaluator__destroy(
     condition_instruction_evaluator_t *own_evaluator
 );
 ```
 Destroys a condition instruction evaluator and frees all resources.
 
 ```c
-bool ar__condition_instruction_evaluator__evaluate(
+bool ar_condition_instruction_evaluator__evaluate(
     condition_instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 );
 ```
 Evaluates a condition instruction using the stored dependencies.
-
-```c
-bool ar_condition_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
-    const instruction_ast_t *ref_ast
-);
-```
-Legacy interface for backward compatibility (will be removed once instruction_evaluator is updated).
 
 ### Functionality
 

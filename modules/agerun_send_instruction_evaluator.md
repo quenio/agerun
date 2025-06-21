@@ -45,14 +45,6 @@ bool ar_send_instruction_evaluator__evaluate(
 ```
 Evaluates a send instruction using the stored dependencies.
 
-```c
-bool ar_send_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
-    const instruction_ast_t *ref_ast
-);
-```
-Legacy interface for backward compatibility (will be removed once instruction_evaluator is updated).
 
 ### Functionality
 

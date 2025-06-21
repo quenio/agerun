@@ -23,7 +23,7 @@ An opaque type representing a parse instruction evaluator instance.
 ### Public Interface
 
 ```c
-parse_instruction_evaluator_t* ar__parse_instruction_evaluator__create(
+parse_instruction_evaluator_t* ar_parse_instruction_evaluator__create(
     expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
@@ -31,28 +31,20 @@ parse_instruction_evaluator_t* ar__parse_instruction_evaluator__create(
 Creates a new parse instruction evaluator that stores its dependencies.
 
 ```c
-void ar__parse_instruction_evaluator__destroy(
+void ar_parse_instruction_evaluator__destroy(
     parse_instruction_evaluator_t *own_evaluator
 );
 ```
 Destroys a parse instruction evaluator and frees all resources.
 
 ```c
-bool ar__parse_instruction_evaluator__evaluate(
+bool ar_parse_instruction_evaluator__evaluate(
     parse_instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 );
 ```
 Evaluates a parse instruction using the stored dependencies.
 
-```c
-bool ar_parse_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
-    const instruction_ast_t *ref_ast
-);
-```
-Legacy interface for backward compatibility (will be removed once instruction_evaluator is updated).
 
 ### Functionality
 
@@ -112,7 +104,7 @@ data_t *memory = ar__data__create_map();
 expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
 
 // Create parse instruction evaluator
-parse_instruction_evaluator_t *parse_eval = ar__parse_instruction_evaluator__create(
+parse_instruction_evaluator_t *parse_eval = ar_parse_instruction_evaluator__create(
     expr_eval, memory
 );
 
@@ -120,14 +112,14 @@ parse_instruction_evaluator_t *parse_eval = ar__parse_instruction_evaluator__cre
 instruction_ast_t *ast = ar__instruction_parser__parse_parse(parser);
 
 // Evaluate the parse
-bool success = ar__parse_instruction_evaluator__evaluate(parse_eval, ast);
+bool success = ar_parse_instruction_evaluator__evaluate(parse_eval, ast);
 
 // memory["data"]["name"] now contains "World"
 
 // Cleanup
-ar__parse_instruction_evaluator__destroy(parse_eval);
-ar__expression_evaluator__destroy(expr_eval);
-ar__data__destroy(memory);
+ar_parse_instruction_evaluator__destroy(parse_eval);
+ar_expression_evaluator__destroy(expr_eval);
+ar_data__destroy(memory);
 ```
 
 ## Testing

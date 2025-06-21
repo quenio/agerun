@@ -15,7 +15,7 @@ This module extracts the build instruction evaluation logic from the main instru
 ### Types
 
 ```c
-typedef struct ar_build_instruction_evaluator_s ar_build_instruction_evaluator_t;
+typedef struct ar_build_instruction_evaluator_s build_instruction_evaluator_t;
 ```
 
 An opaque type representing a build instruction evaluator instance.
@@ -23,7 +23,7 @@ An opaque type representing a build instruction evaluator instance.
 ### Public Interface
 
 ```c
-ar_build_instruction_evaluator_t* ar__build_instruction_evaluator__create(
+build_instruction_evaluator_t* ar_build_instruction_evaluator__create(
     expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
@@ -31,28 +31,20 @@ ar_build_instruction_evaluator_t* ar__build_instruction_evaluator__create(
 Creates a new build instruction evaluator that stores its dependencies.
 
 ```c
-void ar__build_instruction_evaluator__destroy(
-    ar_build_instruction_evaluator_t *own_evaluator
+void ar_build_instruction_evaluator__destroy(
+    build_instruction_evaluator_t *own_evaluator
 );
 ```
 Destroys a build instruction evaluator and frees all resources.
 
 ```c
-bool ar__build_instruction_evaluator__evaluate(
-    ar_build_instruction_evaluator_t *mut_evaluator,
+bool ar_build_instruction_evaluator__evaluate(
+    build_instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 );
 ```
 Evaluates a build instruction using the stored dependencies.
 
-```c
-bool ar_build_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
-    const instruction_ast_t *ref_ast
-);
-```
-Legacy interface for backward compatibility (will be removed once instruction_evaluator is updated).
 
 ### Functionality
 
@@ -112,7 +104,7 @@ data_t *memory = ar__data__create_map();
 expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
 
 // Create build instruction evaluator
-ar_build_instruction_evaluator_t *build_eval = ar__build_instruction_evaluator__create(
+build_instruction_evaluator_t *build_eval = ar_build_instruction_evaluator__create(
     expr_eval, memory
 );
 
@@ -126,14 +118,14 @@ ar__data__set_map_data(memory, "values", values);
 instruction_ast_t *ast = ar__instruction_parser__parse_build(parser);
 
 // Evaluate the build
-bool success = ar__build_instruction_evaluator__evaluate(build_eval, ast);
+bool success = ar_build_instruction_evaluator__evaluate(build_eval, ast);
 
 // memory["msg"] now contains "Hello World! Count: 42"
 
 // Cleanup
-ar__build_instruction_evaluator__destroy(build_eval);
-ar__expression_evaluator__destroy(expr_eval);
-ar__data__destroy(memory);
+ar_build_instruction_evaluator__destroy(build_eval);
+ar_expression_evaluator__destroy(expr_eval);
+ar_data__destroy(memory);
 ```
 
 ## Testing

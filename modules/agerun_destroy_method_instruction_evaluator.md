@@ -16,30 +16,24 @@ The module follows an instantiable design pattern with lifecycle management:
 
 ```c
 // Create evaluator instance with dependencies
-ar_destroy_method_instruction_evaluator_t* ar__destroy_method_instruction_evaluator__create(
+destroy_method_instruction_evaluator_t* ar_destroy_method_instruction_evaluator__create(
     expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory
 );
 
 // Evaluate using stored dependencies
-bool ar__destroy_method_instruction_evaluator__evaluate(
-    const ar_destroy_method_instruction_evaluator_t *ref_evaluator,
+bool ar_destroy_method_instruction_evaluator__evaluate(
+    const destroy_method_instruction_evaluator_t *ref_evaluator,
     const instruction_ast_t *ref_ast
 );
 
 // Clean up instance
-void ar__destroy_method_instruction_evaluator__destroy(ar_destroy_method_instruction_evaluator_t *own_evaluator);
+void ar_destroy_method_instruction_evaluator__destroy(destroy_method_instruction_evaluator_t *own_evaluator);
 ```
 
 ### Legacy Interface (Backward Compatibility)
 
 ```c
-// Legacy function for backward compatibility
-bool ar__destroy_method_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
-    const instruction_ast_t *ref_ast
-);
 ```
 
 ### Functionality
@@ -108,31 +102,27 @@ data_t *memory = ar__data__create_map();
 expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
 
 // Create destroy method evaluator instance
-ar_destroy_method_instruction_evaluator_t *evaluator = ar__destroy_method_instruction_evaluator__create(
+destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
     expr_eval, memory
 );
 
 // Parse destroy instruction: memory.result := destroy("calculator", "1.0.0")
 const char *args[] = {"\"calculator\"", "\"1.0.0\""};
-instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+instruction_ast_t *ast = ar_instruction_ast__create_function_call(
     INST_AST_DESTROY, "destroy", args, 2, "memory.result"
 );
 
 // Evaluate using instance
-bool success = ar__destroy_method_instruction_evaluator__evaluate(evaluator, ast);
+bool success = ar_destroy_method_instruction_evaluator__evaluate(evaluator, ast);
 
 // Clean up
-ar__destroy_method_instruction_evaluator__destroy(evaluator);
+ar_destroy_method_instruction_evaluator__destroy(evaluator);
 // Result stored in memory["result"]: 1 if destroyed, 0 if not found
 ```
 
 ### Legacy Approach (Backward Compatibility)
 
 ```c
-// Direct evaluation with explicit dependencies
-bool success = ar__destroy_method_instruction_evaluator__evaluate_legacy(
-    expr_eval, memory, ast
-);
 ```
 
 ## Testing
