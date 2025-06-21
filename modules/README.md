@@ -227,6 +227,13 @@ agerun_method_instruction_parser
 ├──c──> agerun_string
 └──c──> agerun_heap
 
+agerun_agent_instruction_parser
+├──c──> agerun_instruction_ast
+│       ├──c──> agerun_list
+│       └──c──> agerun_heap
+├──c──> agerun_string
+└──c──> agerun_heap
+
 agerun_expression_parser
 ├──c──> agerun_expression_ast
 │       ├──c──> agerun_list
@@ -555,6 +562,12 @@ agerun_build_instruction_parser_tests
 
 agerun_method_instruction_parser_tests
 ├──c──> agerun_method_instruction_parser (module under test)
+├──c──> agerun_instruction_ast
+├──c──> agerun_list
+└──c──> agerun_heap
+
+agerun_agent_instruction_parser_tests
+├──c──> agerun_agent_instruction_parser (module under test)
 ├──c──> agerun_instruction_ast
 ├──c──> agerun_list
 └──c──> agerun_heap
@@ -1101,6 +1114,17 @@ The [method instruction parser module](agerun_method_instruction_parser.md) hand
 - **Code Parameter**: Handles AgeRun instructions in code with escape sequences
 - **Version Strings**: Accepts semantic version format (e.g., "1.0.0")
 - **Optional Assignment**: Supports `memory.ref := method(...)` syntax
+- **Instantiable Parser**: Follows create/destroy lifecycle pattern
+
+#### Agent Instruction Parser Module (`agerun_agent_instruction_parser`)
+
+The [agent instruction parser module](agerun_agent_instruction_parser.md) handles parsing of agent function calls:
+- **Agent Function Syntax**: Parses both `agent(method, version)` and `agent(method, version, context)` formats
+- **Flexible Arguments**: Supports 2-parameter (automatic null context) and 3-parameter forms
+- **Agent Creation**: Creates INST_AST_AGENT nodes for agent instantiation
+- **Context Parameter**: Third argument can be any map expression when provided
+- **Version Strings**: Accepts semantic version format (e.g., "1.0.0")
+- **Optional Assignment**: Supports `memory.agent_id := agent(...)` syntax
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
 #### Condition Instruction Parser Module (`agerun_condition_instruction_parser`)

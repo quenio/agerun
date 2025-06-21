@@ -3,7 +3,7 @@
 This document tracks completed milestones and major achievements for the AgeRun project.
 
 ## 2025-06-21 (Latest)
-- ✅ **Created specialized parser modules (Phase 1 progress: 6/8 completed)**:
+- ✅ **Created specialized parser modules (Phase 1 progress: 7/8 completed)**:
   - ✅ **assignment_instruction_parser module completed**:
     - ✅ Implemented instantiable parser with create/destroy lifecycle
     - ✅ Moved and adapted implementation from main instruction_parser
@@ -52,6 +52,16 @@ This document tracks completed milestones and major achievements for the AgeRun 
     - ✅ Validates all three arguments are quoted strings
     - ✅ Comprehensive tests including complex code and multiline support
     - ✅ Zero memory leaks (109 allocations, 0 active)
+    - ✅ Module documentation created
+    - ✅ Updated modules README with parser description
+  - ✅ **agent_instruction_parser module completed**:
+    - ✅ Implemented instantiable parser with create/destroy lifecycle
+    - ✅ Moved and adapted implementation from main instruction_parser (lines 571-651)
+    - ✅ Handles both agent(method, version) and agent(method, version, context) syntax
+    - ✅ Flexible argument parsing: automatically adds "null" context for 2-parameter calls
+    - ✅ Supports agent creation with optional context map parameter
+    - ✅ Comprehensive tests including 2-param, 3-param, assignment, and error handling
+    - ✅ Zero memory leaks (39 allocations, 0 active)
     - ✅ Module documentation created
     - ✅ Updated modules README with parser description
 - ✅ **COMPLETED: All 9 legacy wrapper functions removed from specialized evaluators**:
