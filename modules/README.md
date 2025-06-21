@@ -1056,19 +1056,18 @@ The [instruction AST module](agerun_instruction_ast.md) provides Abstract Syntax
 
 ### Instruction Parser Module (`agerun_instruction_parser`)
 
-The [instruction parser module](agerun_instruction_parser.md) extracts parsing logic from the instruction module:
+The [instruction parser module](agerun_instruction_parser.md) serves as a facade that coordinates 9 specialized instruction parser modules:
 
+- **Facade Pattern**: Creates and manages instances of all specialized parsers
+- **Unified Interface**: Provides `ar_instruction_parser__parse()` that automatically detects instruction type
+- **Automatic Dispatch**: Analyzes instruction content and routes to appropriate specialized parser
+- **Error Propagation**: Forwards errors from specialized parsers with consistent interface
+- **Backward Compatible**: Legacy individual parse methods still available (deprecated)
 - **Reusable Parser**: Parser instance can be created once and used to parse multiple instructions
-- **Specific Parse Methods**: Provides individual parse functions for each instruction type (no general parse function)
-- **AST Generation**: Creates instruction AST nodes using the instruction_ast module
-- **Error Handling**: Tracks parsing errors with position information
-- **Expression Extraction**: Extracts and preserves expression strings for later evaluation
-- **Clean Separation**: No dependency on instruction module, achieving clean separation of concerns
-- **Depends on Instruction AST**: Uses instruction_ast module for creating AST nodes
-- **Depends on List**: Uses list module for parsing function arguments
-- **Depends on String**: Uses string utilities for parsing operations
+- **Memory Safety**: Ensures coordinated cleanup across all specialized modules
+- **Zero Direct Implementation**: Contains minimal parsing logic - purely coordination and delegation
 
-The instruction parser is being refactored to become a facade that coordinates the following specialized parser modules:
+The instruction parser coordinates the following 9 specialized parser modules:
 
 #### Assignment Instruction Parser Module (`agerun_assignment_instruction_parser`)
 

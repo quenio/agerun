@@ -6,6 +6,291 @@
 #include "agerun_list.h"
 #include "agerun_heap.h"
 
+static void test_instruction_parser__create_destroy_with_parsers(void) {
+    printf("Testing instruction parser creation with all specialized parsers...\n");
+    
+    // When creating an instruction parser
+    instruction_parser_t *own_parser = ar__instruction_parser__create();
+    
+    // Then it should successfully create with all specialized parsers initialized
+    assert(own_parser != NULL);
+    
+    // And when destroying it
+    ar__instruction_parser__destroy(own_parser);
+    
+    // Then it should clean up without memory leaks (verified by heap tracking)
+}
+
+static void test_instruction_parser__parse_assignment(void) {
+    printf("Testing unified parse method for assignments...\n");
+    
+    // Given an assignment instruction
+    const char *instruction = "memory.x := 42";
+    
+    // When creating a parser and parsing via unified method
+    instruction_parser_t *own_parser = ar__instruction_parser__create();
+    assert(own_parser != NULL);
+    
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+    
+    // Then it should parse successfully as an assignment
+    assert(own_ast != NULL);
+    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_ASSIGNMENT);
+    assert(strcmp(ar__instruction_ast__get_assignment_path(own_ast), "memory.x") == 0);
+    assert(strcmp(ar__instruction_ast__get_assignment_expression(own_ast), "42") == 0);
+    
+    ar__instruction_ast__destroy(own_ast);
+    ar__instruction_parser__destroy(own_parser);
+}
+
+static void test_instruction_parser__parse_send(void) {
+    printf("Testing unified parse method for send instruction...\n");
+    
+    // Given a send instruction
+    const char *instruction = "send(1, \"Hello\")";
+    
+    // When creating a parser and parsing via unified method
+    instruction_parser_t *own_parser = ar__instruction_parser__create();
+    assert(own_parser != NULL);
+    
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+    
+    // Then it should parse successfully as a send
+    assert(own_ast != NULL);
+    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_SEND);
+    
+    list_t *ref_args = ar__instruction_ast__get_function_args(own_ast);
+    assert(ref_args != NULL);
+    assert(ar__list__count(ref_args) == 2);
+    assert(strcmp((const char*)ar__list__items(ref_args)[0], "1") == 0);
+    assert(strcmp((const char*)ar__list__items(ref_args)[1], "\"Hello\"") == 0);
+    
+    ar__instruction_ast__destroy(own_ast);
+    ar__instruction_parser__destroy(own_parser);
+}
+
+static void test_instruction_parser__parse_send_with_assignment(void) {
+    printf("Testing unified parse method for send with assignment...\n");
+    
+    // Given a send instruction with assignment
+    const char *instruction = "memory.result := send(1, \"Hello\")";
+    
+    // When creating a parser and parsing via unified method
+    instruction_parser_t *own_parser = ar__instruction_parser__create();
+    assert(own_parser != NULL);
+    
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+    
+    // Then it should parse successfully as an assignment with send function
+    assert(own_ast != NULL);
+    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_ASSIGNMENT);
+    assert(strcmp(ar__instruction_ast__get_assignment_path(own_ast), "memory.result") == 0);
+    assert(strcmp(ar__instruction_ast__get_assignment_expression(own_ast), "send(1, \"Hello\")") == 0);
+    
+    ar__instruction_ast__destroy(own_ast);
+    ar__instruction_parser__destroy(own_parser);
+}
+
+static void test_instruction_parser__parse_if(void) {
+    printf("Testing unified parse method for if instruction...\n");
+    
+    // Given an if instruction
+    const char *instruction = "if(memory.x > 0, 1, 0)";
+    
+    // When creating a parser and parsing via unified method
+    instruction_parser_t *own_parser = ar__instruction_parser__create();
+    assert(own_parser != NULL);
+    
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+    
+    // Then it should parse successfully as an if
+    assert(own_ast != NULL);
+    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_IF);
+    
+    ar__instruction_ast__destroy(own_ast);
+    ar__instruction_parser__destroy(own_parser);
+}
+
+static void test_instruction_parser__parse_parse(void) {
+    printf("Testing unified parse method for parse instruction...\n");
+    
+    // Given a parse instruction
+    const char *instruction = "parse(\"{x}\", \"x=42\")";
+    
+    // When creating a parser and parsing via unified method
+    instruction_parser_t *own_parser = ar__instruction_parser__create();
+    assert(own_parser != NULL);
+    
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+    
+    // Then it should parse successfully
+    assert(own_ast != NULL);
+    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_PARSE);
+    
+    ar__instruction_ast__destroy(own_ast);
+    ar__instruction_parser__destroy(own_parser);
+}
+
+static void test_instruction_parser__parse_build(void) {
+    printf("Testing unified parse method for build instruction...\n");
+    
+    // Given a build instruction
+    const char *instruction = "build(\"{x}\", memory.vars)";
+    
+    // When creating a parser and parsing via unified method
+    instruction_parser_t *own_parser = ar__instruction_parser__create();
+    assert(own_parser != NULL);
+    
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+    
+    // Then it should parse successfully
+    assert(own_ast != NULL);
+    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_BUILD);
+    
+    ar__instruction_ast__destroy(own_ast);
+    ar__instruction_parser__destroy(own_parser);
+}
+
+static void test_instruction_parser__parse_method(void) {
+    printf("Testing unified parse method for method instruction...\n");
+    
+    // Given a method instruction
+    const char *instruction = "method(\"test\", \"send(1, message)\", \"1.0.0\")";
+    
+    // When creating a parser and parsing via unified method
+    instruction_parser_t *own_parser = ar__instruction_parser__create();
+    assert(own_parser != NULL);
+    
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+    
+    // Then it should parse successfully
+    assert(own_ast != NULL);
+    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_METHOD);
+    
+    ar__instruction_ast__destroy(own_ast);
+    ar__instruction_parser__destroy(own_parser);
+}
+
+static void test_instruction_parser__parse_agent(void) {
+    printf("Testing unified parse method for agent instruction...\n");
+    
+    // Given an agent instruction
+    const char *instruction = "agent(\"echo\", \"1.0.0\")";
+    
+    // When creating a parser and parsing via unified method
+    instruction_parser_t *own_parser = ar__instruction_parser__create();
+    assert(own_parser != NULL);
+    
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+    
+    // Then it should parse successfully
+    assert(own_ast != NULL);
+    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_AGENT);
+    
+    ar__instruction_ast__destroy(own_ast);
+    ar__instruction_parser__destroy(own_parser);
+}
+
+static void test_instruction_parser__parse_destroy_agent(void) {
+    printf("Testing unified parse method for destroy agent instruction...\n");
+    
+    // Given a destroy agent instruction
+    const char *instruction = "destroy(1)";
+    
+    // When creating a parser and parsing via unified method
+    instruction_parser_t *own_parser = ar__instruction_parser__create();
+    assert(own_parser != NULL);
+    
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+    
+    // Then it should parse successfully
+    assert(own_ast != NULL);
+    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_DESTROY_AGENT);
+    
+    ar__instruction_ast__destroy(own_ast);
+    ar__instruction_parser__destroy(own_parser);
+}
+
+static void test_instruction_parser__parse_destroy_method(void) {
+    printf("Testing unified parse method for destroy method instruction...\n");
+    
+    // Given a destroy method instruction
+    const char *instruction = "destroy(\"echo\", \"1.0.0\")";
+    
+    // When creating a parser and parsing via unified method
+    instruction_parser_t *own_parser = ar__instruction_parser__create();
+    assert(own_parser != NULL);
+    
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+    
+    // Then it should parse successfully
+    assert(own_ast != NULL);
+    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_DESTROY_METHOD);
+    
+    ar__instruction_ast__destroy(own_ast);
+    ar__instruction_parser__destroy(own_parser);
+}
+
+static void test_instruction_parser__parse_unknown(void) {
+    printf("Testing unified parse method for unknown instruction...\n");
+    
+    // Given an unknown instruction
+    const char *instruction = "unknown()";
+    
+    // When creating a parser and parsing via unified method
+    instruction_parser_t *own_parser = ar__instruction_parser__create();
+    assert(own_parser != NULL);
+    
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+    
+    // Then it should fail
+    assert(own_ast == NULL);
+    assert(ar__instruction_parser__get_error(own_parser) != NULL);
+    assert(strstr(ar__instruction_parser__get_error(own_parser), "Unknown") != NULL);
+    
+    ar__instruction_parser__destroy(own_parser);
+}
+
+static void test_instruction_parser__parse_empty(void) {
+    printf("Testing unified parse method for empty instruction...\n");
+    
+    // Given an empty instruction
+    const char *instruction = "";
+    
+    // When creating a parser and parsing via unified method
+    instruction_parser_t *own_parser = ar__instruction_parser__create();
+    assert(own_parser != NULL);
+    
+    instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+    
+    // Then it should fail
+    assert(own_ast == NULL);
+    
+    ar__instruction_parser__destroy(own_parser);
+}
+
+static void test_instruction_parser__parse_reusability(void) {
+    printf("Testing unified parser reusability...\n");
+    
+    // Given a parser instance
+    instruction_parser_t *own_parser = ar__instruction_parser__create();
+    assert(own_parser != NULL);
+    
+    // When parsing multiple instructions
+    const char *inst1 = "memory.x := 42";
+    instruction_ast_t *own_ast1 = ar_instruction_parser__parse(own_parser, inst1);
+    assert(own_ast1 != NULL);
+    ar__instruction_ast__destroy(own_ast1);
+    
+    const char *inst2 = "send(1, \"Hello\")";
+    instruction_ast_t *own_ast2 = ar_instruction_parser__parse(own_parser, inst2);
+    assert(own_ast2 != NULL);
+    ar__instruction_ast__destroy(own_ast2);
+    
+    // Then both should succeed
+    ar__instruction_parser__destroy(own_parser);
+}
+
 static void test_parse_simple_assignment(void) {
     printf("Testing simple assignment parsing...\n");
     
@@ -360,6 +645,24 @@ static void test_parser_reusability(void) {
 
 int main(void) {
     printf("Running instruction parser tests...\n\n");
+    
+    // Parser lifecycle tests
+    test_instruction_parser__create_destroy_with_parsers();
+    
+    // Unified parser tests
+    test_instruction_parser__parse_assignment();
+    test_instruction_parser__parse_send();
+    test_instruction_parser__parse_send_with_assignment();
+    test_instruction_parser__parse_if();
+    test_instruction_parser__parse_parse();
+    test_instruction_parser__parse_build();
+    test_instruction_parser__parse_method();
+    test_instruction_parser__parse_agent();
+    test_instruction_parser__parse_destroy_agent();
+    test_instruction_parser__parse_destroy_method();
+    test_instruction_parser__parse_unknown();
+    test_instruction_parser__parse_empty();
+    test_instruction_parser__parse_reusability();
     
     // Assignment tests
     test_parse_simple_assignment();

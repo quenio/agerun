@@ -2,16 +2,29 @@
 
 ## Overview
 
-The Instruction Parser module provides parsing functionality for AgeRun instructions. It converts instruction strings into Abstract Syntax Tree (AST) representations using the instruction_ast module. The parser follows a reusable design pattern where a single parser instance can parse multiple instructions.
+The Instruction Parser module serves as a facade that coordinates all specialized instruction parsers in the AgeRun system. It provides both a unified interface (`ar_instruction_parser__parse()`) for parsing any type of instruction and legacy individual parse methods for backward compatibility. The parser automatically detects instruction types and dispatches to the appropriate specialized parser.
+
+## Architecture
+
+The module follows the facade pattern, maintaining instances of all specialized parsers:
+- Assignment instruction parser
+- Send instruction parser  
+- Condition (if) instruction parser
+- Parse instruction parser
+- Build instruction parser
+- Method instruction parser
+- Agent instruction parser
+- Destroy agent instruction parser
+- Destroy method instruction parser
 
 ## Key Features
 
-- Reusable parser instances for efficient parsing
-- Specific parse methods for each instruction type
-- Proper error reporting with position information
-- Handles nested parentheses and quoted strings in function arguments
-- Clear ownership semantics following the Memory Management Model
-- Support for all AgeRun instruction types
+- **Unified Interface**: Single `ar_instruction_parser__parse()` function handles all instruction types
+- **Automatic Detection**: Identifies instruction type by analyzing the input
+- **Error Propagation**: Forwards errors from specialized parsers with context
+- **Reusable**: Parser instances can be reused for multiple parse operations
+- **Memory Safe**: Zero memory leaks with proper ownership management
+- **Backward Compatible**: Legacy individual parse methods still available
 
 ## Instruction Types Supported
 
@@ -93,6 +106,43 @@ And similar methods for:
 - `ar__instruction_parser__parse_build`
 
 ## Usage Examples
+
+### Using the Unified Parser (Recommended)
+
+```c
+// Create parser
+instruction_parser_t *parser = ar__instruction_parser__create();
+if (!parser) {
+    return;
+}
+
+// Parse any type of instruction
+const char *instructions[] = {
+    "memory.x := 42",
+    "send(1, \"Hello\")",
+    "if(memory.flag, \"yes\", \"no\")",
+    "method(\"test\", \"code\", \"1.0\")",
+    "agent(\"echo\", \"1.0\")",
+    "destroy(1)",
+    "parse(\"{x}\", \"x=42\")",
+    "build(\"Hello {name}\", memory.vars)"
+};
+
+for (int i = 0; i < 8; i++) {
+    instruction_ast_t *ast = ar_instruction_parser__parse(parser, instructions[i]);
+    
+    if (ast) {
+        printf("Parsed: %s (type: %d)\n", instructions[i], 
+               ar__instruction_ast__get_type(ast));
+        ar__instruction_ast__destroy(ast);
+    } else {
+        printf("Failed to parse: %s - %s\n", instructions[i],
+               ar__instruction_parser__get_error(parser));
+    }
+}
+
+ar__instruction_parser__destroy(parser);
+```
 
 ### Parsing an Assignment
 

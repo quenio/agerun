@@ -44,6 +44,17 @@ const char* ar__instruction_parser__get_error(const instruction_parser_t *ref_pa
 size_t ar__instruction_parser__get_error_position(const instruction_parser_t *ref_parser);
 
 /**
+ * Parse an instruction using the unified parser facade.
+ * Automatically detects the instruction type and dispatches to the appropriate specialized parser.
+ * 
+ * @param mut_parser The parser instance (mutable reference)
+ * @param ref_instruction The instruction string to parse (borrowed reference)
+ * @return Parsed instruction AST node (owned by caller), or NULL on failure
+ * @note Ownership: Returns an owned AST node that caller must destroy.
+ */
+instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser, const char *ref_instruction);
+
+/**
  * Parse an assignment instruction.
  * 
  * @param mut_parser The parser instance (mutable reference)
