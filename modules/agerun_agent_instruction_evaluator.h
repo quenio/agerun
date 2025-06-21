@@ -50,20 +50,5 @@ bool ar_agent_instruction_evaluator__evaluate(
     const instruction_ast_t *ref_ast
 );
 
-/**
- * Evaluates an agent instruction (legacy interface)
- * @param mut_expr_evaluator The expression evaluator
- * @param mut_memory The memory map  
- * @param ref_context The context map (can be NULL)
- * @param ref_ast The instruction AST node
- * @return true if evaluation succeeded, false otherwise
- * @note Ownership: Does not take ownership of any parameters
- */
-bool ar_agent_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
-    data_t *ref_context,
-    const instruction_ast_t *ref_ast
-);
 
 #endif /* AGERUN_AGENT_INSTRUCTION_EVALUATOR_H */

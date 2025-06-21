@@ -72,13 +72,19 @@ static void test_parse_instruction_evaluator__evaluate_with_instance(void) {
     ar__data__destroy(own_memory);
 }
 
-static void test_parse_instruction_evaluator__legacy_wrapper(void) {
+static void test_parse_instruction_evaluator__evaluate_without_legacy(void) {
     // Given memory and expression evaluator
     data_t *own_memory = ar__data__create_map();
     assert(own_memory != NULL);
     
     expression_evaluator_t *own_expr_eval = ar__expression_evaluator__create(own_memory, NULL);
     assert(own_expr_eval != NULL);
+    
+    // When creating a parse instruction evaluator instance
+    parse_instruction_evaluator_t *own_evaluator = ar_parse_instruction_evaluator__create(
+        own_expr_eval, own_memory
+    );
+    assert(own_evaluator != NULL);
     
     // When creating a parse AST node
     const char *args[] = {"\"user={username}, role={role}\"", "\"user=alice, role=admin\""};
@@ -87,10 +93,8 @@ static void test_parse_instruction_evaluator__legacy_wrapper(void) {
     );
     assert(own_ast != NULL);
     
-    // When evaluating using the legacy interface directly
-    bool result = ar_parse_instruction_evaluator__evaluate_legacy(
-        own_expr_eval, own_memory, own_ast
-    );
+    // When evaluating using the instance-based interface
+    bool result = ar_parse_instruction_evaluator__evaluate(own_evaluator, own_ast);
     
     // Then it should succeed and store the parsed values
     assert(result == true);
@@ -110,6 +114,7 @@ static void test_parse_instruction_evaluator__legacy_wrapper(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(own_ast);
+    ar_parse_instruction_evaluator__destroy(own_evaluator);
     ar__expression_evaluator__destroy(own_expr_eval);
     ar__data__destroy(own_memory);
 }
@@ -360,8 +365,8 @@ int main(void) {
     test_parse_instruction_evaluator__evaluate_with_instance();
     printf("test_parse_instruction_evaluator__evaluate_with_instance passed!\n");
     
-    test_parse_instruction_evaluator__legacy_wrapper();
-    printf("test_parse_instruction_evaluator__legacy_wrapper passed!\n");
+    test_parse_instruction_evaluator__evaluate_without_legacy();
+    printf("test_parse_instruction_evaluator__evaluate_without_legacy passed!\n");
     
     test_instruction_evaluator__evaluate_parse_simple();
     printf("test_instruction_evaluator__evaluate_parse_simple passed!\n");

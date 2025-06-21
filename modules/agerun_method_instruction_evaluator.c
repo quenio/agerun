@@ -396,24 +396,3 @@ bool ar_method_instruction_evaluator__evaluate(
     return success;
 }
 
-bool ar_method_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
-    const instruction_ast_t *ref_ast
-) {
-    // Create a temporary evaluator instance
-    ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
-        mut_expr_evaluator, mut_memory
-    );
-    if (!evaluator) {
-        return false;
-    }
-    
-    // Call the new evaluate function
-    bool result = ar_method_instruction_evaluator__evaluate(evaluator, ref_ast);
-    
-    // Destroy the temporary instance
-    ar_method_instruction_evaluator__destroy(evaluator);
-    
-    return result;
-}

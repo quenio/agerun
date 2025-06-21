@@ -18,12 +18,6 @@
 #include "agerun_heap.h"
 #include "agerun_io.h"
 
-/* Forward declaration of legacy function */
-bool ar_build_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
-    const instruction_ast_t *ref_ast
-);
 
 /* Memory prefix for path extraction */
 static const char MEMORY_PREFIX[] = "memory.";
@@ -538,24 +532,4 @@ bool ar_build_instruction_evaluator__evaluate(
     return _store_result_if_assigned(mut_memory, ref_ast, own_result);
 }
 
-/**
- * Evaluates a build instruction (legacy interface)
- */
-bool ar_build_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
-    const instruction_ast_t *ref_ast
-) {
-    ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
-        mut_expr_evaluator, mut_memory
-    );
-    if (!evaluator) {
-        return false;
-    }
-    
-    bool result = ar_build_instruction_evaluator__evaluate(evaluator, ref_ast);
-    ar_build_instruction_evaluator__destroy(evaluator);
-    
-    return result;
-}
 

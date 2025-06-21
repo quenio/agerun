@@ -82,6 +82,12 @@ static void test_method_instruction_evaluator__evaluate_legacy(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
+    // Create an evaluator instance
+    ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
+        expr_eval, memory
+    );
+    assert(evaluator != NULL);
+    
     // When creating a method AST node with result assignment
     const char *args[] = {"\"legacy_test\"", "\"send(0, 99)\"", "\"2.0.0\""};
     instruction_ast_t *ast = ar__instruction_ast__create_function_call(
@@ -89,10 +95,8 @@ static void test_method_instruction_evaluator__evaluate_legacy(void) {
     );
     assert(ast != NULL);
     
-    // When evaluating using the legacy interface
-    bool result = ar_method_instruction_evaluator__evaluate_legacy(
-        expr_eval, memory, ast
-    );
+    // When evaluating using the instance-based interface
+    bool result = ar_method_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should succeed
     assert(result == true);
@@ -103,6 +107,7 @@ static void test_method_instruction_evaluator__evaluate_legacy(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
+    ar_method_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
     

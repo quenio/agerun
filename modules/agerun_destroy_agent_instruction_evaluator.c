@@ -12,12 +12,6 @@
 #include <stdio.h>
 #include <inttypes.h>
 
-/* Forward declaration of legacy function */
-bool ar_destroy_agent_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
-    const instruction_ast_t *ref_ast
-);
 
 /* Constants */
 static const char* MEMORY_PREFIX = "memory.";
@@ -257,25 +251,8 @@ bool ar_destroy_agent_instruction_evaluator__evaluate(
         return false;
     }
     
-    // Delegate to the legacy function using stored dependencies
-    return ar_destroy_agent_instruction_evaluator__evaluate_legacy(
-        ref_evaluator->mut_expr_evaluator,
-        ref_evaluator->mut_memory,
-        ref_ast
-    );
-}
-
-/**
- * Legacy function for backward compatibility
- */
-bool ar_destroy_agent_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
-    const instruction_ast_t *ref_ast
-) {
-    if (!mut_expr_evaluator || !mut_memory || !ref_ast) {
-        return false;
-    }
+    expression_evaluator_t *mut_expr_evaluator = ref_evaluator->mut_expr_evaluator;
+    data_t *mut_memory = ref_evaluator->mut_memory;
     
     // Validate AST type
     if (ar__instruction_ast__get_type(ref_ast) != INST_AST_DESTROY) {

@@ -14,13 +14,6 @@
 #include <stdio.h>
 #include <inttypes.h>
 
-/* Forward declaration of legacy function */
-bool ar_agent_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
-    data_t *ref_context,
-    const instruction_ast_t *ref_ast
-);
 
 /* Opaque struct definition */
 struct ar_agent_instruction_evaluator_s {
@@ -53,24 +46,6 @@ void ar_agent_instruction_evaluator__destroy(ar_agent_instruction_evaluator_t *o
     }
     
     AR__HEAP__FREE(own_evaluator);
-}
-
-bool ar_agent_instruction_evaluator__evaluate(
-    const ar_agent_instruction_evaluator_t *ref_evaluator,
-    data_t *ref_context,
-    const instruction_ast_t *ref_ast
-) {
-    if (!ref_evaluator || !ref_ast) {
-        return false;
-    }
-    
-    // Delegate to the legacy function using stored dependencies
-    return ar_agent_instruction_evaluator__evaluate_legacy(
-        ref_evaluator->mut_expr_evaluator,
-        ref_evaluator->mut_memory,
-        ref_context,
-        ref_ast
-    );
 }
 
 /* Constants */
@@ -265,7 +240,6 @@ static data_t* _parse_and_evaluate_expression(
     return result;
 }
 
-
 /* Helper function to store result in memory if assignment path is provided */
 static bool _store_result_if_assigned(
     data_t *mut_memory,
@@ -329,15 +303,17 @@ static const data_t* _get_memory_or_context_reference(
     return NULL;
 }
 
-bool ar_agent_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
+bool ar_agent_instruction_evaluator__evaluate(
+    const ar_agent_instruction_evaluator_t *ref_evaluator,
     data_t *ref_context,
     const instruction_ast_t *ref_ast
 ) {
-    if (!mut_expr_evaluator || !mut_memory || !ref_ast) {
+    if (!ref_evaluator || !ref_ast) {
         return false;
     }
+    
+    expression_evaluator_t *mut_expr_evaluator = ref_evaluator->mut_expr_evaluator;
+    data_t *mut_memory = ref_evaluator->mut_memory;
     
     // Validate AST type
     if (ar__instruction_ast__get_type(ref_ast) != INST_AST_AGENT) {

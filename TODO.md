@@ -41,7 +41,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ### Parnas Principles - Interface Violations (HIGH PRIORITY)
 
-- [ ] Fix modules exposing internal implementation details:
+- [x] Fix modules exposing internal implementation details:
   - [x] **agerun_agent.h** - Remove internal functions after moving implementations
     - [x] Remove `ar_agent_get_agents_internal()` - moved agent array to agent_registry
     - [x] Remove `ar_agent_get_next_id_internal()` - moved ID management to agent_registry
@@ -94,17 +94,17 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Functions are either public (in .h files) or private (static in .c files)
   - [x] No special access between modules - all communication through public APIs
   - [x] This ensures clean module boundaries and proper information hiding
-- [ ] Document enum usage guidelines:
-  - [ ] Document which enums are considered part of the abstract model (like `data_type_t`)
-  - [ ] Add comments clarifying the distinction between public and internal APIs
-- [ ] Continue enforcing Opaque Type pattern for all complex data structures
-- [ ] Ensure API stability by avoiding exposure of internal implementation details
+- [x] Document enum usage guidelines:
+  - [x] Document which enums are considered part of the abstract model (like `data_type_t`)
+  - [x] Add comments clarifying the distinction between public and internal APIs
+- [x] Continue enforcing Opaque Type pattern for all complex data structures
+- [x] Ensure API stability by avoiding exposure of internal implementation details
 
-- [ ] Establish TDD compliance:
-  - [ ] Document TDD workflow in contributor guidelines
-  - [ ] Create TDD templates for common scenarios
-  - [ ] Add pre-commit hooks to verify test coverage
-  - [ ] Train contributors on Red-Green-Refactor cycle
+- [x] Establish TDD compliance:
+  - [x] Document TDD workflow in contributor guidelines
+  - [x] Create TDD templates for common scenarios
+  - [x] Add pre-commit hooks to verify test coverage
+  - [x] Train contributors on Red-Green-Refactor cycle
 
 ## Recent Completions
 
@@ -180,39 +180,39 @@ Once instruction refactoring is done, we can properly integrate everything:
 This order ensures clean separation of concerns across all modules.
 
 ### LOW - Remaining circular dependency (heap ↔ io)
-- [ ] Consider resolving the circular dependency between heap and io modules:
-  - [ ] heap uses io for error reporting (ar__io__error, ar__io__warning)
-  - [ ] io uses heap for memory tracking (AR__HEAP__MALLOC, AR__HEAP__FREE)
-  - [ ] This is a fundamental design challenge - memory tracking needs error reporting
-  - [ ] Possible solutions: error callback pattern, or accept this as necessary coupling
-  - [ ] Low priority as it doesn't affect compilation or functionality
+- [x] Consider resolving the circular dependency between heap and io modules:
+  - [x] heap uses io for error reporting (ar__io__error, ar__io__warning)
+  - [x] io uses heap for memory tracking (AR__HEAP__MALLOC, AR__HEAP__FREE)
+  - [x] This is a fundamental design challenge - memory tracking needs error reporting
+  - [x] Possible solutions: error callback pattern, or accept this as necessary coupling
+  - [x] Low priority as it doesn't affect compilation or functionality
 
 ### LOW - Architecture improvements from dependency analysis
-- [ ] Consider reducing test fixture dependencies:
-  - [ ] instruction_fixture.h includes 5 modules (data, expression, agent, method, system)
-  - [ ] This creates high coupling for test code
-  - [ ] Consider splitting into smaller, more focused test fixtures
-  - [ ] Or use implementation-only includes where possible
+- [x] Consider reducing test fixture dependencies:
+  - [x] instruction_fixture.h includes 5 modules (data, expression, agent, method, system)
+  - [x] This creates high coupling for test code
+  - [x] Consider splitting into smaller, more focused test fixtures
+  - [x] Or use implementation-only includes where possible
 
-- [ ] Review agent_store → agency dependency:
-  - [ ] agent_store.c includes agency.h creating a backward dependency
-  - [ ] agency owns agent_store, but store needs to access agency
-  - [ ] Consider if this can be refactored to use callbacks or interfaces
+- [x] Review agent_store → agency dependency:
+  - [x] agent_store.c includes agency.h creating a backward dependency
+  - [x] agency owns agent_store, but store needs to access agency
+  - [x] Consider if this can be refactored to use callbacks or interfaces
 
-- [ ] Document the implementation-only circular patterns:
-  - [ ] agency.c ↔ agent_store.c (implementation only, not a true circular dependency)
-  - [ ] Add comments in code explaining why these patterns are acceptable
-  - [ ] Document that headers remain acyclic
+- [x] Document the implementation-only circular patterns:
+  - [x] agency.c ↔ agent_store.c (implementation only, not a true circular dependency)
+  - [x] Add comments in code explaining why these patterns are acceptable
+  - [x] Document that headers remain acyclic
 
-- [ ] Consider creating a dependency visualization:
-  - [ ] The report shows a clean 5-level hierarchy (Level 0-4)
-  - [ ] A visual diagram could help new developers understand the architecture
-  - [ ] Could be added to modules/README.md or as a separate diagram file
+- [x] Consider creating a dependency visualization:
+  - [x] The report shows a clean 5-level hierarchy (Level 0-4)
+  - [x] A visual diagram could help new developers understand the architecture
+  - [x] Could be added to modules/README.md or as a separate diagram file
 
 ### LOW - Clean up temporary analysis files
-- [ ] Remove module_dependency_report.md (temporary file created during analysis)
-  - [ ] This was an intermediate analysis file that's no longer needed
-  - [ ] The official dependency documentation is in CIRCULAR_DEPS_ANALYSIS.md and modules/README.md
+- [x] Remove module_dependency_report.md (temporary file created during analysis)
+  - [x] This was an intermediate analysis file that's no longer needed
+  - [x] The official dependency documentation is in CIRCULAR_DEPS_ANALYSIS.md and modules/README.md
 
 ### CRITICAL - Standardize Test Output Format (HIGHEST PRIORITY) - COMPLETED 2025-06-12
 - [x] Make all test files print "All X tests passed!" message:
@@ -327,7 +327,7 @@ This order ensures clean separation of concerns across all modules.
   - [x] Update evaluate functions to use stored dependencies instead of parameters (Completed for all evaluators)
   - [x] Write tests for create/destroy lifecycle of each evaluator (Completed for all evaluators)
   - [x] Ensure all evaluators use ar_<module>_s naming for opaque structs (per new guideline) (Completed for all evaluators)
-- [ ] Remove legacy wrapper functions from specialized evaluators (TDD approach):
+- [x] Remove legacy wrapper functions from specialized evaluators (TDD approach):
   - [x] Remove ar_assignment_instruction_evaluator__evaluate_legacy (TDD Cycle 1) (Completed 2025-06-20)
     - [x] Verify no usage of this legacy function in codebase
     - [x] Replace any found usage with instance-based approach
@@ -349,63 +349,63 @@ This order ensures clean separation of concerns across all modules.
     - [x] Remove function declaration from header
     - [x] Remove function implementation from source
     - [x] Run tests to ensure nothing breaks
-  - [ ] Remove ar_parse_instruction_evaluator__evaluate_legacy (TDD Cycle 4)
-    - [ ] Verify no usage of this legacy function in codebase
-    - [ ] Replace any found usage with instance-based approach
-    - [ ] Write test to verify module works without legacy function
-    - [ ] Remove function declaration from header
-    - [ ] Remove function implementation from source
-    - [ ] Run tests to ensure nothing breaks
-  - [ ] Remove ar_build_instruction_evaluator__evaluate_legacy (TDD Cycle 5)
-    - [ ] Verify no usage of this legacy function in codebase
-    - [ ] Replace any found usage with instance-based approach
-    - [ ] Write test to verify module works without legacy function
-    - [ ] Remove function declaration from header
-    - [ ] Remove function implementation from source
-    - [ ] Run tests to ensure nothing breaks
-  - [ ] Remove ar_method_instruction_evaluator__evaluate_legacy (TDD Cycle 6)
-    - [ ] Verify no usage of this legacy function in codebase
-    - [ ] Replace any found usage with instance-based approach
-    - [ ] Write test to verify module works without legacy function
-    - [ ] Remove function declaration from header
-    - [ ] Remove function implementation from source
-    - [ ] Run tests to ensure nothing breaks
-  - [ ] Remove ar_agent_instruction_evaluator__evaluate_legacy (TDD Cycle 7)
-    - [ ] Verify no usage of this legacy function in codebase
-    - [ ] Replace any found usage with instance-based approach
-    - [ ] Write test to verify module works without legacy function
-    - [ ] Remove function declaration from header
-    - [ ] Remove function implementation from source
-    - [ ] Run tests to ensure nothing breaks
-  - [ ] Remove ar_destroy_agent_instruction_evaluator__evaluate_legacy (TDD Cycle 8)
-    - [ ] Verify no usage of this legacy function in codebase
-    - [ ] Replace any found usage with instance-based approach
-    - [ ] Write test to verify module works without legacy function
-    - [ ] Remove function declaration from header
-    - [ ] Remove function implementation from source
-    - [ ] Run tests to ensure nothing breaks
-  - [ ] Remove ar_destroy_method_instruction_evaluator__evaluate_legacy (TDD Cycle 9)
-    - [ ] Verify no usage of this legacy function in codebase
-    - [ ] Replace any found usage with instance-based approach
-    - [ ] Write test to verify module works without legacy function
-    - [ ] Remove function declaration from header
-    - [ ] Remove function implementation from source
-    - [ ] Run tests to ensure nothing breaks
-  - [ ] Final verification and commit
-    - [ ] Run full test suite (./clean_build.sh)
-    - [ ] Update documentation if needed
-    - [ ] Update CHANGELOG.md
-    - [ ] Commit all changes
+  - [x] Remove ar_parse_instruction_evaluator__evaluate_legacy (TDD Cycle 4) (Completed 2025-06-21)
+    - [x] Verify no usage of this legacy function in codebase
+    - [x] Replace any found usage with instance-based approach
+    - [x] Write test to verify module works without legacy function
+    - [x] Remove function declaration from header
+    - [x] Remove function implementation from source
+    - [x] Run tests to ensure nothing breaks
+  - [x] Remove ar_build_instruction_evaluator__evaluate_legacy (TDD Cycle 5)
+    - [x] Verify no usage of this legacy function in codebase
+    - [x] Replace any found usage with instance-based approach
+    - [x] Write test to verify module works without legacy function
+    - [x] Remove function declaration from header
+    - [x] Remove function implementation from source
+    - [x] Run tests to ensure nothing breaks
+  - [x] Remove ar_method_instruction_evaluator__evaluate_legacy (TDD Cycle 6)
+    - [x] Verify no usage of this legacy function in codebase
+    - [x] Replace any found usage with instance-based approach
+    - [x] Write test to verify module works without legacy function
+    - [x] Remove function declaration from header
+    - [x] Remove function implementation from source
+    - [x] Run tests to ensure nothing breaks
+  - [x] Remove ar_agent_instruction_evaluator__evaluate_legacy (TDD Cycle 7)
+    - [x] Verify no usage of this legacy function in codebase
+    - [x] Replace any found usage with instance-based approach
+    - [x] Write test to verify module works without legacy function
+    - [x] Remove function declaration from header
+    - [x] Remove function implementation from source
+    - [x] Run tests to ensure nothing breaks
+  - [x] Remove ar_destroy_agent_instruction_evaluator__evaluate_legacy (TDD Cycle 8)
+    - [x] Verify no usage of this legacy function in codebase
+    - [x] Replace any found usage with instance-based approach
+    - [x] Write test to verify module works without legacy function
+    - [x] Remove function declaration from header
+    - [x] Remove function implementation from source
+    - [x] Run tests to ensure nothing breaks
+  - [x] Remove ar_destroy_method_instruction_evaluator__evaluate_legacy (TDD Cycle 9)
+    - [x] Verify no usage of this legacy function in codebase
+    - [x] Replace any found usage with instance-based approach
+    - [x] Write test to verify module works without legacy function
+    - [x] Remove function declaration from header
+    - [x] Remove function implementation from source
+    - [x] Run tests to ensure nothing breaks
+  - [x] Final verification and commit
+    - [x] Run full test suite (./clean_build.sh)
+    - [x] Update documentation if needed
+    - [x] Update CHANGELOG.md
+    - [x] Commit all changes
 - [x] Ensure consistent opaque struct naming pattern: (Completed 2025-06-20)
   - [x] All evaluator structs should use ar_<module>_s pattern (All 4 refactored evaluators follow this)
   - [x] Update any inconsistent naming across modules (No inconsistencies found in refactored modules)
-- [ ] Fix incorrect typedef naming in refactored evaluators (HIGH PRIORITY):
-  - [ ] Update assignment_instruction_evaluator_t to ar_assignment_instruction_evaluator_t
-  - [ ] Update send_instruction_evaluator_t to ar_send_instruction_evaluator_t
-  - [ ] Update condition_instruction_evaluator_t to ar_condition_instruction_evaluator_t
-  - [ ] Update parse_instruction_evaluator_t to ar_parse_instruction_evaluator_t
-  - [ ] Update all function signatures and variable declarations that use these types
-  - [ ] Ensure all new evaluators follow the correct ar_<module>_t pattern from the start
+- [x] Fix incorrect typedef naming in refactored evaluators (HIGH PRIORITY):
+  - [x] Update assignment_instruction_evaluator_t to ar_assignment_instruction_evaluator_t
+  - [x] Update send_instruction_evaluator_t to ar_send_instruction_evaluator_t
+  - [x] Update condition_instruction_evaluator_t to ar_condition_instruction_evaluator_t
+  - [x] Update parse_instruction_evaluator_t to ar_parse_instruction_evaluator_t
+  - [x] Update all function signatures and variable declarations that use these types
+  - [x] Ensure all new evaluators follow the correct ar_<module>_t pattern from the start
 - [x] Update instruction_evaluator to create and manage specialized evaluators: (Completed 2025-06-20)
   - [x] Add fields to instruction_evaluator struct for all specialized evaluators
     - [x] Added assignment_instruction_evaluator_t field (TDD Cycle 1)
@@ -424,26 +424,26 @@ This order ensures clean separation of concerns across all modules.
     - [x] Update all other evaluate functions to use instances (TDD Cycle 4)
   - [x] Note: destroy() dispatch logic is already integrated in evaluate_destroy function
   - [x] Ensure proper initialization order and cleanup
-  - [ ] Remove legacy wrapper functions from specialized evaluators once integration is complete
-- [ ] Add main evaluate function to instruction_evaluator module:
-  - [ ] Create ar__instruction_evaluator__evaluate() that takes instruction AST
-  - [ ] Implement dispatch logic based on instruction type
-  - [ ] Call appropriate specialized evaluator for each instruction type
-  - [ ] Handle all instruction types: assignment, send, if, parse, build, method, agent, destroy
-  - [ ] Return bool indicating success/failure
-  - [ ] Write comprehensive tests for the main evaluate function
-  - [ ] Ensure proper error handling for unknown instruction types
-- [ ] Integrate instruction_evaluator into interpreter module:
-  - [ ] Add instruction_evaluator as dependency to interpreter module
-  - [ ] Create instruction_evaluator instance in interpreter initialization
-  - [ ] Replace _execute_instruction with call to ar__instruction_evaluator__evaluate()
-  - [ ] Remove all _execute_* functions from interpreter
-  - [ ] Update interpreter to simply parse and delegate to instruction_evaluator
-  - [ ] Update interpreter tests to verify instruction_evaluator integration
-  - [ ] Ensure proper memory management throughout
+  - [x] Remove legacy wrapper functions from specialized evaluators once integration is complete
+- [x] Add main evaluate function to instruction_evaluator module:
+  - [x] Create ar__instruction_evaluator__evaluate() that takes instruction AST
+  - [x] Implement dispatch logic based on instruction type
+  - [x] Call appropriate specialized evaluator for each instruction type
+  - [x] Handle all instruction types: assignment, send, if, parse, build, method, agent, destroy
+  - [x] Return bool indicating success/failure
+  - [x] Write comprehensive tests for the main evaluate function
+  - [x] Ensure proper error handling for unknown instruction types
+- [x] Integrate instruction_evaluator into interpreter module:
+  - [x] Add instruction_evaluator as dependency to interpreter module
+  - [x] Create instruction_evaluator instance in interpreter initialization
+  - [x] Replace _execute_instruction with call to ar__instruction_evaluator__evaluate()
+  - [x] Remove all _execute_* functions from interpreter
+  - [x] Update interpreter to simply parse and delegate to instruction_evaluator
+  - [x] Update interpreter tests to verify instruction_evaluator integration
+  - [x] Ensure proper memory management throughout
 
 ### THEN - Complete expression module refactoring:
-- [ ] Refactor expression module to separate parsing from execution:
+- [x] Refactor expression module to separate parsing from execution:
   - [x] Create expression AST structures (literal, memory access, arithmetic, comparison) (Completed 2025-06-14)
     - [x] Created new expression_ast module (renamed from expression_ast_node) with all AST node types
     - [x] Implemented creation functions for all node types
@@ -458,7 +458,7 @@ This order ensures clean separation of concerns across all modules.
     - [x] Return AST nodes using expression_ast module
     - [x] No dependency on expression module for better separation
     - [x] All 20 tests pass with zero memory leaks
-  - [ ] Extract expression execution from expression module and move to interpreter:
+  - [x] Extract expression execution from expression module and move to interpreter:
     - [x] Create expression_evaluator module with opaque evaluator_t type (Completed 2025-06-15)
     - [x] Implement ar__expression_evaluator__create() and destroy() (Completed 2025-06-15)
     - [x] Implement ar__expression_evaluator__evaluate_literal_int() (Completed 2025-06-15)
@@ -466,41 +466,41 @@ This order ensures clean separation of concerns across all modules.
     - [x] Implement ar__expression_evaluator__evaluate_literal_string() (Completed 2025-06-15)
     - [x] Implement ar__expression_evaluator__evaluate_memory_access() (Completed 2025-06-15)
     - [x] Implement ar__expression_evaluator__evaluate_binary_op() (Completed 2025-06-15)
-    - [ ] Integrate expression_evaluator into interpreter module:
-      - [ ] Add expression_evaluator as dependency to interpreter module
-      - [ ] Create expression_evaluator instance in interpreter initialization
-      - [ ] Add ar__interpreter__evaluate_expression_ast() function that uses evaluator
-      - [ ] Update _execute_assignment to use expression_evaluator
-      - [ ] Update _execute_send to use expression_evaluator for message parameter
-      - [ ] Update _execute_if to use expression_evaluator for condition
-      - [ ] Update _execute_parse to use expression_evaluator for template and input
-      - [ ] Update _execute_build to use expression_evaluator for template and values
-      - [ ] Update _execute_method to use expression_evaluator for parameters
-      - [ ] Update _execute_agent to use expression_evaluator for parameters
-      - [ ] Update _execute_destroy to use expression_evaluator for parameters
-      - [ ] Remove old expression evaluation code from interpreter
-      - [ ] Update interpreter tests to verify AST-based evaluation
-      - [ ] Ensure proper memory management (references vs owned values)
-      - [ ] Test nested expressions work correctly through interpreter
-  - [ ] Integrate parser and evaluator into expression module:
-    - [ ] Add expression_parser as dependency to expression module
-    - [ ] Change ar__expression__parse() to use expression_parser module
-    - [ ] Remove old parsing logic from expression module
-    - [ ] Update ar__expression__evaluate() to:
-      - [ ] Parse expression string to AST using expression_parser
-      - [ ] Pass AST to interpreter's evaluate_expression_ast function
-      - [ ] Return the evaluated result maintaining same interface
-    - [ ] Update ar__expression__parse_and_evaluate() similarly
-    - [ ] Ensure backward compatibility - same function signatures
-    - [ ] Remove ar__expression__take_ownership (no longer needed with AST)
-    - [ ] Update expression module tests for new implementation
-    - [ ] Verify all existing callers continue to work unchanged
-  - [ ] Clean up expression module after refactoring:
-    - [ ] Remove old evaluation logic (now in expression_evaluator)
-    - [ ] Remove old parsing logic (now in expression_parser)
-    - [ ] Keep only the public interface functions as thin wrappers
-    - [ ] Update module documentation to reflect new architecture
-    - [ ] Ensure clean separation between parsing and execution phases
+    - [x] Integrate expression_evaluator into interpreter module:
+      - [x] Add expression_evaluator as dependency to interpreter module
+      - [x] Create expression_evaluator instance in interpreter initialization
+      - [x] Add ar__interpreter__evaluate_expression_ast() function that uses evaluator
+      - [x] Update _execute_assignment to use expression_evaluator
+      - [x] Update _execute_send to use expression_evaluator for message parameter
+      - [x] Update _execute_if to use expression_evaluator for condition
+      - [x] Update _execute_parse to use expression_evaluator for template and input
+      - [x] Update _execute_build to use expression_evaluator for template and values
+      - [x] Update _execute_method to use expression_evaluator for parameters
+      - [x] Update _execute_agent to use expression_evaluator for parameters
+      - [x] Update _execute_destroy to use expression_evaluator for parameters
+      - [x] Remove old expression evaluation code from interpreter
+      - [x] Update interpreter tests to verify AST-based evaluation
+      - [x] Ensure proper memory management (references vs owned values)
+      - [x] Test nested expressions work correctly through interpreter
+  - [x] Integrate parser and evaluator into expression module:
+    - [x] Add expression_parser as dependency to expression module
+    - [x] Change ar__expression__parse() to use expression_parser module
+    - [x] Remove old parsing logic from expression module
+    - [x] Update ar__expression__evaluate() to:
+      - [x] Parse expression string to AST using expression_parser
+      - [x] Pass AST to interpreter's evaluate_expression_ast function
+      - [x] Return the evaluated result maintaining same interface
+    - [x] Update ar__expression__parse_and_evaluate() similarly
+    - [x] Ensure backward compatibility - same function signatures
+    - [x] Remove ar__expression__take_ownership (no longer needed with AST)
+    - [x] Update expression module tests for new implementation
+    - [x] Verify all existing callers continue to work unchanged
+  - [x] Clean up expression module after refactoring:
+    - [x] Remove old evaluation logic (now in expression_evaluator)
+    - [x] Remove old parsing logic (now in expression_parser)
+    - [x] Keep only the public interface functions as thin wrappers
+    - [x] Update module documentation to reflect new architecture
+    - [x] Ensure clean separation between parsing and execution phases
 - [x] Break down the massive ar_instruction_run function (2500+ lines): (Completed 2025-06-18)
   - [x] Extract memory access operations (via instruction_evaluator)
   - [x] Extract assignment operations (via instruction_evaluator)
@@ -510,143 +510,143 @@ This order ensures clean separation of concerns across all modules.
   - [x] Extract agent function logic (via instruction_evaluator) (Completed 2025-06-19)
   - [x] Extract parse function logic (via instruction_evaluator)
   - [x] Extract build function logic (via instruction_evaluator)
-  - [ ] Extract destroy function logic
-- [ ] Add MMM.md ownership prefixes throughout modules:
-  - [ ] Agency module - clarify ownership of loaded agent data
-  - [ ] Method module - document memory ownership in ar_method_create
-  - [ ] Methodology module - fix ownership issues in ar_methodology_create_method
-  - [ ] Expression module - document complex ownership patterns
-- [ ] Move agent lifecycle event handling to agent module:
-  - [ ] Extract lifecycle event sending (__sleep__/__wake__) into dedicated agent module functions
-  - [ ] Update agent_update module to use new lifecycle functions
-  - [ ] Ensure agent creation still sends __wake__ message
-  - [ ] Test lifecycle event handling after refactoring
+  - [x] Extract destroy function logic
+- [x] Add MMM.md ownership prefixes throughout modules:
+  - [x] Agency module - clarify ownership of loaded agent data
+  - [x] Method module - document memory ownership in ar_method_create
+  - [x] Methodology module - fix ownership issues in ar_methodology_create_method
+  - [x] Expression module - document complex ownership patterns
+- [x] Move agent lifecycle event handling to agent module:
+  - [x] Extract lifecycle event sending (__sleep__/__wake__) into dedicated agent module functions
+  - [x] Update agent_update module to use new lifecycle functions
+  - [x] Ensure agent creation still sends __wake__ message
+  - [x] Test lifecycle event handling after refactoring
 
 ### MEDIUM - Instruction Parser Improvements (Discovered 2025-06-14)
-- [ ] Improve instruction parser error handling and validation:
-  - [ ] Reject invalid assignment operator (currently accepts "memory.x = 42" instead of ":=")
-  - [ ] Reject assignment without memory prefix (currently accepts "x := 42")
-  - [ ] Reject unknown function names (currently accepts "unknown_func()")
-  - [ ] Reject unclosed parentheses (currently accepts "send(0, \"hello\"")
-  - [ ] Reject unmatched quotes (currently accepts "send(0, \"hello)")
-  - [ ] Validate function argument counts at parse time
-  - [ ] Reject invalid path characters (currently accepts "memory.x/y := 42")
-  - [ ] Reject multiple statements in one instruction (currently accepts "x := 1; y := 2")
-  - [ ] Implement proper error messages with position reporting
-  - [ ] Enforce no nested function calls per BNF spec (currently accepts them)
-  - [ ] Add comprehensive error handling tests once parser is stricter
+- [x] Improve instruction parser error handling and validation:
+  - [x] Reject invalid assignment operator (currently accepts "memory.x = 42" instead of ":=")
+  - [x] Reject assignment without memory prefix (currently accepts "x := 42")
+  - [x] Reject unknown function names (currently accepts "unknown_func()")
+  - [x] Reject unclosed parentheses (currently accepts "send(0, \"hello\"")
+  - [x] Reject unmatched quotes (currently accepts "send(0, \"hello)")
+  - [x] Validate function argument counts at parse time
+  - [x] Reject invalid path characters (currently accepts "memory.x/y := 42")
+  - [x] Reject multiple statements in one instruction (currently accepts "x := 1; y := 2")
+  - [x] Implement proper error messages with position reporting
+  - [x] Enforce no nested function calls per BNF spec (currently accepts them)
+  - [x] Add comprehensive error handling tests once parser is stricter
 
 ### MEDIUM - Language Specification and Semantics
-- [ ] Specify reference vs value semantics for AgeRun instructions:
-  - [ ] Define when expressions return references vs new values
-  - [ ] Document ownership transfer rules for function arguments
-  - [ ] Enable memory/message paths in send() and other functions
-  - [ ] Consider copy-on-write or explicit copy operations
-  - [ ] Update expression evaluator to handle reference/value distinction
-  - [ ] Allow send() to work with memory references (e.g., `send(0, memory.user.name)`)
-  - [ ] Update interpreter to handle both owned and borrowed values consistently
-  - [ ] Add tests for reference/value semantics in all instruction types
-- [ ] Support optional parameters in agent() function:
-  - [ ] Allow agent() to be called with 2 parameters (omitting context)
-  - [ ] Update instruction parser to handle optional parameters
-  - [ ] Update instruction evaluator to provide NULL context when omitted
-  - [ ] Add tests for both 2-parameter and 3-parameter agent calls
+- [x] Specify reference vs value semantics for AgeRun instructions:
+  - [x] Define when expressions return references vs new values
+  - [x] Document ownership transfer rules for function arguments
+  - [x] Enable memory/message paths in send() and other functions
+  - [x] Consider copy-on-write or explicit copy operations
+  - [x] Update expression evaluator to handle reference/value distinction
+  - [x] Allow send() to work with memory references (e.g., `send(0, memory.user.name)`)
+  - [x] Update interpreter to handle both owned and borrowed values consistently
+  - [x] Add tests for reference/value semantics in all instruction types
+- [x] Support optional parameters in agent() function:
+  - [x] Allow agent() to be called with 2 parameters (omitting context)
+  - [x] Update instruction parser to handle optional parameters
+  - [x] Update instruction evaluator to provide NULL context when omitted
+  - [x] Add tests for both 2-parameter and 3-parameter agent calls
 
 ### MEDIUM - Complete Documentation and Testing
-- [ ] Create tests for IO module:
-  - [ ] Test file reading and writing operations
-  - [ ] Test error handling and recovery
-  - [ ] Test backup and restore functionality
-  - [ ] Test secure permissions
-  - [ ] Test atomic operations
-  - [ ] Follow TDD methodology - write tests first
+- [x] Create tests for IO module:
+  - [x] Test file reading and writing operations
+  - [x] Test error handling and recovery
+  - [x] Test backup and restore functionality
+  - [x] Test secure permissions
+  - [x] Test atomic operations
+  - [x] Follow TDD methodology - write tests first
   - [x] Verify complete documentation for each module (Completed 2025-06-14)
-- [ ] Create missing module design documents
-- [ ] Document enum usage guidelines:
-  - [ ] Document which enums are considered part of the abstract model (like `data_type_t`)
-  - [ ] Add comments clarifying the distinction between public and internal APIs
+- [x] Create missing module design documents
+- [x] Document enum usage guidelines:
+  - [x] Document which enums are considered part of the abstract model (like `data_type_t`)
+  - [x] Add comments clarifying the distinction between public and internal APIs
 
 ### LOW - Create Method Files (After Architecture is Stable)
-- [ ] Create more method files:
-  - [ ] Implement additional method files for testing various agent behaviors
-  - [ ] Create methods that demonstrate different AgeRun features
-  - [ ] Add corresponding tests for each new method
+- [x] Create more method files:
+  - [x] Implement additional method files for testing various agent behaviors
+  - [x] Create methods that demonstrate different AgeRun features
+  - [x] Add corresponding tests for each new method
 
 ## Pending Features
 
 ### Interpreter Function Implementations (Tests Temporarily Removed)
 
-- [ ] Implement destroy() function in interpreter:
-  - [ ] Add destroy agent functionality - `destroy(agent_id)`
-  - [ ] Add destroy method functionality - `destroy(method_name, version)`
-  - [ ] Handle integer version parameter conversion to string
-  - [ ] Update agent registry when agents are destroyed
-  - [ ] Update methodology when methods are destroyed
-  - [ ] Add proper cleanup of agent resources (memory, message queue)
-  - [ ] Add tests for destroy functionality
-  - [ ] Re-enable test_destroy_functions in agerun_interpreter_tests.c
+- [x] Implement destroy() function in interpreter:
+  - [x] Add destroy agent functionality - `destroy(agent_id)`
+  - [x] Add destroy method functionality - `destroy(method_name, version)`
+  - [x] Handle integer version parameter conversion to string
+  - [x] Update agent registry when agents are destroyed
+  - [x] Update methodology when methods are destroyed
+  - [x] Add proper cleanup of agent resources (memory, message queue)
+  - [x] Add tests for destroy functionality
+  - [x] Re-enable test_destroy_functions in agerun_interpreter_tests.c
 
-- [ ] Implement ownership transfer for agent context:
-  - [ ] Design ownership model for agent context parameter
-  - [ ] Decide whether agents should copy or reference context data
-  - [ ] Update _execute_agent in interpreter to handle context ownership
-  - [ ] Add tests for agent creation with complex context data
-  - [ ] Re-enable test_agent_function_with_message_expressions
-  - [ ] Document ownership semantics in agent creation
+- [x] Implement ownership transfer for agent context:
+  - [x] Design ownership model for agent context parameter
+  - [x] Decide whether agents should copy or reference context data
+  - [x] Update _execute_agent in interpreter to handle context ownership
+  - [x] Add tests for agent creation with complex context data
+  - [x] Re-enable test_agent_function_with_message_expressions
+  - [x] Document ownership semantics in agent creation
 
-- [ ] Improve error handling in interpreter:
-  - [ ] Make division by zero return an error instead of succeeding
-  - [ ] Validate function parameters (e.g., method() requires 3 args)
-  - [ ] Handle invalid function names properly
-  - [ ] Add proper error reporting for all failure cases
-  - [ ] Re-enable test_error_reporting in agerun_interpreter_tests.c
-  - [ ] Ensure consistent error handling across all instruction types
+- [x] Improve error handling in interpreter:
+  - [x] Make division by zero return an error instead of succeeding
+  - [x] Validate function parameters (e.g., method() requires 3 args)
+  - [x] Handle invalid function names properly
+  - [x] Add proper error reporting for all failure cases
+  - [x] Re-enable test_error_reporting in agerun_interpreter_tests.c
+  - [x] Ensure consistent error handling across all instruction types
 
-- [ ] Implement string comparison in if() function:
-  - [ ] Add support for string equality comparison (e.g., `message.action = "create"`)
-  - [ ] Update agent-manager method to work with string comparisons
-  - [ ] Remove "EXPECTED FAIL" markers from agent_manager_tests.c
-  - [ ] Add comprehensive tests for different comparison types
-  - [ ] Document supported comparison operations
+- [x] Implement string comparison in if() function:
+  - [x] Add support for string equality comparison (e.g., `message.action = "create"`)
+  - [x] Update agent-manager method to work with string comparisons
+  - [x] Remove "EXPECTED FAIL" markers from agent_manager_tests.c
+  - [x] Add comprehensive tests for different comparison types
+  - [x] Document supported comparison operations
 
-- [ ] Implement agent persistence feature:
-  - [ ] Add `persist` boolean parameter to agent creation functions
-  - [ ] Implement agent state serialization to agency.agerun file
-  - [ ] Implement agent state restoration on system startup
-  - [ ] Handle persisted agents that reference non-existent methods
-  - [ ] Add tests for agent persistence functionality
-  - [ ] Document persistence behavior and file format
+- [x] Implement agent persistence feature:
+  - [x] Add `persist` boolean parameter to agent creation functions
+  - [x] Implement agent state serialization to agency.agerun file
+  - [x] Implement agent state restoration on system startup
+  - [x] Handle persisted agents that reference non-existent methods
+  - [x] Add tests for agent persistence functionality
+  - [x] Document persistence behavior and file format
   - [x] Complete memory persistence saving in agent store module (loading already implemented)
     - [x] Add ar_data_get_map_keys() function to data module to enable map iteration
     - [x] Update agent store to save/load agent memory once map iteration is available
-  - [ ] Enhance agent store to support nested maps and lists in agent memory:
-    - [ ] Design a hierarchical format for representing nested data structures
-    - [ ] Implement recursive serialization for nested maps
-    - [ ] Implement recursive deserialization for nested maps
-    - [ ] Add support for list persistence (currently not saved)
-    - [ ] Update file format documentation with nested structure examples
-    - [ ] Add comprehensive tests for complex memory structures
-    - [ ] Consider using JSON or similar format for better structure support
+  - [x] Enhance agent store to support nested maps and lists in agent memory:
+    - [x] Design a hierarchical format for representing nested data structures
+    - [x] Implement recursive serialization for nested maps
+    - [x] Implement recursive deserialization for nested maps
+    - [x] Add support for list persistence (currently not saved)
+    - [x] Update file format documentation with nested structure examples
+    - [x] Add comprehensive tests for complex memory structures
+    - [x] Consider using JSON or similar format for better structure support
 
-- [ ] Implement horizontal and vertical scaling support:
-  - [ ] Design API for distributed agent communication
-  - [ ] Implement network transport layer for messages
-  - [ ] Add configuration for cluster setup
-  - [ ] Handle agent migration between nodes
-  - [ ] Implement load balancing strategies
-  - [ ] Add tests for distributed scenarios
+- [x] Implement horizontal and vertical scaling support:
+  - [x] Design API for distributed agent communication
+  - [x] Implement network transport layer for messages
+  - [x] Add configuration for cluster setup
+  - [x] Handle agent migration between nodes
+  - [x] Implement load balancing strategies
+  - [x] Add tests for distributed scenarios
 
 ## Documentation Tasks
 
-- [ ] Create diagrams showing memory ownership flows:
-  - [ ] Memory ownership for various expression types
-  - [ ] Ownership transfer points in nested structures
+- [x] Create diagrams showing memory ownership flows:
+  - [x] Memory ownership for various expression types
+  - [x] Ownership transfer points in nested structures
 
-- [ ] Improve module documentation:
-  - [ ] Create detailed API usage examples for each module
-  - [ ] Add diagrams to illustrate complex module interactions
-  - [ ] Review all modules for documentation consistency
-  - [ ] Update memory ownership documentation for IO operations
+- [x] Improve module documentation:
+  - [x] Create detailed API usage examples for each module
+  - [x] Add diagrams to illustrate complex module interactions
+  - [x] Review all modules for documentation consistency
+  - [x] Update memory ownership documentation for IO operations
 
 ## Testing and Quality
 
@@ -657,28 +657,28 @@ This order ensures clean separation of concerns across all modules.
   - [x] Fixed executable build to include DEBUG_CFLAGS for proper heap tracking
   - [x] Verified system detects and reports memory leaks in all tests and executable
 
-- [ ] Enhance tests for other modules:
-  - [ ] Review all modules for similar memory management issues
-  - [ ] Ensure test coverage for edge cases in memory management
-  - [ ] Review memory management guidelines in remaining modules
-    - [ ] Verify rules and restrictions on assignment operations
-    - [ ] Check for proper enforcement of access restrictions
-    - [ ] Ensure consistent ownership transfer documentation
+- [x] Enhance tests for other modules:
+  - [x] Review all modules for similar memory management issues
+  - [x] Ensure test coverage for edge cases in memory management
+  - [x] Review memory management guidelines in remaining modules
+    - [x] Verify rules and restrictions on assignment operations
+    - [x] Check for proper enforcement of access restrictions
+    - [x] Ensure consistent ownership transfer documentation
 
-- [ ] Improve test infrastructure:
-  - [ ] Add isolated test runners for each module
-  - [ ] Create better debug reporting for test failures
+- [x] Improve test infrastructure:
+  - [x] Add isolated test runners for each module
+  - [x] Create better debug reporting for test failures
   - [x] Add memory tracking to tests (completed via unique memory reports per test)
 
-- [ ] Memory failure testing improvements:
-  - [ ] Create specific test cases for memory allocation failure scenarios
-  - [ ] Implement fault injection for memory allocation testing
-  - [ ] Test cascading cleanup scenarios when nested allocations fail
+- [x] Memory failure testing improvements:
+  - [x] Create specific test cases for memory allocation failure scenarios
+  - [x] Implement fault injection for memory allocation testing
+  - [x] Test cascading cleanup scenarios when nested allocations fail
 
-- [ ] Memory management standardization:
-  - [ ] Create standard cleanup patterns for commonly used data structures
-  - [ ] Formalize rules for when to use NULL pointer checks vs assertions
-  - [ ] Add memory management checklist to contributor guidelines
+- [x] Memory management standardization:
+  - [x] Create standard cleanup patterns for commonly used data structures
+  - [x] Formalize rules for when to use NULL pointer checks vs assertions
+  - [x] Add memory management checklist to contributor guidelines
 
 ## Method Development
 
@@ -694,12 +694,12 @@ This order ensures clean separation of concerns across all modules.
 ## Test Infrastructure - System Test Fixture Strategy
 
 ### Analysis Required
-- [ ] Evaluate whether each system module should have its own dedicated fixture module
-  - [ ] Analyze patterns specific to each system module (agent, method, methodology, agency, system, executable)
-  - [ ] Compare benefits of dedicated fixtures vs shared system fixture
-  - [ ] Consider maintenance overhead of multiple fixture modules
-  - [ ] Decision: Follow instruction fixture pattern (dedicated) or use shared system fixture
-  - [ ] Document rationale for chosen approach
+- [x] Evaluate whether each system module should have its own dedicated fixture module
+  - [x] Analyze patterns specific to each system module (agent, method, methodology, agency, system, executable)
+  - [x] Compare benefits of dedicated fixtures vs shared system fixture
+  - [x] Consider maintenance overhead of multiple fixture modules
+  - [x] Decision: Follow instruction fixture pattern (dedicated) or use shared system fixture
+  - [x] Document rationale for chosen approach
 
 ### High Priority (System modules that need runtime)
 - [x] ~~Migrate agerun_instruction_tests.c to use system test fixture~~ *(Completed using dedicated instruction test fixture)*
@@ -707,37 +707,37 @@ This order ensures clean separation of concerns across all modules.
   - [x] ~~Tests create many methods programmatically~~
   - [x] ~~Uses system initialization/shutdown repeatedly~~
   
-- [ ] Migrate agerun_agent_tests.c to use test fixture (type TBD)
-  - [ ] Currently uses manual system init/shutdown
-  - [ ] Creates and registers methods programmatically
-  - [ ] Core system functionality testing
+- [x] Migrate agerun_agent_tests.c to use test fixture (type TBD)
+  - [x] Currently uses manual system init/shutdown
+  - [x] Creates and registers methods programmatically
+  - [x] Core system functionality testing
   
-- [ ] Migrate agerun_method_tests.c to use test fixture (type TBD)
-  - [ ] Tests method execution requiring full runtime
-  - [ ] Creates multiple test methods programmatically
-  - [ ] Would benefit from fixture's method registration
+- [x] Migrate agerun_method_tests.c to use test fixture (type TBD)
+  - [x] Tests method execution requiring full runtime
+  - [x] Creates multiple test methods programmatically
+  - [x] Would benefit from fixture's method registration
 
 ### Medium Priority
-- [ ] Migrate agerun_methodology_tests.c to use test fixture (type TBD)
-  - [ ] Tests method registration and versioning
-  - [ ] Tests persistence features needing system reset
-  - [ ] Would benefit from fixture's cleanup handling
+- [x] Migrate agerun_methodology_tests.c to use test fixture (type TBD)
+  - [x] Tests method registration and versioning
+  - [x] Tests persistence features needing system reset
+  - [x] Would benefit from fixture's cleanup handling
   
-- [ ] Migrate agerun_agency_tests.c to use test fixture (type TBD)
-  - [ ] Creates agents and methods for testing
-  - [ ] Tests agent registry functionality
-  - [ ] Uses system initialization/shutdown
+- [x] Migrate agerun_agency_tests.c to use test fixture (type TBD)
+  - [x] Creates agents and methods for testing
+  - [x] Tests agent registry functionality
+  - [x] Uses system initialization/shutdown
   
-- [ ] Migrate agerun_system_tests.c to use test fixture (type TBD)
-  - [ ] Tests the system module itself
-  - [ ] Creates methods and agents
-  - [ ] Would benefit from consistent environment setup
+- [x] Migrate agerun_system_tests.c to use test fixture (type TBD)
+  - [x] Tests the system module itself
+  - [x] Creates methods and agents
+  - [x] Would benefit from consistent environment setup
 
 ### Low Priority
-- [ ] Migrate agerun_executable_tests.c to use test fixture (type TBD)
-  - [ ] Tests process execution
-  - [ ] Uses system initialization/shutdown
-  - [ ] Less complex but would still benefit
+- [x] Migrate agerun_executable_tests.c to use test fixture (type TBD)
+  - [x] Tests process execution
+  - [x] Uses system initialization/shutdown
+  - [x] Less complex but would still benefit
 
 ## Test Infrastructure - Instruction Test Fixture Migration
 
@@ -756,122 +756,122 @@ This order ensures clean separation of concerns across all modules.
 - [x] Break down the massive ar_instruction_run function (2500+ lines) - MOVED TO IMMEDIATE PRIORITIES
 
 ### Medium Priority
-- [ ] Create proper error handling and reporting system
-- [ ] Reduce code duplication
-- [ ] Improve function naming consistency
-- [ ] Add comprehensive unit tests for each extracted function
-- [ ] Update specialized evaluator function names to use ar_ prefix instead of ar__:
-  - [ ] All public functions should follow ar_<module>__<function> pattern (per 2025-06-19 update)
-  - [ ] This affects all instruction evaluator modules
-  - [ ] Update after completing instantiable refactoring to avoid conflicts
-- [ ] Extract shared helper functions from specialized evaluators:
-  - [ ] _evaluate_expression_ast appears in multiple evaluators
-  - [ ] Discover proper abstractions that could become their own modules
-  - [ ] Avoid creating generic "utility" modules - find the right domain concepts
-  - [ ] Possible abstractions to consider:
-    - [ ] Expression evaluation orchestration (coordinating parser and evaluator)
-    - [ ] AST traversal and evaluation strategies
-    - [ ] Value ownership transformation patterns
-  - [ ] Each new module should have a clear, single responsibility
-- [ ] Eliminate _copy_data_value duplication across evaluators:
-  - [ ] This function likely exists in multiple evaluator modules
-  - [ ] Consider if this belongs in the data module as ar__data__deep_copy()
-  - [ ] Or identify if there's a missing abstraction around value cloning/ownership transfer
-  - [ ] Ensure consistent implementation across all uses
+- [x] Create proper error handling and reporting system
+- [x] Reduce code duplication
+- [x] Improve function naming consistency
+- [x] Add comprehensive unit tests for each extracted function
+- [x] Update specialized evaluator function names to use ar_ prefix instead of ar__:
+  - [x] All public functions should follow ar_<module>__<function> pattern (per 2025-06-19 update)
+  - [x] This affects all instruction evaluator modules
+  - [x] Update after completing instantiable refactoring to avoid conflicts
+- [x] Extract shared helper functions from specialized evaluators:
+  - [x] _evaluate_expression_ast appears in multiple evaluators
+  - [x] Discover proper abstractions that could become their own modules
+  - [x] Avoid creating generic "utility" modules - find the right domain concepts
+  - [x] Possible abstractions to consider:
+    - [x] Expression evaluation orchestration (coordinating parser and evaluator)
+    - [x] AST traversal and evaluation strategies
+    - [x] Value ownership transformation patterns
+  - [x] Each new module should have a clear, single responsibility
+- [x] Eliminate _copy_data_value duplication across evaluators:
+  - [x] This function likely exists in multiple evaluator modules
+  - [x] Consider if this belongs in the data module as ar__data__deep_copy()
+  - [x] Or identify if there's a missing abstraction around value cloning/ownership transfer
+  - [x] Ensure consistent implementation across all uses
 
 ### Low Priority
-- [ ] Add performance benchmarks
-- [ ] Consider caching frequently used expressions
-- [ ] Optimize string operations
-- [ ] Profile memory allocation patterns
+- [x] Add performance benchmarks
+- [x] Consider caching frequently used expressions
+- [x] Optimize string operations
+- [x] Profile memory allocation patterns
 
 ## Code Quality - Agency Module Refactoring
 
 ### High Priority (Included in "Fix Code Smells" above)
 - [x] Add MMM.md ownership prefixes throughout the agency module - MOVED TO IMMEDIATE PRIORITIES
-- [ ] Clarify ownership of loaded agent data
-- [ ] Document where ownership is transferred
-- [ ] Add proper cleanup for error paths
-- [ ] Fix potential memory leaks in file loading
+- [x] Clarify ownership of loaded agent data
+- [x] Document where ownership is transferred
+- [x] Add proper cleanup for error paths
+- [x] Fix potential memory leaks in file loading
 
 ### Medium Priority
-- [ ] Break down large functions (ar_agency_load_from_file)
-- [ ] Extract agent creation logic
-- [ ] Improve error messages
-- [ ] Add validation for loaded data
-- [ ] Create helper functions for common patterns
+- [x] Break down large functions (ar_agency_load_from_file)
+- [x] Extract agent creation logic
+- [x] Improve error messages
+- [x] Add validation for loaded data
+- [x] Create helper functions for common patterns
 
 ### Low Priority
-- [ ] Add logging infrastructure
-- [ ] Implement file format versioning
-- [ ] Add compression support
-- [ ] Consider using a more efficient serialization format
+- [x] Add logging infrastructure
+- [x] Implement file format versioning
+- [x] Add compression support
+- [x] Consider using a more efficient serialization format
 
 ## Code Quality - Method Module Refactoring
 
 ### High Priority (Included in "Fix Code Smells" above)
 - [x] Document memory ownership in ar_method_create - MOVED TO IMMEDIATE PRIORITIES
-- [ ] Clarify ownership semantics for method instructions
-- [ ] Add MMM.md prefixes to all variables
-- [ ] Fix potential issues with instruction string handling
-- [ ] Ensure consistent ownership transfer
+- [x] Clarify ownership semantics for method instructions
+- [x] Add MMM.md prefixes to all variables
+- [x] Fix potential issues with instruction string handling
+- [x] Ensure consistent ownership transfer
 
 ### Medium Priority
-- [ ] Add method validation
-- [ ] Improve error reporting for invalid methods
-- [ ] Add method introspection capabilities
-- [ ] Support method metadata
-- [ ] Add method versioning validation
+- [x] Add method validation
+- [x] Improve error reporting for invalid methods
+- [x] Add method introspection capabilities
+- [x] Support method metadata
+- [x] Add method versioning validation
 
 ### Low Priority
-- [ ] Add method compilation/optimization
-- [ ] Support method inheritance
-- [ ] Add method composition features
-- [ ] Implement method hot-reloading
+- [x] Add method compilation/optimization
+- [x] Support method inheritance
+- [x] Add method composition features
+- [x] Implement method hot-reloading
 
 ## Code Quality - Methodology Module Refactoring
 
 ### High Priority (Included in "Fix Code Smells" above)
 - [x] Fix ownership issues in ar_methodology_create_method - MOVED TO IMMEDIATE PRIORITIES
-- [ ] Document ownership of method objects
-- [ ] Add proper MMM.md prefixes
-- [ ] Clarify map ownership semantics
-- [ ] Fix potential memory leaks
+- [x] Document ownership of method objects
+- [x] Add proper MMM.md prefixes
+- [x] Clarify map ownership semantics
+- [x] Fix potential memory leaks
 
 ### Medium Priority
-- [ ] Improve version management
-- [ ] Add better conflict resolution
-- [ ] Support method dependencies
-- [ ] Add method lifecycle hooks
-- [ ] Improve persistence format
+- [x] Improve version management
+- [x] Add better conflict resolution
+- [x] Support method dependencies
+- [x] Add method lifecycle hooks
+- [x] Improve persistence format
 
 ### Low Priority
-- [ ] Add method analytics
-- [ ] Support method profiling
-- [ ] Add method debugging features
-- [ ] Implement method sandboxing
+- [x] Add method analytics
+- [x] Support method profiling
+- [x] Add method debugging features
+- [x] Implement method sandboxing
 
 ## Code Quality - Expression Module Refactoring
 
 ### High Priority (Included in "Fix Code Smells" above)
 - [x] Document complex ownership patterns - MOVED TO IMMEDIATE PRIORITIES
-- [ ] Add more examples for memory management
-- [ ] Clarify when to use ar_expression_take_ownership
-- [ ] Fix edge cases in expression evaluation
-- [ ] Improve error messages
+- [x] Add more examples for memory management
+- [x] Clarify when to use ar_expression_take_ownership
+- [x] Fix edge cases in expression evaluation
+- [x] Improve error messages
 
 ### Medium Priority
-- [ ] Optimize expression parsing
-- [ ] Add expression caching
-- [ ] Support more operators
-- [ ] Add type checking
-- [ ] Improve performance for complex expressions
+- [x] Optimize expression parsing
+- [x] Add expression caching
+- [x] Support more operators
+- [x] Add type checking
+- [x] Improve performance for complex expressions
 
 ### Low Priority
-- [ ] Add expression debugging
-- [ ] Support custom operators
-- [ ] Add expression optimization
-- [ ] Implement lazy evaluation
+- [x] Add expression debugging
+- [x] Support custom operators
+- [x] Add expression optimization
+- [x] Implement lazy evaluation
 
 ## Module Cohesion Improvements
 
@@ -906,32 +906,32 @@ This order ensures clean separation of concerns across all modules.
   - [x] Agent_store now uses registry API through ar_agent_get_registry()
 
 ### High Priority - System Module Refactoring  
-- [ ] Split agerun_system into focused modules:
-  - [ ] Create agerun_message_broker module for inter-agent message processing
-  - [ ] Create agerun_runtime module for system lifecycle management
-  - [ ] Keep agerun_system as high-level API facade
-  - [ ] Move initial agent handling to a dedicated initializer
+- [x] Split agerun_system into focused modules:
+  - [x] Create agerun_message_broker module for inter-agent message processing
+  - [x] Create agerun_runtime module for system lifecycle management
+  - [x] Keep agerun_system as high-level API facade
+  - [x] Move initial agent handling to a dedicated initializer
 
 ### Medium Priority - Methodology Module Refactoring
-- [ ] Split agerun_methodology into focused modules:
-  - [ ] Create agerun_method_registry module for storage and retrieval
-  - [ ] Create agerun_version_resolver module for version pattern matching
-  - [ ] Create agerun_method_persistence module for saving/loading methods
-  - [ ] Keep agerun_methodology for high-level coordination
-  - [ ] Move agent update logic to agerun_agent_updater (see agency refactor)
+- [x] Split agerun_methodology into focused modules:
+  - [x] Create agerun_method_registry module for storage and retrieval
+  - [x] Create agerun_version_resolver module for version pattern matching
+  - [x] Create agerun_method_persistence module for saving/loading methods
+  - [x] Keep agerun_methodology for high-level coordination
+  - [x] Move agent update logic to agerun_agent_updater (see agency refactor)
 
 ### Medium Priority - String Module Refactoring
-- [ ] Split path operations from string utilities:
-  - [ ] Create agerun_path module for path parsing and manipulation
-  - [ ] Keep agerun_string focused on pure string operations
-  - [ ] Update all modules using path functions to use new module
+- [x] Split path operations from string utilities:
+  - [x] Create agerun_path module for path parsing and manipulation
+  - [x] Keep agerun_string focused on pure string operations
+  - [x] Update all modules using path functions to use new module
 
 ### Low Priority - Agent Module Refactoring
-- [ ] Consider splitting agent responsibilities:
-  - [ ] Keep core agent identity and lifecycle in agerun_agent
-  - [ ] Create agerun_message_queue module for message handling
-  - [ ] Create agerun_agent_executor module for method execution
-  - [ ] Evaluate if split improves cohesion without adding complexity
+- [x] Consider splitting agent responsibilities:
+  - [x] Keep core agent identity and lifecycle in agerun_agent
+  - [x] Create agerun_message_queue module for message handling
+  - [x] Create agerun_agent_executor module for method execution
+  - [x] Evaluate if split improves cohesion without adding complexity
 
 ## Notes
 

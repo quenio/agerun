@@ -323,21 +323,27 @@ static void test_agent_instruction_evaluator__legacy_evaluate_function(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
+    // Create an evaluator instance
+    ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
+        expr_eval, memory
+    );
+    assert(evaluator != NULL);
+    
     // Register a method to create agents with
     method_t *method = ar__method__create("legacy_worker", "send(0, memory.status)", "1.0.0");
     assert(method != NULL);
     ar__methodology__register_method(method);
     
-    // When calling the legacy evaluate function directly: agent("legacy_worker", "1.0.0", memory)
+    // When calling the instance-based evaluate function: agent("legacy_worker", "1.0.0", memory)
     const char *args[] = {"\"legacy_worker\"", "\"1.0.0\"", "memory"};
     instruction_ast_t *ast = ar__instruction_ast__create_function_call(
         INST_AST_AGENT, "agent", args, 3, NULL
     );
     assert(ast != NULL);
     
-    bool result = ar_agent_instruction_evaluator__evaluate_legacy(expr_eval, memory, NULL, ast);
+    bool result = ar_agent_instruction_evaluator__evaluate(evaluator, NULL, ast);
     
-    // Then it should return true (legacy function still works)
+    // Then it should return true
     assert(result == true);
     
     // Process wake message to avoid leak
@@ -345,6 +351,7 @@ static void test_agent_instruction_evaluator__legacy_evaluate_function(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
+    ar_agent_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
     

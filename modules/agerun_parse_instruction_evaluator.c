@@ -507,31 +507,3 @@ bool ar_parse_instruction_evaluator__evaluate(
     return _store_result_if_assigned(mut_evaluator->mut_memory, ref_ast, own_result);
 }
 
-/**
- * Evaluates a parse instruction (legacy interface)
- */
-bool ar_parse_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
-    const instruction_ast_t *ref_ast
-) {
-    if (!mut_expr_evaluator || !mut_memory || !ref_ast) {
-        return false;
-    }
-    
-    // Create a temporary evaluator
-    parse_instruction_evaluator_t *own_evaluator = ar_parse_instruction_evaluator__create(
-        mut_expr_evaluator, mut_memory
-    );
-    if (!own_evaluator) {
-        return false;
-    }
-    
-    // Evaluate using the instance
-    bool result = ar_parse_instruction_evaluator__evaluate(own_evaluator, ref_ast);
-    
-    // Cleanup
-    ar_parse_instruction_evaluator__destroy(own_evaluator);
-    
-    return result;
-}

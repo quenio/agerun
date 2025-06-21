@@ -3,21 +3,37 @@
 This document tracks completed milestones and major achievements for the AgeRun project.
 
 ## 2025-06-21 (Latest)
-- ✅ Continuing removal of legacy wrapper functions from specialized evaluators:
-  - ✅ Removed ar_assignment_instruction_evaluator__evaluate_legacy (TDD Cycle 1)
-  - ✅ Removed ar_send_instruction_evaluator__evaluate_legacy (TDD Cycle 2)
+- ✅ **COMPLETED: All 9 legacy wrapper functions removed from specialized evaluators**:
+  - ✅ TDD Cycle 1: Removed ar_assignment_instruction_evaluator__evaluate_legacy
+  - ✅ TDD Cycle 2: Removed ar_send_instruction_evaluator__evaluate_legacy
     - ✅ Merged legacy implementation into main evaluate function
     - ✅ Updated parameter references to use instance variables
-    - ✅ All 7 send instruction evaluator tests pass
-    - ✅ Zero memory leaks (217 allocations, all freed)
-  - ✅ Removed ar_condition_instruction_evaluator__evaluate_legacy (TDD Cycle 3)
-    - ✅ Updated test to use instance-based approach
-    - ✅ Merged legacy implementation into main evaluate function
-    - ✅ Updated parameter references: mut_expr_evaluator → mut_evaluator->ref_expr_evaluator, mut_memory → mut_evaluator->mut_memory
-    - ✅ All 8 condition instruction evaluator tests pass
-    - ✅ Zero memory leaks (406 allocations, all freed)
-  - ✅ All tests continue to pass with no memory leaks (45 tests total)
-  - ✅ 3 of 9 legacy wrapper functions have been removed
+    - ✅ All 7 send instruction evaluator tests pass (217 allocations, zero leaks)
+  - ✅ TDD Cycle 3: Removed ar_condition_instruction_evaluator__evaluate_legacy
+    - ✅ Merged legacy implementation following established pattern
+    - ✅ All 8 condition instruction evaluator tests pass (406 allocations, zero leaks)
+  - ✅ TDD Cycle 4: Removed ar_parse_instruction_evaluator__evaluate_legacy
+    - ✅ Removed legacy wrapper that created temporary instance
+    - ✅ All 9 parse instruction evaluator tests pass (276 allocations, zero leaks)
+  - ✅ TDD Cycle 5: Removed ar_build_instruction_evaluator__evaluate_legacy
+    - ✅ Merged implementation following established pattern
+    - ✅ All 4 build instruction evaluator tests pass (132 allocations, zero leaks)
+  - ✅ TDD Cycle 6: Removed ar_method_instruction_evaluator__evaluate_legacy
+    - ✅ Merged implementation following established pattern
+    - ✅ All 6 method instruction evaluator tests pass (388 allocations, zero leaks)
+  - ✅ TDD Cycle 7: Removed ar_agent_instruction_evaluator__evaluate_legacy
+    - ✅ Required moving helper functions to be adjacent to evaluate function
+    - ✅ Complex merge due to multiple helper functions and parameter updates
+    - ✅ All 7 agent instruction evaluator tests pass (502 allocations, zero leaks)
+  - ✅ TDD Cycle 8: Removed ar_destroy_agent_instruction_evaluator__evaluate_legacy
+    - ✅ Merged implementation following established pattern
+    - ✅ All 5 destroy agent instruction evaluator tests pass (371 allocations, zero leaks)
+  - ✅ TDD Cycle 9: Removed ar_destroy_method_instruction_evaluator__evaluate_legacy
+    - ✅ Final cycle completed successfully
+    - ✅ All 7 destroy method instruction evaluator tests pass (316 allocations, zero leaks)
+  - ✅ **Final Status**: All 45 tests pass with zero memory leaks across all modules
+  - ✅ **Architecture Achievement**: All specialized evaluators now use instance-based pattern exclusively
+  - ✅ **Code Quality**: Eliminated all temporary legacy wrapper functions
 
 ## 2025-06-20
 - ✅ Fixed naming conflict in parse_instruction_evaluator causing abort trap:
