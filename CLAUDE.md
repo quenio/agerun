@@ -109,9 +109,11 @@ This prevents overthinking and ensures accurate responses based on documented pr
 
 **Memory Leak Detection**:
 - Full test suite: Check console for "WARNING: X memory leaks detected"
-- Individual debugging: Check `bin/heap_memory_report.log` after each test
-  - **CRITICAL**: The report file is overwritten on each program run
-  - Workflow: `make bin/test_name` → Check generated memory report
+- **Individual test memory reports**: Located at `bin/memory_report_<test_name>.log`
+  - **IMPORTANT**: No longer uses generic `heap_memory_report.log`
+  - Each test generates its own report file automatically
+  - Example: `bin/memory_report_agerun_string_tests.log`
+  - Workflow: `make bin/test_name` → Check test-specific memory report
 - Enhanced per-test reporting: The build system generates unique memory reports for each test
   - `make bin/test_name` automatically creates test-specific report files
   - Manual runs can use `AGERUN_MEMORY_REPORT` environment variable
@@ -894,22 +896,26 @@ When refactoring functions that have similar implementations:
 
 **Creating Specialized Modules from Existing Code**:
 When extracting functionality into specialized modules (e.g., parsers, evaluators):
-- **Always verify code migration**: Use `diff` to compare implementations and ensure you're moving/adapting code, not reimplementing
-  - **CRITICAL**: For parser modules, diff both tests AND implementation against originals
-  - Missing tests or reimplementing code introduces bugs and inconsistencies
+- **MANDATORY diff verification**: Always compare implementations to ensure code is moved, not reimplemented
+  - **Red Phase**: Copy existing tests and verify with diff they match originals
+  - **Green Phase**: Copy implementation and verify with diff it matches original
+  - **Why**: Reimplementing introduces bugs, inconsistencies, and wastes time
+  - **Example**: "Missing diff verification" is a critical error that must be corrected
 - **Follow established patterns**: Mirror existing specialized module patterns for consistency (e.g., evaluators → parsers)
 - **Instantiable modules**: Create modules with create/destroy lifecycle, not just static functions
 - **TDD with existing code**:
-  1. Move tests first (Red phase shows they fail without implementation)
-  2. Move and adapt implementation (Green phase - minimal changes only)
-  3. Document and integrate (Refactor phase)
-  4. Verify the move with `diff` to ensure no accidental reimplementation
+  1. **Red Phase**: Copy tests first, verify with diff, run to confirm failure
+  2. **Green Phase**: Copy implementation, verify with diff, adapt minimally
+  3. **Refactor Phase**: Document, integrate, check for improvements
 - **Helper function migration**: When moving a function that uses helper functions, move all helpers together
 - **Documentation during refactoring**: Create module documentation in refactor phase to clarify purpose and integration
-- **Example verification**:
+- **Verification commands**:
   ```bash
-  # Compare original and moved implementations
-  diff -u <(sed -n '130,215p' modules/original.c) <(sed -n '112,201p' modules/specialized.c)
+  # After copying test:
+  diff -u <(sed -n '130,148p' modules/original_tests.c) <(sed -n '11,29p' modules/new_tests.c)
+  
+  # After copying implementation:
+  diff -u <(sed -n '485,566p' modules/original.c) <(sed -n '213,273p' modules/new.c)
   ```
 
 **Strategic Architecture Analysis**:
@@ -919,7 +925,27 @@ Before refactoring legacy code:
 - **Consider the bigger picture**: Refactoring might be part of a larger architectural transformation
 - **Example**: The 704-line `_parse_function_call` doesn't need refactoring - it needs replacement with specialized parser modules
 
-### 14. Task Tool Usage Guidelines
+### 14. Plan Verification and Review
+
+**When Creating Development Plans**:
+- **Always include critical verification steps**: Plans must include diff verification, test running, memory checking
+- **User feedback is valuable**: If user points out missing steps, update the plan immediately
+- **Example**: "We're missing the comparison of previous and new implementation" - this feedback prevents bugs
+- **Plan completeness checklist**:
+  - [ ] Verification steps included (diff, tests, memory)
+  - [ ] File paths and line numbers specified
+  - [ ] Success criteria defined
+  - [ ] Error handling considered
+
+**Module-Specific Requirements**:
+- **Different modules have different constraints**: Not all modules follow identical patterns
+- **Examples**:
+  - Some parsers accept only strings (method parser: all 3 args must be quoted)
+  - Some accept expressions (build parser: second arg must be expression)
+  - Some have fixed argument counts (method: exactly 3, build: exactly 2)
+- **Always check**: Read existing tests to understand specific requirements
+
+### 15. Task Tool Usage Guidelines
 
 **Preventing Content Loss When Using Task Tool**:
 
