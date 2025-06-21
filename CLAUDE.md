@@ -876,6 +876,31 @@ When refactoring functions that have similar implementations:
 - **Benefits**: Preserves tested code, reduces duplication, maintains behavior
 - **Principle**: "Make the change easy, then make the easy change"
 
+**Creating Specialized Modules from Existing Code**:
+When extracting functionality into specialized modules (e.g., parsers, evaluators):
+- **Always verify code migration**: Use `diff` to compare implementations and ensure you're moving/adapting code, not reimplementing
+- **Follow established patterns**: Mirror existing specialized module patterns for consistency (e.g., evaluators → parsers)
+- **Instantiable modules**: Create modules with create/destroy lifecycle, not just static functions
+- **TDD with existing code**:
+  1. Move tests first (Red phase shows they fail without implementation)
+  2. Move and adapt implementation (Green phase - minimal changes only)
+  3. Document and integrate (Refactor phase)
+  4. Verify the move with `diff` to ensure no accidental reimplementation
+- **Helper function migration**: When moving a function that uses helper functions, move all helpers together
+- **Documentation during refactoring**: Create module documentation in refactor phase to clarify purpose and integration
+- **Example verification**:
+  ```bash
+  # Compare original and moved implementations
+  diff -u <(sed -n '130,215p' modules/original.c) <(sed -n '112,201p' modules/specialized.c)
+  ```
+
+**Strategic Architecture Analysis**:
+Before refactoring legacy code:
+- **Check for existing modern solutions**: Sometimes newer architecture already exists but isn't integrated
+- **Evaluate replacement vs refactoring**: A 700-line function might need replacement, not refactoring
+- **Consider the bigger picture**: Refactoring might be part of a larger architectural transformation
+- **Example**: The 704-line `_parse_function_call` doesn't need refactoring - it needs replacement with specialized parser modules
+
 ### 14. Task Tool Usage Guidelines
 
 **Preventing Content Loss When Using Task Tool**:
