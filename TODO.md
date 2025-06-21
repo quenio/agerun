@@ -167,6 +167,15 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [ ] **Integrate unified instruction_parser into interpreter (REPLACE legacy parsing)**:
   - [ ] Update interpreter to use `ar_instruction_parser__parse()` instead of `ar__instruction__parse()`
   - [ ] Replace legacy parsing with modern `instruction_parser` + `instruction_ast` approach
+
+#### Phase 4: Method Parsing Refactoring (CRITICAL - DEPENDS ON PHASE 3)
+- [ ] **Move parsing responsibility from interpreter to methodology**:
+  - [ ] Create a method parser module that parses entire method definitions
+  - [ ] Method parser should use instruction_parser for parsing individual instructions
+  - [ ] Create method AST node to represent parsed method structure
+  - [ ] Update method storage to store AST instead of source code
+  - [ ] Interpreter should only evaluate, never parse
+  - [ ] This ensures clean separation: methodology handles parsing, interpreter handles evaluation
   - [ ] Update interpreter to work with `instruction_ast_t` nodes instead of legacy parsed structures
   - [ ] Ensure all instruction types (assignment, send, if, parse, build, method, agent, destroy) work with new parser
   - [ ] Remove dependency on legacy `agerun_instruction` module from interpreter
