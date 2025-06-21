@@ -14,12 +14,6 @@
 #include <stdio.h>
 #include <inttypes.h>
 
-/* Forward declaration of legacy function */
-bool ar_send_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
-    const instruction_ast_t *ref_ast
-);
 
 /**
  * Internal structure for send instruction evaluator
@@ -242,26 +236,6 @@ bool ar_send_instruction_evaluator__evaluate(
         return false;
     }
     
-    // Delegate to the legacy function with stored dependencies
-    return ar_send_instruction_evaluator__evaluate_legacy(
-        mut_evaluator->ref_expr_evaluator,
-        mut_evaluator->mut_memory,
-        ref_ast
-    );
-}
-
-/**
- * Evaluates a send instruction AST node (legacy interface)
- */
-bool ar_send_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
-    const instruction_ast_t *ref_ast
-) {
-    if (!mut_expr_evaluator || !mut_memory || !ref_ast) {
-        return false;
-    }
-    
     // Verify this is a send AST node
     if (ar__instruction_ast__get_type(ref_ast) != INST_AST_SEND) {
         return false;
@@ -297,7 +271,7 @@ bool ar_send_instruction_evaluator__evaluate_legacy(
         return false;
     }
     
-    data_t *own_agent_id_data = _evaluate_expression_ast(mut_expr_evaluator, agent_id_ast);
+    data_t *own_agent_id_data = _evaluate_expression_ast(mut_evaluator->ref_expr_evaluator, agent_id_ast);
     ar__expression_ast__destroy(agent_id_ast);
     
     if (!own_agent_id_data) {
@@ -327,7 +301,7 @@ bool ar_send_instruction_evaluator__evaluate_legacy(
         return false;
     }
     
-    data_t *own_message = _evaluate_expression_ast(mut_expr_evaluator, message_ast);
+    data_t *own_message = _evaluate_expression_ast(mut_evaluator->ref_expr_evaluator, message_ast);
     ar__expression_ast__destroy(message_ast);
     
     if (!own_message) {
@@ -360,7 +334,7 @@ bool ar_send_instruction_evaluator__evaluate_legacy(
         
         // Create result value (true = 1, false = 0)
         data_t *own_result = ar__data__create_integer(send_result ? 1 : 0);
-        bool store_success = ar__data__set_map_data(mut_memory, key_path, own_result);
+        bool store_success = ar__data__set_map_data(mut_evaluator->mut_memory, key_path, own_result);
         if (!store_success) {
             ar__data__destroy(own_result);
         }
