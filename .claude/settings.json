@@ -20,7 +20,11 @@
       "Bash(sed:*)",
       "Bash(uniq:*)",
       "Bash(sort:*)",
-      "Bash(diff:*)"
+      "Bash(diff:*)",
+      "Bash(git push:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": []
   },
