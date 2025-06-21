@@ -6,6 +6,12 @@ In the AgeRun system, a module is a self-contained unit of functionality that co
 
 Each module typically follows a consistent naming convention with an `ar_` prefix (e.g., `ar_data`, `ar_string`), and has its own test file (`ar_*_tests.c`) that verifies its functionality. Note: File names are being transitioned from `agerun_` to `ar_` prefix gradually as files are modified for other reasons.
 
+**Recent Architectural Achievements:**
+- **Zero Memory Leaks**: All 45 tests pass with zero memory leaks across the entire system
+- **Modular Instruction Evaluation**: Successfully refactored instruction evaluation into 9 specialized evaluator modules
+- **Legacy Function Elimination**: Completed removal of all legacy wrapper functions from specialized evaluators
+- **Facade Pattern Implementation**: Instruction evaluator now serves as a clean facade coordinating specialized evaluators
+
 ### Naming Conventions
 
 Within modules, consistent naming conventions are used:
@@ -856,15 +862,17 @@ The expression evaluator module provides evaluation of expression ASTs against m
 
 ### Instruction Evaluator Module (`agerun_instruction_evaluator`)
 
-The [instruction evaluator module](agerun_instruction_evaluator.md) provides execution of parsed instruction AST nodes:
+The [instruction evaluator module](agerun_instruction_evaluator.md) serves as a facade that coordinates 9 specialized instruction evaluator modules:
 
-- **Instruction Execution**: Delegates evaluation to specialized modules for each instruction type
-- **Expression Integration**: Passes expression evaluator to specialized modules
-- **Modular Architecture**: Each instruction type handled by its own dedicated module
-- **Memory Safety**: Maintains strict ownership semantics across all modules
-- **No Direct Implementation**: All evaluation logic delegated to specialized modules
+- **Facade Pattern**: Creates and manages instances of all specialized evaluators
+- **Unified Interface**: Provides single entry point for all instruction evaluation
+- **Delegation Architecture**: Routes evaluation requests to appropriate specialized evaluator
+- **Shared Dependencies**: Distributes common dependencies (expression evaluator, memory, context) to all specialized evaluators
+- **Lifecycle Management**: Handles creation and destruction of all specialized evaluator instances
+- **Memory Safety**: Ensures coordinated cleanup across all specialized modules
+- **Zero Direct Implementation**: Contains no evaluation logic - purely coordination and delegation
 
-The instruction evaluator now serves as a facade that delegates to the following specialized modules:
+The instruction evaluator coordinates the following 9 specialized modules:
 
 #### Assignment Instruction Evaluator Module (`agerun_assignment_instruction_evaluator`)
 
