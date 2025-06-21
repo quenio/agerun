@@ -125,50 +125,70 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Immediate Priorities (Next Steps)
 
-### CRITICAL - Fix Memory Leak in build_instruction_evaluator Tests (Completed 2025-06-20)
-- [x] Investigated and fixed memory leak detected in build_instruction_evaluator tests
-  - [x] Memory leak: 34 bytes (string data structure + string value)
-  - [x] Allocated at: modules/agerun_data.c:66 and :72
-  - [x] Leak existed in original code when evaluating non-map values
-  - [x] Added _get_memory_reference() helper to check for simple memory references
-  - [x] Only destroy values_data if it was created (not a borrowed reference)
-  - [x] Pattern adopted from agent_instruction_evaluator module
+### HIGH PRIORITY - Complete Instruction and Expression Module Refactoring
 
-### HIGH - Complete Instruction Module Refactoring FIRST (In Progress)
-Before we can complete the expression refactoring, we must extract instruction parsing and evaluation:
-1. **First**: Create instruction_parser module to extract parsing from instruction module (Completed)
-2. **Second**: Create instruction_evaluator module to extract evaluation from interpreter (Completed)
-3. **Third**: Update instruction module to use instruction_parser (Completed)
-4. **Fourth**: Update interpreter to use both expression_evaluator and instruction_evaluator (Completed)
+**Status**: Critical refactoring work remains to complete the modular architecture. While specialized evaluators have been created and legacy functions removed, several key integration and refactoring tasks are incomplete.
 
-### HIGH - Refactor instruction_evaluator into specialized modules (In Progress)
-Extract each instruction type evaluation into its own module:
-- [x] Created assignment_instruction_evaluator module for evaluate_assignment
-- [x] Created send_instruction_evaluator module for evaluate_send
-- [x] Created condition_instruction_evaluator module for evaluate_if
-- [x] Created parse_instruction_evaluator module for evaluate_parse
-  - [x] Fixed naming conflict causing abort trap in tests (Completed 2025-06-20)
-    - [x] Removed conflicting ar__parse_instruction_evaluator__evaluate function
-    - [x] Adapted ar_parse_instruction_evaluator__evaluate to use instance parameters
-    - [x] Updated legacy wrapper to create temporary instance
-- [x] Created build_instruction_evaluator module for evaluate_build:
-  - [x] Extracted evaluate_build function from instruction_evaluator
-  - [x] Moved helper functions including _ensure_buffer_capacity, _process_placeholder, _data_to_string
-  - [x] Fixed memory ownership issue where borrowed reference was incorrectly destroyed
-  - [x] All tests pass with no memory leaks
-- [x] Created method_instruction_evaluator module for evaluate_method (Completed 2025-06-20)
-  - [x] Extracted evaluate_method function from instruction_evaluator
-  - [x] Moved all necessary helper functions for method evaluation
-  - [x] Updated instruction_evaluator to delegate to new module
-  - [x] All tests pass with no memory leaks
-- [x] Create agent_instruction_evaluator module for evaluate_agent (Completed 2025-06-20)
-  - [x] Extracted evaluate_agent function from instruction_evaluator
-  - [x] Moved all necessary helper functions including _get_memory_or_context_reference
-  - [x] Updated instruction_evaluator to delegate to new module with context parameter
-  - [x] Fixed test cleanup to add ar__system__shutdown() at end of main
-  - [x] All tests pass with no memory leaks
-- [x] Create destroy_instruction_evaluator module for evaluate_destroy (Completed 2025-06-20)
-- [x] Update instruction_evaluator to use all new modules (Completed 2025-06-20)
+#### Phase 1: Complete Parser Refactoring (CRITICAL)
+- [ ] **Refactor the 704-line `_parse_function_call` function in `agerun_instruction.c`**:
+  - [ ] Extract individual function parsers: `_parse_send()`, `_parse_if()`, `_parse_parse()`, etc.
+  - [ ] Extract common argument parsing helpers: `_parse_function_arguments()`, `_extract_argument_between_delimiters()`
+  - [ ] Use dispatch pattern based on function name instead of massive conditional logic
+  - [ ] Follow TDD methodology: write tests first, ensure no memory leaks
+  - [ ] Target: All functions under 50 lines
+
+#### Phase 2: Create Specialized Parser Modules (HIGH)
+- [ ] **Extract instruction parsing into specialized modules** (mirror evaluator pattern):
+  - [ ] Create `assignment_instruction_parser` module
+  - [ ] Create `send_instruction_parser` module  
+  - [ ] Create `condition_instruction_parser` module
+  - [ ] Create `parse_instruction_parser` module
+  - [ ] Create `build_instruction_parser` module
+  - [ ] Create `method_instruction_parser` module
+  - [ ] Create `agent_instruction_parser` module
+  - [ ] Create `destroy_instruction_parser` module
+- [ ] **Update `instruction_parser` to coordinate specialized parsers**:
+  - [ ] Add parser instances to instruction_parser struct
+  - [ ] Implement dispatch pattern for parsing different instruction types
+  - [ ] Ensure consistent error handling across all parsers
+
+#### Phase 3: Unified Instruction Evaluator Interface (HIGH)
+- [ ] **Create single `ar_instruction_evaluator__evaluate()` function**:
+  - [ ] Accept instruction AST and dispatch to appropriate specialized evaluator
+  - [ ] Deprecate direct calls to specialized evaluator functions
+  - [ ] Maintain backward compatibility during transition
+  - [ ] Use instruction type from AST to determine which evaluator to call
+- [ ] **Update interpreter to use unified interface**:
+  - [ ] Replace specialized evaluator calls with single evaluate function
+  - [ ] Simplify interpreter logic with unified instruction evaluation
+  - [ ] Ensure proper error handling and memory management
+
+#### Phase 4: Extract Common Helper Functions (MEDIUM)
+- [ ] **Eliminate `_copy_data_value` duplication across evaluators**:
+  - [ ] Evaluate if this belongs in data module as `ar_data__deep_copy()`
+  - [ ] Or create dedicated value transformation module
+  - [ ] Update all evaluators to use shared implementation
+- [ ] **Extract shared expression evaluation patterns**:
+  - [ ] `_evaluate_expression_ast` appears in multiple evaluators
+  - [ ] Consider expression evaluation orchestration module
+  - [ ] Identify proper abstractions for value ownership transformation
+
+#### Phase 5: Parser Integration (MEDIUM)
+- [ ] **Integrate specialized parsers into interpreter**:
+  - [ ] Update interpreter to use instruction_parser with specialized modules
+  - [ ] Remove any remaining direct parsing logic from interpreter
+  - [ ] Ensure clean separation between parsing and evaluation phases
+- [ ] **Update instruction module to use specialized parsers**:
+  - [ ] Replace remaining parsing logic with parser module calls
+  - [ ] Ensure instruction module becomes thin facade over parsers
+
+#### Completed Foundation Work:
+- [x] Created 9 specialized instruction evaluator modules (assignment, send, condition, parse, build, method, agent, destroy_agent, destroy_method)
+- [x] Removed all legacy wrapper functions from specialized evaluators (9 TDD cycles completed)
+- [x] Eliminated massive 2500+ line `ar_instruction_run` function
+- [x] Achieved zero memory leaks across all 45 tests
+- [x] Expression parsing and evaluation properly separated into dedicated modules
+- [x] Instruction AST and evaluation infrastructure in place
 
 ### THEN - Complete Expression Module Integration
 Once instruction refactoring is done, we can properly integrate everything:
@@ -764,7 +784,7 @@ This order ensures clean separation of concerns across all modules.
   - [x] All public functions should follow ar_<module>__<function> pattern (per 2025-06-19 update)
   - [x] This affects all instruction evaluator modules
   - [x] Update after completing instantiable refactoring to avoid conflicts
-- [x] Extract shared helper functions from specialized evaluators:
+- [x] Extract shared helper functions from specialized evaluators: **MOVED TO HIGH PRIORITY REFACTORING SECTION**
   - [x] _evaluate_expression_ast appears in multiple evaluators
   - [x] Discover proper abstractions that could become their own modules
   - [x] Avoid creating generic "utility" modules - find the right domain concepts
@@ -773,7 +793,7 @@ This order ensures clean separation of concerns across all modules.
     - [x] AST traversal and evaluation strategies
     - [x] Value ownership transformation patterns
   - [x] Each new module should have a clear, single responsibility
-- [x] Eliminate _copy_data_value duplication across evaluators:
+- [x] Eliminate _copy_data_value duplication across evaluators: **MOVED TO HIGH PRIORITY REFACTORING SECTION**
   - [x] This function likely exists in multiple evaluator modules
   - [x] Consider if this belongs in the data module as ar__data__deep_copy()
   - [x] Or identify if there's a missing abstraction around value cloning/ownership transfer
@@ -939,8 +959,8 @@ This order ensures clean separation of concerns across all modules.
 - **Module Naming Convention**: COMPLETED (as of 2025-06-08) - All modules use ar__<module>__<function> pattern
 - **Heap Macros**: COMPLETED (as of 2025-06-08) - All heap macros use AR__HEAP__* pattern
 - **Assert Macros**: Exception maintained - Continue using AR_ASSERT_* pattern
-- **Current Highest Priority**: Resolve remaining circular dependencies (Method/Instruction, Instruction/Agent/Methodology)
-- **Next Priority**: Fix code smells, especially the 2500+ line ar_instruction_run function
+- **Current Highest Priority**: Complete instruction and expression module refactoring (Phase 1: 704-line parse function)
+- **Major Achievement**: Eliminated 2500+ line ar_instruction_run function and resolved all circular dependencies
 - The project has achieved zero memory leaks and passes all sanitizer tests (Completed 2025-06-13)
 - All core instruction functions are now implemented
 - Memory safety is verified through Address Sanitizer and static analysis
