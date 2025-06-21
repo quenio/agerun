@@ -3,7 +3,7 @@
 This document tracks completed milestones and major achievements for the AgeRun project.
 
 ## 2025-06-21 (Latest)
-- ✅ **Created specialized parser modules (Phase 1 progress: 4/8 completed)**:
+- ✅ **Created specialized parser modules (Phase 1 progress: 5/8 completed)**:
   - ✅ **assignment_instruction_parser module completed**:
     - ✅ Implemented instantiable parser with create/destroy lifecycle
     - ✅ Moved and adapted implementation from main instruction_parser
@@ -34,6 +34,15 @@ This document tracks completed milestones and major achievements for the AgeRun 
     - ✅ Supports template placeholders with {variable} syntax
     - ✅ Comprehensive tests including complex templates and escaped quotes
     - ✅ Zero memory leaks (96 allocations, 0 active)
+    - ✅ Module documentation created
+    - ✅ Updated modules README with parser description
+  - ✅ **build_instruction_parser module completed**:
+    - ✅ Implemented instantiable parser with create/destroy lifecycle
+    - ✅ Moved and adapted implementation from main instruction_parser (lines 840-920)
+    - ✅ Handles build(template, map) syntax for string construction
+    - ✅ Supports template placeholders with {variable} syntax
+    - ✅ Comprehensive tests including multiple placeholders and escaped quotes
+    - ✅ Zero memory leaks (110 allocations, 0 active)
     - ✅ Module documentation created
     - ✅ Updated modules README with parser description
 - ✅ **COMPLETED: All 9 legacy wrapper functions removed from specialized evaluators**:

@@ -213,6 +213,13 @@ agerun_parse_instruction_parser
 ├──c──> agerun_string
 └──c──> agerun_heap
 
+agerun_build_instruction_parser
+├──c──> agerun_instruction_ast
+│       ├──c──> agerun_list
+│       └──c──> agerun_heap
+├──c──> agerun_string
+└──c──> agerun_heap
+
 agerun_expression_parser
 ├──c──> agerun_expression_ast
 │       ├──c──> agerun_list
@@ -529,6 +536,12 @@ agerun_condition_instruction_parser_tests
 
 agerun_parse_instruction_parser_tests
 ├──c──> agerun_parse_instruction_parser (module under test)
+├──c──> agerun_instruction_ast
+├──c──> agerun_list
+└──c──> agerun_heap
+
+agerun_build_instruction_parser_tests
+├──c──> agerun_build_instruction_parser (module under test)
 ├──c──> agerun_instruction_ast
 ├──c──> agerun_list
 └──c──> agerun_heap
@@ -1054,6 +1067,16 @@ The [parse instruction parser module](agerun_parse_instruction_parser.md) handle
 - **Template Placeholders**: Extracts values using `{variable}` syntax
 - **Optional Assignment**: Supports `memory.result := parse(...)` syntax
 - **String Handling**: Manages quoted strings with escape sequences
+- **Instantiable Parser**: Follows create/destroy lifecycle pattern
+
+#### Build Instruction Parser Module (`agerun_build_instruction_parser`)
+
+The [build instruction parser module](agerun_build_instruction_parser.md) handles parsing of build function calls:
+- **Build Function Syntax**: Parses `build(template, map)` format
+- **Template Placeholders**: Combines template with values using `{variable}` syntax
+- **Map Expression**: Second argument must be a map expression
+- **Optional Assignment**: Supports `memory.result := build(...)` syntax
+- **String Handling**: Manages quoted templates with escape sequences
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
 #### Condition Instruction Parser Module (`agerun_condition_instruction_parser`)
