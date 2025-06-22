@@ -31,23 +31,37 @@ Check CLAUDE.md to see if these learnings are already documented. If they are:
 
 If updates are needed to CLAUDE.md:
 
-1. **Make learnings generic**: 
+1. **Space-conscious writing** (CRITICAL):
+   - Keep additions under 50 bytes when possible
+   - Prefer updating existing lines over adding new ones
+   - Use abbreviations and symbols where clear (e.g., → instead of "leads to")
+   - Combine related points into single lines
+   - Remove any redundancy with existing content
+
+2. **Make learnings generic**: 
    - Remove session-specific details
    - Use specific examples only as illustrations
    - Focus on patterns that apply broadly
 
-2. **Find appropriate sections**:
+3. **Find appropriate sections**:
    - Locate existing sections that relate to the learnings
-   - Determine if new sections are needed
-   - Maintain document organization and flow
+   - PREFER: Add to existing bullet points rather than creating new sections
+   - If new section needed, keep header concise
 
-3. **Write clear updates**:
+4. **Write clear, concise updates**:
    - Use imperative voice for instructions
-   - Include examples where helpful
+   - Include examples ONLY if essential (prefer inline mentions)
    - Emphasize critical points with **bold** or MANDATORY labels
-   - Add verification steps where applicable
+   - Avoid verbose explanations - trust reader's understanding
+   - One concept per line maximum
 
-4. **Categories to consider**:
+5. **Before adding, always check**:
+   - Is this already covered elsewhere?
+   - Can this be merged with an existing point?
+   - Can this replace something less important?
+   - Is every word necessary?
+
+6. **Categories to consider**:
    - Memory management patterns
    - Testing and verification procedures
    - Development workflows

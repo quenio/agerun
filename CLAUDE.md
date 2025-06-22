@@ -8,37 +8,22 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 
 ## Quick Start
 
-### Clean Build Script
-Use `./clean_build.sh` for comprehensive build verification with minimal output (~20 lines):
-- Cleans, builds, and runs static analysis
-- Runs all tests (shows count only)
-- Runs executable and sanitizer tests
-- Reports memory leak status
+**Primary Build Tool**: `./clean_build.sh` - runs everything with minimal output (~20 lines)
+- Use before commits and for quick verification
+- Includes: clean, build, static analysis, all tests, sanitizers, leak check
 
-**When to use**: Before commits, for quick verification, or when context space is limited.
-
-### Detailed Build Commands
-For detailed output during development:
+**Individual Commands** (when needed):
 ```bash
-make clean && make          # Clean and build
-make analyze               # Static analysis on library
-make analyze-tests         # Static analysis on tests
-make test                  # Run tests (auto-cleans and rebuilds in debug)
-make run                   # Run executable (auto-builds in debug)
-make test-sanitize         # Run tests with ASan
-make run-sanitize          # Run executable with ASan
+make clean && make     # Rebuild
+make analyze          # Static analysis on library
+make analyze-tests    # Static analysis on tests
+make test             # Run tests (auto-rebuilds) 
+make test-sanitize    # Run with ASan
+make run              # Run executable
+make bin/test_name    # Build/run specific test
 ```
 
-**Key Points**:
-- Always run from repository root
-- Tests and executable run from `bin` directory automatically
-- Debug mode is enabled by default for development
-- Documentation-only changes don't require testing
-- The Makefile automatically:
-  - Runs `make clean debug` before tests to ensure heap tracking
-  - Changes to `bin` directory for test/run targets
-  - Builds with debug assertions active
-- Always pause before executing build commands to check for custom scripts/procedures
+**Note**: Always run from repo root. Makefile handles directory changes automatically (runs `make clean debug` before tests). Doc-only changes don't require testing. Always pause before build commands to check for custom scripts.
 
 ## Git Workflow (CRITICAL)
 
@@ -58,24 +43,9 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 ## Critical Development Rules
 
-### 0. Documentation Search Protocol (MANDATORY)
+### 0. Documentation Protocol
 
-**When asked about procedures or workflows**:
-1. **ALWAYS search CLAUDE.md first** using exact keywords from the question
-2. **Use multiple search strategies**:
-   - Search for exact phrases (e.g., "after push", "after commit")
-   - Search for related terms (e.g., "git", "workflow", "verify")
-   - Check relevant sections based on topic
-3. **Start with the simplest interpretation** of the question
-4. **Do NOT assume complexity** where none exists
-5. **Do NOT jump to related topics** without checking for direct answers first
-
-**Common mistake pattern to avoid**:
-- Question: "What should I do after X?"
-- Wrong approach: Jumping to complex workflow sections
-- Right approach: Search for "after X" first, check simple procedures
-
-This prevents overthinking and ensures accurate responses based on documented procedures.
+**Always search CLAUDE.md first** when asked about procedures. Don't overthink - start with exact keywords.
 
 ### 1. Memory Management (ZERO TOLERANCE FOR LEAKS)
 
@@ -101,8 +71,7 @@ This prevents overthinking and ensures accurate responses based on documented pr
   - Memory access (`memory.x`): returns reference, do NOT destroy
   - Arithmetic (`2 + 3`, `memory.x + 5`): returns new object, MUST destroy
   - String operations (`"Hello" + " World"`): returns new object, MUST destroy
-  - Use `ar__expression__take_ownership()` to check ownership
-- Map iteration pattern:
+  - Map iteration pattern:
   - Use `ar__data__get_map_keys()` to get all keys as a list
   - Remember to destroy both the list and its string elements after use
   - Write persistence files with key/type on one line, value on the next
@@ -123,54 +92,38 @@ This prevents overthinking and ensures accurate responses based on documented pr
   - `ASAN_OPTIONS=halt_on_error=0` to continue after first error
   - `ASAN_OPTIONS=detect_leaks=1:leak_check_at_exit=1` for complex leaks
 
-**Common Memory Leak Patterns to Watch For**:
-1. **Function Return Ownership Mismatches**:
-   - **Pattern**: Function returns newly allocated data but caller treats it as borrowed
-   - **Example**: `ar__instruction_ast__get_function_args()` returns a new list
-   - **Prevention**: Check function documentation for ownership semantics
-   - **Fix**: Update variable naming (`ref_` → `own_`) and add proper cleanup
-   
-2. **List/Map Removal Operations**:
-   - **Pattern**: Functions like `ar__data__list_remove_first()` return owned values
-   - **Example**: Removed keys from lists must be destroyed after use
-   - **Prevention**: Always check if removal functions transfer ownership
-   - **Fix**: Capture returned value and destroy it:
-     ```c
-     data_t *removed = ar__data__list_remove_first(list);
-     ar__data__destroy(removed);  // Don't forget this!
-     ```
+**Comprehensive Memory Debugging Guide**:
 
-3. **Misleading Function Names**:
-   - **Pattern**: Function names suggest borrowing but actually create new objects
-   - **Example**: `get_function_args()` sounds like a getter but creates a new list
-   - **Prevention**: Don't trust function names - always check documentation/implementation
-   - **Fix**: Update documentation to clearly state ownership semantics
+**Example: Debugging a Function Return Ownership Leak**
+```c
+// SYMPTOM: Memory leak detected in test_instruction_parser
+// 1. Isolate the specific test causing the leak
+// 2. Check memory report: bin/memory_report_instruction_parser_tests.log
+//    Shows: "data_t (list) allocated at instruction_ast.c:142"
 
-4. **Iterator Pattern Leaks**:
-   - **Pattern**: Getting keys/values for iteration without destroying them
-   - **Example**: `ar__data__get_map_keys()` returns a list that must be destroyed
-   - **Prevention**: Remember that iteration helpers often create new collections
-   - **Fix**: Destroy both the collection and its elements after iteration
+// 3. Examine the leaking function:
+data_t* ar__instruction_ast__get_function_args(ast_t *ast) {
+    return ar__data__create_list();  // Creates NEW list (ownership transfer)
+}
 
-5. **Debugging Memory Leaks**:
-   - **Step 1**: Isolate to specific test function (disable others)
-   - **Step 2**: Add debug output to trace allocations/deallocations
-   - **Step 3**: Check ownership documentation for all called functions
-   - **Step 4**: Verify removal/extraction functions don't leave owned data
-   - **Step 5**: Use heap memory reports to identify leaked data types
+// 4. Find usage in tests - variable naming reveals the bug:
+data_t *ref_args = ar__instruction_ast__get_function_args(ast);  // WRONG: ref_ implies borrowed
+// ... no ar__data__destroy(ref_args) call found
 
-6. **Buffer Overflow Prevention**:
-   - **Pattern**: Miscounting buffer size for strings with escape sequences
-   - **Example**: Counting `\"` as 1 character but writing 2 characters
-   - **Prevention**: When calculating buffer sizes, count actual bytes written, not logical characters
-   - **Fix**: For escape sequences, add the full escape length to the buffer size:
-     ```c
-     if (str[i] == '\\' && str[i+1]) {
-         len += 2;  // Both backslash and escaped character
-     }
-     ```
-   - **Detection**: AddressSanitizer catches these errors - always run `./clean_build.sh`
-   - **Key Rule**: Buffer size = sum of all characters that will be written
+// 5. Fix by updating variable name and adding cleanup:
+data_t *own_args = ar__instruction_ast__get_function_args(ast);  // Correct prefix
+// ... use args ...
+ar__data__destroy(own_args);  // Add cleanup
+
+// 6. Common patterns that cause leaks:
+// - Removal functions: ar__data__list_remove_first() returns owned value
+// - Map iteration: ar__data__get_map_keys() creates new list
+// - String operations: "Hello" + " World" creates new string
+// - Buffer overflows: escape sequences need 2 bytes, not 1
+// - Don't trust function names - check ownership docs
+```
+
+**Debug Strategy**: When leak detected → Check memory report → Trace allocation source → Verify ownership semantics → Fix variable naming → Add proper cleanup
 
 ### 2. Test-Driven Development (MANDATORY)
 
@@ -252,7 +205,7 @@ For each new behavior/feature:
 - **Refactor phase is critical**: Use refactor phase to eliminate duplication and extract common patterns
 - **All cycles before commit**: Complete ALL planned cycles before documentation and commit
 
-### 3. Parnas Design Principles (STRICTLY ENFORCED) ✅
+### 3. Parnas Design Principles (STRICT ENFORCEMENT) ✅
 
 **Status**: Full compliance achieved as of 2025-06-08. All interface violations have been fixed. Zero circular dependencies (except heap ↔ io).
 
@@ -271,400 +224,94 @@ For each new behavior/feature:
 
 **Enforcement**: Violations result in automatic PR rejection.
 
-### Preventing Circular Dependencies (MANDATORY)
+### Preventing Circular Dependencies & Code Duplication
 
-**Before Adding Any #include**:
-1. **Check Current Dependencies**: Run `grep -n "#include.*agerun_" module.h module.c` to see existing includes
-2. **Analyze Dependency Direction**: Ensure the new include follows the hierarchical layers:
-   - Foundation (assert, io, list, map, string) → Data (heap, data) → Core (agent, method, expression) → System (agency, methodology, interpreter)
-3. **Question the Need**: If you need to include a "higher" module in a "lower" one, STOP and reconsider the design
-
-**Architectural Patterns to Prevent/Resolve Circular Dependencies** (in order of preference):
-
-1. **Interface Segregation** (PREFERRED - split large modules):
-   ```c
-   // Instead of one large module with bidirectional dependencies:
-   // Split into: core functionality, registry, store, updater
-   // Example: agency split into agency, agent_registry, agent_store, agent_update
-   ```
-
-2. **Registry Pattern** (PREFERRED - for managing collections):
-   ```c
-   // Instead of modules directly managing each other:
-   // Use a registry that owns and manages the lifecycle
-   // Example: agent_registry owns all agents, not individual modules
-   ```
-
-3. **Facade Pattern** (PREFERRED - for complex subsystems):
-   ```c
-   // Instead of exposing internal module interactions:
-   // Provide a simple interface that coordinates multiple modules
-   // Example: agency is a facade for agent_registry, agent_store, agent_update
-   ```
-   - **CRITICAL**: Facades should ONLY coordinate, never implement business logic
-   - **Pure dispatch**: Use minimal lookahead to determine which module to delegate to
-   - **No parsing in facades**: All parsing logic belongs in specialized modules
-   - **Example violation**: instruction_parser parsing assignments instead of delegating to assignment_parser
-   - **Correct approach**: Facade identifies instruction type, delegates ALL parsing to appropriate specialized parser
-   
-   **Pure Facade Implementation Guidelines**:
-   - **Minimal lookahead only**: Scan for the minimum patterns needed to route (e.g., `:=` for assignments, `(` for functions)
-   - **No complex parsing**: Never extract values, validate syntax, or parse arguments
-   - **Delegation pattern**: Create helper functions like `_dispatch_function()` to handle routing logic
-   - **Error propagation**: Get errors from specialized modules, don't generate parsing errors
-   - **Common duplication targets**: Error handling patterns across dispatch cases should be extracted
-   - **Example**: instruction_parser detects function names but specialized parsers handle all argument parsing
-
-4. **Parser/Executor Separation** (PREFERRED - for language processing):
-   ```c
-   // Instead of mixing parsing and execution in one module:
-   // Separate into parser (returns AST) and executor (processes AST)
-   // Example: instruction parses, interpreter executes
-   ```
-
-5. **Callback Pattern** (LAST RESORT - adds complexity):
-   ```c
-   // Use ONLY when upward communication is absolutely necessary
-   // and other patterns don't work
-   // BAD: in low_module.c
-   #include "high_module.h"
-   void low_function() { high_notify(); }
-   
-   // ACCEPTABLE AS LAST RESORT: in low_module.h
-   typedef void (*notify_callback_t)(int event_type, void *data);
-   void ar_low__register_callback(notify_callback_t callback);
-   // WARNING: Callbacks make code harder to understand and debug
-   ```
-
-6. **Dependency Inversion** (LAST RESORT - adds abstraction layers):
-   ```c
-   // Use ONLY when two modules absolutely must share behavior
-   // and cannot be restructured
-   // Define abstract interface that both modules can use
-   // WARNING: This adds complexity and indirection
-   ```
-
-7. **Event Bus Pattern** (AVOID - too complex for this codebase):
-   ```c
-   // Generally too heavyweight for AgeRun's needs
-   // Consider simpler patterns first
-   ```
-
-**Red Flags to Watch For**:
-- Module A needs to notify Module B of changes (use callbacks)
-- Two modules need to share data structures (extract to common module)
-- Module needs to know about its container (use registry pattern)
-- Parsing and execution in same module (separate concerns)
-- Manager module becoming too large (split into focused modules)
-- Implementation file including a module that uses it (probable circular dependency)
-
-**Testing for Circular Dependencies**:
+**Dependency Management**:
 ```bash
-# Before committing, check for potential circular dependencies:
-grep -r "#include.*agerun_" modules/*.c modules/*.h | sort
-
-# Look for patterns like:
-# - A.c includes B.h and B.c includes A.h
-# - A includes B includes C includes A
-# Update CIRCULAR_DEPS_ANALYSIS.md if adding new modules
+# Check before adding includes:
+grep -n "#include.*agerun_" module.h module.c
+# Verify hierarchy: Foundation (io/list/map) → Data (heap/data) → Core (agent/method) → System (agency/interpreter)
 ```
 
-**Accepted Exception**:
-- `heap ↔ io`: This fundamental circular dependency exists because memory tracking needs error reporting and error reporting needs memory allocation. This is documented and accepted.
+**Architectural Patterns** (in order of preference):
+1. **Interface Segregation**: Split large modules (agency → registry/store/update)
+2. **Registry Pattern**: Central ownership of lifecycle (registry owns all agents)
+3. **Facade Pattern**: ONLY coordinate, never implement business logic
+4. **Parser/Executor Split**: Separate concerns for clarity
+5. **Callbacks/DI**: Last resort - adds complexity
 
-### Preventing Code Duplication (MANDATORY)
-
-**DRY Principle**: Don't Repeat Yourself - every piece of knowledge must have a single, unambiguous, authoritative representation.
-
-**Before Writing Any Code**:
-1. **Search for Similar Functionality**: `grep -r "function_name\|concept" modules/`
-2. **Check Existing Modules**: Review module documentation to find existing implementations
-3. **Question the Duplication**: If you're copying code, STOP and refactor instead
-
-**Strategies to Eliminate Duplication**:
-
-1. **Extract Common Functions** (PREFERRED):
-   ```c
-   // BAD: Same validation logic in multiple places
-   // in module_a.c
-   if (strlen(name) > 0 && strlen(name) < 256 && strchr(name, '/') == NULL) { ... }
-   // in module_b.c  
-   if (strlen(name) > 0 && strlen(name) < 256 && strchr(name, '/') == NULL) { ... }
-   
-   // GOOD: Extract to string module
-   bool ar__string__is_valid_name(const char *name);
-   ```
-
-2. **Create Utility Modules** (PREFERRED):
-   ```c
-   // When multiple modules need similar functionality:
-   // Create a dedicated utility module (e.g., validation, conversion, formatting)
-   // Example: string module provides trim, split, join for all modules
-   ```
-
-3. **Use Data-Driven Approaches** (PREFERRED):
-   ```c
-   // BAD: Repetitive switch/if statements
-   if (type == TYPE_INT) return "integer";
-   else if (type == TYPE_STRING) return "string";
-   else if (type == TYPE_MAP) return "map";
-   
-   // GOOD: Use lookup table
-   static const char* type_names[] = {
-       [TYPE_INT] = "integer",
-       [TYPE_STRING] = "string", 
-       [TYPE_MAP] = "map"
-   };
-   return type_names[type];
-   ```
-
-4. **Parameterize Variations** (PREFERRED):
-   ```c
-   // BAD: Multiple similar functions
-   void process_agent_create() { /* 90% same code */ }
-   void process_agent_update() { /* 90% same code */ }
-   void process_agent_delete() { /* 90% same code */ }
-   
-   // GOOD: Single parameterized function
-   void process_agent_operation(operation_type_t op);
-   ```
-
-5. **Template Pattern with Callbacks** (USE SPARINGLY):
-   ```c
-   // Only when behavior varies in the middle of algorithm
-   void process_file(const char *path, 
-                    bool (*process_line)(const char *line, void *ctx),
-                    void *ctx);
-   ```
-
-**Red Flags for Duplication**:
-- Copy-pasting code between functions/modules
-- Similar function names with slight variations (e.g., `_for_int`, `_for_string`)
-- Repeated error handling patterns
-- Multiple functions with same structure but different types
-- Hardcoded values that appear in multiple places
-- Similar test setup/teardown code
-
-**Acceptable Duplication** (rare cases):
-- Performance-critical code where abstraction overhead matters (document why)
-- When modules must remain independent (no shared dependencies)
-- Test code that needs explicit clarity over DRY
-- When abstraction would be more complex than duplication (document why)
-
-**Testing for Duplication**:
+**Code Duplication Prevention (DRY - Don't Repeat Yourself)**:
 ```bash
-# Find potential duplicate function patterns
-grep -r "^[a-zA-Z_].*(" modules/*.c | sed 's/.*://g' | sort | uniq -c | sort -rn
-
-# Find similar code structures (manual review needed)
-# Look for files with similar sizes that might contain duplicated logic
-ls -la modules/*.c | awk '{print $5, $9}' | sort -n
-
-# Find repeated string literals
-grep -r "\".*\"" modules/*.c | grep -v "printf\|fprintf\|error" | sort | uniq -c | sort -rn
+# Before writing code, search for existing:
+grep -r "function_name\|concept" modules/
 ```
+
+**DRY Strategies**:
+- If copying code, STOP and refactor instead
+- Extract common functions → new abstractions/modules
+- Use data tables instead of switch statements
+- Parameterize variations instead of copying
+- Template pattern with callbacks (use sparingly)
+- Move code with diff verification, don't rewrite
+
+**Red Flags**: Module A→B→C→A cycles, repeated validation logic, similar function names (_for_int, _for_string), parsing+execution together
+
+**Exception**: heap ↔ io circular dependency is accepted and documented.
 
 ### 4. Coding Standards
 
-**String Parsing Guidelines**:
-- **Quote-Aware Operator Scanning**: When searching for operators (like `:=`, `=`, etc.) in strings, MUST consider quoted contexts
-- **Implementation pattern**:
-  ```c
-  // Track quote state while scanning
-  bool in_quotes = false;
-  while (*p) {
-      if (*p == '"' && (p == start || *(p-1) != '\\')) {
-          in_quotes = !in_quotes;
-      } else if (!in_quotes && /* check for operator */) {
-          // Only process operator if not inside quotes
-      }
-      p++;
-  }
-  ```
-- **Common cases**: Assignment operators (`:=`), function delimiters (`(`, `)`), argument separators (`,`)
-- **Example bug**: `method("greet", "memory.msg := \"Hello\"", "1.0.0")` - the `:=` inside the string literal must not be treated as an assignment operator
-- **Testing**: Always test with strings containing the operators you're scanning for
+**String Parsing**: Track quote state when scanning for operators (`:=`, `(`, `)`, `,`)
+```c
+bool in_quotes = false;
+while (*p) {
+    if (*p == '"' && (p == start || *(p-1) != '\\')) in_quotes = !in_quotes;
+    else if (!in_quotes && /* check operator */) { /* process */ }
+    p++;
+}
+```
 
-**Naming Conventions** (Updated 2025-06-19):
-- **Module Functions**: Use `ar_` prefix with double underscore pattern `ar_<module>__<function>`
-  - Examples: `ar_data__create_map()`, `ar_agent__send()`, `ar_system__init()`
-  - **IMPORTANT**: Changed prefix from `ar__` to `ar_` (2025-06-19)
-  - This applies to all public functions in module headers
-- **Module File Names**: Use `ar_` prefix instead of `agerun_` (Updated 2025-06-19)
-  - Examples: `ar_data.h`, `ar_agent.c`, `ar_system_tests.c`
-  - **IMPORTANT**: Only rename files when they need to be modified for other reasons
-  - Do not proactively rename all files at once
-- **Static Functions**: Use single underscore prefix `_<function_name>` (Completed 2025-06-11)
-  - Examples: `_validate_file()`, `_find_method_idx()`, `_allocate_node()`
-  - Indicates internal/private functions within a module
-  - Similar to Python convention for private members
-  - **IMPORTANT**: Only applies to static functions in implementation files, NOT test functions
-- **Test Functions**: Use double underscore pattern `test_<module>__<test_name>` (Updated 2025-06-17)
-  - Examples: `test_instruction_evaluator__create_destroy()`, `test_string__trim_whitespace()`
-  - Test functions are static but do NOT use underscore prefix
-  - Follows module function naming pattern for consistency
-- **Heap Macros**: Use double underscore pattern `AR__HEAP__<OPERATION>`
-  - Examples: `AR__HEAP__MALLOC`, `AR__HEAP__FREE`, `AR__HEAP__STRDUP`
-  - Applied to all 5 heap macros consistently
-- **Assert Macros**: EXCEPTION - Keep original pattern `AR_ASSERT_<TYPE>`
-  - Examples: `AR_ASSERT_OWNERSHIP`, `AR_ASSERT_TRANSFERRED`, `AR_ASSERT_NOT_USED_AFTER_FREE`
-  - Rationale: Assert module contains only macros, not functions; follows different naming pattern
-- **Opaque Structs** (Added 2025-06-19, Updated 2025-06-20):
-  - **Public Interface (Header Files)**:
-    - **Struct Declaration**: MUST use `struct ar_<module>_s` pattern
-      - The struct tag includes the full module name between `ar_` and `_s`
-      - Example: `struct ar_parse_instruction_evaluator_s`
-    - **Typedef**: MUST use `ar_<module>_t` pattern (with ar_ prefix)
-      - Example: `ar_parse_instruction_evaluator_t`
-    - **Complete Declaration**: `typedef struct ar_<module>_s ar_<module>_t;`
-      - Example: `typedef struct ar_agent_s ar_agent_t;`
-      - Example: `typedef struct ar_parse_instruction_evaluator_s ar_parse_instruction_evaluator_t;`
-    - **IMPORTANT**: Both the struct tag and typedef MUST include the ar_ prefix
-  - **Internal Implementation**: Use `_` prefix for internal structs in .c files
-    - Examples: `struct _internal_node { ... };`
-  - This clearly distinguishes public API types from internal implementation details
-- **Type suffix**: `_t`
+**Naming Patterns**:
+| Type | Pattern | Example |
+|------|---------|---------|
+| Module functions | `ar_<module>__<function>` | `ar_data__create_map()` |
+| Static functions | `_<function>` | `_validate_file()` |
+| Test functions | `test_<module>__<name>` | `test_string__trim()` |
+| Heap macros | `AR__HEAP__<OP>` | `AR__HEAP__MALLOC` |
+| Assert macros | `AR_ASSERT_<TYPE>` | `AR_ASSERT_OWNERSHIP` |
+| Opaque types | `typedef struct ar_<module>_s ar_<module>_t;` | |
+| Files | `ar_<module>.{h,c}` | `ar_data.h` |
 
-**Formatting**:
-- 4-space indentation (no tabs)
-- 100-character line limit
-- ALL files must end with newline
-  - C standard requires newline at EOF
-  - Missing newlines cause compiler errors with -Wall -Werror
-  - Always verify file ends with '\n' after edits
-
-**Documentation**:
-- Use `/**` style for all public APIs
-- Include `@param`, `@return`, `@note` tags
-- Document ownership semantics clearly
-- Write complete sentences with punctuation
-- When making functions static (Parnas compliance), mark them "(INTERNAL USE ONLY)" in comments
-- Example:
-  ```c
-  /**
-   * Processes data and creates a new result object
-   * @param mut_context The context to use (mutable reference)
-   * @param ref_data The data to process (borrowed reference)
-   * @return A newly created result object
-   * @note Ownership: Returns an owned value that caller must destroy.
-   *       The function does not take ownership of the data parameter.
-   */
-  result_t* ar_module_process(context_t *mut_context, const data_t *ref_data);
-  ```
-
-**File Operations**:
-- Use IO module functions, not raw stdio
-- `ar_io__open_file` instead of `fopen`
-- `ar_io__close_file` instead of `fclose`
-- `ar_io__fprintf` instead of `fprintf`
-- `ar_io__read_line` instead of `fgets` or `getline`
-- Check all return codes
-- Use `ar_io__create_backup` before modifying critical files
-- Use `ar_io__write_file` for atomic operations
-- Use `ar_io__set_secure_permissions` for sensitive files
-
-**Portable Format Specifiers**:
-- Always use portable format specifiers for fixed-width integer types
-- Include `<inttypes.h>` when formatting `int64_t`, `uint64_t`, etc.
-- Use `PRId64` for `int64_t`: `printf("%" PRId64 "\n", value);`
-- Use `PRIu64` for `uint64_t`: `printf("%" PRIu64 "\n", value);`
-- NEVER use `%lld` or cast to `(long long)` - this breaks on Linux where `int64_t` is `long`
-- Example:
-  ```c
-  #include <inttypes.h>
-  int64_t agent_id = 42;
-  printf("Agent ID: %" PRId64 "\n", agent_id);  // Correct
-  printf("Agent ID: %lld\n", (long long)agent_id);  // Wrong - not portable
-  ```
+**Key Standards**:
+- 4-space indent, 100-char lines, newline at EOF
+- `/** */` docs with `@param`, `@return`, `@note` ownership
+- Use IO module (`ar_io__open_file` not `fopen`, etc) - check all return codes
+- Use `PRId64`/`PRIu64` for portability, never `%lld`
 
 ### 5. Module Development
 
-**Dependency Management**:
-- **Circular Dependencies**: Always check for and eliminate circular dependencies
-- **Unidirectional Flow**: Ensure dependencies flow in one direction (e.g., agency → agent_update → agent_registry)
-- **Delegation Pattern**: Higher-level modules can pass their dependencies to lower-level modules as parameters
-- **Module Naming**: Follow `ar_<module>__<function>` pattern consistently (e.g., `ar_agent_update__update_methods`)
-  - **IMPORTANT**: Prefix changed from `ar__` to `ar_` (updated 2025-06-19)
+**Core Architecture**:
+- **Parsing vs Evaluation**: Data owner parses (methodology→methods), consumer evaluates (interpreter→ASTs)
+- **Opaque Types**: `typedef struct ar_type_name_s ar_type_name_t;` in header, definition in .c only
+- **Module Size**: Split at ~850 lines into focused modules (e.g., agency→4 modules)
 
-**Architectural Separation of Concerns**:
-- **Parsing vs Evaluation**: Separate parsing from evaluation responsibilities
-- **Data Owner Parses**: The module that owns data should handle parsing it
-  - Example: `methodology` module should parse methods, not `interpreter`
-- **Consumer Evaluates**: The module that uses data should only evaluate it
-  - Example: `interpreter` should evaluate ASTs, not parse source code
-- **Benefits**:
-  - Clean module boundaries
-  - Single responsibility principle
-  - Better testability
-  - Clearer error handling
-- **Implementation pattern**:
-  - Store parsed representations (ASTs) instead of source code
-  - Parse once when data is created/loaded
-  - Evaluate many times as needed
+**Key Patterns**:
+- Parse once, evaluate many times (store ASTs, not source)
+- Use dynamic collections (lists/maps), not fixed arrays
+- String-based IDs for reliable persistence
+- Read interface first instead of guessing function names
+- No platform-specific code (`#ifdef __linux__` forbidden)
 
-**Code Modification Process**:
-1. Understand codebase structure and dependencies
-2. Make incremental changes with frequent compilation
-3. Complete one functional area before moving to next
-4. Verify each change with tests
-
-**Opaque Types**:
-- Forward declare in header: `typedef struct name_s name_t;`
-- Define structure in .c file only
-- Provide `ar_name_create()` and `ar_name_destroy()`
-- No separate init functions
-- Update all dependent code to use public API
-- Avoid size-exposing functions
-- Provide accessor functions for internal state
-- Handle NULL checks consistently
-
-**Module Boundaries** (strict Parnas enforcement):
-- **No Internal Headers**: Functions are either public (in .h) or private (static in .c)
-- **No Friend Modules**: No special access between modules - use public APIs only
-- **Clean Interfaces**: If modules need to communicate, design proper public interfaces
-- **Public Enums**: Enums representing abstract concepts (like `data_type_t`) are acceptable in public APIs when clients need them
-- **No Internal Function Exposure**: Never expose functions with "_internal" suffix in public headers
-- **Registry Pattern**: When modules need to manage collections, use a separate registry module (e.g., agent_registry)
-- **Facade Pattern**: For complex subsystems, use a facade module to coordinate multiple focused modules
-
-**Best Practices**:
-- Make incremental changes with frequent compilation
-- Remove unused functions immediately
-- Handle all compiler warnings (-Wall -Werror)
-- Update documentation with code changes
-  - Update modules/README.md when creating new modules
-- Avoid code smells (see below)
-- When showing code, provide only the raw code without commentary
-- Think twice before adding global state to modules - prefer opaque structures
-- When using other modules, read their interface first instead of guessing function names
-- **Module Splitting**: When a module exceeds ~850 lines, consider splitting into focused modules
-- **Dynamic Collections**: Use list/map structures instead of fixed arrays (no MAX_AGENTS limits)
-- **String-Based IDs**: Use string keys in persistent maps for reliable serialization
-- **Parameter Control**: Add boolean parameters to control optional behaviors (e.g., `send_lifecycle_events`)
-- **Shutdown Order**: In system shutdown, call cleanup functions before marking as uninitialized
-- **Avoid Platform-Specific Code**: Write portable C code that works across all platforms
-  - NO `#ifdef __linux__`, `#ifdef __APPLE__`, or similar platform checks
-  - Use standard POSIX/C library functions that work everywhere
-  - If platform differences seem necessary, find a portable solution instead
-  - Example: Use `errno` for error reporting instead of reading `/proc/meminfo`
-- **Variable Argument Parsing**: For functions with optional parameters, create specialized parsers
-  - **Pattern**: Create custom `_parse_functionname_arguments()` instead of forcing generic parsers to be flexible
-  - **Example**: agent() supports both 2 and 3 parameters - custom parser handles both forms gracefully
-  - **Compatibility**: Add default values (like "null") to maintain compatibility with fixed-argument evaluators
-  - **Rationale**: Keeps generic argument parsers simple while supporting flexible user syntax
-
-**Common Code Smells to Avoid**:
-- **Long Function**: Keep functions under 50 lines, single responsibility
-- **Large Module**: Split modules with multiple unrelated concerns
-- **Duplicate Code**: Extract common functionality, follow DRY principle
-- **Long Parameter List**: Limit to 4-5 parameters, use structs for groups
-- **Feature Envy**: Move functions to modules whose data they use most
-- **Primitive Obsession**: Create typedefs/structs for domain concepts
-- **Inappropriate Intimacy**: Use opaque types for proper encapsulation
-- **Speculative Generality**: Remove unused code, implement only what's needed
-- **Switch Statements**: Consider function pointer tables or dispatch tables
-- **Message Chains**: Apply Law of Demeter (a->b()->c()->d() is bad)
-- **Comments**: Refactor code to be self-documenting; comments explain "why" not "what"
+**Code Quality Checklist**:
+✓ Functions < 50 lines (single responsibility)
+✓ Parameters ≤ 5 (use structs for more)  
+✓ No speculative generality  
+✓ Self-documenting (comments = "why" not "what")  
+✓ Incremental changes with frequent compilation
+✓ Verify each change with tests
+✓ Remove unused functions immediately
+✓ Address all warnings immediately
+✓ Think twice before adding global state  
+✓ Update modules/README.md for new modules
 
 ### 6. Method Development
 
@@ -682,124 +329,29 @@ grep -r "\".*\"" modules/*.c | grep -v "printf\|fprintf\|error" | sort | uniq -c
 - `if()` cannot be nested
 - `send(0, message)` is a no-op returning true
 
-### 7. Command Execution Guidelines
+### 7. Development Practices
 
-**ALWAYS Check Directory Before Running Commands**:
-When executing any command, especially build/test commands, follow this 4-step process:
-1. Check where you are: `pwd`
-2. Change to the directory you want to be in: `cd <directory>`
-3. Verify you're in the correct directory: `pwd`
-4. Only then run the command you want
-
-**Directory Navigation Rules**:
-- **ALWAYS use full/absolute paths with `cd`**: Never use relative paths like `cd bin` or `cd ..`
-- **Correct**: `cd /Users/quenio/Repos/agerun/bin`
-- **Incorrect**: `cd bin`, `cd ../modules`, `cd ./tests`
-- **Rationale**: Prevents confusion about current location and ensures commands work regardless of starting directory
-
-This prevents common errors like:
-- Running tests from wrong directory
-- File not found errors
-- Incorrect relative paths
-- Wasted time debugging non-existent problems
-
-### 8. Backup File Handling
-
-**NEVER Create Backup Files**:
-- Git already provides version history - use `git diff` and `git show` instead
-- If you absolutely must create a backup:
-  1. First check `.gitignore` for appropriate patterns
-  2. Use extensions already in `.gitignore` if possible
-  3. Or add the pattern to `.gitignore` BEFORE creating the file
-  4. Delete backup files immediately after use
-
-**Better Alternatives**:
-- Use `git stash` to temporarily save changes
-- Create a branch for experimental changes
-- Use `git diff > changes.patch` to save a patch file (if .patch is in .gitignore)
-- Simply rely on git's reflog for recovery
-
-**If Backup Files Are Accidentally Staged**:
-- Use `git reset HEAD <file>` to unstage
-- Or `git rm --cached <file>` to remove from staging
-- NEVER commit them
-
-### 9. Debug and Analysis
-
-**Installing clang-tools (for Static Analysis)**:
-
-The AgeRun build system uses `scan-build` for static analysis. If `scan-build` is not available on your system, install it using the appropriate package manager:
-
-#### macOS (using Homebrew)
+**Directory Navigation**: Always use absolute paths
 ```bash
-# Install LLVM which includes scan-build
-brew install llvm
-
-# The scan-build command will be available at:
-# /opt/homebrew/opt/llvm/bin/scan-build
-
-# Add to your PATH:
-export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+cd /Users/quenio/Repos/agerun/bin  # Correct
+cd bin  # Wrong - avoid relative paths
 ```
 
-#### Ubuntu/Debian
-```bash
-# Install clang-tools which includes scan-build
-apt-get update && apt-get install -y clang-tools
+**Backup Files**: Never create them - use git instead
+- `git stash` for temporary saves
+- `git diff > changes.patch` for patches
+- If created accidentally: `git reset HEAD <file>`
 
-# scan-build should now be available in your PATH
-```
+**Debug Tools**:
+- **Memory**: `make test-sanitize` → Check `bin/memory_report_<test_name>.log`
+- **Static Analysis**: `make analyze` (requires scan-build: `brew install llvm` or `apt install clang-tools`)
+- **Test Failures**: Often just wrong directory - 4-step check: pwd → cd /path → pwd → run
 
-#### Verifying Installation
-```bash
-which scan-build
-# Should output the path to scan-build
+**Expression Ownership**:
+- References (`memory.x`): Don't destroy
+- New objects (`2+3`, `"a"+"b"`): Must destroy
 
-scan-build --version
-# Should show the version information
-```
-
-**Memory Debugging**:
-- Use ASan via `make test-sanitize`
-- **IMPORTANT**: Memory reports are at `bin/memory_report_<test_name>.log` (NOT heap_memory_report.log)
-  - Example: `bin/memory_report_agerun_string_tests.log`
-  - Each test generates its own memory report file
-  - Check these after running individual tests with `make bin/<test_name>`
-- Add DEBUG output (keep it for future sessions)
-- Use static analyzer: `make analyze`
-  - HTML reports in `bin/scan-build-results` (if scan-build installed)
-  - Console output otherwise
-
-**Guidelines**:
-- NEVER read binary files (.o, executables)
-- NEVER access /bin directory contents
-- Focus on source files only
-- Address all warnings immediately
-
-**Expression Ownership Rules**:
-- Memory access expressions (`memory.x`) return references - do NOT destroy
-- Arithmetic/string operations return new objects - MUST destroy
-- `ar__expression__take_ownership()` returns NULL for references
-- Send instruction requires ownership of message parameter
-- Currently no support for sending memory references directly
-
-**Test Debugging Best Practices**:
-- **ALWAYS verify test output carefully** - don't assume a test is failing based on assertion line numbers alone
-- **Follow the 4-step directory check process** - many tests require being run from the `bin` directory (see Section 7)
-- **Add debug output to confirm assumptions** - use fprintf(stderr, ...) to trace execution
-- **Read the FULL error output** - early errors (like directory checks) can mask the real test status
-- **When a test seems to be failing**:
-  1. Follow the 4-step directory check process from Section 7
-  2. Add debug output to see what's actually happening
-  3. Verify the actual values being compared
-  4. Don't assume the implementation is broken - the test expectations might be wrong
-- **Remember**: A test that exits early due to directory checks is NOT the same as a test that fails assertions
-- **Common pitfalls**:
-  - Seeing "Assertion failed" and assuming the feature doesn't work
-  - Not noticing that later tests are passing when run from correct directory
-  - Jumping to fix code before verifying what's actually happening with debug output
-
-### 10. Agent Lifecycle
+### 8. Agent Lifecycle
 
 **Critical Points**:
 - Agents receive `__wake__` on creation
@@ -807,7 +359,7 @@ scan-build --version
 - ALWAYS process messages after sending to prevent leaks
 - Call `ar__system__process_next_message()` after `ar__agent__send()`
 
-### 11. Building Individual Tests
+### 9. Building Individual Tests
 
 Always use make to build tests:
 ```bash
@@ -825,53 +377,23 @@ Never compile directly with gcc.
   3. Run the test automatically from the bin directory
   4. Generate a memory report specific to that test
 
-### 12. Session Management
+### 10. Session & Commit Management
 
-When reviewing tasks:
-- Check session todo list with `TodoRead`
-- Check `TODO.md` file in repository
-- Keep CLAUDE.md updated with new guidelines
+**Task Management**:
+- **Session todos**: Current TDD cycles, implementations, bug fixes
+- **TODO.md**: Future architectural work, refactoring plans
+- **User feedback**: May reveal design issues, not just implementation bugs
 
-**Task Scope Management**:
-- **Session todos**: Current work only - immediate TDD cycles, specific implementations, bug fixes
-- **Project todos (TODO.md)**: Future work - architectural concerns, refactoring plans, feature requests
-- **CRITICAL**: Move future architectural concerns from session todos to TODO.md to maintain focus
-- **Example**: "Extract helper function" (session) vs "Revise fundamental copying strategy" (project)
+**Pre-Commit Checklist** (MANDATORY):
+1. `./clean_build.sh` - Fix ALL issues before proceeding
+2. Update module .md files if interfaces changed
+3. Update TODO.md - Mark completed, add new tasks
+4. Update CHANGELOG.md (NON-NEGOTIABLE)
+5. `git diff` - Verify all changes intentional
+6. Check for backup files outside ./bin (*.backup, *.bak, *.tmp)
+7. Only then: `git commit`
 
-**User Feedback Integration**:
-- **Listen for architectural signals**: When users suggest fundamental changes, consider broader implications
-- **Reframe problems**: User feedback may reveal deeper design issues, not just implementation details
-- **Example pattern**: "Don't extract this duplication" → "Eliminate this pattern entirely" → architectural revision
-- **Always ask**: Is this a surface fix or does it indicate a fundamental design concern?
-
-**Saving Work for Later**:
-- **TODO.md is authoritative** for future project tasks
-- **Categorize properly**: HIGH/MEDIUM/LOW priority, architectural vs implementation
-- **Provide context**: Explain why the work is needed and what problem it solves
-- **Link to phases**: Place in appropriate development phase (e.g., Phase 7: Extract Common Helper Functions)
-
-**Before Committing (MANDATORY CHECKLIST - ALWAYS CHECK THIS)**:
-1. **Run Tests**: Use `./clean_build.sh` for comprehensive verification (MANDATORY)
-   - Runs all tests including sanitizers (ASan, UBSan, TSan)
-   - Catches memory leaks, buffer overflows, and undefined behavior
-   - If clean build fails, STOP - fix all issues before proceeding
-2. **Update Module Documentation**: If you changed a module's interface, update its .md file
-3. **Update TODO.md**: Mark completed tasks and add any new tasks identified
-4. **Update CHANGELOG.md**: Document completed milestones and achievements (NON-NEGOTIABLE)
-5. **Review Changes**: Use `git diff` to verify all changes are intentional
-6. **Check for temporary/backup files**: NEVER commit backup files (*.backup, *.bak, *.tmp, etc.)
-7. **Then Commit**: Only after completing steps 1-6
-
-**IMPORTANT**: Always perform steps 1-6 BEFORE running `git commit`. Never skip the checklist.
-
-**Critical Reminders**:
-- CHANGELOG update is MANDATORY for every commit that completes tasks
-- Always check this checklist BEFORE running `git commit`
-- Build this mental model: Complete ALL TDD Cycles (Red→Green→Refactor) → Documentation → TODO → CHANGELOG → Check for backups → Commit
-- TDD Cycle means: Red (test fails) → Green (test passes) → Refactor (improve code) → REPEAT for next behavior
-- NEVER skip the Refactor phase - it's mandatory even if you find nothing to improve
-- Treat CHANGELOG updates as part of the work, not as optional documentation
-- NEVER commit temporary or backup files to version control
+**Remember**: Complete ALL TDD Cycles → Docs → TODO → CHANGELOG → Commit
 
 **After Completing Major Tasks**:
 - Document completion date in TODO.md (e.g., "Completed 2025-06-11")
@@ -879,142 +401,41 @@ When reviewing tasks:
 - Include brief summary of what was accomplished
 - Update CLAUDE.md with any new patterns or learnings from the session
 
-### 13. Refactoring Patterns
+### 11. Refactoring Patterns
 
-**Visitor Pattern to List-Based**:
-- When refactoring from visitor pattern, use list-based approach for better memory management
-- Return lists of data that callers can iterate over and destroy
-- Avoids complex callback memory ownership issues
+**Core Principles**:
+- **Preserve behavior**: Tests define expected behavior - fix implementation, not tests
+- **Move code, don't rewrite**: Use diff to verify code is moved, not reimplemented  
+- **Clean state recovery**: If refactoring fails, revert completely rather than debug
 
-**Module Cohesion**:
-- Create focused modules with single responsibilities
-- Example: Split agency (850+ lines) into:
-  - agent_registry (ID management)
-  - agent_store (persistence)  
-  - agent_update (version updates)
-  - agency (81-line facade coordinating the others)
+**Bulk Renaming with sed**:
+```bash
+# Pattern: sed 's/old/new/g' file > file.tmp && mv file.tmp file
+# Example for static functions (exclude test files):
+for file in modules/*.c; do
+  [[ ! "$file" == *"_tests.c" ]] && \
+  sed -E 's/^static ([a-zA-Z][a-zA-Z0-9_]*)\(/static _\1(/g' "$file" > "$file.tmp" && \
+  mv "$file.tmp" "$file"
+done
+# Always compile after bulk changes. Never use -i.bak (creates backups)
+```
 
-**File Editing Best Practices**:
-- Always verify file content thoroughly before making edits
-- Be suspicious of placeholder-looking text like "[... rest of ...]"
-- Check file sizes or line counts when something seems off (e.g., `wc -l filename`)
-- Never assume placeholder text is a display artifact - it might be literal content
-- If a file seems truncated, investigate the git history to find the complete version
+**Code Movement Verification**:
+```bash
+# MANDATORY: Verify code is moved, not rewritten
+diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
+```
 
-**Bulk Renaming Guidelines**:
-- **Use `sed` for bulk renaming**: When renaming functions, macros, variables, or parameters across the codebase, `sed` is the most efficient and safe approach
-- **Pattern**: `sed 's/old_name/new_name/g' file > file.tmp && mv file.tmp file`
-- **Batch processing**: Use loops for multiple files: `for file in modules/*.c; do sed 's/pattern/replacement/g' "$file" > "$file.tmp" && mv "$file.tmp" "$file"; done`
-- **Always verify current directory**: Run `pwd` before executing sed commands to ensure correct location
-- **Advantages**: Fast, reliable, handles large codebases efficiently, preserves file structure
-- **Examples from naming convention refactoring**: 
-  - Module functions: `sed 's/ar_data_/ar__data__/g'`
-  - Static functions: `sed -E 's/^static ([a-zA-Z][a-zA-Z0-9_]*)\(/static _\1(/g'`
-  - Function calls: `sed 's/\bfunction_name(/\b_function_name(/g' file > file.tmp && mv file.tmp file`
-  - Macros: `sed 's/AR_HEAP_/AR__HEAP__/g'`
-- **Important Considerations**:
-  - Global variables may get accidentally renamed - revert these manually
-  - Function calls within renamed functions need separate updates
-  - Always compile and test after bulk renaming to catch issues
-  - NEVER use `-i.bak` as it creates backup files - use temporary files instead
+**Key Patterns**:
+- **Module cohesion**: Split large modules (e.g., 850-line agency → 4 focused modules)
+- **Merging functions**: Move helpers first, then merge implementation (don't re-implement)
+- **Instance migration**: Replace parameters with `self->field` references
+- **File verification**: Check `wc -l` if content seems truncated; beware "[... rest of ...]"
+- **Test preservation**: Tests define behavior - fix implementation, not tests
+- **Diff verification**: MANDATORY when moving code between modules
+- **Strategic analysis**: Check if modern solution exists before refactoring legacy code
 
-**Static Function Renaming Workflow**:
-1. **Identify target files**: Exclude test files when renaming static functions
-   ```bash
-   ls modules/*.c | grep -v '_tests\.c$'
-   ```
-2. **Rename function definitions**:
-   ```bash
-   for file in modules/*.c; do 
-     if [[ ! "$file" == *"_tests.c" ]]; then 
-       sed -E 's/^static ([a-zA-Z][a-zA-Z0-9_]*)\(/static _\1(/g' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
-     fi
-   done
-   ```
-3. **Update function calls**: Use more specific patterns to avoid renaming unrelated items
-   ```bash
-   sed 's/\([^_]\)function_name(/\1_function_name(/g' file.c > file.c.tmp && mv file.c.tmp file.c
-   ```
-4. **Fix any double underscores**: Sometimes sed patterns can create `__function` instead of `_function`
-5. **Revert global variable changes**: Check for and fix any accidentally renamed globals
-6. **Compile and test**: Always run `make clean && make` followed by `./clean_build.sh`
-
-**Git Workflow**:
-- **CRITICAL**: See "Git Workflow (CRITICAL)" section near the top of this document
-- Always run `git status` after `git push` to ensure push completed successfully
-- Verify working tree remains clean after operations
-- Follow the 4-step directory check process (Section 7) before running commands with relative paths
-
-**Function Refactoring and Merging**:
-When refactoring functions that have similar implementations:
-- **Don't re-implement** - reuse existing tested code
-- **Merging approach**:
-  1. Identify which function has the implementation you want to keep
-  2. Remove the function you're eliminating (declaration and header)
-  3. Adapt the kept implementation to work in its new context
-  4. Update variable/parameter references as needed
-- **Common patterns**:
-  - Wrapper removal: Merge wrapped function into wrapper by updating parameter references
-  - Consolidation: Merge similar functions by parameterizing differences
-  - Instance migration: Convert functions using parameters to use instance fields
-- **Complex Merges with Helper Functions**:
-  - When merging functions with many helper functions, first move helpers to be adjacent to the target function
-  - This makes the merge cleaner and easier to verify
-  - Always move helpers without changing them - only relocate, don't modify
-  - Then perform the merge with the helper functions already in the right location
-- **Error Recovery Pattern**:
-  - If complex refactoring goes wrong, use "Step 0: revert to known state"
-  - Start from clean state rather than trying to fix broken intermediate state
-  - Better to lose work and restart cleanly than to debug complex merge conflicts
-- **Example**: Converting from parameters to instance variables:
-  - Replace parameter `expr_eval` with `self->ref_expr_evaluator`
-  - Replace parameter `memory` with `self->mut_memory`
-  - Keep parameters that vary per call
-- **Benefits**: Preserves tested code, reduces duplication, maintains behavior
-
-**Test Behavior Preservation During Refactoring**:
-- **CRITICAL**: When refactoring, tests document expected behavior - do NOT change test assertions
-- **Verify before changing**: Always check if test expectations are correct before modifying them
-- **Refactoring principle**: The system should behave identically before and after refactoring
-- **Common mistake**: Assuming refactored code should return different types/values
-- **Example**: Function instructions with assignment (e.g., `memory.x := send(...)`) should maintain their instruction type, not become ASSIGNMENT type
-- **If tests fail**: Fix the implementation, not the tests (unless tests are genuinely wrong)
-- **Principle**: "Make the change easy, then make the easy change"
-
-**Creating Specialized Modules from Existing Code**:
-When extracting functionality into specialized modules (e.g., parsers, evaluators):
-- **MANDATORY diff verification**: Always compare implementations to ensure code is moved, not reimplemented
-  - **CRITICAL**: Copy code FIRST, then verify with diff - never verify before copying
-  - **Red Phase**: Copy existing tests, then verify with diff they match originals
-  - **Green Phase**: Copy implementation, then verify with diff it matches original
-  - **Why**: Reimplementing introduces bugs, inconsistencies, and wastes time
-  - **Example**: "Missing diff verification" is a critical error that must be corrected
-  - **Timing**: Always perform verification AFTER copying to ensure actual code movement
-- **Follow established patterns**: Mirror existing specialized module patterns for consistency (e.g., evaluators → parsers)
-- **Instantiable modules**: Create modules with create/destroy lifecycle, not just static functions
-- **TDD with existing code**:
-  1. **Red Phase**: Copy tests first, verify with diff, run to confirm failure
-  2. **Green Phase**: Copy implementation, verify with diff, adapt minimally
-  3. **Refactor Phase**: Document, integrate, check for improvements
-- **Helper function migration**: When moving a function that uses helper functions, move all helpers together
-- **Documentation during refactoring**: Create module documentation in refactor phase to clarify purpose and integration
-- **Verification commands**:
-  ```bash
-  # After copying test:
-  diff -u <(sed -n '130,148p' modules/original_tests.c) <(sed -n '11,29p' modules/new_tests.c)
-  
-  # After copying implementation:
-  diff -u <(sed -n '485,566p' modules/original.c) <(sed -n '213,273p' modules/new.c)
-  ```
-
-**Strategic Architecture Analysis**:
-Before refactoring legacy code:
-- **Check for existing modern solutions**: Sometimes newer architecture already exists but isn't integrated
-- **Evaluate replacement vs refactoring**: A 700-line function might need replacement, not refactoring
-- **Consider the bigger picture**: Refactoring might be part of a larger architectural transformation
-- **Example**: The 704-line `_parse_function_call` doesn't need refactoring - it needs replacement with specialized parser modules
-
-### 14. Plan Verification and Review
+### 12. Plan Verification and Review
 
 **When Creating Development Plans**:
 - **Always include critical verification steps**: Plans must include diff verification, test running, memory checking
@@ -1034,30 +455,15 @@ Before refactoring legacy code:
   - Some have fixed argument counts (method: exactly 3, build: exactly 2)
 - **Always check**: Read existing tests to understand specific requirements
 
-### 15. Task Tool Usage Guidelines
+### 13. Task Tool Guidelines
 
-**Preventing Content Loss When Using Task Tool**:
+**Core Rule**: Read before write - examine Task output before modifying
 
-When working with the Task tool, follow these guidelines to prevent accidentally overwriting valuable content:
-
-1. **Read Before Write**: Always use the `Read` tool to examine files created by the `Task` tool before deciding to modify them. This ensures you know what content exists before making changes.
-
-2. **Use Edit Instead of Write**: When improving existing content, use the `Edit` tool to make specific changes rather than completely rewriting with `Write`. This preserves the original work while allowing improvements.
-
-3. **Clear Task Instructions**: When using the `Task` tool, be specific about whether you want it to:
-   - Create files (and then you'll review them)
-   - Just analyze and report back (and then you'll create files)
-   - Create drafts for you to refine
-
-4. **Document Workflow Intentions**: Before starting a task, clearly state your intended workflow:
-   - "I'll use Task to analyze, then create files myself"
-   - "I'll use Task to create files, then review and edit if needed"
-
-5. **Backup Before Overwrite**: If you do need to completely rewrite a file, first copy its contents to a temporary location or include the original content in your response before overwriting.
-
-6. **Trust Task Tool Output**: The Task tool is designed to create high-quality output. Trust its work and only make targeted improvements rather than assuming you need to rewrite everything.
-
-**Key Principle**: Always read and understand existing content before modifying it, even if you were involved in creating it originally.
+**Workflow**: 
+1. Use Task to analyze/create files
+2. Read the output with Read tool
+3. Use Edit (not Write) for improvements
+4. Be specific: "analyze only" vs "create files"
 
 ## AgeRun Language Notes
 
