@@ -244,6 +244,14 @@ For each new behavior/feature:
   - `cd bin && ./agerun_string_tests`
   - `AGERUN_MEMORY_REPORT=bin/test.memory_report.log ./bin/agerun_string_tests`
 
+**TDD for Large Refactoring (Advanced Pattern)**:
+- **Breaking down architectural changes**: Divide large refactoring into multiple sequential TDD cycles
+- **Each cycle addresses one behavior**: Don't try to implement multiple instruction types in one cycle
+- **Build on previous cycles**: Later cycles can assume earlier cycles work correctly
+- **Example pattern**: 9 cycles for facade refactoring (assignment, send, if, parse, build, method, agent, destroy, error handling)
+- **Refactor phase is critical**: Use refactor phase to eliminate duplication and extract common patterns
+- **All cycles before commit**: Complete ALL planned cycles before documentation and commit
+
 ### 3. Parnas Design Principles (STRICTLY ENFORCED) ✅
 
 **Status**: Full compliance achieved as of 2025-06-08. All interface violations have been fixed. Zero circular dependencies (except heap ↔ io).
@@ -298,6 +306,14 @@ For each new behavior/feature:
    - **No parsing in facades**: All parsing logic belongs in specialized modules
    - **Example violation**: instruction_parser parsing assignments instead of delegating to assignment_parser
    - **Correct approach**: Facade identifies instruction type, delegates ALL parsing to appropriate specialized parser
+   
+   **Pure Facade Implementation Guidelines**:
+   - **Minimal lookahead only**: Scan for the minimum patterns needed to route (e.g., `:=` for assignments, `(` for functions)
+   - **No complex parsing**: Never extract values, validate syntax, or parse arguments
+   - **Delegation pattern**: Create helper functions like `_dispatch_function()` to handle routing logic
+   - **Error propagation**: Get errors from specialized modules, don't generate parsing errors
+   - **Common duplication targets**: Error handling patterns across dispatch cases should be extracted
+   - **Example**: instruction_parser detects function names but specialized parsers handle all argument parsing
 
 4. **Parser/Executor Separation** (PREFERRED - for language processing):
    ```c
