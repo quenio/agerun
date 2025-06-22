@@ -832,6 +832,24 @@ When reviewing tasks:
 - Check `TODO.md` file in repository
 - Keep CLAUDE.md updated with new guidelines
 
+**Task Scope Management**:
+- **Session todos**: Current work only - immediate TDD cycles, specific implementations, bug fixes
+- **Project todos (TODO.md)**: Future work - architectural concerns, refactoring plans, feature requests
+- **CRITICAL**: Move future architectural concerns from session todos to TODO.md to maintain focus
+- **Example**: "Extract helper function" (session) vs "Revise fundamental copying strategy" (project)
+
+**User Feedback Integration**:
+- **Listen for architectural signals**: When users suggest fundamental changes, consider broader implications
+- **Reframe problems**: User feedback may reveal deeper design issues, not just implementation details
+- **Example pattern**: "Don't extract this duplication" → "Eliminate this pattern entirely" → architectural revision
+- **Always ask**: Is this a surface fix or does it indicate a fundamental design concern?
+
+**Saving Work for Later**:
+- **TODO.md is authoritative** for future project tasks
+- **Categorize properly**: HIGH/MEDIUM/LOW priority, architectural vs implementation
+- **Provide context**: Explain why the work is needed and what problem it solves
+- **Link to phases**: Place in appropriate development phase (e.g., Phase 7: Extract Common Helper Functions)
+
 **Before Committing (MANDATORY CHECKLIST - ALWAYS CHECK THIS)**:
 1. **Run Tests**: Use `./clean_build.sh` for comprehensive verification (MANDATORY)
    - Runs all tests including sanitizers (ASan, UBSan, TSan)
