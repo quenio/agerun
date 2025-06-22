@@ -2,6 +2,7 @@
 #define AGERUN_SEND_INSTRUCTION_PARSER_H
 
 #include "agerun_instruction_ast.h"
+#include "agerun_expression_parser.h"
 
 /**
  * Opaque parser structure for send instructions.

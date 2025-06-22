@@ -3,6 +3,7 @@
 #include <assert.h>
 #include "agerun_assignment_instruction_parser.h"
 #include "agerun_instruction_ast.h"
+#include "agerun_expression_ast.h"
 #include "agerun_heap.h"
 
 static void test_assignment_instruction_parser__create_destroy(void) {
@@ -206,6 +207,32 @@ static void test_assignment_instruction_parser__reusability(void) {
     ar_assignment_instruction_parser__destroy(own_parser);
 }
 
+static void test_assignment_instruction_parser__parse_with_expression_ast(void) {
+    printf("Testing assignment parsing with expression AST...\n");
+    
+    // Given an assignment instruction with integer literal and a parser
+    const char *instruction = "memory.x := 42";
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create();
+    assert(own_parser != NULL);
+    
+    // When parsing the instruction
+    instruction_ast_t *own_ast = ar_assignment_instruction_parser__parse(own_parser, instruction);
+    
+    // Then it should parse successfully with an expression AST
+    assert(own_ast != NULL);
+    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_ASSIGNMENT);
+    assert(strcmp(ar__instruction_ast__get_assignment_path(own_ast), "memory.x") == 0);
+    
+    // And the expression should be available as an AST
+    const expression_ast_t *ref_expr_ast = ar__instruction_ast__get_assignment_expression_ast(own_ast);
+    assert(ref_expr_ast != NULL);
+    assert(ar__expression_ast__get_type(ref_expr_ast) == EXPR_AST_LITERAL_INT);
+    assert(ar__expression_ast__get_int_value(ref_expr_ast) == 42);
+    
+    ar__instruction_ast__destroy(own_ast);
+    ar_assignment_instruction_parser__destroy(own_parser);
+}
+
 int main(void) {
     printf("Running assignment instruction parser tests...\n\n");
     
@@ -222,6 +249,9 @@ int main(void) {
     test_assignment_instruction_parser__parse_error_invalid_path();
     test_assignment_instruction_parser__parse_empty_instruction();
     test_assignment_instruction_parser__reusability();
+    
+    // Expression AST integration
+    test_assignment_instruction_parser__parse_with_expression_ast();
     
     printf("\nAll assignment_instruction_parser tests passed!\n");
     return 0;

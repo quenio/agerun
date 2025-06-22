@@ -4,6 +4,8 @@
 #include "agerun_agent_instruction_parser.h"
 #include "agerun_list.h"
 #include "agerun_data.h"
+#include "agerun_expression_ast.h"
+#include "agerun_heap.h"
 
 /**
  * Test create and destroy functions
@@ -113,6 +115,61 @@ static void test_agent_parser__error_handling(void) {
     ar_agent_instruction_parser__destroy(own_parser);
 }
 
+/**
+ * Test agent parsing with expression ASTs
+ */
+static void test_agent_parser__parse_with_expression_asts(void) {
+    printf("Testing agent instruction with expression ASTs...\n");
+    
+    // Given an agent instruction with string literal method/version and memory access context
+    const char *instruction = "memory.worker := agent(\"process\", \"2.1.0\", memory.config)";
+    ar_agent_instruction_parser_t *own_parser = ar_agent_instruction_parser__create();
+    assert(own_parser != NULL);
+    
+    // When parsing the instruction
+    instruction_ast_t *own_ast = ar_agent_instruction_parser__parse(own_parser, instruction, "memory.worker");
+    
+    // Then it should parse successfully with argument ASTs
+    assert(own_ast != NULL);
+    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_AGENT);
+    assert(ar__instruction_ast__has_result_assignment(own_ast) == true);
+    
+    // And the arguments should be available as expression ASTs
+    const list_t *ref_arg_asts = ar__instruction_ast__get_function_arg_asts(own_ast);
+    assert(ref_arg_asts != NULL);
+    assert(ar__list__count(ref_arg_asts) == 3);
+    
+    void **items = ar__list__items(ref_arg_asts);
+    assert(items != NULL);
+    
+    // First argument - method name
+    const expression_ast_t *ref_method = (const expression_ast_t*)items[0];
+    assert(ref_method != NULL);
+    assert(ar__expression_ast__get_type(ref_method) == EXPR_AST_LITERAL_STRING);
+    assert(strcmp(ar__expression_ast__get_string_value(ref_method), "process") == 0);
+    
+    // Second argument - version
+    const expression_ast_t *ref_version = (const expression_ast_t*)items[1];
+    assert(ref_version != NULL);
+    assert(ar__expression_ast__get_type(ref_version) == EXPR_AST_LITERAL_STRING);
+    assert(strcmp(ar__expression_ast__get_string_value(ref_version), "2.1.0") == 0);
+    
+    // Third argument - context (memory access)
+    const expression_ast_t *ref_context = (const expression_ast_t*)items[2];
+    assert(ref_context != NULL);
+    assert(ar__expression_ast__get_type(ref_context) == EXPR_AST_MEMORY_ACCESS);
+    size_t path_count = 0;
+    char **path_components = ar__expression_ast__get_memory_path(ref_context, &path_count);
+    assert(path_components != NULL);
+    assert(path_count == 1);
+    assert(strcmp(path_components[0], "config") == 0);
+    AR__HEAP__FREE(path_components);
+    
+    AR__HEAP__FREE(items);
+    ar__instruction_ast__destroy(own_ast);
+    ar_agent_instruction_parser__destroy(own_parser);
+}
+
 int main(void) {
     printf("=== Agent Instruction Parser Tests ===\n");
     
@@ -121,6 +178,12 @@ int main(void) {
     test_agent_parser__parse_without_context();
     test_agent_parser__error_handling();
     
+    // Expression AST integration
+    test_agent_parser__parse_with_expression_asts();
+    
     printf("All agent instruction parser tests passed!\n");
+    
+    ar__heap__memory_report();
+    
     return 0;
 }

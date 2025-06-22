@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include "agerun_list.h"
+#include "agerun_expression_ast.h"
 
 /**
  * Instruction AST node types.
@@ -99,6 +100,25 @@ const char* ar__instruction_ast__get_assignment_path(const instruction_ast_t *re
  */
 const char* ar__instruction_ast__get_assignment_expression(const instruction_ast_t *ref_node);
 
+/**
+ * Get expression AST from an assignment node.
+ * 
+ * @param ref_node The AST node (borrowed reference)
+ * @return The expression AST (borrowed reference), or NULL if not an assignment or no AST
+ * @note Ownership: Returns a borrowed reference. Do not free.
+ */
+const expression_ast_t* ar__instruction_ast__get_assignment_expression_ast(const instruction_ast_t *ref_node);
+
+/**
+ * Set expression AST for an assignment node.
+ * 
+ * @param mut_node The AST node (mutable reference)
+ * @param own_expression_ast The expression AST to set (ownership transferred)
+ * @return true if successful, false if not an assignment node
+ * @note Ownership: Takes ownership of the expression AST. Any existing AST is destroyed.
+ */
+bool ar__instruction_ast__set_assignment_expression_ast(instruction_ast_t *mut_node, expression_ast_t *own_expression_ast);
+
 /* Accessor functions for function call nodes */
 
 /**
@@ -121,6 +141,29 @@ const char* ar__instruction_ast__get_function_name(const instruction_ast_t *ref_
  * @note Despite the "get" in the name, this function allocates memory.
  */
 list_t* ar__instruction_ast__get_function_args(const instruction_ast_t *ref_node);
+
+/**
+ * Get argument ASTs from a function call node.
+ * 
+ * @param ref_node The AST node (borrowed reference)
+ * @return List of expression ASTs (borrowed reference), or NULL if not a function call or no ASTs
+ * @note Ownership: Returns a borrowed reference to the list. Do not free.
+ *       Use ar__list__get() to access individual ASTs as borrowed references.
+ */
+const list_t* ar__instruction_ast__get_function_arg_asts(const instruction_ast_t *ref_node);
+
+/**
+ * Set argument ASTs for a function call node.
+ * 
+ * @param mut_node The AST node (mutable reference)
+ * @param own_arg_asts List of expression ASTs (ownership transferred)
+ * @return true if successful, false if not a function call node
+ * @note Ownership: Takes ownership of the list and all ASTs in it. Any existing ASTs are destroyed.
+ */
+bool ar__instruction_ast__set_function_arg_asts(
+    instruction_ast_t *mut_node, 
+    list_t *own_arg_asts
+);
 
 /**
  * Get result path from a function call node.
