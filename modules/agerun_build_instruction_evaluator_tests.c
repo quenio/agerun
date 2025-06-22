@@ -6,7 +6,9 @@
 #include "agerun_instruction_evaluator.h"
 #include "agerun_expression_evaluator.h"
 #include "agerun_instruction_ast.h"
+#include "agerun_expression_ast.h"
 #include "agerun_data.h"
+#include "agerun_list.h"
 
 static void test_build_instruction_evaluator__create_destroy(void) {
     // Given memory and expression evaluator
@@ -58,6 +60,22 @@ static void test_build_instruction_evaluator__evaluate_with_instance(void) {
     );
     assert(ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Template: "Hello {name}!"
+    expression_ast_t *template_ast = ar__expression_ast__create_literal_string("Hello {name}!");
+    ar__list__add_last(arg_asts, template_ast);
+    
+    // Values: memory.data
+    const char *data_path[] = {"data"};
+    expression_ast_t *values_ast = ar__expression_ast__create_memory_access("memory", data_path, 1);
+    ar__list__add_last(arg_asts, values_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+    
     // When evaluating using the instance
     bool result = ar_build_instruction_evaluator__evaluate(evaluator, ast);
     
@@ -101,6 +119,22 @@ static void test_build_instruction_evaluator__evaluate_legacy(void) {
     );
     assert(ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Template: "{greeting} there!"
+    expression_ast_t *template_ast = ar__expression_ast__create_literal_string("{greeting} there!");
+    ar__list__add_last(arg_asts, template_ast);
+    
+    // Values: memory.vars
+    const char *vars_path[] = {"vars"};
+    expression_ast_t *values_ast = ar__expression_ast__create_memory_access("memory", vars_path, 1);
+    ar__list__add_last(arg_asts, values_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+    
     // When evaluating using the instance-based interface
     bool result = ar_build_instruction_evaluator__evaluate(evaluator, ast);
     
@@ -143,6 +177,22 @@ static void test_instruction_evaluator__evaluate_build_simple(void) {
         INST_AST_BUILD, "build", args, 2, "memory.result"
     );
     assert(ast != NULL);
+    
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Template: "Hello {name}!"
+    expression_ast_t *template_ast = ar__expression_ast__create_literal_string("Hello {name}!");
+    ar__list__add_last(arg_asts, template_ast);
+    
+    // Values: memory.data
+    const char *data_path[] = {"data"};
+    expression_ast_t *values_ast = ar__expression_ast__create_memory_access("memory", data_path, 1);
+    ar__list__add_last(arg_asts, values_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
     
     // When evaluating the build instruction
     bool result = ar_instruction_evaluator__evaluate_build(evaluator, ast);
@@ -189,6 +239,22 @@ static void test_instruction_evaluator__evaluate_build_multiple_variables(void) 
     );
     assert(ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Template: "User: {firstName} {lastName}, Role: {role}"
+    expression_ast_t *template_ast = ar__expression_ast__create_literal_string("User: {firstName} {lastName}, Role: {role}");
+    ar__list__add_last(arg_asts, template_ast);
+    
+    // Values: memory.user
+    const char *user_path[] = {"user"};
+    expression_ast_t *values_ast = ar__expression_ast__create_memory_access("memory", user_path, 1);
+    ar__list__add_last(arg_asts, values_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+    
     // When evaluating the build instruction
     bool result = ar_instruction_evaluator__evaluate_build(evaluator, ast);
     
@@ -234,6 +300,22 @@ static void test_instruction_evaluator__evaluate_build_with_types(void) {
     );
     assert(ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Template: "Name: {name}, Age: {age}, Score: {score}"
+    expression_ast_t *template_ast = ar__expression_ast__create_literal_string("Name: {name}, Age: {age}, Score: {score}");
+    ar__list__add_last(arg_asts, template_ast);
+    
+    // Values: memory.stats
+    const char *stats_path[] = {"stats"};
+    expression_ast_t *values_ast = ar__expression_ast__create_memory_access("memory", stats_path, 1);
+    ar__list__add_last(arg_asts, values_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+    
     // When evaluating the build instruction
     bool result = ar_instruction_evaluator__evaluate_build(evaluator, ast);
     
@@ -278,6 +360,22 @@ static void test_instruction_evaluator__evaluate_build_missing_values(void) {
     );
     assert(ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Template: "Name: {firstName} {lastName}"
+    expression_ast_t *template_ast = ar__expression_ast__create_literal_string("Name: {firstName} {lastName}");
+    ar__list__add_last(arg_asts, template_ast);
+    
+    // Values: memory.person
+    const char *person_path[] = {"person"};
+    expression_ast_t *values_ast = ar__expression_ast__create_memory_access("memory", person_path, 1);
+    ar__list__add_last(arg_asts, values_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+    
     // When evaluating the build instruction
     bool result = ar_instruction_evaluator__evaluate_build(evaluator, ast);
     
@@ -315,6 +413,16 @@ static void test_instruction_evaluator__evaluate_build_invalid_args(void) {
     );
     assert(ast1 != NULL);
     
+    // Create and attach expression ASTs - only one argument (should fail)
+    list_t *arg_asts1 = ar__list__create();
+    assert(arg_asts1 != NULL);
+    
+    expression_ast_t *template_ast1 = ar__expression_ast__create_literal_string("template {value}");
+    ar__list__add_last(arg_asts1, template_ast1);
+    
+    bool ast_set1 = ar__instruction_ast__set_function_arg_asts(ast1, arg_asts1);
+    assert(ast_set1 == true);
+    
     bool result1 = ar_instruction_evaluator__evaluate_build(evaluator, ast1);
     assert(result1 == false);
     
@@ -330,6 +438,20 @@ static void test_instruction_evaluator__evaluate_build_invalid_args(void) {
     );
     assert(ast2 != NULL);
     
+    // Create and attach expression ASTs - first is integer, second is map
+    list_t *arg_asts2 = ar__list__create();
+    assert(arg_asts2 != NULL);
+    
+    expression_ast_t *template_ast2 = ar__expression_ast__create_literal_int(123);
+    ar__list__add_last(arg_asts2, template_ast2);
+    
+    const char *dummy_path[] = {"dummy"};
+    expression_ast_t *values_ast2 = ar__expression_ast__create_memory_access("memory", dummy_path, 1);
+    ar__list__add_last(arg_asts2, values_ast2);
+    
+    bool ast_set2 = ar__instruction_ast__set_function_arg_asts(ast2, arg_asts2);
+    assert(ast_set2 == true);
+    
     bool result2 = ar_instruction_evaluator__evaluate_build(evaluator, ast2);
     assert(result2 == false);
     
@@ -341,6 +463,19 @@ static void test_instruction_evaluator__evaluate_build_invalid_args(void) {
         INST_AST_BUILD, "build", args3, 2, NULL
     );
     assert(ast3 != NULL);
+    
+    // Create and attach expression ASTs - first is string, second is string
+    list_t *arg_asts3 = ar__list__create();
+    assert(arg_asts3 != NULL);
+    
+    expression_ast_t *template_ast3 = ar__expression_ast__create_literal_string("template {value}");
+    ar__list__add_last(arg_asts3, template_ast3);
+    
+    expression_ast_t *values_ast3 = ar__expression_ast__create_literal_string("not a map");
+    ar__list__add_last(arg_asts3, values_ast3);
+    
+    bool ast_set3 = ar__instruction_ast__set_function_arg_asts(ast3, arg_asts3);
+    assert(ast_set3 == true);
     
     bool result3 = ar_instruction_evaluator__evaluate_build(evaluator, ast3);
     assert(result3 == false);

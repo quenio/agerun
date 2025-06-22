@@ -8,7 +8,9 @@
 #include "agerun_instruction_evaluator.h"
 #include "agerun_expression_evaluator.h"
 #include "agerun_instruction_ast.h"
+#include "agerun_expression_ast.h"
 #include "agerun_data.h"
+#include "agerun_list.h"
 #include "agerun_methodology.h"
 #include "agerun_agency.h"
 #include "agerun_system.h"
@@ -58,6 +60,25 @@ static void test_method_instruction_evaluator__evaluate_with_instance(void) {
     );
     assert(ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Method name: "test_method"
+    expression_ast_t *name_ast = ar__expression_ast__create_literal_string("test_method");
+    ar__list__add_last(arg_asts, name_ast);
+    
+    // Instructions: "send(0, 42)"
+    expression_ast_t *instructions_ast = ar__expression_ast__create_literal_string("send(0, 42)");
+    ar__list__add_last(arg_asts, instructions_ast);
+    
+    // Version: "1.0.0"
+    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
+    ar__list__add_last(arg_asts, version_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+    
     // When evaluating using the instance
     bool result = ar_method_instruction_evaluator__evaluate(evaluator, ast);
     
@@ -94,6 +115,25 @@ static void test_method_instruction_evaluator__evaluate_legacy(void) {
         INST_AST_METHOD, "method", args, 3, "memory.result"
     );
     assert(ast != NULL);
+    
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Method name: "legacy_test"
+    expression_ast_t *name_ast = ar__expression_ast__create_literal_string("legacy_test");
+    ar__list__add_last(arg_asts, name_ast);
+    
+    // Instructions: "send(0, 99)"
+    expression_ast_t *instructions_ast = ar__expression_ast__create_literal_string("send(0, 99)");
+    ar__list__add_last(arg_asts, instructions_ast);
+    
+    // Version: "2.0.0"
+    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("2.0.0");
+    ar__list__add_last(arg_asts, version_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
     
     // When evaluating using the instance-based interface
     bool result = ar_method_instruction_evaluator__evaluate(evaluator, ast);
@@ -135,6 +175,25 @@ static void test_instruction_evaluator__evaluate_method_simple(void) {
     );
     assert(ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Method name: "counter"
+    expression_ast_t *name_ast = ar__expression_ast__create_literal_string("counter");
+    ar__list__add_last(arg_asts, name_ast);
+    
+    // Instructions: "send(message.sender, memory.count + 1)"
+    expression_ast_t *instructions_ast = ar__expression_ast__create_literal_string("send(message.sender, memory.count + 1)");
+    ar__list__add_last(arg_asts, instructions_ast);
+    
+    // Version: "1.0.0"
+    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
+    ar__list__add_last(arg_asts, version_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+    
     bool result = ar_instruction_evaluator__evaluate_method(evaluator, ast);
     
     // Then it should return true (method creation successful)
@@ -169,6 +228,25 @@ static void test_instruction_evaluator__evaluate_method_with_result(void) {
         INST_AST_METHOD, "method", args, 3, "memory.created"
     );
     assert(ast != NULL);
+    
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Method name: "echo"
+    expression_ast_t *name_ast = ar__expression_ast__create_literal_string("echo");
+    ar__list__add_last(arg_asts, name_ast);
+    
+    // Instructions: "send(message.sender, message.content)"
+    expression_ast_t *instructions_ast = ar__expression_ast__create_literal_string("send(message.sender, message.content)");
+    ar__list__add_last(arg_asts, instructions_ast);
+    
+    // Version: "2.0.0"
+    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("2.0.0");
+    ar__list__add_last(arg_asts, version_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
     
     bool result = ar_instruction_evaluator__evaluate_method(evaluator, ast);
     
@@ -209,6 +287,25 @@ static void test_instruction_evaluator__evaluate_method_invalid_instructions(voi
     );
     assert(ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Method name: "bad"
+    expression_ast_t *name_ast = ar__expression_ast__create_literal_string("bad");
+    ar__list__add_last(arg_asts, name_ast);
+    
+    // Instructions: "invalid syntax here"
+    expression_ast_t *instructions_ast = ar__expression_ast__create_literal_string("invalid syntax here");
+    ar__list__add_last(arg_asts, instructions_ast);
+    
+    // Version: "1.0.0"
+    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
+    ar__list__add_last(arg_asts, version_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+    
     bool result = ar_instruction_evaluator__evaluate_method(evaluator, ast);
     
     // Then it should return true (method creation succeeds even with invalid instructions)
@@ -245,6 +342,19 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     );
     assert(ast1 != NULL);
     
+    // Create and attach expression ASTs - only 2 arguments (should fail)
+    list_t *arg_asts1 = ar__list__create();
+    assert(arg_asts1 != NULL);
+    
+    expression_ast_t *name_ast1 = ar__expression_ast__create_literal_string("test");
+    ar__list__add_last(arg_asts1, name_ast1);
+    
+    expression_ast_t *instructions_ast1 = ar__expression_ast__create_literal_string("send(0, 42)");
+    ar__list__add_last(arg_asts1, instructions_ast1);
+    
+    bool ast_set1 = ar__instruction_ast__set_function_arg_asts(ast1, arg_asts1);
+    assert(ast_set1 == true);
+    
     bool result1 = ar_instruction_evaluator__evaluate_method(evaluator, ast1);
     assert(result1 == false);
     
@@ -256,6 +366,22 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
         INST_AST_METHOD, "method", args2, 3, NULL
     );
     assert(ast2 != NULL);
+    
+    // Create and attach expression ASTs - first is integer, others are strings
+    list_t *arg_asts2 = ar__list__create();
+    assert(arg_asts2 != NULL);
+    
+    expression_ast_t *name_ast2 = ar__expression_ast__create_literal_int(42);
+    ar__list__add_last(arg_asts2, name_ast2);
+    
+    expression_ast_t *instructions_ast2 = ar__expression_ast__create_literal_string("send(0, 42)");
+    ar__list__add_last(arg_asts2, instructions_ast2);
+    
+    expression_ast_t *version_ast2 = ar__expression_ast__create_literal_string("1.0.0");
+    ar__list__add_last(arg_asts2, version_ast2);
+    
+    bool ast_set2 = ar__instruction_ast__set_function_arg_asts(ast2, arg_asts2);
+    assert(ast_set2 == true);
     
     bool result2 = ar_instruction_evaluator__evaluate_method(evaluator, ast2);
     assert(result2 == false);
@@ -269,6 +395,22 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     );
     assert(ast3 != NULL);
     
+    // Create and attach expression ASTs - second is integer, others are strings
+    list_t *arg_asts3 = ar__list__create();
+    assert(arg_asts3 != NULL);
+    
+    expression_ast_t *name_ast3 = ar__expression_ast__create_literal_string("test");
+    ar__list__add_last(arg_asts3, name_ast3);
+    
+    expression_ast_t *instructions_ast3 = ar__expression_ast__create_literal_int(42);
+    ar__list__add_last(arg_asts3, instructions_ast3);
+    
+    expression_ast_t *version_ast3 = ar__expression_ast__create_literal_string("1.0.0");
+    ar__list__add_last(arg_asts3, version_ast3);
+    
+    bool ast_set3 = ar__instruction_ast__set_function_arg_asts(ast3, arg_asts3);
+    assert(ast_set3 == true);
+    
     bool result3 = ar_instruction_evaluator__evaluate_method(evaluator, ast3);
     assert(result3 == false);
     
@@ -280,6 +422,22 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
         INST_AST_METHOD, "method", args4, 3, NULL
     );
     assert(ast4 != NULL);
+    
+    // Create and attach expression ASTs - third is double, others are strings
+    list_t *arg_asts4 = ar__list__create();
+    assert(arg_asts4 != NULL);
+    
+    expression_ast_t *name_ast4 = ar__expression_ast__create_literal_string("test");
+    ar__list__add_last(arg_asts4, name_ast4);
+    
+    expression_ast_t *instructions_ast4 = ar__expression_ast__create_literal_string("send(0, 42)");
+    ar__list__add_last(arg_asts4, instructions_ast4);
+    
+    expression_ast_t *version_ast4 = ar__expression_ast__create_literal_double(1.0);
+    ar__list__add_last(arg_asts4, version_ast4);
+    
+    bool ast_set4 = ar__instruction_ast__set_function_arg_asts(ast4, arg_asts4);
+    assert(ast_set4 == true);
     
     bool result4 = ar_instruction_evaluator__evaluate_method(evaluator, ast4);
     assert(result4 == false);

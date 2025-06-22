@@ -12,7 +12,6 @@
 #include "agerun_instruction_ast.h"
 #include "agerun_expression_ast.h"
 #include "agerun_expression_evaluator.h"
-#include "agerun_expression_parser.h"
 #include "agerun_data.h"
 #include "agerun_list.h"
 #include "agerun_heap.h"
@@ -64,55 +63,6 @@ void ar_build_instruction_evaluator__destroy(
     AR__HEAP__FREE(own_evaluator);
 }
 
-/**
- * Extracts function arguments from AST node
- * 
- * @param ref_ast The AST node (borrowed reference)
- * @param expected_count Expected number of arguments
- * @param out_args_list Output parameter for the arguments list (owned by caller)
- * @return Array of argument items or NULL on error
- * @note Ownership: Returns borrowed items array, sets owned list in out_args_list
- */
-static void** _extract_function_args(const instruction_ast_t *ref_ast, size_t expected_count, list_t **out_args_list) {
-    if (!ref_ast || !out_args_list) {
-        return NULL;
-    }
-    
-    *out_args_list = ar__instruction_ast__get_function_args(ref_ast);
-    if (!*out_args_list) {
-        return NULL;
-    }
-    
-    if (ar__list__count(*out_args_list) != expected_count) {
-        ar__list__destroy(*out_args_list);
-        *out_args_list = NULL;
-        return NULL;
-    }
-    
-    void **items = ar__list__items(*out_args_list);
-    if (!items) {
-        ar__list__destroy(*out_args_list);
-        *out_args_list = NULL;
-        return NULL;
-    }
-    
-    return items;
-}
-
-/**
- * Cleans up function arguments
- * 
- * @param items The items array to free (can be NULL)
- * @param own_args The arguments list to destroy (can be NULL)
- */
-static void _cleanup_function_args(void **items, list_t *own_args) {
-    if (items) {
-        AR__HEAP__FREE(items);
-    }
-    if (own_args) {
-        ar__list__destroy(own_args);
-    }
-}
 
 /**
  * Gets memory key path by removing "memory." prefix
@@ -277,7 +227,7 @@ static bool _process_placeholder(
  * @return The evaluated data or NULL on error
  * @note Ownership: Returns owned value
  */
-static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluator, expression_ast_t *ref_ast) {
+static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluator, const expression_ast_t *ref_ast) {
     if (!ref_ast) {
         return NULL;
     }
@@ -300,70 +250,6 @@ static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluat
     }
 }
 
-/**
- * Checks if an expression is a simple memory reference
- * 
- * @param mut_memory The memory map (mutable reference)
- * @param ref_expr The expression string (borrowed reference)
- * @return The referenced data or NULL if not a simple reference
- * @note Ownership: Returns borrowed reference
- */
-static const data_t* _get_memory_reference(
-    data_t *mut_memory,
-    const char *ref_expr
-) {
-    if (!ref_expr || !mut_memory) {
-        return NULL;
-    }
-    
-    // Check if it's a simple "memory" expression
-    if (strcmp(ref_expr, "memory") == 0) {
-        return mut_memory;
-    }
-    
-    // Check if it's a memory.path expression
-    if (strncmp(ref_expr, MEMORY_PREFIX, MEMORY_PREFIX_LEN) == 0) {
-        const char *key_path = ref_expr + MEMORY_PREFIX_LEN;
-        return ar__data__get_map_data(mut_memory, key_path);
-    }
-    
-    // Not a simple memory access
-    return NULL;
-}
-
-/**
- * Parses and evaluates an expression string
- * 
- * @param mut_expr_evaluator Expression evaluator (mutable reference)
- * @param ref_expr The expression string to parse and evaluate
- * @return The evaluated data or NULL on error
- * @note Ownership: Returns owned value
- */
-static data_t* _parse_and_evaluate_expression(
-    expression_evaluator_t *mut_expr_evaluator,
-    const char *ref_expr
-) {
-    if (!ref_expr) {
-        return NULL;
-    }
-    
-    expression_parser_t *parser = ar__expression_parser__create(ref_expr);
-    if (!parser) {
-        return NULL;
-    }
-    
-    expression_ast_t *ast = ar__expression_parser__parse_expression(parser);
-    ar__expression_parser__destroy(parser);
-    
-    if (!ast) {
-        return NULL;
-    }
-    
-    data_t *result = _evaluate_expression_ast(mut_expr_evaluator, ast);
-    ar__expression_ast__destroy(ast);
-    
-    return result;
-}
 
 /**
  * Stores result if instruction has assignment
@@ -422,49 +308,65 @@ bool ar_build_instruction_evaluator__evaluate(
         return false;
     }
     
-    // Get function arguments
-    list_t *own_args = NULL;
-    void **items = _extract_function_args(ref_ast, 2, &own_args);
+    // Get pre-parsed expression ASTs for arguments
+    const list_t *ref_arg_asts = ar__instruction_ast__get_function_arg_asts(ref_ast);
+    if (!ref_arg_asts) {
+        return false;
+    }
+    
+    // Verify we have exactly 2 arguments
+    if (ar__list__count(ref_arg_asts) != 2) {
+        return false;
+    }
+    
+    // Get the argument ASTs array
+    void **items = ar__list__items(ref_arg_asts);
     if (!items) {
         return false;
     }
     
-    const char *ref_template_expr = (const char*)items[0];
-    const char *ref_values_expr = (const char*)items[1];
+    const expression_ast_t *ref_template_ast = (const expression_ast_t*)items[0];
+    const expression_ast_t *ref_values_ast = (const expression_ast_t*)items[1];
     
-    if (!ref_template_expr || !ref_values_expr) {
-        _cleanup_function_args(items, own_args);
+    if (!ref_template_ast || !ref_values_ast) {
+        AR__HEAP__FREE(items);
         return false;
     }
     
-    // Parse and evaluate template expression
-    data_t *own_template_data = _parse_and_evaluate_expression(mut_expr_evaluator, ref_template_expr);
+    // Evaluate template expression AST
+    data_t *own_template_data = _evaluate_expression_ast(mut_expr_evaluator, ref_template_ast);
     if (!own_template_data || ar__data__get_type(own_template_data) != DATA_STRING) {
         if (own_template_data) ar__data__destroy(own_template_data);
-        _cleanup_function_args(items, own_args);
+        AR__HEAP__FREE(items);
         return false;
     }
     
-    // Check if values expression is a simple memory reference
-    const data_t *ref_values_data = _get_memory_reference(mut_memory, ref_values_expr);
+    // Evaluate values expression AST to check for map
+    data_t *temp_values_data = _evaluate_expression_ast(mut_expr_evaluator, ref_values_ast);
+    const data_t *ref_values_data = temp_values_data;
     data_t *own_values_data = NULL;
     
-    if (!ref_values_data) {
-        // Not a simple memory access, evaluate the expression
-        own_values_data = _parse_and_evaluate_expression(mut_expr_evaluator, ref_values_expr);
-        ref_values_data = own_values_data; // Use the evaluated result
+    // If it's a memory access, we get a borrowed reference
+    // If it's a literal or computed expression, we get an owned value
+    expression_ast_type_t values_type = ar__expression_ast__get_type(ref_values_ast);
+    if (values_type == EXPR_AST_MEMORY_ACCESS) {
+        // Memory access returns borrowed reference, don't destroy
+        own_values_data = NULL;
+    } else {
+        // Other expressions return owned values, need to destroy later
+        own_values_data = temp_values_data;
     }
     
     // Validate it's a map
     if (!ref_values_data || ar__data__get_type(ref_values_data) != DATA_MAP) {
         if (own_values_data) ar__data__destroy(own_values_data);
         ar__data__destroy(own_template_data);
-        _cleanup_function_args(items, own_args);
+        AR__HEAP__FREE(items);
         return false;
     }
     
-    // Clean up items array and args list
-    _cleanup_function_args(items, own_args);
+    // Clean up the items array as we're done with it
+    AR__HEAP__FREE(items);
     
     const char *template_str = ar__data__get_string(own_template_data);
     

@@ -5,9 +5,9 @@
 
 #include "agerun_destroy_agent_instruction_evaluator.h"
 #include "agerun_heap.h"
-#include "agerun_expression_parser.h"
 #include "agerun_expression_ast.h"
 #include "agerun_agency.h"
+#include "agerun_list.h"
 #include <string.h>
 #include <stdio.h>
 #include <inttypes.h>
@@ -111,7 +111,7 @@ static data_t* _copy_data_value(const data_t *ref_value) {
 /* Helper function to evaluate an expression AST node using the expression evaluator */
 static data_t* _evaluate_expression_ast(
     expression_evaluator_t *mut_expr_evaluator,
-    expression_ast_t *ref_ast
+    const expression_ast_t *ref_ast
 ) {
     if (!ref_ast) {
         return NULL;
@@ -147,32 +147,6 @@ static data_t* _evaluate_expression_ast(
     }
 }
 
-/* Helper function to parse and evaluate an expression string */
-static data_t* _parse_and_evaluate_expression(
-    expression_evaluator_t *mut_expr_evaluator,
-    const char *ref_expr
-) {
-    if (!ref_expr) {
-        return NULL;
-    }
-    
-    expression_parser_t *parser = ar__expression_parser__create(ref_expr);
-    if (!parser) {
-        return NULL;
-    }
-    
-    expression_ast_t *ast = ar__expression_parser__parse_expression(parser);
-    ar__expression_parser__destroy(parser);
-    
-    if (!ast) {
-        return NULL;
-    }
-    
-    data_t *result = _evaluate_expression_ast(mut_expr_evaluator, ast);
-    ar__expression_ast__destroy(ast);
-    
-    return result;
-}
 
 /* Helper function to store result in memory if assignment path is provided */
 static bool _store_result_if_assigned(
@@ -259,31 +233,34 @@ bool ar_destroy_agent_instruction_evaluator__evaluate(
         return false;
     }
     
-    // Get function arguments
-    list_t *own_args = ar__instruction_ast__get_function_args(ref_ast);
-    if (!own_args) {
+    // Get pre-parsed expression ASTs for arguments
+    const list_t *ref_arg_asts = ar__instruction_ast__get_function_arg_asts(ref_ast);
+    if (!ref_arg_asts) {
         return false;
     }
     
-    size_t arg_count = ar__list__count(own_args);
-    if (arg_count != 1) {
-        ar__list__destroy(own_args);
+    // Verify we have exactly 1 argument
+    if (ar__list__count(ref_arg_asts) != 1) {
         return false;
     }
+    
+    // Get the argument ASTs array
+    void **items = ar__list__items(ref_arg_asts);
+    if (!items) {
+        return false;
+    }
+    
+    const expression_ast_t *ref_agent_id_ast = (const expression_ast_t*)items[0];
+    if (!ref_agent_id_ast) {
+        AR__HEAP__FREE(items);
+        return false;
+    }
+    
+    // Evaluate the agent ID expression AST
+    data_t *own_agent_id = _evaluate_expression_ast(mut_expr_evaluator, ref_agent_id_ast);
     
     bool success = false;
     bool destroy_result = false;
-    
-    // Get array of arguments
-    void **items = ar__list__items(own_args);
-    if (!items) {
-        ar__list__destroy(own_args);
-        return false;
-    }
-    
-    // Extract and evaluate agent ID argument
-    const char *ref_agent_expr = (const char*)items[0];
-    data_t *own_agent_id = _parse_and_evaluate_expression(mut_expr_evaluator, ref_agent_expr);
     
     if (own_agent_id && ar__data__get_type(own_agent_id) == DATA_INTEGER) {
         int64_t agent_id = (int64_t)ar__data__get_integer(own_agent_id);
@@ -295,11 +272,8 @@ bool ar_destroy_agent_instruction_evaluator__evaluate(
         ar__data__destroy(own_agent_id);
     }
     
-    // Free the items array (but not the items themselves)
+    // Free the items array
     AR__HEAP__FREE(items);
-    
-    // Destroy the args list
-    ar__list__destroy(own_args);
     
     // Store result if assigned
     if (success && ar__instruction_ast__has_result_assignment(ref_ast)) {

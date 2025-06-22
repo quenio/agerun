@@ -5,7 +5,6 @@
 
 #include "agerun_method_instruction_evaluator.h"
 #include "agerun_heap.h"
-#include "agerun_expression_parser.h"
 #include "agerun_expression_ast.h"
 #include "agerun_method.h"
 #include "agerun_methodology.h"
@@ -89,42 +88,6 @@ static const char* _get_memory_key_path(const char *ref_path) {
     return ref_path + MEMORY_PREFIX_LEN;
 }
 
-/* Helper function to extract function arguments and validate count */
-static void** _extract_function_args(const instruction_ast_t *ref_ast, size_t expected_count, list_t **out_args_list) {
-    if (!ref_ast || !out_args_list) {
-        return NULL;
-    }
-    
-    *out_args_list = ar__instruction_ast__get_function_args(ref_ast);
-    if (!*out_args_list) {
-        return NULL;
-    }
-    
-    if (ar__list__count(*out_args_list) != expected_count) {
-        ar__list__destroy(*out_args_list);
-        *out_args_list = NULL;
-        return NULL;
-    }
-    
-    void **items = ar__list__items(*out_args_list);
-    if (!items) {
-        ar__list__destroy(*out_args_list);
-        *out_args_list = NULL;
-        return NULL;
-    }
-    
-    return items;
-}
-
-/* Helper function to clean up function args */
-static void _cleanup_function_args(void **items, list_t *own_args) {
-    if (items) {
-        AR__HEAP__FREE(items);
-    }
-    if (own_args) {
-        ar__list__destroy(own_args);
-    }
-}
 
 /* Helper function to create a deep copy of data value */
 static data_t* _copy_data_value(const data_t *ref_value) {
@@ -201,7 +164,7 @@ static data_t* _copy_data_value(const data_t *ref_value) {
 /* Helper function to evaluate an expression AST node using the expression evaluator */
 static data_t* _evaluate_expression_ast(
     expression_evaluator_t *mut_expr_evaluator,
-    expression_ast_t *ref_ast
+    const expression_ast_t *ref_ast
 ) {
     if (!ref_ast) {
         return NULL;
@@ -237,32 +200,6 @@ static data_t* _evaluate_expression_ast(
     }
 }
 
-/* Helper function to parse and evaluate an expression string */
-static data_t* _parse_and_evaluate_expression(
-    expression_evaluator_t *mut_expr_evaluator,
-    const char *ref_expr
-) {
-    if (!ref_expr) {
-        return NULL;
-    }
-    
-    expression_parser_t *parser = ar__expression_parser__create(ref_expr);
-    if (!parser) {
-        return NULL;
-    }
-    
-    expression_ast_t *ast = ar__expression_parser__parse_expression(parser);
-    ar__expression_parser__destroy(parser);
-    
-    if (!ast) {
-        return NULL;
-    }
-    
-    data_t *result = _evaluate_expression_ast(mut_expr_evaluator, ast);
-    ar__expression_ast__destroy(ast);
-    
-    return result;
-}
 
 /* Helper function to store result in memory if assignment path is provided */
 static bool _store_result_if_assigned(
@@ -303,23 +240,38 @@ static bool _evaluate_three_string_args(
     data_t **out_arg2,
     data_t **out_arg3
 ) {
-    // Extract arguments
-    list_t *own_args = NULL;
-    void **items = _extract_function_args(ref_ast, expected_arg_count, &own_args);
+    // Get pre-parsed expression ASTs for arguments
+    const list_t *ref_arg_asts = ar__instruction_ast__get_function_arg_asts(ref_ast);
+    if (!ref_arg_asts) {
+        return false;
+    }
+    
+    // Verify we have exactly the expected number of arguments
+    if (ar__list__count(ref_arg_asts) != expected_arg_count) {
+        return false;
+    }
+    
+    // Get the argument ASTs array
+    void **items = ar__list__items(ref_arg_asts);
     if (!items) {
         return false;
     }
     
-    // Parse and evaluate arguments
-    const char *ref_expr1 = (const char*)items[0];
-    const char *ref_expr2 = (const char*)items[1];
-    const char *ref_expr3 = (const char*)items[2];
+    const expression_ast_t *ref_ast1 = (const expression_ast_t*)items[0];
+    const expression_ast_t *ref_ast2 = (const expression_ast_t*)items[1];
+    const expression_ast_t *ref_ast3 = (const expression_ast_t*)items[2];
     
-    *out_arg1 = _parse_and_evaluate_expression(mut_expr_evaluator, ref_expr1);
-    *out_arg2 = _parse_and_evaluate_expression(mut_expr_evaluator, ref_expr2);
-    *out_arg3 = _parse_and_evaluate_expression(mut_expr_evaluator, ref_expr3);
+    if (!ref_ast1 || !ref_ast2 || !ref_ast3) {
+        AR__HEAP__FREE(items);
+        return false;
+    }
     
-    _cleanup_function_args(items, own_args);
+    // Evaluate expression ASTs
+    *out_arg1 = _evaluate_expression_ast(mut_expr_evaluator, ref_ast1);
+    *out_arg2 = _evaluate_expression_ast(mut_expr_evaluator, ref_ast2);
+    *out_arg3 = _evaluate_expression_ast(mut_expr_evaluator, ref_ast3);
+    
+    AR__HEAP__FREE(items);
     
     // Validate all arguments are strings
     if (*out_arg1 && *out_arg2 && *out_arg3 &&

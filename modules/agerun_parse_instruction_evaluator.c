@@ -8,7 +8,6 @@
 #include "agerun_data.h"
 #include "agerun_list.h"
 #include "agerun_instruction_ast.h"
-#include "agerun_expression_parser.h"
 #include "agerun_expression_ast.h"
 #include "agerun_expression_evaluator.h"
 #include <string.h>
@@ -26,10 +25,7 @@ static const char* MEMORY_PREFIX = "memory.";
 static const size_t MEMORY_PREFIX_LEN = 7;
 
 /* Forward declarations of helper functions */
-static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluator, expression_ast_t *ref_ast);
-static void** _extract_function_args(const instruction_ast_t *ref_ast, size_t expected_count, list_t **out_args_list);
-static void _cleanup_function_args(void **items, list_t *own_args);
-static data_t* _parse_and_evaluate_expression(expression_evaluator_t *mut_expr_evaluator, const char *ref_expr);
+static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluator, const expression_ast_t *ref_ast);
 static const char* _get_memory_key_path(const char *ref_path);
 static bool _store_result_if_assigned(data_t *mut_memory, const instruction_ast_t *ref_ast, data_t *own_result);
 static data_t* _copy_data_value(const data_t *ref_value);
@@ -48,42 +44,6 @@ static const char* _get_memory_key_path(const char *ref_path) {
     return ref_path + MEMORY_PREFIX_LEN;
 }
 
-/* Helper function to extract function arguments and validate count */
-static void** _extract_function_args(const instruction_ast_t *ref_ast, size_t expected_count, list_t **out_args_list) {
-    if (!ref_ast || !out_args_list) {
-        return NULL;
-    }
-    
-    *out_args_list = ar__instruction_ast__get_function_args(ref_ast);
-    if (!*out_args_list) {
-        return NULL;
-    }
-    
-    if (ar__list__count(*out_args_list) != expected_count) {
-        ar__list__destroy(*out_args_list);
-        *out_args_list = NULL;
-        return NULL;
-    }
-    
-    void **items = ar__list__items(*out_args_list);
-    if (!items) {
-        ar__list__destroy(*out_args_list);
-        *out_args_list = NULL;
-        return NULL;
-    }
-    
-    return items;
-}
-
-/* Helper function to clean up function args */
-static void _cleanup_function_args(void **items, list_t *own_args) {
-    if (items) {
-        AR__HEAP__FREE(items);
-    }
-    if (own_args) {
-        ar__list__destroy(own_args);
-    }
-}
 
 /* Helper function to create a deep copy of data value */
 static data_t* _copy_data_value(const data_t *ref_value) {
@@ -187,32 +147,9 @@ static bool _store_result_if_assigned(
     return true;
 }
 
-/* Helper function to parse and evaluate an expression string */
-static data_t* _parse_and_evaluate_expression(expression_evaluator_t *mut_expr_evaluator, const char *ref_expr) {
-    if (!ref_expr) {
-        return NULL;
-    }
-    
-    expression_parser_t *parser = ar__expression_parser__create(ref_expr);
-    if (!parser) {
-        return NULL;
-    }
-    
-    expression_ast_t *ast = ar__expression_parser__parse_expression(parser);
-    ar__expression_parser__destroy(parser);
-    
-    if (!ast) {
-        return NULL;
-    }
-    
-    data_t *result = _evaluate_expression_ast(mut_expr_evaluator, ast);
-    ar__expression_ast__destroy(ast);
-    
-    return result;
-}
 
 /* Helper function to evaluate an expression AST node using the expression evaluator */
-static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluator, expression_ast_t *ref_ast) {
+static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluator, const expression_ast_t *ref_ast) {
     if (!ref_ast) {
         return NULL;
     }
@@ -325,43 +262,53 @@ bool ar_parse_instruction_evaluator__evaluate(
         return false;
     }
     
-    // Get function arguments
-    list_t *own_args = NULL;
-    void **items = _extract_function_args(ref_ast, 2, &own_args);
+    // Get pre-parsed expression ASTs for arguments
+    const list_t *ref_arg_asts = ar__instruction_ast__get_function_arg_asts(ref_ast);
+    if (!ref_arg_asts) {
+        return false;
+    }
+    
+    // Verify we have exactly 2 arguments
+    if (ar__list__count(ref_arg_asts) != 2) {
+        return false;
+    }
+    
+    // Get the argument ASTs array
+    void **items = ar__list__items(ref_arg_asts);
     if (!items) {
         return false;
     }
     
-    const char *ref_template_expr = (const char*)items[0];
-    const char *ref_input_expr = (const char*)items[1];
+    const expression_ast_t *ref_template_ast = (const expression_ast_t*)items[0];
+    const expression_ast_t *ref_input_ast = (const expression_ast_t*)items[1];
     
-    if (!ref_template_expr || !ref_input_expr) {
-        _cleanup_function_args(items, own_args);
+    if (!ref_template_ast || !ref_input_ast) {
+        AR__HEAP__FREE(items);
         return false;
     }
     
-    // Parse and evaluate template expression
-    data_t *own_template_data = _parse_and_evaluate_expression(mut_evaluator->ref_expr_evaluator, ref_template_expr);
+    // Evaluate template expression AST
+    data_t *own_template_data = _evaluate_expression_ast(mut_evaluator->ref_expr_evaluator, ref_template_ast);
     if (!own_template_data || ar__data__get_type(own_template_data) != DATA_STRING) {
         if (own_template_data) ar__data__destroy(own_template_data);
-        _cleanup_function_args(items, own_args);
+        AR__HEAP__FREE(items);
         return false;
     }
     
-    // Parse and evaluate input expression
-    data_t *own_input_data = _parse_and_evaluate_expression(mut_evaluator->ref_expr_evaluator, ref_input_expr);
+    // Evaluate input expression AST
+    data_t *own_input_data = _evaluate_expression_ast(mut_evaluator->ref_expr_evaluator, ref_input_ast);
     if (!own_input_data || ar__data__get_type(own_input_data) != DATA_STRING) {
         if (own_input_data) ar__data__destroy(own_input_data);
         ar__data__destroy(own_template_data);
-        _cleanup_function_args(items, own_args);
+        AR__HEAP__FREE(items);
         return false;
     }
     
     const char *template_str = ar__data__get_string(own_template_data);
     const char *input_str = ar__data__get_string(own_input_data);
     
-    // Clean up items array and args list
-    _cleanup_function_args(items, own_args);
+    // Clean up the items array as we're done with it
+    AR__HEAP__FREE(items);
     
     // Create result map
     data_t *own_result = ar__data__create_map();

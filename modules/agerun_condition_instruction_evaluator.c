@@ -5,7 +5,6 @@
 
 #include "agerun_condition_instruction_evaluator.h"
 #include "agerun_heap.h"
-#include "agerun_expression_parser.h"
 #include "agerun_expression_ast.h"
 #include "agerun_list.h"
 #include <assert.h>
@@ -38,42 +37,6 @@ static const char* _get_memory_key_path(const char *ref_path) {
     return ref_path + MEMORY_PREFIX_LEN;
 }
 
-/* Helper function to extract function arguments from AST node */
-static void** _extract_function_args(const instruction_ast_t *ref_ast, size_t expected_count, list_t **out_args_list) {
-    // Get the argument list from the AST
-    list_t *own_args = ar__instruction_ast__get_function_args(ref_ast);
-    if (!own_args) {
-        return NULL;
-    }
-    
-    // Check argument count
-    size_t count = ar__list__count(own_args);
-    if (count != expected_count) {
-        ar__list__destroy(own_args);
-        return NULL;
-    }
-    
-    // Get items array (borrowed reference)
-    void **items = ar__list__items(own_args);
-    if (!items) {
-        ar__list__destroy(own_args);
-        return NULL;
-    }
-    
-    // Return the items array and pass ownership of the list to caller
-    *out_args_list = own_args;
-    return items;
-}
-
-/* Helper function to clean up function arguments */
-static void _cleanup_function_args(void **own_items, list_t *own_args) {
-    if (own_items) {
-        AR__HEAP__FREE(own_items);
-    }
-    if (own_args) {
-        ar__list__destroy(own_args);
-    }
-}
 
 /* Helper function to create a deep copy of data value */
 static data_t* _copy_data_value(const data_t *ref_value) {
@@ -148,7 +111,7 @@ static data_t* _copy_data_value(const data_t *ref_value) {
 }
 
 /* Helper function to evaluate an expression AST node using the expression evaluator */
-static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluator, expression_ast_t *ref_ast) {
+static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluator, const expression_ast_t *ref_ast) {
     if (!ref_ast) {
         return NULL;
     }
@@ -239,42 +202,36 @@ bool ar_condition_instruction_evaluator__evaluate(
         return false;
     }
     
-    // Get function arguments
-    list_t *own_args = NULL;
-    void **items = _extract_function_args(ref_ast, 3, &own_args);
+    // Get pre-parsed expression ASTs for arguments
+    const list_t *ref_arg_asts = ar__instruction_ast__get_function_arg_asts(ref_ast);
+    if (!ref_arg_asts) {
+        return false;
+    }
+    
+    // Verify we have exactly 3 arguments
+    if (ar__list__count(ref_arg_asts) != 3) {
+        return false;
+    }
+    
+    // Get the argument ASTs array
+    void **items = ar__list__items(ref_arg_asts);
     if (!items) {
         return false;
     }
     
-    const char *ref_condition_expr = (const char*)items[0];
-    const char *ref_true_expr = (const char*)items[1];
-    const char *ref_false_expr = (const char*)items[2];
+    const expression_ast_t *ref_condition_ast = (const expression_ast_t*)items[0];
+    const expression_ast_t *ref_true_ast = (const expression_ast_t*)items[1];
+    const expression_ast_t *ref_false_ast = (const expression_ast_t*)items[2];
     
-    if (!ref_condition_expr || !ref_true_expr || !ref_false_expr) {
-        _cleanup_function_args(items, own_args);
+    if (!ref_condition_ast || !ref_true_ast || !ref_false_ast) {
+        AR__HEAP__FREE(items);
         return false;
     }
     
-    // Parse and evaluate condition expression
-    expression_parser_t *parser = ar__expression_parser__create(ref_condition_expr);
-    if (!parser) {
-        _cleanup_function_args(items, own_args);
-        return false;
-    }
-    
-    expression_ast_t *condition_ast = ar__expression_parser__parse_expression(parser);
-    ar__expression_parser__destroy(parser);
-    
-    if (!condition_ast) {
-        _cleanup_function_args(items, own_args);
-        return false;
-    }
-    
-    data_t *own_condition_data = _evaluate_expression_ast(mut_evaluator->ref_expr_evaluator, condition_ast);
-    ar__expression_ast__destroy(condition_ast);
-    
+    // Evaluate condition expression
+    data_t *own_condition_data = _evaluate_expression_ast(mut_evaluator->ref_expr_evaluator, ref_condition_ast);
     if (!own_condition_data) {
-        _cleanup_function_args(items, own_args);
+        AR__HEAP__FREE(items);
         return false;
     }
     
@@ -285,34 +242,18 @@ bool ar_condition_instruction_evaluator__evaluate(
     }
     ar__data__destroy(own_condition_data);
     
-    // Select which expression to evaluate based on condition
-    const char *ref_expr_to_eval = condition_is_true ? ref_true_expr : ref_false_expr;
+    // Select which expression AST to evaluate based on condition
+    const expression_ast_t *ref_ast_to_eval = condition_is_true ? ref_true_ast : ref_false_ast;
     
-    // Parse and evaluate the selected expression
-    parser = ar__expression_parser__create(ref_expr_to_eval);
-    if (!parser) {
-        _cleanup_function_args(items, own_args);
-        return false;
-    }
+    // Evaluate the selected expression AST
+    data_t *own_result = _evaluate_expression_ast(mut_evaluator->ref_expr_evaluator, ref_ast_to_eval);
     
-    expression_ast_t *value_ast = ar__expression_parser__parse_expression(parser);
-    ar__expression_parser__destroy(parser);
-    
-    if (!value_ast) {
-        _cleanup_function_args(items, own_args);
-        return false;
-    }
-    
-    data_t *own_result = _evaluate_expression_ast(mut_evaluator->ref_expr_evaluator, value_ast);
-    ar__expression_ast__destroy(value_ast);
+    // Clean up the items array as we're done with it
+    AR__HEAP__FREE(items);
     
     if (!own_result) {
-        _cleanup_function_args(items, own_args);
         return false;
     }
-    
-    // Clean up items array and args list
-    _cleanup_function_args(items, own_args);
     
     // Handle result assignment if present
     const char *ref_result_path = ar__instruction_ast__get_function_result_path(ref_ast);

@@ -7,6 +7,7 @@
 #include "agerun_instruction_evaluator.h"
 #include "agerun_expression_evaluator.h"
 #include "agerun_instruction_ast.h"
+#include "agerun_expression_ast.h"
 #include "agerun_data.h"
 #include "agerun_methodology.h"
 #include "agerun_agency.h"
@@ -195,6 +196,12 @@ static void test_instruction_evaluator__evaluate_assignment_uses_instance(void) 
     // When evaluating an assignment instruction: memory.test := 123
     instruction_ast_t *ast = ar__instruction_ast__create_assignment("memory.test", "123");
     assert(ast != NULL);
+    
+    // Create and attach the expression AST for the assignment
+    expression_ast_t *expr_ast = ar__expression_ast__create_literal_int(123);
+    assert(expr_ast != NULL);
+    bool ast_set = ar__instruction_ast__set_assignment_expression_ast(ast, expr_ast);
+    assert(ast_set == true);
     
     bool result = ar_instruction_evaluator__evaluate_assignment(evaluator, ast);
     

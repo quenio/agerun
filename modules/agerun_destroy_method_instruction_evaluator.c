@@ -5,11 +5,11 @@
 
 #include "agerun_destroy_method_instruction_evaluator.h"
 #include "agerun_heap.h"
-#include "agerun_expression_parser.h"
 #include "agerun_expression_ast.h"
 #include "agerun_agency.h"
 #include "agerun_method.h"
 #include "agerun_methodology.h"
+#include "agerun_list.h"
 #include <string.h>
 #include <stdio.h>
 #include <inttypes.h>
@@ -113,7 +113,7 @@ static data_t* _copy_data_value(const data_t *ref_value) {
 /* Helper function to evaluate an expression AST node using the expression evaluator */
 static data_t* _evaluate_expression_ast(
     expression_evaluator_t *mut_expr_evaluator,
-    expression_ast_t *ref_ast
+    const expression_ast_t *ref_ast
 ) {
     if (!ref_ast) {
         return NULL;
@@ -149,32 +149,6 @@ static data_t* _evaluate_expression_ast(
     }
 }
 
-/* Helper function to parse and evaluate an expression string */
-static data_t* _parse_and_evaluate_expression(
-    expression_evaluator_t *mut_expr_evaluator,
-    const char *ref_expr
-) {
-    if (!ref_expr) {
-        return NULL;
-    }
-    
-    expression_parser_t *parser = ar__expression_parser__create(ref_expr);
-    if (!parser) {
-        return NULL;
-    }
-    
-    expression_ast_t *ast = ar__expression_parser__parse_expression(parser);
-    ar__expression_parser__destroy(parser);
-    
-    if (!ast) {
-        return NULL;
-    }
-    
-    data_t *result = _evaluate_expression_ast(mut_expr_evaluator, ast);
-    ar__expression_ast__destroy(ast);
-    
-    return result;
-}
 
 /* Helper function to store result in memory if assignment path is provided */
 static bool _store_result_if_assigned(
@@ -261,35 +235,37 @@ bool ar_destroy_method_instruction_evaluator__evaluate(
         return false;
     }
     
-    // Get function arguments
-    list_t *own_args = ar__instruction_ast__get_function_args(ref_ast);
-    if (!own_args) {
+    // Get pre-parsed expression ASTs for arguments
+    const list_t *ref_arg_asts = ar__instruction_ast__get_function_arg_asts(ref_ast);
+    if (!ref_arg_asts) {
         return false;
     }
     
-    size_t arg_count = ar__list__count(own_args);
-    if (arg_count != 2) {
-        ar__list__destroy(own_args);
+    // Verify we have exactly 2 arguments
+    if (ar__list__count(ref_arg_asts) != 2) {
         return false;
     }
+    
+    // Get the argument ASTs array
+    void **items = ar__list__items(ref_arg_asts);
+    if (!items) {
+        return false;
+    }
+    
+    const expression_ast_t *ref_name_ast = (const expression_ast_t*)items[0];
+    const expression_ast_t *ref_version_ast = (const expression_ast_t*)items[1];
+    
+    if (!ref_name_ast || !ref_version_ast) {
+        AR__HEAP__FREE(items);
+        return false;
+    }
+    
+    // Evaluate expression ASTs
+    data_t *own_name = _evaluate_expression_ast(mut_expr_evaluator, ref_name_ast);
+    data_t *own_version = _evaluate_expression_ast(mut_expr_evaluator, ref_version_ast);
     
     bool success = false;
     bool destroy_result = false;
-    
-    // Get array of arguments
-    void **items = ar__list__items(own_args);
-    if (!items) {
-        ar__list__destroy(own_args);
-        return false;
-    }
-    
-    // Extract arguments
-    const char *ref_name_expr = (const char*)items[0];
-    const char *ref_version_expr = (const char*)items[1];
-    
-    // Evaluate method name and version
-    data_t *own_name = _parse_and_evaluate_expression(mut_expr_evaluator, ref_name_expr);
-    data_t *own_version = _parse_and_evaluate_expression(mut_expr_evaluator, ref_version_expr);
     
     if (own_name && own_version &&
         ar__data__get_type(own_name) == DATA_STRING &&
@@ -347,11 +323,8 @@ bool ar_destroy_method_instruction_evaluator__evaluate(
     if (own_name) ar__data__destroy(own_name);
     if (own_version) ar__data__destroy(own_version);
     
-    // Free the items array (but not the items themselves)
+    // Free the items array
     AR__HEAP__FREE(items);
-    
-    // Destroy the args list
-    ar__list__destroy(own_args);
     
     // Store result if assigned
     if (success && ar__instruction_ast__has_result_assignment(ref_ast)) {

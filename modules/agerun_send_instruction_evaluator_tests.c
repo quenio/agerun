@@ -6,7 +6,9 @@
 #include "agerun_instruction_evaluator.h"
 #include "agerun_expression_evaluator.h"
 #include "agerun_instruction_ast.h"
+#include "agerun_expression_ast.h"
 #include "agerun_data.h"
+#include "agerun_list.h"
 
 static void test_send_instruction_evaluator__create_destroy(void) {
     // Given memory and expression evaluator
@@ -51,6 +53,21 @@ static void test_send_instruction_evaluator__evaluate_with_instance(void) {
     );
     assert(own_ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *own_arg_asts = ar__list__create();
+    assert(own_arg_asts != NULL);
+    
+    expression_ast_t *own_agent_ast = ar__expression_ast__create_literal_int(0);
+    assert(own_agent_ast != NULL);
+    ar__list__add_last(own_arg_asts, own_agent_ast);
+    
+    expression_ast_t *own_msg_ast = ar__expression_ast__create_literal_int(42);
+    assert(own_msg_ast != NULL);
+    ar__list__add_last(own_arg_asts, own_msg_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(own_ast, own_arg_asts);
+    assert(ast_set == true);
+    
     // When evaluating the send
     bool result = ar_send_instruction_evaluator__evaluate(own_evaluator, own_ast);
     
@@ -83,6 +100,21 @@ static void test_instruction_evaluator__evaluate_send_integer_message(void) {
         INST_AST_SEND, "send", args, 2, NULL
     );
     assert(ast != NULL);
+    
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    expression_ast_t *agent_ast = ar__expression_ast__create_literal_int(0);
+    assert(agent_ast != NULL);
+    ar__list__add_last(arg_asts, agent_ast);
+    
+    expression_ast_t *msg_ast = ar__expression_ast__create_literal_int(42);
+    assert(msg_ast != NULL);
+    ar__list__add_last(arg_asts, msg_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
     
     // When evaluating the send
     bool result = ar_instruction_evaluator__evaluate_send(evaluator, ast);
@@ -117,6 +149,21 @@ static void test_instruction_evaluator__evaluate_send_string_message(void) {
     );
     assert(ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    expression_ast_t *agent_ast = ar__expression_ast__create_literal_int(0);
+    assert(agent_ast != NULL);
+    ar__list__add_last(arg_asts, agent_ast);
+    
+    expression_ast_t *msg_ast = ar__expression_ast__create_literal_string("hello");
+    assert(msg_ast != NULL);
+    ar__list__add_last(arg_asts, msg_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+    
     // When evaluating the send
     bool result = ar_instruction_evaluator__evaluate_send(evaluator, ast);
     
@@ -149,6 +196,21 @@ static void test_instruction_evaluator__evaluate_send_with_result(void) {
         INST_AST_SEND, "send", args, 2, "memory.result"
     );
     assert(ast != NULL);
+    
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    expression_ast_t *agent_ast = ar__expression_ast__create_literal_int(0);
+    assert(agent_ast != NULL);
+    ar__list__add_last(arg_asts, agent_ast);
+    
+    expression_ast_t *msg_ast = ar__expression_ast__create_literal_string("test");
+    assert(msg_ast != NULL);
+    ar__list__add_last(arg_asts, msg_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
     
     // When evaluating the send
     bool result = ar_instruction_evaluator__evaluate_send(evaluator, ast);
@@ -192,6 +254,22 @@ static void test_instruction_evaluator__evaluate_send_memory_reference(void) {
     );
     assert(ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    expression_ast_t *agent_ast = ar__expression_ast__create_literal_int(0);
+    assert(agent_ast != NULL);
+    ar__list__add_last(arg_asts, agent_ast);
+    
+    const char *msg_path[] = {"msg"};
+    expression_ast_t *msg_ast = ar__expression_ast__create_memory_access("memory", msg_path, 1);
+    assert(msg_ast != NULL);
+    ar__list__add_last(arg_asts, msg_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+    
     // When evaluating the send
     bool result = ar_instruction_evaluator__evaluate_send(evaluator, ast);
     
@@ -224,6 +302,17 @@ static void test_instruction_evaluator__evaluate_send_invalid_args(void) {
         INST_AST_SEND, "send", args, 1, NULL
     );
     assert(ast != NULL);
+    
+    // Create and attach the expression ASTs for arguments (only one arg)
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    expression_ast_t *agent_ast = ar__expression_ast__create_literal_int(0);
+    assert(agent_ast != NULL);
+    ar__list__add_last(arg_asts, agent_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
     
     // When evaluating the send
     bool result = ar_instruction_evaluator__evaluate_send(evaluator, ast);

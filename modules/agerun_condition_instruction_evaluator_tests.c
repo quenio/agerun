@@ -5,7 +5,9 @@
 #include "agerun_instruction_evaluator.h"
 #include "agerun_expression_evaluator.h"
 #include "agerun_instruction_ast.h"
+#include "agerun_expression_ast.h"
 #include "agerun_data.h"
+#include "agerun_list.h"
 #include "agerun_condition_instruction_evaluator.h"
 
 static void test_condition_instruction_evaluator__create_destroy(void) {
@@ -52,6 +54,28 @@ static void test_condition_instruction_evaluator__evaluate_with_instance(void) {
     );
     assert(own_ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Condition: memory.x > 5
+    const char *x_path[] = {"x"};
+    expression_ast_t *x_ast = ar__expression_ast__create_memory_access("memory", x_path, 1);
+    expression_ast_t *five_ast = ar__expression_ast__create_literal_int(5);
+    expression_ast_t *cond_ast = ar__expression_ast__create_binary_op(OP_GREATER, x_ast, five_ast);
+    ar__list__add_last(arg_asts, cond_ast);
+    
+    // True value: 100
+    expression_ast_t *true_ast = ar__expression_ast__create_literal_int(100);
+    ar__list__add_last(arg_asts, true_ast);
+    
+    // False value: 200
+    expression_ast_t *false_ast = ar__expression_ast__create_literal_int(200);
+    ar__list__add_last(arg_asts, false_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(own_ast, arg_asts);
+    assert(ast_set == true);
+    
     // When evaluating using the instance
     bool result = ar_condition_instruction_evaluator__evaluate(own_evaluator, own_ast);
     
@@ -91,6 +115,26 @@ static void test_condition_instruction_evaluator__evaluate_without_legacy(void) 
     );
     assert(own_ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Condition: memory.flag
+    const char *flag_path[] = {"flag"};
+    expression_ast_t *cond_ast = ar__expression_ast__create_memory_access("memory", flag_path, 1);
+    ar__list__add_last(arg_asts, cond_ast);
+    
+    // True value: "yes"
+    expression_ast_t *true_ast = ar__expression_ast__create_literal_string("yes");
+    ar__list__add_last(arg_asts, true_ast);
+    
+    // False value: "no"
+    expression_ast_t *false_ast = ar__expression_ast__create_literal_string("no");
+    ar__list__add_last(arg_asts, false_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(own_ast, arg_asts);
+    assert(ast_set == true);
+    
     // When evaluating using the instance-based interface
     bool result = ar_condition_instruction_evaluator__evaluate(own_evaluator, own_ast);
     
@@ -129,6 +173,28 @@ static void test_instruction_evaluator__evaluate_if_true_condition(void) {
     );
     assert(ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Condition: memory.x > 5
+    const char *x_path[] = {"x"};
+    expression_ast_t *x_ast = ar__expression_ast__create_memory_access("memory", x_path, 1);
+    expression_ast_t *five_ast = ar__expression_ast__create_literal_int(5);
+    expression_ast_t *cond_ast = ar__expression_ast__create_binary_op(OP_GREATER, x_ast, five_ast);
+    ar__list__add_last(arg_asts, cond_ast);
+    
+    // True value: 100
+    expression_ast_t *true_ast = ar__expression_ast__create_literal_int(100);
+    ar__list__add_last(arg_asts, true_ast);
+    
+    // False value: 200
+    expression_ast_t *false_ast = ar__expression_ast__create_literal_int(200);
+    ar__list__add_last(arg_asts, false_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+    
     // When evaluating the if instruction
     bool result = ar_instruction_evaluator__evaluate_if(evaluator, ast);
     
@@ -166,6 +232,28 @@ static void test_instruction_evaluator__evaluate_if_false_condition(void) {
         INST_AST_IF, "if", args, 3, "memory.result"
     );
     assert(ast != NULL);
+    
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Condition: memory.x > 5 (will be false since x=3)
+    const char *x_path[] = {"x"};
+    expression_ast_t *x_ast = ar__expression_ast__create_memory_access("memory", x_path, 1);
+    expression_ast_t *five_ast = ar__expression_ast__create_literal_int(5);
+    expression_ast_t *cond_ast = ar__expression_ast__create_binary_op(OP_GREATER, x_ast, five_ast);
+    ar__list__add_last(arg_asts, cond_ast);
+    
+    // True value: 100
+    expression_ast_t *true_ast = ar__expression_ast__create_literal_int(100);
+    ar__list__add_last(arg_asts, true_ast);
+    
+    // False value: 200
+    expression_ast_t *false_ast = ar__expression_ast__create_literal_int(200);
+    ar__list__add_last(arg_asts, false_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
     
     // When evaluating the if instruction
     bool result = ar_instruction_evaluator__evaluate_if(evaluator, ast);
@@ -207,6 +295,34 @@ static void test_instruction_evaluator__evaluate_if_with_expressions(void) {
     );
     assert(ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Condition: memory.flag
+    const char *flag_path[] = {"flag"};
+    expression_ast_t *flag_ast = ar__expression_ast__create_memory_access("memory", flag_path, 1);
+    ar__list__add_last(arg_asts, flag_ast);
+    
+    // True value: memory.a + memory.b
+    const char *a_path[] = {"a"};
+    const char *b_path[] = {"b"};
+    expression_ast_t *a_ast = ar__expression_ast__create_memory_access("memory", a_path, 1);
+    expression_ast_t *b_ast = ar__expression_ast__create_memory_access("memory", b_path, 1);
+    expression_ast_t *add_ast = ar__expression_ast__create_binary_op(OP_ADD, a_ast, b_ast);
+    ar__list__add_last(arg_asts, add_ast);
+    
+    // False value: memory.a - memory.b
+    const char *a2_path[] = {"a"};
+    const char *b2_path[] = {"b"};
+    expression_ast_t *a2_ast = ar__expression_ast__create_memory_access("memory", a2_path, 1);
+    expression_ast_t *b2_ast = ar__expression_ast__create_memory_access("memory", b2_path, 1);
+    expression_ast_t *sub_ast = ar__expression_ast__create_binary_op(OP_SUBTRACT, a2_ast, b2_ast);
+    ar__list__add_last(arg_asts, sub_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+    
     // When evaluating the if instruction
     bool result = ar_instruction_evaluator__evaluate_if(evaluator, ast);
     
@@ -247,6 +363,28 @@ static void test_instruction_evaluator__evaluate_if_nested(void) {
     );
     assert(ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Condition: memory.x > 10
+    const char *x_path[] = {"x"};
+    expression_ast_t *x_ast = ar__expression_ast__create_memory_access("memory", x_path, 1);
+    expression_ast_t *ten_ast = ar__expression_ast__create_literal_int(10);
+    expression_ast_t *cond_ast = ar__expression_ast__create_binary_op(OP_GREATER, x_ast, ten_ast);
+    ar__list__add_last(arg_asts, cond_ast);
+    
+    // True value: "medium"
+    expression_ast_t *true_ast = ar__expression_ast__create_literal_string("medium");
+    ar__list__add_last(arg_asts, true_ast);
+    
+    // False value: "small"
+    expression_ast_t *false_ast = ar__expression_ast__create_literal_string("small");
+    ar__list__add_last(arg_asts, false_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+    
     // When evaluating the if instruction
     bool result = ar_instruction_evaluator__evaluate_if(evaluator, ast);
     
@@ -284,17 +422,33 @@ static void test_instruction_evaluator__evaluate_if_invalid_args(void) {
     );
     assert(ast1 != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts1 = ar__list__create();
+    assert(arg_asts1 != NULL);
+    
+    // Only 2 arguments instead of required 3
+    expression_ast_t *one_ast = ar__expression_ast__create_literal_int(1);
+    ar__list__add_last(arg_asts1, one_ast);
+    
+    expression_ast_t *hundred_ast = ar__expression_ast__create_literal_int(100);
+    ar__list__add_last(arg_asts1, hundred_ast);
+    
+    bool ast_set1 = ar__instruction_ast__set_function_arg_asts(ast1, arg_asts1);
+    assert(ast_set1 == true);
+    
     bool result1 = ar_instruction_evaluator__evaluate_if(evaluator, ast1);
     assert(result1 == false);
     
     ar__instruction_ast__destroy(ast1);
     
-    // Test case 2: Invalid condition expression
+    // Test case 2: Invalid condition expression (NULL AST)
     const char *args2[] = {"invalid expression", "100", "200"};
     instruction_ast_t *ast2 = ar__instruction_ast__create_function_call(
         INST_AST_IF, "if", args2, 3, NULL
     );
     assert(ast2 != NULL);
+    
+    // Don't attach any ASTs to simulate parsing failure
     
     bool result2 = ar_instruction_evaluator__evaluate_if(evaluator, ast2);
     assert(result2 == false);

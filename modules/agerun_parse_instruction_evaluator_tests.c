@@ -5,7 +5,9 @@
 #include "agerun_instruction_evaluator.h"
 #include "agerun_expression_evaluator.h"
 #include "agerun_instruction_ast.h"
+#include "agerun_expression_ast.h"
 #include "agerun_data.h"
+#include "agerun_list.h"
 #include "agerun_parse_instruction_evaluator.h"
 
 static void test_parse_instruction_evaluator__create_destroy(void) {
@@ -51,6 +53,21 @@ static void test_parse_instruction_evaluator__evaluate_with_instance(void) {
     );
     assert(own_ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Template: "name={name}"
+    expression_ast_t *template_ast = ar__expression_ast__create_literal_string("name={name}");
+    ar__list__add_last(arg_asts, template_ast);
+    
+    // Input: "name=John"
+    expression_ast_t *input_ast = ar__expression_ast__create_literal_string("name=John");
+    ar__list__add_last(arg_asts, input_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(own_ast, arg_asts);
+    assert(ast_set == true);
+    
     // When evaluating using the instance
     bool result = ar_parse_instruction_evaluator__evaluate(own_evaluator, own_ast);
     
@@ -92,6 +109,21 @@ static void test_parse_instruction_evaluator__evaluate_without_legacy(void) {
         INST_AST_PARSE, "parse", args, 2, "memory.result"
     );
     assert(own_ast != NULL);
+    
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Template: "user={username}, role={role}"
+    expression_ast_t *template_ast = ar__expression_ast__create_literal_string("user={username}, role={role}");
+    ar__list__add_last(arg_asts, template_ast);
+    
+    // Input: "user=alice, role=admin"
+    expression_ast_t *input_ast = ar__expression_ast__create_literal_string("user=alice, role=admin");
+    ar__list__add_last(arg_asts, input_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(own_ast, arg_asts);
+    assert(ast_set == true);
     
     // When evaluating using the instance-based interface
     bool result = ar_parse_instruction_evaluator__evaluate(own_evaluator, own_ast);
@@ -139,6 +171,21 @@ static void test_instruction_evaluator__evaluate_parse_simple(void) {
     );
     assert(ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Template: "name={name}"
+    expression_ast_t *template_ast = ar__expression_ast__create_literal_string("name={name}");
+    ar__list__add_last(arg_asts, template_ast);
+    
+    // Input: "name=John"
+    expression_ast_t *input_ast = ar__expression_ast__create_literal_string("name=John");
+    ar__list__add_last(arg_asts, input_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+    
     // When evaluating the parse instruction
     bool result = ar_instruction_evaluator__evaluate_parse(evaluator, ast);
     
@@ -180,6 +227,21 @@ static void test_instruction_evaluator__evaluate_parse_multiple_variables(void) 
         INST_AST_PARSE, "parse", args, 2, "memory.result"
     );
     assert(ast != NULL);
+    
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Template: "user={username}, role={role}"
+    expression_ast_t *template_ast = ar__expression_ast__create_literal_string("user={username}, role={role}");
+    ar__list__add_last(arg_asts, template_ast);
+    
+    // Input: "user=alice, role=admin"
+    expression_ast_t *input_ast = ar__expression_ast__create_literal_string("user=alice, role=admin");
+    ar__list__add_last(arg_asts, input_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
     
     // When evaluating the parse instruction
     bool result = ar_instruction_evaluator__evaluate_parse(evaluator, ast);
@@ -227,6 +289,21 @@ static void test_instruction_evaluator__evaluate_parse_with_types(void) {
         INST_AST_PARSE, "parse", args, 2, "memory.result"
     );
     assert(ast != NULL);
+    
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Template: "age={age}, score={score}, name={name}"
+    expression_ast_t *template_ast = ar__expression_ast__create_literal_string("age={age}, score={score}, name={name}");
+    ar__list__add_last(arg_asts, template_ast);
+    
+    // Input: "age=25, score=98.5, name=Bob"
+    expression_ast_t *input_ast = ar__expression_ast__create_literal_string("age=25, score=98.5, name=Bob");
+    ar__list__add_last(arg_asts, input_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
     
     // When evaluating the parse instruction
     bool result = ar_instruction_evaluator__evaluate_parse(evaluator, ast);
@@ -280,6 +357,21 @@ static void test_instruction_evaluator__evaluate_parse_no_match(void) {
     );
     assert(ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Template: "name={name}, age={age}"
+    expression_ast_t *template_ast = ar__expression_ast__create_literal_string("name={name}, age={age}");
+    ar__list__add_last(arg_asts, template_ast);
+    
+    // Input: "username=John, level=5"
+    expression_ast_t *input_ast = ar__expression_ast__create_literal_string("username=John, level=5");
+    ar__list__add_last(arg_asts, input_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+    
     // When evaluating the parse instruction
     bool result = ar_instruction_evaluator__evaluate_parse(evaluator, ast);
     
@@ -321,6 +413,16 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     );
     assert(ast1 != NULL);
     
+    // Create and attach expression ASTs - only one argument (should fail)
+    list_t *arg_asts1 = ar__list__create();
+    assert(arg_asts1 != NULL);
+    
+    expression_ast_t *template_ast1 = ar__expression_ast__create_literal_string("template={value}");
+    ar__list__add_last(arg_asts1, template_ast1);
+    
+    bool ast_set1 = ar__instruction_ast__set_function_arg_asts(ast1, arg_asts1);
+    assert(ast_set1 == true);
+    
     bool result1 = ar_instruction_evaluator__evaluate_parse(evaluator, ast1);
     assert(result1 == false);
     
@@ -333,6 +435,19 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     );
     assert(ast2 != NULL);
     
+    // Create and attach expression ASTs - first is integer, second is string
+    list_t *arg_asts2 = ar__list__create();
+    assert(arg_asts2 != NULL);
+    
+    expression_ast_t *template_ast2 = ar__expression_ast__create_literal_int(123);
+    ar__list__add_last(arg_asts2, template_ast2);
+    
+    expression_ast_t *input_ast2 = ar__expression_ast__create_literal_string("input=value");
+    ar__list__add_last(arg_asts2, input_ast2);
+    
+    bool ast_set2 = ar__instruction_ast__set_function_arg_asts(ast2, arg_asts2);
+    assert(ast_set2 == true);
+    
     bool result2 = ar_instruction_evaluator__evaluate_parse(evaluator, ast2);
     assert(result2 == false);
     
@@ -344,6 +459,19 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
         INST_AST_PARSE, "parse", args3, 2, NULL
     );
     assert(ast3 != NULL);
+    
+    // Create and attach expression ASTs - first is string, second is integer
+    list_t *arg_asts3 = ar__list__create();
+    assert(arg_asts3 != NULL);
+    
+    expression_ast_t *template_ast3 = ar__expression_ast__create_literal_string("template={value}");
+    ar__list__add_last(arg_asts3, template_ast3);
+    
+    expression_ast_t *input_ast3 = ar__expression_ast__create_literal_int(456);
+    ar__list__add_last(arg_asts3, input_ast3);
+    
+    bool ast_set3 = ar__instruction_ast__set_function_arg_asts(ast3, arg_asts3);
+    assert(ast_set3 == true);
     
     bool result3 = ar_instruction_evaluator__evaluate_parse(evaluator, ast3);
     assert(result3 == false);

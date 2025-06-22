@@ -8,7 +8,9 @@
 #include "agerun_agent_instruction_evaluator.h"
 #include "agerun_expression_evaluator.h"
 #include "agerun_instruction_ast.h"
+#include "agerun_expression_ast.h"
 #include "agerun_data.h"
+#include "agerun_list.h"
 #include "agerun_methodology.h"
 #include "agerun_agency.h"
 #include "agerun_system.h"
@@ -41,6 +43,25 @@ static void test_instruction_evaluator__evaluate_agent_with_context(void) {
         INST_AST_AGENT, "agent", args, 3, NULL
     );
     assert(ast != NULL);
+    
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Method name: "worker"
+    expression_ast_t *method_ast = ar__expression_ast__create_literal_string("worker");
+    ar__list__add_last(arg_asts, method_ast);
+    
+    // Version: "2.0.0"
+    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("2.0.0");
+    ar__list__add_last(arg_asts, version_ast);
+    
+    // Context: memory
+    expression_ast_t *context_ast = ar__expression_ast__create_memory_access("memory", NULL, 0);
+    ar__list__add_last(arg_asts, context_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
     
     bool result = ar_instruction_evaluator__evaluate_agent(evaluator, ast);
     
@@ -92,6 +113,25 @@ static void test_instruction_evaluator__evaluate_agent_with_result(void) {
         INST_AST_AGENT, "agent", args, 3, "memory.agent_id"
     );
     assert(ast != NULL);
+    
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Method name: "counter"
+    expression_ast_t *method_ast = ar__expression_ast__create_literal_string("counter");
+    ar__list__add_last(arg_asts, method_ast);
+    
+    // Version: "1.0.0"
+    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
+    ar__list__add_last(arg_asts, version_ast);
+    
+    // Context: memory
+    expression_ast_t *context_ast = ar__expression_ast__create_memory_access("memory", NULL, 0);
+    ar__list__add_last(arg_asts, context_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
     
     bool result = ar_instruction_evaluator__evaluate_agent(evaluator, ast);
     
@@ -287,6 +327,25 @@ static void test_agent_instruction_evaluator__evaluate_with_instance(void) {
     );
     assert(ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Method name: "tester"
+    expression_ast_t *method_ast = ar__expression_ast__create_literal_string("tester");
+    ar__list__add_last(arg_asts, method_ast);
+    
+    // Version: "1.0.0"
+    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
+    ar__list__add_last(arg_asts, version_ast);
+    
+    // Context: memory
+    expression_ast_t *context_ast = ar__expression_ast__create_memory_access("memory", NULL, 0);
+    ar__list__add_last(arg_asts, context_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+    
     bool result = ar_agent_instruction_evaluator__evaluate(evaluator, NULL, ast);
     
     // Then it should return true
@@ -340,6 +399,25 @@ static void test_agent_instruction_evaluator__legacy_evaluate_function(void) {
         INST_AST_AGENT, "agent", args, 3, NULL
     );
     assert(ast != NULL);
+    
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Method name: "legacy_worker"
+    expression_ast_t *method_ast = ar__expression_ast__create_literal_string("legacy_worker");
+    ar__list__add_last(arg_asts, method_ast);
+    
+    // Version: "1.0.0"
+    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
+    ar__list__add_last(arg_asts, version_ast);
+    
+    // Context: memory
+    expression_ast_t *context_ast = ar__expression_ast__create_memory_access("memory", NULL, 0);
+    ar__list__add_last(arg_asts, context_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
     
     bool result = ar_agent_instruction_evaluator__evaluate(evaluator, NULL, ast);
     

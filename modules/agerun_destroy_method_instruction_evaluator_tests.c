@@ -7,7 +7,9 @@
 #include "agerun_destroy_method_instruction_evaluator.h"
 #include "agerun_expression_evaluator.h"
 #include "agerun_instruction_ast.h"
+#include "agerun_expression_ast.h"
 #include "agerun_data.h"
+#include "agerun_list.h"
 #include "agerun_methodology.h"
 #include "agerun_agency.h"
 #include "agerun_system.h"
@@ -76,6 +78,21 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_instance(vo
     );
     assert(ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Method name: "test_destroyer"
+    expression_ast_t *name_ast = ar__expression_ast__create_literal_string("test_destroyer");
+    ar__list__add_last(arg_asts, name_ast);
+    
+    // Version: "1.0.0"
+    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
+    ar__list__add_last(arg_asts, version_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+    
     // When evaluating the destroy call using instance
     bool result = ar_destroy_method_instruction_evaluator__evaluate(evaluator, ast);
     
@@ -133,6 +150,21 @@ static void test_destroy_method_instruction_evaluator__evaluate_legacy(void) {
         INST_AST_DESTROY, "destroy", args, 2, NULL
     );
     assert(ast != NULL);
+    
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Method name: "test_destroyer"
+    expression_ast_t *name_ast = ar__expression_ast__create_literal_string("test_destroyer");
+    ar__list__add_last(arg_asts, name_ast);
+    
+    // Version: "1.0.0"
+    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
+    ar__list__add_last(arg_asts, version_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
     
     // When evaluating using instance-based interface
     bool result = ar_destroy_method_instruction_evaluator__evaluate(evaluator, ast);
@@ -199,6 +231,21 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void
     );
     assert(ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Method name: "test_destroyer"
+    expression_ast_t *name_ast = ar__expression_ast__create_literal_string("test_destroyer");
+    ar__list__add_last(arg_asts, name_ast);
+    
+    // Version: "1.0.0"
+    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
+    ar__list__add_last(arg_asts, version_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+    
     // When evaluating the destroy call
     bool result = ar_destroy_method_instruction_evaluator__evaluate(evaluator, ast);
     
@@ -264,6 +311,21 @@ static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void
     );
     assert(ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Method name: "nonexistent"
+    expression_ast_t *name_ast = ar__expression_ast__create_literal_string("nonexistent");
+    ar__list__add_last(arg_asts, name_ast);
+    
+    // Version: "1.0.0"
+    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
+    ar__list__add_last(arg_asts, version_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+    
     // When evaluating the destroy call
     bool result = ar_destroy_method_instruction_evaluator__evaluate(evaluator, ast);
     
@@ -313,6 +375,21 @@ static void test_destroy_method_instruction_evaluator__evaluate_invalid_name_typ
     );
     assert(ast != NULL);
     
+    // Create and attach the expression ASTs for arguments
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Method name: 123 (integer, not string)
+    expression_ast_t *name_ast = ar__expression_ast__create_literal_int(123);
+    ar__list__add_last(arg_asts, name_ast);
+    
+    // Version: "1.0.0"
+    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
+    ar__list__add_last(arg_asts, version_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+    
     // When evaluating the destroy call
     bool result = ar_destroy_method_instruction_evaluator__evaluate(evaluator, ast);
     
@@ -346,6 +423,17 @@ static void test_destroy_method_instruction_evaluator__evaluate_wrong_arg_count(
         INST_AST_DESTROY, "destroy", args, 1, NULL
     );
     assert(ast != NULL);
+    
+    // Create and attach the expression AST for the single argument
+    list_t *arg_asts = ar__list__create();
+    assert(arg_asts != NULL);
+    
+    // Method name only (missing version - should cause error)
+    expression_ast_t *name_ast = ar__expression_ast__create_literal_string("method_name");
+    ar__list__add_last(arg_asts, name_ast);
+    
+    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
     
     // When evaluating the destroy call
     bool result = ar_destroy_method_instruction_evaluator__evaluate(evaluator, ast);

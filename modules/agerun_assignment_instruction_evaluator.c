@@ -5,7 +5,6 @@
 
 #include "agerun_assignment_instruction_evaluator.h"
 #include "agerun_heap.h"
-#include "agerun_expression_parser.h"
 #include "agerun_expression_ast.h"
 #include <assert.h>
 #include <string.h>
@@ -139,7 +138,7 @@ static data_t* _copy_data_value(const data_t *ref_value) {
 }
 
 /* Helper function to evaluate an expression AST node using the expression evaluator */
-static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluator, expression_ast_t *ref_ast) {
+static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluator, const expression_ast_t *ref_ast) {
     if (!ref_ast) {
         return NULL;
     }
@@ -192,9 +191,7 @@ bool ar_assignment_instruction_evaluator__evaluate(
     
     // Get assignment details
     const char *ref_path = ar__instruction_ast__get_assignment_path(ref_ast);
-    const char *ref_expression = ar__instruction_ast__get_assignment_expression(ref_ast);
-    
-    if (!ref_path || !ref_expression) {
+    if (!ref_path) {
         return false;
     }
     
@@ -204,22 +201,14 @@ bool ar_assignment_instruction_evaluator__evaluate(
         return false;
     }
     
-    // Parse the expression to get an AST
-    expression_parser_t *parser = ar__expression_parser__create(ref_expression);
-    if (!parser) {
-        return false;
-    }
-    
-    expression_ast_t *expr_ast = ar__expression_parser__parse_expression(parser);
-    ar__expression_parser__destroy(parser);
-    
-    if (!expr_ast) {
+    // Get the pre-parsed expression AST
+    const expression_ast_t *ref_expr_ast = ar__instruction_ast__get_assignment_expression_ast(ref_ast);
+    if (!ref_expr_ast) {
         return false;
     }
     
     // Evaluate the expression AST
-    data_t *own_value = _evaluate_expression_ast(mut_evaluator->ref_expr_evaluator, expr_ast);
-    ar__expression_ast__destroy(expr_ast);
+    data_t *own_value = _evaluate_expression_ast(mut_evaluator->ref_expr_evaluator, ref_expr_ast);
     
     if (!own_value) {
         return false;
