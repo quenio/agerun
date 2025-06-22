@@ -127,12 +127,12 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ### HIGH PRIORITY - Complete Instruction and Expression Module Refactoring
 
-**Status**: Critical refactoring work remains to complete the modular architecture. While specialized evaluators have been created and legacy functions removed, several key integration and refactoring tasks are incomplete.
+**Status**: Phase 1 (Create Specialized Parser Modules) and Phase 2 (Expression AST Integration) are complete. Phase 3 (Unified Instruction Evaluator Interface) is the current priority to create the facade method for the interpreter.
 
 **Critical Order of Implementation**:
 1. Phase 1: Create Specialized Parser Modules ✅ (COMPLETED)
-2. Phase 2: Expression AST Integration Prerequisites (MUST DO FIRST)
-3. Phase 3: Unified Instruction Evaluator Interface 
+2. Phase 2: Expression AST Integration Prerequisites ✅ (COMPLETED)
+3. Phase 3: Unified Instruction Evaluator Interface (CURRENT PRIORITY)
 4. Phase 4: Parser Integration into Interpreter
 5. Phase 5: Method Parsing Refactoring
 6. Phase 6: Legacy Code Removal
@@ -164,8 +164,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Delegate ALL actual parsing to specialized parsers
   - [x] Ensure facade only dispatches, never parses
 
-#### Phase 2: Expression AST Integration Prerequisites (IN PROGRESS)
-- [ ] **Integrate expression parser into instruction parser**:
+#### Phase 2: Expression AST Integration Prerequisites (COMPLETED 2025-06-22)
+- [x] **Integrate expression parser into instruction parser**:
   - [x] TDD Cycle 1: Update assignment_instruction_parser to parse expressions as ASTs (Completed 2025-06-21)
     - [x] Red: Test that assignment parser creates expression ASTs instead of storing strings
     - [x] Green: Integrate expression_parser, store expression_ast_t* in instruction AST
@@ -183,16 +183,16 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] TDD Cycle 9: Update destroy_method_instruction_parser to parse expressions as ASTs (Completed 2025-06-22)
     - [x] Fixed error message corruption bug in all parsers
     - [x] Updated test expectations for expression parser behavior
-  - [ ] TDD Cycle 10: Update instruction_ast module to hold expression AST references
-    - [ ] Add expression_ast_t* fields alongside or replacing string fields
-    - [ ] Update accessors to work with ASTs
-    - [ ] Ensure proper ownership and destruction of embedded ASTs
-  - [ ] TDD Cycle 11: Update all instruction evaluators to use pre-parsed expression ASTs
-    - [ ] Remove expression parsing from evaluators
-    - [ ] Use expression ASTs directly
-    - [ ] This achieves complete separation: parse once during instruction parsing, evaluate during execution
+  - [x] TDD Cycle 10: Update instruction_ast module to hold expression AST references (Completed 2025-06-22)
+    - [x] Add expression_ast_t* fields alongside or replacing string fields
+    - [x] Update accessors to work with ASTs
+    - [x] Ensure proper ownership and destruction of embedded ASTs
+  - [x] TDD Cycle 11: Update all instruction evaluators to use pre-parsed expression ASTs (Completed 2025-06-22)
+    - [x] Remove expression parsing from evaluators
+    - [x] Use expression ASTs directly
+    - [x] This achieves complete separation: parse once during instruction parsing, evaluate during execution
 
-#### Phase 3: Unified Instruction Evaluator Interface (CRITICAL - SECOND PRIORITY)
+#### Phase 3: Unified Instruction Evaluator Interface (IN PROGRESS - CURRENT PRIORITY)
 - [ ] **Create single `ar_instruction_evaluator__evaluate()` function**:
   - [ ] TDD Cycle 1: Create the unified evaluate method
     - [ ] Red: Test that ar_instruction_evaluator__evaluate() exists and works for assignment
