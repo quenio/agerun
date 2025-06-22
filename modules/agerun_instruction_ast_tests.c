@@ -2,6 +2,8 @@
 #include <string.h>
 #include <assert.h>
 #include "agerun_instruction_ast.h"
+#include "agerun_expression_ast.h"
+#include "agerun_expression_parser.h"
 #include "agerun_list.h"
 #include "agerun_heap.h"
 
@@ -314,6 +316,169 @@ static void test_empty_arguments(void) {
     ar__instruction_ast__destroy(own_node);
 }
 
+static void test_instruction_ast__assignment_expression_ast(void) {
+    printf("Testing assignment instruction with expression AST...\n");
+    
+    // Given an assignment instruction
+    const char *memory_path = "memory.x";
+    const char *expression = "42";
+    
+    // When creating an assignment instruction AST node
+    instruction_ast_t *own_node = ar__instruction_ast__create_assignment(memory_path, expression);
+    assert(own_node != NULL);
+    
+    // Initially, expression AST should be NULL
+    assert(ar__instruction_ast__get_assignment_expression_ast(own_node) == NULL);
+    
+    // When setting an expression AST
+    expression_parser_t *own_parser = ar__expression_parser__create(expression);
+    assert(own_parser != NULL);
+    
+    expression_ast_t *own_expr_ast = ar__expression_parser__parse_expression(own_parser);
+    assert(own_expr_ast != NULL);
+    ar__expression_parser__destroy(own_parser);
+    
+    bool success = ar__instruction_ast__set_assignment_expression_ast(own_node, own_expr_ast);
+    assert(success == true);
+    
+    // Then the expression AST should be retrievable
+    const expression_ast_t *ref_stored_ast = ar__instruction_ast__get_assignment_expression_ast(own_node);
+    assert(ref_stored_ast != NULL);
+    assert(ref_stored_ast == own_expr_ast); // Same pointer
+    
+    // And the string expression should still be available
+    assert(strcmp(ar__instruction_ast__get_assignment_expression(own_node), "42") == 0);
+    
+    // Cleanup (should destroy the embedded expression AST)
+    ar__instruction_ast__destroy(own_node);
+}
+
+static void test_instruction_ast__function_arg_asts(void) {
+    printf("Testing function instruction with argument ASTs...\n");
+    
+    // Given a send function with arguments
+    const char *function_name = "send";
+    const char *args[] = {"1", "\"Hello\""};
+    size_t arg_count = 2;
+    
+    // When creating a send function call AST node
+    instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
+        INST_AST_SEND, function_name, args, arg_count, NULL
+    );
+    assert(own_node != NULL);
+    
+    // Initially, argument ASTs should be NULL
+    assert(ar__instruction_ast__get_function_arg_asts(own_node) == NULL);
+    
+    // When creating expression ASTs for arguments
+    list_t *own_arg_asts = ar__list__create();
+    assert(own_arg_asts != NULL);
+    
+    for (size_t i = 0; i < arg_count; i++) {
+        expression_parser_t *own_parser = ar__expression_parser__create(args[i]);
+        assert(own_parser != NULL);
+        expression_ast_t *own_arg_ast = ar__expression_parser__parse_expression(own_parser);
+        assert(own_arg_ast != NULL);
+        ar__expression_parser__destroy(own_parser);
+        ar__list__add_last(own_arg_asts, own_arg_ast);
+    }
+    
+    // When setting the argument ASTs
+    bool success = ar__instruction_ast__set_function_arg_asts(own_node, own_arg_asts);
+    assert(success == true);
+    
+    // Then the argument ASTs should be retrievable
+    const list_t *ref_stored_asts = ar__instruction_ast__get_function_arg_asts(own_node);
+    assert(ref_stored_asts != NULL);
+    assert(ar__list__count(ref_stored_asts) == 2);
+    
+    // And the string arguments should still be available
+    list_t *own_string_args = ar__instruction_ast__get_function_args(own_node);
+    assert(own_string_args != NULL);
+    assert(ar__list__count(own_string_args) == 2);
+    ar__list__destroy(own_string_args);
+    
+    // Cleanup (should destroy all embedded expression ASTs)
+    ar__instruction_ast__destroy(own_node);
+}
+
+static void test_instruction_ast__expression_ast_replacement(void) {
+    printf("Testing expression AST replacement...\n");
+    
+    // Given an assignment with an expression AST
+    instruction_ast_t *own_node = ar__instruction_ast__create_assignment("memory.x", "42");
+    assert(own_node != NULL);
+    
+    expression_parser_t *own_parser1 = ar__expression_parser__create("42");
+    assert(own_parser1 != NULL);
+    
+    expression_ast_t *own_first_ast = ar__expression_parser__parse_expression(own_parser1);
+    assert(own_first_ast != NULL);
+    ar__expression_parser__destroy(own_parser1);
+    
+    ar__instruction_ast__set_assignment_expression_ast(own_node, own_first_ast);
+    
+    // When replacing the expression AST with a new one
+    expression_parser_t *own_parser2 = ar__expression_parser__create("100");
+    assert(own_parser2 != NULL);
+    
+    expression_ast_t *own_second_ast = ar__expression_parser__parse_expression(own_parser2);
+    assert(own_second_ast != NULL);
+    ar__expression_parser__destroy(own_parser2);
+    
+    bool success = ar__instruction_ast__set_assignment_expression_ast(own_node, own_second_ast);
+    assert(success == true);
+    
+    // Then the new AST should be stored (old one destroyed internally)
+    const expression_ast_t *ref_stored_ast = ar__instruction_ast__get_assignment_expression_ast(own_node);
+    assert(ref_stored_ast == own_second_ast);
+    
+    // Cleanup
+    ar__instruction_ast__destroy(own_node);
+}
+
+static void test_instruction_ast__expression_ast_null_handling(void) {
+    printf("Testing expression AST null handling...\n");
+    
+    // Test setting expression AST on wrong node type
+    instruction_ast_t *own_send_node = ar__instruction_ast__create_function_call(
+        INST_AST_SEND, "send", NULL, 0, NULL
+    );
+    assert(own_send_node != NULL);
+    
+    expression_parser_t *own_parser = ar__expression_parser__create("42");
+    expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
+    ar__expression_parser__destroy(own_parser);
+    
+    // Should fail to set expression AST on non-assignment node
+    bool success = ar__instruction_ast__set_assignment_expression_ast(own_send_node, own_ast);
+    assert(success == false);
+    
+    // Clean up the AST since it wasn't taken
+    ar__expression_ast__destroy(own_ast);
+    
+    // Test getting expression AST from wrong node type
+    assert(ar__instruction_ast__get_assignment_expression_ast(own_send_node) == NULL);
+    
+    ar__instruction_ast__destroy(own_send_node);
+    
+    // Test setting arg ASTs on wrong node type
+    instruction_ast_t *own_assign_node = ar__instruction_ast__create_assignment("memory.x", "42");
+    assert(own_assign_node != NULL);
+    
+    list_t *own_arg_asts = ar__list__create();
+    success = ar__instruction_ast__set_function_arg_asts(own_assign_node, own_arg_asts);
+    assert(success == false);
+    
+    // Clean up the list since it wasn't taken
+    ar__list__destroy(own_arg_asts);
+    
+    // Test getting arg ASTs from wrong node type  
+    assert(ar__instruction_ast__get_function_arg_asts(own_assign_node) == NULL);
+    
+    ar__instruction_ast__destroy(own_assign_node);
+}
+
 int main(void) {
     printf("Running instruction AST tests...\n\n");
     
@@ -335,6 +500,12 @@ int main(void) {
     // Edge case tests
     test_null_handling();
     test_empty_arguments();
+    
+    // Expression AST tests
+    test_instruction_ast__assignment_expression_ast();
+    test_instruction_ast__function_arg_asts();
+    test_instruction_ast__expression_ast_replacement();
+    test_instruction_ast__expression_ast_null_handling();
     
     printf("\nAll instruction_ast tests passed!\n");
     return 0;

@@ -3,6 +3,15 @@
 This document tracks completed milestones and major achievements for the AgeRun project.
 
 ## 2025-06-22
+- ✅ **Completed TDD Cycle 10: Expression AST Storage Verification**:
+  - ✅ Added comprehensive tests for expression AST storage in instruction_ast module
+  - ✅ Verified assignment nodes can store and retrieve expression ASTs
+  - ✅ Verified function nodes can store and retrieve argument expression ASTs  
+  - ✅ Tested AST replacement and proper memory management
+  - ✅ Tested error handling for wrong node types
+  - ✅ All tests pass with zero memory leaks (132 allocations, 0 active)
+  - ✅ Confirmed all parsers (cycles 1-9) are properly creating and storing ASTs
+  - ✅ Ready for TDD Cycle 11: Update evaluators to use pre-parsed ASTs
 - ✅ **Completed TDD Cycles 8-9 of Expression AST Integration**:
   - ✅ **TDD Cycle 8: destroy_agent_instruction_parser**:
     - ✅ Added expression AST test and implementation
