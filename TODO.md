@@ -158,11 +158,11 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Remove individual `parse_send()`, `parse_if()`, etc. functions from main parser
   - [x] Implement dispatch pattern based on instruction content analysis (detect assignment vs function call vs other)
   - [x] Ensure consistent error handling across all specialized parsers
-- [ ] **CRITICAL: Refactor instruction_parser to use pure lookahead approach**:
-  - [ ] Remove all parsing logic from instruction_parser (including assignment parsing)
-  - [ ] Implement minimal lookahead to determine instruction type only
-  - [ ] Delegate ALL actual parsing to specialized parsers
-  - [ ] Ensure facade only dispatches, never parses
+- [x] **CRITICAL: Refactor instruction_parser to use pure lookahead approach** (Completed 2025-06-21):
+  - [x] Remove all parsing logic from instruction_parser (including assignment parsing)
+  - [x] Implement minimal lookahead to determine instruction type only
+  - [x] Delegate ALL actual parsing to specialized parsers
+  - [x] Ensure facade only dispatches, never parses
 
 #### Phase 2: Expression AST Integration Prerequisites (CRITICAL - MUST DO FIRST)
 - [ ] **Integrate expression parser into instruction parser**:
