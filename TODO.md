@@ -262,10 +262,10 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Update module dependency tree documentation
 
 #### Phase 7: Extract Common Helper Functions (MEDIUM)
-- [ ] **Eliminate `_copy_data_value` duplication across evaluators**:
-  - [ ] Evaluate if this belongs in data module as `ar_data__deep_copy()`
-  - [ ] Or create dedicated value transformation module
-  - [ ] Update all evaluators to use shared implementation
+- [ ] **Revise copying strategy in instruction evaluation (ARCHITECTURAL)**:
+  - [ ] Eliminate `_copy_data_value` pattern entirely - instruction evaluation should use only references or create new data, not copy existing data
+  - [ ] Review all instruction evaluators to ensure proper reference vs. creation semantics
+  - [ ] This addresses fundamental design issue where copying indicates incorrect ownership model
 - [ ] **Extract shared expression evaluation patterns**:
   - [ ] `_evaluate_expression_ast` appears in multiple evaluators
   - [ ] Consider expression evaluation orchestration module
