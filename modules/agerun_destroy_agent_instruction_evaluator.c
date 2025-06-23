@@ -229,7 +229,7 @@ bool ar_destroy_agent_instruction_evaluator__evaluate(
     data_t *mut_memory = ref_evaluator->mut_memory;
     
     // Validate AST type
-    if (ar__instruction_ast__get_type(ref_ast) != INST_AST_DESTROY) {
+    if (ar__instruction_ast__get_type(ref_ast) != INST_AST_DESTROY_AGENT) {
         return false;
     }
     

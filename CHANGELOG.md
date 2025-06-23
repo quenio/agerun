@@ -2,6 +2,29 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-06-23
+- ✅ **Phase 3 Complete: Unified Instruction Evaluator Interface**:
+  - ✅ **Created unified `ar_instruction_evaluator__evaluate()` facade method**:
+    - ✅ Single entry point that dispatches to specialized evaluators based on AST type
+    - ✅ Uses switch statement on `ar__instruction_ast__get_type()` for clean dispatch
+    - ✅ Handles all 9 instruction types: assignment, send, if, parse, build, method, agent, destroy_agent, destroy_method
+    - ✅ Completely removed INST_AST_DESTROY enum (now only specific destroy types exist)
+  - ✅ **Transformed instruction_evaluator into true facade pattern**:
+    - ✅ Removed all individual evaluate functions from public header
+    - ✅ Removed all getter functions from public header  
+    - ✅ Moved all specialized evaluator includes to .c file
+    - ✅ Public interface now contains only create, destroy, and unified evaluate
+  - ✅ **Updated all specialized evaluator tests for independence**:
+    - ✅ Specialized evaluators no longer depend on the facade
+    - ✅ Each test file creates and uses its own specialized evaluator directly
+    - ✅ Fixed compilation errors in all 9 specialized evaluator test files
+  - ✅ **Standardized type naming with ar_ prefix**:
+    - ✅ Renamed `parse_instruction_evaluator_t` to `ar_parse_instruction_evaluator_t`
+    - ✅ Renamed `condition_instruction_evaluator_t` to `ar_condition_instruction_evaluator_t`
+    - ✅ Updated all references in headers, implementations, and tests
+  - ✅ **All tests pass with zero memory leaks (54 tests total)**
+  - ✅ **Clean build passes all checks**: static analysis, sanitizers, thread sanitizer
+
 ## 2025-06-22
 - ✅ **Completed TDD Cycle 10: Expression AST Storage Verification**:
   - ✅ Added comprehensive tests for expression AST storage in instruction_ast module

@@ -16,7 +16,6 @@ typedef enum {
     INST_AST_IF,             /* if(condition, true_val, false_val) */
     INST_AST_METHOD,         /* method(name, instructions, version) */
     INST_AST_AGENT,          /* agent(method, version, context) */
-    INST_AST_DESTROY,        /* destroy(agent_id) or destroy(method, version) */
     INST_AST_DESTROY_AGENT,  /* destroy(agent_id) - specialized parser */
     INST_AST_DESTROY_METHOD, /* destroy(method, version) - specialized parser */
     INST_AST_PARSE,          /* parse(template, input) */

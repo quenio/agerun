@@ -179,8 +179,8 @@ static void test_create_agent_function(void) {
     ar__instruction_ast__destroy(own_node);
 }
 
-static void test_create_destroy_function_one_arg(void) {
-    printf("Testing destroy function with one argument...\n");
+static void test_create_destroy_agent_function(void) {
+    printf("Testing destroy agent function...\n");
     
     // Given destroy function for agent
     const char *function_name = "destroy";
@@ -188,14 +188,14 @@ static void test_create_destroy_function_one_arg(void) {
     size_t arg_count = 1;
     const char *result_path = "memory.destroyed";
     
-    // When creating a destroy function call AST node
+    // When creating a destroy agent function call AST node
     instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY, function_name, args, arg_count, result_path
+        INST_AST_DESTROY_AGENT, function_name, args, arg_count, result_path
     );
     
     // Then the node should be created correctly
     assert(own_node != NULL);
-    assert(ar__instruction_ast__get_type(own_node) == INST_AST_DESTROY);
+    assert(ar__instruction_ast__get_type(own_node) == INST_AST_DESTROY_AGENT);
     
     list_t *own_args = ar__instruction_ast__get_function_args(own_node);
     assert(own_args != NULL);
@@ -209,22 +209,22 @@ static void test_create_destroy_function_one_arg(void) {
     ar__instruction_ast__destroy(own_node);
 }
 
-static void test_create_destroy_function_two_args(void) {
-    printf("Testing destroy function with two arguments...\n");
+static void test_create_destroy_method_function(void) {
+    printf("Testing destroy method function...\n");
     
     // Given destroy function for method
     const char *function_name = "destroy";
     const char *args[] = {"\"calculator\"", "\"1.0.0\""};
     size_t arg_count = 2;
     
-    // When creating a destroy function call AST node without assignment
+    // When creating a destroy method function call AST node without assignment
     instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY, function_name, args, arg_count, NULL
+        INST_AST_DESTROY_METHOD, function_name, args, arg_count, NULL
     );
     
     // Then the node should be created correctly
     assert(own_node != NULL);
-    assert(ar__instruction_ast__get_type(own_node) == INST_AST_DESTROY);
+    assert(ar__instruction_ast__get_type(own_node) == INST_AST_DESTROY_METHOD);
     assert(ar__instruction_ast__has_result_assignment(own_node) == false);
     
     list_t *own_args = ar__instruction_ast__get_function_args(own_node);
@@ -492,8 +492,8 @@ int main(void) {
     test_create_if_function();
     test_create_method_function();
     test_create_agent_function();
-    test_create_destroy_function_one_arg();
-    test_create_destroy_function_two_args();
+    test_create_destroy_agent_function();
+    test_create_destroy_method_function();
     test_create_parse_function();
     test_create_build_function();
     

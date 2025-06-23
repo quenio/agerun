@@ -17,7 +17,7 @@ typedef struct data_s data_t;
 typedef struct instruction_ast_s instruction_ast_t;
 
 /* Opaque type for parse instruction evaluator */
-typedef struct ar_parse_instruction_evaluator_s parse_instruction_evaluator_t;
+typedef struct ar_parse_instruction_evaluator_s ar_parse_instruction_evaluator_t;
 
 /**
  * Creates a new parse instruction evaluator
@@ -29,7 +29,7 @@ typedef struct ar_parse_instruction_evaluator_s parse_instruction_evaluator_t;
  * @note Ownership: Returns an owned value that caller must destroy
  * @note The evaluator stores references to the provided dependencies
  */
-parse_instruction_evaluator_t* ar_parse_instruction_evaluator__create(
+ar_parse_instruction_evaluator_t* ar_parse_instruction_evaluator__create(
     expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
@@ -43,7 +43,7 @@ parse_instruction_evaluator_t* ar_parse_instruction_evaluator__create(
  * @note Does not destroy the stored dependency references
  */
 void ar_parse_instruction_evaluator__destroy(
-    parse_instruction_evaluator_t *own_evaluator
+    ar_parse_instruction_evaluator_t *own_evaluator
 );
 
 /**
@@ -66,7 +66,7 @@ void ar_parse_instruction_evaluator__destroy(
  * @note Supports optional result assignment: result = parse(template, input)
  */
 bool ar_parse_instruction_evaluator__evaluate(
-    parse_instruction_evaluator_t *mut_evaluator,
+    ar_parse_instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 );
 

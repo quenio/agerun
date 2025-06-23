@@ -210,7 +210,7 @@ static data_t* _parse_value_string(const char *value_str) {
 /**
  * Creates a new parse instruction evaluator
  */
-parse_instruction_evaluator_t* ar_parse_instruction_evaluator__create(
+ar_parse_instruction_evaluator_t* ar_parse_instruction_evaluator__create(
     expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 ) {
@@ -218,8 +218,8 @@ parse_instruction_evaluator_t* ar_parse_instruction_evaluator__create(
         return NULL;
     }
     
-    parse_instruction_evaluator_t *own_evaluator = AR__HEAP__MALLOC(
-        sizeof(parse_instruction_evaluator_t),
+    ar_parse_instruction_evaluator_t *own_evaluator = AR__HEAP__MALLOC(
+        sizeof(ar_parse_instruction_evaluator_t),
         "parse_instruction_evaluator"
     );
     if (!own_evaluator) {
@@ -237,7 +237,7 @@ parse_instruction_evaluator_t* ar_parse_instruction_evaluator__create(
  * Destroys a parse instruction evaluator
  */
 void ar_parse_instruction_evaluator__destroy(
-    parse_instruction_evaluator_t *own_evaluator
+    ar_parse_instruction_evaluator_t *own_evaluator
 ) {
     if (!own_evaluator) {
         return;
@@ -250,7 +250,7 @@ void ar_parse_instruction_evaluator__destroy(
  * Evaluates a parse instruction using the stored dependencies
  */
 bool ar_parse_instruction_evaluator__evaluate(
-    parse_instruction_evaluator_t *mut_evaluator,
+    ar_parse_instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 ) {
     if (!mut_evaluator || !ref_ast) {

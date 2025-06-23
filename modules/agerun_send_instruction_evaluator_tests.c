@@ -3,7 +3,6 @@
 #include <assert.h>
 #include <string.h>
 #include "agerun_send_instruction_evaluator.h"
-#include "agerun_instruction_evaluator.h"
 #include "agerun_expression_evaluator.h"
 #include "agerun_instruction_ast.h"
 #include "agerun_expression_ast.h"
@@ -89,8 +88,8 @@ static void test_instruction_evaluator__evaluate_send_integer_message(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -117,14 +116,14 @@ static void test_instruction_evaluator__evaluate_send_integer_message(void) {
     assert(ast_set == true);
     
     // When evaluating the send
-    bool result = ar_instruction_evaluator__evaluate_send(evaluator, ast);
+    bool result = ar_send_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should succeed (send to agent 0 is a no-op that returns true)
     assert(result == true);
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_send_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -137,8 +136,8 @@ static void test_instruction_evaluator__evaluate_send_string_message(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -165,14 +164,14 @@ static void test_instruction_evaluator__evaluate_send_string_message(void) {
     assert(ast_set == true);
     
     // When evaluating the send
-    bool result = ar_instruction_evaluator__evaluate_send(evaluator, ast);
+    bool result = ar_send_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should succeed
     assert(result == true);
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_send_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -185,8 +184,8 @@ static void test_instruction_evaluator__evaluate_send_with_result(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -213,7 +212,7 @@ static void test_instruction_evaluator__evaluate_send_with_result(void) {
     assert(ast_set == true);
     
     // When evaluating the send
-    bool result = ar_instruction_evaluator__evaluate_send(evaluator, ast);
+    bool result = ar_send_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should succeed
     assert(result == true);
@@ -226,7 +225,7 @@ static void test_instruction_evaluator__evaluate_send_with_result(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_send_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -242,8 +241,8 @@ static void test_instruction_evaluator__evaluate_send_memory_reference(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -271,14 +270,14 @@ static void test_instruction_evaluator__evaluate_send_memory_reference(void) {
     assert(ast_set == true);
     
     // When evaluating the send
-    bool result = ar_instruction_evaluator__evaluate_send(evaluator, ast);
+    bool result = ar_send_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should succeed
     assert(result == true);
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_send_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -291,8 +290,8 @@ static void test_instruction_evaluator__evaluate_send_invalid_args(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -315,14 +314,14 @@ static void test_instruction_evaluator__evaluate_send_invalid_args(void) {
     assert(ast_set == true);
     
     // When evaluating the send
-    bool result = ar_instruction_evaluator__evaluate_send(evaluator, ast);
+    bool result = ar_send_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should fail (send requires 2 arguments)
     assert(result == false);
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_send_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }

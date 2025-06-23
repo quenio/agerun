@@ -3,7 +3,6 @@
 #include <assert.h>
 #include <string.h>
 #include "agerun_build_instruction_evaluator.h"
-#include "agerun_instruction_evaluator.h"
 #include "agerun_expression_evaluator.h"
 #include "agerun_instruction_ast.h"
 #include "agerun_expression_ast.h"
@@ -152,7 +151,7 @@ static void test_build_instruction_evaluator__evaluate_legacy(void) {
     ar__data__destroy(memory);
 }
 
-static void test_instruction_evaluator__evaluate_build_simple(void) {
+static void test_build_instruction_evaluator__evaluate_simple(void) {
     // Given an evaluator with memory containing a map
     data_t *memory = ar__data__create_map();
     assert(memory != NULL);
@@ -166,8 +165,8 @@ static void test_instruction_evaluator__evaluate_build_simple(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -195,7 +194,7 @@ static void test_instruction_evaluator__evaluate_build_simple(void) {
     assert(ast_set == true);
     
     // When evaluating the build instruction
-    bool result = ar_instruction_evaluator__evaluate_build(evaluator, ast);
+    bool result = ar_build_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should succeed and build the string
     assert(result == true);
@@ -206,12 +205,12 @@ static void test_instruction_evaluator__evaluate_build_simple(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_build_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     
     ar__data__destroy(memory);
 }
-static void test_instruction_evaluator__evaluate_build_multiple_variables(void) {
+static void test_build_instruction_evaluator__evaluate_multiple_variables(void) {
     // Given an evaluator with memory containing a map
     data_t *memory = ar__data__create_map();
     assert(memory != NULL);
@@ -227,8 +226,8 @@ static void test_instruction_evaluator__evaluate_build_multiple_variables(void) 
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -256,7 +255,7 @@ static void test_instruction_evaluator__evaluate_build_multiple_variables(void) 
     assert(ast_set == true);
     
     // When evaluating the build instruction
-    bool result = ar_instruction_evaluator__evaluate_build(evaluator, ast);
+    bool result = ar_build_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should succeed and build the string with all values
     assert(result == true);
@@ -267,12 +266,12 @@ static void test_instruction_evaluator__evaluate_build_multiple_variables(void) 
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_build_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
 
-static void test_instruction_evaluator__evaluate_build_with_types(void) {
+static void test_build_instruction_evaluator__evaluate_with_types(void) {
     // Given an evaluator with memory containing a map with different types
     data_t *memory = ar__data__create_map();
     assert(memory != NULL);
@@ -288,8 +287,8 @@ static void test_instruction_evaluator__evaluate_build_with_types(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -317,7 +316,7 @@ static void test_instruction_evaluator__evaluate_build_with_types(void) {
     assert(ast_set == true);
     
     // When evaluating the build instruction
-    bool result = ar_instruction_evaluator__evaluate_build(evaluator, ast);
+    bool result = ar_build_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should succeed and convert all types to strings
     assert(result == true);
@@ -328,12 +327,12 @@ static void test_instruction_evaluator__evaluate_build_with_types(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_build_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
 
-static void test_instruction_evaluator__evaluate_build_missing_values(void) {
+static void test_build_instruction_evaluator__evaluate_missing_values(void) {
     // Given an evaluator with memory containing a map with some missing values
     data_t *memory = ar__data__create_map();
     assert(memory != NULL);
@@ -348,8 +347,8 @@ static void test_instruction_evaluator__evaluate_build_missing_values(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -377,7 +376,7 @@ static void test_instruction_evaluator__evaluate_build_missing_values(void) {
     assert(ast_set == true);
     
     // When evaluating the build instruction
-    bool result = ar_instruction_evaluator__evaluate_build(evaluator, ast);
+    bool result = ar_build_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should succeed but preserve the placeholder for missing value
     assert(result == true);
@@ -388,12 +387,12 @@ static void test_instruction_evaluator__evaluate_build_missing_values(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_build_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
 
-static void test_instruction_evaluator__evaluate_build_invalid_args(void) {
+static void test_build_instruction_evaluator__evaluate_invalid_args(void) {
     // Given an evaluator with memory
     data_t *memory = ar__data__create_map();
     assert(memory != NULL);
@@ -401,8 +400,8 @@ static void test_instruction_evaluator__evaluate_build_invalid_args(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -423,7 +422,7 @@ static void test_instruction_evaluator__evaluate_build_invalid_args(void) {
     bool ast_set1 = ar__instruction_ast__set_function_arg_asts(ast1, arg_asts1);
     assert(ast_set1 == true);
     
-    bool result1 = ar_instruction_evaluator__evaluate_build(evaluator, ast1);
+    bool result1 = ar_build_instruction_evaluator__evaluate(evaluator, ast1);
     assert(result1 == false);
     
     ar__instruction_ast__destroy(ast1);
@@ -452,7 +451,7 @@ static void test_instruction_evaluator__evaluate_build_invalid_args(void) {
     bool ast_set2 = ar__instruction_ast__set_function_arg_asts(ast2, arg_asts2);
     assert(ast_set2 == true);
     
-    bool result2 = ar_instruction_evaluator__evaluate_build(evaluator, ast2);
+    bool result2 = ar_build_instruction_evaluator__evaluate(evaluator, ast2);
     assert(result2 == false);
     
     ar__instruction_ast__destroy(ast2);
@@ -477,13 +476,13 @@ static void test_instruction_evaluator__evaluate_build_invalid_args(void) {
     bool ast_set3 = ar__instruction_ast__set_function_arg_asts(ast3, arg_asts3);
     assert(ast_set3 == true);
     
-    bool result3 = ar_instruction_evaluator__evaluate_build(evaluator, ast3);
+    bool result3 = ar_build_instruction_evaluator__evaluate(evaluator, ast3);
     assert(result3 == false);
     
     ar__instruction_ast__destroy(ast3);
     
     // Cleanup
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_build_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -500,20 +499,20 @@ int main(void) {
     test_build_instruction_evaluator__evaluate_legacy();
     printf("test_build_instruction_evaluator__evaluate_legacy passed!\n");
     
-    test_instruction_evaluator__evaluate_build_simple();
-    printf("test_instruction_evaluator__evaluate_build_simple passed!\n");
+    test_build_instruction_evaluator__evaluate_simple();
+    printf("test_build_instruction_evaluator__evaluate_simple passed!\n");
     
-    test_instruction_evaluator__evaluate_build_multiple_variables();
-    printf("test_instruction_evaluator__evaluate_build_multiple_variables passed!\n");
+    test_build_instruction_evaluator__evaluate_multiple_variables();
+    printf("test_build_instruction_evaluator__evaluate_multiple_variables passed!\n");
     
-    test_instruction_evaluator__evaluate_build_with_types();
-    printf("test_instruction_evaluator__evaluate_build_with_types passed!\n");
+    test_build_instruction_evaluator__evaluate_with_types();
+    printf("test_build_instruction_evaluator__evaluate_with_types passed!\n");
     
-    test_instruction_evaluator__evaluate_build_missing_values();
-    printf("test_instruction_evaluator__evaluate_build_missing_values passed!\n");
+    test_build_instruction_evaluator__evaluate_missing_values();
+    printf("test_build_instruction_evaluator__evaluate_missing_values passed!\n");
     
-    test_instruction_evaluator__evaluate_build_invalid_args();
-    printf("test_instruction_evaluator__evaluate_build_invalid_args passed!\n");
+    test_build_instruction_evaluator__evaluate_invalid_args();
+    printf("test_build_instruction_evaluator__evaluate_invalid_args passed!\n");
     
     printf("All build instruction_evaluator tests passed!\n");
     

@@ -4,7 +4,6 @@
 #include <string.h>
 #include <inttypes.h>
 #include <unistd.h>
-#include "agerun_instruction_evaluator.h"
 #include "agerun_agent_instruction_evaluator.h"
 #include "agerun_expression_evaluator.h"
 #include "agerun_instruction_ast.h"
@@ -15,20 +14,23 @@
 #include "agerun_agency.h"
 #include "agerun_system.h"
 
-static void test_instruction_evaluator__evaluate_agent_with_context(void) {
+static void test_agent_instruction_evaluator__evaluate_with_context(void) {
     // Initialize system for agent creation
     ar__system__init(NULL, NULL);
     
-    // Given an instruction evaluator with memory and a registered method
+    // Given an agent instruction evaluator with memory and a registered method
     data_t *memory = ar__data__create_map();
     assert(memory != NULL);
     ar__data__set_map_string(memory, "config", "production");
     
-    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    data_t *context = ar__data__create_map();
+    assert(context != NULL);
+    
+    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, context);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -63,7 +65,7 @@ static void test_instruction_evaluator__evaluate_agent_with_context(void) {
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
     
-    bool result = ar_instruction_evaluator__evaluate_agent(evaluator, ast);
+    bool result = ar_agent_instruction_evaluator__evaluate(evaluator, context, ast);
     
     // Then it should return true
     assert(result == true);
@@ -73,8 +75,9 @@ static void test_instruction_evaluator__evaluate_agent_with_context(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_agent_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
+    ar__data__destroy(context);
     ar__data__destroy(memory);
     
     // Clean up agency before shutting down
@@ -87,7 +90,7 @@ static void test_instruction_evaluator__evaluate_agent_with_context(void) {
     ar__methodology__cleanup();
 }
 
-static void test_instruction_evaluator__evaluate_agent_with_result(void) {
+static void test_agent_instruction_evaluator__evaluate_with_result(void) {
     // Initialize system for agent creation
     ar__system__init(NULL, NULL);
     // Given an instruction evaluator with memory and a registered method
@@ -97,8 +100,8 @@ static void test_instruction_evaluator__evaluate_agent_with_result(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -133,7 +136,7 @@ static void test_instruction_evaluator__evaluate_agent_with_result(void) {
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
     
-    bool result = ar_instruction_evaluator__evaluate_agent(evaluator, ast);
+    bool result = ar_agent_instruction_evaluator__evaluate(evaluator, NULL, ast);
     
     // Then it should return true
     assert(result == true);
@@ -147,7 +150,7 @@ static void test_instruction_evaluator__evaluate_agent_with_result(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_agent_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
     
@@ -161,7 +164,7 @@ static void test_instruction_evaluator__evaluate_agent_with_result(void) {
     ar__methodology__cleanup();
 }
 
-static void test_instruction_evaluator__evaluate_agent_invalid_method(void) {
+static void test_agent_instruction_evaluator__evaluate_invalid_method(void) {
     // Initialize system for agent creation
     ar__system__init(NULL, NULL);
     // Given an instruction evaluator with memory (no methods registered)
@@ -171,8 +174,8 @@ static void test_instruction_evaluator__evaluate_agent_invalid_method(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -183,14 +186,14 @@ static void test_instruction_evaluator__evaluate_agent_invalid_method(void) {
     );
     assert(ast != NULL);
     
-    bool result = ar_instruction_evaluator__evaluate_agent(evaluator, ast);
+    bool result = ar_agent_instruction_evaluator__evaluate(evaluator, NULL, ast);
     
     // Then it should return false (method not found)
     assert(result == false);
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_agent_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
     
@@ -204,7 +207,7 @@ static void test_instruction_evaluator__evaluate_agent_invalid_method(void) {
     ar__methodology__cleanup();
 }
 
-static void test_instruction_evaluator__evaluate_agent_invalid_args(void) {
+static void test_agent_instruction_evaluator__evaluate_invalid_args(void) {
     // Initialize system for agent creation
     ar__system__init(NULL, NULL);
     // Given an instruction evaluator with memory
@@ -214,8 +217,8 @@ static void test_instruction_evaluator__evaluate_agent_invalid_args(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -226,7 +229,7 @@ static void test_instruction_evaluator__evaluate_agent_invalid_args(void) {
     );
     assert(ast1 != NULL);
     
-    bool result1 = ar_instruction_evaluator__evaluate_agent(evaluator, ast1);
+    bool result1 = ar_agent_instruction_evaluator__evaluate(evaluator, NULL, ast1);
     assert(result1 == false);
     
     ar__instruction_ast__destroy(ast1);
@@ -238,7 +241,7 @@ static void test_instruction_evaluator__evaluate_agent_invalid_args(void) {
     );
     assert(ast2 != NULL);
     
-    bool result2 = ar_instruction_evaluator__evaluate_agent(evaluator, ast2);
+    bool result2 = ar_agent_instruction_evaluator__evaluate(evaluator, NULL, ast2);
     assert(result2 == false);
     
     ar__instruction_ast__destroy(ast2);
@@ -250,7 +253,7 @@ static void test_instruction_evaluator__evaluate_agent_invalid_args(void) {
     );
     assert(ast3 != NULL);
     
-    bool result3 = ar_instruction_evaluator__evaluate_agent(evaluator, ast3);
+    bool result3 = ar_agent_instruction_evaluator__evaluate(evaluator, NULL, ast3);
     assert(result3 == false);
     
     ar__instruction_ast__destroy(ast3);
@@ -262,13 +265,13 @@ static void test_instruction_evaluator__evaluate_agent_invalid_args(void) {
     );
     assert(ast4 != NULL);
     
-    bool result4 = ar_instruction_evaluator__evaluate_agent(evaluator, ast4);
+    bool result4 = ar_agent_instruction_evaluator__evaluate(evaluator, NULL, ast4);
     assert(result4 == false);
     
     ar__instruction_ast__destroy(ast4);
     
     // Cleanup
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_agent_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
     
@@ -465,17 +468,17 @@ int main(void) {
     remove("methodology.agerun");
     remove("agency.agerun");
     
-    test_instruction_evaluator__evaluate_agent_with_context();
-    printf("test_instruction_evaluator__evaluate_agent_with_context passed!\n");
+    test_agent_instruction_evaluator__evaluate_with_context();
+    printf("test_agent_instruction_evaluator__evaluate_with_context passed!\n");
     
-    test_instruction_evaluator__evaluate_agent_with_result();
-    printf("test_instruction_evaluator__evaluate_agent_with_result passed!\n");
+    test_agent_instruction_evaluator__evaluate_with_result();
+    printf("test_agent_instruction_evaluator__evaluate_with_result passed!\n");
     
-    test_instruction_evaluator__evaluate_agent_invalid_method();
-    printf("test_instruction_evaluator__evaluate_agent_invalid_method passed!\n");
+    test_agent_instruction_evaluator__evaluate_invalid_method();
+    printf("test_agent_instruction_evaluator__evaluate_invalid_method passed!\n");
     
-    test_instruction_evaluator__evaluate_agent_invalid_args();
-    printf("test_instruction_evaluator__evaluate_agent_invalid_args passed!\n");
+    test_agent_instruction_evaluator__evaluate_invalid_args();
+    printf("test_agent_instruction_evaluator__evaluate_invalid_args passed!\n");
     
     test_agent_instruction_evaluator__create_destroy();
     printf("test_agent_instruction_evaluator__create_destroy passed!\n");

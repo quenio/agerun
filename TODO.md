@@ -127,7 +127,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ### HIGH PRIORITY - Complete Instruction and Expression Module Refactoring
 
-**Status**: Phase 1 (Create Specialized Parser Modules) and Phase 2 (Expression AST Integration) are complete. Phase 3 (Unified Instruction Evaluator Interface) is the current priority to create the facade method for the interpreter.
+**Status**: Phase 1 (Create Specialized Parser Modules), Phase 2 (Expression AST Integration), and Phase 3 (Unified Instruction Evaluator Interface) are complete. Phase 4 (Parser Integration into Interpreter) is the next priority.
 
 **Critical Order of Implementation**:
 1. Phase 1: Create Specialized Parser Modules ✅ (COMPLETED)
@@ -192,17 +192,23 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] Use expression ASTs directly
     - [x] This achieves complete separation: parse once during instruction parsing, evaluate during execution
 
-#### Phase 3: Unified Instruction Evaluator Interface (IN PROGRESS - CURRENT PRIORITY)
-- [ ] **Create single `ar_instruction_evaluator__evaluate()` function**:
-  - [ ] TDD Cycle 1: Create the unified evaluate method
-    - [ ] Red: Test that ar_instruction_evaluator__evaluate() exists and works for assignment
-    - [ ] Green: Implement switch dispatch based on AST type
-    - [ ] Refactor: Ensure all AST types are covered
-  - [ ] TDD Cycle 2: Test all instruction types through unified interface
-    - [ ] Red: Test each instruction type works through unified method
-    - [ ] Green: Add all cases to switch statement
-    - [ ] Refactor: Extract common patterns
-  - [ ] IMPORTANT: This is a facade method that ONLY dispatches, never evaluates directly
+#### Phase 3: Unified Instruction Evaluator Interface (Completed 2025-06-23)
+- [x] **Create single `ar_instruction_evaluator__evaluate()` function**:
+  - [x] TDD Cycle 1: Create the unified evaluate method
+    - [x] Red: Test that ar_instruction_evaluator__evaluate() exists and works for assignment
+    - [x] Green: Implement switch dispatch based on AST type
+    - [x] Refactor: Ensure all AST types are covered
+  - [x] TDD Cycle 2: Test all instruction types through unified interface
+    - [x] Red: Test each instruction type works through unified method
+    - [x] Green: Add all cases to switch statement
+    - [x] Refactor: Extract common patterns
+  - [x] TDD Cycle 3: Remove individual evaluate functions from header
+  - [x] TDD Cycle 4: Remove getter functions from header
+  - [x] TDD Cycle 5: Move specialized evaluator includes to .c file
+  - [x] Made instruction_evaluator a true facade pattern
+  - [x] Removed INST_AST_DESTROY enum and updated all references
+  - [x] Updated all specialized evaluator tests to be independent of facade
+  - [x] Renamed parse_instruction_evaluator_t and condition_instruction_evaluator_t to use ar_ prefix
 
 #### Phase 4: Parser Integration into Interpreter (CRITICAL - THIRD PRIORITY)
 - [ ] **Detailed integration plan using FACADES ONLY**:

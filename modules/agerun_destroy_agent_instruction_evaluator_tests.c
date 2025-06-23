@@ -80,7 +80,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_with_instance(voi
     // Create destroy AST with agent ID
     const char *args[] = {"memory.agent_id"};
     instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY, "destroy", args, 1, NULL
+        INST_AST_DESTROY_AGENT, "destroy", args, 1, NULL
     );
     assert(ast != NULL);
     
@@ -156,7 +156,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_legacy(void) {
     snprintf(agent_id_str, sizeof(agent_id_str), "%" PRId64, agent_id);
     const char *args[] = {agent_id_str};
     instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY, "destroy", args, 1, NULL
+        INST_AST_DESTROY_AGENT, "destroy", args, 1, NULL
     );
     assert(ast != NULL);
     
@@ -230,7 +230,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_with_result(void)
     snprintf(agent_id_str, sizeof(agent_id_str), "%" PRId64, agent_id);
     const char *args[] = {agent_id_str};
     instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY, "destroy", args, 1, "memory.result"
+        INST_AST_DESTROY_AGENT, "destroy", args, 1, "memory.result"
     );
     assert(ast != NULL);
     
@@ -300,7 +300,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_nonexistent(void)
     // Create destroy AST with non-existent agent ID
     const char *args[] = {"999"};
     instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY, "destroy", args, 1, "memory.result"
+        INST_AST_DESTROY_AGENT, "destroy", args, 1, "memory.result"
     );
     assert(ast != NULL);
     
@@ -360,7 +360,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_invalid_type(void
     // Create destroy AST with non-integer agent ID (string)
     const char *args[] = {"\"not_a_number\""};
     instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY, "destroy", args, 1, NULL
+        INST_AST_DESTROY_AGENT, "destroy", args, 1, NULL
     );
     assert(ast != NULL);
     
@@ -405,7 +405,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_wrong_arg_count(v
     // Create destroy AST with 2 args (should be 1 for agent)
     const char *args[] = {"1", "\"extra\""};
     instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY, "destroy", args, 2, NULL
+        INST_AST_DESTROY_AGENT, "destroy", args, 2, NULL
     );
     assert(ast != NULL);
     

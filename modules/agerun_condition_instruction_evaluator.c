@@ -149,7 +149,7 @@ static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluat
 /**
  * Creates a new condition instruction evaluator
  */
-condition_instruction_evaluator_t* ar_condition_instruction_evaluator__create(
+ar_condition_instruction_evaluator_t* ar_condition_instruction_evaluator__create(
     expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 ) {
@@ -157,8 +157,8 @@ condition_instruction_evaluator_t* ar_condition_instruction_evaluator__create(
         return NULL;
     }
     
-    condition_instruction_evaluator_t *own_evaluator = AR__HEAP__MALLOC(
-        sizeof(condition_instruction_evaluator_t),
+    ar_condition_instruction_evaluator_t *own_evaluator = AR__HEAP__MALLOC(
+        sizeof(ar_condition_instruction_evaluator_t),
         "condition_instruction_evaluator"
     );
     if (!own_evaluator) {
@@ -176,7 +176,7 @@ condition_instruction_evaluator_t* ar_condition_instruction_evaluator__create(
  * Destroys a condition instruction evaluator
  */
 void ar_condition_instruction_evaluator__destroy(
-    condition_instruction_evaluator_t *own_evaluator
+    ar_condition_instruction_evaluator_t *own_evaluator
 ) {
     if (!own_evaluator) {
         return;
@@ -190,7 +190,7 @@ void ar_condition_instruction_evaluator__destroy(
  * Evaluates a condition (if) instruction using stored dependencies
  */
 bool ar_condition_instruction_evaluator__evaluate(
-    condition_instruction_evaluator_t *mut_evaluator,
+    ar_condition_instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 ) {
     if (!mut_evaluator || !ref_ast) {

@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-#include "agerun_instruction_evaluator.h"
 #include "agerun_expression_evaluator.h"
 #include "agerun_instruction_ast.h"
 #include "agerun_expression_ast.h"
@@ -159,8 +158,8 @@ static void test_instruction_evaluator__evaluate_parse_simple(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    ar_parse_instruction_evaluator_t *evaluator = ar_parse_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -187,7 +186,7 @@ static void test_instruction_evaluator__evaluate_parse_simple(void) {
     assert(ast_set == true);
     
     // When evaluating the parse instruction
-    bool result = ar_instruction_evaluator__evaluate_parse(evaluator, ast);
+    bool result = ar_parse_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should succeed and store a map with the parsed value
     assert(result == true);
@@ -203,7 +202,7 @@ static void test_instruction_evaluator__evaluate_parse_simple(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_parse_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -216,8 +215,8 @@ static void test_instruction_evaluator__evaluate_parse_multiple_variables(void) 
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    ar_parse_instruction_evaluator_t *evaluator = ar_parse_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -244,7 +243,7 @@ static void test_instruction_evaluator__evaluate_parse_multiple_variables(void) 
     assert(ast_set == true);
     
     // When evaluating the parse instruction
-    bool result = ar_instruction_evaluator__evaluate_parse(evaluator, ast);
+    bool result = ar_parse_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should succeed and store a map with the parsed values
     assert(result == true);
@@ -265,7 +264,7 @@ static void test_instruction_evaluator__evaluate_parse_multiple_variables(void) 
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_parse_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -278,8 +277,8 @@ static void test_instruction_evaluator__evaluate_parse_with_types(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    ar_parse_instruction_evaluator_t *evaluator = ar_parse_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -306,7 +305,7 @@ static void test_instruction_evaluator__evaluate_parse_with_types(void) {
     assert(ast_set == true);
     
     // When evaluating the parse instruction
-    bool result = ar_instruction_evaluator__evaluate_parse(evaluator, ast);
+    bool result = ar_parse_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should succeed and store a map with the parsed values of correct types
     assert(result == true);
@@ -332,7 +331,7 @@ static void test_instruction_evaluator__evaluate_parse_with_types(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_parse_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -345,8 +344,8 @@ static void test_instruction_evaluator__evaluate_parse_no_match(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    ar_parse_instruction_evaluator_t *evaluator = ar_parse_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -373,7 +372,7 @@ static void test_instruction_evaluator__evaluate_parse_no_match(void) {
     assert(ast_set == true);
     
     // When evaluating the parse instruction
-    bool result = ar_instruction_evaluator__evaluate_parse(evaluator, ast);
+    bool result = ar_parse_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should succeed but store an empty map
     assert(result == true);
@@ -388,7 +387,7 @@ static void test_instruction_evaluator__evaluate_parse_no_match(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_parse_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -401,8 +400,8 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    ar_parse_instruction_evaluator_t *evaluator = ar_parse_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -423,7 +422,7 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     bool ast_set1 = ar__instruction_ast__set_function_arg_asts(ast1, arg_asts1);
     assert(ast_set1 == true);
     
-    bool result1 = ar_instruction_evaluator__evaluate_parse(evaluator, ast1);
+    bool result1 = ar_parse_instruction_evaluator__evaluate(evaluator, ast1);
     assert(result1 == false);
     
     ar__instruction_ast__destroy(ast1);
@@ -448,7 +447,7 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     bool ast_set2 = ar__instruction_ast__set_function_arg_asts(ast2, arg_asts2);
     assert(ast_set2 == true);
     
-    bool result2 = ar_instruction_evaluator__evaluate_parse(evaluator, ast2);
+    bool result2 = ar_parse_instruction_evaluator__evaluate(evaluator, ast2);
     assert(result2 == false);
     
     ar__instruction_ast__destroy(ast2);
@@ -473,13 +472,13 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     bool ast_set3 = ar__instruction_ast__set_function_arg_asts(ast3, arg_asts3);
     assert(ast_set3 == true);
     
-    bool result3 = ar_instruction_evaluator__evaluate_parse(evaluator, ast3);
+    bool result3 = ar_parse_instruction_evaluator__evaluate(evaluator, ast3);
     assert(result3 == false);
     
     ar__instruction_ast__destroy(ast3);
     
     // Cleanup
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_parse_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }

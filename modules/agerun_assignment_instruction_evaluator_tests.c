@@ -2,12 +2,11 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-#include "agerun_instruction_evaluator.h"
+#include "agerun_assignment_instruction_evaluator.h"
 #include "agerun_expression_evaluator.h"
 #include "agerun_instruction_ast.h"
 #include "agerun_expression_ast.h"
 #include "agerun_data.h"
-#include "agerun_assignment_instruction_evaluator.h"
 
 static void test_assignment_instruction_evaluator__create_destroy(void) {
     // Given expression evaluator and memory
@@ -68,16 +67,16 @@ static void test_assignment_instruction_evaluator__evaluate_with_instance(void) 
     ar__data__destroy(own_memory);
 }
 
-static void test_instruction_evaluator__evaluate_assignment_integer(void) {
-    // Given an evaluator with empty memory
+static void test_assignment_instruction_evaluator__evaluate_integer(void) {
+    // Given an assignment evaluator with empty memory
     data_t *memory = ar__data__create_map();
     assert(memory != NULL);
     
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -91,7 +90,7 @@ static void test_instruction_evaluator__evaluate_assignment_integer(void) {
     bool ast_set = ar__instruction_ast__set_assignment_expression_ast(ast, expr_ast);
     assert(ast_set == true);
     
-    bool result = ar_instruction_evaluator__evaluate_assignment(evaluator, ast);
+    bool result = ar_assignment_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should return true
     assert(result == true);
@@ -102,12 +101,12 @@ static void test_instruction_evaluator__evaluate_assignment_integer(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_assignment_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
 
-static void test_instruction_evaluator__evaluate_assignment_string(void) {
+static void test_assignment_instruction_evaluator__evaluate_string(void) {
     // Given an evaluator with empty memory
     data_t *memory = ar__data__create_map();
     assert(memory != NULL);
@@ -115,8 +114,8 @@ static void test_instruction_evaluator__evaluate_assignment_string(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -130,7 +129,7 @@ static void test_instruction_evaluator__evaluate_assignment_string(void) {
     bool ast_set = ar__instruction_ast__set_assignment_expression_ast(ast, expr_ast);
     assert(ast_set == true);
     
-    bool result = ar_instruction_evaluator__evaluate_assignment(evaluator, ast);
+    bool result = ar_assignment_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should return true
     assert(result == true);
@@ -142,12 +141,12 @@ static void test_instruction_evaluator__evaluate_assignment_string(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_assignment_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
 
-static void test_instruction_evaluator__evaluate_assignment_nested_path(void) {
+static void test_assignment_instruction_evaluator__evaluate_nested_path(void) {
     // Given an evaluator with memory containing a nested map
     data_t *memory = ar__data__create_map();
     assert(memory != NULL);
@@ -159,8 +158,8 @@ static void test_instruction_evaluator__evaluate_assignment_nested_path(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -174,7 +173,7 @@ static void test_instruction_evaluator__evaluate_assignment_nested_path(void) {
     bool ast_set = ar__instruction_ast__set_assignment_expression_ast(ast, expr_ast);
     assert(ast_set == true);
     
-    bool result = ar_instruction_evaluator__evaluate_assignment(evaluator, ast);
+    bool result = ar_assignment_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should return true
     assert(result == true);
@@ -187,12 +186,12 @@ static void test_instruction_evaluator__evaluate_assignment_nested_path(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_assignment_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
 
-static void test_instruction_evaluator__evaluate_assignment_expression(void) {
+static void test_assignment_instruction_evaluator__evaluate_expression(void) {
     // Given an evaluator with memory containing initial values
     data_t *memory = ar__data__create_map();
     assert(memory != NULL);
@@ -202,8 +201,8 @@ static void test_instruction_evaluator__evaluate_assignment_expression(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -225,7 +224,7 @@ static void test_instruction_evaluator__evaluate_assignment_expression(void) {
     bool ast_set = ar__instruction_ast__set_assignment_expression_ast(ast, expr_ast);
     assert(ast_set == true);
     
-    bool result = ar_instruction_evaluator__evaluate_assignment(evaluator, ast);
+    bool result = ar_assignment_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should return true
     assert(result == true);
@@ -236,12 +235,12 @@ static void test_instruction_evaluator__evaluate_assignment_expression(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_assignment_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
 
-static void test_instruction_evaluator__evaluate_assignment_invalid_path(void) {
+static void test_assignment_instruction_evaluator__evaluate_invalid_path(void) {
     // Given an evaluator with empty memory
     data_t *memory = ar__data__create_map();
     assert(memory != NULL);
@@ -249,8 +248,8 @@ static void test_instruction_evaluator__evaluate_assignment_invalid_path(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -264,14 +263,14 @@ static void test_instruction_evaluator__evaluate_assignment_invalid_path(void) {
     bool ast_set = ar__instruction_ast__set_assignment_expression_ast(ast, expr_ast);
     assert(ast_set == true);
     
-    bool result = ar_instruction_evaluator__evaluate_assignment(evaluator, ast);
+    bool result = ar_assignment_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should return false
     assert(result == false);
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_assignment_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -285,20 +284,20 @@ int main(void) {
     test_assignment_instruction_evaluator__evaluate_with_instance();
     printf("test_assignment_instruction_evaluator__evaluate_with_instance passed!\n");
     
-    test_instruction_evaluator__evaluate_assignment_integer();
-    printf("test_instruction_evaluator__evaluate_assignment_integer passed!\n");
+    test_assignment_instruction_evaluator__evaluate_integer();
+    printf("test_assignment_instruction_evaluator__evaluate_integer passed!\n");
     
-    test_instruction_evaluator__evaluate_assignment_string();
-    printf("test_instruction_evaluator__evaluate_assignment_string passed!\n");
+    test_assignment_instruction_evaluator__evaluate_string();
+    printf("test_assignment_instruction_evaluator__evaluate_string passed!\n");
     
-    test_instruction_evaluator__evaluate_assignment_nested_path();
-    printf("test_instruction_evaluator__evaluate_assignment_nested_path passed!\n");
+    test_assignment_instruction_evaluator__evaluate_nested_path();
+    printf("test_assignment_instruction_evaluator__evaluate_nested_path passed!\n");
     
-    test_instruction_evaluator__evaluate_assignment_expression();
-    printf("test_instruction_evaluator__evaluate_assignment_expression passed!\n");
+    test_assignment_instruction_evaluator__evaluate_expression();
+    printf("test_assignment_instruction_evaluator__evaluate_expression passed!\n");
     
-    test_instruction_evaluator__evaluate_assignment_invalid_path();
-    printf("test_instruction_evaluator__evaluate_assignment_invalid_path passed!\n");
+    test_assignment_instruction_evaluator__evaluate_invalid_path();
+    printf("test_assignment_instruction_evaluator__evaluate_invalid_path passed!\n");
     
     printf("All assignment instruction_evaluator tests passed!\n");
     

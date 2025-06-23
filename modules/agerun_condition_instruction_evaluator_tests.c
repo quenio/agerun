@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-#include "agerun_instruction_evaluator.h"
 #include "agerun_expression_evaluator.h"
 #include "agerun_instruction_ast.h"
 #include "agerun_expression_ast.h"
@@ -161,8 +160,8 @@ static void test_instruction_evaluator__evaluate_if_true_condition(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    ar_condition_instruction_evaluator_t *evaluator = ar_condition_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -196,7 +195,7 @@ static void test_instruction_evaluator__evaluate_if_true_condition(void) {
     assert(ast_set == true);
     
     // When evaluating the if instruction
-    bool result = ar_instruction_evaluator__evaluate_if(evaluator, ast);
+    bool result = ar_condition_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should succeed and store the true value
     assert(result == true);
@@ -207,7 +206,7 @@ static void test_instruction_evaluator__evaluate_if_true_condition(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_condition_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -221,8 +220,8 @@ static void test_instruction_evaluator__evaluate_if_false_condition(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    ar_condition_instruction_evaluator_t *evaluator = ar_condition_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -256,7 +255,7 @@ static void test_instruction_evaluator__evaluate_if_false_condition(void) {
     assert(ast_set == true);
     
     // When evaluating the if instruction
-    bool result = ar_instruction_evaluator__evaluate_if(evaluator, ast);
+    bool result = ar_condition_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should succeed and store the false value
     assert(result == true);
@@ -267,7 +266,7 @@ static void test_instruction_evaluator__evaluate_if_false_condition(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_condition_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -283,8 +282,8 @@ static void test_instruction_evaluator__evaluate_if_with_expressions(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    ar_condition_instruction_evaluator_t *evaluator = ar_condition_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -324,7 +323,7 @@ static void test_instruction_evaluator__evaluate_if_with_expressions(void) {
     assert(ast_set == true);
     
     // When evaluating the if instruction
-    bool result = ar_instruction_evaluator__evaluate_if(evaluator, ast);
+    bool result = ar_condition_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should succeed and evaluate the true expression
     assert(result == true);
@@ -335,7 +334,7 @@ static void test_instruction_evaluator__evaluate_if_with_expressions(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_condition_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -349,8 +348,8 @@ static void test_instruction_evaluator__evaluate_if_nested(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    ar_condition_instruction_evaluator_t *evaluator = ar_condition_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -386,7 +385,7 @@ static void test_instruction_evaluator__evaluate_if_nested(void) {
     assert(ast_set == true);
     
     // When evaluating the if instruction
-    bool result = ar_instruction_evaluator__evaluate_if(evaluator, ast);
+    bool result = ar_condition_instruction_evaluator__evaluate(evaluator, ast);
     
     // Then it should succeed and return the correct string
     assert(result == true);
@@ -397,7 +396,7 @@ static void test_instruction_evaluator__evaluate_if_nested(void) {
     
     // Cleanup
     ar__instruction_ast__destroy(ast);
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_condition_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }
@@ -410,8 +409,8 @@ static void test_instruction_evaluator__evaluate_if_invalid_args(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        expr_eval, memory, NULL, NULL
+    ar_condition_instruction_evaluator_t *evaluator = ar_condition_instruction_evaluator__create(
+        expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -436,7 +435,7 @@ static void test_instruction_evaluator__evaluate_if_invalid_args(void) {
     bool ast_set1 = ar__instruction_ast__set_function_arg_asts(ast1, arg_asts1);
     assert(ast_set1 == true);
     
-    bool result1 = ar_instruction_evaluator__evaluate_if(evaluator, ast1);
+    bool result1 = ar_condition_instruction_evaluator__evaluate(evaluator, ast1);
     assert(result1 == false);
     
     ar__instruction_ast__destroy(ast1);
@@ -450,13 +449,13 @@ static void test_instruction_evaluator__evaluate_if_invalid_args(void) {
     
     // Don't attach any ASTs to simulate parsing failure
     
-    bool result2 = ar_instruction_evaluator__evaluate_if(evaluator, ast2);
+    bool result2 = ar_condition_instruction_evaluator__evaluate(evaluator, ast2);
     assert(result2 == false);
     
     ar__instruction_ast__destroy(ast2);
     
     // Cleanup
-    ar_instruction_evaluator__destroy(evaluator);
+    ar_condition_instruction_evaluator__destroy(evaluator);
     ar__expression_evaluator__destroy(expr_eval);
     ar__data__destroy(memory);
 }

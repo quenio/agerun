@@ -74,7 +74,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_instance(vo
     // Create destroy AST with method name and version
     const char *args[] = {"\"test_destroyer\"", "\"1.0.0\""};
     instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY, "destroy", args, 2, NULL
+        INST_AST_DESTROY_METHOD, "destroy", args, 2, NULL
     );
     assert(ast != NULL);
     
@@ -147,7 +147,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_legacy(void) {
     // Create destroy AST with method name and version
     const char *args[] = {"\"test_destroyer\"", "\"1.0.0\""};
     instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY, "destroy", args, 2, NULL
+        INST_AST_DESTROY_METHOD, "destroy", args, 2, NULL
     );
     assert(ast != NULL);
     
@@ -227,7 +227,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void
     // Create destroy AST with method name and version
     const char *args[] = {"\"test_destroyer\"", "\"1.0.0\""};
     instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY, "destroy", args, 2, "memory.result"
+        INST_AST_DESTROY_METHOD, "destroy", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -307,7 +307,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void
     // Create destroy AST with non-existent method
     const char *args[] = {"\"nonexistent\"", "\"1.0.0\""};
     instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY, "destroy", args, 2, "memory.result"
+        INST_AST_DESTROY_METHOD, "destroy", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -371,7 +371,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_invalid_name_typ
     // Create destroy AST with non-string method name (integer)
     const char *args[] = {"123", "\"1.0.0\""};
     instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY, "destroy", args, 2, NULL
+        INST_AST_DESTROY_METHOD, "destroy", args, 2, NULL
     );
     assert(ast != NULL);
     
@@ -420,7 +420,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_wrong_arg_count(
     // Create destroy AST with 1 arg (should be 2 for method)
     const char *args[] = {"\"method_name\""};
     instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY, "destroy", args, 1, NULL
+        INST_AST_DESTROY_METHOD, "destroy", args, 1, NULL
     );
     assert(ast != NULL);
     

@@ -15,7 +15,7 @@
 #include "agerun_data.h"
 
 /* Opaque type for condition instruction evaluator */
-typedef struct ar_condition_instruction_evaluator_s condition_instruction_evaluator_t;
+typedef struct ar_condition_instruction_evaluator_s ar_condition_instruction_evaluator_t;
 
 /**
  * Creates a new condition instruction evaluator
@@ -26,7 +26,7 @@ typedef struct ar_condition_instruction_evaluator_s condition_instruction_evalua
  *
  * @note Ownership: Returns an owned value that caller must destroy
  */
-condition_instruction_evaluator_t* ar_condition_instruction_evaluator__create(
+ar_condition_instruction_evaluator_t* ar_condition_instruction_evaluator__create(
     expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
@@ -39,7 +39,7 @@ condition_instruction_evaluator_t* ar_condition_instruction_evaluator__create(
  * @note The evaluator does not own its dependencies
  */
 void ar_condition_instruction_evaluator__destroy(
-    condition_instruction_evaluator_t *own_evaluator
+    ar_condition_instruction_evaluator_t *own_evaluator
 );
 
 /**
@@ -50,7 +50,7 @@ void ar_condition_instruction_evaluator__destroy(
  * @return true if the instruction was successfully evaluated, false on error
  */
 bool ar_condition_instruction_evaluator__evaluate(
-    condition_instruction_evaluator_t *mut_evaluator,
+    ar_condition_instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 );
 

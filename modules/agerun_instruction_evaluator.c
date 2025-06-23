@@ -32,8 +32,8 @@ struct instruction_evaluator_s {
     data_t *ref_message;                         /* Message data (borrowed reference, can be NULL) */
     assignment_instruction_evaluator_t *own_assignment_evaluator;  /* Assignment evaluator instance (owned) */
     send_instruction_evaluator_t *own_send_evaluator;  /* Send evaluator instance (owned) */
-    condition_instruction_evaluator_t *own_condition_evaluator;  /* Condition evaluator instance (owned) */
-    parse_instruction_evaluator_t *own_parse_evaluator;  /* Parse evaluator instance (owned) */
+    ar_condition_instruction_evaluator_t *own_condition_evaluator;  /* Condition evaluator instance (owned) */
+    ar_parse_instruction_evaluator_t *own_parse_evaluator;  /* Parse evaluator instance (owned) */
     ar_build_instruction_evaluator_t *own_build_evaluator;  /* Build evaluator instance (owned) */
     ar_method_instruction_evaluator_t *own_method_evaluator;  /* Method evaluator instance (owned) */
     ar_agent_instruction_evaluator_t *own_agent_evaluator;  /* Agent evaluator instance (owned) */
@@ -237,116 +237,12 @@ void ar_instruction_evaluator__destroy(instruction_evaluator_t *own_evaluator) {
     AR__HEAP__FREE(own_evaluator);
 }
 
-/**
- * Gets the assignment evaluator instance
- */
-assignment_instruction_evaluator_t* ar_instruction_evaluator__get_assignment_evaluator(
-    const instruction_evaluator_t *ref_evaluator
-) {
-    if (ref_evaluator == NULL) {
-        return NULL;
-    }
-    return ref_evaluator->own_assignment_evaluator;
-}
+
 
 /**
- * Gets the send evaluator instance
+ * Evaluates any instruction AST node
  */
-send_instruction_evaluator_t* ar_instruction_evaluator__get_send_evaluator(
-    const instruction_evaluator_t *ref_evaluator
-) {
-    if (ref_evaluator == NULL) {
-        return NULL;
-    }
-    return ref_evaluator->own_send_evaluator;
-}
-
-/**
- * Gets the condition evaluator instance
- */
-condition_instruction_evaluator_t* ar_instruction_evaluator__get_condition_evaluator(
-    const instruction_evaluator_t *ref_evaluator
-) {
-    if (ref_evaluator == NULL) {
-        return NULL;
-    }
-    return ref_evaluator->own_condition_evaluator;
-}
-
-/**
- * Gets the parse evaluator instance
- */
-parse_instruction_evaluator_t* ar_instruction_evaluator__get_parse_evaluator(
-    const instruction_evaluator_t *ref_evaluator
-) {
-    if (ref_evaluator == NULL) {
-        return NULL;
-    }
-    return ref_evaluator->own_parse_evaluator;
-}
-
-/**
- * Gets the build evaluator instance
- */
-ar_build_instruction_evaluator_t* ar_instruction_evaluator__get_build_evaluator(
-    const instruction_evaluator_t *ref_evaluator
-) {
-    if (ref_evaluator == NULL) {
-        return NULL;
-    }
-    return ref_evaluator->own_build_evaluator;
-}
-
-/**
- * Gets the method evaluator instance
- */
-ar_method_instruction_evaluator_t* ar_instruction_evaluator__get_method_evaluator(
-    const instruction_evaluator_t *ref_evaluator
-) {
-    if (ref_evaluator == NULL) {
-        return NULL;
-    }
-    return ref_evaluator->own_method_evaluator;
-}
-
-/**
- * Gets the agent evaluator instance
- */
-ar_agent_instruction_evaluator_t* ar_instruction_evaluator__get_agent_evaluator(
-    const instruction_evaluator_t *ref_evaluator
-) {
-    if (ref_evaluator == NULL) {
-        return NULL;
-    }
-    return ref_evaluator->own_agent_evaluator;
-}
-
-/**
- * Gets the destroy agent evaluator instance
- */
-ar_destroy_agent_instruction_evaluator_t* ar_instruction_evaluator__get_destroy_agent_evaluator(
-    const instruction_evaluator_t *ref_evaluator
-) {
-    if (ref_evaluator == NULL) {
-        return NULL;
-    }
-    return ref_evaluator->own_destroy_agent_evaluator;
-}
-
-/**
- * Gets the destroy method evaluator instance
- */
-ar_destroy_method_instruction_evaluator_t* ar_instruction_evaluator__get_destroy_method_evaluator(
-    const instruction_evaluator_t *ref_evaluator
-) {
-    if (ref_evaluator == NULL) {
-        return NULL;
-    }
-    return ref_evaluator->own_destroy_method_evaluator;
-}
-
-
-bool ar_instruction_evaluator__evaluate_assignment(
+bool ar_instruction_evaluator__evaluate(
     instruction_evaluator_t *mut_evaluator,
     const instruction_ast_t *ref_ast
 ) {
@@ -354,142 +250,76 @@ bool ar_instruction_evaluator__evaluate_assignment(
         return false;
     }
     
-    // Delegate to the assignment instruction evaluator instance
-    return ar_assignment_instruction_evaluator__evaluate(
-        mut_evaluator->own_assignment_evaluator,
-        ref_ast
-    );
-}
-
-bool ar_instruction_evaluator__evaluate_send(
-    instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
-) {
-    if (!mut_evaluator || !ref_ast) {
-        return false;
-    }
+    // Dispatch based on AST node type
+    instruction_ast_type_t type = ar__instruction_ast__get_type(ref_ast);
     
-    // Delegate to the send instruction evaluator instance
-    return ar_send_instruction_evaluator__evaluate(
-        mut_evaluator->own_send_evaluator,
-        ref_ast
-    );
-}
-
-bool ar_instruction_evaluator__evaluate_if(
-    instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
-) {
-    if (!mut_evaluator || !ref_ast) {
-        return false;
-    }
-    
-    // Delegate to the condition instruction evaluator instance
-    return ar_condition_instruction_evaluator__evaluate(
-        mut_evaluator->own_condition_evaluator,
-        ref_ast
-    );
-}
-
-
-bool ar_instruction_evaluator__evaluate_parse(
-    instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
-) {
-    if (!mut_evaluator || !ref_ast) {
-        return false;
-    }
-    
-    // Delegate to the parse instruction evaluator instance
-    return ar_parse_instruction_evaluator__evaluate(
-        mut_evaluator->own_parse_evaluator,
-        ref_ast
-    );
-}
-
-
-bool ar_instruction_evaluator__evaluate_build(
-    instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
-) {
-    if (!mut_evaluator || !ref_ast) {
-        return false;
-    }
-    
-    // Delegate to the build instruction evaluator instance
-    return ar_build_instruction_evaluator__evaluate(
-        mut_evaluator->own_build_evaluator,
-        ref_ast
-    );
-}
-
-bool ar_instruction_evaluator__evaluate_method(
-    instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
-) {
-    if (!mut_evaluator || !ref_ast) {
-        return false;
-    }
-    
-    // Delegate to the method instruction evaluator instance
-    return ar_method_instruction_evaluator__evaluate(
-        mut_evaluator->own_method_evaluator,
-        ref_ast
-    );
-}
-
-bool ar_instruction_evaluator__evaluate_agent(
-    instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
-) {
-    if (!mut_evaluator || !ref_ast) {
-        return false;
-    }
-    
-    // Delegate to the agent instruction evaluator instance
-    return ar_agent_instruction_evaluator__evaluate(
-        mut_evaluator->own_agent_evaluator,
-        mut_evaluator->ref_context,
-        ref_ast
-    );
-}
-
-bool ar_instruction_evaluator__evaluate_destroy(
-    instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
-) {
-    if (!mut_evaluator || !ref_ast) {
-        return false;
-    }
-    
-    // Validate AST type
-    if (ar__instruction_ast__get_type(ref_ast) != INST_AST_DESTROY) {
-        return false;
-    }
-    
-    // Get function arguments to determine which evaluator to use
-    list_t *own_args = ar__instruction_ast__get_function_args(ref_ast);
-    if (!own_args) {
-        return false;
-    }
-    
-    size_t arg_count = ar__list__count(own_args);
-    ar__list__destroy(own_args);
-    
-    if (arg_count == 1) {
-        // destroy(agent_id) - dispatch to destroy agent evaluator instance
-        return ar_destroy_agent_instruction_evaluator__evaluate(
-            mut_evaluator->own_destroy_agent_evaluator,
-            ref_ast
-        );
-    } else if (arg_count == 2) {
-        // destroy(method_name, method_version) - dispatch to destroy method evaluator instance
-        return ar_destroy_method_instruction_evaluator__evaluate(
-            mut_evaluator->own_destroy_method_evaluator,
-            ref_ast
-        );
-    } else {
-        // Invalid argument count
-        return false;
+    switch (type) {
+        case INST_AST_ASSIGNMENT:
+            // Delegate to the assignment instruction evaluator instance
+            return ar_assignment_instruction_evaluator__evaluate(
+                mut_evaluator->own_assignment_evaluator,
+                ref_ast
+            );
+            
+        case INST_AST_SEND:
+            // Delegate to the send instruction evaluator instance
+            return ar_send_instruction_evaluator__evaluate(
+                mut_evaluator->own_send_evaluator,
+                ref_ast
+            );
+            
+        case INST_AST_IF:
+            // Delegate to the condition instruction evaluator instance
+            return ar_condition_instruction_evaluator__evaluate(
+                mut_evaluator->own_condition_evaluator,
+                ref_ast
+            );
+            
+        case INST_AST_PARSE:
+            // Delegate to the parse instruction evaluator instance
+            return ar_parse_instruction_evaluator__evaluate(
+                mut_evaluator->own_parse_evaluator,
+                ref_ast
+            );
+            
+        case INST_AST_BUILD:
+            // Delegate to the build instruction evaluator instance
+            return ar_build_instruction_evaluator__evaluate(
+                mut_evaluator->own_build_evaluator,
+                ref_ast
+            );
+            
+        case INST_AST_METHOD:
+            // Delegate to the method instruction evaluator instance
+            return ar_method_instruction_evaluator__evaluate(
+                mut_evaluator->own_method_evaluator,
+                ref_ast
+            );
+            
+        case INST_AST_AGENT:
+            // Delegate to the agent instruction evaluator instance
+            return ar_agent_instruction_evaluator__evaluate(
+                mut_evaluator->own_agent_evaluator,
+                mut_evaluator->ref_context,
+                ref_ast
+            );
+            
+        case INST_AST_DESTROY_AGENT:
+            // Delegate directly to destroy agent evaluator
+            return ar_destroy_agent_instruction_evaluator__evaluate(
+                mut_evaluator->own_destroy_agent_evaluator,
+                ref_ast
+            );
+            
+        case INST_AST_DESTROY_METHOD:
+            // Delegate directly to destroy method evaluator
+            return ar_destroy_method_instruction_evaluator__evaluate(
+                mut_evaluator->own_destroy_method_evaluator,
+                ref_ast
+            );
+            
+        default:
+            // Unknown instruction type
+            return false;
     }
 }
