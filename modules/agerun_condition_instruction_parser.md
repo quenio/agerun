@@ -29,14 +29,14 @@ This module extracts the parsing logic for if() function calls from the general 
 ar_condition_instruction_parser_t *parser = ar_condition_instruction_parser__create();
 
 // Parse simple if
-instruction_ast_t *ast1 = ar_condition_instruction_parser__parse(
+ar_instruction_ast_t *ast1 = ar_condition_instruction_parser__parse(
     parser, 
     "if(x > 5, \"high\", \"low\")", 
     NULL
 );
 
 // Parse if with assignment
-instruction_ast_t *ast2 = ar_condition_instruction_parser__parse(
+ar_instruction_ast_t *ast2 = ar_condition_instruction_parser__parse(
     parser,
     "memory.result := if(memory.age >= 18, \"adult\", \"minor\")",
     "memory.result"
@@ -75,7 +75,7 @@ The parser:
 2. Ensures opening parenthesis follows
 3. Extracts exactly 3 arguments (condition, then, else)
 4. Handles nested parentheses and quoted strings in arguments
-5. Creates an INST_AST_IF node with the parsed arguments
+5. Creates an AR_INST__IF node with the parsed arguments
 6. Tracks optional result assignment path
 
 ## Error Handling

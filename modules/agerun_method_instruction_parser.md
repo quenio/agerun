@@ -29,14 +29,14 @@ This module extracts the parsing logic for method() function calls from the gene
 ar_method_instruction_parser_t *parser = ar_method_instruction_parser__create();
 
 // Parse simple method function
-instruction_ast_t *ast1 = ar_method_instruction_parser__parse(
+ar_instruction_ast_t *ast1 = ar_method_instruction_parser__parse(
     parser, 
     "method(\"greet\", \"memory.msg := \\\"Hello\\\"\", \"1.0.0\")", 
     NULL
 );
 
 // Parse with assignment
-instruction_ast_t *ast2 = ar_method_instruction_parser__parse(
+ar_instruction_ast_t *ast2 = ar_method_instruction_parser__parse(
     parser,
     "memory.method_ref := method(\"calculate\", \"memory.result := 42\", \"2.0.0\")",
     "memory.method_ref"
@@ -76,7 +76,7 @@ The parser:
 2. Ensures opening parenthesis follows
 3. Extracts exactly 3 string arguments (name, code, version)
 4. Handles quoted strings with escape sequences
-5. Creates an INST_AST_METHOD node with the parsed arguments
+5. Creates an AR_INST__METHOD node with the parsed arguments
 6. Tracks optional result assignment path
 
 ## Error Handling

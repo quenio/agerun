@@ -24,7 +24,7 @@ An opaque type representing a method instruction evaluator instance.
 
 ```c
 method_instruction_evaluator_t* ar_method_instruction_evaluator__create(
-    expression_evaluator_t *ref_expr_evaluator,
+    ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
 ```
@@ -40,7 +40,7 @@ Destroys a method instruction evaluator and frees all resources.
 ```c
 bool ar_method_instruction_evaluator__evaluate(
     method_instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
+    const ar_instruction_ast_t *ref_ast
 );
 ```
 Evaluates a method instruction using the stored dependencies.
@@ -95,7 +95,7 @@ The module:
 ```c
 // Create memory and expression evaluator
 data_t *memory = ar__data__create_map();
-expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
 
 // Create method instruction evaluator
 method_instruction_evaluator_t *method_eval = ar_method_instruction_evaluator__create(
@@ -103,7 +103,7 @@ method_instruction_evaluator_t *method_eval = ar_method_instruction_evaluator__c
 );
 
 // Parse method instruction: method("echo", "send(0, message)", "1.0.0")
-instruction_ast_t *ast = ar__instruction_parser__parse_method(parser);
+ar_instruction_ast_t *ast = ar__instruction_parser__parse_method(parser);
 
 // Evaluate the method creation
 bool success = ar_method_instruction_evaluator__evaluate(method_eval, ast);

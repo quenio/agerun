@@ -20,7 +20,7 @@ The expression parser module serves as the foundation for separating expression 
 The module uses an opaque type to hide parsing state:
 
 ```c
-typedef struct expression_parser_s expression_parser_t;
+typedef struct expression_parser_s ar_expression_parser_t;
 ```
 
 The parser maintains:
@@ -95,8 +95,8 @@ Each precedence level has its own parsing function:
 The parser provides detailed error messages with position information:
 
 ```c
-expression_parser_t *parser = ar__expression_parser__create("2 + + 3");
-expression_ast_t *ast = ar__expression_parser__parse_expression(parser);
+ar_expression_parser_t *parser = ar__expression_parser__create("2 + + 3");
+ar_expression_ast_t *ast = ar__expression_parser__parse_expression(parser);
 if (!ast) {
     printf("Error: %s\n", ar__expression_parser__get_error(parser));
     // Output: "Error at position 4: Expected literal (string or number)"
@@ -123,10 +123,10 @@ The parser follows strict ownership semantics:
 
 ```c
 // Create parser
-expression_parser_t *own_parser = ar__expression_parser__create("memory.x + 5");
+ar_expression_parser_t *own_parser = ar__expression_parser__create("memory.x + 5");
 
 // Parse expression
-expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
+ar_expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
 if (!own_ast) {
     fprintf(stderr, "Parse error: %s\n", ar__expression_parser__get_error(own_parser));
     ar__expression_parser__destroy(own_parser);
@@ -134,8 +134,8 @@ if (!own_ast) {
 }
 
 // Use the AST
-assert(ar__expression_ast__get_type(own_ast) == EXPR_AST_BINARY_OP);
-assert(ar__expression_ast__get_operator(own_ast) == OP_ADD);
+assert(ar__expression_ast__get_type(own_ast) == AR_EXPR__BINARY_OP);
+assert(ar__expression_ast__get_operator(own_ast) == AR_OP__ADD);
 
 // Clean up
 ar__expression_ast__destroy(own_ast);

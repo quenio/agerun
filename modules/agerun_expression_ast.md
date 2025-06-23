@@ -20,7 +20,7 @@ The expression AST module serves as the foundation for separating expression par
 The module uses opaque types to hide implementation details:
 
 ```c
-typedef struct expression_ast_s expression_ast_t;
+typedef struct expression_ast_s ar_expression_ast_t;
 ```
 
 This ensures that clients cannot directly access or modify the internal structure of AST nodes.
@@ -31,12 +31,12 @@ The module defines all possible expression types:
 
 ```c
 typedef enum {
-    EXPR_AST_LITERAL_INT,      /* Integer literal (e.g., 42, -10) */
-    EXPR_AST_LITERAL_DOUBLE,   /* Double literal (e.g., 3.14, -2.5) */
-    EXPR_AST_LITERAL_STRING,   /* String literal (e.g., "hello") */
-    EXPR_AST_MEMORY_ACCESS,    /* Memory/message/context access */
-    EXPR_AST_BINARY_OP         /* Binary operation (arithmetic or comparison) */
-} expression_ast_type_t;
+    AR_EXPR__LITERAL_INT,      /* Integer literal (e.g., 42, -10) */
+    AR_EXPR__LITERAL_DOUBLE,   /* Double literal (e.g., 3.14, -2.5) */
+    AR_EXPR__LITERAL_STRING,   /* String literal (e.g., "hello") */
+    AR_EXPR__MEMORY_ACCESS,    /* Memory/message/context access */
+    AR_EXPR__BINARY_OP         /* Binary operation (arithmetic or comparison) */
+} ar_expression_ast_type_t;
 ```
 
 ### Binary Operator Types
@@ -46,19 +46,19 @@ All binary operators are defined in a single enumeration:
 ```c
 typedef enum {
     /* Arithmetic operators */
-    OP_ADD,        /* + */
-    OP_SUBTRACT,   /* - */
-    OP_MULTIPLY,   /* * */
-    OP_DIVIDE,     /* / */
+    AR_OP__ADD,        /* + */
+    AR_OP__SUBTRACT,   /* - */
+    AR_OP__MULTIPLY,   /* * */
+    AR_OP__DIVIDE,     /* / */
     
     /* Comparison operators */
-    OP_EQUAL,      /* = */
-    OP_NOT_EQUAL,  /* <> */
-    OP_LESS,       /* < */
-    OP_LESS_EQ,    /* <= */
-    OP_GREATER,    /* > */
-    OP_GREATER_EQ  /* >= */
-} binary_operator_t;
+    AR_OP__EQUAL,      /* = */
+    AR_OP__NOT_EQUAL,  /* <> */
+    AR_OP__LESS,       /* < */
+    AR_OP__LESS_EQ,    /* <= */
+    AR_OP__GREATER,    /* > */
+    AR_OP__GREATER_EQ  /* >= */
+} ar_binary_operator_t;
 ```
 
 ## API Functions
@@ -106,13 +106,13 @@ The module follows strict ownership semantics:
 ```c
 // Create an AST for: memory.x + 5
 const char *path[] = {"x"};
-expression_ast_t *own_mem = ar__expression_ast__create_memory_access("memory", path, 1);
-expression_ast_t *own_five = ar__expression_ast__create_literal_int(5);
-expression_ast_t *own_add = ar__expression_ast__create_binary_op(OP_ADD, own_mem, own_five);
+ar_expression_ast_t *own_mem = ar__expression_ast__create_memory_access("memory", path, 1);
+ar_expression_ast_t *own_five = ar__expression_ast__create_literal_int(5);
+ar_expression_ast_t *own_add = ar__expression_ast__create_binary_op(AR_OP__ADD, own_mem, own_five);
 
 // Inspect the AST
-assert(ar__expression_ast__get_type(own_add) == EXPR_AST_BINARY_OP);
-assert(ar__expression_ast__get_operator(own_add) == OP_ADD);
+assert(ar__expression_ast__get_type(own_add) == AR_EXPR__BINARY_OP);
+assert(ar__expression_ast__get_operator(own_add) == AR_OP__ADD);
 
 // Clean up
 ar__expression_ast__destroy(own_add);

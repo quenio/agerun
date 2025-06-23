@@ -15,7 +15,7 @@ This module extracts the conditional instruction evaluation logic from the main 
 ### Types
 
 ```c
-typedef struct ar_condition_instruction_evaluator_s condition_instruction_evaluator_t;
+typedef struct ar_condition_instruction_evaluator_s ar_condition_instruction_evaluator_t;
 ```
 
 An opaque type representing a condition instruction evaluator instance.
@@ -23,8 +23,8 @@ An opaque type representing a condition instruction evaluator instance.
 ### Public Interface
 
 ```c
-condition_instruction_evaluator_t* ar_condition_instruction_evaluator__create(
-    expression_evaluator_t *ref_expr_evaluator,
+ar_condition_instruction_evaluator_t* ar_condition_instruction_evaluator__create(
+    ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
 ```
@@ -32,15 +32,15 @@ Creates a new condition instruction evaluator that stores its dependencies.
 
 ```c
 void ar_condition_instruction_evaluator__destroy(
-    condition_instruction_evaluator_t *own_evaluator
+    ar_condition_instruction_evaluator_t *own_evaluator
 );
 ```
 Destroys a condition instruction evaluator and frees all resources.
 
 ```c
 bool ar_condition_instruction_evaluator__evaluate(
-    condition_instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
+    ar_condition_instruction_evaluator_t *mut_evaluator,
+    const ar_instruction_ast_t *ref_ast
 );
 ```
 Evaluates a condition instruction using the stored dependencies.
@@ -92,15 +92,15 @@ The module evaluates all three arguments:
 ```c
 // Create memory and expression evaluator
 data_t *memory = ar__data__create_map();
-expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
 
 // Create condition instruction evaluator
-condition_instruction_evaluator_t *cond_eval = ar__condition_instruction_evaluator__create(
+ar_condition_instruction_evaluator_t *cond_eval = ar__condition_instruction_evaluator__create(
     expr_eval, memory
 );
 
 // Parse if instruction: result := if(x > 5, 100, 200)
-instruction_ast_t *ast = ar__instruction_parser__parse_if(parser);
+ar_instruction_ast_t *ast = ar__instruction_parser__parse_if(parser);
 
 // Evaluate the condition
 bool success = ar__condition_instruction_evaluator__evaluate(cond_eval, ast);

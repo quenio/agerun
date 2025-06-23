@@ -24,7 +24,7 @@ An opaque type representing an assignment instruction evaluator instance.
 
 ```c
 assignment_instruction_evaluator_t* ar_assignment_instruction_evaluator__create(
-    expression_evaluator_t *ref_expr_evaluator,
+    ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
 ```
@@ -40,7 +40,7 @@ Destroys an assignment instruction evaluator and frees all resources.
 ```c
 bool ar_assignment_instruction_evaluator__evaluate(
     assignment_instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
+    const ar_instruction_ast_t *ref_ast
 );
 ```
 Evaluates an assignment instruction using the stored dependencies.
@@ -91,7 +91,7 @@ The module includes helper functions for:
 ```c
 // Create memory and expression evaluator
 data_t *memory = ar__data__create_map();
-expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
 
 // Create assignment instruction evaluator
 assignment_instruction_evaluator_t *assign_eval = ar_assignment_instruction_evaluator__create(
@@ -99,7 +99,7 @@ assignment_instruction_evaluator_t *assign_eval = ar_assignment_instruction_eval
 );
 
 // Parse assignment instruction: memory.result := 42
-instruction_ast_t *ast = ar__instruction_parser__parse_assignment(parser);
+ar_instruction_ast_t *ast = ar__instruction_parser__parse_assignment(parser);
 
 // Evaluate the assignment
 bool success = ar_assignment_instruction_evaluator__evaluate(assign_eval, ast);

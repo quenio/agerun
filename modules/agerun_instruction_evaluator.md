@@ -49,7 +49,7 @@ The module follows a **composition pattern** where it creates and manages instan
 ### Types
 
 ```c
-typedef struct instruction_evaluator_s instruction_evaluator_t;
+typedef struct instruction_evaluator_s ar_instruction_evaluator_t;
 ```
 
 An opaque type representing an instruction evaluator instance.
@@ -59,8 +59,8 @@ An opaque type representing an instruction evaluator instance.
 #### ar_instruction_evaluator__create
 
 ```c
-instruction_evaluator_t* ar_instruction_evaluator__create(
-    expression_evaluator_t *ref_expr_evaluator,
+ar_instruction_evaluator_t* ar_instruction_evaluator__create(
+    ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory,
     data_t *ref_context,
     data_t *ref_message
@@ -87,7 +87,7 @@ Creates a new instruction evaluator instance and initializes all specialized eva
 #### ar_instruction_evaluator__destroy
 
 ```c
-void ar_instruction_evaluator__destroy(instruction_evaluator_t *own_evaluator);
+void ar_instruction_evaluator__destroy(ar_instruction_evaluator_t *own_evaluator);
 ```
 
 Destroys an instruction evaluator instance and all its specialized evaluators.
@@ -112,8 +112,8 @@ Each delegation function follows the same pattern:
 
 ```c
 bool ar_instruction_evaluator__evaluate_assignment(
-    instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
+    ar_instruction_evaluator_t *mut_evaluator,
+    const ar_instruction_ast_t *ref_ast
 );
 ```
 
@@ -130,35 +130,35 @@ The instruction evaluator provides delegation functions for each instruction typ
 ```c
 // Delegates to assignment_instruction_evaluator
 bool ar_instruction_evaluator__evaluate_assignment(
-    instruction_evaluator_t *mut_evaluator, const instruction_ast_t *ref_ast);
+    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
 
 // Delegates to send_instruction_evaluator
 bool ar_instruction_evaluator__evaluate_send(
-    instruction_evaluator_t *mut_evaluator, const instruction_ast_t *ref_ast);
+    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
 
 // Delegates to condition_instruction_evaluator
 bool ar_instruction_evaluator__evaluate_if(
-    instruction_evaluator_t *mut_evaluator, const instruction_ast_t *ref_ast);
+    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
 
 // Delegates to parse_instruction_evaluator
 bool ar_instruction_evaluator__evaluate_parse(
-    instruction_evaluator_t *mut_evaluator, const instruction_ast_t *ref_ast);
+    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
 
 // Delegates to build_instruction_evaluator
 bool ar_instruction_evaluator__evaluate_build(
-    instruction_evaluator_t *mut_evaluator, const instruction_ast_t *ref_ast);
+    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
 
 // Delegates to method_instruction_evaluator
 bool ar_instruction_evaluator__evaluate_method(
-    instruction_evaluator_t *mut_evaluator, const instruction_ast_t *ref_ast);
+    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
 
 // Delegates to agent_instruction_evaluator
 bool ar_instruction_evaluator__evaluate_agent(
-    instruction_evaluator_t *mut_evaluator, const instruction_ast_t *ref_ast);
+    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
 
 // Dispatches to destroy_agent_instruction_evaluator or destroy_method_instruction_evaluator
 bool ar_instruction_evaluator__evaluate_destroy(
-    instruction_evaluator_t *mut_evaluator, const instruction_ast_t *ref_ast);
+    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
 ```
 
 **Common Behavior:**
@@ -173,12 +173,12 @@ bool ar_instruction_evaluator__evaluate_destroy(
 
 ```c
 // Create evaluator with dependencies
-instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
+ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
     expr_eval, memory, NULL, NULL
 );
 
 // Create assignment AST: memory.count := 10
-instruction_ast_t *ast = ar_instruction_ast__create_assignment(
+ar_instruction_ast_t *ast = ar_instruction_ast__create_assignment(
     "memory.count", "10"
 );
 
@@ -195,8 +195,8 @@ ar_instruction_evaluator__destroy(evaluator);
 ```c
 // Create send AST: send(1, "Hello")
 const char *args[] = {"1", "\"Hello\""};
-instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-    INST_AST_SEND, "send", args, 2, NULL
+ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+    AR_INST__SEND, "send", args, 2, NULL
 );
 
 // Evaluate (delegates to send_instruction_evaluator)
@@ -209,7 +209,7 @@ The instruction evaluator demonstrates the **facade pattern** by providing a uni
 
 ```c
 // Single evaluator manages all specialized evaluators
-instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
+ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
     expr_eval, memory, context, message
 );
 
@@ -259,7 +259,7 @@ Error handling is delegated to the specialized evaluators:
 
 The module has a focused test suite that verifies the coordination pattern:
 
-- `agerun_instruction_evaluator_tests.c`: Tests creation/destruction and delegation functions
+- `agerun_ar_instruction_evaluator_tests.c`: Tests creation/destruction and delegation functions
 - **Specialized evaluator testing**: Each specialized evaluator has its own comprehensive test suite
 - **Integration focus**: Tests verify that delegation works correctly
 - **Memory safety**: All tests pass with zero memory leaks

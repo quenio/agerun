@@ -24,7 +24,7 @@ An opaque type representing a parse instruction evaluator instance.
 
 ```c
 parse_instruction_evaluator_t* ar_parse_instruction_evaluator__create(
-    expression_evaluator_t *ref_expr_evaluator,
+    ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
 ```
@@ -40,7 +40,7 @@ Destroys a parse instruction evaluator and frees all resources.
 ```c
 bool ar_parse_instruction_evaluator__evaluate(
     parse_instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
+    const ar_instruction_ast_t *ref_ast
 );
 ```
 Evaluates a parse instruction using the stored dependencies.
@@ -101,7 +101,7 @@ The module:
 ```c
 // Create memory and expression evaluator
 data_t *memory = ar__data__create_map();
-expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
 
 // Create parse instruction evaluator
 parse_instruction_evaluator_t *parse_eval = ar_parse_instruction_evaluator__create(
@@ -109,7 +109,7 @@ parse_instruction_evaluator_t *parse_eval = ar_parse_instruction_evaluator__crea
 );
 
 // Parse instruction: memory.data := parse("Hello {name}!", "Hello World!")
-instruction_ast_t *ast = ar__instruction_parser__parse_parse(parser);
+ar_instruction_ast_t *ast = ar__instruction_parser__parse_parse(parser);
 
 // Evaluate the parse
 bool success = ar_parse_instruction_evaluator__evaluate(parse_eval, ast);

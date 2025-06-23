@@ -12,7 +12,7 @@ This module extracts the parsing logic for parse() function calls from the gener
 
 ### Types
 
-- `ar_parse_instruction_parser_t` - Opaque parser instance type
+- `ar_ar_parse_instruction_parser_t` - Opaque parser instance type
 
 ### Functions
 
@@ -26,17 +26,17 @@ This module extracts the parsing logic for parse() function calls from the gener
 
 ```c
 // Create parser
-ar_parse_instruction_parser_t *parser = ar_parse_instruction_parser__create();
+ar_ar_parse_instruction_parser_t *parser = ar_parse_instruction_parser__create();
 
 // Parse simple parse function
-instruction_ast_t *ast1 = ar_parse_instruction_parser__parse(
+ar_instruction_ast_t *ast1 = ar_parse_instruction_parser__parse(
     parser, 
     "parse(\"name={name}\", \"name=John\")", 
     NULL
 );
 
 // Parse with assignment
-instruction_ast_t *ast2 = ar_parse_instruction_parser__parse(
+ar_instruction_ast_t *ast2 = ar_parse_instruction_parser__parse(
     parser,
     "memory.result := parse(\"template: {var}\", \"template: value\")",
     "memory.result"
@@ -75,7 +75,7 @@ The parser:
 2. Ensures opening parenthesis follows
 3. Extracts exactly 2 arguments (template and input strings)
 4. Handles quoted strings with escape sequences
-5. Creates an INST_AST_PARSE node with the parsed arguments
+5. Creates an AR_INST__PARSE node with the parsed arguments
 6. Tracks optional result assignment path
 
 ## Error Handling

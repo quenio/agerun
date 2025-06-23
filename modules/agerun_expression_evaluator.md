@@ -17,7 +17,7 @@ The expression evaluator module provides functionality for evaluating expression
 ## Architecture
 
 The module is designed with clean separation of concerns:
-- Depends on expression_ast for node inspection
+- Depends on ar_expression_ast for node inspection
 - Depends on data module for value creation and manipulation  
 - No dependency on expression or instruction modules
 - Maintains memory and context references throughout evaluation
@@ -94,11 +94,11 @@ The module provides comprehensive error handling:
 // Create evaluator with memory and context
 data_t *memory = ar__data__create_map();
 data_t *context = ar__data__create_map();
-expression_evaluator_t *evaluator = ar__expression_evaluator__create(memory, context);
+ar_expression_evaluator_t *evaluator = ar__expression_evaluator__create(memory, context);
 
 // Parse an expression to AST
-expression_parser_t *parser = ar__expression_parser__create("memory.x + 5");
-expression_ast_t *ast = ar__expression_parser__parse(parser);
+ar_expression_parser_t *parser = ar__expression_parser__create("memory.x + 5");
+ar_expression_ast_t *ast = ar__expression_parser__parse(parser);
 
 // Evaluate the AST
 data_t *result = ar__expression_evaluator__evaluate_binary_op(evaluator, ast);

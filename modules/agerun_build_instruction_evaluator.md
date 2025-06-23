@@ -24,7 +24,7 @@ An opaque type representing a build instruction evaluator instance.
 
 ```c
 build_instruction_evaluator_t* ar_build_instruction_evaluator__create(
-    expression_evaluator_t *ref_expr_evaluator,
+    ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
 ```
@@ -40,7 +40,7 @@ Destroys a build instruction evaluator and frees all resources.
 ```c
 bool ar_build_instruction_evaluator__evaluate(
     build_instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
+    const ar_instruction_ast_t *ref_ast
 );
 ```
 Evaluates a build instruction using the stored dependencies.
@@ -101,7 +101,7 @@ The module:
 ```c
 // Create memory and expression evaluator
 data_t *memory = ar__data__create_map();
-expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
 
 // Create build instruction evaluator
 build_instruction_evaluator_t *build_eval = ar_build_instruction_evaluator__create(
@@ -115,7 +115,7 @@ ar__data__set_map_data(values, "count", ar__data__create_integer(42));
 ar__data__set_map_data(memory, "values", values);
 
 // Parse build instruction: memory.msg := build("Hello {name}! Count: {count}", memory.values)
-instruction_ast_t *ast = ar__instruction_parser__parse_build(parser);
+ar_instruction_ast_t *ast = ar__instruction_parser__parse_build(parser);
 
 // Evaluate the build
 bool success = ar_build_instruction_evaluator__evaluate(build_eval, ast);

@@ -1109,7 +1109,7 @@ The [build instruction parser module](agerun_build_instruction_parser.md) handle
 The [method instruction parser module](agerun_method_instruction_parser.md) handles parsing of method function calls:
 - **Method Function Syntax**: Parses `method(name, code, version)` format
 - **Three String Arguments**: Validates all arguments are quoted strings
-- **Method Creation**: Creates INST_AST_METHOD nodes for method definitions
+- **Method Creation**: Creates AR_INST__METHOD nodes for method definitions
 - **Code Parameter**: Handles AgeRun instructions in code with escape sequences
 - **Version Strings**: Accepts semantic version format (e.g., "1.0.0")
 - **Optional Assignment**: Supports `memory.ref := method(...)` syntax
@@ -1120,7 +1120,7 @@ The [method instruction parser module](agerun_method_instruction_parser.md) hand
 The [agent instruction parser module](agerun_agent_instruction_parser.md) handles parsing of agent function calls:
 - **Agent Function Syntax**: Parses both `agent(method, version)` and `agent(method, version, context)` formats
 - **Flexible Arguments**: Supports 2-parameter (automatic null context) and 3-parameter forms
-- **Agent Creation**: Creates INST_AST_AGENT nodes for agent instantiation
+- **Agent Creation**: Creates AR_INST__AGENT nodes for agent instantiation
 - **Context Parameter**: Third argument can be any map expression when provided
 - **Version Strings**: Accepts semantic version format (e.g., "1.0.0")
 - **Optional Assignment**: Supports `memory.agent_id := agent(...)` syntax

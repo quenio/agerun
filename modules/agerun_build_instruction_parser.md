@@ -29,14 +29,14 @@ This module extracts the parsing logic for build() function calls from the gener
 ar_build_instruction_parser_t *parser = ar_build_instruction_parser__create();
 
 // Parse simple build function
-instruction_ast_t *ast1 = ar_build_instruction_parser__parse(
+ar_instruction_ast_t *ast1 = ar_build_instruction_parser__parse(
     parser, 
     "build(\"Hello {name}!\", memory.data)", 
     NULL
 );
 
 // Parse with assignment
-instruction_ast_t *ast2 = ar_build_instruction_parser__parse(
+ar_instruction_ast_t *ast2 = ar_build_instruction_parser__parse(
     parser,
     "memory.greeting := build(\"User: {firstName} {lastName}\", memory.user)",
     "memory.greeting"
@@ -77,7 +77,7 @@ The parser:
 2. Ensures opening parenthesis follows
 3. Extracts exactly 2 arguments (template string and map expression)
 4. Handles quoted strings with escape sequences
-5. Creates an INST_AST_BUILD node with the parsed arguments
+5. Creates an AR_INST__BUILD node with the parsed arguments
 6. Tracks optional result assignment path
 
 ## Error Handling

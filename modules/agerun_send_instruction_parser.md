@@ -35,14 +35,14 @@ The module uses an opaque `ar_send_instruction_parser_t` structure that maintain
 ar_send_instruction_parser_t *parser = ar_send_instruction_parser__create();
 
 // Parse simple send
-instruction_ast_t *ast = ar_send_instruction_parser__parse(
+ar_instruction_ast_t *ast = ar_send_instruction_parser__parse(
     parser, 
     "send(0, \"Hello\")", 
     NULL
 );
 
 // Parse send with assignment
-instruction_ast_t *ast2 = ar_send_instruction_parser__parse(
+ar_instruction_ast_t *ast2 = ar_send_instruction_parser__parse(
     parser,
     "send(1, \"Test\")",
     "memory.result"

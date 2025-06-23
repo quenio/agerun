@@ -24,7 +24,7 @@ ar_agent_instruction_parser_t *parser = ar_agent_instruction_parser__create();
 
 // Parse agent instruction with 2 parameters
 const char *instruction = "agent(\"echo\", \"1.0.0\")";
-instruction_ast_t *ast = ar_agent_instruction_parser__parse(parser, instruction, NULL);
+ar_instruction_ast_t *ast = ar_agent_instruction_parser__parse(parser, instruction, NULL);
 
 if (ast) {
     // Successfully parsed
@@ -46,7 +46,7 @@ ar_agent_instruction_parser__destroy(parser);
 ```c
 // Parse agent instruction with assignment
 const char *instruction = "memory.agent_id := agent(\"echo\", \"1.0.0\", memory.config)";
-instruction_ast_t *ast = ar_agent_instruction_parser__parse(parser, instruction, "memory.agent_id");
+ar_instruction_ast_t *ast = ar_agent_instruction_parser__parse(parser, instruction, "memory.agent_id");
 
 if (ast) {
     assert(ar__instruction_ast__has_result_assignment(ast) == true);

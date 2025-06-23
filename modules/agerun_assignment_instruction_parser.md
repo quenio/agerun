@@ -42,7 +42,7 @@ This module is part of the specialized parser architecture, where each instructi
 ar_assignment_instruction_parser_t *parser = ar_assignment_instruction_parser__create();
 
 // Parse assignment instruction
-instruction_ast_t *ast = ar_assignment_instruction_parser__parse(
+ar_instruction_ast_t *ast = ar_assignment_instruction_parser__parse(
     parser, 
     "memory.user.name := \"John\""
 );

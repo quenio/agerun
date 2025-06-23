@@ -16,6 +16,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
     - `OP_*` → `AR_OP__*`
   - ✅ Also renamed parser types: `expression_parser_t` → `ar_expression_parser_t`
   - ✅ Updated all 72 files that referenced these types
+  - ✅ Updated all 25 documentation files to reflect new type names
   - ✅ Clean build passes with no errors or warnings
 
 ## 2025-06-23

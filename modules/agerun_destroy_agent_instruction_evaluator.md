@@ -17,14 +17,14 @@ The module follows an instantiable design pattern with lifecycle management:
 ```c
 // Create evaluator instance with dependencies
 destroy_agent_instruction_evaluator_t* ar_destroy_agent_instruction_evaluator__create(
-    expression_evaluator_t *mut_expr_evaluator,
+    ar_expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory
 );
 
 // Evaluate using stored dependencies
 bool ar_destroy_agent_instruction_evaluator__evaluate(
     const destroy_agent_instruction_evaluator_t *ref_evaluator,
-    const instruction_ast_t *ref_ast
+    const ar_instruction_ast_t *ref_ast
 );
 
 // Clean up instance
@@ -81,7 +81,7 @@ The module:
 ```c
 // Create dependencies
 data_t *memory = ar__data__create_map();
-expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
 
 // Create destroy agent evaluator instance
 destroy_agent_instruction_evaluator_t *evaluator = ar_destroy_agent_instruction_evaluator__create(
@@ -89,8 +89,8 @@ destroy_agent_instruction_evaluator_t *evaluator = ar_destroy_agent_instruction_
 );
 
 // Parse destroy instruction: memory.result := destroy(42)
-instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-    INST_AST_DESTROY, "destroy", args, 1, "memory.result"
+ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+    AR_INST__DESTROY, "destroy", args, 1, "memory.result"
 );
 
 // Evaluate using instance

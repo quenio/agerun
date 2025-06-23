@@ -24,11 +24,11 @@ ar_destroy_agent_instruction_parser_t *parser = ar_destroy_agent_instruction_par
 
 // Parse destroy agent instruction
 const char *instruction = "destroy(123)";
-instruction_ast_t *ast = ar_destroy_agent_instruction_parser__parse(parser, instruction, NULL);
+ar_instruction_ast_t *ast = ar_destroy_agent_instruction_parser__parse(parser, instruction, NULL);
 
 if (ast) {
     // Successfully parsed
-    assert(ar__instruction_ast__get_type(ast) == INST_AST_DESTROY_AGENT);
+    assert(ar__instruction_ast__get_type(ast) == AR_INST__DESTROY_AGENT);
     // ... use AST ...
     ar__instruction_ast__destroy(ast);
 } else {
@@ -47,7 +47,7 @@ ar_destroy_agent_instruction_parser__destroy(parser);
 ```c
 // Parse destroy instruction with assignment
 const char *instruction = "memory.result := destroy(memory.agent_id)";
-instruction_ast_t *ast = ar_destroy_agent_instruction_parser__parse(parser, instruction, "memory.result");
+ar_instruction_ast_t *ast = ar_destroy_agent_instruction_parser__parse(parser, instruction, "memory.result");
 
 if (ast) {
     assert(ar__instruction_ast__has_result_assignment(ast) == true);
@@ -98,7 +98,7 @@ Access error information using:
 - **Opaque Type**: `ar_destroy_agent_instruction_parser_t` hides implementation details
 - **Error State**: Tracks last error message and position
 - **Instance-Based**: Each parser instance maintains its own state
-- **AST Type**: Creates `INST_AST_DESTROY_AGENT` nodes
+- **AST Type**: Creates `AR_INST__DESTROY_AGENT` nodes
 
 ### Memory Management
 - **Heap Tracking**: Uses `AR__HEAP__MALLOC`, `AR__HEAP__FREE`, `AR__HEAP__STRDUP`

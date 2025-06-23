@@ -24,7 +24,7 @@ An opaque type representing a send instruction evaluator instance.
 
 ```c
 send_instruction_evaluator_t* ar_send_instruction_evaluator__create(
-    expression_evaluator_t *ref_expr_evaluator,
+    ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
 ```
@@ -40,7 +40,7 @@ Destroys a send instruction evaluator and frees all resources.
 ```c
 bool ar_send_instruction_evaluator__evaluate(
     send_instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
+    const ar_instruction_ast_t *ref_ast
 );
 ```
 Evaluates a send instruction using the stored dependencies.
@@ -94,7 +94,7 @@ The module evaluates both arguments:
 ```c
 // Create memory and expression evaluator
 data_t *memory = ar__data__create_map();
-expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
 
 // Create send instruction evaluator
 send_instruction_evaluator_t *send_eval = ar_send_instruction_evaluator__create(
@@ -102,7 +102,7 @@ send_instruction_evaluator_t *send_eval = ar_send_instruction_evaluator__create(
 );
 
 // Parse send instruction: send(1, "Hello")
-instruction_ast_t *ast = ar__instruction_parser__parse_send(parser);
+ar_instruction_ast_t *ast = ar__instruction_parser__parse_send(parser);
 
 // Evaluate the send
 bool success = ar_send_instruction_evaluator__evaluate(send_eval, ast);

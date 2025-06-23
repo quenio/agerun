@@ -17,7 +17,7 @@ The module follows an instantiable design pattern with lifecycle management:
 ```c
 // Create evaluator instance with dependencies
 agent_instruction_evaluator_t* ar_agent_instruction_evaluator__create(
-    expression_evaluator_t *mut_expr_evaluator,
+    ar_expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory
 );
 
@@ -25,7 +25,7 @@ agent_instruction_evaluator_t* ar_agent_instruction_evaluator__create(
 bool ar_agent_instruction_evaluator__evaluate(
     const agent_instruction_evaluator_t *ref_evaluator,
     data_t *ref_context,
-    const instruction_ast_t *ref_ast
+    const ar_instruction_ast_t *ref_ast
 );
 
 // Clean up instance
@@ -94,7 +94,7 @@ The module:
 ```c
 // Create dependencies
 data_t *memory = ar__data__create_map();
-expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
 
 // Create agent evaluator instance
 agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
@@ -102,7 +102,7 @@ agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__creat
 );
 
 // Parse agent instruction: memory.worker := agent("processor", "1.0.0", context)
-instruction_ast_t *ast = ar_instruction_parser__parse_agent(parser);
+ar_instruction_ast_t *ast = ar_instruction_parser__parse_agent(parser);
 
 // Evaluate using instance
 bool success = ar_agent_instruction_evaluator__evaluate(evaluator, context, ast);

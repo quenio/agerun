@@ -17,14 +17,15 @@ The Instruction AST module provides Abstract Syntax Tree (AST) representations f
 
 The module supports the following instruction types:
 
-- **INST_AST_ASSIGNMENT**: Assignment instructions (e.g., `memory.x := 42`)
-- **INST_AST_SEND**: Send function calls (e.g., `send(0, "Hello")`)
-- **INST_AST_IF**: Conditional function calls (e.g., `if(x > 5, "High", "Low")`)
-- **INST_AST_METHOD**: Method creation calls (e.g., `method("greet", "...", "1.0.0")`)
-- **INST_AST_AGENT**: Agent creation calls (e.g., `agent("echo", "1.0.0", context)`)
-- **INST_AST_DESTROY**: Destroy function calls (e.g., `destroy(agent_id)`)
-- **INST_AST_PARSE**: Parse function calls (e.g., `parse("{name}", "name=John")`)
-- **INST_AST_BUILD**: Build function calls (e.g., `build("Hello {name}", map)`)
+- **AR_INST__ASSIGNMENT**: Assignment instructions (e.g., `memory.x := 42`)
+- **AR_INST__SEND**: Send function calls (e.g., `send(0, "Hello")`)
+- **AR_INST__IF**: Conditional function calls (e.g., `if(x > 5, "High", "Low")`)
+- **AR_INST__METHOD**: Method creation calls (e.g., `method("greet", "...", "1.0.0")`)
+- **AR_INST__AGENT**: Agent creation calls (e.g., `agent("echo", "1.0.0", context)`)
+- **AR_INST__DESTROY_AGENT**: Destroy agent calls (e.g., `destroy(agent_id)`)
+- **AR_INST__DESTROY_METHOD**: Destroy method calls (e.g., `destroy("method_name", "1.0.0")`)
+- **AR_INST__PARSE**: Parse function calls (e.g., `parse("{name}", "name=John")`)
+- **AR_INST__BUILD**: Build function calls (e.g., `build("Hello {name}", map)`)
 
 ## API Reference
 
@@ -32,17 +33,18 @@ The module supports the following instruction types:
 
 ```c
 typedef enum {
-    INST_AST_ASSIGNMENT,
-    INST_AST_SEND,
-    INST_AST_IF,
-    INST_AST_METHOD,
-    INST_AST_AGENT,
-    INST_AST_DESTROY,
-    INST_AST_PARSE,
-    INST_AST_BUILD
-} instruction_ast_type_t;
+    AR_INST__ASSIGNMENT,
+    AR_INST__SEND,
+    AR_INST__IF,
+    AR_INST__METHOD,
+    AR_INST__AGENT,
+    AR_INST__DESTROY_AGENT,
+    AR_INST__DESTROY_METHOD,
+    AR_INST__PARSE,
+    AR_INST__BUILD
+} ar_instruction_ast_type_t;
 
-typedef struct instruction_ast_s instruction_ast_t;
+typedef struct ar_instruction_ast_s ar_instruction_ast_t;
 ```
 
 ### Node Creation
@@ -50,7 +52,7 @@ typedef struct instruction_ast_s instruction_ast_t;
 #### Assignment Instructions
 
 ```c
-instruction_ast_t* ar__instruction_ast__create_assignment(
+ar_instruction_ast_t* ar__instruction_ast__create_assignment(
     const char *ref_memory_path,
     const char *ref_expression
 );
@@ -72,8 +74,8 @@ Creates an AST node for an assignment instruction.
 #### Function Call Instructions
 
 ```c
-instruction_ast_t* ar__instruction_ast__create_function_call(
-    instruction_ast_type_t type,
+ar_instruction_ast_t* ar__instruction_ast__create_function_call(
+    ar_instruction_ast_type_t type,
     const char *ref_function_name,
     const char **ref_args,
     size_t arg_count,
@@ -100,7 +102,7 @@ Creates an AST node for a function call instruction.
 ### Node Destruction
 
 ```c
-void ar__instruction_ast__destroy(instruction_ast_t *own_node);
+void ar__instruction_ast__destroy(ar_instruction_ast_t *own_node);
 ```
 
 Destroys an AST node and all its components.
@@ -117,19 +119,19 @@ Destroys an AST node and all its components.
 #### General Node Information
 
 ```c
-instruction_ast_type_t ar__instruction_ast__get_type(const instruction_ast_t *ref_node);
+ar_instruction_ast_type_t ar__instruction_ast__get_type(const ar_instruction_ast_t *ref_node);
 ```
 
 Gets the type of an AST node.
 
 **Returns:**
-- The type of the node, or INST_AST_ASSIGNMENT if node is NULL
+- The type of the node, or AR_INST__ASSIGNMENT if node is NULL
 
 #### Assignment Node Accessors
 
 ```c
-const char* ar__instruction_ast__get_assignment_path(const instruction_ast_t *ref_node);
-const char* ar__instruction_ast__get_assignment_expression(const instruction_ast_t *ref_node);
+const char* ar__instruction_ast__get_assignment_path(const ar_instruction_ast_t *ref_node);
+const char* ar__instruction_ast__get_assignment_expression(const ar_instruction_ast_t *ref_node);
 ```
 
 Get information from assignment nodes.
@@ -140,10 +142,10 @@ Get information from assignment nodes.
 #### Function Call Node Accessors
 
 ```c
-const char* ar__instruction_ast__get_function_name(const instruction_ast_t *ref_node);
-list_t* ar__instruction_ast__get_function_args(const instruction_ast_t *ref_node);
-const char* ar__instruction_ast__get_function_result_path(const instruction_ast_t *ref_node);
-bool ar__instruction_ast__has_result_assignment(const instruction_ast_t *ref_node);
+const char* ar__instruction_ast__get_function_name(const ar_instruction_ast_t *ref_node);
+list_t* ar__instruction_ast__get_function_args(const ar_instruction_ast_t *ref_node);
+const char* ar__instruction_ast__get_function_result_path(const ar_instruction_ast_t *ref_node);
+bool ar__instruction_ast__has_result_assignment(const ar_instruction_ast_t *ref_node);
 ```
 
 Get information from function call nodes.
@@ -159,10 +161,10 @@ Get information from function call nodes.
 
 ```c
 // Create an assignment: memory.count := 42
-instruction_ast_t *own_node = ar__instruction_ast__create_assignment("memory.count", "42");
+ar_instruction_ast_t *own_node = ar__instruction_ast__create_assignment("memory.count", "42");
 if (own_node) {
     // Use the node...
-    assert(ar__instruction_ast__get_type(own_node) == INST_AST_ASSIGNMENT);
+    assert(ar__instruction_ast__get_type(own_node) == AR_INST__ASSIGNMENT);
     assert(strcmp(ar__instruction_ast__get_assignment_path(own_node), "memory.count") == 0);
     
     // Clean up
@@ -175,8 +177,8 @@ if (own_node) {
 ```c
 // Create a send call: send(0, "Hello")
 const char *args[] = {"0", "\"Hello\""};
-instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
-    INST_AST_SEND, "send", args, 2, NULL
+ar_instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
+    AR_INST__SEND, "send", args, 2, NULL
 );
 
 if (own_node) {
@@ -199,8 +201,8 @@ if (own_node) {
 ```c
 // Create: memory.result := if(x > 5, "High", "Low")
 const char *args[] = {"x > 5", "\"High\"", "\"Low\""};
-instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
-    INST_AST_IF, "if", args, 3, "memory.result"
+ar_instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
+    AR_INST__IF, "if", args, 3, "memory.result"
 );
 
 if (own_node) {
