@@ -3,6 +3,22 @@
 This document tracks completed milestones and major achievements for the AgeRun project.
 
 ## 2025-06-23
+- ✅ **Standardized all AST types with ar_ prefix**:
+  - ✅ Renamed all AST types to follow consistent naming convention:
+    - `expression_ast_t` → `ar_expression_ast_t`
+    - `instruction_ast_t` → `ar_instruction_ast_t`
+    - `expression_ast_type_t` → `ar_expression_ast_type_t`
+    - `instruction_ast_type_t` → `ar_instruction_ast_type_t`
+    - `binary_operator_t` → `ar_binary_operator_t`
+  - ✅ Updated enum values to use proper prefixes:
+    - `EXPR_AST_*` → `AR_EXPR__*`
+    - `INST_AST_*` → `AR_INST__*`
+    - `OP_*` → `AR_OP__*`
+  - ✅ Also renamed parser types: `expression_parser_t` → `ar_expression_parser_t`
+  - ✅ Updated all 72 files that referenced these types
+  - ✅ Clean build passes with no errors or warnings
+
+## 2025-06-23
 - ✅ **Phase 3 Complete: Unified Instruction Evaluator Interface**:
   - ✅ **Created unified `ar_instruction_evaluator__evaluate()` facade method**:
     - ✅ Single entry point that dispatches to specialized evaluators based on AST type

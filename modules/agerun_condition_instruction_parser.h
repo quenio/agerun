@@ -21,7 +21,7 @@
 typedef struct ar_condition_instruction_parser_s ar_condition_instruction_parser_t;
 
 /* Forward declaration of instruction AST type */
-typedef struct instruction_ast_s instruction_ast_t;
+typedef struct instruction_ast_s ar_instruction_ast_t;
 
 /**
  * Create a new condition instruction parser.
@@ -45,7 +45,7 @@ void ar_condition_instruction_parser__destroy(ar_condition_instruction_parser_t 
  * @note Ownership: Returns an owned value that caller must destroy
  * @note The parser retains error information accessible via get_error functions
  */
-instruction_ast_t* ar_condition_instruction_parser__parse(
+ar_instruction_ast_t* ar_condition_instruction_parser__parse(
     ar_condition_instruction_parser_t *mut_parser,
     const char *ref_instruction,
     const char *ref_result_path

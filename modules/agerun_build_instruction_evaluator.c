@@ -24,7 +24,7 @@ static const size_t MEMORY_PREFIX_LEN = sizeof(MEMORY_PREFIX) - 1;
 
 /* Opaque struct definition */
 struct ar_build_instruction_evaluator_s {
-    expression_evaluator_t *ref_expr_evaluator;
+    ar_expression_evaluator_t *ref_expr_evaluator;
     data_t *mut_memory;
 };
 
@@ -32,7 +32,7 @@ struct ar_build_instruction_evaluator_s {
  * Creates a new build instruction evaluator
  */
 ar_build_instruction_evaluator_t* ar_build_instruction_evaluator__create(
-    expression_evaluator_t *ref_expr_evaluator,
+    ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 ) {
     if (!ref_expr_evaluator || !mut_memory) {
@@ -227,23 +227,23 @@ static bool _process_placeholder(
  * @return The evaluated data or NULL on error
  * @note Ownership: Returns owned value
  */
-static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluator, const expression_ast_t *ref_ast) {
+static data_t* _evaluate_expression_ast(ar_expression_evaluator_t *mut_expr_evaluator, const ar_expression_ast_t *ref_ast) {
     if (!ref_ast) {
         return NULL;
     }
     
-    expression_ast_type_t type = ar__expression_ast__get_type(ref_ast);
+    ar_expression_ast_type_t type = ar__expression_ast__get_type(ref_ast);
     
     switch (type) {
-        case EXPR_AST_LITERAL_INT:
+        case AR_EXPR__LITERAL_INT:
             return ar__expression_evaluator__evaluate_literal_int(mut_expr_evaluator, ref_ast);
-        case EXPR_AST_LITERAL_DOUBLE:
+        case AR_EXPR__LITERAL_DOUBLE:
             return ar__expression_evaluator__evaluate_literal_double(mut_expr_evaluator, ref_ast);
-        case EXPR_AST_LITERAL_STRING:
+        case AR_EXPR__LITERAL_STRING:
             return ar__expression_evaluator__evaluate_literal_string(mut_expr_evaluator, ref_ast);
-        case EXPR_AST_MEMORY_ACCESS:
+        case AR_EXPR__MEMORY_ACCESS:
             return ar__expression_evaluator__evaluate_memory_access(mut_expr_evaluator, ref_ast);
-        case EXPR_AST_BINARY_OP:
+        case AR_EXPR__BINARY_OP:
             return ar__expression_evaluator__evaluate_binary_op(mut_expr_evaluator, ref_ast);
         default:
             return NULL;
@@ -262,7 +262,7 @@ static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluat
  */
 static bool _store_result_if_assigned(
     data_t *mut_memory,
-    const instruction_ast_t *ref_ast,
+    const ar_instruction_ast_t *ref_ast,
     data_t *own_result
 ) {
     const char *ref_result_path = ar__instruction_ast__get_function_result_path(ref_ast);
@@ -294,17 +294,17 @@ static bool _store_result_if_assigned(
  */
 bool ar_build_instruction_evaluator__evaluate(
     ar_build_instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
+    const ar_instruction_ast_t *ref_ast
 ) {
     if (!mut_evaluator || !ref_ast) {
         return false;
     }
     
-    expression_evaluator_t *mut_expr_evaluator = mut_evaluator->ref_expr_evaluator;
+    ar_expression_evaluator_t *mut_expr_evaluator = mut_evaluator->ref_expr_evaluator;
     data_t *mut_memory = mut_evaluator->mut_memory;
     
     // Verify this is a build AST node
-    if (ar__instruction_ast__get_type(ref_ast) != INST_AST_BUILD) {
+    if (ar__instruction_ast__get_type(ref_ast) != AR_INST__BUILD) {
         return false;
     }
     
@@ -325,8 +325,8 @@ bool ar_build_instruction_evaluator__evaluate(
         return false;
     }
     
-    const expression_ast_t *ref_template_ast = (const expression_ast_t*)items[0];
-    const expression_ast_t *ref_values_ast = (const expression_ast_t*)items[1];
+    const ar_expression_ast_t *ref_template_ast = (const ar_expression_ast_t*)items[0];
+    const ar_expression_ast_t *ref_values_ast = (const ar_expression_ast_t*)items[1];
     
     if (!ref_template_ast || !ref_values_ast) {
         AR__HEAP__FREE(items);
@@ -348,8 +348,8 @@ bool ar_build_instruction_evaluator__evaluate(
     
     // If it's a memory access, we get a borrowed reference
     // If it's a literal or computed expression, we get an owned value
-    expression_ast_type_t values_type = ar__expression_ast__get_type(ref_values_ast);
-    if (values_type == EXPR_AST_MEMORY_ACCESS) {
+    ar_expression_ast_type_t values_type = ar__expression_ast__get_type(ref_values_ast);
+    if (values_type == AR_EXPR__MEMORY_ACCESS) {
         // Memory access returns borrowed reference, don't destroy
         own_values_data = NULL;
     } else {

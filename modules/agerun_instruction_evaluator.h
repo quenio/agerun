@@ -35,7 +35,7 @@ typedef struct instruction_evaluator_s instruction_evaluator_t;
  *       The function does not take ownership of any parameters.
  */
 instruction_evaluator_t* ar_instruction_evaluator__create(
-    expression_evaluator_t *ref_expr_evaluator,
+    ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory,
     data_t *ref_context,
     data_t *ref_message
@@ -59,7 +59,7 @@ void ar_instruction_evaluator__destroy(instruction_evaluator_t *own_evaluator);
  */
 bool ar_instruction_evaluator__evaluate(
     instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
+    const ar_instruction_ast_t *ref_ast
 );
 
 #endif /* AGERUN_INSTRUCTION_EVALUATOR_H */

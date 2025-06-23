@@ -40,11 +40,11 @@ static void test_agent_parser__parse_with_context(void) {
     ar_agent_instruction_parser_t *own_parser = ar_agent_instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar_agent_instruction_parser__parse(own_parser, instruction, "memory.agent_id");
+    ar_instruction_ast_t *own_ast = ar_agent_instruction_parser__parse(own_parser, instruction, "memory.agent_id");
     
     // Then it should parse as an agent function
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_AGENT);
+    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__AGENT);
     assert(ar__instruction_ast__has_result_assignment(own_ast) == true);
     
     list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
@@ -68,11 +68,11 @@ static void test_agent_parser__parse_without_context(void) {
     ar_agent_instruction_parser_t *own_parser = ar_agent_instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar_agent_instruction_parser__parse(own_parser, instruction, NULL);
+    ar_instruction_ast_t *own_ast = ar_agent_instruction_parser__parse(own_parser, instruction, NULL);
     
     // Then it should parse as an agent function with 2 arguments
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_AGENT);
+    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__AGENT);
     assert(ar__instruction_ast__has_result_assignment(own_ast) == false);
     
     list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
@@ -93,7 +93,7 @@ static void test_agent_parser__error_handling(void) {
     assert(own_parser != NULL);
     
     // Test missing parentheses
-    instruction_ast_t *own_ast = ar_agent_instruction_parser__parse(own_parser, "agent", NULL);
+    ar_instruction_ast_t *own_ast = ar_agent_instruction_parser__parse(own_parser, "agent", NULL);
     assert(own_ast == NULL);
     assert(ar_agent_instruction_parser__get_error(own_parser) != NULL);
     
@@ -127,11 +127,11 @@ static void test_agent_parser__parse_with_expression_asts(void) {
     assert(own_parser != NULL);
     
     // When parsing the instruction
-    instruction_ast_t *own_ast = ar_agent_instruction_parser__parse(own_parser, instruction, "memory.worker");
+    ar_instruction_ast_t *own_ast = ar_agent_instruction_parser__parse(own_parser, instruction, "memory.worker");
     
     // Then it should parse successfully with argument ASTs
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_AGENT);
+    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__AGENT);
     assert(ar__instruction_ast__has_result_assignment(own_ast) == true);
     
     // And the arguments should be available as expression ASTs
@@ -143,21 +143,21 @@ static void test_agent_parser__parse_with_expression_asts(void) {
     assert(items != NULL);
     
     // First argument - method name
-    const expression_ast_t *ref_method = (const expression_ast_t*)items[0];
+    const ar_expression_ast_t *ref_method = (const ar_expression_ast_t*)items[0];
     assert(ref_method != NULL);
-    assert(ar__expression_ast__get_type(ref_method) == EXPR_AST_LITERAL_STRING);
+    assert(ar__expression_ast__get_type(ref_method) == AR_EXPR__LITERAL_STRING);
     assert(strcmp(ar__expression_ast__get_string_value(ref_method), "process") == 0);
     
     // Second argument - version
-    const expression_ast_t *ref_version = (const expression_ast_t*)items[1];
+    const ar_expression_ast_t *ref_version = (const ar_expression_ast_t*)items[1];
     assert(ref_version != NULL);
-    assert(ar__expression_ast__get_type(ref_version) == EXPR_AST_LITERAL_STRING);
+    assert(ar__expression_ast__get_type(ref_version) == AR_EXPR__LITERAL_STRING);
     assert(strcmp(ar__expression_ast__get_string_value(ref_version), "2.1.0") == 0);
     
     // Third argument - context (memory access)
-    const expression_ast_t *ref_context = (const expression_ast_t*)items[2];
+    const ar_expression_ast_t *ref_context = (const ar_expression_ast_t*)items[2];
     assert(ref_context != NULL);
-    assert(ar__expression_ast__get_type(ref_context) == EXPR_AST_MEMORY_ACCESS);
+    assert(ar__expression_ast__get_type(ref_context) == AR_EXPR__MEMORY_ACCESS);
     size_t path_count = 0;
     char **path_components = ar__expression_ast__get_memory_path(ref_context, &path_count);
     assert(path_components != NULL);

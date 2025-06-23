@@ -31,11 +31,11 @@ static void test_condition_parser__parse_simple_if(void) {
     ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
+    ar_instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
     
     // Then it should parse successfully
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_IF);
+    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__IF);
     assert(strcmp(ar__instruction_ast__get_function_name(own_ast), "if") == 0);
     assert(ar__instruction_ast__has_result_assignment(own_ast) == false);
     
@@ -64,11 +64,11 @@ static void test_condition_parser__parse_if_with_assignment(void) {
     ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, "memory.level");
+    ar_instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, "memory.level");
     
     // Then it should parse as an if function with assignment
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_IF);
+    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__IF);
     assert(strcmp(ar__instruction_ast__get_function_name(own_ast), "if") == 0);
     assert(ar__instruction_ast__has_result_assignment(own_ast) == true);
     assert(strcmp(ar__instruction_ast__get_function_result_path(own_ast), "memory.level") == 0);
@@ -100,11 +100,11 @@ static void test_condition_parser__parse_nested_conditions(void) {
     ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
+    ar_instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
     
     // Then it should parse the complex condition
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_IF);
+    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__IF);
     
     list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
     assert(ar__list__count(own_args) == 3);
@@ -130,11 +130,11 @@ static void test_condition_parser__parse_nested_function_calls(void) {
     ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
+    ar_instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
     
     // Then it should parse with nested function calls preserved
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_IF);
+    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__IF);
     
     list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
     assert(ar__list__count(own_args) == 3);
@@ -160,7 +160,7 @@ static void test_condition_parser__error_wrong_function(void) {
     ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
+    ar_instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
     
     // Then it should fail
     assert(own_ast == NULL);
@@ -180,7 +180,7 @@ static void test_condition_parser__error_missing_parenthesis(void) {
     ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
+    ar_instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
     
     // Then it should fail
     assert(own_ast == NULL);
@@ -199,7 +199,7 @@ static void test_condition_parser__error_wrong_arg_count(void) {
     ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
+    ar_instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
     
     // Then it should fail
     assert(own_ast == NULL);
@@ -217,13 +217,13 @@ static void test_condition_parser__reusability(void) {
     
     // First parse
     const char *instruction1 = "if(1, 1, 0)";
-    instruction_ast_t *own_ast1 = ar_condition_instruction_parser__parse(own_parser, instruction1, NULL);
+    ar_instruction_ast_t *own_ast1 = ar_condition_instruction_parser__parse(own_parser, instruction1, NULL);
     assert(own_ast1 != NULL);
     ar__instruction_ast__destroy(own_ast1);
     
     // Second parse with same parser
     const char *instruction2 = "if(0, \"yes\", \"no\")";
-    instruction_ast_t *own_ast2 = ar_condition_instruction_parser__parse(own_parser, instruction2, NULL);
+    ar_instruction_ast_t *own_ast2 = ar_condition_instruction_parser__parse(own_parser, instruction2, NULL);
     assert(own_ast2 != NULL);
     ar__instruction_ast__destroy(own_ast2);
     
@@ -242,11 +242,11 @@ static void test_condition_parser__parse_with_expression_asts(void) {
     assert(own_parser != NULL);
     
     // When parsing the instruction
-    instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
+    ar_instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
     
     // Then it should parse successfully with argument ASTs
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_IF);
+    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__IF);
     
     // And the arguments should be available as expression ASTs
     const list_t *ref_arg_asts = ar__instruction_ast__get_function_arg_asts(own_ast);
@@ -256,21 +256,21 @@ static void test_condition_parser__parse_with_expression_asts(void) {
     // First argument should be a comparison expression AST
     void **items = ar__list__items(ref_arg_asts);
     assert(items != NULL);
-    const expression_ast_t *ref_condition = (const expression_ast_t*)items[0];
+    const ar_expression_ast_t *ref_condition = (const ar_expression_ast_t*)items[0];
     assert(ref_condition != NULL);
-    assert(ar__expression_ast__get_type(ref_condition) == EXPR_AST_BINARY_OP);
-    assert(ar__expression_ast__get_operator(ref_condition) == OP_GREATER);
+    assert(ar__expression_ast__get_type(ref_condition) == AR_EXPR__BINARY_OP);
+    assert(ar__expression_ast__get_operator(ref_condition) == AR_OP__GREATER);
     
     // Second argument should be a string literal AST
-    const expression_ast_t *ref_then_expr = (const expression_ast_t*)items[1];
+    const ar_expression_ast_t *ref_then_expr = (const ar_expression_ast_t*)items[1];
     assert(ref_then_expr != NULL);
-    assert(ar__expression_ast__get_type(ref_then_expr) == EXPR_AST_LITERAL_STRING);
+    assert(ar__expression_ast__get_type(ref_then_expr) == AR_EXPR__LITERAL_STRING);
     assert(strcmp(ar__expression_ast__get_string_value(ref_then_expr), "High") == 0);
     
     // Third argument should be a memory access AST
-    const expression_ast_t *ref_else_expr = (const expression_ast_t*)items[2];
+    const ar_expression_ast_t *ref_else_expr = (const ar_expression_ast_t*)items[2];
     assert(ref_else_expr != NULL);
-    assert(ar__expression_ast__get_type(ref_else_expr) == EXPR_AST_MEMORY_ACCESS);
+    assert(ar__expression_ast__get_type(ref_else_expr) == AR_EXPR__MEMORY_ACCESS);
     // Verify memory path
     size_t path_count = 0;
     char **path_components = ar__expression_ast__get_memory_path(ref_else_expr, &path_count);

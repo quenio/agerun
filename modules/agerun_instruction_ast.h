@@ -11,30 +11,30 @@
  * Represents all possible instruction types in the AgeRun language.
  */
 typedef enum {
-    INST_AST_ASSIGNMENT,      /* memory.x := expression */
-    INST_AST_SEND,           /* send(target, message) or result := send(...) */
-    INST_AST_IF,             /* if(condition, true_val, false_val) */
-    INST_AST_METHOD,         /* method(name, instructions, version) */
-    INST_AST_AGENT,          /* agent(method, version, context) */
-    INST_AST_DESTROY_AGENT,  /* destroy(agent_id) - specialized parser */
-    INST_AST_DESTROY_METHOD, /* destroy(method, version) - specialized parser */
-    INST_AST_PARSE,          /* parse(template, input) */
-    INST_AST_BUILD           /* build(template, values) */
-} instruction_ast_type_t;
+    AR_INST__ASSIGNMENT,      /* memory.x := expression */
+    AR_INST__SEND,           /* send(target, message) or result := send(...) */
+    AR_INST__IF,             /* if(condition, true_val, false_val) */
+    AR_INST__METHOD,         /* method(name, instructions, version) */
+    AR_INST__AGENT,          /* agent(method, version, context) */
+    AR_INST__DESTROY_AGENT,  /* destroy(agent_id) - specialized parser */
+    AR_INST__DESTROY_METHOD, /* destroy(method, version) - specialized parser */
+    AR_INST__PARSE,          /* parse(template, input) */
+    AR_INST__BUILD           /* build(template, values) */
+} ar_instruction_ast_type_t;
 
 /**
  * Opaque AST node structure.
  * Internal structure is hidden to maintain encapsulation.
  */
-typedef struct instruction_ast_s instruction_ast_t;
+typedef struct instruction_ast_s ar_instruction_ast_t;
 
 /**
  * Get the type of an AST node.
  * 
  * @param ref_node The AST node (borrowed reference)
- * @return The type of the node, or INST_AST_ASSIGNMENT if node is NULL
+ * @return The type of the node, or AR_INST__ASSIGNMENT if node is NULL
  */
-instruction_ast_type_t ar__instruction_ast__get_type(const instruction_ast_t *ref_node);
+ar_instruction_ast_type_t ar__instruction_ast__get_type(const ar_instruction_ast_t *ref_node);
 
 /**
  * Create an assignment instruction AST node.
@@ -45,7 +45,7 @@ instruction_ast_type_t ar__instruction_ast__get_type(const instruction_ast_t *re
  * @note Ownership: Returns an owned value that caller must destroy.
  *       The function makes copies of the string parameters.
  */
-instruction_ast_t* ar__instruction_ast__create_assignment(
+ar_instruction_ast_t* ar__instruction_ast__create_assignment(
     const char *ref_memory_path,
     const char *ref_expression
 );
@@ -62,8 +62,8 @@ instruction_ast_t* ar__instruction_ast__create_assignment(
  * @note Ownership: Returns an owned value that caller must destroy.
  *       The function makes copies of all string parameters.
  */
-instruction_ast_t* ar__instruction_ast__create_function_call(
-    instruction_ast_type_t type,
+ar_instruction_ast_t* ar__instruction_ast__create_function_call(
+    ar_instruction_ast_type_t type,
     const char *ref_function_name,
     const char **ref_args,
     size_t arg_count,
@@ -77,7 +77,7 @@ instruction_ast_t* ar__instruction_ast__create_function_call(
  * @note Ownership: Takes ownership of the node and destroys it.
  *       Safe to call with NULL.
  */
-void ar__instruction_ast__destroy(instruction_ast_t *own_node);
+void ar__instruction_ast__destroy(ar_instruction_ast_t *own_node);
 
 /* Accessor functions for assignment nodes */
 
@@ -88,7 +88,7 @@ void ar__instruction_ast__destroy(instruction_ast_t *own_node);
  * @return The memory path (borrowed reference), or NULL if not an assignment
  * @note Ownership: Returns a borrowed reference. Do not free.
  */
-const char* ar__instruction_ast__get_assignment_path(const instruction_ast_t *ref_node);
+const char* ar__instruction_ast__get_assignment_path(const ar_instruction_ast_t *ref_node);
 
 /**
  * Get expression from an assignment node.
@@ -97,7 +97,7 @@ const char* ar__instruction_ast__get_assignment_path(const instruction_ast_t *re
  * @return The expression string (borrowed reference), or NULL if not an assignment
  * @note Ownership: Returns a borrowed reference. Do not free.
  */
-const char* ar__instruction_ast__get_assignment_expression(const instruction_ast_t *ref_node);
+const char* ar__instruction_ast__get_assignment_expression(const ar_instruction_ast_t *ref_node);
 
 /**
  * Get expression AST from an assignment node.
@@ -106,7 +106,7 @@ const char* ar__instruction_ast__get_assignment_expression(const instruction_ast
  * @return The expression AST (borrowed reference), or NULL if not an assignment or no AST
  * @note Ownership: Returns a borrowed reference. Do not free.
  */
-const expression_ast_t* ar__instruction_ast__get_assignment_expression_ast(const instruction_ast_t *ref_node);
+const ar_expression_ast_t* ar__instruction_ast__get_assignment_expression_ast(const ar_instruction_ast_t *ref_node);
 
 /**
  * Set expression AST for an assignment node.
@@ -116,7 +116,7 @@ const expression_ast_t* ar__instruction_ast__get_assignment_expression_ast(const
  * @return true if successful, false if not an assignment node
  * @note Ownership: Takes ownership of the expression AST. Any existing AST is destroyed.
  */
-bool ar__instruction_ast__set_assignment_expression_ast(instruction_ast_t *mut_node, expression_ast_t *own_expression_ast);
+bool ar__instruction_ast__set_assignment_expression_ast(ar_instruction_ast_t *mut_node, ar_expression_ast_t *own_expression_ast);
 
 /* Accessor functions for function call nodes */
 
@@ -127,7 +127,7 @@ bool ar__instruction_ast__set_assignment_expression_ast(instruction_ast_t *mut_n
  * @return The function name (borrowed reference), or NULL if not a function call
  * @note Ownership: Returns a borrowed reference. Do not free.
  */
-const char* ar__instruction_ast__get_function_name(const instruction_ast_t *ref_node);
+const char* ar__instruction_ast__get_function_name(const ar_instruction_ast_t *ref_node);
 
 /**
  * Get arguments from a function call node as a new list.
@@ -139,7 +139,7 @@ const char* ar__instruction_ast__get_function_name(const instruction_ast_t *ref_
  *       The strings in the list are borrowed references and should not be freed individually.
  * @note Despite the "get" in the name, this function allocates memory.
  */
-list_t* ar__instruction_ast__get_function_args(const instruction_ast_t *ref_node);
+list_t* ar__instruction_ast__get_function_args(const ar_instruction_ast_t *ref_node);
 
 /**
  * Get argument ASTs from a function call node.
@@ -149,7 +149,7 @@ list_t* ar__instruction_ast__get_function_args(const instruction_ast_t *ref_node
  * @note Ownership: Returns a borrowed reference to the list. Do not free.
  *       Use ar__list__get() to access individual ASTs as borrowed references.
  */
-const list_t* ar__instruction_ast__get_function_arg_asts(const instruction_ast_t *ref_node);
+const list_t* ar__instruction_ast__get_function_arg_asts(const ar_instruction_ast_t *ref_node);
 
 /**
  * Set argument ASTs for a function call node.
@@ -160,7 +160,7 @@ const list_t* ar__instruction_ast__get_function_arg_asts(const instruction_ast_t
  * @note Ownership: Takes ownership of the list and all ASTs in it. Any existing ASTs are destroyed.
  */
 bool ar__instruction_ast__set_function_arg_asts(
-    instruction_ast_t *mut_node, 
+    ar_instruction_ast_t *mut_node, 
     list_t *own_arg_asts
 );
 
@@ -171,7 +171,7 @@ bool ar__instruction_ast__set_function_arg_asts(
  * @return The result assignment path (borrowed reference), or NULL if no assignment or not a function call
  * @note Ownership: Returns a borrowed reference. Do not free.
  */
-const char* ar__instruction_ast__get_function_result_path(const instruction_ast_t *ref_node);
+const char* ar__instruction_ast__get_function_result_path(const ar_instruction_ast_t *ref_node);
 
 /**
  * Check if a function call has a result assignment.
@@ -179,6 +179,6 @@ const char* ar__instruction_ast__get_function_result_path(const instruction_ast_
  * @param ref_node The AST node (borrowed reference)
  * @return true if the function call assigns to a result path, false otherwise
  */
-bool ar__instruction_ast__has_result_assignment(const instruction_ast_t *ref_node);
+bool ar__instruction_ast__has_result_assignment(const ar_instruction_ast_t *ref_node);
 
 #endif /* AGERUN_INSTRUCTION_AST_H */

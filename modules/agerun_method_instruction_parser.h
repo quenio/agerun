@@ -37,7 +37,7 @@ void ar_method_instruction_parser__destroy(ar_method_instruction_parser_t *own_p
  * @note Ownership: Returns an owned AST that caller must destroy
  * @note The parser expects exactly 3 arguments: name, code, and version
  */
-instruction_ast_t* ar_method_instruction_parser__parse(
+ar_instruction_ast_t* ar_method_instruction_parser__parse(
     ar_method_instruction_parser_t *mut_parser,
     const char *ref_instruction,
     const char *ref_result_path

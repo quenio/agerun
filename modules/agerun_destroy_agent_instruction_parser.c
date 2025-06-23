@@ -155,7 +155,7 @@ static void _cleanup_arg_asts(list_t *arg_asts) {
         if (items) {
             size_t list_count = ar__list__count(arg_asts);
             for (size_t j = 0; j < list_count; j++) {
-                ar__expression_ast__destroy((expression_ast_t*)items[j]);
+                ar__expression_ast__destroy((ar_expression_ast_t*)items[j]);
             }
             AR__HEAP__FREE(items);
         }
@@ -175,14 +175,14 @@ static list_t* _parse_argument_to_ast(ar_destroy_agent_instruction_parser_t *mut
         return NULL;
     }
     
-    expression_parser_t *own_expr_parser = ar__expression_parser__create(ref_arg);
+    ar_expression_parser_t *own_expr_parser = ar__expression_parser__create(ref_arg);
     if (!own_expr_parser) {
         ar__list__destroy(own_arg_asts);
         _set_error(mut_parser, "Failed to create expression parser", error_offset);
         return NULL;
     }
     
-    expression_ast_t *own_expr_ast = ar__expression_parser__parse_expression(own_expr_parser);
+    ar_expression_ast_t *own_expr_ast = ar__expression_parser__parse_expression(own_expr_parser);
     if (!own_expr_ast) {
         const char *expr_error = ar__expression_parser__get_error(own_expr_parser);
         // Copy error message before destroying parser
@@ -213,7 +213,7 @@ static list_t* _parse_argument_to_ast(ar_destroy_agent_instruction_parser_t *mut
 /**
  * Parses a destroy agent instruction.
  */
-instruction_ast_t* ar_destroy_agent_instruction_parser__parse(
+ar_instruction_ast_t* ar_destroy_agent_instruction_parser__parse(
     ar_destroy_agent_instruction_parser_t *mut_parser,
     const char *ref_instruction,
     const char *ref_result_path
@@ -279,8 +279,8 @@ instruction_ast_t* ar_destroy_agent_instruction_parser__parse(
     
     /* Create AST node */
     const char *const_args[] = { arg };
-    instruction_ast_t *own_ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY_AGENT, "destroy", const_args, 1, ref_result_path
+    ar_instruction_ast_t *own_ast = ar__instruction_ast__create_function_call(
+        AR_INST__DESTROY_AGENT, "destroy", const_args, 1, ref_result_path
     );
     
     if (!own_ast) {

@@ -13,9 +13,9 @@
 
 /* Forward declaration of legacy function */
 bool ar_method_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
+    ar_expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory,
-    const instruction_ast_t *ref_ast
+    const ar_instruction_ast_t *ref_ast
 );
 
 /**
@@ -25,7 +25,7 @@ bool ar_method_instruction_evaluator__evaluate_legacy(
  * ar__methodology__register_method() uses a global singleton internally.
  */
 struct ar_method_instruction_evaluator_s {
-    expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
+    ar_expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
     data_t *mut_memory;                          /* Memory map (mutable reference) */
 };
 
@@ -33,7 +33,7 @@ struct ar_method_instruction_evaluator_s {
  * Creates a new method instruction evaluator instance
  */
 ar_method_instruction_evaluator_t* ar_method_instruction_evaluator__create(
-    expression_evaluator_t *ref_expr_evaluator,
+    ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 ) {
     // Validate required parameters
@@ -163,26 +163,26 @@ static data_t* _copy_data_value(const data_t *ref_value) {
 
 /* Helper function to evaluate an expression AST node using the expression evaluator */
 static data_t* _evaluate_expression_ast(
-    expression_evaluator_t *mut_expr_evaluator,
-    const expression_ast_t *ref_ast
+    ar_expression_evaluator_t *mut_expr_evaluator,
+    const ar_expression_ast_t *ref_ast
 ) {
     if (!ref_ast) {
         return NULL;
     }
     
-    expression_ast_type_t type = ar__expression_ast__get_type(ref_ast);
+    ar_expression_ast_type_t type = ar__expression_ast__get_type(ref_ast);
     
     switch (type) {
-        case EXPR_AST_LITERAL_INT:
+        case AR_EXPR__LITERAL_INT:
             return ar__expression_evaluator__evaluate_literal_int(mut_expr_evaluator, ref_ast);
             
-        case EXPR_AST_LITERAL_DOUBLE:
+        case AR_EXPR__LITERAL_DOUBLE:
             return ar__expression_evaluator__evaluate_literal_double(mut_expr_evaluator, ref_ast);
             
-        case EXPR_AST_LITERAL_STRING:
+        case AR_EXPR__LITERAL_STRING:
             return ar__expression_evaluator__evaluate_literal_string(mut_expr_evaluator, ref_ast);
             
-        case EXPR_AST_MEMORY_ACCESS:
+        case AR_EXPR__MEMORY_ACCESS:
             // Memory access returns a reference, we need to make a copy
             {
                 data_t *ref_value = ar__expression_evaluator__evaluate_memory_access(mut_expr_evaluator, ref_ast);
@@ -192,7 +192,7 @@ static data_t* _evaluate_expression_ast(
                 return _copy_data_value(ref_value);
             }
             
-        case EXPR_AST_BINARY_OP:
+        case AR_EXPR__BINARY_OP:
             return ar__expression_evaluator__evaluate_binary_op(mut_expr_evaluator, ref_ast);
             
         default:
@@ -204,7 +204,7 @@ static data_t* _evaluate_expression_ast(
 /* Helper function to store result in memory if assignment path is provided */
 static bool _store_result_if_assigned(
     data_t *mut_memory,
-    const instruction_ast_t *ref_ast,
+    const ar_instruction_ast_t *ref_ast,
     data_t *own_result
 ) {
     const char *ref_result_path = ar__instruction_ast__get_function_result_path(ref_ast);
@@ -233,8 +233,8 @@ static bool _store_result_if_assigned(
 
 /* Helper function to evaluate three string arguments from a function call */
 static bool _evaluate_three_string_args(
-    expression_evaluator_t *mut_expr_evaluator,
-    const instruction_ast_t *ref_ast,
+    ar_expression_evaluator_t *mut_expr_evaluator,
+    const ar_instruction_ast_t *ref_ast,
     size_t expected_arg_count,
     data_t **out_arg1,
     data_t **out_arg2,
@@ -257,9 +257,9 @@ static bool _evaluate_three_string_args(
         return false;
     }
     
-    const expression_ast_t *ref_ast1 = (const expression_ast_t*)items[0];
-    const expression_ast_t *ref_ast2 = (const expression_ast_t*)items[1];
-    const expression_ast_t *ref_ast3 = (const expression_ast_t*)items[2];
+    const ar_expression_ast_t *ref_ast1 = (const ar_expression_ast_t*)items[0];
+    const ar_expression_ast_t *ref_ast2 = (const ar_expression_ast_t*)items[1];
+    const ar_expression_ast_t *ref_ast3 = (const ar_expression_ast_t*)items[2];
     
     if (!ref_ast1 || !ref_ast2 || !ref_ast3) {
         AR__HEAP__FREE(items);
@@ -286,14 +286,14 @@ static bool _evaluate_three_string_args(
 
 bool ar_method_instruction_evaluator__evaluate(
     ar_method_instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
+    const ar_instruction_ast_t *ref_ast
 ) {
     if (!mut_evaluator || !ref_ast) {
         return false;
     }
     
     // Extract dependencies from the evaluator instance
-    expression_evaluator_t *mut_expr_evaluator = mut_evaluator->ref_expr_evaluator;
+    ar_expression_evaluator_t *mut_expr_evaluator = mut_evaluator->ref_expr_evaluator;
     data_t *mut_memory = mut_evaluator->mut_memory;
     
     if (!mut_expr_evaluator || !mut_memory) {
@@ -301,7 +301,7 @@ bool ar_method_instruction_evaluator__evaluate(
     }
     
     // Validate AST type
-    if (ar__instruction_ast__get_type(ref_ast) != INST_AST_METHOD) {
+    if (ar__instruction_ast__get_type(ref_ast) != AR_INST__METHOD) {
         return false;
     }
     

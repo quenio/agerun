@@ -54,8 +54,8 @@ static void test_method_instruction_evaluator__evaluate_with_instance(void) {
     
     // When creating a method AST node
     const char *args[] = {"\"test_method\"", "\"send(0, 42)\"", "\"1.0.0\""};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_METHOD, "method", args, 3, NULL
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__METHOD, "method", args, 3, NULL
     );
     assert(ast != NULL);
     
@@ -64,15 +64,15 @@ static void test_method_instruction_evaluator__evaluate_with_instance(void) {
     assert(arg_asts != NULL);
     
     // Method name: "test_method"
-    expression_ast_t *name_ast = ar__expression_ast__create_literal_string("test_method");
+    ar_expression_ast_t *name_ast = ar__expression_ast__create_literal_string("test_method");
     ar__list__add_last(arg_asts, name_ast);
     
     // Instructions: "send(0, 42)"
-    expression_ast_t *instructions_ast = ar__expression_ast__create_literal_string("send(0, 42)");
+    ar_expression_ast_t *instructions_ast = ar__expression_ast__create_literal_string("send(0, 42)");
     ar__list__add_last(arg_asts, instructions_ast);
     
     // Version: "1.0.0"
-    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
+    ar_expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
     ar__list__add_last(arg_asts, version_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -110,8 +110,8 @@ static void test_method_instruction_evaluator__evaluate_legacy(void) {
     
     // When creating a method AST node with result assignment
     const char *args[] = {"\"legacy_test\"", "\"send(0, 99)\"", "\"2.0.0\""};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_METHOD, "method", args, 3, "memory.result"
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__METHOD, "method", args, 3, "memory.result"
     );
     assert(ast != NULL);
     
@@ -120,15 +120,15 @@ static void test_method_instruction_evaluator__evaluate_legacy(void) {
     assert(arg_asts != NULL);
     
     // Method name: "legacy_test"
-    expression_ast_t *name_ast = ar__expression_ast__create_literal_string("legacy_test");
+    ar_expression_ast_t *name_ast = ar__expression_ast__create_literal_string("legacy_test");
     ar__list__add_last(arg_asts, name_ast);
     
     // Instructions: "send(0, 99)"
-    expression_ast_t *instructions_ast = ar__expression_ast__create_literal_string("send(0, 99)");
+    ar_expression_ast_t *instructions_ast = ar__expression_ast__create_literal_string("send(0, 99)");
     ar__list__add_last(arg_asts, instructions_ast);
     
     // Version: "2.0.0"
-    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("2.0.0");
+    ar_expression_ast_t *version_ast = ar__expression_ast__create_literal_string("2.0.0");
     ar__list__add_last(arg_asts, version_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -169,8 +169,8 @@ static void test_instruction_evaluator__evaluate_method_simple(void) {
     
     // When evaluating a method instruction: method("counter", "send(message.sender, memory.count + 1)", "1.0.0")
     const char *args[] = {"\"counter\"", "\"send(message.sender, memory.count + 1)\"", "\"1.0.0\""};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_METHOD, "method", args, 3, NULL
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__METHOD, "method", args, 3, NULL
     );
     assert(ast != NULL);
     
@@ -179,15 +179,15 @@ static void test_instruction_evaluator__evaluate_method_simple(void) {
     assert(arg_asts != NULL);
     
     // Method name: "counter"
-    expression_ast_t *name_ast = ar__expression_ast__create_literal_string("counter");
+    ar_expression_ast_t *name_ast = ar__expression_ast__create_literal_string("counter");
     ar__list__add_last(arg_asts, name_ast);
     
     // Instructions: "send(message.sender, memory.count + 1)"
-    expression_ast_t *instructions_ast = ar__expression_ast__create_literal_string("send(message.sender, memory.count + 1)");
+    ar_expression_ast_t *instructions_ast = ar__expression_ast__create_literal_string("send(message.sender, memory.count + 1)");
     ar__list__add_last(arg_asts, instructions_ast);
     
     // Version: "1.0.0"
-    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
+    ar_expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
     ar__list__add_last(arg_asts, version_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -223,8 +223,8 @@ static void test_instruction_evaluator__evaluate_method_with_result(void) {
     
     // When evaluating a method instruction with result assignment: memory.created := method("echo", "send(message.sender, message.content)", "2.0.0")
     const char *args[] = {"\"echo\"", "\"send(message.sender, message.content)\"", "\"2.0.0\""};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_METHOD, "method", args, 3, "memory.created"
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__METHOD, "method", args, 3, "memory.created"
     );
     assert(ast != NULL);
     
@@ -233,15 +233,15 @@ static void test_instruction_evaluator__evaluate_method_with_result(void) {
     assert(arg_asts != NULL);
     
     // Method name: "echo"
-    expression_ast_t *name_ast = ar__expression_ast__create_literal_string("echo");
+    ar_expression_ast_t *name_ast = ar__expression_ast__create_literal_string("echo");
     ar__list__add_last(arg_asts, name_ast);
     
     // Instructions: "send(message.sender, message.content)"
-    expression_ast_t *instructions_ast = ar__expression_ast__create_literal_string("send(message.sender, message.content)");
+    ar_expression_ast_t *instructions_ast = ar__expression_ast__create_literal_string("send(message.sender, message.content)");
     ar__list__add_last(arg_asts, instructions_ast);
     
     // Version: "2.0.0"
-    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("2.0.0");
+    ar_expression_ast_t *version_ast = ar__expression_ast__create_literal_string("2.0.0");
     ar__list__add_last(arg_asts, version_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -281,8 +281,8 @@ static void test_instruction_evaluator__evaluate_method_invalid_instructions(voi
     
     // When evaluating a method instruction with invalid instructions: method("bad", "invalid syntax here", "1.0.0")
     const char *args[] = {"\"bad\"", "\"invalid syntax here\"", "\"1.0.0\""};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_METHOD, "method", args, 3, NULL
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__METHOD, "method", args, 3, NULL
     );
     assert(ast != NULL);
     
@@ -291,15 +291,15 @@ static void test_instruction_evaluator__evaluate_method_invalid_instructions(voi
     assert(arg_asts != NULL);
     
     // Method name: "bad"
-    expression_ast_t *name_ast = ar__expression_ast__create_literal_string("bad");
+    ar_expression_ast_t *name_ast = ar__expression_ast__create_literal_string("bad");
     ar__list__add_last(arg_asts, name_ast);
     
     // Instructions: "invalid syntax here"
-    expression_ast_t *instructions_ast = ar__expression_ast__create_literal_string("invalid syntax here");
+    ar_expression_ast_t *instructions_ast = ar__expression_ast__create_literal_string("invalid syntax here");
     ar__list__add_last(arg_asts, instructions_ast);
     
     // Version: "1.0.0"
-    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
+    ar_expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
     ar__list__add_last(arg_asts, version_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -336,8 +336,8 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     
     // Test case 1: Wrong number of arguments
     const char *args1[] = {"\"test\"", "\"send(0, 42)\""};  // Missing version
-    instruction_ast_t *ast1 = ar__instruction_ast__create_function_call(
-        INST_AST_METHOD, "method", args1, 2, NULL
+    ar_instruction_ast_t *ast1 = ar__instruction_ast__create_function_call(
+        AR_INST__METHOD, "method", args1, 2, NULL
     );
     assert(ast1 != NULL);
     
@@ -345,10 +345,10 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     list_t *arg_asts1 = ar__list__create();
     assert(arg_asts1 != NULL);
     
-    expression_ast_t *name_ast1 = ar__expression_ast__create_literal_string("test");
+    ar_expression_ast_t *name_ast1 = ar__expression_ast__create_literal_string("test");
     ar__list__add_last(arg_asts1, name_ast1);
     
-    expression_ast_t *instructions_ast1 = ar__expression_ast__create_literal_string("send(0, 42)");
+    ar_expression_ast_t *instructions_ast1 = ar__expression_ast__create_literal_string("send(0, 42)");
     ar__list__add_last(arg_asts1, instructions_ast1);
     
     bool ast_set1 = ar__instruction_ast__set_function_arg_asts(ast1, arg_asts1);
@@ -361,8 +361,8 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     
     // Test case 2: Non-string method name
     const char *args2[] = {"42", "\"send(0, 42)\"", "\"1.0.0\""};
-    instruction_ast_t *ast2 = ar__instruction_ast__create_function_call(
-        INST_AST_METHOD, "method", args2, 3, NULL
+    ar_instruction_ast_t *ast2 = ar__instruction_ast__create_function_call(
+        AR_INST__METHOD, "method", args2, 3, NULL
     );
     assert(ast2 != NULL);
     
@@ -370,13 +370,13 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     list_t *arg_asts2 = ar__list__create();
     assert(arg_asts2 != NULL);
     
-    expression_ast_t *name_ast2 = ar__expression_ast__create_literal_int(42);
+    ar_expression_ast_t *name_ast2 = ar__expression_ast__create_literal_int(42);
     ar__list__add_last(arg_asts2, name_ast2);
     
-    expression_ast_t *instructions_ast2 = ar__expression_ast__create_literal_string("send(0, 42)");
+    ar_expression_ast_t *instructions_ast2 = ar__expression_ast__create_literal_string("send(0, 42)");
     ar__list__add_last(arg_asts2, instructions_ast2);
     
-    expression_ast_t *version_ast2 = ar__expression_ast__create_literal_string("1.0.0");
+    ar_expression_ast_t *version_ast2 = ar__expression_ast__create_literal_string("1.0.0");
     ar__list__add_last(arg_asts2, version_ast2);
     
     bool ast_set2 = ar__instruction_ast__set_function_arg_asts(ast2, arg_asts2);
@@ -389,8 +389,8 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     
     // Test case 3: Non-string instructions
     const char *args3[] = {"\"test\"", "42", "\"1.0.0\""};
-    instruction_ast_t *ast3 = ar__instruction_ast__create_function_call(
-        INST_AST_METHOD, "method", args3, 3, NULL
+    ar_instruction_ast_t *ast3 = ar__instruction_ast__create_function_call(
+        AR_INST__METHOD, "method", args3, 3, NULL
     );
     assert(ast3 != NULL);
     
@@ -398,13 +398,13 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     list_t *arg_asts3 = ar__list__create();
     assert(arg_asts3 != NULL);
     
-    expression_ast_t *name_ast3 = ar__expression_ast__create_literal_string("test");
+    ar_expression_ast_t *name_ast3 = ar__expression_ast__create_literal_string("test");
     ar__list__add_last(arg_asts3, name_ast3);
     
-    expression_ast_t *instructions_ast3 = ar__expression_ast__create_literal_int(42);
+    ar_expression_ast_t *instructions_ast3 = ar__expression_ast__create_literal_int(42);
     ar__list__add_last(arg_asts3, instructions_ast3);
     
-    expression_ast_t *version_ast3 = ar__expression_ast__create_literal_string("1.0.0");
+    ar_expression_ast_t *version_ast3 = ar__expression_ast__create_literal_string("1.0.0");
     ar__list__add_last(arg_asts3, version_ast3);
     
     bool ast_set3 = ar__instruction_ast__set_function_arg_asts(ast3, arg_asts3);
@@ -417,8 +417,8 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     
     // Test case 4: Non-string version
     const char *args4[] = {"\"test\"", "\"send(0, 42)\"", "1.0"};
-    instruction_ast_t *ast4 = ar__instruction_ast__create_function_call(
-        INST_AST_METHOD, "method", args4, 3, NULL
+    ar_instruction_ast_t *ast4 = ar__instruction_ast__create_function_call(
+        AR_INST__METHOD, "method", args4, 3, NULL
     );
     assert(ast4 != NULL);
     
@@ -426,13 +426,13 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     list_t *arg_asts4 = ar__list__create();
     assert(arg_asts4 != NULL);
     
-    expression_ast_t *name_ast4 = ar__expression_ast__create_literal_string("test");
+    ar_expression_ast_t *name_ast4 = ar__expression_ast__create_literal_string("test");
     ar__list__add_last(arg_asts4, name_ast4);
     
-    expression_ast_t *instructions_ast4 = ar__expression_ast__create_literal_string("send(0, 42)");
+    ar_expression_ast_t *instructions_ast4 = ar__expression_ast__create_literal_string("send(0, 42)");
     ar__list__add_last(arg_asts4, instructions_ast4);
     
-    expression_ast_t *version_ast4 = ar__expression_ast__create_literal_double(1.0);
+    ar_expression_ast_t *version_ast4 = ar__expression_ast__create_literal_double(1.0);
     ar__list__add_last(arg_asts4, version_ast4);
     
     bool ast_set4 = ar__instruction_ast__set_function_arg_asts(ast4, arg_asts4);
@@ -462,7 +462,7 @@ int main(void) {
         if (len < 4 || strcmp(cwd + len - 4, "/bin") != 0) {
             fprintf(stderr, "ERROR: Tests must be run from the bin directory!\n");
             fprintf(stderr, "Current directory: %s\n", cwd);
-            fprintf(stderr, "Please run: cd bin && ./agerun_method_instruction_evaluator_tests\n");
+            fprintf(stderr, "Please run: cd bin && ./agerun_ar_method_instruction_evaluator_tests\n");
             return 1;
         }
     }

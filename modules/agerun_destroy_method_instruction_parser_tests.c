@@ -40,11 +40,11 @@ static void test_destroy_method_parser__parse_two_strings(void) {
     ar_destroy_method_instruction_parser_t *own_parser = ar_destroy_method_instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar_destroy_method_instruction_parser__parse(own_parser, instruction, NULL);
+    ar_instruction_ast_t *own_ast = ar_destroy_method_instruction_parser__parse(own_parser, instruction, NULL);
     
     // Then it should parse as a destroy method function
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_DESTROY_METHOD);
+    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__DESTROY_METHOD);
     assert(ar__instruction_ast__has_result_assignment(own_ast) == false);
     
     list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
@@ -79,11 +79,11 @@ static void test_destroy_method_parser__parse_with_assignment(void) {
     ar_destroy_method_instruction_parser_t *own_parser = ar_destroy_method_instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar_destroy_method_instruction_parser__parse(own_parser, instruction, "memory.result");
+    ar_instruction_ast_t *own_ast = ar_destroy_method_instruction_parser__parse(own_parser, instruction, "memory.result");
     
     // Then it should parse as a destroy method function with assignment
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_DESTROY_METHOD);
+    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__DESTROY_METHOD);
     assert(ar__instruction_ast__has_result_assignment(own_ast) == true);
     
     list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
@@ -110,7 +110,7 @@ static void test_destroy_method_parser__error_handling(void) {
     assert(own_parser != NULL);
     
     // Test 1: Missing parentheses
-    instruction_ast_t *ast = ar_destroy_method_instruction_parser__parse(own_parser, "destroy \"method\", \"1.0.0\"", NULL);
+    ar_instruction_ast_t *ast = ar_destroy_method_instruction_parser__parse(own_parser, "destroy \"method\", \"1.0.0\"", NULL);
     assert(ast == NULL);
     assert(ar_destroy_method_instruction_parser__get_error(own_parser) != NULL);
     assert(strstr(ar_destroy_method_instruction_parser__get_error(own_parser), "Expected '(' after 'destroy'") != NULL);
@@ -146,10 +146,10 @@ static void test_destroy_method_parser__complex_strings(void) {
     
     // Test with escaped quotes
     const char *instruction = "destroy(\"test\\\"method\", \"1.0.0-beta\")";
-    instruction_ast_t *own_ast = ar_destroy_method_instruction_parser__parse(own_parser, instruction, NULL);
+    ar_instruction_ast_t *own_ast = ar_destroy_method_instruction_parser__parse(own_parser, instruction, NULL);
     
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_DESTROY_METHOD);
+    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__DESTROY_METHOD);
     
     list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
     assert(ar__list__count(own_args) == 2);
@@ -182,11 +182,11 @@ static void test_destroy_method_parser__parse_with_expression_asts(void) {
     assert(own_parser != NULL);
     
     // When parsing the instruction
-    instruction_ast_t *own_ast = ar_destroy_method_instruction_parser__parse(own_parser, instruction, "memory.result");
+    ar_instruction_ast_t *own_ast = ar_destroy_method_instruction_parser__parse(own_parser, instruction, "memory.result");
     
     // Then it should parse successfully with argument ASTs
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_DESTROY_METHOD);
+    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__DESTROY_METHOD);
     assert(ar__instruction_ast__has_result_assignment(own_ast) == true);
     
     // And the arguments should be available as expression ASTs
@@ -198,15 +198,15 @@ static void test_destroy_method_parser__parse_with_expression_asts(void) {
     assert(items != NULL);
     
     // First argument should be a string literal AST
-    const expression_ast_t *ref_arg1 = (const expression_ast_t*)items[0];
+    const ar_expression_ast_t *ref_arg1 = (const ar_expression_ast_t*)items[0];
     assert(ref_arg1 != NULL);
-    assert(ar__expression_ast__get_type(ref_arg1) == EXPR_AST_LITERAL_STRING);
+    assert(ar__expression_ast__get_type(ref_arg1) == AR_EXPR__LITERAL_STRING);
     assert(strcmp(ar__expression_ast__get_string_value(ref_arg1), "calculator") == 0);
     
     // Second argument should be a string literal AST
-    const expression_ast_t *ref_arg2 = (const expression_ast_t*)items[1];
+    const ar_expression_ast_t *ref_arg2 = (const ar_expression_ast_t*)items[1];
     assert(ref_arg2 != NULL);
-    assert(ar__expression_ast__get_type(ref_arg2) == EXPR_AST_LITERAL_STRING);
+    assert(ar__expression_ast__get_type(ref_arg2) == AR_EXPR__LITERAL_STRING);
     assert(strcmp(ar__expression_ast__get_string_value(ref_arg2), "1.0.0") == 0);
     
     AR__HEAP__FREE(items);
@@ -214,10 +214,10 @@ static void test_destroy_method_parser__parse_with_expression_asts(void) {
     
     // Test with memory references (even though not typical for destroy method)
     const char *instruction2 = "destroy(memory.method_name, memory.version)";
-    instruction_ast_t *own_ast2 = ar_destroy_method_instruction_parser__parse(own_parser, instruction2, NULL);
+    ar_instruction_ast_t *own_ast2 = ar_destroy_method_instruction_parser__parse(own_parser, instruction2, NULL);
     
     assert(own_ast2 != NULL);
-    assert(ar__instruction_ast__get_type(own_ast2) == INST_AST_DESTROY_METHOD);
+    assert(ar__instruction_ast__get_type(own_ast2) == AR_INST__DESTROY_METHOD);
     
     const list_t *ref_arg_asts2 = ar__instruction_ast__get_function_arg_asts(own_ast2);
     assert(ref_arg_asts2 != NULL);
@@ -227,14 +227,14 @@ static void test_destroy_method_parser__parse_with_expression_asts(void) {
     assert(items2 != NULL);
     
     // First argument should be a memory access AST
-    const expression_ast_t *ref_arg2_1 = (const expression_ast_t*)items2[0];
+    const ar_expression_ast_t *ref_arg2_1 = (const ar_expression_ast_t*)items2[0];
     assert(ref_arg2_1 != NULL);
-    assert(ar__expression_ast__get_type(ref_arg2_1) == EXPR_AST_MEMORY_ACCESS);
+    assert(ar__expression_ast__get_type(ref_arg2_1) == AR_EXPR__MEMORY_ACCESS);
     
     // Second argument should be a memory access AST
-    const expression_ast_t *ref_arg2_2 = (const expression_ast_t*)items2[1];
+    const ar_expression_ast_t *ref_arg2_2 = (const ar_expression_ast_t*)items2[1];
     assert(ref_arg2_2 != NULL);
-    assert(ar__expression_ast__get_type(ref_arg2_2) == EXPR_AST_MEMORY_ACCESS);
+    assert(ar__expression_ast__get_type(ref_arg2_2) == AR_EXPR__MEMORY_ACCESS);
     
     AR__HEAP__FREE(items2);
     ar__instruction_ast__destroy(own_ast2);

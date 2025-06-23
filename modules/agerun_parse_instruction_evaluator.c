@@ -16,7 +16,7 @@
 
 /* Struct definition for parse instruction evaluator */
 struct ar_parse_instruction_evaluator_s {
-    expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
+    ar_expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
     data_t *mut_memory;                          /* Memory map (mutable reference) */
 };
 
@@ -25,9 +25,9 @@ static const char* MEMORY_PREFIX = "memory.";
 static const size_t MEMORY_PREFIX_LEN = 7;
 
 /* Forward declarations of helper functions */
-static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluator, const expression_ast_t *ref_ast);
+static data_t* _evaluate_expression_ast(ar_expression_evaluator_t *mut_expr_evaluator, const ar_expression_ast_t *ref_ast);
 static const char* _get_memory_key_path(const char *ref_path);
-static bool _store_result_if_assigned(data_t *mut_memory, const instruction_ast_t *ref_ast, data_t *own_result);
+static bool _store_result_if_assigned(data_t *mut_memory, const ar_instruction_ast_t *ref_ast, data_t *own_result);
 static data_t* _copy_data_value(const data_t *ref_value);
 static data_t* _parse_value_string(const char *value_str);
 
@@ -120,7 +120,7 @@ static data_t* _copy_data_value(const data_t *ref_value) {
 /* Helper function to store result in memory if assignment path is provided */
 static bool _store_result_if_assigned(
     data_t *mut_memory,
-    const instruction_ast_t *ref_ast,
+    const ar_instruction_ast_t *ref_ast,
     data_t *own_result
 ) {
     const char *ref_result_path = ar__instruction_ast__get_function_result_path(ref_ast);
@@ -149,24 +149,24 @@ static bool _store_result_if_assigned(
 
 
 /* Helper function to evaluate an expression AST node using the expression evaluator */
-static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluator, const expression_ast_t *ref_ast) {
+static data_t* _evaluate_expression_ast(ar_expression_evaluator_t *mut_expr_evaluator, const ar_expression_ast_t *ref_ast) {
     if (!ref_ast) {
         return NULL;
     }
     
-    expression_ast_type_t type = ar__expression_ast__get_type(ref_ast);
+    ar_expression_ast_type_t type = ar__expression_ast__get_type(ref_ast);
     
     switch (type) {
-        case EXPR_AST_LITERAL_INT:
+        case AR_EXPR__LITERAL_INT:
             return ar__expression_evaluator__evaluate_literal_int(mut_expr_evaluator, ref_ast);
             
-        case EXPR_AST_LITERAL_DOUBLE:
+        case AR_EXPR__LITERAL_DOUBLE:
             return ar__expression_evaluator__evaluate_literal_double(mut_expr_evaluator, ref_ast);
             
-        case EXPR_AST_LITERAL_STRING:
+        case AR_EXPR__LITERAL_STRING:
             return ar__expression_evaluator__evaluate_literal_string(mut_expr_evaluator, ref_ast);
             
-        case EXPR_AST_MEMORY_ACCESS:
+        case AR_EXPR__MEMORY_ACCESS:
             // Memory access returns a reference, we need to make a copy
             {
                 data_t *ref_value = ar__expression_evaluator__evaluate_memory_access(mut_expr_evaluator, ref_ast);
@@ -176,7 +176,7 @@ static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluat
                 return _copy_data_value(ref_value);
             }
             
-        case EXPR_AST_BINARY_OP:
+        case AR_EXPR__BINARY_OP:
             return ar__expression_evaluator__evaluate_binary_op(mut_expr_evaluator, ref_ast);
             
         default:
@@ -211,7 +211,7 @@ static data_t* _parse_value_string(const char *value_str) {
  * Creates a new parse instruction evaluator
  */
 ar_parse_instruction_evaluator_t* ar_parse_instruction_evaluator__create(
-    expression_evaluator_t *ref_expr_evaluator,
+    ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 ) {
     if (!ref_expr_evaluator || !mut_memory) {
@@ -251,14 +251,14 @@ void ar_parse_instruction_evaluator__destroy(
  */
 bool ar_parse_instruction_evaluator__evaluate(
     ar_parse_instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
+    const ar_instruction_ast_t *ref_ast
 ) {
     if (!mut_evaluator || !ref_ast) {
         return false;
     }
     
     // Verify this is a parse AST node
-    if (ar__instruction_ast__get_type(ref_ast) != INST_AST_PARSE) {
+    if (ar__instruction_ast__get_type(ref_ast) != AR_INST__PARSE) {
         return false;
     }
     
@@ -279,8 +279,8 @@ bool ar_parse_instruction_evaluator__evaluate(
         return false;
     }
     
-    const expression_ast_t *ref_template_ast = (const expression_ast_t*)items[0];
-    const expression_ast_t *ref_input_ast = (const expression_ast_t*)items[1];
+    const ar_expression_ast_t *ref_template_ast = (const ar_expression_ast_t*)items[0];
+    const ar_expression_ast_t *ref_input_ast = (const ar_expression_ast_t*)items[1];
     
     if (!ref_template_ast || !ref_input_ast) {
         AR__HEAP__FREE(items);

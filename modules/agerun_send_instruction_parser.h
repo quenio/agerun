@@ -37,7 +37,7 @@ void ar_send_instruction_parser__destroy(ar_send_instruction_parser_t *own_parse
  * @note The instruction must be of the form "send(agent_id, message)"
  * @note If ref_result_path is provided, it represents assignment like "memory.x := send(...)"
  */
-instruction_ast_t* ar_send_instruction_parser__parse(
+ar_instruction_ast_t* ar_send_instruction_parser__parse(
     ar_send_instruction_parser_t *mut_parser,
     const char *ref_instruction,
     const char *ref_result_path

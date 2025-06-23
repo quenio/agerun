@@ -16,7 +16,7 @@
  * Internal structure for condition instruction evaluator
  */
 struct ar_condition_instruction_evaluator_s {
-    expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
+    ar_expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
     data_t *mut_memory;                          /* Memory map (mutable reference) */
 };
 
@@ -111,24 +111,24 @@ static data_t* _copy_data_value(const data_t *ref_value) {
 }
 
 /* Helper function to evaluate an expression AST node using the expression evaluator */
-static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluator, const expression_ast_t *ref_ast) {
+static data_t* _evaluate_expression_ast(ar_expression_evaluator_t *mut_expr_evaluator, const ar_expression_ast_t *ref_ast) {
     if (!ref_ast) {
         return NULL;
     }
     
-    expression_ast_type_t type = ar__expression_ast__get_type(ref_ast);
+    ar_expression_ast_type_t type = ar__expression_ast__get_type(ref_ast);
     
     switch (type) {
-        case EXPR_AST_LITERAL_INT:
+        case AR_EXPR__LITERAL_INT:
             return ar__expression_evaluator__evaluate_literal_int(mut_expr_evaluator, ref_ast);
             
-        case EXPR_AST_LITERAL_DOUBLE:
+        case AR_EXPR__LITERAL_DOUBLE:
             return ar__expression_evaluator__evaluate_literal_double(mut_expr_evaluator, ref_ast);
             
-        case EXPR_AST_LITERAL_STRING:
+        case AR_EXPR__LITERAL_STRING:
             return ar__expression_evaluator__evaluate_literal_string(mut_expr_evaluator, ref_ast);
             
-        case EXPR_AST_MEMORY_ACCESS:
+        case AR_EXPR__MEMORY_ACCESS:
             // Memory access returns a reference, we need to make a copy
             {
                 data_t *ref_value = ar__expression_evaluator__evaluate_memory_access(mut_expr_evaluator, ref_ast);
@@ -138,7 +138,7 @@ static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluat
                 return _copy_data_value(ref_value);
             }
             
-        case EXPR_AST_BINARY_OP:
+        case AR_EXPR__BINARY_OP:
             return ar__expression_evaluator__evaluate_binary_op(mut_expr_evaluator, ref_ast);
             
         default:
@@ -150,7 +150,7 @@ static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluat
  * Creates a new condition instruction evaluator
  */
 ar_condition_instruction_evaluator_t* ar_condition_instruction_evaluator__create(
-    expression_evaluator_t *ref_expr_evaluator,
+    ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 ) {
     if (!ref_expr_evaluator || !mut_memory) {
@@ -191,14 +191,14 @@ void ar_condition_instruction_evaluator__destroy(
  */
 bool ar_condition_instruction_evaluator__evaluate(
     ar_condition_instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
+    const ar_instruction_ast_t *ref_ast
 ) {
     if (!mut_evaluator || !ref_ast) {
         return false;
     }
     
     // Verify this is an if AST node
-    if (ar__instruction_ast__get_type(ref_ast) != INST_AST_IF) {
+    if (ar__instruction_ast__get_type(ref_ast) != AR_INST__IF) {
         return false;
     }
     
@@ -219,9 +219,9 @@ bool ar_condition_instruction_evaluator__evaluate(
         return false;
     }
     
-    const expression_ast_t *ref_condition_ast = (const expression_ast_t*)items[0];
-    const expression_ast_t *ref_true_ast = (const expression_ast_t*)items[1];
-    const expression_ast_t *ref_false_ast = (const expression_ast_t*)items[2];
+    const ar_expression_ast_t *ref_condition_ast = (const ar_expression_ast_t*)items[0];
+    const ar_expression_ast_t *ref_true_ast = (const ar_expression_ast_t*)items[1];
+    const ar_expression_ast_t *ref_false_ast = (const ar_expression_ast_t*)items[2];
     
     if (!ref_condition_ast || !ref_true_ast || !ref_false_ast) {
         AR__HEAP__FREE(items);
@@ -243,7 +243,7 @@ bool ar_condition_instruction_evaluator__evaluate(
     ar__data__destroy(own_condition_data);
     
     // Select which expression AST to evaluate based on condition
-    const expression_ast_t *ref_ast_to_eval = condition_is_true ? ref_true_ast : ref_false_ast;
+    const ar_expression_ast_t *ref_ast_to_eval = condition_is_true ? ref_true_ast : ref_false_ast;
     
     // Evaluate the selected expression AST
     data_t *own_result = _evaluate_expression_ast(mut_evaluator->ref_expr_evaluator, ref_ast_to_eval);

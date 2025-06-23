@@ -79,8 +79,8 @@ static void test_destroy_agent_instruction_evaluator__evaluate_with_instance(voi
     
     // Create destroy AST with agent ID
     const char *args[] = {"memory.agent_id"};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY_AGENT, "destroy", args, 1, NULL
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__DESTROY_AGENT, "destroy", args, 1, NULL
     );
     assert(ast != NULL);
     
@@ -90,7 +90,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_with_instance(voi
     
     // Agent ID: memory.agent_id
     const char *agent_id_path[] = {"agent_id"};
-    expression_ast_t *agent_id_ast = ar__expression_ast__create_memory_access("memory", agent_id_path, 1);
+    ar_expression_ast_t *agent_id_ast = ar__expression_ast__create_memory_access("memory", agent_id_path, 1);
     ar__list__add_last(arg_asts, agent_id_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -155,8 +155,8 @@ static void test_destroy_agent_instruction_evaluator__evaluate_legacy(void) {
     char agent_id_str[32];
     snprintf(agent_id_str, sizeof(agent_id_str), "%" PRId64, agent_id);
     const char *args[] = {agent_id_str};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY_AGENT, "destroy", args, 1, NULL
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__DESTROY_AGENT, "destroy", args, 1, NULL
     );
     assert(ast != NULL);
     
@@ -165,7 +165,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_legacy(void) {
     assert(arg_asts != NULL);
     
     // Agent ID: literal integer
-    expression_ast_t *agent_id_ast = ar__expression_ast__create_literal_int((int)agent_id);
+    ar_expression_ast_t *agent_id_ast = ar__expression_ast__create_literal_int((int)agent_id);
     ar__list__add_last(arg_asts, agent_id_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -229,8 +229,8 @@ static void test_destroy_agent_instruction_evaluator__evaluate_with_result(void)
     char agent_id_str[32];
     snprintf(agent_id_str, sizeof(agent_id_str), "%" PRId64, agent_id);
     const char *args[] = {agent_id_str};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY_AGENT, "destroy", args, 1, "memory.result"
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__DESTROY_AGENT, "destroy", args, 1, "memory.result"
     );
     assert(ast != NULL);
     
@@ -239,7 +239,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_with_result(void)
     assert(arg_asts != NULL);
     
     // Agent ID: literal integer
-    expression_ast_t *agent_id_ast = ar__expression_ast__create_literal_int((int)agent_id);
+    ar_expression_ast_t *agent_id_ast = ar__expression_ast__create_literal_int((int)agent_id);
     ar__list__add_last(arg_asts, agent_id_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -299,8 +299,8 @@ static void test_destroy_agent_instruction_evaluator__evaluate_nonexistent(void)
     
     // Create destroy AST with non-existent agent ID
     const char *args[] = {"999"};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY_AGENT, "destroy", args, 1, "memory.result"
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__DESTROY_AGENT, "destroy", args, 1, "memory.result"
     );
     assert(ast != NULL);
     
@@ -309,7 +309,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_nonexistent(void)
     assert(arg_asts != NULL);
     
     // Agent ID: 999 (nonexistent)
-    expression_ast_t *agent_id_ast = ar__expression_ast__create_literal_int(999);
+    ar_expression_ast_t *agent_id_ast = ar__expression_ast__create_literal_int(999);
     ar__list__add_last(arg_asts, agent_id_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -359,8 +359,8 @@ static void test_destroy_agent_instruction_evaluator__evaluate_invalid_type(void
     
     // Create destroy AST with non-integer agent ID (string)
     const char *args[] = {"\"not_a_number\""};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY_AGENT, "destroy", args, 1, NULL
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__DESTROY_AGENT, "destroy", args, 1, NULL
     );
     assert(ast != NULL);
     
@@ -369,7 +369,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_invalid_type(void
     assert(arg_asts != NULL);
     
     // Agent ID: "not_a_number" (string, not integer)
-    expression_ast_t *agent_id_ast = ar__expression_ast__create_literal_string("not_a_number");
+    ar_expression_ast_t *agent_id_ast = ar__expression_ast__create_literal_string("not_a_number");
     ar__list__add_last(arg_asts, agent_id_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -404,8 +404,8 @@ static void test_destroy_agent_instruction_evaluator__evaluate_wrong_arg_count(v
     
     // Create destroy AST with 2 args (should be 1 for agent)
     const char *args[] = {"1", "\"extra\""};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY_AGENT, "destroy", args, 2, NULL
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__DESTROY_AGENT, "destroy", args, 2, NULL
     );
     assert(ast != NULL);
     
@@ -414,11 +414,11 @@ static void test_destroy_agent_instruction_evaluator__evaluate_wrong_arg_count(v
     assert(arg_asts != NULL);
     
     // Agent ID: 1
-    expression_ast_t *agent_id_ast = ar__expression_ast__create_literal_int(1);
+    ar_expression_ast_t *agent_id_ast = ar__expression_ast__create_literal_int(1);
     ar__list__add_last(arg_asts, agent_id_ast);
     
     // Extra argument: "extra" (should cause error due to wrong arg count)
-    expression_ast_t *extra_ast = ar__expression_ast__create_literal_string("extra");
+    ar_expression_ast_t *extra_ast = ar__expression_ast__create_literal_string("extra");
     ar__list__add_last(arg_asts, extra_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -447,7 +447,7 @@ int main(void) {
         if (len < 4 || strcmp(cwd + len - 4, "/bin") != 0) {
             fprintf(stderr, "ERROR: Tests must be run from the bin directory!\n");
             fprintf(stderr, "Current directory: %s\n", cwd);
-            fprintf(stderr, "Please run: cd bin && ./agerun_destroy_agent_instruction_evaluator_tests\n");
+            fprintf(stderr, "Please run: cd bin && ./agerun_destroy_ar_agent_instruction_evaluator_tests\n");
             return 1;
         }
     }

@@ -19,27 +19,27 @@ struct expression_parser_s {
 };
 
 /* Forward declarations for internal parsing functions */
-static void _skip_whitespace(expression_parser_t *mut_parser);
-static bool _peek_char(const expression_parser_t *ref_parser, char expected);
-static bool _consume_char(expression_parser_t *mut_parser, char expected);
-static char _current_char(const expression_parser_t *ref_parser);
-static void _advance(expression_parser_t *mut_parser);
-static void _set_error(expression_parser_t *mut_parser, const char *ref_message);
-static expression_ast_t* _parse_primary(expression_parser_t *mut_parser);
-static expression_ast_t* _parse_term(expression_parser_t *mut_parser);
-static expression_ast_t* _parse_additive(expression_parser_t *mut_parser);
-static expression_ast_t* _parse_relational(expression_parser_t *mut_parser);
-static expression_ast_t* _parse_equality(expression_parser_t *mut_parser);
+static void _skip_whitespace(ar_expression_parser_t *mut_parser);
+static bool _peek_char(const ar_expression_parser_t *ref_parser, char expected);
+static bool _consume_char(ar_expression_parser_t *mut_parser, char expected);
+static char _current_char(const ar_expression_parser_t *ref_parser);
+static void _advance(ar_expression_parser_t *mut_parser);
+static void _set_error(ar_expression_parser_t *mut_parser, const char *ref_message);
+static ar_expression_ast_t* _parse_primary(ar_expression_parser_t *mut_parser);
+static ar_expression_ast_t* _parse_term(ar_expression_parser_t *mut_parser);
+static ar_expression_ast_t* _parse_additive(ar_expression_parser_t *mut_parser);
+static ar_expression_ast_t* _parse_relational(ar_expression_parser_t *mut_parser);
+static ar_expression_ast_t* _parse_equality(ar_expression_parser_t *mut_parser);
 
 /**
  * Create a new expression parser instance.
  */
-expression_parser_t* ar__expression_parser__create(const char *ref_expression) {
+ar_expression_parser_t* ar__expression_parser__create(const char *ref_expression) {
     if (!ref_expression) {
         return NULL;
     }
     
-    expression_parser_t *own_parser = AR__HEAP__MALLOC(sizeof(expression_parser_t), "Expression parser");
+    ar_expression_parser_t *own_parser = AR__HEAP__MALLOC(sizeof(ar_expression_parser_t), "Expression parser");
     if (!own_parser) {
         return NULL;
     }
@@ -59,7 +59,7 @@ expression_parser_t* ar__expression_parser__create(const char *ref_expression) {
 /**
  * Destroy an expression parser instance.
  */
-void ar__expression_parser__destroy(expression_parser_t *own_parser) {
+void ar__expression_parser__destroy(ar_expression_parser_t *own_parser) {
     if (!own_parser) {
         return;
     }
@@ -78,7 +78,7 @@ void ar__expression_parser__destroy(expression_parser_t *own_parser) {
 /**
  * Get the current position in the expression being parsed.
  */
-size_t ar__expression_parser__get_position(const expression_parser_t *ref_parser) {
+size_t ar__expression_parser__get_position(const ar_expression_parser_t *ref_parser) {
     if (!ref_parser) {
         return 0;
     }
@@ -88,7 +88,7 @@ size_t ar__expression_parser__get_position(const expression_parser_t *ref_parser
 /**
  * Get the last error message from the parser.
  */
-const char* ar__expression_parser__get_error(const expression_parser_t *ref_parser) {
+const char* ar__expression_parser__get_error(const ar_expression_parser_t *ref_parser) {
     if (!ref_parser) {
         return NULL;
     }
@@ -98,7 +98,7 @@ const char* ar__expression_parser__get_error(const expression_parser_t *ref_pars
 /**
  * Skip whitespace characters.
  */
-static void _skip_whitespace(expression_parser_t *mut_parser) {
+static void _skip_whitespace(ar_expression_parser_t *mut_parser) {
     if (!mut_parser || !mut_parser->own_expression) {
         return;
     }
@@ -111,7 +111,7 @@ static void _skip_whitespace(expression_parser_t *mut_parser) {
 /**
  * Get the current character without advancing.
  */
-static char _current_char(const expression_parser_t *ref_parser) {
+static char _current_char(const ar_expression_parser_t *ref_parser) {
     if (!ref_parser || !ref_parser->own_expression) {
         return '\0';
     }
@@ -121,14 +121,14 @@ static char _current_char(const expression_parser_t *ref_parser) {
 /**
  * Check if the current character matches expected without consuming.
  */
-static bool _peek_char(const expression_parser_t *ref_parser, char expected) {
+static bool _peek_char(const ar_expression_parser_t *ref_parser, char expected) {
     return _current_char(ref_parser) == expected;
 }
 
 /**
  * Advance the position by one character.
  */
-static void _advance(expression_parser_t *mut_parser) {
+static void _advance(ar_expression_parser_t *mut_parser) {
     if (!mut_parser || !mut_parser->own_expression) {
         return;
     }
@@ -141,7 +141,7 @@ static void _advance(expression_parser_t *mut_parser) {
 /**
  * Consume a character if it matches expected.
  */
-static bool _consume_char(expression_parser_t *mut_parser, char expected) {
+static bool _consume_char(ar_expression_parser_t *mut_parser, char expected) {
     if (_peek_char(mut_parser, expected)) {
         _advance(mut_parser);
         return true;
@@ -152,7 +152,7 @@ static bool _consume_char(expression_parser_t *mut_parser, char expected) {
 /**
  * Set an error message.
  */
-static void _set_error(expression_parser_t *mut_parser, const char *ref_message) {
+static void _set_error(ar_expression_parser_t *mut_parser, const char *ref_message) {
     if (!mut_parser || !ref_message) {
         return;
     }
@@ -173,7 +173,7 @@ static void _set_error(expression_parser_t *mut_parser, const char *ref_message)
 /**
  * Parse a literal (integer, double, or string).
  */
-expression_ast_t* ar__expression_parser__parse_literal(expression_parser_t *mut_parser) {
+ar_expression_ast_t* ar__expression_parser__parse_literal(ar_expression_parser_t *mut_parser) {
     if (!mut_parser) {
         return NULL;
     }
@@ -208,7 +208,7 @@ expression_ast_t* ar__expression_parser__parse_literal(expression_parser_t *mut_
         
         _advance(mut_parser); // Skip closing quote
         
-        expression_ast_t *own_node = ar__expression_ast__create_literal_string(own_string);
+        ar_expression_ast_t *own_node = ar__expression_ast__create_literal_string(own_string);
         AR__HEAP__FREE(own_string);
         
         if (!own_node) {
@@ -255,7 +255,7 @@ expression_ast_t* ar__expression_parser__parse_literal(expression_parser_t *mut_
         strncpy(own_number, mut_parser->own_expression + start, length);
         own_number[length] = '\0';
         
-        expression_ast_t *own_node = NULL;
+        ar_expression_ast_t *own_node = NULL;
         
         if (has_dot) {
             // Parse as double
@@ -301,7 +301,7 @@ expression_ast_t* ar__expression_parser__parse_literal(expression_parser_t *mut_
 /**
  * Parse a memory access expression.
  */
-expression_ast_t* ar__expression_parser__parse_memory_access(expression_parser_t *mut_parser) {
+ar_expression_ast_t* ar__expression_parser__parse_memory_access(ar_expression_parser_t *mut_parser) {
     if (!mut_parser) {
         return NULL;
     }
@@ -418,7 +418,7 @@ expression_ast_t* ar__expression_parser__parse_memory_access(expression_parser_t
     }
     
     // Create AST node
-    expression_ast_t *own_node = ar__expression_ast__create_memory_access(base, path_array, path_count);
+    ar_expression_ast_t *own_node = ar__expression_ast__create_memory_access(base, path_array, path_count);
     
     // Clean up the arrays
     if (own_items) {
@@ -445,7 +445,7 @@ expression_ast_t* ar__expression_parser__parse_memory_access(expression_parser_t
 /**
  * Parse a primary expression (literal, memory access, or parenthesized expression).
  */
-static expression_ast_t* _parse_primary(expression_parser_t *mut_parser) {
+static ar_expression_ast_t* _parse_primary(ar_expression_parser_t *mut_parser) {
     if (!mut_parser) {
         return NULL;
     }
@@ -454,7 +454,7 @@ static expression_ast_t* _parse_primary(expression_parser_t *mut_parser) {
     
     // Parenthesized expression
     if (_consume_char(mut_parser, '(')) {
-        expression_ast_t *own_expr = _parse_equality(mut_parser);
+        ar_expression_ast_t *own_expr = _parse_equality(mut_parser);
         if (!own_expr) {
             return NULL;
         }
@@ -470,7 +470,7 @@ static expression_ast_t* _parse_primary(expression_parser_t *mut_parser) {
     }
     
     // Try memory access first
-    expression_ast_t *own_node = ar__expression_parser__parse_memory_access(mut_parser);
+    ar_expression_ast_t *own_node = ar__expression_parser__parse_memory_access(mut_parser);
     if (own_node) {
         return own_node;
     }
@@ -488,12 +488,12 @@ static expression_ast_t* _parse_primary(expression_parser_t *mut_parser) {
 /**
  * Parse a term (multiplication and division).
  */
-static expression_ast_t* _parse_term(expression_parser_t *mut_parser) {
+static ar_expression_ast_t* _parse_term(ar_expression_parser_t *mut_parser) {
     if (!mut_parser) {
         return NULL;
     }
     
-    expression_ast_t *own_left = _parse_primary(mut_parser);
+    ar_expression_ast_t *own_left = _parse_primary(mut_parser);
     if (!own_left) {
         return NULL;
     }
@@ -501,24 +501,24 @@ static expression_ast_t* _parse_term(expression_parser_t *mut_parser) {
     while (true) {
         _skip_whitespace(mut_parser);
         
-        binary_operator_t op;
+        ar_binary_operator_t op;
         if (_peek_char(mut_parser, '*')) {
-            op = OP_MULTIPLY;
+            op = AR_OP__MULTIPLY;
         } else if (_peek_char(mut_parser, '/')) {
-            op = OP_DIVIDE;
+            op = AR_OP__DIVIDE;
         } else {
             break;
         }
         
         _advance(mut_parser); // Consume operator
         
-        expression_ast_t *own_right = _parse_primary(mut_parser);
+        ar_expression_ast_t *own_right = _parse_primary(mut_parser);
         if (!own_right) {
             ar__expression_ast__destroy(own_left);
             return NULL;
         }
         
-        expression_ast_t *own_new_left = ar__expression_ast__create_binary_op(op, own_left, own_right);
+        ar_expression_ast_t *own_new_left = ar__expression_ast__create_binary_op(op, own_left, own_right);
         if (!own_new_left) {
             // own_left and own_right are already destroyed by create_binary_op
             _set_error(mut_parser, "Failed to create binary operation AST node");
@@ -534,12 +534,12 @@ static expression_ast_t* _parse_term(expression_parser_t *mut_parser) {
 /**
  * Parse an additive expression (addition and subtraction).
  */
-static expression_ast_t* _parse_additive(expression_parser_t *mut_parser) {
+static ar_expression_ast_t* _parse_additive(ar_expression_parser_t *mut_parser) {
     if (!mut_parser) {
         return NULL;
     }
     
-    expression_ast_t *own_left = _parse_term(mut_parser);
+    ar_expression_ast_t *own_left = _parse_term(mut_parser);
     if (!own_left) {
         return NULL;
     }
@@ -547,24 +547,24 @@ static expression_ast_t* _parse_additive(expression_parser_t *mut_parser) {
     while (true) {
         _skip_whitespace(mut_parser);
         
-        binary_operator_t op;
+        ar_binary_operator_t op;
         if (_peek_char(mut_parser, '+')) {
-            op = OP_ADD;
+            op = AR_OP__ADD;
         } else if (_peek_char(mut_parser, '-')) {
-            op = OP_SUBTRACT;
+            op = AR_OP__SUBTRACT;
         } else {
             break;
         }
         
         _advance(mut_parser); // Consume operator
         
-        expression_ast_t *own_right = _parse_term(mut_parser);
+        ar_expression_ast_t *own_right = _parse_term(mut_parser);
         if (!own_right) {
             ar__expression_ast__destroy(own_left);
             return NULL;
         }
         
-        expression_ast_t *own_new_left = ar__expression_ast__create_binary_op(op, own_left, own_right);
+        ar_expression_ast_t *own_new_left = ar__expression_ast__create_binary_op(op, own_left, own_right);
         if (!own_new_left) {
             // own_left and own_right are already destroyed by create_binary_op
             _set_error(mut_parser, "Failed to create binary operation AST node");
@@ -580,12 +580,12 @@ static expression_ast_t* _parse_additive(expression_parser_t *mut_parser) {
 /**
  * Parse a relational expression (<, <=, >, >=).
  */
-static expression_ast_t* _parse_relational(expression_parser_t *mut_parser) {
+static ar_expression_ast_t* _parse_relational(ar_expression_parser_t *mut_parser) {
     if (!mut_parser) {
         return NULL;
     }
     
-    expression_ast_t *own_left = _parse_additive(mut_parser);
+    ar_expression_ast_t *own_left = _parse_additive(mut_parser);
     if (!own_left) {
         return NULL;
     }
@@ -593,35 +593,35 @@ static expression_ast_t* _parse_relational(expression_parser_t *mut_parser) {
     while (true) {
         _skip_whitespace(mut_parser);
         
-        binary_operator_t op;
+        ar_binary_operator_t op;
         if (_peek_char(mut_parser, '<')) {
             _advance(mut_parser);
             if (_consume_char(mut_parser, '=')) {
-                op = OP_LESS_EQ;
+                op = AR_OP__LESS_EQ;
             } else if (_consume_char(mut_parser, '>')) {
                 // <> for not equal
-                op = OP_NOT_EQUAL;
+                op = AR_OP__NOT_EQUAL;
             } else {
-                op = OP_LESS;
+                op = AR_OP__LESS;
             }
         } else if (_peek_char(mut_parser, '>')) {
             _advance(mut_parser);
             if (_consume_char(mut_parser, '=')) {
-                op = OP_GREATER_EQ;
+                op = AR_OP__GREATER_EQ;
             } else {
-                op = OP_GREATER;
+                op = AR_OP__GREATER;
             }
         } else {
             break;
         }
         
-        expression_ast_t *own_right = _parse_additive(mut_parser);
+        ar_expression_ast_t *own_right = _parse_additive(mut_parser);
         if (!own_right) {
             ar__expression_ast__destroy(own_left);
             return NULL;
         }
         
-        expression_ast_t *own_new_left = ar__expression_ast__create_binary_op(op, own_left, own_right);
+        ar_expression_ast_t *own_new_left = ar__expression_ast__create_binary_op(op, own_left, own_right);
         if (!own_new_left) {
             // own_left and own_right are already destroyed by create_binary_op
             _set_error(mut_parser, "Failed to create binary operation AST node");
@@ -637,12 +637,12 @@ static expression_ast_t* _parse_relational(expression_parser_t *mut_parser) {
 /**
  * Parse an equality expression (=, <>).
  */
-static expression_ast_t* _parse_equality(expression_parser_t *mut_parser) {
+static ar_expression_ast_t* _parse_equality(ar_expression_parser_t *mut_parser) {
     if (!mut_parser) {
         return NULL;
     }
     
-    expression_ast_t *own_left = _parse_relational(mut_parser);
+    ar_expression_ast_t *own_left = _parse_relational(mut_parser);
     if (!own_left) {
         return NULL;
     }
@@ -650,21 +650,21 @@ static expression_ast_t* _parse_equality(expression_parser_t *mut_parser) {
     while (true) {
         _skip_whitespace(mut_parser);
         
-        binary_operator_t op;
+        ar_binary_operator_t op;
         if (_peek_char(mut_parser, '=')) {
             _advance(mut_parser);
-            op = OP_EQUAL;
+            op = AR_OP__EQUAL;
         } else {
             break;
         }
         
-        expression_ast_t *own_right = _parse_relational(mut_parser);
+        ar_expression_ast_t *own_right = _parse_relational(mut_parser);
         if (!own_right) {
             ar__expression_ast__destroy(own_left);
             return NULL;
         }
         
-        expression_ast_t *own_new_left = ar__expression_ast__create_binary_op(op, own_left, own_right);
+        ar_expression_ast_t *own_new_left = ar__expression_ast__create_binary_op(op, own_left, own_right);
         if (!own_new_left) {
             // own_left and own_right are already destroyed by create_binary_op
             _set_error(mut_parser, "Failed to create binary operation AST node");
@@ -680,7 +680,7 @@ static expression_ast_t* _parse_equality(expression_parser_t *mut_parser) {
 /**
  * Parse an arithmetic expression.
  */
-expression_ast_t* ar__expression_parser__parse_arithmetic(expression_parser_t *mut_parser) {
+ar_expression_ast_t* ar__expression_parser__parse_arithmetic(ar_expression_parser_t *mut_parser) {
     // Arithmetic expressions are handled by the additive parser
     return _parse_additive(mut_parser);
 }
@@ -688,7 +688,7 @@ expression_ast_t* ar__expression_parser__parse_arithmetic(expression_parser_t *m
 /**
  * Parse a comparison expression.
  */
-expression_ast_t* ar__expression_parser__parse_comparison(expression_parser_t *mut_parser) {
+ar_expression_ast_t* ar__expression_parser__parse_comparison(ar_expression_parser_t *mut_parser) {
     // Comparison expressions are handled by the equality parser
     return _parse_equality(mut_parser);
 }
@@ -696,13 +696,13 @@ expression_ast_t* ar__expression_parser__parse_comparison(expression_parser_t *m
 /**
  * Parse an expression (main entry point).
  */
-expression_ast_t* ar__expression_parser__parse_expression(expression_parser_t *mut_parser) {
+ar_expression_ast_t* ar__expression_parser__parse_expression(ar_expression_parser_t *mut_parser) {
     if (!mut_parser) {
         return NULL;
     }
     
     // Start with equality (lowest precedence)
-    expression_ast_t *own_expr = _parse_equality(mut_parser);
+    ar_expression_ast_t *own_expr = _parse_equality(mut_parser);
     if (!own_expr) {
         return NULL;
     }

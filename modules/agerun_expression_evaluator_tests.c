@@ -92,7 +92,7 @@ static void test_evaluate_literal_int(void) {
     assert(evaluator != NULL);
     
     // Given an integer literal AST node
-    expression_ast_t *ast = ar__expression_ast__create_literal_int(42);
+    ar_expression_ast_t *ast = ar__expression_ast__create_literal_int(42);
     assert(ast != NULL);
     
     // When evaluating the integer literal
@@ -124,7 +124,7 @@ static void test_evaluate_literal_int_wrong_type(void) {
     assert(evaluator != NULL);
     
     // Given a string literal AST node (wrong type)
-    expression_ast_t *ast = ar__expression_ast__create_literal_string("hello");
+    ar_expression_ast_t *ast = ar__expression_ast__create_literal_string("hello");
     assert(ast != NULL);
     
     // When evaluating with integer evaluator
@@ -153,7 +153,7 @@ static void test_evaluate_literal_double(void) {
     assert(evaluator != NULL);
     
     // Given a double literal AST node
-    expression_ast_t *ast = ar__expression_ast__create_literal_double(3.14);
+    ar_expression_ast_t *ast = ar__expression_ast__create_literal_double(3.14);
     assert(ast != NULL);
     
     // When evaluating the double literal
@@ -185,7 +185,7 @@ static void test_evaluate_literal_double_wrong_type(void) {
     assert(evaluator != NULL);
     
     // Given an integer literal AST node (wrong type)
-    expression_ast_t *ast = ar__expression_ast__create_literal_int(42);
+    ar_expression_ast_t *ast = ar__expression_ast__create_literal_int(42);
     assert(ast != NULL);
     
     // When evaluating with double evaluator
@@ -214,7 +214,7 @@ static void test_evaluate_literal_string(void) {
     assert(evaluator != NULL);
     
     // Given a string literal AST node
-    expression_ast_t *ast = ar__expression_ast__create_literal_string("hello world");
+    ar_expression_ast_t *ast = ar__expression_ast__create_literal_string("hello world");
     assert(ast != NULL);
     
     // When evaluating the string literal
@@ -246,7 +246,7 @@ static void test_evaluate_literal_string_wrong_type(void) {
     assert(evaluator != NULL);
     
     // Given an integer literal AST node (wrong type)
-    expression_ast_t *ast = ar__expression_ast__create_literal_int(42);
+    ar_expression_ast_t *ast = ar__expression_ast__create_literal_int(42);
     assert(ast != NULL);
     
     // When evaluating with string evaluator
@@ -275,7 +275,7 @@ static void test_evaluate_literal_string_empty(void) {
     assert(evaluator != NULL);
     
     // Given an empty string literal AST node
-    expression_ast_t *ast = ar__expression_ast__create_literal_string("");
+    ar_expression_ast_t *ast = ar__expression_ast__create_literal_string("");
     assert(ast != NULL);
     
     // When evaluating the empty string literal
@@ -310,7 +310,7 @@ static void test_evaluate_memory_access(void) {
     
     // Given a memory access AST node for "memory.x"
     const char *path[] = {"x"};
-    expression_ast_t *ast = ar__expression_ast__create_memory_access("memory", path, 1);
+    ar_expression_ast_t *ast = ar__expression_ast__create_memory_access("memory", path, 1);
     assert(ast != NULL);
     
     // When evaluating the memory access
@@ -341,7 +341,7 @@ static void test_evaluate_memory_access_wrong_type(void) {
     assert(evaluator != NULL);
     
     // Given an integer literal AST node (wrong type)
-    expression_ast_t *ast = ar__expression_ast__create_literal_int(42);
+    ar_expression_ast_t *ast = ar__expression_ast__create_literal_int(42);
     assert(ast != NULL);
     
     // When evaluating with memory access evaluator
@@ -376,7 +376,7 @@ static void test_evaluate_memory_access_nested(void) {
     
     // Given a memory access AST node for "memory.user.name"
     const char *path[] = {"user", "name"};
-    expression_ast_t *ast = ar__expression_ast__create_memory_access("memory", path, 2);
+    ar_expression_ast_t *ast = ar__expression_ast__create_memory_access("memory", path, 2);
     assert(ast != NULL);
     
     // When evaluating the nested memory access
@@ -408,7 +408,7 @@ static void test_evaluate_memory_access_missing(void) {
     
     // Given a memory access AST node for "memory.missing"
     const char *path[] = {"missing"};
-    expression_ast_t *ast = ar__expression_ast__create_memory_access("memory", path, 1);
+    ar_expression_ast_t *ast = ar__expression_ast__create_memory_access("memory", path, 1);
     assert(ast != NULL);
     
     // When evaluating the memory access for a missing key
@@ -437,9 +437,9 @@ static void test_evaluate_binary_op_add_integers(void) {
     assert(evaluator != NULL);
     
     // Given a binary addition AST node for "5 + 3"
-    expression_ast_t *left = ar__expression_ast__create_literal_int(5);
-    expression_ast_t *right = ar__expression_ast__create_literal_int(3);
-    expression_ast_t *ast = ar__expression_ast__create_binary_op(OP_ADD, left, right);
+    ar_expression_ast_t *left = ar__expression_ast__create_literal_int(5);
+    ar_expression_ast_t *right = ar__expression_ast__create_literal_int(3);
+    ar_expression_ast_t *ast = ar__expression_ast__create_binary_op(AR_OP__ADD, left, right);
     assert(ast != NULL);
     
     // When evaluating the binary operation
@@ -471,9 +471,9 @@ static void test_evaluate_binary_op_multiply_doubles(void) {
     assert(evaluator != NULL);
     
     // Given a binary multiplication AST node for "2.5 * 4.0"
-    expression_ast_t *left = ar__expression_ast__create_literal_double(2.5);
-    expression_ast_t *right = ar__expression_ast__create_literal_double(4.0);
-    expression_ast_t *ast = ar__expression_ast__create_binary_op(OP_MULTIPLY, left, right);
+    ar_expression_ast_t *left = ar__expression_ast__create_literal_double(2.5);
+    ar_expression_ast_t *right = ar__expression_ast__create_literal_double(4.0);
+    ar_expression_ast_t *ast = ar__expression_ast__create_binary_op(AR_OP__MULTIPLY, left, right);
     assert(ast != NULL);
     
     // When evaluating the binary operation
@@ -505,9 +505,9 @@ static void test_evaluate_binary_op_concatenate_strings(void) {
     assert(evaluator != NULL);
     
     // Given a binary addition AST node for "Hello" + " World"
-    expression_ast_t *left = ar__expression_ast__create_literal_string("Hello");
-    expression_ast_t *right = ar__expression_ast__create_literal_string(" World");
-    expression_ast_t *ast = ar__expression_ast__create_binary_op(OP_ADD, left, right);
+    ar_expression_ast_t *left = ar__expression_ast__create_literal_string("Hello");
+    ar_expression_ast_t *right = ar__expression_ast__create_literal_string(" World");
+    ar_expression_ast_t *ast = ar__expression_ast__create_binary_op(AR_OP__ADD, left, right);
     assert(ast != NULL);
     
     // When evaluating the binary operation
@@ -539,7 +539,7 @@ static void test_evaluate_binary_op_wrong_type(void) {
     assert(evaluator != NULL);
     
     // Given an integer literal AST node (wrong type)
-    expression_ast_t *ast = ar__expression_ast__create_literal_int(42);
+    ar_expression_ast_t *ast = ar__expression_ast__create_literal_int(42);
     assert(ast != NULL);
     
     // When evaluating with binary op evaluator
@@ -572,18 +572,18 @@ static void test_evaluate_binary_op_nested(void) {
     // Given a nested binary operation AST node for "(memory.x + 2) * memory.y"
     // First create memory.x
     const char *path_x[] = {"x"};
-    expression_ast_t *mem_x = ar__expression_ast__create_memory_access("memory", path_x, 1);
+    ar_expression_ast_t *mem_x = ar__expression_ast__create_memory_access("memory", path_x, 1);
     
     // Create memory.x + 2
-    expression_ast_t *two = ar__expression_ast__create_literal_int(2);
-    expression_ast_t *add = ar__expression_ast__create_binary_op(OP_ADD, mem_x, two);
+    ar_expression_ast_t *two = ar__expression_ast__create_literal_int(2);
+    ar_expression_ast_t *add = ar__expression_ast__create_binary_op(AR_OP__ADD, mem_x, two);
     
     // Create memory.y
     const char *path_y[] = {"y"};
-    expression_ast_t *mem_y = ar__expression_ast__create_memory_access("memory", path_y, 1);
+    ar_expression_ast_t *mem_y = ar__expression_ast__create_memory_access("memory", path_y, 1);
     
     // Create (memory.x + 2) * memory.y
-    expression_ast_t *ast = ar__expression_ast__create_binary_op(OP_MULTIPLY, add, mem_y);
+    ar_expression_ast_t *ast = ar__expression_ast__create_binary_op(AR_OP__MULTIPLY, add, mem_y);
     assert(ast != NULL);
     
     // When evaluating the nested binary operation

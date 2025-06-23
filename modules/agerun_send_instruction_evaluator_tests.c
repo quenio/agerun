@@ -18,7 +18,7 @@ static void test_send_instruction_evaluator__create_destroy(void) {
     assert(own_expr_eval != NULL);
     
     // When creating a send instruction evaluator
-    send_instruction_evaluator_t *own_evaluator = ar_send_instruction_evaluator__create(
+    ar_send_instruction_evaluator_t *own_evaluator = ar_send_instruction_evaluator__create(
         own_expr_eval, own_memory
     );
     
@@ -40,15 +40,15 @@ static void test_send_instruction_evaluator__evaluate_with_instance(void) {
     assert(own_expr_eval != NULL);
     
     // When creating a send instruction evaluator
-    send_instruction_evaluator_t *own_evaluator = ar_send_instruction_evaluator__create(
+    ar_send_instruction_evaluator_t *own_evaluator = ar_send_instruction_evaluator__create(
         own_expr_eval, own_memory
     );
     assert(own_evaluator != NULL);
     
     // When creating a send AST node for "send(0, 42)"
     const char *args[] = {"0", "42"};
-    instruction_ast_t *own_ast = ar__instruction_ast__create_function_call(
-        INST_AST_SEND, "send", args, 2, NULL
+    ar_instruction_ast_t *own_ast = ar__instruction_ast__create_function_call(
+        AR_INST__SEND, "send", args, 2, NULL
     );
     assert(own_ast != NULL);
     
@@ -56,11 +56,11 @@ static void test_send_instruction_evaluator__evaluate_with_instance(void) {
     list_t *own_arg_asts = ar__list__create();
     assert(own_arg_asts != NULL);
     
-    expression_ast_t *own_agent_ast = ar__expression_ast__create_literal_int(0);
+    ar_expression_ast_t *own_agent_ast = ar__expression_ast__create_literal_int(0);
     assert(own_agent_ast != NULL);
     ar__list__add_last(own_arg_asts, own_agent_ast);
     
-    expression_ast_t *own_msg_ast = ar__expression_ast__create_literal_int(42);
+    ar_expression_ast_t *own_msg_ast = ar__expression_ast__create_literal_int(42);
     assert(own_msg_ast != NULL);
     ar__list__add_last(own_arg_asts, own_msg_ast);
     
@@ -88,15 +88,15 @@ static void test_instruction_evaluator__evaluate_send_integer_message(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
+    ar_send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
         expr_eval, memory
     );
     assert(evaluator != NULL);
     
     // When creating a send AST node for "send(0, 42)"
     const char *args[] = {"0", "42"};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_SEND, "send", args, 2, NULL
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__SEND, "send", args, 2, NULL
     );
     assert(ast != NULL);
     
@@ -104,11 +104,11 @@ static void test_instruction_evaluator__evaluate_send_integer_message(void) {
     list_t *arg_asts = ar__list__create();
     assert(arg_asts != NULL);
     
-    expression_ast_t *agent_ast = ar__expression_ast__create_literal_int(0);
+    ar_expression_ast_t *agent_ast = ar__expression_ast__create_literal_int(0);
     assert(agent_ast != NULL);
     ar__list__add_last(arg_asts, agent_ast);
     
-    expression_ast_t *msg_ast = ar__expression_ast__create_literal_int(42);
+    ar_expression_ast_t *msg_ast = ar__expression_ast__create_literal_int(42);
     assert(msg_ast != NULL);
     ar__list__add_last(arg_asts, msg_ast);
     
@@ -136,15 +136,15 @@ static void test_instruction_evaluator__evaluate_send_string_message(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
+    ar_send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
         expr_eval, memory
     );
     assert(evaluator != NULL);
     
     // When creating a send AST node for "send(0, \"hello\")"
     const char *args[] = {"0", "\"hello\""};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_SEND, "send", args, 2, NULL
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__SEND, "send", args, 2, NULL
     );
     assert(ast != NULL);
     
@@ -152,11 +152,11 @@ static void test_instruction_evaluator__evaluate_send_string_message(void) {
     list_t *arg_asts = ar__list__create();
     assert(arg_asts != NULL);
     
-    expression_ast_t *agent_ast = ar__expression_ast__create_literal_int(0);
+    ar_expression_ast_t *agent_ast = ar__expression_ast__create_literal_int(0);
     assert(agent_ast != NULL);
     ar__list__add_last(arg_asts, agent_ast);
     
-    expression_ast_t *msg_ast = ar__expression_ast__create_literal_string("hello");
+    ar_expression_ast_t *msg_ast = ar__expression_ast__create_literal_string("hello");
     assert(msg_ast != NULL);
     ar__list__add_last(arg_asts, msg_ast);
     
@@ -184,15 +184,15 @@ static void test_instruction_evaluator__evaluate_send_with_result(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
+    ar_send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
         expr_eval, memory
     );
     assert(evaluator != NULL);
     
     // When creating a send AST node for "memory.result := send(0, \"test\")"
     const char *args[] = {"0", "\"test\""};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_SEND, "send", args, 2, "memory.result"
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__SEND, "send", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -200,11 +200,11 @@ static void test_instruction_evaluator__evaluate_send_with_result(void) {
     list_t *arg_asts = ar__list__create();
     assert(arg_asts != NULL);
     
-    expression_ast_t *agent_ast = ar__expression_ast__create_literal_int(0);
+    ar_expression_ast_t *agent_ast = ar__expression_ast__create_literal_int(0);
     assert(agent_ast != NULL);
     ar__list__add_last(arg_asts, agent_ast);
     
-    expression_ast_t *msg_ast = ar__expression_ast__create_literal_string("test");
+    ar_expression_ast_t *msg_ast = ar__expression_ast__create_literal_string("test");
     assert(msg_ast != NULL);
     ar__list__add_last(arg_asts, msg_ast);
     
@@ -241,15 +241,15 @@ static void test_instruction_evaluator__evaluate_send_memory_reference(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
+    ar_send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
         expr_eval, memory
     );
     assert(evaluator != NULL);
     
     // When creating a send AST node for "send(0, memory.msg)"
     const char *args[] = {"0", "memory.msg"};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_SEND, "send", args, 2, NULL
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__SEND, "send", args, 2, NULL
     );
     assert(ast != NULL);
     
@@ -257,12 +257,12 @@ static void test_instruction_evaluator__evaluate_send_memory_reference(void) {
     list_t *arg_asts = ar__list__create();
     assert(arg_asts != NULL);
     
-    expression_ast_t *agent_ast = ar__expression_ast__create_literal_int(0);
+    ar_expression_ast_t *agent_ast = ar__expression_ast__create_literal_int(0);
     assert(agent_ast != NULL);
     ar__list__add_last(arg_asts, agent_ast);
     
     const char *msg_path[] = {"msg"};
-    expression_ast_t *msg_ast = ar__expression_ast__create_memory_access("memory", msg_path, 1);
+    ar_expression_ast_t *msg_ast = ar__expression_ast__create_memory_access("memory", msg_path, 1);
     assert(msg_ast != NULL);
     ar__list__add_last(arg_asts, msg_ast);
     
@@ -290,15 +290,15 @@ static void test_instruction_evaluator__evaluate_send_invalid_args(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
+    ar_send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
         expr_eval, memory
     );
     assert(evaluator != NULL);
     
     // When creating a send AST node with only one argument
     const char *args[] = {"0"};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_SEND, "send", args, 1, NULL
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__SEND, "send", args, 1, NULL
     );
     assert(ast != NULL);
     
@@ -306,7 +306,7 @@ static void test_instruction_evaluator__evaluate_send_invalid_args(void) {
     list_t *arg_asts = ar__list__create();
     assert(arg_asts != NULL);
     
-    expression_ast_t *agent_ast = ar__expression_ast__create_literal_int(0);
+    ar_expression_ast_t *agent_ast = ar__expression_ast__create_literal_int(0);
     assert(agent_ast != NULL);
     ar__list__add_last(arg_asts, agent_ast);
     

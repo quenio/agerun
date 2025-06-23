@@ -28,7 +28,7 @@ typedef struct ar_method_instruction_evaluator_s ar_method_instruction_evaluator
  * @note Ownership: Returns an owned value that caller must destroy
  */
 ar_method_instruction_evaluator_t* ar_method_instruction_evaluator__create(
-    expression_evaluator_t *ref_expr_evaluator,
+    ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
 
@@ -57,7 +57,7 @@ void ar_method_instruction_evaluator__destroy(
  */
 bool ar_method_instruction_evaluator__evaluate(
     ar_method_instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
+    const ar_instruction_ast_t *ref_ast
 );
 
 

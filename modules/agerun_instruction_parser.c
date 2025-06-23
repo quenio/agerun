@@ -225,14 +225,14 @@ static void _clear_error(instruction_parser_t *mut_parser) {
 /**
  * Internal: Extract and dispatch to appropriate parser based on function name.
  */
-static instruction_ast_t* _dispatch_function(instruction_parser_t *mut_parser, 
+static ar_instruction_ast_t* _dispatch_function(instruction_parser_t *mut_parser, 
                                            const char *ref_instruction,
                                            const char *func_name, 
                                            size_t func_len,
                                            char *own_result_path) {
     // Check for send
     if (func_len == 4 && strncmp(func_name, "send", 4) == 0) {
-        instruction_ast_t *own_ast = ar_send_instruction_parser__parse(
+        ar_instruction_ast_t *own_ast = ar_send_instruction_parser__parse(
             mut_parser->own_send_parser,
             ref_instruction,
             own_result_path
@@ -249,7 +249,7 @@ static instruction_ast_t* _dispatch_function(instruction_parser_t *mut_parser,
     
     // Check for if
     if (func_len == 2 && strncmp(func_name, "if", 2) == 0) {
-        instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(
+        ar_instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(
             mut_parser->own_condition_parser,
             ref_instruction,
             own_result_path
@@ -266,7 +266,7 @@ static instruction_ast_t* _dispatch_function(instruction_parser_t *mut_parser,
     
     // Check for parse
     if (func_len == 5 && strncmp(func_name, "parse", 5) == 0) {
-        instruction_ast_t *own_ast = ar_parse_instruction_parser__parse(
+        ar_instruction_ast_t *own_ast = ar_parse_instruction_parser__parse(
             mut_parser->own_parse_parser,
             ref_instruction,
             own_result_path
@@ -283,7 +283,7 @@ static instruction_ast_t* _dispatch_function(instruction_parser_t *mut_parser,
     
     // Check for build
     if (func_len == 5 && strncmp(func_name, "build", 5) == 0) {
-        instruction_ast_t *own_ast = ar_build_instruction_parser__parse(
+        ar_instruction_ast_t *own_ast = ar_build_instruction_parser__parse(
             mut_parser->own_build_parser,
             ref_instruction,
             own_result_path
@@ -300,7 +300,7 @@ static instruction_ast_t* _dispatch_function(instruction_parser_t *mut_parser,
     
     // Check for method
     if (func_len == 6 && strncmp(func_name, "method", 6) == 0) {
-        instruction_ast_t *own_ast = ar_method_instruction_parser__parse(
+        ar_instruction_ast_t *own_ast = ar_method_instruction_parser__parse(
             mut_parser->own_method_parser,
             ref_instruction,
             own_result_path
@@ -317,7 +317,7 @@ static instruction_ast_t* _dispatch_function(instruction_parser_t *mut_parser,
     
     // Check for agent
     if (func_len == 5 && strncmp(func_name, "agent", 5) == 0) {
-        instruction_ast_t *own_ast = ar_agent_instruction_parser__parse(
+        ar_instruction_ast_t *own_ast = ar_agent_instruction_parser__parse(
             mut_parser->own_agent_parser,
             ref_instruction,
             own_result_path
@@ -335,7 +335,7 @@ static instruction_ast_t* _dispatch_function(instruction_parser_t *mut_parser,
     // Check for destroy
     if (func_len == 7 && strncmp(func_name, "destroy", 7) == 0) {
         // Try destroy method first
-        instruction_ast_t *own_ast = ar_destroy_method_instruction_parser__parse(
+        ar_instruction_ast_t *own_ast = ar_destroy_method_instruction_parser__parse(
             mut_parser->own_destroy_method_parser,
             ref_instruction,
             own_result_path
@@ -370,7 +370,7 @@ static instruction_ast_t* _dispatch_function(instruction_parser_t *mut_parser,
 /**
  * Parse an instruction using the unified parser facade.
  */
-instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser, const char *ref_instruction) {
+ar_instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser, const char *ref_instruction) {
     if (!mut_parser || !ref_instruction) {
         return NULL;
     }
@@ -431,13 +431,13 @@ instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser
             }
             
             // Dispatch to appropriate parser
-            instruction_ast_t *own_ast = _dispatch_function(mut_parser, ref_instruction, 
+            ar_instruction_ast_t *own_ast = _dispatch_function(mut_parser, ref_instruction, 
                                                            func_start, func_len, own_result_path);
             AR__HEAP__FREE(own_result_path);
             return own_ast;
         } else {
             // Pure assignment
-            instruction_ast_t *own_ast = ar_assignment_instruction_parser__parse(
+            ar_instruction_ast_t *own_ast = ar_assignment_instruction_parser__parse(
                 mut_parser->own_assignment_parser, 
                 ref_instruction
             );

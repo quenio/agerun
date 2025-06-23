@@ -17,7 +17,7 @@ struct expression_evaluator_s {
     data_t *ref_context;   /**< Optional context map (borrowed, may be NULL) */
 };
 
-expression_evaluator_t* ar__expression_evaluator__create(
+ar_expression_evaluator_t* ar__expression_evaluator__create(
     data_t *ref_memory,
     data_t *ref_context)
 {
@@ -26,7 +26,7 @@ expression_evaluator_t* ar__expression_evaluator__create(
         return NULL;
     }
 
-    expression_evaluator_t *evaluator = AR__HEAP__MALLOC(sizeof(expression_evaluator_t), "expression_evaluator");
+    ar_expression_evaluator_t *evaluator = AR__HEAP__MALLOC(sizeof(ar_expression_evaluator_t), "expression_evaluator");
     if (!evaluator) {
         ar__io__error("ar__expression_evaluator__create: Failed to allocate evaluator");
         return NULL;
@@ -38,7 +38,7 @@ expression_evaluator_t* ar__expression_evaluator__create(
     return evaluator;
 }
 
-void ar__expression_evaluator__destroy(expression_evaluator_t *own_evaluator)
+void ar__expression_evaluator__destroy(ar_expression_evaluator_t *own_evaluator)
 {
     if (own_evaluator) {
         AR__HEAP__FREE(own_evaluator);
@@ -46,8 +46,8 @@ void ar__expression_evaluator__destroy(expression_evaluator_t *own_evaluator)
 }
 
 data_t* ar__expression_evaluator__evaluate_literal_int(
-    expression_evaluator_t *mut_evaluator,
-    const expression_ast_t *ref_node)
+    ar_expression_evaluator_t *mut_evaluator,
+    const ar_expression_ast_t *ref_node)
 {
     if (!mut_evaluator || !ref_node) {
         ar__io__error("ar__expression_evaluator__evaluate_literal_int: NULL evaluator or node");
@@ -55,7 +55,7 @@ data_t* ar__expression_evaluator__evaluate_literal_int(
     }
     
     // Check if the node is an integer literal
-    if (ar__expression_ast__get_type(ref_node) != EXPR_AST_LITERAL_INT) {
+    if (ar__expression_ast__get_type(ref_node) != AR_EXPR__LITERAL_INT) {
         // Not an error, just not the right type
         return NULL;
     }
@@ -66,8 +66,8 @@ data_t* ar__expression_evaluator__evaluate_literal_int(
 }
 
 data_t* ar__expression_evaluator__evaluate_literal_double(
-    expression_evaluator_t *mut_evaluator,
-    const expression_ast_t *ref_node)
+    ar_expression_evaluator_t *mut_evaluator,
+    const ar_expression_ast_t *ref_node)
 {
     if (!mut_evaluator || !ref_node) {
         ar__io__error("ar__expression_evaluator__evaluate_literal_double: NULL evaluator or node");
@@ -75,7 +75,7 @@ data_t* ar__expression_evaluator__evaluate_literal_double(
     }
     
     // Check if the node is a double literal
-    if (ar__expression_ast__get_type(ref_node) != EXPR_AST_LITERAL_DOUBLE) {
+    if (ar__expression_ast__get_type(ref_node) != AR_EXPR__LITERAL_DOUBLE) {
         // Not an error, just not the right type
         return NULL;
     }
@@ -86,8 +86,8 @@ data_t* ar__expression_evaluator__evaluate_literal_double(
 }
 
 data_t* ar__expression_evaluator__evaluate_literal_string(
-    expression_evaluator_t *mut_evaluator,
-    const expression_ast_t *ref_node)
+    ar_expression_evaluator_t *mut_evaluator,
+    const ar_expression_ast_t *ref_node)
 {
     if (!mut_evaluator || !ref_node) {
         ar__io__error("ar__expression_evaluator__evaluate_literal_string: NULL evaluator or node");
@@ -95,7 +95,7 @@ data_t* ar__expression_evaluator__evaluate_literal_string(
     }
     
     // Check if the node is a string literal
-    if (ar__expression_ast__get_type(ref_node) != EXPR_AST_LITERAL_STRING) {
+    if (ar__expression_ast__get_type(ref_node) != AR_EXPR__LITERAL_STRING) {
         // Not an error, just not the right type
         return NULL;
     }
@@ -106,8 +106,8 @@ data_t* ar__expression_evaluator__evaluate_literal_string(
 }
 
 data_t* ar__expression_evaluator__evaluate_memory_access(
-    expression_evaluator_t *mut_evaluator,
-    const expression_ast_t *ref_node)
+    ar_expression_evaluator_t *mut_evaluator,
+    const ar_expression_ast_t *ref_node)
 {
     if (!mut_evaluator || !ref_node) {
         ar__io__error("ar__expression_evaluator__evaluate_memory_access: NULL evaluator or node");
@@ -115,7 +115,7 @@ data_t* ar__expression_evaluator__evaluate_memory_access(
     }
     
     // Check if the node is a memory access
-    if (ar__expression_ast__get_type(ref_node) != EXPR_AST_MEMORY_ACCESS) {
+    if (ar__expression_ast__get_type(ref_node) != AR_EXPR__MEMORY_ACCESS) {
         // Not an error, just not the right type
         return NULL;
     }
@@ -177,21 +177,21 @@ data_t* ar__expression_evaluator__evaluate_memory_access(
  * Helper function to evaluate any expression AST node
  */
 static data_t* _evaluate_expression(
-    expression_evaluator_t *mut_evaluator,
-    const expression_ast_t *ref_node)
+    ar_expression_evaluator_t *mut_evaluator,
+    const ar_expression_ast_t *ref_node)
 {
     if (!ref_node) return NULL;
     
-    expression_ast_type_t type = ar__expression_ast__get_type(ref_node);
+    ar_expression_ast_type_t type = ar__expression_ast__get_type(ref_node);
     
     switch (type) {
-        case EXPR_AST_LITERAL_INT:
+        case AR_EXPR__LITERAL_INT:
             return ar__expression_evaluator__evaluate_literal_int(mut_evaluator, ref_node);
-        case EXPR_AST_LITERAL_DOUBLE:
+        case AR_EXPR__LITERAL_DOUBLE:
             return ar__expression_evaluator__evaluate_literal_double(mut_evaluator, ref_node);
-        case EXPR_AST_LITERAL_STRING:
+        case AR_EXPR__LITERAL_STRING:
             return ar__expression_evaluator__evaluate_literal_string(mut_evaluator, ref_node);
-        case EXPR_AST_MEMORY_ACCESS:
+        case AR_EXPR__MEMORY_ACCESS:
             // Memory access returns a reference, we need to make a copy for binary ops
             {
                 data_t *ref_value = ar__expression_evaluator__evaluate_memory_access(mut_evaluator, ref_node);
@@ -210,7 +210,7 @@ static data_t* _evaluate_expression(
                         return NULL;
                 }
             }
-        case EXPR_AST_BINARY_OP:
+        case AR_EXPR__BINARY_OP:
             return ar__expression_evaluator__evaluate_binary_op(mut_evaluator, ref_node);
         default:
             ar__io__error("_evaluate_expression: Unknown expression type");
@@ -219,8 +219,8 @@ static data_t* _evaluate_expression(
 }
 
 data_t* ar__expression_evaluator__evaluate_binary_op(
-    expression_evaluator_t *mut_evaluator,
-    const expression_ast_t *ref_node)
+    ar_expression_evaluator_t *mut_evaluator,
+    const ar_expression_ast_t *ref_node)
 {
     if (!mut_evaluator || !ref_node) {
         ar__io__error("ar__expression_evaluator__evaluate_binary_op: NULL evaluator or node");
@@ -228,15 +228,15 @@ data_t* ar__expression_evaluator__evaluate_binary_op(
     }
     
     // Check if the node is a binary operation
-    if (ar__expression_ast__get_type(ref_node) != EXPR_AST_BINARY_OP) {
+    if (ar__expression_ast__get_type(ref_node) != AR_EXPR__BINARY_OP) {
         // Not an error, just not the right type
         return NULL;
     }
     
     // Get the operator and operands
-    binary_operator_t op = ar__expression_ast__get_operator(ref_node);
-    const expression_ast_t *left_node = ar__expression_ast__get_left(ref_node);
-    const expression_ast_t *right_node = ar__expression_ast__get_right(ref_node);
+    ar_binary_operator_t op = ar__expression_ast__get_operator(ref_node);
+    const ar_expression_ast_t *left_node = ar__expression_ast__get_left(ref_node);
+    const ar_expression_ast_t *right_node = ar__expression_ast__get_right(ref_node);
     
     if (!left_node || !right_node) {
         ar__io__error("ar__expression_evaluator__evaluate_binary_op: Missing operands");
@@ -270,38 +270,38 @@ data_t* ar__expression_evaluator__evaluate_binary_op(
         int right_val = ar__data__get_integer(right);
         
         switch (op) {
-            case OP_ADD:
+            case AR_OP__ADD:
                 result = ar__data__create_integer(left_val + right_val);
                 break;
-            case OP_SUBTRACT:
+            case AR_OP__SUBTRACT:
                 result = ar__data__create_integer(left_val - right_val);
                 break;
-            case OP_MULTIPLY:
+            case AR_OP__MULTIPLY:
                 result = ar__data__create_integer(left_val * right_val);
                 break;
-            case OP_DIVIDE:
+            case AR_OP__DIVIDE:
                 if (right_val == 0) {
                     ar__io__error("ar__expression_evaluator__evaluate_binary_op: Division by zero");
                 } else {
                     result = ar__data__create_integer(left_val / right_val);
                 }
                 break;
-            case OP_EQUAL:
+            case AR_OP__EQUAL:
                 result = ar__data__create_integer(left_val == right_val ? 1 : 0);
                 break;
-            case OP_NOT_EQUAL:
+            case AR_OP__NOT_EQUAL:
                 result = ar__data__create_integer(left_val != right_val ? 1 : 0);
                 break;
-            case OP_LESS:
+            case AR_OP__LESS:
                 result = ar__data__create_integer(left_val < right_val ? 1 : 0);
                 break;
-            case OP_GREATER:
+            case AR_OP__GREATER:
                 result = ar__data__create_integer(left_val > right_val ? 1 : 0);
                 break;
-            case OP_LESS_EQ:
+            case AR_OP__LESS_EQ:
                 result = ar__data__create_integer(left_val <= right_val ? 1 : 0);
                 break;
-            case OP_GREATER_EQ:
+            case AR_OP__GREATER_EQ:
                 result = ar__data__create_integer(left_val >= right_val ? 1 : 0);
                 break;
             default:
@@ -316,38 +316,38 @@ data_t* ar__expression_evaluator__evaluate_binary_op(
             ar__data__get_double(right) : (double)ar__data__get_integer(right);
         
         switch (op) {
-            case OP_ADD:
+            case AR_OP__ADD:
                 result = ar__data__create_double(left_val + right_val);
                 break;
-            case OP_SUBTRACT:
+            case AR_OP__SUBTRACT:
                 result = ar__data__create_double(left_val - right_val);
                 break;
-            case OP_MULTIPLY:
+            case AR_OP__MULTIPLY:
                 result = ar__data__create_double(left_val * right_val);
                 break;
-            case OP_DIVIDE:
+            case AR_OP__DIVIDE:
                 if (right_val == 0.0) {
                     ar__io__error("ar__expression_evaluator__evaluate_binary_op: Division by zero");
                 } else {
                     result = ar__data__create_double(left_val / right_val);
                 }
                 break;
-            case OP_EQUAL:
+            case AR_OP__EQUAL:
                 result = ar__data__create_integer(left_val == right_val ? 1 : 0);
                 break;
-            case OP_NOT_EQUAL:
+            case AR_OP__NOT_EQUAL:
                 result = ar__data__create_integer(left_val != right_val ? 1 : 0);
                 break;
-            case OP_LESS:
+            case AR_OP__LESS:
                 result = ar__data__create_integer(left_val < right_val ? 1 : 0);
                 break;
-            case OP_GREATER:
+            case AR_OP__GREATER:
                 result = ar__data__create_integer(left_val > right_val ? 1 : 0);
                 break;
-            case OP_LESS_EQ:
+            case AR_OP__LESS_EQ:
                 result = ar__data__create_integer(left_val <= right_val ? 1 : 0);
                 break;
-            case OP_GREATER_EQ:
+            case AR_OP__GREATER_EQ:
                 result = ar__data__create_integer(left_val >= right_val ? 1 : 0);
                 break;
             default:
@@ -360,7 +360,7 @@ data_t* ar__expression_evaluator__evaluate_binary_op(
         const char *right_str = ar__data__get_string(right);
         
         switch (op) {
-            case OP_ADD:
+            case AR_OP__ADD:
                 // String concatenation
                 {
                     size_t len = strlen(left_str) + strlen(right_str) + 1;
@@ -373,10 +373,10 @@ data_t* ar__expression_evaluator__evaluate_binary_op(
                     }
                 }
                 break;
-            case OP_EQUAL:
+            case AR_OP__EQUAL:
                 result = ar__data__create_integer(strcmp(left_str, right_str) == 0 ? 1 : 0);
                 break;
-            case OP_NOT_EQUAL:
+            case AR_OP__NOT_EQUAL:
                 result = ar__data__create_integer(strcmp(left_str, right_str) != 0 ? 1 : 0);
                 break;
             default:

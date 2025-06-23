@@ -16,7 +16,7 @@
 /**
  * Opaque type for expression evaluator
  */
-typedef struct expression_evaluator_s expression_evaluator_t;
+typedef struct expression_evaluator_s ar_expression_evaluator_t;
 
 /**
  * Creates a new expression evaluator
@@ -25,7 +25,7 @@ typedef struct expression_evaluator_s expression_evaluator_t;
  * @return A new evaluator instance
  * @note Ownership: Returns an owned value that caller must destroy
  */
-expression_evaluator_t* ar__expression_evaluator__create(
+ar_expression_evaluator_t* ar__expression_evaluator__create(
     data_t *ref_memory,
     data_t *ref_context
 );
@@ -35,7 +35,7 @@ expression_evaluator_t* ar__expression_evaluator__create(
  * @param own_evaluator The evaluator to destroy
  * @note Ownership: Takes ownership and destroys the evaluator
  */
-void ar__expression_evaluator__destroy(expression_evaluator_t *own_evaluator);
+void ar__expression_evaluator__destroy(ar_expression_evaluator_t *own_evaluator);
 
 /**
  * Evaluates an integer literal AST node
@@ -46,8 +46,8 @@ void ar__expression_evaluator__destroy(expression_evaluator_t *own_evaluator);
  *       Returns NULL if node is not an integer literal
  */
 data_t* ar__expression_evaluator__evaluate_literal_int(
-    expression_evaluator_t *mut_evaluator,
-    const expression_ast_t *ref_node
+    ar_expression_evaluator_t *mut_evaluator,
+    const ar_expression_ast_t *ref_node
 );
 
 /**
@@ -59,8 +59,8 @@ data_t* ar__expression_evaluator__evaluate_literal_int(
  *       Returns NULL if node is not a double literal
  */
 data_t* ar__expression_evaluator__evaluate_literal_double(
-    expression_evaluator_t *mut_evaluator,
-    const expression_ast_t *ref_node
+    ar_expression_evaluator_t *mut_evaluator,
+    const ar_expression_ast_t *ref_node
 );
 
 /**
@@ -72,8 +72,8 @@ data_t* ar__expression_evaluator__evaluate_literal_double(
  *       Returns NULL if node is not a string literal
  */
 data_t* ar__expression_evaluator__evaluate_literal_string(
-    expression_evaluator_t *mut_evaluator,
-    const expression_ast_t *ref_node
+    ar_expression_evaluator_t *mut_evaluator,
+    const ar_expression_ast_t *ref_node
 );
 
 /**
@@ -85,8 +85,8 @@ data_t* ar__expression_evaluator__evaluate_literal_string(
  *       Returns NULL if variable not found or node is not a memory access
  */
 data_t* ar__expression_evaluator__evaluate_memory_access(
-    expression_evaluator_t *mut_evaluator,
-    const expression_ast_t *ref_node
+    ar_expression_evaluator_t *mut_evaluator,
+    const ar_expression_ast_t *ref_node
 );
 
 /**
@@ -98,8 +98,8 @@ data_t* ar__expression_evaluator__evaluate_memory_access(
  *       Returns NULL on evaluation errors or if node is not a binary operation
  */
 data_t* ar__expression_evaluator__evaluate_binary_op(
-    expression_evaluator_t *mut_evaluator,
-    const expression_ast_t *ref_node
+    ar_expression_evaluator_t *mut_evaluator,
+    const ar_expression_ast_t *ref_node
 );
 
 #endif /* AGERUN_EXPRESSION_EVALUATOR_H */

@@ -17,7 +17,7 @@ static void test_assignment_instruction_evaluator__create_destroy(void) {
     assert(own_expr_eval != NULL);
     
     // When creating an assignment instruction evaluator
-    assignment_instruction_evaluator_t *own_evaluator = ar_assignment_instruction_evaluator__create(own_expr_eval, own_memory);
+    ar_assignment_instruction_evaluator_t *own_evaluator = ar_assignment_instruction_evaluator__create(own_expr_eval, own_memory);
     
     // Then it should be created successfully
     assert(own_evaluator != NULL);
@@ -38,15 +38,15 @@ static void test_assignment_instruction_evaluator__evaluate_with_instance(void) 
     expression_evaluator_t *own_expr_eval = ar__expression_evaluator__create(own_memory, NULL);
     assert(own_expr_eval != NULL);
     
-    assignment_instruction_evaluator_t *own_evaluator = ar_assignment_instruction_evaluator__create(own_expr_eval, own_memory);
+    ar_assignment_instruction_evaluator_t *own_evaluator = ar_assignment_instruction_evaluator__create(own_expr_eval, own_memory);
     assert(own_evaluator != NULL);
     
     // When evaluating an assignment instruction: memory.count := 42
-    instruction_ast_t *own_ast = ar__instruction_ast__create_assignment("memory.count", "42");
+    ar_instruction_ast_t *own_ast = ar__instruction_ast__create_assignment("memory.count", "42");
     assert(own_ast != NULL);
     
     // Create and attach the expression AST
-    expression_ast_t *own_expr_ast = ar__expression_ast__create_literal_int(42);
+    ar_expression_ast_t *own_expr_ast = ar__expression_ast__create_literal_int(42);
     assert(own_expr_ast != NULL);
     bool ast_set = ar__instruction_ast__set_assignment_expression_ast(own_ast, own_expr_ast);
     assert(ast_set == true);
@@ -75,17 +75,17 @@ static void test_assignment_instruction_evaluator__evaluate_integer(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(
+    ar_assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(
         expr_eval, memory
     );
     assert(evaluator != NULL);
     
     // When evaluating an assignment instruction: memory.count := 42
-    instruction_ast_t *ast = ar__instruction_ast__create_assignment("memory.count", "42");
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_assignment("memory.count", "42");
     assert(ast != NULL);
     
     // Create and attach the expression AST
-    expression_ast_t *expr_ast = ar__expression_ast__create_literal_int(42);
+    ar_expression_ast_t *expr_ast = ar__expression_ast__create_literal_int(42);
     assert(expr_ast != NULL);
     bool ast_set = ar__instruction_ast__set_assignment_expression_ast(ast, expr_ast);
     assert(ast_set == true);
@@ -114,17 +114,17 @@ static void test_assignment_instruction_evaluator__evaluate_string(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(
+    ar_assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(
         expr_eval, memory
     );
     assert(evaluator != NULL);
     
     // When evaluating an assignment instruction: memory.name := "Alice"
-    instruction_ast_t *ast = ar__instruction_ast__create_assignment("memory.name", "\"Alice\"");
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_assignment("memory.name", "\"Alice\"");
     assert(ast != NULL);
     
     // Create and attach the expression AST
-    expression_ast_t *expr_ast = ar__expression_ast__create_literal_string("Alice");
+    ar_expression_ast_t *expr_ast = ar__expression_ast__create_literal_string("Alice");
     assert(expr_ast != NULL);
     bool ast_set = ar__instruction_ast__set_assignment_expression_ast(ast, expr_ast);
     assert(ast_set == true);
@@ -158,17 +158,17 @@ static void test_assignment_instruction_evaluator__evaluate_nested_path(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(
+    ar_assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(
         expr_eval, memory
     );
     assert(evaluator != NULL);
     
     // When evaluating an assignment to a nested path: memory.user.age := 25
-    instruction_ast_t *ast = ar__instruction_ast__create_assignment("memory.user.age", "25");
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_assignment("memory.user.age", "25");
     assert(ast != NULL);
     
     // Create and attach the expression AST
-    expression_ast_t *expr_ast = ar__expression_ast__create_literal_int(25);
+    ar_expression_ast_t *expr_ast = ar__expression_ast__create_literal_int(25);
     assert(expr_ast != NULL);
     bool ast_set = ar__instruction_ast__set_assignment_expression_ast(ast, expr_ast);
     assert(ast_set == true);
@@ -201,25 +201,25 @@ static void test_assignment_instruction_evaluator__evaluate_expression(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(
+    ar_assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(
         expr_eval, memory
     );
     assert(evaluator != NULL);
     
     // When evaluating an assignment with an expression: memory.sum := memory.x + memory.y
-    instruction_ast_t *ast = ar__instruction_ast__create_assignment("memory.sum", "memory.x + memory.y");
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_assignment("memory.sum", "memory.x + memory.y");
     assert(ast != NULL);
     
     // Create and attach the expression AST for memory.x + memory.y
     const char *x_path[] = {"x"};
-    expression_ast_t *left_ast = ar__expression_ast__create_memory_access("memory", x_path, 1);
+    ar_expression_ast_t *left_ast = ar__expression_ast__create_memory_access("memory", x_path, 1);
     assert(left_ast != NULL);
     
     const char *y_path[] = {"y"};
-    expression_ast_t *right_ast = ar__expression_ast__create_memory_access("memory", y_path, 1);
+    ar_expression_ast_t *right_ast = ar__expression_ast__create_memory_access("memory", y_path, 1);
     assert(right_ast != NULL);
     
-    expression_ast_t *expr_ast = ar__expression_ast__create_binary_op(OP_ADD, left_ast, right_ast);
+    ar_expression_ast_t *expr_ast = ar__expression_ast__create_binary_op(AR_OP__ADD, left_ast, right_ast);
     assert(expr_ast != NULL);
     bool ast_set = ar__instruction_ast__set_assignment_expression_ast(ast, expr_ast);
     assert(ast_set == true);
@@ -248,17 +248,17 @@ static void test_assignment_instruction_evaluator__evaluate_invalid_path(void) {
     expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
-    assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(
+    ar_assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(
         expr_eval, memory
     );
     assert(evaluator != NULL);
     
     // When evaluating an assignment with invalid path: invalid.path := 42
-    instruction_ast_t *ast = ar__instruction_ast__create_assignment("invalid.path", "42");
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_assignment("invalid.path", "42");
     assert(ast != NULL);
     
     // Create and attach the expression AST
-    expression_ast_t *expr_ast = ar__expression_ast__create_literal_int(42);
+    ar_expression_ast_t *expr_ast = ar__expression_ast__create_literal_int(42);
     assert(expr_ast != NULL);
     bool ast_set = ar__instruction_ast__set_assignment_expression_ast(ast, expr_ast);
     assert(ast_set == true);

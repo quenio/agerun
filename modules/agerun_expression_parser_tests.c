@@ -11,14 +11,14 @@ static void test_parse_integer_literal(void) {
     
     // Given an expression with an integer literal
     const char *expression = "42";
-    expression_parser_t *own_parser = ar__expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar__expression_parser__create(expression);
     
     // When parsing the expression
-    expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
+    ar_expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
     
     // Then it should parse successfully as an integer literal
     assert(own_ast != NULL);
-    assert(ar__expression_ast__get_type(own_ast) == EXPR_AST_LITERAL_INT);
+    assert(ar__expression_ast__get_type(own_ast) == AR_EXPR__LITERAL_INT);
     assert(ar__expression_ast__get_int_value(own_ast) == 42);
     assert(ar__expression_parser__get_error(own_parser) == NULL);
     
@@ -31,14 +31,14 @@ static void test_parse_negative_integer(void) {
     
     // Given an expression with a negative integer
     const char *expression = "-123";
-    expression_parser_t *own_parser = ar__expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar__expression_parser__create(expression);
     
     // When parsing the expression
-    expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
+    ar_expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
     
     // Then it should parse successfully
     assert(own_ast != NULL);
-    assert(ar__expression_ast__get_type(own_ast) == EXPR_AST_LITERAL_INT);
+    assert(ar__expression_ast__get_type(own_ast) == AR_EXPR__LITERAL_INT);
     assert(ar__expression_ast__get_int_value(own_ast) == -123);
     
     ar__expression_ast__destroy(own_ast);
@@ -50,14 +50,14 @@ static void test_parse_double_literal(void) {
     
     // Given an expression with a double literal
     const char *expression = "3.14159";
-    expression_parser_t *own_parser = ar__expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar__expression_parser__create(expression);
     
     // When parsing the expression
-    expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
+    ar_expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
     
     // Then it should parse successfully as a double literal
     assert(own_ast != NULL);
-    assert(ar__expression_ast__get_type(own_ast) == EXPR_AST_LITERAL_DOUBLE);
+    assert(ar__expression_ast__get_type(own_ast) == AR_EXPR__LITERAL_DOUBLE);
     assert(fabs(ar__expression_ast__get_double_value(own_ast) - 3.14159) < 0.00001);
     
     ar__expression_ast__destroy(own_ast);
@@ -69,14 +69,14 @@ static void test_parse_string_literal(void) {
     
     // Given an expression with a string literal
     const char *expression = "\"hello world\"";
-    expression_parser_t *own_parser = ar__expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar__expression_parser__create(expression);
     
     // When parsing the expression
-    expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
+    ar_expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
     
     // Then it should parse successfully as a string literal
     assert(own_ast != NULL);
-    assert(ar__expression_ast__get_type(own_ast) == EXPR_AST_LITERAL_STRING);
+    assert(ar__expression_ast__get_type(own_ast) == AR_EXPR__LITERAL_STRING);
     assert(strcmp(ar__expression_ast__get_string_value(own_ast), "hello world") == 0);
     
     ar__expression_ast__destroy(own_ast);
@@ -88,14 +88,14 @@ static void test_parse_empty_string(void) {
     
     // Given an expression with an empty string
     const char *expression = "\"\"";
-    expression_parser_t *own_parser = ar__expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar__expression_parser__create(expression);
     
     // When parsing the expression
-    expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
+    ar_expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
     
     // Then it should parse successfully
     assert(own_ast != NULL);
-    assert(ar__expression_ast__get_type(own_ast) == EXPR_AST_LITERAL_STRING);
+    assert(ar__expression_ast__get_type(own_ast) == AR_EXPR__LITERAL_STRING);
     assert(strcmp(ar__expression_ast__get_string_value(own_ast), "") == 0);
     
     ar__expression_ast__destroy(own_ast);
@@ -107,10 +107,10 @@ static void test_parse_unterminated_string(void) {
     
     // Given an expression with an unterminated string
     const char *expression = "\"hello";
-    expression_parser_t *own_parser = ar__expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar__expression_parser__create(expression);
     
     // When parsing the expression
-    expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
+    ar_expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
     
     // Then it should fail with an error
     assert(own_ast == NULL);
@@ -125,14 +125,14 @@ static void test_parse_simple_memory_access(void) {
     
     // Given an expression with memory access
     const char *expression = "memory";
-    expression_parser_t *own_parser = ar__expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar__expression_parser__create(expression);
     
     // When parsing the expression
-    expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
+    ar_expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
     
     // Then it should parse successfully
     assert(own_ast != NULL);
-    assert(ar__expression_ast__get_type(own_ast) == EXPR_AST_MEMORY_ACCESS);
+    assert(ar__expression_ast__get_type(own_ast) == AR_EXPR__MEMORY_ACCESS);
     assert(strcmp(ar__expression_ast__get_memory_base(own_ast), "memory") == 0);
     
     size_t path_count = 0;
@@ -149,14 +149,14 @@ static void test_parse_memory_access_with_path(void) {
     
     // Given an expression with memory access and path
     const char *expression = "message.user.name";
-    expression_parser_t *own_parser = ar__expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar__expression_parser__create(expression);
     
     // When parsing the expression
-    expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
+    ar_expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
     
     // Then it should parse successfully with the correct path
     assert(own_ast != NULL);
-    assert(ar__expression_ast__get_type(own_ast) == EXPR_AST_MEMORY_ACCESS);
+    assert(ar__expression_ast__get_type(own_ast) == AR_EXPR__MEMORY_ACCESS);
     assert(strcmp(ar__expression_ast__get_memory_base(own_ast), "message") == 0);
     
     size_t path_count = 0;
@@ -176,14 +176,14 @@ static void test_parse_context_access(void) {
     
     // Given an expression with context access
     const char *expression = "context.request_id";
-    expression_parser_t *own_parser = ar__expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar__expression_parser__create(expression);
     
     // When parsing the expression
-    expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
+    ar_expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
     
     // Then it should parse successfully
     assert(own_ast != NULL);
-    assert(ar__expression_ast__get_type(own_ast) == EXPR_AST_MEMORY_ACCESS);
+    assert(ar__expression_ast__get_type(own_ast) == AR_EXPR__MEMORY_ACCESS);
     assert(strcmp(ar__expression_ast__get_memory_base(own_ast), "context") == 0);
     
     size_t path_count = 0;
@@ -201,18 +201,18 @@ static void test_parse_simple_addition(void) {
     
     // Given an expression with addition
     const char *expression = "2 + 3";
-    expression_parser_t *own_parser = ar__expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar__expression_parser__create(expression);
     
     // When parsing the expression
-    expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
+    ar_expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
     
     // Then it should parse successfully
     assert(own_ast != NULL);
-    assert(ar__expression_ast__get_type(own_ast) == EXPR_AST_BINARY_OP);
-    assert(ar__expression_ast__get_operator(own_ast) == OP_ADD);
+    assert(ar__expression_ast__get_type(own_ast) == AR_EXPR__BINARY_OP);
+    assert(ar__expression_ast__get_operator(own_ast) == AR_OP__ADD);
     
-    const expression_ast_t *ref_left = ar__expression_ast__get_left(own_ast);
-    const expression_ast_t *ref_right = ar__expression_ast__get_right(own_ast);
+    const ar_expression_ast_t *ref_left = ar__expression_ast__get_left(own_ast);
+    const ar_expression_ast_t *ref_right = ar__expression_ast__get_right(own_ast);
     assert(ar__expression_ast__get_int_value(ref_left) == 2);
     assert(ar__expression_ast__get_int_value(ref_right) == 3);
     
@@ -225,22 +225,22 @@ static void test_parse_arithmetic_precedence(void) {
     
     // Given an expression with mixed operators
     const char *expression = "2 + 3 * 4";
-    expression_parser_t *own_parser = ar__expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar__expression_parser__create(expression);
     
     // When parsing the expression
-    expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
+    ar_expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
     
     // Then multiplication should have higher precedence
     assert(own_ast != NULL);
-    assert(ar__expression_ast__get_type(own_ast) == EXPR_AST_BINARY_OP);
-    assert(ar__expression_ast__get_operator(own_ast) == OP_ADD);
+    assert(ar__expression_ast__get_type(own_ast) == AR_EXPR__BINARY_OP);
+    assert(ar__expression_ast__get_operator(own_ast) == AR_OP__ADD);
     
-    const expression_ast_t *ref_left = ar__expression_ast__get_left(own_ast);
+    const ar_expression_ast_t *ref_left = ar__expression_ast__get_left(own_ast);
     assert(ar__expression_ast__get_int_value(ref_left) == 2);
     
-    const expression_ast_t *ref_right = ar__expression_ast__get_right(own_ast);
-    assert(ar__expression_ast__get_type(ref_right) == EXPR_AST_BINARY_OP);
-    assert(ar__expression_ast__get_operator(ref_right) == OP_MULTIPLY);
+    const ar_expression_ast_t *ref_right = ar__expression_ast__get_right(own_ast);
+    assert(ar__expression_ast__get_type(ref_right) == AR_EXPR__BINARY_OP);
+    assert(ar__expression_ast__get_operator(ref_right) == AR_OP__MULTIPLY);
     
     ar__expression_ast__destroy(own_ast);
     ar__expression_parser__destroy(own_parser);
@@ -251,10 +251,10 @@ static void test_parse_parenthesized_expression(void) {
     
     // Given an expression with parentheses
     const char *expression = "(2 + 3) * 4";
-    expression_parser_t *own_parser = ar__expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar__expression_parser__create(expression);
     
     // When parsing the expression
-    expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
+    ar_expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
     
     // Check for error
     if (own_ast == NULL) {
@@ -264,12 +264,12 @@ static void test_parse_parenthesized_expression(void) {
     }
     
     // Then parentheses should override precedence
-    assert(ar__expression_ast__get_type(own_ast) == EXPR_AST_BINARY_OP);
-    assert(ar__expression_ast__get_operator(own_ast) == OP_MULTIPLY);
+    assert(ar__expression_ast__get_type(own_ast) == AR_EXPR__BINARY_OP);
+    assert(ar__expression_ast__get_operator(own_ast) == AR_OP__MULTIPLY);
     
-    const expression_ast_t *ref_left = ar__expression_ast__get_left(own_ast);
-    assert(ar__expression_ast__get_type(ref_left) == EXPR_AST_BINARY_OP);
-    assert(ar__expression_ast__get_operator(ref_left) == OP_ADD);
+    const ar_expression_ast_t *ref_left = ar__expression_ast__get_left(own_ast);
+    assert(ar__expression_ast__get_type(ref_left) == AR_EXPR__BINARY_OP);
+    assert(ar__expression_ast__get_operator(ref_left) == AR_OP__ADD);
     
     ar__expression_ast__destroy(own_ast);
     ar__expression_parser__destroy(own_parser);
@@ -281,22 +281,22 @@ static void test_parse_comparison_operators(void) {
     // Test all comparison operators
     struct {
         const char *expression;
-        binary_operator_t expected_op;
+        ar_binary_operator_t expected_op;
     } test_cases[] = {
-        {"5 > 3", OP_GREATER},
-        {"5 >= 3", OP_GREATER_EQ},
-        {"5 < 3", OP_LESS},
-        {"5 <= 3", OP_LESS_EQ},
-        {"5 = 3", OP_EQUAL},
-        {"5 <> 3", OP_NOT_EQUAL}
+        {"5 > 3", AR_OP__GREATER},
+        {"5 >= 3", AR_OP__GREATER_EQ},
+        {"5 < 3", AR_OP__LESS},
+        {"5 <= 3", AR_OP__LESS_EQ},
+        {"5 = 3", AR_OP__EQUAL},
+        {"5 <> 3", AR_OP__NOT_EQUAL}
     };
     
     for (int i = 0; i < 6; i++) {
-        expression_parser_t *own_parser = ar__expression_parser__create(test_cases[i].expression);
-        expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
+        ar_expression_parser_t *own_parser = ar__expression_parser__create(test_cases[i].expression);
+        ar_expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
         
         assert(own_ast != NULL);
-        assert(ar__expression_ast__get_type(own_ast) == EXPR_AST_BINARY_OP);
+        assert(ar__expression_ast__get_type(own_ast) == AR_EXPR__BINARY_OP);
         assert(ar__expression_ast__get_operator(own_ast) == test_cases[i].expected_op);
         
         ar__expression_ast__destroy(own_ast);
@@ -309,18 +309,18 @@ static void test_parse_memory_in_arithmetic(void) {
     
     // Given an expression with memory access in arithmetic
     const char *expression = "memory.x + 5";
-    expression_parser_t *own_parser = ar__expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar__expression_parser__create(expression);
     
     // When parsing the expression
-    expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
+    ar_expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
     
     // Then it should parse correctly
     assert(own_ast != NULL);
-    assert(ar__expression_ast__get_type(own_ast) == EXPR_AST_BINARY_OP);
-    assert(ar__expression_ast__get_operator(own_ast) == OP_ADD);
+    assert(ar__expression_ast__get_type(own_ast) == AR_EXPR__BINARY_OP);
+    assert(ar__expression_ast__get_operator(own_ast) == AR_OP__ADD);
     
-    const expression_ast_t *ref_left = ar__expression_ast__get_left(own_ast);
-    assert(ar__expression_ast__get_type(ref_left) == EXPR_AST_MEMORY_ACCESS);
+    const ar_expression_ast_t *ref_left = ar__expression_ast__get_left(own_ast);
+    assert(ar__expression_ast__get_type(ref_left) == AR_EXPR__MEMORY_ACCESS);
     assert(strcmp(ar__expression_ast__get_memory_base(ref_left), "memory") == 0);
     
     ar__expression_ast__destroy(own_ast);
@@ -332,15 +332,15 @@ static void test_parse_complex_expression(void) {
     
     // Given a complex expression
     const char *expression = "(memory.count + 1) * 2 > message.limit";
-    expression_parser_t *own_parser = ar__expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar__expression_parser__create(expression);
     
     // When parsing the expression
-    expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
+    ar_expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
     
     // Then it should parse the entire structure correctly
     assert(own_ast != NULL);
-    assert(ar__expression_ast__get_type(own_ast) == EXPR_AST_BINARY_OP);
-    assert(ar__expression_ast__get_operator(own_ast) == OP_GREATER);
+    assert(ar__expression_ast__get_type(own_ast) == AR_EXPR__BINARY_OP);
+    assert(ar__expression_ast__get_operator(own_ast) == AR_OP__GREATER);
     
     ar__expression_ast__destroy(own_ast);
     ar__expression_parser__destroy(own_parser);
@@ -351,15 +351,15 @@ static void test_parse_whitespace_handling(void) {
     
     // Given an expression with various whitespace
     const char *expression = "  42   +   \t\n  8  ";
-    expression_parser_t *own_parser = ar__expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar__expression_parser__create(expression);
     
     // When parsing the expression
-    expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
+    ar_expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
     
     // Then it should parse correctly ignoring whitespace
     assert(own_ast != NULL);
-    assert(ar__expression_ast__get_type(own_ast) == EXPR_AST_BINARY_OP);
-    assert(ar__expression_ast__get_operator(own_ast) == OP_ADD);
+    assert(ar__expression_ast__get_type(own_ast) == AR_EXPR__BINARY_OP);
+    assert(ar__expression_ast__get_operator(own_ast) == AR_OP__ADD);
     
     ar__expression_ast__destroy(own_ast);
     ar__expression_parser__destroy(own_parser);
@@ -370,10 +370,10 @@ static void test_parse_invalid_expression(void) {
     
     // Given an invalid expression
     const char *expression = "2 + + 3";
-    expression_parser_t *own_parser = ar__expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar__expression_parser__create(expression);
     
     // When parsing the expression
-    expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
+    ar_expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
     
     // Then it should fail with an error
     assert(own_ast == NULL);
@@ -387,10 +387,10 @@ static void test_parse_trailing_characters(void) {
     
     // Given an expression with trailing characters
     const char *expression = "42 abc";
-    expression_parser_t *own_parser = ar__expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar__expression_parser__create(expression);
     
     // When parsing the expression
-    expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
+    ar_expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
     
     // Then it should fail with an error
     assert(own_ast == NULL);
@@ -405,13 +405,13 @@ static void test_parse_position_tracking(void) {
     
     // Given a parser
     const char *expression = "42 + 3";
-    expression_parser_t *own_parser = ar__expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar__expression_parser__create(expression);
     
     // When checking initial position
     assert(ar__expression_parser__get_position(own_parser) == 0);
     
     // When parsing a literal
-    expression_ast_t *own_ast = ar__expression_parser__parse_literal(own_parser);
+    ar_expression_ast_t *own_ast = ar__expression_parser__parse_literal(own_parser);
     assert(own_ast != NULL);
     assert(ar__expression_parser__get_position(own_parser) == 2); // After "42"
     
@@ -423,7 +423,7 @@ static void test_parse_null_safety(void) {
     printf("Testing NULL safety...\n");
     
     // Test NULL expression
-    expression_parser_t *own_parser = ar__expression_parser__create(NULL);
+    ar_expression_parser_t *own_parser = ar__expression_parser__create(NULL);
     assert(own_parser == NULL);
     
     // Test NULL parser parameter

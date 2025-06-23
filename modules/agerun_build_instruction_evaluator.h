@@ -12,9 +12,9 @@
 #include <stdbool.h>
 
 /* Forward declarations */
-typedef struct expression_evaluator_s expression_evaluator_t;
+typedef struct expression_evaluator_s ar_expression_evaluator_t;
 typedef struct data_s data_t;
-typedef struct instruction_ast_s instruction_ast_t;
+typedef struct instruction_ast_s ar_instruction_ast_t;
 
 /* Opaque type for build instruction evaluator */
 typedef struct ar_build_instruction_evaluator_s ar_build_instruction_evaluator_t;
@@ -30,7 +30,7 @@ typedef struct ar_build_instruction_evaluator_s ar_build_instruction_evaluator_t
  * @note The evaluator stores references to the provided dependencies
  */
 ar_build_instruction_evaluator_t* ar_build_instruction_evaluator__create(
-    expression_evaluator_t *ref_expr_evaluator,
+    ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
 
@@ -67,7 +67,7 @@ void ar_build_instruction_evaluator__destroy(
  */
 bool ar_build_instruction_evaluator__evaluate(
     ar_build_instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
+    const ar_instruction_ast_t *ref_ast
 );
 
 

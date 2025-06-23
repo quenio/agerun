@@ -17,7 +17,7 @@
 /**
  * Opaque type for send instruction evaluator
  */
-typedef struct ar_send_instruction_evaluator_s send_instruction_evaluator_t;
+typedef struct ar_send_instruction_evaluator_s ar_send_instruction_evaluator_t;
 
 /**
  * Creates a new send instruction evaluator
@@ -26,8 +26,8 @@ typedef struct ar_send_instruction_evaluator_s send_instruction_evaluator_t;
  * @return A new send instruction evaluator, or NULL on error
  * @note Ownership: Returns an owned value that caller must destroy
  */
-send_instruction_evaluator_t* ar_send_instruction_evaluator__create(
-    expression_evaluator_t *ref_expr_evaluator,
+ar_send_instruction_evaluator_t* ar_send_instruction_evaluator__create(
+    ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
 
@@ -36,7 +36,7 @@ send_instruction_evaluator_t* ar_send_instruction_evaluator__create(
  * @param own_evaluator The evaluator to destroy (takes ownership)
  */
 void ar_send_instruction_evaluator__destroy(
-    send_instruction_evaluator_t *own_evaluator
+    ar_send_instruction_evaluator_t *own_evaluator
 );
 
 /**
@@ -48,8 +48,8 @@ void ar_send_instruction_evaluator__destroy(
  *       If the send has a result assignment, it will modify the memory map.
  */
 bool ar_send_instruction_evaluator__evaluate(
-    send_instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
+    ar_send_instruction_evaluator_t *mut_evaluator,
+    const ar_instruction_ast_t *ref_ast
 );
 
 #endif /* AGERUN_SEND_INSTRUCTION_EVALUATOR_H */

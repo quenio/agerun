@@ -17,7 +17,7 @@
 /**
  * Opaque type for the assignment instruction evaluator
  */
-typedef struct ar_assignment_instruction_evaluator_s assignment_instruction_evaluator_t;
+typedef struct ar_assignment_instruction_evaluator_s ar_assignment_instruction_evaluator_t;
 
 /**
  * Creates a new assignment instruction evaluator
@@ -26,8 +26,8 @@ typedef struct ar_assignment_instruction_evaluator_s assignment_instruction_eval
  * @return A newly created evaluator or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy
  */
-assignment_instruction_evaluator_t* ar_assignment_instruction_evaluator__create(
-    expression_evaluator_t *ref_expr_evaluator,
+ar_assignment_instruction_evaluator_t* ar_assignment_instruction_evaluator__create(
+    ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
 
@@ -37,7 +37,7 @@ assignment_instruction_evaluator_t* ar_assignment_instruction_evaluator__create(
  * @note Takes ownership of the evaluator and frees all resources
  */
 void ar_assignment_instruction_evaluator__destroy(
-    assignment_instruction_evaluator_t *own_evaluator
+    ar_assignment_instruction_evaluator_t *own_evaluator
 );
 
 /**
@@ -48,8 +48,8 @@ void ar_assignment_instruction_evaluator__destroy(
  * @note The assignment will modify the memory map by storing the evaluated expression result
  */
 bool ar_assignment_instruction_evaluator__evaluate(
-    assignment_instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
+    ar_assignment_instruction_evaluator_t *mut_evaluator,
+    const ar_instruction_ast_t *ref_ast
 );
 
 #endif /* AGERUN_ASSIGNMENT_INSTRUCTION_EVALUATOR_H */

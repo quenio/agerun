@@ -235,7 +235,7 @@ static void _cleanup_arg_asts(list_t *arg_asts) {
         if (items) {
             size_t list_count = ar__list__count(arg_asts);
             for (size_t j = 0; j < list_count; j++) {
-                ar__expression_ast__destroy((expression_ast_t*)items[j]);
+                ar__expression_ast__destroy((ar_expression_ast_t*)items[j]);
             }
             AR__HEAP__FREE(items);
         }
@@ -257,14 +257,14 @@ static list_t* _parse_arguments_to_asts(ar_build_instruction_parser_t *mut_parse
     }
     
     for (size_t i = 0; i < arg_count; i++) {
-        expression_parser_t *own_expr_parser = ar__expression_parser__create(ref_args[i]);
+        ar_expression_parser_t *own_expr_parser = ar__expression_parser__create(ref_args[i]);
         if (!own_expr_parser) {
             _cleanup_arg_asts(own_arg_asts);
             _set_error(mut_parser, "Failed to create expression parser", error_offset);
             return NULL;
         }
         
-        expression_ast_t *own_expr_ast = ar__expression_parser__parse_expression(own_expr_parser);
+        ar_expression_ast_t *own_expr_ast = ar__expression_parser__parse_expression(own_expr_parser);
         if (!own_expr_ast) {
             const char *expr_error = ar__expression_parser__get_error(own_expr_parser);
             char *own_error_copy = expr_error ? AR__HEAP__STRDUP(expr_error, "error message copy") : NULL;
@@ -307,7 +307,7 @@ void ar_build_instruction_parser__destroy(ar_build_instruction_parser_t *own_par
     AR__HEAP__FREE(own_parser);
 }
 
-instruction_ast_t* ar_build_instruction_parser__parse(
+ar_instruction_ast_t* ar_build_instruction_parser__parse(
     ar_build_instruction_parser_t *mut_parser,
     const char *ref_instruction,
     const char *ref_result_path
@@ -375,8 +375,8 @@ instruction_ast_t* ar_build_instruction_parser__parse(
         const_args[i] = args[i];
     }
     
-    instruction_ast_t *own_ast = ar__instruction_ast__create_function_call(
-        INST_AST_BUILD, "build", const_args, arg_count, ref_result_path
+    ar_instruction_ast_t *own_ast = ar__instruction_ast__create_function_call(
+        AR_INST__BUILD, "build", const_args, arg_count, ref_result_path
     );
     
     AR__HEAP__FREE(const_args);

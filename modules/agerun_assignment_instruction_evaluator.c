@@ -13,7 +13,7 @@
 
 /* Internal structure for the assignment instruction evaluator */
 struct ar_assignment_instruction_evaluator_s {
-    expression_evaluator_t *ref_expr_evaluator;  /* Borrowed reference to expression evaluator */
+    ar_expression_evaluator_t *ref_expr_evaluator;  /* Borrowed reference to expression evaluator */
     data_t *mut_memory;                          /* Mutable reference to memory map */
 };
 
@@ -21,15 +21,15 @@ struct ar_assignment_instruction_evaluator_s {
 static const char* MEMORY_PREFIX = "memory.";
 static const size_t MEMORY_PREFIX_LEN = 7;
 
-assignment_instruction_evaluator_t* ar_assignment_instruction_evaluator__create(
-    expression_evaluator_t *ref_expr_evaluator,
+ar_assignment_instruction_evaluator_t* ar_assignment_instruction_evaluator__create(
+    ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 ) {
     if (!ref_expr_evaluator || !mut_memory) {
         return NULL;
     }
     
-    assignment_instruction_evaluator_t *own_evaluator = AR__HEAP__MALLOC(sizeof(assignment_instruction_evaluator_t), "assignment_instruction_evaluator");
+    ar_assignment_instruction_evaluator_t *own_evaluator = AR__HEAP__MALLOC(sizeof(ar_assignment_instruction_evaluator_t), "assignment_instruction_evaluator");
     if (!own_evaluator) {
         return NULL;
     }
@@ -42,7 +42,7 @@ assignment_instruction_evaluator_t* ar_assignment_instruction_evaluator__create(
 }
 
 void ar_assignment_instruction_evaluator__destroy(
-    assignment_instruction_evaluator_t *own_evaluator
+    ar_assignment_instruction_evaluator_t *own_evaluator
 ) {
     if (!own_evaluator) {
         return;
@@ -138,24 +138,24 @@ static data_t* _copy_data_value(const data_t *ref_value) {
 }
 
 /* Helper function to evaluate an expression AST node using the expression evaluator */
-static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluator, const expression_ast_t *ref_ast) {
+static data_t* _evaluate_expression_ast(ar_expression_evaluator_t *mut_expr_evaluator, const ar_expression_ast_t *ref_ast) {
     if (!ref_ast) {
         return NULL;
     }
     
-    expression_ast_type_t type = ar__expression_ast__get_type(ref_ast);
+    ar_expression_ast_type_t type = ar__expression_ast__get_type(ref_ast);
     
     switch (type) {
-        case EXPR_AST_LITERAL_INT:
+        case AR_EXPR__LITERAL_INT:
             return ar__expression_evaluator__evaluate_literal_int(mut_expr_evaluator, ref_ast);
             
-        case EXPR_AST_LITERAL_DOUBLE:
+        case AR_EXPR__LITERAL_DOUBLE:
             return ar__expression_evaluator__evaluate_literal_double(mut_expr_evaluator, ref_ast);
             
-        case EXPR_AST_LITERAL_STRING:
+        case AR_EXPR__LITERAL_STRING:
             return ar__expression_evaluator__evaluate_literal_string(mut_expr_evaluator, ref_ast);
             
-        case EXPR_AST_MEMORY_ACCESS:
+        case AR_EXPR__MEMORY_ACCESS:
             // Memory access returns a reference, we need to make a copy
             {
                 data_t *ref_value = ar__expression_evaluator__evaluate_memory_access(mut_expr_evaluator, ref_ast);
@@ -165,7 +165,7 @@ static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluat
                 return _copy_data_value(ref_value);
             }
             
-        case EXPR_AST_BINARY_OP:
+        case AR_EXPR__BINARY_OP:
             return ar__expression_evaluator__evaluate_binary_op(mut_expr_evaluator, ref_ast);
             
         default:
@@ -177,15 +177,15 @@ static data_t* _evaluate_expression_ast(expression_evaluator_t *mut_expr_evaluat
  * Evaluates an assignment instruction AST node
  */
 bool ar_assignment_instruction_evaluator__evaluate(
-    assignment_instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
+    ar_assignment_instruction_evaluator_t *mut_evaluator,
+    const ar_instruction_ast_t *ref_ast
 ) {
     if (!mut_evaluator || !ref_ast) {
         return false;
     }
     
     // Verify this is an assignment AST node
-    if (ar__instruction_ast__get_type(ref_ast) != INST_AST_ASSIGNMENT) {
+    if (ar__instruction_ast__get_type(ref_ast) != AR_INST__ASSIGNMENT) {
         return false;
     }
     
@@ -202,7 +202,7 @@ bool ar_assignment_instruction_evaluator__evaluate(
     }
     
     // Get the pre-parsed expression AST
-    const expression_ast_t *ref_expr_ast = ar__instruction_ast__get_assignment_expression_ast(ref_ast);
+    const ar_expression_ast_t *ref_expr_ast = ar__instruction_ast__get_assignment_expression_ast(ref_ast);
     if (!ref_expr_ast) {
         return false;
     }

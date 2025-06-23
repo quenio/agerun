@@ -49,7 +49,7 @@ void ar_build_instruction_parser__destroy(ar_build_instruction_parser_t *own_par
  * @note Supports optional assignment: memory.result := build(...)
  * @note Sets error message and position on parse failure
  */
-instruction_ast_t* ar_build_instruction_parser__parse(
+ar_instruction_ast_t* ar_build_instruction_parser__parse(
     ar_build_instruction_parser_t *mut_parser,
     const char *ref_instruction,
     const char *ref_result_path

@@ -21,7 +21,7 @@ static const size_t MEMORY_PREFIX_LEN = 7;
 
 /* Opaque struct definition */
 struct ar_destroy_method_instruction_evaluator_s {
-    expression_evaluator_t *mut_expr_evaluator;
+    ar_expression_evaluator_t *mut_expr_evaluator;
     data_t *mut_memory;
 };
 
@@ -112,26 +112,26 @@ static data_t* _copy_data_value(const data_t *ref_value) {
 
 /* Helper function to evaluate an expression AST node using the expression evaluator */
 static data_t* _evaluate_expression_ast(
-    expression_evaluator_t *mut_expr_evaluator,
-    const expression_ast_t *ref_ast
+    ar_expression_evaluator_t *mut_expr_evaluator,
+    const ar_expression_ast_t *ref_ast
 ) {
     if (!ref_ast) {
         return NULL;
     }
     
-    expression_ast_type_t type = ar__expression_ast__get_type(ref_ast);
+    ar_expression_ast_type_t type = ar__expression_ast__get_type(ref_ast);
     
     switch (type) {
-        case EXPR_AST_LITERAL_INT:
+        case AR_EXPR__LITERAL_INT:
             return ar__expression_evaluator__evaluate_literal_int(mut_expr_evaluator, ref_ast);
             
-        case EXPR_AST_LITERAL_DOUBLE:
+        case AR_EXPR__LITERAL_DOUBLE:
             return ar__expression_evaluator__evaluate_literal_double(mut_expr_evaluator, ref_ast);
             
-        case EXPR_AST_LITERAL_STRING:
+        case AR_EXPR__LITERAL_STRING:
             return ar__expression_evaluator__evaluate_literal_string(mut_expr_evaluator, ref_ast);
             
-        case EXPR_AST_MEMORY_ACCESS:
+        case AR_EXPR__MEMORY_ACCESS:
             // Memory access returns a reference, we need to make a copy
             {
                 data_t *ref_value = ar__expression_evaluator__evaluate_memory_access(mut_expr_evaluator, ref_ast);
@@ -141,7 +141,7 @@ static data_t* _evaluate_expression_ast(
                 return _copy_data_value(ref_value);
             }
             
-        case EXPR_AST_BINARY_OP:
+        case AR_EXPR__BINARY_OP:
             return ar__expression_evaluator__evaluate_binary_op(mut_expr_evaluator, ref_ast);
             
         default:
@@ -153,7 +153,7 @@ static data_t* _evaluate_expression_ast(
 /* Helper function to store result in memory if assignment path is provided */
 static bool _store_result_if_assigned(
     data_t *mut_memory,
-    const instruction_ast_t *ref_ast,
+    const ar_instruction_ast_t *ref_ast,
     data_t *own_result
 ) {
     const char *ref_result_path = ar__instruction_ast__get_function_result_path(ref_ast);
@@ -184,7 +184,7 @@ static bool _store_result_if_assigned(
  * Creates a new destroy method instruction evaluator instance
  */
 ar_destroy_method_instruction_evaluator_t* ar_destroy_method_instruction_evaluator__create(
-    expression_evaluator_t *mut_expr_evaluator,
+    ar_expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory
 ) {
     if (!mut_expr_evaluator || !mut_memory) {
@@ -221,17 +221,17 @@ void ar_destroy_method_instruction_evaluator__destroy(ar_destroy_method_instruct
  */
 bool ar_destroy_method_instruction_evaluator__evaluate(
     const ar_destroy_method_instruction_evaluator_t *ref_evaluator,
-    const instruction_ast_t *ref_ast
+    const ar_instruction_ast_t *ref_ast
 ) {
     if (!ref_evaluator || !ref_ast) {
         return false;
     }
     
-    expression_evaluator_t *mut_expr_evaluator = ref_evaluator->mut_expr_evaluator;
+    ar_expression_evaluator_t *mut_expr_evaluator = ref_evaluator->mut_expr_evaluator;
     data_t *mut_memory = ref_evaluator->mut_memory;
     
     // Validate AST type
-    if (ar__instruction_ast__get_type(ref_ast) != INST_AST_DESTROY_METHOD) {
+    if (ar__instruction_ast__get_type(ref_ast) != AR_INST__DESTROY_METHOD) {
         return false;
     }
     
@@ -252,8 +252,8 @@ bool ar_destroy_method_instruction_evaluator__evaluate(
         return false;
     }
     
-    const expression_ast_t *ref_name_ast = (const expression_ast_t*)items[0];
-    const expression_ast_t *ref_version_ast = (const expression_ast_t*)items[1];
+    const ar_expression_ast_t *ref_name_ast = (const ar_expression_ast_t*)items[0];
+    const ar_expression_ast_t *ref_version_ast = (const ar_expression_ast_t*)items[1];
     
     if (!ref_name_ast || !ref_version_ast) {
         AR__HEAP__FREE(items);

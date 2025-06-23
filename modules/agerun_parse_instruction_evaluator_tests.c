@@ -17,7 +17,7 @@ static void test_parse_instruction_evaluator__create_destroy(void) {
     assert(own_expr_eval != NULL);
     
     // When creating a parse instruction evaluator
-    parse_instruction_evaluator_t *own_evaluator = ar_parse_instruction_evaluator__create(
+    ar_parse_instruction_evaluator_t *own_evaluator = ar_parse_instruction_evaluator__create(
         own_expr_eval, own_memory
     );
     
@@ -40,15 +40,15 @@ static void test_parse_instruction_evaluator__evaluate_with_instance(void) {
     expression_evaluator_t *own_expr_eval = ar__expression_evaluator__create(own_memory, NULL);
     assert(own_expr_eval != NULL);
     
-    parse_instruction_evaluator_t *own_evaluator = ar_parse_instruction_evaluator__create(
+    ar_parse_instruction_evaluator_t *own_evaluator = ar_parse_instruction_evaluator__create(
         own_expr_eval, own_memory
     );
     assert(own_evaluator != NULL);
     
     // When creating a parse AST node
     const char *args[] = {"\"name={name}\"", "\"name=John\""};
-    instruction_ast_t *own_ast = ar__instruction_ast__create_function_call(
-        INST_AST_PARSE, "parse", args, 2, "memory.result"
+    ar_instruction_ast_t *own_ast = ar__instruction_ast__create_function_call(
+        AR_INST__PARSE, "parse", args, 2, "memory.result"
     );
     assert(own_ast != NULL);
     
@@ -57,11 +57,11 @@ static void test_parse_instruction_evaluator__evaluate_with_instance(void) {
     assert(arg_asts != NULL);
     
     // Template: "name={name}"
-    expression_ast_t *template_ast = ar__expression_ast__create_literal_string("name={name}");
+    ar_expression_ast_t *template_ast = ar__expression_ast__create_literal_string("name={name}");
     ar__list__add_last(arg_asts, template_ast);
     
     // Input: "name=John"
-    expression_ast_t *input_ast = ar__expression_ast__create_literal_string("name=John");
+    ar_expression_ast_t *input_ast = ar__expression_ast__create_literal_string("name=John");
     ar__list__add_last(arg_asts, input_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(own_ast, arg_asts);
@@ -97,15 +97,15 @@ static void test_parse_instruction_evaluator__evaluate_without_legacy(void) {
     assert(own_expr_eval != NULL);
     
     // When creating a parse instruction evaluator instance
-    parse_instruction_evaluator_t *own_evaluator = ar_parse_instruction_evaluator__create(
+    ar_parse_instruction_evaluator_t *own_evaluator = ar_parse_instruction_evaluator__create(
         own_expr_eval, own_memory
     );
     assert(own_evaluator != NULL);
     
     // When creating a parse AST node
     const char *args[] = {"\"user={username}, role={role}\"", "\"user=alice, role=admin\""};
-    instruction_ast_t *own_ast = ar__instruction_ast__create_function_call(
-        INST_AST_PARSE, "parse", args, 2, "memory.result"
+    ar_instruction_ast_t *own_ast = ar__instruction_ast__create_function_call(
+        AR_INST__PARSE, "parse", args, 2, "memory.result"
     );
     assert(own_ast != NULL);
     
@@ -114,11 +114,11 @@ static void test_parse_instruction_evaluator__evaluate_without_legacy(void) {
     assert(arg_asts != NULL);
     
     // Template: "user={username}, role={role}"
-    expression_ast_t *template_ast = ar__expression_ast__create_literal_string("user={username}, role={role}");
+    ar_expression_ast_t *template_ast = ar__expression_ast__create_literal_string("user={username}, role={role}");
     ar__list__add_last(arg_asts, template_ast);
     
     // Input: "user=alice, role=admin"
-    expression_ast_t *input_ast = ar__expression_ast__create_literal_string("user=alice, role=admin");
+    ar_expression_ast_t *input_ast = ar__expression_ast__create_literal_string("user=alice, role=admin");
     ar__list__add_last(arg_asts, input_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(own_ast, arg_asts);
@@ -165,8 +165,8 @@ static void test_instruction_evaluator__evaluate_parse_simple(void) {
     
     // When creating a parse AST node with simple template
     const char *args[] = {"\"name={name}\"", "\"name=John\""};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_PARSE, "parse", args, 2, "memory.result"
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__PARSE, "parse", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -175,11 +175,11 @@ static void test_instruction_evaluator__evaluate_parse_simple(void) {
     assert(arg_asts != NULL);
     
     // Template: "name={name}"
-    expression_ast_t *template_ast = ar__expression_ast__create_literal_string("name={name}");
+    ar_expression_ast_t *template_ast = ar__expression_ast__create_literal_string("name={name}");
     ar__list__add_last(arg_asts, template_ast);
     
     // Input: "name=John"
-    expression_ast_t *input_ast = ar__expression_ast__create_literal_string("name=John");
+    ar_expression_ast_t *input_ast = ar__expression_ast__create_literal_string("name=John");
     ar__list__add_last(arg_asts, input_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -222,8 +222,8 @@ static void test_instruction_evaluator__evaluate_parse_multiple_variables(void) 
     
     // When creating a parse AST node with multiple variables
     const char *args[] = {"\"user={username}, role={role}\"", "\"user=alice, role=admin\""};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_PARSE, "parse", args, 2, "memory.result"
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__PARSE, "parse", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -232,11 +232,11 @@ static void test_instruction_evaluator__evaluate_parse_multiple_variables(void) 
     assert(arg_asts != NULL);
     
     // Template: "user={username}, role={role}"
-    expression_ast_t *template_ast = ar__expression_ast__create_literal_string("user={username}, role={role}");
+    ar_expression_ast_t *template_ast = ar__expression_ast__create_literal_string("user={username}, role={role}");
     ar__list__add_last(arg_asts, template_ast);
     
     // Input: "user=alice, role=admin"
-    expression_ast_t *input_ast = ar__expression_ast__create_literal_string("user=alice, role=admin");
+    ar_expression_ast_t *input_ast = ar__expression_ast__create_literal_string("user=alice, role=admin");
     ar__list__add_last(arg_asts, input_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -284,8 +284,8 @@ static void test_instruction_evaluator__evaluate_parse_with_types(void) {
     
     // When creating a parse AST node with values that should be parsed as different types
     const char *args[] = {"\"age={age}, score={score}, name={name}\"", "\"age=25, score=98.5, name=Bob\""};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_PARSE, "parse", args, 2, "memory.result"
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__PARSE, "parse", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -294,11 +294,11 @@ static void test_instruction_evaluator__evaluate_parse_with_types(void) {
     assert(arg_asts != NULL);
     
     // Template: "age={age}, score={score}, name={name}"
-    expression_ast_t *template_ast = ar__expression_ast__create_literal_string("age={age}, score={score}, name={name}");
+    ar_expression_ast_t *template_ast = ar__expression_ast__create_literal_string("age={age}, score={score}, name={name}");
     ar__list__add_last(arg_asts, template_ast);
     
     // Input: "age=25, score=98.5, name=Bob"
-    expression_ast_t *input_ast = ar__expression_ast__create_literal_string("age=25, score=98.5, name=Bob");
+    ar_expression_ast_t *input_ast = ar__expression_ast__create_literal_string("age=25, score=98.5, name=Bob");
     ar__list__add_last(arg_asts, input_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -351,8 +351,8 @@ static void test_instruction_evaluator__evaluate_parse_no_match(void) {
     
     // When creating a parse AST node where template doesn't match input
     const char *args[] = {"\"name={name}, age={age}\"", "\"username=John, level=5\""};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_PARSE, "parse", args, 2, "memory.result"
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__PARSE, "parse", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -361,11 +361,11 @@ static void test_instruction_evaluator__evaluate_parse_no_match(void) {
     assert(arg_asts != NULL);
     
     // Template: "name={name}, age={age}"
-    expression_ast_t *template_ast = ar__expression_ast__create_literal_string("name={name}, age={age}");
+    ar_expression_ast_t *template_ast = ar__expression_ast__create_literal_string("name={name}, age={age}");
     ar__list__add_last(arg_asts, template_ast);
     
     // Input: "username=John, level=5"
-    expression_ast_t *input_ast = ar__expression_ast__create_literal_string("username=John, level=5");
+    ar_expression_ast_t *input_ast = ar__expression_ast__create_literal_string("username=John, level=5");
     ar__list__add_last(arg_asts, input_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -407,8 +407,8 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     
     // Test case 1: Wrong number of arguments (1 instead of 2)
     const char *args1[] = {"\"template={value}\""};
-    instruction_ast_t *ast1 = ar__instruction_ast__create_function_call(
-        INST_AST_PARSE, "parse", args1, 1, NULL
+    ar_instruction_ast_t *ast1 = ar__instruction_ast__create_function_call(
+        AR_INST__PARSE, "parse", args1, 1, NULL
     );
     assert(ast1 != NULL);
     
@@ -416,7 +416,7 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     list_t *arg_asts1 = ar__list__create();
     assert(arg_asts1 != NULL);
     
-    expression_ast_t *template_ast1 = ar__expression_ast__create_literal_string("template={value}");
+    ar_expression_ast_t *template_ast1 = ar__expression_ast__create_literal_string("template={value}");
     ar__list__add_last(arg_asts1, template_ast1);
     
     bool ast_set1 = ar__instruction_ast__set_function_arg_asts(ast1, arg_asts1);
@@ -429,8 +429,8 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     
     // Test case 2: Non-string template argument
     const char *args2[] = {"123", "\"input=value\""};
-    instruction_ast_t *ast2 = ar__instruction_ast__create_function_call(
-        INST_AST_PARSE, "parse", args2, 2, NULL
+    ar_instruction_ast_t *ast2 = ar__instruction_ast__create_function_call(
+        AR_INST__PARSE, "parse", args2, 2, NULL
     );
     assert(ast2 != NULL);
     
@@ -438,10 +438,10 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     list_t *arg_asts2 = ar__list__create();
     assert(arg_asts2 != NULL);
     
-    expression_ast_t *template_ast2 = ar__expression_ast__create_literal_int(123);
+    ar_expression_ast_t *template_ast2 = ar__expression_ast__create_literal_int(123);
     ar__list__add_last(arg_asts2, template_ast2);
     
-    expression_ast_t *input_ast2 = ar__expression_ast__create_literal_string("input=value");
+    ar_expression_ast_t *input_ast2 = ar__expression_ast__create_literal_string("input=value");
     ar__list__add_last(arg_asts2, input_ast2);
     
     bool ast_set2 = ar__instruction_ast__set_function_arg_asts(ast2, arg_asts2);
@@ -454,8 +454,8 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     
     // Test case 3: Non-string input argument
     const char *args3[] = {"\"template={value}\"", "456"};
-    instruction_ast_t *ast3 = ar__instruction_ast__create_function_call(
-        INST_AST_PARSE, "parse", args3, 2, NULL
+    ar_instruction_ast_t *ast3 = ar__instruction_ast__create_function_call(
+        AR_INST__PARSE, "parse", args3, 2, NULL
     );
     assert(ast3 != NULL);
     
@@ -463,10 +463,10 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     list_t *arg_asts3 = ar__list__create();
     assert(arg_asts3 != NULL);
     
-    expression_ast_t *template_ast3 = ar__expression_ast__create_literal_string("template={value}");
+    ar_expression_ast_t *template_ast3 = ar__expression_ast__create_literal_string("template={value}");
     ar__list__add_last(arg_asts3, template_ast3);
     
-    expression_ast_t *input_ast3 = ar__expression_ast__create_literal_int(456);
+    ar_expression_ast_t *input_ast3 = ar__expression_ast__create_literal_int(456);
     ar__list__add_last(arg_asts3, input_ast3);
     
     bool ast_set3 = ar__instruction_ast__set_function_arg_asts(ast3, arg_asts3);

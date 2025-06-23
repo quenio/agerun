@@ -73,8 +73,8 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_instance(vo
     
     // Create destroy AST with method name and version
     const char *args[] = {"\"test_destroyer\"", "\"1.0.0\""};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY_METHOD, "destroy", args, 2, NULL
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__DESTROY_METHOD, "destroy", args, 2, NULL
     );
     assert(ast != NULL);
     
@@ -83,11 +83,11 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_instance(vo
     assert(arg_asts != NULL);
     
     // Method name: "test_destroyer"
-    expression_ast_t *name_ast = ar__expression_ast__create_literal_string("test_destroyer");
+    ar_expression_ast_t *name_ast = ar__expression_ast__create_literal_string("test_destroyer");
     ar__list__add_last(arg_asts, name_ast);
     
     // Version: "1.0.0"
-    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
+    ar_expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
     ar__list__add_last(arg_asts, version_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -146,8 +146,8 @@ static void test_destroy_method_instruction_evaluator__evaluate_legacy(void) {
     
     // Create destroy AST with method name and version
     const char *args[] = {"\"test_destroyer\"", "\"1.0.0\""};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY_METHOD, "destroy", args, 2, NULL
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__DESTROY_METHOD, "destroy", args, 2, NULL
     );
     assert(ast != NULL);
     
@@ -156,11 +156,11 @@ static void test_destroy_method_instruction_evaluator__evaluate_legacy(void) {
     assert(arg_asts != NULL);
     
     // Method name: "test_destroyer"
-    expression_ast_t *name_ast = ar__expression_ast__create_literal_string("test_destroyer");
+    ar_expression_ast_t *name_ast = ar__expression_ast__create_literal_string("test_destroyer");
     ar__list__add_last(arg_asts, name_ast);
     
     // Version: "1.0.0"
-    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
+    ar_expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
     ar__list__add_last(arg_asts, version_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -226,8 +226,8 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void
     
     // Create destroy AST with method name and version
     const char *args[] = {"\"test_destroyer\"", "\"1.0.0\""};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY_METHOD, "destroy", args, 2, "memory.result"
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__DESTROY_METHOD, "destroy", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -236,11 +236,11 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void
     assert(arg_asts != NULL);
     
     // Method name: "test_destroyer"
-    expression_ast_t *name_ast = ar__expression_ast__create_literal_string("test_destroyer");
+    ar_expression_ast_t *name_ast = ar__expression_ast__create_literal_string("test_destroyer");
     ar__list__add_last(arg_asts, name_ast);
     
     // Version: "1.0.0"
-    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
+    ar_expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
     ar__list__add_last(arg_asts, version_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -306,8 +306,8 @@ static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void
     
     // Create destroy AST with non-existent method
     const char *args[] = {"\"nonexistent\"", "\"1.0.0\""};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY_METHOD, "destroy", args, 2, "memory.result"
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__DESTROY_METHOD, "destroy", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -316,11 +316,11 @@ static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void
     assert(arg_asts != NULL);
     
     // Method name: "nonexistent"
-    expression_ast_t *name_ast = ar__expression_ast__create_literal_string("nonexistent");
+    ar_expression_ast_t *name_ast = ar__expression_ast__create_literal_string("nonexistent");
     ar__list__add_last(arg_asts, name_ast);
     
     // Version: "1.0.0"
-    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
+    ar_expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
     ar__list__add_last(arg_asts, version_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -370,8 +370,8 @@ static void test_destroy_method_instruction_evaluator__evaluate_invalid_name_typ
     
     // Create destroy AST with non-string method name (integer)
     const char *args[] = {"123", "\"1.0.0\""};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY_METHOD, "destroy", args, 2, NULL
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__DESTROY_METHOD, "destroy", args, 2, NULL
     );
     assert(ast != NULL);
     
@@ -380,11 +380,11 @@ static void test_destroy_method_instruction_evaluator__evaluate_invalid_name_typ
     assert(arg_asts != NULL);
     
     // Method name: 123 (integer, not string)
-    expression_ast_t *name_ast = ar__expression_ast__create_literal_int(123);
+    ar_expression_ast_t *name_ast = ar__expression_ast__create_literal_int(123);
     ar__list__add_last(arg_asts, name_ast);
     
     // Version: "1.0.0"
-    expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
+    ar_expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
     ar__list__add_last(arg_asts, version_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -419,8 +419,8 @@ static void test_destroy_method_instruction_evaluator__evaluate_wrong_arg_count(
     
     // Create destroy AST with 1 arg (should be 2 for method)
     const char *args[] = {"\"method_name\""};
-    instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY_METHOD, "destroy", args, 1, NULL
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+        AR_INST__DESTROY_METHOD, "destroy", args, 1, NULL
     );
     assert(ast != NULL);
     
@@ -429,7 +429,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_wrong_arg_count(
     assert(arg_asts != NULL);
     
     // Method name only (missing version - should cause error)
-    expression_ast_t *name_ast = ar__expression_ast__create_literal_string("method_name");
+    ar_expression_ast_t *name_ast = ar__expression_ast__create_literal_string("method_name");
     ar__list__add_last(arg_asts, name_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -458,7 +458,7 @@ int main(void) {
         if (len < 4 || strcmp(cwd + len - 4, "/bin") != 0) {
             fprintf(stderr, "ERROR: Tests must be run from the bin directory!\n");
             fprintf(stderr, "Current directory: %s\n", cwd);
-            fprintf(stderr, "Please run: cd bin && ./agerun_destroy_method_instruction_evaluator_tests\n");
+            fprintf(stderr, "Please run: cd bin && ./agerun_destroy_ar_method_instruction_evaluator_tests\n");
             return 1;
         }
     }

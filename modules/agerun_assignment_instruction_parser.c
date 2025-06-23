@@ -81,16 +81,16 @@ static size_t _find_expression_end(const char *str, size_t pos) {
  * Internal: Parse expression string into AST and set it in the instruction AST.
  */
 static bool _parse_and_set_expression_ast(ar_assignment_instruction_parser_t *mut_parser, 
-                                         instruction_ast_t *mut_inst_ast, 
+                                         ar_instruction_ast_t *mut_inst_ast, 
                                          const char *ref_expression,
                                          size_t error_offset) {
-    expression_parser_t *own_expr_parser = ar__expression_parser__create(ref_expression);
+    ar_expression_parser_t *own_expr_parser = ar__expression_parser__create(ref_expression);
     if (!own_expr_parser) {
         _set_error(mut_parser, "Failed to create expression parser", error_offset);
         return false;
     }
     
-    expression_ast_t *own_expr_ast = ar__expression_parser__parse_expression(own_expr_parser);
+    ar_expression_ast_t *own_expr_ast = ar__expression_parser__parse_expression(own_expr_parser);
     if (!own_expr_ast) {
         const char *expr_error = ar__expression_parser__get_error(own_expr_parser);
         char *own_error_copy = expr_error ? AR__HEAP__STRDUP(expr_error, "error message copy") : NULL;
@@ -144,7 +144,7 @@ void ar_assignment_instruction_parser__destroy(ar_assignment_instruction_parser_
 /**
  * Parse an assignment instruction.
  */
-instruction_ast_t* ar_assignment_instruction_parser__parse(
+ar_instruction_ast_t* ar_assignment_instruction_parser__parse(
     ar_assignment_instruction_parser_t *mut_parser,
     const char *ref_instruction
 ) {
@@ -223,7 +223,7 @@ instruction_ast_t* ar_assignment_instruction_parser__parse(
     own_expr[expr_end - expr_start] = '\0';
     
     /* Create AST node */
-    instruction_ast_t *own_ast = ar__instruction_ast__create_assignment(own_path, own_expr);
+    ar_instruction_ast_t *own_ast = ar__instruction_ast__create_assignment(own_path, own_expr);
     
     if (!own_ast) {
         AR__HEAP__FREE(own_path);

@@ -27,7 +27,7 @@ typedef struct ar_condition_instruction_evaluator_s ar_condition_instruction_eva
  * @note Ownership: Returns an owned value that caller must destroy
  */
 ar_condition_instruction_evaluator_t* ar_condition_instruction_evaluator__create(
-    expression_evaluator_t *ref_expr_evaluator,
+    ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
 
@@ -51,7 +51,7 @@ void ar_condition_instruction_evaluator__destroy(
  */
 bool ar_condition_instruction_evaluator__evaluate(
     ar_condition_instruction_evaluator_t *mut_evaluator,
-    const instruction_ast_t *ref_ast
+    const ar_instruction_ast_t *ref_ast
 );
 
 /**
@@ -63,9 +63,9 @@ bool ar_condition_instruction_evaluator__evaluate(
  * @note Ownership: Does not take ownership of any parameters
  */
 bool ar_condition_instruction_evaluator__evaluate_legacy(
-    expression_evaluator_t *mut_expr_evaluator,
+    ar_expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory,
-    const instruction_ast_t *ref_ast
+    const ar_instruction_ast_t *ref_ast
 );
 
 #endif /* AGERUN_CONDITION_INSTRUCTION_EVALUATOR_H */

@@ -41,11 +41,11 @@ static void test_destroy_agent_parser__parse_integer_id(void) {
     ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar_destroy_agent_instruction_parser__parse(own_parser, instruction, NULL);
+    ar_instruction_ast_t *own_ast = ar_destroy_agent_instruction_parser__parse(own_parser, instruction, NULL);
     
     // Then it should parse as a destroy agent function
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_DESTROY_AGENT);
+    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__DESTROY_AGENT);
     assert(ar__instruction_ast__has_result_assignment(own_ast) == false);
     
     list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
@@ -75,11 +75,11 @@ static void test_destroy_agent_parser__parse_memory_reference(void) {
     ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar_destroy_agent_instruction_parser__parse(own_parser, instruction, NULL);
+    ar_instruction_ast_t *own_ast = ar_destroy_agent_instruction_parser__parse(own_parser, instruction, NULL);
     
     // Then it should parse as a destroy agent function
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_DESTROY_AGENT);
+    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__DESTROY_AGENT);
     
     list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
     assert(ar__list__count(own_args) == 1);
@@ -108,11 +108,11 @@ static void test_destroy_agent_parser__parse_with_assignment(void) {
     ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create();
     assert(own_parser != NULL);
     
-    instruction_ast_t *own_ast = ar_destroy_agent_instruction_parser__parse(own_parser, instruction, "memory.result");
+    ar_instruction_ast_t *own_ast = ar_destroy_agent_instruction_parser__parse(own_parser, instruction, "memory.result");
     
     // Then it should parse as a destroy agent function with assignment
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_DESTROY_AGENT);
+    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__DESTROY_AGENT);
     assert(ar__instruction_ast__has_result_assignment(own_ast) == true);
     
     list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
@@ -139,7 +139,7 @@ static void test_destroy_agent_parser__error_handling(void) {
     assert(own_parser != NULL);
     
     // Test 1: Missing parentheses
-    instruction_ast_t *ast = ar_destroy_agent_instruction_parser__parse(own_parser, "destroy 123", NULL);
+    ar_instruction_ast_t *ast = ar_destroy_agent_instruction_parser__parse(own_parser, "destroy 123", NULL);
     assert(ast == NULL);
     assert(ar_destroy_agent_instruction_parser__get_error(own_parser) != NULL);
     assert(strstr(ar_destroy_agent_instruction_parser__get_error(own_parser), "Expected '(' after 'destroy'") != NULL);
@@ -180,11 +180,11 @@ static void test_destroy_agent_parser__parse_with_expression_asts(void) {
     assert(own_parser != NULL);
     
     // When parsing the instruction
-    instruction_ast_t *own_ast = ar_destroy_agent_instruction_parser__parse(own_parser, instruction, "memory.destroyed");
+    ar_instruction_ast_t *own_ast = ar_destroy_agent_instruction_parser__parse(own_parser, instruction, "memory.destroyed");
     
     // Then it should parse successfully with argument ASTs
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == INST_AST_DESTROY_AGENT);
+    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__DESTROY_AGENT);
     assert(ar__instruction_ast__has_result_assignment(own_ast) == true);
     
     // And the argument should be available as an expression AST
@@ -196,9 +196,9 @@ static void test_destroy_agent_parser__parse_with_expression_asts(void) {
     assert(items != NULL);
     
     // The argument should be an integer literal AST
-    const expression_ast_t *ref_arg = (const expression_ast_t*)items[0];
+    const ar_expression_ast_t *ref_arg = (const ar_expression_ast_t*)items[0];
     assert(ref_arg != NULL);
-    assert(ar__expression_ast__get_type(ref_arg) == EXPR_AST_LITERAL_INT);
+    assert(ar__expression_ast__get_type(ref_arg) == AR_EXPR__LITERAL_INT);
     assert(ar__expression_ast__get_int_value(ref_arg) == 42);
     
     AR__HEAP__FREE(items);
@@ -206,10 +206,10 @@ static void test_destroy_agent_parser__parse_with_expression_asts(void) {
     
     // Test with memory reference
     const char *instruction2 = "destroy(memory.agent_id)";
-    instruction_ast_t *own_ast2 = ar_destroy_agent_instruction_parser__parse(own_parser, instruction2, NULL);
+    ar_instruction_ast_t *own_ast2 = ar_destroy_agent_instruction_parser__parse(own_parser, instruction2, NULL);
     
     assert(own_ast2 != NULL);
-    assert(ar__instruction_ast__get_type(own_ast2) == INST_AST_DESTROY_AGENT);
+    assert(ar__instruction_ast__get_type(own_ast2) == AR_INST__DESTROY_AGENT);
     
     const list_t *ref_arg_asts2 = ar__instruction_ast__get_function_arg_asts(own_ast2);
     assert(ref_arg_asts2 != NULL);
@@ -218,9 +218,9 @@ static void test_destroy_agent_parser__parse_with_expression_asts(void) {
     void **items2 = ar__list__items(ref_arg_asts2);
     assert(items2 != NULL);
     
-    const expression_ast_t *ref_arg2 = (const expression_ast_t*)items2[0];
+    const ar_expression_ast_t *ref_arg2 = (const ar_expression_ast_t*)items2[0];
     assert(ref_arg2 != NULL);
-    assert(ar__expression_ast__get_type(ref_arg2) == EXPR_AST_MEMORY_ACCESS);
+    assert(ar__expression_ast__get_type(ref_arg2) == AR_EXPR__MEMORY_ACCESS);
     
     size_t path_count = 0;
     char **path_components = ar__expression_ast__get_memory_path(ref_arg2, &path_count);

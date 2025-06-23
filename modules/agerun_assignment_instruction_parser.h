@@ -35,7 +35,7 @@ void ar_assignment_instruction_parser__destroy(ar_assignment_instruction_parser_
  * @note Ownership: Returns an owned AST node that caller must destroy.
  * @note The instruction must be of the form "memory.path := expression"
  */
-instruction_ast_t* ar_assignment_instruction_parser__parse(
+ar_instruction_ast_t* ar_assignment_instruction_parser__parse(
     ar_assignment_instruction_parser_t *mut_parser,
     const char *ref_instruction
 );

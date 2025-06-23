@@ -52,7 +52,7 @@ size_t ar__instruction_parser__get_error_position(const instruction_parser_t *re
  * @return Parsed instruction AST node (owned by caller), or NULL on failure
  * @note Ownership: Returns an owned AST node that caller must destroy.
  */
-instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser, const char *ref_instruction);
+ar_instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser, const char *ref_instruction);
 
 
 #endif /* AGERUN_INSTRUCTION_PARSER_H */

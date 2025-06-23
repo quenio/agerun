@@ -129,8 +129,8 @@ static void test_instruction_evaluator__stores_evaluator_instances_internally(vo
     // (internal evaluator instances are created but not exposed)
     
     // Test assignment instruction
-    instruction_ast_t *assignment_ast = ar__instruction_ast__create_assignment("memory.x", "42");
-    expression_ast_t *expr_ast = ar__expression_ast__create_literal_int(42);
+    ar_instruction_ast_t *assignment_ast = ar__instruction_ast__create_assignment("memory.x", "42");
+    ar_expression_ast_t *expr_ast = ar__expression_ast__create_literal_int(42);
     ar__instruction_ast__set_assignment_expression_ast(assignment_ast, expr_ast);
     
     bool result = ar_instruction_evaluator__evaluate(evaluator, assignment_ast);
@@ -170,15 +170,15 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
     // Test 1: Send instruction
     {
         const char *args[] = {"0", "\"hello\""};
-        instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-            INST_AST_SEND, "send", args, 2, NULL
+        ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+            AR_INST__SEND, "send", args, 2, NULL
         );
         assert(ast != NULL);
         
         // Create argument ASTs
         list_t *arg_asts = ar__list__create();
-        expression_ast_t *target_ast = ar__expression_ast__create_literal_int(0);
-        expression_ast_t *msg_ast = ar__expression_ast__create_literal_string("hello");
+        ar_expression_ast_t *target_ast = ar__expression_ast__create_literal_int(0);
+        ar_expression_ast_t *msg_ast = ar__expression_ast__create_literal_string("hello");
         ar__list__add_last(arg_asts, target_ast);
         ar__list__add_last(arg_asts, msg_ast);
         ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -192,16 +192,16 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
     // Test 2: If instruction with result assignment
     {
         const char *args[] = {"1", "\"yes\"", "\"no\""};
-        instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-            INST_AST_IF, "if", args, 3, "memory.result"
+        ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+            AR_INST__IF, "if", args, 3, "memory.result"
         );
         assert(ast != NULL);
         
         // Create argument ASTs: if(1, "yes", "no")
         list_t *arg_asts = ar__list__create();
-        expression_ast_t *cond_ast = ar__expression_ast__create_literal_int(1);
-        expression_ast_t *true_ast = ar__expression_ast__create_literal_string("yes");
-        expression_ast_t *false_ast = ar__expression_ast__create_literal_string("no");
+        ar_expression_ast_t *cond_ast = ar__expression_ast__create_literal_int(1);
+        ar_expression_ast_t *true_ast = ar__expression_ast__create_literal_string("yes");
+        ar_expression_ast_t *false_ast = ar__expression_ast__create_literal_string("no");
         ar__list__add_last(arg_asts, cond_ast);
         ar__list__add_last(arg_asts, true_ast);
         ar__list__add_last(arg_asts, false_ast);
@@ -222,15 +222,15 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
     // Test 3: Parse instruction
     {
         const char *args[] = {"\"user={username}, role={role}\"", "\"user=alice, role=admin\""};
-        instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-            INST_AST_PARSE, "parse", args, 2, "memory.parsed"
+        ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+            AR_INST__PARSE, "parse", args, 2, "memory.parsed"
         );
         assert(ast != NULL);
         
         // Create argument ASTs: parse("user={username}, role={role}", "user=alice, role=admin")
         list_t *arg_asts = ar__list__create();
-        expression_ast_t *template_ast = ar__expression_ast__create_literal_string("user={username}, role={role}");
-        expression_ast_t *input_ast = ar__expression_ast__create_literal_string("user=alice, role=admin");
+        ar_expression_ast_t *template_ast = ar__expression_ast__create_literal_string("user={username}, role={role}");
+        ar_expression_ast_t *input_ast = ar__expression_ast__create_literal_string("user=alice, role=admin");
         ar__list__add_last(arg_asts, template_ast);
         ar__list__add_last(arg_asts, input_ast);
         ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -263,15 +263,15 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         ar__data__set_map_string(memory, "name", "Alice");
         
         const char *args[] = {"\"Hi {name}\"", "memory"};
-        instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-            INST_AST_BUILD, "build", args, 2, "memory.built"
+        ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+            AR_INST__BUILD, "build", args, 2, "memory.built"
         );
         assert(ast != NULL);
         
         // Create argument ASTs: build("Hi {name}", memory)
         list_t *arg_asts = ar__list__create();
-        expression_ast_t *template_ast = ar__expression_ast__create_literal_string("Hi {name}");
-        expression_ast_t *values_ast = ar__expression_ast__create_memory_access("memory", NULL, 0);
+        ar_expression_ast_t *template_ast = ar__expression_ast__create_literal_string("Hi {name}");
+        ar_expression_ast_t *values_ast = ar__expression_ast__create_memory_access("memory", NULL, 0);
         ar__list__add_last(arg_asts, template_ast);
         ar__list__add_last(arg_asts, values_ast);
         ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
@@ -313,23 +313,23 @@ static void test_instruction_evaluator__only_unified_interface_exposed(void) {
     assert(evaluator != NULL);
     
     // When we have various instruction ASTs
-    instruction_ast_t *assignment_ast = ar__instruction_ast__create_assignment("memory.x", "42");
+    ar_instruction_ast_t *assignment_ast = ar__instruction_ast__create_assignment("memory.x", "42");
     assert(assignment_ast != NULL);
-    expression_ast_t *expr_ast = ar__expression_ast__create_literal_int(42);
+    ar_expression_ast_t *expr_ast = ar__expression_ast__create_literal_int(42);
     assert(expr_ast != NULL);
     bool ast_set = ar__instruction_ast__set_assignment_expression_ast(assignment_ast, expr_ast);
     assert(ast_set == true);
     
     const char *send_args[] = {"0", "\"hello\""};
-    instruction_ast_t *send_ast = ar__instruction_ast__create_function_call(
-        INST_AST_SEND, "send", send_args, 2, NULL
+    ar_instruction_ast_t *send_ast = ar__instruction_ast__create_function_call(
+        AR_INST__SEND, "send", send_args, 2, NULL
     );
     assert(send_ast != NULL);
     
     // Create argument ASTs for send
     list_t *arg_asts = ar__list__create();
-    expression_ast_t *target_ast = ar__expression_ast__create_literal_int(0);
-    expression_ast_t *msg_ast = ar__expression_ast__create_literal_string("hello");
+    ar_expression_ast_t *target_ast = ar__expression_ast__create_literal_int(0);
+    ar_expression_ast_t *msg_ast = ar__expression_ast__create_literal_string("hello");
     ar__list__add_last(arg_asts, target_ast);
     ar__list__add_last(arg_asts, msg_ast);
     ar__instruction_ast__set_function_arg_asts(send_ast, arg_asts);
@@ -368,16 +368,16 @@ static void test_instruction_evaluator__unified_evaluate_assignment(void) {
     assert(evaluator != NULL);
     
     // Create an assignment AST: memory.x := 42
-    instruction_ast_t *ast = ar__instruction_ast__create_assignment("memory.x", "42");
+    ar_instruction_ast_t *ast = ar__instruction_ast__create_assignment("memory.x", "42");
     assert(ast != NULL);
     
-    expression_ast_t *expr_ast = ar__expression_ast__create_literal_int(42);
+    ar_expression_ast_t *expr_ast = ar__expression_ast__create_literal_int(42);
     assert(expr_ast != NULL);
     bool set_result = ar__instruction_ast__set_assignment_expression_ast(ast, expr_ast);
     assert(set_result == true);
     
     // Verify the expression AST was stored
-    const expression_ast_t *stored_ast = ar__instruction_ast__get_assignment_expression_ast(ast);
+    const ar_expression_ast_t *stored_ast = ar__instruction_ast__get_assignment_expression_ast(ast);
     assert(stored_ast != NULL);
     
     // When evaluating using the unified evaluate method

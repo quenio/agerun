@@ -19,7 +19,7 @@ static void test_create_assignment_instruction(void) {
     
     // Then the node should be created successfully with correct type and values
     assert(own_node != NULL);
-    assert(ar__instruction_ast__get_type(own_node) == INST_AST_ASSIGNMENT);
+    assert(ar__instruction_ast__get_type(own_node) == AR_INST__ASSIGNMENT);
     assert(strcmp(ar__instruction_ast__get_assignment_path(own_node), "memory.x") == 0);
     assert(strcmp(ar__instruction_ast__get_assignment_expression(own_node), "42") == 0);
     
@@ -54,12 +54,12 @@ static void test_create_send_function_without_assignment(void) {
     
     // When creating a send function call AST node without result assignment
     instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
-        INST_AST_SEND, function_name, args, arg_count, NULL
+        AR_INST__SEND, function_name, args, arg_count, NULL
     );
     
     // Then the node should be created successfully
     assert(own_node != NULL);
-    assert(ar__instruction_ast__get_type(own_node) == INST_AST_SEND);
+    assert(ar__instruction_ast__get_type(own_node) == AR_INST__SEND);
     assert(strcmp(ar__instruction_ast__get_function_name(own_node), "send") == 0);
     assert(ar__instruction_ast__has_result_assignment(own_node) == false);
     assert(ar__instruction_ast__get_function_result_path(own_node) == NULL);
@@ -89,7 +89,7 @@ static void test_create_send_function_with_assignment(void) {
     
     // When creating a send function call AST node with result assignment
     instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
-        INST_AST_SEND, function_name, args, arg_count, result_path
+        AR_INST__SEND, function_name, args, arg_count, result_path
     );
     
     // Then the node should include the result assignment
@@ -111,12 +111,12 @@ static void test_create_if_function(void) {
     
     // When creating an if function call AST node
     instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
-        INST_AST_IF, function_name, args, arg_count, result_path
+        AR_INST__IF, function_name, args, arg_count, result_path
     );
     
     // Then the node should be created with correct type and arguments
     assert(own_node != NULL);
-    assert(ar__instruction_ast__get_type(own_node) == INST_AST_IF);
+    assert(ar__instruction_ast__get_type(own_node) == AR_INST__IF);
     assert(strcmp(ar__instruction_ast__get_function_name(own_node), "if") == 0);
     
     // Verify arguments
@@ -145,12 +145,12 @@ static void test_create_method_function(void) {
     
     // When creating a method function call AST node
     instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
-        INST_AST_METHOD, function_name, args, arg_count, result_path
+        AR_INST__METHOD, function_name, args, arg_count, result_path
     );
     
     // Then the node should be created correctly
     assert(own_node != NULL);
-    assert(ar__instruction_ast__get_type(own_node) == INST_AST_METHOD);
+    assert(ar__instruction_ast__get_type(own_node) == AR_INST__METHOD);
     assert(ar__instruction_ast__has_result_assignment(own_node) == true);
     
     ar__instruction_ast__destroy(own_node);
@@ -167,12 +167,12 @@ static void test_create_agent_function(void) {
     
     // When creating an agent function call AST node
     instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
-        INST_AST_AGENT, function_name, args, arg_count, result_path
+        AR_INST__AGENT, function_name, args, arg_count, result_path
     );
     
     // Then the node should be created correctly
     assert(own_node != NULL);
-    assert(ar__instruction_ast__get_type(own_node) == INST_AST_AGENT);
+    assert(ar__instruction_ast__get_type(own_node) == AR_INST__AGENT);
     assert(strcmp(ar__instruction_ast__get_function_name(own_node), "agent") == 0);
     assert(strcmp(ar__instruction_ast__get_function_result_path(own_node), "memory.agent_id") == 0);
     
@@ -190,12 +190,12 @@ static void test_create_destroy_agent_function(void) {
     
     // When creating a destroy agent function call AST node
     instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY_AGENT, function_name, args, arg_count, result_path
+        AR_INST__DESTROY_AGENT, function_name, args, arg_count, result_path
     );
     
     // Then the node should be created correctly
     assert(own_node != NULL);
-    assert(ar__instruction_ast__get_type(own_node) == INST_AST_DESTROY_AGENT);
+    assert(ar__instruction_ast__get_type(own_node) == AR_INST__DESTROY_AGENT);
     
     list_t *own_args = ar__instruction_ast__get_function_args(own_node);
     assert(own_args != NULL);
@@ -219,12 +219,12 @@ static void test_create_destroy_method_function(void) {
     
     // When creating a destroy method function call AST node without assignment
     instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
-        INST_AST_DESTROY_METHOD, function_name, args, arg_count, NULL
+        AR_INST__DESTROY_METHOD, function_name, args, arg_count, NULL
     );
     
     // Then the node should be created correctly
     assert(own_node != NULL);
-    assert(ar__instruction_ast__get_type(own_node) == INST_AST_DESTROY_METHOD);
+    assert(ar__instruction_ast__get_type(own_node) == AR_INST__DESTROY_METHOD);
     assert(ar__instruction_ast__has_result_assignment(own_node) == false);
     
     list_t *own_args = ar__instruction_ast__get_function_args(own_node);
@@ -246,12 +246,12 @@ static void test_create_parse_function(void) {
     
     // When creating a parse function call AST node
     instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
-        INST_AST_PARSE, function_name, args, arg_count, result_path
+        AR_INST__PARSE, function_name, args, arg_count, result_path
     );
     
     // Then the node should be created correctly
     assert(own_node != NULL);
-    assert(ar__instruction_ast__get_type(own_node) == INST_AST_PARSE);
+    assert(ar__instruction_ast__get_type(own_node) == AR_INST__PARSE);
     assert(strcmp(ar__instruction_ast__get_function_name(own_node), "parse") == 0);
     
     ar__instruction_ast__destroy(own_node);
@@ -268,12 +268,12 @@ static void test_create_build_function(void) {
     
     // When creating a build function call AST node
     instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
-        INST_AST_BUILD, function_name, args, arg_count, result_path
+        AR_INST__BUILD, function_name, args, arg_count, result_path
     );
     
     // Then the node should be created correctly
     assert(own_node != NULL);
-    assert(ar__instruction_ast__get_type(own_node) == INST_AST_BUILD);
+    assert(ar__instruction_ast__get_type(own_node) == AR_INST__BUILD);
     assert(strcmp(ar__instruction_ast__get_function_name(own_node), "build") == 0);
     assert(strcmp(ar__instruction_ast__get_function_result_path(own_node), "memory.greeting") == 0);
     
@@ -287,7 +287,7 @@ static void test_null_handling(void) {
     ar__instruction_ast__destroy(NULL); // Should not crash
     
     // Test accessors with NULL node
-    assert(ar__instruction_ast__get_type(NULL) == INST_AST_ASSIGNMENT); // Default type
+    assert(ar__instruction_ast__get_type(NULL) == AR_INST__ASSIGNMENT); // Default type
     assert(ar__instruction_ast__get_assignment_path(NULL) == NULL);
     assert(ar__instruction_ast__get_assignment_expression(NULL) == NULL);
     assert(ar__instruction_ast__get_function_name(NULL) == NULL);
@@ -304,7 +304,7 @@ static void test_empty_arguments(void) {
     
     // When creating a function call with no arguments
     instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
-        INST_AST_SEND, function_name, NULL, 0, NULL
+        AR_INST__SEND, function_name, NULL, 0, NULL
     );
     
     // Then the node should handle empty arguments correctly
@@ -363,7 +363,7 @@ static void test_instruction_ast__function_arg_asts(void) {
     
     // When creating a send function call AST node
     instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
-        INST_AST_SEND, function_name, args, arg_count, NULL
+        AR_INST__SEND, function_name, args, arg_count, NULL
     );
     assert(own_node != NULL);
     
@@ -442,7 +442,7 @@ static void test_instruction_ast__expression_ast_null_handling(void) {
     
     // Test setting expression AST on wrong node type
     instruction_ast_t *own_send_node = ar__instruction_ast__create_function_call(
-        INST_AST_SEND, "send", NULL, 0, NULL
+        AR_INST__SEND, "send", NULL, 0, NULL
     );
     assert(own_send_node != NULL);
     
