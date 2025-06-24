@@ -88,13 +88,33 @@ run_step "Build executable" "make clean executable"
 echo
 echo "Running tests..."
 output=$(make clean test 2>&1)
+test_exit_code=$?
+
+# Check if tests failed to compile
+if [ $test_exit_code -ne 0 ]; then
+    # Check for compilation errors
+    compile_errors=$(echo "$output" | grep -c "error:")
+    if [ $compile_errors -gt 0 ]; then
+        echo "Tests: COMPILATION FAILED ✗"
+        echo
+        echo "Compilation errors:"
+        echo "$output" | grep -E "error:|^modules/.*_tests\.c:" | head -20
+        exit 1
+    fi
+fi
+
 # Count passed and failed tests by counting test executables that ran
 total_tests=$(echo "$output" | grep -c "^Running test: bin/")
 passed=$(echo "$output" | grep -c "All .* tests passed")
 errors=$(echo "$output" | grep -c "ERROR: Test .* failed")
 aborts=$(echo "$output" | grep -c "Abort trap")
 failed=$((errors + aborts))
-if [ $failed -eq 0 ]; then
+
+# If no tests ran but make succeeded, something is wrong
+if [ $test_exit_code -eq 0 ] && [ $total_tests -eq 0 ]; then
+    echo "Tests: WARNING - No tests were run ⚠️"
+    echo "Check if test executables are being built properly"
+elif [ $failed -eq 0 ] && [ $test_exit_code -eq 0 ]; then
     echo "Tests: $total_tests run, all passed ✓"
 else
     echo "Tests: $total_tests run, $passed passed, $failed FAILED ✗"
