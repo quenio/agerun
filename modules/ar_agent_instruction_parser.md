@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `agerun_agent_instruction_parser` module provides specialized parsing for `agent()` function instructions in the AgeRun language. It follows the instantiable parser pattern with create/destroy lifecycle management and supports both 2-parameter and 3-parameter forms of agent creation.
+The `ar_agent_instruction_parser` module provides specialized parsing for `agent()` function instructions in the AgeRun language. It follows the instantiable parser pattern with create/destroy lifecycle management and supports both 2-parameter and 3-parameter forms of agent creation.
 
 ## Features
 
@@ -17,7 +17,7 @@ The `agerun_agent_instruction_parser` module provides specialized parsing for `a
 ### Basic Usage
 
 ```c
-#include "agerun_agent_instruction_parser.h"
+#include "ar_agent_instruction_parser.h"
 
 // Create parser instance
 ar_agent_instruction_parser_t *parser = ar_agent_instruction_parser__create();
@@ -105,8 +105,8 @@ For 2-parameter calls, the parser automatically adds `"null"` as the third argum
 
 ## Dependencies
 
-- `agerun_instruction_ast.h` - For creating AST nodes
-- `agerun_heap.h` - For memory tracking
+- `ar_instruction_ast.h` - For creating AST nodes
+- `ar_heap.h` - For memory tracking
 - Standard C libraries: `string.h`, `stdio.h`, `ctype.h`, `stdbool.h`
 
 ## Testing
@@ -120,7 +120,7 @@ The module includes comprehensive tests covering:
 
 Run tests with:
 ```bash
-make bin/agerun_agent_instruction_parser_tests
+make bin/ar_agent_instruction_parser_tests
 ```
 
 ## Integration

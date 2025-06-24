@@ -4,7 +4,7 @@ This document describes the memory management model used throughout the AgeRun p
 
 > Inspired by the [Mojo ownership model](https://www.modular.com/blog/deep-dive-into-ownership-in-mojo)
 
-For debugging support and ownership validation, see the [Assert Module Documentation](./modules/agerun_assert.md).
+For debugging support and ownership validation, see the [Assert Module Documentation](./modules/ar_assert.md).
 
 ## Core Concepts
 
@@ -72,7 +72,7 @@ AgeRun implements a memory ownership model with three fundamental value categori
    - For complex resource management, use `AR_ASSERT_OWNERSHIP()` to validate critical allocations
    - For non-obvious transfers, use `AR_ASSERT_TRANSFERRED()` after setting transferred pointers to NULL
    - For preventing use-after-free, use `AR_ASSERT_NOT_USED_AFTER_FREE()` before potential reuse points
-   - See the [Assert Module Documentation](./modules/agerun_assert.md) for detailed guidelines
+   - See the [Assert Module Documentation](./modules/ar_assert.md) for detailed guidelines
    - Assertions should be used strategically rather than excessively
 
 ## Module-Specific Ownership Guidelines
@@ -259,7 +259,7 @@ The AgeRun project follows specific rules for parameter assignment to ensure mem
    - No ownership transfer occurs
 
 4. **Copy and Move Semantics:**
-   - When `ar_data_copy` is used, a new owned object is created
+   - When data is copied, a new owned object is created
    - For larger data structures, prefer creating handles and transferring ownership rather than copying
    - "Move" semantics are implemented via explicit ownership transfer
 

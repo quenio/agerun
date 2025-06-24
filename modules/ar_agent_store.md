@@ -2,7 +2,7 @@
 
 ## Overview
 
-The agent store module (`agerun_agent_store`) handles the persistence of agent state to and from disk storage. It manages the `agency.agerun` file format, ensuring data integrity and providing backup capabilities.
+The agent store module (`ar_agent_store`) handles the persistence of agent state to and from disk storage. It manages the `agency.agerun` file format, ensuring data integrity and providing backup capabilities.
 
 ## Purpose
 
@@ -57,11 +57,11 @@ debug
 ## Key Functions
 
 ### Core Operations
-- `ar__agent__store_save()` - Save all agents to disk
-- `ar__agent__store_load()` - Load agents from disk
-- `ar__agent__store_exists()` - Check if store file exists
-- `ar__agent__store_delete()` - Delete the store file (with backup)
-- `ar__agent__store_get_path()` - Get the store file path
+- `ar__agent_store__save()` - Save all agents to disk
+- `ar__agent_store__load()` - Load agents from disk
+- `ar__agent_store__exists()` - Check if store file exists
+- `ar__agent_store__delete()` - Delete the store file (with backup)
+- `ar__agent_store__get_path()` - Get the store file path
 
 ## Design Principles
 
@@ -73,12 +73,12 @@ The module follows Parnas principles:
 
 ## Dependencies
 
-- `agerun_agent` - For agent operations
-- `agerun_method` - For method information
-- `agerun_data` - For agent memory data
-- `agerun_list` - For collection operations
-- `agerun_io` - For safe file operations
-- `agerun_heap` - For memory management
+- `ar_agent` - For agent operations
+- `ar_method` - For method information
+- `ar_data` - For agent memory data
+- `ar_list` - For collection operations
+- `ar_io` - For safe file operations
+- `ar_heap` - For memory management
 
 ## Error Handling
 
@@ -98,22 +98,22 @@ The module provides robust error handling:
 
 ```c
 // Save current agents
-if (!ar__agent__store_save()) {
+if (!ar__agent_store__save()) {
     // Handle save error
 }
 
 // Load agents on startup
-if (!ar__agent__store_load()) {
+if (!ar__agent_store__load()) {
     // Handle load error
 }
 
 // Check if we have persisted state
-if (ar__agent__store_exists()) {
+if (ar__agent_store__exists()) {
     // Load existing agents
 }
 
 // Clean up persisted state
-ar__agent__store_delete();
+ar__agent_store__delete();
 ```
 
 ## Memory Management

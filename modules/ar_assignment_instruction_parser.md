@@ -98,13 +98,13 @@ This module is designed to be used by the main `instruction_parser` facade, whic
 
 ## Dependencies
 
-- `agerun_instruction_ast`: For creating assignment AST nodes
-- `agerun_heap`: For memory management
+- `ar_instruction_ast`: For creating assignment AST nodes
+- `ar_heap`: For memory management
 - Standard C library: string.h, ctype.h
 
 ## Testing
 
-Comprehensive tests are provided in `agerun_assignment_instruction_parser_tests.c` covering:
+Comprehensive tests are provided in `ar_assignment_instruction_parser_tests.c` covering:
 
 - Basic assignment parsing
 - String and expression assignments

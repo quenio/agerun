@@ -71,15 +71,15 @@ The module follows strict memory ownership rules:
 
 ## Dependencies
 
-- `agerun_expression_evaluator`: For evaluating expressions
-- `agerun_expression_parser`: For parsing expression strings
-- `agerun_expression_ast`: For expression AST nodes
-- `agerun_instruction_ast`: For accessing instruction AST structure
-- `agerun_methodology`: For method registration
-- `agerun_method`: For method creation
-- `agerun_data`: For data manipulation
-- `agerun_string`: For string operations
-- `agerun_heap`: For memory tracking
+- `ar_expression_evaluator`: For evaluating expressions
+- `ar_expression_parser`: For parsing expression strings
+- `ar_expression_ast`: For expression AST nodes
+- `ar_instruction_ast`: For accessing instruction AST structure
+- `ar_methodology`: For method registration
+- `ar_method`: For method creation
+- `ar_data`: For data manipulation
+- `ar_string`: For string operations
+- `ar_heap`: For memory tracking
 
 ## Implementation Details
 

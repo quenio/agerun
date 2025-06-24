@@ -1,4 +1,4 @@
-# Assert Module (agerun_assert)
+# Assert Module (ar_assert)
 
 The Assert module provides runtime assertion utilities for the AgeRun system, with a particular focus on memory ownership validation. It's designed to help catch programming errors early during development while incurring zero overhead in release builds.
 

@@ -1,6 +1,6 @@
 # Instruction Evaluator Module
 
-The instruction evaluator module (`agerun_instruction_evaluator`) serves as the central coordinator for executing parsed instruction AST nodes within the AgeRun runtime environment. It manages a collection of specialized instruction evaluators, each responsible for a specific instruction type.
+The instruction evaluator module (`ar_instruction_evaluator`) serves as the central coordinator for executing parsed instruction AST nodes within the AgeRun runtime environment. It manages a collection of specialized instruction evaluators, each responsible for a specific instruction type.
 
 ## Purpose
 
@@ -39,10 +39,10 @@ The module follows a **composition pattern** where it creates and manages instan
 ## Dependencies
 
 - All 9 specialized instruction evaluator modules
-- `agerun_expression_evaluator`: For evaluating expressions within instructions
-- `agerun_instruction_ast`: For accessing parsed instruction structures
-- `agerun_data`: For data manipulation and storage
-- `agerun_heap`: For memory tracking
+- `ar_expression_evaluator`: For evaluating expressions within instructions
+- `ar_instruction_ast`: For accessing parsed instruction structures
+- `ar_data`: For data manipulation and storage
+- `ar_heap`: For memory tracking
 
 ## API Reference
 
@@ -259,7 +259,7 @@ Error handling is delegated to the specialized evaluators:
 
 The module has a focused test suite that verifies the coordination pattern:
 
-- `agerun_ar_instruction_evaluator_tests.c`: Tests creation/destruction and delegation functions
+- `ar_instruction_evaluator_tests.c`: Tests creation/destruction and delegation functions
 - **Specialized evaluator testing**: Each specialized evaluator has its own comprehensive test suite
 - **Integration focus**: Tests verify that delegation works correctly
 - **Memory safety**: All tests pass with zero memory leaks

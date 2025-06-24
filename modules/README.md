@@ -4,7 +4,7 @@
 
 In the AgeRun system, a module is a self-contained unit of functionality that consists of an implementation file (`.c`) and a header file (`.h`). Each module encapsulates a specific set of related functions and data structures that work together to provide a particular capability to the system. Modules are designed to have clear interfaces and dependencies, making the system more maintainable and easier to understand.
 
-Each module typically follows a consistent naming convention with an `ar_` prefix (e.g., `ar_data`, `ar_string`), and has its own test file (`ar_*_tests.c`) that verifies its functionality. Note: File names are being transitioned from `agerun_` to `ar_` prefix gradually as files are modified for other reasons.
+Each module typically follows a consistent naming convention with an `ar_` prefix (e.g., `ar_data`, `ar_string`), and has its own test file (`ar_*_tests.c`) that verifies its functionality. Note: File names are being transitioned from `ar_` to `ar_` prefix gradually as files are modified for other reasons.
 
 **Recent Architectural Achievements:**
 - **Zero Memory Leaks**: All 45 tests pass with zero memory leaks across the entire system
@@ -18,7 +18,7 @@ Within modules, consistent naming conventions are used:
 
 - **Functions**: All public functions in a module use the `ar_` prefix followed by the module name and function purpose (e.g., `ar_string__trim`, `ar_data__copy`). This creates a namespace to prevent naming collisions.
 
-- **Structs**: Data structures typically use lowercase with underscores and the `_t` suffix (e.g., `string_t`, `agent_t`). These are often defined in the header files.
+- **Structs**: Data structures typically use lowercase with underscores and the `_t` suffix (e.g., `data_t`, `method_t`). These are often defined in the header files.
 
 - **Type Declarations**: Type declarations often use typedefs to create more readable code, following the same naming pattern as structs.
 
@@ -89,290 +89,290 @@ This tree illustrates the dependency relationships between modules in the AgeRun
 - These represent weaker coupling and better information hiding
 - Following Parnas principles, most dependencies should be implementation-only
 
-Each module depends on the modules listed under it (its children in the tree). For example, `agerun_executable` depends on both `agerun_system` and `agerun_methodology` in its implementation.
+Each module depends on the modules listed under it (its children in the tree). For example, `ar_executable` depends on both `ar_system` and `ar_methodology` in its implementation.
 
-**Note**: The `agerun_heap` and `agerun_io` modules are not shown as top-level entries in the tree to avoid clutter, as they are used by many modules. However, there is one remaining circular dependency:
-- `agerun_heap` ↔ `agerun_io`*: heap uses io for error reporting, while io uses heap for memory tracking. This is a fundamental design challenge where memory tracking needs error reporting.
+**Note**: The `ar_heap` and `ar_io` modules are not shown as top-level entries in the tree to avoid clutter, as they are used by many modules. However, there is one remaining circular dependency:
+- `ar_heap` ↔ `ar_io`*: heap uses io for error reporting, while io uses heap for memory tracking. This is a fundamental design challenge where memory tracking needs error reporting.
 
 ```
 Main Modules:
-agerun_executable
-├──c──> agerun_system
-├──c──> agerun_methodology
-├──c──> agerun_agency
-├──c──> agerun_method
-└──c──> agerun_agent
+ar_executable
+├──c──> ar_system
+├──c──> ar_methodology
+├──c──> ar_agency
+├──c──> ar_method
+└──c──> ar_agent
 
-agerun_system
-├──c──> agerun_agent
-│       ├──h──> agerun_data
-│       │       ├──h──> agerun_map
-│       │       ├──h──> agerun_list
-│       │       ├──c──> agerun_string
-│       │       └──c──> agerun_assert
-│       ├──h──> agerun_list
-│       ├──c──> agerun_method
-│       │       ├──h──> agerun_data
-│       │       ├──c──> agerun_interpreter
-│       │       │       ├──h──> agerun_instruction
-│       │       │       │       ├──h──> agerun_data
-│       │       │       │       ├──c──> agerun_expression
-│       │       │       │       │       ├──h──> agerun_data
-│       │       │       │       │       ├──c──> agerun_string
-│       │       │       │       │       ├──c──> agerun_list
-│       │       │       │       │       └──c──> agerun_map
-│       │       │       │       ├──c──> agerun_string
-│       │       │       │       └──c──> agerun_assert
-│       │       │       ├──c──> agerun_agency
-│       │       │       ├──c──> agerun_agent
-│       │       │       ├──c──> agerun_string
-│       │       │       ├──c──> agerun_data
-│       │       │       ├──c──> agerun_expression
-│       │       │       ├──c──> agerun_map
-│       │       │       ├──c──> agerun_methodology
-│       │       │       └──c──> agerun_assert
-│       │       ├──c──> agerun_string
-│       │       ├──c──> agerun_agent
-│       │       ├──c──> agerun_agency
-│       │       ├──c──> agerun_map
-│       │       └──c──> agerun_assert
-│       ├──c──> agerun_methodology
-│       └──c──> agerun_map
-├──c──> agerun_method
-├──c──> agerun_methodology
-│       ├──h──> agerun_method
-│       ├──c──> agerun_semver
-│       ├──c──> agerun_agency
-│       ├──c──> agerun_io
-│       ├──c──> agerun_string
-│       └──c──> agerun_assert
-├──c──> agerun_agency
-│       ├──h──> agerun_data
-│       ├──h──> agerun_agent_registry
-│       │       ├──h──> agerun_data
-│       │       ├──c──> agerun_list
-│       │       └──c──> agerun_map
-│       ├──c──> agerun_agent
-│       ├──c──> agerun_agent_store
-│       │       ├──h──> agerun_agent_registry
-│       │       ├──c──> agerun_io
-│       │       ├──c──> agerun_agent
-│       │       ├──c──> agerun_method
-│       │       ├──c──> agerun_data
-│       │       └──c──> agerun_list
-│       └──c──> agerun_agent_update
-│               ├──h──> agerun_agent_registry
-│               ├──h──> agerun_method
-│               ├──c──> agerun_agent
-│               ├──c──> agerun_semver
-│               └──c──> agerun_io
-├──c──> agerun_data
-├──c──> agerun_list
-└──c──> agerun_map
+ar_system
+├──c──> ar_agent
+│       ├──h──> ar_data
+│       │       ├──h──> ar_map
+│       │       ├──h──> ar_list
+│       │       ├──c──> ar_string
+│       │       └──c──> ar_assert
+│       ├──h──> ar_list
+│       ├──c──> ar_method
+│       │       ├──h──> ar_data
+│       │       ├──c──> ar_interpreter
+│       │       │       ├──h──> ar_instruction
+│       │       │       │       ├──h──> ar_data
+│       │       │       │       ├──c──> ar_expression
+│       │       │       │       │       ├──h──> ar_data
+│       │       │       │       │       ├──c──> ar_string
+│       │       │       │       │       ├──c──> ar_list
+│       │       │       │       │       └──c──> ar_map
+│       │       │       │       ├──c──> ar_string
+│       │       │       │       └──c──> ar_assert
+│       │       │       ├──c──> ar_agency
+│       │       │       ├──c──> ar_agent
+│       │       │       ├──c──> ar_string
+│       │       │       ├──c──> ar_data
+│       │       │       ├──c──> ar_expression
+│       │       │       ├──c──> ar_map
+│       │       │       ├──c──> ar_methodology
+│       │       │       └──c──> ar_assert
+│       │       ├──c──> ar_string
+│       │       ├──c──> ar_agent
+│       │       ├──c──> ar_agency
+│       │       ├──c──> ar_map
+│       │       └──c──> ar_assert
+│       ├──c──> ar_methodology
+│       └──c──> ar_map
+├──c──> ar_method
+├──c──> ar_methodology
+│       ├──h──> ar_method
+│       ├──c──> ar_semver
+│       ├──c──> ar_agency
+│       ├──c──> ar_io
+│       ├──c──> ar_string
+│       └──c──> ar_assert
+├──c──> ar_agency
+│       ├──h──> ar_data
+│       ├──h──> ar_agent_registry
+│       │       ├──h──> ar_data
+│       │       ├──c──> ar_list
+│       │       └──c──> ar_map
+│       ├──c──> ar_agent
+│       ├──c──> ar_agent_store
+│       │       ├──h──> ar_agent_registry
+│       │       ├──c──> ar_io
+│       │       ├──c──> ar_agent
+│       │       ├──c──> ar_method
+│       │       ├──c──> ar_data
+│       │       └──c──> ar_list
+│       └──c──> ar_agent_update
+│               ├──h──> ar_agent_registry
+│               ├──h──> ar_method
+│               ├──c──> ar_agent
+│               ├──c──> ar_semver
+│               └──c──> ar_io
+├──c──> ar_data
+├──c──> ar_list
+└──c──> ar_map
 
-agerun_expression_ast
-├──c──> agerun_list
-└──c──> agerun_heap
+ar_expression_ast
+├──c──> ar_list
+└──c──> ar_heap
 
-agerun_instruction_ast
-├──c──> agerun_list
-└──c──> agerun_heap
+ar_instruction_ast
+├──c──> ar_list
+└──c──> ar_heap
 
-agerun_instruction_parser
-├──c──> agerun_instruction_ast
-│       ├──c──> agerun_list
-│       └──c──> agerun_heap
-├──c──> agerun_list
-├──c──> agerun_string
-└──c──> agerun_heap
+ar_instruction_parser
+├──c──> ar_instruction_ast
+│       ├──c──> ar_list
+│       └──c──> ar_heap
+├──c──> ar_list
+├──c──> ar_string
+└──c──> ar_heap
 
-agerun_assignment_instruction_parser
-├──c──> agerun_instruction_ast
-│       ├──c──> agerun_list
-│       └──c──> agerun_heap
-└──c──> agerun_heap
+ar_assignment_instruction_parser
+├──c──> ar_instruction_ast
+│       ├──c──> ar_list
+│       └──c──> ar_heap
+└──c──> ar_heap
 
-agerun_send_instruction_parser
-├──c──> agerun_instruction_ast
-│       ├──c──> agerun_list
-│       └──c──> agerun_heap
-├──c──> agerun_string
-└──c──> agerun_heap
+ar_send_instruction_parser
+├──c──> ar_instruction_ast
+│       ├──c──> ar_list
+│       └──c──> ar_heap
+├──c──> ar_string
+└──c──> ar_heap
 
-agerun_condition_instruction_parser
-├──c──> agerun_instruction_ast
-│       ├──c──> agerun_list
-│       └──c──> agerun_heap
-├──c──> agerun_string
-└──c──> agerun_heap
+ar_condition_instruction_parser
+├──c──> ar_instruction_ast
+│       ├──c──> ar_list
+│       └──c──> ar_heap
+├──c──> ar_string
+└──c──> ar_heap
 
-agerun_parse_instruction_parser
-├──c──> agerun_instruction_ast
-│       ├──c──> agerun_list
-│       └──c──> agerun_heap
-├──c──> agerun_string
-└──c──> agerun_heap
+ar_parse_instruction_parser
+├──c──> ar_instruction_ast
+│       ├──c──> ar_list
+│       └──c──> ar_heap
+├──c──> ar_string
+└──c──> ar_heap
 
-agerun_build_instruction_parser
-├──c──> agerun_instruction_ast
-│       ├──c──> agerun_list
-│       └──c──> agerun_heap
-├──c──> agerun_string
-└──c──> agerun_heap
+ar_build_instruction_parser
+├──c──> ar_instruction_ast
+│       ├──c──> ar_list
+│       └──c──> ar_heap
+├──c──> ar_string
+└──c──> ar_heap
 
-agerun_method_instruction_parser
-├──c──> agerun_instruction_ast
-│       ├──c──> agerun_list
-│       └──c──> agerun_heap
-├──c──> agerun_string
-└──c──> agerun_heap
+ar_method_instruction_parser
+├──c──> ar_instruction_ast
+│       ├──c──> ar_list
+│       └──c──> ar_heap
+├──c──> ar_string
+└──c──> ar_heap
 
-agerun_agent_instruction_parser
-├──c──> agerun_instruction_ast
-│       ├──c──> agerun_list
-│       └──c──> agerun_heap
-├──c──> agerun_string
-└──c──> agerun_heap
+ar_agent_instruction_parser
+├──c──> ar_instruction_ast
+│       ├──c──> ar_list
+│       └──c──> ar_heap
+├──c──> ar_string
+└──c──> ar_heap
 
-agerun_expression_parser
-├──c──> agerun_expression_ast
-│       ├──c──> agerun_list
-│       └──c──> agerun_heap
-├──c──> agerun_list
-├──c──> agerun_string
-└──c──> agerun_heap
+ar_expression_parser
+├──c──> ar_expression_ast
+│       ├──c──> ar_list
+│       └──c──> ar_heap
+├──c──> ar_list
+├──c──> ar_string
+└──c──> ar_heap
 
-agerun_expression_evaluator
-├──h──> agerun_expression_ast
-├──h──> agerun_data
-├──c──> agerun_string
-├──c──> agerun_io
-└──c──> agerun_heap
+ar_expression_evaluator
+├──h──> ar_expression_ast
+├──h──> ar_data
+├──c──> ar_string
+├──c──> ar_io
+└──c──> ar_heap
 
-agerun_instruction_evaluator
-├──h──> agerun_expression_evaluator
-├──h──> agerun_instruction_ast
-├──h──> agerun_data
-├──c──> agerun_assignment_instruction_evaluator
-│       ├──h──> agerun_expression_evaluator
-│       ├──h──> agerun_instruction_ast
-│       ├──h──> agerun_data
-│       ├──c──> agerun_expression_parser
-│       ├──c──> agerun_expression_ast
-│       ├──c──> agerun_string
-│       └──c──> agerun_heap
-├──c──> agerun_send_instruction_evaluator
-│       ├──h──> agerun_expression_evaluator
-│       ├──h──> agerun_instruction_ast
-│       ├──h──> agerun_data
-│       ├──c──> agerun_expression_parser
-│       ├──c──> agerun_expression_ast
-│       ├──c──> agerun_agency
-│       ├──c──> agerun_string
-│       └──c──> agerun_heap
-├──c──> agerun_condition_instruction_evaluator
-│       ├──h──> agerun_expression_evaluator
-│       ├──h──> agerun_instruction_ast
-│       ├──h──> agerun_data
-│       ├──c──> agerun_expression_parser
-│       ├──c──> agerun_expression_ast
-│       ├──c──> agerun_string
-│       └──c──> agerun_heap
-├──c──> agerun_parse_instruction_evaluator
-│       ├──h──> agerun_expression_evaluator
-│       ├──h──> agerun_instruction_ast
-│       ├──h──> agerun_data
-│       ├──c──> agerun_expression_parser
-│       ├──c──> agerun_expression_ast
-│       ├──c──> agerun_instruction
-│       ├──c──> agerun_string
-│       └──c──> agerun_heap
-├──c──> agerun_build_instruction_evaluator
-│       ├──h──> agerun_expression_evaluator
-│       ├──h──> agerun_instruction_ast
-│       ├──h──> agerun_data
-│       ├──c──> agerun_expression_parser
-│       ├──c──> agerun_expression_ast
-│       ├──c──> agerun_string
-│       └──c──> agerun_heap
-├──c──> agerun_method_instruction_evaluator
-│       ├──h──> agerun_expression_evaluator
-│       ├──h──> agerun_instruction_ast
-│       ├──h──> agerun_data
-│       ├──c──> agerun_expression_parser
-│       ├──c──> agerun_expression_ast
-│       ├──c──> agerun_methodology
-│       ├──c──> agerun_method
-│       ├──c──> agerun_string
-│       └──c──> agerun_heap
-├──c──> agerun_agent_instruction_evaluator
-│       ├──h──> agerun_expression_evaluator
-│       ├──h──> agerun_instruction_ast
-│       ├──h──> agerun_data
-│       ├──c──> agerun_expression_parser
-│       ├──c──> agerun_expression_ast
-│       ├──c──> agerun_agency
-│       ├──c──> agerun_method
-│       ├──c──> agerun_methodology
-│       ├──c──> agerun_string
-│       └──c──> agerun_heap
-├──c──> agerun_destroy_agent_instruction_evaluator
-│       ├──h──> agerun_expression_evaluator
-│       ├──h──> agerun_instruction_ast
-│       ├──h──> agerun_data
-│       ├──c──> agerun_expression_parser
-│       ├──c──> agerun_expression_ast
-│       ├──c──> agerun_agency
-│       └──c──> agerun_heap
-├──c──> agerun_destroy_method_instruction_evaluator
-│       ├──h──> agerun_expression_evaluator
-│       ├──h──> agerun_instruction_ast
-│       ├──h──> agerun_data
-│       ├──c──> agerun_expression_parser
-│       ├──c──> agerun_expression_ast
-│       ├──c──> agerun_agency
-│       ├──c──> agerun_method
-│       ├──c──> agerun_methodology
-│       └──c──> agerun_heap
-└──c──> agerun_heap
+ar_instruction_evaluator
+├──h──> ar_expression_evaluator
+├──h──> ar_instruction_ast
+├──h──> ar_data
+├──c──> ar_assignment_instruction_evaluator
+│       ├──h──> ar_expression_evaluator
+│       ├──h──> ar_instruction_ast
+│       ├──h──> ar_data
+│       ├──c──> ar_expression_parser
+│       ├──c──> ar_expression_ast
+│       ├──c──> ar_string
+│       └──c──> ar_heap
+├──c──> ar_send_instruction_evaluator
+│       ├──h──> ar_expression_evaluator
+│       ├──h──> ar_instruction_ast
+│       ├──h──> ar_data
+│       ├──c──> ar_expression_parser
+│       ├──c──> ar_expression_ast
+│       ├──c──> ar_agency
+│       ├──c──> ar_string
+│       └──c──> ar_heap
+├──c──> ar_condition_instruction_evaluator
+│       ├──h──> ar_expression_evaluator
+│       ├──h──> ar_instruction_ast
+│       ├──h──> ar_data
+│       ├──c──> ar_expression_parser
+│       ├──c──> ar_expression_ast
+│       ├──c──> ar_string
+│       └──c──> ar_heap
+├──c──> ar_parse_instruction_evaluator
+│       ├──h──> ar_expression_evaluator
+│       ├──h──> ar_instruction_ast
+│       ├──h──> ar_data
+│       ├──c──> ar_expression_parser
+│       ├──c──> ar_expression_ast
+│       ├──c──> ar_instruction
+│       ├──c──> ar_string
+│       └──c──> ar_heap
+├──c──> ar_build_instruction_evaluator
+│       ├──h──> ar_expression_evaluator
+│       ├──h──> ar_instruction_ast
+│       ├──h──> ar_data
+│       ├──c──> ar_expression_parser
+│       ├──c──> ar_expression_ast
+│       ├──c──> ar_string
+│       └──c──> ar_heap
+├──c──> ar_method_instruction_evaluator
+│       ├──h──> ar_expression_evaluator
+│       ├──h──> ar_instruction_ast
+│       ├──h──> ar_data
+│       ├──c──> ar_expression_parser
+│       ├──c──> ar_expression_ast
+│       ├──c──> ar_methodology
+│       ├──c──> ar_method
+│       ├──c──> ar_string
+│       └──c──> ar_heap
+├──c──> ar_agent_instruction_evaluator
+│       ├──h──> ar_expression_evaluator
+│       ├──h──> ar_instruction_ast
+│       ├──h──> ar_data
+│       ├──c──> ar_expression_parser
+│       ├──c──> ar_expression_ast
+│       ├──c──> ar_agency
+│       ├──c──> ar_method
+│       ├──c──> ar_methodology
+│       ├──c──> ar_string
+│       └──c──> ar_heap
+├──c──> ar_destroy_agent_instruction_evaluator
+│       ├──h──> ar_expression_evaluator
+│       ├──h──> ar_instruction_ast
+│       ├──h──> ar_data
+│       ├──c──> ar_expression_parser
+│       ├──c──> ar_expression_ast
+│       ├──c──> ar_agency
+│       └──c──> ar_heap
+├──c──> ar_destroy_method_instruction_evaluator
+│       ├──h──> ar_expression_evaluator
+│       ├──h──> ar_instruction_ast
+│       ├──h──> ar_data
+│       ├──c──> ar_expression_parser
+│       ├──c──> ar_expression_ast
+│       ├──c──> ar_agency
+│       ├──c──> ar_method
+│       ├──c──> ar_methodology
+│       └──c──> ar_heap
+└──c──> ar_heap
 
 Fixture Modules:
-agerun_method_fixture
-├──c──> agerun_system
-├──c──> agerun_methodology
-├──c──> agerun_agency
-├──c──> agerun_io
-└──c──> agerun_heap
+ar_method_fixture
+├──c──> ar_system
+├──c──> ar_methodology
+├──c──> ar_agency
+├──c──> ar_io
+└──c──> ar_heap
 
-agerun_system_fixture
-├──c──> agerun_system
-├──c──> agerun_methodology
-├──c──> agerun_agency
-├──c──> agerun_method
-└──c──> agerun_heap
+ar_system_fixture
+├──c──> ar_system
+├──c──> ar_methodology
+├──c──> ar_agency
+├──c──> ar_method
+└──c──> ar_heap
 
-agerun_instruction_fixture
-├──h──> agerun_data
-├──h──> agerun_expression
-├──c──> agerun_list
-└──c──> agerun_heap
+ar_instruction_fixture
+├──h──> ar_data
+├──h──> ar_expression
+├──c──> ar_list
+└──c──> ar_heap
 
-agerun_interpreter_fixture
-├──h──> agerun_interpreter
-├──h──> agerun_instruction
-├──h──> agerun_data
-├──h──> agerun_method
-├──c──> agerun_heap
-├──c──> agerun_list
-├──c──> agerun_agency
-├──c──> agerun_methodology
-└──c──> agerun_system
+ar_interpreter_fixture
+├──h──> ar_interpreter
+├──h──> ar_instruction
+├──h──> ar_data
+├──h──> ar_method
+├──c──> ar_heap
+├──c──> ar_list
+├──c──> ar_agency
+├──c──> ar_methodology
+└──c──> ar_system
 ```
 
 **Note**: The refactoring to separate parsing (instruction module) from execution (interpreter module) has successfully eliminated the circular dependencies that previously existed between:
-- `agerun_method` ↔ `agerun_instruction`: Now method depends on interpreter, which depends on instruction (unidirectional)
-- `agerun_instruction` → `agerun_methodology` → `agerun_method` → `agerun_instruction`: This cycle has been broken
-- `agerun_instruction` → `agerun_agent` → `agerun_method` → `agerun_instruction`: This cycle has been broken
+- `ar_method` ↔ `ar_instruction`: Now method depends on interpreter, which depends on instruction (unidirectional)
+- `ar_instruction` → `ar_methodology` → `ar_method` → `ar_instruction`: This cycle has been broken
+- `ar_instruction` → `ar_agent` → `ar_method` → `ar_instruction`: This cycle has been broken
 
 The system now follows proper Parnas principles with clean, unidirectional dependencies.
 
@@ -386,315 +386,315 @@ Test files often have different dependency patterns than their corresponding mod
 
 ```
 Core Tests:
-agerun_assert_tests
-├──c──> agerun_assert (module under test)
-└──c──> agerun_heap
+ar_assert_tests
+├──c──> ar_assert (module under test)
+└──c──> ar_heap
 
-agerun_heap_tests
-└──c──> agerun_heap (module under test)
+ar_heap_tests
+└──c──> ar_heap (module under test)
 
-agerun_string_tests
-├──c──> agerun_string (module under test)
-└──c──> agerun_heap
+ar_string_tests
+├──c──> ar_string (module under test)
+└──c──> ar_heap
 
-agerun_list_tests
-├──c──> agerun_list (module under test)
-└──c──> agerun_heap
+ar_list_tests
+├──c──> ar_list (module under test)
+└──c──> ar_heap
 
-agerun_map_tests
-├──c──> agerun_map (module under test)
-└──c──> agerun_heap
+ar_map_tests
+├──c──> ar_map (module under test)
+└──c──> ar_heap
 
-agerun_semver_tests
-├──c──> agerun_semver (module under test)
-└──c──> agerun_heap
+ar_semver_tests
+├──c──> ar_semver (module under test)
+└──c──> ar_heap
 
 Foundation Tests:
-agerun_data_tests
-├──c──> agerun_data (module under test)
-├──c──> agerun_string
-├──c──> agerun_map
-├──c──> agerun_list
-└──c──> agerun_heap
+ar_data_tests
+├──c──> ar_data (module under test)
+├──c──> ar_string
+├──c──> ar_map
+├──c──> ar_list
+└──c──> ar_heap
 
-agerun_expression_tests
-├──c──> agerun_expression (module under test)
-├──c──> agerun_data
-├──c──> agerun_string
-├──c──> agerun_list
-├──c──> agerun_map
-└──c──> agerun_heap
+ar_expression_tests
+├──c──> ar_expression (module under test)
+├──c──> ar_data
+├──c──> ar_string
+├──c──> ar_list
+├──c──> ar_map
+└──c──> ar_heap
 
-agerun_expression_ast_tests
-├──c──> agerun_expression_ast (module under test)
-├──c──> agerun_list
-└──c──> agerun_heap
+ar_expression_ast_tests
+├──c──> ar_expression_ast (module under test)
+├──c──> ar_list
+└──c──> ar_heap
 
-agerun_expression_parser_tests
-├──c──> agerun_expression_parser (module under test)
-├──c──> agerun_expression_ast
-├──c──> agerun_list
-└──c──> agerun_heap
+ar_expression_parser_tests
+├──c──> ar_expression_parser (module under test)
+├──c──> ar_expression_ast
+├──c──> ar_list
+└──c──> ar_heap
 
-agerun_expression_evaluator_tests
-├──c──> agerun_expression_evaluator (module under test)
-├──c──> agerun_expression_ast
-├──c──> agerun_data
-└──c──> agerun_heap
+ar_expression_evaluator_tests
+├──c──> ar_expression_evaluator (module under test)
+├──c──> ar_expression_ast
+├──c──> ar_data
+└──c──> ar_heap
 
-agerun_assignment_instruction_evaluator_tests
-├──c──> agerun_assignment_instruction_evaluator (module under test)
-├──c──> agerun_instruction_evaluator
-├──c──> agerun_expression_evaluator
-├──c──> agerun_instruction_ast
-├──c──> agerun_data
-└──c──> agerun_heap
+ar_assignment_instruction_evaluator_tests
+├──c──> ar_assignment_instruction_evaluator (module under test)
+├──c──> ar_instruction_evaluator
+├──c──> ar_expression_evaluator
+├──c──> ar_instruction_ast
+├──c──> ar_data
+└──c──> ar_heap
 
-agerun_send_instruction_evaluator_tests
-├──c──> agerun_send_instruction_evaluator (module under test)
-├──c──> agerun_instruction_evaluator
-├──c──> agerun_expression_evaluator
-├──c──> agerun_instruction_ast
-├──c──> agerun_agency
-├──c──> agerun_data
-└──c──> agerun_heap
+ar_send_instruction_evaluator_tests
+├──c──> ar_send_instruction_evaluator (module under test)
+├──c──> ar_instruction_evaluator
+├──c──> ar_expression_evaluator
+├──c──> ar_instruction_ast
+├──c──> ar_agency
+├──c──> ar_data
+└──c──> ar_heap
 
-agerun_condition_instruction_evaluator_tests
-├──c──> agerun_condition_instruction_evaluator (module under test)
-├──c──> agerun_instruction_evaluator
-├──c──> agerun_expression_evaluator
-├──c──> agerun_instruction_ast
-├──c──> agerun_data
-└──c──> agerun_heap
+ar_condition_instruction_evaluator_tests
+├──c──> ar_condition_instruction_evaluator (module under test)
+├──c──> ar_instruction_evaluator
+├──c──> ar_expression_evaluator
+├──c──> ar_instruction_ast
+├──c──> ar_data
+└──c──> ar_heap
 
-agerun_parse_instruction_evaluator_tests
-├──c──> agerun_parse_instruction_evaluator (module under test)
-├──c──> agerun_instruction_evaluator
-├──c──> agerun_expression_evaluator
-├──c──> agerun_instruction_ast
-├──c──> agerun_data
-└──c──> agerun_heap
+ar_parse_instruction_evaluator_tests
+├──c──> ar_parse_instruction_evaluator (module under test)
+├──c──> ar_instruction_evaluator
+├──c──> ar_expression_evaluator
+├──c──> ar_instruction_ast
+├──c──> ar_data
+└──c──> ar_heap
 
-agerun_build_instruction_evaluator_tests
-├──c──> agerun_build_instruction_evaluator (module under test)
-├──c──> agerun_instruction_evaluator
-├──c──> agerun_expression_evaluator
-├──c──> agerun_instruction_ast
-├──c──> agerun_data
-└──c──> agerun_heap
+ar_build_instruction_evaluator_tests
+├──c──> ar_build_instruction_evaluator (module under test)
+├──c──> ar_instruction_evaluator
+├──c──> ar_expression_evaluator
+├──c──> ar_instruction_ast
+├──c──> ar_data
+└──c──> ar_heap
 
-agerun_method_instruction_evaluator_tests
-├──c──> agerun_method_instruction_evaluator (module under test)
-├──c──> agerun_instruction_evaluator
-├──c──> agerun_expression_evaluator
-├──c──> agerun_instruction_ast
-├──c──> agerun_methodology
-├──c──> agerun_system
-├──c──> agerun_data
-└──c──> agerun_heap
+ar_method_instruction_evaluator_tests
+├──c──> ar_method_instruction_evaluator (module under test)
+├──c──> ar_instruction_evaluator
+├──c──> ar_expression_evaluator
+├──c──> ar_instruction_ast
+├──c──> ar_methodology
+├──c──> ar_system
+├──c──> ar_data
+└──c──> ar_heap
 
-agerun_agent_instruction_evaluator_tests
-├──c──> agerun_agent_instruction_evaluator (module under test)
-├──c──> agerun_instruction_evaluator
-├──c──> agerun_expression_evaluator
-├──c──> agerun_instruction_ast
-├──c──> agerun_agency
-├──c──> agerun_methodology
-├──c──> agerun_system
-├──c──> agerun_data
-└──c──> agerun_heap
+ar_agent_instruction_evaluator_tests
+├──c──> ar_agent_instruction_evaluator (module under test)
+├──c──> ar_instruction_evaluator
+├──c──> ar_expression_evaluator
+├──c──> ar_instruction_ast
+├──c──> ar_agency
+├──c──> ar_methodology
+├──c──> ar_system
+├──c──> ar_data
+└──c──> ar_heap
 
-agerun_instruction_evaluator_tests
-├──c──> agerun_instruction_evaluator (module under test)
-├──c──> agerun_expression_evaluator
-├──c──> agerun_instruction_ast
-├──c──> agerun_agency
-├──c──> agerun_methodology
-├──c──> agerun_method
-├──c──> agerun_system
-├──c──> agerun_data
-└──c──> agerun_heap
+ar_instruction_evaluator_tests
+├──c──> ar_instruction_evaluator (module under test)
+├──c──> ar_expression_evaluator
+├──c──> ar_instruction_ast
+├──c──> ar_agency
+├──c──> ar_methodology
+├──c──> ar_method
+├──c──> ar_system
+├──c──> ar_data
+└──c──> ar_heap
 
-agerun_instruction_tests
-├──c──> agerun_instruction (module under test)
-├──c──> agerun_data
-└──c──> agerun_heap
+ar_instruction_tests
+├──c──> ar_instruction (module under test)
+├──c──> ar_data
+└──c──> ar_heap
 
-agerun_instruction_ast_tests
-├──c──> agerun_instruction_ast (module under test)
-├──c──> agerun_list
-└──c──> agerun_heap
+ar_instruction_ast_tests
+├──c──> ar_instruction_ast (module under test)
+├──c──> ar_list
+└──c──> ar_heap
 
-agerun_instruction_parser_tests
-├──c──> agerun_instruction_parser (module under test)
-├──c──> agerun_instruction_ast
-├──c──> agerun_list
-└──c──> agerun_heap
+ar_instruction_parser_tests
+├──c──> ar_instruction_parser (module under test)
+├──c──> ar_instruction_ast
+├──c──> ar_list
+└──c──> ar_heap
 
-agerun_assignment_instruction_parser_tests
-├──c──> agerun_assignment_instruction_parser (module under test)
-├──c──> agerun_instruction_ast
-└──c──> agerun_heap
+ar_assignment_instruction_parser_tests
+├──c──> ar_assignment_instruction_parser (module under test)
+├──c──> ar_instruction_ast
+└──c──> ar_heap
 
-agerun_send_instruction_parser_tests
-├──c──> agerun_send_instruction_parser (module under test)
-├──c──> agerun_instruction_ast
-├──c──> agerun_list
-└──c──> agerun_heap
+ar_send_instruction_parser_tests
+├──c──> ar_send_instruction_parser (module under test)
+├──c──> ar_instruction_ast
+├──c──> ar_list
+└──c──> ar_heap
 
-agerun_condition_instruction_parser_tests
-├──c──> agerun_condition_instruction_parser (module under test)
-├──c──> agerun_instruction_ast
-├──c──> agerun_list
-└──c──> agerun_heap
+ar_condition_instruction_parser_tests
+├──c──> ar_condition_instruction_parser (module under test)
+├──c──> ar_instruction_ast
+├──c──> ar_list
+└──c──> ar_heap
 
-agerun_parse_instruction_parser_tests
-├──c──> agerun_parse_instruction_parser (module under test)
-├──c──> agerun_instruction_ast
-├──c──> agerun_list
-└──c──> agerun_heap
+ar_parse_instruction_parser_tests
+├──c──> ar_parse_instruction_parser (module under test)
+├──c──> ar_instruction_ast
+├──c──> ar_list
+└──c──> ar_heap
 
-agerun_build_instruction_parser_tests
-├──c──> agerun_build_instruction_parser (module under test)
-├──c──> agerun_instruction_ast
-├──c──> agerun_list
-└──c──> agerun_heap
+ar_build_instruction_parser_tests
+├──c──> ar_build_instruction_parser (module under test)
+├──c──> ar_instruction_ast
+├──c──> ar_list
+└──c──> ar_heap
 
-agerun_method_instruction_parser_tests
-├──c──> agerun_method_instruction_parser (module under test)
-├──c──> agerun_instruction_ast
-├──c──> agerun_list
-└──c──> agerun_heap
+ar_method_instruction_parser_tests
+├──c──> ar_method_instruction_parser (module under test)
+├──c──> ar_instruction_ast
+├──c──> ar_list
+└──c──> ar_heap
 
-agerun_agent_instruction_parser_tests
-├──c──> agerun_agent_instruction_parser (module under test)
-├──c──> agerun_instruction_ast
-├──c──> agerun_list
-└──c──> agerun_heap
+ar_agent_instruction_parser_tests
+├──c──> ar_agent_instruction_parser (module under test)
+├──c──> ar_instruction_ast
+├──c──> ar_list
+└──c──> ar_heap
 
-agerun_interpreter_tests
-├──c──> agerun_interpreter (module under test)
-├──c──> agerun_instruction
-├──c──> agerun_method
-├──c──> agerun_methodology
-├──c──> agerun_agent
-├──c──> agerun_agency
-├──c──> agerun_system
-├──c──> agerun_data
-└──c──> agerun_heap
+ar_interpreter_tests
+├──c──> ar_interpreter (module under test)
+├──c──> ar_instruction
+├──c──> ar_method
+├──c──> ar_methodology
+├──c──> ar_agent
+├──c──> ar_agency
+├──c──> ar_system
+├──c──> ar_data
+└──c──> ar_heap
 
-agerun_method_tests
-├──c──> agerun_method (module under test)
-├──c──> agerun_system_fixture
-├──c──> agerun_data
-└──c──> agerun_heap
+ar_method_tests
+├──c──> ar_method (module under test)
+├──c──> ar_system_fixture
+├──c──> ar_data
+└──c──> ar_heap
 
-agerun_methodology_tests
-├──c──> agerun_methodology (module under test)
-├──c──> agerun_method
-├──c──> agerun_system
-├──c──> agerun_agency
-├──c──> agerun_io
-└──c──> agerun_heap
+ar_methodology_tests
+├──c──> ar_methodology (module under test)
+├──c──> ar_method
+├──c──> ar_system
+├──c──> ar_agency
+├──c──> ar_io
+└──c──> ar_heap
 
 System Tests:
-agerun_agent_tests
-├──c──> agerun_agent (module under test)
-├──c──> agerun_agency
-├──c──> agerun_system
-├──c──> agerun_method
-├──c──> agerun_methodology
-├──c──> agerun_data
-└──c──> agerun_heap
+ar_agent_tests
+├──c──> ar_agent (module under test)
+├──c──> ar_agency
+├──c──> ar_system
+├──c──> ar_method
+├──c──> ar_methodology
+├──c──> ar_data
+└──c──> ar_heap
 
-agerun_agent_registry_tests
-├──c──> agerun_agent_registry (module under test)
-├──c──> agerun_agent
-├──c──> agerun_data
-└──c──> agerun_heap
+ar_agent_registry_tests
+├──c──> ar_agent_registry (module under test)
+├──c──> ar_agent
+├──c──> ar_data
+└──c──> ar_heap
 
-agerun_agent_store_tests
-├──c──> agerun_agent_store (module under test)
-├──c──> agerun_agent_registry
-├──c──> agerun_agent
-├──c──> agerun_agency
-├──c──> agerun_system
-├──c──> agerun_method
-├──c──> agerun_methodology
-├──c──> agerun_data
-├──c──> agerun_io
-└──c──> agerun_heap
+ar_agent_store_tests
+├──c──> ar_agent_store (module under test)
+├──c──> ar_agent_registry
+├──c──> ar_agent
+├──c──> ar_agency
+├──c──> ar_system
+├──c──> ar_method
+├──c──> ar_methodology
+├──c──> ar_data
+├──c──> ar_io
+└──c──> ar_heap
 
-agerun_agent_update_tests
-├──c──> agerun_agent_update (module under test)
-├──c──> agerun_agent_registry
-├──c──> agerun_agent
-├──c──> agerun_agency
-├──c──> agerun_system
-├──c──> agerun_method
-├──c──> agerun_methodology
-├──c──> agerun_semver
-├──c──> agerun_data
-└──c──> agerun_heap
+ar_agent_update_tests
+├──c──> ar_agent_update (module under test)
+├──c──> ar_agent_registry
+├──c──> ar_agent
+├──c──> ar_agency
+├──c──> ar_system
+├──c──> ar_method
+├──c──> ar_methodology
+├──c──> ar_semver
+├──c──> ar_data
+└──c──> ar_heap
 
-agerun_agency_tests
-├──c──> agerun_agency (module under test)
-├──c──> agerun_agent
-├──c──> agerun_system
-├──c──> agerun_method
-├──c──> agerun_methodology
-├──c──> agerun_data
-└──c──> agerun_heap
+ar_agency_tests
+├──c──> ar_agency (module under test)
+├──c──> ar_agent
+├──c──> ar_system
+├──c──> ar_method
+├──c──> ar_methodology
+├──c──> ar_data
+└──c──> ar_heap
 
-agerun_system_tests
-├──c──> agerun_system (module under test)
-├──c──> agerun_agent
-├──c──> agerun_agency
-├──c──> agerun_method
-├──c──> agerun_methodology
-├──c──> agerun_data
-├──c──> agerun_list
-└──c──> agerun_heap
+ar_system_tests
+├──c──> ar_system (module under test)
+├──c──> ar_agent
+├──c──> ar_agency
+├──c──> ar_method
+├──c──> ar_methodology
+├──c──> ar_data
+├──c──> ar_list
+└──c──> ar_heap
 
-agerun_executable_tests
-├──c──> agerun_executable (module under test)
-├──c──> agerun_system
-├──c──> agerun_methodology
-├──c──> agerun_agency
-├──c──> agerun_io
-└──c──> agerun_heap
+ar_executable_tests
+├──c──> ar_executable (module under test)
+├──c──> ar_system
+├──c──> ar_methodology
+├──c──> ar_agency
+├──c──> ar_io
+└──c──> ar_heap
 
 Fixture Tests:
-agerun_method_fixture_tests
-├──c──> agerun_method_fixture (module under test)
-├──c──> agerun_methodology
-├──c──> agerun_system
-├──c──> agerun_agency
-├──c──> agerun_io
-└──c──> agerun_heap
+ar_method_fixture_tests
+├──c──> ar_method_fixture (module under test)
+├──c──> ar_methodology
+├──c──> ar_system
+├──c──> ar_agency
+├──c──> ar_io
+└──c──> ar_heap
 
-agerun_system_fixture_tests
-├──c──> agerun_system_fixture (module under test)
-├──c──> agerun_system
-├──c──> agerun_methodology
-├──c──> agerun_method
-├──c──> agerun_data
-└──c──> agerun_heap
+ar_system_fixture_tests
+├──c──> ar_system_fixture (module under test)
+├──c──> ar_system
+├──c──> ar_methodology
+├──c──> ar_method
+├──c──> ar_data
+└──c──> ar_heap
 
-agerun_instruction_fixture_tests
-├──c──> agerun_instruction_fixture (module under test)
-├──c──> agerun_data
-├──c──> agerun_expression
-├──c──> agerun_list
-└──c──> agerun_heap
+ar_instruction_fixture_tests
+├──c──> ar_instruction_fixture (module under test)
+├──c──> ar_data
+├──c──> ar_expression
+├──c──> ar_list
+└──c──> ar_heap
 
-agerun_interpreter_fixture_tests
-├──c──> agerun_interpreter_fixture (module under test)
-├──c──> agerun_agency
-├──c──> agerun_system
-├──c──> agerun_methodology
-├──c──> agerun_data
-└──c──> agerun_heap
+ar_interpreter_fixture_tests
+├──c──> ar_interpreter_fixture (module under test)
+├──c──> ar_agency
+├──c──> ar_system
+├──c──> ar_methodology
+├──c──> ar_data
+└──c──> ar_heap
 ```
 
 **Key Observations:**
@@ -706,7 +706,7 @@ agerun_interpreter_fixture_tests
   - Core tests: 0-1 dependencies (excluding heap)
   - Foundation tests: 3-8 dependencies 
   - System tests: 5-10 dependencies
-- All tests depend on `agerun_heap` for memory leak detection
+- All tests depend on `ar_heap` for memory leak detection
 - Tests often have more dependencies than their corresponding modules because they need to:
   - Create realistic test scenarios
   - Verify module interactions
@@ -720,25 +720,25 @@ The AgeRun system is organized into hierarchical layers, with each layer buildin
 ```
 ┌───────────────────────────────────────────────────────────┐
 │                    System Modules                         │ 
-│  (agerun_agent, agerun_agency, agerun_agent_registry,     │ ◄──┐
-│   agerun_agent_store, agerun_agent_update, agerun_system, │    │
-│   agerun_executable)                                      │    │
+│  (ar_agent, ar_agency, ar_agent_registry,     │ ◄──┐
+│   ar_agent_store, ar_agent_update, ar_system, │    │
+│   ar_executable)                                      │    │
 └──────────────────────────────┬────────────────────────────┘    │
                                │                                 │ ┌──────────────────────────────┐
                                ▼                                 └─│                              │
 ┌───────────────────────────────────────────────────────────┐      │      Fixture Modules         │
-│                  Foundation Modules                       │      │ (agerun_method_fixture,      │
-│  (agerun_data, agerun_expression, agerun_expression_ast,  │      │  agerun_instruction_fixture, │
-│   agerun_expression_parser, agerun_expression_evaluator,  │ ◄────┤  agerun_system_fixture,      │
-│   agerun_instruction, agerun_interpreter, agerun_method,  │      │  agerun_interpreter_fixture) │
-│   agerun_methodology)                                     │      │                              │
+│                  Foundation Modules                       │      │ (ar_method_fixture,      │
+│  (ar_data, ar_expression, ar_expression_ast,  │      │  ar_instruction_fixture, │
+│   ar_expression_parser, ar_expression_evaluator,  │ ◄────┤  ar_system_fixture,      │
+│   ar_instruction, ar_interpreter, ar_method,  │      │  ar_interpreter_fixture) │
+│   ar_methodology)                                     │      │                              │
 └──────────────────────────────┬────────────────────────────┘      │                              │
                                │                                   └──────────────────────────────┘
                                ▼                                   
 ┌───────────────────────────────────────────────────────────┐      
 │                      Core Modules                         │      
-│  (agerun_assert, agerun_heap, agerun_string, agerun_list, │      
-│   agerun_map, agerun_io, agerun_semver)                   │      
+│  (ar_assert, ar_heap, ar_string, ar_list, │      
+│   ar_map, ar_io, ar_semver)                   │      
 └───────────────────────────────────────────────────────────┘    
 ```
 
@@ -748,9 +748,9 @@ This layering reflects the dependency structure of the system, with higher layer
 
 Core modules have minimal or no dependencies on other modules and provide essential low-level functionality that other modules build upon. These modules form the base layer of the system architecture and are designed to be simple, focused, and highly reusable.
 
-### Assert Module (`agerun_assert`)
+### Assert Module (`ar_assert`)
 
-The [assert module](agerun_assert.md) provides assertion utilities for runtime validation, particularly focused on memory ownership validation:
+The [assert module](ar_assert.md) provides assertion utilities for runtime validation, particularly focused on memory ownership validation:
 
 - **Runtime Condition Checking**: Provides general assertion macro for checking conditions in debug builds
 - **Ownership Validation**: Includes specialized macros for verifying memory ownership invariants
@@ -760,9 +760,9 @@ The [assert module](agerun_assert.md) provides assertion utilities for runtime v
 - **No Dependencies**: The module depends only on the standard C `assert.h` header
 - **Conditionally Compiled**: All validation checks only run in debug builds for optimal performance
 
-### Heap Module (`agerun_heap`)
+### Heap Module (`ar_heap`)
 
-The [heap module](agerun_heap.md) provides comprehensive memory tracking and leak detection for the entire AgeRun system:
+The [heap module](ar_heap.md) provides comprehensive memory tracking and leak detection for the entire AgeRun system:
 
 - **Memory Tracking Macros**: Provides `AR__HEAP__MALLOC`, `AR__HEAP__FREE`, and `AR__HEAP__STRDUP` macros for tracked memory allocation
 - **Zero Memory Leaks**: System has achieved zero memory leaks across all modules using this tracking system
@@ -774,9 +774,9 @@ The [heap module](agerun_heap.md) provides comprehensive memory tracking and lea
 - **Production Safety**: All tracking code compiles out in release builds
 
 
-### String Module (`agerun_string`)
+### String Module (`ar_string`)
 
-The [string module](agerun_string.md) provides utility functions for string manipulation with the following features:
+The [string module](ar_string.md) provides utility functions for string manipulation with the following features:
 
 - **String Trimming**: Removes leading and trailing whitespace from strings
 - **Safe Character Handling**: Ensures proper handling of character values with safe typecasting
@@ -786,9 +786,9 @@ The [string module](agerun_string.md) provides utility functions for string mani
 - **Memory Management**: Clearly documents ownership transfers for allocated strings
 - **No Dependencies**: Functions as a standalone utility module with no dependencies on other modules
 
-### List Module (`agerun_list`)
+### List Module (`ar_list`)
 
-The [list module](agerun_list.md) provides a doubly-linked list implementation for storing pointer items:
+The [list module](ar_list.md) provides a doubly-linked list implementation for storing pointer items:
 
 - **Non-Owning Container**: Stores references without managing memory for the items
 - **Versatile Interface**: Supports both stack (LIFO) and queue (FIFO) operations
@@ -799,9 +799,9 @@ The [list module](agerun_list.md) provides a doubly-linked list implementation f
 - **No Dependencies**: Functions independently without relying on other modules
 - **Opaque Type**: The list structure is opaque, encapsulating implementation details
 
-### Map Module (`agerun_map`)
+### Map Module (`ar_map`)
 
-The [map module](agerun_map.md) provides a fundamental key-value storage implementation that is used throughout the system. It has the following characteristics:
+The [map module](ar_map.md) provides a fundamental key-value storage implementation that is used throughout the system. It has the following characteristics:
 
 - **Key-Value Storage**: Stores string keys mapped to generic pointers (void*) to values
 - **Reference-Based**: The map stores references to keys and values rather than duplicating them
@@ -812,9 +812,9 @@ The [map module](agerun_map.md) provides a fundamental key-value storage impleme
 - **No Dependencies**: This is a foundational module with no dependencies on other modules
 - **Opaque Type**: The map structure is opaque, encapsulating implementation details from clients
 
-### IO Module (`agerun_io`)
+### IO Module (`ar_io`)
 
-The [IO module](agerun_io.md) provides secure file I/O operations with comprehensive error handling:
+The [IO module](ar_io.md) provides secure file I/O operations with comprehensive error handling:
 
 - **Secure File Operations**: Implements safe reading and writing with bounds checking
 - **Error Handling**: Comprehensive error detection, reporting, and recovery mechanisms
@@ -826,9 +826,9 @@ The [IO module](agerun_io.md) provides secure file I/O operations with comprehen
 - **Error Categorization**: Detailed error types and human-readable messages
 - **Recovery Mechanisms**: Built-in error recovery through backup restoration
 
-### Semver Module (`agerun_semver`)
+### Semver Module (`ar_semver`)
 
-The [semver module](agerun_semver.md) provides semantic versioning support for the method versioning system:
+The [semver module](ar_semver.md) provides semantic versioning support for the method versioning system:
 
 - **Version Parsing**: Parses semantic version strings into major, minor, and patch components
 - **Version Comparison**: Implements comparison operators according to semver rules
@@ -844,9 +844,9 @@ The [semver module](agerun_semver.md) provides semantic versioning support for t
 
 Foundation modules build upon core modules to provide essential data structures and services that support the execution environment. These modules depend on one or more core modules and add type safety, memory management, and other critical services required by higher-level components.
 
-### Method Module (`agerun_method`)
+### Method Module (`ar_method`)
 
-The [method module](agerun_method.md) provides functionality for creating, managing, and running methods within the AgeRun system:
+The [method module](ar_method.md) provides functionality for creating, managing, and running methods within the AgeRun system:
 
 - **Method Encapsulation**: Uses an opaque type to hide implementation details
 - **Semantic Versioning**: Supports creating and managing methods with semantic version strings (e.g., "1.0.0")
@@ -858,9 +858,9 @@ The [method module](agerun_method.md) provides functionality for creating, manag
 - **Depends on String**: Utilizes string utilities for method name and instruction handling
 - **Simplified API**: Offers a single creation function that aligns with the specification
 
-### Methodology Module (`agerun_methodology`)
+### Methodology Module (`ar_methodology`)
 
-The [methodology module](agerun_methodology.md) provides a registry for methods, including storage, retrieval, and versioning:
+The [methodology module](ar_methodology.md) provides a registry for methods, including storage, retrieval, and versioning:
 
 - **Method Registry**: Stores and manages method objects created by the method module
 - **Semantic Version Management**: Tracks multiple versions of the same method using semantic versioning
@@ -877,9 +877,9 @@ The [methodology module](agerun_methodology.md) provides a registry for methods,
 - **Memory Management**: Properly handles ownership of method objects
 - **Clean Interface**: Provides a clear API for interacting with methods
 
-### Data Module (`agerun_data`)
+### Data Module (`ar_data`)
 
-The [data module](agerun_data.md) builds on the map and list modules to provide typed data storage with the following features:
+The [data module](ar_data.md) builds on the map and list modules to provide typed data storage with the following features:
 
 - **Type System**: Supports integers, doubles, strings, lists, and nested maps
 - **Memory Management**: Handles memory allocation and cleanup for data values
@@ -894,9 +894,9 @@ The [data module](agerun_data.md) builds on the map and list modules to provide 
 - **Container Management**: Proper destruction sequence to prevent use-after-free issues
 - **Path-Based Access**: Supports dot-notation paths for accessing nested data structures
 
-### Expression Module (`agerun_expression`)
+### Expression Module (`ar_expression`)
 
-The [expression module](agerun_expression.md) provides a recursive descent parser for evaluating expressions in the AgeRun agent system:
+The [expression module](ar_expression.md) provides a recursive descent parser for evaluating expressions in the AgeRun agent system:
 
 - **Grammar Implementation**: Implements the BNF grammar for expressions defined in the specification
 - **Type Handling**: Properly evaluates expressions for all supported data types
@@ -907,9 +907,9 @@ The [expression module](agerun_expression.md) provides a recursive descent parse
 - **Recursive Parsing**: Uses recursive descent parsing for nested expressions
 - **Depends on Data**: Uses the data module for storing and manipulating values
 
-### Expression AST Module (`agerun_expression_ast`)
+### Expression AST Module (`ar_expression_ast`)
 
-The [expression AST module](agerun_expression_ast.md) provides Abstract Syntax Tree structures for representing parsed expressions:
+The [expression AST module](ar_expression_ast.md) provides Abstract Syntax Tree structures for representing parsed expressions:
 
 - **AST Node Types**: Defines structures for all expression types (literals, memory access, binary operations)
 - **Type-Safe Creation**: Provides creation functions for each node type with proper ownership semantics
@@ -920,9 +920,9 @@ The [expression AST module](agerun_expression_ast.md) provides Abstract Syntax T
 - **Opaque Types**: Uses opaque node structure to hide implementation details
 - **Depends on List**: Uses the list module for storing memory access path components
 
-### Expression Parser Module (`agerun_expression_parser`)
+### Expression Parser Module (`ar_expression_parser`)
 
-The [expression parser module](agerun_expression_parser.md) provides a recursive descent parser for converting expression strings into ASTs:
+The [expression parser module](ar_expression_parser.md) provides a recursive descent parser for converting expression strings into ASTs:
 
 - **Stateful Parser**: Uses opaque parser structure to track position and errors
 - **Recursive Descent**: Implements proper operator precedence through recursive functions
@@ -933,7 +933,7 @@ The [expression parser module](agerun_expression_parser.md) provides a recursive
 - **Depends on AST**: Uses expression_ast module for building parse trees
 - **Depends on List**: Uses list module for managing path components during parsing
 
-### Expression Evaluator Module (`agerun_expression_evaluator`)
+### Expression Evaluator Module (`ar_expression_evaluator`)
 
 The expression evaluator module provides evaluation of expression ASTs against memory and context:
 
@@ -949,9 +949,9 @@ The expression evaluator module provides evaluation of expression ASTs against m
 - **Depends on AST**: Uses expression_ast module for node inspection
 - **Depends on Data**: Uses data module for value creation and manipulation
 
-### Instruction Evaluator Module (`agerun_instruction_evaluator`)
+### Instruction Evaluator Module (`ar_instruction_evaluator`)
 
-The [instruction evaluator module](agerun_instruction_evaluator.md) serves as a facade that coordinates 9 specialized instruction evaluator modules:
+The [instruction evaluator module](ar_instruction_evaluator.md) serves as a facade that coordinates 9 specialized instruction evaluator modules:
 
 - **Facade Pattern**: Creates and manages instances of all specialized evaluators
 - **Unified Interface**: Provides single entry point for all instruction evaluation
@@ -963,73 +963,73 @@ The [instruction evaluator module](agerun_instruction_evaluator.md) serves as a 
 
 The instruction evaluator coordinates the following 9 specialized modules:
 
-#### Assignment Instruction Evaluator Module (`agerun_assignment_instruction_evaluator`)
+#### Assignment Instruction Evaluator Module (`ar_assignment_instruction_evaluator`)
 
-The [assignment instruction evaluator module](agerun_assignment_instruction_evaluator.md) handles memory assignment operations:
+The [assignment instruction evaluator module](ar_assignment_instruction_evaluator.md) handles memory assignment operations:
 - **Memory Assignment**: Supports nested path assignments (e.g., `memory.data.value`)
 - **Expression Evaluation**: Evaluates right-hand side expressions
 - **Ownership Transfer**: Properly transfers ownership of evaluated values
 
-#### Send Instruction Evaluator Module (`agerun_send_instruction_evaluator`)
+#### Send Instruction Evaluator Module (`ar_send_instruction_evaluator`)
 
-The [send instruction evaluator module](agerun_send_instruction_evaluator.md) handles agent messaging:
+The [send instruction evaluator module](ar_send_instruction_evaluator.md) handles agent messaging:
 - **Message Sending**: Sends messages to agents by ID
 - **Agent ID 0**: Special case for logging/no-op sends
 - **Memory Management**: Transfers message ownership to agency
 
-#### Condition Instruction Evaluator Module (`agerun_condition_instruction_evaluator`)
+#### Condition Instruction Evaluator Module (`ar_condition_instruction_evaluator`)
 
-The [condition instruction evaluator module](agerun_condition_instruction_evaluator.md) handles conditional execution:
+The [condition instruction evaluator module](ar_condition_instruction_evaluator.md) handles conditional execution:
 - **Boolean Evaluation**: Evaluates condition expressions to boolean
 - **Branch Selection**: Executes appropriate instruction list based on condition
 - **Truthiness**: Non-zero integers and non-empty strings are truthy
 
-#### Parse Instruction Evaluator Module (`agerun_parse_instruction_evaluator`)
+#### Parse Instruction Evaluator Module (`ar_parse_instruction_evaluator`)
 
-The [parse instruction evaluator module](agerun_parse_instruction_evaluator.md) handles template parsing:
+The [parse instruction evaluator module](ar_parse_instruction_evaluator.md) handles template parsing:
 - **Template Parsing**: Extracts values from strings using templates
 - **Pattern Matching**: Supports placeholder extraction with `{name}` syntax
 - **Result Storage**: Stores extracted values in memory map
 
-#### Build Instruction Evaluator Module (`agerun_build_instruction_evaluator`)
+#### Build Instruction Evaluator Module (`ar_build_instruction_evaluator`)
 
-The [build instruction evaluator module](agerun_build_instruction_evaluator.md) handles string building:
+The [build instruction evaluator module](ar_build_instruction_evaluator.md) handles string building:
 - **Template Building**: Constructs strings from templates with placeholders
 - **Value Substitution**: Replaces `{key}` with values from provided map
 - **Type Conversion**: Converts all value types to strings
 
-#### Method Instruction Evaluator Module (`agerun_method_instruction_evaluator`)
+#### Method Instruction Evaluator Module (`ar_method_instruction_evaluator`)
 
-The [method instruction evaluator module](agerun_method_instruction_evaluator.md) handles method creation:
+The [method instruction evaluator module](ar_method_instruction_evaluator.md) handles method creation:
 - **Method Registration**: Creates and registers new methods
 - **Version Management**: Supports semantic versioning
 - **Instruction Body**: Associates instruction strings with methods
 
-#### Agent Instruction Evaluator Module (`agerun_agent_instruction_evaluator`)
+#### Agent Instruction Evaluator Module (`ar_agent_instruction_evaluator`)
 
-The [agent instruction evaluator module](agerun_agent_instruction_evaluator.md) handles agent creation:
+The [agent instruction evaluator module](ar_agent_instruction_evaluator.md) handles agent creation:
 - **Agent Creation**: Creates agents with specified method and context
 - **Context Handling**: Supports both memory and context references
 - **Wake Messages**: Agents receive `__wake__` message on creation
 
-#### Destroy Agent Instruction Evaluator Module (`agerun_destroy_agent_instruction_evaluator`)
+#### Destroy Agent Instruction Evaluator Module (`ar_destroy_agent_instruction_evaluator`)
 
-The [destroy agent instruction evaluator module](agerun_destroy_agent_instruction_evaluator.md) handles agent destruction:
+The [destroy agent instruction evaluator module](ar_destroy_agent_instruction_evaluator.md) handles agent destruction:
 - **Agent Destruction**: Destroys agents by ID
 - **Result Storage**: Stores success/failure result when assignment specified
 - **Instantiable Design**: Follows instantiable pattern with create/destroy lifecycle
 
-#### Destroy Method Instruction Evaluator Module (`agerun_destroy_method_instruction_evaluator`)
+#### Destroy Method Instruction Evaluator Module (`ar_destroy_method_instruction_evaluator`)
 
-The [destroy method instruction evaluator module](agerun_destroy_method_instruction_evaluator.md) handles method destruction:
+The [destroy method instruction evaluator module](ar_destroy_method_instruction_evaluator.md) handles method destruction:
 - **Method Destruction**: Unregisters methods and destroys associated agents
 - **Agent Lifecycle**: Sends `__sleep__` messages to agents before destruction
 - **Result Storage**: Stores success/failure result when assignment specified
 - **Instantiable Design**: Follows instantiable pattern with create/destroy lifecycle
 
-### Instruction Module (`agerun_instruction`)
+### Instruction Module (`ar_instruction`)
 
-The [instruction module](agerun_instruction.md) provides a recursive descent parser for parsing instructions in the AgeRun agent system:
+The [instruction module](ar_instruction.md) provides a recursive descent parser for parsing instructions in the AgeRun agent system:
 
 - **Grammar Implementation**: Implements the BNF grammar for instructions defined in the specification
 - **AST Generation**: Parses instructions into Abstract Syntax Tree nodes without executing them
@@ -1041,9 +1041,9 @@ The [instruction module](agerun_instruction.md) provides a recursive descent par
 - **Depends on Expression**: Uses the expression module for evaluating expressions
 - **Depends on Data**: Uses the data module for storing and manipulating values
 
-### Instruction AST Module (`agerun_instruction_ast`)
+### Instruction AST Module (`ar_instruction_ast`)
 
-The [instruction AST module](agerun_instruction_ast.md) provides Abstract Syntax Tree representations for AgeRun instructions:
+The [instruction AST module](ar_instruction_ast.md) provides Abstract Syntax Tree representations for AgeRun instructions:
 
 - **AST Node Types**: Defines node types for all instruction types (assignment, send, if, method, agent, destroy, parse, build)
 - **Type-Safe Creation**: Provides functions to create nodes with proper type safety and memory management
@@ -1054,9 +1054,9 @@ The [instruction AST module](agerun_instruction_ast.md) provides Abstract Syntax
 - **Depends on List**: Uses the list module for managing function arguments
 - **Depends on Heap**: Uses heap tracking for comprehensive memory management
 
-### Instruction Parser Module (`agerun_instruction_parser`)
+### Instruction Parser Module (`ar_instruction_parser`)
 
-The [instruction parser module](agerun_instruction_parser.md) serves as a facade that coordinates 9 specialized instruction parser modules:
+The [instruction parser module](ar_instruction_parser.md) serves as a facade that coordinates 9 specialized instruction parser modules:
 
 - **Facade Pattern**: Creates and manages instances of all specialized parsers
 - **Unified Interface**: Provides `ar_instruction_parser__parse()` that automatically detects instruction type
@@ -1069,34 +1069,34 @@ The [instruction parser module](agerun_instruction_parser.md) serves as a facade
 
 The instruction parser coordinates the following 9 specialized parser modules:
 
-#### Assignment Instruction Parser Module (`agerun_assignment_instruction_parser`)
+#### Assignment Instruction Parser Module (`ar_assignment_instruction_parser`)
 
-The [assignment instruction parser module](agerun_assignment_instruction_parser.md) handles parsing of memory assignment instructions:
+The [assignment instruction parser module](ar_assignment_instruction_parser.md) handles parsing of memory assignment instructions:
 - **Memory Assignment Syntax**: Parses `memory.path := expression` format
 - **Path Validation**: Ensures paths start with "memory" prefix
 - **Expression Extraction**: Preserves expression strings for later evaluation
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
-#### Send Instruction Parser Module (`agerun_send_instruction_parser`)
+#### Send Instruction Parser Module (`ar_send_instruction_parser`)
 
-The [send instruction parser module](agerun_send_instruction_parser.md) handles parsing of send function calls:
+The [send instruction parser module](ar_send_instruction_parser.md) handles parsing of send function calls:
 - **Send Function Syntax**: Parses `send(agent_id, message)` format
 - **Optional Assignment**: Supports `memory.result := send(...)` syntax
 - **Argument Extraction**: Handles quoted strings and nested expressions
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
-#### Parse Instruction Parser Module (`agerun_parse_instruction_parser`)
+#### Parse Instruction Parser Module (`ar_parse_instruction_parser`)
 
-The [parse instruction parser module](agerun_parse_instruction_parser.md) handles parsing of parse function calls:
+The [parse instruction parser module](ar_parse_instruction_parser.md) handles parsing of parse function calls:
 - **Parse Function Syntax**: Parses `parse(template, input)` format
 - **Template Placeholders**: Extracts values using `{variable}` syntax
 - **Optional Assignment**: Supports `memory.result := parse(...)` syntax
 - **String Handling**: Manages quoted strings with escape sequences
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
-#### Build Instruction Parser Module (`agerun_build_instruction_parser`)
+#### Build Instruction Parser Module (`ar_build_instruction_parser`)
 
-The [build instruction parser module](agerun_build_instruction_parser.md) handles parsing of build function calls:
+The [build instruction parser module](ar_build_instruction_parser.md) handles parsing of build function calls:
 - **Build Function Syntax**: Parses `build(template, map)` format
 - **Template Placeholders**: Combines template with values using `{variable}` syntax
 - **Map Expression**: Second argument must be a map expression
@@ -1104,9 +1104,9 @@ The [build instruction parser module](agerun_build_instruction_parser.md) handle
 - **String Handling**: Manages quoted templates with escape sequences
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
-#### Method Instruction Parser Module (`agerun_method_instruction_parser`)
+#### Method Instruction Parser Module (`ar_method_instruction_parser`)
 
-The [method instruction parser module](agerun_method_instruction_parser.md) handles parsing of method function calls:
+The [method instruction parser module](ar_method_instruction_parser.md) handles parsing of method function calls:
 - **Method Function Syntax**: Parses `method(name, code, version)` format
 - **Three String Arguments**: Validates all arguments are quoted strings
 - **Method Creation**: Creates AR_INST__METHOD nodes for method definitions
@@ -1115,9 +1115,9 @@ The [method instruction parser module](agerun_method_instruction_parser.md) hand
 - **Optional Assignment**: Supports `memory.ref := method(...)` syntax
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
-#### Agent Instruction Parser Module (`agerun_agent_instruction_parser`)
+#### Agent Instruction Parser Module (`ar_agent_instruction_parser`)
 
-The [agent instruction parser module](agerun_agent_instruction_parser.md) handles parsing of agent function calls:
+The [agent instruction parser module](ar_agent_instruction_parser.md) handles parsing of agent function calls:
 - **Agent Function Syntax**: Parses both `agent(method, version)` and `agent(method, version, context)` formats
 - **Flexible Arguments**: Supports 2-parameter (automatic null context) and 3-parameter forms
 - **Agent Creation**: Creates AR_INST__AGENT nodes for agent instantiation
@@ -1126,36 +1126,36 @@ The [agent instruction parser module](agerun_agent_instruction_parser.md) handle
 - **Optional Assignment**: Supports `memory.agent_id := agent(...)` syntax
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
-#### Condition Instruction Parser Module (`agerun_condition_instruction_parser`)
+#### Condition Instruction Parser Module (`ar_condition_instruction_parser`)
 
-The [condition instruction parser module](agerun_condition_instruction_parser.md) handles parsing of conditional (if) instructions:
+The [condition instruction parser module](ar_condition_instruction_parser.md) handles parsing of conditional (if) instructions:
 - **If Function Syntax**: Parses `if(condition, then_value, else_value)` format
 - **Optional Assignment**: Supports `memory.result := if(...)` syntax
 - **Nested Function Support**: Handles nested function calls in arguments
 - **Complex Conditions**: Parses boolean expressions with operators
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
-#### Destroy Agent Instruction Parser Module (`agerun_destroy_agent_instruction_parser`)
+#### Destroy Agent Instruction Parser Module (`ar_destroy_agent_instruction_parser`)
 
-The [destroy agent instruction parser module](agerun_destroy_agent_instruction_parser.md) handles parsing of agent destruction:
+The [destroy agent instruction parser module](ar_destroy_agent_instruction_parser.md) handles parsing of agent destruction:
 - **Single Argument**: Parses `destroy(agent_id)` format for agent termination
 - **Agent ID Types**: Accepts integer literals or memory references (e.g., `memory.agent_id`)
 - **Optional Assignment**: Supports `memory.result := destroy(agent_id)` syntax
 - **Return Value**: Destroy operations return 1 (true) on success, 0 (false) on failure
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
-#### Destroy Method Instruction Parser Module (`agerun_destroy_method_instruction_parser`)
+#### Destroy Method Instruction Parser Module (`ar_destroy_method_instruction_parser`)
 
-The [destroy method instruction parser module](agerun_destroy_method_instruction_parser.md) handles parsing of method destruction:
+The [destroy method instruction parser module](ar_destroy_method_instruction_parser.md) handles parsing of method destruction:
 - **Two Arguments**: Parses `destroy("method_name", "version")` format for method removal
 - **String Arguments**: Both arguments must be quoted strings in evaluator validation
 - **Version Format**: Accepts semantic version strings (e.g., "1.0.0")
 - **Optional Assignment**: Supports `memory.result := destroy(...)` syntax
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
-### Interpreter Module (`agerun_interpreter`)
+### Interpreter Module (`ar_interpreter`)
 
-The [interpreter module](agerun_interpreter.md) provides execution capabilities for parsed instructions and methods:
+The [interpreter module](ar_interpreter.md) provides execution capabilities for parsed instructions and methods:
 
 - **Instruction Execution**: Executes single instructions from their AST representation
 - **Method Execution**: Executes entire methods by parsing and running each instruction
@@ -1173,7 +1173,7 @@ The [interpreter module](agerun_interpreter.md) provides execution capabilities 
 
 System modules provide the high-level runtime environment and agent management capabilities. These modules depend on foundation modules to provide the complete agent system functionality.
 
-### Agent Module (`agerun_agent`)
+### Agent Module (`ar_agent`)
 
 The agent module provides individual agent lifecycle management and message handling:
 
@@ -1182,21 +1182,21 @@ The agent module provides individual agent lifecycle management and message hand
 - **Memory Management**: Agents have persistent memory maps for state storage
 - **Context Handling**: Supports read-only context data provided at agent creation
 - **Registry Integration**: Uses internal agent_registry for ID management and agent tracking
-- **Registry Access**: Provides `ar__agent__get_registry()` for agency and agent_store modules
+- **Registry Access**: Provides `ar__agency__get_registry()` for agency and agent_store modules
 - **Dynamic Agent Limit**: No hardcoded MAX_AGENTS limit - uses dynamic allocation via registry
 - **Opaque Type**: Agent structure is fully opaque with accessor functions:
   - `ar__agent__get_memory()`: Returns read-only access to agent's memory
   - `ar__agent__get_mutable_memory()`: Returns mutable access to agent's memory
   - `ar__agent__get_context()`: Returns read-only access to agent's context
   - `ar__agent__get_method()`: Returns agent's method reference
-  - `ar__agent__get_registry()`: Returns agent registry for persistence/management operations
+  - `ar__agency__get_registry()`: Returns agent registry for persistence/management operations
 - **Zero Memory Leaks**: Proper cleanup of agent resources including message queues
 - **Depends on Agent Registry**: Uses agent_registry module for ID allocation and tracking
 - **Depends on Map and List**: Uses core data structures for internal state management
 
-For detailed API documentation, see [agerun_agent.md](agerun_agent.md).
+For detailed API documentation, see [ar_agent.md](ar_agent.md).
 
-### Agency Module (`agerun_agency`)
+### Agency Module (`ar_agency`)
 
 The agency module serves as a facade that coordinates agent management operations across specialized modules:
 
@@ -1206,16 +1206,16 @@ The agency module serves as a facade that coordinates agent management operation
 - **Method Update Operations**: Delegates version updates to agent_update module
 - **Clean Architecture**: Reduced from 850+ lines to 81 lines through proper separation of concerns
 - **Module Cohesion**: Each sub-module has a single, well-defined responsibility:
-  - `agerun_agent_registry`: Agent ID allocation, tracking, and iteration
-  - `agerun_agent_store`: Saving and loading agent state to/from disk
-  - `agerun_agent_update`: Method version updates and compatibility checking
+  - `ar_agent_registry`: Agent ID allocation, tracking, and iteration
+  - `ar_agent_store`: Saving and loading agent state to/from disk
+  - `ar_agent_update`: Method version updates and compatibility checking
 - **Zero Memory Leaks**: Maintains proper cleanup through coordinated module operations
 - **Depends on New Modules**: Uses agent_registry, agent_store, and agent_update modules
 - **Maintains Compatibility**: Public API unchanged, ensuring no breaking changes
 
-For detailed API documentation, see [agerun_agency.md](agerun_agency.md).
+For detailed API documentation, see [ar_agency.md](ar_agency.md).
 
-### Agent Registry Module (`agerun_agent_registry`)
+### Agent Registry Module (`ar_agent_registry`)
 
 The agent registry module manages agent ID allocation and runtime agent tracking:
 
@@ -1231,7 +1231,7 @@ The agent registry module manages agent ID allocation and runtime agent tracking
 - **Opaque Implementation**: Internal registry structure hidden from clients
 - **Memory Safe**: Proper cleanup of all dynamic allocations with no memory leaks
 
-### Agent Store Module (`agerun_agent_store`)
+### Agent Store Module (`ar_agent_store`)
 
 The agent store module handles persistence of agent state:
 
@@ -1246,7 +1246,7 @@ The agent store module handles persistence of agent state:
 - **Atomic Operations**: Uses atomic file operations for crash resistance
 - **Depends on IO**: Uses secure file operations from IO module
 
-### Agent Update Module (`agerun_agent_update`)
+### Agent Update Module (`ar_agent_update`)
 
 The agent update module manages method version transitions for agents:
 
@@ -1261,9 +1261,9 @@ The agent update module manages method version transitions for agents:
 - **Depends on Semver**: Uses semantic versioning for compatibility checks
 - **Clean Interface**: Provides clear API for method version management
 
-### System Module (`agerun_system`)
+### System Module (`ar_system`)
 
-The [system module](agerun_system.md) provides the high-level API and runtime environment for the entire AgeRun system:
+The [system module](ar_system.md) provides the high-level API and runtime environment for the entire AgeRun system:
 
 - **Runtime Management**: Initializes and manages the overall system runtime
 - **Message Processing**: Processes messages between agents asynchronously
@@ -1273,11 +1273,11 @@ The [system module](agerun_system.md) provides the high-level API and runtime en
 - **Zero Memory Leaks**: Ensures proper cleanup of all system resources
 - **Depends on Multiple**: Integrates agent, method, methodology, agency, data, and list modules
 
-For detailed API documentation, see [agerun_system.md](agerun_system.md).
+For detailed API documentation, see [ar_system.md](ar_system.md).
 
-### Executable Module (`agerun_executable`)
+### Executable Module (`ar_executable`)
 
-The [executable module](agerun_executable.md) provides the main application entry point and example usage:
+The [executable module](ar_executable.md) provides the main application entry point and example usage:
 
 - **Application Entry**: Implements the main() function for the AgeRun executable
 - **Example Usage**: Demonstrates how to use the AgeRun system API
@@ -1286,13 +1286,13 @@ The [executable module](agerun_executable.md) provides the main application entr
 - **Zero Memory Leaks**: Example of leak-free application development with AgeRun
 - **Depends on System and Methodology**: Uses high-level system APIs for demonstration
 
-For detailed API documentation, see [agerun_executable.md](agerun_executable.md).
+For detailed API documentation, see [ar_executable.md](ar_executable.md).
 
 ## Fixture Modules
 
 Fixture modules provide test infrastructure for other modules by encapsulating common test setup and teardown patterns. These modules are designed specifically for testing and follow Parnas design principles with opaque types and focused interfaces.
 
-### Method Fixture Module (`agerun_method_fixture`)
+### Method Fixture Module (`ar_method_fixture`)
 
 The method test fixture module provides a proper abstraction for method test setup and teardown operations:
 
@@ -1306,7 +1306,7 @@ The method test fixture module provides a proper abstraction for method test set
 - **Opaque Type**: Method test fixture structure is opaque, following Parnas principles
 - **Depends on Core Modules**: Uses system, methodology, agency, IO, and heap modules
 
-### Instruction Fixture Module (`agerun_instruction_fixture`)
+### Instruction Fixture Module (`ar_instruction_fixture`)
 
 The instruction fixture module provides a proper abstraction for instruction module test patterns:
 
@@ -1322,7 +1322,7 @@ The instruction fixture module provides a proper abstraction for instruction mod
 - **Designed for Instruction Modules**: Used specifically by instruction module tests
 - **Reduces Boilerplate**: Eliminates 200+ lines of repetitive agent setup and teardown code
 
-### System Fixture Module (`agerun_system_fixture`)
+### System Fixture Module (`ar_system_fixture`)
 
 The system test fixture module provides a proper abstraction for system module test setup and teardown operations:
 
@@ -1337,9 +1337,9 @@ The system test fixture module provides a proper abstraction for system module t
 - **Designed for System Modules**: Used by agent, method, instruction, methodology, and system module tests
 - **Not for Core Modules**: Core modules (string, list, map, etc.) test in isolation without fixtures
 
-### Interpreter Fixture Module (`agerun_interpreter_fixture`)
+### Interpreter Fixture Module (`ar_interpreter_fixture`)
 
-The [interpreter fixture module](agerun_interpreter_fixture.md) provides a proper abstraction for interpreter module test patterns:
+The [interpreter fixture module](ar_interpreter_fixture.md) provides a proper abstraction for interpreter module test patterns:
 
 - **Interpreter Lifecycle Management**: Creates and manages interpreter instances automatically
 - **Agent Management**: Creates and tracks test agents with automatic method registration and cleanup

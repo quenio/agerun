@@ -1,4 +1,4 @@
-# String Module (`agerun_string`)
+# String Module (`ar_string`)
 
 ## Overview
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The agent module (`agerun_agent.h` and `agerun_agent.c`) provides individual agent lifecycle management and message handling within the AgeRun system. Each agent is an independent entity that executes a specific method and maintains its own state through a persistent memory map.
+The agent module (`ar_agent.h` and `ar_agent.c`) provides individual agent lifecycle management and message handling within the AgeRun system. Each agent is an independent entity that executes a specific method and maintains its own state through a persistent memory map.
 
 ## Key Features
 
@@ -184,15 +184,15 @@ The agent structure is defined only in the implementation file, making it a true
 
 ### Dependencies
 
-- **agerun_agency**: For agent registry and ID management
-- **agerun_list**: For message queue implementation
-- **agerun_map**: For agent memory storage
-- **agerun_method**: For method execution
-- **agerun_data**: For data type handling
+- **ar_agency**: For agent registry and ID management
+- **ar_list**: For message queue implementation
+- **ar_map**: For agent memory storage
+- **ar_method**: For method execution
+- **ar_data**: For data type handling
 
 ## See Also
 
-- [System Module](agerun_system.h) - High-level agent system management
-- [Agency Module](agerun_agency.h) - System-wide agent registry
-- [Method Module](agerun_method.md) - Method execution engine
-- [Data Module](agerun_data.md) - Data type system
+- [System Module](ar_system.h) - High-level agent system management
+- [Agency Module](ar_agency.h) - System-wide agent registry
+- [Method Module](ar_method.md) - Method execution engine
+- [Data Module](ar_data.md) - Data type system

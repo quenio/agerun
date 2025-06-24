@@ -5,7 +5,7 @@ This document compares the execution logic between the old instruction module (w
 ## Overview
 
 - **Old Implementation**: `/tmp/old_instruction.c` - Parsed and executed instructions in one pass
-- **New Implementation**: `agerun_interpreter.c` - Separates parsing (instruction module) from execution (interpreter module)
+- **New Implementation**: `ar_interpreter.c` - Separates parsing (instruction module) from execution (interpreter module)
 
 ## 1. Assignment Execution
 

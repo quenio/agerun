@@ -2,7 +2,7 @@
 
 ## Overview
 
-The expression AST module (`agerun_expression_ast`) provides Abstract Syntax Tree (AST) structures for representing parsed expressions in the AgeRun language. This module defines the data structures and operations for building, manipulating, and destroying expression ASTs without any dependency on the expression evaluation module.
+The expression AST module (`ar_expression_ast`) provides Abstract Syntax Tree (AST) structures for representing parsed expressions in the AgeRun language. This module defines the data structures and operations for building, manipulating, and destroying expression ASTs without any dependency on the expression evaluation module.
 
 ## Purpose
 
@@ -120,13 +120,13 @@ ar__expression_ast__destroy(own_add);
 
 ## Dependencies
 
-- **agerun_heap** - For memory allocation and tracking
-- **agerun_list** - For storing memory access path components
-- **agerun_assert** - For ownership assertions in debug builds
+- **ar_heap** - For memory allocation and tracking
+- **ar_list** - For storing memory access path components
+- **ar_assert** - For ownership assertions in debug builds
 
 ## Testing
 
-The module includes comprehensive tests (`agerun_expression_ast_tests.c`) that verify:
+The module includes comprehensive tests (`ar_expression_ast_tests.c`) that verify:
 
 - Creation of all node types
 - Accessor function behavior

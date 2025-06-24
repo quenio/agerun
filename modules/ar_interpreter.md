@@ -25,15 +25,15 @@ The interpreter uses an opaque type to hide implementation details. Currently, t
 
 ### Module Dependencies
 ```
-agerun_interpreter
-    ├── uses → agerun_instruction (for parsing and AST access)
-    ├── uses → agerun_expression (for expression evaluation)
-    ├── uses → agerun_agency (for agent operations)
-    ├── uses → agerun_methodology (for method operations)
-    ├── uses → agerun_data (for data manipulation)
-    ├── uses → agerun_string (for string operations)
-    ├── uses → agerun_map (for map operations)
-    └── uses → agerun_heap (for memory tracking)
+ar_interpreter
+    ├── uses → ar_instruction (for parsing and AST access)
+    ├── uses → ar_expression (for expression evaluation)
+    ├── uses → ar_agency (for agent operations)
+    ├── uses → ar_methodology (for method operations)
+    ├── uses → ar_data (for data manipulation)
+    ├── uses → ar_string (for string operations)
+    ├── uses → ar_map (for map operations)
+    └── uses → ar_heap (for memory tracking)
 ```
 
 ### Execution Model

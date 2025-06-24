@@ -4,7 +4,7 @@ The IO module provides secure file I/O operations with comprehensive error handl
 
 ## Overview
 
-The IO module (`agerun_io`) implements secure file operations including:
+The IO module (`ar_io`) implements secure file operations including:
 
 - Error and warning reporting with consistent formatting
 - Secure file reading with bounds checking and buffer overflow prevention

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The agent update module (`agerun_agent_update`) manages method version updates for active agents. It ensures safe transitions between compatible method versions while maintaining agent state and handling lifecycle events.
+The agent update module (`ar_agent_update`) manages method version updates for active agents. It ensures safe transitions between compatible method versions while maintaining agent state and handling lifecycle events.
 
 ## Purpose
 
@@ -15,9 +15,9 @@ This module was created as part of the agency module refactoring to improve cohe
 ## Key Functions
 
 ### Update Operations
-- `ar__agent__update_update_methods()` - Update agents from one method version to another
-- `ar__agent__update_count_using_method()` - Count agents using a specific method
-- `ar__agent__update_are_compatible()` - Check if two methods are compatible for update
+- `ar__agent_update__update_methods()` - Update agents from one method version to another
+- `ar__agent_update__count_using_method()` - Count agents using a specific method
+- `ar__agent_update__are_compatible()` - Check if two methods are compatible for update
 
 ## Update Process
 
@@ -37,11 +37,11 @@ The module follows Parnas principles:
 
 ## Dependencies
 
-- `agerun_agent` - For agent update operations
-- `agerun_method` - For method information
-- `agerun_semver` - For version compatibility checking
-- `agerun_io` - For logging
-- `agerun_heap` - For memory management
+- `ar_agent` - For agent update operations
+- `ar_method` - For method information
+- `ar_semver` - For version compatibility checking
+- `ar_io` - For logging
+- `ar_heap` - For memory management
 
 ## Usage Example
 
@@ -51,9 +51,9 @@ const method_t *ref_old = ar__methodology__find_method("echo", "1.0.0");
 const method_t *ref_new = ar__methodology__find_method("echo", "1.1.0");
 
 // Check compatibility
-if (ar__agent__update_are_compatible(ref_old, ref_new)) {
+if (ar__agent_update__are_compatible(ref_old, ref_new)) {
     // Update agents with lifecycle events
-    int count = ar__agent__update_update_methods(registry, ref_old, ref_new, true);
+    int count = ar__agent_update__update_methods(registry, ref_old, ref_new, true);
     
     // Process the lifecycle messages
     for (int i = 0; i < count * 2; i++) {
@@ -62,7 +62,7 @@ if (ar__agent__update_are_compatible(ref_old, ref_new)) {
 }
 
 // Count agents using a method
-int count = ar__agent__update_count_using_method(ref_old);
+int count = ar__agent_update__count_using_method(ref_old);
 ```
 
 ## Important Notes

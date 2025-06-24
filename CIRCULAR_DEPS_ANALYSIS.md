@@ -25,53 +25,53 @@ The AgeRun codebase has been successfully refactored to eliminate all circular d
 ### Header Dependencies (from .h files)
 
 1. **Foundation Layer** (no dependencies):
-   - agerun_assert.h
-   - agerun_io.h
-   - agerun_list.h
-   - agerun_map.h
-   - agerun_string.h
-   - agerun_semver.h
-   - agerun_agent_registry.h
-   - agerun_agent_store.h
+   - ar_assert.h
+   - ar_io.h
+   - ar_list.h
+   - ar_map.h
+   - ar_string.h
+   - ar_semver.h
+   - ar_agent_registry.h
+   - ar_agent_store.h
 
 2. **Data Layer**:
-   - agerun_heap.h → agerun_assert.h
-   - agerun_data.h → agerun_list.h, agerun_map.h
+   - ar_heap.h → ar_assert.h
+   - ar_data.h → ar_list.h, ar_map.h
 
 3. **Core Layer**:
-   - agerun_agent.h → agerun_data.h
-   - agerun_expression.h → agerun_data.h
-   - agerun_method.h → agerun_data.h
-   - agerun_instruction.h → agerun_data.h
+   - ar_agent.h → ar_data.h
+   - ar_expression.h → ar_data.h
+   - ar_method.h → ar_data.h
+   - ar_instruction.h → ar_data.h
 
 4. **Higher Layers**:
-   - agerun_agency.h → agerun_data.h, agerun_agent_registry.h
-   - agerun_agent_update.h → agerun_agent_registry.h
-   - agerun_methodology.h → agerun_method.h
-   - agerun_interpreter.h → agerun_data.h, agerun_instruction.h, agerun_method.h
+   - ar_agency.h → ar_data.h, ar_agent_registry.h
+   - ar_agent_update.h → ar_agent_registry.h
+   - ar_methodology.h → ar_method.h
+   - ar_interpreter.h → ar_data.h, ar_instruction.h, ar_method.h
 
 ### Key Implementation Dependencies (from .c files)
 
 **Instruction Module** (parsing only):
-- agerun_instruction.c includes:
-  - agerun_data.h
-  - agerun_expression.h
-  - agerun_string.h
-  - agerun_assert.h
+- ar_instruction.c includes:
+  - ar_data.h
+  - ar_expression.h
+  - ar_string.h
+  - ar_assert.h
   - (NO dependencies on agent, agency, or methodology)
 
 **Interpreter Module** (execution):
-- agerun_interpreter.c includes:
-  - agerun_agent.h
-  - agerun_agency.h
-  - agerun_methodology.h
-  - agerun_expression.h
+- ar_interpreter.c includes:
+  - ar_agent.h
+  - ar_agency.h
+  - ar_methodology.h
+  - ar_expression.h
   - (Handles all execution logic)
 
 **Method Module**:
-- agerun_method.c includes:
-  - agerun_assert.h
-  - agerun_heap.h
+- ar_method.c includes:
+  - ar_assert.h
+  - ar_heap.h
   - (NO dependencies on instruction - clean separation)
 
 ## Dependency Analysis Results

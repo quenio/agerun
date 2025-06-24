@@ -87,9 +87,9 @@ The parser detects and reports:
 
 ## Dependencies
 
-- `agerun_instruction_ast.h` - AST node creation
-- `agerun_heap.h` - Memory tracking
-- `agerun_string.h` - String utilities
+- `ar_instruction_ast.h` - AST node creation
+- `ar_heap.h` - Memory tracking
+- `ar_string.h` - String utilities
 - Standard C library for string operations
 
 ## Testing

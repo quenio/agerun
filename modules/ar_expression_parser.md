@@ -2,7 +2,7 @@
 
 ## Overview
 
-The expression parser module (`agerun_expression_parser`) provides a recursive descent parser for converting AgeRun expression strings into Abstract Syntax Trees (ASTs). It uses the expression AST module to represent parsed expressions and implements proper operator precedence and associativity rules.
+The expression parser module (`ar_expression_parser`) provides a recursive descent parser for converting AgeRun expression strings into Abstract Syntax Trees (ASTs). It uses the expression AST module to represent parsed expressions and implements proper operator precedence and associativity rules.
 
 ## Purpose
 
@@ -144,14 +144,14 @@ ar__expression_parser__destroy(own_parser);
 
 ## Dependencies
 
-- **agerun_expression_ast** - For AST node structures and creation
-- **agerun_heap** - For memory allocation and tracking
-- **agerun_list** - For managing path components during parsing
-- **agerun_string** - For string manipulation utilities
+- **ar_expression_ast** - For AST node structures and creation
+- **ar_heap** - For memory allocation and tracking
+- **ar_list** - For managing path components during parsing
+- **ar_string** - For string manipulation utilities
 
 ## Testing
 
-The module includes comprehensive tests (`agerun_expression_parser_tests.c`) that verify:
+The module includes comprehensive tests (`ar_expression_parser_tests.c`) that verify:
 
 - Parsing of all literal types
 - Memory access with various path depths

@@ -113,9 +113,9 @@ The executable module follows these principles:
 ## Dependencies
 
 The executable module depends on:
-- `agerun_system`: For system initialization and message processing
-- `agerun_agent`: For agent creation and message sending
-- `agerun_data`: For creating message data structures
+- `ar_system`: For system initialization and message processing
+- `ar_agent`: For agent creation and message sending
+- `ar_data`: For creating message data structures
 - Standard C library: For printf output
 
 ## Testing
@@ -151,7 +151,7 @@ The executable shows different message processing patterns:
 
 ## See Also
 
-- [agerun_system.md](agerun_system.md) - Core system runtime
-- [agerun_agent.md](agerun_agent.md) - Agent management
-- [agerun_agency.md](agerun_agency.md) - Agent persistence
-- [agerun_methodology.md](agerun_methodology.md) - Method management
+- [ar_system.md](ar_system.md) - Core system runtime
+- [ar_agent.md](ar_agent.md) - Agent management
+- [ar_agency.md](ar_agency.md) - Agent persistence
+- [ar_methodology.md](ar_methodology.md) - Method management

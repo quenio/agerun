@@ -1,4 +1,4 @@
-# Heap Module (`agerun_heap`)
+# Heap Module (`ar_heap`)
 
 ## Overview
 

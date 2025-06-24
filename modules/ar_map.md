@@ -2,7 +2,7 @@
 
 ## Overview
 
-The map module (`agerun_map`) provides a fundamental key-value storage implementation that is used throughout the AgeRun system. It's designed to be a foundational module with no dependencies on other modules.
+The map module (`ar_map`) provides a fundamental key-value storage implementation that is used throughout the AgeRun system. It's designed to be a foundational module with no dependencies on other modules.
 
 ## Key Features
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `agerun_semver` module provides functions for parsing, comparing, and managing semantic version strings according to the Semantic Versioning specification. This module is crucial for the AgeRun runtime system's method versioning and agent version management.
+The `ar_semver` module provides functions for parsing, comparing, and managing semantic version strings according to the Semantic Versioning specification. This module is crucial for the AgeRun runtime system's method versioning and agent version management.
 
 ## Key Features
 

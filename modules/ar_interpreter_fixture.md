@@ -238,14 +238,14 @@ All resources created through or tracked by the fixture are automatically cleane
 ## Dependencies
 
 The interpreter fixture depends on:
-- **agerun_interpreter**: For interpreter creation and instruction execution
-- **agerun_instruction**: For instruction context creation
-- **agerun_agency**: For agent management
-- **agerun_methodology**: For method registration
-- **agerun_system**: For system initialization and message processing
-- **agerun_data**: For data structure creation
-- **agerun_list**: For tracking resources
-- **agerun_heap**: For memory allocation
+- **ar_interpreter**: For interpreter creation and instruction execution
+- **ar_instruction**: For instruction context creation
+- **ar_agency**: For agent management
+- **ar_methodology**: For method registration
+- **ar_system**: For system initialization and message processing
+- **ar_data**: For data structure creation
+- **ar_list**: For tracking resources
+- **ar_heap**: For memory allocation
 
 ## Comparison with Instruction Fixture
 

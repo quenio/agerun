@@ -2,11 +2,11 @@
 
 ## Overview
 
-The agency module (`agerun_agency`) serves as the primary facade for agent management in the AgeRun system. It provides a unified interface for creating, managing, and interacting with agents while delegating specialized operations to three focused sub-modules:
+The agency module (`ar_agency`) serves as the primary facade for agent management in the AgeRun system. It provides a unified interface for creating, managing, and interacting with agents while delegating specialized operations to three focused sub-modules:
 
-- **agerun_agent_registry** - Agent ID allocation and tracking
-- **agerun_agent_store** - Agent persistence (save/load)
-- **agerun_agent_update** - Method version updates
+- **ar_agent_registry** - Agent ID allocation and tracking
+- **ar_agent_store** - Agent persistence (save/load)
+- **ar_agent_update** - Method version updates
 
 This clean architecture reduced the module from 850+ lines to just 81 lines while maintaining the same public API.
 
@@ -25,7 +25,7 @@ The agency module follows the facade design pattern:
 
 ```
 ┌─────────────────────────────────────┐
-│         agerun_agency               │  ← Facade (81 lines)
+│         ar_agency                   │  ← Facade (81 lines)
 │   (Unified Agent Management API)    │
 └──────────────┬─────────────────────┘
                │
@@ -220,12 +220,12 @@ The agency module exemplifies good software design:
 
 ## Dependencies
 
-- `agerun_agent` - Core agent functionality
-- `agerun_agent_registry` - ID management and tracking
-- `agerun_agent_store` - Persistence operations
-- `agerun_agent_update` - Version update operations
-- `agerun_data` - Data structures
-- `agerun_heap` - Memory tracking
+- `ar_agent` - Core agent functionality
+- `ar_agent_registry` - ID management and tracking
+- `ar_agent_store` - Persistence operations
+- `ar_agent_update` - Version update operations
+- `ar_data` - Data structures
+- `ar_heap` - Memory tracking
 
 ## Thread Safety
 

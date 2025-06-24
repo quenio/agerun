@@ -205,11 +205,11 @@ The system module adheres to these principles:
 ## Dependencies
 
 The system module depends on:
-- `agerun_agent`: For message queue access and agent operations
-- `agerun_agency`: For agent persistence operations
-- `agerun_methodology`: For method persistence operations
-- `agerun_interpreter`: For executing agent methods
-- `agerun_data`: For creating __sleep__ and __wake__ messages
+- `ar_agent`: For message queue access and agent operations
+- `ar_agency`: For agent persistence operations
+- `ar_methodology`: For method persistence operations
+- `ar_interpreter`: For executing agent methods
+- `ar_data`: For creating __sleep__ and __wake__ messages
 
 ## Error Handling
 
@@ -238,7 +238,7 @@ Potential improvements identified in TODO.md:
 
 ## See Also
 
-- [agerun_agent.md](agerun_agent.md) - Agent management and messaging
-- [agerun_agency.md](agerun_agency.md) - Agent persistence and registry
-- [agerun_methodology.md](agerun_methodology.md) - Method management
-- [agerun_interpreter.md](agerun_interpreter.md) - Instruction execution
+- [ar_agent.md](ar_agent.md) - Agent management and messaging
+- [ar_agency.md](ar_agency.md) - Agent persistence and registry
+- [ar_methodology.md](ar_methodology.md) - Method management
+- [ar_interpreter.md](ar_interpreter.md) - Instruction execution

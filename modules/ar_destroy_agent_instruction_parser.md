@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `agerun_destroy_agent_instruction_parser` module provides specialized parsing for `destroy()` function instructions with a single argument in the AgeRun language. This parser handles destroy instructions that target agents by their ID.
+The `ar_destroy_agent_instruction_parser` module provides specialized parsing for `destroy()` function instructions with a single argument in the AgeRun language. This parser handles destroy instructions that target agents by their ID.
 
 ## Features
 
@@ -17,7 +17,7 @@ The `agerun_destroy_agent_instruction_parser` module provides specialized parsin
 ### Basic Usage
 
 ```c
-#include "agerun_destroy_agent_instruction_parser.h"
+#include "ar_destroy_agent_instruction_parser.h"
 
 // Create parser instance
 ar_destroy_agent_instruction_parser_t *parser = ar_destroy_agent_instruction_parser__create();
@@ -114,8 +114,8 @@ The parser uses `_extract_argument()` to parse a single argument up to the closi
 
 ## Dependencies
 
-- `agerun_instruction_ast.h` - For creating AST nodes
-- `agerun_heap.h` - For memory tracking
+- `ar_instruction_ast.h` - For creating AST nodes
+- `ar_heap.h` - For memory tracking
 - Standard C libraries: `string.h`, `stdio.h`, `ctype.h`, `stdbool.h`
 
 ## Testing
@@ -129,7 +129,7 @@ The module includes comprehensive tests covering:
 
 Run tests with:
 ```bash
-make bin/agerun_destroy_agent_instruction_parser_tests
+make bin/ar_destroy_agent_instruction_parser_tests
 ```
 
 ## Integration

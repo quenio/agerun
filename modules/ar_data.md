@@ -2,7 +2,7 @@
 
 ## Overview
 
-The data module (`agerun_data`) provides a type-safe data storage system built on top of the map and list modules. It offers a structured way to handle different data types within the AgeRun system using an opaque data type. The module implements the AgeRun Memory Management Model (MMM) with rigorous ownership semantics.
+The data module (`ar_data`) provides a type-safe data storage system built on top of the map and list modules. It offers a structured way to handle different data types within the AgeRun system using an opaque data type. The module implements the AgeRun Memory Management Model (MMM) with rigorous ownership semantics.
 
 ## Key Features
 

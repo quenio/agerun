@@ -12,7 +12,7 @@ This module extracts the parsing logic for parse() function calls from the gener
 
 ### Types
 
-- `ar_ar_parse_instruction_parser_t` - Opaque parser instance type
+- `ar_parse_instruction_parser_t` - Opaque parser instance type
 
 ### Functions
 
@@ -26,7 +26,7 @@ This module extracts the parsing logic for parse() function calls from the gener
 
 ```c
 // Create parser
-ar_ar_parse_instruction_parser_t *parser = ar_parse_instruction_parser__create();
+ar_parse_instruction_parser_t *parser = ar_parse_instruction_parser__create();
 
 // Parse simple parse function
 ar_instruction_ast_t *ast1 = ar_parse_instruction_parser__parse(
