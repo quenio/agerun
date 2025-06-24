@@ -45,7 +45,7 @@ Destroys an agent and cleans up all its resources. Sends a `__sleep__` message b
 
 #### `ar__agent__send`
 ```c
-bool ar__agent__send(agent_id_t agent_id, data_t *own_message)
+bool ar__agent__send(int64_t agent_id, data_t *own_message)
 ```
 Sends a message to an agent's message queue. Takes ownership of the message.
 
@@ -59,7 +59,7 @@ Sends a message to an agent's message queue. Takes ownership of the message.
 
 #### `ar__agent__exists`
 ```c
-bool ar__agent__exists(agent_id_t agent_id)
+bool ar__agent__exists(int64_t agent_id)
 ```
 Checks if an agent with the given ID exists and is active.
 
@@ -72,7 +72,7 @@ Checks if an agent with the given ID exists and is active.
 
 #### `ar__agent__get_memory`
 ```c
-const data_t* ar__agent__get_memory(agent_id_t agent_id)
+const data_t* ar__agent__get_memory(int64_t agent_id)
 ```
 Returns read-only access to an agent's memory map.
 
@@ -83,7 +83,7 @@ Returns read-only access to an agent's memory map.
 
 #### `ar__agent__get_mutable_memory`
 ```c
-data_t* ar__agent__get_mutable_memory(agent_id_t agent_id)
+data_t* ar__agent__get_mutable_memory(int64_t agent_id)
 ```
 Returns mutable access to an agent's memory map for modification.
 
@@ -94,7 +94,7 @@ Returns mutable access to an agent's memory map for modification.
 
 #### `ar__agent__get_context`
 ```c
-const data_t* ar__agent__get_context(agent_id_t agent_id)
+const data_t* ar__agent__get_context(int64_t agent_id)
 ```
 Returns read-only access to an agent's context data.
 
@@ -105,7 +105,7 @@ Returns read-only access to an agent's context data.
 
 #### `ar__agent__get_method`
 ```c
-const method_t* ar__agent__get_method(agent_id_t agent_id)
+const method_t* ar__agent__get_method(int64_t agent_id)
 ```
 Returns the method associated with an agent.
 
@@ -120,7 +120,7 @@ Returns the method associated with an agent.
 
 ```c
 // Create an agent with the echo method
-agent_id_t echo_agent = ar__agent__create("echo", "1.0.0", NULL);
+int64_t echo_agent = ar__agent__create("echo", "1.0.0", NULL);
 if (echo_agent == 0) {
     fprintf(stderr, "Failed to create agent\n");
     return;

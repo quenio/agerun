@@ -15,7 +15,7 @@ This module extracts the send instruction evaluation logic from the main instruc
 ### Types
 
 ```c
-typedef struct ar_send_instruction_evaluator_s send_instruction_evaluator_t;
+typedef struct ar_send_instruction_evaluator_s ar_send_instruction_evaluator_t;
 ```
 
 An opaque type representing a send instruction evaluator instance.
@@ -23,7 +23,7 @@ An opaque type representing a send instruction evaluator instance.
 ### Public Interface
 
 ```c
-send_instruction_evaluator_t* ar_send_instruction_evaluator__create(
+ar_send_instruction_evaluator_t* ar_send_instruction_evaluator__create(
     ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
@@ -32,14 +32,14 @@ Creates a new send instruction evaluator that stores its dependencies.
 
 ```c
 void ar_send_instruction_evaluator__destroy(
-    send_instruction_evaluator_t *own_evaluator
+    ar_send_instruction_evaluator_t *own_evaluator
 );
 ```
 Destroys a send instruction evaluator and frees all resources.
 
 ```c
 bool ar_send_instruction_evaluator__evaluate(
-    send_instruction_evaluator_t *mut_evaluator,
+    ar_send_instruction_evaluator_t *mut_evaluator,
     const ar_instruction_ast_t *ref_ast
 );
 ```
@@ -97,7 +97,7 @@ data_t *memory = ar__data__create_map();
 ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
 
 // Create send instruction evaluator
-send_instruction_evaluator_t *send_eval = ar_send_instruction_evaluator__create(
+ar_send_instruction_evaluator_t *send_eval = ar_send_instruction_evaluator__create(
     expr_eval, memory
 );
 

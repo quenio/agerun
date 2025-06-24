@@ -211,7 +211,7 @@ static void test_method_basic(void) {
                                        "../methods/method-name-1.0.0.method", "1.0.0"));
     
     // Create agent
-    agent_id_t agent = ar_agent__create("method-name", "1.0.0", NULL);
+    int64_t agent = ar_agent__create("method-name", "1.0.0", NULL);
     assert(agent > 0);
     
     // Process wake message

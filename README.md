@@ -105,7 +105,7 @@ int main(void) {
     const char *echo_version = ar__method__create("echo", "send(0, message)", "1.0.0");
 
     // Initialize the runtime with the echo method
-    agent_id_t initial_agent = ar__system__init("echo", echo_version);
+    int64_t initial_agent = ar__system__init("echo", echo_version);
 
     // Send a message to the echo agent
     ar__agent__send(initial_agent, "Hello, AgeRun!");
@@ -130,7 +130,7 @@ const char *counter_version = ar__method__create("counter",
     "1.0.0");
 
 // Create a counter agent
-agent_id_t counter_id = ar__agent__create("counter", counter_version, NULL);
+int64_t counter_id = ar__agent__create("counter", counter_version, NULL);
 
 // Send messages to the counter agent
 ar__agent__send(counter_id, "increment");

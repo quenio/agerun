@@ -144,7 +144,7 @@ Gets the message from the instruction context.
 ### Message Sending
 
 ```c
-bool ar__instruction__send_message(agent_id_t target_id, data_t *own_message);
+bool ar__instruction__send_message(int64_t target_id, data_t *own_message);
 ```
 
 Sends a message to another agent.

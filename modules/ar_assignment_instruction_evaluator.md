@@ -15,7 +15,7 @@ This module extracts the assignment instruction evaluation logic from the main i
 ### Types
 
 ```c
-typedef struct ar_assignment_instruction_evaluator_s assignment_instruction_evaluator_t;
+typedef struct ar_assignment_instruction_evaluator_s ar_assignment_instruction_evaluator_t;
 ```
 
 An opaque type representing an assignment instruction evaluator instance.
@@ -23,7 +23,7 @@ An opaque type representing an assignment instruction evaluator instance.
 ### Public Interface
 
 ```c
-assignment_instruction_evaluator_t* ar_assignment_instruction_evaluator__create(
+ar_assignment_instruction_evaluator_t* ar_assignment_instruction_evaluator__create(
     ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
@@ -32,14 +32,14 @@ Creates a new assignment instruction evaluator that stores its dependencies.
 
 ```c
 void ar_assignment_instruction_evaluator__destroy(
-    assignment_instruction_evaluator_t *own_evaluator
+    ar_assignment_instruction_evaluator_t *own_evaluator
 );
 ```
 Destroys an assignment instruction evaluator and frees all resources.
 
 ```c
 bool ar_assignment_instruction_evaluator__evaluate(
-    assignment_instruction_evaluator_t *mut_evaluator,
+    ar_assignment_instruction_evaluator_t *mut_evaluator,
     const ar_instruction_ast_t *ref_ast
 );
 ```
@@ -94,7 +94,7 @@ data_t *memory = ar__data__create_map();
 ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
 
 // Create assignment instruction evaluator
-assignment_instruction_evaluator_t *assign_eval = ar_assignment_instruction_evaluator__create(
+ar_assignment_instruction_evaluator_t *assign_eval = ar_assignment_instruction_evaluator__create(
     expr_eval, memory
 );
 

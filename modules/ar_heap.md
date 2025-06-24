@@ -44,7 +44,7 @@ Verifies that a pointer that should have valid ownership actually has a non-NULL
 
 **Usage Example:**
 ```c
-own_data_t *own_data = ar__data__create_integer(42);
+data_t *own_data = ar__data__create_integer(42);
 AR_ASSERT_OWNERSHIP(own_data); // Ensures creation succeeded
 ```
 
@@ -239,7 +239,7 @@ own_copy = NULL;
 ### Verifying Ownership After Creation
 
 ```c
-own_data_t *own_data = ar__data__create_integer(42);
+data_t *own_data = ar__data__create_integer(42);
 AR_ASSERT_OWNERSHIP(own_data);
 
 // Use the data...
@@ -252,7 +252,7 @@ AR_ASSERT_NOT_USED_AFTER_FREE(own_data);
 ### Enforcing Ownership Transfer Rules
 
 ```c
-own_data_t *own_value = ar__data__create_string("test");
+data_t *own_value = ar__data__create_string("test");
 AR_ASSERT_OWNERSHIP(own_value);
 
 // Transfer ownership to map
