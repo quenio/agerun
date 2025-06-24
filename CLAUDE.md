@@ -346,6 +346,8 @@ cd bin  # Wrong - avoid relative paths
 - **Memory**: `make test-sanitize` → Check `bin/memory_report_<test_name>.log`
 - **Static Analysis**: `make analyze` (requires scan-build: `brew install llvm` or `apt install clang-tools`)
 - **Test Failures**: Often just wrong directory - 4-step check: pwd → cd /path → pwd → run
+- **Pattern Testing**: Test regex/sed/awk patterns before using in scripts
+- **Doc Validation**: clean_build.sh validates file refs, function names, types
 
 **Expression Ownership**:
 - References (`memory.x`): Don't destroy
@@ -385,7 +387,7 @@ Never compile directly with gcc.
 - **User feedback**: May reveal design issues, not just implementation bugs
 
 **Pre-Commit Checklist** (MANDATORY):
-1. `./clean_build.sh` - Fix ALL issues before proceeding
+1. `./clean_build.sh` - Fix ALL issues before proceeding (includes doc validation)
 2. Update module .md files if interfaces changed
 3. Update TODO.md - Mark completed, add new tasks
 4. Update CHANGELOG.md (NON-NEGOTIABLE)
@@ -407,6 +409,7 @@ Never compile directly with gcc.
 - **Preserve behavior**: Tests define expected behavior - fix implementation, not tests
 - **Move code, don't rewrite**: Use diff to verify code is moved, not reimplemented  
 - **Clean state recovery**: If refactoring fails, revert completely rather than debug
+- **Validate changes**: After adding validation, test with intentional errors to ensure no false negatives
 
 **Bulk Renaming with sed**:
 ```bash
