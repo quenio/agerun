@@ -16,19 +16,19 @@ The module follows an instantiable design pattern with lifecycle management:
 
 ```c
 // Create evaluator instance with dependencies
-destroy_method_instruction_evaluator_t* ar_destroy_method_instruction_evaluator__create(
+ar_destroy_method_instruction_evaluator_t* ar_destroy_method_instruction_evaluator__create(
     ar_expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory
 );
 
 // Evaluate using stored dependencies
 bool ar_destroy_method_instruction_evaluator__evaluate(
-    const destroy_method_instruction_evaluator_t *ref_evaluator,
+    const ar_destroy_method_instruction_evaluator_t *ref_evaluator,
     const ar_instruction_ast_t *ref_ast
 );
 
 // Clean up instance
-void ar_destroy_method_instruction_evaluator__destroy(destroy_method_instruction_evaluator_t *own_evaluator);
+void ar_destroy_method_instruction_evaluator__destroy(ar_destroy_method_instruction_evaluator_t *own_evaluator);
 ```
 
 ### Legacy Interface (Backward Compatibility)
@@ -102,7 +102,7 @@ data_t *memory = ar__data__create_map();
 ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
 
 // Create destroy method evaluator instance
-destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
+ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
     expr_eval, memory
 );
 

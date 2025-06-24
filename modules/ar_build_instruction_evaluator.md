@@ -15,7 +15,7 @@ This module extracts the build instruction evaluation logic from the main instru
 ### Types
 
 ```c
-typedef struct ar_build_instruction_evaluator_s build_instruction_evaluator_t;
+typedef struct ar_build_instruction_evaluator_s ar_build_instruction_evaluator_t;
 ```
 
 An opaque type representing a build instruction evaluator instance.
@@ -23,7 +23,7 @@ An opaque type representing a build instruction evaluator instance.
 ### Public Interface
 
 ```c
-build_instruction_evaluator_t* ar_build_instruction_evaluator__create(
+ar_build_instruction_evaluator_t* ar_build_instruction_evaluator__create(
     ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
@@ -32,14 +32,14 @@ Creates a new build instruction evaluator that stores its dependencies.
 
 ```c
 void ar_build_instruction_evaluator__destroy(
-    build_instruction_evaluator_t *own_evaluator
+    ar_build_instruction_evaluator_t *own_evaluator
 );
 ```
 Destroys a build instruction evaluator and frees all resources.
 
 ```c
 bool ar_build_instruction_evaluator__evaluate(
-    build_instruction_evaluator_t *mut_evaluator,
+    ar_build_instruction_evaluator_t *mut_evaluator,
     const ar_instruction_ast_t *ref_ast
 );
 ```
@@ -104,7 +104,7 @@ data_t *memory = ar__data__create_map();
 ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
 
 // Create build instruction evaluator
-build_instruction_evaluator_t *build_eval = ar_build_instruction_evaluator__create(
+ar_build_instruction_evaluator_t *build_eval = ar_build_instruction_evaluator__create(
     expr_eval, memory
 );
 

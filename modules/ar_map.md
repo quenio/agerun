@@ -114,14 +114,14 @@ void ar__map__destroy(map_t *own_map);
 
 ```c
 // Create a map (owned by caller)
-own_map_t *own_map = ar__map__create();
+map_t *own_map = ar__map__create();
 
 // Key must remain valid for the lifetime of the map entry
 // Using const char* for better compatibility with string literals
 const char *ref_key = "answer";  // Using string literal that has static lifetime
 
 // Store a value (integer, owned by caller)
-own_int_t *own_value = malloc(sizeof(int));
+int *own_value = malloc(sizeof(int));
 *own_value = 42;
 ar__map__set(own_map, ref_key, own_value);
 
@@ -141,7 +141,7 @@ free(own_value);
 
 ```c
 // Create and populate a map
-own_map_t *own_map = ar__map__create();
+map_t *own_map = ar__map__create();
 ar__map__set(own_map, "key1", value1);
 ar__map__set(own_map, "key2", value2);
 ar__map__set(own_map, "key3", value3);
@@ -151,7 +151,7 @@ size_t count = ar__map__count(own_map);
 printf("Map contains %zu entries\n", count);
 
 // Get all refs (returned array is owned by caller)
-own_refs_t **own_refs = ar__map__refs(own_map);
+void* **own_refs = ar__map__refs(own_map);
 
 if (own_refs) {
     for (size_t i = 0; i < count; i++) {
@@ -170,17 +170,17 @@ ar__map__destroy(own_map);
 
 ```c
 // Create and populate a map with heap-allocated keys and values
-own_map_t *own_map = ar__map__create();
-own_key1_t *own_key1 = strdup("key1");
-own_key2_t *own_key2 = strdup("key2");
-own_value1_t *own_value1 = malloc(sizeof(int));
-own_value2_t *own_value2 = malloc(sizeof(int));
+map_t *own_map = ar__map__create();
+char* own_key1 = strdup("key1");
+char* own_key2 = strdup("key2");
+int *own_value1 = malloc(sizeof(int));
+int *own_value2 = malloc(sizeof(int));
 
 ar__map__set(own_map, own_key1, own_value1);
 ar__map__set(own_map, own_key2, own_value2);
 
 // Get all refs to free them
-own_refs_t **own_refs = ar__map__refs(own_map);
+void* **own_refs = ar__map__refs(own_map);
 size_t count = ar__map__count(own_map);
 
 // We need to manually track which refs correspond to which keys
@@ -218,10 +218,10 @@ ar__map__destroy(own_map);
 
 ```c
 // Create outer map (owned)
-own_outer_map_t *own_outer_map = ar__map__create();
+map_t *own_outer_map = ar__map__create();
 
 // Create inner map (owned)
-own_inner_map_t *own_inner_map = ar__map__create();
+map_t *own_inner_map = ar__map__create();
 
 // Create keys (must remain valid for the lifetime of the map entries)
 // Using string literals for simplicity
@@ -232,7 +232,7 @@ const char *ref_inner_key = "count";
 ar__map__set(own_outer_map, ref_outer_key, own_inner_map);
 
 // Store a value in inner map (value remains owned by this code)
-own_value_t *own_value = malloc(sizeof(int));
+int *own_value = malloc(sizeof(int));
 *own_value = 100;
 ar__map__set(own_inner_map, ref_inner_key, own_value);
 

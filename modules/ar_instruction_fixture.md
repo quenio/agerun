@@ -107,7 +107,7 @@ bool ar__instruction__fixture_init_system(
 Initializes the system with the specified method. Must be called before creating agents if system initialization is required.
 
 ```c
-agent_id_t ar__instruction__fixture_create_test_agent(
+int64_t ar__instruction__fixture_create_test_agent(
     instruction_fixture_t *mut_fixture,
     const char *ref_method_name,
     const char *ref_instructions
@@ -121,7 +121,7 @@ Creates a test agent with the specified method. The fixture:
 - Tracks the agent for cleanup
 
 ```c
-agent_id_t ar__instruction__fixture_get_agent(const instruction_fixture_t *ref_fixture);
+int64_t ar__instruction__fixture_get_agent(const instruction_fixture_t *ref_fixture);
 ```
 
 Returns the agent ID created by the fixture, or 0 if no agent was created.
@@ -169,7 +169,7 @@ static void test_instruction_with_agent(void) {
     assert(ar__instruction__fixture_init_system(own_fixture, "init_method", "memory.ready = 1"));
     
     // Create test agent
-    agent_id_t agent = ar__instruction__fixture_create_test_agent(
+    int64_t agent = ar__instruction__fixture_create_test_agent(
         own_fixture, "test_method", "memory.value := message"
     );
     assert(agent > 0);

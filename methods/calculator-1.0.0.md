@@ -30,7 +30,7 @@ send(message.sender, memory.result)
 ### Creating a Calculator Agent
 
 ```c
-agent_id_t calc = ar__agent__create("calculator", "1.0.0", NULL);
+int64_t calc = ar__agent__create("calculator", "1.0.0", NULL);
 ```
 
 ### Performing Operations

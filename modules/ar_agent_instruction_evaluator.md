@@ -16,20 +16,20 @@ The module follows an instantiable design pattern with lifecycle management:
 
 ```c
 // Create evaluator instance with dependencies
-agent_instruction_evaluator_t* ar_agent_instruction_evaluator__create(
+ar_agent_instruction_evaluator_t* ar_agent_instruction_evaluator__create(
     ar_expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory
 );
 
 // Evaluate using stored dependencies
 bool ar_agent_instruction_evaluator__evaluate(
-    const agent_instruction_evaluator_t *ref_evaluator,
+    const ar_agent_instruction_evaluator_t *ref_evaluator,
     data_t *ref_context,
     const ar_instruction_ast_t *ref_ast
 );
 
 // Clean up instance
-void ar_agent_instruction_evaluator__destroy(agent_instruction_evaluator_t *own_evaluator);
+void ar_agent_instruction_evaluator__destroy(ar_agent_instruction_evaluator_t *own_evaluator);
 ```
 
 ### Legacy Interface (Backward Compatibility)
@@ -97,7 +97,7 @@ data_t *memory = ar__data__create_map();
 ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
 
 // Create agent evaluator instance
-agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
+ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
     expr_eval, memory
 );
 

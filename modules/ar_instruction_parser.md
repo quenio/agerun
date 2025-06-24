@@ -50,24 +50,24 @@ Function calls can optionally have result assignment:
 ### Parser Creation and Destruction
 
 ```c
-ar_instruction_parser_t* ar__instruction_parser__create(void);
+instruction_parser_t* ar__instruction_parser__create(void);
 ```
 Creates a new parser instance that can be reused for multiple parse operations.
 
 ```c
-void ar__instruction_parser__destroy(ar_instruction_parser_t *own_parser);
+void ar__instruction_parser__destroy(instruction_parser_t *own_parser);
 ```
 Destroys a parser instance and frees all associated memory.
 
 ### Error Handling
 
 ```c
-const char* ar__instruction_parser__get_error(const ar_instruction_parser_t *ref_parser);
+const char* ar__instruction_parser__get_error(const instruction_parser_t *ref_parser);
 ```
 Returns the last error message, or NULL if no error occurred.
 
 ```c
-size_t ar__instruction_parser__get_error_position(const ar_instruction_parser_t *ref_parser);
+size_t ar__instruction_parser__get_error_position(const instruction_parser_t *ref_parser);
 ```
 Returns the character position where the last error occurred.
 
@@ -77,14 +77,14 @@ Each instruction type has its own parse method:
 
 ```c
 ar_instruction_ast_t* ar__instruction_parser__parse_assignment(
-    ar_instruction_parser_t *mut_parser, 
+    instruction_parser_t *mut_parser, 
     const char *ref_instruction
 );
 ```
 
 ```c
 ar_instruction_ast_t* ar__instruction_parser__parse_send(
-    ar_instruction_parser_t *mut_parser, 
+    instruction_parser_t *mut_parser, 
     const char *ref_instruction, 
     const char *ref_result_path
 );
@@ -92,7 +92,7 @@ ar_instruction_ast_t* ar__instruction_parser__parse_send(
 
 ```c
 ar_instruction_ast_t* ar__instruction_parser__parse_if(
-    ar_instruction_parser_t *mut_parser, 
+    instruction_parser_t *mut_parser, 
     const char *ref_instruction, 
     const char *ref_result_path
 );
@@ -111,7 +111,7 @@ And similar methods for:
 
 ```c
 // Create parser
-ar_instruction_parser_t *parser = ar__instruction_parser__create();
+instruction_parser_t *parser = ar__instruction_parser__create();
 if (!parser) {
     return;
 }
@@ -148,7 +148,7 @@ ar__instruction_parser__destroy(parser);
 
 ```c
 // Create parser
-ar_instruction_parser_t *parser = ar__instruction_parser__create();
+instruction_parser_t *parser = ar__instruction_parser__create();
 if (!parser) {
     // Handle error
     return;
@@ -197,7 +197,7 @@ ar_instruction_ast_t *ast3 = ar__instruction_parser__parse_if(
 ### Parser Reusability
 
 ```c
-ar_instruction_parser_t *parser = ar__instruction_parser__create();
+instruction_parser_t *parser = ar__instruction_parser__create();
 
 // Parse multiple instructions with the same parser
 ar_instruction_ast_t *ast1 = ar__instruction_parser__parse_assignment(parser, "memory.x := 10");

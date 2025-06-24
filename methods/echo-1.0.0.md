@@ -19,7 +19,7 @@ send(message.sender, message.content)
 ### Creating an Echo Agent
 
 ```c
-agent_id_t echo_agent = ar__agent__create("echo", "1.0.0", NULL);
+int64_t echo_agent = ar__agent__create("echo", "1.0.0", NULL);
 ```
 
 ### Sending Messages
