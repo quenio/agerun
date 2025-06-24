@@ -14,7 +14,7 @@ static void test_send_instruction_evaluator__create_destroy(void) {
     data_t *own_memory = ar__data__create_map();
     assert(own_memory != NULL);
     
-    expression_evaluator_t *own_expr_eval = ar__expression_evaluator__create(own_memory, NULL);
+    ar_expression_evaluator_t *own_expr_eval = ar__expression_evaluator__create(own_memory, NULL);
     assert(own_expr_eval != NULL);
     
     // When creating a send instruction evaluator
@@ -36,7 +36,7 @@ static void test_send_instruction_evaluator__evaluate_with_instance(void) {
     data_t *own_memory = ar__data__create_map();
     assert(own_memory != NULL);
     
-    expression_evaluator_t *own_expr_eval = ar__expression_evaluator__create(own_memory, NULL);
+    ar_expression_evaluator_t *own_expr_eval = ar__expression_evaluator__create(own_memory, NULL);
     assert(own_expr_eval != NULL);
     
     // When creating a send instruction evaluator
@@ -85,7 +85,7 @@ static void test_instruction_evaluator__evaluate_send_integer_message(void) {
     data_t *memory = ar__data__create_map();
     assert(memory != NULL);
     
-    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
@@ -133,7 +133,7 @@ static void test_instruction_evaluator__evaluate_send_string_message(void) {
     data_t *memory = ar__data__create_map();
     assert(memory != NULL);
     
-    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
@@ -181,7 +181,7 @@ static void test_instruction_evaluator__evaluate_send_with_result(void) {
     data_t *memory = ar__data__create_map();
     assert(memory != NULL);
     
-    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
@@ -238,7 +238,7 @@ static void test_instruction_evaluator__evaluate_send_memory_reference(void) {
     data_t *msg_value = ar__data__create_string("Hello from memory");
     ar__data__set_map_data(memory, "msg", msg_value);
     
-    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
@@ -287,7 +287,7 @@ static void test_instruction_evaluator__evaluate_send_invalid_args(void) {
     data_t *memory = ar__data__create_map();
     assert(memory != NULL);
     
-    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(

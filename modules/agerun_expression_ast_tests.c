@@ -12,7 +12,7 @@ static void test_create_integer_literal(void) {
     int value = 42;
     
     // When creating an integer literal AST node
-    expression_ast_t *own_node = ar__expression_ast__create_literal_int(value);
+    ar_expression_ast_t *own_node = ar__expression_ast__create_literal_int(value);
     
     // Then the node should be created successfully with correct type and value
     assert(own_node != NULL);
@@ -29,7 +29,7 @@ static void test_create_negative_integer_literal(void) {
     int value = -100;
     
     // When creating an integer literal AST node
-    expression_ast_t *own_node = ar__expression_ast__create_literal_int(value);
+    ar_expression_ast_t *own_node = ar__expression_ast__create_literal_int(value);
     
     // Then the node should be created with the negative value
     assert(own_node != NULL);
@@ -45,7 +45,7 @@ static void test_create_double_literal(void) {
     double value = 3.14;
     
     // When creating a double literal AST node
-    expression_ast_t *own_node = ar__expression_ast__create_literal_double(value);
+    ar_expression_ast_t *own_node = ar__expression_ast__create_literal_double(value);
     
     // Then the node should be created successfully with correct type and value
     assert(own_node != NULL);
@@ -62,7 +62,7 @@ static void test_create_string_literal(void) {
     const char *value = "hello world";
     
     // When creating a string literal AST node
-    expression_ast_t *own_node = ar__expression_ast__create_literal_string(value);
+    ar_expression_ast_t *own_node = ar__expression_ast__create_literal_string(value);
     
     // Then the node should be created successfully with a copy of the string
     assert(own_node != NULL);
@@ -79,7 +79,7 @@ static void test_create_string_literal_with_null(void) {
     const char *value = NULL;
     
     // When creating a string literal AST node with NULL
-    expression_ast_t *own_node = ar__expression_ast__create_literal_string(value);
+    ar_expression_ast_t *own_node = ar__expression_ast__create_literal_string(value);
     
     // Then the creation should fail
     assert(own_node == NULL);
@@ -92,7 +92,7 @@ static void test_create_simple_memory_access(void) {
     const char *base = "memory";
     
     // When creating a memory access AST node
-    expression_ast_t *own_node = ar__expression_ast__create_memory_access(base, NULL, 0);
+    ar_expression_ast_t *own_node = ar__expression_ast__create_memory_access(base, NULL, 0);
     
     // Then the node should be created with just the base
     assert(own_node != NULL);
@@ -115,7 +115,7 @@ static void test_create_memory_access_with_path(void) {
     const char *path_components[] = {"user", "name"};
     
     // When creating a memory access AST node with path
-    expression_ast_t *own_node = ar__expression_ast__create_memory_access(base, path_components, 2);
+    ar_expression_ast_t *own_node = ar__expression_ast__create_memory_access(base, path_components, 2);
     
     // Then the node should be created with the base and path components
     assert(own_node != NULL);
@@ -136,19 +136,19 @@ static void test_create_binary_addition(void) {
     printf("Testing binary addition creation...\n");
     
     // Given two integer literal nodes
-    expression_ast_t *own_left = ar__expression_ast__create_literal_int(5);
-    expression_ast_t *own_right = ar__expression_ast__create_literal_int(3);
+    ar_expression_ast_t *own_left = ar__expression_ast__create_literal_int(5);
+    ar_expression_ast_t *own_right = ar__expression_ast__create_literal_int(3);
     
     // When creating a binary addition node
-    expression_ast_t *own_node = ar__expression_ast__create_binary_op(AR_OP__ADD, own_left, own_right);
+    ar_expression_ast_t *own_node = ar__expression_ast__create_binary_op(AR_OP__ADD, own_left, own_right);
     
     // Then the node should be created with correct operator and operands
     assert(own_node != NULL);
     assert(ar__expression_ast__get_type(own_node) == AR_EXPR__BINARY_OP);
     assert(ar__expression_ast__get_operator(own_node) == AR_OP__ADD);
     
-    const expression_ast_t *ref_left = ar__expression_ast__get_left(own_node);
-    const expression_ast_t *ref_right = ar__expression_ast__get_right(own_node);
+    const ar_expression_ast_t *ref_left = ar__expression_ast__get_left(own_node);
+    const ar_expression_ast_t *ref_right = ar__expression_ast__get_right(own_node);
     assert(ar__expression_ast__get_int_value(ref_left) == 5);
     assert(ar__expression_ast__get_int_value(ref_right) == 3);
     
@@ -159,18 +159,18 @@ static void test_create_binary_comparison(void) {
     printf("Testing binary comparison creation...\n");
     
     // Given two string literal nodes
-    expression_ast_t *own_left = ar__expression_ast__create_literal_string("hello");
-    expression_ast_t *own_right = ar__expression_ast__create_literal_string("world");
+    ar_expression_ast_t *own_left = ar__expression_ast__create_literal_string("hello");
+    ar_expression_ast_t *own_right = ar__expression_ast__create_literal_string("world");
     
     // When creating a binary equality comparison node
-    expression_ast_t *own_node = ar__expression_ast__create_binary_op(AR_OP__EQUAL, own_left, own_right);
+    ar_expression_ast_t *own_node = ar__expression_ast__create_binary_op(AR_OP__EQUAL, own_left, own_right);
     
     // Then the node should be created with correct operator and operands
     assert(own_node != NULL);
     assert(ar__expression_ast__get_operator(own_node) == AR_OP__EQUAL);
     
-    const expression_ast_t *ref_left = ar__expression_ast__get_left(own_node);
-    const expression_ast_t *ref_right = ar__expression_ast__get_right(own_node);
+    const ar_expression_ast_t *ref_left = ar__expression_ast__get_left(own_node);
+    const ar_expression_ast_t *ref_right = ar__expression_ast__get_right(own_node);
     assert(strcmp(ar__expression_ast__get_string_value(ref_left), "hello") == 0);
     assert(strcmp(ar__expression_ast__get_string_value(ref_right), "world") == 0);
     
@@ -181,19 +181,19 @@ static void test_create_nested_expression(void) {
     printf("Testing nested expression creation...\n");
     
     // Given a nested expression: (1 + 2) * 3
-    expression_ast_t *own_one = ar__expression_ast__create_literal_int(1);
-    expression_ast_t *own_two = ar__expression_ast__create_literal_int(2);
-    expression_ast_t *own_add = ar__expression_ast__create_binary_op(AR_OP__ADD, own_one, own_two);
-    expression_ast_t *own_three = ar__expression_ast__create_literal_int(3);
+    ar_expression_ast_t *own_one = ar__expression_ast__create_literal_int(1);
+    ar_expression_ast_t *own_two = ar__expression_ast__create_literal_int(2);
+    ar_expression_ast_t *own_add = ar__expression_ast__create_binary_op(AR_OP__ADD, own_one, own_two);
+    ar_expression_ast_t *own_three = ar__expression_ast__create_literal_int(3);
     
     // When creating the multiplication node
-    expression_ast_t *own_multiply = ar__expression_ast__create_binary_op(AR_OP__MULTIPLY, own_add, own_three);
+    ar_expression_ast_t *own_multiply = ar__expression_ast__create_binary_op(AR_OP__MULTIPLY, own_add, own_three);
     
     // Then the nested structure should be preserved
     assert(own_multiply != NULL);
     assert(ar__expression_ast__get_operator(own_multiply) == AR_OP__MULTIPLY);
     
-    const expression_ast_t *ref_left = ar__expression_ast__get_left(own_multiply);
+    const ar_expression_ast_t *ref_left = ar__expression_ast__get_left(own_multiply);
     assert(ar__expression_ast__get_type(ref_left) == AR_EXPR__BINARY_OP);
     assert(ar__expression_ast__get_operator(ref_left) == AR_OP__ADD);
     
@@ -204,16 +204,16 @@ static void test_binary_op_with_null_operands(void) {
     printf("Testing binary operation with NULL operands...\n");
     
     // Given one valid operand and one NULL
-    expression_ast_t *own_left = ar__expression_ast__create_literal_int(1);
+    ar_expression_ast_t *own_left = ar__expression_ast__create_literal_int(1);
     
     // When creating a binary operation with NULL right operand
-    expression_ast_t *own_node = ar__expression_ast__create_binary_op(AR_OP__ADD, own_left, NULL);
+    ar_expression_ast_t *own_node = ar__expression_ast__create_binary_op(AR_OP__ADD, own_left, NULL);
     
     // Then the creation should fail and clean up the valid operand
     assert(own_node == NULL);
     
     // Given one NULL and one valid operand
-    expression_ast_t *own_right = ar__expression_ast__create_literal_int(2);
+    ar_expression_ast_t *own_right = ar__expression_ast__create_literal_int(2);
     
     // When creating a binary operation with NULL left operand
     own_node = ar__expression_ast__create_binary_op(AR_OP__ADD, NULL, own_right);
@@ -226,7 +226,7 @@ static void test_accessor_type_safety(void) {
     printf("Testing accessor type safety...\n");
     
     // Given an integer literal node
-    expression_ast_t *own_int = ar__expression_ast__create_literal_int(42);
+    ar_expression_ast_t *own_int = ar__expression_ast__create_literal_int(42);
     
     // When accessing with wrong type accessors
     // Then they should return default values
@@ -246,26 +246,26 @@ static void test_complex_expression_tree(void) {
     
     // Build left side: memory.x + 5
     const char *path_x[] = {"x"};
-    expression_ast_t *own_memory_x = ar__expression_ast__create_memory_access("memory", path_x, 1);
-    expression_ast_t *own_five = ar__expression_ast__create_literal_int(5);
-    expression_ast_t *own_add = ar__expression_ast__create_binary_op(AR_OP__ADD, own_memory_x, own_five);
+    ar_expression_ast_t *own_memory_x = ar__expression_ast__create_memory_access("memory", path_x, 1);
+    ar_expression_ast_t *own_five = ar__expression_ast__create_literal_int(5);
+    ar_expression_ast_t *own_add = ar__expression_ast__create_binary_op(AR_OP__ADD, own_memory_x, own_five);
     
     // Build right side: message.count * 2
     const char *path_count[] = {"count"};
-    expression_ast_t *own_msg_count = ar__expression_ast__create_memory_access("message", path_count, 1);
-    expression_ast_t *own_two = ar__expression_ast__create_literal_int(2);
-    expression_ast_t *own_multiply = ar__expression_ast__create_binary_op(AR_OP__MULTIPLY, own_msg_count, own_two);
+    ar_expression_ast_t *own_msg_count = ar__expression_ast__create_memory_access("message", path_count, 1);
+    ar_expression_ast_t *own_two = ar__expression_ast__create_literal_int(2);
+    ar_expression_ast_t *own_multiply = ar__expression_ast__create_binary_op(AR_OP__MULTIPLY, own_msg_count, own_two);
     
     // When creating the comparison
-    expression_ast_t *own_compare = ar__expression_ast__create_binary_op(AR_OP__GREATER, own_add, own_multiply);
+    ar_expression_ast_t *own_compare = ar__expression_ast__create_binary_op(AR_OP__GREATER, own_add, own_multiply);
     
     // Then the entire tree structure should be correct
     assert(own_compare != NULL);
     assert(ar__expression_ast__get_type(own_compare) == AR_EXPR__BINARY_OP);
     assert(ar__expression_ast__get_operator(own_compare) == AR_OP__GREATER);
     
-    const expression_ast_t *ref_left = ar__expression_ast__get_left(own_compare);
-    const expression_ast_t *ref_right = ar__expression_ast__get_right(own_compare);
+    const ar_expression_ast_t *ref_left = ar__expression_ast__get_left(own_compare);
+    const ar_expression_ast_t *ref_right = ar__expression_ast__get_right(own_compare);
     assert(ar__expression_ast__get_type(ref_left) == AR_EXPR__BINARY_OP);
     assert(ar__expression_ast__get_operator(ref_left) == AR_OP__ADD);
     assert(ar__expression_ast__get_type(ref_right) == AR_EXPR__BINARY_OP);
@@ -285,9 +285,9 @@ static void test_all_operator_types(void) {
     
     // When creating binary operations with each operator
     for (int i = 0; i < 10; i++) {
-        expression_ast_t *own_left = ar__expression_ast__create_literal_int(10);
-        expression_ast_t *own_right = ar__expression_ast__create_literal_int(5);
-        expression_ast_t *own_node = ar__expression_ast__create_binary_op(operators[i], own_left, own_right);
+        ar_expression_ast_t *own_left = ar__expression_ast__create_literal_int(10);
+        ar_expression_ast_t *own_right = ar__expression_ast__create_literal_int(5);
+        ar_expression_ast_t *own_node = ar__expression_ast__create_binary_op(operators[i], own_left, own_right);
         
         // Then each should be created with the correct operator
         assert(own_node != NULL);

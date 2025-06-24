@@ -14,7 +14,7 @@ static void test_build_instruction_evaluator__create_destroy(void) {
     data_t *memory = ar__data__create_map();
     assert(memory != NULL);
     
-    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     // When creating a build instruction evaluator
@@ -43,7 +43,7 @@ static void test_build_instruction_evaluator__evaluate_with_instance(void) {
     assert(ar__data__set_map_data(values, "name", ar__data__create_string("Alice")));
     assert(ar__data__set_map_data(memory, "data", values));
     
-    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     // When creating a build instruction evaluator instance
@@ -102,7 +102,7 @@ static void test_build_instruction_evaluator__evaluate_legacy(void) {
     assert(ar__data__set_map_data(values, "greeting", ar__data__create_string("Hi")));
     assert(ar__data__set_map_data(memory, "vars", values));
     
-    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     // Create an evaluator instance
@@ -162,7 +162,7 @@ static void test_build_instruction_evaluator__evaluate_simple(void) {
     assert(ar__data__set_map_data(values, "name", ar__data__create_string("Alice")));
     assert(ar__data__set_map_data(memory, "data", values));
     
-    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
@@ -223,7 +223,7 @@ static void test_build_instruction_evaluator__evaluate_multiple_variables(void) 
     assert(ar__data__set_map_data(values, "role", ar__data__create_string("Admin")));
     assert(ar__data__set_map_data(memory, "user", values));
     
-    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
@@ -284,7 +284,7 @@ static void test_build_instruction_evaluator__evaluate_with_types(void) {
     assert(ar__data__set_map_data(values, "score", ar__data__create_double(95.5)));
     assert(ar__data__set_map_data(memory, "stats", values));
     
-    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
@@ -344,7 +344,7 @@ static void test_build_instruction_evaluator__evaluate_missing_values(void) {
     // Note: lastName is missing
     assert(ar__data__set_map_data(memory, "person", values));
     
-    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
@@ -397,7 +397,7 @@ static void test_build_instruction_evaluator__evaluate_invalid_args(void) {
     data_t *memory = ar__data__create_map();
     assert(memory != NULL);
     
-    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(

@@ -26,7 +26,7 @@ static void test_agent_instruction_evaluator__evaluate_with_context(void) {
     data_t *context = ar__data__create_map();
     assert(context != NULL);
     
-    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, context);
+    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, context);
     assert(expr_eval != NULL);
     
     ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
@@ -97,7 +97,7 @@ static void test_agent_instruction_evaluator__evaluate_with_result(void) {
     data_t *memory = ar__data__create_map();
     assert(memory != NULL);
     
-    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
@@ -171,7 +171,7 @@ static void test_agent_instruction_evaluator__evaluate_invalid_method(void) {
     data_t *memory = ar__data__create_map();
     assert(memory != NULL);
     
-    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
@@ -214,7 +214,7 @@ static void test_agent_instruction_evaluator__evaluate_invalid_args(void) {
     data_t *memory = ar__data__create_map();
     assert(memory != NULL);
     
-    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
@@ -284,7 +284,7 @@ static void test_agent_instruction_evaluator__create_destroy(void) {
     data_t *memory = ar__data__create_map();
     assert(memory != NULL);
     
-    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     // When creating an agent instruction evaluator instance
@@ -312,7 +312,7 @@ static void test_agent_instruction_evaluator__evaluate_with_instance(void) {
     assert(memory != NULL);
     ar__data__set_map_string(memory, "config", "test");
     
-    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(expr_eval, memory);
@@ -382,7 +382,7 @@ static void test_agent_instruction_evaluator__legacy_evaluate_function(void) {
     assert(memory != NULL);
     ar__data__set_map_string(memory, "status", "legacy");
     
-    expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     // Create an evaluator instance

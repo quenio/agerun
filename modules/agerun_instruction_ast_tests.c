@@ -15,7 +15,7 @@ static void test_create_assignment_instruction(void) {
     const char *expression = "42";
     
     // When creating an assignment instruction AST node
-    instruction_ast_t *own_node = ar__instruction_ast__create_assignment(memory_path, expression);
+    ar_instruction_ast_t *own_node = ar__instruction_ast__create_assignment(memory_path, expression);
     
     // Then the node should be created successfully with correct type and values
     assert(own_node != NULL);
@@ -34,7 +34,7 @@ static void test_create_nested_assignment_instruction(void) {
     const char *expression = "\"John Doe\"";
     
     // When creating an assignment instruction AST node
-    instruction_ast_t *own_node = ar__instruction_ast__create_assignment(memory_path, expression);
+    ar_instruction_ast_t *own_node = ar__instruction_ast__create_assignment(memory_path, expression);
     
     // Then the node should handle nested paths correctly
     assert(own_node != NULL);
@@ -53,7 +53,7 @@ static void test_create_send_function_without_assignment(void) {
     size_t arg_count = 2;
     
     // When creating a send function call AST node without result assignment
-    instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
         AR_INST__SEND, function_name, args, arg_count, NULL
     );
     
@@ -88,7 +88,7 @@ static void test_create_send_function_with_assignment(void) {
     const char *result_path = "memory.result";
     
     // When creating a send function call AST node with result assignment
-    instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
         AR_INST__SEND, function_name, args, arg_count, result_path
     );
     
@@ -110,7 +110,7 @@ static void test_create_if_function(void) {
     const char *result_path = "memory.level";
     
     // When creating an if function call AST node
-    instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
         AR_INST__IF, function_name, args, arg_count, result_path
     );
     
@@ -144,7 +144,7 @@ static void test_create_method_function(void) {
     const char *result_path = "memory.method_created";
     
     // When creating a method function call AST node
-    instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
         AR_INST__METHOD, function_name, args, arg_count, result_path
     );
     
@@ -166,7 +166,7 @@ static void test_create_agent_function(void) {
     const char *result_path = "memory.agent_id";
     
     // When creating an agent function call AST node
-    instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
         AR_INST__AGENT, function_name, args, arg_count, result_path
     );
     
@@ -189,7 +189,7 @@ static void test_create_destroy_agent_function(void) {
     const char *result_path = "memory.destroyed";
     
     // When creating a destroy agent function call AST node
-    instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
         AR_INST__DESTROY_AGENT, function_name, args, arg_count, result_path
     );
     
@@ -218,7 +218,7 @@ static void test_create_destroy_method_function(void) {
     size_t arg_count = 2;
     
     // When creating a destroy method function call AST node without assignment
-    instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
         AR_INST__DESTROY_METHOD, function_name, args, arg_count, NULL
     );
     
@@ -245,7 +245,7 @@ static void test_create_parse_function(void) {
     const char *result_path = "memory.parsed";
     
     // When creating a parse function call AST node
-    instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
         AR_INST__PARSE, function_name, args, arg_count, result_path
     );
     
@@ -267,7 +267,7 @@ static void test_create_build_function(void) {
     const char *result_path = "memory.greeting";
     
     // When creating a build function call AST node
-    instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
         AR_INST__BUILD, function_name, args, arg_count, result_path
     );
     
@@ -303,7 +303,7 @@ static void test_empty_arguments(void) {
     const char *function_name = "test";
     
     // When creating a function call with no arguments
-    instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
         AR_INST__SEND, function_name, NULL, 0, NULL
     );
     
@@ -324,17 +324,17 @@ static void test_instruction_ast__assignment_expression_ast(void) {
     const char *expression = "42";
     
     // When creating an assignment instruction AST node
-    instruction_ast_t *own_node = ar__instruction_ast__create_assignment(memory_path, expression);
+    ar_instruction_ast_t *own_node = ar__instruction_ast__create_assignment(memory_path, expression);
     assert(own_node != NULL);
     
     // Initially, expression AST should be NULL
     assert(ar__instruction_ast__get_assignment_expression_ast(own_node) == NULL);
     
     // When setting an expression AST
-    expression_parser_t *own_parser = ar__expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar__expression_parser__create(expression);
     assert(own_parser != NULL);
     
-    expression_ast_t *own_expr_ast = ar__expression_parser__parse_expression(own_parser);
+    ar_expression_ast_t *own_expr_ast = ar__expression_parser__parse_expression(own_parser);
     assert(own_expr_ast != NULL);
     ar__expression_parser__destroy(own_parser);
     
@@ -342,7 +342,7 @@ static void test_instruction_ast__assignment_expression_ast(void) {
     assert(success == true);
     
     // Then the expression AST should be retrievable
-    const expression_ast_t *ref_stored_ast = ar__instruction_ast__get_assignment_expression_ast(own_node);
+    const ar_expression_ast_t *ref_stored_ast = ar__instruction_ast__get_assignment_expression_ast(own_node);
     assert(ref_stored_ast != NULL);
     assert(ref_stored_ast == own_expr_ast); // Same pointer
     
@@ -362,7 +362,7 @@ static void test_instruction_ast__function_arg_asts(void) {
     size_t arg_count = 2;
     
     // When creating a send function call AST node
-    instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
         AR_INST__SEND, function_name, args, arg_count, NULL
     );
     assert(own_node != NULL);
@@ -375,9 +375,9 @@ static void test_instruction_ast__function_arg_asts(void) {
     assert(own_arg_asts != NULL);
     
     for (size_t i = 0; i < arg_count; i++) {
-        expression_parser_t *own_parser = ar__expression_parser__create(args[i]);
+        ar_expression_parser_t *own_parser = ar__expression_parser__create(args[i]);
         assert(own_parser != NULL);
-        expression_ast_t *own_arg_ast = ar__expression_parser__parse_expression(own_parser);
+        ar_expression_ast_t *own_arg_ast = ar__expression_parser__parse_expression(own_parser);
         assert(own_arg_ast != NULL);
         ar__expression_parser__destroy(own_parser);
         ar__list__add_last(own_arg_asts, own_arg_ast);
@@ -406,23 +406,23 @@ static void test_instruction_ast__expression_ast_replacement(void) {
     printf("Testing expression AST replacement...\n");
     
     // Given an assignment with an expression AST
-    instruction_ast_t *own_node = ar__instruction_ast__create_assignment("memory.x", "42");
+    ar_instruction_ast_t *own_node = ar__instruction_ast__create_assignment("memory.x", "42");
     assert(own_node != NULL);
     
-    expression_parser_t *own_parser1 = ar__expression_parser__create("42");
+    ar_expression_parser_t *own_parser1 = ar__expression_parser__create("42");
     assert(own_parser1 != NULL);
     
-    expression_ast_t *own_first_ast = ar__expression_parser__parse_expression(own_parser1);
+    ar_expression_ast_t *own_first_ast = ar__expression_parser__parse_expression(own_parser1);
     assert(own_first_ast != NULL);
     ar__expression_parser__destroy(own_parser1);
     
     ar__instruction_ast__set_assignment_expression_ast(own_node, own_first_ast);
     
     // When replacing the expression AST with a new one
-    expression_parser_t *own_parser2 = ar__expression_parser__create("100");
+    ar_expression_parser_t *own_parser2 = ar__expression_parser__create("100");
     assert(own_parser2 != NULL);
     
-    expression_ast_t *own_second_ast = ar__expression_parser__parse_expression(own_parser2);
+    ar_expression_ast_t *own_second_ast = ar__expression_parser__parse_expression(own_parser2);
     assert(own_second_ast != NULL);
     ar__expression_parser__destroy(own_parser2);
     
@@ -430,7 +430,7 @@ static void test_instruction_ast__expression_ast_replacement(void) {
     assert(success == true);
     
     // Then the new AST should be stored (old one destroyed internally)
-    const expression_ast_t *ref_stored_ast = ar__instruction_ast__get_assignment_expression_ast(own_node);
+    const ar_expression_ast_t *ref_stored_ast = ar__instruction_ast__get_assignment_expression_ast(own_node);
     assert(ref_stored_ast == own_second_ast);
     
     // Cleanup
@@ -441,13 +441,13 @@ static void test_instruction_ast__expression_ast_null_handling(void) {
     printf("Testing expression AST null handling...\n");
     
     // Test setting expression AST on wrong node type
-    instruction_ast_t *own_send_node = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *own_send_node = ar__instruction_ast__create_function_call(
         AR_INST__SEND, "send", NULL, 0, NULL
     );
     assert(own_send_node != NULL);
     
-    expression_parser_t *own_parser = ar__expression_parser__create("42");
-    expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
+    ar_expression_parser_t *own_parser = ar__expression_parser__create("42");
+    ar_expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
     ar__expression_parser__destroy(own_parser);
     
     // Should fail to set expression AST on non-assignment node
@@ -463,7 +463,7 @@ static void test_instruction_ast__expression_ast_null_handling(void) {
     ar__instruction_ast__destroy(own_send_node);
     
     // Test setting arg ASTs on wrong node type
-    instruction_ast_t *own_assign_node = ar__instruction_ast__create_assignment("memory.x", "42");
+    ar_instruction_ast_t *own_assign_node = ar__instruction_ast__create_assignment("memory.x", "42");
     assert(own_assign_node != NULL);
     
     list_t *own_arg_asts = ar__list__create();
