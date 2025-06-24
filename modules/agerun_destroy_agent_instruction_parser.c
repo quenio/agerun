@@ -268,6 +268,10 @@ ar_instruction_ast_t* ar_destroy_agent_instruction_parser__parse(
     
     /* No comma found, parse until closing paren */
     pos = saved_pos;
+    if (arg) {
+        /* Safety: free previous allocation before reusing variable */
+        AR__HEAP__FREE(arg);
+    }
     arg = _extract_argument(ref_instruction, &pos, ')');
     if (!arg) {
         _set_error(mut_parser, "Failed to parse destroy argument", pos);
