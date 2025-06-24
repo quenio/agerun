@@ -171,8 +171,8 @@ ar__map__destroy(own_map);
 ```c
 // Create and populate a map with heap-allocated keys and values
 map_t *own_map = ar__map__create();
-char* *own_key1 = strdup("key1");
-char* *own_key2 = strdup("key2");
+char* own_key1 = strdup("key1");
+char* own_key2 = strdup("key2");
 int *own_value1 = malloc(sizeof(int));
 int *own_value2 = malloc(sizeof(int));
 
