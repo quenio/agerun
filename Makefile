@@ -94,11 +94,11 @@ test_lib: bin $(OBJ) $(TEST_OBJ) $(METHOD_TEST_OBJ)
 
 # Executable application - build only
 executable: lib bin
-	$(CC) $(CFLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS)
+	$(CC) $(CFLAGS) -o bin/agerun modules/ar_executable.c bin/libagerun.a $(LDFLAGS)
 
 # Executable application with Address + Undefined Behavior Sanitizers - build only
 executable-sanitize: sanitize
-	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS) $(SANITIZER_FLAGS)
+	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS) -o bin/agerun modules/ar_executable.c bin/libagerun.a $(LDFLAGS) $(SANITIZER_FLAGS)
 
 # Run the executable (always in debug mode)
 run: debug executable
@@ -111,7 +111,7 @@ run-sanitize: executable-sanitize
 # Executable application with Thread Sanitizer - build only
 executable-tsan: clean
 	$(MAKE) lib CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS)" LDFLAGS="$(LDFLAGS) $(TSAN_FLAGS)"
-	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS) -o bin/agerun modules/agerun_executable.c bin/libagerun.a $(LDFLAGS) $(TSAN_FLAGS)
+	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS) -o bin/agerun modules/ar_executable.c bin/libagerun.a $(LDFLAGS) $(TSAN_FLAGS)
 
 # Run the executable with Thread Sanitizer
 run-tsan: executable-tsan

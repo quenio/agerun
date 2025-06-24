@@ -47,7 +47,7 @@ else
     # Check if it's due to static analysis findings
     if echo "$output" | grep -q "Static analysis FAILED:"; then
         echo "Static analysis found issues:"
-        # Extract file-specific errors (e.g., "✗ 1 bugs found in modules/agerun_interpreter.c")
+        # Extract file-specific errors (e.g., "✗ 1 bugs found in modules/ar_interpreter.c")
         echo "$output" | grep "✗.*bugs found in" | sed 's/^/  /'
         # Extract warnings with file:line:column format
         echo "$output" | grep -E "^modules/[a-zA-Z0-9_/.-]+\.[ch]:[0-9]+:[0-9]+: warning:" | head -10 | sed 's/^/  /'

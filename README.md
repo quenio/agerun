@@ -97,7 +97,7 @@ Developers are encouraged to run both dynamic (ASan) and static analysis regular
 ### Basic Usage
 
 ```c
-#include "agerun_system.h"
+#include "ar_system.h"
 #include <stdio.h>
 
 int main(void) {

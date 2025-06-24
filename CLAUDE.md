@@ -51,7 +51,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 **Mandatory Practices**:
 - Use heap tracking macros: `AR__HEAP__MALLOC`, `AR__HEAP__FREE`, `AR__HEAP__STRDUP`
-- Include `#include "agerun_heap.h"` in all .c files that allocate memory
+- Include `#include "ar_heap.h"` in all .c files that allocate memory
 - Follow ownership naming conventions:
   - `own_`: Owned values that must be destroyed
   - `mut_`: Mutable references (read-write access)
@@ -66,7 +66,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
   - `AR_ASSERT_OWNERSHIP()` for critical resource allocations
   - `AR_ASSERT_TRANSFERRED()` for complex ownership transfers
   - `AR_ASSERT_NOT_USED_AFTER_FREE()` for complex reuse patterns
-  - See agerun_assert.md for complete guidelines
+  - See ar_assert.md for complete guidelines
 - Expression evaluation ownership rules:
   - Memory access (`memory.x`): returns reference, do NOT destroy
   - Arithmetic (`2 + 3`, `memory.x + 5`): returns new object, MUST destroy
@@ -81,12 +81,12 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - **Individual test memory reports**: Located at `bin/memory_report_<test_name>.log`
   - **IMPORTANT**: No longer uses generic `heap_memory_report.log`
   - Each test generates its own report file automatically
-  - Example: `bin/memory_report_agerun_string_tests.log`
+  - Example: `bin/memory_report_ar_string_tests.log`
   - Workflow: `make bin/test_name` → Check test-specific memory report
 - Enhanced per-test reporting: The build system generates unique memory reports for each test
   - `make bin/test_name` automatically creates test-specific report files
   - Manual runs can use `AGERUN_MEMORY_REPORT` environment variable
-  - Example: `AGERUN_MEMORY_REPORT=my_test.log ./bin/agerun_string_tests`
+  - Example: `AGERUN_MEMORY_REPORT=my_test.log ./bin/ar_string_tests`
 - Always run `make test-sanitize` before committing
 - Environment variables for debugging:
   - `ASAN_OPTIONS=halt_on_error=0` to continue after first error
@@ -194,8 +194,8 @@ For each new behavior/feature:
 - Follow the 4-step directory check process (see Section 7) before running tests
 - To run tests, use `make bin/test_name` which automatically builds and runs
 - If you need to run tests manually from bin/ directory:
-  - `cd bin && ./agerun_string_tests`
-  - `AGERUN_MEMORY_REPORT=bin/test.memory_report.log ./bin/agerun_string_tests`
+  - `cd bin && ./ar_string_tests`
+  - `AGERUN_MEMORY_REPORT=bin/test.memory_report.log ./bin/ar_string_tests`
 
 **TDD for Large Refactoring (Advanced Pattern)**:
 - **Breaking down architectural changes**: Divide large refactoring into multiple sequential TDD cycles
@@ -229,7 +229,7 @@ For each new behavior/feature:
 **Dependency Management**:
 ```bash
 # Check before adding includes:
-grep -n "#include.*agerun_" module.h module.c
+grep -n "#include.*ar_" module.h module.c
 # Verify hierarchy: Foundation (io/list/map) → Data (heap/data) → Core (agent/method) → System (agency/interpreter)
 ```
 
@@ -371,7 +371,7 @@ Never compile directly with gcc.
 - When building individual tests, the test is automatically executed after building
 - Module changes are automatically rebuilt (no need to rebuild the library separately)
 - The Makefile handles all dependencies and runs the test from the correct directory
-- Example: `make bin/agerun_string_tests` will:
+- Example: `make bin/ar_string_tests` will:
   1. Rebuild any changed modules
   2. Rebuild the test
   3. Run the test automatically from the bin directory

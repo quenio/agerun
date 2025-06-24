@@ -2,6 +2,16 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-06-24
+- ✅ **Renamed all module files to follow ar_ naming convention**:
+  - ✅ Renamed 191 module files from `agerun_*.{h,c,md}` to `ar_*.{h,c,md}`
+  - ✅ Updated all #include statements to use new ar_ filenames
+  - ✅ Updated Makefile references to ar_executable.c
+  - ✅ Updated method test includes to use ar_ headers
+  - ✅ Updated documentation references in CLAUDE.md and README.md
+  - ✅ Preserved historical references in TODO.md and CHANGELOG.md
+  - ✅ Clean build passes with all tests (54 tests, zero memory leaks)
+
 ## 2025-06-23
 - ✅ **Standardized all AST types with ar_ prefix**:
   - ✅ Renamed all AST types to follow consistent naming convention:
