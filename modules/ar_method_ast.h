@@ -17,7 +17,7 @@ typedef struct ar_method_ast_s ar_method_ast_t;
  * @return Newly created method AST (owned by caller), or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy.
  */
-ar_method_ast_t* ar__method_ast__create(void);
+ar_method_ast_t* ar_method_ast__create(void);
 
 /**
  * Destroy a method AST and all its instruction ASTs.
@@ -27,7 +27,7 @@ ar_method_ast_t* ar__method_ast__create(void);
  *       Also destroys all instruction ASTs contained within.
  *       Safe to call with NULL.
  */
-void ar__method_ast__destroy(ar_method_ast_t* own_ast);
+void ar_method_ast__destroy(ar_method_ast_t* own_ast);
 
 /**
  * Add an instruction AST to the method AST.
@@ -37,7 +37,7 @@ void ar__method_ast__destroy(ar_method_ast_t* own_ast);
  * @note Ownership: Takes ownership of the instruction AST.
  *       The method AST will destroy it when the method AST is destroyed.
  */
-void ar__method_ast__add_instruction(ar_method_ast_t* mut_ast, ar_instruction_ast_t* own_instruction);
+void ar_method_ast__add_instruction(ar_method_ast_t* mut_ast, ar_instruction_ast_t* own_instruction);
 
 /**
  * Get the number of instructions in the method AST.
@@ -45,7 +45,7 @@ void ar__method_ast__add_instruction(ar_method_ast_t* mut_ast, ar_instruction_as
  * @param ref_ast The method AST to query (borrowed reference)
  * @return The number of instructions
  */
-size_t ar__method_ast__get_instruction_count(const ar_method_ast_t* ref_ast);
+size_t ar_method_ast__get_instruction_count(const ar_method_ast_t* ref_ast);
 
 /**
  * Get an instruction by line number (1-based).
@@ -55,6 +55,6 @@ size_t ar__method_ast__get_instruction_count(const ar_method_ast_t* ref_ast);
  * @return The instruction AST at the given line (borrowed reference), or NULL if invalid
  * @note Ownership: Returns a borrowed reference - caller must NOT destroy it
  */
-const ar_instruction_ast_t* ar__method_ast__get_instruction(const ar_method_ast_t* ref_ast, size_t line_no);
+const ar_instruction_ast_t* ar_method_ast__get_instruction(const ar_method_ast_t* ref_ast, size_t line_no);
 
 #endif /* AGERUN_METHOD_AST_H */

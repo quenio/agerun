@@ -16,7 +16,7 @@ struct ar_method_ast_s {
 /**
  * Create a new method AST.
  */
-ar_method_ast_t* ar__method_ast__create(void) {
+ar_method_ast_t* ar_method_ast__create(void) {
     ar_method_ast_t *own_ast = AR__HEAP__MALLOC(sizeof(ar_method_ast_t), "method_ast");
     if (!own_ast) {
         return NULL;
@@ -35,7 +35,7 @@ ar_method_ast_t* ar__method_ast__create(void) {
 /**
  * Destroy a method AST and all its instruction ASTs.
  */
-void ar__method_ast__destroy(ar_method_ast_t* own_ast) {
+void ar_method_ast__destroy(ar_method_ast_t* own_ast) {
     if (!own_ast) {
         return;
     }
@@ -58,7 +58,7 @@ void ar__method_ast__destroy(ar_method_ast_t* own_ast) {
 /**
  * Add an instruction AST to the method AST.
  */
-void ar__method_ast__add_instruction(ar_method_ast_t* mut_ast, ar_instruction_ast_t* own_instruction) {
+void ar_method_ast__add_instruction(ar_method_ast_t* mut_ast, ar_instruction_ast_t* own_instruction) {
     if (!mut_ast || !own_instruction) {
         // If instruction is provided but AST is NULL, we need to destroy the instruction
         // to prevent memory leak since we're taking ownership
@@ -79,7 +79,7 @@ void ar__method_ast__add_instruction(ar_method_ast_t* mut_ast, ar_instruction_as
 /**
  * Get the number of instructions in the method AST.
  */
-size_t ar__method_ast__get_instruction_count(const ar_method_ast_t* ref_ast) {
+size_t ar_method_ast__get_instruction_count(const ar_method_ast_t* ref_ast) {
     if (!ref_ast || !ref_ast->instructions) {
         return 0;
     }
@@ -90,7 +90,7 @@ size_t ar__method_ast__get_instruction_count(const ar_method_ast_t* ref_ast) {
 /**
  * Get an instruction by line number (1-based).
  */
-const ar_instruction_ast_t* ar__method_ast__get_instruction(const ar_method_ast_t* ref_ast, size_t line_no) {
+const ar_instruction_ast_t* ar_method_ast__get_instruction(const ar_method_ast_t* ref_ast, size_t line_no) {
     if (!ref_ast || !ref_ast->instructions || line_no == 0) {
         return NULL;
     }

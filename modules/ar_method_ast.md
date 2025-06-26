@@ -22,18 +22,18 @@ An opaque type representing a parsed method.
 
 ### Functions
 
-#### ar__method_ast__create
+#### ar_method_ast__create
 ```c
-ar_method_ast_t* ar__method_ast__create(void);
+ar_method_ast_t* ar_method_ast__create(void);
 ```
 Creates a new empty method AST.
 
 **Returns**: A newly created method AST (owned by caller), or NULL on failure
-**Ownership**: Caller must destroy the returned AST using `ar__method_ast__destroy()`
+**Ownership**: Caller must destroy the returned AST using `ar_method_ast__destroy()`
 
-#### ar__method_ast__destroy
+#### ar_method_ast__destroy
 ```c
-void ar__method_ast__destroy(ar_method_ast_t* own_ast);
+void ar_method_ast__destroy(ar_method_ast_t* own_ast);
 ```
 Destroys a method AST and all instruction ASTs it contains.
 
@@ -43,9 +43,9 @@ Destroys a method AST and all instruction ASTs it contains.
 **Ownership**: Takes ownership of the AST and all contained instruction ASTs
 **Note**: Safe to call with NULL
 
-#### ar__method_ast__add_instruction
+#### ar_method_ast__add_instruction
 ```c
-void ar__method_ast__add_instruction(ar_method_ast_t* mut_ast, ar_instruction_ast_t* own_instruction);
+void ar_method_ast__add_instruction(ar_method_ast_t* mut_ast, ar_instruction_ast_t* own_instruction);
 ```
 Adds an instruction AST to the method AST.
 
@@ -56,9 +56,9 @@ Adds an instruction AST to the method AST.
 **Ownership**: Takes ownership of the instruction AST
 **Note**: If either parameter is NULL, the instruction is destroyed to prevent memory leaks
 
-#### ar__method_ast__get_instruction_count
+#### ar_method_ast__get_instruction_count
 ```c
-size_t ar__method_ast__get_instruction_count(const ar_method_ast_t* ref_ast);
+size_t ar_method_ast__get_instruction_count(const ar_method_ast_t* ref_ast);
 ```
 Gets the number of instructions in the method AST.
 
@@ -81,7 +81,7 @@ Gets the number of instructions in the method AST.
 
 ```c
 // Create a method AST
-ar_method_ast_t *own_ast = ar__method_ast__create();
+ar_method_ast_t *own_ast = ar_method_ast__create();
 if (!own_ast) {
     // Handle error
 }
@@ -89,15 +89,15 @@ if (!own_ast) {
 // Parse and add instructions
 instruction_parser_t *parser = ar__instruction_parser__create();
 ar_instruction_ast_t *own_instr = ar_instruction_parser__parse(parser, "memory.x := 42");
-ar__method_ast__add_instruction(own_ast, own_instr);
+ar_method_ast__add_instruction(own_ast, own_instr);
 
 // Check instruction count
-size_t count = ar__method_ast__get_instruction_count(own_ast);
+size_t count = ar_method_ast__get_instruction_count(own_ast);
 printf("Method has %zu instructions\n", count);
 
 // Cleanup
 ar__instruction_parser__destroy(parser);
-ar__method_ast__destroy(own_ast);
+ar_method_ast__destroy(own_ast);
 ```
 
 ## Dependencies
@@ -109,7 +109,7 @@ ar__method_ast__destroy(own_ast);
 ## Future Enhancements
 
 The following functions are planned for upcoming TDD cycles:
-- `ar__method_ast__get_instruction()`: Access instruction by line number (1-based)
+- `ar_method_ast__get_instruction()`: Access instruction by line number (1-based)
 
 ## Memory Management
 

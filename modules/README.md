@@ -535,6 +535,10 @@ ar_method_ast_tests
 ├──c──> ar_instruction_ast
 └──c──> ar_heap
 
+ar_method_parser_tests
+├──c──> ar_method_parser (module under test)
+└──c──> ar_heap
+
 ar_instruction_parser_tests
 ├──c──> ar_instruction_parser (module under test)
 ├──c──> ar_instruction_ast
