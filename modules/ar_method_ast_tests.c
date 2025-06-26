@@ -144,6 +144,82 @@ static void test_method_ast__get_instruction_count_null(void) {
     printf("✓ test_method_ast__get_instruction_count_null passed\n");
 }
 
+// Test get instruction by line number
+static void test_method_ast__get_instruction_by_line(void) {
+    printf("Testing method AST get instruction by line number...\n");
+    
+    // Given a method AST with multiple instructions
+    ar_method_ast_t *own_ast = ar__method_ast__create();
+    assert(own_ast != NULL);
+    
+    instruction_parser_t *own_parser = ar__instruction_parser__create();
+    
+    // Add three instructions
+    const char *instruction1 = "memory.x := 10";
+    ar_instruction_ast_t *own_instruction1 = ar_instruction_parser__parse(own_parser, instruction1);
+    ar__method_ast__add_instruction(own_ast, own_instruction1);
+    
+    const char *instruction2 = "memory.y := 20";
+    ar_instruction_ast_t *own_instruction2 = ar_instruction_parser__parse(own_parser, instruction2);
+    ar__method_ast__add_instruction(own_ast, own_instruction2);
+    
+    const char *instruction3 = "memory.z := 30";
+    ar_instruction_ast_t *own_instruction3 = ar_instruction_parser__parse(own_parser, instruction3);
+    ar__method_ast__add_instruction(own_ast, own_instruction3);
+    
+    // When getting instruction at line 1
+    const ar_instruction_ast_t *ref_instr1 = ar__method_ast__get_instruction(own_ast, 1);
+    
+    // Then it should return the first instruction
+    assert(ref_instr1 != NULL);
+    assert(ar__instruction_ast__get_type(ref_instr1) == AR_INST__ASSIGNMENT);
+    
+    // When getting instruction at line 2
+    const ar_instruction_ast_t *ref_instr2 = ar__method_ast__get_instruction(own_ast, 2);
+    
+    // Then it should return the second instruction
+    assert(ref_instr2 != NULL);
+    assert(ar__instruction_ast__get_type(ref_instr2) == AR_INST__ASSIGNMENT);
+    
+    // When getting instruction at line 3
+    const ar_instruction_ast_t *ref_instr3 = ar__method_ast__get_instruction(own_ast, 3);
+    
+    // Then it should return the third instruction
+    assert(ref_instr3 != NULL);
+    assert(ar__instruction_ast__get_type(ref_instr3) == AR_INST__ASSIGNMENT);
+    
+    // When getting instruction at line 0 (invalid)
+    const ar_instruction_ast_t *ref_instr0 = ar__method_ast__get_instruction(own_ast, 0);
+    
+    // Then it should return NULL
+    assert(ref_instr0 == NULL);
+    
+    // When getting instruction beyond count
+    const ar_instruction_ast_t *ref_instr4 = ar__method_ast__get_instruction(own_ast, 4);
+    
+    // Then it should return NULL
+    assert(ref_instr4 == NULL);
+    
+    // Cleanup
+    ar__instruction_parser__destroy(own_parser);
+    ar__method_ast__destroy(own_ast);
+    
+    printf("✓ test_method_ast__get_instruction_by_line passed\n");
+}
+
+// Test get instruction with NULL AST
+static void test_method_ast__get_instruction_null(void) {
+    printf("Testing method AST get instruction with NULL...\n");
+    
+    // When getting instruction from NULL AST
+    const ar_instruction_ast_t *ref_instr = ar__method_ast__get_instruction(NULL, 1);
+    
+    // Then it should return NULL
+    assert(ref_instr == NULL);
+    
+    printf("✓ test_method_ast__get_instruction_null passed\n");
+}
+
 int main(void) {
     printf("Running method AST tests...\n\n");
     
@@ -153,6 +229,8 @@ int main(void) {
     test_method_ast__add_instruction_null_ast();
     test_method_ast__get_instruction_count();
     test_method_ast__get_instruction_count_null();
+    test_method_ast__get_instruction_by_line();
+    test_method_ast__get_instruction_null();
     
     printf("\nAll method AST tests passed!\n");
     return 0;

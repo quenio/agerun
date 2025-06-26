@@ -4,16 +4,19 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-06-26
 - ✅ **Advanced Method AST Implementation**:
-  - ✅ **Completed TDD Cycles 1-3 for method_ast module**:
+  - ✅ **Completed TDD Cycles 1-4 for method_ast module**:
     - ✅ TDD Cycle 1: Basic create/destroy functionality with opaque type design
     - ✅ TDD Cycle 2: Add instructions with proper ownership management
     - ✅ TDD Cycle 3: Get instruction count functionality
+    - ✅ TDD Cycle 4: Get instruction by line number (1-based) for error reporting
     - ✅ All tests pass with zero memory leaks (55 tests total)
   - ✅ **Robust implementation features**:
     - ✅ Uses list module to store instruction ASTs in order
     - ✅ Proper error handling - destroys instructions on NULL AST to prevent leaks
     - ✅ Refactored destroy to use efficient remove_last pattern
     - ✅ Added comprehensive NULL parameter handling tests
+    - ✅ Line-based instruction access with boundary checking
+    - ✅ Fixed memory leak from ar__list__items() by freeing returned array
   - ✅ **Documentation and integration**:
     - ✅ Created comprehensive ar_method_ast.md documentation
     - ✅ Updated documentation to reflect implemented functions
@@ -22,7 +25,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - ✅ **Foundation for method parsing**:
     - ✅ Enables storing parsed methods instead of source text
     - ✅ Clean separation between AST structure and parsing logic
-    - ✅ Ready for line-based instruction access implementation (TDD Cycle 4)
+    - ✅ Line-based access ready for error reporting in method parser
 
 ## 2025-06-24
 - ✅ **Renamed all module files to follow ar_ naming convention**:

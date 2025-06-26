@@ -47,4 +47,14 @@ void ar__method_ast__add_instruction(ar_method_ast_t* mut_ast, ar_instruction_as
  */
 size_t ar__method_ast__get_instruction_count(const ar_method_ast_t* ref_ast);
 
+/**
+ * Get an instruction by line number (1-based).
+ * 
+ * @param ref_ast The method AST to query (borrowed reference)
+ * @param line_no The line number (1-based, where 1 is the first instruction)
+ * @return The instruction AST at the given line (borrowed reference), or NULL if invalid
+ * @note Ownership: Returns a borrowed reference - caller must NOT destroy it
+ */
+const ar_instruction_ast_t* ar__method_ast__get_instruction(const ar_method_ast_t* ref_ast, size_t line_no);
+
 #endif /* AGERUN_METHOD_AST_H */

@@ -86,3 +86,31 @@ size_t ar__method_ast__get_instruction_count(const ar_method_ast_t* ref_ast) {
     
     return ar__list__count(ref_ast->instructions);
 }
+
+/**
+ * Get an instruction by line number (1-based).
+ */
+const ar_instruction_ast_t* ar__method_ast__get_instruction(const ar_method_ast_t* ref_ast, size_t line_no) {
+    if (!ref_ast || !ref_ast->instructions || line_no == 0) {
+        return NULL;
+    }
+    
+    size_t count = ar__list__count(ref_ast->instructions);
+    if (line_no > count) {
+        return NULL;
+    }
+    
+    // Get the array of instructions
+    void **items = ar__list__items(ref_ast->instructions);
+    if (!items) {
+        return NULL;
+    }
+    
+    // Get the instruction at the given line (convert 1-based to 0-based index)
+    const ar_instruction_ast_t* instruction = (const ar_instruction_ast_t*)items[line_no - 1];
+    
+    // Free the array (but not the items themselves)
+    AR__HEAP__FREE(items);
+    
+    return instruction;
+}
