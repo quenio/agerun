@@ -17,6 +17,15 @@ The method parser module is responsible for parsing method source code and creat
 - `ar_method_parser__create()`: Creates a new parser instance
 - `ar_method_parser__destroy()`: Destroys a parser instance
 
+#### Parsing
+
+- `ar_method_parser__parse()`: Parses method source code into an AST
+
+#### Error Handling
+
+- `ar_method_parser__get_error()`: Returns the last error message
+- `ar_method_parser__get_error_line()`: Returns the line number where the error occurred
+
 ## Usage Example
 
 ```c
@@ -50,8 +59,8 @@ The module follows strict ownership rules:
 - [x] Parse multiple instructions
 - [x] Skip empty lines
 - [x] Skip comments (both full line and inline)
-- [ ] Error handling and reporting
-- [ ] Integration with method AST
+- [x] Error handling and reporting
+- [ ] Integration with method module
 
 ## Design Decisions
 
@@ -62,6 +71,8 @@ The module follows strict ownership rules:
 5. **Trimming**: Removes leading/trailing whitespace from method source before parsing
 6. **Line-by-Line Parsing**: Splits source by newlines and parses each non-empty line as an instruction
 7. **Empty Line Handling**: Automatically skips empty lines during parsing
-8. **Line Ending Support**: Handles both Unix (\n) and Windows (\r\n) line endings
+8. **Line Ending Support**: Handles Unix (\n), Windows (\r\n), and Mac (\r) line endings
 9. **Comment Support**: Supports `#` for comments (both full line and inline)
 10. **Quote-Aware Parsing**: Correctly handles `#` inside quoted strings (not treated as comments)
+11. **Error Reporting**: Provides line numbers and error messages for parse failures
+12. **Error State Management**: Clears error state on successful parse

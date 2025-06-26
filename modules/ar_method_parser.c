@@ -6,11 +6,30 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdio.h>
+
+// Error buffer size for formatting error messages
+#define ERROR_BUFFER_SIZE 512
 
 // Opaque structure definition
 struct ar_method_parser_s {
     instruction_parser_t *instruction_parser;
+    char *own_error_message;
+    int error_line;
 };
+
+// Helper function to set error message with line number
+static void _set_error(ar_method_parser_t *mut_parser, int line_number, const char *ref_instruction_error) {
+    if (ref_instruction_error) {
+        // Format error message with line number
+        char error_buffer[ERROR_BUFFER_SIZE];
+        snprintf(error_buffer, sizeof(error_buffer), "Line %d: %s", line_number, ref_instruction_error);
+        mut_parser->own_error_message = AR__HEAP__STRDUP(error_buffer, "error message");
+    } else {
+        mut_parser->own_error_message = AR__HEAP__STRDUP("Unknown parse error", "error message");
+    }
+    mut_parser->error_line = line_number;
+}
 
 // Helper function to parse a single line
 static bool _parse_line(ar_method_parser_t *mut_parser, ar_method_ast_t *mut_ast, const char *ref_line) {
@@ -80,6 +99,9 @@ ar_method_parser_t* ar_method_parser__create(void) {
         return NULL;
     }
     
+    own_parser->own_error_message = NULL;
+    own_parser->error_line = 0;
+    
     return own_parser;
     // Ownership transferred to caller
 }
@@ -93,6 +115,10 @@ void ar_method_parser__destroy(ar_method_parser_t *own_parser) {
         ar__instruction_parser__destroy(own_parser->instruction_parser);
     }
     
+    if (own_parser->own_error_message) {
+        AR__HEAP__FREE(own_parser->own_error_message);
+    }
+    
     AR__HEAP__FREE(own_parser);
 }
 
@@ -100,6 +126,13 @@ ar_method_ast_t* ar_method_parser__parse(ar_method_parser_t *mut_parser, const c
     if (!mut_parser || !ref_source) {
         return NULL;
     }
+    
+    // Clear any previous error
+    if (mut_parser->own_error_message) {
+        AR__HEAP__FREE(mut_parser->own_error_message);
+        mut_parser->own_error_message = NULL;
+    }
+    mut_parser->error_line = 0;
     
     // Make a copy and trim the source to remove leading/trailing whitespace
     char *own_copy = AR__HEAP__STRDUP(ref_source, "method source copy");
@@ -125,6 +158,7 @@ ar_method_ast_t* ar_method_parser__parse(ar_method_parser_t *mut_parser, const c
     // Split by lines and parse each instruction
     char *mut_current = mut_trimmed;
     char *mut_line_start = mut_current;
+    int current_line = 1;
     
     while (*mut_current) {
         // Find the end of the current line
@@ -138,7 +172,10 @@ ar_method_ast_t* ar_method_parser__parse(ar_method_parser_t *mut_parser, const c
         
         // Parse the line
         if (!_parse_line(mut_parser, own_ast, mut_line_start)) {
-            // Parse failed
+            // Parse failed - capture error from instruction parser
+            const char *ref_inst_error = ar__instruction_parser__get_error(mut_parser->instruction_parser);
+            _set_error(mut_parser, current_line, ref_inst_error);
+            
             AR__HEAP__FREE(own_copy);
             ar_method_ast__destroy(own_ast);
             return NULL;
@@ -147,9 +184,20 @@ ar_method_ast_t* ar_method_parser__parse(ar_method_parser_t *mut_parser, const c
         // Restore the character
         *mut_current = saved_char;
         
-        // Skip past line endings
-        while (*mut_current && (*mut_current == '\n' || *mut_current == '\r')) {
-            mut_current++;
+        // Skip past line endings and count lines
+        if (*mut_current) {
+            // Count the line - handle \n, \r, and \r\n
+            if (*mut_current == '\n') {
+                current_line++;
+                mut_current++;
+            } else if (*mut_current == '\r') {
+                current_line++;
+                mut_current++;
+                // Skip \n in \r\n sequence
+                if (*mut_current == '\n') {
+                    mut_current++;
+                }
+            }
         }
         
         // Set up for next line
@@ -160,4 +208,20 @@ ar_method_ast_t* ar_method_parser__parse(ar_method_parser_t *mut_parser, const c
     
     return own_ast;
     // Ownership transferred to caller
+}
+
+const char* ar_method_parser__get_error(const ar_method_parser_t *ref_parser) {
+    if (!ref_parser) {
+        return NULL;
+    }
+    
+    return ref_parser->own_error_message;
+}
+
+int ar_method_parser__get_error_line(const ar_method_parser_t *ref_parser) {
+    if (!ref_parser) {
+        return 0;
+    }
+    
+    return ref_parser->error_line;
 }

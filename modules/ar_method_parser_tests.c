@@ -200,6 +200,69 @@ static void test_method_parser__parse_hash_in_string(void) {
     printf("✓ test_method_parser__parse_hash_in_string passed\n");
 }
 
+// Test parse with invalid instruction
+static void test_method_parser__parse_invalid_instruction(void) {
+    printf("Testing method parser parse with invalid instruction...\n");
+    
+    // Given a parser and a method with invalid syntax
+    ar_method_parser_t *own_parser = ar_method_parser__create();
+    assert(own_parser != NULL);
+    const char *ref_source = "memory.x := 10\ninvalid syntax here\nmemory.z := 30";
+    
+    // When parsing the source
+    ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
+    
+    // Then parsing should fail
+    assert(own_ast == NULL);
+    
+    // And an error message should be available
+    const char *ref_error = ar_method_parser__get_error(own_parser);
+    assert(ref_error != NULL);
+    assert(strlen(ref_error) > 0);
+    
+    // And the error line should be correct
+    int error_line = ar_method_parser__get_error_line(own_parser);
+    assert(error_line == 2);
+    
+    // Clean up
+    ar_method_parser__destroy(own_parser);
+    
+    printf("✓ test_method_parser__parse_invalid_instruction passed\n");
+}
+
+// Test error cleared on successful parse
+static void test_method_parser__error_cleared_on_success(void) {
+    printf("Testing method parser error cleared on successful parse...\n");
+    
+    // Given a parser that had a previous error
+    ar_method_parser_t *own_parser = ar_method_parser__create();
+    assert(own_parser != NULL);
+    
+    // First, cause an error
+    const char *ref_bad_source = "invalid syntax";
+    ar_method_ast_t *own_bad_ast = ar_method_parser__parse(own_parser, ref_bad_source);
+    assert(own_bad_ast == NULL);
+    assert(ar_method_parser__get_error(own_parser) != NULL);
+    assert(ar_method_parser__get_error_line(own_parser) == 1);
+    
+    // When parsing valid source
+    const char *ref_good_source = "memory.x := 42";
+    ar_method_ast_t *own_good_ast = ar_method_parser__parse(own_parser, ref_good_source);
+    
+    // Then parsing should succeed
+    assert(own_good_ast != NULL);
+    
+    // And error should be cleared
+    assert(ar_method_parser__get_error(own_parser) == NULL);
+    assert(ar_method_parser__get_error_line(own_parser) == 0);
+    
+    // Clean up
+    ar_method_ast__destroy(own_good_ast);
+    ar_method_parser__destroy(own_parser);
+    
+    printf("✓ test_method_parser__error_cleared_on_success passed\n");
+}
+
 int main(void) {
     printf("Running method parser tests...\n\n");
     
@@ -211,6 +274,8 @@ int main(void) {
     test_method_parser__parse_with_empty_lines();
     test_method_parser__parse_with_comments();
     test_method_parser__parse_hash_in_string();
+    test_method_parser__parse_invalid_instruction();
+    test_method_parser__error_cleared_on_success();
     
     printf("\nAll method parser tests passed!\n");
     return 0;
