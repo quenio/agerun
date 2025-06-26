@@ -45,8 +45,8 @@ The module follows strict ownership rules:
 ## Implementation Status
 
 - [x] Basic structure creation and destruction
-- [ ] Parse empty method
-- [ ] Parse single instruction
+- [x] Parse empty method
+- [x] Parse single instruction
 - [ ] Parse multiple instructions
 - [ ] Skip comments and empty lines
 - [ ] Error handling and reporting
@@ -56,4 +56,6 @@ The module follows strict ownership rules:
 
 1. **Opaque Type**: The parser structure is opaque to maintain encapsulation
 2. **Stateful Parser**: The parser maintains state to support error reporting
-3. **AST Output**: Will produce method AST objects for execution
+3. **AST Output**: Produces method AST objects for execution
+4. **Instruction Parser Integration**: Uses the instruction parser facade for parsing individual instructions
+5. **Trimming**: Removes leading/trailing whitespace from method source before parsing

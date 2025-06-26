@@ -4,6 +4,7 @@
 #include <assert.h>
 #include "ar_method_parser.h"
 #include "ar_method_ast.h"
+#include "ar_instruction_ast.h"
 #include "ar_heap.h"
 
 // Test create and destroy
@@ -61,12 +62,41 @@ static void test_method_parser__parse_empty_method(void) {
     printf("✓ test_method_parser__parse_empty_method passed\n");
 }
 
+// Test parse single instruction
+static void test_method_parser__parse_single_instruction(void) {
+    printf("Testing method parser parse single instruction...\n");
+    
+    // Given a parser and a method with one instruction
+    ar_method_parser_t *own_parser = ar_method_parser__create();
+    assert(own_parser != NULL);
+    const char *ref_source = "memory.x := 42";
+    
+    // When parsing the source
+    ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
+    
+    // Then an AST should be created with one instruction
+    assert(own_ast != NULL);
+    assert(ar_method_ast__get_instruction_count(own_ast) == 1);
+    
+    // And the instruction should be the correct type
+    const ar_instruction_ast_t *ref_instruction = ar_method_ast__get_instruction(own_ast, 1);
+    assert(ref_instruction != NULL);
+    assert(ar__instruction_ast__get_type(ref_instruction) == AR_INST__ASSIGNMENT);
+    
+    // Clean up
+    ar_method_ast__destroy(own_ast);
+    ar_method_parser__destroy(own_parser);
+    
+    printf("✓ test_method_parser__parse_single_instruction passed\n");
+}
+
 int main(void) {
     printf("Running method parser tests...\n\n");
     
     test_method_parser__create_destroy();
     test_method_parser__destroy_null();
     test_method_parser__parse_empty_method();
+    test_method_parser__parse_single_instruction();
     
     printf("\nAll method parser tests passed!\n");
     return 0;
