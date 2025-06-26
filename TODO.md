@@ -125,6 +125,21 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Immediate Priorities (Next Steps)
 
+### HIGH PRIORITY - Method Parser and AST Implementation (NEW - In Progress)
+
+**Status**: Started implementing method_ast module as foundation for method_parser. This enables storing parsed methods instead of source text.
+
+**Completed**:
+- [x] TDD Cycle 1: Created method_ast module with basic create/destroy functionality (Completed 2025-06-26)
+
+**Remaining TDD Cycles**:
+- [ ] TDD Cycle 2: Add instructions to AST - implement add_instruction
+- [ ] TDD Cycle 3: Access instruction count
+- [ ] TDD Cycle 4: Access instructions by line number
+- [ ] TDD Cycle 5: Memory management with multiple instructions
+- [ ] TDD Cycle 6-11: Implement method_parser module
+- [ ] TDD Cycle 12-13: Integrate with method module
+
 ### HIGH PRIORITY - Complete Instruction and Expression Module Refactoring
 
 **Status**: Phase 1 (Create Specialized Parser Modules), Phase 2 (Expression AST Integration), and Phase 3 (Unified Instruction Evaluator Interface) are complete. Phase 4 (Parser Integration into Interpreter) is the next priority.

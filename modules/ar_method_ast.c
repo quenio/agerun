@@ -1,0 +1,54 @@
+#include "ar_method_ast.h"
+#include "ar_heap.h"
+#include "ar_list.h"
+#include <stdlib.h>
+
+/**
+ * Method AST structure (internal).
+ * Contains a list of instruction ASTs.
+ */
+struct ar_method_ast_s {
+    list_t *instructions;  // List of ar_instruction_ast_t*
+};
+
+/**
+ * Create a new method AST.
+ */
+ar_method_ast_t* ar__method_ast__create(void) {
+    ar_method_ast_t *own_ast = AR__HEAP__MALLOC(sizeof(ar_method_ast_t), "method_ast");
+    if (!own_ast) {
+        return NULL;
+    }
+    
+    own_ast->instructions = ar__list__create();
+    if (!own_ast->instructions) {
+        AR__HEAP__FREE(own_ast);
+        return NULL;
+    }
+    
+    return own_ast;
+    // Ownership transferred to caller
+}
+
+/**
+ * Destroy a method AST and all its instruction ASTs.
+ */
+void ar__method_ast__destroy(ar_method_ast_t* own_ast) {
+    if (!own_ast) {
+        return;
+    }
+    
+    // Destroy all instruction ASTs in the list
+    if (own_ast->instructions) {
+        // Remove and destroy instructions from the end to avoid shifting
+        while (!ar__list__empty(own_ast->instructions)) {
+            ar_instruction_ast_t *own_instruction = ar__list__remove_last(own_ast->instructions);
+            if (own_instruction) {
+                ar__instruction_ast__destroy(own_instruction);
+            }
+        }
+        ar__list__destroy(own_ast->instructions);
+    }
+    
+    AR__HEAP__FREE(own_ast);
+}

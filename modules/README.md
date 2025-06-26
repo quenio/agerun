@@ -178,6 +178,11 @@ ar_instruction_ast
 ├──c──> ar_list
 └──c──> ar_heap
 
+ar_method_ast
+├──c──> ar_list
+├──c──> ar_instruction_ast
+└──c──> ar_heap
+
 ar_instruction_parser
 ├──c──> ar_instruction_ast
 │       ├──c──> ar_list
@@ -523,6 +528,11 @@ ar_instruction_tests
 ar_instruction_ast_tests
 ├──c──> ar_instruction_ast (module under test)
 ├──c──> ar_list
+└──c──> ar_heap
+
+ar_method_ast_tests
+├──c──> ar_method_ast (module under test)
+├──c──> ar_instruction_ast
 └──c──> ar_heap
 
 ar_instruction_parser_tests
@@ -1053,6 +1063,20 @@ The [instruction AST module](ar_instruction_ast.md) provides Abstract Syntax Tre
 - **Opaque Types**: Uses opaque types following Parnas principles for information hiding
 - **Depends on List**: Uses the list module for managing function arguments
 - **Depends on Heap**: Uses heap tracking for comprehensive memory management
+
+### Method AST Module (`ar_method_ast`)
+
+The [method AST module](ar_method_ast.md) provides Abstract Syntax Tree structure for representing parsed methods:
+
+- **Method Container**: Represents a method as a collection of instruction ASTs
+- **Line-Based Access**: Designed to support accessing instructions by line number (1-based)
+- **Clean Separation**: Contains only instructions, no method metadata (name/version)
+- **Memory Management**: Owns all instruction ASTs and ensures proper cleanup
+- **Future Enhancements**: Planned functions for adding instructions and accessing by line
+- **Opaque Type**: Uses opaque structure following Parnas principles
+- **Depends on List**: Uses list module for storing instruction ASTs in order
+- **Depends on Instruction AST**: Contains and manages instruction AST nodes
+- **Depends on Heap**: Uses heap tracking for memory management
 
 ### Instruction Parser Module (`ar_instruction_parser`)
 
