@@ -29,4 +29,22 @@ ar_method_ast_t* ar__method_ast__create(void);
  */
 void ar__method_ast__destroy(ar_method_ast_t* own_ast);
 
+/**
+ * Add an instruction AST to the method AST.
+ * 
+ * @param mut_ast The method AST to add to (mutable reference)
+ * @param own_instruction The instruction AST to add (ownership transferred)
+ * @note Ownership: Takes ownership of the instruction AST.
+ *       The method AST will destroy it when the method AST is destroyed.
+ */
+void ar__method_ast__add_instruction(ar_method_ast_t* mut_ast, ar_instruction_ast_t* own_instruction);
+
+/**
+ * Get the number of instructions in the method AST.
+ * 
+ * @param ref_ast The method AST to query (borrowed reference)
+ * @return The number of instructions
+ */
+size_t ar__method_ast__get_instruction_count(const ar_method_ast_t* ref_ast);
+
 #endif /* AGERUN_METHOD_AST_H */

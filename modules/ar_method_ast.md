@@ -43,6 +43,30 @@ Destroys a method AST and all instruction ASTs it contains.
 **Ownership**: Takes ownership of the AST and all contained instruction ASTs
 **Note**: Safe to call with NULL
 
+#### ar__method_ast__add_instruction
+```c
+void ar__method_ast__add_instruction(ar_method_ast_t* mut_ast, ar_instruction_ast_t* own_instruction);
+```
+Adds an instruction AST to the method AST.
+
+**Parameters**:
+- `mut_ast`: The method AST to add to (mutable reference)
+- `own_instruction`: The instruction AST to add (ownership transferred)
+
+**Ownership**: Takes ownership of the instruction AST
+**Note**: If either parameter is NULL, the instruction is destroyed to prevent memory leaks
+
+#### ar__method_ast__get_instruction_count
+```c
+size_t ar__method_ast__get_instruction_count(const ar_method_ast_t* ref_ast);
+```
+Gets the number of instructions in the method AST.
+
+**Parameters**:
+- `ref_ast`: The method AST to query (borrowed reference)
+
+**Returns**: The number of instructions (0 if AST is NULL)
+
 ## Design Decisions
 
 1. **Container Pattern**: The method AST is purely a container for instruction ASTs, with no knowledge of method names or versions (handled by the method module)
@@ -62,10 +86,17 @@ if (!own_ast) {
     // Handle error
 }
 
-// Future: Add parsed instructions to the AST
-// (add_instruction function to be implemented)
+// Parse and add instructions
+instruction_parser_t *parser = ar__instruction_parser__create();
+ar_instruction_ast_t *own_instr = ar_instruction_parser__parse(parser, "memory.x := 42");
+ar__method_ast__add_instruction(own_ast, own_instr);
 
-// Destroy when done
+// Check instruction count
+size_t count = ar__method_ast__get_instruction_count(own_ast);
+printf("Method has %zu instructions\n", count);
+
+// Cleanup
+ar__instruction_parser__destroy(parser);
 ar__method_ast__destroy(own_ast);
 ```
 
@@ -78,9 +109,7 @@ ar__method_ast__destroy(own_ast);
 ## Future Enhancements
 
 The following functions are planned for upcoming TDD cycles:
-- `ar__method_ast__add_instruction()`: Add an instruction AST to the method
-- `ar__method_ast__get_instruction_count()`: Get the number of instructions
-- `ar__method_ast__get_instruction()`: Access instruction by line number
+- `ar__method_ast__get_instruction()`: Access instruction by line number (1-based)
 
 ## Memory Management
 

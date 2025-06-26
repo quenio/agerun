@@ -2,6 +2,8 @@
 #include "ar_heap.h"
 #include "ar_list.h"
 #include <stdlib.h>
+#include <stdbool.h>
+#include <stddef.h>
 
 /**
  * Method AST structure (internal).
@@ -51,4 +53,36 @@ void ar__method_ast__destroy(ar_method_ast_t* own_ast) {
     }
     
     AR__HEAP__FREE(own_ast);
+}
+
+/**
+ * Add an instruction AST to the method AST.
+ */
+void ar__method_ast__add_instruction(ar_method_ast_t* mut_ast, ar_instruction_ast_t* own_instruction) {
+    if (!mut_ast || !own_instruction) {
+        // If instruction is provided but AST is NULL, we need to destroy the instruction
+        // to prevent memory leak since we're taking ownership
+        if (own_instruction) {
+            ar__instruction_ast__destroy(own_instruction);
+        }
+        return;
+    }
+    
+    bool added = ar__list__add_last(mut_ast->instructions, own_instruction);
+    if (!added) {
+        // Failed to add to list, need to clean up the instruction
+        ar__instruction_ast__destroy(own_instruction);
+    }
+    // Ownership of instruction transferred to list on success
+}
+
+/**
+ * Get the number of instructions in the method AST.
+ */
+size_t ar__method_ast__get_instruction_count(const ar_method_ast_t* ref_ast) {
+    if (!ref_ast || !ref_ast->instructions) {
+        return 0;
+    }
+    
+    return ar__list__count(ref_ast->instructions);
 }

@@ -131,10 +131,10 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 **Completed**:
 - [x] TDD Cycle 1: Created method_ast module with basic create/destroy functionality (Completed 2025-06-26)
+- [x] TDD Cycle 2: Add instructions to AST - implement add_instruction (Completed 2025-06-26)
+- [x] TDD Cycle 3: Access instruction count - implement get_instruction_count (Completed 2025-06-26)
 
 **Remaining TDD Cycles**:
-- [ ] TDD Cycle 2: Add instructions to AST - implement add_instruction
-- [ ] TDD Cycle 3: Access instruction count
 - [ ] TDD Cycle 4: Access instructions by line number
 - [ ] TDD Cycle 5: Memory management with multiple instructions
 - [ ] TDD Cycle 6-11: Implement method_parser module
