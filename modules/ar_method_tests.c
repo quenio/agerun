@@ -1,4 +1,5 @@
 #include "ar_method.h"
+#include "ar_method_ast.h"
 #include "ar_agency.h"
 #include "ar_system.h"
 #include "ar_methodology.h"
@@ -13,13 +14,15 @@ static void test_method_create(void);
 static void test_method_create_with_previous_version(void);
 static void test_method_run(void);
 static void test_method_persistence(void);
+static void test_method_get_ast(void);
+static void test_method_parse_ast_on_create(void);
 
 static void test_method_create(void) {
     printf("Testing ar__method__create()...\n");
     
     // Given a name and instructions for a new method
     const char *name = "test_method";
-    const char *instructions = "message -> \"Hello from test method\"";
+    const char *instructions = "memory.message := \"Hello from test method\"";
     
     // When we create the method
     method_t *own_method = ar__method__create(name, instructions, "1.0.0");
@@ -39,7 +42,7 @@ static void test_method_create_with_previous_version(void) {
     
     // Given a method that already exists
     const char *name = "versioned_method";
-    const char *instructions_v1 = "message -> \"Version 1\"";
+    const char *instructions_v1 = "memory.message := \"Version 1\"";
     
     // Create version 1
     method_t *own_method_v1 = ar__method__create(name, instructions_v1, "1.0.0");
@@ -53,7 +56,7 @@ static void test_method_create_with_previous_version(void) {
     const char *v1 = "1.0.0";
     
     // When we create a new version of the method
-    const char *instructions_v2 = "message -> \"Version 2\"";
+    const char *instructions_v2 = "memory.message := \"Version 2\"";
     method_t *own_method_v2 = ar__method__create(name, instructions_v2, "2.0.0");
     assert(own_method_v2 != NULL);
     
@@ -77,7 +80,7 @@ static void test_method_run(void) {
     
     // Given an echo method
     const char *method_name = "echo_method";
-    const char *instructions = "message -> message";
+    const char *instructions = "memory.message := memory.message";
     
     // Create method and register it with methodology 
     method_t *own_method = ar__method__create(method_name, instructions, "1.0.0");
@@ -126,7 +129,7 @@ static void test_method_persistence(void) {
     
     // Create a persistent method
     const char *name = "persistent_method";
-    const char *instructions = "message -> \"I am persistent\"";
+    const char *instructions = "memory.message := \"I am persistent\"";
     
     // Create method and register it with methodology 
     method_t *own_method = ar__method__create(name, instructions, "1.0.0");
@@ -141,7 +144,7 @@ static void test_method_persistence(void) {
     
     // Create a non-persistent method
     const char *name2 = "non_persistent_method";
-    const char *instructions2 = "message -> \"I am not persistent\"";
+    const char *instructions2 = "memory.message := \"I am not persistent\"";
     
     // Create method and register it with methodology 
     method_t *own_method2 = ar__method__create(name2, instructions2, "1.0.0");
@@ -210,12 +213,71 @@ static void test_method_persistence(void) {
     printf("Method persistence tests passed!\n");
 }
 
+static void test_method_get_ast(void) {
+    printf("Testing ar__method__get_ast()...\n");
+    
+    // Given a method with valid instructions
+    const char *name = "ast_test_method";
+    const char *instructions = "memory.x := 42\nmemory.y := 84";
+    
+    // When we create the method
+    method_t *own_method = ar__method__create(name, instructions, "1.0.0");
+    assert(own_method != NULL);
+    
+    // Then we should be able to get the AST
+    const ar_method_ast_t *ref_ast = ar__method__get_ast(own_method);
+    
+    // The AST should now be parsed automatically
+    assert(ref_ast != NULL);
+    assert(ar_method_ast__get_instruction_count(ref_ast) == 2);
+    
+    // Clean up
+    ar__method__destroy(own_method);
+    
+    printf("ar__method__get_ast() test passed!\n");
+}
+
+static void test_method_parse_ast_on_create(void) {
+    printf("Testing method parses AST on creation...\n");
+    
+    // Given a method with valid instructions
+    const char *name = "parse_test_method";
+    const char *instructions = "memory.x := 42\nmemory.y := 84";
+    
+    // When we create the method
+    method_t *own_method = ar__method__create(name, instructions, "1.0.0");
+    assert(own_method != NULL);
+    
+    // Then the AST should be parsed automatically
+    const ar_method_ast_t *ref_ast = ar__method__get_ast(own_method);
+    assert(ref_ast != NULL);
+    
+    // And it should have 2 instructions
+    size_t count = ar_method_ast__get_instruction_count(ref_ast);
+    printf("    AST has %zu instructions\n", count);
+    assert(count == 2);
+    
+    // And the instructions should be assignment type
+    const ar_instruction_ast_t *ref_inst1 = ar_method_ast__get_instruction(ref_ast, 1);  // 1-based
+    assert(ref_inst1 != NULL);
+    assert(ar__instruction_ast__get_type(ref_inst1) == AR_INST__ASSIGNMENT);
+    
+    const ar_instruction_ast_t *ref_inst2 = ar_method_ast__get_instruction(ref_ast, 2);  // 1-based
+    assert(ref_inst2 != NULL);
+    assert(ar__instruction_ast__get_type(ref_inst2) == AR_INST__ASSIGNMENT);
+    
+    // Clean up
+    ar__method__destroy(own_method);
+    
+    printf("Method parse AST on create test passed!\n");
+}
+
 int main(void) {
     printf("Starting Method Module Tests...\n");
     
     // Given a test method and initialized system
     const char *init_method = "method_test_init";
-    const char *init_instructions = "memory.result = \"Method test init\"";
+    const char *init_instructions = "memory.result := \"Method test init\"";
     
     // Create method and register it with methodology 
     method_t *own_method = ar__method__create(init_method, init_instructions, "1.0.0");
@@ -235,6 +297,8 @@ int main(void) {
     test_method_create();
     test_method_create_with_previous_version();
     test_method_run();
+    test_method_get_ast();
+    test_method_parse_ast_on_create();
     
     // Shutdown the system to clean up resources
     ar__system__shutdown();
@@ -243,6 +307,6 @@ int main(void) {
     test_method_persistence();
     
     // And report success
-    printf("All 8 tests passed!\n");
+    printf("All 9 tests passed!\n");
     return 0;
 }

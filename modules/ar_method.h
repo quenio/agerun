@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "ar_data.h"
+#include "ar_method_ast.h"
 
 /* Method Definition (opaque type) */
 typedef struct method_s method_t;
@@ -53,5 +54,13 @@ const char* ar__method__get_instructions(const method_t *ref_method);
  *       The pointer will be invalid after this call.
  */
 void ar__method__destroy(method_t *own_method);
+
+/**
+ * Get the parsed AST of a method
+ * @param ref_method Method reference (borrowed reference)
+ * @return Method AST (borrowed reference), or NULL if not parsed
+ * @note Ownership: Returns a borrowed reference. The caller should not free the result.
+ */
+const ar_method_ast_t* ar__method__get_ast(const method_t *ref_method);
 
 #endif /* AGERUN_METHOD_H */

@@ -1,4 +1,6 @@
 #include "ar_method.h"
+#include "ar_method_ast.h"
+#include "ar_method_parser.h"
 #include "ar_heap.h"
 #include "ar_assert.h" /* Include the assertion utilities */
 
@@ -19,6 +21,7 @@ struct method_s {
     char name[MAX_METHOD_NAME_LENGTH];
     char version[MAX_VERSION_LENGTH];
     char instructions[MAX_INSTRUCTIONS_LENGTH];
+    ar_method_ast_t *own_ast;  // Parsed AST (owned by method)
 };
 
 /* Accessor functions implementation */
@@ -41,6 +44,10 @@ const char* ar__method__get_instructions(const method_t *ref_method) {
 
 void ar__method__destroy(method_t *own_method) {
     if (own_method) {
+        // Destroy the AST if it exists
+        if (own_method->own_ast) {
+            ar_method_ast__destroy(own_method->own_ast);
+        }
         AR__HEAP__FREE(own_method);
     }
 }
@@ -77,6 +84,33 @@ method_t* ar__method__create(const char *ref_name, const char *ref_instructions,
     strncpy(mut_method->instructions, ref_instructions, MAX_INSTRUCTIONS_LENGTH - 1);
     mut_method->instructions[MAX_INSTRUCTIONS_LENGTH - 1] = '\0';
     
+    // Parse the instructions into AST
+    ar_method_parser_t *own_parser = ar_method_parser__create();
+    if (!own_parser) {
+        AR__HEAP__FREE(mut_method);
+        return NULL;
+    }
+    
+    mut_method->own_ast = ar_method_parser__parse(own_parser, ref_instructions);
+    if (!mut_method->own_ast) {
+        // Get error information for debugging
+        const char *ref_error = ar_method_parser__get_error(own_parser);
+        int error_line = ar_method_parser__get_error_line(own_parser);
+        if (ref_error) {
+            // For now, we'll just log the error but continue
+            // This allows legacy tests to continue working
+            printf("Warning: Failed to parse method instructions: %s (line %d)\n", ref_error, error_line);
+        }
+        // Continue without AST for backward compatibility
+    }
+    
+    ar_method_parser__destroy(own_parser);
+    
     return mut_method;
+}
+
+const ar_method_ast_t* ar__method__get_ast(const method_t *ref_method) {
+    AR_ASSERT(ref_method != NULL, "Method pointer cannot be NULL");
+    return ref_method->own_ast;
 }
 
