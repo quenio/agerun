@@ -41,6 +41,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] TDD Cycle 1-5: Created method AST module with instruction management
 - [x] TDD Cycle 6-7: Created method parser module with basic structure and empty method parsing
 - [x] TDD Cycle 8: Parse single instruction - integrated instruction parser facade
+- [x] TDD Cycle 9: Parse multiple instructions - implemented line-by-line parsing
+- [x] TDD Cycle 10: Skip comments and empty lines - added # comment support with quote awareness
 - [x] Fixed module function naming convention from ar__<module>__ to ar_<module>__
 - [x] Zero memory leaks across all tests
 - [x] Full documentation for both modules
@@ -142,10 +144,15 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] TDD Cycle 2: Add instructions to AST - implement add_instruction (Completed 2025-06-26)
 - [x] TDD Cycle 3: Access instruction count - implement get_instruction_count (Completed 2025-06-26)
 - [x] TDD Cycle 4: Access instructions by line number - implement get_instruction (Completed 2025-06-26)
+- [x] TDD Cycle 5: Memory management with multiple instructions (Completed 2025-06-26)
+- [x] TDD Cycle 6: Create parser structure (Completed 2025-06-26)
+- [x] TDD Cycle 7: Parse empty method (Completed 2025-06-26)
+- [x] TDD Cycle 8: Parse single instruction (Completed 2025-06-26)
+- [x] TDD Cycle 9: Parse multiple instructions (Completed 2025-06-26)
+- [x] TDD Cycle 10: Skip comments and empty lines (Completed 2025-06-26)
 
 **Remaining TDD Cycles**:
-- [ ] TDD Cycle 5: Memory management with multiple instructions
-- [ ] TDD Cycle 6-11: Implement method_parser module
+- [ ] TDD Cycle 11: Error handling
 - [ ] TDD Cycle 12-13: Integrate with method module
 
 ### HIGH PRIORITY - Complete Instruction and Expression Module Refactoring

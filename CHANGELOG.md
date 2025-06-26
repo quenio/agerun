@@ -3,6 +3,24 @@
 This document tracks completed milestones and major achievements for the AgeRun project.
 
 ## 2025-06-26
+- ✅ **Method Parser Multiple Instructions and Comments Support**:
+  - ✅ **Completed TDD Cycles 9-10 for method_parser module**:
+    - ✅ TDD Cycle 9: Parse multiple instructions with line-by-line parsing
+    - ✅ TDD Cycle 10: Skip comments and empty lines with # comment syntax
+    - ✅ Implemented cross-platform line ending support (\n, \r\n, \r)
+    - ✅ Added quote-aware comment parsing to handle # inside strings
+    - ✅ All tests pass with zero memory leaks
+  - ✅ **Advanced parsing features**:
+    - ✅ Supports both full-line comments (# at start) and inline comments
+    - ✅ Correctly handles escaped quotes in strings
+    - ✅ Efficient line splitting without creating unnecessary copies
+    - ✅ Extracted _parse_line helper function for cleaner code structure
+  - ✅ **Bug fix and documentation**:
+    - ✅ Fixed bug where # inside quoted strings was treated as comment
+    - ✅ Updated ar_method_parser.md with all design decisions
+    - ✅ Added comprehensive test coverage for edge cases
+
+## 2025-06-26
 - ✅ **Method Parser Single Instruction Parsing**:
   - ✅ **Completed TDD Cycle 8 for method_parser module**:
     - ✅ Implemented parsing of single instruction methods

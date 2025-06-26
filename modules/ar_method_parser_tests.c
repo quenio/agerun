@@ -90,6 +90,116 @@ static void test_method_parser__parse_single_instruction(void) {
     printf("✓ test_method_parser__parse_single_instruction passed\n");
 }
 
+// Test parse multiple instructions
+static void test_method_parser__parse_multiple_instructions(void) {
+    printf("Testing method parser parse multiple instructions...\n");
+    
+    // Given a parser and a method with multiple instructions
+    ar_method_parser_t *own_parser = ar_method_parser__create();
+    assert(own_parser != NULL);
+    const char *ref_source = "memory.x := 10\nmemory.y := 20\nmemory.z := 30";
+    
+    // When parsing the source
+    ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
+    
+    // Then an AST should be created with three instructions
+    assert(own_ast != NULL);
+    assert(ar_method_ast__get_instruction_count(own_ast) == 3);
+    
+    // And each instruction should be the correct type in order
+    const ar_instruction_ast_t *ref_instruction1 = ar_method_ast__get_instruction(own_ast, 1);
+    assert(ref_instruction1 != NULL);
+    assert(ar__instruction_ast__get_type(ref_instruction1) == AR_INST__ASSIGNMENT);
+    
+    const ar_instruction_ast_t *ref_instruction2 = ar_method_ast__get_instruction(own_ast, 2);
+    assert(ref_instruction2 != NULL);
+    assert(ar__instruction_ast__get_type(ref_instruction2) == AR_INST__ASSIGNMENT);
+    
+    const ar_instruction_ast_t *ref_instruction3 = ar_method_ast__get_instruction(own_ast, 3);
+    assert(ref_instruction3 != NULL);
+    assert(ar__instruction_ast__get_type(ref_instruction3) == AR_INST__ASSIGNMENT);
+    
+    // Clean up
+    ar_method_ast__destroy(own_ast);
+    ar_method_parser__destroy(own_parser);
+    
+    printf("✓ test_method_parser__parse_multiple_instructions passed\n");
+}
+
+// Test parse with empty lines
+static void test_method_parser__parse_with_empty_lines(void) {
+    printf("Testing method parser parse with empty lines...\n");
+    
+    // Given a parser and a method with instructions and empty lines
+    ar_method_parser_t *own_parser = ar_method_parser__create();
+    assert(own_parser != NULL);
+    const char *ref_source = "memory.x := 10\n\nmemory.y := 20\n\n\nmemory.z := 30\n";
+    
+    // When parsing the source
+    ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
+    
+    // Then an AST should be created with only the non-empty instructions
+    assert(own_ast != NULL);
+    assert(ar_method_ast__get_instruction_count(own_ast) == 3);
+    
+    // Clean up
+    ar_method_ast__destroy(own_ast);
+    ar_method_parser__destroy(own_parser);
+    
+    printf("✓ test_method_parser__parse_with_empty_lines passed\n");
+}
+
+// Test parse with comments
+static void test_method_parser__parse_with_comments(void) {
+    printf("Testing method parser parse with comments...\n");
+    
+    // Given a parser and a method with comments
+    ar_method_parser_t *own_parser = ar_method_parser__create();
+    assert(own_parser != NULL);
+    const char *ref_source = "# This is a comment\nmemory.x := 10\n# Another comment\nmemory.y := 20\nmemory.z := 30 # Inline comment";
+    
+    // When parsing the source
+    ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
+    
+    // Then an AST should be created with only the instructions
+    assert(own_ast != NULL);
+    assert(ar_method_ast__get_instruction_count(own_ast) == 3);
+    
+    // And each instruction should be correctly parsed
+    const ar_instruction_ast_t *ref_instruction1 = ar_method_ast__get_instruction(own_ast, 1);
+    assert(ref_instruction1 != NULL);
+    assert(ar__instruction_ast__get_type(ref_instruction1) == AR_INST__ASSIGNMENT);
+    
+    // Clean up
+    ar_method_ast__destroy(own_ast);
+    ar_method_parser__destroy(own_parser);
+    
+    printf("✓ test_method_parser__parse_with_comments passed\n");
+}
+
+// Test parse with hash in string
+static void test_method_parser__parse_hash_in_string(void) {
+    printf("Testing method parser parse with hash in string...\n");
+    
+    // Given a parser and a method with # inside a string
+    ar_method_parser_t *own_parser = ar_method_parser__create();
+    assert(own_parser != NULL);
+    const char *ref_source = "memory.msg := \"Item #1\"";
+    
+    // When parsing the source
+    ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
+    
+    // Then the AST should be created successfully
+    assert(own_ast != NULL);
+    assert(ar_method_ast__get_instruction_count(own_ast) == 1);
+    
+    // Clean up
+    ar_method_ast__destroy(own_ast);
+    ar_method_parser__destroy(own_parser);
+    
+    printf("✓ test_method_parser__parse_hash_in_string passed\n");
+}
+
 int main(void) {
     printf("Running method parser tests...\n\n");
     
@@ -97,6 +207,10 @@ int main(void) {
     test_method_parser__destroy_null();
     test_method_parser__parse_empty_method();
     test_method_parser__parse_single_instruction();
+    test_method_parser__parse_multiple_instructions();
+    test_method_parser__parse_with_empty_lines();
+    test_method_parser__parse_with_comments();
+    test_method_parser__parse_hash_in_string();
     
     printf("\nAll method parser tests passed!\n");
     return 0;

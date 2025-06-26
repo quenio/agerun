@@ -47,8 +47,9 @@ The module follows strict ownership rules:
 - [x] Basic structure creation and destruction
 - [x] Parse empty method
 - [x] Parse single instruction
-- [ ] Parse multiple instructions
-- [ ] Skip comments and empty lines
+- [x] Parse multiple instructions
+- [x] Skip empty lines
+- [x] Skip comments (both full line and inline)
 - [ ] Error handling and reporting
 - [ ] Integration with method AST
 
@@ -59,3 +60,8 @@ The module follows strict ownership rules:
 3. **AST Output**: Produces method AST objects for execution
 4. **Instruction Parser Integration**: Uses the instruction parser facade for parsing individual instructions
 5. **Trimming**: Removes leading/trailing whitespace from method source before parsing
+6. **Line-by-Line Parsing**: Splits source by newlines and parses each non-empty line as an instruction
+7. **Empty Line Handling**: Automatically skips empty lines during parsing
+8. **Line Ending Support**: Handles both Unix (\n) and Windows (\r\n) line endings
+9. **Comment Support**: Supports `#` for comments (both full line and inline)
+10. **Quote-Aware Parsing**: Correctly handles `#` inside quoted strings (not treated as comments)
