@@ -141,13 +141,15 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 **Core Principle**: Modify in place - No parallel implementations. Each change replaces existing code.
 
-#### Phase 1: Create Frame Abstraction
-- [ ] TDD Cycle 1: Create frame module with basic structure
-  - [ ] Create `ar_frame_t` opaque type
-  - [ ] Implement `ar_frame__create(memory, context, message)`
-  - [ ] Implement `ar_frame__destroy()`
-  - [ ] Implement getters: `get_memory()`, `get_context()`, `get_message()`
-  - [ ] Test with various combinations including NULL context/message
+#### Phase 1: Create Frame Abstraction (Completed 2025-06-28)
+- [x] TDD Cycle 1: Create frame module with basic structure
+  - [x] Create `ar_frame_t` opaque type
+  - [x] Implement `ar_frame__create(memory, context, message)`
+  - [x] Implement `ar_frame__destroy()`
+  - [x] Implement getters: `get_memory()`, `get_context()`, `get_message()`
+  - [x] Test with various combinations including NULL context/message
+  - [x] Created comprehensive documentation (ar_frame.md)
+  - [x] Updated modules/README.md with module description and dependencies
 
 #### Phase 2: Update Expression Evaluator (Foundation)
 - [ ] TDD Cycle 2: Modify expression evaluator to use frames

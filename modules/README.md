@@ -254,6 +254,9 @@ ar_expression_evaluator
 ├──c──> ar_io
 └──c──> ar_heap
 
+ar_frame
+└──h──> ar_data
+
 ar_instruction_evaluator
 ├──h──> ar_expression_evaluator
 ├──h──> ar_instruction_ast
@@ -444,6 +447,11 @@ ar_expression_parser_tests
 ar_expression_evaluator_tests
 ├──c──> ar_expression_evaluator (module under test)
 ├──c──> ar_expression_ast
+├──c──> ar_data
+└──c──> ar_heap
+
+ar_frame_tests
+├──c──> ar_frame (module under test)
 ├──c──> ar_data
 └──c──> ar_heap
 
@@ -946,6 +954,20 @@ The [expression parser module](ar_expression_parser.md) provides a recursive des
 - **Memory Safety**: Zero memory leaks with proper cleanup of temporary structures
 - **Depends on AST**: Uses expression_ast module for building parse trees
 - **Depends on List**: Uses list module for managing path components during parsing
+
+### Frame Module (`ar_frame`)
+
+The [frame module](ar_frame.md) provides a simple data structure that bundles execution context for stateless evaluators:
+
+- **Execution Context**: Bundles memory (mutable), context (const), and message (const) references
+- **Reference-Only**: Frames do not own any data - they only hold references
+- **Required Fields**: All three fields are mandatory - no NULL values allowed
+- **Const-Correctness**: Enforces read-only access for context and message, mutable access for memory
+- **Minimal Interface**: Provides only essential operations (create, destroy, getters)
+- **Stateless Evaluation**: Enables evaluator functions to receive all context via single parameter
+- **Clean Architecture**: Simplifies parameter passing throughout the evaluation chain
+- **No Dependencies**: Independent module with no dependencies on other AgeRun modules
+- **Opaque Type**: Frame structure is opaque, following Parnas principles
 
 ### Expression Evaluator Module (`ar_expression_evaluator`)
 
