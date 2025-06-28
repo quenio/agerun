@@ -127,6 +127,8 @@ ar__data__destroy(own_args);  // Add cleanup
 
 ### 2. Test-Driven Development (MANDATORY)
 
+**Pre-modification Rule**: Run module tests BEFORE changing any module
+
 **Red-Green-Refactor Cycle (ALL THREE PHASES REQUIRED)**:
 
 **CRITICAL**: This is a CYCLE that repeats for each new behavior/feature. NO commits during the cycle!
@@ -216,6 +218,8 @@ For each new behavior/feature:
 - **Opaque Types**: Required for complex data structures
 - **Minimal Interfaces**: Expose only what's necessary
 - **Complete Documentation**: Every module must be fully documented
+- **Const-Correctness**: NEVER cast away const - fix interfaces instead
+- **No Parallel Implementations**: Modify existing code, don't create _v2 versions
 
 **Important Clarifications**:
 - **Enums in Public APIs**: Some enums (like `data_type_t`) are part of the abstract model, not implementation details. These are acceptable when they represent abstract concepts needed by clients.
@@ -437,6 +441,8 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - **Test preservation**: Tests define behavior - fix implementation, not tests
 - **Diff verification**: MANDATORY when moving code between modules
 - **Strategic analysis**: Check if modern solution exists before refactoring legacy code
+- **Complexity warning**: If "simple" change touches many modules → approach is wrong
+- **Complete implementations**: All cases or none - partial implementations create bugs
 
 ### 12. Plan Verification and Review
 
