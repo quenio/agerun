@@ -10,7 +10,6 @@
 #include "ar_expression_ast.h"
 #include "ar_data.h"
 #include "ar_heap.h"
-#include "ar_frame.h"
 
 /**
  * Test creating and destroying an evaluator
@@ -604,149 +603,6 @@ static void test_evaluate_binary_op_nested(void) {
     printf("  ✓ Evaluate nested binary operations\n");
 }
 
-/**
- * Test unified evaluate method with all expression types
- */
-static void test_evaluate_unified(void) {
-    printf("Testing unified evaluate method...\n");
-    
-    // Given memory with some values
-    data_t *memory = ar__data__create_map();
-    assert(memory != NULL);
-    ar__data__set_map_data(memory, "x", ar__data__create_integer(42));
-    ar__data__set_map_data(memory, "name", ar__data__create_string("test"));
-    
-    // And an evaluator
-    ar_expression_evaluator_t *evaluator = ar__expression_evaluator__create(memory, NULL);
-    assert(evaluator != NULL);
-    
-    // Test 1: Integer literal
-    ar_expression_ast_t *int_ast = ar__expression_ast__create_literal_int(100);
-    data_t *result = ar__expression_evaluator__evaluate(evaluator, int_ast);
-    assert(result != NULL);
-    assert(ar__data__get_type(result) == DATA_INTEGER);
-    assert(ar__data__get_integer(result) == 100);
-    ar__data__destroy(result);
-    ar__expression_ast__destroy(int_ast);
-    
-    // Test 2: Double literal
-    ar_expression_ast_t *double_ast = ar__expression_ast__create_literal_double(3.14);
-    result = ar__expression_evaluator__evaluate(evaluator, double_ast);
-    assert(result != NULL);
-    assert(ar__data__get_type(result) == DATA_DOUBLE);
-    assert(ar__data__get_double(result) == 3.14);
-    ar__data__destroy(result);
-    ar__expression_ast__destroy(double_ast);
-    
-    // Test 3: String literal
-    ar_expression_ast_t *string_ast = ar__expression_ast__create_literal_string("hello");
-    result = ar__expression_evaluator__evaluate(evaluator, string_ast);
-    assert(result != NULL);
-    assert(ar__data__get_type(result) == DATA_STRING);
-    assert(strcmp(ar__data__get_string(result), "hello") == 0);
-    ar__data__destroy(result);
-    ar__expression_ast__destroy(string_ast);
-    
-    // Test 4: Memory access
-    const char *path[] = {"x"};
-    ar_expression_ast_t *memory_ast = ar__expression_ast__create_memory_access("memory", path, 1);
-    result = ar__expression_evaluator__evaluate(evaluator, memory_ast);
-    assert(result != NULL);
-    assert(ar__data__get_type(result) == DATA_INTEGER);
-    assert(ar__data__get_integer(result) == 42);
-    ar__data__destroy(result);
-    ar__expression_ast__destroy(memory_ast);
-    
-    // Test 5: Binary operation
-    ar_expression_ast_t *left = ar__expression_ast__create_literal_int(10);
-    ar_expression_ast_t *right = ar__expression_ast__create_literal_int(20);
-    ar_expression_ast_t *binary_ast = ar__expression_ast__create_binary_op(AR_OP__ADD, left, right);
-    result = ar__expression_evaluator__evaluate(evaluator, binary_ast);
-    assert(result != NULL);
-    assert(ar__data__get_type(result) == DATA_INTEGER);
-    assert(ar__data__get_integer(result) == 30);
-    ar__data__destroy(result);
-    ar__expression_ast__destroy(binary_ast);
-    
-    // Test 6: NULL AST
-    result = ar__expression_evaluator__evaluate(evaluator, NULL);
-    assert(result == NULL);
-    
-    // Clean up
-    ar__expression_evaluator__destroy(evaluator);
-    ar__data__destroy(memory);
-    
-    printf("  ✓ Unified evaluate method works for all expression types\n");
-}
-
-/**
- * Test stateless evaluate method with frame
- */
-static void test_evaluate_stateless_with_frame(void) {
-    printf("Testing stateless evaluate with frame...\n");
-    
-    // Given memory with some values
-    data_t *own_memory = ar__data__create_map();
-    ar__data__set_map_integer(own_memory, "x", 10);
-    ar__data__set_map_integer(own_memory, "y", 20);
-    
-    // And context with some values
-    data_t *own_context = ar__data__create_map();
-    ar__data__set_map_string(own_context, "user", "alice");
-    
-    // And a message
-    data_t *own_message = ar__data__create_string("test message");
-    
-    // Create a frame
-    ar_frame_t *frame = ar_frame__create(own_memory, own_context, own_message);
-    assert(frame != NULL);
-    
-    // Create a stateless evaluator
-    ar_expression_evaluator_t *evaluator = ar__expression_evaluator__create_stateless();
-    assert(evaluator != NULL);
-    
-    // Test 1: Evaluate memory access using frame
-    const char *path[] = {"x"};
-    ar_expression_ast_t *memory_ast = ar__expression_ast__create_memory_access("memory", path, 1);
-    data_t *result = ar__expression_evaluator__evaluate_with_frame(evaluator, memory_ast, frame);
-    assert(result != NULL);
-    assert(ar__data__get_type(result) == DATA_INTEGER);
-    assert(ar__data__get_integer(result) == 10);
-    ar__data__destroy(result);
-    ar__expression_ast__destroy(memory_ast);
-    
-    // Test 2: Evaluate context access using frame
-    const char *context_path[] = {"user"};
-    ar_expression_ast_t *context_ast = ar__expression_ast__create_memory_access("context", context_path, 1);
-    result = ar__expression_evaluator__evaluate_with_frame(evaluator, context_ast, frame);
-    assert(result != NULL);
-    assert(ar__data__get_type(result) == DATA_STRING);
-    assert(strcmp(ar__data__get_string(result), "alice") == 0);
-    ar__data__destroy(result);
-    ar__expression_ast__destroy(context_ast);
-    
-    // Test 3: Binary operation with memory values
-    ar_expression_ast_t *x_ast = ar__expression_ast__create_memory_access("memory", path, 1);
-    const char *y_path[] = {"y"};
-    ar_expression_ast_t *y_ast = ar__expression_ast__create_memory_access("memory", y_path, 1);
-    ar_expression_ast_t *add_ast = ar__expression_ast__create_binary_op(AR_OP__ADD, x_ast, y_ast);
-    result = ar__expression_evaluator__evaluate_with_frame(evaluator, add_ast, frame);
-    assert(result != NULL);
-    assert(ar__data__get_type(result) == DATA_INTEGER);
-    assert(ar__data__get_integer(result) == 30);
-    ar__data__destroy(result);
-    ar__expression_ast__destroy(add_ast);
-    
-    // Clean up
-    ar__expression_evaluator__destroy(evaluator);
-    ar_frame__destroy(frame);
-    ar__data__destroy(own_memory);
-    ar__data__destroy(own_context);
-    ar__data__destroy(own_message);
-    
-    printf("  ✓ Stateless evaluate with frame works correctly\n");
-}
-
 int main(void) {
     printf("\n=== Expression Evaluator Tests ===\n\n");
     
@@ -769,8 +625,6 @@ int main(void) {
     test_evaluate_binary_op_concatenate_strings();
     test_evaluate_binary_op_wrong_type();
     test_evaluate_binary_op_nested();
-    test_evaluate_unified();
-    test_evaluate_stateless_with_frame();
     
     printf("\nAll expression_evaluator tests passed!\n");
     return 0;

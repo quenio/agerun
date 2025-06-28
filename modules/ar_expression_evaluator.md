@@ -27,13 +27,10 @@ The module is designed with clean separation of concerns:
 ### Creation and Destruction
 
 - `ar__expression_evaluator__create()` - Creates evaluator with memory and optional context
-- `ar__expression_evaluator__create_stateless()` - Creates stateless evaluator that uses frames
 - `ar__expression_evaluator__destroy()` - Destroys evaluator and releases resources
 
 ### Evaluation Functions
 
-- `ar__expression_evaluator__evaluate()` - Unified method that evaluates any expression AST node
-- `ar__expression_evaluator__evaluate_with_frame()` - Evaluates expressions using frame for context
 - `ar__expression_evaluator__evaluate_literal_int()` - Evaluates integer literal nodes
 - `ar__expression_evaluator__evaluate_literal_double()` - Evaluates double literal nodes
 - `ar__expression_evaluator__evaluate_literal_string()` - Evaluates string literal nodes
@@ -115,22 +112,6 @@ ar__data__destroy(memory);
 ar__data__destroy(context);
 ```
 
-## Stateless Evaluation
-
-The module supports two evaluation modes:
-
-### Stateful Mode
-- Created with `ar__expression_evaluator__create(memory, context)`
-- Stores memory and context references internally
-- Use `ar__expression_evaluator__evaluate()` for evaluation
-
-### Stateless Mode
-- Created with `ar__expression_evaluator__create_stateless()`
-- Does not store any execution context
-- Use `ar__expression_evaluator__evaluate_with_frame()` for evaluation
-- Frame provides memory, context, and message for each evaluation
-- Enables evaluator reuse across different execution contexts
-
 ## Implementation Notes
 
 - Uses a helper function `_evaluate_expression()` for recursive evaluation
@@ -138,4 +119,3 @@ The module supports two evaluation modes:
 - String concatenation allocates temporary buffer for result
 - All evaluation functions check node type before proceeding
 - Maintains zero memory leaks through careful ownership tracking
-- Binary operation logic is shared between stateful and stateless modes

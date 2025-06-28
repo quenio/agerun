@@ -12,7 +12,6 @@
 
 #include "ar_expression_ast.h"
 #include "ar_data.h"
-#include "ar_frame.h"
 
 /**
  * Opaque type for expression evaluator
@@ -30,14 +29,6 @@ ar_expression_evaluator_t* ar__expression_evaluator__create(
     data_t *ref_memory,
     data_t *ref_context
 );
-
-/**
- * Creates a new stateless expression evaluator
- * @return A new evaluator instance without stored memory/context
- * @note Ownership: Returns an owned value that caller must destroy
- *       This evaluator requires frame to be passed during evaluation
- */
-ar_expression_evaluator_t* ar__expression_evaluator__create_stateless(void);
 
 /**
  * Destroys an expression evaluator
@@ -109,37 +100,6 @@ data_t* ar__expression_evaluator__evaluate_memory_access(
 data_t* ar__expression_evaluator__evaluate_binary_op(
     ar_expression_evaluator_t *mut_evaluator,
     const ar_expression_ast_t *ref_node
-);
-
-/**
- * Evaluates any expression AST node
- * @param mut_evaluator The evaluator instance (mutable reference)
- * @param ref_ast The AST node to evaluate (borrowed reference)
- * @return The evaluated value as data_t
- * @note Ownership: Returns an owned value that caller must destroy
- *       Returns NULL on evaluation errors or if ast is NULL
- *       This is a unified method that dispatches to the appropriate
- *       specialized evaluation method based on the AST node type.
- */
-data_t* ar__expression_evaluator__evaluate(
-    ar_expression_evaluator_t *mut_evaluator,
-    const ar_expression_ast_t *ref_ast
-);
-
-/**
- * Evaluates any expression AST node using a frame for context
- * @param mut_evaluator The evaluator instance (mutable reference)
- * @param ref_ast The AST node to evaluate (borrowed reference)
- * @param ref_frame The frame containing memory, context, and message (borrowed reference)
- * @return The evaluated value as data_t
- * @note Ownership: Returns an owned value that caller must destroy
- *       Returns NULL on evaluation errors or if ast/frame is NULL
- *       This method is used with stateless evaluators
- */
-data_t* ar__expression_evaluator__evaluate_with_frame(
-    ar_expression_evaluator_t *mut_evaluator,
-    const ar_expression_ast_t *ref_ast,
-    const ar_frame_t *ref_frame
 );
 
 #endif /* AGERUN_EXPRESSION_EVALUATOR_H */

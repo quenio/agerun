@@ -35,8 +35,6 @@ The module follows a **composition pattern** where it creates and manages instan
 - **Memory Safety**: Strict ownership semantics with proper cleanup
 - **Extensibility**: Easy to add new instruction types by creating new specialized evaluators
 - **Separation of Concerns**: Clear boundaries between different instruction types
-- **Unified Interface**: Single `evaluate` method dispatches to appropriate evaluator
-- **Stateless Support**: Can work with frames for stateless evaluation
 
 ## Dependencies
 
@@ -45,7 +43,6 @@ The module follows a **composition pattern** where it creates and manages instan
 - `ar_instruction_ast`: For accessing parsed instruction structures
 - `ar_data`: For data manipulation and storage
 - `ar_heap`: For memory tracking
-- `ar_frame`: For stateless evaluation support
 
 ## API Reference
 
@@ -87,28 +84,6 @@ Creates a new instruction evaluator instance and initializes all specialized eva
 - Passes shared dependencies to each specialized evaluator
 - Returns NULL if any specialized evaluator creation fails
 
-#### ar_instruction_evaluator__create_stateless
-
-```c
-instruction_evaluator_t* ar_instruction_evaluator__create_stateless(
-    ar_expression_evaluator_t *ref_expr_evaluator
-);
-```
-
-Creates a new stateless instruction evaluator instance.
-
-**Parameters:**
-- `ref_expr_evaluator`: Expression evaluator to use (required, borrowed reference)
-
-**Returns:** New stateless evaluator instance or NULL on failure
-
-**Ownership:** Caller owns the returned evaluator and must destroy it
-
-**Behavior:**
-- Creates a lightweight evaluator without specialized evaluator instances
-- Requires frames to be passed during evaluation
-- More memory efficient for short-lived evaluations
-
 #### ar_instruction_evaluator__destroy
 
 ```c
@@ -125,58 +100,76 @@ Destroys an instruction evaluator instance and all its specialized evaluators.
 - Frees the main evaluator structure
 - Safe to call with NULL pointer
 
-### Evaluation Functions
+### Delegation Functions
 
-#### ar_instruction_evaluator__evaluate
+Each delegation function follows the same pattern:
+- Takes the evaluator and an instruction AST node
+- Delegates to the appropriate specialized evaluator
+- Returns `true` on successful evaluation, `false` on failure
+- All memory management and error handling is done by the specialized evaluator
+
+#### ar_instruction_evaluator__evaluate_assignment
 
 ```c
-bool ar_instruction_evaluator__evaluate(
+bool ar_instruction_evaluator__evaluate_assignment(
     instruction_evaluator_t *mut_evaluator,
     const ar_instruction_ast_t *ref_ast
 );
 ```
 
-Evaluates any instruction AST node by dispatching to the appropriate specialized evaluator.
-
-**Parameters:**
-- `mut_evaluator`: The evaluator instance (mutable reference)
-- `ref_ast`: The instruction AST to evaluate (borrowed reference)
-
-**Returns:** `true` on successful evaluation, `false` on failure
+Delegates assignment instruction evaluation to the assignment_instruction_evaluator.
 
 **Behavior:**
-- Examines the AST node type and delegates to the appropriate specialized evaluator
-- Handles all instruction types: assignment, send, if, parse, build, method, agent, destroy
-- All memory management and error handling is done by the specialized evaluator
+- Calls `ar_assignment_instruction_evaluator__evaluate()` with the stored instance
+- The specialized evaluator handles all assignment logic including path validation and value storage
 
-#### ar_instruction_evaluator__evaluate_with_frame
+The instruction evaluator provides delegation functions for each instruction type. Each function simply delegates to its corresponding specialized evaluator:
+
+#### All Delegation Functions
 
 ```c
-bool ar_instruction_evaluator__evaluate_with_frame(
-    instruction_evaluator_t *mut_evaluator,
-    const ar_instruction_ast_t *ref_ast,
-    const ar_frame_t *ref_frame
-);
+// Delegates to assignment_instruction_evaluator
+bool ar_instruction_evaluator__evaluate_assignment(
+    instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
+
+// Delegates to send_instruction_evaluator
+bool ar_instruction_evaluator__evaluate_send(
+    instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
+
+// Delegates to condition_instruction_evaluator
+bool ar_instruction_evaluator__evaluate_if(
+    instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
+
+// Delegates to parse_instruction_evaluator
+bool ar_instruction_evaluator__evaluate_parse(
+    instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
+
+// Delegates to build_instruction_evaluator
+bool ar_instruction_evaluator__evaluate_build(
+    instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
+
+// Delegates to method_instruction_evaluator
+bool ar_instruction_evaluator__evaluate_method(
+    instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
+
+// Delegates to agent_instruction_evaluator
+bool ar_instruction_evaluator__evaluate_agent(
+    instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
+
+// Dispatches to destroy_agent_instruction_evaluator or destroy_method_instruction_evaluator
+bool ar_instruction_evaluator__evaluate_destroy(
+    instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
 ```
 
-Evaluates any instruction AST node using a frame for execution context.
-
-**Parameters:**
-- `mut_evaluator`: The evaluator instance (mutable reference)
-- `ref_ast`: The instruction AST to evaluate (borrowed reference)
-- `ref_frame`: The frame containing memory, context, and message (borrowed reference)
-
-**Returns:** `true` on successful evaluation, `false` on failure
-
-**Behavior:**
-- Used with stateless evaluators created by `ar_instruction_evaluator__create_stateless`
-- The frame provides the execution context (memory, context, message)
-- Currently supports assignment, send, and if instructions directly
-- Other instruction types are delegated to specialized evaluators (future enhancement)
+**Common Behavior:**
+- All functions delegate to their corresponding specialized evaluator instance
+- Return `true` on successful evaluation, `false` on failure
+- The specialized evaluators handle all logic, memory management, and error handling
+- For detailed behavior of each instruction type, see the individual specialized evaluator documentation
 
 ## Usage Examples
 
-### Basic Usage with Unified Interface
+### Basic Assignment
 
 ```c
 // Create evaluator with dependencies
@@ -189,37 +182,25 @@ ar_instruction_ast_t *ast = ar_instruction_ast__create_assignment(
     "memory.count", "10"
 );
 
-// Evaluate using unified interface
-bool success = ar_instruction_evaluator__evaluate(evaluator, ast);
+// Evaluate (delegates to assignment_instruction_evaluator)
+bool success = ar_instruction_evaluator__evaluate_assignment(evaluator, ast);
 
 // Clean up
 ar_instruction_ast__destroy(ast);
 ar_instruction_evaluator__destroy(evaluator);
 ```
 
-### Stateless Evaluation with Frames
+### Agent Messaging
 
 ```c
-// Create stateless evaluator
-ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create_stateless();
-instruction_evaluator_t *evaluator = ar_instruction_evaluator__create_stateless(expr_eval);
-
-// Create frame with execution context
-ar_frame_t *frame = ar_frame__create(memory, context, message);
-
-// Create and evaluate instructions
-ar_instruction_ast_t *ast = ar_instruction_ast__create_assignment(
-    "memory.result", "memory.x + memory.y"
+// Create send AST: send(1, "Hello")
+const char *args[] = {"1", "\"Hello\""};
+ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+    AR_INST__SEND, "send", args, 2, NULL
 );
 
-// Evaluate using frame
-bool success = ar_instruction_evaluator__evaluate_with_frame(evaluator, ast, frame);
-
-// Clean up
-ar_instruction_ast__destroy(ast);
-ar_frame__destroy(frame);
-ar_instruction_evaluator__destroy(evaluator);
-ar__expression_evaluator__destroy(expr_eval);
+// Evaluate (delegates to send_instruction_evaluator)
+bool success = ar_instruction_evaluator__evaluate_send(evaluator, ast);
 ```
 
 ### Coordination Pattern
@@ -232,11 +213,11 @@ instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
     expr_eval, memory, context, message
 );
 
-// Unified interface handles all instruction types
-ar_instruction_evaluator__evaluate(evaluator, assignment_ast);
-ar_instruction_evaluator__evaluate(evaluator, send_ast);
-ar_instruction_evaluator__evaluate(evaluator, condition_ast);
-// ... works for all instruction types
+// Each instruction type is handled by its specialized evaluator
+ar_instruction_evaluator__evaluate_assignment(evaluator, assignment_ast);
+ar_instruction_evaluator__evaluate_send(evaluator, send_ast);
+ar_instruction_evaluator__evaluate_if(evaluator, condition_ast);
+// ... etc for all instruction types
 
 // Single destroy call cleans up all specialized evaluators
 ar_instruction_evaluator__destroy(evaluator);

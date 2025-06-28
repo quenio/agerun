@@ -47,16 +47,6 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Zero memory leaks across all tests
 - [x] Full documentation for both modules
 
-### Method Evaluator and Frame-Based Execution (Completed 2025-06-28)
-- [x] TDD Cycle 1-3: Created frame module with create/destroy, accessors, and NULL rejection
-- [x] TDD Cycle 4: Exposed expression evaluator unified method for both stateful and stateless operation
-- [x] TDD Cycle 5: Made expression evaluator stateless with frame support, refactored binary operations
-- [x] TDD Cycle 6: Updated instruction evaluator to support stateless operation with frames
-- [x] TDD Cycle 7: Created method evaluator module with comprehensive tests and implementation
-- [x] Enables "parse once, evaluate many times" semantics for interpreter
-- [x] Full documentation for frame and method evaluator modules
-- [x] Zero memory leaks across all tests
-
 ## Critical Compliance Tasks
 
 ### Parnas Principles - Interface Violations (HIGH PRIORITY)

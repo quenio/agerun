@@ -2,31 +2,6 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
-## 2025-06-28
-- ✅ **Method Evaluator and Frame-Based Execution Implementation**:
-  - ✅ **Created frame module for execution context**:
-    - ✅ TDD Cycles 1-3: Basic frame creation, accessors, and NULL parameter validation
-    - ✅ Encapsulates memory, context, and message triple
-    - ✅ Enables stateless evaluator design pattern
-  - ✅ **Enhanced expression evaluator for stateless operation**:
-    - ✅ TDD Cycle 4: Exposed unified evaluation method for both stateful and stateless modes
-    - ✅ TDD Cycle 5: Added frame-based evaluation support
-    - ✅ Refactored to extract common binary operation logic (~200 lines reduced)
-  - ✅ **Updated instruction evaluator for frame support**:
-    - ✅ TDD Cycle 6: Added stateless creation and frame-based evaluation
-    - ✅ Supports assignment, send, and if instructions with frames
-    - ✅ Extracted memory key parsing helper for cleaner code
-  - ✅ **Implemented method evaluator module**:
-    - ✅ TDD Cycle 7: Complete implementation with 6 comprehensive tests
-    - ✅ Enables "parse once, evaluate many times" semantics
-    - ✅ Reusable evaluator instances for multiple executions
-    - ✅ Sequential instruction execution with detailed error reporting
-    - ✅ Zero memory leaks across all 422 allocations
-  - ✅ **Documentation and integration**:
-    - ✅ Created ar_frame.md and ar_method_evaluator.md documentation
-    - ✅ Updated modules README with new modules
-    - ✅ Ready for interpreter integration
-
 ## 2025-06-26
 - ✅ **Method Parser Error Handling Implementation**:
   - ✅ **Completed TDD Cycle 11 for method_parser module**:

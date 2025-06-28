@@ -12,7 +12,6 @@
 #include "ar_methodology.h"
 #include "ar_agency.h"
 #include "ar_system.h"
-#include "ar_frame.h"
 
 static void test_instruction_evaluator__create_destroy(void) {
     // Given an expression evaluator and memory/context/message data
@@ -400,110 +399,6 @@ static void test_instruction_evaluator__unified_evaluate_assignment(void) {
     ar__data__destroy(memory);
 }
 
-static void test_instruction_evaluator__stateless_with_frame(void) {
-    printf("Testing stateless instruction evaluator with frame...\n");
-    
-    // Given memory with some values
-    data_t *own_memory = ar__data__create_map();
-    ar__data__set_map_integer(own_memory, "x", 10);
-    ar__data__set_map_integer(own_memory, "y", 20);
-    
-    // And context with some values
-    data_t *own_context = ar__data__create_map();
-    ar__data__set_map_string(own_context, "user", "alice");
-    
-    // And a message
-    data_t *own_message = ar__data__create_string("test message");
-    
-    // Create a frame
-    ar_frame_t *frame = ar_frame__create(own_memory, own_context, own_message);
-    assert(frame != NULL);
-    
-    // Create a stateless expression evaluator
-    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create_stateless();
-    assert(expr_eval != NULL);
-    
-    // Create a stateless instruction evaluator
-    instruction_evaluator_t *evaluator = ar_instruction_evaluator__create_stateless(expr_eval);
-    assert(evaluator != NULL);
-    
-    // Test 1: Assignment instruction using frame
-    {
-        // Create assignment AST: memory.sum := memory.x + memory.y
-        ar_instruction_ast_t *ast = ar__instruction_ast__create_assignment("memory.sum", "memory.x + memory.y");
-        assert(ast != NULL);
-        
-        // Create expression AST for memory.x + memory.y
-        const char *path_x[] = {"x"};
-        ar_expression_ast_t *x_ast = ar__expression_ast__create_memory_access("memory", path_x, 1);
-        const char *path_y[] = {"y"};
-        ar_expression_ast_t *y_ast = ar__expression_ast__create_memory_access("memory", path_y, 1);
-        ar_expression_ast_t *expr_ast = ar__expression_ast__create_binary_op(AR_OP__ADD, x_ast, y_ast);
-        ar__instruction_ast__set_assignment_expression_ast(ast, expr_ast);
-        
-        // Evaluate using frame
-        bool result = ar_instruction_evaluator__evaluate_with_frame(evaluator, ast, frame);
-        assert(result == true);
-        
-        // Verify the assignment worked
-        data_t *sum = ar__data__get_map_data(own_memory, "sum");
-        assert(sum != NULL);
-        assert(ar__data__get_type(sum) == DATA_INTEGER);
-        assert(ar__data__get_integer(sum) == 30);
-        
-        ar__instruction_ast__destroy(ast);
-    }
-    
-    // Test 2: Condition instruction using context from frame
-    {
-        // Create if instruction: if(context.user = "alice", "admin", "guest")
-        const char *args[] = {"context.user = \"alice\"", "\"admin\"", "\"guest\""};
-        ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
-            AR_INST__IF, "if", args, 3, "memory.role"
-        );
-        
-        // Create argument ASTs
-        list_t *arg_asts = ar__list__create();
-        
-        // Condition: context.user = "alice"
-        const char *user_path[] = {"user"};
-        ar_expression_ast_t *user_ast = ar__expression_ast__create_memory_access("context", user_path, 1);
-        ar_expression_ast_t *alice_ast = ar__expression_ast__create_literal_string("alice");
-        ar_expression_ast_t *cond_ast = ar__expression_ast__create_binary_op(AR_OP__EQUAL, user_ast, alice_ast);
-        
-        // True branch: "admin"
-        ar_expression_ast_t *true_ast = ar__expression_ast__create_literal_string("admin");
-        
-        // False branch: "guest"
-        ar_expression_ast_t *false_ast = ar__expression_ast__create_literal_string("guest");
-        
-        ar__list__add_last(arg_asts, cond_ast);
-        ar__list__add_last(arg_asts, true_ast);
-        ar__list__add_last(arg_asts, false_ast);
-        ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
-        
-        // Evaluate using frame
-        bool result = ar_instruction_evaluator__evaluate_with_frame(evaluator, ast, frame);
-        assert(result == true);
-        
-        // Verify the result
-        data_t *role = ar__data__get_map_data(own_memory, "role");
-        assert(role != NULL);
-        assert(ar__data__get_type(role) == DATA_STRING);
-        assert(strcmp(ar__data__get_string(role), "admin") == 0);
-        
-        ar__instruction_ast__destroy(ast);
-    }
-    
-    // Clean up
-    ar_instruction_evaluator__destroy(evaluator);
-    ar__expression_evaluator__destroy(expr_eval);
-    ar_frame__destroy(frame);
-    ar__data__destroy(own_memory);
-    ar__data__destroy(own_context);
-    ar__data__destroy(own_message);
-}
-
 int main(void) {
     printf("Starting instruction_evaluator create/destroy tests...\n");
     
@@ -533,9 +428,6 @@ int main(void) {
     
     test_instruction_evaluator__only_unified_interface_exposed();
     printf("test_instruction_evaluator__only_unified_interface_exposed passed!\n");
-    
-    test_instruction_evaluator__stateless_with_frame();
-    printf("test_instruction_evaluator__stateless_with_frame passed!\n");
     
     printf("All instruction_evaluator create/destroy tests passed!\n");
     
