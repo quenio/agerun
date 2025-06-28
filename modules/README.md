@@ -183,6 +183,16 @@ ar_method_ast
 ├──c──> ar_instruction_ast
 └──c──> ar_heap
 
+ar_method_evaluator
+├──c──> ar_method
+├──c──> ar_method_ast
+├──c──> ar_instruction_ast
+├──c──> ar_expression_evaluator
+├──c──> ar_instruction_evaluator
+├──c──> ar_frame
+├──c──> ar_heap
+└──c──> ar_io
+
 ar_instruction_parser
 ├──c──> ar_instruction_ast
 │       ├──c──> ar_list
@@ -538,6 +548,19 @@ ar_method_ast_tests
 ar_method_parser_tests
 ├──c──> ar_method_parser (module under test)
 └──c──> ar_heap
+
+ar_method_evaluator_tests
+├──c──> ar_method_evaluator (module under test)
+├──c──> ar_method
+├──c──> ar_method_ast
+├──c──> ar_instruction_ast
+├──c──> ar_expression_ast
+├──c──> ar_expression_evaluator
+├──c──> ar_instruction_evaluator
+├──c──> ar_frame
+├──c──> ar_data
+├──c──> ar_heap
+└──c──> ar_io
 
 ar_instruction_parser_tests
 ├──c──> ar_instruction_parser (module under test)
@@ -1081,6 +1104,21 @@ The [method AST module](ar_method_ast.md) provides Abstract Syntax Tree structur
 - **Depends on List**: Uses list module for storing instruction ASTs in order
 - **Depends on Instruction AST**: Contains and manages instruction AST nodes
 - **Depends on Heap**: Uses heap tracking for memory management
+
+### Method Evaluator Module (`ar_method_evaluator`)
+
+The [method evaluator module](ar_method_evaluator.md) provides functionality to evaluate parsed method ASTs:
+
+- **Parse Once, Evaluate Many**: Executes pre-parsed method ASTs without reparsing
+- **Frame-Based Execution**: Uses frames to provide execution context (memory, context, message)
+- **Stateless Evaluators**: Internally manages stateless expression and instruction evaluators
+- **Sequential Execution**: Executes instructions in order with early exit on errors
+- **Evaluator Reuse**: Single evaluator instance can execute the same method with different frames
+- **Bridge to Interpreter**: Enables efficient method execution in the interpreter
+- **Memory Safety**: Proper ownership tracking with no circular dependencies
+- **Detailed Error Reporting**: Reports which instruction failed during execution
+- **Depends on Method**: For accessing parsed ASTs
+- **Depends on Expression/Instruction Evaluators**: For executing individual instructions
 
 ### Instruction Parser Module (`ar_instruction_parser`)
 

@@ -18,6 +18,7 @@
 #include "ar_instruction_ast.h"
 #include "ar_data.h"
 #include "ar_expression_evaluator.h"
+#include "ar_frame.h"
 
 /**
  * Opaque type for instruction evaluator
@@ -42,6 +43,17 @@ instruction_evaluator_t* ar_instruction_evaluator__create(
 );
 
 /**
+ * Creates a new stateless instruction evaluator
+ * @param ref_expr_evaluator The expression evaluator to use (borrowed reference)
+ * @return A new stateless evaluator instance
+ * @note Ownership: Returns an owned value that caller must destroy.
+ *       This evaluator requires frames to be passed during evaluation.
+ */
+instruction_evaluator_t* ar_instruction_evaluator__create_stateless(
+    ar_expression_evaluator_t *ref_expr_evaluator
+);
+
+/**
  * Destroys an instruction evaluator
  * @param own_evaluator The evaluator to destroy
  * @note Ownership: Takes ownership and destroys the evaluator
@@ -60,6 +72,21 @@ void ar_instruction_evaluator__destroy(instruction_evaluator_t *own_evaluator);
 bool ar_instruction_evaluator__evaluate(
     instruction_evaluator_t *mut_evaluator,
     const ar_instruction_ast_t *ref_ast
+);
+
+/**
+ * Evaluates any instruction AST node using a frame for context
+ * @param mut_evaluator The evaluator instance (mutable reference)
+ * @param ref_ast The AST node to evaluate (borrowed reference)
+ * @param ref_frame The frame containing memory, context, and message (borrowed reference)
+ * @return true if evaluation succeeded, false otherwise
+ * @note This method is used with stateless evaluators.
+ *       The frame provides the execution context for evaluation.
+ */
+bool ar_instruction_evaluator__evaluate_with_frame(
+    instruction_evaluator_t *mut_evaluator,
+    const ar_instruction_ast_t *ref_ast,
+    const ar_frame_t *ref_frame
 );
 
 #endif /* AGERUN_INSTRUCTION_EVALUATOR_H */
