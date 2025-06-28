@@ -135,6 +135,80 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Immediate Priorities (Next Steps)
 
+### HIGHEST PRIORITY - Frame-Based Execution Implementation (Revised Plan)
+
+**Status**: Previous attempt failed due to creating parallel implementations instead of modifying existing code. This revised plan addresses those issues.
+
+**Core Principle**: Modify in place - No parallel implementations. Each change replaces existing code.
+
+#### Phase 1: Create Frame Abstraction
+- [ ] TDD Cycle 1: Create frame module with basic structure
+  - [ ] Create `ar_frame_t` opaque type
+  - [ ] Implement `ar_frame__create(memory, context, message)`
+  - [ ] Implement `ar_frame__destroy()`
+  - [ ] Implement getters: `get_memory()`, `get_context()`, `get_message()`
+  - [ ] Test with various combinations including NULL context/message
+
+#### Phase 2: Update Expression Evaluator (Foundation)
+- [ ] TDD Cycle 2: Modify expression evaluator to use frames
+  - [ ] Change `ar__expression_evaluator__create()` to take no parameters
+  - [ ] Add `ar__expression_evaluator__set_frame()` method
+  - [ ] Update ALL evaluate methods to get memory/context from frame
+  - [ ] Remove old create function after new one works
+  - [ ] Test all expression types still work
+
+#### Phase 3: Update Instruction Evaluators (One by One)
+- [ ] TDD Cycle 3: Assignment evaluator
+  - [ ] Modify create to take no parameters
+  - [ ] Add set_frame method
+  - [ ] Update evaluate to use frame
+  - [ ] Test thoroughly
+  - [ ] Remove old code
+- [ ] TDD Cycle 4: Send evaluator
+  - [ ] Same pattern as assignment
+  - [ ] Ensure send actually performs sends (not just returns true)
+- [ ] TDD Cycle 5: Condition (if) evaluator
+- [ ] TDD Cycle 6: Parse evaluator
+- [ ] TDD Cycle 7: Build evaluator
+- [ ] TDD Cycle 8: Method evaluator
+- [ ] TDD Cycle 9: Agent evaluator
+- [ ] TDD Cycle 10: Destroy agent evaluator
+- [ ] TDD Cycle 11: Destroy method evaluator
+
+#### Phase 4: Update Facades
+- [ ] TDD Cycle 12: Update instruction evaluator facade
+  - [ ] Modify to create evaluators without parameters
+  - [ ] Set frame before each evaluate call
+  - [ ] Test all instruction types
+- [ ] TDD Cycle 13: Update expression evaluator usage
+  - [ ] Ensure instruction evaluators use frame-based expression evaluation
+  - [ ] Remove any remaining parameter passing
+
+#### Phase 5: Integrate into Interpreter
+- [ ] TDD Cycle 14: Update interpreter
+  - [ ] Create frame at start of instruction execution
+  - [ ] Pass frame to evaluators
+  - [ ] Remove context creation code
+  - [ ] Test all existing interpreter tests pass
+- [ ] TDD Cycle 15: Update method execution
+  - [ ] Create frame once per method
+  - [ ] Reuse frame for all instructions in method
+  - [ ] Test method execution with multiple instructions
+
+**Success Criteria**:
+- Zero parallel code: No `_with_frame` variants
+- 100% coverage: All 9 instruction types work with frames
+- Clean removal: No old parameter-based code remains
+- All tests pass: Including existing tests
+- No memory leaks: Frame lifecycle properly managed
+
+**Key Differences from Failed Attempt**:
+1. Complete each module before moving to next
+2. Remove old code as you go (no parallel paths)
+3. Test thoroughly at each step
+4. No shortcuts - implement all cases
+5. Frame owns nothing - it's just a context bundle
+
 ### HIGH PRIORITY - Method Parser and AST Implementation (NEW - In Progress)
 
 **Status**: Started implementing method_ast module as foundation for method_parser. This enables storing parsed methods instead of source text.
