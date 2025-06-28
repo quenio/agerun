@@ -152,7 +152,25 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Updated modules/README.md with module description and dependencies
 
 #### Phase 2: Update Expression Evaluator (Foundation)
-- [ ] TDD Cycle 2: Modify expression evaluator to use frames
+
+**Note**: Before implementing frame-based execution, must first implement ownership semantics in data module.
+
+**Ownership Implementation (Completed 2025-06-28)**
+- [x] TDD Cycle 1: Add basic ownership tracking to data module
+  - [x] Added `ar__data__hold_ownership()` and `ar__data__transfer_ownership()` functions
+  - [x] Updated `ar__data__destroy()` to check ownership before destroying
+  - [x] Minimalist design: single void* owner field, no enums or complex state
+- [x] TDD Cycle 2: Update list/map add functions to hold ownership
+  - [x] List add functions (`ar__data__list_add_first_data`, `ar__data__list_add_last_data`) now hold ownership
+  - [x] Map set function (`ar__data__set_map_data`) now holds ownership and handles replacements
+  - [x] Collections can contain mixed ownership items
+- [x] TDD Cycle 3: Update list remove functions to transfer ownership
+  - [x] `ar__data__list_remove_first` and `ar__data__list_remove_last` now transfer ownership back to caller
+  - [x] Extracted common ownership transfer logic into `_transfer_ownership_on_remove` helper
+  - [x] Re-enabled large test_list_operations test after fixing ownership
+
+**Expression Evaluator Update (Next)**
+- [ ] TDD Cycle 4: Modify expression evaluator to use frames
   - [ ] Change `ar__expression_evaluator__create()` to take no parameters
   - [ ] Add `ar__expression_evaluator__set_frame()` method
   - [ ] Update ALL evaluate methods to get memory/context from frame

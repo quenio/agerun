@@ -68,6 +68,23 @@ data_t* ar__data__create_map(void);
 void ar__data__destroy(data_t *own_data);
 
 /**
+ * Claim or accept ownership of data
+ * @param mut_data The data to claim (mutable reference)
+ * @param owner The owner claiming the data (typically 'this' pointer)
+ * @return true if successful, false if already owned by another
+ */
+bool ar__data__hold_ownership(data_t *mut_data, void *owner);
+
+/**
+ * Transfer ownership of data
+ * @param mut_data The data to transfer (mutable reference)
+ * @param owner The current owner transferring the data
+ * @return true if successful, false if not the owner
+ * @note To release ownership for destruction, transfer with your owner pointer
+ */
+bool ar__data__transfer_ownership(data_t *mut_data, void *owner);
+
+/**
  * Get the type of a data structure
  * @param ref_data Pointer to the data to check
  * @return The data type or DATA_INTEGER if data is NULL

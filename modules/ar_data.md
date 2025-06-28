@@ -98,6 +98,26 @@ void ar__data__destroy(data_t *own_data);
 data_type_t ar__data__get_type(const data_t *ref_data);
 
 /**
+ * Hold ownership of a data object
+ * @param mut_data Pointer to the data to claim ownership of
+ * @param owner Pointer identifying the owner (typically the containing object)
+ * @return true if ownership was successfully held, false if already owned by another
+ * @note Ownership: Does not take ownership of the data parameter.
+ * @note This function allows tracking which object owns a data instance
+ */
+bool ar__data__hold_ownership(data_t *mut_data, void *owner);
+
+/**
+ * Transfer ownership of a data object
+ * @param mut_data Pointer to the data to transfer ownership of
+ * @param owner Current owner requesting the transfer
+ * @return true if ownership was successfully transferred, false if not owned by requester
+ * @note Ownership: Does not take ownership of the data parameter.
+ * @note After successful transfer, the data becomes unowned and can be destroyed
+ */
+bool ar__data__transfer_ownership(data_t *mut_data, void *owner);
+
+/**
  * Get the integer value from a data structure
  * @param ref_data Pointer to the data to retrieve from
  * @return The integer value or 0 if data is NULL or not an integer type

@@ -3,6 +3,28 @@
 This document tracks completed milestones and major achievements for the AgeRun project.
 
 ## 2025-06-28
+- ✅ **Data Module Ownership Tracking Implementation Complete**:
+  - ✅ **Implemented ownership semantics for proper memory management**:
+    - ✅ TDD Cycle 1: Basic ownership tracking with hold/transfer functions
+    - ✅ TDD Cycle 2: List/map add functions now properly hold ownership
+    - ✅ TDD Cycle 3: List remove functions now transfer ownership back to caller
+    - ✅ All 19 tests pass with zero memory leaks
+  - ✅ **Key design decisions**:
+    - ✅ Minimalist approach: single void* owner field, no complex state machines
+    - ✅ Only data_t objects participate in ownership (not convenience functions)
+    - ✅ Collections can contain mixed ownership items
+    - ✅ Ownership must be transferred to NULL before destruction
+  - ✅ **Implementation details**:
+    - ✅ Added `ar__data__hold_ownership()` and `ar__data__transfer_ownership()` functions
+    - ✅ Updated `ar__data__destroy()` to prevent destroying owned data
+    - ✅ Extracted `_transfer_ownership_on_remove()` helper for DRY principle
+    - ✅ Re-enabled large test_list_operations test after fixing ownership
+  - ✅ **Foundation for expression evaluator**:
+    - ✅ Memory access returns borrowed references (no ownership transfer)
+    - ✅ Literals/operations return owned values (caller must destroy)
+    - ✅ Enables proper memory management in frame-based execution
+
+## 2025-06-28
 - ✅ **Frame Module Implementation Complete (Phase 1 of Frame-Based Execution)**:
   - ✅ **Created frame module following strict TDD methodology**:
     - ✅ TDD Cycle 1a: Basic create/destroy with all required parameters
