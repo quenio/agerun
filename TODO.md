@@ -49,6 +49,52 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Critical Compliance Tasks
 
+### CRITICAL - Evaluator Code Duplication Refactoring (HIGHEST PRIORITY)
+
+**Problem**: Extensive code duplication across 9+ evaluators violates DRY principle and creates maintenance burden.
+
+#### 1. Extract Common Error Handling Module
+- [ ] Create `ar_evaluator_error` module for shared error handling
+  - [ ] Move `_set_error` function (duplicated in 9+ evaluators)
+  - [ ] Standardize error message ownership pattern
+  - [ ] Provide common error clearing/setting interface
+  - [ ] Test thoroughly with all evaluators
+
+#### 2. Extract Memory Path Utilities Module  
+- [ ] Create `ar_memory_path` module for memory path operations
+  - [ ] Move `_get_memory_key_path` function (duplicated in 6+ evaluators)
+  - [ ] Move `MEMORY_PREFIX` and `MEMORY_PREFIX_LEN` constants
+  - [ ] Add validation and error handling
+  - [ ] Ensure consistent memory path handling
+
+#### 3. Extract Ownership Handling Utilities
+- [ ] Create ownership handling utilities in appropriate module
+  - [ ] Move ownership checking pattern (duplicated in 5+ evaluators)
+  - [ ] Standardize ownership transfer logic
+  - [ ] Handle shallow copy vs reference semantics
+  - [ ] Reduce code duplication in ownership decisions
+
+#### 4. Extract Result Storage Utilities
+- [ ] Create result storage utilities module
+  - [ ] Move `_store_result_if_assigned` pattern (duplicated in 4+ evaluators)
+  - [ ] Standardize result path validation
+  - [ ] Handle ownership transfer on storage
+  - [ ] Ensure consistent cleanup on errors
+
+#### 5. Create Base Evaluator Structure
+- [ ] Design base evaluator pattern or shared utilities
+  - [ ] Common error message field management
+  - [ ] Shared initialization/cleanup patterns
+  - [ ] Standardize get_error implementations
+  - [ ] Consider composition over inheritance approach
+
+#### 6. Refactor All Evaluators to Use Shared Components
+- [ ] Update all 9 evaluators to use new shared modules
+  - [ ] Replace duplicated code with shared function calls
+  - [ ] Ensure no functionality is lost
+  - [ ] Verify all tests still pass
+  - [ ] Check for memory leaks after refactoring
+
 ### Parnas Principles - Interface Violations (HIGH PRIORITY)
 
 - [x] Fix modules exposing internal implementation details:

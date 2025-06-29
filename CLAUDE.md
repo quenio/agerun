@@ -223,6 +223,7 @@ For each new behavior/feature:
 - **Complete Documentation**: Every module must be fully documented
 - **Const-Correctness**: NEVER cast away const - fix interfaces instead
 - **No Parallel Implementations**: Modify existing code, don't create _v2 versions
+- **Composition Over Inheritance**: Prefer composition patterns to create flexible, maintainable architectures
 
 **Important Clarifications**:
 - **Enums in Public APIs**: Some enums (like `data_type_t`) are part of the abstract model, not implementation details. These are acceptable when they represent abstract concepts needed by clients.
