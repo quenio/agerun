@@ -179,40 +179,49 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Refactored all 9 instruction evaluators to use public method
   - [x] Fixed build instruction evaluator memory corruption bug
 
+**Code Duplication Cleanup (Required before Phase 3)**
+- [ ] TDD Cycle 6: Move _copy_data_value to data module
+  - [ ] Extract _copy_data_value() function that appears in multiple evaluators
+  - [ ] Create ar__data__copy() or ar__data__deep_copy() in data module
+  - [ ] Update all evaluators to use the new data module function
+  - [ ] Remove duplicated implementations from evaluators
+  - [ ] Test thoroughly to ensure all data types are properly copied
+  - [ ] This eliminates code duplication and provides a proper abstraction
+
 #### Phase 3: Update Instruction Evaluators (One by One)
-- [ ] TDD Cycle 3: Assignment evaluator
+- [ ] TDD Cycle 7: Assignment evaluator
   - [ ] Modify create to take no parameters
   - [ ] Add set_frame method
   - [ ] Update evaluate to use frame
   - [ ] Test thoroughly
   - [ ] Remove old code
-- [ ] TDD Cycle 4: Send evaluator
+- [ ] TDD Cycle 8: Send evaluator
   - [ ] Same pattern as assignment
   - [ ] Ensure send actually performs sends (not just returns true)
-- [ ] TDD Cycle 5: Condition (if) evaluator
-- [ ] TDD Cycle 6: Parse evaluator
-- [ ] TDD Cycle 7: Build evaluator
-- [ ] TDD Cycle 8: Method evaluator
-- [ ] TDD Cycle 9: Agent evaluator
-- [ ] TDD Cycle 10: Destroy agent evaluator
-- [ ] TDD Cycle 11: Destroy method evaluator
+- [ ] TDD Cycle 9: Condition (if) evaluator
+- [ ] TDD Cycle 10: Parse evaluator
+- [ ] TDD Cycle 11: Build evaluator
+- [ ] TDD Cycle 12: Method evaluator
+- [ ] TDD Cycle 13: Agent evaluator
+- [ ] TDD Cycle 14: Destroy agent evaluator
+- [ ] TDD Cycle 15: Destroy method evaluator
 
 #### Phase 4: Update Facades
-- [ ] TDD Cycle 12: Update instruction evaluator facade
+- [ ] TDD Cycle 16: Update instruction evaluator facade
   - [ ] Modify to create evaluators without parameters
   - [ ] Set frame before each evaluate call
   - [ ] Test all instruction types
-- [ ] TDD Cycle 13: Update expression evaluator usage
+- [ ] TDD Cycle 17: Update expression evaluator usage
   - [ ] Ensure instruction evaluators use frame-based expression evaluation
   - [ ] Remove any remaining parameter passing
 
 #### Phase 5: Integrate into Interpreter
-- [ ] TDD Cycle 14: Update interpreter
+- [ ] TDD Cycle 18: Update interpreter
   - [ ] Create frame at start of instruction execution
   - [ ] Pass frame to evaluators
   - [ ] Remove context creation code
   - [ ] Test all existing interpreter tests pass
-- [ ] TDD Cycle 15: Update method execution
+- [ ] TDD Cycle 19: Update method execution
   - [ ] Create frame once per method
   - [ ] Reuse frame for all instructions in method
   - [ ] Test method execution with multiple instructions
