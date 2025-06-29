@@ -59,10 +59,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Optional position tracking for parsers
   - [x] Automatic ISO 8601 timestamps
   - [x] Comprehensive tests with zero memory leaks
-- [ ] Create `ar_log` module for managing event collections
-  - [ ] Support adding multiple events
-  - [ ] Iteration over events
-  - [ ] Clear functionality
+- [ ] Create `ar_log` module for managing event collections (In Progress 2025-06-29)
+  - [x] Basic create/destroy with file creation
+  - [x] Log single error, warning, and info messages
+  - [x] Position-aware logging variants (_at functions)
+  - [ ] Get last event by type functionality
+  - [ ] Buffer overflow triggers automatic flush
+  - [ ] Destroy flushes buffered events to disk
   - [ ] Integration with evaluators and parsers
 
 #### 2. Extract Memory Path Utilities Module  
