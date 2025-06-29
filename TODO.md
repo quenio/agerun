@@ -54,11 +54,16 @@ This document tracks pending tasks and improvements for the AgeRun project.
 **Problem**: Extensive code duplication across 9+ evaluators violates DRY principle and creates maintenance burden.
 
 #### 1. Extract Common Error Handling Module
-- [ ] Create `ar_evaluator_error` module for shared error handling
-  - [ ] Move `_set_error` function (duplicated in 9+ evaluators)
-  - [ ] Standardize error message ownership pattern
-  - [ ] Provide common error clearing/setting interface
-  - [ ] Test thoroughly with all evaluators
+- [x] Create `ar_event` module for individual event representation (Completed 2025-06-29)
+  - [x] Event types (ERROR, WARNING, INFO)
+  - [x] Optional position tracking for parsers
+  - [x] Automatic ISO 8601 timestamps
+  - [x] Comprehensive tests with zero memory leaks
+- [ ] Create `ar_log` module for managing event collections
+  - [ ] Support adding multiple events
+  - [ ] Iteration over events
+  - [ ] Clear functionality
+  - [ ] Integration with evaluators and parsers
 
 #### 2. Extract Memory Path Utilities Module  
 - [ ] Create `ar_memory_path` module for memory path operations
