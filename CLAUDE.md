@@ -10,7 +10,7 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 
 **Primary Build Tool**: `./clean_build.sh` - runs everything with minimal output (~20 lines)
 - Use before commits and for quick verification
-- Includes: clean, build, static analysis, all tests, sanitizers, leak check
+- Includes: clean, build, static analysis, all tests, sanitizers, leak check, doc validation
 
 **Individual Commands** (when needed):
 ```bash
@@ -274,7 +274,7 @@ while (*p) {
 }
 ```
 
-**Naming Patterns**:
+**Naming Patterns** (verify with grep before large changes):
 | Type | Pattern | Example |
 |------|---------|---------|
 | Module functions | `ar_<module>__<function>` | `ar_data__create_map()` |
@@ -429,6 +429,7 @@ for file in modules/*.c; do
   mv "$file.tmp" "$file"
 done
 # Always compile after bulk changes. Never use -i.bak (creates backups)
+# Include methods/*_tests.c when updating module APIs
 ```
 
 **Code Movement Verification**:
