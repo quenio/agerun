@@ -272,6 +272,126 @@ bool ar_data__transfer_ownership(data_t *mut_data, void *owner) {
     return false;
 }
 
+/* Helper function to shallow copy a map with only primitive values */
+static data_t* _shallow_copy_map(const data_t *ref_map) {
+    // Check if map contains only primitives
+    if (!ar_data__map_contains_only_primitives(ref_map)) {
+        return NULL;
+    }
+    
+    // Create a new map
+    data_t *own_new_map = ar_data__create_map();
+    if (!own_new_map) return NULL;
+    
+    // Get all keys from the original map
+    data_t *own_keys = ar_data__get_map_keys(ref_map);
+    if (!own_keys) {
+        return own_new_map; // Empty map
+    }
+    
+    // Copy all key-value pairs
+    size_t key_count = ar_data__list_count(own_keys);
+    for (size_t i = 0; i < key_count; i++) {
+        data_t *ref_key_data = ar_data__list_first(own_keys);
+        if (!ref_key_data) break;
+        
+        const char *ref_key = ar_data__get_string(ref_key_data);
+        if (ref_key) {
+            data_t *ref_orig_value = ar_data__get_map_data(ref_map, ref_key);
+            if (ref_orig_value) {
+                data_t *own_copy_value = ar_data__shallow_copy(ref_orig_value);
+                if (own_copy_value) {
+                    bool success = ar_data__set_map_data(own_new_map, ref_key, own_copy_value);
+                    if (!success) {
+                        ar_data__destroy(own_copy_value);
+                    }
+                }
+            }
+        }
+        
+        // Remove and destroy the processed key
+        data_t *own_removed_key = ar_data__list_remove_first(own_keys);
+        ar_data__destroy(own_removed_key);
+    }
+    
+    ar_data__destroy(own_keys);
+    return own_new_map;
+}
+
+/* Helper function to shallow copy a list with only primitive values */
+static data_t* _shallow_copy_list(const data_t *ref_list) {
+    // Check if list contains only primitives
+    if (!ar_data__list_contains_only_primitives(ref_list)) {
+        return NULL;
+    }
+    
+    // Create a new list
+    data_t *own_new_list = ar_data__create_list();
+    if (!own_new_list) return NULL;
+    
+    // Get list items
+    list_t *ref_internal_list = ref_list->data.own_list;
+    void **items = ar_list__items(ref_internal_list);
+    size_t count = ar_list__count(ref_internal_list);
+    
+    if (!items || count == 0) {
+        return own_new_list; // Empty list
+    }
+    
+    // Copy all items
+    for (size_t i = 0; i < count; i++) {
+        data_t *ref_item = (data_t*)items[i];
+        if (ref_item) {
+            data_t *own_copy_item = ar_data__shallow_copy(ref_item);
+            if (own_copy_item) {
+                bool success = ar_data__list_add_last_data(own_new_list, own_copy_item);
+                if (!success) {
+                    ar_data__destroy(own_copy_item);
+                }
+            }
+        }
+    }
+    
+    AR__HEAP__FREE(items);
+    return own_new_list;
+}
+
+/**
+ * Create a shallow copy of data values
+ * @param ref_value The data value to copy
+ * @return New data instance for primitives and flat containers, NULL for nested containers
+ * @note Copies primitives (INTEGER, DOUBLE, STRING) and containers with only primitive elements
+ * @note Returns NULL if containers have nested containers (no deep copy)
+ * @note Ownership: Returns an owned value that caller must destroy, or NULL if cannot copy
+ */
+data_t* ar_data__shallow_copy(const data_t *ref_value) {
+    if (!ref_value) {
+        return NULL;
+    }
+    
+    data_type_t type = ar_data__get_type(ref_value);
+    
+    switch (type) {
+        case DATA_INTEGER:
+            return ar_data__create_integer(ar_data__get_integer(ref_value));
+            
+        case DATA_DOUBLE:
+            return ar_data__create_double(ar_data__get_double(ref_value));
+            
+        case DATA_STRING:
+            return ar_data__create_string(ar_data__get_string(ref_value));
+            
+        case DATA_MAP:
+            return _shallow_copy_map(ref_value);
+            
+        case DATA_LIST:
+            return _shallow_copy_list(ref_value);
+            
+        default:
+            return NULL;
+    }
+}
+
 /**
  * Get the type of a data structure
  * @param ref_data Pointer to the data to check
@@ -283,6 +403,111 @@ data_type_t ar_data__get_type(const data_t *ref_data) {
         return DATA_INTEGER; // Default to int if NULL
     }
     return ref_data->type;
+}
+
+/**
+ * Check if a data value is a primitive type
+ * @param ref_data The data value to check
+ * @return true if the data is INTEGER, DOUBLE, or STRING; false otherwise
+ * @note Ownership: Does not take ownership of the data parameter.
+ */
+bool ar_data__is_primitive_type(const data_t *ref_data) {
+    if (!ref_data) {
+        return false;
+    }
+    
+    data_type_t type = ar_data__get_type(ref_data);
+    return (type == DATA_INTEGER || type == DATA_DOUBLE || type == DATA_STRING);
+}
+
+/**
+ * Check if a map contains only primitive values
+ * @param ref_data The map data to check
+ * @return true if the map contains only INTEGER, DOUBLE, or STRING values; false otherwise
+ * @note Returns false if ref_data is NULL or not a map
+ * @note Returns true for empty maps
+ * @note Ownership: Does not take ownership of the data parameter.
+ */
+bool ar_data__map_contains_only_primitives(const data_t *ref_data) {
+    if (!ref_data || ar_data__get_type(ref_data) != DATA_MAP) {
+        return false;
+    }
+    
+    // Get all keys to iterate through map
+    data_t *own_keys = ar_data__get_map_keys(ref_data);
+    if (!own_keys) {
+        return true; // Empty map
+    }
+    
+    bool all_primitives = true;
+    size_t count = ar_data__list_count(own_keys);
+    
+    for (size_t i = 0; i < count; i++) {
+        data_t *ref_key_data = ar_data__list_first(own_keys);
+        if (!ref_key_data) break;
+        
+        const char *ref_key = ar_data__get_string(ref_key_data);
+        if (!ref_key) {
+            data_t *own_removed = ar_data__list_remove_first(own_keys);
+            ar_data__destroy(own_removed);
+            continue;
+        }
+        
+        // Get the value for this key
+        data_t *ref_value = ar_data__get_map_data(ref_data, ref_key);
+        if (ref_value && !ar_data__is_primitive_type(ref_value)) {
+            all_primitives = false;
+            break;
+        }
+        
+        // Remove and destroy the processed key
+        data_t *own_removed_key = ar_data__list_remove_first(own_keys);
+        ar_data__destroy(own_removed_key);
+    }
+    
+    // Clean up remaining keys if we broke out early
+    while (ar_data__list_count(own_keys) > 0) {
+        data_t *own_key = ar_data__list_remove_first(own_keys);
+        ar_data__destroy(own_key);
+    }
+    
+    ar_data__destroy(own_keys);
+    return all_primitives;
+}
+
+/**
+ * Check if a list contains only primitive values
+ * @param ref_data The list data to check
+ * @return true if the list contains only INTEGER, DOUBLE, or STRING values; false otherwise
+ * @note Returns false if ref_data is NULL or not a list
+ * @note Returns true for empty lists
+ * @note Ownership: Does not take ownership of the data parameter.
+ */
+bool ar_data__list_contains_only_primitives(const data_t *ref_data) {
+    if (!ref_data || ar_data__get_type(ref_data) != DATA_LIST) {
+        return false;
+    }
+    
+    // Get list items
+    void **items = ar_list__items(ref_data->data.own_list);
+    size_t count = ar_list__count(ref_data->data.own_list);
+    
+    if (!items || count == 0) {
+        return true; // Empty list
+    }
+    
+    bool all_primitives = true;
+    
+    for (size_t i = 0; i < count; i++) {
+        data_t *ref_item = (data_t*)items[i];
+        if (ref_item && !ar_data__is_primitive_type(ref_item)) {
+            all_primitives = false;
+            break;
+        }
+    }
+    
+    AR__HEAP__FREE(items);
+    return all_primitives;
 }
 
 /**

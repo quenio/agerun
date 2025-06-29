@@ -28,6 +28,10 @@ static void test_data_ownership(void);
 static void test_list_ownership(void);
 static void test_list_remove_ownership(void);
 static void test_map_ownership(void);
+static void test_data_shallow_copy(void);
+static void test_data_is_primitive_type(void);
+static void test_data_map_contains_only_primitives(void);
+static void test_data_list_contains_only_primitives(void);
 
 static void test_data_creation(void) {
     printf("Testing data creation for different types...\n");
@@ -1452,6 +1456,373 @@ static void test_map_ownership(void) {
     printf("Map ownership tests passed!\n");
 }
 
+static void test_data_shallow_copy(void) {
+    printf("Testing data shallow copy...\n");
+    
+    // Given a NULL input
+    data_t *ref_null_value = NULL;
+    
+    // When we try to copy NULL
+    data_t *own_result = ar_data__shallow_copy(ref_null_value);
+    
+    // Then we should get NULL back
+    assert(own_result == NULL);
+    
+    // Given an integer value
+    data_t *own_int_value = ar_data__create_integer(42);
+    assert(own_int_value != NULL);
+    
+    // When we copy the integer
+    data_t *own_int_copy = ar_data__shallow_copy(own_int_value);
+    
+    // Then we should get a new integer with the same value
+    assert(own_int_copy != NULL);
+    assert(ar_data__get_type(own_int_copy) == DATA_INTEGER);
+    assert(ar_data__get_integer(own_int_copy) == 42);
+    assert(own_int_copy != own_int_value); // Different instance
+    
+    // Clean up
+    ar_data__destroy(own_int_value);
+    ar_data__destroy(own_int_copy);
+    
+    // Given a double value
+    data_t *own_double_value = ar_data__create_double(3.14159);
+    assert(own_double_value != NULL);
+    
+    // When we copy the double
+    data_t *own_double_copy = ar_data__shallow_copy(own_double_value);
+    
+    // Then we should get a new double with the same value
+    assert(own_double_copy != NULL);
+    assert(ar_data__get_type(own_double_copy) == DATA_DOUBLE);
+    assert(ar_data__get_double(own_double_copy) == 3.14159);
+    assert(own_double_copy != own_double_value); // Different instance
+    
+    // Clean up
+    ar_data__destroy(own_double_value);
+    ar_data__destroy(own_double_copy);
+    
+    // Given a string value
+    data_t *own_string_value = ar_data__create_string("Hello, World!");
+    assert(own_string_value != NULL);
+    
+    // When we copy the string
+    data_t *own_string_copy = ar_data__shallow_copy(own_string_value);
+    
+    // Then we should get a new string with the same value
+    assert(own_string_copy != NULL);
+    assert(ar_data__get_type(own_string_copy) == DATA_STRING);
+    assert(strcmp(ar_data__get_string(own_string_copy), "Hello, World!") == 0);
+    assert(own_string_copy != own_string_value); // Different instance
+    
+    // Clean up
+    ar_data__destroy(own_string_value);
+    ar_data__destroy(own_string_copy);
+    
+    // Given an empty map
+    data_t *own_empty_map = ar_data__create_map();
+    assert(own_empty_map != NULL);
+    
+    // When we copy the empty map
+    data_t *own_map_copy = ar_data__shallow_copy(own_empty_map);
+    
+    // Then we should get a new empty map
+    assert(own_map_copy != NULL);
+    assert(ar_data__get_type(own_map_copy) == DATA_MAP);
+    assert(own_map_copy != own_empty_map); // Different instance
+    
+    // Verify it's empty by checking keys
+    data_t *own_keys = ar_data__get_map_keys(own_map_copy);
+    assert(own_keys != NULL);
+    assert(ar_data__list_count(own_keys) == 0);
+    
+    // Clean up
+    ar_data__destroy(own_keys);
+    ar_data__destroy(own_empty_map);
+    ar_data__destroy(own_map_copy);
+    
+    // Given a map with primitive values
+    data_t *own_map_with_primitives = ar_data__create_map();
+    assert(own_map_with_primitives != NULL);
+    assert(ar_data__set_map_integer(own_map_with_primitives, "age", 25));
+    assert(ar_data__set_map_double(own_map_with_primitives, "score", 95.5));
+    assert(ar_data__set_map_string(own_map_with_primitives, "name", "Alice"));
+    
+    // When we copy the map
+    data_t *own_map_primitives_copy = ar_data__shallow_copy(own_map_with_primitives);
+    
+    // Then we should get a new map with the same primitive values
+    assert(own_map_primitives_copy != NULL);
+    assert(ar_data__get_type(own_map_primitives_copy) == DATA_MAP);
+    assert(own_map_primitives_copy != own_map_with_primitives); // Different instance
+    
+    // Verify the values were copied
+    assert(ar_data__get_map_integer(own_map_primitives_copy, "age") == 25);
+    assert(ar_data__get_map_double(own_map_primitives_copy, "score") == 95.5);
+    assert(strcmp(ar_data__get_map_string(own_map_primitives_copy, "name"), "Alice") == 0);
+    
+    // Clean up
+    ar_data__destroy(own_map_with_primitives);
+    ar_data__destroy(own_map_primitives_copy);
+    
+    // Given a map with a nested map
+    data_t *own_map_with_nested = ar_data__create_map();
+    assert(own_map_with_nested != NULL);
+    assert(ar_data__set_map_integer(own_map_with_nested, "age", 30));
+    
+    // Create a nested map
+    data_t *own_nested_map = ar_data__create_map();
+    assert(own_nested_map != NULL);
+    assert(ar_data__set_map_string(own_nested_map, "city", "New York"));
+    
+    // Add the nested map
+    assert(ar_data__set_map_data(own_map_with_nested, "address", own_nested_map));
+    
+    // When we try to copy the map with nested container
+    data_t *result_nested_map = ar_data__shallow_copy(own_map_with_nested);
+    
+    // Then we should get NULL (cannot shallow copy nested containers)
+    assert(result_nested_map == NULL);
+    
+    // Clean up
+    ar_data__destroy(own_map_with_nested);
+    
+    // Given a map with a nested list
+    data_t *own_map_with_list = ar_data__create_map();
+    assert(own_map_with_list != NULL);
+    assert(ar_data__set_map_string(own_map_with_list, "name", "Bob"));
+    
+    // Create a nested list
+    data_t *own_nested_list = ar_data__create_list();
+    assert(own_nested_list != NULL);
+    assert(ar_data__list_add_last_string(own_nested_list, "reading"));
+    assert(ar_data__list_add_last_string(own_nested_list, "gaming"));
+    
+    // Add the nested list
+    assert(ar_data__set_map_data(own_map_with_list, "hobbies", own_nested_list));
+    
+    // When we try to copy the map with nested list
+    data_t *result_nested_list = ar_data__shallow_copy(own_map_with_list);
+    
+    // Then we should get NULL (cannot shallow copy nested containers)
+    assert(result_nested_list == NULL);
+    
+    // Clean up
+    ar_data__destroy(own_map_with_list);
+    
+    // Given an empty list
+    data_t *own_empty_list = ar_data__create_list();
+    assert(own_empty_list != NULL);
+    
+    // When we copy the empty list
+    data_t *own_list_copy = ar_data__shallow_copy(own_empty_list);
+    
+    // Then we should get a new empty list
+    assert(own_list_copy != NULL);
+    assert(ar_data__get_type(own_list_copy) == DATA_LIST);
+    assert(own_list_copy != own_empty_list); // Different instance
+    assert(ar_data__list_count(own_list_copy) == 0);
+    
+    // Clean up
+    ar_data__destroy(own_empty_list);
+    ar_data__destroy(own_list_copy);
+    
+    // Given a list with primitive values
+    data_t *own_list_with_primitives = ar_data__create_list();
+    assert(own_list_with_primitives != NULL);
+    assert(ar_data__list_add_last_integer(own_list_with_primitives, 10));
+    assert(ar_data__list_add_last_double(own_list_with_primitives, 2.5));
+    assert(ar_data__list_add_last_string(own_list_with_primitives, "test"));
+    
+    // When we copy the list
+    data_t *own_list_primitives_copy = ar_data__shallow_copy(own_list_with_primitives);
+    
+    // Then we should get a new list with the same primitive values
+    assert(own_list_primitives_copy != NULL);
+    assert(ar_data__get_type(own_list_primitives_copy) == DATA_LIST);
+    assert(own_list_primitives_copy != own_list_with_primitives); // Different instance
+    assert(ar_data__list_count(own_list_primitives_copy) == 3);
+    
+    // Verify the values were copied (check first item)
+    data_t *ref_first = ar_data__list_first(own_list_primitives_copy);
+    assert(ref_first != NULL);
+    assert(ar_data__get_type(ref_first) == DATA_INTEGER);
+    assert(ar_data__get_integer(ref_first) == 10);
+    
+    // Clean up
+    ar_data__destroy(own_list_with_primitives);
+    ar_data__destroy(own_list_primitives_copy);
+    
+    // Given a list with a nested map
+    data_t *own_list_with_map = ar_data__create_list();
+    assert(own_list_with_map != NULL);
+    assert(ar_data__list_add_last_integer(own_list_with_map, 5));
+    
+    // Create a nested map
+    data_t *own_nested_map_in_list = ar_data__create_map();
+    assert(own_nested_map_in_list != NULL);
+    assert(ar_data__set_map_string(own_nested_map_in_list, "key", "value"));
+    
+    // Add the nested map to the list
+    assert(ar_data__list_add_last_data(own_list_with_map, own_nested_map_in_list));
+    
+    // When we try to copy the list with nested map
+    data_t *result_list_with_map = ar_data__shallow_copy(own_list_with_map);
+    
+    // Then we should get NULL (cannot shallow copy nested containers)
+    assert(result_list_with_map == NULL);
+    
+    // Clean up
+    ar_data__destroy(own_list_with_map);
+    
+    // Given a list with a nested list
+    data_t *own_list_with_list = ar_data__create_list();
+    assert(own_list_with_list != NULL);
+    assert(ar_data__list_add_last_string(own_list_with_list, "first"));
+    
+    // Create a nested list
+    data_t *own_nested_list_in_list = ar_data__create_list();
+    assert(own_nested_list_in_list != NULL);
+    assert(ar_data__list_add_last_integer(own_nested_list_in_list, 100));
+    
+    // Add the nested list
+    assert(ar_data__list_add_last_data(own_list_with_list, own_nested_list_in_list));
+    
+    // When we try to copy the list with nested list
+    data_t *result_list_with_list = ar_data__shallow_copy(own_list_with_list);
+    
+    // Then we should get NULL (cannot shallow copy nested containers)
+    assert(result_list_with_list == NULL);
+    
+    // Clean up
+    ar_data__destroy(own_list_with_list);
+    
+    printf("Shallow copy tests passed!\n");
+}
+
+static void test_data_is_primitive_type(void) {
+    printf("Testing ar_data__is_primitive_type...\n");
+    
+    // Given we need to test type classification
+    
+    // When we check NULL
+    assert(ar_data__is_primitive_type(NULL) == false);
+    
+    // When we check primitive types
+    data_t *own_int = ar_data__create_integer(42);
+    assert(ar_data__is_primitive_type(own_int) == true);
+    ar_data__destroy(own_int);
+    
+    data_t *own_double = ar_data__create_double(3.14);
+    assert(ar_data__is_primitive_type(own_double) == true);
+    ar_data__destroy(own_double);
+    
+    data_t *own_string = ar_data__create_string("test");
+    assert(ar_data__is_primitive_type(own_string) == true);
+    ar_data__destroy(own_string);
+    
+    // When we check container types
+    data_t *own_map = ar_data__create_map();
+    assert(ar_data__is_primitive_type(own_map) == false);
+    ar_data__destroy(own_map);
+    
+    data_t *own_list = ar_data__create_list();
+    assert(ar_data__is_primitive_type(own_list) == false);
+    ar_data__destroy(own_list);
+    
+    printf("is_primitive_type tests passed!\n");
+}
+
+static void test_data_map_contains_only_primitives(void) {
+    printf("Testing ar_data__map_contains_only_primitives...\n");
+    
+    // Given we need to test map validation
+    
+    // When we check NULL
+    assert(ar_data__map_contains_only_primitives(NULL) == false);
+    
+    // When we check non-map type
+    data_t *own_int = ar_data__create_integer(42);
+    assert(ar_data__map_contains_only_primitives(own_int) == false);
+    ar_data__destroy(own_int);
+    
+    // When we check empty map
+    data_t *own_empty_map = ar_data__create_map();
+    assert(ar_data__map_contains_only_primitives(own_empty_map) == true);
+    ar_data__destroy(own_empty_map);
+    
+    // When we check map with only primitives
+    data_t *own_primitive_map = ar_data__create_map();
+    ar_data__set_map_integer(own_primitive_map, "int", 42);
+    ar_data__set_map_double(own_primitive_map, "double", 3.14);
+    ar_data__set_map_string(own_primitive_map, "string", "test");
+    assert(ar_data__map_contains_only_primitives(own_primitive_map) == true);
+    ar_data__destroy(own_primitive_map);
+    
+    // When we check map with nested map
+    data_t *own_nested_map = ar_data__create_map();
+    ar_data__set_map_integer(own_nested_map, "int", 42);
+    data_t *own_inner_map = ar_data__create_map();
+    ar_data__set_map_data(own_nested_map, "map", own_inner_map);
+    assert(ar_data__map_contains_only_primitives(own_nested_map) == false);
+    ar_data__destroy(own_nested_map);
+    
+    // When we check map with nested list
+    data_t *own_list_map = ar_data__create_map();
+    ar_data__set_map_string(own_list_map, "string", "test");
+    data_t *own_inner_list = ar_data__create_list();
+    ar_data__set_map_data(own_list_map, "list", own_inner_list);
+    assert(ar_data__map_contains_only_primitives(own_list_map) == false);
+    ar_data__destroy(own_list_map);
+    
+    printf("map_contains_only_primitives tests passed!\n");
+}
+
+static void test_data_list_contains_only_primitives(void) {
+    printf("Testing ar_data__list_contains_only_primitives...\n");
+    
+    // Given we need to test list validation
+    
+    // When we check NULL
+    assert(ar_data__list_contains_only_primitives(NULL) == false);
+    
+    // When we check non-list type
+    data_t *own_int = ar_data__create_integer(42);
+    assert(ar_data__list_contains_only_primitives(own_int) == false);
+    ar_data__destroy(own_int);
+    
+    // When we check empty list
+    data_t *own_empty_list = ar_data__create_list();
+    assert(ar_data__list_contains_only_primitives(own_empty_list) == true);
+    ar_data__destroy(own_empty_list);
+    
+    // When we check list with only primitives
+    data_t *own_primitive_list = ar_data__create_list();
+    ar_data__list_add_last_integer(own_primitive_list, 42);
+    ar_data__list_add_last_double(own_primitive_list, 3.14);
+    ar_data__list_add_last_string(own_primitive_list, "test");
+    assert(ar_data__list_contains_only_primitives(own_primitive_list) == true);
+    ar_data__destroy(own_primitive_list);
+    
+    // When we check list with nested map
+    data_t *own_map_list = ar_data__create_list();
+    ar_data__list_add_last_integer(own_map_list, 42);
+    data_t *own_inner_map = ar_data__create_map();
+    ar_data__list_add_last_data(own_map_list, own_inner_map);
+    assert(ar_data__list_contains_only_primitives(own_map_list) == false);
+    ar_data__destroy(own_map_list);
+    
+    // When we check list with nested list
+    data_t *own_list_list = ar_data__create_list();
+    ar_data__list_add_last_string(own_list_list, "test");
+    data_t *own_inner_list = ar_data__create_list();
+    ar_data__list_add_last_data(own_list_list, own_inner_list);
+    assert(ar_data__list_contains_only_primitives(own_list_list) == false);
+    ar_data__destroy(own_list_list);
+    
+    printf("list_contains_only_primitives tests passed!\n");
+}
+
 int main(void) {
     printf("Starting Data Module Tests...\n");
     
@@ -1491,8 +1862,20 @@ int main(void) {
     test_list_remove_ownership();
     test_map_ownership();
     
+    // Run shallow copy tests
+    test_data_shallow_copy();
+    
+    // Run is primitive type tests
+    test_data_is_primitive_type();
+    
+    // Run map contains only primitives tests
+    test_data_map_contains_only_primitives();
+    
+    // Run list contains only primitives tests
+    test_data_list_contains_only_primitives();
+    
     // Then all tests should pass
-    printf("All 19 tests passed!\n");
+    printf("All 23 tests passed!\n");
     
     return 0;
 }

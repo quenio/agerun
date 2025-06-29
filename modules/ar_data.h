@@ -85,12 +85,50 @@ bool ar_data__hold_ownership(data_t *mut_data, void *owner);
 bool ar_data__transfer_ownership(data_t *mut_data, void *owner);
 
 /**
+ * Create a shallow copy of data values
+ * @param ref_value The data value to copy
+ * @return New data instance for primitives and flat containers, NULL for nested containers
+ * @note Copies primitives (INTEGER, DOUBLE, STRING) and containers with only primitive elements
+ * @note Returns NULL if containers have nested containers (no deep copy)
+ * @note Ownership: Returns an owned value that caller must destroy, or NULL if cannot copy
+ */
+data_t* ar_data__shallow_copy(const data_t *ref_value);
+
+/**
  * Get the type of a data structure
  * @param ref_data Pointer to the data to check
  * @return The data type or DATA_INTEGER if data is NULL
  * @note Ownership: Does not take ownership of the data parameter.
  */
 data_type_t ar_data__get_type(const data_t *ref_data);
+
+/**
+ * Check if a data value is a primitive type
+ * @param ref_data The data value to check
+ * @return true if the data is INTEGER, DOUBLE, or STRING; false otherwise
+ * @note Ownership: Does not take ownership of the data parameter.
+ */
+bool ar_data__is_primitive_type(const data_t *ref_data);
+
+/**
+ * Check if a map contains only primitive values
+ * @param ref_data The map data to check
+ * @return true if the map contains only INTEGER, DOUBLE, or STRING values; false otherwise
+ * @note Returns false if ref_data is NULL or not a map
+ * @note Returns true for empty maps
+ * @note Ownership: Does not take ownership of the data parameter.
+ */
+bool ar_data__map_contains_only_primitives(const data_t *ref_data);
+
+/**
+ * Check if a list contains only primitive values
+ * @param ref_data The list data to check
+ * @return true if the list contains only INTEGER, DOUBLE, or STRING values; false otherwise
+ * @note Returns false if ref_data is NULL or not a list
+ * @note Returns true for empty lists
+ * @note Ownership: Does not take ownership of the data parameter.
+ */
+bool ar_data__list_contains_only_primitives(const data_t *ref_data);
 
 /**
  * Get the integer value from a data structure
