@@ -135,7 +135,7 @@ ar__data__destroy(own_args);  // Add cleanup
 
 For each new behavior/feature:
 1. **Red Phase**: Write failing test FIRST
-   - Write test for ONE specific behavior
+   - Write test for ONE specific behavior (or modify existing test to fail)
    - Run test to confirm it fails
    - Do NOT commit
    
@@ -304,6 +304,7 @@ while (*p) {
 - String-based IDs for reliable persistence
 - Read interface first instead of guessing function names
 - No platform-specific code (`#ifdef __linux__` forbidden)
+- Create public APIs to eliminate duplication across modules
 
 **Code Quality Checklist**:
 ✓ Functions < 50 lines (single responsibility)
@@ -353,9 +354,12 @@ cd bin  # Wrong - avoid relative paths
 - **Pattern Testing**: Test regex/sed/awk patterns before using in scripts
 - **Doc Validation**: clean_build.sh validates file refs, function names, types
 
-**Expression Ownership**:
-- References (`memory.x`): Don't destroy
-- New objects (`2+3`, `"a"+"b"`): Must destroy
+**Expression Ownership** (CRITICAL):
+- References (`memory.x`): Don't destroy - borrowed from memory/context
+- New objects (`2+3`, `"a"+"b"`): Must destroy - evaluator creates them
+- Self-ownership check: Never let `values_result == mut_memory`
+- Context lifetime: NEVER destroy context or its elements in evaluators
+- Debug ownership: Use `ar__data__hold_ownership()` to verify status
 
 ### 8. Agent Lifecycle
 
