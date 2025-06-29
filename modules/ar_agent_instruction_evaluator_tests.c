@@ -21,10 +21,10 @@ static void test_agent_instruction_evaluator__evaluate_with_context(void) {
     // Given an agent instruction evaluator with memory and a registered method
     data_t *memory = ar__data__create_map();
     assert(memory != NULL);
-    ar__data__set_map_string(memory, "config", "production");
     
     data_t *context = ar__data__create_map();
     assert(context != NULL);
+    ar__data__set_map_string(context, "config", "production");
     
     ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, context);
     assert(expr_eval != NULL);
@@ -58,8 +58,8 @@ static void test_agent_instruction_evaluator__evaluate_with_context(void) {
     ar_expression_ast_t *version_ast = ar__expression_ast__create_literal_string("2.0.0");
     ar__list__add_last(arg_asts, version_ast);
     
-    // Context: memory
-    ar_expression_ast_t *context_ast = ar__expression_ast__create_memory_access("memory", NULL, 0);
+    // Context: context
+    ar_expression_ast_t *context_ast = ar__expression_ast__create_memory_access("context", NULL, 0);
     ar__list__add_last(arg_asts, context_ast);
     
     bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);

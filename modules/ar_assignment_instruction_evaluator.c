@@ -137,41 +137,6 @@ static data_t* _copy_data_value(const data_t *ref_value) {
     }
 }
 
-/* Helper function to evaluate an expression AST node using the expression evaluator */
-static data_t* _evaluate_expression_ast(ar_expression_evaluator_t *mut_expr_evaluator, const ar_expression_ast_t *ref_ast) {
-    if (!ref_ast) {
-        return NULL;
-    }
-    
-    ar_expression_ast_type_t type = ar__expression_ast__get_type(ref_ast);
-    
-    switch (type) {
-        case AR_EXPR__LITERAL_INT:
-            return ar__expression_evaluator__evaluate_literal_int(mut_expr_evaluator, ref_ast);
-            
-        case AR_EXPR__LITERAL_DOUBLE:
-            return ar__expression_evaluator__evaluate_literal_double(mut_expr_evaluator, ref_ast);
-            
-        case AR_EXPR__LITERAL_STRING:
-            return ar__expression_evaluator__evaluate_literal_string(mut_expr_evaluator, ref_ast);
-            
-        case AR_EXPR__MEMORY_ACCESS:
-            // Memory access returns a reference, we need to make a copy
-            {
-                data_t *ref_value = ar__expression_evaluator__evaluate_memory_access(mut_expr_evaluator, ref_ast);
-                if (!ref_value) return NULL;
-                
-                // Create a deep copy of the value
-                return _copy_data_value(ref_value);
-            }
-            
-        case AR_EXPR__BINARY_OP:
-            return ar__expression_evaluator__evaluate_binary_op(mut_expr_evaluator, ref_ast);
-            
-        default:
-            return NULL;
-    }
-}
 
 /**
  * Evaluates an assignment instruction AST node
@@ -208,10 +173,24 @@ bool ar_assignment_instruction_evaluator__evaluate(
     }
     
     // Evaluate the expression AST
-    data_t *own_value = _evaluate_expression_ast(mut_evaluator->ref_expr_evaluator, ref_expr_ast);
+    data_t *result = ar__expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_expr_ast);
     
-    if (!own_value) {
+    if (!result) {
         return false;
+    }
+    
+    // Check if we need to make a copy (if result is owned by memory/context)
+    data_t *own_value;
+    if (ar__data__hold_ownership(result, mut_evaluator)) {
+        // We can claim ownership - it's an unowned value (literal or operation result)
+        ar__data__transfer_ownership(result, mut_evaluator);  // Transfer to NULL
+        own_value = result;
+    } else {
+        // It's owned by someone else (memory access) - we need to make a copy
+        own_value = _copy_data_value(result);
+        if (!own_value) {
+            return false;
+        }
     }
     
     // Store the value in memory (transfers ownership)

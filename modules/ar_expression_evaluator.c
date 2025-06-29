@@ -173,8 +173,38 @@ data_t* ar__expression_evaluator__evaluate_memory_access(
     return current;
 }
 
+data_t* ar__expression_evaluator__evaluate(
+    ar_expression_evaluator_t *mut_evaluator,
+    const ar_expression_ast_t *ref_ast)
+{
+    if (!mut_evaluator || !ref_ast) {
+        ar__io__error("ar__expression_evaluator__evaluate: NULL evaluator or AST");
+        return NULL;
+    }
+    
+    ar_expression_ast_type_t type = ar__expression_ast__get_type(ref_ast);
+    
+    switch (type) {
+        case AR_EXPR__LITERAL_INT:
+            return ar__expression_evaluator__evaluate_literal_int(mut_evaluator, ref_ast);
+        case AR_EXPR__LITERAL_DOUBLE:
+            return ar__expression_evaluator__evaluate_literal_double(mut_evaluator, ref_ast);
+        case AR_EXPR__LITERAL_STRING:
+            return ar__expression_evaluator__evaluate_literal_string(mut_evaluator, ref_ast);
+        case AR_EXPR__MEMORY_ACCESS:
+            // Memory access returns a reference owned by the memory/context map
+            return ar__expression_evaluator__evaluate_memory_access(mut_evaluator, ref_ast);
+        case AR_EXPR__BINARY_OP:
+            return ar__expression_evaluator__evaluate_binary_op(mut_evaluator, ref_ast);
+        default:
+            ar__io__error("ar__expression_evaluator__evaluate: Unknown expression type");
+            return NULL;
+    }
+}
+
 /**
  * Helper function to evaluate any expression AST node
+ * This is used internally by binary operations to evaluate operands
  */
 static data_t* _evaluate_expression(
     ar_expression_evaluator_t *mut_evaluator,

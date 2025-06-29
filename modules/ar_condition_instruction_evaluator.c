@@ -110,41 +110,6 @@ static data_t* _copy_data_value(const data_t *ref_value) {
     }
 }
 
-/* Helper function to evaluate an expression AST node using the expression evaluator */
-static data_t* _evaluate_expression_ast(ar_expression_evaluator_t *mut_expr_evaluator, const ar_expression_ast_t *ref_ast) {
-    if (!ref_ast) {
-        return NULL;
-    }
-    
-    ar_expression_ast_type_t type = ar__expression_ast__get_type(ref_ast);
-    
-    switch (type) {
-        case AR_EXPR__LITERAL_INT:
-            return ar__expression_evaluator__evaluate_literal_int(mut_expr_evaluator, ref_ast);
-            
-        case AR_EXPR__LITERAL_DOUBLE:
-            return ar__expression_evaluator__evaluate_literal_double(mut_expr_evaluator, ref_ast);
-            
-        case AR_EXPR__LITERAL_STRING:
-            return ar__expression_evaluator__evaluate_literal_string(mut_expr_evaluator, ref_ast);
-            
-        case AR_EXPR__MEMORY_ACCESS:
-            // Memory access returns a reference, we need to make a copy
-            {
-                data_t *ref_value = ar__expression_evaluator__evaluate_memory_access(mut_expr_evaluator, ref_ast);
-                if (!ref_value) return NULL;
-                
-                // Create a deep copy of the value
-                return _copy_data_value(ref_value);
-            }
-            
-        case AR_EXPR__BINARY_OP:
-            return ar__expression_evaluator__evaluate_binary_op(mut_expr_evaluator, ref_ast);
-            
-        default:
-            return NULL;
-    }
-}
 
 /**
  * Creates a new condition instruction evaluator
@@ -229,29 +194,34 @@ bool ar_condition_instruction_evaluator__evaluate(
     }
     
     // Evaluate condition expression
-    data_t *own_condition_data = _evaluate_expression_ast(mut_evaluator->ref_expr_evaluator, ref_condition_ast);
-    if (!own_condition_data) {
+    data_t *condition_result = ar__expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_condition_ast);
+    if (!condition_result) {
         AR__HEAP__FREE(items);
         return false;
     }
     
     // Check condition value (0 is false, non-zero is true)
     bool condition_is_true = false;
-    if (ar__data__get_type(own_condition_data) == DATA_INTEGER) {
-        condition_is_true = (ar__data__get_integer(own_condition_data) != 0);
+    if (ar__data__get_type(condition_result) == DATA_INTEGER) {
+        condition_is_true = (ar__data__get_integer(condition_result) != 0);
     }
-    ar__data__destroy(own_condition_data);
+    
+    // We only need the value, not the data itself
+    if (ar__data__hold_ownership(condition_result, mut_evaluator)) {
+        ar__data__transfer_ownership(condition_result, mut_evaluator);
+        ar__data__destroy(condition_result);
+    }
     
     // Select which expression AST to evaluate based on condition
     const ar_expression_ast_t *ref_ast_to_eval = condition_is_true ? ref_true_ast : ref_false_ast;
     
     // Evaluate the selected expression AST
-    data_t *own_result = _evaluate_expression_ast(mut_evaluator->ref_expr_evaluator, ref_ast_to_eval);
+    data_t *result = ar__expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_ast_to_eval);
     
     // Clean up the items array as we're done with it
     AR__HEAP__FREE(items);
     
-    if (!own_result) {
+    if (!result) {
         return false;
     }
     
@@ -261,8 +231,26 @@ bool ar_condition_instruction_evaluator__evaluate(
         // Get memory key path
         const char *key_path = _get_memory_key_path(ref_result_path);
         if (!key_path) {
-            ar__data__destroy(own_result);
+            // Clean up result if we can
+            if (ar__data__hold_ownership(result, mut_evaluator)) {
+                ar__data__transfer_ownership(result, mut_evaluator);
+                ar__data__destroy(result);
+            }
             return false;
+        }
+        
+        // Get ownership of result for storing
+        data_t *own_result;
+        if (ar__data__hold_ownership(result, mut_evaluator)) {
+            // We can claim ownership
+            ar__data__transfer_ownership(result, mut_evaluator);
+            own_result = result;
+        } else {
+            // Need to make a copy
+            own_result = _copy_data_value(result);
+            if (!own_result) {
+                return false;
+            }
         }
         
         // Store the result value (transfers ownership)
@@ -275,7 +263,10 @@ bool ar_condition_instruction_evaluator__evaluate(
         return true;
     } else {
         // No assignment, just return success (expression was evaluated for side effects)
-        ar__data__destroy(own_result);
+        if (ar__data__hold_ownership(result, mut_evaluator)) {
+            ar__data__transfer_ownership(result, mut_evaluator);
+            ar__data__destroy(result);
+        }
         return true;
     }
 }

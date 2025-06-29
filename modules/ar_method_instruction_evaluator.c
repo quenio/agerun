@@ -161,44 +161,6 @@ static data_t* _copy_data_value(const data_t *ref_value) {
     }
 }
 
-/* Helper function to evaluate an expression AST node using the expression evaluator */
-static data_t* _evaluate_expression_ast(
-    ar_expression_evaluator_t *mut_expr_evaluator,
-    const ar_expression_ast_t *ref_ast
-) {
-    if (!ref_ast) {
-        return NULL;
-    }
-    
-    ar_expression_ast_type_t type = ar__expression_ast__get_type(ref_ast);
-    
-    switch (type) {
-        case AR_EXPR__LITERAL_INT:
-            return ar__expression_evaluator__evaluate_literal_int(mut_expr_evaluator, ref_ast);
-            
-        case AR_EXPR__LITERAL_DOUBLE:
-            return ar__expression_evaluator__evaluate_literal_double(mut_expr_evaluator, ref_ast);
-            
-        case AR_EXPR__LITERAL_STRING:
-            return ar__expression_evaluator__evaluate_literal_string(mut_expr_evaluator, ref_ast);
-            
-        case AR_EXPR__MEMORY_ACCESS:
-            // Memory access returns a reference, we need to make a copy
-            {
-                data_t *ref_value = ar__expression_evaluator__evaluate_memory_access(mut_expr_evaluator, ref_ast);
-                if (!ref_value) return NULL;
-                
-                // Create a deep copy of the value
-                return _copy_data_value(ref_value);
-            }
-            
-        case AR_EXPR__BINARY_OP:
-            return ar__expression_evaluator__evaluate_binary_op(mut_expr_evaluator, ref_ast);
-            
-        default:
-            return NULL;
-    }
-}
 
 
 /* Helper function to store result in memory if assignment path is provided */
@@ -233,6 +195,7 @@ static bool _store_result_if_assigned(
 
 /* Helper function to evaluate three string arguments from a function call */
 static bool _evaluate_three_string_args(
+    ar_method_instruction_evaluator_t *mut_evaluator,
     ar_expression_evaluator_t *mut_expr_evaluator,
     const ar_instruction_ast_t *ref_ast,
     size_t expected_arg_count,
@@ -266,12 +229,48 @@ static bool _evaluate_three_string_args(
         return false;
     }
     
-    // Evaluate expression ASTs
-    *out_arg1 = _evaluate_expression_ast(mut_expr_evaluator, ref_ast1);
-    *out_arg2 = _evaluate_expression_ast(mut_expr_evaluator, ref_ast2);
-    *out_arg3 = _evaluate_expression_ast(mut_expr_evaluator, ref_ast3);
+    // Evaluate expression ASTs using public method
+    data_t *result1 = ar__expression_evaluator__evaluate(mut_expr_evaluator, ref_ast1);
+    data_t *result2 = ar__expression_evaluator__evaluate(mut_expr_evaluator, ref_ast2);
+    data_t *result3 = ar__expression_evaluator__evaluate(mut_expr_evaluator, ref_ast3);
     
     AR__HEAP__FREE(items);
+    
+    // Handle ownership for arg1
+    if (result1) {
+        if (ar__data__hold_ownership(result1, mut_evaluator)) {
+            ar__data__transfer_ownership(result1, mut_evaluator);
+            *out_arg1 = result1;
+        } else {
+            *out_arg1 = _copy_data_value(result1);
+        }
+    } else {
+        *out_arg1 = NULL;
+    }
+    
+    // Handle ownership for arg2
+    if (result2) {
+        if (ar__data__hold_ownership(result2, mut_evaluator)) {
+            ar__data__transfer_ownership(result2, mut_evaluator);
+            *out_arg2 = result2;
+        } else {
+            *out_arg2 = _copy_data_value(result2);
+        }
+    } else {
+        *out_arg2 = NULL;
+    }
+    
+    // Handle ownership for arg3
+    if (result3) {
+        if (ar__data__hold_ownership(result3, mut_evaluator)) {
+            ar__data__transfer_ownership(result3, mut_evaluator);
+            *out_arg3 = result3;
+        } else {
+            *out_arg3 = _copy_data_value(result3);
+        }
+    } else {
+        *out_arg3 = NULL;
+    }
     
     // Validate all arguments are strings
     if (*out_arg1 && *out_arg2 && *out_arg3 &&
@@ -311,7 +310,7 @@ bool ar_method_instruction_evaluator__evaluate(
     data_t *own_version = NULL;
     
     bool args_valid = _evaluate_three_string_args(
-        mut_expr_evaluator, ref_ast, 3,
+        mut_evaluator, mut_expr_evaluator, ref_ast, 3,
         &own_method_name, &own_instructions, &own_version
     );
     

@@ -95,13 +95,21 @@ static void test_evaluate_literal_int(void) {
     ar_expression_ast_t *ast = ar__expression_ast__create_literal_int(42);
     assert(ast != NULL);
     
-    // When evaluating the integer literal
-    data_t *result = ar__expression_evaluator__evaluate_literal_int(evaluator, ast);
+    // When evaluating the integer literal using the public evaluate method
+    data_t *result = ar__expression_evaluator__evaluate(evaluator, ast);
     
     // Then it should return the integer value
     assert(result != NULL);
     assert(ar__data__get_type(result) == DATA_INTEGER);
     assert(ar__data__get_integer(result) == 42);
+    
+    // Verify ownership: result should be unowned (we can claim it)
+    bool held = ar__data__hold_ownership(result, evaluator);
+    assert(held == true);  // Should succeed because nobody owns it
+    
+    // Transfer ownership to NULL so we can destroy it
+    bool transferred = ar__data__transfer_ownership(result, evaluator);
+    assert(transferred == true);
     
     // Clean up
     ar__data__destroy(result);
@@ -217,13 +225,21 @@ static void test_evaluate_literal_string(void) {
     ar_expression_ast_t *ast = ar__expression_ast__create_literal_string("hello world");
     assert(ast != NULL);
     
-    // When evaluating the string literal
-    data_t *result = ar__expression_evaluator__evaluate_literal_string(evaluator, ast);
+    // When evaluating the string literal using the public evaluate method
+    data_t *result = ar__expression_evaluator__evaluate(evaluator, ast);
     
     // Then it should return the string value
     assert(result != NULL);
     assert(ar__data__get_type(result) == DATA_STRING);
     assert(strcmp(ar__data__get_string(result), "hello world") == 0);
+    
+    // Verify ownership: result should be unowned (we can claim it)
+    bool held = ar__data__hold_ownership(result, evaluator);
+    assert(held == true);  // Should succeed because nobody owns it
+    
+    // Transfer ownership to NULL so we can destroy it
+    bool transferred = ar__data__transfer_ownership(result, evaluator);
+    assert(transferred == true);
     
     // Clean up
     ar__data__destroy(result);
@@ -313,13 +329,18 @@ static void test_evaluate_memory_access(void) {
     ar_expression_ast_t *ast = ar__expression_ast__create_memory_access("memory", path, 1);
     assert(ast != NULL);
     
-    // When evaluating the memory access
-    data_t *result = ar__expression_evaluator__evaluate_memory_access(evaluator, ast);
+    // When evaluating the memory access using the public evaluate method
+    data_t *result = ar__expression_evaluator__evaluate(evaluator, ast);
     
     // Then it should return the value from memory (a reference, not owned)
     assert(result != NULL);
     assert(ar__data__get_type(result) == DATA_INTEGER);
     assert(ar__data__get_integer(result) == 42);
+    
+    // Verify ownership: result should be owned by the memory map
+    // Try to hold ownership with a different owner - should fail
+    bool held = ar__data__hold_ownership(result, evaluator);
+    assert(held == false);  // Should fail because memory map owns it
     
     // Clean up (do NOT destroy result - it's a reference)
     ar__expression_ast__destroy(ast);
@@ -442,13 +463,21 @@ static void test_evaluate_binary_op_add_integers(void) {
     ar_expression_ast_t *ast = ar__expression_ast__create_binary_op(AR_OP__ADD, left, right);
     assert(ast != NULL);
     
-    // When evaluating the binary operation
-    data_t *result = ar__expression_evaluator__evaluate_binary_op(evaluator, ast);
+    // When evaluating the binary operation using the public evaluate method
+    data_t *result = ar__expression_evaluator__evaluate(evaluator, ast);
     
     // Then it should return the sum (a new owned value)
     assert(result != NULL);
     assert(ar__data__get_type(result) == DATA_INTEGER);
     assert(ar__data__get_integer(result) == 8);
+    
+    // Verify ownership: result should be unowned (we can claim it)
+    bool held = ar__data__hold_ownership(result, evaluator);
+    assert(held == true);  // Should succeed because nobody owns it
+    
+    // Transfer ownership to NULL so we can destroy it
+    bool transferred = ar__data__transfer_ownership(result, evaluator);
+    assert(transferred == true);
     
     // Clean up (MUST destroy result - it's owned)
     ar__data__destroy(result);
@@ -586,13 +615,21 @@ static void test_evaluate_binary_op_nested(void) {
     ar_expression_ast_t *ast = ar__expression_ast__create_binary_op(AR_OP__MULTIPLY, add, mem_y);
     assert(ast != NULL);
     
-    // When evaluating the nested binary operation
-    data_t *result = ar__expression_evaluator__evaluate_binary_op(evaluator, ast);
+    // When evaluating the nested binary operation using the public evaluate method
+    data_t *result = ar__expression_evaluator__evaluate(evaluator, ast);
     
     // Then it should return (10 + 2) * 5 = 60 (a new owned value)
     assert(result != NULL);
     assert(ar__data__get_type(result) == DATA_INTEGER);
     assert(ar__data__get_integer(result) == 60);
+    
+    // Verify ownership: result should be unowned (we can claim it)
+    bool held = ar__data__hold_ownership(result, evaluator);
+    assert(held == true);  // Should succeed because nobody owns it
+    
+    // Transfer ownership to NULL so we can destroy it
+    bool transferred = ar__data__transfer_ownership(result, evaluator);
+    assert(transferred == true);
     
     // Clean up (MUST destroy result - it's owned)
     ar__data__destroy(result);

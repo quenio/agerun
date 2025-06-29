@@ -464,10 +464,7 @@ static const data_t* parse_memory_access(expression_context_t *mut_ctx) {
         if (ref_value) {
             // Return the value directly, not a copy
             // The caller is responsible for not destroying this reference
-            fprintf(stderr, "DEBUG: Found value at path '%s'\n", path);
             return ref_value; // Borrowed reference
-        } else {
-            fprintf(stderr, "DEBUG: Path '%s' not found in map\n", path);
         }
     } else {
         fprintf(stderr, "DEBUG: Source is not a map (type=%d)\n", source_type);

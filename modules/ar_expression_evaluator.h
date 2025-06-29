@@ -102,4 +102,19 @@ data_t* ar__expression_evaluator__evaluate_binary_op(
     const ar_expression_ast_t *ref_node
 );
 
+/**
+ * Evaluates any expression AST node
+ * @param mut_evaluator The evaluator instance (mutable reference)
+ * @param ref_ast The expression AST to evaluate (borrowed reference)
+ * @return The evaluated result
+ * @note Ownership: 
+ *       - Memory access: Returns borrowed reference (owned by memory/context map)
+ *       - Literals: Returns owned value that caller must destroy
+ *       - Operations: Returns owned value that caller must destroy
+ */
+data_t* ar__expression_evaluator__evaluate(
+    ar_expression_evaluator_t *mut_evaluator,
+    const ar_expression_ast_t *ref_ast
+);
+
 #endif /* AGERUN_EXPRESSION_EVALUATOR_H */

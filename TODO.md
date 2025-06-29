@@ -169,13 +169,15 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Extracted common ownership transfer logic into `_transfer_ownership_on_remove` helper
   - [x] Re-enabled large test_list_operations test after fixing ownership
 
-**Expression Evaluator Update (Next)**
-- [ ] TDD Cycle 4: Modify expression evaluator to use frames
-  - [ ] Change `ar__expression_evaluator__create()` to take no parameters
-  - [ ] Add `ar__expression_evaluator__set_frame()` method
-  - [ ] Update ALL evaluate methods to get memory/context from frame
-  - [ ] Remove old create function after new one works
-  - [ ] Test all expression types still work
+**Expression Evaluator Update (Completed 2025-06-28)**
+- [x] TDD Cycle 5: Expression evaluator uses ownership
+  - [x] Created public `ar__expression_evaluator__evaluate()` method
+  - [x] Memory access returns borrowed references
+  - [x] Literals and operations return owned values
+  - [x] Modified existing tests to verify ownership
+  - [x] Fixed agent instruction evaluator test crash
+  - [x] Refactored all 9 instruction evaluators to use public method
+  - [x] Fixed build instruction evaluator memory corruption bug
 
 #### Phase 3: Update Instruction Evaluators (One by One)
 - [ ] TDD Cycle 3: Assignment evaluator

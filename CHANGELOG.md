@@ -3,6 +3,29 @@
 This document tracks completed milestones and major achievements for the AgeRun project.
 
 ## 2025-06-28
+- ✅ **Expression Evaluator Ownership Implementation Complete**:
+  - ✅ **Implemented TDD Cycle 5: Expression evaluator uses ownership**:
+    - ✅ Created public `ar__expression_evaluator__evaluate()` method
+    - ✅ Memory access returns borrowed references (no ownership transfer)
+    - ✅ Literals and operations return owned values (caller must destroy)
+    - ✅ Modified existing tests to verify ownership using data module functions
+    - ✅ All tests pass with zero memory leaks
+  - ✅ **Fixed agent instruction evaluator test crash**:
+    - ✅ Discovered agency does not copy context - holds borrowed reference
+    - ✅ Fixed by not destroying context after passing to agency
+    - ✅ Key insight: "None of the evaluators should ever destroy the context or its owned elements"
+  - ✅ **Refactored all 9 instruction evaluators to use public method**:
+    - ✅ Assignment, send, condition, build, parse, method evaluators
+    - ✅ Agent, destroy_agent, destroy_method evaluators
+    - ✅ Eliminated duplicated `_evaluate_expression_ast` functions
+    - ✅ Achieved DRY principle - single expression evaluation implementation
+  - ✅ **Fixed build instruction evaluator memory corruption**:
+    - ✅ Root cause: taking ownership of memory map itself when evaluating "memory"
+    - ✅ Solution: never take ownership of memory/context when returned from expression evaluation
+    - ✅ Added safeguard to prevent ownership of evaluation result that equals memory pointer
+    - ✅ Fixed memory corruption that was causing ar__data__set_map_data to fail
+
+## 2025-06-28
 - ✅ **Data Module Ownership Tracking Implementation Complete**:
   - ✅ **Implemented ownership semantics for proper memory management**:
     - ✅ TDD Cycle 1: Basic ownership tracking with hold/transfer functions

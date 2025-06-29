@@ -219,32 +219,73 @@ static bool _process_placeholder(
     return true;
 }
 
-/**
- * Evaluates an expression AST node
- * 
- * @param mut_expr_evaluator Expression evaluator (mutable reference)
- * @param ref_ast The expression AST to evaluate (borrowed reference)
- * @return The evaluated data or NULL on error
- * @note Ownership: Returns owned value
- */
-static data_t* _evaluate_expression_ast(ar_expression_evaluator_t *mut_expr_evaluator, const ar_expression_ast_t *ref_ast) {
-    if (!ref_ast) {
+/* Helper function to create a deep copy of data value */
+static data_t* _copy_data_value(const data_t *ref_value) {
+    if (!ref_value) {
         return NULL;
     }
     
-    ar_expression_ast_type_t type = ar__expression_ast__get_type(ref_ast);
-    
-    switch (type) {
-        case AR_EXPR__LITERAL_INT:
-            return ar__expression_evaluator__evaluate_literal_int(mut_expr_evaluator, ref_ast);
-        case AR_EXPR__LITERAL_DOUBLE:
-            return ar__expression_evaluator__evaluate_literal_double(mut_expr_evaluator, ref_ast);
-        case AR_EXPR__LITERAL_STRING:
-            return ar__expression_evaluator__evaluate_literal_string(mut_expr_evaluator, ref_ast);
-        case AR_EXPR__MEMORY_ACCESS:
-            return ar__expression_evaluator__evaluate_memory_access(mut_expr_evaluator, ref_ast);
-        case AR_EXPR__BINARY_OP:
-            return ar__expression_evaluator__evaluate_binary_op(mut_expr_evaluator, ref_ast);
+    switch (ar__data__get_type(ref_value)) {
+        case DATA_INTEGER:
+            return ar__data__create_integer(ar__data__get_integer(ref_value));
+        case DATA_DOUBLE:
+            return ar__data__create_double(ar__data__get_double(ref_value));
+        case DATA_STRING:
+            return ar__data__create_string(ar__data__get_string(ref_value));
+        case DATA_MAP:
+            {
+                // Create a new map and copy all key-value pairs
+                data_t *new_map = ar__data__create_map();
+                if (!new_map) return NULL;
+                
+                // Get all keys from the original map
+                data_t *keys = ar__data__get_map_keys(ref_value);
+                if (!keys) {
+                    ar__data__destroy(new_map);
+                    return NULL;
+                }
+                
+                // Copy each key-value pair
+                size_t count = ar__data__list_count(keys);
+                for (size_t i = 0; i < count; i++) {
+                    // Get the key
+                    data_t *key_data = ar__data__list_first(keys);
+                    if (!key_data) break;
+                    
+                    const char *key = ar__data__get_string(key_data);
+                    if (!key) {
+                        data_t *removed = ar__data__list_remove_first(keys);
+                        ar__data__destroy(removed);
+                        continue;
+                    }
+                    
+                    // Get the value from the original map
+                    data_t *orig_value = ar__data__get_map_data(ref_value, key);
+                    if (orig_value) {
+                        // Recursively copy the value
+                        data_t *copy_value = _copy_data_value(orig_value);
+                        if (copy_value) {
+                            bool success = ar__data__set_map_data(new_map, key, copy_value);
+                            if (!success) {
+                                fprintf(stderr, "ERROR: Failed to set map data for key '%s'\n", key);
+                                ar__data__destroy(copy_value);
+                            }
+                        }
+                    }
+                    
+                    // Remove and destroy the processed key
+                    data_t *removed_key = ar__data__list_remove_first(keys);
+                    ar__data__destroy(removed_key);
+                }
+                
+                // Clean up the keys list
+                ar__data__destroy(keys);
+                
+                return new_map;
+            }
+        case DATA_LIST:
+            // TODO: Implement deep copy for lists
+            return ar__data__create_list();
         default:
             return NULL;
     }
@@ -334,27 +375,45 @@ bool ar_build_instruction_evaluator__evaluate(
     }
     
     // Evaluate template expression AST
-    data_t *own_template_data = _evaluate_expression_ast(mut_expr_evaluator, ref_template_ast);
-    if (!own_template_data || ar__data__get_type(own_template_data) != DATA_STRING) {
-        if (own_template_data) ar__data__destroy(own_template_data);
+    data_t *template_result = ar__expression_evaluator__evaluate(mut_expr_evaluator, ref_template_ast);
+    if (!template_result || ar__data__get_type(template_result) != DATA_STRING) {
+        fprintf(stderr, "DEBUG: build evaluator - template evaluation failed or not string\n");
+        if (template_result && ar__data__hold_ownership(template_result, mut_evaluator)) {
+            ar__data__transfer_ownership(template_result, mut_evaluator);
+            ar__data__destroy(template_result);
+        }
         AR__HEAP__FREE(items);
         return false;
     }
     
+    // Get ownership of template data
+    data_t *own_template_data;
+    if (ar__data__hold_ownership(template_result, mut_evaluator)) {
+        // We can claim ownership - it's an unowned value
+        ar__data__transfer_ownership(template_result, mut_evaluator);
+        own_template_data = template_result;
+    } else {
+        // It's owned by someone else - we need to make a copy
+        own_template_data = _copy_data_value(template_result);
+        if (!own_template_data) {
+            AR__HEAP__FREE(items);
+            return false;
+        }
+    }
+    
     // Evaluate values expression AST to check for map
-    data_t *temp_values_data = _evaluate_expression_ast(mut_expr_evaluator, ref_values_ast);
-    const data_t *ref_values_data = temp_values_data;
+    data_t *values_result = ar__expression_evaluator__evaluate(mut_expr_evaluator, ref_values_ast);
+    const data_t *ref_values_data = values_result;
     data_t *own_values_data = NULL;
     
-    // If it's a memory access, we get a borrowed reference
-    // If it's a literal or computed expression, we get an owned value
-    ar_expression_ast_type_t values_type = ar__expression_ast__get_type(ref_values_ast);
-    if (values_type == AR_EXPR__MEMORY_ACCESS) {
-        // Memory access returns borrowed reference, don't destroy
+    // Check if we need to make a copy (if result is owned by memory/context)
+    // CRITICAL: Never try to take ownership of memory itself!
+    if (values_result == mut_memory) {
         own_values_data = NULL;
-    } else {
-        // Other expressions return owned values, need to destroy later
-        own_values_data = temp_values_data;
+    } else if (values_result && ar__data__hold_ownership(values_result, mut_evaluator)) {
+        // We can claim ownership - it's an unowned value
+        ar__data__transfer_ownership(values_result, mut_evaluator);
+        own_values_data = values_result;
     }
     
     // Validate it's a map

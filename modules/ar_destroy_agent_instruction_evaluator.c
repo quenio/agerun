@@ -6,6 +6,7 @@
 #include "ar_destroy_agent_instruction_evaluator.h"
 #include "ar_heap.h"
 #include "ar_expression_ast.h"
+#include "ar_expression_evaluator.h"
 #include "ar_agency.h"
 #include "ar_list.h"
 #include <string.h>
@@ -108,44 +109,6 @@ static data_t* _copy_data_value(const data_t *ref_value) {
     }
 }
 
-/* Helper function to evaluate an expression AST node using the expression evaluator */
-static data_t* _evaluate_expression_ast(
-    ar_expression_evaluator_t *mut_expr_evaluator,
-    const ar_expression_ast_t *ref_ast
-) {
-    if (!ref_ast) {
-        return NULL;
-    }
-    
-    ar_expression_ast_type_t type = ar__expression_ast__get_type(ref_ast);
-    
-    switch (type) {
-        case AR_EXPR__LITERAL_INT:
-            return ar__expression_evaluator__evaluate_literal_int(mut_expr_evaluator, ref_ast);
-            
-        case AR_EXPR__LITERAL_DOUBLE:
-            return ar__expression_evaluator__evaluate_literal_double(mut_expr_evaluator, ref_ast);
-            
-        case AR_EXPR__LITERAL_STRING:
-            return ar__expression_evaluator__evaluate_literal_string(mut_expr_evaluator, ref_ast);
-            
-        case AR_EXPR__MEMORY_ACCESS:
-            // Memory access returns a reference, we need to make a copy
-            {
-                data_t *ref_value = ar__expression_evaluator__evaluate_memory_access(mut_expr_evaluator, ref_ast);
-                if (!ref_value) return NULL;
-                
-                // Create a deep copy of the value
-                return _copy_data_value(ref_value);
-            }
-            
-        case AR_EXPR__BINARY_OP:
-            return ar__expression_evaluator__evaluate_binary_op(mut_expr_evaluator, ref_ast);
-            
-        default:
-            return NULL;
-    }
-}
 
 
 /* Helper function to store result in memory if assignment path is provided */
@@ -256,8 +219,21 @@ bool ar_destroy_agent_instruction_evaluator__evaluate(
         return false;
     }
     
-    // Evaluate the agent ID expression AST
-    data_t *own_agent_id = _evaluate_expression_ast(mut_expr_evaluator, ref_agent_id_ast);
+    // Evaluate the agent ID expression AST using public method
+    data_t *agent_id_result = ar__expression_evaluator__evaluate(mut_expr_evaluator, ref_agent_id_ast);
+    
+    // Check if we need to make a copy (if result is owned by memory/context)
+    data_t *own_agent_id = NULL;
+    if (agent_id_result) {
+        if (ar__data__hold_ownership(agent_id_result, mut_expr_evaluator)) {
+            // We can claim ownership - it's an unowned value (literal or operation result)
+            ar__data__transfer_ownership(agent_id_result, mut_expr_evaluator);
+            own_agent_id = agent_id_result;
+        } else {
+            // It's owned by someone else (memory access) - we need to make a copy
+            own_agent_id = _copy_data_value(agent_id_result);
+        }
+    }
     
     bool success = false;
     bool destroy_result = false;

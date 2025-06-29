@@ -25,7 +25,6 @@ static const char* MEMORY_PREFIX = "memory.";
 static const size_t MEMORY_PREFIX_LEN = 7;
 
 /* Forward declarations of helper functions */
-static data_t* _evaluate_expression_ast(ar_expression_evaluator_t *mut_expr_evaluator, const ar_expression_ast_t *ref_ast);
 static const char* _get_memory_key_path(const char *ref_path);
 static bool _store_result_if_assigned(data_t *mut_memory, const ar_instruction_ast_t *ref_ast, data_t *own_result);
 static data_t* _copy_data_value(const data_t *ref_value);
@@ -148,42 +147,6 @@ static bool _store_result_if_assigned(
 }
 
 
-/* Helper function to evaluate an expression AST node using the expression evaluator */
-static data_t* _evaluate_expression_ast(ar_expression_evaluator_t *mut_expr_evaluator, const ar_expression_ast_t *ref_ast) {
-    if (!ref_ast) {
-        return NULL;
-    }
-    
-    ar_expression_ast_type_t type = ar__expression_ast__get_type(ref_ast);
-    
-    switch (type) {
-        case AR_EXPR__LITERAL_INT:
-            return ar__expression_evaluator__evaluate_literal_int(mut_expr_evaluator, ref_ast);
-            
-        case AR_EXPR__LITERAL_DOUBLE:
-            return ar__expression_evaluator__evaluate_literal_double(mut_expr_evaluator, ref_ast);
-            
-        case AR_EXPR__LITERAL_STRING:
-            return ar__expression_evaluator__evaluate_literal_string(mut_expr_evaluator, ref_ast);
-            
-        case AR_EXPR__MEMORY_ACCESS:
-            // Memory access returns a reference, we need to make a copy
-            {
-                data_t *ref_value = ar__expression_evaluator__evaluate_memory_access(mut_expr_evaluator, ref_ast);
-                if (!ref_value) return NULL;
-                
-                // Create a deep copy of the value
-                return _copy_data_value(ref_value);
-            }
-            
-        case AR_EXPR__BINARY_OP:
-            return ar__expression_evaluator__evaluate_binary_op(mut_expr_evaluator, ref_ast);
-            
-        default:
-            return NULL;
-    }
-}
-
 /* Helper function to parse a value string and determine its type */
 static data_t* _parse_value_string(const char *value_str) {
     if (!value_str || *value_str == '\0') {
@@ -288,20 +251,57 @@ bool ar_parse_instruction_evaluator__evaluate(
     }
     
     // Evaluate template expression AST
-    data_t *own_template_data = _evaluate_expression_ast(mut_evaluator->ref_expr_evaluator, ref_template_ast);
-    if (!own_template_data || ar__data__get_type(own_template_data) != DATA_STRING) {
-        if (own_template_data) ar__data__destroy(own_template_data);
+    data_t *template_result = ar__expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_template_ast);
+    if (!template_result || ar__data__get_type(template_result) != DATA_STRING) {
+        if (template_result && ar__data__hold_ownership(template_result, mut_evaluator)) {
+            ar__data__transfer_ownership(template_result, mut_evaluator);
+            ar__data__destroy(template_result);
+        }
         AR__HEAP__FREE(items);
         return false;
     }
     
+    // Get ownership of template data
+    data_t *own_template_data;
+    if (ar__data__hold_ownership(template_result, mut_evaluator)) {
+        // We can claim ownership - it's an unowned value
+        ar__data__transfer_ownership(template_result, mut_evaluator);
+        own_template_data = template_result;
+    } else {
+        // It's owned by someone else - we need to make a copy
+        own_template_data = _copy_data_value(template_result);
+        if (!own_template_data) {
+            AR__HEAP__FREE(items);
+            return false;
+        }
+    }
+    
     // Evaluate input expression AST
-    data_t *own_input_data = _evaluate_expression_ast(mut_evaluator->ref_expr_evaluator, ref_input_ast);
-    if (!own_input_data || ar__data__get_type(own_input_data) != DATA_STRING) {
-        if (own_input_data) ar__data__destroy(own_input_data);
+    data_t *input_result = ar__expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_input_ast);
+    if (!input_result || ar__data__get_type(input_result) != DATA_STRING) {
+        if (input_result && ar__data__hold_ownership(input_result, mut_evaluator)) {
+            ar__data__transfer_ownership(input_result, mut_evaluator);
+            ar__data__destroy(input_result);
+        }
         ar__data__destroy(own_template_data);
         AR__HEAP__FREE(items);
         return false;
+    }
+    
+    // Get ownership of input data
+    data_t *own_input_data;
+    if (ar__data__hold_ownership(input_result, mut_evaluator)) {
+        // We can claim ownership - it's an unowned value
+        ar__data__transfer_ownership(input_result, mut_evaluator);
+        own_input_data = input_result;
+    } else {
+        // It's owned by someone else - we need to make a copy
+        own_input_data = _copy_data_value(input_result);
+        if (!own_input_data) {
+            ar__data__destroy(own_template_data);
+            AR__HEAP__FREE(items);
+            return false;
+        }
     }
     
     const char *template_str = ar__data__get_string(own_template_data);

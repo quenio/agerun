@@ -6,6 +6,7 @@
 #include "ar_destroy_method_instruction_evaluator.h"
 #include "ar_heap.h"
 #include "ar_expression_ast.h"
+#include "ar_expression_evaluator.h"
 #include "ar_agency.h"
 #include "ar_method.h"
 #include "ar_methodology.h"
@@ -110,44 +111,6 @@ static data_t* _copy_data_value(const data_t *ref_value) {
     }
 }
 
-/* Helper function to evaluate an expression AST node using the expression evaluator */
-static data_t* _evaluate_expression_ast(
-    ar_expression_evaluator_t *mut_expr_evaluator,
-    const ar_expression_ast_t *ref_ast
-) {
-    if (!ref_ast) {
-        return NULL;
-    }
-    
-    ar_expression_ast_type_t type = ar__expression_ast__get_type(ref_ast);
-    
-    switch (type) {
-        case AR_EXPR__LITERAL_INT:
-            return ar__expression_evaluator__evaluate_literal_int(mut_expr_evaluator, ref_ast);
-            
-        case AR_EXPR__LITERAL_DOUBLE:
-            return ar__expression_evaluator__evaluate_literal_double(mut_expr_evaluator, ref_ast);
-            
-        case AR_EXPR__LITERAL_STRING:
-            return ar__expression_evaluator__evaluate_literal_string(mut_expr_evaluator, ref_ast);
-            
-        case AR_EXPR__MEMORY_ACCESS:
-            // Memory access returns a reference, we need to make a copy
-            {
-                data_t *ref_value = ar__expression_evaluator__evaluate_memory_access(mut_expr_evaluator, ref_ast);
-                if (!ref_value) return NULL;
-                
-                // Create a deep copy of the value
-                return _copy_data_value(ref_value);
-            }
-            
-        case AR_EXPR__BINARY_OP:
-            return ar__expression_evaluator__evaluate_binary_op(mut_expr_evaluator, ref_ast);
-            
-        default:
-            return NULL;
-    }
-}
 
 
 /* Helper function to store result in memory if assignment path is provided */
@@ -260,9 +223,35 @@ bool ar_destroy_method_instruction_evaluator__evaluate(
         return false;
     }
     
-    // Evaluate expression ASTs
-    data_t *own_name = _evaluate_expression_ast(mut_expr_evaluator, ref_name_ast);
-    data_t *own_version = _evaluate_expression_ast(mut_expr_evaluator, ref_version_ast);
+    // Evaluate expression ASTs using public method
+    data_t *name_result = ar__expression_evaluator__evaluate(mut_expr_evaluator, ref_name_ast);
+    data_t *version_result = ar__expression_evaluator__evaluate(mut_expr_evaluator, ref_version_ast);
+    
+    // Handle ownership for name
+    data_t *own_name = NULL;
+    if (name_result) {
+        if (ar__data__hold_ownership(name_result, mut_expr_evaluator)) {
+            // We can claim ownership - it's an unowned value
+            ar__data__transfer_ownership(name_result, mut_expr_evaluator);
+            own_name = name_result;
+        } else {
+            // It's owned by someone else - we need to make a copy
+            own_name = _copy_data_value(name_result);
+        }
+    }
+    
+    // Handle ownership for version
+    data_t *own_version = NULL;
+    if (version_result) {
+        if (ar__data__hold_ownership(version_result, mut_expr_evaluator)) {
+            // We can claim ownership - it's an unowned value
+            ar__data__transfer_ownership(version_result, mut_expr_evaluator);
+            own_version = version_result;
+        } else {
+            // It's owned by someone else - we need to make a copy
+            own_version = _copy_data_value(version_result);
+        }
+    }
     
     bool success = false;
     bool destroy_result = false;
