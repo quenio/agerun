@@ -52,4 +52,14 @@ bool ar_assignment_instruction_evaluator__evaluate(
     const ar_instruction_ast_t *ref_ast
 );
 
+/**
+ * Get the last error message from the evaluator
+ * @param ref_evaluator The evaluator to get the error from
+ * @return Error message string, or NULL if no error
+ * @note Ownership: Returns a borrowed reference, do not free
+ */
+const char* ar_assignment_instruction_evaluator__get_error(
+    const ar_assignment_instruction_evaluator_t *ref_evaluator
+);
+
 #endif /* AGERUN_ASSIGNMENT_INSTRUCTION_EVALUATOR_H */

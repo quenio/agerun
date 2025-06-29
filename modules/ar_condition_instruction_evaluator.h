@@ -55,6 +55,16 @@ bool ar_condition_instruction_evaluator__evaluate(
 );
 
 /**
+ * Get the last error message from the evaluator
+ * @param ref_evaluator The evaluator to get the error from
+ * @return Error message string, or NULL if no error
+ * @note Ownership: Returns a borrowed reference, do not free
+ */
+const char* ar_condition_instruction_evaluator__get_error(
+    const ar_condition_instruction_evaluator_t *ref_evaluator
+);
+
+/**
  * Evaluates a condition (if) instruction (legacy interface)
  * @param mut_expr_evaluator The expression evaluator
  * @param mut_memory The memory map

@@ -975,6 +975,28 @@ struct data_s {
 - The list module allows simple management of the dynamically allocated keys
 - The ownership model is clear: the data module owns and manages all memory for data objects and their contents
 - Type safety is improved through the use of const qualifiers throughout the API
+
+### Shallow Copy Functions
+
+The data module provides shallow copy functionality for creating independent copies of data values:
+
+```c
+data_t* ar_data__shallow_copy(const data_t *ref_value);
+bool ar_data__is_primitive_type(const data_t *ref_data);
+bool ar_data__map_contains_only_primitives(const data_t *ref_map);
+bool ar_data__list_contains_only_primitives(const data_t *ref_list);
+```
+
+- `ar_data__shallow_copy` creates a new copy of a data value
+  - For primitive types (integer, double, string), it creates a full copy
+  - For maps and lists, it only copies if they contain exclusively primitive values
+  - Returns NULL if the value contains nested containers (no deep copy support)
+  - Caller owns the returned copy and must destroy it
+- `ar_data__is_primitive_type` checks if a data value is a primitive type (integer, double, or string)
+- `ar_data__map_contains_only_primitives` validates that a map contains only primitive values
+- `ar_data__list_contains_only_primitives` validates that a list contains only primitive values
+- These functions enable safe copying in evaluators while preventing deep copy issues
+- The shallow copy limitation ensures predictable memory management behavior
 - List operations are provided for both generic data objects and specific typed values
 - Typed list operations (add_first_integer, remove_last_double, etc.) simplify working with lists of specific types
 - Remove operations handle type checking and return default values for type mismatches

@@ -179,17 +179,19 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Refactored all 9 instruction evaluators to use public method
   - [x] Fixed build instruction evaluator memory corruption bug
 
-**Code Duplication Cleanup (In Progress)**
-- [ ] TDD Cycle 6: Move _copy_data_value to data module
+**Code Duplication Cleanup (Completed 2025-06-29)**
+- [x] TDD Cycle 6: Move _copy_data_value to data module
   - [x] Created ar_data__shallow_copy() function in data module
   - [x] Created ar_data__is_primitive_type() helper function
   - [x] Created ar_data__map_contains_only_primitives() helper function
   - [x] Created ar_data__list_contains_only_primitives() helper function
   - [x] Refactored shallow_copy to use helper functions for better maintainability
-  - [ ] Update all evaluators to use the new data module function
+  - [x] Update all evaluators to use the new data module function
   - [x] Test thoroughly to ensure all data types are properly copied
-  - [ ] Remove duplicated implementations from evaluators
-  - [ ] This eliminates code duplication and provides a proper abstraction
+  - [x] Remove duplicated implementations from evaluators
+  - [x] This eliminates code duplication and provides a proper abstraction
+  - [x] Added error handling infrastructure to all evaluators with get_error methods
+  - [x] Fixed use-after-free bug in method_instruction_evaluator
 
 #### Phase 3: Update Instruction Evaluators (One by One)
 - [ ] TDD Cycle 7: Assignment evaluator
@@ -406,10 +408,11 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Update module dependency tree documentation
 
 #### Phase 7: Extract Common Helper Functions (MEDIUM)
-- [ ] **Revise copying strategy in instruction evaluation (ARCHITECTURAL)**:
-  - [ ] Eliminate `_copy_data_value` pattern entirely - instruction evaluation should use only references or create new data, not copy existing data
-  - [ ] Review all instruction evaluators to ensure proper reference vs. creation semantics
-  - [ ] This addresses fundamental design issue where copying indicates incorrect ownership model
+- [x] **Revise copying strategy in instruction evaluation (ARCHITECTURAL)** (Completed 2025-06-29):
+  - [x] Eliminate `_copy_data_value` pattern entirely - replaced with ar_data__shallow_copy
+  - [x] Review all instruction evaluators to ensure proper reference vs. creation semantics
+  - [x] This addresses fundamental design issue where copying indicates incorrect ownership model
+  - [x] Shallow copy prevents deep copy issues with nested containers
 - [ ] **Extract shared expression evaluation patterns**:
   - [ ] `_evaluate_expression_ast` appears in multiple evaluators
   - [ ] Consider expression evaluation orchestration module
@@ -1039,9 +1042,10 @@ This order ensures clean separation of concerns across all modules.
     - [x] AST traversal and evaluation strategies
     - [x] Value ownership transformation patterns
   - [x] Each new module should have a clear, single responsibility
-- [x] Eliminate _copy_data_value duplication across evaluators: **MOVED TO HIGH PRIORITY REFACTORING SECTION**
+- [x] Eliminate _copy_data_value duplication across evaluators: **COMPLETED 2025-06-29**
   - [x] This function likely exists in multiple evaluator modules
   - [x] Consider if this belongs in the data module as ar__data__deep_copy()
+  - [x] Implemented as ar_data__shallow_copy() to prevent deep copy issues
   - [x] Or identify if there's a missing abstraction around value cloning/ownership transfer
   - [x] Ensure consistent implementation across all uses
 

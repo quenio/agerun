@@ -8,6 +8,7 @@
 #include "ar_expression_ast.h"
 #include "ar_method.h"
 #include "ar_methodology.h"
+#include "ar_io.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -27,6 +28,7 @@ bool ar_method_instruction_evaluator__evaluate_legacy(
 struct ar_method_instruction_evaluator_s {
     ar_expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
     data_t *mut_memory;                          /* Memory map (mutable reference) */
+    char *own_error_message;                     /* Owned error message string */
 };
 
 /**
@@ -53,6 +55,7 @@ ar_method_instruction_evaluator_t* ar_method_instruction_evaluator__create(
     // Initialize fields
     evaluator->ref_expr_evaluator = ref_expr_evaluator;
     evaluator->mut_memory = mut_memory;
+    evaluator->own_error_message = NULL;
     
     return evaluator;
 }
@@ -67,6 +70,11 @@ void ar_method_instruction_evaluator__destroy(
         return;
     }
     
+    // Free error message if any
+    if (own_evaluator->own_error_message) {
+        AR__HEAP__FREE(own_evaluator->own_error_message);
+    }
+    
     // Free the evaluator structure
     AR__HEAP__FREE(own_evaluator);
 }
@@ -74,6 +82,21 @@ void ar_method_instruction_evaluator__destroy(
 /* Constants */
 static const char* MEMORY_PREFIX = "memory.";
 static const size_t MEMORY_PREFIX_LEN = 7;
+
+/* Helper function to set error message */
+static void _set_error(ar_method_instruction_evaluator_t *mut_evaluator, const char *message) {
+    // Free existing error message if any
+    if (mut_evaluator->own_error_message) {
+        AR__HEAP__FREE(mut_evaluator->own_error_message);
+        mut_evaluator->own_error_message = NULL;
+    }
+    
+    // Set new error message
+    if (message) {
+        mut_evaluator->own_error_message = AR__HEAP__STRDUP(message, "evaluator error message");
+        ar_io__error("%s", message);
+    }
+}
 
 /* Helper function to check if a path starts with "memory." and return the key path */
 static const char* _get_memory_key_path(const char *ref_path) {
@@ -89,77 +112,6 @@ static const char* _get_memory_key_path(const char *ref_path) {
 }
 
 
-/* Helper function to create a deep copy of data value */
-static data_t* _copy_data_value(const data_t *ref_value) {
-    if (!ref_value) {
-        return NULL;
-    }
-    
-    switch (ar_data__get_type(ref_value)) {
-        case DATA_INTEGER:
-            return ar_data__create_integer(ar_data__get_integer(ref_value));
-        case DATA_DOUBLE:
-            return ar_data__create_double(ar_data__get_double(ref_value));
-        case DATA_STRING:
-            return ar_data__create_string(ar_data__get_string(ref_value));
-        case DATA_MAP:
-            {
-                // Create a new map and copy all key-value pairs
-                data_t *new_map = ar_data__create_map();
-                if (!new_map) return NULL;
-                
-                // Get all keys from the original map
-                data_t *keys = ar_data__get_map_keys(ref_value);
-                if (!keys) {
-                    ar_data__destroy(new_map);
-                    return NULL;
-                }
-                
-                // Copy each key-value pair
-                size_t count = ar_data__list_count(keys);
-                for (size_t i = 0; i < count; i++) {
-                    // Get the key
-                    data_t *key_data = ar_data__list_first(keys);
-                    if (!key_data) break;
-                    
-                    const char *key = ar_data__get_string(key_data);
-                    if (!key) {
-                        data_t *removed = ar_data__list_remove_first(keys);
-                        ar_data__destroy(removed);
-                        continue;
-                    }
-                    
-                    // Get the value from the original map
-                    data_t *orig_value = ar_data__get_map_data(ref_value, key);
-                    if (orig_value) {
-                        // Recursively copy the value
-                        data_t *copy_value = _copy_data_value(orig_value);
-                        if (copy_value) {
-                            bool success = ar_data__set_map_data(new_map, key, copy_value);
-                            if (!success) {
-                                fprintf(stderr, "ERROR: Failed to set map data for key '%s'\n", key);
-                                ar_data__destroy(copy_value);
-                            }
-                        }
-                    }
-                    
-                    // Remove and destroy the processed key
-                    data_t *removed_key = ar_data__list_remove_first(keys);
-                    ar_data__destroy(removed_key);
-                }
-                
-                // Clean up the keys list
-                ar_data__destroy(keys);
-                
-                return new_map;
-            }
-        case DATA_LIST:
-            // TODO: Implement deep copy for lists
-            return ar_data__create_list();
-        default:
-            return NULL;
-    }
-}
 
 
 
@@ -242,7 +194,23 @@ static bool _evaluate_three_string_args(
             ar_data__transfer_ownership(result1, mut_evaluator);
             *out_arg1 = result1;
         } else {
-            *out_arg1 = _copy_data_value(result1);
+            *out_arg1 = ar_data__shallow_copy(result1);
+            if (!*out_arg1) {
+                _set_error(mut_evaluator, "Cannot create method with nested containers in argument 1 (no deep copy support)");
+                if (result2) {
+                    if (ar_data__hold_ownership(result2, mut_evaluator)) {
+                        ar_data__transfer_ownership(result2, mut_evaluator);
+                        ar_data__destroy(result2);
+                    }
+                }
+                if (result3) {
+                    if (ar_data__hold_ownership(result3, mut_evaluator)) {
+                        ar_data__transfer_ownership(result3, mut_evaluator);
+                        ar_data__destroy(result3);
+                    }
+                }
+                return false;
+            }
         }
     } else {
         *out_arg1 = NULL;
@@ -254,7 +222,18 @@ static bool _evaluate_three_string_args(
             ar_data__transfer_ownership(result2, mut_evaluator);
             *out_arg2 = result2;
         } else {
-            *out_arg2 = _copy_data_value(result2);
+            *out_arg2 = ar_data__shallow_copy(result2);
+            if (!*out_arg2) {
+                _set_error(mut_evaluator, "Cannot create method with nested containers in argument 2 (no deep copy support)");
+                ar_data__destroy(*out_arg1);
+                if (result3) {
+                    if (ar_data__hold_ownership(result3, mut_evaluator)) {
+                        ar_data__transfer_ownership(result3, mut_evaluator);
+                        ar_data__destroy(result3);
+                    }
+                }
+                return false;
+            }
         }
     } else {
         *out_arg2 = NULL;
@@ -266,7 +245,13 @@ static bool _evaluate_three_string_args(
             ar_data__transfer_ownership(result3, mut_evaluator);
             *out_arg3 = result3;
         } else {
-            *out_arg3 = _copy_data_value(result3);
+            *out_arg3 = ar_data__shallow_copy(result3);
+            if (!*out_arg3) {
+                _set_error(mut_evaluator, "Cannot create method with nested containers in argument 3 (no deep copy support)");
+                ar_data__destroy(*out_arg1);
+                ar_data__destroy(*out_arg2);
+                return false;
+            }
         }
     } else {
         *out_arg3 = NULL;
@@ -290,6 +275,9 @@ bool ar_method_instruction_evaluator__evaluate(
     if (!mut_evaluator || !ref_ast) {
         return false;
     }
+    
+    // Clear any previous error
+    _set_error(mut_evaluator, NULL);
     
     // Extract dependencies from the evaluator instance
     ar_expression_evaluator_t *mut_expr_evaluator = mut_evaluator->ref_expr_evaluator;
@@ -345,5 +333,14 @@ bool ar_method_instruction_evaluator__evaluate(
     }
     
     return success;
+}
+
+const char* ar_method_instruction_evaluator__get_error(
+    const ar_method_instruction_evaluator_t *ref_evaluator
+) {
+    if (!ref_evaluator) {
+        return NULL;
+    }
+    return ref_evaluator->own_error_message;
 }
 

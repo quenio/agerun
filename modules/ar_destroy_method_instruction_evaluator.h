@@ -35,14 +35,24 @@ void ar_destroy_method_instruction_evaluator__destroy(ar_destroy_method_instruct
 
 /**
  * Evaluates a destroy method instruction using stored dependencies
- * @param ref_evaluator The evaluator instance (borrowed reference)
+ * @param mut_evaluator The evaluator instance (mutable reference)
  * @param ref_ast The instruction AST to evaluate (borrowed reference)
  * @return true if evaluation succeeded, false otherwise
  * @note Ownership: Borrows all parameters, does not take ownership
  */
 bool ar_destroy_method_instruction_evaluator__evaluate(
-    const ar_destroy_method_instruction_evaluator_t *ref_evaluator,
+    ar_destroy_method_instruction_evaluator_t *mut_evaluator,
     const ar_instruction_ast_t *ref_ast
+);
+
+/**
+ * Get the last error message from the evaluator
+ * @param ref_evaluator The evaluator to get the error from
+ * @return Error message string, or NULL if no error
+ * @note Ownership: Returns a borrowed reference, do not free
+ */
+const char* ar_destroy_method_instruction_evaluator__get_error(
+    const ar_destroy_method_instruction_evaluator_t *ref_evaluator
 );
 
 

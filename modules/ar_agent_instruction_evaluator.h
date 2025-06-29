@@ -38,16 +38,26 @@ void ar_agent_instruction_evaluator__destroy(ar_agent_instruction_evaluator_t *o
 
 /**
  * Evaluates an agent instruction using stored dependencies from instance
- * @param ref_evaluator The evaluator instance (borrowed reference)
+ * @param mut_evaluator The evaluator instance (mutable reference)
  * @param ref_context The context map (can be NULL)
  * @param ref_ast The instruction AST node
  * @return true if evaluation succeeded, false otherwise
  * @note Ownership: Does not take ownership of any parameters
  */
 bool ar_agent_instruction_evaluator__evaluate(
-    const ar_agent_instruction_evaluator_t *ref_evaluator,
+    ar_agent_instruction_evaluator_t *mut_evaluator,
     data_t *ref_context,
     const ar_instruction_ast_t *ref_ast
+);
+
+/**
+ * Get the last error message from the evaluator
+ * @param ref_evaluator The evaluator to get the error from
+ * @return Error message string, or NULL if no error
+ * @note Ownership: Returns a borrowed reference, do not free
+ */
+const char* ar_agent_instruction_evaluator__get_error(
+    const ar_agent_instruction_evaluator_t *ref_evaluator
 );
 
 

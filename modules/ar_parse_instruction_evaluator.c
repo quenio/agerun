@@ -10,6 +10,7 @@
 #include "ar_instruction_ast.h"
 #include "ar_expression_ast.h"
 #include "ar_expression_evaluator.h"
+#include "ar_io.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -18,6 +19,7 @@
 struct ar_parse_instruction_evaluator_s {
     ar_expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
     data_t *mut_memory;                          /* Memory map (mutable reference) */
+    char *own_error_message;                     /* Owned error message string */
 };
 
 /* Constants */
@@ -27,8 +29,23 @@ static const size_t MEMORY_PREFIX_LEN = 7;
 /* Forward declarations of helper functions */
 static const char* _get_memory_key_path(const char *ref_path);
 static bool _store_result_if_assigned(data_t *mut_memory, const ar_instruction_ast_t *ref_ast, data_t *own_result);
-static data_t* _copy_data_value(const data_t *ref_value);
 static data_t* _parse_value_string(const char *value_str);
+static void _set_error(ar_parse_instruction_evaluator_t *mut_evaluator, const char *message);
+
+/* Helper function to set error message */
+static void _set_error(ar_parse_instruction_evaluator_t *mut_evaluator, const char *message) {
+    // Free existing error message if any
+    if (mut_evaluator->own_error_message) {
+        AR__HEAP__FREE(mut_evaluator->own_error_message);
+        mut_evaluator->own_error_message = NULL;
+    }
+    
+    // Set new error message
+    if (message) {
+        mut_evaluator->own_error_message = AR__HEAP__STRDUP(message, "evaluator error message");
+        ar_io__error("%s", message);
+    }
+}
 
 /* Helper function to check if a path starts with "memory." and return the key path */
 static const char* _get_memory_key_path(const char *ref_path) {
@@ -44,77 +61,6 @@ static const char* _get_memory_key_path(const char *ref_path) {
 }
 
 
-/* Helper function to create a deep copy of data value */
-static data_t* _copy_data_value(const data_t *ref_value) {
-    if (!ref_value) {
-        return NULL;
-    }
-    
-    switch (ar_data__get_type(ref_value)) {
-        case DATA_INTEGER:
-            return ar_data__create_integer(ar_data__get_integer(ref_value));
-        case DATA_DOUBLE:
-            return ar_data__create_double(ar_data__get_double(ref_value));
-        case DATA_STRING:
-            return ar_data__create_string(ar_data__get_string(ref_value));
-        case DATA_MAP:
-            {
-                // Create a new map and copy all key-value pairs
-                data_t *new_map = ar_data__create_map();
-                if (!new_map) return NULL;
-                
-                // Get all keys from the original map
-                data_t *keys = ar_data__get_map_keys(ref_value);
-                if (!keys) {
-                    ar_data__destroy(new_map);
-                    return NULL;
-                }
-                
-                // Copy each key-value pair
-                size_t count = ar_data__list_count(keys);
-                for (size_t i = 0; i < count; i++) {
-                    // Get the key
-                    data_t *key_data = ar_data__list_first(keys);
-                    if (!key_data) break;
-                    
-                    const char *key = ar_data__get_string(key_data);
-                    if (!key) {
-                        data_t *removed = ar_data__list_remove_first(keys);
-                        ar_data__destroy(removed);
-                        continue;
-                    }
-                    
-                    // Get the value from the original map
-                    data_t *orig_value = ar_data__get_map_data(ref_value, key);
-                    if (orig_value) {
-                        // Recursively copy the value
-                        data_t *copy_value = _copy_data_value(orig_value);
-                        if (copy_value) {
-                            bool success = ar_data__set_map_data(new_map, key, copy_value);
-                            if (!success) {
-                                fprintf(stderr, "ERROR: Failed to set map data for key '%s'\n", key);
-                                ar_data__destroy(copy_value);
-                            }
-                        }
-                    }
-                    
-                    // Remove and destroy the processed key
-                    data_t *removed_key = ar_data__list_remove_first(keys);
-                    ar_data__destroy(removed_key);
-                }
-                
-                // Clean up the keys list
-                ar_data__destroy(keys);
-                
-                return new_map;
-            }
-        case DATA_LIST:
-            // TODO: Implement deep copy for lists
-            return ar_data__create_list();
-        default:
-            return NULL;
-    }
-}
 
 /* Helper function to store result in memory if assignment path is provided */
 static bool _store_result_if_assigned(
@@ -191,6 +137,7 @@ ar_parse_instruction_evaluator_t* ar_parse_instruction_evaluator__create(
     
     own_evaluator->ref_expr_evaluator = ref_expr_evaluator;
     own_evaluator->mut_memory = mut_memory;
+    own_evaluator->own_error_message = NULL;
     
     // Ownership transferred to caller
     return own_evaluator;
@@ -206,6 +153,11 @@ void ar_parse_instruction_evaluator__destroy(
         return;
     }
     
+    // Free error message if any
+    if (own_evaluator->own_error_message) {
+        AR__HEAP__FREE(own_evaluator->own_error_message);
+    }
+    
     AR__HEAP__FREE(own_evaluator);
 }
 
@@ -219,6 +171,9 @@ bool ar_parse_instruction_evaluator__evaluate(
     if (!mut_evaluator || !ref_ast) {
         return false;
     }
+    
+    // Clear any previous error
+    _set_error(mut_evaluator, NULL);
     
     // Verify this is a parse AST node
     if (ar_instruction_ast__get_type(ref_ast) != AR_INST__PARSE) {
@@ -269,8 +224,9 @@ bool ar_parse_instruction_evaluator__evaluate(
         own_template_data = template_result;
     } else {
         // It's owned by someone else - we need to make a copy
-        own_template_data = _copy_data_value(template_result);
+        own_template_data = ar_data__shallow_copy(template_result);
         if (!own_template_data) {
+            _set_error(mut_evaluator, "Cannot parse with nested containers in template (no deep copy support)");
             AR__HEAP__FREE(items);
             return false;
         }
@@ -296,8 +252,9 @@ bool ar_parse_instruction_evaluator__evaluate(
         own_input_data = input_result;
     } else {
         // It's owned by someone else - we need to make a copy
-        own_input_data = _copy_data_value(input_result);
+        own_input_data = ar_data__shallow_copy(input_result);
         if (!own_input_data) {
+            _set_error(mut_evaluator, "Cannot parse with nested containers in input (no deep copy support)");
             ar_data__destroy(own_template_data);
             AR__HEAP__FREE(items);
             return false;
@@ -452,5 +409,14 @@ bool ar_parse_instruction_evaluator__evaluate(
     
     // Store result if assigned, otherwise just destroy it
     return _store_result_if_assigned(mut_evaluator->mut_memory, ref_ast, own_result);
+}
+
+const char* ar_parse_instruction_evaluator__get_error(
+    const ar_parse_instruction_evaluator_t *ref_evaluator
+) {
+    if (!ref_evaluator) {
+        return NULL;
+    }
+    return ref_evaluator->own_error_message;
 }
 
