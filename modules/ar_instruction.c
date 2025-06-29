@@ -51,7 +51,7 @@ static void _set_error(instruction_context_t *mut_ctx, const char *ref_message, 
 static void _clear_error(instruction_context_t *mut_ctx);
 
 // Create a new instruction context
-instruction_context_t* ar__instruction__create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message) {
+instruction_context_t* ar_instruction__create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message) {
     // Allocate memory for the context
     instruction_context_t *own_ctx = (instruction_context_t*)AR__HEAP__MALLOC(sizeof(instruction_context_t), "Instruction context");
     if (!own_ctx) {
@@ -70,7 +70,7 @@ instruction_context_t* ar__instruction__create_context(data_t *mut_memory, const
 }
 
 // Destroy an instruction context
-void ar__instruction__destroy_context(instruction_context_t *own_ctx) {
+void ar_instruction__destroy_context(instruction_context_t *own_ctx) {
     if (own_ctx) {
         // Free the owned error message if any
         if (own_ctx->own_error_message) {
@@ -82,7 +82,7 @@ void ar__instruction__destroy_context(instruction_context_t *own_ctx) {
 }
 
 // Get the memory from the instruction context
-data_t* ar__instruction__get_memory(const instruction_context_t *ref_ctx) {
+data_t* ar_instruction__get_memory(const instruction_context_t *ref_ctx) {
     if (!ref_ctx) {
         return NULL;
     }
@@ -90,7 +90,7 @@ data_t* ar__instruction__get_memory(const instruction_context_t *ref_ctx) {
 }
 
 // Get the context data from the instruction context
-const data_t* ar__instruction__get_context(const instruction_context_t *ref_ctx) {
+const data_t* ar_instruction__get_context(const instruction_context_t *ref_ctx) {
     if (!ref_ctx) {
         return NULL;
     }
@@ -98,7 +98,7 @@ const data_t* ar__instruction__get_context(const instruction_context_t *ref_ctx)
 }
 
 // Get the message from the instruction context
-const data_t* ar__instruction__get_message(const instruction_context_t *ref_ctx) {
+const data_t* ar_instruction__get_message(const instruction_context_t *ref_ctx) {
     if (!ref_ctx) {
         return NULL;
     }
@@ -108,7 +108,7 @@ const data_t* ar__instruction__get_message(const instruction_context_t *ref_ctx)
 
 // Parse and execute a single instruction
 // This is now the main parse function that builds AST
-parsed_instruction_t* ar__instruction__parse(const char *ref_instruction, instruction_context_t *mut_ctx) {
+parsed_instruction_t* ar_instruction__parse(const char *ref_instruction, instruction_context_t *mut_ctx) {
     if (!mut_ctx || !ref_instruction) {
         return NULL;
     }
@@ -137,7 +137,7 @@ static parsed_instruction_t* _create_parsed_instruction(void) {
 }
 
 // Destroys a parsed instruction and frees its resources
-void ar__instruction__destroy_parsed(parsed_instruction_t *own_parsed) {
+void ar_instruction__destroy_parsed(parsed_instruction_t *own_parsed) {
     if (!own_parsed) {
         return;
     }
@@ -172,7 +172,7 @@ void ar__instruction__destroy_parsed(parsed_instruction_t *own_parsed) {
 }
 
 // Gets the type of a parsed instruction
-instruction_type_t ar__instruction__get_type(const parsed_instruction_t *ref_parsed) {
+instruction_type_t ar_instruction__get_type(const parsed_instruction_t *ref_parsed) {
     if (!ref_parsed) {
         return INST_ASSIGNMENT; // Default, though caller should check for NULL
     }
@@ -180,7 +180,7 @@ instruction_type_t ar__instruction__get_type(const parsed_instruction_t *ref_par
 }
 
 // Gets the memory path for an assignment instruction
-const char* ar__instruction__get_assignment_path(const parsed_instruction_t *ref_parsed) {
+const char* ar_instruction__get_assignment_path(const parsed_instruction_t *ref_parsed) {
     if (!ref_parsed || ref_parsed->type != INST_ASSIGNMENT) {
         return NULL;
     }
@@ -188,7 +188,7 @@ const char* ar__instruction__get_assignment_path(const parsed_instruction_t *ref
 }
 
 // Gets the expression for an assignment instruction
-const char* ar__instruction__get_assignment_expression(const parsed_instruction_t *ref_parsed) {
+const char* ar_instruction__get_assignment_expression(const parsed_instruction_t *ref_parsed) {
     if (!ref_parsed || ref_parsed->type != INST_ASSIGNMENT) {
         return NULL;
     }
@@ -196,7 +196,7 @@ const char* ar__instruction__get_assignment_expression(const parsed_instruction_
 }
 
 // Gets function call details from a parsed instruction
-bool ar__instruction__get_function_call(const parsed_instruction_t *ref_parsed,
+bool ar_instruction__get_function_call(const parsed_instruction_t *ref_parsed,
                                         const char **out_function_name,
                                         const char ***out_args,
                                         int *out_arg_count,
@@ -271,10 +271,10 @@ static parsed_instruction_t* _parse_assignment(instruction_context_t *mut_ctx, c
     
     // Validate that the right-hand side is a valid expression by trying to parse it
     // This follows the original implementation approach
-    expression_context_t *own_expr_test = ar__expression__create_context(
-        ar__instruction__get_memory(mut_ctx),
-        ar__instruction__get_context(mut_ctx), 
-        ar__instruction__get_message(mut_ctx),
+    expression_context_t *own_expr_test = ar_expression__create_context(
+        ar_instruction__get_memory(mut_ctx),
+        ar_instruction__get_context(mut_ctx), 
+        ar_instruction__get_message(mut_ctx),
         ref_instruction + *mut_pos
     );
     
@@ -284,9 +284,9 @@ static parsed_instruction_t* _parse_assignment(instruction_context_t *mut_ctx, c
     }
     
     // Try to evaluate the expression - if this fails, it's not a valid expression
-    const data_t *ref_test_result = ar__expression__evaluate(own_expr_test);
-    int expr_offset = ar__expression__offset(own_expr_test);
-    ar__expression__destroy_context(own_expr_test);
+    const data_t *ref_test_result = ar_expression__evaluate(own_expr_test);
+    int expr_offset = ar_expression__offset(own_expr_test);
+    ar_expression__destroy_context(own_expr_test);
     
     if (!ref_test_result || expr_offset == 0) {
         // Expression evaluation failed - this should be handled by function instruction parser
@@ -323,7 +323,7 @@ static parsed_instruction_t* _parse_assignment(instruction_context_t *mut_ctx, c
     // Copy the expression
     own_result->own_assignment_expression = AR__HEAP__MALLOC(expr_len + 1, "Assignment expression");
     if (!own_result->own_assignment_expression) {
-        ar__instruction__destroy_parsed(own_result);
+        ar_instruction__destroy_parsed(own_result);
         return NULL;
     }
     
@@ -475,7 +475,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
     // Set function name
     own_result->own_function_name = AR__HEAP__STRDUP(function_name, "Function name");
     if (!own_result->own_function_name) {
-        ar__instruction__destroy_parsed(own_result);
+        ar_instruction__destroy_parsed(own_result);
         return NULL;
     }
     
@@ -487,7 +487,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
         // Allocate args array for 2 arguments
         own_result->own_args = AR__HEAP__MALLOC(2 * sizeof(char*), "Send arguments");
         if (!own_result->own_args) {
-            ar__instruction__destroy_parsed(own_result);
+            ar_instruction__destroy_parsed(own_result);
             return NULL;
         }
         own_result->arg_count = 0;
@@ -514,7 +514,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
         
         if (ref_instruction[*mut_pos] != ',') {
             _set_error(mut_ctx, "send() requires exactly 2 arguments", *mut_pos);
-            ar__instruction__destroy_parsed(own_result);
+            ar_instruction__destroy_parsed(own_result);
             return NULL;
         }
         
@@ -522,7 +522,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
         int arg_len = *mut_pos - arg_start;
         own_result->own_args[0] = AR__HEAP__MALLOC((size_t)(arg_len + 1), "Agent ID expression");
         if (!own_result->own_args[0]) {
-            ar__instruction__destroy_parsed(own_result);
+            ar_instruction__destroy_parsed(own_result);
             return NULL;
         }
         memcpy(own_result->own_args[0], ref_instruction + arg_start, (size_t)arg_len);
@@ -555,7 +555,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
         
         if (ref_instruction[*mut_pos] != ')') {
             _set_error(mut_ctx, "Expected ')' after send() arguments", *mut_pos);
-            ar__instruction__destroy_parsed(own_result);
+            ar_instruction__destroy_parsed(own_result);
             return NULL;
         }
         
@@ -563,7 +563,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
         arg_len = *mut_pos - arg_start;
         own_result->own_args[1] = AR__HEAP__MALLOC((size_t)(arg_len + 1), "Message expression");
         if (!own_result->own_args[1]) {
-            ar__instruction__destroy_parsed(own_result);
+            ar_instruction__destroy_parsed(own_result);
             return NULL;
         }
         memcpy(own_result->own_args[1], ref_instruction + arg_start, (size_t)arg_len);
@@ -587,7 +587,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
         // Allocate args array for 3 arguments
         own_result->own_args = AR__HEAP__MALLOC(3 * sizeof(char*), "If arguments");
         if (!own_result->own_args) {
-            ar__instruction__destroy_parsed(own_result);
+            ar_instruction__destroy_parsed(own_result);
             return NULL;
         }
         own_result->arg_count = 0;
@@ -620,7 +620,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
             
             if (ref_instruction[*mut_pos] != target_char) {
                 _set_error(mut_ctx, "if() requires exactly 3 arguments", *mut_pos);
-                ar__instruction__destroy_parsed(own_result);
+                ar_instruction__destroy_parsed(own_result);
                 return NULL;
             }
             
@@ -636,7 +636,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
             
             own_result->own_args[i] = AR__HEAP__MALLOC((size_t)(arg_len + 1), "If argument");
             if (!own_result->own_args[i]) {
-                ar__instruction__destroy_parsed(own_result);
+                ar_instruction__destroy_parsed(own_result);
                 return NULL;
             }
             memcpy(own_result->own_args[i], ref_instruction + arg_start, (size_t)arg_len);
@@ -667,7 +667,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
         // Allocate args array for 2 arguments
         own_result->own_args = AR__HEAP__MALLOC(2 * sizeof(char*), "Parse arguments");
         if (!own_result->own_args) {
-            ar__instruction__destroy_parsed(own_result);
+            ar_instruction__destroy_parsed(own_result);
             return NULL;
         }
         own_result->arg_count = 0;
@@ -697,7 +697,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
         
         if (ref_instruction[*mut_pos] != ',') {
             _set_error(mut_ctx, "Expected ',' after first parse() argument", *mut_pos);
-            ar__instruction__destroy_parsed(own_result);
+            ar_instruction__destroy_parsed(own_result);
             return NULL;
         }
         
@@ -705,7 +705,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
         int arg_len = *mut_pos - arg_start;
         own_result->own_args[0] = AR__HEAP__MALLOC((size_t)(arg_len + 1), "Parse template argument");
         if (!own_result->own_args[0]) {
-            ar__instruction__destroy_parsed(own_result);
+            ar_instruction__destroy_parsed(own_result);
             return NULL;
         }
         memcpy(own_result->own_args[0], ref_instruction + arg_start, (size_t)arg_len);
@@ -738,7 +738,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
         
         if (ref_instruction[*mut_pos] != ')') {
             _set_error(mut_ctx, "Expected ')' after second parse() argument", *mut_pos);
-            ar__instruction__destroy_parsed(own_result);
+            ar_instruction__destroy_parsed(own_result);
             return NULL;
         }
         
@@ -746,7 +746,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
         arg_len = *mut_pos - arg_start;
         own_result->own_args[1] = AR__HEAP__MALLOC((size_t)(arg_len + 1), "Parse input argument");
         if (!own_result->own_args[1]) {
-            ar__instruction__destroy_parsed(own_result);
+            ar_instruction__destroy_parsed(own_result);
             return NULL;
         }
         memcpy(own_result->own_args[1], ref_instruction + arg_start, (size_t)arg_len);
@@ -770,7 +770,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
         // Allocate args array for 2 arguments
         own_result->own_args = AR__HEAP__MALLOC(2 * sizeof(char*), "Build arguments");
         if (!own_result->own_args) {
-            ar__instruction__destroy_parsed(own_result);
+            ar_instruction__destroy_parsed(own_result);
             return NULL;
         }
         own_result->arg_count = 0;
@@ -797,7 +797,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
         
         if (ref_instruction[*mut_pos] != ',') {
             _set_error(mut_ctx, "build() requires exactly 2 arguments", *mut_pos);
-            ar__instruction__destroy_parsed(own_result);
+            ar_instruction__destroy_parsed(own_result);
             return NULL;
         }
         
@@ -813,7 +813,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
         
         own_result->own_args[0] = AR__HEAP__MALLOC((size_t)(arg_len + 1), "Template expression");
         if (!own_result->own_args[0]) {
-            ar__instruction__destroy_parsed(own_result);
+            ar_instruction__destroy_parsed(own_result);
             return NULL;
         }
         memcpy(own_result->own_args[0], ref_instruction + arg_start, (size_t)arg_len);
@@ -846,7 +846,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
         
         if (ref_instruction[*mut_pos] != ')') {
             _set_error(mut_ctx, "Expected ')' after build() arguments", *mut_pos);
-            ar__instruction__destroy_parsed(own_result);
+            ar_instruction__destroy_parsed(own_result);
             return NULL;
         }
         
@@ -862,7 +862,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
         
         own_result->own_args[1] = AR__HEAP__MALLOC((size_t)(arg_len + 1), "Map expression");
         if (!own_result->own_args[1]) {
-            ar__instruction__destroy_parsed(own_result);
+            ar_instruction__destroy_parsed(own_result);
             return NULL;
         }
         memcpy(own_result->own_args[1], ref_instruction + arg_start, (size_t)arg_len);
@@ -886,7 +886,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
         // Allocate args array for 3 arguments
         own_result->own_args = AR__HEAP__MALLOC(3 * sizeof(char*), "Method arguments");
         if (!own_result->own_args) {
-            ar__instruction__destroy_parsed(own_result);
+            ar_instruction__destroy_parsed(own_result);
             return NULL;
         }
         own_result->arg_count = 0;
@@ -919,7 +919,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
             
             if (ref_instruction[*mut_pos] != target_char) {
                 _set_error(mut_ctx, "method() requires exactly 3 arguments", *mut_pos);
-                ar__instruction__destroy_parsed(own_result);
+                ar_instruction__destroy_parsed(own_result);
                 return NULL;
             }
             
@@ -936,7 +936,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
             own_result->own_args[i] = AR__HEAP__MALLOC((size_t)(arg_len + 1), 
                 (i == 0) ? "Method name" : (i == 1) ? "Method instructions" : "Method version");
             if (!own_result->own_args[i]) {
-                ar__instruction__destroy_parsed(own_result);
+                ar_instruction__destroy_parsed(own_result);
                 return NULL;
             }
             memcpy(own_result->own_args[i], ref_instruction + arg_start, (size_t)arg_len);
@@ -966,7 +966,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
         // Allocate args array for 3 arguments
         own_result->own_args = AR__HEAP__MALLOC(3 * sizeof(char*), "Agent arguments");
         if (!own_result->own_args) {
-            ar__instruction__destroy_parsed(own_result);
+            ar_instruction__destroy_parsed(own_result);
             return NULL;
         }
         own_result->arg_count = 0;
@@ -999,7 +999,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
             
             if (ref_instruction[*mut_pos] != target_char) {
                 _set_error(mut_ctx, "agent() requires exactly 3 arguments", *mut_pos);
-                ar__instruction__destroy_parsed(own_result);
+                ar_instruction__destroy_parsed(own_result);
                 return NULL;
             }
             
@@ -1016,7 +1016,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
             own_result->own_args[i] = AR__HEAP__MALLOC((size_t)(arg_len + 1), 
                 (i == 0) ? "Method name" : (i == 1) ? "Version" : "Context");
             if (!own_result->own_args[i]) {
-                ar__instruction__destroy_parsed(own_result);
+                ar_instruction__destroy_parsed(own_result);
                 return NULL;
             }
             memcpy(own_result->own_args[i], ref_instruction + arg_start, (size_t)arg_len);
@@ -1046,7 +1046,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
         // Allocate args array - destroy can have 1 or 2 arguments
         own_result->own_args = AR__HEAP__MALLOC(sizeof(char*) * 2, "Destroy arguments");
         if (!own_result->own_args) {
-            ar__instruction__destroy_parsed(own_result);
+            ar_instruction__destroy_parsed(own_result);
             return NULL;
         }
         own_result->own_args[0] = NULL;
@@ -1081,7 +1081,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
         int arg_len = *mut_pos - arg_start;
         own_result->own_args[0] = AR__HEAP__MALLOC((size_t)(arg_len + 1), "Destroy first argument");
         if (!own_result->own_args[0]) {
-            ar__instruction__destroy_parsed(own_result);
+            ar_instruction__destroy_parsed(own_result);
             return NULL;
         }
         memcpy(own_result->own_args[0], ref_instruction + arg_start, (size_t)arg_len);
@@ -1121,7 +1121,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
             arg_len = *mut_pos - arg_start;
             own_result->own_args[1] = AR__HEAP__MALLOC((size_t)(arg_len + 1), "Destroy version argument");
             if (!own_result->own_args[1]) {
-                ar__instruction__destroy_parsed(own_result);
+                ar_instruction__destroy_parsed(own_result);
                 return NULL;
             }
             memcpy(own_result->own_args[1], ref_instruction + arg_start, (size_t)arg_len);
@@ -1133,7 +1133,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
         
         // Expect closing parenthesis
         if (ref_instruction[*mut_pos] != ')') {
-            ar__instruction__destroy_parsed(own_result);
+            ar_instruction__destroy_parsed(own_result);
             return NULL;
         }
         (*mut_pos)++; // Skip ')'
@@ -1143,7 +1143,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
     }
     else {
         // Unknown function - return NULL to indicate parsing error
-        ar__instruction__destroy_parsed(own_result);
+        ar_instruction__destroy_parsed(own_result);
         return NULL;
     }
     
@@ -1153,7 +1153,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
 // Error reporting functions
 
 // Gets the last error message from the instruction context
-const char* ar__instruction__get_last_error(const instruction_context_t *ref_ctx) {
+const char* ar_instruction__get_last_error(const instruction_context_t *ref_ctx) {
     if (!ref_ctx) {
         return NULL;
     }
@@ -1161,7 +1161,7 @@ const char* ar__instruction__get_last_error(const instruction_context_t *ref_ctx
 }
 
 // Gets the position in the instruction string where the last error occurred
-int ar__instruction__get_error_position(const instruction_context_t *ref_ctx) {
+int ar_instruction__get_error_position(const instruction_context_t *ref_ctx) {
     if (!ref_ctx) {
         return 0;
     }

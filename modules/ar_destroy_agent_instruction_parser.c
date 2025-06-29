@@ -151,15 +151,15 @@ static char* _extract_argument(const char *str, size_t *pos, char delimiter) {
  */
 static void _cleanup_arg_asts(list_t *arg_asts) {
     if (arg_asts) {
-        void **items = ar__list__items(arg_asts);
+        void **items = ar_list__items(arg_asts);
         if (items) {
-            size_t list_count = ar__list__count(arg_asts);
+            size_t list_count = ar_list__count(arg_asts);
             for (size_t j = 0; j < list_count; j++) {
-                ar__expression_ast__destroy((ar_expression_ast_t*)items[j]);
+                ar_expression_ast__destroy((ar_expression_ast_t*)items[j]);
             }
             AR__HEAP__FREE(items);
         }
-        ar__list__destroy(arg_asts);
+        ar_list__destroy(arg_asts);
     }
 }
 
@@ -169,43 +169,43 @@ static void _cleanup_arg_asts(list_t *arg_asts) {
 static list_t* _parse_argument_to_ast(ar_destroy_agent_instruction_parser_t *mut_parser, 
                                       const char *ref_arg,
                                       size_t error_offset) {
-    list_t *own_arg_asts = ar__list__create();
+    list_t *own_arg_asts = ar_list__create();
     if (!own_arg_asts) {
         _set_error(mut_parser, "Failed to create argument AST list", error_offset);
         return NULL;
     }
     
-    ar_expression_parser_t *own_expr_parser = ar__expression_parser__create(ref_arg);
+    ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(ref_arg);
     if (!own_expr_parser) {
-        ar__list__destroy(own_arg_asts);
+        ar_list__destroy(own_arg_asts);
         _set_error(mut_parser, "Failed to create expression parser", error_offset);
         return NULL;
     }
     
-    ar_expression_ast_t *own_expr_ast = ar__expression_parser__parse_expression(own_expr_parser);
+    ar_expression_ast_t *own_expr_ast = ar_expression_parser__parse_expression(own_expr_parser);
     if (!own_expr_ast) {
-        const char *expr_error = ar__expression_parser__get_error(own_expr_parser);
+        const char *expr_error = ar_expression_parser__get_error(own_expr_parser);
         // Copy error message before destroying parser
         char *own_error_copy = NULL;
         if (expr_error) {
             own_error_copy = AR__HEAP__STRDUP(expr_error, "error message copy");
         }
-        ar__list__destroy(own_arg_asts);
-        ar__expression_parser__destroy(own_expr_parser);
+        ar_list__destroy(own_arg_asts);
+        ar_expression_parser__destroy(own_expr_parser);
         _set_error(mut_parser, own_error_copy ? own_error_copy : "Failed to parse argument expression", error_offset);
         AR__HEAP__FREE(own_error_copy);
         return NULL;
     }
     
-    if (!ar__list__add_last(own_arg_asts, own_expr_ast)) {
-        ar__list__destroy(own_arg_asts);
-        ar__expression_ast__destroy(own_expr_ast);
-        ar__expression_parser__destroy(own_expr_parser);
+    if (!ar_list__add_last(own_arg_asts, own_expr_ast)) {
+        ar_list__destroy(own_arg_asts);
+        ar_expression_ast__destroy(own_expr_ast);
+        ar_expression_parser__destroy(own_expr_parser);
         _set_error(mut_parser, "Failed to add argument AST to list", error_offset);
         return NULL;
     }
     
-    ar__expression_parser__destroy(own_expr_parser);
+    ar_expression_parser__destroy(own_expr_parser);
     
     return own_arg_asts;
 }
@@ -283,7 +283,7 @@ ar_instruction_ast_t* ar_destroy_agent_instruction_parser__parse(
     
     /* Create AST node */
     const char *const_args[] = { arg };
-    ar_instruction_ast_t *own_ast = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *own_ast = ar_instruction_ast__create_function_call(
         AR_INST__DESTROY_AGENT, "destroy", const_args, 1, ref_result_path
     );
     
@@ -300,12 +300,12 @@ ar_instruction_ast_t* ar_destroy_agent_instruction_parser__parse(
     AR__HEAP__FREE(arg);
     
     if (!own_arg_asts) {
-        ar__instruction_ast__destroy(own_ast);
+        ar_instruction_ast__destroy(own_ast);
         return NULL;
     }
     
-    if (!ar__instruction_ast__set_function_arg_asts(own_ast, own_arg_asts)) {
-        ar__instruction_ast__destroy(own_ast);
+    if (!ar_instruction_ast__set_function_arg_asts(own_ast, own_arg_asts)) {
+        ar_instruction_ast__destroy(own_ast);
         _cleanup_arg_asts(own_arg_asts);
         _set_error(mut_parser, "Failed to set argument ASTs", 0);
         return NULL;

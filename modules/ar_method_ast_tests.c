@@ -55,7 +55,7 @@ static void test_method_ast__add_instruction(void) {
     ar_method_ast_t *own_ast = ar_method_ast__create();
     assert(own_ast != NULL);
     
-    ar_instruction_ast_t *own_instruction = ar__instruction_ast__create_assignment("memory.x", "42");
+    ar_instruction_ast_t *own_instruction = ar_instruction_ast__create_assignment("memory.x", "42");
     assert(own_instruction != NULL);
     
     // When adding the instruction to the AST
@@ -75,7 +75,7 @@ static void test_method_ast__add_instruction_null_ast(void) {
     printf("Testing method AST add instruction with NULL AST...\n");
     
     // Given a parsed instruction but NULL AST
-    ar_instruction_ast_t *own_instruction = ar__instruction_ast__create_assignment("memory.x", "42");
+    ar_instruction_ast_t *own_instruction = ar_instruction_ast__create_assignment("memory.x", "42");
     assert(own_instruction != NULL);
     
     // When adding the instruction to NULL AST
@@ -101,7 +101,7 @@ static void test_method_ast__get_instruction_count(void) {
     assert(count == 0);
     
     // When adding an instruction
-    ar_instruction_ast_t *own_instruction1 = ar__instruction_ast__create_assignment("memory.x", "42");
+    ar_instruction_ast_t *own_instruction1 = ar_instruction_ast__create_assignment("memory.x", "42");
     ar_method_ast__add_instruction(own_ast, own_instruction1);
     
     // Then count should be 1
@@ -109,7 +109,7 @@ static void test_method_ast__get_instruction_count(void) {
     assert(count == 1);
     
     // When adding another instruction
-    ar_instruction_ast_t *own_instruction2 = ar__instruction_ast__create_assignment("memory.y", "100");
+    ar_instruction_ast_t *own_instruction2 = ar_instruction_ast__create_assignment("memory.y", "100");
     ar_method_ast__add_instruction(own_ast, own_instruction2);
     
     // Then count should be 2
@@ -144,13 +144,13 @@ static void test_method_ast__get_instruction_by_line(void) {
     assert(own_ast != NULL);
     
     // Add three instructions
-    ar_instruction_ast_t *own_instruction1 = ar__instruction_ast__create_assignment("memory.x", "10");
+    ar_instruction_ast_t *own_instruction1 = ar_instruction_ast__create_assignment("memory.x", "10");
     ar_method_ast__add_instruction(own_ast, own_instruction1);
     
-    ar_instruction_ast_t *own_instruction2 = ar__instruction_ast__create_assignment("memory.y", "20");
+    ar_instruction_ast_t *own_instruction2 = ar_instruction_ast__create_assignment("memory.y", "20");
     ar_method_ast__add_instruction(own_ast, own_instruction2);
     
-    ar_instruction_ast_t *own_instruction3 = ar__instruction_ast__create_assignment("memory.z", "30");
+    ar_instruction_ast_t *own_instruction3 = ar_instruction_ast__create_assignment("memory.z", "30");
     ar_method_ast__add_instruction(own_ast, own_instruction3);
     
     // When getting instruction at line 1
@@ -158,21 +158,21 @@ static void test_method_ast__get_instruction_by_line(void) {
     
     // Then it should return the first instruction
     assert(ref_instr1 != NULL);
-    assert(ar__instruction_ast__get_type(ref_instr1) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(ref_instr1) == AR_INST__ASSIGNMENT);
     
     // When getting instruction at line 2
     const ar_instruction_ast_t *ref_instr2 = ar_method_ast__get_instruction(own_ast, 2);
     
     // Then it should return the second instruction
     assert(ref_instr2 != NULL);
-    assert(ar__instruction_ast__get_type(ref_instr2) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(ref_instr2) == AR_INST__ASSIGNMENT);
     
     // When getting instruction at line 3
     const ar_instruction_ast_t *ref_instr3 = ar_method_ast__get_instruction(own_ast, 3);
     
     // Then it should return the third instruction
     assert(ref_instr3 != NULL);
-    assert(ar__instruction_ast__get_type(ref_instr3) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(ref_instr3) == AR_INST__ASSIGNMENT);
     
     // When getting instruction at line 0 (invalid)
     const ar_instruction_ast_t *ref_instr0 = ar_method_ast__get_instruction(own_ast, 0);
@@ -220,7 +220,7 @@ static void test_method_ast__memory_stress_test(void) {
         snprintf(memory_path, sizeof(memory_path), "memory.var%d", i);
         snprintf(expression, sizeof(expression), "%d", i * 10);
         
-        ar_instruction_ast_t *own_instruction = ar__instruction_ast__create_assignment(memory_path, expression);
+        ar_instruction_ast_t *own_instruction = ar_instruction_ast__create_assignment(memory_path, expression);
         assert(own_instruction != NULL);
         ar_method_ast__add_instruction(own_ast, own_instruction);
     }
@@ -232,7 +232,7 @@ static void test_method_ast__memory_stress_test(void) {
     for (size_t i = 1; i <= STRESS_TEST_INSTRUCTION_COUNT; i++) {
         const ar_instruction_ast_t *ref_instruction = ar_method_ast__get_instruction(own_ast, i);
         assert(ref_instruction != NULL);
-        assert(ar__instruction_ast__get_type(ref_instruction) == AR_INST__ASSIGNMENT);
+        assert(ar_instruction_ast__get_type(ref_instruction) == AR_INST__ASSIGNMENT);
     }
     
     // Cleanup - this should free all instructions without leaks
@@ -256,7 +256,7 @@ static void test_method_ast__memory_mixed_operations(void) {
         snprintf(memory_path, sizeof(memory_path), "memory.x%d", i);
         snprintf(expression, sizeof(expression), "memory.y + %d", i);
         
-        ar_instruction_ast_t *own_instruction = ar__instruction_ast__create_assignment(memory_path, expression);
+        ar_instruction_ast_t *own_instruction = ar_instruction_ast__create_assignment(memory_path, expression);
         ar_method_ast__add_instruction(own_ast, own_instruction);
     }
     
@@ -275,7 +275,7 @@ static void test_method_ast__memory_mixed_operations(void) {
         snprintf(memory_path, sizeof(memory_path), "memory.msg%d", i);
         snprintf(expression, sizeof(expression), "\"message%d\"", i);
         
-        ar_instruction_ast_t *own_instruction = ar__instruction_ast__create_assignment(memory_path, expression);
+        ar_instruction_ast_t *own_instruction = ar_instruction_ast__create_assignment(memory_path, expression);
         ar_method_ast__add_instruction(own_ast, own_instruction);
     }
     
@@ -310,7 +310,7 @@ static void test_method_ast__memory_repeated_access(void) {
         snprintf(memory_path, sizeof(memory_path), "memory.var%zu", i);
         snprintf(expression, sizeof(expression), "%zu", i * 100);
         
-        ar_instruction_ast_t *own_instruction = ar__instruction_ast__create_assignment(memory_path, expression);
+        ar_instruction_ast_t *own_instruction = ar_instruction_ast__create_assignment(memory_path, expression);
         assert(own_instruction != NULL);
         ar_method_ast__add_instruction(own_ast, own_instruction);
     }

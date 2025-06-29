@@ -19,7 +19,7 @@ struct system_fixture_s {
     bool initialized;             /* Whether fixture has been initialized */
 };
 
-system_fixture_t* ar__system_fixture__create(const char *ref_test_name) {
+system_fixture_t* ar_system_fixture__create(const char *ref_test_name) {
     if (!ref_test_name) {
         return NULL;
     }
@@ -40,16 +40,16 @@ system_fixture_t* ar__system_fixture__create(const char *ref_test_name) {
     return own_fixture; // Ownership transferred to caller
 }
 
-void ar__system_fixture__destroy(system_fixture_t *own_fixture) {
+void ar_system_fixture__destroy(system_fixture_t *own_fixture) {
     if (!own_fixture) {
         return;
     }
     
     // If initialized, perform cleanup
     if (own_fixture->initialized) {
-        ar__system__shutdown();
-        ar__methodology__cleanup();
-        ar__agency__reset();
+        ar_system__shutdown();
+        ar_methodology__cleanup();
+        ar_agency__reset();
         
         // Remove persistence files
         remove("methodology.agerun");
@@ -60,22 +60,22 @@ void ar__system_fixture__destroy(system_fixture_t *own_fixture) {
     AR__HEAP__FREE(own_fixture);
 }
 
-bool ar__system_fixture__initialize(system_fixture_t *mut_fixture) {
+bool ar_system_fixture__initialize(system_fixture_t *mut_fixture) {
     if (!mut_fixture) {
         return false;
     }
     
     // Clean shutdown of any existing state
-    ar__system__shutdown();
-    ar__methodology__cleanup();
-    ar__agency__reset();
+    ar_system__shutdown();
+    ar_methodology__cleanup();
+    ar_agency__reset();
     
     // Remove persistence files
     remove("methodology.agerun");
     remove("agency.agerun");
     
     // Initialize system with no persistence files
-    if (ar__system__init(NULL, NULL) != 1) {
+    if (ar_system__init(NULL, NULL) != 1) {
         // System already initialized is okay
     }
     
@@ -84,7 +84,7 @@ bool ar__system_fixture__initialize(system_fixture_t *mut_fixture) {
     return true;
 }
 
-method_t* ar__system_fixture__register_method(system_fixture_t *mut_fixture,
+method_t* ar_system_fixture__register_method(system_fixture_t *mut_fixture,
                                                 const char *ref_method_name,
                                                 const char *ref_instructions,
                                                 const char *ref_version) {
@@ -97,20 +97,20 @@ method_t* ar__system_fixture__register_method(system_fixture_t *mut_fixture,
     }
     
     // Create method
-    method_t *own_method = ar__method__create(ref_method_name, ref_instructions, ref_version);
+    method_t *own_method = ar_method__create(ref_method_name, ref_instructions, ref_version);
     if (!own_method) {
         return NULL;
     }
     
     // Register with methodology
-    ar__methodology__register_method(own_method);
+    ar_methodology__register_method(own_method);
     
     // Note: ownership was transferred to methodology, but we return the pointer
     // for the test to use (as a borrowed reference)
     return own_method;
 }
 
-const char* ar__system_fixture__get_name(const system_fixture_t *ref_fixture) {
+const char* ar_system_fixture__get_name(const system_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return NULL;
     }
@@ -118,7 +118,7 @@ const char* ar__system_fixture__get_name(const system_fixture_t *ref_fixture) {
     return ref_fixture->own_test_name;
 }
 
-bool ar__system_fixture__check_memory(const system_fixture_t *ref_fixture) {
+bool ar_system_fixture__check_memory(const system_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return false;
     }
@@ -130,31 +130,31 @@ bool ar__system_fixture__check_memory(const system_fixture_t *ref_fixture) {
     return true;
 }
 
-void ar__system_fixture__reset_system(system_fixture_t *mut_fixture) {
+void ar_system_fixture__reset_system(system_fixture_t *mut_fixture) {
     if (!mut_fixture || !mut_fixture->initialized) {
         return;
     }
     
     // Clean shutdown of existing state
-    ar__system__shutdown();
-    ar__methodology__cleanup();
-    ar__agency__reset();
+    ar_system__shutdown();
+    ar_methodology__cleanup();
+    ar_agency__reset();
     
     // Remove persistence files
     remove("methodology.agerun");
     remove("agency.agerun");
     
     // Reinitialize
-    ar__system__init(NULL, NULL);
+    ar_system__init(NULL, NULL);
 }
 
-void ar__system_fixture__shutdown_preserve_files(system_fixture_t *mut_fixture) {
+void ar_system_fixture__shutdown_preserve_files(system_fixture_t *mut_fixture) {
     if (!mut_fixture || !mut_fixture->initialized) {
         return;
     }
     
     // Just shutdown the system - this will save files
-    ar__system__shutdown();
+    ar_system__shutdown();
     
     // Mark as not initialized since system is now shut down
     mut_fixture->initialized = false;

@@ -34,22 +34,22 @@ static void test_send_instruction_parser__parse_simple_send(void) {
     
     // Then it should parse as a send function
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__SEND);
-    assert(strcmp(ar__instruction_ast__get_function_name(own_ast), "send") == 0);
-    assert(ar__instruction_ast__has_result_assignment(own_ast) == false);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__SEND);
+    assert(strcmp(ar_instruction_ast__get_function_name(own_ast), "send") == 0);
+    assert(ar_instruction_ast__has_result_assignment(own_ast) == false);
     
     // Verify arguments
-    list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
+    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
-    assert(ar__list__count(own_args) == 2);
-    void **own_items = ar__list__items(own_args);
+    assert(ar_list__count(own_args) == 2);
+    void **own_items = ar_list__items(own_args);
     assert(own_items != NULL);
     assert(strcmp((const char*)own_items[0], "0") == 0);
     assert(strcmp((const char*)own_items[1], "\"Hello\"") == 0);
     AR__HEAP__FREE(own_items);
-    ar__list__destroy(own_args);
+    ar_list__destroy(own_args);
     
-    ar__instruction_ast__destroy(own_ast);
+    ar_instruction_ast__destroy(own_ast);
     ar_send_instruction_parser__destroy(own_parser);
 }
 
@@ -66,11 +66,11 @@ static void test_send_instruction_parser__parse_send_with_assignment(void) {
     
     // Then it should parse with result assignment
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__SEND);
-    assert(ar__instruction_ast__has_result_assignment(own_ast) == true);
-    assert(strcmp(ar__instruction_ast__get_function_result_path(own_ast), "memory.result") == 0);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__SEND);
+    assert(ar_instruction_ast__has_result_assignment(own_ast) == true);
+    assert(strcmp(ar_instruction_ast__get_function_result_path(own_ast), "memory.result") == 0);
     
-    ar__instruction_ast__destroy(own_ast);
+    ar_instruction_ast__destroy(own_ast);
     ar_send_instruction_parser__destroy(own_parser);
 }
 
@@ -87,20 +87,20 @@ static void test_send_instruction_parser__parse_send_with_expression_args(void) 
     
     // Then it should parse the expressions as arguments
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__SEND);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__SEND);
     
     // Verify arguments
-    list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
+    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
-    assert(ar__list__count(own_args) == 2);
-    void **own_items = ar__list__items(own_args);
+    assert(ar_list__count(own_args) == 2);
+    void **own_items = ar_list__items(own_args);
     assert(own_items != NULL);
     assert(strcmp((const char*)own_items[0], "memory.agent_id") == 0);
     assert(strcmp((const char*)own_items[1], "\"Count: \" + memory.count") == 0);
     AR__HEAP__FREE(own_items);
-    ar__list__destroy(own_args);
+    ar_list__destroy(own_args);
     
-    ar__instruction_ast__destroy(own_ast);
+    ar_instruction_ast__destroy(own_ast);
     ar_send_instruction_parser__destroy(own_parser);
 }
 
@@ -157,20 +157,20 @@ static void test_send_instruction_parser__parse_nested_parentheses(void) {
     
     // Then it should handle nested parentheses correctly
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__SEND);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__SEND);
     
     // Verify arguments
-    list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
+    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
-    assert(ar__list__count(own_args) == 2);
-    void **own_items = ar__list__items(own_args);
+    assert(ar_list__count(own_args) == 2);
+    void **own_items = ar_list__items(own_args);
     assert(own_items != NULL);
     assert(strcmp((const char*)own_items[0], "0") == 0);
     assert(strcmp((const char*)own_items[1], "build(\"Hello {0}\", memory.name)") == 0);
     AR__HEAP__FREE(own_items);
-    ar__list__destroy(own_args);
+    ar_list__destroy(own_args);
     
-    ar__instruction_ast__destroy(own_ast);
+    ar_instruction_ast__destroy(own_ast);
     ar_send_instruction_parser__destroy(own_parser);
 }
 */
@@ -194,25 +194,25 @@ static void test_send_instruction_parser__reusability(void) {
     assert(own_ast2 != NULL);
     
     // Verify first instruction
-    list_t *own_args1 = ar__instruction_ast__get_function_args(own_ast1);
+    list_t *own_args1 = ar_instruction_ast__get_function_args(own_ast1);
     assert(own_args1 != NULL);
-    void **own_items1 = ar__list__items(own_args1);
+    void **own_items1 = ar_list__items(own_args1);
     assert(strcmp((const char*)own_items1[0], "0") == 0);
     assert(strcmp((const char*)own_items1[1], "\"First\"") == 0);
     AR__HEAP__FREE(own_items1);
-    ar__list__destroy(own_args1);
+    ar_list__destroy(own_args1);
     
     // Verify second instruction
-    list_t *own_args2 = ar__instruction_ast__get_function_args(own_ast2);
+    list_t *own_args2 = ar_instruction_ast__get_function_args(own_ast2);
     assert(own_args2 != NULL);
-    void **own_items2 = ar__list__items(own_args2);
+    void **own_items2 = ar_list__items(own_args2);
     assert(strcmp((const char*)own_items2[0], "1") == 0);
     assert(strcmp((const char*)own_items2[1], "\"Second\"") == 0);
     AR__HEAP__FREE(own_items2);
-    ar__list__destroy(own_args2);
+    ar_list__destroy(own_args2);
     
-    ar__instruction_ast__destroy(own_ast1);
-    ar__instruction_ast__destroy(own_ast2);
+    ar_instruction_ast__destroy(own_ast1);
+    ar_instruction_ast__destroy(own_ast2);
     ar_send_instruction_parser__destroy(own_parser);
 }
 
@@ -229,29 +229,29 @@ static void test_send_instruction_parser__parse_with_expression_asts(void) {
     
     // Then it should parse successfully with argument ASTs
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__SEND);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__SEND);
     
     // And the arguments should be available as expression ASTs
-    const list_t *ref_arg_asts = ar__instruction_ast__get_function_arg_asts(own_ast);
+    const list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
     assert(ref_arg_asts != NULL);
-    assert(ar__list__count(ref_arg_asts) == 2);
+    assert(ar_list__count(ref_arg_asts) == 2);
     
     // First argument should be an integer literal AST
-    void **items = ar__list__items(ref_arg_asts);
+    void **items = ar_list__items(ref_arg_asts);
     assert(items != NULL);
     const ar_expression_ast_t *ref_first_arg = (const ar_expression_ast_t*)items[0];
     assert(ref_first_arg != NULL);
-    assert(ar__expression_ast__get_type(ref_first_arg) == AR_EXPR__LITERAL_INT);
-    assert(ar__expression_ast__get_int_value(ref_first_arg) == 42);
+    assert(ar_expression_ast__get_type(ref_first_arg) == AR_EXPR__LITERAL_INT);
+    assert(ar_expression_ast__get_int_value(ref_first_arg) == 42);
     
     // Second argument should be a string literal AST
     const ar_expression_ast_t *ref_second_arg = (const ar_expression_ast_t*)items[1];
     assert(ref_second_arg != NULL);
-    assert(ar__expression_ast__get_type(ref_second_arg) == AR_EXPR__LITERAL_STRING);
-    assert(strcmp(ar__expression_ast__get_string_value(ref_second_arg), "Hello World") == 0);
+    assert(ar_expression_ast__get_type(ref_second_arg) == AR_EXPR__LITERAL_STRING);
+    assert(strcmp(ar_expression_ast__get_string_value(ref_second_arg), "Hello World") == 0);
     
     AR__HEAP__FREE(items);
-    ar__instruction_ast__destroy(own_ast);
+    ar_instruction_ast__destroy(own_ast);
     ar_send_instruction_parser__destroy(own_parser);
 }
 

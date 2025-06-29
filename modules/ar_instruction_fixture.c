@@ -29,7 +29,7 @@ struct instruction_fixture_s {
     bool system_initialized;                /* Whether system was initialized by fixture */
 };
 
-instruction_fixture_t* ar__instruction_fixture__create(const char *ref_test_name) {
+instruction_fixture_t* ar_instruction_fixture__create(const char *ref_test_name) {
     if (!ref_test_name) {
         return NULL;
     }
@@ -45,25 +45,25 @@ instruction_fixture_t* ar__instruction_fixture__create(const char *ref_test_name
         return NULL;
     }
     
-    own_fixture->own_tracked_data = ar__list__create();
+    own_fixture->own_tracked_data = ar_list__create();
     if (!own_fixture->own_tracked_data) {
         AR__HEAP__FREE(own_fixture->own_test_name);
         AR__HEAP__FREE(own_fixture);
         return NULL;
     }
     
-    own_fixture->own_tracked_contexts = ar__list__create();
+    own_fixture->own_tracked_contexts = ar_list__create();
     if (!own_fixture->own_tracked_contexts) {
-        ar__list__destroy(own_fixture->own_tracked_data);
+        ar_list__destroy(own_fixture->own_tracked_data);
         AR__HEAP__FREE(own_fixture->own_test_name);
         AR__HEAP__FREE(own_fixture);
         return NULL;
     }
     
-    own_fixture->own_tracked_resources = ar__list__create();
+    own_fixture->own_tracked_resources = ar_list__create();
     if (!own_fixture->own_tracked_resources) {
-        ar__list__destroy(own_fixture->own_tracked_contexts);
-        ar__list__destroy(own_fixture->own_tracked_data);
+        ar_list__destroy(own_fixture->own_tracked_contexts);
+        ar_list__destroy(own_fixture->own_tracked_data);
         AR__HEAP__FREE(own_fixture->own_test_name);
         AR__HEAP__FREE(own_fixture);
         return NULL;
@@ -75,37 +75,37 @@ instruction_fixture_t* ar__instruction_fixture__create(const char *ref_test_name
     return own_fixture; // Ownership transferred to caller
 }
 
-void ar__instruction_fixture__destroy(instruction_fixture_t *own_fixture) {
+void ar_instruction_fixture__destroy(instruction_fixture_t *own_fixture) {
     if (!own_fixture) {
         return;
     }
     
     // Destroy test agent if created
     if (own_fixture->test_agent_id > 0) {
-        ar__agency__destroy_agent(own_fixture->test_agent_id);
+        ar_agency__destroy_agent(own_fixture->test_agent_id);
     }
     
     // Destroy all tracked expression contexts
-    while (!ar__list__empty(own_fixture->own_tracked_contexts)) {
-        expression_context_t *own_context = (expression_context_t*)ar__list__remove_first(own_fixture->own_tracked_contexts);
+    while (!ar_list__empty(own_fixture->own_tracked_contexts)) {
+        expression_context_t *own_context = (expression_context_t*)ar_list__remove_first(own_fixture->own_tracked_contexts);
         if (own_context) {
-            ar__expression__destroy_context(own_context);
+            ar_expression__destroy_context(own_context);
         }
     }
-    ar__list__destroy(own_fixture->own_tracked_contexts);
+    ar_list__destroy(own_fixture->own_tracked_contexts);
     
     // Destroy all tracked data objects
-    while (!ar__list__empty(own_fixture->own_tracked_data)) {
-        data_t *own_data = (data_t*)ar__list__remove_first(own_fixture->own_tracked_data);
+    while (!ar_list__empty(own_fixture->own_tracked_data)) {
+        data_t *own_data = (data_t*)ar_list__remove_first(own_fixture->own_tracked_data);
         if (own_data) {
-            ar__data__destroy(own_data);
+            ar_data__destroy(own_data);
         }
     }
-    ar__list__destroy(own_fixture->own_tracked_data);
+    ar_list__destroy(own_fixture->own_tracked_data);
     
     // Destroy all tracked generic resources
-    while (!ar__list__empty(own_fixture->own_tracked_resources)) {
-        resource_entry_t *own_entry = (resource_entry_t*)ar__list__remove_first(own_fixture->own_tracked_resources);
+    while (!ar_list__empty(own_fixture->own_tracked_resources)) {
+        resource_entry_t *own_entry = (resource_entry_t*)ar_list__remove_first(own_fixture->own_tracked_resources);
         if (own_entry) {
             if (own_entry->destructor && own_entry->own_resource) {
                 own_entry->destructor(own_entry->own_resource);
@@ -113,18 +113,18 @@ void ar__instruction_fixture__destroy(instruction_fixture_t *own_fixture) {
             AR__HEAP__FREE(own_entry);
         }
     }
-    ar__list__destroy(own_fixture->own_tracked_resources);
+    ar_list__destroy(own_fixture->own_tracked_resources);
     
     // Shutdown system if initialized by fixture
     if (own_fixture->system_initialized) {
-        ar__system__shutdown();
+        ar_system__shutdown();
     }
     
     AR__HEAP__FREE(own_fixture->own_test_name);
     AR__HEAP__FREE(own_fixture);
 }
 
-expression_context_t* ar__instruction_fixture__create_expression_context(
+expression_context_t* ar_instruction_fixture__create_expression_context(
     instruction_fixture_t *mut_fixture,
     const char *ref_expression) {
     
@@ -133,45 +133,45 @@ expression_context_t* ar__instruction_fixture__create_expression_context(
     }
     
     // Create standard test maps
-    data_t *own_memory = ar__data__create_map();
+    data_t *own_memory = ar_data__create_map();
     if (!own_memory) {
         return NULL;
     }
     
     // Add common test values to memory
-    ar__data__set_map_string(own_memory, "name", "TestAgent");
-    ar__data__set_map_integer(own_memory, "count", 42);
-    ar__data__set_map_double(own_memory, "value", 3.14);
-    ar__data__set_map_string(own_memory, "status", "active");
+    ar_data__set_map_string(own_memory, "name", "TestAgent");
+    ar_data__set_map_integer(own_memory, "count", 42);
+    ar_data__set_map_double(own_memory, "value", 3.14);
+    ar_data__set_map_string(own_memory, "status", "active");
     
-    data_t *own_context = ar__data__create_map();
+    data_t *own_context = ar_data__create_map();
     if (!own_context) {
-        ar__data__destroy(own_memory);
+        ar_data__destroy(own_memory);
         return NULL;
     }
     
     // Add common test values to context
-    ar__data__set_map_string(own_context, "type", "test");
-    ar__data__set_map_integer(own_context, "version", 1);
+    ar_data__set_map_string(own_context, "type", "test");
+    ar_data__set_map_integer(own_context, "version", 1);
     
-    data_t *own_message = ar__data__create_map();
+    data_t *own_message = ar_data__create_map();
     if (!own_message) {
-        ar__data__destroy(own_memory);
-        ar__data__destroy(own_context);
+        ar_data__destroy(own_memory);
+        ar_data__destroy(own_context);
         return NULL;
     }
     
     // Add common test values to message
-    ar__data__set_map_string(own_message, "action", "test");
-    ar__data__set_map_integer(own_message, "sender", 0);
+    ar_data__set_map_string(own_message, "action", "test");
+    ar_data__set_map_integer(own_message, "sender", 0);
     
     // Track the data objects
-    ar__list__add_last(mut_fixture->own_tracked_data, own_memory);
-    ar__list__add_last(mut_fixture->own_tracked_data, own_context);
-    ar__list__add_last(mut_fixture->own_tracked_data, own_message);
+    ar_list__add_last(mut_fixture->own_tracked_data, own_memory);
+    ar_list__add_last(mut_fixture->own_tracked_data, own_context);
+    ar_list__add_last(mut_fixture->own_tracked_data, own_message);
     
     // Create expression context
-    expression_context_t *own_expr_ctx = ar__expression__create_context(
+    expression_context_t *own_expr_ctx = ar_expression__create_context(
         own_memory, own_context, own_message, ref_expression
     );
     
@@ -180,12 +180,12 @@ expression_context_t* ar__instruction_fixture__create_expression_context(
     }
     
     // Track the expression context
-    ar__list__add_last(mut_fixture->own_tracked_contexts, own_expr_ctx);
+    ar_list__add_last(mut_fixture->own_tracked_contexts, own_expr_ctx);
     
     return own_expr_ctx; // Return borrowed reference
 }
 
-expression_context_t* ar__instruction_fixture__create_custom_expression_context(
+expression_context_t* ar_instruction_fixture__create_custom_expression_context(
     instruction_fixture_t *mut_fixture,
     data_t *mut_memory,
     const data_t *ref_context,
@@ -197,7 +197,7 @@ expression_context_t* ar__instruction_fixture__create_custom_expression_context(
     }
     
     // Create expression context
-    expression_context_t *own_expr_ctx = ar__expression__create_context(
+    expression_context_t *own_expr_ctx = ar_expression__create_context(
         mut_memory, ref_context, ref_message, ref_expression
     );
     
@@ -206,12 +206,12 @@ expression_context_t* ar__instruction_fixture__create_custom_expression_context(
     }
     
     // Track the expression context
-    ar__list__add_last(mut_fixture->own_tracked_contexts, own_expr_ctx);
+    ar_list__add_last(mut_fixture->own_tracked_contexts, own_expr_ctx);
     
     return own_expr_ctx; // Return borrowed reference
 }
 
-data_t* ar__instruction_fixture__create_test_map(
+data_t* ar_instruction_fixture__create_test_map(
     instruction_fixture_t *mut_fixture,
     const char *ref_name) {
     
@@ -219,89 +219,89 @@ data_t* ar__instruction_fixture__create_test_map(
         return NULL;
     }
     
-    data_t *own_map = ar__data__create_map();
+    data_t *own_map = ar_data__create_map();
     if (!own_map) {
         return NULL;
     }
     
     // Add test data based on name
     if (ref_name && strcmp(ref_name, "user") == 0) {
-        ar__data__set_map_string(own_map, "username", "alice");
-        ar__data__set_map_string(own_map, "role", "admin");
-        ar__data__set_map_integer(own_map, "id", 123);
+        ar_data__set_map_string(own_map, "username", "alice");
+        ar_data__set_map_string(own_map, "role", "admin");
+        ar_data__set_map_integer(own_map, "id", 123);
     } else if (ref_name && strcmp(ref_name, "config") == 0) {
-        ar__data__set_map_string(own_map, "mode", "test");
-        ar__data__set_map_integer(own_map, "timeout", 30);
-        ar__data__set_map_double(own_map, "threshold", 0.95);
+        ar_data__set_map_string(own_map, "mode", "test");
+        ar_data__set_map_integer(own_map, "timeout", 30);
+        ar_data__set_map_double(own_map, "threshold", 0.95);
     } else {
         // Default test values
-        ar__data__set_map_string(own_map, "test", "value");
-        ar__data__set_map_integer(own_map, "number", 42);
-        ar__data__set_map_double(own_map, "decimal", 3.14);
+        ar_data__set_map_string(own_map, "test", "value");
+        ar_data__set_map_integer(own_map, "number", 42);
+        ar_data__set_map_double(own_map, "decimal", 3.14);
     }
     
     // Track the data object
-    ar__list__add_last(mut_fixture->own_tracked_data, own_map);
+    ar_list__add_last(mut_fixture->own_tracked_data, own_map);
     
     return own_map; // Return borrowed reference
 }
 
-data_t* ar__instruction_fixture__create_empty_map(
+data_t* ar_instruction_fixture__create_empty_map(
     instruction_fixture_t *mut_fixture) {
     
     if (!mut_fixture) {
         return NULL;
     }
     
-    data_t *own_map = ar__data__create_map();
+    data_t *own_map = ar_data__create_map();
     if (!own_map) {
         return NULL;
     }
     
     // Track the data object
-    ar__list__add_last(mut_fixture->own_tracked_data, own_map);
+    ar_list__add_last(mut_fixture->own_tracked_data, own_map);
     
     return own_map; // Return borrowed reference
 }
 
-data_t* ar__instruction_fixture__create_test_list(
+data_t* ar_instruction_fixture__create_test_list(
     instruction_fixture_t *mut_fixture) {
     
     if (!mut_fixture) {
         return NULL;
     }
     
-    data_t *own_list = ar__data__create_list();
+    data_t *own_list = ar_data__create_list();
     if (!own_list) {
         return NULL;
     }
     
     // Add sample values
-    data_t *own_item1 = ar__data__create_string("first");
+    data_t *own_item1 = ar_data__create_string("first");
     if (own_item1) {
-        ar__data__list_add_last_data(own_list, own_item1);
+        ar_data__list_add_last_data(own_list, own_item1);
         own_item1 = NULL; // Ownership transferred
     }
     
-    data_t *own_item2 = ar__data__create_integer(42);
+    data_t *own_item2 = ar_data__create_integer(42);
     if (own_item2) {
-        ar__data__list_add_last_data(own_list, own_item2);
+        ar_data__list_add_last_data(own_list, own_item2);
         own_item2 = NULL; // Ownership transferred
     }
     
-    data_t *own_item3 = ar__data__create_double(3.14);
+    data_t *own_item3 = ar_data__create_double(3.14);
     if (own_item3) {
-        ar__data__list_add_last_data(own_list, own_item3);
+        ar_data__list_add_last_data(own_list, own_item3);
         own_item3 = NULL; // Ownership transferred
     }
     
     // Track the data object
-    ar__list__add_last(mut_fixture->own_tracked_data, own_list);
+    ar_list__add_last(mut_fixture->own_tracked_data, own_list);
     
     return own_list; // Return borrowed reference
 }
 
-const char* ar__instruction_fixture__get_name(const instruction_fixture_t *ref_fixture) {
+const char* ar_instruction_fixture__get_name(const instruction_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return NULL;
     }
@@ -309,7 +309,7 @@ const char* ar__instruction_fixture__get_name(const instruction_fixture_t *ref_f
     return ref_fixture->own_test_name;
 }
 
-bool ar__instruction_fixture__check_memory(const instruction_fixture_t *ref_fixture) {
+bool ar_instruction_fixture__check_memory(const instruction_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return false;
     }
@@ -320,7 +320,7 @@ bool ar__instruction_fixture__check_memory(const instruction_fixture_t *ref_fixt
     return true;
 }
 
-void ar__instruction_fixture__track_data(
+void ar_instruction_fixture__track_data(
     instruction_fixture_t *mut_fixture,
     data_t *own_data) {
     
@@ -328,10 +328,10 @@ void ar__instruction_fixture__track_data(
         return;
     }
     
-    ar__list__add_last(mut_fixture->own_tracked_data, own_data);
+    ar_list__add_last(mut_fixture->own_tracked_data, own_data);
 }
 
-void ar__instruction_fixture__track_expression_context(
+void ar_instruction_fixture__track_expression_context(
     instruction_fixture_t *mut_fixture,
     expression_context_t *own_context) {
     
@@ -339,10 +339,10 @@ void ar__instruction_fixture__track_expression_context(
         return;
     }
     
-    ar__list__add_last(mut_fixture->own_tracked_contexts, own_context);
+    ar_list__add_last(mut_fixture->own_tracked_contexts, own_context);
 }
 
-int64_t ar__instruction_fixture__create_test_agent(
+int64_t ar_instruction_fixture__create_test_agent(
     instruction_fixture_t *mut_fixture,
     const char *ref_method_name,
     const char *ref_instructions) {
@@ -357,17 +357,17 @@ int64_t ar__instruction_fixture__create_test_agent(
     }
     
     // Create method and register it with methodology
-    method_t *own_method = ar__method__create(ref_method_name, ref_instructions, "1.0.0");
+    method_t *own_method = ar_method__create(ref_method_name, ref_instructions, "1.0.0");
     if (!own_method) {
         return 0;
     }
     
     // Register with methodology
-    ar__methodology__register_method(own_method);
+    ar_methodology__register_method(own_method);
     own_method = NULL; // Ownership transferred
     
     // Create agent
-    int64_t agent_id = ar__agency__create_agent(ref_method_name, "1.0.0", NULL);
+    int64_t agent_id = ar_agency__create_agent(ref_method_name, "1.0.0", NULL);
     if (agent_id <= 0) {
         return 0;
     }
@@ -376,12 +376,12 @@ int64_t ar__instruction_fixture__create_test_agent(
     mut_fixture->test_agent_id = agent_id;
     
     // Process wake message
-    ar__system__process_next_message();
+    ar_system__process_next_message();
     
     return agent_id;
 }
 
-int64_t ar__instruction_fixture__get_agent(const instruction_fixture_t *ref_fixture) {
+int64_t ar_instruction_fixture__get_agent(const instruction_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return 0;
     }
@@ -389,7 +389,7 @@ int64_t ar__instruction_fixture__get_agent(const instruction_fixture_t *ref_fixt
     return ref_fixture->test_agent_id;
 }
 
-void ar__instruction_fixture__track_resource(
+void ar_instruction_fixture__track_resource(
     instruction_fixture_t *mut_fixture,
     void *own_resource,
     void (*destructor)(void*)) {
@@ -406,10 +406,10 @@ void ar__instruction_fixture__track_resource(
     own_entry->own_resource = own_resource;
     own_entry->destructor = destructor;
     
-    ar__list__add_last(mut_fixture->own_tracked_resources, own_entry);
+    ar_list__add_last(mut_fixture->own_tracked_resources, own_entry);
 }
 
-bool ar__instruction_fixture__init_system(
+bool ar_instruction_fixture__init_system(
     instruction_fixture_t *mut_fixture,
     const char *ref_init_method_name,
     const char *ref_init_instructions) {
@@ -424,16 +424,16 @@ bool ar__instruction_fixture__init_system(
     }
     
     // Create and register initialization method
-    method_t *own_method = ar__method__create(ref_init_method_name, ref_init_instructions, "1.0.0");
+    method_t *own_method = ar_method__create(ref_init_method_name, ref_init_instructions, "1.0.0");
     if (!own_method) {
         return false;
     }
     
-    ar__methodology__register_method(own_method);
+    ar_methodology__register_method(own_method);
     own_method = NULL; // Ownership transferred
     
     // Initialize system
-    ar__system__init(ref_init_method_name, "1.0.0");
+    ar_system__init(ref_init_method_name, "1.0.0");
     mut_fixture->system_initialized = true;
     
     return true;

@@ -22,7 +22,7 @@ bool ar_method_instruction_evaluator__evaluate_legacy(
  * Internal structure for method instruction evaluator
  * 
  * Note: This struct does not store a methodology reference because
- * ar__methodology__register_method() uses a global singleton internally.
+ * ar_methodology__register_method() uses a global singleton internally.
  */
 struct ar_method_instruction_evaluator_s {
     ar_expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
@@ -95,67 +95,67 @@ static data_t* _copy_data_value(const data_t *ref_value) {
         return NULL;
     }
     
-    switch (ar__data__get_type(ref_value)) {
+    switch (ar_data__get_type(ref_value)) {
         case DATA_INTEGER:
-            return ar__data__create_integer(ar__data__get_integer(ref_value));
+            return ar_data__create_integer(ar_data__get_integer(ref_value));
         case DATA_DOUBLE:
-            return ar__data__create_double(ar__data__get_double(ref_value));
+            return ar_data__create_double(ar_data__get_double(ref_value));
         case DATA_STRING:
-            return ar__data__create_string(ar__data__get_string(ref_value));
+            return ar_data__create_string(ar_data__get_string(ref_value));
         case DATA_MAP:
             {
                 // Create a new map and copy all key-value pairs
-                data_t *new_map = ar__data__create_map();
+                data_t *new_map = ar_data__create_map();
                 if (!new_map) return NULL;
                 
                 // Get all keys from the original map
-                data_t *keys = ar__data__get_map_keys(ref_value);
+                data_t *keys = ar_data__get_map_keys(ref_value);
                 if (!keys) {
-                    ar__data__destroy(new_map);
+                    ar_data__destroy(new_map);
                     return NULL;
                 }
                 
                 // Copy each key-value pair
-                size_t count = ar__data__list_count(keys);
+                size_t count = ar_data__list_count(keys);
                 for (size_t i = 0; i < count; i++) {
                     // Get the key
-                    data_t *key_data = ar__data__list_first(keys);
+                    data_t *key_data = ar_data__list_first(keys);
                     if (!key_data) break;
                     
-                    const char *key = ar__data__get_string(key_data);
+                    const char *key = ar_data__get_string(key_data);
                     if (!key) {
-                        data_t *removed = ar__data__list_remove_first(keys);
-                        ar__data__destroy(removed);
+                        data_t *removed = ar_data__list_remove_first(keys);
+                        ar_data__destroy(removed);
                         continue;
                     }
                     
                     // Get the value from the original map
-                    data_t *orig_value = ar__data__get_map_data(ref_value, key);
+                    data_t *orig_value = ar_data__get_map_data(ref_value, key);
                     if (orig_value) {
                         // Recursively copy the value
                         data_t *copy_value = _copy_data_value(orig_value);
                         if (copy_value) {
-                            bool success = ar__data__set_map_data(new_map, key, copy_value);
+                            bool success = ar_data__set_map_data(new_map, key, copy_value);
                             if (!success) {
                                 fprintf(stderr, "ERROR: Failed to set map data for key '%s'\n", key);
-                                ar__data__destroy(copy_value);
+                                ar_data__destroy(copy_value);
                             }
                         }
                     }
                     
                     // Remove and destroy the processed key
-                    data_t *removed_key = ar__data__list_remove_first(keys);
-                    ar__data__destroy(removed_key);
+                    data_t *removed_key = ar_data__list_remove_first(keys);
+                    ar_data__destroy(removed_key);
                 }
                 
                 // Clean up the keys list
-                ar__data__destroy(keys);
+                ar_data__destroy(keys);
                 
                 return new_map;
             }
         case DATA_LIST:
             // TODO: Implement deep copy for lists
-            return ar__data__create_list();
+            return ar_data__create_list();
         default:
             return NULL;
     }
@@ -169,24 +169,24 @@ static bool _store_result_if_assigned(
     const ar_instruction_ast_t *ref_ast,
     data_t *own_result
 ) {
-    const char *ref_result_path = ar__instruction_ast__get_function_result_path(ref_ast);
+    const char *ref_result_path = ar_instruction_ast__get_function_result_path(ref_ast);
     if (!ref_result_path) {
         // No assignment, just destroy the result
-        ar__data__destroy(own_result);
+        ar_data__destroy(own_result);
         return true;
     }
     
     // Get memory key path
     const char *key_path = _get_memory_key_path(ref_result_path);
     if (!key_path) {
-        ar__data__destroy(own_result);
+        ar_data__destroy(own_result);
         return false;
     }
     
     // Store the result (transfers ownership)
-    bool store_success = ar__data__set_map_data(mut_memory, key_path, own_result);
+    bool store_success = ar_data__set_map_data(mut_memory, key_path, own_result);
     if (!store_success) {
-        ar__data__destroy(own_result);
+        ar_data__destroy(own_result);
         return false;
     }
     
@@ -204,18 +204,18 @@ static bool _evaluate_three_string_args(
     data_t **out_arg3
 ) {
     // Get pre-parsed expression ASTs for arguments
-    const list_t *ref_arg_asts = ar__instruction_ast__get_function_arg_asts(ref_ast);
+    const list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(ref_ast);
     if (!ref_arg_asts) {
         return false;
     }
     
     // Verify we have exactly the expected number of arguments
-    if (ar__list__count(ref_arg_asts) != expected_arg_count) {
+    if (ar_list__count(ref_arg_asts) != expected_arg_count) {
         return false;
     }
     
     // Get the argument ASTs array
-    void **items = ar__list__items(ref_arg_asts);
+    void **items = ar_list__items(ref_arg_asts);
     if (!items) {
         return false;
     }
@@ -230,16 +230,16 @@ static bool _evaluate_three_string_args(
     }
     
     // Evaluate expression ASTs using public method
-    data_t *result1 = ar__expression_evaluator__evaluate(mut_expr_evaluator, ref_ast1);
-    data_t *result2 = ar__expression_evaluator__evaluate(mut_expr_evaluator, ref_ast2);
-    data_t *result3 = ar__expression_evaluator__evaluate(mut_expr_evaluator, ref_ast3);
+    data_t *result1 = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_ast1);
+    data_t *result2 = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_ast2);
+    data_t *result3 = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_ast3);
     
     AR__HEAP__FREE(items);
     
     // Handle ownership for arg1
     if (result1) {
-        if (ar__data__hold_ownership(result1, mut_evaluator)) {
-            ar__data__transfer_ownership(result1, mut_evaluator);
+        if (ar_data__hold_ownership(result1, mut_evaluator)) {
+            ar_data__transfer_ownership(result1, mut_evaluator);
             *out_arg1 = result1;
         } else {
             *out_arg1 = _copy_data_value(result1);
@@ -250,8 +250,8 @@ static bool _evaluate_three_string_args(
     
     // Handle ownership for arg2
     if (result2) {
-        if (ar__data__hold_ownership(result2, mut_evaluator)) {
-            ar__data__transfer_ownership(result2, mut_evaluator);
+        if (ar_data__hold_ownership(result2, mut_evaluator)) {
+            ar_data__transfer_ownership(result2, mut_evaluator);
             *out_arg2 = result2;
         } else {
             *out_arg2 = _copy_data_value(result2);
@@ -262,8 +262,8 @@ static bool _evaluate_three_string_args(
     
     // Handle ownership for arg3
     if (result3) {
-        if (ar__data__hold_ownership(result3, mut_evaluator)) {
-            ar__data__transfer_ownership(result3, mut_evaluator);
+        if (ar_data__hold_ownership(result3, mut_evaluator)) {
+            ar_data__transfer_ownership(result3, mut_evaluator);
             *out_arg3 = result3;
         } else {
             *out_arg3 = _copy_data_value(result3);
@@ -274,9 +274,9 @@ static bool _evaluate_three_string_args(
     
     // Validate all arguments are strings
     if (*out_arg1 && *out_arg2 && *out_arg3 &&
-        ar__data__get_type(*out_arg1) == DATA_STRING &&
-        ar__data__get_type(*out_arg2) == DATA_STRING &&
-        ar__data__get_type(*out_arg3) == DATA_STRING) {
+        ar_data__get_type(*out_arg1) == DATA_STRING &&
+        ar_data__get_type(*out_arg2) == DATA_STRING &&
+        ar_data__get_type(*out_arg3) == DATA_STRING) {
         return true;
     }
     
@@ -300,7 +300,7 @@ bool ar_method_instruction_evaluator__evaluate(
     }
     
     // Validate AST type
-    if (ar__instruction_ast__get_type(ref_ast) != AR_INST__METHOD) {
+    if (ar_instruction_ast__get_type(ref_ast) != AR_INST__METHOD) {
         return false;
     }
     
@@ -317,14 +317,14 @@ bool ar_method_instruction_evaluator__evaluate(
     bool success = false;
     
     if (args_valid) {
-        const char *method_name = ar__data__get_string(own_method_name);
-        const char *instructions = ar__data__get_string(own_instructions);
-        const char *version = ar__data__get_string(own_version);
+        const char *method_name = ar_data__get_string(own_method_name);
+        const char *instructions = ar_data__get_string(own_instructions);
+        const char *version = ar_data__get_string(own_version);
         
         // Create and register the method
-        method_t *own_method = ar__method__create(method_name, instructions, version);
+        method_t *own_method = ar_method__create(method_name, instructions, version);
         if (own_method) {
-            ar__methodology__register_method(own_method);
+            ar_methodology__register_method(own_method);
             // Ownership transferred to methodology
             own_method = NULL;
             success = true;
@@ -332,13 +332,13 @@ bool ar_method_instruction_evaluator__evaluate(
     }
     
     // Clean up evaluated arguments
-    if (own_method_name) ar__data__destroy(own_method_name);
-    if (own_instructions) ar__data__destroy(own_instructions);
-    if (own_version) ar__data__destroy(own_version);
+    if (own_method_name) ar_data__destroy(own_method_name);
+    if (own_instructions) ar_data__destroy(own_instructions);
+    if (own_version) ar_data__destroy(own_version);
     
     // Store result if assigned
-    if (ar__instruction_ast__has_result_assignment(ref_ast)) {
-        data_t *own_result = ar__data__create_integer(success ? 1 : 0);
+    if (ar_instruction_ast__has_result_assignment(ref_ast)) {
+        data_t *own_result = ar_data__create_integer(success ? 1 : 0);
         if (own_result) {
             _store_result_if_assigned(mut_memory, ref_ast, own_result);
         }

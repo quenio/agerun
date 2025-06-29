@@ -46,13 +46,13 @@ The system module acts as a facade that coordinates several subsystems:
  * @param initial_method_version Optional method version for initial agent (can be NULL)
  * @note If both parameters are provided, creates agent ID 1 with specified method
  */
-void ar__system__init(const char *initial_method_name, const char *initial_method_version);
+void ar_system__init(const char *initial_method_name, const char *initial_method_version);
 
 /**
  * Shuts down the AgeRun system.
  * @note Sends sleep messages to all agents before cleanup
  */
-void ar__system__shutdown(void);
+void ar_system__shutdown(void);
 ```
 
 ### Message Processing
@@ -62,20 +62,20 @@ void ar__system__shutdown(void);
  * Processes the next message in the queue.
  * @return true if a message was processed, false if queue was empty
  */
-bool ar__system__process_next_message(void);
+bool ar_system__process_next_message(void);
 
 /**
  * Processes a specific number of messages.
  * @param max_messages Maximum number of messages to process
  * @return Number of messages actually processed
  */
-int ar__system__process_messages(int max_messages);
+int ar_system__process_messages(int max_messages);
 
 /**
  * Processes all pending messages until the queue is empty.
  * @return Total number of messages processed
  */
-int ar__system__process_all_messages(void);
+int ar_system__process_all_messages(void);
 ```
 
 ### Persistence Operations
@@ -85,13 +85,13 @@ int ar__system__process_all_messages(void);
  * Saves the current system state.
  * @note Saves both agents (via agency) and methods (via methodology)
  */
-void ar__system__save(void);
+void ar_system__save(void);
 
 /**
  * Loads system state from persistence files.
  * @note Loads both agents and methods if files exist
  */
-void ar__system__load(void);
+void ar_system__load(void);
 ```
 
 ### State Inspection
@@ -101,7 +101,7 @@ void ar__system__load(void);
  * Checks if the system has been initialized.
  * @return true if initialized, false otherwise
  */
-bool ar__system__is_initialized(void);
+bool ar_system__is_initialized(void);
 ```
 
 ## Implementation Details
@@ -116,7 +116,7 @@ bool ar__system__is_initialized(void);
 ### Message Processing Loop
 
 The system maintains a central message queue that:
-- Receives messages from agents via `ar__agent__send()`
+- Receives messages from agents via `ar_agent__send()`
 - Processes messages in FIFO order
 - Executes the recipient agent's method with the message
 - Handles any errors gracefully
@@ -141,46 +141,46 @@ The system owns and manages a single interpreter instance that:
 
 ```c
 // Initialize system with an echo agent
-ar__system__init("echo", "1.0.0");
+ar_system__init("echo", "1.0.0");
 
 // Process some messages
-int processed = ar__system__process_messages(10);
+int processed = ar_system__process_messages(10);
 printf("Processed %d messages\n", processed);
 
 // Save state and shutdown
-ar__system__save();
-ar__system__shutdown();
+ar_system__save();
+ar_system__shutdown();
 ```
 
 ### Continuous Processing
 
 ```c
 // Initialize and load saved state
-ar__system__init(NULL, NULL);
-ar__system__load();
+ar_system__init(NULL, NULL);
+ar_system__load();
 
 // Process until no more messages
-int total = ar__system__process_all_messages();
+int total = ar_system__process_all_messages();
 printf("Processed %d total messages\n", total);
 
 // Clean shutdown
-ar__system__shutdown();
+ar_system__shutdown();
 ```
 
 ### Message Processing Patterns
 
 ```c
 // Single message processing
-if (ar__system__process_next_message()) {
+if (ar_system__process_next_message()) {
     printf("Processed one message\n");
 }
 
 // Batch processing with limit
 int batch_size = 100;
-int processed = ar__system__process_messages(batch_size);
+int processed = ar_system__process_messages(batch_size);
 
 // Process all pending
-int all = ar__system__process_all_messages();
+int all = ar_system__process_all_messages();
 ```
 
 ## Memory Management

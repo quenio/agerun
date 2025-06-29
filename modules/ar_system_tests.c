@@ -24,13 +24,13 @@ static void test_method_creation(void) {
     const char *method_body = "send(0, \"Hello, World!\")";
     
     // When we create the method
-    method_t *own_method = ar__method__create(method_name, method_body, "1.0.0");
+    method_t *own_method = ar_method__create(method_name, method_body, "1.0.0");
     
     // Then the method should be created successfully
     assert(own_method != NULL);
     
     // Register with methodology
-    ar__methodology__register_method(own_method);
+    ar_methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we use version "1.0.0"
@@ -38,13 +38,13 @@ static void test_method_creation(void) {
     
     // When we create a new version of the same method
     const char *updated_body = "send(0, \"Hello, Updated World!\")";
-    method_t *own_method2 = ar__method__create(method_name, updated_body, "2.0.0");
+    method_t *own_method2 = ar_method__create(method_name, updated_body, "2.0.0");
     
     // Then the method should be created successfully
     assert(own_method2 != NULL);
     
     // Register with methodology
-    ar__methodology__register_method(own_method2);
+    ar_methodology__register_method(own_method2);
     own_method2 = NULL; // Mark as transferred
     
     // For test purposes, we use version "2.0.0"
@@ -64,45 +64,45 @@ static void test_agent_creation(void) {
     const char *method_body = "send(0, \"Agent created\")";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar__method__create(method_name, method_body, "1.0.0");
+    method_t *own_method = ar_method__create(method_name, method_body, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
-    ar__methodology__register_method(own_method);
+    ar_methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we use version "1.0.0"
     const char *version = "1.0.0";
     
     // When we create an agent with this method
-    int64_t agent_id = ar__agency__create_agent(method_name, version, NULL);
+    int64_t agent_id = ar_agency__create_agent(method_name, version, NULL);
     
     // Then the agent should be created successfully
     assert(agent_id > 0);
     
     // And the agent should exist in the system
-    assert(ar__agency__agent_exists(agent_id));
+    assert(ar_agency__agent_exists(agent_id));
     
     // When we send a message to the agent
-    data_t *test_message = ar__data__create_string(g_test_message);
+    data_t *test_message = ar_data__create_string(g_test_message);
     assert(test_message != NULL);
-    bool send_result = ar__agency__send_to_agent(agent_id, test_message);
+    bool send_result = ar_agency__send_to_agent(agent_id, test_message);
     
     // Then the message should be sent successfully
     assert(send_result);
     
     // When we process the next message in the system
     // With opaque map_t, we can't directly test the processing result
-    ar__system__process_next_message();
+    ar_system__process_next_message();
     
     // When we destroy the agent
-    ar__agency__destroy_agent(agent_id);
+    ar_agency__destroy_agent(agent_id);
     
     // Then the destruction should succeed
     // Agency destroy returns void
     
     // And the agent should no longer exist in the system
-    assert(!ar__agency__agent_exists(agent_id));
+    assert(!ar_agency__agent_exists(agent_id));
     
     printf("Agent creation test passed.\n");
 }
@@ -112,43 +112,43 @@ static void test_message_passing(void) {
     
     // Given methods for sender and receiver agents
     // Create and register sender method
-    method_t *own_sender_method = ar__method__create("sender", "send(target_id, \"Hello from sender!\")", "1.0.0");
+    method_t *own_sender_method = ar_method__create("sender", "send(target_id, \"Hello from sender!\")", "1.0.0");
     assert(own_sender_method != NULL);
     
     // Register with methodology
-    ar__methodology__register_method(own_sender_method);
+    ar_methodology__register_method(own_sender_method);
     own_sender_method = NULL; // Mark as transferred
     
     // For test purposes, we use version "1.0.0"
     const char *sender_version = "1.0.0";
     
     // Create and register receiver method
-    method_t *own_receiver_method = ar__method__create("receiver", "memory[\"received\"] := \"true\"", "1.0.0");
+    method_t *own_receiver_method = ar_method__create("receiver", "memory[\"received\"] := \"true\"", "1.0.0");
     assert(own_receiver_method != NULL);
     
     // Register with methodology
-    ar__methodology__register_method(own_receiver_method);
+    ar_methodology__register_method(own_receiver_method);
     own_receiver_method = NULL; // Mark as transferred
     
     // For test purposes, we use version "1.0.0"
     const char *receiver_version = "1.0.0";
     
     // And a receiver agent created with the receiver method
-    int64_t receiver_id = ar__agency__create_agent("receiver", receiver_version, NULL);
+    int64_t receiver_id = ar_agency__create_agent("receiver", receiver_version, NULL);
     assert(receiver_id > 0);
     
     // And a sender agent created with the sender method
     // Note: In the full implementation, a context with receiver ID would be passed
-    int64_t sender_id = ar__agency__create_agent("sender", sender_version, NULL);
+    int64_t sender_id = ar_agency__create_agent("sender", sender_version, NULL);
     assert(sender_id > 0);
     
     // When we send __wake__ messages to both agents
-    data_t *wake_message1 = ar__data__create_string(g_wake_message);
-    data_t *wake_message2 = ar__data__create_string(g_wake_message);
+    data_t *wake_message1 = ar_data__create_string(g_wake_message);
+    data_t *wake_message2 = ar_data__create_string(g_wake_message);
     assert(wake_message1 != NULL);
     assert(wake_message2 != NULL);
-    bool receiver_send = ar__agency__send_to_agent(receiver_id, wake_message1);
-    bool sender_send = ar__agency__send_to_agent(sender_id, wake_message2);
+    bool receiver_send = ar_agency__send_to_agent(receiver_id, wake_message1);
+    bool sender_send = ar_agency__send_to_agent(sender_id, wake_message2);
     
     // Then the messages should be sent successfully
     assert(receiver_send);
@@ -156,11 +156,11 @@ static void test_message_passing(void) {
     
     // When we process all pending messages
     // With opaque map_t, we can't rely on the exact count
-    ar__system__process_all_messages();
+    ar_system__process_all_messages();
     
     // When we clean up the agents
-    ar__agency__destroy_agent(sender_id);
-    ar__agency__destroy_agent(receiver_id);
+    ar_agency__destroy_agent(sender_id);
+    ar_agency__destroy_agent(receiver_id);
     
     // Then the destruction should succeed
     // Agency destroy returns void
@@ -172,57 +172,57 @@ int main(void) {
     printf("Starting Agerun tests...\n");
     
     // Given we initialize the runtime
-    int64_t initial_agent = ar__system__init(NULL, NULL);
+    int64_t initial_agent = ar_system__init(NULL, NULL);
     
     // Then no agent should be created during initialization
     if (initial_agent != 0) {
         printf("Error: Unexpected agent created during initialization\n");
-        ar__system__shutdown();
+        ar_system__shutdown();
         return 1;
     }
     
     // Given we create a test method
-    method_t *own_method = ar__method__create("test_init", "send(0, \"Runtime initialized\")", "1.0.0");
+    method_t *own_method = ar_method__create("test_init", "send(0, \"Runtime initialized\")", "1.0.0");
     
     // Then the method should be created successfully
     if (own_method == NULL) {
         printf("Error: Failed to create test_init method\n");
-        ar__system__shutdown();
+        ar_system__shutdown();
         return 1;
     }
     
     // Register with methodology
-    ar__methodology__register_method(own_method);
+    ar_methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we use version "1.0.0"
     const char *version = "1.0.0";
     
     // When we create an initial agent with this method
-    initial_agent = ar__agency__create_agent("test_init", version, NULL);
+    initial_agent = ar_agency__create_agent("test_init", version, NULL);
     
     // Then the agent should be created successfully
     if (initial_agent == 0) {
         printf("Error: Failed to create initial agent\n");
-        ar__system__shutdown();
+        ar_system__shutdown();
         return 1;
     }
     
     // When we send a wake message to the initial agent
-    data_t *wake_message3 = ar__data__create_string(g_wake_message);
+    data_t *wake_message3 = ar_data__create_string(g_wake_message);
     assert(wake_message3 != NULL);
-    bool send_result = ar__agency__send_to_agent(initial_agent, wake_message3);
+    bool send_result = ar_agency__send_to_agent(initial_agent, wake_message3);
     
     // Then the message should be sent successfully
     if (!send_result) {
         printf("Error: Failed to send wake message\n");
-        ar__system__shutdown();
+        ar_system__shutdown();
         return 1;
     }
     
     // When we process the message
     // With opaque map_t, we can't directly test the processing result
-    ar__system__process_next_message();
+    ar_system__process_next_message();
     
     // When we run all system tests
     test_method_creation();
@@ -230,7 +230,7 @@ int main(void) {
     test_message_passing();
     
     // Then clean up the system
-    ar__system__shutdown();
+    ar_system__shutdown();
     
     // And report success
     printf("All tests passed!\n");

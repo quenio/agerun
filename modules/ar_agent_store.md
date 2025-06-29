@@ -57,11 +57,11 @@ debug
 ## Key Functions
 
 ### Core Operations
-- `ar__agent_store__save()` - Save all agents to disk
-- `ar__agent_store__load()` - Load agents from disk
-- `ar__agent_store__exists()` - Check if store file exists
-- `ar__agent_store__delete()` - Delete the store file (with backup)
-- `ar__agent_store__get_path()` - Get the store file path
+- `ar_agent_store__save()` - Save all agents to disk
+- `ar_agent_store__load()` - Load agents from disk
+- `ar_agent_store__exists()` - Check if store file exists
+- `ar_agent_store__delete()` - Delete the store file (with backup)
+- `ar_agent_store__get_path()` - Get the store file path
 
 ## Design Principles
 
@@ -86,7 +86,7 @@ The module provides robust error handling:
 - File validation before loading
 - Automatic backup creation before modifications
 - Corrupted file detection and recovery
-- Detailed error messages via `ar__io__error()`
+- Detailed error messages via `ar_io__error()`
 
 ## Security
 
@@ -98,22 +98,22 @@ The module provides robust error handling:
 
 ```c
 // Save current agents
-if (!ar__agent_store__save()) {
+if (!ar_agent_store__save()) {
     // Handle save error
 }
 
 // Load agents on startup
-if (!ar__agent_store__load()) {
+if (!ar_agent_store__load()) {
     // Handle load error
 }
 
 // Check if we have persisted state
-if (ar__agent_store__exists()) {
+if (ar_agent_store__exists()) {
     // Load existing agents
 }
 
 // Clean up persisted state
-ar__agent_store__delete();
+ar_agent_store__delete();
 ```
 
 ## Memory Management

@@ -61,7 +61,7 @@ struct expression_ast_s {
 /**
  * Get the type of an AST node.
  */
-ar_expression_ast_type_t ar__expression_ast__get_type(const ar_expression_ast_t *ref_node) {
+ar_expression_ast_type_t ar_expression_ast__get_type(const ar_expression_ast_t *ref_node) {
     if (!ref_node) {
         return AR_EXPR__LITERAL_INT; // Default value
     }
@@ -71,7 +71,7 @@ ar_expression_ast_type_t ar__expression_ast__get_type(const ar_expression_ast_t 
 /**
  * Create an integer literal AST node.
  */
-ar_expression_ast_t* ar__expression_ast__create_literal_int(int value) {
+ar_expression_ast_t* ar_expression_ast__create_literal_int(int value) {
     ar_expression_ast_t *own_node = AR__HEAP__MALLOC(sizeof(ar_expression_ast_t), "Expression AST node (int)");
     if (!own_node) {
         return NULL;
@@ -87,7 +87,7 @@ ar_expression_ast_t* ar__expression_ast__create_literal_int(int value) {
 /**
  * Create a double literal AST node.
  */
-ar_expression_ast_t* ar__expression_ast__create_literal_double(double value) {
+ar_expression_ast_t* ar_expression_ast__create_literal_double(double value) {
     ar_expression_ast_t *own_node = AR__HEAP__MALLOC(sizeof(ar_expression_ast_t), "Expression AST node (double)");
     if (!own_node) {
         return NULL;
@@ -103,7 +103,7 @@ ar_expression_ast_t* ar__expression_ast__create_literal_double(double value) {
 /**
  * Create a string literal AST node.
  */
-ar_expression_ast_t* ar__expression_ast__create_literal_string(const char *ref_value) {
+ar_expression_ast_t* ar_expression_ast__create_literal_string(const char *ref_value) {
     if (!ref_value) {
         return NULL;
     }
@@ -127,7 +127,7 @@ ar_expression_ast_t* ar__expression_ast__create_literal_string(const char *ref_v
 /**
  * Create a memory access AST node.
  */
-ar_expression_ast_t* ar__expression_ast__create_memory_access(
+ar_expression_ast_t* ar_expression_ast__create_memory_access(
     const char *ref_base,
     const char **ref_path,
     size_t path_count
@@ -149,7 +149,7 @@ ar_expression_ast_t* ar__expression_ast__create_memory_access(
     }
     
     // Create list for path components
-    own_node->data.memory_access.own_path = ar__list__create();
+    own_node->data.memory_access.own_path = ar_list__create();
     if (!own_node->data.memory_access.own_path) {
         AR__HEAP__FREE(own_node->data.memory_access.own_base);
         AR__HEAP__FREE(own_node);
@@ -163,10 +163,10 @@ ar_expression_ast_t* ar__expression_ast__create_memory_access(
                 char *own_component = AR__HEAP__STRDUP(ref_path[i], "Memory path component");
                 if (!own_component) {
                     // Clean up on failure
-                    ar__expression_ast__destroy(own_node);
+                    ar_expression_ast__destroy(own_node);
                     return NULL;
                 }
-                ar__list__add_last(own_node->data.memory_access.own_path, own_component);
+                ar_list__add_last(own_node->data.memory_access.own_path, own_component);
             }
         }
     }
@@ -178,23 +178,23 @@ ar_expression_ast_t* ar__expression_ast__create_memory_access(
 /**
  * Create a binary operation AST node.
  */
-ar_expression_ast_t* ar__expression_ast__create_binary_op(
+ar_expression_ast_t* ar_expression_ast__create_binary_op(
     ar_binary_operator_t op,
     ar_expression_ast_t *own_left,
     ar_expression_ast_t *own_right
 ) {
     if (!own_left || !own_right) {
         // Clean up any provided nodes
-        if (own_left) ar__expression_ast__destroy(own_left);
-        if (own_right) ar__expression_ast__destroy(own_right);
+        if (own_left) ar_expression_ast__destroy(own_left);
+        if (own_right) ar_expression_ast__destroy(own_right);
         return NULL;
     }
     
     ar_expression_ast_t *own_node = AR__HEAP__MALLOC(sizeof(ar_expression_ast_t), "Expression AST node (binary)");
     if (!own_node) {
         // Clean up provided nodes on failure
-        ar__expression_ast__destroy(own_left);
-        ar__expression_ast__destroy(own_right);
+        ar_expression_ast__destroy(own_left);
+        ar_expression_ast__destroy(own_right);
         return NULL;
     }
     
@@ -211,7 +211,7 @@ ar_expression_ast_t* ar__expression_ast__create_binary_op(
 /**
  * Destroy an AST node and all its children.
  */
-void ar__expression_ast__destroy(ar_expression_ast_t *own_node) {
+void ar_expression_ast__destroy(ar_expression_ast_t *own_node) {
     if (!own_node) {
         return;
     }
@@ -234,9 +234,9 @@ void ar__expression_ast__destroy(ar_expression_ast_t *own_node) {
             }
             if (own_node->data.memory_access.own_path) {
                 // Free all path components
-                size_t count = ar__list__count(own_node->data.memory_access.own_path);
+                size_t count = ar_list__count(own_node->data.memory_access.own_path);
                 if (count > 0) {
-                    void **own_items = ar__list__items(own_node->data.memory_access.own_path);
+                    void **own_items = ar_list__items(own_node->data.memory_access.own_path);
                     if (own_items) {
                         for (size_t i = 0; i < count; i++) {
                             if (own_items[i]) {
@@ -246,16 +246,16 @@ void ar__expression_ast__destroy(ar_expression_ast_t *own_node) {
                         AR__HEAP__FREE(own_items);
                     }
                 }
-                ar__list__destroy(own_node->data.memory_access.own_path);
+                ar_list__destroy(own_node->data.memory_access.own_path);
             }
             break;
             
         case AR_EXPR__BINARY_OP:
             if (own_node->data.binary_op.own_left) {
-                ar__expression_ast__destroy(own_node->data.binary_op.own_left);
+                ar_expression_ast__destroy(own_node->data.binary_op.own_left);
             }
             if (own_node->data.binary_op.own_right) {
-                ar__expression_ast__destroy(own_node->data.binary_op.own_right);
+                ar_expression_ast__destroy(own_node->data.binary_op.own_right);
             }
             break;
     }
@@ -265,35 +265,35 @@ void ar__expression_ast__destroy(ar_expression_ast_t *own_node) {
 
 /* Accessor function implementations */
 
-int ar__expression_ast__get_int_value(const ar_expression_ast_t *ref_node) {
+int ar_expression_ast__get_int_value(const ar_expression_ast_t *ref_node) {
     if (!ref_node || ref_node->type != AR_EXPR__LITERAL_INT) {
         return 0;
     }
     return ref_node->data.literal_int.value;
 }
 
-double ar__expression_ast__get_double_value(const ar_expression_ast_t *ref_node) {
+double ar_expression_ast__get_double_value(const ar_expression_ast_t *ref_node) {
     if (!ref_node || ref_node->type != AR_EXPR__LITERAL_DOUBLE) {
         return 0.0;
     }
     return ref_node->data.literal_double.value;
 }
 
-const char* ar__expression_ast__get_string_value(const ar_expression_ast_t *ref_node) {
+const char* ar_expression_ast__get_string_value(const ar_expression_ast_t *ref_node) {
     if (!ref_node || ref_node->type != AR_EXPR__LITERAL_STRING) {
         return NULL;
     }
     return ref_node->data.literal_string.own_value;
 }
 
-const char* ar__expression_ast__get_memory_base(const ar_expression_ast_t *ref_node) {
+const char* ar_expression_ast__get_memory_base(const ar_expression_ast_t *ref_node) {
     if (!ref_node || ref_node->type != AR_EXPR__MEMORY_ACCESS) {
         return NULL;
     }
     return ref_node->data.memory_access.own_base;
 }
 
-char** ar__expression_ast__get_memory_path(
+char** ar_expression_ast__get_memory_path(
     const ar_expression_ast_t *ref_node,
     size_t *out_count
 ) {
@@ -302,30 +302,30 @@ char** ar__expression_ast__get_memory_path(
         return NULL;
     }
     
-    *out_count = ar__list__count(ref_node->data.memory_access.own_path);
+    *out_count = ar_list__count(ref_node->data.memory_access.own_path);
     if (*out_count == 0) {
         return NULL;
     }
     
     // Transfer ownership of the array to caller - they must free it
-    return (char**)ar__list__items(ref_node->data.memory_access.own_path);
+    return (char**)ar_list__items(ref_node->data.memory_access.own_path);
 }
 
-ar_binary_operator_t ar__expression_ast__get_operator(const ar_expression_ast_t *ref_node) {
+ar_binary_operator_t ar_expression_ast__get_operator(const ar_expression_ast_t *ref_node) {
     if (!ref_node || ref_node->type != AR_EXPR__BINARY_OP) {
         return AR_OP__ADD; // Default value
     }
     return ref_node->data.binary_op.op;
 }
 
-const ar_expression_ast_t* ar__expression_ast__get_left(const ar_expression_ast_t *ref_node) {
+const ar_expression_ast_t* ar_expression_ast__get_left(const ar_expression_ast_t *ref_node) {
     if (!ref_node || ref_node->type != AR_EXPR__BINARY_OP) {
         return NULL;
     }
     return ref_node->data.binary_op.own_left;
 }
 
-const ar_expression_ast_t* ar__expression_ast__get_right(const ar_expression_ast_t *ref_node) {
+const ar_expression_ast_t* ar_expression_ast__get_right(const ar_expression_ast_t *ref_node) {
     if (!ref_node || ref_node->type != AR_EXPR__BINARY_OP) {
         return NULL;
     }

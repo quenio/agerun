@@ -22,14 +22,14 @@ typedef struct method_fixture_s method_fixture_t;
  * @return A newly created test fixture
  * @note Ownership: Returns an owned fixture that caller must destroy
  */
-method_fixture_t* ar__method_fixture__create(const char *ref_test_name);
+method_fixture_t* ar_method_fixture__create(const char *ref_test_name);
 
 /**
  * Destroys a test fixture and performs cleanup
  * @param own_fixture The fixture to destroy
  * @note Ownership: Takes ownership and destroys the fixture
  */
-void ar__method_fixture__destroy(method_fixture_t *own_fixture);
+void ar_method_fixture__destroy(method_fixture_t *own_fixture);
 
 /**
  * Initializes the test environment
@@ -37,7 +37,7 @@ void ar__method_fixture__destroy(method_fixture_t *own_fixture);
  * @return true if initialization succeeded, false otherwise
  * @note This ensures system is in clean state and initializes required components
  */
-bool ar__method_fixture__initialize(method_fixture_t *mut_fixture);
+bool ar_method_fixture__initialize(method_fixture_t *mut_fixture);
 
 /**
  * Loads a method file and registers it with the methodology
@@ -47,7 +47,7 @@ bool ar__method_fixture__initialize(method_fixture_t *mut_fixture);
  * @param ref_version Version string for the method
  * @return true if method was loaded and registered successfully
  */
-bool ar__method_fixture__load_method(method_fixture_t *mut_fixture,
+bool ar_method_fixture__load_method(method_fixture_t *mut_fixture,
                                 const char *ref_method_name,
                                 const char *ref_method_file,
                                 const char *ref_version);
@@ -57,20 +57,20 @@ bool ar__method_fixture__load_method(method_fixture_t *mut_fixture,
  * @param ref_fixture The fixture to use for verification
  * @return true if in correct directory, false otherwise
  */
-bool ar__method_fixture__verify_directory(const method_fixture_t *ref_fixture);
+bool ar_method_fixture__verify_directory(const method_fixture_t *ref_fixture);
 
 /**
  * Gets the test name from a fixture
  * @param ref_fixture The fixture to query
  * @return The test name (borrowed reference)
  */
-const char* ar__method_fixture__get_name(const method_fixture_t *ref_fixture);
+const char* ar_method_fixture__get_name(const method_fixture_t *ref_fixture);
 
 /**
  * Checks if there were any memory leaks during the test
  * @param ref_fixture The fixture to check
  * @return true if no memory leaks, false if leaks detected
  */
-bool ar__method_fixture__check_memory(const method_fixture_t *ref_fixture);
+bool ar_method_fixture__check_memory(const method_fixture_t *ref_fixture);
 
 #endif /* AGERUN_METHOD_FIXTURE_H */

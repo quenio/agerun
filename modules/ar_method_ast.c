@@ -22,7 +22,7 @@ ar_method_ast_t* ar_method_ast__create(void) {
         return NULL;
     }
     
-    own_ast->instructions = ar__list__create();
+    own_ast->instructions = ar_list__create();
     if (!own_ast->instructions) {
         AR__HEAP__FREE(own_ast);
         return NULL;
@@ -43,13 +43,13 @@ void ar_method_ast__destroy(ar_method_ast_t* own_ast) {
     // Destroy all instruction ASTs in the list
     if (own_ast->instructions) {
         // Remove and destroy instructions from the end to avoid shifting
-        while (!ar__list__empty(own_ast->instructions)) {
-            ar_instruction_ast_t *own_instruction = ar__list__remove_last(own_ast->instructions);
+        while (!ar_list__empty(own_ast->instructions)) {
+            ar_instruction_ast_t *own_instruction = ar_list__remove_last(own_ast->instructions);
             if (own_instruction) {
-                ar__instruction_ast__destroy(own_instruction);
+                ar_instruction_ast__destroy(own_instruction);
             }
         }
-        ar__list__destroy(own_ast->instructions);
+        ar_list__destroy(own_ast->instructions);
     }
     
     AR__HEAP__FREE(own_ast);
@@ -63,15 +63,15 @@ void ar_method_ast__add_instruction(ar_method_ast_t* mut_ast, ar_instruction_ast
         // If instruction is provided but AST is NULL, we need to destroy the instruction
         // to prevent memory leak since we're taking ownership
         if (own_instruction) {
-            ar__instruction_ast__destroy(own_instruction);
+            ar_instruction_ast__destroy(own_instruction);
         }
         return;
     }
     
-    bool added = ar__list__add_last(mut_ast->instructions, own_instruction);
+    bool added = ar_list__add_last(mut_ast->instructions, own_instruction);
     if (!added) {
         // Failed to add to list, need to clean up the instruction
-        ar__instruction_ast__destroy(own_instruction);
+        ar_instruction_ast__destroy(own_instruction);
     }
     // Ownership of instruction transferred to list on success
 }
@@ -84,7 +84,7 @@ size_t ar_method_ast__get_instruction_count(const ar_method_ast_t* ref_ast) {
         return 0;
     }
     
-    return ar__list__count(ref_ast->instructions);
+    return ar_list__count(ref_ast->instructions);
 }
 
 /**
@@ -95,13 +95,13 @@ const ar_instruction_ast_t* ar_method_ast__get_instruction(const ar_method_ast_t
         return NULL;
     }
     
-    size_t count = ar__list__count(ref_ast->instructions);
+    size_t count = ar_list__count(ref_ast->instructions);
     if (line_no > count) {
         return NULL;
     }
     
     // Get the array of instructions
-    void **items = ar__list__items(ref_ast->instructions);
+    void **items = ar_list__items(ref_ast->instructions);
     if (!items) {
         return NULL;
     }

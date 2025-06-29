@@ -16,7 +16,7 @@ typedef struct map_s map_t;
  * @return Pointer to the new map, or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy.
  */
-map_t* ar__map__create(void);
+map_t* ar_map__create(void);
 
 /**
  * Get a reference from map by key
@@ -25,7 +25,7 @@ map_t* ar__map__create(void);
  * @return Pointer to the referenced value, or NULL if not found
  * @note Ownership: Returns a borrowed reference. Caller does not own the returned value.
  */
-void* ar__map__get(const map_t *ref_map, const char *ref_key);
+void* ar_map__get(const map_t *ref_map, const char *ref_key);
 
 /**
  * Set a reference in map
@@ -37,14 +37,14 @@ void* ar__map__get(const map_t *ref_map, const char *ref_key);
  *       The caller remains responsible for allocating and freeing the key string.
  *       The key string must remain valid for the lifetime of the map entry.
  */
-bool ar__map__set(map_t *mut_map, const char *ref_key, void *ref_value);
+bool ar_map__set(map_t *mut_map, const char *ref_key, void *ref_value);
 
 /**
  * Get the number of used entries in the map
  * @param ref_map The map to count (borrowed reference)
  * @return The number of used entries
  */
-size_t ar__map__count(const map_t *ref_map);
+size_t ar_map__count(const map_t *ref_map);
 
 /**
  * Get an array of all refs in the map
@@ -55,7 +55,7 @@ size_t ar__map__count(const map_t *ref_map);
  *       The refs themselves are borrowed references and remain owned by their original owners.
  *       The caller can use ar_map_count() to determine the size of the array.
  */
-void** ar__map__refs(const map_t *ref_map);
+void** ar_map__refs(const map_t *ref_map);
 
 /**
  * Free all resources in a map
@@ -64,7 +64,7 @@ void** ar__map__refs(const map_t *ref_map);
  *       It does not free memory for keys or referenced values.
  *       The caller remains responsible for freeing all keys and values that were added to the map.
  */
-void ar__map__destroy(map_t *own_map);
+void ar_map__destroy(map_t *own_map);
 
 
 #endif /* AGERUN_MAP_H */

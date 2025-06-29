@@ -44,7 +44,7 @@ Verifies that a pointer that should have valid ownership actually has a non-NULL
 
 **Usage Example:**
 ```c
-data_t *own_data = ar__data__create_integer(42);
+data_t *own_data = ar_data__create_integer(42);
 AR_ASSERT_OWNERSHIP(own_data); // Ensures creation succeeded
 ```
 
@@ -61,7 +61,7 @@ Validates that a pointer has been set to NULL after ownership transfer.
 
 **Usage Example:**
 ```c
-ar__data__set_map_value(mut_map, "key", own_value);
+ar_data__set_map_value(mut_map, "key", own_value);
 own_value = NULL; // Mark as transferred
 AR_ASSERT_TRANSFERRED(own_value); // Verify proper transfer marking
 ```
@@ -185,10 +185,10 @@ AR__HEAP__FREE(own_buffer);
 own_buffer = NULL;
 ```
 
-#### `ar__heap__memory_report()`
+#### `ar_heap__memory_report()`
 
 ```c
-void ar__heap__memory_report(void)
+void ar_heap__memory_report(void)
 ```
 
 Generates a memory leak report with details of all allocations that have not been freed.
@@ -198,7 +198,7 @@ to check for leaks at specific points in the program.
 **Usage Example:**
 ```c
 // After a test or operation, check for leaks
-ar__heap__memory_report();
+ar_heap__memory_report();
 ```
 
 ## Usage Examples
@@ -239,12 +239,12 @@ own_copy = NULL;
 ### Verifying Ownership After Creation
 
 ```c
-data_t *own_data = ar__data__create_integer(42);
+data_t *own_data = ar_data__create_integer(42);
 AR_ASSERT_OWNERSHIP(own_data);
 
 // Use the data...
 
-ar__data__destroy(own_data);
+ar_data__destroy(own_data);
 own_data = NULL; // Mark as freed
 AR_ASSERT_NOT_USED_AFTER_FREE(own_data);
 ```
@@ -252,11 +252,11 @@ AR_ASSERT_NOT_USED_AFTER_FREE(own_data);
 ### Enforcing Ownership Transfer Rules
 
 ```c
-data_t *own_value = ar__data__create_string("test");
+data_t *own_value = ar_data__create_string("test");
 AR_ASSERT_OWNERSHIP(own_value);
 
 // Transfer ownership to map
-ar__data__set_map_value(mut_map, "key", own_value);
+ar_data__set_map_value(mut_map, "key", own_value);
 own_value = NULL; // Mark as transferred
 AR_ASSERT_TRANSFERRED(own_value);
 
@@ -273,7 +273,7 @@ bool process_data(data_t *own_input) {
     char *own_buffer = AR__HEAP__MALLOC(1024, "Temporary processing buffer");
     if (!own_buffer) {
         // Handle allocation failure
-        ar__data__destroy(own_input);
+        ar_data__destroy(own_input);
         own_input = NULL;
         return false;
     }
@@ -284,7 +284,7 @@ bool process_data(data_t *own_input) {
     AR__HEAP__FREE(own_buffer);
     own_buffer = NULL;
     
-    ar__data__destroy(own_input);
+    ar_data__destroy(own_input);
     own_input = NULL;
     
     return true;
@@ -321,7 +321,7 @@ The heap memory management system is designed with these key architectural compo
    
 4. **Automated Reporting**: Memory leak reports are automatically generated:
    - At program exit via atexit registration
-   - When explicitly requested through ar__heap__memory_report()
+   - When explicitly requested through ar_heap__memory_report()
    - Reports are written to heap_memory_report.log
 
 5. **Conditional Compilation**: All heap tracking code is wrapped in #ifdef DEBUG directives

@@ -91,8 +91,8 @@ The module evaluates all three arguments:
 
 ```c
 // Create memory and expression evaluator
-data_t *memory = ar__data__create_map();
-ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+data_t *memory = ar_data__create_map();
+ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
 
 // Create condition instruction evaluator
 ar_condition_instruction_evaluator_t *cond_eval = ar__condition_instruction_evaluator__create(
@@ -109,8 +109,8 @@ bool success = ar__condition_instruction_evaluator__evaluate(cond_eval, ast);
 
 // Cleanup
 ar__condition_instruction_evaluator__destroy(cond_eval);
-ar__expression_evaluator__destroy(expr_eval);
-ar__data__destroy(memory);
+ar_expression_evaluator__destroy(expr_eval);
+ar_data__destroy(memory);
 ```
 
 ## Testing

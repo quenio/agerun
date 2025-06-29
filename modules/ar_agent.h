@@ -25,14 +25,14 @@ typedef struct agent_s agent_t;
  * @note Ownership: Function does not take ownership of ref_context, it just references it.
  *       Caller takes ownership of the returned agent.
  */
-agent_t* ar__agent__create(const char *ref_method_name, const char *ref_version, const data_t *ref_context);
+agent_t* ar_agent__create(const char *ref_method_name, const char *ref_version, const data_t *ref_context);
 
 /**
  * Destroy an agent instance
  * @param own_agent Agent to destroy (ownership transferred)
  * @note Ownership: Destroys all resources owned by the agent (memory, message queue).
  */
-void ar__agent__destroy(agent_t *own_agent);
+void ar_agent__destroy(agent_t *own_agent);
 
 /**
  * Send a message to an agent
@@ -43,14 +43,14 @@ void ar__agent__destroy(agent_t *own_agent);
  *       Caller should set own_message = NULL after this call.
  *       If sending fails, function will destroy the message.
  */
-bool ar__agent__send(agent_t *mut_agent, data_t *own_message);
+bool ar_agent__send(agent_t *mut_agent, data_t *own_message);
 
 /**
  * Get the ID of an agent
  * @param ref_agent Agent to query (borrowed reference)
  * @return Agent's ID, or 0 if agent is NULL
  */
-int64_t ar__agent__get_id(const agent_t *ref_agent);
+int64_t ar_agent__get_id(const agent_t *ref_agent);
 
 /**
  * Get the memory data of an agent
@@ -59,7 +59,7 @@ int64_t ar__agent__get_id(const agent_t *ref_agent);
  * @note Ownership: Returns a borrowed reference to the agent's memory.
  *       Caller must not modify or destroy the returned data.
  */
-const data_t* ar__agent__get_memory(const agent_t *ref_agent);
+const data_t* ar_agent__get_memory(const agent_t *ref_agent);
 
 /**
  * Get the mutable memory data of an agent (for internal use)
@@ -68,7 +68,7 @@ const data_t* ar__agent__get_memory(const agent_t *ref_agent);
  * @note Ownership: Returns a mutable reference to the agent's memory.
  *       Caller must not destroy the returned data.
  */
-data_t* ar__agent__get_mutable_memory(agent_t *mut_agent);
+data_t* ar_agent__get_mutable_memory(agent_t *mut_agent);
 
 /**
  * Get the context data of an agent
@@ -77,14 +77,14 @@ data_t* ar__agent__get_mutable_memory(agent_t *mut_agent);
  * @note Ownership: Returns a borrowed reference to the agent's context.
  *       Caller must not modify or destroy the returned data.
  */
-const data_t* ar__agent__get_context(const agent_t *ref_agent);
+const data_t* ar_agent__get_context(const agent_t *ref_agent);
 
 /**
  * Check if an agent is active
  * @param ref_agent Agent to check (borrowed reference)
  * @return true if the agent is active, false otherwise
  */
-bool ar__agent__is_active(const agent_t *ref_agent);
+bool ar_agent__is_active(const agent_t *ref_agent);
 
 /**
  * Get the method information of an agent
@@ -95,7 +95,7 @@ bool ar__agent__is_active(const agent_t *ref_agent);
  * @note Ownership: The returned strings are borrowed references.
  *       Caller must not modify or free the returned strings.
  */
-bool ar__agent__get_method_info(const agent_t *ref_agent, const char **out_method_name, const char **out_method_version);
+bool ar_agent__get_method_info(const agent_t *ref_agent, const char **out_method_name, const char **out_method_version);
 
 /**
  * Get the method reference of an agent (for internal use)
@@ -104,14 +104,14 @@ bool ar__agent__get_method_info(const agent_t *ref_agent, const char **out_metho
  * @note Ownership: Returns a borrowed reference to the agent's method.
  *       Caller must not modify or destroy the returned method.
  */
-const method_t* ar__agent__get_method(const agent_t *ref_agent);
+const method_t* ar_agent__get_method(const agent_t *ref_agent);
 
 /**
  * Set the active status of an agent (for internal use)
  * @param mut_agent Agent to modify (mutable reference)
  * @param is_active New active status
  */
-void ar__agent__set_active(agent_t *mut_agent, bool is_active);
+void ar_agent__set_active(agent_t *mut_agent, bool is_active);
 
 
 
@@ -120,7 +120,7 @@ void ar__agent__set_active(agent_t *mut_agent, bool is_active);
  * @param ref_agent Agent to check (borrowed reference)
  * @return true if agent has messages, false otherwise
  */
-bool ar__agent__has_messages(const agent_t *ref_agent);
+bool ar_agent__has_messages(const agent_t *ref_agent);
 
 /**
  * Get and remove the first message from an agent's queue
@@ -128,7 +128,7 @@ bool ar__agent__has_messages(const agent_t *ref_agent);
  * @return Message data (ownership transferred), or NULL if no messages
  * @note Ownership: Returns an owned value that caller must destroy
  */
-data_t* ar__agent__get_message(agent_t *mut_agent);
+data_t* ar_agent__get_message(agent_t *mut_agent);
 
 
 /**
@@ -138,13 +138,13 @@ data_t* ar__agent__get_message(agent_t *mut_agent);
  * @param send_sleep_wake If true, send sleep/wake messages during update
  * @return true if successful, false otherwise
  */
-bool ar__agent__update_method(agent_t *mut_agent, const method_t *ref_new_method, bool send_sleep_wake);
+bool ar_agent__update_method(agent_t *mut_agent, const method_t *ref_new_method, bool send_sleep_wake);
 
 /**
  * Set agent ID (for persistence restoration)
  * @param mut_agent The agent to modify (mutable reference)
  * @param new_id The new agent ID to set
  */
-void ar__agent__set_id(agent_t *mut_agent, int64_t new_id);
+void ar_agent__set_id(agent_t *mut_agent, int64_t new_id);
 
 #endif /* AGERUN_AGENT_H */

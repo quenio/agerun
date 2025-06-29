@@ -81,7 +81,7 @@ static void test_method_parser__parse_single_instruction(void) {
     // And the instruction should be the correct type
     const ar_instruction_ast_t *ref_instruction = ar_method_ast__get_instruction(own_ast, 1);
     assert(ref_instruction != NULL);
-    assert(ar__instruction_ast__get_type(ref_instruction) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(ref_instruction) == AR_INST__ASSIGNMENT);
     
     // Clean up
     ar_method_ast__destroy(own_ast);
@@ -109,15 +109,15 @@ static void test_method_parser__parse_multiple_instructions(void) {
     // And each instruction should be the correct type in order
     const ar_instruction_ast_t *ref_instruction1 = ar_method_ast__get_instruction(own_ast, 1);
     assert(ref_instruction1 != NULL);
-    assert(ar__instruction_ast__get_type(ref_instruction1) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(ref_instruction1) == AR_INST__ASSIGNMENT);
     
     const ar_instruction_ast_t *ref_instruction2 = ar_method_ast__get_instruction(own_ast, 2);
     assert(ref_instruction2 != NULL);
-    assert(ar__instruction_ast__get_type(ref_instruction2) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(ref_instruction2) == AR_INST__ASSIGNMENT);
     
     const ar_instruction_ast_t *ref_instruction3 = ar_method_ast__get_instruction(own_ast, 3);
     assert(ref_instruction3 != NULL);
-    assert(ar__instruction_ast__get_type(ref_instruction3) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(ref_instruction3) == AR_INST__ASSIGNMENT);
     
     // Clean up
     ar_method_ast__destroy(own_ast);
@@ -168,7 +168,7 @@ static void test_method_parser__parse_with_comments(void) {
     // And each instruction should be correctly parsed
     const ar_instruction_ast_t *ref_instruction1 = ar_method_ast__get_instruction(own_ast, 1);
     assert(ref_instruction1 != NULL);
-    assert(ar__instruction_ast__get_type(ref_instruction1) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(ref_instruction1) == AR_INST__ASSIGNMENT);
     
     // Clean up
     ar_method_ast__destroy(own_ast);

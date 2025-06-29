@@ -160,8 +160,8 @@ static void test_interpreter_functionality(void) {
     
     // Then verify the result
     data_t *mut_memory = ar__interpreter_fixture__get_agent_memory(own_fixture, agent_id);
-    data_t *ref_y = ar__data__get_map_data(mut_memory, "y");
-    assert(ar__data__get_integer(ref_y) == 2);
+    data_t *ref_y = ar_data__get_map_data(mut_memory, "y");
+    assert(ar_data__get_integer(ref_y) == 2);
     
     // Cleanup is automatic
     ar__interpreter_fixture__destroy(own_fixture);
@@ -182,21 +182,21 @@ static void test_message_handling(void) {
     );
     
     // Execute with a custom message
-    data_t *own_message = ar__data__create_string("Hello");
+    data_t *own_message = ar_data__create_string("Hello");
     bool result = ar__interpreter_fixture__execute_with_message(
         own_fixture,
         agent_id,
         "memory.result := message",
         own_message
     );
-    ar__data__destroy(own_message);
+    ar_data__destroy(own_message);
     
     assert(result == true);
     
     // Verify message was used
     data_t *mut_memory = ar__interpreter_fixture__get_agent_memory(own_fixture, agent_id);
-    data_t *ref_result = ar__data__get_map_data(mut_memory, "result");
-    assert(strcmp(ar__data__get_string(ref_result), "Hello") == 0);
+    data_t *ref_result = ar_data__get_map_data(mut_memory, "result");
+    assert(strcmp(ar_data__get_string(ref_result), "Hello") == 0);
     
     ar__interpreter_fixture__destroy(own_fixture);
 }
@@ -212,7 +212,7 @@ static void test_resource_tracking(void) {
     assert(ref_map != NULL);
     
     // Create additional data and track it
-    data_t *own_list = ar__data__create_list();
+    data_t *own_list = ar_data__create_list();
     ar__interpreter_fixture__track_data(own_fixture, own_list);
     // Ownership transferred - fixture will destroy it
     

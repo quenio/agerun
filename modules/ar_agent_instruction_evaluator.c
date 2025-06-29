@@ -72,67 +72,67 @@ static data_t* _copy_data_value(const data_t *ref_value) {
         return NULL;
     }
     
-    switch (ar__data__get_type(ref_value)) {
+    switch (ar_data__get_type(ref_value)) {
         case DATA_INTEGER:
-            return ar__data__create_integer(ar__data__get_integer(ref_value));
+            return ar_data__create_integer(ar_data__get_integer(ref_value));
         case DATA_DOUBLE:
-            return ar__data__create_double(ar__data__get_double(ref_value));
+            return ar_data__create_double(ar_data__get_double(ref_value));
         case DATA_STRING:
-            return ar__data__create_string(ar__data__get_string(ref_value));
+            return ar_data__create_string(ar_data__get_string(ref_value));
         case DATA_MAP:
             {
                 // Create a new map and copy all key-value pairs
-                data_t *new_map = ar__data__create_map();
+                data_t *new_map = ar_data__create_map();
                 if (!new_map) return NULL;
                 
                 // Get all keys from the original map
-                data_t *keys = ar__data__get_map_keys(ref_value);
+                data_t *keys = ar_data__get_map_keys(ref_value);
                 if (!keys) {
-                    ar__data__destroy(new_map);
+                    ar_data__destroy(new_map);
                     return NULL;
                 }
                 
                 // Copy each key-value pair
-                size_t count = ar__data__list_count(keys);
+                size_t count = ar_data__list_count(keys);
                 for (size_t i = 0; i < count; i++) {
                     // Get the key
-                    data_t *key_data = ar__data__list_first(keys);
+                    data_t *key_data = ar_data__list_first(keys);
                     if (!key_data) break;
                     
-                    const char *key = ar__data__get_string(key_data);
+                    const char *key = ar_data__get_string(key_data);
                     if (!key) {
-                        data_t *removed = ar__data__list_remove_first(keys);
-                        ar__data__destroy(removed);
+                        data_t *removed = ar_data__list_remove_first(keys);
+                        ar_data__destroy(removed);
                         continue;
                     }
                     
                     // Get the value from the original map
-                    data_t *orig_value = ar__data__get_map_data(ref_value, key);
+                    data_t *orig_value = ar_data__get_map_data(ref_value, key);
                     if (orig_value) {
                         // Recursively copy the value
                         data_t *copy_value = _copy_data_value(orig_value);
                         if (copy_value) {
-                            bool success = ar__data__set_map_data(new_map, key, copy_value);
+                            bool success = ar_data__set_map_data(new_map, key, copy_value);
                             if (!success) {
                                 fprintf(stderr, "ERROR: Failed to set map data for key '%s'\n", key);
-                                ar__data__destroy(copy_value);
+                                ar_data__destroy(copy_value);
                             }
                         }
                     }
                     
                     // Remove and destroy the processed key
-                    data_t *removed_key = ar__data__list_remove_first(keys);
-                    ar__data__destroy(removed_key);
+                    data_t *removed_key = ar_data__list_remove_first(keys);
+                    ar_data__destroy(removed_key);
                 }
                 
                 // Clean up the keys list
-                ar__data__destroy(keys);
+                ar_data__destroy(keys);
                 
                 return new_map;
             }
         case DATA_LIST:
             // TODO: Implement deep copy for lists
-            return ar__data__create_list();
+            return ar_data__create_list();
         default:
             return NULL;
     }
@@ -146,24 +146,24 @@ static bool _store_result_if_assigned(
     const ar_instruction_ast_t *ref_ast,
     data_t *own_result
 ) {
-    const char *ref_result_path = ar__instruction_ast__get_function_result_path(ref_ast);
+    const char *ref_result_path = ar_instruction_ast__get_function_result_path(ref_ast);
     if (!ref_result_path) {
         // No assignment, just destroy the result
-        ar__data__destroy(own_result);
+        ar_data__destroy(own_result);
         return true;
     }
     
     // Get memory key path
     const char *key_path = _get_memory_key_path(ref_result_path);
     if (!key_path) {
-        ar__data__destroy(own_result);
+        ar_data__destroy(own_result);
         return false;
     }
     
     // Store the result (transfers ownership)
-    bool store_success = ar__data__set_map_data(mut_memory, key_path, own_result);
+    bool store_success = ar_data__set_map_data(mut_memory, key_path, own_result);
     if (!store_success) {
-        ar__data__destroy(own_result);
+        ar_data__destroy(own_result);
         return false;
     }
     
@@ -184,23 +184,23 @@ bool ar_agent_instruction_evaluator__evaluate(
     data_t *mut_memory = ref_evaluator->mut_memory;
     
     // Validate AST type
-    if (ar__instruction_ast__get_type(ref_ast) != AR_INST__AGENT) {
+    if (ar_instruction_ast__get_type(ref_ast) != AR_INST__AGENT) {
         return false;
     }
     
     // Get pre-parsed expression ASTs for arguments
-    const list_t *ref_arg_asts = ar__instruction_ast__get_function_arg_asts(ref_ast);
+    const list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(ref_ast);
     if (!ref_arg_asts) {
         return false;
     }
     
     // Verify we have exactly 3 arguments
-    if (ar__list__count(ref_arg_asts) != 3) {
+    if (ar_list__count(ref_arg_asts) != 3) {
         return false;
     }
     
     // Get the argument ASTs array
-    void **items = ar__list__items(ref_arg_asts);
+    void **items = ar_list__items(ref_arg_asts);
     if (!items) {
         return false;
     }
@@ -215,15 +215,15 @@ bool ar_agent_instruction_evaluator__evaluate(
     }
     
     // Evaluate expression ASTs using public method
-    data_t *method_result = ar__expression_evaluator__evaluate(mut_expr_evaluator, ref_method_ast);
-    data_t *version_result = ar__expression_evaluator__evaluate(mut_expr_evaluator, ref_version_ast);
-    data_t *context_result = ar__expression_evaluator__evaluate(mut_expr_evaluator, ref_context_ast);
+    data_t *method_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_method_ast);
+    data_t *version_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_version_ast);
+    data_t *context_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_context_ast);
     
     // Handle ownership for method name
     data_t *own_method_name = NULL;
     if (method_result) {
-        if (ar__data__hold_ownership(method_result, mut_expr_evaluator)) {
-            ar__data__transfer_ownership(method_result, mut_expr_evaluator);
+        if (ar_data__hold_ownership(method_result, mut_expr_evaluator)) {
+            ar_data__transfer_ownership(method_result, mut_expr_evaluator);
             own_method_name = method_result;
         } else {
             own_method_name = _copy_data_value(method_result);
@@ -233,8 +233,8 @@ bool ar_agent_instruction_evaluator__evaluate(
     // Handle ownership for version
     data_t *own_version = NULL;
     if (version_result) {
-        if (ar__data__hold_ownership(version_result, mut_expr_evaluator)) {
-            ar__data__transfer_ownership(version_result, mut_expr_evaluator);
+        if (ar_data__hold_ownership(version_result, mut_expr_evaluator)) {
+            ar_data__transfer_ownership(version_result, mut_expr_evaluator);
             own_version = version_result;
         } else {
             own_version = _copy_data_value(version_result);
@@ -251,24 +251,24 @@ bool ar_agent_instruction_evaluator__evaluate(
     
     // Validate method name and version are strings
     if (own_method_name && own_version &&
-        ar__data__get_type(own_method_name) == DATA_STRING &&
-        ar__data__get_type(own_version) == DATA_STRING) {
+        ar_data__get_type(own_method_name) == DATA_STRING &&
+        ar_data__get_type(own_version) == DATA_STRING) {
         
         // Validate context - must be a map (since parser requires 3 args)
         bool context_valid = false;
-        if (ref_context_data && ar__data__get_type(ref_context_data) == DATA_MAP) {
+        if (ref_context_data && ar_data__get_type(ref_context_data) == DATA_MAP) {
             context_valid = true;
         }
         
         if (context_valid) {
-            const char *method_name = ar__data__get_string(own_method_name);
-            const char *version = ar__data__get_string(own_version);
+            const char *method_name = ar_data__get_string(own_method_name);
+            const char *version = ar_data__get_string(own_version);
             
             // Check if method exists
-            method_t *ref_method = ar__methodology__get_method(method_name, version);
+            method_t *ref_method = ar_methodology__get_method(method_name, version);
             if (ref_method) {
                 // Create the agent - context is borrowed, not owned
-                agent_id = ar__agency__create_agent(method_name, version, ref_context_data);
+                agent_id = ar_agency__create_agent(method_name, version, ref_context_data);
                 if (agent_id > 0) {
                     success = true;
                 }
@@ -277,13 +277,13 @@ bool ar_agent_instruction_evaluator__evaluate(
     }
     
     // Clean up evaluated arguments
-    if (own_method_name) ar__data__destroy(own_method_name);
-    if (own_version) ar__data__destroy(own_version);
+    if (own_method_name) ar_data__destroy(own_method_name);
+    if (own_version) ar_data__destroy(own_version);
     // Never destroy context - the agent needs it to remain valid
     
     // Store result if assigned
-    if (ar__instruction_ast__has_result_assignment(ref_ast)) {
-        data_t *own_result = ar__data__create_integer((int)agent_id);
+    if (ar_instruction_ast__has_result_assignment(ref_ast)) {
+        data_t *own_result = ar_data__create_integer((int)agent_id);
         if (own_result) {
             _store_result_if_assigned(mut_memory, ref_ast, own_result);
         }

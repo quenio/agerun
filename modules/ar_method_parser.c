@@ -39,7 +39,7 @@ static bool _parse_line(ar_method_parser_t *mut_parser, ar_method_ast_t *mut_ast
         return false;
     }
     
-    char *mut_trimmed = ar__string__trim(own_line);
+    char *mut_trimmed = ar_string__trim(own_line);
     
     // Skip empty lines
     if (strlen(mut_trimmed) == 0) {
@@ -63,7 +63,7 @@ static bool _parse_line(ar_method_parser_t *mut_parser, ar_method_ast_t *mut_ast
             // Found a comment marker outside of quotes
             *p = '\0';
             // Trim again to remove trailing whitespace before the comment
-            mut_trimmed = ar__string__trim(mut_trimmed);
+            mut_trimmed = ar_string__trim(mut_trimmed);
             
             // If the line is now empty after removing the comment, skip it
             if (strlen(mut_trimmed) == 0) {
@@ -93,7 +93,7 @@ ar_method_parser_t* ar_method_parser__create(void) {
         return NULL;
     }
     
-    own_parser->instruction_parser = ar__instruction_parser__create();
+    own_parser->instruction_parser = ar_instruction_parser__create();
     if (!own_parser->instruction_parser) {
         AR__HEAP__FREE(own_parser);
         return NULL;
@@ -112,7 +112,7 @@ void ar_method_parser__destroy(ar_method_parser_t *own_parser) {
     }
     
     if (own_parser->instruction_parser) {
-        ar__instruction_parser__destroy(own_parser->instruction_parser);
+        ar_instruction_parser__destroy(own_parser->instruction_parser);
     }
     
     if (own_parser->own_error_message) {
@@ -140,7 +140,7 @@ ar_method_ast_t* ar_method_parser__parse(ar_method_parser_t *mut_parser, const c
         return NULL;
     }
     
-    char *mut_trimmed = ar__string__trim(own_copy);
+    char *mut_trimmed = ar_string__trim(own_copy);
     
     // Create the AST to populate
     ar_method_ast_t *own_ast = ar_method_ast__create();
@@ -173,7 +173,7 @@ ar_method_ast_t* ar_method_parser__parse(ar_method_parser_t *mut_parser, const c
         // Parse the line
         if (!_parse_line(mut_parser, own_ast, mut_line_start)) {
             // Parse failed - capture error from instruction parser
-            const char *ref_inst_error = ar__instruction_parser__get_error(mut_parser->instruction_parser);
+            const char *ref_inst_error = ar_instruction_parser__get_error(mut_parser->instruction_parser);
             _set_error(mut_parser, current_line, ref_inst_error);
             
             AR__HEAP__FREE(own_copy);

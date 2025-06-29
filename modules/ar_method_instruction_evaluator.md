@@ -94,8 +94,8 @@ The module:
 
 ```c
 // Create memory and expression evaluator
-data_t *memory = ar__data__create_map();
-ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+data_t *memory = ar_data__create_map();
+ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
 
 // Create method instruction evaluator
 ar_method_instruction_evaluator_t *method_eval = ar_method_instruction_evaluator__create(

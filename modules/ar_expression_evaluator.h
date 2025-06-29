@@ -25,7 +25,7 @@ typedef struct expression_evaluator_s ar_expression_evaluator_t;
  * @return A new evaluator instance
  * @note Ownership: Returns an owned value that caller must destroy
  */
-ar_expression_evaluator_t* ar__expression_evaluator__create(
+ar_expression_evaluator_t* ar_expression_evaluator__create(
     data_t *ref_memory,
     data_t *ref_context
 );
@@ -35,7 +35,7 @@ ar_expression_evaluator_t* ar__expression_evaluator__create(
  * @param own_evaluator The evaluator to destroy
  * @note Ownership: Takes ownership and destroys the evaluator
  */
-void ar__expression_evaluator__destroy(ar_expression_evaluator_t *own_evaluator);
+void ar_expression_evaluator__destroy(ar_expression_evaluator_t *own_evaluator);
 
 /**
  * Evaluates an integer literal AST node
@@ -45,7 +45,7 @@ void ar__expression_evaluator__destroy(ar_expression_evaluator_t *own_evaluator)
  * @note Ownership: Returns an owned value that caller must destroy
  *       Returns NULL if node is not an integer literal
  */
-data_t* ar__expression_evaluator__evaluate_literal_int(
+data_t* ar_expression_evaluator__evaluate_literal_int(
     ar_expression_evaluator_t *mut_evaluator,
     const ar_expression_ast_t *ref_node
 );
@@ -58,7 +58,7 @@ data_t* ar__expression_evaluator__evaluate_literal_int(
  * @note Ownership: Returns an owned value that caller must destroy
  *       Returns NULL if node is not a double literal
  */
-data_t* ar__expression_evaluator__evaluate_literal_double(
+data_t* ar_expression_evaluator__evaluate_literal_double(
     ar_expression_evaluator_t *mut_evaluator,
     const ar_expression_ast_t *ref_node
 );
@@ -71,7 +71,7 @@ data_t* ar__expression_evaluator__evaluate_literal_double(
  * @note Ownership: Returns an owned value that caller must destroy
  *       Returns NULL if node is not a string literal
  */
-data_t* ar__expression_evaluator__evaluate_literal_string(
+data_t* ar_expression_evaluator__evaluate_literal_string(
     ar_expression_evaluator_t *mut_evaluator,
     const ar_expression_ast_t *ref_node
 );
@@ -84,7 +84,7 @@ data_t* ar__expression_evaluator__evaluate_literal_string(
  * @note Ownership: Returns an owned value that caller must destroy
  *       Returns NULL if variable not found or node is not a memory access
  */
-data_t* ar__expression_evaluator__evaluate_memory_access(
+data_t* ar_expression_evaluator__evaluate_memory_access(
     ar_expression_evaluator_t *mut_evaluator,
     const ar_expression_ast_t *ref_node
 );
@@ -97,7 +97,7 @@ data_t* ar__expression_evaluator__evaluate_memory_access(
  * @note Ownership: Returns an owned value that caller must destroy
  *       Returns NULL on evaluation errors or if node is not a binary operation
  */
-data_t* ar__expression_evaluator__evaluate_binary_op(
+data_t* ar_expression_evaluator__evaluate_binary_op(
     ar_expression_evaluator_t *mut_evaluator,
     const ar_expression_ast_t *ref_node
 );
@@ -112,7 +112,7 @@ data_t* ar__expression_evaluator__evaluate_binary_op(
  *       - Literals: Returns owned value that caller must destroy
  *       - Operations: Returns owned value that caller must destroy
  */
-data_t* ar__expression_evaluator__evaluate(
+data_t* ar_expression_evaluator__evaluate(
     ar_expression_evaluator_t *mut_evaluator,
     const ar_expression_ast_t *ref_ast
 );

@@ -131,7 +131,7 @@ void ar__methodology__cleanup(void);
 - The module handles persistence of methods to disk, saving and loading them for system restarts
 - Proper memory management follows the AgeRun Memory Management Model (MMM)
 - The methodology module is responsible for freeing method resources it owns
-- It uses `ar__method__destroy()` to properly clean up method resources
+- It uses `ar_method__destroy()` to properly clean up method resources
 
 ## Usage Examples
 
@@ -142,8 +142,8 @@ void ar__methodology__cleanup(void);
 method_t *ref_method = ar__methodology__get_method("echo_method", NULL);
 if (ref_method) {
     // Use the method...
-    const char *instructions = ar__method__get_instructions(ref_method);
-    const char *version = ar__method__get_version(ref_method);
+    const char *instructions = ar_method__get_instructions(ref_method);
+    const char *version = ar_method__get_version(ref_method);
     // Note: ref_method is owned by the methodology module, don't free it
 }
 
@@ -166,7 +166,7 @@ if (created) {
 }
 
 // Alternative approach: Create method object manually and register it
-method_t *own_method = ar__method__create("another_method", 
+method_t *own_method = ar_method__create("another_method", 
                                    "memory.greeting := \"Hello\";",
                                    "1.0.0");
 

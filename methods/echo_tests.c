@@ -11,49 +11,49 @@ static void test_echo_simple_message(void) {
     printf("Testing echo method with simple message...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar__method_fixture__create("echo_simple_message");
+    method_fixture_t *own_fixture = ar_method_fixture__create("echo_simple_message");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar__method_fixture__initialize(own_fixture));
+    assert(ar_method_fixture__initialize(own_fixture));
     
     // Verify correct directory
-    assert(ar__method_fixture__verify_directory(own_fixture));
+    assert(ar_method_fixture__verify_directory(own_fixture));
     
     // Load and register echo method
-    assert(ar__method_fixture__load_method(own_fixture, "echo", "../methods/echo-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture__load_method(own_fixture, "echo", "../methods/echo-1.0.0.method", "1.0.0"));
     
     // Create echo agent
-    int64_t echo_agent = ar__agency__create_agent("echo", "1.0.0", NULL);
+    int64_t echo_agent = ar_agency__create_agent("echo", "1.0.0", NULL);
     assert(echo_agent != 0);
     
     // Process wake message
-    ar__system__process_next_message();
+    ar_system__process_next_message();
     
     // Verify agent memory was initialized
-    const data_t *agent_memory = ar__agency__get_agent_memory(echo_agent);
+    const data_t *agent_memory = ar_agency__get_agent_memory(echo_agent);
     assert(agent_memory != NULL);
     
     // When we send a message with sender field
-    data_t *own_message = ar__data__create_map();
+    data_t *own_message = ar_data__create_map();
     assert(own_message != NULL);
     
     // Add sender field (0 means system/test)
-    data_t *own_sender = ar__data__create_integer(0);
-    ar__data__set_map_data(own_message, "sender", own_sender);
+    data_t *own_sender = ar_data__create_integer(0);
+    ar_data__set_map_data(own_message, "sender", own_sender);
     own_sender = NULL; // Ownership transferred
     
     // Add the actual message content
-    data_t *own_content = ar__data__create_string("Hello, Echo!");
-    ar__data__set_map_data(own_message, "content", own_content);
+    data_t *own_content = ar_data__create_string("Hello, Echo!");
+    ar_data__set_map_data(own_message, "content", own_content);
     own_content = NULL; // Ownership transferred
     
-    bool sent = ar__agency__send_to_agent(echo_agent, own_message);
+    bool sent = ar_agency__send_to_agent(echo_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
     // Process the message
-    bool processed = ar__system__process_next_message();
+    bool processed = ar_system__process_next_message();
     assert(processed);
     
     // Echo method now only sends back message.content, doesn't store in memory
@@ -62,18 +62,18 @@ static void test_echo_simple_message(void) {
     // NOTE: This currently fails because send() requires ownership of the message
     // but message.content is a reference, not an owned value. The AgeRun language
     // doesn't yet support sending memory references directly.
-    processed = ar__system__process_next_message();
+    processed = ar_system__process_next_message();
     assert(!processed);  // Expected to fail due to ownership limitations
     (void)processed;  // Suppress unused variable warning
     
     // Clean up
-    ar__agency__destroy_agent(echo_agent);
+    ar_agency__destroy_agent(echo_agent);
     
     // Check for memory leaks
-    assert(ar__method_fixture__check_memory(own_fixture));
+    assert(ar_method_fixture__check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar__method_fixture__destroy(own_fixture);
+    ar_method_fixture__destroy(own_fixture);
     
     printf("PASS\n");
 }
@@ -82,60 +82,60 @@ static void test_echo_map_message(void) {
     printf("Testing echo method with map message...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar__method_fixture__create("echo_map_message");
+    method_fixture_t *own_fixture = ar_method_fixture__create("echo_map_message");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar__method_fixture__initialize(own_fixture));
+    assert(ar_method_fixture__initialize(own_fixture));
     
     // Verify correct directory
-    assert(ar__method_fixture__verify_directory(own_fixture));
+    assert(ar_method_fixture__verify_directory(own_fixture));
     
     // Load and register echo method
-    assert(ar__method_fixture__load_method(own_fixture, "echo", "../methods/echo-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture__load_method(own_fixture, "echo", "../methods/echo-1.0.0.method", "1.0.0"));
     
     // Create echo agent
-    int64_t echo_agent = ar__agency__create_agent("echo", "1.0.0", NULL);
+    int64_t echo_agent = ar_agency__create_agent("echo", "1.0.0", NULL);
     assert(echo_agent != 0);
     
     // Process wake message
-    ar__system__process_next_message();
+    ar_system__process_next_message();
     
     // Verify agent memory was initialized
-    const data_t *agent_memory = ar__agency__get_agent_memory(echo_agent);
+    const data_t *agent_memory = ar_agency__get_agent_memory(echo_agent);
     assert(agent_memory != NULL);
     
     // When we send a map message
-    data_t *own_map_message = ar__data__create_map();
+    data_t *own_map_message = ar_data__create_map();
     assert(own_map_message != NULL);
-    ar__data__set_map_integer(own_map_message, "sender", 0); // Add sender field
-    ar__data__set_map_string(own_map_message, "type", "greeting");
-    ar__data__set_map_string(own_map_message, "content", "Hello from map!");
-    ar__data__set_map_integer(own_map_message, "count", 42);
+    ar_data__set_map_integer(own_map_message, "sender", 0); // Add sender field
+    ar_data__set_map_string(own_map_message, "type", "greeting");
+    ar_data__set_map_string(own_map_message, "content", "Hello from map!");
+    ar_data__set_map_integer(own_map_message, "count", 42);
     
-    bool sent = ar__agency__send_to_agent(echo_agent, own_map_message);
+    bool sent = ar_agency__send_to_agent(echo_agent, own_map_message);
     assert(sent);
     own_map_message = NULL; // Ownership transferred
     
     // Process the message
-    bool processed = ar__system__process_next_message();
+    bool processed = ar_system__process_next_message();
     assert(processed);
     
     // Process the return message (echo sends it back)
     // NOTE: This currently fails because send() requires ownership of the message
     // but message.content is a reference (a map), not an owned value. The AgeRun 
     // language doesn't yet support sending memory references directly.
-    processed = ar__system__process_next_message();
+    processed = ar_system__process_next_message();
     assert(!processed);  // Expected to fail due to ownership limitations
     
     // Clean up
-    ar__agency__destroy_agent(echo_agent);
+    ar_agency__destroy_agent(echo_agent);
     
     // Check for memory leaks
-    assert(ar__method_fixture__check_memory(own_fixture));
+    assert(ar_method_fixture__check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar__method_fixture__destroy(own_fixture);
+    ar_method_fixture__destroy(own_fixture);
     
     printf("PASS\n");
 }

@@ -84,30 +84,30 @@ static bool _parse_and_set_expression_ast(ar_assignment_instruction_parser_t *mu
                                          ar_instruction_ast_t *mut_inst_ast, 
                                          const char *ref_expression,
                                          size_t error_offset) {
-    ar_expression_parser_t *own_expr_parser = ar__expression_parser__create(ref_expression);
+    ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(ref_expression);
     if (!own_expr_parser) {
         _set_error(mut_parser, "Failed to create expression parser", error_offset);
         return false;
     }
     
-    ar_expression_ast_t *own_expr_ast = ar__expression_parser__parse_expression(own_expr_parser);
+    ar_expression_ast_t *own_expr_ast = ar_expression_parser__parse_expression(own_expr_parser);
     if (!own_expr_ast) {
-        const char *expr_error = ar__expression_parser__get_error(own_expr_parser);
+        const char *expr_error = ar_expression_parser__get_error(own_expr_parser);
         char *own_error_copy = expr_error ? AR__HEAP__STRDUP(expr_error, "error message copy") : NULL;
-        ar__expression_parser__destroy(own_expr_parser);
+        ar_expression_parser__destroy(own_expr_parser);
         _set_error(mut_parser, own_error_copy ? own_error_copy : "Failed to parse expression", error_offset);
         AR__HEAP__FREE(own_error_copy);
         return false;
     }
     
-    if (!ar__instruction_ast__set_assignment_expression_ast(mut_inst_ast, own_expr_ast)) {
+    if (!ar_instruction_ast__set_assignment_expression_ast(mut_inst_ast, own_expr_ast)) {
         _set_error(mut_parser, "Failed to set expression AST", error_offset);
-        ar__expression_ast__destroy(own_expr_ast);
-        ar__expression_parser__destroy(own_expr_parser);
+        ar_expression_ast__destroy(own_expr_ast);
+        ar_expression_parser__destroy(own_expr_parser);
         return false;
     }
     
-    ar__expression_parser__destroy(own_expr_parser);
+    ar_expression_parser__destroy(own_expr_parser);
     return true;
 }
 
@@ -223,7 +223,7 @@ ar_instruction_ast_t* ar_assignment_instruction_parser__parse(
     own_expr[expr_end - expr_start] = '\0';
     
     /* Create AST node */
-    ar_instruction_ast_t *own_ast = ar__instruction_ast__create_assignment(own_path, own_expr);
+    ar_instruction_ast_t *own_ast = ar_instruction_ast__create_assignment(own_path, own_expr);
     
     if (!own_ast) {
         AR__HEAP__FREE(own_path);
@@ -236,7 +236,7 @@ ar_instruction_ast_t* ar_assignment_instruction_parser__parse(
     if (!_parse_and_set_expression_ast(mut_parser, own_ast, own_expr, expr_start)) {
         AR__HEAP__FREE(own_path);
         AR__HEAP__FREE(own_expr);
-        ar__instruction_ast__destroy(own_ast);
+        ar_instruction_ast__destroy(own_ast);
         return NULL;
     }
     

@@ -18,38 +18,38 @@ static void test_method_get_ast(void);
 static void test_method_parse_ast_on_create(void);
 
 static void test_method_create(void) {
-    printf("Testing ar__method__create()...\n");
+    printf("Testing ar_method__create()...\n");
     
     // Given a name and instructions for a new method
     const char *name = "test_method";
     const char *instructions = "memory.message := \"Hello from test method\"";
     
     // When we create the method
-    method_t *own_method = ar__method__create(name, instructions, "1.0.0");
+    method_t *own_method = ar_method__create(name, instructions, "1.0.0");
     
     // Then the method should be created successfully
     assert(own_method != NULL);
     
     // Register with methodology
-    ar__methodology__register_method(own_method);
+    ar_methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
-    printf("ar__method__create() test passed!\n");
+    printf("ar_method__create() test passed!\n");
 }
 
 static void test_method_create_with_previous_version(void) {
-    printf("Testing ar__method__create() with previous version...\n");
+    printf("Testing ar_method__create() with previous version...\n");
     
     // Given a method that already exists
     const char *name = "versioned_method";
     const char *instructions_v1 = "memory.message := \"Version 1\"";
     
     // Create version 1
-    method_t *own_method_v1 = ar__method__create(name, instructions_v1, "1.0.0");
+    method_t *own_method_v1 = ar_method__create(name, instructions_v1, "1.0.0");
     assert(own_method_v1 != NULL);
     
     // Register with methodology
-    ar__methodology__register_method(own_method_v1);
+    ar_methodology__register_method(own_method_v1);
     own_method_v1 = NULL; // Mark as transferred
     
     // For test purposes, we assume registration succeeds and creates version 1.0.0
@@ -57,11 +57,11 @@ static void test_method_create_with_previous_version(void) {
     
     // When we create a new version of the method
     const char *instructions_v2 = "memory.message := \"Version 2\"";
-    method_t *own_method_v2 = ar__method__create(name, instructions_v2, "2.0.0");
+    method_t *own_method_v2 = ar_method__create(name, instructions_v2, "2.0.0");
     assert(own_method_v2 != NULL);
     
     // Register with methodology
-    ar__methodology__register_method(own_method_v2);
+    ar_methodology__register_method(own_method_v2);
     own_method_v2 = NULL; // Mark as transferred
     
     // Then the new version should be created successfully
@@ -72,53 +72,53 @@ static void test_method_create_with_previous_version(void) {
     // We can't directly compare strings with > operator
     assert(strcmp(v2, v1) != 0);
     
-    printf("ar__method__create() with previous version test passed!\n");
+    printf("ar_method__create() with previous version test passed!\n");
 }
 
 static void test_method_run(void) {
-    printf("Testing ar__method__run()...\n");
+    printf("Testing ar_method__run()...\n");
     
     // Given an echo method
     const char *method_name = "echo_method";
     const char *instructions = "memory.message := memory.message";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar__method__create(method_name, instructions, "1.0.0");
+    method_t *own_method = ar_method__create(method_name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
-    ar__methodology__register_method(own_method);
+    ar_methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we assume registration succeeds and creates version "1.0.0"
     const char *version = "1.0.0";
     
     // And an agent created with this method
-    int64_t agent_id = ar__agency__create_agent(method_name, version, NULL);
+    int64_t agent_id = ar_agency__create_agent(method_name, version, NULL);
     assert(agent_id > 0);
     
     // With map_t now opaque, we can't directly access the agent
     // We'll test indirectly by sending a message
-    assert(ar__agency__agent_exists(agent_id));
+    assert(ar_agency__agent_exists(agent_id));
     
     // When we send a message to the agent
     static const char *sleep_text = "__sleep__"; // Use a special message that will be handled
-    data_t *sleep_message = ar__data__create_string(sleep_text);
+    data_t *sleep_message = ar_data__create_string(sleep_text);
     assert(sleep_message != NULL);
-    bool result = ar__agency__send_to_agent(agent_id, sleep_message);
+    bool result = ar_agency__send_to_agent(agent_id, sleep_message);
     
     // Then the method should run successfully
     assert(result);
     
     // Process the message to prevent memory leaks
-    ar__system__process_next_message();
+    ar_system__process_next_message();
     
     // When we clean up the agent
-    ar__agency__destroy_agent(agent_id);
+    ar_agency__destroy_agent(agent_id);
     
     // Agency destroy returns void, cleanup is done
     
-    printf("ar__method__run() test passed!\n");
+    printf("ar_method__run() test passed!\n");
 }
 
 static void test_method_persistence(void) {
@@ -132,11 +132,11 @@ static void test_method_persistence(void) {
     const char *instructions = "memory.message := \"I am persistent\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar__method__create(name, instructions, "1.0.0");
+    method_t *own_method = ar_method__create(name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
-    ar__methodology__register_method(own_method);
+    ar_methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we assume registration succeeds and creates version 1.0.0
@@ -147,94 +147,94 @@ static void test_method_persistence(void) {
     const char *instructions2 = "memory.message := \"I am not persistent\"";
     
     // Create method and register it with methodology 
-    method_t *own_method2 = ar__method__create(name2, instructions2, "1.0.0");
+    method_t *own_method2 = ar_method__create(name2, instructions2, "1.0.0");
     assert(own_method2 != NULL);
     
     // Register with methodology
-    ar__methodology__register_method(own_method2);
+    ar_methodology__register_method(own_method2);
     own_method2 = NULL; // Mark as transferred
     
     // For test purposes, we assume registration succeeds and creates version 1.0.0
     const char *version2 = "1.0.0";
     
     // Save methods to disk
-    bool save_result = ar__methodology__save_methods();
+    bool save_result = ar_methodology__save_methods();
     assert(save_result);
     
     // Clear the methodology to simulate a fresh start
-    ar__methodology__cleanup();
+    ar_methodology__cleanup();
     
     // Load methods from disk
-    bool load_result = ar__methodology__load_methods();
+    bool load_result = ar_methodology__load_methods();
     assert(load_result);
     
     // Verify methods were loaded correctly
-    method_t *method = ar__methodology__get_method(name, version);
+    method_t *method = ar_methodology__get_method(name, version);
     if (method == NULL) {
         printf("Warning: Method %s not loaded correctly, skipping detailed check\n", name);
     } else {
-        assert(strcmp(ar__method__get_name(method), name) == 0);
+        assert(strcmp(ar_method__get_name(method), name) == 0);
         // Version is now a string, not an integer
-        // assert(ar__method__get_version(method) == version);
+        // assert(ar_method__get_version(method) == version);
         // Persistent flag is no longer in the spec
         // assert(ar_method_is_persistent(method) == true);
         
         // Instruction comparison is skipped for now
         // This could be fixed in a future task if needed
         // printf("Original instructions: '%s'\n", instructions);
-        // printf("Loaded instructions: '%s'\n", ar__method__get_instructions(method));
+        // printf("Loaded instructions: '%s'\n", ar_method__get_instructions(method));
         
         // Note: instructions might differ due to how they're stored/loaded from file
-        // assert(strcmp(ar__method__get_instructions(method), instructions) == 0);
+        // assert(strcmp(ar_method__get_instructions(method), instructions) == 0);
     }
     
-    method_t *method2 = ar__methodology__get_method(name2, version2);
+    method_t *method2 = ar_methodology__get_method(name2, version2);
     if (method2 == NULL) {
         printf("Warning: Method %s not loaded correctly, skipping detailed check\n", name2);
     } else {
-        assert(strcmp(ar__method__get_name(method2), name2) == 0);
+        assert(strcmp(ar_method__get_name(method2), name2) == 0);
         // Version is now a string, not an integer
-        // assert(ar__method__get_version(method2) == version2);
+        // assert(ar_method__get_version(method2) == version2);
         // Persistent flag is no longer in the spec
         // assert(ar_method_is_persistent(method2) == false);
         
         // Instruction comparison is skipped for now
         // This could be fixed in a future task if needed
         // printf("Original instructions2: '%s'\n", instructions2);
-        // printf("Loaded instructions2: '%s'\n", ar__method__get_instructions(method2));
+        // printf("Loaded instructions2: '%s'\n", ar_method__get_instructions(method2));
         
         // Note: instructions might differ due to how they're stored/loaded from file
-        // assert(strcmp(ar__method__get_instructions(method2), instructions2) == 0);
+        // assert(strcmp(ar_method__get_instructions(method2), instructions2) == 0);
     }
     
     // Clean up loaded methods to prevent memory leaks
-    ar__methodology__cleanup();
+    ar_methodology__cleanup();
     
     printf("Method persistence tests passed!\n");
 }
 
 static void test_method_get_ast(void) {
-    printf("Testing ar__method__get_ast()...\n");
+    printf("Testing ar_method__get_ast()...\n");
     
     // Given a method with valid instructions
     const char *name = "ast_test_method";
     const char *instructions = "memory.x := 42\nmemory.y := 84";
     
     // When we create the method
-    method_t *own_method = ar__method__create(name, instructions, "1.0.0");
+    method_t *own_method = ar_method__create(name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Then we should be able to get the AST
-    const ar_method_ast_t *ref_ast = ar__method__get_ast(own_method);
+    const ar_method_ast_t *ref_ast = ar_method__get_ast(own_method);
     
     // The AST should now be parsed automatically
     assert(ref_ast != NULL);
     assert(ar_method_ast__get_instruction_count(ref_ast) == 2);
     
     // Clean up
-    ar__method__destroy(own_method);
+    ar_method__destroy(own_method);
     
-    printf("ar__method__get_ast() test passed!\n");
+    printf("ar_method__get_ast() test passed!\n");
 }
 
 static void test_method_parse_ast_on_create(void) {
@@ -245,11 +245,11 @@ static void test_method_parse_ast_on_create(void) {
     const char *instructions = "memory.x := 42\nmemory.y := 84";
     
     // When we create the method
-    method_t *own_method = ar__method__create(name, instructions, "1.0.0");
+    method_t *own_method = ar_method__create(name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Then the AST should be parsed automatically
-    const ar_method_ast_t *ref_ast = ar__method__get_ast(own_method);
+    const ar_method_ast_t *ref_ast = ar_method__get_ast(own_method);
     assert(ref_ast != NULL);
     
     // And it should have 2 instructions
@@ -260,14 +260,14 @@ static void test_method_parse_ast_on_create(void) {
     // And the instructions should be assignment type
     const ar_instruction_ast_t *ref_inst1 = ar_method_ast__get_instruction(ref_ast, 1);  // 1-based
     assert(ref_inst1 != NULL);
-    assert(ar__instruction_ast__get_type(ref_inst1) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(ref_inst1) == AR_INST__ASSIGNMENT);
     
     const ar_instruction_ast_t *ref_inst2 = ar_method_ast__get_instruction(ref_ast, 2);  // 1-based
     assert(ref_inst2 != NULL);
-    assert(ar__instruction_ast__get_type(ref_inst2) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(ref_inst2) == AR_INST__ASSIGNMENT);
     
     // Clean up
-    ar__method__destroy(own_method);
+    ar_method__destroy(own_method);
     
     printf("Method parse AST on create test passed!\n");
 }
@@ -280,18 +280,18 @@ int main(void) {
     const char *init_instructions = "memory.result := \"Method test init\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar__method__create(init_method, init_instructions, "1.0.0");
+    method_t *own_method = ar_method__create(init_method, init_instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
-    ar__methodology__register_method(own_method);
+    ar_methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we assume registration succeeds and creates version 1.0.0
     const char *init_version = "1.0.0";
     
     // When we initialize the system
-    ar__system__init(init_method, init_version);
+    ar_system__init(init_method, init_version);
     
     // And we run all method tests
     test_method_create();
@@ -301,7 +301,7 @@ int main(void) {
     test_method_parse_ast_on_create();
     
     // Shutdown the system to clean up resources
-    ar__system__shutdown();
+    ar_system__shutdown();
     
     // Run persistence test (doesn't need system initialized)
     test_method_persistence();

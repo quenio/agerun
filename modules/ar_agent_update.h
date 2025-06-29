@@ -32,7 +32,7 @@ typedef struct method_s method_t;
  *       IMPORTANT: The caller must process 2*update_count messages after this call
  *       if lifecycle events are enabled to ensure all sleep and wake messages are processed.
  */
-int ar__agent_update__update_methods(agent_registry_t *ref_registry,
+int ar_agent_update__update_methods(agent_registry_t *ref_registry,
                                     const method_t *ref_old_method, 
                                     const method_t *ref_new_method,
                                     bool send_lifecycle_events);
@@ -44,7 +44,7 @@ int ar__agent_update__update_methods(agent_registry_t *ref_registry,
  * @return Number of active agents using the method
  * @note Ownership: Does not take ownership of any references.
  */
-int ar__agent_update__count_using_method(agent_registry_t *ref_registry,
+int ar_agent_update__count_using_method(agent_registry_t *ref_registry,
                                         const method_t *ref_method);
 
 /**
@@ -54,7 +54,7 @@ int ar__agent_update__count_using_method(agent_registry_t *ref_registry,
  * @return true if methods are compatible (same name, compatible versions)
  * @note Ownership: Does not take ownership of either method reference.
  */
-bool ar__agent_update__are_compatible(const method_t *ref_old_method,
+bool ar_agent_update__are_compatible(const method_t *ref_old_method,
                                      const method_t *ref_new_method);
 
 #endif /* AGERUN_AGENT_UPDATE_H */

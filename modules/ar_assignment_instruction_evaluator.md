@@ -90,8 +90,8 @@ The module includes helper functions for:
 
 ```c
 // Create memory and expression evaluator
-data_t *memory = ar__data__create_map();
-ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+data_t *memory = ar_data__create_map();
+ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
 
 // Create assignment instruction evaluator
 ar_assignment_instruction_evaluator_t *assign_eval = ar_assignment_instruction_evaluator__create(
@@ -108,8 +108,8 @@ bool success = ar_assignment_instruction_evaluator__evaluate(assign_eval, ast);
 
 // Cleanup
 ar_assignment_instruction_evaluator__destroy(assign_eval);
-ar__expression_evaluator__destroy(expr_eval);
-ar__data__destroy(memory);
+ar_expression_evaluator__destroy(expr_eval);
+ar_data__destroy(memory);
 ```
 
 ## Testing

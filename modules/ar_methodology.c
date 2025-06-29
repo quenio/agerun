@@ -33,22 +33,22 @@
  */
 static bool _validate_file(const char *filename, char *error_message, size_t error_size) {
     FILE *fp;
-    file_result_t result = ar__io__open_file(filename, "r", &fp);
+    file_result_t result = ar_io__open_file(filename, "r", &fp);
 
     if (result == FILE_ERROR_NOT_FOUND) {
         snprintf(error_message, error_size, "Methodology file %s not found", filename);
         return false;
     } else if (result != FILE_SUCCESS) {
         snprintf(error_message, error_size, "Failed to open methodology file: %s",
-                ar__io__error_message(result));
+                ar_io__error_message(result));
         return false;
     }
 
     // Read and validate method count
     char line[256] = {0};
-    if (!ar__io__read_line(fp, line, (int)sizeof(line), filename)) {
+    if (!ar_io__read_line(fp, line, (int)sizeof(line), filename)) {
         snprintf(error_message, error_size, "Failed to read method count from %s", filename);
-        ar__io__close_file(fp, filename);
+        ar_io__close_file(fp, filename);
         return false;
     }
 
@@ -60,17 +60,17 @@ static bool _validate_file(const char *filename, char *error_message, size_t err
     if (errno != 0 || line_endptr == line || (*line_endptr != '\0' && *line_endptr != '\n') ||
         method_count < 0 || method_count > MAX_METHODS) {
         snprintf(error_message, error_size, "Invalid method count in %s", filename);
-        ar__io__close_file(fp, filename);
+        ar_io__close_file(fp, filename);
         return false;
     }
 
     // Validate each method entry
     for (int i = 0; i < method_count; i++) {
         // Read method name and version count line
-        if (!ar__io__read_line(fp, line, (int)sizeof(line), filename)) {
+        if (!ar_io__read_line(fp, line, (int)sizeof(line), filename)) {
             snprintf(error_message, error_size,
                     "Failed to read method entry %d from %s", i+1, filename);
-            ar__io__close_file(fp, filename);
+            ar_io__close_file(fp, filename);
             return false;
         }
 
@@ -82,7 +82,7 @@ static bool _validate_file(const char *filename, char *error_message, size_t err
         char line_copy[256];
 
         // Make a copy of the line since strtok_r modifies it
-        ar__io__string_copy(line_copy, line, sizeof(line_copy));
+        ar_io__string_copy(line_copy, line, sizeof(line_copy));
 
         // Count tokens
         token = strtok_r(line_copy, " \t\n", &saveptr);
@@ -95,7 +95,7 @@ static bool _validate_file(const char *filename, char *error_message, size_t err
             snprintf(error_message, error_size,
                     "Malformed method entry for method %d in %s: expected 2 fields, found %d",
                     i+1, filename, tokens);
-            ar__io__close_file(fp, filename);
+            ar_io__close_file(fp, filename);
             return false;
         }
 
@@ -106,7 +106,7 @@ static bool _validate_file(const char *filename, char *error_message, size_t err
             snprintf(error_message, error_size,
                     "Malformed method entry - missing method name in %s for method %d",
                     filename, i+1);
-            ar__io__close_file(fp, filename);
+            ar_io__close_file(fp, filename);
             return false;
         }
 
@@ -115,18 +115,18 @@ static bool _validate_file(const char *filename, char *error_message, size_t err
         if (token_len >= MAX_METHOD_NAME_LENGTH) {
             snprintf(error_message, error_size,
                     "Method name too long in %s for method %d", filename, i+1);
-            ar__io__close_file(fp, filename);
+            ar_io__close_file(fp, filename);
             return false;
         }
 
         // Use safer string copy function
-        ar__io__string_copy(method_name, token, sizeof(method_name));
+        ar_io__string_copy(method_name, token, sizeof(method_name));
 
         // Validate method name is not empty
         if (strlen(method_name) == 0) {
             snprintf(error_message, error_size,
                     "Empty method name in %s for method %d", filename, i+1);
-            ar__io__close_file(fp, filename);
+            ar_io__close_file(fp, filename);
             return false;
         }
 
@@ -136,7 +136,7 @@ static bool _validate_file(const char *filename, char *error_message, size_t err
             snprintf(error_message, error_size,
                     "Malformed method entry - missing version count in %s for method %d",
                     filename, i+1);
-            ar__io__close_file(fp, filename);
+            ar_io__close_file(fp, filename);
             return false;
         }
 
@@ -150,18 +150,18 @@ static bool _validate_file(const char *filename, char *error_message, size_t err
             snprintf(error_message, error_size,
                     "Invalid version count '%s' for method %s in %s",
                     token, method_name, filename);
-            ar__io__close_file(fp, filename);
+            ar_io__close_file(fp, filename);
             return false;
         }
 
         // Validate each version for this method
         for (int j = 0; j < version_count; j++) {
             // Read version line
-            if (!ar__io__read_line(fp, line, (int)sizeof(line), filename)) {
+            if (!ar_io__read_line(fp, line, (int)sizeof(line), filename)) {
                 snprintf(error_message, error_size,
                         "Failed to read version for method %s (%d/%d) in %s",
                         method_name, j+1, version_count, filename);
-                ar__io__close_file(fp, filename);
+                ar_io__close_file(fp, filename);
                 return false;
             }
 
@@ -170,16 +170,16 @@ static bool _validate_file(const char *filename, char *error_message, size_t err
                 snprintf(error_message, error_size,
                         "Empty version string for method %s (%d/%d) in %s",
                         method_name, j+1, version_count, filename);
-                ar__io__close_file(fp, filename);
+                ar_io__close_file(fp, filename);
                 return false;
             }
 
             // Read instructions line
-            if (!ar__io__read_line(fp, line, (int)sizeof(line), filename)) {
+            if (!ar_io__read_line(fp, line, (int)sizeof(line), filename)) {
                 snprintf(error_message, error_size,
                         "Failed to read instructions for method %s (%d/%d) in %s",
                         method_name, j+1, version_count, filename);
-                ar__io__close_file(fp, filename);
+                ar_io__close_file(fp, filename);
                 return false;
             }
 
@@ -188,13 +188,13 @@ static bool _validate_file(const char *filename, char *error_message, size_t err
                 snprintf(error_message, error_size,
                         "Empty instructions for method %s (%d/%d) in %s",
                         method_name, j+1, version_count, filename);
-                ar__io__close_file(fp, filename);
+                ar_io__close_file(fp, filename);
                 return false;
             }
         }
     }
 
-    ar__io__close_file(fp, filename);
+    ar_io__close_file(fp, filename);
     return true;
 }
 
@@ -215,20 +215,20 @@ static int method_name_count = 0;
  * @note Ownership: This function creates and takes ownership of the method.
  *       The caller should not worry about destroying the method.
  */
-bool ar__methodology__create_method(const char *ref_name, const char *ref_instructions, 
+bool ar_methodology__create_method(const char *ref_name, const char *ref_instructions, 
                               const char *ref_version) {
     if (!ref_name || !ref_instructions) {
         return false;
     }
     
     // Create the method directly with the provided parameters
-    method_t *own_method = ar__method__create(ref_name, ref_instructions, ref_version);
+    method_t *own_method = ar_method__create(ref_name, ref_instructions, ref_version);
     if (!own_method) {
         return false;
     }
     
     // Register the method (transfers ownership)
-    ar__methodology__register_method(own_method);
+    ar_methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     return true;
@@ -241,7 +241,7 @@ static method_t* _find_method(const char *ref_name, const char *ref_version);
 /* Method Search Functions */
 static int _find_method_idx(const char *ref_name) {
     for (int i = 0; i < method_name_count; i++) {
-        if (methods[i][0] != NULL && strcmp(ar__method__get_name(methods[i][0]), ref_name) == 0) {
+        if (methods[i][0] != NULL && strcmp(ar_method__get_name(methods[i][0]), ref_name) == 0) {
             return i;
         }
     }
@@ -259,9 +259,9 @@ static method_t* _find_latest_method(const char *ref_name) {
     int latest_idx = 0;
     for (int i = 1; i < method_counts[method_idx]; i++) {
         if (methods[method_idx][i] != NULL && methods[method_idx][latest_idx] != NULL &&
-            ar__semver__compare(
-                ar__method__get_version(methods[method_idx][i]),
-                ar__method__get_version(methods[method_idx][latest_idx])
+            ar_semver__compare(
+                ar_method__get_version(methods[method_idx][i]),
+                ar_method__get_version(methods[method_idx][latest_idx])
             ) > 0) {
             latest_idx = i;
         }
@@ -288,7 +288,7 @@ static method_t* _find_method(const char *ref_name, const char *ref_version) {
     // Case 2: Exact version match
     for (int i = 0; i < method_counts[method_idx]; i++) {
         if (methods[method_idx][i] != NULL && 
-            strcmp(ar__method__get_version(methods[method_idx][i]), ref_version) == 0) {
+            strcmp(ar_method__get_version(methods[method_idx][i]), ref_version) == 0) {
             return methods[method_idx][i];
         }
     }
@@ -299,17 +299,17 @@ static method_t* _find_method(const char *ref_name, const char *ref_version) {
     int valid_count = 0;
     for (int i = 0; i < method_counts[method_idx]; i++) {
         if (methods[method_idx][i] != NULL) {
-            versions[valid_count++] = ar__method__get_version(methods[method_idx][i]);
+            versions[valid_count++] = ar_method__get_version(methods[method_idx][i]);
         }
     }
     
     // Find the latest version matching the pattern
-    int latest_idx = ar__semver__find_latest_matching(versions, valid_count, ref_version);
+    int latest_idx = ar_semver__find_latest_matching(versions, valid_count, ref_version);
     if (latest_idx >= 0) {
         // Map back to the original index in methods array
         for (int i = 0; i < method_counts[method_idx]; i++) {
             if (methods[method_idx][i] != NULL && 
-                strcmp(ar__method__get_version(methods[method_idx][i]), versions[latest_idx]) == 0) {
+                strcmp(ar_method__get_version(methods[method_idx][i]), versions[latest_idx]) == 0) {
                 return methods[method_idx][i];
             }
         }
@@ -328,7 +328,7 @@ static void _set_method_storage(int method_idx, int version_idx, method_t *ref_m
     
     // If there's already a method at this location, destroy it first
     if (methods[method_idx][version_idx] != NULL) {
-        ar__method__destroy(methods[method_idx][version_idx]);
+        ar_method__destroy(methods[method_idx][version_idx]);
     }
     
     // Store the new method
@@ -338,7 +338,7 @@ static void _set_method_storage(int method_idx, int version_idx, method_t *ref_m
 // Functions removed - were exposing internal state
 
 // Main method access function
-method_t* ar__methodology__get_method(const char *ref_name, const char *ref_version) {
+method_t* ar_methodology__get_method(const char *ref_name, const char *ref_version) {
     if (ref_version == NULL) {
         // Use latest version
         return _find_latest_method(ref_name);
@@ -348,16 +348,16 @@ method_t* ar__methodology__get_method(const char *ref_name, const char *ref_vers
     }
 }
 
-bool ar__methodology__save_methods(void) {
+bool ar_methodology__save_methods(void) {
     // Create a temporary file first, then rename it to avoid data corruption
     const char *temp_filename = METHODOLOGY_FILE_NAME ".tmp";
     
     // Use restricted mode "w" to ensure we only create/write, not execute
     FILE *mut_fp;
-    file_result_t result = ar__io__open_file(temp_filename, "w", &mut_fp);
+    file_result_t result = ar_io__open_file(temp_filename, "w", &mut_fp);
     if (result != FILE_SUCCESS) {
-        ar__io__error("Could not open %s for writing: %s",
-                temp_filename, ar__io__error_message(result));
+        ar_io__error("Could not open %s for writing: %s",
+                temp_filename, ar_io__error_message(result));
         return false;
     }
     
@@ -374,16 +374,16 @@ bool ar__methodology__save_methods(void) {
     // Write method count
     int written = snprintf(buffer, BUFFER_SIZE, "%d\n", method_name_count);
     if (written < 0 || written >= (int)BUFFER_SIZE) {
-        ar__io__error("Buffer too small for method count in %s", temp_filename);
-        ar__io__close_file(mut_fp, temp_filename);
+        ar_io__error("Buffer too small for method count in %s", temp_filename);
+        ar_io__close_file(mut_fp, temp_filename);
         remove(temp_filename);
         return false;
     }
     
     // Write the count to the file with error checking
     if (fputs(buffer, mut_fp) == EOF) {
-        ar__io__error("Failed to write method count to %s", temp_filename);
-        ar__io__close_file(mut_fp, temp_filename);
+        ar_io__error("Failed to write method count to %s", temp_filename);
+        ar_io__close_file(mut_fp, temp_filename);
         remove(temp_filename);
         return false;
     }
@@ -395,10 +395,10 @@ bool ar__methodology__save_methods(void) {
         }
         
         // Get method name with validation
-        const char *method_name = ar__method__get_name(methods[i][0]);
+        const char *method_name = ar_method__get_name(methods[i][0]);
         if (!method_name) {
-            ar__io__error("NULL method name at index %d", i);
-            ar__io__close_file(mut_fp, temp_filename);
+            ar_io__error("NULL method name at index %d", i);
+            ar_io__close_file(mut_fp, temp_filename);
             remove(temp_filename);
             return false;
         }
@@ -406,16 +406,16 @@ bool ar__methodology__save_methods(void) {
         // Write method name and version count
         written = snprintf(buffer, BUFFER_SIZE, "%s %d\n", method_name, method_counts[i]);
         if (written < 0 || written >= (int)BUFFER_SIZE) {
-            ar__io__error("Buffer too small for method data in %s", temp_filename);
-            ar__io__close_file(mut_fp, temp_filename);
+            ar_io__error("Buffer too small for method data in %s", temp_filename);
+            ar_io__close_file(mut_fp, temp_filename);
             remove(temp_filename);
             return false;
         }
         
         // Write the data to the file with error checking
         if (fputs(buffer, mut_fp) == EOF) {
-            ar__io__error("Failed to write method data to %s", temp_filename);
-            ar__io__close_file(mut_fp, temp_filename);
+            ar_io__error("Failed to write method data to %s", temp_filename);
+            ar_io__close_file(mut_fp, temp_filename);
             remove(temp_filename);
             return false;
         }
@@ -429,10 +429,10 @@ bool ar__methodology__save_methods(void) {
             const method_t *ref_method = methods[i][j];
             
             // Get version string with validation
-            const char *version = ar__method__get_version(ref_method);
+            const char *version = ar_method__get_version(ref_method);
             if (!version) {
-                ar__io__error("NULL version for method %s at index %d", method_name, j);
-                ar__io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
+                ar_io__error("NULL version for method %s at index %d", method_name, j);
+                ar_io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
                 remove(METHODOLOGY_FILE_NAME);
                 return false;
             }
@@ -440,26 +440,26 @@ bool ar__methodology__save_methods(void) {
             // Write version string
             written = snprintf(buffer, BUFFER_SIZE, "%s\n", version);
             if (written < 0 || written >= (int)BUFFER_SIZE) {
-                ar__io__error("Buffer too small for version data in %s", temp_filename);
-                ar__io__close_file(mut_fp, temp_filename);
+                ar_io__error("Buffer too small for version data in %s", temp_filename);
+                ar_io__close_file(mut_fp, temp_filename);
                 remove(temp_filename);
                 return false;
             }
             
             // Write the version to the file with error checking
             if (fputs(buffer, mut_fp) == EOF) {
-                ar__io__error("Failed to write version data to %s", temp_filename);
-                ar__io__close_file(mut_fp, temp_filename);
+                ar_io__error("Failed to write version data to %s", temp_filename);
+                ar_io__close_file(mut_fp, temp_filename);
                 remove(temp_filename);
                 return false;
             }
             
             // Get instructions with validation
-            const char *instructions = ar__method__get_instructions(ref_method);
+            const char *instructions = ar_method__get_instructions(ref_method);
             if (!instructions) {
-                ar__io__error("NULL instructions for method %s version %s",
+                ar_io__error("NULL instructions for method %s version %s",
                         method_name, version);
-                ar__io__close_file(mut_fp, temp_filename);
+                ar_io__close_file(mut_fp, temp_filename);
                 remove(temp_filename);
                 return false;
             }
@@ -467,9 +467,9 @@ bool ar__methodology__save_methods(void) {
             // Check if instructions will fit in buffer
             size_t instr_len = strlen(instructions);
             if (instr_len >= BUFFER_SIZE - 2) { // -2 for newline and null terminator
-                ar__io__error("Instructions too large for buffer (size: %zu) for method %s version %s",
+                ar_io__error("Instructions too large for buffer (size: %zu) for method %s version %s",
                         instr_len, method_name, version);
-                ar__io__close_file(mut_fp, temp_filename);
+                ar_io__close_file(mut_fp, temp_filename);
                 remove(temp_filename);
                 return false;
             }
@@ -477,17 +477,17 @@ bool ar__methodology__save_methods(void) {
             // Write instructions - these can be large, so buffer size is critical
             written = snprintf(buffer, BUFFER_SIZE, "%s\n", instructions);
             if (written < 0 || written >= (int)BUFFER_SIZE) {
-                ar__io__error("Buffer overflow writing instructions for method %s version %s",
+                ar_io__error("Buffer overflow writing instructions for method %s version %s",
                         method_name, version);
-                ar__io__close_file(mut_fp, temp_filename);
+                ar_io__close_file(mut_fp, temp_filename);
                 remove(temp_filename);
                 return false;
             }
             
             // Write the instructions to the file with error checking
             if (fputs(buffer, mut_fp) == EOF) {
-                ar__io__error("Failed to write instructions to %s", temp_filename);
-                ar__io__close_file(mut_fp, temp_filename);
+                ar_io__error("Failed to write instructions to %s", temp_filename);
+                ar_io__close_file(mut_fp, temp_filename);
                 remove(temp_filename);
                 return false;
             }
@@ -496,38 +496,38 @@ bool ar__methodology__save_methods(void) {
     
     // Flush and close the file
     if (fflush(mut_fp) != 0) {
-        ar__io__error("Failed to flush data to %s", temp_filename);
-        ar__io__close_file(mut_fp, temp_filename);
+        ar_io__error("Failed to flush data to %s", temp_filename);
+        ar_io__close_file(mut_fp, temp_filename);
         remove(temp_filename);
         return false;
     }
 
-    ar__io__close_file(mut_fp, temp_filename);
+    ar_io__close_file(mut_fp, temp_filename);
     
     // Rename the temporary file to the permanent file
     if (rename(temp_filename, METHODOLOGY_FILE_NAME) != 0) {
-        ar__io__error("Failed to rename %s to %s: %s", temp_filename, METHODOLOGY_FILE_NAME, strerror(errno));
+        ar_io__error("Failed to rename %s to %s: %s", temp_filename, METHODOLOGY_FILE_NAME, strerror(errno));
         remove(temp_filename);
         return false;
     }
 
     // Set secure permissions on the permanent file
-    result = ar__io__set_secure_permissions(METHODOLOGY_FILE_NAME);
+    result = ar_io__set_secure_permissions(METHODOLOGY_FILE_NAME);
     if (result != FILE_SUCCESS) {
-        ar__io__warning("Failed to set secure permissions on %s: %s",
-                 METHODOLOGY_FILE_NAME, ar__io__error_message(result));
+        ar_io__warning("Failed to set secure permissions on %s: %s",
+                 METHODOLOGY_FILE_NAME, ar_io__error_message(result));
         // Continue despite permission issues - file was saved successfully
     }
     
     return true;
 }
 
-void ar__methodology__cleanup(void) {
+void ar_methodology__cleanup(void) {
     // Free all method pointers in the methods array
     for (int i = 0; i < MAX_METHODS; i++) {
         for (int j = 0; j < MAX_VERSIONS_PER_METHOD; j++) {
             if (methods[i][j] != NULL) {
-                ar__method__destroy(methods[i][j]);
+                ar_method__destroy(methods[i][j]);
                 methods[i][j] = NULL;
             }
         }
@@ -536,21 +536,21 @@ void ar__methodology__cleanup(void) {
     method_name_count = 0;
 }
 
-void ar__methodology__register_method(method_t *own_method) {
+void ar_methodology__register_method(method_t *own_method) {
     if (!own_method) {
         return;
     }
     
-    const char *method_name = ar__method__get_name(own_method);
-    const char *method_version = ar__method__get_version(own_method);
+    const char *method_name = ar_method__get_name(own_method);
+    const char *method_version = ar_method__get_version(own_method);
     
     // Find or create a method index for this name
     int method_idx = _find_method_idx(method_name);
     if (method_idx < 0) {
         // No existing method with this name, create a new entry
         if (method_name_count >= MAX_METHODS) {
-            ar__io__error("Maximum number of method types reached");
-            ar__method__destroy(own_method); // Clean up the method
+            ar_io__error("Maximum number of method types reached");
+            ar_method__destroy(own_method); // Clean up the method
             return;
         }
         
@@ -559,8 +559,8 @@ void ar__methodology__register_method(method_t *own_method) {
     
     // Check if we've reached max versions for this method
     if (method_counts[method_idx] >= MAX_VERSIONS_PER_METHOD) {
-        ar__io__error("Maximum number of versions reached for method %s", method_name);
-        ar__method__destroy(own_method); // Clean up the method
+        ar_io__error("Maximum number of versions reached for method %s", method_name);
+        ar_method__destroy(own_method); // Clean up the method
         return;
     }
     
@@ -568,7 +568,7 @@ void ar__methodology__register_method(method_t *own_method) {
     bool version_conflict = false;
     for (int i = 0; i < method_counts[method_idx]; i++) {
         if (methods[method_idx][i] != NULL && 
-            strcmp(ar__method__get_version(methods[method_idx][i]), method_version) == 0) {
+            strcmp(ar_method__get_version(methods[method_idx][i]), method_version) == 0) {
             version_conflict = true;
             break;
         }
@@ -576,7 +576,7 @@ void ar__methodology__register_method(method_t *own_method) {
     
     if (version_conflict) {
         // Rather than modifying the version, we'll just append a note
-        ar__io__warning("Method %s version %s already exists", method_name, method_version);
+        ar_io__warning("Method %s version %s already exists", method_name, method_version);
     }
     
     // Find the next version slot
@@ -586,32 +586,32 @@ void ar__methodology__register_method(method_t *own_method) {
     _set_method_storage(method_idx, version_idx, own_method);
     method_counts[method_idx]++;
     
-    ar__io__info("Registered method %s version %s", method_name, method_version);
+    ar_io__info("Registered method %s version %s", method_name, method_version);
     
     // Update agents using compatible older versions to use this new version
     // We only auto-update if the new version is higher than existing versions
     for (int i = 0; i < method_counts[method_idx] - 1; i++) {
         if (methods[method_idx][i] != NULL) {
             // Check if the old method is compatible with the new one
-            if (ar__semver__are_compatible(
-                    ar__method__get_version(methods[method_idx][i]), 
+            if (ar_semver__are_compatible(
+                    ar_method__get_version(methods[method_idx][i]), 
                     method_version)) {
                 
                 // Check if the new version is higher
-                if (ar__semver__compare(
+                if (ar_semver__compare(
                         method_version,
-                        ar__method__get_version(methods[method_idx][i])) > 0) {
+                        ar_method__get_version(methods[method_idx][i])) > 0) {
                     
                     // Update agents using the old method to use the new one
-                    int updated = ar__agency__update_agent_methods(
+                    int updated = ar_agency__update_agent_methods(
                         methods[method_idx][i], 
                         own_method,
                         true);
                     
                     if (updated > 0) {
-                        ar__io__info("Updated %d agent(s) from method %s version %s to version %s",
+                        ar_io__info("Updated %d agent(s) from method %s version %s to version %s",
                                updated, method_name,
-                               ar__method__get_version(methods[method_idx][i]),
+                               ar_method__get_version(methods[method_idx][i]),
                                method_version);
                     }
                 }
@@ -620,7 +620,7 @@ void ar__methodology__register_method(method_t *own_method) {
     }
 }
 
-bool ar__methodology__load_methods(void) {
+bool ar_methodology__load_methods(void) {
     // First validate the methodology file format
     char error_message[512];
     if (!_validate_file(METHODOLOGY_FILE_NAME, error_message, sizeof(error_message))) {
@@ -630,11 +630,11 @@ bool ar__methodology__load_methods(void) {
         }
 
         // File exists but has errors
-        ar__io__error("Methodology file validation failed: %s", error_message);
+        ar_io__error("Methodology file validation failed: %s", error_message);
 
         // Create a backup and remove the corrupted file
-        ar__io__warning("Creating backup of corrupted methodology file");
-        ar__io__create_backup(METHODOLOGY_FILE_NAME);
+        ar_io__warning("Creating backup of corrupted methodology file");
+        ar_io__create_backup(METHODOLOGY_FILE_NAME);
         remove(METHODOLOGY_FILE_NAME);
 
         return true; // Return success but with empty state
@@ -642,18 +642,18 @@ bool ar__methodology__load_methods(void) {
 
     // Securely open the file with proper error handling (now that we know it's valid)
     FILE *mut_fp;
-    file_result_t result = ar__io__open_file(METHODOLOGY_FILE_NAME, "r", &mut_fp);
+    file_result_t result = ar_io__open_file(METHODOLOGY_FILE_NAME, "r", &mut_fp);
 
     if (result != FILE_SUCCESS) {
-        ar__io__error("Failed to open methodology file: %s", ar__io__error_message(result));
+        ar_io__error("Failed to open methodology file: %s", ar_io__error_message(result));
         return false;
     }
 
     // Verify file permissions (should be readable only by owner)
-    result = ar__io__set_secure_permissions(METHODOLOGY_FILE_NAME);
+    result = ar_io__set_secure_permissions(METHODOLOGY_FILE_NAME);
     if (result != FILE_SUCCESS) {
-        ar__io__warning("Failed to set secure permissions on methodology file: %s",
-                   ar__io__error_message(result));
+        ar_io__warning("Failed to set secure permissions on methodology file: %s",
+                   ar_io__error_message(result));
         // Continue anyway with a warning
     }
     
@@ -661,13 +661,13 @@ bool ar__methodology__load_methods(void) {
     char line[LINE_SIZE] = {0}; // Initialize to zeros for security
     
     // Read the first line to get method count with error checking
-    if (!ar__io__read_line(mut_fp, line, (int)LINE_SIZE, METHODOLOGY_FILE_NAME)) {
-        ar__io__error("Failed to read method count from %s", METHODOLOGY_FILE_NAME);
-        ar__io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
+    if (!ar_io__read_line(mut_fp, line, (int)LINE_SIZE, METHODOLOGY_FILE_NAME)) {
+        ar_io__error("Failed to read method count from %s", METHODOLOGY_FILE_NAME);
+        ar_io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
 
         // Create a backup and remove the corrupted file
-        ar__io__warning("Creating backup of corrupted methodology file");
-        ar__io__create_backup(METHODOLOGY_FILE_NAME);
+        ar_io__warning("Creating backup of corrupted methodology file");
+        ar_io__create_backup(METHODOLOGY_FILE_NAME);
         remove(METHODOLOGY_FILE_NAME);
 
         return true; // Return success with empty state
@@ -683,21 +683,21 @@ bool ar__methodology__load_methods(void) {
     if (errno != 0 || method_count_endptr == line ||
         (*method_count_endptr != '\0' && *method_count_endptr != '\n') ||
         method_count <= 0 || method_count > MAX_METHODS) {
-        ar__io__error("Invalid method count in %s", METHODOLOGY_FILE_NAME);
-        ar__io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
+        ar_io__error("Invalid method count in %s", METHODOLOGY_FILE_NAME);
+        ar_io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
 
         // Create a backup and delete the corrupted file
-        ar__io__warning("Creating backup of corrupted methodology file");
-        ar__io__create_backup(METHODOLOGY_FILE_NAME);
+        ar_io__warning("Creating backup of corrupted methodology file");
+        ar_io__create_backup(METHODOLOGY_FILE_NAME);
         remove(METHODOLOGY_FILE_NAME);
         return true;
     }
     
-    // Clear existing methods to avoid conflicts using ar__method__destroy
+    // Clear existing methods to avoid conflicts using ar_method__destroy
     for (int i = 0; i < MAX_METHODS; i++) {
         for (int j = 0; j < MAX_VERSIONS_PER_METHOD; j++) {
             if (methods[i][j] != NULL) {
-                ar__method__destroy(methods[i][j]);
+                ar_method__destroy(methods[i][j]);
                 methods[i][j] = NULL;
             }
         }
@@ -712,11 +712,11 @@ bool ar__methodology__load_methods(void) {
         
         // Read the next line for method name and version count
         if (fgets(line, (int)LINE_SIZE, mut_fp) == NULL) {
-            ar__io__error("Unexpected end of file in %s (method %d)",
+            ar_io__error("Unexpected end of file in %s (method %d)",
                     METHODOLOGY_FILE_NAME, i+1);
-            ar__io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
+            ar_io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
             // Delete the corrupted file and start fresh
-            ar__io__warning("Deleting corrupted methodology file");
+            ar_io__warning("Deleting corrupted methodology file");
             remove(METHODOLOGY_FILE_NAME);
             return true;
         }
@@ -728,10 +728,10 @@ bool ar__methodology__load_methods(void) {
         // Get method name
         token = strtok_r(line, " \t\n", &next_token);
         if (token == NULL) {
-            ar__io__error("Malformed method entry - missing name in %s (method %d)",
+            ar_io__error("Malformed method entry - missing name in %s (method %d)",
                     METHODOLOGY_FILE_NAME, i+1);
-            ar__io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
-            ar__io__warning("Deleting corrupted methodology file");
+            ar_io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
+            ar_io__warning("Deleting corrupted methodology file");
             remove(METHODOLOGY_FILE_NAME);
             return true;
         }
@@ -739,10 +739,10 @@ bool ar__methodology__load_methods(void) {
         // Copy method name with secure length check
         size_t token_len = strlen(token);
         if (token_len >= MAX_METHOD_NAME_LENGTH) {
-            ar__io__error("Method name too long in %s (method %d)",
+            ar_io__error("Method name too long in %s (method %d)",
                     METHODOLOGY_FILE_NAME, i+1);
-            ar__io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
-            ar__io__warning("Deleting corrupted methodology file");
+            ar_io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
+            ar_io__warning("Deleting corrupted methodology file");
             remove(METHODOLOGY_FILE_NAME);
             return true;
         }
@@ -756,10 +756,10 @@ bool ar__methodology__load_methods(void) {
         // Get version count
         token = strtok_r(NULL, " \t\n", &next_token);
         if (token == NULL) {
-            ar__io__error("Malformed method entry - missing version count in %s (method %d)",
+            ar_io__error("Malformed method entry - missing version count in %s (method %d)",
                     METHODOLOGY_FILE_NAME, i+1);
-            ar__io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
-            ar__io__warning("Deleting corrupted methodology file");
+            ar_io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
+            ar_io__warning("Deleting corrupted methodology file");
             remove(METHODOLOGY_FILE_NAME);
             return true;
         }
@@ -772,10 +772,10 @@ bool ar__methodology__load_methods(void) {
         // Validate conversion success and range
         if (errno != 0 || version_count_endptr == token || *version_count_endptr != '\0' ||
             version_count <= 0 || version_count > MAX_VERSIONS_PER_METHOD) {
-            ar__io__error("Invalid version count for method %s in %s",
+            ar_io__error("Invalid version count for method %s in %s",
                     name, METHODOLOGY_FILE_NAME);
-            ar__io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
-            ar__io__warning("Deleting corrupted methodology file");
+            ar_io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
+            ar_io__warning("Deleting corrupted methodology file");
             remove(METHODOLOGY_FILE_NAME);
             return true;
         }
@@ -788,9 +788,9 @@ bool ar__methodology__load_methods(void) {
         for (int j = 0; j < version_count; j++) {
             // Verify we don't exceed the maximum versions per method
             if (method_counts[method_idx] >= MAX_VERSIONS_PER_METHOD) {
-                ar__io__error("Maximum versions reached for method %s in %s",
+                ar_io__error("Maximum versions reached for method %s in %s",
                         name, METHODOLOGY_FILE_NAME);
-                ar__io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
+                ar_io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
                 return false;
             }
             
@@ -799,10 +799,10 @@ bool ar__methodology__load_methods(void) {
             
             // Read version string with error checking
             if (fgets(line, (int)LINE_SIZE, mut_fp) == NULL) {
-                ar__io__error("Unexpected end of file in %s when reading version for method %s",
+                ar_io__error("Unexpected end of file in %s when reading version for method %s",
                         METHODOLOGY_FILE_NAME, name);
-                ar__io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
-                ar__io__warning("Deleting corrupted methodology file");
+                ar_io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
+                ar_io__warning("Deleting corrupted methodology file");
                 remove(METHODOLOGY_FILE_NAME);
                 return true;
             }
@@ -815,36 +815,36 @@ bool ar__methodology__load_methods(void) {
             
             // Validate version string length
             if (len == 0) {
-                ar__io__error("Empty version string for method %s in %s",
+                ar_io__error("Empty version string for method %s in %s",
                         name, METHODOLOGY_FILE_NAME);
-                ar__io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
-                ar__io__warning("Deleting corrupted methodology file");
+                ar_io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
+                ar_io__warning("Deleting corrupted methodology file");
                 remove(METHODOLOGY_FILE_NAME);
                 return true;
             }
             
             // Copy the version string securely
             if (len > sizeof(version) - 1) {
-                ar__io__error("Version string too long for method %s in %s",
+                ar_io__error("Version string too long for method %s in %s",
                         name, METHODOLOGY_FILE_NAME);
-                ar__io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
-                ar__io__warning("Deleting corrupted methodology file");
+                ar_io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
+                ar_io__warning("Deleting corrupted methodology file");
                 remove(METHODOLOGY_FILE_NAME);
                 return true;
             }
             
             // Use safer string copy function
-            ar__io__string_copy(version, line, sizeof(version));
+            ar_io__string_copy(version, line, sizeof(version));
             
             // Buffer for instructions with security initialization
             char instructions[MAX_INSTRUCTIONS_LENGTH] = {0};
             
             // Read the instructions with error checking
             if (fgets(instructions, MAX_INSTRUCTIONS_LENGTH, mut_fp) == NULL) {
-                ar__io__error("Could not read instructions for method %s version %s in %s",
+                ar_io__error("Could not read instructions for method %s version %s in %s",
                        name, version, METHODOLOGY_FILE_NAME);
-                ar__io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
-                ar__io__warning("Deleting corrupted methodology file");
+                ar_io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
+                ar_io__warning("Deleting corrupted methodology file");
                 remove(METHODOLOGY_FILE_NAME);
                 return true;
             }
@@ -852,10 +852,10 @@ bool ar__methodology__load_methods(void) {
             // Validate instructions
             size_t instr_len = strlen(instructions);
             if (instr_len == 0) {
-                ar__io__error("Empty instructions for method %s version %s in %s",
+                ar_io__error("Empty instructions for method %s version %s in %s",
                         name, version, METHODOLOGY_FILE_NAME);
-                ar__io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
-                ar__io__warning("Deleting corrupted methodology file");
+                ar_io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
+                ar_io__warning("Deleting corrupted methodology file");
                 remove(METHODOLOGY_FILE_NAME);
                 return true;
             }
@@ -867,26 +867,26 @@ bool ar__methodology__load_methods(void) {
             
             // Check for truncation (buffer filled completely)
             if (instr_len >= MAX_INSTRUCTIONS_LENGTH - 1) {
-                ar__io__warning("Instructions for method %s version %s may be truncated in %s",
+                ar_io__warning("Instructions for method %s version %s may be truncated in %s",
                         name, version, METHODOLOGY_FILE_NAME);
             }
             
             // Create a new method with data from the file
-            method_t *own_method = ar__method__create(name, instructions, version);
+            method_t *own_method = ar_method__create(name, instructions, version);
             
             if (own_method) {
                 // Store the method in the methods array
                 _set_method_storage(method_idx, method_counts[method_idx]++, own_method);
                 own_method = NULL; // Mark as transferred
             } else {
-                ar__io__error("Failed to create method %s version %s", name, version);
-                ar__io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
+                ar_io__error("Failed to create method %s version %s", name, version);
+                ar_io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
                 return false;
             }
         }
     }
     
-    ar__io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
+    ar_io__close_file(mut_fp, METHODOLOGY_FILE_NAME);
     return true;
 }
 
@@ -897,7 +897,7 @@ bool ar__methodology__load_methods(void) {
  * @return true if method was successfully unregistered, false otherwise
  * @note This will fail if there are active agents using this method
  */
-bool ar__methodology__unregister_method(const char *ref_name, const char *ref_version) {
+bool ar_methodology__unregister_method(const char *ref_name, const char *ref_version) {
     if (!ref_name || !ref_version) {
         return false;
     }
@@ -905,7 +905,7 @@ bool ar__methodology__unregister_method(const char *ref_name, const char *ref_ve
     // Find the method index
     int method_idx = _find_method_idx(ref_name);
     if (method_idx < 0) {
-        ar__io__warning("Method %s not found for unregistration", ref_name);
+        ar_io__warning("Method %s not found for unregistration", ref_name);
         return false;
     }
     
@@ -913,27 +913,27 @@ bool ar__methodology__unregister_method(const char *ref_name, const char *ref_ve
     int version_idx = -1;
     for (int i = 0; i < method_counts[method_idx]; i++) {
         if (methods[method_idx][i] != NULL &&
-            strcmp(ar__method__get_version(methods[method_idx][i]), ref_version) == 0) {
+            strcmp(ar_method__get_version(methods[method_idx][i]), ref_version) == 0) {
             version_idx = i;
             break;
         }
     }
     
     if (version_idx < 0) {
-        ar__io__warning("Method %s version %s not found for unregistration", ref_name, ref_version);
+        ar_io__warning("Method %s version %s not found for unregistration", ref_name, ref_version);
         return false;
     }
     
     // Check if any agents are using this method
     method_t *method_to_remove = methods[method_idx][version_idx];
-    if (ar__agency__count_agents_using_method(method_to_remove) > 0) {
-        ar__io__error("Cannot unregister method %s version %s: agents are still using it", 
+    if (ar_agency__count_agents_using_method(method_to_remove) > 0) {
+        ar_io__error("Cannot unregister method %s version %s: agents are still using it", 
                     ref_name, ref_version);
         return false;
     }
     
     // Destroy the method
-    ar__method__destroy(method_to_remove);
+    ar_method__destroy(method_to_remove);
     methods[method_idx][version_idx] = NULL;
     
     // Compact the versions array by shifting remaining versions
@@ -962,10 +962,10 @@ bool ar__methodology__unregister_method(const char *ref_name, const char *ref_ve
         method_name_count--;
     }
     
-    ar__io__info("Successfully unregistered method %s version %s", ref_name, ref_version);
+    ar_io__info("Successfully unregistered method %s version %s", ref_name, ref_version);
     
     // Save the updated methodology to disk
-    ar__methodology__save_methods();
+    ar_methodology__save_methods();
     
     return true;
 }

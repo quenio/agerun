@@ -6,24 +6,24 @@
 #include <string.h>
 
 static void test_fixture_create_destroy(void) {
-    printf("Testing ar__instruction_fixture__create() and destroy()...\n");
+    printf("Testing ar_instruction_fixture__create() and destroy()...\n");
     
     // Given a test name
     const char *test_name = "sample_instruction_test";
     
     // When we create an instruction fixture
-    instruction_fixture_t *own_fixture = ar__instruction_fixture__create(test_name);
+    instruction_fixture_t *own_fixture = ar_instruction_fixture__create(test_name);
     
     // Then the fixture should be created successfully
     assert(own_fixture != NULL);
     
     // And we should be able to get the test name
-    const char *retrieved_name = ar__instruction_fixture__get_name(own_fixture);
+    const char *retrieved_name = ar_instruction_fixture__get_name(own_fixture);
     assert(retrieved_name != NULL);
     assert(strcmp(retrieved_name, test_name) == 0);
     
     // When we destroy the fixture
-    ar__instruction_fixture__destroy(own_fixture);
+    ar_instruction_fixture__destroy(own_fixture);
     
     // Then no assertion failures should occur (destruction succeeded)
     printf("✓ Create and destroy tests passed\n");
@@ -33,11 +33,11 @@ static void test_expression_context_creation(void) {
     printf("Testing expression context creation...\n");
     
     // Given an instruction fixture
-    instruction_fixture_t *own_fixture = ar__instruction_fixture__create("expr_test");
+    instruction_fixture_t *own_fixture = ar_instruction_fixture__create("expr_test");
     assert(own_fixture != NULL);
     
     // When we create an expression context
-    expression_context_t *ref_ctx = ar__instruction_fixture__create_expression_context(
+    expression_context_t *ref_ctx = ar_instruction_fixture__create_expression_context(
         own_fixture, "memory.count + 10"
     );
     
@@ -45,13 +45,13 @@ static void test_expression_context_creation(void) {
     assert(ref_ctx != NULL);
     
     // And we can evaluate expressions using the test data
-    const data_t *ref_result = ar__expression__evaluate(ref_ctx);
+    const data_t *ref_result = ar_expression__evaluate(ref_ctx);
     assert(ref_result != NULL);
-    assert(ar__data__get_type(ref_result) == DATA_INTEGER);
-    assert(ar__data__get_integer(ref_result) == 52); // 42 + 10
+    assert(ar_data__get_type(ref_result) == DATA_INTEGER);
+    assert(ar_data__get_integer(ref_result) == 52); // 42 + 10
     
     // Clean up
-    ar__instruction_fixture__destroy(own_fixture);
+    ar_instruction_fixture__destroy(own_fixture);
     
     printf("✓ Expression context creation tests passed\n");
 }
@@ -60,26 +60,26 @@ static void test_custom_expression_context(void) {
     printf("Testing custom expression context creation...\n");
     
     // Given an instruction fixture and custom data
-    instruction_fixture_t *own_fixture = ar__instruction_fixture__create("custom_expr");
+    instruction_fixture_t *own_fixture = ar_instruction_fixture__create("custom_expr");
     assert(own_fixture != NULL);
     
-    data_t *own_memory = ar__data__create_map();
-    ar__data__set_map_integer(own_memory, "x", 100);
+    data_t *own_memory = ar_data__create_map();
+    ar_data__set_map_integer(own_memory, "x", 100);
     
     // When we create a custom expression context
-    expression_context_t *ref_ctx = ar__instruction_fixture__create_custom_expression_context(
+    expression_context_t *ref_ctx = ar_instruction_fixture__create_custom_expression_context(
         own_fixture, own_memory, NULL, NULL, "memory.x * 2"
     );
     
     // Then the context should use our custom data
     assert(ref_ctx != NULL);
-    const data_t *ref_result = ar__expression__evaluate(ref_ctx);
+    const data_t *ref_result = ar_expression__evaluate(ref_ctx);
     assert(ref_result != NULL);
-    assert(ar__data__get_integer(ref_result) == 200);
+    assert(ar_data__get_integer(ref_result) == 200);
     
     // Clean up our custom data (fixture tracks the context)
-    ar__data__destroy(own_memory);
-    ar__instruction_fixture__destroy(own_fixture);
+    ar_data__destroy(own_memory);
+    ar_instruction_fixture__destroy(own_fixture);
     
     printf("✓ Custom expression context tests passed\n");
 }
@@ -88,28 +88,28 @@ static void test_map_creation(void) {
     printf("Testing test map creation...\n");
     
     // Given an instruction fixture
-    instruction_fixture_t *own_fixture = ar__instruction_fixture__create("map_test");
+    instruction_fixture_t *own_fixture = ar_instruction_fixture__create("map_test");
     assert(own_fixture != NULL);
     
     // When we create a user map
-    data_t *ref_user = ar__instruction_fixture__create_test_map(own_fixture, "user");
+    data_t *ref_user = ar_instruction_fixture__create_test_map(own_fixture, "user");
     
     // Then it should have the expected values
     assert(ref_user != NULL);
-    assert(strcmp(ar__data__get_map_string(ref_user, "username"), "alice") == 0);
-    assert(strcmp(ar__data__get_map_string(ref_user, "role"), "admin") == 0);
-    assert(ar__data__get_map_integer(ref_user, "id") == 123);
+    assert(strcmp(ar_data__get_map_string(ref_user, "username"), "alice") == 0);
+    assert(strcmp(ar_data__get_map_string(ref_user, "role"), "admin") == 0);
+    assert(ar_data__get_map_integer(ref_user, "id") == 123);
     
     // When we create a config map
-    data_t *ref_config = ar__instruction_fixture__create_test_map(own_fixture, "config");
+    data_t *ref_config = ar_instruction_fixture__create_test_map(own_fixture, "config");
     
     // Then it should have different values
     assert(ref_config != NULL);
-    assert(strcmp(ar__data__get_map_string(ref_config, "mode"), "test") == 0);
-    assert(ar__data__get_map_integer(ref_config, "timeout") == 30);
+    assert(strcmp(ar_data__get_map_string(ref_config, "mode"), "test") == 0);
+    assert(ar_data__get_map_integer(ref_config, "timeout") == 30);
     
     // Clean up (fixture tracks all maps)
-    ar__instruction_fixture__destroy(own_fixture);
+    ar_instruction_fixture__destroy(own_fixture);
     
     printf("✓ Map creation tests passed\n");
 }
@@ -118,19 +118,19 @@ static void test_list_creation(void) {
     printf("Testing test list creation...\n");
     
     // Given an instruction fixture
-    instruction_fixture_t *own_fixture = ar__instruction_fixture__create("list_test");
+    instruction_fixture_t *own_fixture = ar_instruction_fixture__create("list_test");
     assert(own_fixture != NULL);
     
     // When we create a test list
-    data_t *ref_list = ar__instruction_fixture__create_test_list(own_fixture);
+    data_t *ref_list = ar_instruction_fixture__create_test_list(own_fixture);
     
     // Then it should have the expected values
     assert(ref_list != NULL);
     // For now, just verify the list was created
-    assert(ar__data__get_type(ref_list) == DATA_LIST);
+    assert(ar_data__get_type(ref_list) == DATA_LIST);
     
     // Clean up
-    ar__instruction_fixture__destroy(own_fixture);
+    ar_instruction_fixture__destroy(own_fixture);
     
     printf("✓ List creation tests passed\n");
 }
@@ -139,26 +139,26 @@ static void test_resource_tracking(void) {
     printf("Testing resource tracking...\n");
     
     // Given an instruction fixture
-    instruction_fixture_t *own_fixture = ar__instruction_fixture__create("tracking_test");
+    instruction_fixture_t *own_fixture = ar_instruction_fixture__create("tracking_test");
     assert(own_fixture != NULL);
     
     // When we create data outside the fixture
-    data_t *own_external_map = ar__data__create_map();
-    ar__data__set_map_string(own_external_map, "external", "data");
+    data_t *own_external_map = ar_data__create_map();
+    ar_data__set_map_string(own_external_map, "external", "data");
     
     // And track it with the fixture
-    ar__instruction_fixture__track_data(own_fixture, own_external_map);
+    ar_instruction_fixture__track_data(own_fixture, own_external_map);
     own_external_map = NULL; // Ownership transferred
     
     // When we create an expression context outside
-    expression_context_t *own_external_ctx = ar__expression__create_context(
+    expression_context_t *own_external_ctx = ar_expression__create_context(
         NULL, NULL, NULL, "42"
     );
-    ar__instruction_fixture__track_expression_context(own_fixture, own_external_ctx);
+    ar_instruction_fixture__track_expression_context(own_fixture, own_external_ctx);
     own_external_ctx = NULL; // Ownership transferred
     
     // Then fixture destruction should clean up everything
-    ar__instruction_fixture__destroy(own_fixture);
+    ar_instruction_fixture__destroy(own_fixture);
     
     printf("✓ Resource tracking tests passed\n");
 }
@@ -167,26 +167,26 @@ static void test_memory_check(void) {
     printf("Testing memory check function...\n");
     
     // Given an instruction fixture
-    instruction_fixture_t *own_fixture = ar__instruction_fixture__create("memory_test");
+    instruction_fixture_t *own_fixture = ar_instruction_fixture__create("memory_test");
     assert(own_fixture != NULL);
     
     // Create some test resources
-    data_t *ref_map = ar__instruction_fixture__create_test_map(own_fixture, NULL);
+    data_t *ref_map = ar_instruction_fixture__create_test_map(own_fixture, NULL);
     assert(ref_map != NULL);
     
-    expression_context_t *ref_ctx = ar__instruction_fixture__create_expression_context(
+    expression_context_t *ref_ctx = ar_instruction_fixture__create_expression_context(
         own_fixture, "1 + 1"
     );
     assert(ref_ctx != NULL);
     
     // When we check memory
-    bool result = ar__instruction_fixture__check_memory(own_fixture);
+    bool result = ar_instruction_fixture__check_memory(own_fixture);
     
     // Then it should pass (no leaks expected)
     assert(result == true);
     
     // Clean up
-    ar__instruction_fixture__destroy(own_fixture);
+    ar_instruction_fixture__destroy(own_fixture);
     
     printf("✓ Memory check tests passed\n");
 }
@@ -195,11 +195,11 @@ static void test_system_initialization(void) {
     printf("Testing system initialization...\n");
     
     // Given an instruction fixture
-    instruction_fixture_t *own_fixture = ar__instruction_fixture__create("system_init_test");
+    instruction_fixture_t *own_fixture = ar_instruction_fixture__create("system_init_test");
     assert(own_fixture != NULL);
     
     // When we initialize the system
-    bool result = ar__instruction_fixture__init_system(
+    bool result = ar_instruction_fixture__init_system(
         own_fixture, 
         "test_init_method", 
         "memory.initialized := 1"
@@ -209,7 +209,7 @@ static void test_system_initialization(void) {
     assert(result == true);
     
     // And we shouldn't be able to initialize again
-    result = ar__instruction_fixture__init_system(
+    result = ar_instruction_fixture__init_system(
         own_fixture,
         "another_method",
         "memory.x := 1"
@@ -217,7 +217,7 @@ static void test_system_initialization(void) {
     assert(result == false);
     
     // Clean up (fixture handles system shutdown)
-    ar__instruction_fixture__destroy(own_fixture);
+    ar_instruction_fixture__destroy(own_fixture);
     
     printf("✓ System initialization tests passed\n");
 }
@@ -226,13 +226,13 @@ static void test_agent_creation(void) {
     printf("Testing agent creation...\n");
     
     // Given an instruction fixture with initialized system
-    instruction_fixture_t *own_fixture = ar__instruction_fixture__create("agent_test");
+    instruction_fixture_t *own_fixture = ar_instruction_fixture__create("agent_test");
     assert(own_fixture != NULL);
     
-    assert(ar__instruction_fixture__init_system(own_fixture, "init_method", "memory.ready := 1"));
+    assert(ar_instruction_fixture__init_system(own_fixture, "init_method", "memory.ready := 1"));
     
     // When we create a test agent
-    int64_t agent_id = ar__instruction_fixture__create_test_agent(
+    int64_t agent_id = ar_instruction_fixture__create_test_agent(
         own_fixture,
         "test_agent_method",
         "memory.value := message"
@@ -242,11 +242,11 @@ static void test_agent_creation(void) {
     assert(agent_id > 0);
     
     // And we should be able to get the agent ID
-    int64_t retrieved_id = ar__instruction_fixture__get_agent(own_fixture);
+    int64_t retrieved_id = ar_instruction_fixture__get_agent(own_fixture);
     assert(retrieved_id == agent_id);
     
     // And we shouldn't be able to create another agent
-    int64_t second_agent = ar__instruction_fixture__create_test_agent(
+    int64_t second_agent = ar_instruction_fixture__create_test_agent(
         own_fixture,
         "another_method",
         "memory.x := 1"
@@ -254,7 +254,7 @@ static void test_agent_creation(void) {
     assert(second_agent == 0);
     
     // Clean up (fixture handles agent destruction)
-    ar__instruction_fixture__destroy(own_fixture);
+    ar_instruction_fixture__destroy(own_fixture);
     
     printf("✓ Agent creation tests passed\n");
 }
@@ -273,7 +273,7 @@ static void test_generic_resource_tracking(void) {
     test_resource_destroyed = 0;
     
     // Given an instruction fixture
-    instruction_fixture_t *own_fixture = ar__instruction_fixture__create("generic_tracking");
+    instruction_fixture_t *own_fixture = ar_instruction_fixture__create("generic_tracking");
     assert(own_fixture != NULL);
     
     // When we create a generic resource
@@ -281,14 +281,14 @@ static void test_generic_resource_tracking(void) {
     assert(own_resource != NULL);
     
     // And track it with a custom destructor
-    ar__instruction_fixture__track_resource(own_fixture, own_resource, test_destructor);
+    ar_instruction_fixture__track_resource(own_fixture, own_resource, test_destructor);
     own_resource = NULL; // Ownership transferred
     
     // Then the destructor should not be called yet
     assert(test_resource_destroyed == 0);
     
     // When we destroy the fixture
-    ar__instruction_fixture__destroy(own_fixture);
+    ar_instruction_fixture__destroy(own_fixture);
     
     // Then the destructor should have been called
     assert(test_resource_destroyed == 1);

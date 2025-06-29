@@ -185,10 +185,10 @@ if (own_node) {
     // Access function arguments
     list_t *own_args = ar__instruction_ast__get_function_args(own_node);
     if (own_args) {
-        void **own_items = ar__list__items(own_args);
+        void **own_items = ar_list__items(own_args);
         // Use the arguments...
         AR__HEAP__FREE(own_items);
-        ar__list__destroy(own_args);
+        ar_list__destroy(own_args);
     }
     
     // Clean up

@@ -67,29 +67,29 @@ typedef enum {
 
 Each node type has its own creation function:
 
-- `ar__expression_ast__create_literal_int(int value)` - Creates integer literal nodes
-- `ar__expression_ast__create_literal_double(double value)` - Creates double literal nodes
-- `ar__expression_ast__create_literal_string(const char *ref_value)` - Creates string literal nodes
-- `ar__expression_ast__create_memory_access(base, path, count)` - Creates memory access nodes
-- `ar__expression_ast__create_binary_op(op, left, right)` - Creates binary operation nodes
+- `ar_expression_ast__create_literal_int(int value)` - Creates integer literal nodes
+- `ar_expression_ast__create_literal_double(double value)` - Creates double literal nodes
+- `ar_expression_ast__create_literal_string(const char *ref_value)` - Creates string literal nodes
+- `ar_expression_ast__create_memory_access(base, path, count)` - Creates memory access nodes
+- `ar_expression_ast__create_binary_op(op, left, right)` - Creates binary operation nodes
 
 ### Node Inspection
 
 Type-safe accessor functions for retrieving node data:
 
-- `ar__expression_ast__get_type()` - Returns the node type
-- `ar__expression_ast__get_int_value()` - Gets integer value from literal nodes
-- `ar__expression_ast__get_double_value()` - Gets double value from literal nodes
-- `ar__expression_ast__get_string_value()` - Gets string value from literal nodes
-- `ar__expression_ast__get_memory_base()` - Gets base accessor from memory nodes
-- `ar__expression_ast__get_memory_path()` - Gets path components from memory nodes
-- `ar__expression_ast__get_operator()` - Gets operator from binary nodes
-- `ar__expression_ast__get_left()` - Gets left operand from binary nodes
-- `ar__expression_ast__get_right()` - Gets right operand from binary nodes
+- `ar_expression_ast__get_type()` - Returns the node type
+- `ar_expression_ast__get_int_value()` - Gets integer value from literal nodes
+- `ar_expression_ast__get_double_value()` - Gets double value from literal nodes
+- `ar_expression_ast__get_string_value()` - Gets string value from literal nodes
+- `ar_expression_ast__get_memory_base()` - Gets base accessor from memory nodes
+- `ar_expression_ast__get_memory_path()` - Gets path components from memory nodes
+- `ar_expression_ast__get_operator()` - Gets operator from binary nodes
+- `ar_expression_ast__get_left()` - Gets left operand from binary nodes
+- `ar_expression_ast__get_right()` - Gets right operand from binary nodes
 
 ### Memory Management
 
-- `ar__expression_ast__destroy()` - Recursively destroys an AST tree
+- `ar_expression_ast__destroy()` - Recursively destroys an AST tree
 
 ## Memory Ownership
 
@@ -106,16 +106,16 @@ The module follows strict ownership semantics:
 ```c
 // Create an AST for: memory.x + 5
 const char *path[] = {"x"};
-ar_expression_ast_t *own_mem = ar__expression_ast__create_memory_access("memory", path, 1);
-ar_expression_ast_t *own_five = ar__expression_ast__create_literal_int(5);
-ar_expression_ast_t *own_add = ar__expression_ast__create_binary_op(AR_OP__ADD, own_mem, own_five);
+ar_expression_ast_t *own_mem = ar_expression_ast__create_memory_access("memory", path, 1);
+ar_expression_ast_t *own_five = ar_expression_ast__create_literal_int(5);
+ar_expression_ast_t *own_add = ar_expression_ast__create_binary_op(AR_OP__ADD, own_mem, own_five);
 
 // Inspect the AST
-assert(ar__expression_ast__get_type(own_add) == AR_EXPR__BINARY_OP);
-assert(ar__expression_ast__get_operator(own_add) == AR_OP__ADD);
+assert(ar_expression_ast__get_type(own_add) == AR_EXPR__BINARY_OP);
+assert(ar_expression_ast__get_operator(own_add) == AR_OP__ADD);
 
 // Clean up
-ar__expression_ast__destroy(own_add);
+ar_expression_ast__destroy(own_add);
 ```
 
 ## Dependencies

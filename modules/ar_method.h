@@ -15,10 +15,10 @@ typedef struct method_s method_t;
  * @param ref_instructions The method implementation code (borrowed reference)
  * @param ref_version Semantic version string for this method (e.g., "1.0.0")
  * @return Newly created method object, or NULL on failure
- * @note Ownership: Returns an owned object that the caller must destroy with ar__method__destroy.
+ * @note Ownership: Returns an owned object that the caller must destroy with ar_method__destroy.
  *       The method copies the name, instructions, and version. The original strings remain owned by the caller.
  */
-method_t* ar__method__create(const char *ref_name, const char *ref_instructions, 
+method_t* ar_method__create(const char *ref_name, const char *ref_instructions, 
                            const char *ref_version);
 
 /**
@@ -27,7 +27,7 @@ method_t* ar__method__create(const char *ref_name, const char *ref_instructions,
  * @return Method name (borrowed reference)
  * @note Ownership: Returns a borrowed reference. The caller should not free the result.
  */
-const char* ar__method__get_name(const method_t *ref_method);
+const char* ar_method__get_name(const method_t *ref_method);
 
 /**
  * Get the version of a method
@@ -35,7 +35,7 @@ const char* ar__method__get_name(const method_t *ref_method);
  * @return Method version string (borrowed reference)
  * @note Ownership: Returns a borrowed reference. The caller should not free the result.
  */
-const char* ar__method__get_version(const method_t *ref_method);
+const char* ar_method__get_version(const method_t *ref_method);
 
 // Removed ar_method_is_backward_compatible and ar_method_is_persistent
 
@@ -45,7 +45,7 @@ const char* ar__method__get_version(const method_t *ref_method);
  * @return Method instructions (borrowed reference)
  * @note Ownership: Returns a borrowed reference. The caller should not free the result.
  */
-const char* ar__method__get_instructions(const method_t *ref_method);
+const char* ar_method__get_instructions(const method_t *ref_method);
 
 /**
  * Destroys a method object and frees its resources
@@ -53,7 +53,7 @@ const char* ar__method__get_instructions(const method_t *ref_method);
  * @note Ownership: This function takes ownership of the method and frees it.
  *       The pointer will be invalid after this call.
  */
-void ar__method__destroy(method_t *own_method);
+void ar_method__destroy(method_t *own_method);
 
 /**
  * Get the parsed AST of a method
@@ -61,6 +61,6 @@ void ar__method__destroy(method_t *own_method);
  * @return Method AST (borrowed reference), or NULL if not parsed
  * @note Ownership: Returns a borrowed reference. The caller should not free the result.
  */
-const ar_method_ast_t* ar__method__get_ast(const method_t *ref_method);
+const ar_method_ast_t* ar_method__get_ast(const method_t *ref_method);
 
 #endif /* AGERUN_METHOD_H */

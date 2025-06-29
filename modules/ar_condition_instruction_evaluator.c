@@ -44,67 +44,67 @@ static data_t* _copy_data_value(const data_t *ref_value) {
         return NULL;
     }
     
-    switch (ar__data__get_type(ref_value)) {
+    switch (ar_data__get_type(ref_value)) {
         case DATA_INTEGER:
-            return ar__data__create_integer(ar__data__get_integer(ref_value));
+            return ar_data__create_integer(ar_data__get_integer(ref_value));
         case DATA_DOUBLE:
-            return ar__data__create_double(ar__data__get_double(ref_value));
+            return ar_data__create_double(ar_data__get_double(ref_value));
         case DATA_STRING:
-            return ar__data__create_string(ar__data__get_string(ref_value));
+            return ar_data__create_string(ar_data__get_string(ref_value));
         case DATA_MAP:
             {
                 // Create a new map and copy all key-value pairs
-                data_t *new_map = ar__data__create_map();
+                data_t *new_map = ar_data__create_map();
                 if (!new_map) return NULL;
                 
                 // Get all keys from the original map
-                data_t *keys = ar__data__get_map_keys(ref_value);
+                data_t *keys = ar_data__get_map_keys(ref_value);
                 if (!keys) {
-                    ar__data__destroy(new_map);
+                    ar_data__destroy(new_map);
                     return NULL;
                 }
                 
                 // Copy each key-value pair
-                size_t count = ar__data__list_count(keys);
+                size_t count = ar_data__list_count(keys);
                 for (size_t i = 0; i < count; i++) {
                     // Get the key
-                    data_t *key_data = ar__data__list_first(keys);
+                    data_t *key_data = ar_data__list_first(keys);
                     if (!key_data) break;
                     
-                    const char *key = ar__data__get_string(key_data);
+                    const char *key = ar_data__get_string(key_data);
                     if (!key) {
-                        data_t *removed = ar__data__list_remove_first(keys);
-                        ar__data__destroy(removed);
+                        data_t *removed = ar_data__list_remove_first(keys);
+                        ar_data__destroy(removed);
                         continue;
                     }
                     
                     // Get the value from the original map
-                    data_t *orig_value = ar__data__get_map_data(ref_value, key);
+                    data_t *orig_value = ar_data__get_map_data(ref_value, key);
                     if (orig_value) {
                         // Recursively copy the value
                         data_t *copy_value = _copy_data_value(orig_value);
                         if (copy_value) {
-                            bool success = ar__data__set_map_data(new_map, key, copy_value);
+                            bool success = ar_data__set_map_data(new_map, key, copy_value);
                             if (!success) {
                                 fprintf(stderr, "ERROR: Failed to set map data for key '%s'\n", key);
-                                ar__data__destroy(copy_value);
+                                ar_data__destroy(copy_value);
                             }
                         }
                     }
                     
                     // Remove and destroy the processed key
-                    data_t *removed_key = ar__data__list_remove_first(keys);
-                    ar__data__destroy(removed_key);
+                    data_t *removed_key = ar_data__list_remove_first(keys);
+                    ar_data__destroy(removed_key);
                 }
                 
                 // Clean up the keys list
-                ar__data__destroy(keys);
+                ar_data__destroy(keys);
                 
                 return new_map;
             }
         case DATA_LIST:
             // TODO: Implement deep copy for lists
-            return ar__data__create_list();
+            return ar_data__create_list();
         default:
             return NULL;
     }
@@ -163,23 +163,23 @@ bool ar_condition_instruction_evaluator__evaluate(
     }
     
     // Verify this is an if AST node
-    if (ar__instruction_ast__get_type(ref_ast) != AR_INST__IF) {
+    if (ar_instruction_ast__get_type(ref_ast) != AR_INST__IF) {
         return false;
     }
     
     // Get pre-parsed expression ASTs for arguments
-    const list_t *ref_arg_asts = ar__instruction_ast__get_function_arg_asts(ref_ast);
+    const list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(ref_ast);
     if (!ref_arg_asts) {
         return false;
     }
     
     // Verify we have exactly 3 arguments
-    if (ar__list__count(ref_arg_asts) != 3) {
+    if (ar_list__count(ref_arg_asts) != 3) {
         return false;
     }
     
     // Get the argument ASTs array
-    void **items = ar__list__items(ref_arg_asts);
+    void **items = ar_list__items(ref_arg_asts);
     if (!items) {
         return false;
     }
@@ -194,7 +194,7 @@ bool ar_condition_instruction_evaluator__evaluate(
     }
     
     // Evaluate condition expression
-    data_t *condition_result = ar__expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_condition_ast);
+    data_t *condition_result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_condition_ast);
     if (!condition_result) {
         AR__HEAP__FREE(items);
         return false;
@@ -202,21 +202,21 @@ bool ar_condition_instruction_evaluator__evaluate(
     
     // Check condition value (0 is false, non-zero is true)
     bool condition_is_true = false;
-    if (ar__data__get_type(condition_result) == DATA_INTEGER) {
-        condition_is_true = (ar__data__get_integer(condition_result) != 0);
+    if (ar_data__get_type(condition_result) == DATA_INTEGER) {
+        condition_is_true = (ar_data__get_integer(condition_result) != 0);
     }
     
     // We only need the value, not the data itself
-    if (ar__data__hold_ownership(condition_result, mut_evaluator)) {
-        ar__data__transfer_ownership(condition_result, mut_evaluator);
-        ar__data__destroy(condition_result);
+    if (ar_data__hold_ownership(condition_result, mut_evaluator)) {
+        ar_data__transfer_ownership(condition_result, mut_evaluator);
+        ar_data__destroy(condition_result);
     }
     
     // Select which expression AST to evaluate based on condition
     const ar_expression_ast_t *ref_ast_to_eval = condition_is_true ? ref_true_ast : ref_false_ast;
     
     // Evaluate the selected expression AST
-    data_t *result = ar__expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_ast_to_eval);
+    data_t *result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_ast_to_eval);
     
     // Clean up the items array as we're done with it
     AR__HEAP__FREE(items);
@@ -226,24 +226,24 @@ bool ar_condition_instruction_evaluator__evaluate(
     }
     
     // Handle result assignment if present
-    const char *ref_result_path = ar__instruction_ast__get_function_result_path(ref_ast);
+    const char *ref_result_path = ar_instruction_ast__get_function_result_path(ref_ast);
     if (ref_result_path) {
         // Get memory key path
         const char *key_path = _get_memory_key_path(ref_result_path);
         if (!key_path) {
             // Clean up result if we can
-            if (ar__data__hold_ownership(result, mut_evaluator)) {
-                ar__data__transfer_ownership(result, mut_evaluator);
-                ar__data__destroy(result);
+            if (ar_data__hold_ownership(result, mut_evaluator)) {
+                ar_data__transfer_ownership(result, mut_evaluator);
+                ar_data__destroy(result);
             }
             return false;
         }
         
         // Get ownership of result for storing
         data_t *own_result;
-        if (ar__data__hold_ownership(result, mut_evaluator)) {
+        if (ar_data__hold_ownership(result, mut_evaluator)) {
             // We can claim ownership
-            ar__data__transfer_ownership(result, mut_evaluator);
+            ar_data__transfer_ownership(result, mut_evaluator);
             own_result = result;
         } else {
             // Need to make a copy
@@ -254,18 +254,18 @@ bool ar_condition_instruction_evaluator__evaluate(
         }
         
         // Store the result value (transfers ownership)
-        bool store_success = ar__data__set_map_data(mut_evaluator->mut_memory, key_path, own_result);
+        bool store_success = ar_data__set_map_data(mut_evaluator->mut_memory, key_path, own_result);
         if (!store_success) {
-            ar__data__destroy(own_result);
+            ar_data__destroy(own_result);
         }
         
         // For assignments, return true to indicate the instruction succeeded
         return true;
     } else {
         // No assignment, just return success (expression was evaluated for side effects)
-        if (ar__data__hold_ownership(result, mut_evaluator)) {
-            ar__data__transfer_ownership(result, mut_evaluator);
-            ar__data__destroy(result);
+        if (ar_data__hold_ownership(result, mut_evaluator)) {
+            ar_data__transfer_ownership(result, mut_evaluator);
+            ar_data__destroy(result);
         }
         return true;
     }

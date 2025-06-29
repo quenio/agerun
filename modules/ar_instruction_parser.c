@@ -77,7 +77,7 @@ static void _destroy_specialized_parsers(instruction_parser_t *mut_parser) {
 /**
  * Create a new instruction parser instance.
  */
-instruction_parser_t* ar__instruction_parser__create(void) {
+instruction_parser_t* ar_instruction_parser__create(void) {
     instruction_parser_t *own_parser = AR__HEAP__MALLOC(sizeof(instruction_parser_t), "instruction_parser");
     if (!own_parser) {
         return NULL;
@@ -151,7 +151,7 @@ error:
 /**
  * Destroy an instruction parser instance.
  */
-void ar__instruction_parser__destroy(instruction_parser_t *own_parser) {
+void ar_instruction_parser__destroy(instruction_parser_t *own_parser) {
     if (!own_parser) {
         return;
     }
@@ -166,7 +166,7 @@ void ar__instruction_parser__destroy(instruction_parser_t *own_parser) {
 /**
  * Get the last error message from the parser.
  */
-const char* ar__instruction_parser__get_error(const instruction_parser_t *ref_parser) {
+const char* ar_instruction_parser__get_error(const instruction_parser_t *ref_parser) {
     if (!ref_parser) {
         return NULL;
     }
@@ -176,7 +176,7 @@ const char* ar__instruction_parser__get_error(const instruction_parser_t *ref_pa
 /**
  * Get the error position from the last parse attempt.
  */
-size_t ar__instruction_parser__get_error_position(const instruction_parser_t *ref_parser) {
+size_t ar_instruction_parser__get_error_position(const instruction_parser_t *ref_parser) {
     if (!ref_parser) {
         return 0;
     }

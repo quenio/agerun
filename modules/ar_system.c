@@ -40,48 +40,48 @@ static bool is_initialized = false;
 static interpreter_t *g_interpreter = NULL;
 
 /* Implementation */
-int64_t ar__system__init(const char *ref_method_name, const char *ref_version) {
+int64_t ar_system__init(const char *ref_method_name, const char *ref_version) {
     if (is_initialized) {
         printf("Agerun already initialized\n");
         return 0;
     }
     
     is_initialized = true;
-    ar__agency__set_initialized(true);
+    ar_agency__set_initialized(true);
     
     // Create the interpreter
-    g_interpreter = ar__interpreter__create();
+    g_interpreter = ar_interpreter__create();
     if (!g_interpreter) {
         printf("Error: Failed to create interpreter\n");
         is_initialized = false;
-        ar__agency__set_initialized(false);
+        ar_agency__set_initialized(false);
         return 0;
     }
     
     // Load methods from file if available
-    if (!ar__methodology__load_methods()) {
+    if (!ar_methodology__load_methods()) {
         printf("Warning: Could not load methods from file\n");
     }
     
     // Load agents from file if available
-    if (!ar__agency__load_agents()) {
+    if (!ar_agency__load_agents()) {
         printf("Warning: Could not load agents from file\n");
     }
     
     // Create initial agent if ref_method_name is provided
     if (ref_method_name != NULL) {
         // Create initial agent with NULL context
-        int64_t initial_agent = ar__agency__create_agent(ref_method_name, ref_version, NULL);
+        int64_t initial_agent = ar_agency__create_agent(ref_method_name, ref_version, NULL);
         if (initial_agent != 0) {
             // Send wake message to initial agent
-            data_t *own_wake_data = ar__data__create_string(g_wake_message);
+            data_t *own_wake_data = ar_data__create_string(g_wake_message);
             if (own_wake_data) {
-                ar__agency__send_to_agent(initial_agent, own_wake_data);
+                ar_agency__send_to_agent(initial_agent, own_wake_data);
                 // Ownership transferred to agent's message queue
                 // own_wake_data is now NULL
                 
                 // Process the wake message
-                ar__system__process_next_message();
+                ar_system__process_next_message();
             }
         }
         return initial_agent;
@@ -90,92 +90,92 @@ int64_t ar__system__init(const char *ref_method_name, const char *ref_version) {
     return 0;
 }
 
-void ar__system__shutdown(void) {
+void ar_system__shutdown(void) {
     if (!is_initialized) {
         return;
     }
     
     // Save methods to file
-    ar__methodology__save_methods();
+    ar_methodology__save_methods();
     
     // Save persistent agents to file
-    ar__agency__save_agents();
+    ar_agency__save_agents();
     
     // The memory cleanup is now responsibility of the agency module
     
     // Reset the agency to clean up all agents before disabling
-    ar__agency__reset();
+    ar_agency__reset();
     
     // Clean up methodology resources
-    ar__methodology__cleanup();
+    ar_methodology__cleanup();
     
     // Destroy the interpreter
     if (g_interpreter) {
-        ar__interpreter__destroy(g_interpreter);
+        ar_interpreter__destroy(g_interpreter);
         g_interpreter = NULL;
     }
     
     // Now mark as uninitialized
     is_initialized = false;
-    ar__agency__set_initialized(false);
+    ar_agency__set_initialized(false);
 }
 
-bool ar__system__process_next_message(void) {
+bool ar_system__process_next_message(void) {
     if (!is_initialized) {
         printf("DEBUG: System not initialized\n");
         return false;
     }
     
     // Find an agent with a non-empty message queue
-    int64_t agent_id = ar__agency__get_first_agent();
+    int64_t agent_id = ar_agency__get_first_agent();
     printf("DEBUG: First agent ID: %" PRId64 "\n", agent_id);
     while (agent_id != 0) {
-        if (ar__agency__agent_has_messages(agent_id)) {
+        if (ar_agency__agent_has_messages(agent_id)) {
             printf("DEBUG: Agent %" PRId64 " has messages\n", agent_id);
             // Process one message
-            data_t *own_message = ar__agency__get_agent_message(agent_id);
+            data_t *own_message = ar_agency__get_agent_message(agent_id);
             if (own_message) {
                 printf("DEBUG: Got message from agent %" PRId64 "\n", agent_id);
                 // Get the agent's method
-                const method_t *ref_method = ar__agency__get_agent_method(agent_id);
+                const method_t *ref_method = ar_agency__get_agent_method(agent_id);
                 if (ref_method) {
                     printf("DEBUG: Agent has method\n");
                     // Print message based on its type
                     printf("Agent %" PRId64 " received message: ", agent_id);
-                    data_type_t msg_type = ar__data__get_type(own_message);
+                    data_type_t msg_type = ar_data__get_type(own_message);
                     if (msg_type == DATA_STRING) {
-                        printf("%s\n", ar__data__get_string(own_message));
+                        printf("%s\n", ar_data__get_string(own_message));
                     } else if (msg_type == DATA_INTEGER) {
-                        printf("%d\n", ar__data__get_integer(own_message));
+                        printf("%d\n", ar_data__get_integer(own_message));
                     } else if (msg_type == DATA_DOUBLE) {
-                        printf("%f\n", ar__data__get_double(own_message));
+                        printf("%f\n", ar_data__get_double(own_message));
                     } else if (msg_type == DATA_LIST || msg_type == DATA_MAP) {
                         printf("[complex data]\n");
                     }
                     
-                    ar__interpreter__execute_method(g_interpreter, agent_id, own_message, ref_method);
+                    ar_interpreter__execute_method(g_interpreter, agent_id, own_message, ref_method);
                     
                     // Free the message as it's now been processed
-                    ar__data__destroy(own_message);
+                    ar_data__destroy(own_message);
                     own_message = NULL; // Mark as freed
                     return true;
                 }
                 
                 // Free the message if we couldn't process it
-                ar__data__destroy(own_message);
+                ar_data__destroy(own_message);
                 own_message = NULL; // Mark as freed
             }
         }
-        agent_id = ar__agency__get_next_agent(agent_id);
+        agent_id = ar_agency__get_next_agent(agent_id);
     }
     
     return false; // No messages to process
 }
 
-int ar__system__process_all_messages(void) {
+int ar_system__process_all_messages(void) {
     int count = 0;
     
-    while (ar__system__process_next_message()) {
+    while (ar_system__process_next_message()) {
         count++;
     }
     

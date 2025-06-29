@@ -44,7 +44,7 @@ typedef struct parsed_instruction_s parsed_instruction_t;
  * @note Ownership: Returns an owned value that caller must destroy.
  *       The function does not take ownership of the memory, context, or message parameters.
  */
-instruction_context_t* ar__instruction__create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message);
+instruction_context_t* ar_instruction__create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message);
 
 /**
  * Destroys an instruction context.
@@ -54,7 +54,7 @@ instruction_context_t* ar__instruction__create_context(data_t *mut_memory, const
  *       This only frees the context structure itself,
  *       not the memory, context, or message data structures which are owned by the caller.
  */
-void ar__instruction__destroy_context(instruction_context_t *own_ctx);
+void ar_instruction__destroy_context(instruction_context_t *own_ctx);
 
 
 /**
@@ -63,11 +63,11 @@ void ar__instruction__destroy_context(instruction_context_t *own_ctx);
  * @param ref_instruction The instruction string to parse (borrowed reference)
  * @param mut_ctx The instruction context for error reporting (mutable reference)
  * @return Parsed instruction structure, or NULL on parse error
- * @note Ownership: Returns an owned value that caller must destroy with ar__instruction__destroy_parsed.
+ * @note Ownership: Returns an owned value that caller must destroy with ar_instruction__destroy_parsed.
  *       The function does not take ownership of the instruction string.
  *       Parse errors are reported through the context's error mechanism.
  */
-parsed_instruction_t* ar__instruction__parse(const char *ref_instruction, instruction_context_t *mut_ctx);
+parsed_instruction_t* ar_instruction__parse(const char *ref_instruction, instruction_context_t *mut_ctx);
 
 /**
  * Destroys a parsed instruction and frees its resources
@@ -76,7 +76,7 @@ parsed_instruction_t* ar__instruction__parse(const char *ref_instruction, instru
  * @note Ownership: This function takes ownership of the parsed instruction and frees it.
  *       The pointer will be invalid after this call.
  */
-void ar__instruction__destroy_parsed(parsed_instruction_t *own_parsed);
+void ar_instruction__destroy_parsed(parsed_instruction_t *own_parsed);
 
 /**
  * Gets the type of a parsed instruction
@@ -85,7 +85,7 @@ void ar__instruction__destroy_parsed(parsed_instruction_t *own_parsed);
  * @return The instruction type
  * @note Ownership: Does not take ownership of the parsed instruction.
  */
-instruction_type_t ar__instruction__get_type(const parsed_instruction_t *ref_parsed);
+instruction_type_t ar_instruction__get_type(const parsed_instruction_t *ref_parsed);
 
 /**
  * Gets the memory path for an assignment instruction
@@ -94,7 +94,7 @@ instruction_type_t ar__instruction__get_type(const parsed_instruction_t *ref_par
  * @return The memory path (e.g., "memory.x.y"), or NULL if not an assignment
  * @note Ownership: Returns a borrowed reference. The caller should not free the result.
  */
-const char* ar__instruction__get_assignment_path(const parsed_instruction_t *ref_parsed);
+const char* ar_instruction__get_assignment_path(const parsed_instruction_t *ref_parsed);
 
 /**
  * Gets the expression for an assignment instruction
@@ -103,7 +103,7 @@ const char* ar__instruction__get_assignment_path(const parsed_instruction_t *ref
  * @return The expression string, or NULL if not an assignment
  * @note Ownership: Returns a borrowed reference. The caller should not free the result.
  */
-const char* ar__instruction__get_assignment_expression(const parsed_instruction_t *ref_parsed);
+const char* ar_instruction__get_assignment_expression(const parsed_instruction_t *ref_parsed);
 
 /**
  * Gets function call details from a parsed instruction
@@ -116,7 +116,7 @@ const char* ar__instruction__get_assignment_expression(const parsed_instruction_
  * @return true if this is a function call instruction, false otherwise
  * @note Ownership: All output parameters are borrowed references that remain owned by the parsed instruction.
  */
-bool ar__instruction__get_function_call(const parsed_instruction_t *ref_parsed,
+bool ar_instruction__get_function_call(const parsed_instruction_t *ref_parsed,
                                         const char **out_function_name,
                                         const char ***out_args,
                                         int *out_arg_count,
@@ -130,7 +130,7 @@ bool ar__instruction__get_function_call(const parsed_instruction_t *ref_parsed,
  * @note Ownership: Does not take ownership of the context parameter.
  *       The returned memory is still owned by the context.
  */
-data_t* ar__instruction__get_memory(const instruction_context_t *ref_ctx);
+data_t* ar_instruction__get_memory(const instruction_context_t *ref_ctx);
 
 /**
  * Gets the context data from the instruction context.
@@ -140,7 +140,7 @@ data_t* ar__instruction__get_memory(const instruction_context_t *ref_ctx);
  * @note Ownership: Does not take ownership of the context parameter.
  *       The returned context data is still owned by the context owner.
  */
-const data_t* ar__instruction__get_context(const instruction_context_t *ref_ctx);
+const data_t* ar_instruction__get_context(const instruction_context_t *ref_ctx);
 
 /**
  * Gets the message from the instruction context.
@@ -150,7 +150,7 @@ const data_t* ar__instruction__get_context(const instruction_context_t *ref_ctx)
  * @note Ownership: Does not take ownership of the context parameter.
  *       The returned message is still owned by the context owner.
  */
-const data_t* ar__instruction__get_message(const instruction_context_t *ref_ctx);
+const data_t* ar_instruction__get_message(const instruction_context_t *ref_ctx);
 
 
 /**
@@ -161,7 +161,7 @@ const data_t* ar__instruction__get_message(const instruction_context_t *ref_ctx)
  * @note Ownership: Does not take ownership of the context parameter.
  *       The returned string is owned by the context and should not be freed.
  */
-const char* ar__instruction__get_last_error(const instruction_context_t *ref_ctx);
+const char* ar_instruction__get_last_error(const instruction_context_t *ref_ctx);
 
 /**
  * Gets the position in the instruction string where the last error occurred.
@@ -170,6 +170,6 @@ const char* ar__instruction__get_last_error(const instruction_context_t *ref_ctx
  * @return The error position (1-based column), or 0 if no error
  * @note Ownership: Does not take ownership of the context parameter.
  */
-int ar__instruction__get_error_position(const instruction_context_t *ref_ctx);
+int ar_instruction__get_error_position(const instruction_context_t *ref_ctx);
 
 #endif /* AGERUN_INSTRUCTION_H */

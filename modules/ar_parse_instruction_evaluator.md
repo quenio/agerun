@@ -92,7 +92,7 @@ The module follows strict memory ownership rules:
 The module:
 1. Evaluates template and input string expressions
 2. Validates both are strings
-3. Calls `ar__instruction__parse()` to perform extraction
+3. Calls `ar_instruction__parse()` to perform extraction
 4. Stores resulting map in memory at specified path
 5. Handles all error cases with proper cleanup
 
@@ -100,8 +100,8 @@ The module:
 
 ```c
 // Create memory and expression evaluator
-data_t *memory = ar__data__create_map();
-ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+data_t *memory = ar_data__create_map();
+ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
 
 // Create parse instruction evaluator
 ar_parse_instruction_evaluator_t *parse_eval = ar_parse_instruction_evaluator__create(

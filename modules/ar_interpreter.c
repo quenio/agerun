@@ -39,7 +39,7 @@ static bool _send_message(int64_t target_id, data_t *own_message);
 /**
  * Creates a new interpreter instance
  */
-interpreter_t* ar__interpreter__create(void) {
+interpreter_t* ar_interpreter__create(void) {
     interpreter_t *own_interpreter = AR__HEAP__MALLOC(sizeof(interpreter_t), "interpreter");
     if (!own_interpreter) {
         return NULL;
@@ -54,7 +54,7 @@ interpreter_t* ar__interpreter__create(void) {
 /**
  * Destroys an interpreter instance and frees its resources
  */
-void ar__interpreter__destroy(interpreter_t *own_interpreter) {
+void ar_interpreter__destroy(interpreter_t *own_interpreter) {
     if (!own_interpreter) {
         return;
     }
@@ -65,7 +65,7 @@ void ar__interpreter__destroy(interpreter_t *own_interpreter) {
 /**
  * Executes a single instruction in the given context
  */
-bool ar__interpreter__execute_instruction(interpreter_t *mut_interpreter, 
+bool ar_interpreter__execute_instruction(interpreter_t *mut_interpreter, 
                                          instruction_context_t *mut_context, 
                                          const char *ref_instruction) {
     if (!mut_interpreter || !mut_context || !ref_instruction) {
@@ -73,14 +73,14 @@ bool ar__interpreter__execute_instruction(interpreter_t *mut_interpreter,
     }
     
     // Parse the instruction to get an AST
-    parsed_instruction_t *own_parsed = ar__instruction__parse(ref_instruction, mut_context);
+    parsed_instruction_t *own_parsed = ar_instruction__parse(ref_instruction, mut_context);
     if (!own_parsed) {
         return false;
     }
     
     // Execute based on instruction type
     bool result = false;
-    instruction_type_t type = ar__instruction__get_type(own_parsed);
+    instruction_type_t type = ar_instruction__get_type(own_parsed);
     
     fprintf(stderr, "DEBUG: Instruction type: %d\n", type);
     
@@ -117,7 +117,7 @@ bool ar__interpreter__execute_instruction(interpreter_t *mut_interpreter,
     }
     
     // Clean up parsed instruction
-    ar__instruction__destroy_parsed(own_parsed);
+    ar_instruction__destroy_parsed(own_parsed);
     
     return result;
 }
@@ -125,7 +125,7 @@ bool ar__interpreter__execute_instruction(interpreter_t *mut_interpreter,
 /**
  * Executes a method in the context of an agent
  */
-bool ar__interpreter__execute_method(interpreter_t *mut_interpreter,
+bool ar_interpreter__execute_method(interpreter_t *mut_interpreter,
                                     int64_t agent_id, 
                                     const data_t *ref_message, 
                                     const method_t *ref_method) {
@@ -134,8 +134,8 @@ bool ar__interpreter__execute_method(interpreter_t *mut_interpreter,
     }
     
     // Get agent memory and context
-    data_t *mut_memory = ar__agency__get_agent_mutable_memory(agent_id);
-    const data_t *ref_context = ar__agency__get_agent_context(agent_id);
+    data_t *mut_memory = ar_agency__get_agent_mutable_memory(agent_id);
+    const data_t *ref_context = ar_agency__get_agent_context(agent_id);
     
     if (!mut_memory) {
         fprintf(stderr, "DEBUG: Agent %" PRId64 " has no memory\n", agent_id);
@@ -147,7 +147,7 @@ bool ar__interpreter__execute_method(interpreter_t *mut_interpreter,
             agent_id, (void*)mut_memory, (const void*)ref_context, (const void*)ref_message);
     
     // Create an instruction context
-    instruction_context_t *own_ctx = ar__instruction__create_context(
+    instruction_context_t *own_ctx = ar_instruction__create_context(
         mut_memory,
         ref_context,
         ref_message
@@ -158,16 +158,16 @@ bool ar__interpreter__execute_method(interpreter_t *mut_interpreter,
     }
     
     // Get method instructions
-    const char *ref_instructions = ar__method__get_instructions(ref_method);
+    const char *ref_instructions = ar_method__get_instructions(ref_method);
     if (!ref_instructions) {
-        ar__instruction__destroy_context(own_ctx);
+        ar_instruction__destroy_context(own_ctx);
         return false;
     }
     
     // Make a copy of the instructions for tokenization
     char *own_instructions_copy = AR__HEAP__STRDUP(ref_instructions, "Method instructions copy");
     if (!own_instructions_copy) {
-        ar__instruction__destroy_context(own_ctx);
+        ar_instruction__destroy_context(own_ctx);
         return false;
     }
     
@@ -176,11 +176,11 @@ bool ar__interpreter__execute_method(interpreter_t *mut_interpreter,
     bool result = true;
     
     while (mut_instruction != NULL) {
-        mut_instruction = ar__string__trim(mut_instruction);
+        mut_instruction = ar_string__trim(mut_instruction);
         
         // Skip empty lines and comments
         if (strlen(mut_instruction) > 0 && mut_instruction[0] != '#') {
-            if (!ar__interpreter__execute_instruction(mut_interpreter, own_ctx, mut_instruction)) {
+            if (!ar_interpreter__execute_instruction(mut_interpreter, own_ctx, mut_instruction)) {
                 result = false;
                 break;
             }
@@ -190,7 +190,7 @@ bool ar__interpreter__execute_method(interpreter_t *mut_interpreter,
     }
     
     // Clean up
-    ar__instruction__destroy_context(own_ctx);
+    ar_instruction__destroy_context(own_ctx);
     AR__HEAP__FREE(own_instructions_copy);
     own_instructions_copy = NULL; // Mark as freed
     
@@ -201,12 +201,12 @@ bool ar__interpreter__execute_method(interpreter_t *mut_interpreter,
 static bool _send_message(int64_t target_id, data_t *own_message) {
     if (target_id == 0) {
         // Special case: agent_id 0 is a no-op that always returns true
-        ar__data__destroy(own_message);
+        ar_data__destroy(own_message);
         return true;
     }
     
-    // Send message (ownership of own_message is transferred to ar__agency__send_to_agent)
-    return ar__agency__send_to_agent(target_id, own_message);
+    // Send message (ownership of own_message is transferred to ar_agency__send_to_agent)
+    return ar_agency__send_to_agent(target_id, own_message);
 }
 
 // Execute an assignment instruction
@@ -214,20 +214,20 @@ static bool _execute_assignment(interpreter_t *mut_interpreter, instruction_cont
     (void)mut_interpreter; // Unused for now
     
     // Get assignment details
-    const char *ref_path = ar__instruction__get_assignment_path(ref_parsed);
-    const char *ref_expression = ar__instruction__get_assignment_expression(ref_parsed);
+    const char *ref_path = ar_instruction__get_assignment_path(ref_parsed);
+    const char *ref_expression = ar_instruction__get_assignment_expression(ref_parsed);
     
     if (!ref_path || !ref_expression) {
         return false;
     }
     
     // Get the memory from context
-    data_t *mut_memory = ar__instruction__get_memory(mut_context);
-    const data_t *ref_context_data = ar__instruction__get_context(mut_context);
-    const data_t *ref_message = ar__instruction__get_message(mut_context);
+    data_t *mut_memory = ar_instruction__get_memory(mut_context);
+    const data_t *ref_context_data = ar_instruction__get_context(mut_context);
+    const data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Create expression context
-    expression_context_t *own_expr_ctx = ar__expression__create_context(
+    expression_context_t *own_expr_ctx = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_expression
     );
     if (!own_expr_ctx) {
@@ -235,41 +235,41 @@ static bool _execute_assignment(interpreter_t *mut_interpreter, instruction_cont
     }
     
     // Evaluate the expression and take ownership (old code always did this)
-    const data_t *ref_result = ar__expression__evaluate(own_expr_ctx);
+    const data_t *ref_result = ar_expression__evaluate(own_expr_ctx);
     if (!ref_result) {
         fprintf(stderr, "DEBUG: Expression evaluation returned NULL for: %s\n", ref_expression);
-        ar__expression__destroy_context(own_expr_ctx);
+        ar_expression__destroy_context(own_expr_ctx);
         return false;
     }
     
     // Debug: Check what type we got
-    fprintf(stderr, "DEBUG: Expression evaluated to type %d\n", ar__data__get_type(ref_result));
-    if (ar__data__get_type(ref_result) == DATA_STRING) {
-        fprintf(stderr, "DEBUG: Expression result string: '%s'\n", ar__data__get_string(ref_result));
+    fprintf(stderr, "DEBUG: Expression evaluated to type %d\n", ar_data__get_type(ref_result));
+    if (ar_data__get_type(ref_result) == DATA_STRING) {
+        fprintf(stderr, "DEBUG: Expression result string: '%s'\n", ar_data__get_string(ref_result));
     }
     
-    data_t *own_value = ar__expression__take_ownership(own_expr_ctx, ref_result);
+    data_t *own_value = ar_expression__take_ownership(own_expr_ctx, ref_result);
     if (!own_value) {
         fprintf(stderr, "DEBUG: Failed to take ownership of expression result (this matches old behavior)\n");
-        ar__expression__destroy_context(own_expr_ctx);
+        ar_expression__destroy_context(own_expr_ctx);
         return false;
     }
     
     // The path from parse_memory_access already has "memory." stripped
     // So ref_path is like "x" or "x.y.z"
-    // ar__data__set_map_data supports deep paths like "x.y.z"
+    // ar_data__set_map_data supports deep paths like "x.y.z"
     bool success = false;
     
     if (own_value) {
         // Store result in agent's memory (transfers ownership of value)
-        success = ar__data__set_map_data(mut_memory, ref_path, own_value);
+        success = ar_data__set_map_data(mut_memory, ref_path, own_value);
         if (!success) {
-            ar__data__destroy(own_value);
+            ar_data__destroy(own_value);
         }
     }
     
     // Clean up
-    ar__expression__destroy_context(own_expr_ctx);
+    ar_expression__destroy_context(own_expr_ctx);
     
     return success;
 }
@@ -284,7 +284,7 @@ static bool _execute_send(interpreter_t *mut_interpreter, instruction_context_t 
     int arg_count;
     const char *ref_result_path;
     
-    if (!ar__instruction__get_function_call(ref_parsed, &ref_function_name, &ref_args, &arg_count, &ref_result_path)) {
+    if (!ar_instruction__get_function_call(ref_parsed, &ref_function_name, &ref_args, &arg_count, &ref_result_path)) {
         return false;
     }
     
@@ -296,23 +296,23 @@ static bool _execute_send(interpreter_t *mut_interpreter, instruction_context_t 
     }
     
     // Get context data
-    data_t *mut_memory = ar__instruction__get_memory(mut_context);
-    const data_t *ref_context_data = ar__instruction__get_context(mut_context);
-    const data_t *ref_message = ar__instruction__get_message(mut_context);
+    data_t *mut_memory = ar_instruction__get_memory(mut_context);
+    const data_t *ref_context_data = ar_instruction__get_context(mut_context);
+    const data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Evaluate first argument (agent ID)
-    expression_context_t *own_expr_ctx = ar__expression__create_context(
+    expression_context_t *own_expr_ctx = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[0]
     );
     if (!own_expr_ctx) {
         return false;
     }
     
-    const data_t *ref_agent_id_data = ar__expression__evaluate(own_expr_ctx);
-    data_t *own_agent_id = ar__expression__take_ownership(own_expr_ctx, ref_agent_id_data);
+    const data_t *ref_agent_id_data = ar_expression__evaluate(own_expr_ctx);
+    data_t *own_agent_id = ar_expression__take_ownership(own_expr_ctx, ref_agent_id_data);
     
     // Clean up context immediately
-    ar__expression__destroy_context(own_expr_ctx);
+    ar_expression__destroy_context(own_expr_ctx);
     
     if (!own_agent_id) {
         return false;
@@ -320,15 +320,15 @@ static bool _execute_send(interpreter_t *mut_interpreter, instruction_context_t 
     
     // Extract agent_id
     int64_t agent_id = 0;
-    if (ar__data__get_type(own_agent_id) == DATA_INTEGER) {
-        agent_id = (int64_t)ar__data__get_integer(own_agent_id);
+    if (ar_data__get_type(own_agent_id) == DATA_INTEGER) {
+        agent_id = (int64_t)ar_data__get_integer(own_agent_id);
     }
     
-    ar__data__destroy(own_agent_id);
+    ar_data__destroy(own_agent_id);
     
     // Evaluate second argument (message)
     printf("DEBUG: Evaluating send arg[1]: '%s'\n", ref_args[1]);
-    own_expr_ctx = ar__expression__create_context(
+    own_expr_ctx = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[1]
     );
     if (!own_expr_ctx) {
@@ -336,11 +336,11 @@ static bool _execute_send(interpreter_t *mut_interpreter, instruction_context_t 
         return false;
     }
     
-    const data_t *ref_msg_data = ar__expression__evaluate(own_expr_ctx);
-    data_t *own_msg = ar__expression__take_ownership(own_expr_ctx, ref_msg_data);
+    const data_t *ref_msg_data = ar_expression__evaluate(own_expr_ctx);
+    data_t *own_msg = ar_expression__take_ownership(own_expr_ctx, ref_msg_data);
     
     // Clean up context immediately
-    ar__expression__destroy_context(own_expr_ctx);
+    ar_expression__destroy_context(own_expr_ctx);
     
     if (!own_msg) {
         fprintf(stderr, "DEBUG: Failed to evaluate message expression\n");
@@ -353,9 +353,9 @@ static bool _execute_send(interpreter_t *mut_interpreter, instruction_context_t 
     
     // If there's a result path, store the result
     if (ref_result_path) {
-        data_t *own_result = ar__data__create_integer(send_result ? 1 : 0);
+        data_t *own_result = ar_data__create_integer(send_result ? 1 : 0);
         // The result_path from parsing already has "memory." stripped
-        ar__data__set_map_data(mut_memory, ref_result_path, own_result);
+        ar_data__set_map_data(mut_memory, ref_result_path, own_result);
         fprintf(stderr, "DEBUG: Stored result in memory.%s, returning true for assignment\n", ref_result_path);
         // For assignments, return true to indicate the instruction succeeded
         return true;
@@ -374,7 +374,7 @@ static bool _execute_if(interpreter_t *mut_interpreter, instruction_context_t *m
     int arg_count;
     const char *ref_result_path;
     
-    if (!ar__instruction__get_function_call(ref_parsed, &ref_function_name, &ref_args, &arg_count, &ref_result_path)) {
+    if (!ar_instruction__get_function_call(ref_parsed, &ref_function_name, &ref_args, &arg_count, &ref_result_path)) {
         return false;
     }
     
@@ -384,23 +384,23 @@ static bool _execute_if(interpreter_t *mut_interpreter, instruction_context_t *m
     }
     
     // Get context data
-    data_t *mut_memory = ar__instruction__get_memory(mut_context);
-    const data_t *ref_context_data = ar__instruction__get_context(mut_context);
-    const data_t *ref_message = ar__instruction__get_message(mut_context);
+    data_t *mut_memory = ar_instruction__get_memory(mut_context);
+    const data_t *ref_context_data = ar_instruction__get_context(mut_context);
+    const data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Evaluate condition
-    expression_context_t *own_expr_ctx = ar__expression__create_context(
+    expression_context_t *own_expr_ctx = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[0]
     );
     if (!own_expr_ctx) {
         return false;
     }
     
-    const data_t *ref_cond_eval = ar__expression__evaluate(own_expr_ctx);
-    data_t *own_cond = ar__expression__take_ownership(own_expr_ctx, ref_cond_eval);
+    const data_t *ref_cond_eval = ar_expression__evaluate(own_expr_ctx);
+    data_t *own_cond = ar_expression__take_ownership(own_expr_ctx, ref_cond_eval);
     
     // Clean up context immediately
-    ar__expression__destroy_context(own_expr_ctx);
+    ar_expression__destroy_context(own_expr_ctx);
     
     // Handle both owned values and references
     const data_t *cond_to_use = own_cond ? own_cond : ref_cond_eval;
@@ -409,72 +409,72 @@ static bool _execute_if(interpreter_t *mut_interpreter, instruction_context_t *m
     }
     
     // Evaluate true_value expression
-    own_expr_ctx = ar__expression__create_context(
+    own_expr_ctx = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[1]
     );
     if (!own_expr_ctx) {
         if (own_cond) {
-            ar__data__destroy(own_cond);
+            ar_data__destroy(own_cond);
         }
         return false;
     }
     
-    const data_t *ref_true_eval = ar__expression__evaluate(own_expr_ctx);
-    data_t *own_true = ar__expression__take_ownership(own_expr_ctx, ref_true_eval);
+    const data_t *ref_true_eval = ar_expression__evaluate(own_expr_ctx);
+    data_t *own_true = ar_expression__take_ownership(own_expr_ctx, ref_true_eval);
     
     // Clean up context immediately
-    ar__expression__destroy_context(own_expr_ctx);
+    ar_expression__destroy_context(own_expr_ctx);
     
     // Handle both owned values and references
     const data_t *true_to_use = own_true ? own_true : ref_true_eval;
     if (!true_to_use) {
         if (own_cond) {
-            ar__data__destroy(own_cond);
+            ar_data__destroy(own_cond);
         }
         return false;
     }
     
     // Evaluate false_value expression
-    own_expr_ctx = ar__expression__create_context(
+    own_expr_ctx = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[2]
     );
     if (!own_expr_ctx) {
         if (own_cond) {
-            ar__data__destroy(own_cond);
+            ar_data__destroy(own_cond);
         }
         if (own_true) {
-            ar__data__destroy(own_true);
+            ar_data__destroy(own_true);
         }
         return false;
     }
     
-    const data_t *ref_false_eval = ar__expression__evaluate(own_expr_ctx);
-    data_t *own_false = ar__expression__take_ownership(own_expr_ctx, ref_false_eval);
+    const data_t *ref_false_eval = ar_expression__evaluate(own_expr_ctx);
+    data_t *own_false = ar_expression__take_ownership(own_expr_ctx, ref_false_eval);
     
     // Clean up context immediately
-    ar__expression__destroy_context(own_expr_ctx);
+    ar_expression__destroy_context(own_expr_ctx);
     
     // Handle both owned values and references
     const data_t *false_to_use = own_false ? own_false : ref_false_eval;
     if (!false_to_use) {
         if (own_cond) {
-            ar__data__destroy(own_cond);
+            ar_data__destroy(own_cond);
         }
         if (own_true) {
-            ar__data__destroy(own_true);
+            ar_data__destroy(own_true);
         }
         return false;
     }
     
     // Check condition - any non-zero integer or non-empty string is true
     bool condition_is_true = false;
-    if (ar__data__get_type(cond_to_use) == DATA_INTEGER) {
-        condition_is_true = (ar__data__get_integer(cond_to_use) != 0);
-    } else if (ar__data__get_type(cond_to_use) == DATA_STRING) {
-        const char *str = ar__data__get_string(cond_to_use);
+    if (ar_data__get_type(cond_to_use) == DATA_INTEGER) {
+        condition_is_true = (ar_data__get_integer(cond_to_use) != 0);
+    } else if (ar_data__get_type(cond_to_use) == DATA_STRING) {
+        const char *str = ar_data__get_string(cond_to_use);
         condition_is_true = (str && strlen(str) > 0);
-    } else if (ar__data__get_type(cond_to_use) == DATA_DOUBLE) {
-        condition_is_true = (ar__data__get_double(cond_to_use) != 0.0);
+    } else if (ar_data__get_type(cond_to_use) == DATA_DOUBLE) {
+        condition_is_true = (ar_data__get_double(cond_to_use) != 0.0);
     }
     
     // Create result based on condition
@@ -486,20 +486,20 @@ static bool _execute_if(interpreter_t *mut_interpreter, instruction_context_t *m
             own_true = NULL; // Mark as transferred
         } else {
             // Create a copy of the reference
-            if (ar__data__get_type(true_to_use) == DATA_INTEGER) {
-                own_result = ar__data__create_integer(ar__data__get_integer(true_to_use));
-            } else if (ar__data__get_type(true_to_use) == DATA_DOUBLE) {
-                own_result = ar__data__create_double(ar__data__get_double(true_to_use));
-            } else if (ar__data__get_type(true_to_use) == DATA_STRING) {
-                own_result = ar__data__create_string(ar__data__get_string(true_to_use));
+            if (ar_data__get_type(true_to_use) == DATA_INTEGER) {
+                own_result = ar_data__create_integer(ar_data__get_integer(true_to_use));
+            } else if (ar_data__get_type(true_to_use) == DATA_DOUBLE) {
+                own_result = ar_data__create_double(ar_data__get_double(true_to_use));
+            } else if (ar_data__get_type(true_to_use) == DATA_STRING) {
+                own_result = ar_data__create_string(ar_data__get_string(true_to_use));
             } else {
                 // For maps and other types, we can't easily copy, so return 0
-                own_result = ar__data__create_integer(0);
+                own_result = ar_data__create_integer(0);
             }
         }
         // Clean up false value if we own it
         if (own_false) {
-            ar__data__destroy(own_false);
+            ar_data__destroy(own_false);
         }
     } else {
         // If we own the false value, transfer ownership
@@ -508,33 +508,33 @@ static bool _execute_if(interpreter_t *mut_interpreter, instruction_context_t *m
             own_false = NULL; // Mark as transferred
         } else {
             // Create a copy of the reference
-            if (ar__data__get_type(false_to_use) == DATA_INTEGER) {
-                own_result = ar__data__create_integer(ar__data__get_integer(false_to_use));
-            } else if (ar__data__get_type(false_to_use) == DATA_DOUBLE) {
-                own_result = ar__data__create_double(ar__data__get_double(false_to_use));
-            } else if (ar__data__get_type(false_to_use) == DATA_STRING) {
-                own_result = ar__data__create_string(ar__data__get_string(false_to_use));
+            if (ar_data__get_type(false_to_use) == DATA_INTEGER) {
+                own_result = ar_data__create_integer(ar_data__get_integer(false_to_use));
+            } else if (ar_data__get_type(false_to_use) == DATA_DOUBLE) {
+                own_result = ar_data__create_double(ar_data__get_double(false_to_use));
+            } else if (ar_data__get_type(false_to_use) == DATA_STRING) {
+                own_result = ar_data__create_string(ar_data__get_string(false_to_use));
             } else {
                 // For maps and other types, we can't easily copy, so return 0
-                own_result = ar__data__create_integer(0);
+                own_result = ar_data__create_integer(0);
             }
         }
         // Clean up true value if we own it
         if (own_true) {
-            ar__data__destroy(own_true);
+            ar_data__destroy(own_true);
         }
     }
     
     // Clean up condition if we own it
     if (own_cond) {
-        ar__data__destroy(own_cond);
+        ar_data__destroy(own_cond);
     }
     
     // Store result if there's a result path
     if (ref_result_path && own_result) {
-        ar__data__set_map_data(mut_memory, ref_result_path, own_result);
+        ar_data__set_map_data(mut_memory, ref_result_path, own_result);
     } else if (own_result) {
-        ar__data__destroy(own_result);
+        ar_data__destroy(own_result);
     }
     
     return true;
@@ -550,7 +550,7 @@ static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t
     int arg_count;
     const char *ref_result_path;
     
-    if (!ar__instruction__get_function_call(ref_parsed, &ref_function_name, &ref_args, &arg_count, &ref_result_path)) {
+    if (!ar_instruction__get_function_call(ref_parsed, &ref_function_name, &ref_args, &arg_count, &ref_result_path)) {
         return false;
     }
     
@@ -560,23 +560,23 @@ static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t
     }
     
     // Get context data
-    data_t *mut_memory = ar__instruction__get_memory(mut_context);
-    const data_t *ref_context_data = ar__instruction__get_context(mut_context);
-    const data_t *ref_message = ar__instruction__get_message(mut_context);
+    data_t *mut_memory = ar_instruction__get_memory(mut_context);
+    const data_t *ref_context_data = ar_instruction__get_context(mut_context);
+    const data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Evaluate template argument
-    expression_context_t *own_expr_ctx = ar__expression__create_context(
+    expression_context_t *own_expr_ctx = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[0]
     );
     if (!own_expr_ctx) {
         return false;
     }
     
-    const data_t *ref_eval_result = ar__expression__evaluate(own_expr_ctx);
-    data_t *own_template = ar__expression__take_ownership(own_expr_ctx, ref_eval_result);
+    const data_t *ref_eval_result = ar_expression__evaluate(own_expr_ctx);
+    data_t *own_template = ar_expression__take_ownership(own_expr_ctx, ref_eval_result);
     
     // Clean up context after getting the value
-    ar__expression__destroy_context(own_expr_ctx);
+    ar_expression__destroy_context(own_expr_ctx);
     
     // Get template string
     const char *template_str = NULL;
@@ -584,35 +584,35 @@ static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t
     
     if (owns_template) {
         // We own the value
-        if (ar__data__get_type(own_template) != DATA_STRING) {
-            ar__data__destroy(own_template);
+        if (ar_data__get_type(own_template) != DATA_STRING) {
+            ar_data__destroy(own_template);
             return false;
         }
-        template_str = ar__data__get_string(own_template);
+        template_str = ar_data__get_string(own_template);
     } else {
         // It's a reference - use the evaluation result directly
-        if (!ref_eval_result || ar__data__get_type(ref_eval_result) != DATA_STRING) {
+        if (!ref_eval_result || ar_data__get_type(ref_eval_result) != DATA_STRING) {
             return false;
         }
-        template_str = ar__data__get_string(ref_eval_result);
+        template_str = ar_data__get_string(ref_eval_result);
     }
     
     // Evaluate input argument
-    own_expr_ctx = ar__expression__create_context(
+    own_expr_ctx = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[1]
     );
     if (!own_expr_ctx) {
         if (owns_template && own_template) {
-            ar__data__destroy(own_template);
+            ar_data__destroy(own_template);
         }
         return false;
     }
     
-    const data_t *ref_input_eval = ar__expression__evaluate(own_expr_ctx);
-    data_t *own_input = ar__expression__take_ownership(own_expr_ctx, ref_input_eval);
+    const data_t *ref_input_eval = ar_expression__evaluate(own_expr_ctx);
+    data_t *own_input = ar_expression__take_ownership(own_expr_ctx, ref_input_eval);
     
     // Clean up context immediately
-    ar__expression__destroy_context(own_expr_ctx);
+    ar_expression__destroy_context(own_expr_ctx);
     
     // Handle both owned values and references for input
     const char *input_str = NULL;
@@ -620,33 +620,33 @@ static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t
     
     if (owns_input) {
         // We own the value
-        if (ar__data__get_type(own_input) != DATA_STRING) {
-            ar__data__destroy(own_input);
+        if (ar_data__get_type(own_input) != DATA_STRING) {
+            ar_data__destroy(own_input);
             if (owns_template && own_template) {
-                ar__data__destroy(own_template);
+                ar_data__destroy(own_template);
             }
             return false;
         }
-        input_str = ar__data__get_string(own_input);
+        input_str = ar_data__get_string(own_input);
     } else {
         // It's a reference - use the evaluation result directly
-        if (!ref_input_eval || ar__data__get_type(ref_input_eval) != DATA_STRING) {
+        if (!ref_input_eval || ar_data__get_type(ref_input_eval) != DATA_STRING) {
             if (owns_template && own_template) {
-                ar__data__destroy(own_template);
+                ar_data__destroy(own_template);
             }
             return false;
         }
-        input_str = ar__data__get_string(ref_input_eval);
+        input_str = ar_data__get_string(ref_input_eval);
     }
     
     // Create result map (owned by us)
-    data_t *own_result = ar__data__create_map();
+    data_t *own_result = ar_data__create_map();
     if (!own_result) {
         if (owns_input && own_input) {
-            ar__data__destroy(own_input);
+            ar_data__destroy(own_input);
         }
         if (owns_template && own_template) {
-            ar__data__destroy(own_template);
+            ar_data__destroy(own_template);
         }
         return false;
     }
@@ -669,12 +669,12 @@ static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t
                 size_t var_len = (size_t)(var_end - var_start - 1);
                 char *var_name = AR__HEAP__MALLOC(var_len + 1, "Parse variable name");
                 if (!var_name) {
-                    ar__data__destroy(own_result);
+                    ar_data__destroy(own_result);
                     if (owns_input && own_input) {
-                        ar__data__destroy(own_input);
+                        ar_data__destroy(own_input);
                     }
                     if (owns_template && own_template) {
-                        ar__data__destroy(own_template);
+                        ar_data__destroy(own_template);
                     }
                     return false;
                 }
@@ -690,13 +690,13 @@ static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t
                     // Extract the literal text from template
                     char *literal_text = AR__HEAP__MALLOC(literal_len + 1, "Parse literal");
                     if (!literal_text) {
-                        ar__data__destroy(own_result);
+                        ar_data__destroy(own_result);
                         AR__HEAP__FREE(var_name);
                         if (owns_input && own_input) {
-                            ar__data__destroy(own_input);
+                            ar_data__destroy(own_input);
                         }
                         if (owns_template && own_template) {
-                            ar__data__destroy(own_template);
+                            ar_data__destroy(own_template);
                         }
                         return false;
                     }
@@ -730,13 +730,13 @@ static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t
                     // Extract the next literal text
                     char *next_literal = AR__HEAP__MALLOC(next_literal_len + 1, "Parse next literal");
                     if (!next_literal) {
-                        ar__data__destroy(own_result);
+                        ar_data__destroy(own_result);
                         AR__HEAP__FREE(var_name);
                         if (owns_input && own_input) {
-                            ar__data__destroy(own_input);
+                            ar_data__destroy(own_input);
                         }
                         if (owns_template && own_template) {
-                            ar__data__destroy(own_template);
+                            ar_data__destroy(own_template);
                         }
                         return false;
                     }
@@ -771,21 +771,21 @@ static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t
                         // Try integer
                         long int_val = strtol(value_str, &endptr, 10);
                         if (*endptr == '\0' && value_str[0] != '\0') {
-                            own_value = ar__data__create_integer((int)int_val);
+                            own_value = ar_data__create_integer((int)int_val);
                         } else {
                             // Try double
                             double double_val = strtod(value_str, &endptr);
                             if (*endptr == '\0' && value_str[0] != '\0' && strchr(value_str, '.')) {
-                                own_value = ar__data__create_double(double_val);
+                                own_value = ar_data__create_double(double_val);
                             } else {
                                 // Use as string
-                                own_value = ar__data__create_string(value_str);
+                                own_value = ar_data__create_string(value_str);
                             }
                         }
                         
                         // Store in result map
                         if (own_value) {
-                            ar__data__set_map_data(own_result, var_name, own_value);
+                            ar_data__set_map_data(own_result, var_name, own_value);
                             // Ownership of own_value is transferred
                         }
                         
@@ -796,15 +796,15 @@ static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t
                     input_ptr = value_end;
                 } else {
                     // Could not find the next literal - parsing failed
-                    ar__data__destroy(own_result);
-                    own_result = ar__data__create_map();
+                    ar_data__destroy(own_result);
+                    own_result = ar_data__create_map();
                     if (!own_result) {
                         AR__HEAP__FREE(var_name);
                         if (owns_input && own_input) {
-                            ar__data__destroy(own_input);
+                            ar_data__destroy(own_input);
                         }
                         if (owns_template && own_template) {
-                            ar__data__destroy(own_template);
+                            ar_data__destroy(own_template);
                         }
                         return false;
                     }
@@ -828,17 +828,17 @@ static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t
     
     // Clean up input data
     if (owns_input && own_input) {
-        ar__data__destroy(own_input);
+        ar_data__destroy(own_input);
     }
     if (owns_template && own_template) {
-        ar__data__destroy(own_template);
+        ar_data__destroy(own_template);
     }
     
     // Store result if there's a result path
     if (ref_result_path) {
-        ar__data__set_map_data(mut_memory, ref_result_path, own_result);
+        ar_data__set_map_data(mut_memory, ref_result_path, own_result);
     } else {
-        ar__data__destroy(own_result);
+        ar_data__destroy(own_result);
     }
     
     return true;
@@ -854,7 +854,7 @@ static bool _execute_build(interpreter_t *mut_interpreter, instruction_context_t
     int arg_count;
     const char *ref_result_path;
     
-    if (!ar__instruction__get_function_call(ref_parsed, &ref_function_name, &ref_args, &arg_count, &ref_result_path)) {
+    if (!ar_instruction__get_function_call(ref_parsed, &ref_function_name, &ref_args, &arg_count, &ref_result_path)) {
         return false;
     }
     
@@ -864,23 +864,23 @@ static bool _execute_build(interpreter_t *mut_interpreter, instruction_context_t
     }
     
     // Get context data
-    data_t *mut_memory = ar__instruction__get_memory(mut_context);
-    const data_t *ref_context_data = ar__instruction__get_context(mut_context);
-    const data_t *ref_message = ar__instruction__get_message(mut_context);
+    data_t *mut_memory = ar_instruction__get_memory(mut_context);
+    const data_t *ref_context_data = ar_instruction__get_context(mut_context);
+    const data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Evaluate template argument
-    expression_context_t *own_expr_ctx = ar__expression__create_context(
+    expression_context_t *own_expr_ctx = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[0]
     );
     if (!own_expr_ctx) {
         return false;
     }
     
-    const data_t *ref_eval_result = ar__expression__evaluate(own_expr_ctx);
-    data_t *own_template = ar__expression__take_ownership(own_expr_ctx, ref_eval_result);
+    const data_t *ref_eval_result = ar_expression__evaluate(own_expr_ctx);
+    data_t *own_template = ar_expression__take_ownership(own_expr_ctx, ref_eval_result);
     
     // Clean up context after getting the value
-    ar__expression__destroy_context(own_expr_ctx);
+    ar_expression__destroy_context(own_expr_ctx);
     
     // Get template string
     const char *template_str = NULL;
@@ -888,48 +888,48 @@ static bool _execute_build(interpreter_t *mut_interpreter, instruction_context_t
     
     if (owns_template) {
         // We own the value
-        if (ar__data__get_type(own_template) != DATA_STRING) {
-            ar__data__destroy(own_template);
+        if (ar_data__get_type(own_template) != DATA_STRING) {
+            ar_data__destroy(own_template);
             return false;
         }
-        template_str = ar__data__get_string(own_template);
+        template_str = ar_data__get_string(own_template);
     } else {
         // It's a reference - use the evaluation result directly
-        if (!ref_eval_result || ar__data__get_type(ref_eval_result) != DATA_STRING) {
+        if (!ref_eval_result || ar_data__get_type(ref_eval_result) != DATA_STRING) {
             return false;
         }
-        template_str = ar__data__get_string(ref_eval_result);
+        template_str = ar_data__get_string(ref_eval_result);
     }
     
     // Evaluate values argument (should be a map)
-    own_expr_ctx = ar__expression__create_context(
+    own_expr_ctx = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[1]
     );
     if (!own_expr_ctx) {
         if (owns_template && own_template) {
-            ar__data__destroy(own_template);
+            ar_data__destroy(own_template);
         }
         return false;
     }
     
-    const data_t *ref_values = ar__expression__evaluate(own_expr_ctx);
+    const data_t *ref_values = ar_expression__evaluate(own_expr_ctx);
     
     // Try to take ownership. If it fails, the value is a reference to existing data
-    data_t *own_values = ar__expression__take_ownership(own_expr_ctx, ref_values);
+    data_t *own_values = ar_expression__take_ownership(own_expr_ctx, ref_values);
     
     // Clean up context immediately
-    ar__expression__destroy_context(own_expr_ctx);
+    ar_expression__destroy_context(own_expr_ctx);
     
     // Use ref_values if we couldn't take ownership
     const data_t *values_to_use = own_values ? own_values : ref_values;
     
     // Ensure values is a map
-    if (ar__data__get_type(values_to_use) != DATA_MAP) {
+    if (ar_data__get_type(values_to_use) != DATA_MAP) {
         if (own_values) {
-            ar__data__destroy(own_values);
+            ar_data__destroy(own_values);
         }
         if (owns_template && own_template) {
-            ar__data__destroy(own_template);
+            ar_data__destroy(own_template);
         }
         return false;
     }
@@ -943,10 +943,10 @@ static bool _execute_build(interpreter_t *mut_interpreter, instruction_context_t
     char *own_result_str = AR__HEAP__MALLOC(result_size, "Build result string");
     if (!own_result_str) {
         if (own_values) {
-            ar__data__destroy(own_values);
+            ar_data__destroy(own_values);
         }
         if (owns_template && own_template) {
-            ar__data__destroy(own_template);
+            ar_data__destroy(own_template);
         }
         return false;
     }
@@ -965,10 +965,10 @@ static bool _execute_build(interpreter_t *mut_interpreter, instruction_context_t
                 if (!var_name) {
                     AR__HEAP__FREE(own_result_str);
                     if (own_values) {
-                        ar__data__destroy(own_values);
+                        ar_data__destroy(own_values);
                     }
                     if (owns_template && own_template) {
-                        ar__data__destroy(own_template);
+                        ar_data__destroy(own_template);
                     }
                     return false;
                 }
@@ -977,19 +977,19 @@ static bool _execute_build(interpreter_t *mut_interpreter, instruction_context_t
                 var_name[var_len] = '\0';
                 
                 // Look up value in the map
-                const data_t *ref_value = ar__data__get_map_data(values_to_use, var_name);
+                const data_t *ref_value = ar_data__get_map_data(values_to_use, var_name);
                 if (ref_value) {
                     // Convert value to string
                     char value_buffer[256];
                     const char *value_str = NULL;
                     
-                    if (ar__data__get_type(ref_value) == DATA_STRING) {
-                        value_str = ar__data__get_string(ref_value);
-                    } else if (ar__data__get_type(ref_value) == DATA_INTEGER) {
-                        snprintf(value_buffer, sizeof(value_buffer), "%d", ar__data__get_integer(ref_value));
+                    if (ar_data__get_type(ref_value) == DATA_STRING) {
+                        value_str = ar_data__get_string(ref_value);
+                    } else if (ar_data__get_type(ref_value) == DATA_INTEGER) {
+                        snprintf(value_buffer, sizeof(value_buffer), "%d", ar_data__get_integer(ref_value));
                         value_str = value_buffer;
-                    } else if (ar__data__get_type(ref_value) == DATA_DOUBLE) {
-                        snprintf(value_buffer, sizeof(value_buffer), "%g", ar__data__get_double(ref_value));
+                    } else if (ar_data__get_type(ref_value) == DATA_DOUBLE) {
+                        snprintf(value_buffer, sizeof(value_buffer), "%g", ar_data__get_double(ref_value));
                         value_str = value_buffer;
                     }
                     
@@ -1003,10 +1003,10 @@ static bool _execute_build(interpreter_t *mut_interpreter, instruction_context_t
                                 AR__HEAP__FREE(var_name);
                                 AR__HEAP__FREE(own_result_str);
                                 if (own_values) {
-                                    ar__data__destroy(own_values);
+                                    ar_data__destroy(own_values);
                                 }
                                 if (owns_template && own_template) {
-                                    ar__data__destroy(own_template);
+                                    ar_data__destroy(own_template);
                                 }
                                 return false;
                             }
@@ -1029,10 +1029,10 @@ static bool _execute_build(interpreter_t *mut_interpreter, instruction_context_t
                             AR__HEAP__FREE(var_name);
                             AR__HEAP__FREE(own_result_str);
                             if (own_values) {
-                                ar__data__destroy(own_values);
+                                ar_data__destroy(own_values);
                             }
                             if (owns_template && own_template) {
-                                ar__data__destroy(own_template);
+                                ar_data__destroy(own_template);
                             }
                             return false;
                         }
@@ -1060,10 +1060,10 @@ static bool _execute_build(interpreter_t *mut_interpreter, instruction_context_t
                     if (!new_result) {
                         AR__HEAP__FREE(own_result_str);
                         if (own_values) {
-                            ar__data__destroy(own_values);
+                            ar_data__destroy(own_values);
                         }
                         if (owns_template && own_template) {
-                            ar__data__destroy(own_template);
+                            ar_data__destroy(own_template);
                         }
                         return false;
                     }
@@ -1081,10 +1081,10 @@ static bool _execute_build(interpreter_t *mut_interpreter, instruction_context_t
                 if (!new_result) {
                     AR__HEAP__FREE(own_result_str);
                     if (own_values) {
-                        ar__data__destroy(own_values);
+                        ar_data__destroy(own_values);
                     }
                     if (owns_template && own_template) {
-                        ar__data__destroy(own_template);
+                        ar_data__destroy(own_template);
                     }
                     return false;
                 }
@@ -1101,14 +1101,14 @@ static bool _execute_build(interpreter_t *mut_interpreter, instruction_context_t
     
     // Clean up input data
     if (own_values) {
-        ar__data__destroy(own_values);
+        ar_data__destroy(own_values);
     }
     if (owns_template && own_template) {
-        ar__data__destroy(own_template);
+        ar_data__destroy(own_template);
     }
     
     // Create result string data
-    data_t *own_result = ar__data__create_string(own_result_str);
+    data_t *own_result = ar_data__create_string(own_result_str);
     AR__HEAP__FREE(own_result_str);
     
     if (!own_result) {
@@ -1117,9 +1117,9 @@ static bool _execute_build(interpreter_t *mut_interpreter, instruction_context_t
     
     // Store result if there's a result path
     if (ref_result_path) {
-        ar__data__set_map_data(mut_memory, ref_result_path, own_result);
+        ar_data__set_map_data(mut_memory, ref_result_path, own_result);
     } else {
-        ar__data__destroy(own_result);
+        ar_data__destroy(own_result);
     }
     
     return true;
@@ -1135,7 +1135,7 @@ static bool _execute_method(interpreter_t *mut_interpreter, instruction_context_
     int arg_count;
     const char *ref_result_path;
     
-    if (!ar__instruction__get_function_call(ref_parsed, &ref_function_name, &ref_args, &arg_count, &ref_result_path)) {
+    if (!ar_instruction__get_function_call(ref_parsed, &ref_function_name, &ref_args, &arg_count, &ref_result_path)) {
         return false;
     }
     
@@ -1145,23 +1145,23 @@ static bool _execute_method(interpreter_t *mut_interpreter, instruction_context_
     }
     
     // Get context data
-    data_t *mut_memory = ar__instruction__get_memory(mut_context);
-    const data_t *ref_context_data = ar__instruction__get_context(mut_context);
-    const data_t *ref_message = ar__instruction__get_message(mut_context);
+    data_t *mut_memory = ar_instruction__get_memory(mut_context);
+    const data_t *ref_context_data = ar_instruction__get_context(mut_context);
+    const data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Evaluate name argument
-    expression_context_t *own_context = ar__expression__create_context(
+    expression_context_t *own_context = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[0]
     );
     if (!own_context) {
         return false;
     }
     
-    const data_t *ref_name_eval = ar__expression__evaluate(own_context);
-    data_t *own_name = ar__expression__take_ownership(own_context, ref_name_eval);
+    const data_t *ref_name_eval = ar_expression__evaluate(own_context);
+    data_t *own_name = ar_expression__take_ownership(own_context, ref_name_eval);
     
     // Clean up context immediately
-    ar__expression__destroy_context(own_context);
+    ar_expression__destroy_context(own_context);
     
     // Handle both owned values and references
     const char *method_name = NULL;
@@ -1169,35 +1169,35 @@ static bool _execute_method(interpreter_t *mut_interpreter, instruction_context_
     
     if (owns_name) {
         // We own the value
-        if (ar__data__get_type(own_name) != DATA_STRING) {
-            ar__data__destroy(own_name);
+        if (ar_data__get_type(own_name) != DATA_STRING) {
+            ar_data__destroy(own_name);
             return false;
         }
-        method_name = ar__data__get_string(own_name);
+        method_name = ar_data__get_string(own_name);
     } else {
         // It's a reference - use the evaluation result directly
-        if (!ref_name_eval || ar__data__get_type(ref_name_eval) != DATA_STRING) {
+        if (!ref_name_eval || ar_data__get_type(ref_name_eval) != DATA_STRING) {
             return false;
         }
-        method_name = ar__data__get_string(ref_name_eval);
+        method_name = ar_data__get_string(ref_name_eval);
     }
     
     // Evaluate instructions argument
-    own_context = ar__expression__create_context(
+    own_context = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[1]
     );
     if (!own_context) {
         if (owns_name && own_name) {
-            ar__data__destroy(own_name);
+            ar_data__destroy(own_name);
         }
         return false;
     }
     
-    const data_t *ref_instr_eval = ar__expression__evaluate(own_context);
-    data_t *own_instr = ar__expression__take_ownership(own_context, ref_instr_eval);
+    const data_t *ref_instr_eval = ar_expression__evaluate(own_context);
+    data_t *own_instr = ar_expression__take_ownership(own_context, ref_instr_eval);
     
     // Clean up context immediately
-    ar__expression__destroy_context(own_context);
+    ar_expression__destroy_context(own_context);
     
     // Handle both owned values and references
     const char *instructions = NULL;
@@ -1205,44 +1205,44 @@ static bool _execute_method(interpreter_t *mut_interpreter, instruction_context_
     
     if (owns_instr) {
         // We own the value
-        if (ar__data__get_type(own_instr) != DATA_STRING) {
-            ar__data__destroy(own_instr);
+        if (ar_data__get_type(own_instr) != DATA_STRING) {
+            ar_data__destroy(own_instr);
             if (owns_name && own_name) {
-                ar__data__destroy(own_name);
+                ar_data__destroy(own_name);
             }
             return false;
         }
-        instructions = ar__data__get_string(own_instr);
+        instructions = ar_data__get_string(own_instr);
     } else {
         // It's a reference - use the evaluation result directly
-        if (!ref_instr_eval || ar__data__get_type(ref_instr_eval) != DATA_STRING) {
+        if (!ref_instr_eval || ar_data__get_type(ref_instr_eval) != DATA_STRING) {
             if (owns_name && own_name) {
-                ar__data__destroy(own_name);
+                ar_data__destroy(own_name);
             }
             return false;
         }
-        instructions = ar__data__get_string(ref_instr_eval);
+        instructions = ar_data__get_string(ref_instr_eval);
     }
     
     // Evaluate version argument
-    own_context = ar__expression__create_context(
+    own_context = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[2]
     );
     if (!own_context) {
         if (owns_instr && own_instr) {
-            ar__data__destroy(own_instr);
+            ar_data__destroy(own_instr);
         }
         if (owns_name && own_name) {
-            ar__data__destroy(own_name);
+            ar_data__destroy(own_name);
         }
         return false;
     }
     
-    const data_t *ref_version_eval = ar__expression__evaluate(own_context);
-    data_t *own_version = ar__expression__take_ownership(own_context, ref_version_eval);
+    const data_t *ref_version_eval = ar_expression__evaluate(own_context);
+    data_t *own_version = ar_expression__take_ownership(own_context, ref_version_eval);
     
     // Clean up context immediately
-    ar__expression__destroy_context(own_context);
+    ar_expression__destroy_context(own_context);
     
     // Handle both owned values and references for version
     const char *version_str = "1.0.0"; // Default
@@ -1250,23 +1250,23 @@ static bool _execute_method(interpreter_t *mut_interpreter, instruction_context_
     
     if (owns_version) {
         // We own the value
-        if (ar__data__get_type(own_version) == DATA_STRING) {
-            version_str = ar__data__get_string(own_version);
-        } else if (ar__data__get_type(own_version) == DATA_INTEGER) {
+        if (ar_data__get_type(own_version) == DATA_STRING) {
+            version_str = ar_data__get_string(own_version);
+        } else if (ar_data__get_type(own_version) == DATA_INTEGER) {
             // If version is provided as a number, convert it to a string "X.0.0"
             static char version_buffer[16]; // Buffer for conversion
-            snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar__data__get_integer(own_version));
+            snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar_data__get_integer(own_version));
             version_str = version_buffer;
         }
     } else {
         // It's a reference - use the evaluation result directly
         if (ref_version_eval) {
-            if (ar__data__get_type(ref_version_eval) == DATA_STRING) {
-                version_str = ar__data__get_string(ref_version_eval);
-            } else if (ar__data__get_type(ref_version_eval) == DATA_INTEGER) {
+            if (ar_data__get_type(ref_version_eval) == DATA_STRING) {
+                version_str = ar_data__get_string(ref_version_eval);
+            } else if (ar_data__get_type(ref_version_eval) == DATA_INTEGER) {
                 // If version is provided as a number, convert it to a string "X.0.0"
                 static char version_buffer[16]; // Buffer for conversion
-                snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar__data__get_integer(ref_version_eval));
+                snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar_data__get_integer(ref_version_eval));
                 version_str = version_buffer;
             }
         }
@@ -1274,27 +1274,27 @@ static bool _execute_method(interpreter_t *mut_interpreter, instruction_context_
     
     // Call methodology module directly to create method with just 3 parameters:
     // name, instructions, version
-    bool success = ar__methodology__create_method(method_name, instructions, version_str);
+    bool success = ar_methodology__create_method(method_name, instructions, version_str);
     
     // Clean up input data now that we're done with it
     if (owns_version && own_version) {
-        ar__data__destroy(own_version);
+        ar_data__destroy(own_version);
     }
     if (owns_instr && own_instr) {
-        ar__data__destroy(own_instr);
+        ar_data__destroy(own_instr);
     }
     if (owns_name && own_name) {
-        ar__data__destroy(own_name);
+        ar_data__destroy(own_name);
     }
     
     // Return success indicator
-    data_t *own_result = ar__data__create_integer(success ? 1 : 0);
+    data_t *own_result = ar_data__create_integer(success ? 1 : 0);
     
     // Store result if there's a result path
     if (ref_result_path && own_result) {
-        ar__data__set_map_data(mut_memory, ref_result_path, own_result);
+        ar_data__set_map_data(mut_memory, ref_result_path, own_result);
     } else if (own_result) {
-        ar__data__destroy(own_result);
+        ar_data__destroy(own_result);
     }
     
     return true;
@@ -1310,7 +1310,7 @@ static bool _execute_agent(interpreter_t *mut_interpreter, instruction_context_t
     int arg_count;
     const char *ref_result_path;
     
-    if (!ar__instruction__get_function_call(ref_parsed, &ref_function_name, &ref_args, &arg_count, &ref_result_path)) {
+    if (!ar_instruction__get_function_call(ref_parsed, &ref_function_name, &ref_args, &arg_count, &ref_result_path)) {
         return false;
     }
     
@@ -1320,23 +1320,23 @@ static bool _execute_agent(interpreter_t *mut_interpreter, instruction_context_t
     }
     
     // Get context data
-    data_t *mut_memory = ar__instruction__get_memory(mut_context);
-    const data_t *ref_context_data = ar__instruction__get_context(mut_context);
-    const data_t *ref_message = ar__instruction__get_message(mut_context);
+    data_t *mut_memory = ar_instruction__get_memory(mut_context);
+    const data_t *ref_context_data = ar_instruction__get_context(mut_context);
+    const data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Evaluate method name argument
-    expression_context_t *own_context = ar__expression__create_context(
+    expression_context_t *own_context = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[0]
     );
     if (!own_context) {
         return false;
     }
     
-    const data_t *ref_method_eval = ar__expression__evaluate(own_context);
-    data_t *own_method_name = ar__expression__take_ownership(own_context, ref_method_eval);
+    const data_t *ref_method_eval = ar_expression__evaluate(own_context);
+    data_t *own_method_name = ar_expression__take_ownership(own_context, ref_method_eval);
     
     // Clean up context immediately
-    ar__expression__destroy_context(own_context);
+    ar_expression__destroy_context(own_context);
     
     // Handle both owned values and references
     const char *method_name = NULL;
@@ -1344,35 +1344,35 @@ static bool _execute_agent(interpreter_t *mut_interpreter, instruction_context_t
     
     if (owns_method_name) {
         // We own the value
-        if (ar__data__get_type(own_method_name) != DATA_STRING) {
-            ar__data__destroy(own_method_name);
+        if (ar_data__get_type(own_method_name) != DATA_STRING) {
+            ar_data__destroy(own_method_name);
             return false;
         }
-        method_name = ar__data__get_string(own_method_name);
+        method_name = ar_data__get_string(own_method_name);
     } else {
         // It's a reference - use the evaluation result directly
-        if (!ref_method_eval || ar__data__get_type(ref_method_eval) != DATA_STRING) {
+        if (!ref_method_eval || ar_data__get_type(ref_method_eval) != DATA_STRING) {
             return false;
         }
-        method_name = ar__data__get_string(ref_method_eval);
+        method_name = ar_data__get_string(ref_method_eval);
     }
     
     // Evaluate version argument
-    own_context = ar__expression__create_context(
+    own_context = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[1]
     );
     if (!own_context) {
         if (owns_method_name && own_method_name) {
-            ar__data__destroy(own_method_name);
+            ar_data__destroy(own_method_name);
         }
         return false;
     }
     
-    const data_t *ref_version_eval = ar__expression__evaluate(own_context);
-    data_t *own_version = ar__expression__take_ownership(own_context, ref_version_eval);
+    const data_t *ref_version_eval = ar_expression__evaluate(own_context);
+    data_t *own_version = ar_expression__take_ownership(own_context, ref_version_eval);
     
     // Clean up context immediately
-    ar__expression__destroy_context(own_context);
+    ar_expression__destroy_context(own_context);
     
     // Handle both owned values and references for version
     const char *version_str = "1.0.0"; // Default
@@ -1380,47 +1380,47 @@ static bool _execute_agent(interpreter_t *mut_interpreter, instruction_context_t
     
     if (owns_version) {
         // We own the value
-        if (ar__data__get_type(own_version) == DATA_STRING) {
-            version_str = ar__data__get_string(own_version);
-        } else if (ar__data__get_type(own_version) == DATA_INTEGER) {
+        if (ar_data__get_type(own_version) == DATA_STRING) {
+            version_str = ar_data__get_string(own_version);
+        } else if (ar_data__get_type(own_version) == DATA_INTEGER) {
             // If version is provided as a number, convert it to a string "X.0.0"
             static char version_buffer[16]; // Buffer for conversion
-            snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar__data__get_integer(own_version));
+            snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar_data__get_integer(own_version));
             version_str = version_buffer;
         }
     } else {
         // It's a reference - use the evaluation result directly
         if (ref_version_eval) {
-            if (ar__data__get_type(ref_version_eval) == DATA_STRING) {
-                version_str = ar__data__get_string(ref_version_eval);
-            } else if (ar__data__get_type(ref_version_eval) == DATA_INTEGER) {
+            if (ar_data__get_type(ref_version_eval) == DATA_STRING) {
+                version_str = ar_data__get_string(ref_version_eval);
+            } else if (ar_data__get_type(ref_version_eval) == DATA_INTEGER) {
                 // If version is provided as a number, convert it to a string "X.0.0"
                 static char version_buffer[16]; // Buffer for conversion
-                snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar__data__get_integer(ref_version_eval));
+                snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar_data__get_integer(ref_version_eval));
                 version_str = version_buffer;
             }
         }
     }
     
     // Evaluate context argument
-    own_context = ar__expression__create_context(
+    own_context = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[2]
     );
     if (!own_context) {
         if (owns_version && own_version) {
-            ar__data__destroy(own_version);
+            ar_data__destroy(own_version);
         }
         if (owns_method_name && own_method_name) {
-            ar__data__destroy(own_method_name);
+            ar_data__destroy(own_method_name);
         }
         return false;
     }
     
-    const data_t *ref_ctx_eval = ar__expression__evaluate(own_context);
-    data_t *own_ctx = ar__expression__take_ownership(own_context, ref_ctx_eval);
+    const data_t *ref_ctx_eval = ar_expression__evaluate(own_context);
+    data_t *own_ctx = ar_expression__take_ownership(own_context, ref_ctx_eval);
     
     // Clean up context immediately
-    ar__expression__destroy_context(own_context);
+    ar_expression__destroy_context(own_context);
     
     // Handle both owned values and references for context
     const data_t *ctx_to_use = own_ctx ? own_ctx : ref_ctx_eval;
@@ -1429,35 +1429,35 @@ static bool _execute_agent(interpreter_t *mut_interpreter, instruction_context_t
     // Default to empty map if context is null
     data_t *empty_context = NULL;
     if (!ctx_to_use) {
-        empty_context = ar__data__create_map();
+        empty_context = ar_data__create_map();
         ctx_to_use = empty_context;
     }
     
     // Create the agent
-    int64_t agent_id = ar__agency__create_agent(method_name, version_str, ctx_to_use);
+    int64_t agent_id = ar_agency__create_agent(method_name, version_str, ctx_to_use);
     
     // Clean up input data
     if (empty_context) {
-        ar__data__destroy(empty_context);
+        ar_data__destroy(empty_context);
     }
     if (owns_ctx && own_ctx) {
-        ar__data__destroy(own_ctx);
+        ar_data__destroy(own_ctx);
     }
     if (owns_version && own_version) {
-        ar__data__destroy(own_version);
+        ar_data__destroy(own_version);
     }
     if (owns_method_name && own_method_name) {
-        ar__data__destroy(own_method_name);
+        ar_data__destroy(own_method_name);
     }
     
     // Return agent ID as result (0 if creation failed)
-    data_t *own_result = ar__data__create_integer((int)agent_id);
+    data_t *own_result = ar_data__create_integer((int)agent_id);
     
     // Store result if there's a result path
     if (ref_result_path && own_result) {
-        ar__data__set_map_data(mut_memory, ref_result_path, own_result);
+        ar_data__set_map_data(mut_memory, ref_result_path, own_result);
     } else if (own_result) {
-        ar__data__destroy(own_result);
+        ar_data__destroy(own_result);
     }
     
     return true;
@@ -1473,7 +1473,7 @@ static bool _execute_destroy(interpreter_t *mut_interpreter, instruction_context
     int arg_count;
     const char *ref_result_path;
     
-    if (!ar__instruction__get_function_call(ref_parsed, &ref_function_name, &ref_args, &arg_count, &ref_result_path)) {
+    if (!ar_instruction__get_function_call(ref_parsed, &ref_function_name, &ref_args, &arg_count, &ref_result_path)) {
         return false;
     }
     
@@ -1483,23 +1483,23 @@ static bool _execute_destroy(interpreter_t *mut_interpreter, instruction_context
     }
     
     // Get context data
-    data_t *mut_memory = ar__instruction__get_memory(mut_context);
-    const data_t *ref_context_data = ar__instruction__get_context(mut_context);
-    const data_t *ref_message = ar__instruction__get_message(mut_context);
+    data_t *mut_memory = ar_instruction__get_memory(mut_context);
+    const data_t *ref_context_data = ar_instruction__get_context(mut_context);
+    const data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Evaluate first argument
-    expression_context_t *own_context = ar__expression__create_context(
+    expression_context_t *own_context = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[0]
     );
     if (!own_context) {
         return false;
     }
     
-    const data_t *ref_arg1_eval = ar__expression__evaluate(own_context);
-    data_t *own_arg1 = ar__expression__take_ownership(own_context, ref_arg1_eval);
+    const data_t *ref_arg1_eval = ar_expression__evaluate(own_context);
+    data_t *own_arg1 = ar_expression__take_ownership(own_context, ref_arg1_eval);
     
     // Clean up context immediately
-    ar__expression__destroy_context(own_context);
+    ar_expression__destroy_context(own_context);
     
     // Handle both owned values and references
     const data_t *arg1_to_use = own_arg1 ? own_arg1 : ref_arg1_eval;
@@ -1512,30 +1512,30 @@ static bool _execute_destroy(interpreter_t *mut_interpreter, instruction_context
     if (arg_count == 2) {
         // destroy(method_name, version)
         // First argument must be a string (method name)
-        if (ar__data__get_type(arg1_to_use) != DATA_STRING) {
+        if (ar_data__get_type(arg1_to_use) != DATA_STRING) {
             if (own_arg1) {
-                ar__data__destroy(own_arg1);
+                ar_data__destroy(own_arg1);
             }
             return false;
         }
-        const char *method_name = ar__data__get_string(arg1_to_use);
+        const char *method_name = ar_data__get_string(arg1_to_use);
         
         // Evaluate version argument
-        own_context = ar__expression__create_context(
+        own_context = ar_expression__create_context(
             mut_memory, ref_context_data, ref_message, ref_args[1]
         );
         if (!own_context) {
             if (own_arg1) {
-                ar__data__destroy(own_arg1);
+                ar_data__destroy(own_arg1);
             }
             return false;
         }
         
-        const data_t *ref_version_eval = ar__expression__evaluate(own_context);
-        data_t *own_version = ar__expression__take_ownership(own_context, ref_version_eval);
+        const data_t *ref_version_eval = ar_expression__evaluate(own_context);
+        data_t *own_version = ar_expression__take_ownership(own_context, ref_version_eval);
         
         // Clean up context immediately
-        ar__expression__destroy_context(own_context);
+        ar_expression__destroy_context(own_context);
         
         // Handle both owned values and references for version
         const char *version_str = "1.0.0"; // Default
@@ -1543,63 +1543,63 @@ static bool _execute_destroy(interpreter_t *mut_interpreter, instruction_context
         
         if (owns_version) {
             // We own the value
-            if (ar__data__get_type(own_version) == DATA_STRING) {
-                version_str = ar__data__get_string(own_version);
-            } else if (ar__data__get_type(own_version) == DATA_INTEGER) {
+            if (ar_data__get_type(own_version) == DATA_STRING) {
+                version_str = ar_data__get_string(own_version);
+            } else if (ar_data__get_type(own_version) == DATA_INTEGER) {
                 // If version is provided as a number, convert it to a string "X.0.0"
                 static char version_buffer[16]; // Buffer for conversion
-                snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar__data__get_integer(own_version));
+                snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar_data__get_integer(own_version));
                 version_str = version_buffer;
             }
         } else {
             // It's a reference - use the evaluation result directly
             if (ref_version_eval) {
-                if (ar__data__get_type(ref_version_eval) == DATA_STRING) {
-                    version_str = ar__data__get_string(ref_version_eval);
-                } else if (ar__data__get_type(ref_version_eval) == DATA_INTEGER) {
+                if (ar_data__get_type(ref_version_eval) == DATA_STRING) {
+                    version_str = ar_data__get_string(ref_version_eval);
+                } else if (ar_data__get_type(ref_version_eval) == DATA_INTEGER) {
                     // If version is provided as a number, convert it to a string "X.0.0"
                     static char version_buffer[16]; // Buffer for conversion
-                    snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar__data__get_integer(ref_version_eval));
+                    snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar_data__get_integer(ref_version_eval));
                     version_str = version_buffer;
                 }
             }
         }
         
         // Call methodology module to unregister the method
-        success = ar__methodology__unregister_method(method_name, version_str);
+        success = ar_methodology__unregister_method(method_name, version_str);
         
         // Clean up
         if (owns_version && own_version) {
-            ar__data__destroy(own_version);
+            ar_data__destroy(own_version);
         }
     } else {
         // destroy(agent_id)
         // Argument must be an integer (agent ID)
-        if (ar__data__get_type(arg1_to_use) != DATA_INTEGER) {
+        if (ar_data__get_type(arg1_to_use) != DATA_INTEGER) {
             if (own_arg1) {
-                ar__data__destroy(own_arg1);
+                ar_data__destroy(own_arg1);
             }
             return false;
         }
-        int64_t agent_id = (int64_t)ar__data__get_integer(arg1_to_use);
+        int64_t agent_id = (int64_t)ar_data__get_integer(arg1_to_use);
         
         // Destroy the agent
-        success = ar__agency__destroy_agent(agent_id);
+        success = ar_agency__destroy_agent(agent_id);
     }
     
     // Clean up first argument
     if (own_arg1) {
-        ar__data__destroy(own_arg1);
+        ar_data__destroy(own_arg1);
     }
     
     // Return success indicator
-    data_t *own_result = ar__data__create_integer(success ? 1 : 0);
+    data_t *own_result = ar_data__create_integer(success ? 1 : 0);
     
     // Store result if there's a result path
     if (ref_result_path && own_result) {
-        ar__data__set_map_data(mut_memory, ref_result_path, own_result);
+        ar_data__set_map_data(mut_memory, ref_result_path, own_result);
     } else if (own_result) {
-        ar__data__destroy(own_result);
+        ar_data__destroy(own_result);
     }
     
     return true;

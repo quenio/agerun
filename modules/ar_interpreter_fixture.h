@@ -28,7 +28,7 @@ typedef struct interpreter_fixture_s interpreter_fixture_t;
  * @note Ownership: Returns an owned fixture that caller must destroy
  * @note Automatically creates an interpreter instance and initializes the system
  */
-interpreter_fixture_t* ar__interpreter_fixture__create(const char *ref_test_name);
+interpreter_fixture_t* ar_interpreter_fixture__create(const char *ref_test_name);
 
 /**
  * Destroys a test fixture and performs cleanup
@@ -36,7 +36,7 @@ interpreter_fixture_t* ar__interpreter_fixture__create(const char *ref_test_name
  * @note Ownership: Takes ownership and destroys the fixture and all tracked resources
  * @note Automatically destroys the interpreter and cleans up the system
  */
-void ar__interpreter_fixture__destroy(interpreter_fixture_t *own_fixture);
+void ar_interpreter_fixture__destroy(interpreter_fixture_t *own_fixture);
 
 /**
  * Gets the interpreter managed by the fixture
@@ -44,7 +44,7 @@ void ar__interpreter_fixture__destroy(interpreter_fixture_t *own_fixture);
  * @return The interpreter instance (borrowed reference)
  * @note Ownership: Returns a borrowed reference; fixture owns the interpreter
  */
-interpreter_t* ar__interpreter_fixture__get_interpreter(const interpreter_fixture_t *ref_fixture);
+interpreter_t* ar_interpreter_fixture__get_interpreter(const interpreter_fixture_t *ref_fixture);
 
 /**
  * Creates a test agent with the given method
@@ -56,7 +56,7 @@ interpreter_t* ar__interpreter_fixture__get_interpreter(const interpreter_fixtur
  * @note The fixture handles method registration and agent cleanup
  * @note Processes the wake message automatically
  */
-int64_t ar__interpreter_fixture__create_agent(
+int64_t ar_interpreter_fixture__create_agent(
     interpreter_fixture_t *mut_fixture,
     const char *ref_method_name,
     const char *ref_instructions,
@@ -71,7 +71,7 @@ int64_t ar__interpreter_fixture__create_agent(
  * @return true if execution succeeded, false otherwise
  * @note Uses the fixture's interpreter to execute the instruction
  */
-bool ar__interpreter_fixture__execute_instruction(
+bool ar_interpreter_fixture__execute_instruction(
     interpreter_fixture_t *mut_fixture,
     int64_t agent_id,
     const char *ref_instruction
@@ -86,7 +86,7 @@ bool ar__interpreter_fixture__execute_instruction(
  * @return true if execution succeeded, false otherwise
  * @note The message is not destroyed by this function
  */
-bool ar__interpreter_fixture__execute_with_message(
+bool ar_interpreter_fixture__execute_with_message(
     interpreter_fixture_t *mut_fixture,
     int64_t agent_id,
     const char *ref_instruction,
@@ -102,7 +102,7 @@ bool ar__interpreter_fixture__execute_with_message(
  * @return true if successful, false on error
  * @note The fixture tracks the method for cleanup
  */
-bool ar__interpreter_fixture__create_method(
+bool ar_interpreter_fixture__create_method(
     interpreter_fixture_t *mut_fixture,
     const char *ref_method_name,
     const char *ref_instructions,
@@ -116,7 +116,7 @@ bool ar__interpreter_fixture__create_method(
  * @return The agent's memory (borrowed reference) or NULL if not found
  * @note Ownership: Returns a mutable borrowed reference for testing
  */
-data_t* ar__interpreter_fixture__get_agent_memory(
+data_t* ar_interpreter_fixture__get_agent_memory(
     const interpreter_fixture_t *ref_fixture,
     int64_t agent_id
 );
@@ -129,7 +129,7 @@ data_t* ar__interpreter_fixture__get_agent_memory(
  * @return true if message was sent and processed successfully
  * @note Ownership: Takes ownership of the message
  */
-bool ar__interpreter_fixture__send_message(
+bool ar_interpreter_fixture__send_message(
     interpreter_fixture_t *mut_fixture,
     int64_t agent_id,
     data_t *own_message
@@ -143,7 +143,7 @@ bool ar__interpreter_fixture__send_message(
  * @note Ownership: Returns a borrowed reference; fixture owns and will destroy it
  * @note The map is pre-populated with common test values
  */
-data_t* ar__interpreter_fixture__create_test_map(
+data_t* ar_interpreter_fixture__create_test_map(
     interpreter_fixture_t *mut_fixture,
     const char *ref_name
 );
@@ -155,7 +155,7 @@ data_t* ar__interpreter_fixture__create_test_map(
  * @note Ownership: Takes ownership of the data object
  * @note Use this for data objects created outside the fixture helpers
  */
-void ar__interpreter_fixture__track_data(
+void ar_interpreter_fixture__track_data(
     interpreter_fixture_t *mut_fixture,
     data_t *own_data
 );
@@ -165,6 +165,6 @@ void ar__interpreter_fixture__track_data(
  * @param ref_fixture The fixture to query
  * @return The test name (borrowed reference)
  */
-const char* ar__interpreter_fixture__get_name(const interpreter_fixture_t *ref_fixture);
+const char* ar_interpreter_fixture__get_name(const interpreter_fixture_t *ref_fixture);
 
 #endif /* AGERUN_INTERPRETER_FIXTURE_H */

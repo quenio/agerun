@@ -72,7 +72,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
   - Arithmetic (`2 + 3`, `memory.x + 5`): returns new object, MUST destroy
   - String operations (`"Hello" + " World"`): returns new object, MUST destroy
   - Map iteration pattern:
-  - Use `ar__data__get_map_keys()` to get all keys as a list
+  - Use `ar_data__get_map_keys()` to get all keys as a list
   - Remember to destroy both the list and its string elements after use
   - Write persistence files with key/type on one line, value on the next
 
@@ -103,21 +103,21 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 // 3. Examine the leaking function:
 data_t* ar__instruction_ast__get_function_args(ast_t *ast) {
-    return ar__data__create_list();  // Creates NEW list (ownership transfer)
+    return ar_data__create_list();  // Creates NEW list (ownership transfer)
 }
 
 // 4. Find usage in tests - variable naming reveals the bug:
 data_t *ref_args = ar__instruction_ast__get_function_args(ast);  // WRONG: ref_ implies borrowed
-// ... no ar__data__destroy(ref_args) call found
+// ... no ar_data__destroy(ref_args) call found
 
 // 5. Fix by updating variable name and adding cleanup:
 data_t *own_args = ar__instruction_ast__get_function_args(ast);  // Correct prefix
 // ... use args ...
-ar__data__destroy(own_args);  // Add cleanup
+ar_data__destroy(own_args);  // Add cleanup
 
 // 6. Common patterns that cause leaks:
-// - Removal functions: ar__data__list_remove_first() returns owned value
-// - Map iteration: ar__data__get_map_keys() creates new list
+// - Removal functions: ar_data__list_remove_first() returns owned value
+// - Map iteration: ar_data__get_map_keys() creates new list
 // - String operations: "Hello" + " World" creates new string
 // - Buffer overflows: escape sequences need 2 bytes, not 1
 // - Don't trust function names - check ownership docs
@@ -359,7 +359,7 @@ cd bin  # Wrong - avoid relative paths
 - New objects (`2+3`, `"a"+"b"`): Must destroy - evaluator creates them
 - Self-ownership check: Never let `values_result == mut_memory`
 - Context lifetime: NEVER destroy context or its elements in evaluators
-- Debug ownership: Use `ar__data__hold_ownership()` to verify status
+- Debug ownership: Use `ar_data__hold_ownership()` to verify status
 
 ### 8. Agent Lifecycle
 
@@ -367,7 +367,7 @@ cd bin  # Wrong - avoid relative paths
 - Agents receive `__wake__` on creation
 - Agents receive `__sleep__` before destruction
 - ALWAYS process messages after sending to prevent leaks
-- Call `ar__system__process_next_message()` after `ar__agent__send()`
+- Call `ar_system__process_next_message()` after `ar_agent__send()`
 
 ### 9. Building Individual Tests
 
@@ -507,16 +507,16 @@ if (getcwd(cwd, sizeof(cwd)) != NULL) {
 }
 
 // Clean state
-ar__system__shutdown();
+ar_system__shutdown();
 ar__methodology__cleanup();
-ar__agency__reset();
+ar_agency__reset();
 remove("methodology.agerun");
 remove("agency.agerun");
 
 // ... test code ...
 
 // Initialize system after creating methods
-ar__system__init(NULL, NULL);
+ar_system__init(NULL, NULL);
 ```
 
 ## Quick Reference

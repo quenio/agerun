@@ -11,10 +11,10 @@
 
 static void test_build_instruction_evaluator__create_destroy(void) {
     // Given memory and expression evaluator
-    data_t *memory = ar__data__create_map();
+    data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     // When creating a build instruction evaluator
@@ -29,21 +29,21 @@ static void test_build_instruction_evaluator__create_destroy(void) {
     ar_build_instruction_evaluator__destroy(evaluator);
     
     // Then cleanup dependencies
-    ar__expression_evaluator__destroy(expr_eval);
-    ar__data__destroy(memory);
+    ar_expression_evaluator__destroy(expr_eval);
+    ar_data__destroy(memory);
 }
 
 static void test_build_instruction_evaluator__evaluate_with_instance(void) {
     // Given memory with a map of values
-    data_t *memory = ar__data__create_map();
+    data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    data_t *values = ar__data__create_map();
+    data_t *values = ar_data__create_map();
     assert(values != NULL);
-    assert(ar__data__set_map_data(values, "name", ar__data__create_string("Alice")));
-    assert(ar__data__set_map_data(memory, "data", values));
+    assert(ar_data__set_map_data(values, "name", ar_data__create_string("Alice")));
+    assert(ar_data__set_map_data(memory, "data", values));
     
-    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     // When creating a build instruction evaluator instance
@@ -54,25 +54,25 @@ static void test_build_instruction_evaluator__evaluate_with_instance(void) {
     
     // When creating a build AST node
     const char *args[] = {"\"Hello {name}!\"", "memory.data"};
-    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
         AR_INST__BUILD, "build", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar__list__create();
+    list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Template: "Hello {name}!"
-    ar_expression_ast_t *template_ast = ar__expression_ast__create_literal_string("Hello {name}!");
-    ar__list__add_last(arg_asts, template_ast);
+    ar_expression_ast_t *template_ast = ar_expression_ast__create_literal_string("Hello {name}!");
+    ar_list__add_last(arg_asts, template_ast);
     
     // Values: memory.data
     const char *data_path[] = {"data"};
-    ar_expression_ast_t *values_ast = ar__expression_ast__create_memory_access("memory", data_path, 1);
-    ar__list__add_last(arg_asts, values_ast);
+    ar_expression_ast_t *values_ast = ar_expression_ast__create_memory_access("memory", data_path, 1);
+    ar_list__add_last(arg_asts, values_ast);
     
-    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
     
     // When evaluating using the instance
@@ -80,29 +80,29 @@ static void test_build_instruction_evaluator__evaluate_with_instance(void) {
     
     // Then it should succeed and build the string
     assert(result == true);
-    data_t *result_value = ar__data__get_map_data(memory, "result");
+    data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
-    assert(ar__data__get_type(result_value) == DATA_STRING);
-    assert(strcmp(ar__data__get_string(result_value), "Hello Alice!") == 0);
+    assert(ar_data__get_type(result_value) == DATA_STRING);
+    assert(strcmp(ar_data__get_string(result_value), "Hello Alice!") == 0);
     
     // Cleanup
-    ar__instruction_ast__destroy(ast);
+    ar_instruction_ast__destroy(ast);
     ar_build_instruction_evaluator__destroy(evaluator);
-    ar__expression_evaluator__destroy(expr_eval);
-    ar__data__destroy(memory);
+    ar_expression_evaluator__destroy(expr_eval);
+    ar_data__destroy(memory);
 }
 
 static void test_build_instruction_evaluator__evaluate_legacy(void) {
     // Given memory with a map of values
-    data_t *memory = ar__data__create_map();
+    data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    data_t *values = ar__data__create_map();
+    data_t *values = ar_data__create_map();
     assert(values != NULL);
-    assert(ar__data__set_map_data(values, "greeting", ar__data__create_string("Hi")));
-    assert(ar__data__set_map_data(memory, "vars", values));
+    assert(ar_data__set_map_data(values, "greeting", ar_data__create_string("Hi")));
+    assert(ar_data__set_map_data(memory, "vars", values));
     
-    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     // Create an evaluator instance
@@ -113,25 +113,25 @@ static void test_build_instruction_evaluator__evaluate_legacy(void) {
     
     // When creating a build AST node
     const char *args[] = {"\"{greeting} there!\"", "memory.vars"};
-    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
         AR_INST__BUILD, "build", args, 2, "memory.message"
     );
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar__list__create();
+    list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Template: "{greeting} there!"
-    ar_expression_ast_t *template_ast = ar__expression_ast__create_literal_string("{greeting} there!");
-    ar__list__add_last(arg_asts, template_ast);
+    ar_expression_ast_t *template_ast = ar_expression_ast__create_literal_string("{greeting} there!");
+    ar_list__add_last(arg_asts, template_ast);
     
     // Values: memory.vars
     const char *vars_path[] = {"vars"};
-    ar_expression_ast_t *values_ast = ar__expression_ast__create_memory_access("memory", vars_path, 1);
-    ar__list__add_last(arg_asts, values_ast);
+    ar_expression_ast_t *values_ast = ar_expression_ast__create_memory_access("memory", vars_path, 1);
+    ar_list__add_last(arg_asts, values_ast);
     
-    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
     
     // When evaluating using the instance-based interface
@@ -139,30 +139,30 @@ static void test_build_instruction_evaluator__evaluate_legacy(void) {
     
     // Then it should succeed and build the string
     assert(result == true);
-    data_t *result_value = ar__data__get_map_data(memory, "message");
+    data_t *result_value = ar_data__get_map_data(memory, "message");
     assert(result_value != NULL);
-    assert(ar__data__get_type(result_value) == DATA_STRING);
-    assert(strcmp(ar__data__get_string(result_value), "Hi there!") == 0);
+    assert(ar_data__get_type(result_value) == DATA_STRING);
+    assert(strcmp(ar_data__get_string(result_value), "Hi there!") == 0);
     
     // Cleanup
-    ar__instruction_ast__destroy(ast);
+    ar_instruction_ast__destroy(ast);
     ar_build_instruction_evaluator__destroy(evaluator);
-    ar__expression_evaluator__destroy(expr_eval);
-    ar__data__destroy(memory);
+    ar_expression_evaluator__destroy(expr_eval);
+    ar_data__destroy(memory);
 }
 
 static void test_build_instruction_evaluator__evaluate_simple(void) {
     // Given an evaluator with memory containing a map
-    data_t *memory = ar__data__create_map();
+    data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     // Create a map with values to use in building
-    data_t *values = ar__data__create_map();
+    data_t *values = ar_data__create_map();
     assert(values != NULL);
-    assert(ar__data__set_map_data(values, "name", ar__data__create_string("Alice")));
-    assert(ar__data__set_map_data(memory, "data", values));
+    assert(ar_data__set_map_data(values, "name", ar_data__create_string("Alice")));
+    assert(ar_data__set_map_data(memory, "data", values));
     
-    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
@@ -172,25 +172,25 @@ static void test_build_instruction_evaluator__evaluate_simple(void) {
     
     // When creating a build AST node with simple template
     const char *args[] = {"\"Hello {name}!\"", "memory.data"};
-    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
         AR_INST__BUILD, "build", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar__list__create();
+    list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Template: "Hello {name}!"
-    ar_expression_ast_t *template_ast = ar__expression_ast__create_literal_string("Hello {name}!");
-    ar__list__add_last(arg_asts, template_ast);
+    ar_expression_ast_t *template_ast = ar_expression_ast__create_literal_string("Hello {name}!");
+    ar_list__add_last(arg_asts, template_ast);
     
     // Values: memory.data
     const char *data_path[] = {"data"};
-    ar_expression_ast_t *values_ast = ar__expression_ast__create_memory_access("memory", data_path, 1);
-    ar__list__add_last(arg_asts, values_ast);
+    ar_expression_ast_t *values_ast = ar_expression_ast__create_memory_access("memory", data_path, 1);
+    ar_list__add_last(arg_asts, values_ast);
     
-    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
     
     // When evaluating the build instruction
@@ -198,32 +198,32 @@ static void test_build_instruction_evaluator__evaluate_simple(void) {
     
     // Then it should succeed and build the string
     assert(result == true);
-    data_t *result_value = ar__data__get_map_data(memory, "result");
+    data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
-    assert(ar__data__get_type(result_value) == DATA_STRING);
-    assert(strcmp(ar__data__get_string(result_value), "Hello Alice!") == 0);
+    assert(ar_data__get_type(result_value) == DATA_STRING);
+    assert(strcmp(ar_data__get_string(result_value), "Hello Alice!") == 0);
     
     // Cleanup
-    ar__instruction_ast__destroy(ast);
+    ar_instruction_ast__destroy(ast);
     ar_build_instruction_evaluator__destroy(evaluator);
-    ar__expression_evaluator__destroy(expr_eval);
+    ar_expression_evaluator__destroy(expr_eval);
     
-    ar__data__destroy(memory);
+    ar_data__destroy(memory);
 }
 static void test_build_instruction_evaluator__evaluate_multiple_variables(void) {
     // Given an evaluator with memory containing a map
-    data_t *memory = ar__data__create_map();
+    data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     // Create a map with multiple values
-    data_t *values = ar__data__create_map();
+    data_t *values = ar_data__create_map();
     assert(values != NULL);
-    assert(ar__data__set_map_data(values, "firstName", ar__data__create_string("Bob")));
-    assert(ar__data__set_map_data(values, "lastName", ar__data__create_string("Smith")));
-    assert(ar__data__set_map_data(values, "role", ar__data__create_string("Admin")));
-    assert(ar__data__set_map_data(memory, "user", values));
+    assert(ar_data__set_map_data(values, "firstName", ar_data__create_string("Bob")));
+    assert(ar_data__set_map_data(values, "lastName", ar_data__create_string("Smith")));
+    assert(ar_data__set_map_data(values, "role", ar_data__create_string("Admin")));
+    assert(ar_data__set_map_data(memory, "user", values));
     
-    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
@@ -233,25 +233,25 @@ static void test_build_instruction_evaluator__evaluate_multiple_variables(void) 
     
     // When creating a build AST node with multiple variables
     const char *args[] = {"\"User: {firstName} {lastName}, Role: {role}\"", "memory.user"};
-    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
         AR_INST__BUILD, "build", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar__list__create();
+    list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Template: "User: {firstName} {lastName}, Role: {role}"
-    ar_expression_ast_t *template_ast = ar__expression_ast__create_literal_string("User: {firstName} {lastName}, Role: {role}");
-    ar__list__add_last(arg_asts, template_ast);
+    ar_expression_ast_t *template_ast = ar_expression_ast__create_literal_string("User: {firstName} {lastName}, Role: {role}");
+    ar_list__add_last(arg_asts, template_ast);
     
     // Values: memory.user
     const char *user_path[] = {"user"};
-    ar_expression_ast_t *values_ast = ar__expression_ast__create_memory_access("memory", user_path, 1);
-    ar__list__add_last(arg_asts, values_ast);
+    ar_expression_ast_t *values_ast = ar_expression_ast__create_memory_access("memory", user_path, 1);
+    ar_list__add_last(arg_asts, values_ast);
     
-    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
     
     // When evaluating the build instruction
@@ -259,32 +259,32 @@ static void test_build_instruction_evaluator__evaluate_multiple_variables(void) 
     
     // Then it should succeed and build the string with all values
     assert(result == true);
-    data_t *result_value = ar__data__get_map_data(memory, "result");
+    data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
-    assert(ar__data__get_type(result_value) == DATA_STRING);
-    assert(strcmp(ar__data__get_string(result_value), "User: Bob Smith, Role: Admin") == 0);
+    assert(ar_data__get_type(result_value) == DATA_STRING);
+    assert(strcmp(ar_data__get_string(result_value), "User: Bob Smith, Role: Admin") == 0);
     
     // Cleanup
-    ar__instruction_ast__destroy(ast);
+    ar_instruction_ast__destroy(ast);
     ar_build_instruction_evaluator__destroy(evaluator);
-    ar__expression_evaluator__destroy(expr_eval);
-    ar__data__destroy(memory);
+    ar_expression_evaluator__destroy(expr_eval);
+    ar_data__destroy(memory);
 }
 
 static void test_build_instruction_evaluator__evaluate_with_types(void) {
     // Given an evaluator with memory containing a map with different types
-    data_t *memory = ar__data__create_map();
+    data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     // Create a map with values of different types
-    data_t *values = ar__data__create_map();
+    data_t *values = ar_data__create_map();
     assert(values != NULL);
-    assert(ar__data__set_map_data(values, "name", ar__data__create_string("Charlie")));
-    assert(ar__data__set_map_data(values, "age", ar__data__create_integer(30)));
-    assert(ar__data__set_map_data(values, "score", ar__data__create_double(95.5)));
-    assert(ar__data__set_map_data(memory, "stats", values));
+    assert(ar_data__set_map_data(values, "name", ar_data__create_string("Charlie")));
+    assert(ar_data__set_map_data(values, "age", ar_data__create_integer(30)));
+    assert(ar_data__set_map_data(values, "score", ar_data__create_double(95.5)));
+    assert(ar_data__set_map_data(memory, "stats", values));
     
-    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
@@ -294,25 +294,25 @@ static void test_build_instruction_evaluator__evaluate_with_types(void) {
     
     // When creating a build AST node with different value types
     const char *args[] = {"\"Name: {name}, Age: {age}, Score: {score}\"", "memory.stats"};
-    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
         AR_INST__BUILD, "build", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar__list__create();
+    list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Template: "Name: {name}, Age: {age}, Score: {score}"
-    ar_expression_ast_t *template_ast = ar__expression_ast__create_literal_string("Name: {name}, Age: {age}, Score: {score}");
-    ar__list__add_last(arg_asts, template_ast);
+    ar_expression_ast_t *template_ast = ar_expression_ast__create_literal_string("Name: {name}, Age: {age}, Score: {score}");
+    ar_list__add_last(arg_asts, template_ast);
     
     // Values: memory.stats
     const char *stats_path[] = {"stats"};
-    ar_expression_ast_t *values_ast = ar__expression_ast__create_memory_access("memory", stats_path, 1);
-    ar__list__add_last(arg_asts, values_ast);
+    ar_expression_ast_t *values_ast = ar_expression_ast__create_memory_access("memory", stats_path, 1);
+    ar_list__add_last(arg_asts, values_ast);
     
-    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
     
     // When evaluating the build instruction
@@ -320,31 +320,31 @@ static void test_build_instruction_evaluator__evaluate_with_types(void) {
     
     // Then it should succeed and convert all types to strings
     assert(result == true);
-    data_t *result_value = ar__data__get_map_data(memory, "result");
+    data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
-    assert(ar__data__get_type(result_value) == DATA_STRING);
-    assert(strcmp(ar__data__get_string(result_value), "Name: Charlie, Age: 30, Score: 95.5") == 0);
+    assert(ar_data__get_type(result_value) == DATA_STRING);
+    assert(strcmp(ar_data__get_string(result_value), "Name: Charlie, Age: 30, Score: 95.5") == 0);
     
     // Cleanup
-    ar__instruction_ast__destroy(ast);
+    ar_instruction_ast__destroy(ast);
     ar_build_instruction_evaluator__destroy(evaluator);
-    ar__expression_evaluator__destroy(expr_eval);
-    ar__data__destroy(memory);
+    ar_expression_evaluator__destroy(expr_eval);
+    ar_data__destroy(memory);
 }
 
 static void test_build_instruction_evaluator__evaluate_missing_values(void) {
     // Given an evaluator with memory containing a map with some missing values
-    data_t *memory = ar__data__create_map();
+    data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     // Create a map with only some values
-    data_t *values = ar__data__create_map();
+    data_t *values = ar_data__create_map();
     assert(values != NULL);
-    assert(ar__data__set_map_data(values, "firstName", ar__data__create_string("David")));
+    assert(ar_data__set_map_data(values, "firstName", ar_data__create_string("David")));
     // Note: lastName is missing
-    assert(ar__data__set_map_data(memory, "person", values));
+    assert(ar_data__set_map_data(memory, "person", values));
     
-    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
@@ -354,25 +354,25 @@ static void test_build_instruction_evaluator__evaluate_missing_values(void) {
     
     // When creating a build AST node with a missing variable
     const char *args[] = {"\"Name: {firstName} {lastName}\"", "memory.person"};
-    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
         AR_INST__BUILD, "build", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar__list__create();
+    list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Template: "Name: {firstName} {lastName}"
-    ar_expression_ast_t *template_ast = ar__expression_ast__create_literal_string("Name: {firstName} {lastName}");
-    ar__list__add_last(arg_asts, template_ast);
+    ar_expression_ast_t *template_ast = ar_expression_ast__create_literal_string("Name: {firstName} {lastName}");
+    ar_list__add_last(arg_asts, template_ast);
     
     // Values: memory.person
     const char *person_path[] = {"person"};
-    ar_expression_ast_t *values_ast = ar__expression_ast__create_memory_access("memory", person_path, 1);
-    ar__list__add_last(arg_asts, values_ast);
+    ar_expression_ast_t *values_ast = ar_expression_ast__create_memory_access("memory", person_path, 1);
+    ar_list__add_last(arg_asts, values_ast);
     
-    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
     
     // When evaluating the build instruction
@@ -380,24 +380,24 @@ static void test_build_instruction_evaluator__evaluate_missing_values(void) {
     
     // Then it should succeed but preserve the placeholder for missing value
     assert(result == true);
-    data_t *result_value = ar__data__get_map_data(memory, "result");
+    data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
-    assert(ar__data__get_type(result_value) == DATA_STRING);
-    assert(strcmp(ar__data__get_string(result_value), "Name: David {lastName}") == 0);
+    assert(ar_data__get_type(result_value) == DATA_STRING);
+    assert(strcmp(ar_data__get_string(result_value), "Name: David {lastName}") == 0);
     
     // Cleanup
-    ar__instruction_ast__destroy(ast);
+    ar_instruction_ast__destroy(ast);
     ar_build_instruction_evaluator__destroy(evaluator);
-    ar__expression_evaluator__destroy(expr_eval);
-    ar__data__destroy(memory);
+    ar_expression_evaluator__destroy(expr_eval);
+    ar_data__destroy(memory);
 }
 
 static void test_build_instruction_evaluator__evaluate_invalid_args(void) {
     // Given an evaluator with memory
-    data_t *memory = ar__data__create_map();
+    data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
@@ -407,84 +407,84 @@ static void test_build_instruction_evaluator__evaluate_invalid_args(void) {
     
     // Test case 1: Wrong number of arguments (1 instead of 2)
     const char *args1[] = {"\"template {value}\""};
-    ar_instruction_ast_t *ast1 = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *ast1 = ar_instruction_ast__create_function_call(
         AR_INST__BUILD, "build", args1, 1, NULL
     );
     assert(ast1 != NULL);
     
     // Create and attach expression ASTs - only one argument (should fail)
-    list_t *arg_asts1 = ar__list__create();
+    list_t *arg_asts1 = ar_list__create();
     assert(arg_asts1 != NULL);
     
-    ar_expression_ast_t *template_ast1 = ar__expression_ast__create_literal_string("template {value}");
-    ar__list__add_last(arg_asts1, template_ast1);
+    ar_expression_ast_t *template_ast1 = ar_expression_ast__create_literal_string("template {value}");
+    ar_list__add_last(arg_asts1, template_ast1);
     
-    bool ast_set1 = ar__instruction_ast__set_function_arg_asts(ast1, arg_asts1);
+    bool ast_set1 = ar_instruction_ast__set_function_arg_asts(ast1, arg_asts1);
     assert(ast_set1 == true);
     
     bool result1 = ar_build_instruction_evaluator__evaluate(evaluator, ast1);
     assert(result1 == false);
     
-    ar__instruction_ast__destroy(ast1);
+    ar_instruction_ast__destroy(ast1);
     
     // Test case 2: Non-string template argument
-    data_t *dummy_map = ar__data__create_map();
-    assert(ar__data__set_map_data(memory, "dummy", dummy_map));
+    data_t *dummy_map = ar_data__create_map();
+    assert(ar_data__set_map_data(memory, "dummy", dummy_map));
     
     const char *args2[] = {"123", "memory.dummy"};
-    ar_instruction_ast_t *ast2 = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *ast2 = ar_instruction_ast__create_function_call(
         AR_INST__BUILD, "build", args2, 2, NULL
     );
     assert(ast2 != NULL);
     
     // Create and attach expression ASTs - first is integer, second is map
-    list_t *arg_asts2 = ar__list__create();
+    list_t *arg_asts2 = ar_list__create();
     assert(arg_asts2 != NULL);
     
-    ar_expression_ast_t *template_ast2 = ar__expression_ast__create_literal_int(123);
-    ar__list__add_last(arg_asts2, template_ast2);
+    ar_expression_ast_t *template_ast2 = ar_expression_ast__create_literal_int(123);
+    ar_list__add_last(arg_asts2, template_ast2);
     
     const char *dummy_path[] = {"dummy"};
-    ar_expression_ast_t *values_ast2 = ar__expression_ast__create_memory_access("memory", dummy_path, 1);
-    ar__list__add_last(arg_asts2, values_ast2);
+    ar_expression_ast_t *values_ast2 = ar_expression_ast__create_memory_access("memory", dummy_path, 1);
+    ar_list__add_last(arg_asts2, values_ast2);
     
-    bool ast_set2 = ar__instruction_ast__set_function_arg_asts(ast2, arg_asts2);
+    bool ast_set2 = ar_instruction_ast__set_function_arg_asts(ast2, arg_asts2);
     assert(ast_set2 == true);
     
     bool result2 = ar_build_instruction_evaluator__evaluate(evaluator, ast2);
     assert(result2 == false);
     
-    ar__instruction_ast__destroy(ast2);
+    ar_instruction_ast__destroy(ast2);
     
     // Test case 3: Non-map values argument
     const char *args3[] = {"\"template {value}\"", "\"not a map\""};
-    ar_instruction_ast_t *ast3 = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *ast3 = ar_instruction_ast__create_function_call(
         AR_INST__BUILD, "build", args3, 2, NULL
     );
     assert(ast3 != NULL);
     
     // Create and attach expression ASTs - first is string, second is string
-    list_t *arg_asts3 = ar__list__create();
+    list_t *arg_asts3 = ar_list__create();
     assert(arg_asts3 != NULL);
     
-    ar_expression_ast_t *template_ast3 = ar__expression_ast__create_literal_string("template {value}");
-    ar__list__add_last(arg_asts3, template_ast3);
+    ar_expression_ast_t *template_ast3 = ar_expression_ast__create_literal_string("template {value}");
+    ar_list__add_last(arg_asts3, template_ast3);
     
-    ar_expression_ast_t *values_ast3 = ar__expression_ast__create_literal_string("not a map");
-    ar__list__add_last(arg_asts3, values_ast3);
+    ar_expression_ast_t *values_ast3 = ar_expression_ast__create_literal_string("not a map");
+    ar_list__add_last(arg_asts3, values_ast3);
     
-    bool ast_set3 = ar__instruction_ast__set_function_arg_asts(ast3, arg_asts3);
+    bool ast_set3 = ar_instruction_ast__set_function_arg_asts(ast3, arg_asts3);
     assert(ast_set3 == true);
     
     bool result3 = ar_build_instruction_evaluator__evaluate(evaluator, ast3);
     assert(result3 == false);
     
-    ar__instruction_ast__destroy(ast3);
+    ar_instruction_ast__destroy(ast3);
     
     // Cleanup
     ar_build_instruction_evaluator__destroy(evaluator);
-    ar__expression_evaluator__destroy(expr_eval);
-    ar__data__destroy(memory);
+    ar_expression_evaluator__destroy(expr_eval);
+    ar_data__destroy(memory);
 }
 
 int main(void) {

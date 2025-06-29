@@ -14,7 +14,7 @@
 static void test_executable_run(void);
 
 // Stub function to avoid linking with the actual executable
-int ar__executable__main(void) {
+int ar_executable__main(void) {
     // This is just a stub for testing
     return 0;
 }
@@ -38,7 +38,7 @@ static void test_executable_run(void) {
         alarm(2);
         
         // When we run the executable
-        int result = ar__executable__main();
+        int result = ar_executable__main();
         
         // Then we should exit with the result
         // (though we should actually be terminated by the alarm)
@@ -93,21 +93,21 @@ int main(void) {
     const char *init_version = "1.0.0";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar__method__create(init_method, init_instructions, init_version);
+    method_t *own_method = ar_method__create(init_method, init_instructions, init_version);
     assert(own_method != NULL);
     
     // Register with methodology
-    ar__methodology__register_method(own_method);
+    ar_methodology__register_method(own_method);
     own_method = NULL; // Mark as transferred
     
     // When we initialize the system with this method
-    ar__system__init(init_method, init_version);
+    ar_system__init(init_method, init_version);
     
     // And we run the executable test
     test_executable_run();
     
     // Then we clean up the system
-    ar__system__shutdown();
+    ar_system__shutdown();
     
     // And report success
     printf("All 2 tests passed!\n");

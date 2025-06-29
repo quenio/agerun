@@ -20,7 +20,7 @@ struct method_fixture_s {
     bool initialized;             /* Whether fixture has been initialized */
 };
 
-method_fixture_t* ar__method_fixture__create(const char *ref_test_name) {
+method_fixture_t* ar_method_fixture__create(const char *ref_test_name) {
     if (!ref_test_name) {
         return NULL;
     }
@@ -41,16 +41,16 @@ method_fixture_t* ar__method_fixture__create(const char *ref_test_name) {
     return own_fixture; // Ownership transferred to caller
 }
 
-void ar__method_fixture__destroy(method_fixture_t *own_fixture) {
+void ar_method_fixture__destroy(method_fixture_t *own_fixture) {
     if (!own_fixture) {
         return;
     }
     
     // If initialized, perform cleanup
     if (own_fixture->initialized) {
-        ar__system__shutdown();
-        ar__methodology__cleanup();
-        ar__agency__reset();
+        ar_system__shutdown();
+        ar_methodology__cleanup();
+        ar_agency__reset();
         
         // Remove persistence files
         remove("methodology.agerun");
@@ -61,22 +61,22 @@ void ar__method_fixture__destroy(method_fixture_t *own_fixture) {
     AR__HEAP__FREE(own_fixture);
 }
 
-bool ar__method_fixture__initialize(method_fixture_t *mut_fixture) {
+bool ar_method_fixture__initialize(method_fixture_t *mut_fixture) {
     if (!mut_fixture) {
         return false;
     }
     
     // Clean shutdown of any existing state
-    ar__system__shutdown();
-    ar__methodology__cleanup();
-    ar__agency__reset();
+    ar_system__shutdown();
+    ar_methodology__cleanup();
+    ar_agency__reset();
     
     // Remove persistence files
     remove("methodology.agerun");
     remove("agency.agerun");
     
     // Initialize system with no persistence files
-    if (ar__system__init(NULL, NULL) != 1) {
+    if (ar_system__init(NULL, NULL) != 1) {
         // System already initialized is okay
     }
     
@@ -85,7 +85,7 @@ bool ar__method_fixture__initialize(method_fixture_t *mut_fixture) {
     return true;
 }
 
-bool ar__method_fixture__load_method(method_fixture_t *mut_fixture,
+bool ar_method_fixture__load_method(method_fixture_t *mut_fixture,
                                 const char *ref_method_name,
                                 const char *ref_method_file,
                                 const char *ref_version) {
@@ -99,10 +99,10 @@ bool ar__method_fixture__load_method(method_fixture_t *mut_fixture,
     
     // Read method file
     FILE *fp = NULL;
-    file_result_t result = ar__io__open_file(ref_method_file, "r", &fp);
+    file_result_t result = ar_io__open_file(ref_method_file, "r", &fp);
     if (result != FILE_SUCCESS) {
-        ar__io__error("Failed to open method file %s: %s\n", 
-                    ref_method_file, ar__io__error_message(result));
+        ar_io__error("Failed to open method file %s: %s\n", 
+                    ref_method_file, ar_io__error_message(result));
         return false;
     }
     
@@ -114,7 +114,7 @@ bool ar__method_fixture__load_method(method_fixture_t *mut_fixture,
     // Allocate buffer
     char *own_content = AR__HEAP__MALLOC((size_t)(file_size + 1), "Method file content");
     if (!own_content) {
-        ar__io__close_file(fp, ref_method_file);
+        ar_io__close_file(fp, ref_method_file);
         return false;
     }
     
@@ -122,17 +122,17 @@ bool ar__method_fixture__load_method(method_fixture_t *mut_fixture,
     size_t bytes_read = fread(own_content, 1, (size_t)file_size, fp);
     own_content[bytes_read] = '\0';
     
-    ar__io__close_file(fp, ref_method_file);
+    ar_io__close_file(fp, ref_method_file);
     
     // Register method
-    bool registered = ar__methodology__create_method(ref_method_name, own_content, ref_version);
+    bool registered = ar_methodology__create_method(ref_method_name, own_content, ref_version);
     
     AR__HEAP__FREE(own_content);
     
     return registered;
 }
 
-bool ar__method_fixture__verify_directory(const method_fixture_t *ref_fixture) {
+bool ar_method_fixture__verify_directory(const method_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return false;
     }
@@ -152,7 +152,7 @@ bool ar__method_fixture__verify_directory(const method_fixture_t *ref_fixture) {
     return true;
 }
 
-const char* ar__method_fixture__get_name(const method_fixture_t *ref_fixture) {
+const char* ar_method_fixture__get_name(const method_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return NULL;
     }
@@ -160,7 +160,7 @@ const char* ar__method_fixture__get_name(const method_fixture_t *ref_fixture) {
     return ref_fixture->own_test_name;
 }
 
-bool ar__method_fixture__check_memory(const method_fixture_t *ref_fixture) {
+bool ar_method_fixture__check_memory(const method_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return false;
     }

@@ -19,10 +19,10 @@
 // Test create/destroy lifecycle
 static void test_destroy_method_instruction_evaluator__create_destroy(void) {
     // Given dependencies
-    data_t *memory = ar__data__create_map();
+    data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     // When creating a destroy method evaluator
@@ -39,8 +39,8 @@ static void test_destroy_method_instruction_evaluator__create_destroy(void) {
     // Then no memory leaks should occur (verified by test framework)
     
     // Cleanup
-    ar__expression_evaluator__destroy(expr_eval);
-    ar__data__destroy(memory);
+    ar_expression_evaluator__destroy(expr_eval);
+    ar_data__destroy(memory);
 }
 
 // Test evaluate with instance
@@ -50,13 +50,13 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_instance(vo
     remove("agency.agerun");
     
     // Initialize system for method operations
-    ar__system__init(NULL, NULL);
+    ar_system__init(NULL, NULL);
     
     // Given an evaluator instance with a registered method
-    data_t *memory = ar__data__create_map();
+    data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
@@ -65,32 +65,32 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_instance(vo
     assert(evaluator != NULL);
     
     // Create a test method
-    ar__methodology__create_method("test_destroyer", "memory.x := 1", "1.0.0");
+    ar_methodology__create_method("test_destroyer", "memory.x := 1", "1.0.0");
     
     // Verify method exists
-    method_t *method = ar__methodology__get_method("test_destroyer", "1.0.0");
+    method_t *method = ar_methodology__get_method("test_destroyer", "1.0.0");
     assert(method != NULL);
     
     // Create destroy AST with method name and version
     const char *args[] = {"\"test_destroyer\"", "\"1.0.0\""};
-    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
         AR_INST__DESTROY_METHOD, "destroy", args, 2, NULL
     );
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar__list__create();
+    list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Method name: "test_destroyer"
-    ar_expression_ast_t *name_ast = ar__expression_ast__create_literal_string("test_destroyer");
-    ar__list__add_last(arg_asts, name_ast);
+    ar_expression_ast_t *name_ast = ar_expression_ast__create_literal_string("test_destroyer");
+    ar_list__add_last(arg_asts, name_ast);
     
     // Version: "1.0.0"
-    ar_expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
-    ar__list__add_last(arg_asts, version_ast);
+    ar_expression_ast_t *version_ast = ar_expression_ast__create_literal_string("1.0.0");
+    ar_list__add_last(arg_asts, version_ast);
     
-    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
     
     // When evaluating the destroy call using instance
@@ -100,23 +100,23 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_instance(vo
     assert(result == true);
     
     // And the method should be destroyed (not exist anymore)
-    method = ar__methodology__get_method("test_destroyer", "1.0.0");
+    method = ar_methodology__get_method("test_destroyer", "1.0.0");
     assert(method == NULL);
     
     // Cleanup
-    ar__instruction_ast__destroy(ast);
+    ar_instruction_ast__destroy(ast);
     ar_destroy_method_instruction_evaluator__destroy(evaluator);
-    ar__expression_evaluator__destroy(expr_eval);
-    ar__data__destroy(memory);
+    ar_expression_evaluator__destroy(expr_eval);
+    ar_data__destroy(memory);
     
     // Clean up agency before shutting down
-    ar__agency__reset();
+    ar_agency__reset();
     
     // Shutdown system
-    ar__system__shutdown();
+    ar_system__shutdown();
     
     // Clean up methodology after each test to prevent accumulation
-    ar__methodology__cleanup();
+    ar_methodology__cleanup();
 }
 
 // Test legacy function
@@ -126,13 +126,13 @@ static void test_destroy_method_instruction_evaluator__evaluate_legacy(void) {
     remove("agency.agerun");
     
     // Initialize system for method operations
-    ar__system__init(NULL, NULL);
+    ar_system__init(NULL, NULL);
     
     // Given dependencies
-    data_t *memory = ar__data__create_map();
+    data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     // Create an evaluator instance
@@ -142,28 +142,28 @@ static void test_destroy_method_instruction_evaluator__evaluate_legacy(void) {
     assert(evaluator != NULL);
     
     // Create a test method
-    ar__methodology__create_method("test_destroyer", "memory.x := 1", "1.0.0");
+    ar_methodology__create_method("test_destroyer", "memory.x := 1", "1.0.0");
     
     // Create destroy AST with method name and version
     const char *args[] = {"\"test_destroyer\"", "\"1.0.0\""};
-    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
         AR_INST__DESTROY_METHOD, "destroy", args, 2, NULL
     );
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar__list__create();
+    list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Method name: "test_destroyer"
-    ar_expression_ast_t *name_ast = ar__expression_ast__create_literal_string("test_destroyer");
-    ar__list__add_last(arg_asts, name_ast);
+    ar_expression_ast_t *name_ast = ar_expression_ast__create_literal_string("test_destroyer");
+    ar_list__add_last(arg_asts, name_ast);
     
     // Version: "1.0.0"
-    ar_expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
-    ar__list__add_last(arg_asts, version_ast);
+    ar_expression_ast_t *version_ast = ar_expression_ast__create_literal_string("1.0.0");
+    ar_list__add_last(arg_asts, version_ast);
     
-    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
     
     // When evaluating using instance-based interface
@@ -173,23 +173,23 @@ static void test_destroy_method_instruction_evaluator__evaluate_legacy(void) {
     assert(result == true);
     
     // And the method should be destroyed
-    method_t *method = ar__methodology__get_method("test_destroyer", "1.0.0");
+    method_t *method = ar_methodology__get_method("test_destroyer", "1.0.0");
     assert(method == NULL);
     
     // Cleanup
-    ar__instruction_ast__destroy(ast);
+    ar_instruction_ast__destroy(ast);
     ar_destroy_method_instruction_evaluator__destroy(evaluator);
-    ar__expression_evaluator__destroy(expr_eval);
-    ar__data__destroy(memory);
+    ar_expression_evaluator__destroy(expr_eval);
+    ar_data__destroy(memory);
     
     // Clean up agency before shutting down
-    ar__agency__reset();
+    ar_agency__reset();
     
     // Shutdown system
-    ar__system__shutdown();
+    ar_system__shutdown();
     
     // Clean up methodology after each test to prevent accumulation
-    ar__methodology__cleanup();
+    ar_methodology__cleanup();
 }
 
 // Test destroy method with agents using it
@@ -199,13 +199,13 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void
     remove("agency.agerun");
     
     // Initialize system for method operations
-    ar__system__init(NULL, NULL);
+    ar_system__init(NULL, NULL);
     
     // Given an evaluator instance with a method and agents using it
-    data_t *memory = ar__data__create_map();
+    data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
@@ -214,36 +214,36 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void
     assert(evaluator != NULL);
     
     // Create a test method and agents using it
-    ar__methodology__create_method("test_destroyer", "memory.x := 1", "1.0.0");
-    int64_t agent1 = ar__agency__create_agent("test_destroyer", "1.0.0", NULL);
-    int64_t agent2 = ar__agency__create_agent("test_destroyer", "1.0.0", NULL);
+    ar_methodology__create_method("test_destroyer", "memory.x := 1", "1.0.0");
+    int64_t agent1 = ar_agency__create_agent("test_destroyer", "1.0.0", NULL);
+    int64_t agent2 = ar_agency__create_agent("test_destroyer", "1.0.0", NULL);
     assert(agent1 > 0);
     assert(agent2 > 0);
     
     // Process wake messages to avoid leaks
-    ar__system__process_next_message();
-    ar__system__process_next_message();
+    ar_system__process_next_message();
+    ar_system__process_next_message();
     
     // Create destroy AST with method name and version
     const char *args[] = {"\"test_destroyer\"", "\"1.0.0\""};
-    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
         AR_INST__DESTROY_METHOD, "destroy", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar__list__create();
+    list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Method name: "test_destroyer"
-    ar_expression_ast_t *name_ast = ar__expression_ast__create_literal_string("test_destroyer");
-    ar__list__add_last(arg_asts, name_ast);
+    ar_expression_ast_t *name_ast = ar_expression_ast__create_literal_string("test_destroyer");
+    ar_list__add_last(arg_asts, name_ast);
     
     // Version: "1.0.0"
-    ar_expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
-    ar__list__add_last(arg_asts, version_ast);
+    ar_expression_ast_t *version_ast = ar_expression_ast__create_literal_string("1.0.0");
+    ar_list__add_last(arg_asts, version_ast);
     
-    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
     
     // When evaluating the destroy call
@@ -253,34 +253,34 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void
     assert(result == true);
     
     // And the result should be true (1)
-    data_t *result_value = ar__data__get_map_data(memory, "result");
+    data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
-    assert(ar__data__get_type(result_value) == DATA_INTEGER);
-    assert(ar__data__get_integer(result_value) == 1);
+    assert(ar_data__get_type(result_value) == DATA_INTEGER);
+    assert(ar_data__get_integer(result_value) == 1);
     
     // The agents should already be destroyed
     // (In the current implementation, destroy() handles agent destruction immediately)
-    assert(ar__agency__agent_exists(agent1) == false);
-    assert(ar__agency__agent_exists(agent2) == false);
+    assert(ar_agency__agent_exists(agent1) == false);
+    assert(ar_agency__agent_exists(agent2) == false);
     
     // And the method should be destroyed
-    method_t *method = ar__methodology__get_method("test_destroyer", "1.0.0");
+    method_t *method = ar_methodology__get_method("test_destroyer", "1.0.0");
     assert(method == NULL);
     
     // Cleanup
-    ar__instruction_ast__destroy(ast);
+    ar_instruction_ast__destroy(ast);
     ar_destroy_method_instruction_evaluator__destroy(evaluator);
-    ar__expression_evaluator__destroy(expr_eval);
-    ar__data__destroy(memory);
+    ar_expression_evaluator__destroy(expr_eval);
+    ar_data__destroy(memory);
     
     // Clean up agency before shutting down
-    ar__agency__reset();
+    ar_agency__reset();
     
     // Shutdown system
-    ar__system__shutdown();
+    ar_system__shutdown();
     
     // Clean up methodology after each test to prevent accumulation
-    ar__methodology__cleanup();
+    ar_methodology__cleanup();
 }
 
 // Test destroy nonexistent method
@@ -290,13 +290,13 @@ static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void
     remove("agency.agerun");
     
     // Initialize system for method operations
-    ar__system__init(NULL, NULL);
+    ar_system__init(NULL, NULL);
     
     // Given an evaluator instance with no methods
-    data_t *memory = ar__data__create_map();
+    data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
@@ -306,24 +306,24 @@ static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void
     
     // Create destroy AST with non-existent method
     const char *args[] = {"\"nonexistent\"", "\"1.0.0\""};
-    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
         AR_INST__DESTROY_METHOD, "destroy", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar__list__create();
+    list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Method name: "nonexistent"
-    ar_expression_ast_t *name_ast = ar__expression_ast__create_literal_string("nonexistent");
-    ar__list__add_last(arg_asts, name_ast);
+    ar_expression_ast_t *name_ast = ar_expression_ast__create_literal_string("nonexistent");
+    ar_list__add_last(arg_asts, name_ast);
     
     // Version: "1.0.0"
-    ar_expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
-    ar__list__add_last(arg_asts, version_ast);
+    ar_expression_ast_t *version_ast = ar_expression_ast__create_literal_string("1.0.0");
+    ar_list__add_last(arg_asts, version_ast);
     
-    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
     
     // When evaluating the destroy call
@@ -333,34 +333,34 @@ static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void
     assert(result == true);
     
     // But the result should be false (0) since method doesn't exist
-    data_t *result_value = ar__data__get_map_data(memory, "result");
+    data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
-    assert(ar__data__get_type(result_value) == DATA_INTEGER);
-    assert(ar__data__get_integer(result_value) == 0);
+    assert(ar_data__get_type(result_value) == DATA_INTEGER);
+    assert(ar_data__get_integer(result_value) == 0);
     
     // Cleanup
-    ar__instruction_ast__destroy(ast);
+    ar_instruction_ast__destroy(ast);
     ar_destroy_method_instruction_evaluator__destroy(evaluator);
-    ar__expression_evaluator__destroy(expr_eval);
-    ar__data__destroy(memory);
+    ar_expression_evaluator__destroy(expr_eval);
+    ar_data__destroy(memory);
     
     // Clean up agency before shutting down
-    ar__agency__reset();
+    ar_agency__reset();
     
     // Shutdown system
-    ar__system__shutdown();
+    ar_system__shutdown();
     
     // Clean up methodology after each test to prevent accumulation
-    ar__methodology__cleanup();
+    ar_methodology__cleanup();
 }
 
 // Test destroy with invalid method name type
 static void test_destroy_method_instruction_evaluator__evaluate_invalid_name_type(void) {
     // Given an evaluator instance
-    data_t *memory = ar__data__create_map();
+    data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
@@ -370,24 +370,24 @@ static void test_destroy_method_instruction_evaluator__evaluate_invalid_name_typ
     
     // Create destroy AST with non-string method name (integer)
     const char *args[] = {"123", "\"1.0.0\""};
-    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
         AR_INST__DESTROY_METHOD, "destroy", args, 2, NULL
     );
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar__list__create();
+    list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Method name: 123 (integer, not string)
-    ar_expression_ast_t *name_ast = ar__expression_ast__create_literal_int(123);
-    ar__list__add_last(arg_asts, name_ast);
+    ar_expression_ast_t *name_ast = ar_expression_ast__create_literal_int(123);
+    ar_list__add_last(arg_asts, name_ast);
     
     // Version: "1.0.0"
-    ar_expression_ast_t *version_ast = ar__expression_ast__create_literal_string("1.0.0");
-    ar__list__add_last(arg_asts, version_ast);
+    ar_expression_ast_t *version_ast = ar_expression_ast__create_literal_string("1.0.0");
+    ar_list__add_last(arg_asts, version_ast);
     
-    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
     
     // When evaluating the destroy call
@@ -397,19 +397,19 @@ static void test_destroy_method_instruction_evaluator__evaluate_invalid_name_typ
     assert(result == false);
     
     // Cleanup
-    ar__instruction_ast__destroy(ast);
+    ar_instruction_ast__destroy(ast);
     ar_destroy_method_instruction_evaluator__destroy(evaluator);
-    ar__expression_evaluator__destroy(expr_eval);
-    ar__data__destroy(memory);
+    ar_expression_evaluator__destroy(expr_eval);
+    ar_data__destroy(memory);
 }
 
 // Test destroy with wrong number of arguments
 static void test_destroy_method_instruction_evaluator__evaluate_wrong_arg_count(void) {
     // Given an evaluator instance
-    data_t *memory = ar__data__create_map();
+    data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
     ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
@@ -419,20 +419,20 @@ static void test_destroy_method_instruction_evaluator__evaluate_wrong_arg_count(
     
     // Create destroy AST with 1 arg (should be 2 for method)
     const char *args[] = {"\"method_name\""};
-    ar_instruction_ast_t *ast = ar__instruction_ast__create_function_call(
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
         AR_INST__DESTROY_METHOD, "destroy", args, 1, NULL
     );
     assert(ast != NULL);
     
     // Create and attach the expression AST for the single argument
-    list_t *arg_asts = ar__list__create();
+    list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Method name only (missing version - should cause error)
-    ar_expression_ast_t *name_ast = ar__expression_ast__create_literal_string("method_name");
-    ar__list__add_last(arg_asts, name_ast);
+    ar_expression_ast_t *name_ast = ar_expression_ast__create_literal_string("method_name");
+    ar_list__add_last(arg_asts, name_ast);
     
-    bool ast_set = ar__instruction_ast__set_function_arg_asts(ast, arg_asts);
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
     
     // When evaluating the destroy call
@@ -442,10 +442,10 @@ static void test_destroy_method_instruction_evaluator__evaluate_wrong_arg_count(
     assert(result == false);
     
     // Cleanup
-    ar__instruction_ast__destroy(ast);
+    ar_instruction_ast__destroy(ast);
     ar_destroy_method_instruction_evaluator__destroy(evaluator);
-    ar__expression_evaluator__destroy(expr_eval);
-    ar__data__destroy(memory);
+    ar_expression_evaluator__destroy(expr_eval);
+    ar_data__destroy(memory);
 }
 
 int main(void) {
@@ -464,9 +464,9 @@ int main(void) {
     }
     
     // Clean up any existing state at the start
-    ar__system__shutdown();
-    ar__methodology__cleanup();
-    ar__agency__reset();
+    ar_system__shutdown();
+    ar_methodology__cleanup();
+    ar_agency__reset();
     remove("methodology.agerun");
     remove("agency.agerun");
     
@@ -494,8 +494,8 @@ int main(void) {
     printf("All destroy method instruction evaluator tests passed!\n");
     
     // Clean up after tests
-    ar__methodology__cleanup();
-    ar__agency__reset();
+    ar_methodology__cleanup();
+    ar_agency__reset();
     
     return 0;
 }

@@ -22,7 +22,7 @@ typedef struct list_s list_t;
  * @return Pointer to the new list, or NULL on failure
  * @note Ownership: Returns an owned value that the caller must eventually destroy using ar_list_destroy()
  */
-list_t* ar__list__create(void);
+list_t* ar_list__create(void);
 
 /**
  * Add an item to the end of the list
@@ -31,7 +31,7 @@ list_t* ar__list__create(void);
  * @return true if successful, false otherwise
  * @note Ownership: Borrows the item without taking ownership. The caller remains responsible for the item's memory.
  */
-bool ar__list__add_last(list_t *mut_list, void *mut_item);
+bool ar_list__add_last(list_t *mut_list, void *mut_item);
 
 /**
  * Add an item to the beginning of the list
@@ -40,7 +40,7 @@ bool ar__list__add_last(list_t *mut_list, void *mut_item);
  * @return true if successful, false otherwise
  * @note Ownership: Borrows the item without taking ownership. The caller remains responsible for the item's memory.
  */
-bool ar__list__add_first(list_t *mut_list, void *mut_item);
+bool ar_list__add_first(list_t *mut_list, void *mut_item);
 
 /**
  * Get the first item in the list
@@ -48,7 +48,7 @@ bool ar__list__add_first(list_t *mut_list, void *mut_item);
  * @return Pointer to the first item, or NULL if the list is empty
  * @note Ownership: Returns a borrowed reference. The caller must not destroy the returned item.
  */
-void* ar__list__first(const list_t *ref_list);
+void* ar_list__first(const list_t *ref_list);
 
 /**
  * Get the last item in the list
@@ -56,7 +56,7 @@ void* ar__list__first(const list_t *ref_list);
  * @return Pointer to the last item, or NULL if the list is empty
  * @note Ownership: Returns a borrowed reference. The caller must not destroy the returned item.
  */
-void* ar__list__last(const list_t *ref_list);
+void* ar_list__last(const list_t *ref_list);
 
 /**
  * Remove and return the first item from the list
@@ -64,7 +64,7 @@ void* ar__list__last(const list_t *ref_list);
  * @return Pointer to the removed item, or NULL if the list is empty
  * @note Ownership: Returns a borrowed reference. The list does not transfer ownership to the caller.
  */
-void* ar__list__remove_first(list_t *mut_list);
+void* ar_list__remove_first(list_t *mut_list);
 
 /**
  * Remove and return the last item from the list
@@ -72,7 +72,7 @@ void* ar__list__remove_first(list_t *mut_list);
  * @return Pointer to the removed item, or NULL if the list is empty
  * @note Ownership: Returns a borrowed reference. The list does not transfer ownership to the caller.
  */
-void* ar__list__remove_last(list_t *mut_list);
+void* ar_list__remove_last(list_t *mut_list);
 
 /**
  * Get the number of items in the list
@@ -80,7 +80,7 @@ void* ar__list__remove_last(list_t *mut_list);
  * @return The number of items
  * @note Ownership: No ownership implications; this is a pure query operation.
  */
-size_t ar__list__count(const list_t *ref_list);
+size_t ar_list__count(const list_t *ref_list);
 
 /**
  * Check if the list is empty
@@ -88,7 +88,7 @@ size_t ar__list__count(const list_t *ref_list);
  * @return true if the list is empty, false otherwise
  * @note Ownership: No ownership implications; this is a pure query operation.
  */
-bool ar__list__empty(const list_t *ref_list);
+bool ar_list__empty(const list_t *ref_list);
 
 /**
  * Get an array of all items in the list
@@ -98,7 +98,7 @@ bool ar__list__empty(const list_t *ref_list);
  *       The items in the array remain borrowed references.
  *       The caller can use ar_list_count() to determine the size of the array.
  */
-void** ar__list__items(const list_t *ref_list);
+void** ar_list__items(const list_t *ref_list);
 
 /**
  * Remove the first occurrence of an item from the list by value
@@ -115,7 +115,7 @@ void** ar__list__items(const list_t *ref_list);
  * @note When the item is removed, it is returned as a non-const pointer, allowing the
  *       caller to take ownership of it regardless of how it was originally passed.
  */
-void* ar__list__remove(list_t *mut_list, const void *ref_item);
+void* ar_list__remove(list_t *mut_list, const void *ref_item);
 
 /**
  * Free all resources in a list
@@ -125,6 +125,6 @@ void* ar__list__remove(list_t *mut_list, const void *ref_item);
  *       It does not free memory for items.
  *       The caller is responsible for freeing all items that were added to the list.
  */
-void ar__list__destroy(list_t *own_list);
+void ar_list__destroy(list_t *own_list);
 
 #endif /* AGERUN_LIST_H */

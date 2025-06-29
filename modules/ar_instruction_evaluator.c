@@ -251,7 +251,7 @@ bool ar_instruction_evaluator__evaluate(
     }
     
     // Dispatch based on AST node type
-    ar_instruction_ast_type_t type = ar__instruction_ast__get_type(ref_ast);
+    ar_instruction_ast_type_t type = ar_instruction_ast__get_type(ref_ast);
     
     switch (type) {
         case AR_INST__ASSIGNMENT:

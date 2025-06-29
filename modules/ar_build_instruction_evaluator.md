@@ -100,8 +100,8 @@ The module:
 
 ```c
 // Create memory and expression evaluator
-data_t *memory = ar__data__create_map();
-ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+data_t *memory = ar_data__create_map();
+ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
 
 // Create build instruction evaluator
 ar_build_instruction_evaluator_t *build_eval = ar_build_instruction_evaluator__create(
@@ -109,10 +109,10 @@ ar_build_instruction_evaluator_t *build_eval = ar_build_instruction_evaluator__c
 );
 
 // Set up values in memory
-data_t *values = ar__data__create_map();
-ar__data__set_map_data(values, "name", ar__data__create_string("World"));
-ar__data__set_map_data(values, "count", ar__data__create_integer(42));
-ar__data__set_map_data(memory, "values", values);
+data_t *values = ar_data__create_map();
+ar_data__set_map_data(values, "name", ar_data__create_string("World"));
+ar_data__set_map_data(values, "count", ar_data__create_integer(42));
+ar_data__set_map_data(memory, "values", values);
 
 // Parse build instruction: memory.msg := build("Hello {name}! Count: {count}", memory.values)
 ar_instruction_ast_t *ast = ar__instruction_parser__parse_build(parser);

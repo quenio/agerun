@@ -134,11 +134,11 @@ if (!own_ast) {
 }
 
 // Use the AST
-assert(ar__expression_ast__get_type(own_ast) == AR_EXPR__BINARY_OP);
-assert(ar__expression_ast__get_operator(own_ast) == AR_OP__ADD);
+assert(ar_expression_ast__get_type(own_ast) == AR_EXPR__BINARY_OP);
+assert(ar_expression_ast__get_operator(own_ast) == AR_OP__ADD);
 
 // Clean up
-ar__expression_ast__destroy(own_ast);
+ar_expression_ast__destroy(own_ast);
 ar__expression_parser__destroy(own_parser);
 ```
 

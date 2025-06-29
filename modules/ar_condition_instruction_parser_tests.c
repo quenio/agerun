@@ -35,22 +35,22 @@ static void test_condition_parser__parse_simple_if(void) {
     
     // Then it should parse successfully
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__IF);
-    assert(strcmp(ar__instruction_ast__get_function_name(own_ast), "if") == 0);
-    assert(ar__instruction_ast__has_result_assignment(own_ast) == false);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__IF);
+    assert(strcmp(ar_instruction_ast__get_function_name(own_ast), "if") == 0);
+    assert(ar_instruction_ast__has_result_assignment(own_ast) == false);
     
     // Verify arguments
-    list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
+    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
-    assert(ar__list__count(own_args) == 3);
-    void **own_items = ar__list__items(own_args);
+    assert(ar_list__count(own_args) == 3);
+    void **own_items = ar_list__items(own_args);
     assert(strcmp((const char*)own_items[0], "1 > 0") == 0);
     assert(strcmp((const char*)own_items[1], "\"true\"") == 0);
     assert(strcmp((const char*)own_items[2], "\"false\"") == 0);
     AR__HEAP__FREE(own_items);
-    ar__list__destroy(own_args);
+    ar_list__destroy(own_args);
     
-    ar__instruction_ast__destroy(own_ast);
+    ar_instruction_ast__destroy(own_ast);
     ar_condition_instruction_parser__destroy(own_parser);
 }
 
@@ -68,23 +68,23 @@ static void test_condition_parser__parse_if_with_assignment(void) {
     
     // Then it should parse as an if function with assignment
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__IF);
-    assert(strcmp(ar__instruction_ast__get_function_name(own_ast), "if") == 0);
-    assert(ar__instruction_ast__has_result_assignment(own_ast) == true);
-    assert(strcmp(ar__instruction_ast__get_function_result_path(own_ast), "memory.level") == 0);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__IF);
+    assert(strcmp(ar_instruction_ast__get_function_name(own_ast), "if") == 0);
+    assert(ar_instruction_ast__has_result_assignment(own_ast) == true);
+    assert(strcmp(ar_instruction_ast__get_function_result_path(own_ast), "memory.level") == 0);
     
     // Verify arguments
-    list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
+    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
-    assert(ar__list__count(own_args) == 3);
-    void **own_items = ar__list__items(own_args);
+    assert(ar_list__count(own_args) == 3);
+    void **own_items = ar_list__items(own_args);
     assert(strcmp((const char*)own_items[0], "memory.count > 5") == 0);
     assert(strcmp((const char*)own_items[1], "\"High\"") == 0);
     assert(strcmp((const char*)own_items[2], "\"Low\"") == 0);
     AR__HEAP__FREE(own_items);
-    ar__list__destroy(own_args);
+    ar_list__destroy(own_args);
     
-    ar__instruction_ast__destroy(own_ast);
+    ar_instruction_ast__destroy(own_ast);
     ar_condition_instruction_parser__destroy(own_parser);
 }
 
@@ -104,16 +104,16 @@ static void test_condition_parser__parse_nested_conditions(void) {
     
     // Then it should parse the complex condition
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__IF);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__IF);
     
-    list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
-    assert(ar__list__count(own_args) == 3);
-    void **own_items = ar__list__items(own_args);
+    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    assert(ar_list__count(own_args) == 3);
+    void **own_items = ar_list__items(own_args);
     assert(strcmp((const char*)own_items[0], "memory.age >= 18 && memory.registered") == 0);
     AR__HEAP__FREE(own_items);
-    ar__list__destroy(own_args);
+    ar_list__destroy(own_args);
     
-    ar__instruction_ast__destroy(own_ast);
+    ar_instruction_ast__destroy(own_ast);
     ar_condition_instruction_parser__destroy(own_parser);
 }
 */
@@ -134,18 +134,18 @@ static void test_condition_parser__parse_nested_function_calls(void) {
     
     // Then it should parse with nested function calls preserved
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__IF);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__IF);
     
-    list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
-    assert(ar__list__count(own_args) == 3);
-    void **own_items = ar__list__items(own_args);
+    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    assert(ar_list__count(own_args) == 3);
+    void **own_items = ar_list__items(own_args);
     assert(strcmp((const char*)own_items[0], "send(0, \"check\")") == 0);
     assert(strcmp((const char*)own_items[1], "send(1, \"true\")") == 0);
     assert(strcmp((const char*)own_items[2], "send(1, \"false\")") == 0);
     AR__HEAP__FREE(own_items);
-    ar__list__destroy(own_args);
+    ar_list__destroy(own_args);
     
-    ar__instruction_ast__destroy(own_ast);
+    ar_instruction_ast__destroy(own_ast);
     ar_condition_instruction_parser__destroy(own_parser);
 }
 */
@@ -219,13 +219,13 @@ static void test_condition_parser__reusability(void) {
     const char *instruction1 = "if(1, 1, 0)";
     ar_instruction_ast_t *own_ast1 = ar_condition_instruction_parser__parse(own_parser, instruction1, NULL);
     assert(own_ast1 != NULL);
-    ar__instruction_ast__destroy(own_ast1);
+    ar_instruction_ast__destroy(own_ast1);
     
     // Second parse with same parser
     const char *instruction2 = "if(0, \"yes\", \"no\")";
     ar_instruction_ast_t *own_ast2 = ar_condition_instruction_parser__parse(own_parser, instruction2, NULL);
     assert(own_ast2 != NULL);
-    ar__instruction_ast__destroy(own_ast2);
+    ar_instruction_ast__destroy(own_ast2);
     
     // Error should be cleared between parses
     assert(ar_condition_instruction_parser__get_error(own_parser) == NULL);
@@ -246,41 +246,41 @@ static void test_condition_parser__parse_with_expression_asts(void) {
     
     // Then it should parse successfully with argument ASTs
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__IF);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__IF);
     
     // And the arguments should be available as expression ASTs
-    const list_t *ref_arg_asts = ar__instruction_ast__get_function_arg_asts(own_ast);
+    const list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
     assert(ref_arg_asts != NULL);
-    assert(ar__list__count(ref_arg_asts) == 3);
+    assert(ar_list__count(ref_arg_asts) == 3);
     
     // First argument should be a comparison expression AST
-    void **items = ar__list__items(ref_arg_asts);
+    void **items = ar_list__items(ref_arg_asts);
     assert(items != NULL);
     const ar_expression_ast_t *ref_condition = (const ar_expression_ast_t*)items[0];
     assert(ref_condition != NULL);
-    assert(ar__expression_ast__get_type(ref_condition) == AR_EXPR__BINARY_OP);
-    assert(ar__expression_ast__get_operator(ref_condition) == AR_OP__GREATER);
+    assert(ar_expression_ast__get_type(ref_condition) == AR_EXPR__BINARY_OP);
+    assert(ar_expression_ast__get_operator(ref_condition) == AR_OP__GREATER);
     
     // Second argument should be a string literal AST
     const ar_expression_ast_t *ref_then_expr = (const ar_expression_ast_t*)items[1];
     assert(ref_then_expr != NULL);
-    assert(ar__expression_ast__get_type(ref_then_expr) == AR_EXPR__LITERAL_STRING);
-    assert(strcmp(ar__expression_ast__get_string_value(ref_then_expr), "High") == 0);
+    assert(ar_expression_ast__get_type(ref_then_expr) == AR_EXPR__LITERAL_STRING);
+    assert(strcmp(ar_expression_ast__get_string_value(ref_then_expr), "High") == 0);
     
     // Third argument should be a memory access AST
     const ar_expression_ast_t *ref_else_expr = (const ar_expression_ast_t*)items[2];
     assert(ref_else_expr != NULL);
-    assert(ar__expression_ast__get_type(ref_else_expr) == AR_EXPR__MEMORY_ACCESS);
+    assert(ar_expression_ast__get_type(ref_else_expr) == AR_EXPR__MEMORY_ACCESS);
     // Verify memory path
     size_t path_count = 0;
-    char **path_components = ar__expression_ast__get_memory_path(ref_else_expr, &path_count);
+    char **path_components = ar_expression_ast__get_memory_path(ref_else_expr, &path_count);
     assert(path_components != NULL);
     assert(path_count == 1);
     assert(strcmp(path_components[0], "default") == 0);
     AR__HEAP__FREE(path_components);
     
     AR__HEAP__FREE(items);
-    ar__instruction_ast__destroy(own_ast);
+    ar_instruction_ast__destroy(own_ast);
     ar_condition_instruction_parser__destroy(own_parser);
 }
 

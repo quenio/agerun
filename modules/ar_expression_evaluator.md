@@ -26,16 +26,16 @@ The module is designed with clean separation of concerns:
 
 ### Creation and Destruction
 
-- `ar__expression_evaluator__create()` - Creates evaluator with memory and optional context
-- `ar__expression_evaluator__destroy()` - Destroys evaluator and releases resources
+- `ar_expression_evaluator__create()` - Creates evaluator with memory and optional context
+- `ar_expression_evaluator__destroy()` - Destroys evaluator and releases resources
 
 ### Evaluation Functions
 
-- `ar__expression_evaluator__evaluate_literal_int()` - Evaluates integer literal nodes
-- `ar__expression_evaluator__evaluate_literal_double()` - Evaluates double literal nodes
-- `ar__expression_evaluator__evaluate_literal_string()` - Evaluates string literal nodes
-- `ar__expression_evaluator__evaluate_memory_access()` - Evaluates memory/context access paths
-- `ar__expression_evaluator__evaluate_binary_op()` - Evaluates binary operations recursively
+- `ar_expression_evaluator__evaluate_literal_int()` - Evaluates integer literal nodes
+- `ar_expression_evaluator__evaluate_literal_double()` - Evaluates double literal nodes
+- `ar_expression_evaluator__evaluate_literal_string()` - Evaluates string literal nodes
+- `ar_expression_evaluator__evaluate_memory_access()` - Evaluates memory/context access paths
+- `ar_expression_evaluator__evaluate_binary_op()` - Evaluates binary operations recursively
 
 ## Ownership Model
 
@@ -92,24 +92,24 @@ The module provides comprehensive error handling:
 
 ```c
 // Create evaluator with memory and context
-data_t *memory = ar__data__create_map();
-data_t *context = ar__data__create_map();
-ar_expression_evaluator_t *evaluator = ar__expression_evaluator__create(memory, context);
+data_t *memory = ar_data__create_map();
+data_t *context = ar_data__create_map();
+ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(memory, context);
 
 // Parse an expression to AST
 ar_expression_parser_t *parser = ar__expression_parser__create("memory.x + 5");
 ar_expression_ast_t *ast = ar__expression_parser__parse(parser);
 
 // Evaluate the AST
-data_t *result = ar__expression_evaluator__evaluate_binary_op(evaluator, ast);
+data_t *result = ar_expression_evaluator__evaluate_binary_op(evaluator, ast);
 
 // Clean up
-ar__data__destroy(result);  // Owned value from operation
-ar__expression_ast__destroy(ast);
+ar_data__destroy(result);  // Owned value from operation
+ar_expression_ast__destroy(ast);
 ar__expression_parser__destroy(parser);
-ar__expression_evaluator__destroy(evaluator);
-ar__data__destroy(memory);
-ar__data__destroy(context);
+ar_expression_evaluator__destroy(evaluator);
+ar_data__destroy(memory);
+ar_data__destroy(context);
 ```
 
 ## Implementation Notes

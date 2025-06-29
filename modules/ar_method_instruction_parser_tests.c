@@ -26,9 +26,9 @@ static void test_method_instruction_parser__simple_parsing(void) {
     
     // Then it should parse as a method function
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__METHOD);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__METHOD);
     
-    ar__instruction_ast__destroy(own_ast);
+    ar_instruction_ast__destroy(own_ast);
     ar_method_instruction_parser__destroy(own_parser);
 }
 #endif
@@ -50,26 +50,26 @@ static void test_method_instruction_parser__with_assignment(void) {
     
     // Then it should parse correctly with assignment
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__METHOD);
-    assert(ar__instruction_ast__has_result_assignment(own_ast) == true);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__METHOD);
+    assert(ar_instruction_ast__has_result_assignment(own_ast) == true);
     
-    const char *result_path = ar__instruction_ast__get_function_result_path(own_ast);
+    const char *result_path = ar_instruction_ast__get_function_result_path(own_ast);
     assert(result_path != NULL);
     assert(strcmp(result_path, "memory.method_ref") == 0);
     
     // And should have 3 arguments
-    list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
+    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
-    assert(ar__list__count(own_args) == 3);
+    assert(ar_list__count(own_args) == 3);
     
-    void **own_items = ar__list__items(own_args);
+    void **own_items = ar_list__items(own_args);
     assert(strcmp((const char*)own_items[0], "\"calculate\"") == 0);
     assert(strcmp((const char*)own_items[1], "\"memory.result := 42\"") == 0);
     assert(strcmp((const char*)own_items[2], "\"2.0.0\"") == 0);
     
     AR__HEAP__FREE(own_items);
-    ar__list__destroy(own_args);
-    ar__instruction_ast__destroy(own_ast);
+    ar_list__destroy(own_args);
+    ar_instruction_ast__destroy(own_ast);
     ar_method_instruction_parser__destroy(own_parser);
 }
 
@@ -92,19 +92,19 @@ static void test_method_instruction_parser__complex_code(void) {
     
     // Then it should parse correctly
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__METHOD);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__METHOD);
     
-    list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
-    assert(ar__list__count(own_args) == 3);
+    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    assert(ar_list__count(own_args) == 3);
     
-    void **own_items = ar__list__items(own_args);
+    void **own_items = ar_list__items(own_args);
     assert(strcmp((const char*)own_items[0], "\"process\"") == 0);
     assert(strcmp((const char*)own_items[1], "\"memory.output := build(\\\"Result: {value}\\\", memory.data)\"") == 0);
     assert(strcmp((const char*)own_items[2], "\"1.0.0\"") == 0);
     
     AR__HEAP__FREE(own_items);
-    ar__list__destroy(own_args);
-    ar__instruction_ast__destroy(own_ast);
+    ar_list__destroy(own_args);
+    ar_instruction_ast__destroy(own_ast);
     ar_method_instruction_parser__destroy(own_parser);
 }
 #endif
@@ -126,9 +126,9 @@ static void test_method_instruction_parser__whitespace_handling(void) {
     
     // Then it should parse correctly ignoring whitespace
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__METHOD);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__METHOD);
     
-    ar__instruction_ast__destroy(own_ast);
+    ar_instruction_ast__destroy(own_ast);
     ar_method_instruction_parser__destroy(own_parser);
 }
 
@@ -240,8 +240,8 @@ static void test_method_instruction_parser__reusability(void) {
     assert(own_ast3 != NULL);
     assert(ar_method_instruction_parser__get_error(own_parser) == NULL);
     
-    ar__instruction_ast__destroy(own_ast1);
-    ar__instruction_ast__destroy(own_ast3);
+    ar_instruction_ast__destroy(own_ast1);
+    ar_instruction_ast__destroy(own_ast3);
     ar_method_instruction_parser__destroy(own_parser);
 }
 
@@ -262,15 +262,15 @@ static void test_method_instruction_parser__multiline_code(void) {
     
     // Then it should parse correctly
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__METHOD);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__METHOD);
     
-    list_t *own_args = ar__instruction_ast__get_function_args(own_ast);
-    void **own_items = ar__list__items(own_args);
+    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    void **own_items = ar_list__items(own_args);
     assert(strcmp((const char*)own_items[1], "\"memory.x := 1\\nmemory.y := 2\"") == 0);
     
     AR__HEAP__FREE(own_items);
-    ar__list__destroy(own_args);
-    ar__instruction_ast__destroy(own_ast);
+    ar_list__destroy(own_args);
+    ar_instruction_ast__destroy(own_ast);
     ar_method_instruction_parser__destroy(own_parser);
 }
 
@@ -290,37 +290,37 @@ static void test_method_instruction_parser__parse_with_expression_asts(void) {
     
     // Then it should parse successfully with argument ASTs
     assert(own_ast != NULL);
-    assert(ar__instruction_ast__get_type(own_ast) == AR_INST__METHOD);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__METHOD);
     
     // And the arguments should be available as expression ASTs
-    const list_t *ref_arg_asts = ar__instruction_ast__get_function_arg_asts(own_ast);
+    const list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
     assert(ref_arg_asts != NULL);
-    assert(ar__list__count(ref_arg_asts) == 3);
+    assert(ar_list__count(ref_arg_asts) == 3);
     
     // All three arguments should be string literal ASTs
-    void **items = ar__list__items(ref_arg_asts);
+    void **items = ar_list__items(ref_arg_asts);
     assert(items != NULL);
     
     // First argument - method name
     const ar_expression_ast_t *ref_name = (const ar_expression_ast_t*)items[0];
     assert(ref_name != NULL);
-    assert(ar__expression_ast__get_type(ref_name) == AR_EXPR__LITERAL_STRING);
-    assert(strcmp(ar__expression_ast__get_string_value(ref_name), "calculate") == 0);
+    assert(ar_expression_ast__get_type(ref_name) == AR_EXPR__LITERAL_STRING);
+    assert(strcmp(ar_expression_ast__get_string_value(ref_name), "calculate") == 0);
     
     // Second argument - method code
     const ar_expression_ast_t *ref_code = (const ar_expression_ast_t*)items[1];
     assert(ref_code != NULL);
-    assert(ar__expression_ast__get_type(ref_code) == AR_EXPR__LITERAL_STRING);
-    assert(strcmp(ar__expression_ast__get_string_value(ref_code), "memory.result := memory.x + memory.y") == 0);
+    assert(ar_expression_ast__get_type(ref_code) == AR_EXPR__LITERAL_STRING);
+    assert(strcmp(ar_expression_ast__get_string_value(ref_code), "memory.result := memory.x + memory.y") == 0);
     
     // Third argument - version
     const ar_expression_ast_t *ref_version = (const ar_expression_ast_t*)items[2];
     assert(ref_version != NULL);
-    assert(ar__expression_ast__get_type(ref_version) == AR_EXPR__LITERAL_STRING);
-    assert(strcmp(ar__expression_ast__get_string_value(ref_version), "1.2.3") == 0);
+    assert(ar_expression_ast__get_type(ref_version) == AR_EXPR__LITERAL_STRING);
+    assert(strcmp(ar_expression_ast__get_string_value(ref_version), "1.2.3") == 0);
     
     AR__HEAP__FREE(items);
-    ar__instruction_ast__destroy(own_ast);
+    ar_instruction_ast__destroy(own_ast);
     ar_method_instruction_parser__destroy(own_parser);
 }
 
@@ -342,7 +342,7 @@ int main(void) {
     
     printf("\nAll method instruction parser tests passed!\n");
     
-    ar__heap__memory_report();
+    ar_heap__memory_report();
     
     return 0;
 }

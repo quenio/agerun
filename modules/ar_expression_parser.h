@@ -18,7 +18,7 @@ typedef struct expression_parser_s ar_expression_parser_t;
  * @note Ownership: Returns an owned value that caller must destroy.
  *       The parser makes a copy of the expression string.
  */
-ar_expression_parser_t* ar__expression_parser__create(const char *ref_expression);
+ar_expression_parser_t* ar_expression_parser__create(const char *ref_expression);
 
 /**
  * Destroy an expression parser instance.
@@ -26,7 +26,7 @@ ar_expression_parser_t* ar__expression_parser__create(const char *ref_expression
  * @param own_parser The parser instance to destroy (ownership transferred)
  * @note Ownership: Takes ownership of the parser and destroys it.
  */
-void ar__expression_parser__destroy(ar_expression_parser_t *own_parser);
+void ar_expression_parser__destroy(ar_expression_parser_t *own_parser);
 
 /**
  * Get the current position in the expression being parsed.
@@ -34,7 +34,7 @@ void ar__expression_parser__destroy(ar_expression_parser_t *own_parser);
  * @param ref_parser The parser instance (borrowed reference)
  * @return The current character offset in the expression
  */
-size_t ar__expression_parser__get_position(const ar_expression_parser_t *ref_parser);
+size_t ar_expression_parser__get_position(const ar_expression_parser_t *ref_parser);
 
 /**
  * Get the last error message from the parser.
@@ -43,7 +43,7 @@ size_t ar__expression_parser__get_position(const ar_expression_parser_t *ref_par
  * @return The error message (borrowed reference), or NULL if no error
  * @note Ownership: Returns a borrowed reference. Do not free.
  */
-const char* ar__expression_parser__get_error(const ar_expression_parser_t *ref_parser);
+const char* ar_expression_parser__get_error(const ar_expression_parser_t *ref_parser);
 
 /**
  * Parse an expression and return the AST.
@@ -52,10 +52,10 @@ const char* ar__expression_parser__get_error(const ar_expression_parser_t *ref_p
  * @param mut_parser The parser instance (mutable reference)
  * @return Parsed expression AST (owned by caller), or NULL on failure
  * @note Ownership: Returns an owned AST that caller must destroy.
- *       On failure, use ar__expression_parser__get_error() for details.
+ *       On failure, use ar_expression_parser__get_error() for details.
  *       This function ensures the entire input is consumed.
  */
-ar_expression_ast_t* ar__expression_parser__parse_expression(ar_expression_parser_t *mut_parser);
+ar_expression_ast_t* ar_expression_parser__parse_expression(ar_expression_parser_t *mut_parser);
 
 /**
  * Parse a literal (integer, double, or string).
@@ -64,7 +64,7 @@ ar_expression_ast_t* ar__expression_parser__parse_expression(ar_expression_parse
  * @return Parsed literal AST node (owned by caller), or NULL on failure
  * @note Ownership: Returns an owned AST node that caller must destroy.
  */
-ar_expression_ast_t* ar__expression_parser__parse_literal(ar_expression_parser_t *mut_parser);
+ar_expression_ast_t* ar_expression_parser__parse_literal(ar_expression_parser_t *mut_parser);
 
 /**
  * Parse a memory access expression (e.g., memory.x, message.content).
@@ -73,7 +73,7 @@ ar_expression_ast_t* ar__expression_parser__parse_literal(ar_expression_parser_t
  * @return Parsed memory access AST node (owned by caller), or NULL on failure
  * @note Ownership: Returns an owned AST node that caller must destroy.
  */
-ar_expression_ast_t* ar__expression_parser__parse_memory_access(ar_expression_parser_t *mut_parser);
+ar_expression_ast_t* ar_expression_parser__parse_memory_access(ar_expression_parser_t *mut_parser);
 
 /**
  * Parse an arithmetic expression (e.g., 2 + 3, x * 5).
@@ -82,7 +82,7 @@ ar_expression_ast_t* ar__expression_parser__parse_memory_access(ar_expression_pa
  * @return Parsed arithmetic AST node (owned by caller), or NULL on failure
  * @note Ownership: Returns an owned AST node that caller must destroy.
  */
-ar_expression_ast_t* ar__expression_parser__parse_arithmetic(ar_expression_parser_t *mut_parser);
+ar_expression_ast_t* ar_expression_parser__parse_arithmetic(ar_expression_parser_t *mut_parser);
 
 /**
  * Parse a comparison expression (e.g., x > 5, name = "test").
@@ -91,6 +91,6 @@ ar_expression_ast_t* ar__expression_parser__parse_arithmetic(ar_expression_parse
  * @return Parsed comparison AST node (owned by caller), or NULL on failure
  * @note Ownership: Returns an owned AST node that caller must destroy.
  */
-ar_expression_ast_t* ar__expression_parser__parse_comparison(ar_expression_parser_t *mut_parser);
+ar_expression_ast_t* ar_expression_parser__parse_comparison(ar_expression_parser_t *mut_parser);
 
 #endif /* AGERUN_EXPRESSION_PARSER_H */

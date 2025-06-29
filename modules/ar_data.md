@@ -50,7 +50,7 @@ typedef struct data_s data_t;
  * @return Pointer to the new data, or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy.
  */
-data_t* ar__data__create_integer(int value);
+data_t* ar_data__create_integer(int value);
 
 /**
  * Create a new double data value
@@ -58,7 +58,7 @@ data_t* ar__data__create_integer(int value);
  * @return Pointer to the new data, or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy.
  */
-data_t* ar__data__create_double(double value);
+data_t* ar_data__create_double(double value);
 
 /**
  * Create a new string data value
@@ -66,28 +66,28 @@ data_t* ar__data__create_double(double value);
  * @return Pointer to the new data, or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy.
  */
-data_t* ar__data__create_string(const char *ref_value);
+data_t* ar_data__create_string(const char *ref_value);
 
 /**
  * Create a new list data value
  * @return Pointer to the new data, or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy.
  */
-data_t* ar__data__create_list(void);
+data_t* ar_data__create_list(void);
 
 /**
  * Create a new map data value
  * @return Pointer to the new data, or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy.
  */
-data_t* ar__data__create_map(void);
+data_t* ar_data__create_map(void);
 
 /**
  * Free resources associated with a data structure and release memory
  * @param own_data Pointer to the data to destroy
  * @note Ownership: Takes ownership of the data parameter.
  */
-void ar__data__destroy(data_t *own_data);
+void ar_data__destroy(data_t *own_data);
 
 /**
  * Get the type of a data structure
@@ -95,7 +95,7 @@ void ar__data__destroy(data_t *own_data);
  * @return The data type or DATA_INTEGER if data is NULL
  * @note Ownership: Does not take ownership of the data parameter.
  */
-data_type_t ar__data__get_type(const data_t *ref_data);
+data_type_t ar_data__get_type(const data_t *ref_data);
 
 /**
  * Hold ownership of a data object
@@ -105,7 +105,7 @@ data_type_t ar__data__get_type(const data_t *ref_data);
  * @note Ownership: Does not take ownership of the data parameter.
  * @note This function allows tracking which object owns a data instance
  */
-bool ar__data__hold_ownership(data_t *mut_data, void *owner);
+bool ar_data__hold_ownership(data_t *mut_data, void *owner);
 
 /**
  * Transfer ownership of a data object
@@ -115,7 +115,7 @@ bool ar__data__hold_ownership(data_t *mut_data, void *owner);
  * @note Ownership: Does not take ownership of the data parameter.
  * @note After successful transfer, the data becomes unowned and can be destroyed
  */
-bool ar__data__transfer_ownership(data_t *mut_data, void *owner);
+bool ar_data__transfer_ownership(data_t *mut_data, void *owner);
 
 /**
  * Get the integer value from a data structure
@@ -123,7 +123,7 @@ bool ar__data__transfer_ownership(data_t *mut_data, void *owner);
  * @return The integer value or 0 if data is NULL or not an integer type
  * @note Ownership: Does not take ownership of the data parameter.
  */
-int ar__data__get_integer(const data_t *ref_data);
+int ar_data__get_integer(const data_t *ref_data);
 
 /**
  * Get the double value from a data structure
@@ -131,7 +131,7 @@ int ar__data__get_integer(const data_t *ref_data);
  * @return The double value or 0.0 if data is NULL or not a double type
  * @note Ownership: Does not take ownership of the data parameter.
  */
-double ar__data__get_double(const data_t *ref_data);
+double ar_data__get_double(const data_t *ref_data);
 
 /**
  * Get the string value from a data structure
@@ -139,7 +139,7 @@ double ar__data__get_double(const data_t *ref_data);
  * @return The string value or NULL if data is NULL or not a string type
  * @note Ownership: Does not take ownership of the data parameter.
  */
-const char *ar__data__get_string(const data_t *ref_data);
+const char *ar_data__get_string(const data_t *ref_data);
 
 /**
  * Get an integer value from a map data structure by key
@@ -148,7 +148,7 @@ const char *ar__data__get_string(const data_t *ref_data);
  * @return The integer value, or 0 if data is NULL, not a map, key not found, or value not an integer
  * @note Ownership: Does not take ownership of the parameters.
  */
-int ar__data__get_map_integer(const data_t *ref_data, const char *ref_key);
+int ar_data__get_map_integer(const data_t *ref_data, const char *ref_key);
 
 /**
  * Get a double value from a map data structure by key
@@ -157,7 +157,7 @@ int ar__data__get_map_integer(const data_t *ref_data, const char *ref_key);
  * @return The double value, or 0.0 if data is NULL, not a map, key not found, or value not a double
  * @note Ownership: Does not take ownership of the parameters.
  */
-double ar__data__get_map_double(const data_t *ref_data, const char *ref_key);
+double ar_data__get_map_double(const data_t *ref_data, const char *ref_key);
 
 /**
  * Get a string value from a map data structure by key
@@ -166,7 +166,7 @@ double ar__data__get_map_double(const data_t *ref_data, const char *ref_key);
  * @return The string value, or NULL if data is NULL, not a map, key not found, or value not a string
  * @note Ownership: Does not take ownership of the parameters.
  */
-const char *ar__data__get_map_string(const data_t *ref_data, const char *ref_key);
+const char *ar_data__get_map_string(const data_t *ref_data, const char *ref_key);
 
 /**
  * Get a data value from a map data structure by key or path
@@ -175,7 +175,7 @@ const char *ar__data__get_map_string(const data_t *ref_data, const char *ref_key
  * @return The data value, or NULL if data is NULL, not a map, or key not found
  * @note Ownership: Does not take ownership of the parameters. Returns a borrowed reference.
  */
-data_t *ar__data__get_map_data(const data_t *ref_data, const char *ref_key);
+data_t *ar_data__get_map_data(const data_t *ref_data, const char *ref_key);
 
 /**
  * Set an integer value in a map data structure by key
@@ -185,7 +185,7 @@ data_t *ar__data__get_map_data(const data_t *ref_data, const char *ref_key);
  * @return true if successful, false if data is NULL, not a map, or allocation failure
  * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar__data__set_map_integer(data_t *mut_data, const char *ref_key, int value);
+bool ar_data__set_map_integer(data_t *mut_data, const char *ref_key, int value);
 
 /**
  * Set a double value in a map data structure by key
@@ -195,7 +195,7 @@ bool ar__data__set_map_integer(data_t *mut_data, const char *ref_key, int value)
  * @return true if successful, false if data is NULL, not a map, or allocation failure
  * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar__data__set_map_double(data_t *mut_data, const char *ref_key, double value);
+bool ar_data__set_map_double(data_t *mut_data, const char *ref_key, double value);
 
 /**
  * Set a string value in a map data structure by key
@@ -205,7 +205,7 @@ bool ar__data__set_map_double(data_t *mut_data, const char *ref_key, double valu
  * @return true if successful, false if data is NULL, not a map, or allocation failure
  * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar__data__set_map_string(data_t *mut_data, const char *ref_key, const char *ref_value);
+bool ar_data__set_map_string(data_t *mut_data, const char *ref_key, const char *ref_value);
 
 /**
  * Set a data value in a map data structure by key or path
@@ -216,7 +216,7 @@ bool ar__data__set_map_string(data_t *mut_data, const char *ref_key, const char 
  * @note Ownership: Takes ownership of the own_value parameter.
  *       The caller should set own_value = NULL after this call.
  */
-bool ar__data__set_map_data(data_t *mut_data, const char *ref_key, data_t *own_value);
+bool ar_data__set_map_data(data_t *mut_data, const char *ref_key, data_t *own_value);
 
 /**
  * Add an integer value to the beginning of a list data structure
@@ -225,7 +225,7 @@ bool ar__data__set_map_data(data_t *mut_data, const char *ref_key, data_t *own_v
  * @return true if successful, false if data is NULL, not a list, or allocation failure
  * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar__data__list_add_first_integer(data_t *mut_data, int value);
+bool ar_data__list_add_first_integer(data_t *mut_data, int value);
 
 /**
  * Add a double value to the beginning of a list data structure
@@ -234,7 +234,7 @@ bool ar__data__list_add_first_integer(data_t *mut_data, int value);
  * @return true if successful, false if data is NULL, not a list, or allocation failure
  * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar__data__list_add_first_double(data_t *mut_data, double value);
+bool ar_data__list_add_first_double(data_t *mut_data, double value);
 
 /**
  * Add a string value to the beginning of a list data structure
@@ -243,7 +243,7 @@ bool ar__data__list_add_first_double(data_t *mut_data, double value);
  * @return true if successful, false if data is NULL, not a list, or allocation failure
  * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar__data__list_add_first_string(data_t *mut_data, const char *ref_value);
+bool ar_data__list_add_first_string(data_t *mut_data, const char *ref_value);
 
 /**
  * Add a data value to the beginning of a list data structure
@@ -253,7 +253,7 @@ bool ar__data__list_add_first_string(data_t *mut_data, const char *ref_value);
  * @note Ownership: Takes ownership of the own_value parameter.
  *       The caller should set own_value = NULL after this call.
  */
-bool ar__data__list_add_first_data(data_t *mut_data, data_t *own_value);
+bool ar_data__list_add_first_data(data_t *mut_data, data_t *own_value);
 
 /**
  * Add an integer value to the end of a list data structure
@@ -262,7 +262,7 @@ bool ar__data__list_add_first_data(data_t *mut_data, data_t *own_value);
  * @return true if successful, false if data is NULL, not a list, or allocation failure
  * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar__data__list_add_last_integer(data_t *mut_data, int value);
+bool ar_data__list_add_last_integer(data_t *mut_data, int value);
 
 /**
  * Add a double value to the end of a list data structure
@@ -271,7 +271,7 @@ bool ar__data__list_add_last_integer(data_t *mut_data, int value);
  * @return true if successful, false if data is NULL, not a list, or allocation failure
  * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar__data__list_add_last_double(data_t *mut_data, double value);
+bool ar_data__list_add_last_double(data_t *mut_data, double value);
 
 /**
  * Add a string value to the end of a list data structure
@@ -280,7 +280,7 @@ bool ar__data__list_add_last_double(data_t *mut_data, double value);
  * @return true if successful, false if data is NULL, not a list, or allocation failure
  * @note Ownership: Does not take ownership of the parameters.
  */
-bool ar__data__list_add_last_string(data_t *mut_data, const char *ref_value);
+bool ar_data__list_add_last_string(data_t *mut_data, const char *ref_value);
 
 /**
  * Add a data value to the end of a list data structure
@@ -290,7 +290,7 @@ bool ar__data__list_add_last_string(data_t *mut_data, const char *ref_value);
  * @note Ownership: Takes ownership of the own_value parameter.
  *       The caller should set own_value = NULL after this call.
  */
-bool ar__data__list_add_last_data(data_t *mut_data, data_t *own_value);
+bool ar_data__list_add_last_data(data_t *mut_data, data_t *own_value);
 
 /**
  * Remove and return the first data value from a list data structure
@@ -298,7 +298,7 @@ bool ar__data__list_add_last_data(data_t *mut_data, data_t *own_value);
  * @return The removed data value (ownership is transferred), or NULL if data is NULL, not a list, or list is empty
  * @note Ownership: Returns an owned value that caller must destroy.
  */
-data_t *ar__data__list_remove_first(data_t *mut_data);
+data_t *ar_data__list_remove_first(data_t *mut_data);
 
 /**
  * Remove and return the last data value from a list data structure
@@ -306,7 +306,7 @@ data_t *ar__data__list_remove_first(data_t *mut_data);
  * @return The removed data value (ownership is transferred), or NULL if data is NULL, not a list, or list is empty
  * @note Ownership: Returns an owned value that caller must destroy.
  */
-data_t *ar__data__list_remove_last(data_t *mut_data);
+data_t *ar_data__list_remove_last(data_t *mut_data);
 
 /**
  * Remove and return the first integer value from a list data structure
@@ -315,7 +315,7 @@ data_t *ar__data__list_remove_last(data_t *mut_data);
  * @note This function also removes and frees the data structure containing the integer
  * @note Ownership: Does not transfer any ownership for the return value.
  */
-int ar__data__list_remove_first_integer(data_t *mut_data);
+int ar_data__list_remove_first_integer(data_t *mut_data);
 
 /**
  * Remove and return the first double value from a list data structure
@@ -324,7 +324,7 @@ int ar__data__list_remove_first_integer(data_t *mut_data);
  * @note This function also removes and frees the data structure containing the double
  * @note Ownership: Does not transfer any ownership for the return value.
  */
-double ar__data__list_remove_first_double(data_t *mut_data);
+double ar_data__list_remove_first_double(data_t *mut_data);
 
 /**
  * Remove and return the first string value from a list data structure
@@ -333,7 +333,7 @@ double ar__data__list_remove_first_double(data_t *mut_data);
  * @note This function also removes and frees the data structure containing the string reference
  * @note Ownership: Returns an owned string that caller must free.
  */
-char *ar__data__list_remove_first_string(data_t *mut_data);
+char *ar_data__list_remove_first_string(data_t *mut_data);
 
 /**
  * Remove and return the last integer value from a list data structure
@@ -342,7 +342,7 @@ char *ar__data__list_remove_first_string(data_t *mut_data);
  * @note This function also removes and frees the data structure containing the integer
  * @note Ownership: Does not transfer any ownership for the return value.
  */
-int ar__data__list_remove_last_integer(data_t *mut_data);
+int ar_data__list_remove_last_integer(data_t *mut_data);
 
 /**
  * Remove and return the last double value from a list data structure
@@ -351,7 +351,7 @@ int ar__data__list_remove_last_integer(data_t *mut_data);
  * @note This function also removes and frees the data structure containing the double
  * @note Ownership: Does not transfer any ownership for the return value.
  */
-double ar__data__list_remove_last_double(data_t *mut_data);
+double ar_data__list_remove_last_double(data_t *mut_data);
 
 /**
  * Remove and return the last string value from a list data structure
@@ -360,7 +360,7 @@ double ar__data__list_remove_last_double(data_t *mut_data);
  * @note This function also removes and frees the data structure containing the string reference
  * @note Ownership: Returns an owned string that caller must free.
  */
-char *ar__data__list_remove_last_string(data_t *mut_data);
+char *ar_data__list_remove_last_string(data_t *mut_data);
 
 /**
  * Get the first data value from a list data structure (without removing it)
@@ -368,7 +368,7 @@ char *ar__data__list_remove_last_string(data_t *mut_data);
  * @return The first data value (ownership is not transferred), or NULL if data is NULL, not a list, or list is empty
  * @note Ownership: Returns a borrowed reference that caller must not destroy.
  */
-data_t *ar__data__list_first(const data_t *ref_data);
+data_t *ar_data__list_first(const data_t *ref_data);
 
 /**
  * Get the last data value from a list data structure (without removing it)
@@ -376,7 +376,7 @@ data_t *ar__data__list_first(const data_t *ref_data);
  * @return The last data value (ownership is not transferred), or NULL if data is NULL, not a list, or list is empty
  * @note Ownership: Returns a borrowed reference that caller must not destroy.
  */
-data_t *ar__data__list_last(const data_t *ref_data);
+data_t *ar_data__list_last(const data_t *ref_data);
 
 /**
  * Get the number of items in a list data structure
@@ -384,7 +384,7 @@ data_t *ar__data__list_last(const data_t *ref_data);
  * @return The number of items, or 0 if data is NULL or not a list
  * @note Ownership: Does not take ownership of the data parameter.
  */
-size_t ar__data__list_count(const data_t *ref_data);
+size_t ar_data__list_count(const data_t *ref_data);
 
 /**
  * Get all keys from a map data structure
@@ -394,7 +394,7 @@ size_t ar__data__list_count(const data_t *ref_data);
  *       The returned list contains string data values (not raw strings).
  *       An empty map returns an empty list (not NULL).
  */
-data_t* ar__data__get_map_keys(const data_t *ref_data);
+data_t* ar_data__get_map_keys(const data_t *ref_data);
 ```
 
 ## Usage Examples
@@ -403,74 +403,74 @@ data_t* ar__data__get_map_keys(const data_t *ref_data);
 
 ```c
 // Create data using the type-specific creator functions - these return owned values
-data_t *own_int_data = ar__data__create_integer(42);
-data_t *own_double_data = ar__data__create_double(3.14159);
-data_t *own_string_data = ar__data__create_string("Hello, World!");
-data_t *own_list_data = ar__data__create_list();
-data_t *own_map_data = ar__data__create_map();
+data_t *own_int_data = ar_data__create_integer(42);
+data_t *own_double_data = ar_data__create_double(3.14159);
+data_t *own_string_data = ar_data__create_string("Hello, World!");
+data_t *own_list_data = ar_data__create_list();
+data_t *own_map_data = ar_data__create_map();
 
 // Access values through accessor functions - these don't transfer ownership
-int i = ar__data__get_integer(own_int_data);
-double d = ar__data__get_double(own_double_data);
-const char *ref_str = ar__data__get_string(own_string_data); // borrowed reference
+int i = ar_data__get_integer(own_int_data);
+double d = ar_data__get_double(own_double_data);
+const char *ref_str = ar_data__get_string(own_string_data); // borrowed reference
 
 // Clean up owned resources
-ar__data__destroy(own_string_data);
-ar__data__destroy(own_list_data);
-ar__data__destroy(own_map_data);
-ar__data__destroy(own_double_data);
-ar__data__destroy(own_int_data);
+ar_data__destroy(own_string_data);
+ar_data__destroy(own_list_data);
+ar_data__destroy(own_map_data);
+ar_data__destroy(own_double_data);
+ar_data__destroy(own_int_data);
 ```
 
 ### Using with Maps
 
 ```c
 // Create a map
-map_t *map = ar__map__create();
+map_t *map = ar_map__create();
 
 // Create data value with type-specific creator
-data_t *int_data = ar__data__create_integer(42);
+data_t *int_data = ar_data__create_integer(42);
 
 // Store the data in the map
-ar__map__set(map, "answer", int_data);
+ar_map__set(map, "answer", int_data);
 
 // Retrieve the data from the map
-const data_t *retrieved = (const data_t*)ar__map__get(map, "answer");
-printf("The answer is: %d\n", ar__data__get_integer(retrieved));
+const data_t *retrieved = (const data_t*)ar_map__get(map, "answer");
+printf("The answer is: %d\n", ar_data__get_integer(retrieved));
 
 // Note: When the map is destroyed, it doesn't free the data values
 // You must free them separately before destroying the map
 
 // Clean up map (not cleaning up values in this example for brevity)
-ar__map__destroy(map);
+ar_map__destroy(map);
 ```
 
 ### Creating Nested Maps
 
 ```c
 // Create a parent map
-data_t *parent_map = ar__data__create_map();
+data_t *parent_map = ar_data__create_map();
 
 // Create a child map
-data_t *child_map = ar__data__create_map();
+data_t *child_map = ar_data__create_map();
 
 // Create a value for the child map
-data_t *count_data = ar__data__create_integer(100);
+data_t *count_data = ar_data__create_integer(100);
 
 // Store the count in the child map
-ar__map__set((map_t*)ar__data__get_map(child_map), "count", count_data);
+ar_map__set((map_t*)ar_data__get_map(child_map), "count", count_data);
 
 // Store the child map in the parent map
-ar__map__set((map_t*)ar__data__get_map(parent_map), "child", child_map);
+ar_map__set((map_t*)ar_data__get_map(parent_map), "child", child_map);
 
 // Retrieve and use the nested data
-const data_t *retrieved_child = (const data_t*)ar__map__get(
-    (map_t*)ar__data__get_map(parent_map), "child");
-if (retrieved_child && ar__data__get_type(retrieved_child) == DATA_MAP) {
-    const map_t *child = ar__data__get_map(retrieved_child);
-    const data_t *count = (const data_t*)ar__map__get(child, "count");
-    if (count && ar__data__get_type(count) == DATA_INTEGER) {
-        printf("Count value: %d\n", ar__data__get_integer(count));
+const data_t *retrieved_child = (const data_t*)ar_map__get(
+    (map_t*)ar_data__get_map(parent_map), "child");
+if (retrieved_child && ar_data__get_type(retrieved_child) == DATA_MAP) {
+    const map_t *child = ar_data__get_map(retrieved_child);
+    const data_t *count = (const data_t*)ar_map__get(child, "count");
+    if (count && ar_data__get_type(count) == DATA_INTEGER) {
+        printf("Count value: %d\n", ar_data__get_integer(count));
     }
 }
 
@@ -482,37 +482,37 @@ if (retrieved_child && ar__data__get_type(retrieved_child) == DATA_MAP) {
 
 ```c
 // Create a map
-data_t *map_data = ar__data__create_map();
-map_t *map = ar__data__get_map(map_data);
+data_t *map_data = ar_data__create_map();
+map_t *map = ar_data__get_map(map_data);
 
 // Create and store values of different types using the traditional approach
-data_t *int_data = ar__data__create_integer(42);
-data_t *double_data = ar__data__create_double(3.14159);
-data_t *string_data = ar__data__create_string("Hello, World!");
-data_t *nested_map_data = ar__data__create_map();
+data_t *int_data = ar_data__create_integer(42);
+data_t *double_data = ar_data__create_double(3.14159);
+data_t *string_data = ar_data__create_string("Hello, World!");
+data_t *nested_map_data = ar_data__create_map();
 
 // Store values in the map
-ar__map__set(map, "int_key", int_data);
-ar__map__set(map, "double_key", double_data);
-ar__map__set(map, "string_key", string_data);
-ar__map__set(map, "map_key", nested_map_data);
+ar_map__set(map, "int_key", int_data);
+ar_map__set(map, "double_key", double_data);
+ar_map__set(map, "string_key", string_data);
+ar_map__set(map, "map_key", nested_map_data);
 
 // Add data to the nested map
-map_t *nested_map = ar__data__get_map(nested_map_data);
-data_t *nested_int = ar__data__create_integer(100);
-ar__map__set(nested_map, "nested_int", nested_int);
+map_t *nested_map = ar_data__get_map(nested_map_data);
+data_t *nested_int = ar_data__create_integer(100);
+ar_map__set(nested_map, "nested_int", nested_int);
 
 // Access values directly with the map accessors
-int int_value = ar__data__get_map_integer(map_data, "int_key");
-double double_value = ar__data__get_map_double(map_data, "double_key");
-const char *string_value = ar__data__get_map_string(map_data, "string_key");
+int int_value = ar_data__get_map_integer(map_data, "int_key");
+double double_value = ar_data__get_map_double(map_data, "double_key");
+const char *string_value = ar_data__get_map_string(map_data, "string_key");
 
 // Access nested map through map function
-const map_t *map = ar__data__get_map(map_data);
-const data_t *map_value = (const data_t*)ar__map__get(map, "map_key");
-const map_t *sub_map = ar__data__get_map(map_value);
-const data_t *nested_value = (const data_t*)ar__map__get(sub_map, "nested_int");
-int nested_int_value = ar__data__get_integer(nested_value);
+const map_t *map = ar_data__get_map(map_data);
+const data_t *map_value = (const data_t*)ar_map__get(map, "map_key");
+const map_t *sub_map = ar_data__get_map(map_value);
+const data_t *nested_value = (const data_t*)ar_map__get(sub_map, "nested_int");
+int nested_int_value = ar_data__get_integer(nested_value);
 
 printf("Int value: %d\n", int_value);
 printf("Double value: %f\n", double_value);
@@ -526,27 +526,27 @@ printf("Nested int value: %d\n", nested_int_value);
 
 ```c
 // Create a map
-data_t *map_data = ar__data__create_map();
+data_t *map_data = ar_data__create_map();
 
 // Set values directly using the map-data setter functions
 // No need to manually create data_t objects or handle the map
-ar__data__set_map_integer(map_data, "int_key", 42);
-ar__data__set_map_double(map_data, "double_key", 3.14159);
-ar__data__set_map_string(map_data, "string_key", "Hello, World!");
+ar_data__set_map_integer(map_data, "int_key", 42);
+ar_data__set_map_double(map_data, "double_key", 3.14159);
+ar_data__set_map_string(map_data, "string_key", "Hello, World!");
 
 // Create a nested map
-data_t *nested_map_data = ar__data__create_map();
-ar__data__set_map_integer(nested_map_data, "nested_int", 100);
+data_t *nested_map_data = ar_data__create_map();
+ar_data__set_map_integer(nested_map_data, "nested_int", 100);
 
 // Add the nested map to the main map
-map_t *map = ar__data__get_map(map_data);
-ar__map__set(map, "map_key", nested_map_data);
+map_t *map = ar_data__get_map(map_data);
+ar_map__set(map, "map_key", nested_map_data);
 
 // Access values using the map-data getter functions
-int int_value = ar__data__get_map_integer(map_data, "int_key");
-double double_value = ar__data__get_map_double(map_data, "double_key");
-const char *string_value = ar__data__get_map_string(map_data, "string_key");
-int nested_int = ar__data__get_map_integer(nested_map_data, "nested_int");
+int int_value = ar_data__get_map_integer(map_data, "int_key");
+double double_value = ar_data__get_map_double(map_data, "double_key");
+const char *string_value = ar_data__get_map_string(map_data, "string_key");
+int nested_int = ar_data__get_map_integer(nested_map_data, "nested_int");
 
 printf("Int value: %d\n", int_value);
 printf("Double value: %f\n", double_value);
@@ -554,77 +554,77 @@ printf("String value: %s\n", string_value);
 printf("Nested int value: %d\n", nested_int);
 
 // Update values
-ar__data__set_map_integer(map_data, "int_key", 100);
-ar__data__set_map_string(map_data, "string_key", "Updated text");
+ar_data__set_map_integer(map_data, "int_key", 100);
+ar_data__set_map_string(map_data, "string_key", "Updated text");
 
 // Get updated values
-int updated_int = ar__data__get_map_integer(map_data, "int_key");
-const char *updated_string = ar__data__get_map_string(map_data, "string_key");
+int updated_int = ar_data__get_map_integer(map_data, "int_key");
+const char *updated_string = ar_data__get_map_string(map_data, "string_key");
 
 printf("Updated int value: %d\n", updated_int);
 printf("Updated string value: %s\n", updated_string);
 
 // Cleanup
-ar__data__destroy(nested_map_data);
-ar__data__destroy(map_data);
+ar_data__destroy(nested_map_data);
+ar_data__destroy(map_data);
 ```
 
 ### Using Lists
 
 ```c
 // Create a list data structure - this returns an owned value
-data_t *own_list_data = ar__data__create_list();
+data_t *own_list_data = ar_data__create_list();
 
 // Add various types of data to the list - primitive values don't transfer ownership
-ar__data__list_add_last_integer(own_list_data, 42);                // Integer at the end
-ar__data__list_add_last_double(own_list_data, 3.14159);            // Double at the end
-ar__data__list_add_last_string(own_list_data, "Hello, World!");    // String at the end
-ar__data__list_add_first_integer(own_list_data, 100);              // Integer at the beginning
-ar__data__list_add_first_double(own_list_data, 2.71828);           // Double at the beginning
+ar_data__list_add_last_integer(own_list_data, 42);                // Integer at the end
+ar_data__list_add_last_double(own_list_data, 3.14159);            // Double at the end
+ar_data__list_add_last_string(own_list_data, "Hello, World!");    // String at the end
+ar_data__list_add_first_integer(own_list_data, 100);              // Integer at the beginning
+ar_data__list_add_first_double(own_list_data, 2.71828);           // Double at the beginning
 
 // Add a map to the list - this will transfer ownership
-data_t *own_map_data = ar__data__create_map();
-ar__data__set_map_string(own_map_data, "name", "John");
-ar__data__set_map_integer(own_map_data, "age", 30);
-ar__data__list_add_last_data(own_list_data, own_map_data);  // Ownership is transferred to the list
+data_t *own_map_data = ar_data__create_map();
+ar_data__set_map_string(own_map_data, "name", "John");
+ar_data__set_map_integer(own_map_data, "age", 30);
+ar_data__list_add_last_data(own_list_data, own_map_data);  // Ownership is transferred to the list
 own_map_data = NULL;  // Don't use after this point - ownership transferred
 
 // Check the list count
-size_t count = ar__data__list_count(own_list_data);
+size_t count = ar_data__list_count(own_list_data);
 printf("List contains %zu items\n", count);
 
 // Access the first and last items without removing them - these are borrowed references
-data_t *ref_first_item = ar__data__list_first(own_list_data);
-data_t *ref_last_item = ar__data__list_last(own_list_data);
+data_t *ref_first_item = ar_data__list_first(own_list_data);
+data_t *ref_last_item = ar_data__list_last(own_list_data);
 
 // Check the types and values
-if (ref_first_item && ar__data__get_type(ref_first_item) == DATA_DOUBLE) {
-    printf("First item is a double: %f\n", ar__data__get_double(ref_first_item));
+if (ref_first_item && ar_data__get_type(ref_first_item) == DATA_DOUBLE) {
+    printf("First item is a double: %f\n", ar_data__get_double(ref_first_item));
 }
 
-if (ref_last_item && ar__data__get_type(ref_last_item) == DATA_MAP) {
+if (ref_last_item && ar_data__get_type(ref_last_item) == DATA_MAP) {
     printf("Last item is a map\n");
-    printf("Name: %s\n", ar__data__get_map_string(ref_last_item, "name"));
-    printf("Age: %d\n", ar__data__get_map_integer(ref_last_item, "age"));
+    printf("Name: %s\n", ar_data__get_map_string(ref_last_item, "name"));
+    printf("Age: %d\n", ar_data__get_map_integer(ref_last_item, "age"));
 }
 
 // Remove and use typed primitive values - these don't need special ownership handling
-double first_double = ar__data__list_remove_first_double(own_list_data);
+double first_double = ar_data__list_remove_first_double(own_list_data);
 printf("Removed first double: %f\n", first_double);
 
-int first_int = ar__data__list_remove_first_integer(own_list_data);
+int first_int = ar_data__list_remove_first_integer(own_list_data);
 printf("Removed first integer: %d\n", first_int);
 
 // Remove and manage data values - we get ownership and must destroy when done
-data_t *own_removed_data = ar__data__list_remove_first(own_list_data);
+data_t *own_removed_data = ar_data__list_remove_first(own_list_data);
 if (own_removed_data) {
     // Process the data...
-    ar__data__destroy(own_removed_data);  // Don't forget to destroy it when done
+    ar_data__destroy(own_removed_data);  // Don't forget to destroy it when done
     own_removed_data = NULL;  // Mark as destroyed
 }
 
 // Remove string and free it when done - we get ownership of the string
-char *own_str = ar__data__list_remove_first_string(own_list_data);
+char *own_str = ar_data__list_remove_first_string(own_list_data);
 if (own_str) {
     printf("Removed string: %s\n", own_str);
     free(own_str);  // Must free the string when finished
@@ -632,46 +632,46 @@ if (own_str) {
 }
 
 // Clean up
-ar__data__destroy(own_list_data);  // Destroys the list and all remaining items
+ar_data__destroy(own_list_data);  // Destroys the list and all remaining items
 ```
 
 ### Using Path-Based Access
 
 ```c
 // Create a root map
-data_t *root_map = ar__data__create_map();
+data_t *root_map = ar_data__create_map();
 
 // First, we need to create all intermediate maps manually
 // Create the user map
-data_t *user_map = ar__data__create_map();
-ar__map__set(ar__data__get_map(root_map), "user", user_map);
+data_t *user_map = ar_data__create_map();
+ar_map__set(ar_data__get_map(root_map), "user", user_map);
 
 // Create the profile, contact, and address maps
-data_t *profile_map = ar__data__create_map();
-data_t *contact_map = ar__data__create_map();
-data_t *address_map = ar__data__create_map();
+data_t *profile_map = ar_data__create_map();
+data_t *contact_map = ar_data__create_map();
+data_t *address_map = ar_data__create_map();
 
 // Add them to the user map
-ar__map__set(ar__data__get_map(user_map), "profile", profile_map);
-ar__map__set(ar__data__get_map(user_map), "contact", contact_map);
-ar__map__set(ar__data__get_map(user_map), "address", address_map);
+ar_map__set(ar_data__get_map(user_map), "profile", profile_map);
+ar_map__set(ar_data__get_map(user_map), "contact", contact_map);
+ar_map__set(ar_data__get_map(user_map), "address", address_map);
 
 // Now we can set values using path-based setters
 // (intermediate maps must exist for this to succeed)
-ar__data__set_map_string(root_map, "user.profile.name", "John Doe");
-ar__data__set_map_integer(root_map, "user.profile.age", 30);
-ar__data__set_map_string(root_map, "user.contact.email", "john.doe@example.com");
-ar__data__set_map_string(root_map, "user.address.street", "123 Main St");
-ar__data__set_map_string(root_map, "user.address.city", "Anytown");
-ar__data__set_map_integer(root_map, "user.address.zip", 12345);
+ar_data__set_map_string(root_map, "user.profile.name", "John Doe");
+ar_data__set_map_integer(root_map, "user.profile.age", 30);
+ar_data__set_map_string(root_map, "user.contact.email", "john.doe@example.com");
+ar_data__set_map_string(root_map, "user.address.street", "123 Main St");
+ar_data__set_map_string(root_map, "user.address.city", "Anytown");
+ar_data__set_map_integer(root_map, "user.address.zip", 12345);
 
 // Access nested values using path-based getters
-const char *name = ar__data__get_map_string(root_map, "user.profile.name");
-int age = ar__data__get_map_integer(root_map, "user.profile.age");
-const char *email = ar__data__get_map_string(root_map, "user.contact.email");
-const char *street = ar__data__get_map_string(root_map, "user.address.street");
-const char *city = ar__data__get_map_string(root_map, "user.address.city");
-int zip = ar__data__get_map_integer(root_map, "user.address.zip");
+const char *name = ar_data__get_map_string(root_map, "user.profile.name");
+int age = ar_data__get_map_integer(root_map, "user.profile.age");
+const char *email = ar_data__get_map_string(root_map, "user.contact.email");
+const char *street = ar_data__get_map_string(root_map, "user.address.street");
+const char *city = ar_data__get_map_string(root_map, "user.address.city");
+int zip = ar_data__get_map_integer(root_map, "user.address.zip");
 
 printf("Name: %s\n", name);
 printf("Age: %d\n", age);
@@ -679,149 +679,149 @@ printf("Email: %s\n", email);
 printf("Address: %s, %s %d\n", street, city, zip);
 
 // Update a nested value (will succeed because path exists)
-ar__data__set_map_integer(root_map, "user.profile.age", 31);
-int updated_age = ar__data__get_map_integer(root_map, "user.profile.age");
+ar_data__set_map_integer(root_map, "user.profile.age", 31);
+int updated_age = ar_data__get_map_integer(root_map, "user.profile.age");
 printf("Updated age: %d\n", updated_age);
 
 // Access a non-existent path
-const char *missing = ar__data__get_map_string(root_map, "user.profile.nickname");
+const char *missing = ar_data__get_map_string(root_map, "user.profile.nickname");
 printf("Missing value: %s\n", missing ? missing : "NULL");
 
 // Attempt to set a value on a non-existent path will fail
-bool success = ar__data__set_map_integer(root_map, "user.settings.enabled", 1);
+bool success = ar_data__set_map_integer(root_map, "user.settings.enabled", 1);
 printf("Set on non-existent path succeeded: %s\n", success ? "yes" : "no"); // Will print "no"
 
 // To add values at a new path, we must first create the intermediate maps
-data_t *settings_map = ar__data__create_map();
-ar__map__set(ar__data__get_map(user_map), "settings", settings_map);
+data_t *settings_map = ar_data__create_map();
+ar_map__set(ar_data__get_map(user_map), "settings", settings_map);
 
 // Now we can set values at this path
-success = ar__data__set_map_integer(root_map, "user.settings.enabled", 1);
+success = ar_data__set_map_integer(root_map, "user.settings.enabled", 1);
 printf("Set on newly created path succeeded: %s\n", success ? "yes" : "no"); // Will print "yes"
-int enabled = ar__data__get_map_integer(root_map, "user.settings.enabled");
+int enabled = ar_data__get_map_integer(root_map, "user.settings.enabled");
 printf("Settings enabled: %d\n", enabled);
 
 // Cleanup - we need to free only the root map as the set operations took ownership
 // of the other maps we created
-ar__data__destroy(root_map);
+ar_data__destroy(root_map);
 ```
 
 ### Using Direct Data Access with get_map_data
 
 ```c
 // Create a root map
-data_t *root_map = ar__data__create_map();
+data_t *root_map = ar_data__create_map();
 
 // Create the needed intermediate maps manually
-data_t *user_map = ar__data__create_map();
-ar__map__set(ar__data__get_map(root_map), "user", user_map);
+data_t *user_map = ar_data__create_map();
+ar_map__set(ar_data__get_map(root_map), "user", user_map);
 
-data_t *profile_map = ar__data__create_map();
-data_t *stats_map = ar__data__create_map();
-ar__map__set(ar__data__get_map(user_map), "profile", profile_map);
-ar__map__set(ar__data__get_map(user_map), "stats", stats_map);
+data_t *profile_map = ar_data__create_map();
+data_t *stats_map = ar_data__create_map();
+ar_map__set(ar_data__get_map(user_map), "profile", profile_map);
+ar_map__set(ar_data__get_map(user_map), "stats", stats_map);
 
 // Now set nested values using path-based setters
-ar__data__set_map_string(root_map, "user.profile.name", "John Doe");
-ar__data__set_map_integer(root_map, "user.profile.age", 30);
-ar__data__set_map_double(root_map, "user.stats.height", 185.5);
-ar__data__set_map_double(root_map, "user.stats.weight", 82.3);
+ar_data__set_map_string(root_map, "user.profile.name", "John Doe");
+ar_data__set_map_integer(root_map, "user.profile.age", 30);
+ar_data__set_map_double(root_map, "user.stats.height", 185.5);
+ar_data__set_map_double(root_map, "user.stats.weight", 82.3);
 
 // Create a nested map for scores
-data_t *scores_map = ar__data__create_map();
-ar__data__set_map_integer(scores_map, "math", 95);
-ar__data__set_map_integer(scores_map, "science", 87);
-ar__data__set_map_double(scores_map, "average", 91.0);
+data_t *scores_map = ar_data__create_map();
+ar_data__set_map_integer(scores_map, "math", 95);
+ar_data__set_map_integer(scores_map, "science", 87);
+ar_data__set_map_double(scores_map, "average", 91.0);
 
 // Add the scores map to the user map
-map_t *user_map_ptr = ar__data__get_map(ar__data__get_map_data(root_map, "user"));
-ar__map__set(user_map_ptr, "scores", scores_map);
+map_t *user_map_ptr = ar_data__get_map(ar_data__get_map_data(root_map, "user"));
+ar_map__set(user_map_ptr, "scores", scores_map);
 
-// Access nested data directly with ar__data__get_map_data
-const data_t *profile_data = ar__data__get_map_data(root_map, "user.profile");
-const data_t *name_data = ar__data__get_map_data(root_map, "user.profile.name");
-const data_t *age_data = ar__data__get_map_data(root_map, "user.profile.age");
-const data_t *stats_data = ar__data__get_map_data(root_map, "user.stats");
-const data_t *height_data = ar__data__get_map_data(root_map, "user.stats.height");
-const data_t *scores_data = ar__data__get_map_data(root_map, "user.scores");
-const data_t *math_score_data = ar__data__get_map_data(root_map, "user.scores.math");
+// Access nested data directly with ar_data__get_map_data
+const data_t *profile_data = ar_data__get_map_data(root_map, "user.profile");
+const data_t *name_data = ar_data__get_map_data(root_map, "user.profile.name");
+const data_t *age_data = ar_data__get_map_data(root_map, "user.profile.age");
+const data_t *stats_data = ar_data__get_map_data(root_map, "user.stats");
+const data_t *height_data = ar_data__get_map_data(root_map, "user.stats.height");
+const data_t *scores_data = ar_data__get_map_data(root_map, "user.scores");
+const data_t *math_score_data = ar_data__get_map_data(root_map, "user.scores.math");
 
 // Check data types and access values appropriately
-if (profile_data && ar__data__get_type(profile_data) == DATA_MAP) {
+if (profile_data && ar_data__get_type(profile_data) == DATA_MAP) {
     printf("Profile is a map\n");
     
-    if (name_data && ar__data__get_type(name_data) == DATA_STRING) {
-        printf("Name: %s\n", ar__data__get_string(name_data));
+    if (name_data && ar_data__get_type(name_data) == DATA_STRING) {
+        printf("Name: %s\n", ar_data__get_string(name_data));
     }
     
-    if (age_data && ar__data__get_type(age_data) == DATA_INTEGER) {
-        printf("Age: %d\n", ar__data__get_integer(age_data));
+    if (age_data && ar_data__get_type(age_data) == DATA_INTEGER) {
+        printf("Age: %d\n", ar_data__get_integer(age_data));
     }
 }
 
-if (stats_data && ar__data__get_type(stats_data) == DATA_MAP) {
-    if (height_data && ar__data__get_type(height_data) == DATA_DOUBLE) {
-        printf("Height: %.1f cm\n", ar__data__get_double(height_data));
+if (stats_data && ar_data__get_type(stats_data) == DATA_MAP) {
+    if (height_data && ar_data__get_type(height_data) == DATA_DOUBLE) {
+        printf("Height: %.1f cm\n", ar_data__get_double(height_data));
     }
 }
 
-if (scores_data && ar__data__get_type(scores_data) == DATA_MAP) {
-    if (math_score_data && ar__data__get_type(math_score_data) == DATA_INTEGER) {
-        printf("Math score: %d\n", ar__data__get_integer(math_score_data));
+if (scores_data && ar_data__get_type(scores_data) == DATA_MAP) {
+    if (math_score_data && ar_data__get_type(math_score_data) == DATA_INTEGER) {
+        printf("Math score: %d\n", ar_data__get_integer(math_score_data));
     }
     
     // You can also enumerate all scores by getting the map and iterating
-    map_t *scores = ar__data__get_map(scores_data);
+    map_t *scores = ar_data__get_map(scores_data);
     // (iteration code would go here)
 }
 
 // Handle non-existent paths gracefully
-const data_t *missing_data = ar__data__get_map_data(root_map, "user.profile.nonexistent");
+const data_t *missing_data = ar_data__get_map_data(root_map, "user.profile.nonexistent");
 if (!missing_data) {
     printf("Missing data path returns NULL as expected\n");
 }
 
 // Cleanup
-ar__data__destroy(scores_map);
-ar__data__destroy(root_map);
+ar_data__destroy(scores_map);
+ar_data__destroy(root_map);
 ```
 
 ### Iterating Over Map Keys
 
 ```c
 // Create a map with various data
-data_t *own_user_map = ar__data__create_map();
-ar__data__set_map_string(own_user_map, "name", "John Doe");
-ar__data__set_map_integer(own_user_map, "age", 30);
-ar__data__set_map_double(own_user_map, "height", 180.5);
-ar__data__set_map_string(own_user_map, "email", "john@example.com");
+data_t *own_user_map = ar_data__create_map();
+ar_data__set_map_string(own_user_map, "name", "John Doe");
+ar_data__set_map_integer(own_user_map, "age", 30);
+ar_data__set_map_double(own_user_map, "height", 180.5);
+ar_data__set_map_string(own_user_map, "email", "john@example.com");
 
 // Get all keys from the map
-data_t *own_keys_list = ar__data__get_map_keys(own_user_map);
+data_t *own_keys_list = ar_data__get_map_keys(own_user_map);
 if (own_keys_list) {
-    printf("Map contains %zu keys:\n", ar__data__list_count(own_keys_list));
+    printf("Map contains %zu keys:\n", ar_data__list_count(own_keys_list));
     
     // Iterate through all keys
-    while (ar__data__list_count(own_keys_list) > 0) {
+    while (ar_data__list_count(own_keys_list) > 0) {
         // Remove and get ownership of the key string data
-        data_t *own_key_data = ar__data__list_remove_first(own_keys_list);
+        data_t *own_key_data = ar_data__list_remove_first(own_keys_list);
         if (own_key_data) {
-            const char *key = ar__data__get_string(own_key_data);
+            const char *key = ar_data__get_string(own_key_data);
             
             // Get the value for this key
-            data_t *ref_value = ar__data__get_map_data(own_user_map, key);
+            data_t *ref_value = ar_data__get_map_data(own_user_map, key);
             
             // Print key and value based on type
             printf("  %s: ", key);
-            switch (ar__data__get_type(ref_value)) {
+            switch (ar_data__get_type(ref_value)) {
                 case DATA_STRING:
-                    printf("%s", ar__data__get_string(ref_value));
+                    printf("%s", ar_data__get_string(ref_value));
                     break;
                 case DATA_INTEGER:
-                    printf("%d", ar__data__get_integer(ref_value));
+                    printf("%d", ar_data__get_integer(ref_value));
                     break;
                 case DATA_DOUBLE:
-                    printf("%.1f", ar__data__get_double(ref_value));
+                    printf("%.1f", ar_data__get_double(ref_value));
                     break;
                 default:
                     printf("<unknown type>");
@@ -829,16 +829,16 @@ if (own_keys_list) {
             printf("\n");
             
             // Clean up the key data
-            ar__data__destroy(own_key_data);
+            ar_data__destroy(own_key_data);
         }
     }
     
     // Clean up the keys list
-    ar__data__destroy(own_keys_list);
+    ar_data__destroy(own_keys_list);
 }
 
 // Clean up the map
-ar__data__destroy(own_user_map);
+ar_data__destroy(own_user_map);
 ```
 
 ## Memory Management Model (MMM) Implementation
@@ -847,23 +847,23 @@ The data module strictly follows the AgeRun Memory Management Model (MMM) with t
 
 1. **Owned Values (`own_` prefix)**
    - Functions returning new objects:
-     - All creation functions (`ar__data__create_*`) return owned values that the caller must destroy
-     - Functions like `ar__data__list_remove_first()` transfer ownership from the container to the caller
+     - All creation functions (`ar_data__create_*`) return owned values that the caller must destroy
+     - Functions like `ar_data__list_remove_first()` transfer ownership from the container to the caller
    - Functions taking ownership:
-     - `ar__data__destroy()` takes ownership of the data and frees all resources
-     - `ar__data__set_map_data()` and `ar__data__list_add_*_data()` take ownership of value parameters
+     - `ar_data__destroy()` takes ownership of the data and frees all resources
+     - `ar_data__set_map_data()` and `ar_data__list_add_*_data()` take ownership of value parameters
    - After ownership transfer, the original pointer must be set to NULL and not used again
 
 2. **Mutable References (`mut_` prefix)**
    - Functions that modify data but don't take ownership:
-     - Setters like `ar__data__set_map_integer()` use mutable references
-     - List operations like `ar__data__list_add_last_integer()` use mutable references
+     - Setters like `ar_data__set_map_integer()` use mutable references
+     - List operations like `ar_data__list_add_last_integer()` use mutable references
    - These functions change the referenced object but don't own or destroy it
 
 3. **Borrowed References (`ref_` prefix)**
    - Functions that provide read-only access:
      - All getter functions accept `const` references and don't take ownership
-     - Functions like `ar__data__list_first()` return borrowed references that must not be destroyed
+     - Functions like `ar_data__list_first()` return borrowed references that must not be destroyed
    - Never destroy or modify objects accessed through borrowed references
 
 ### Ownership Transfer Points
@@ -871,17 +871,17 @@ The data module strictly follows the AgeRun Memory Management Model (MMM) with t
 The module has several critical ownership transfer points:
 
 1. **Creation → Caller**: All creation functions transfer ownership to the caller
-2. **Caller → Data Module**: Functions like `ar__data__set_map_data()` transfer ownership from caller to the module
-3. **Container → Caller**: Functions like `ar__data__list_remove_first()` transfer ownership from container to caller
-4. **String extraction**: Functions like `ar__data__list_remove_first_string()` return strings that the caller must free
+2. **Caller → Data Module**: Functions like `ar_data__set_map_data()` transfer ownership from caller to the module
+3. **Container → Caller**: Functions like `ar_data__list_remove_first()` transfer ownership from container to caller
+4. **String extraction**: Functions like `ar_data__list_remove_first_string()` return strings that the caller must free
 
 ### NULL Marking After Transfer
 
 After ownership is transferred, the original pointer should be marked as NULL:
 
 ```c
-data_t *own_value = ar__data__create_integer(42);
-ar__data__set_map_data(mut_map, "key", own_value);
+data_t *own_value = ar_data__create_integer(42);
+ar_data__set_map_data(mut_map, "key", own_value);
 own_value = NULL; // Mark as transferred, don't use after this point
 ```
 
@@ -930,9 +930,9 @@ struct data_s {
 - The data module fully manages memory for all its components - when a data object is destroyed, all of its contents are properly freed
 - String, list, and map values are stored as references (string_ref, list_ref, and map_ref) within the internal data structure
 - While the list and map modules store references as void pointers and don't manage memory for items/values, the data module handles this responsibility
-- For list data types, ar__data__destroy uses ar__list__items to get all items, then properly frees them
-- For map data types, ar__data__destroy uses ar__map__refs to get all keys and values, then properly frees them
-- Duplicated keys created by ar__data__set_map_* functions are tracked in a keys list to ensure proper cleanup
+- For list data types, ar_data__destroy uses ar_list__items to get all items, then properly frees them
+- For map data types, ar_data__destroy uses ar_map__refs to get all keys and values, then properly frees them
+- Duplicated keys created by ar_data__set_map_* functions are tracked in a keys list to ensure proper cleanup
 - When a key is duplicated with strdup, it is added to a tracking list for later cleanup during destruction
 - The list module allows simple management of the dynamically allocated keys
 - The ownership model is clear: the data module owns and manages all memory for data objects and their contents
@@ -955,5 +955,5 @@ struct data_s {
 - Path-based set functions no longer automatically create intermediate maps when setting values at a specific path
 - Path-based set functions will return false if attempting to set values on non-existent paths
 - Path handling functions manage memory properly, freeing any temporary segments after use
-- The `ar__data__get_map_data()` function allows direct access to the data structure at a specified path, enabling type checking and accessing values of any type
-- The path-based functions rely on the `ar__data__get_map_data()` function to validate paths before attempting operations
+- The `ar_data__get_map_data()` function allows direct access to the data structure at a specified path, enabling type checking and accessing values of any type
+- The path-based functions rely on the `ar_data__get_map_data()` function to validate paths before attempting operations

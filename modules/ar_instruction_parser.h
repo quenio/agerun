@@ -16,7 +16,7 @@ typedef struct instruction_parser_s instruction_parser_t;
  * @return Newly created parser instance (owned by caller), or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy.
  */
-instruction_parser_t* ar__instruction_parser__create(void);
+instruction_parser_t* ar_instruction_parser__create(void);
 
 /**
  * Destroy an instruction parser instance.
@@ -24,7 +24,7 @@ instruction_parser_t* ar__instruction_parser__create(void);
  * @param own_parser The parser instance to destroy (ownership transferred)
  * @note Ownership: Takes ownership of the parser and destroys it.
  */
-void ar__instruction_parser__destroy(instruction_parser_t *own_parser);
+void ar_instruction_parser__destroy(instruction_parser_t *own_parser);
 
 /**
  * Get the last error message from the parser.
@@ -33,7 +33,7 @@ void ar__instruction_parser__destroy(instruction_parser_t *own_parser);
  * @return The error message (borrowed reference), or NULL if no error
  * @note Ownership: Returns a borrowed reference. Do not free.
  */
-const char* ar__instruction_parser__get_error(const instruction_parser_t *ref_parser);
+const char* ar_instruction_parser__get_error(const instruction_parser_t *ref_parser);
 
 /**
  * Get the error position from the last parse attempt.
@@ -41,7 +41,7 @@ const char* ar__instruction_parser__get_error(const instruction_parser_t *ref_pa
  * @param ref_parser The parser instance (borrowed reference)
  * @return The character offset where the error occurred, or 0 if no error
  */
-size_t ar__instruction_parser__get_error_position(const instruction_parser_t *ref_parser);
+size_t ar_instruction_parser__get_error_position(const instruction_parser_t *ref_parser);
 
 /**
  * Parse an instruction using the unified parser facade.

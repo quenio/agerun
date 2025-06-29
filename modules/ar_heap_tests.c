@@ -217,7 +217,7 @@ static void test_memory_report(void) {
     }
     
     // Manually generate a report
-    ar__heap__memory_report();
+    ar_heap__memory_report();
     
     // Check if the report file exists - use the same path as used in agerun_heap.c
     const char *custom_path = getenv("AGERUN_MEMORY_REPORT");

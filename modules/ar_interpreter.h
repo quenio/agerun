@@ -13,9 +13,9 @@ typedef struct interpreter_s interpreter_t;
 /**
  * Creates a new interpreter instance
  * @return Newly created interpreter, or NULL on failure
- * @note Ownership: Returns an owned object that the caller must destroy with ar__interpreter__destroy.
+ * @note Ownership: Returns an owned object that the caller must destroy with ar_interpreter__destroy.
  */
-interpreter_t* ar__interpreter__create(void);
+interpreter_t* ar_interpreter__create(void);
 
 /**
  * Destroys an interpreter instance and frees its resources
@@ -23,7 +23,7 @@ interpreter_t* ar__interpreter__create(void);
  * @note Ownership: This function takes ownership of the interpreter and frees it.
  *       The pointer will be invalid after this call.
  */
-void ar__interpreter__destroy(interpreter_t *own_interpreter);
+void ar_interpreter__destroy(interpreter_t *own_interpreter);
 
 /**
  * Executes a single instruction in the given context
@@ -33,9 +33,9 @@ void ar__interpreter__destroy(interpreter_t *own_interpreter);
  * @return true if execution was successful, false otherwise
  * @note Ownership: Function does not take ownership of any parameters.
  *       The context may be modified during execution.
- *       This function will contain the core logic moved from ar__instruction__run.
+ *       This function will contain the core logic moved from ar_instruction__run.
  */
-bool ar__interpreter__execute_instruction(interpreter_t *mut_interpreter, 
+bool ar_interpreter__execute_instruction(interpreter_t *mut_interpreter, 
                                          instruction_context_t *mut_context, 
                                          const char *ref_instruction);
 
@@ -50,7 +50,7 @@ bool ar__interpreter__execute_instruction(interpreter_t *mut_interpreter,
  *       This function creates an instruction context, executes the method's
  *       instructions line by line, and cleans up the context.
  */
-bool ar__interpreter__execute_method(interpreter_t *mut_interpreter,
+bool ar_interpreter__execute_method(interpreter_t *mut_interpreter,
                                     int64_t agent_id, 
                                     const data_t *ref_message, 
                                     const method_t *ref_method);

@@ -98,8 +98,8 @@ The module:
 
 ```c
 // Create dependencies
-data_t *memory = ar__data__create_map();
-ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+data_t *memory = ar_data__create_map();
+ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
 
 // Create destroy method evaluator instance
 ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(

@@ -13,23 +13,23 @@ static void test_map_count(void);
 static void test_map_refs(void);
 
 static void test_map_create(void) {
-    printf("Testing ar__map__create()...\n");
+    printf("Testing ar_map__create()...\n");
     
     // Given we need a new map
     
-    // When we call ar__map__create
-    map_t *own_map = ar__map__create();
+    // When we call ar_map__create
+    map_t *own_map = ar_map__create();
     
     // Then the map should be created successfully
     assert(own_map != NULL);
     
-    // Test functionality via ar__map__set and ar__map__get
+    // Test functionality via ar_map__set and ar_map__get
     const char *ref_key = "test_key";
     int test_value = 42;
-    bool set_result = ar__map__set(own_map, ref_key, &test_value);
+    bool set_result = ar_map__set(own_map, ref_key, &test_value);
     assert(set_result);
     
-    const int *ref_retrieved = ar__map__get(own_map, ref_key);
+    const int *ref_retrieved = ar_map__get(own_map, ref_key);
     assert(ref_retrieved != NULL);
     assert(*ref_retrieved == test_value);
     assert(ref_retrieved == &test_value);
@@ -38,17 +38,17 @@ static void test_map_create(void) {
     // Following the guideline to free containers first, then contents
     // In this case, the map is the container and test_value is stack-allocated
     // so no manual freeing of the content is needed
-    ar__map__destroy(own_map);
+    ar_map__destroy(own_map);
     
-    printf("All ar__map__create() tests passed!\n");
+    printf("All ar_map__create() tests passed!\n");
 }
 
 
 static void test_map_set_get_simple(void) {
-    printf("Testing ar__map__set() and ar__map__get() with simple value...\n");
+    printf("Testing ar_map__set() and ar_map__get() with simple value...\n");
     
     // Given a new map
-    map_t *own_map = ar__map__create();
+    map_t *own_map = ar_map__create();
     if (own_map == NULL) {
         printf("Failed to create map, skipping test\n");
         return;
@@ -59,13 +59,13 @@ static void test_map_set_get_simple(void) {
     *own_value = 42;
     
     // When we set the reference in the map
-    bool set_result = ar__map__set(own_map, "test_key", own_value);
+    bool set_result = ar_map__set(own_map, "test_key", own_value);
     
     // Then the set operation should succeed
     assert(set_result);
     
     // When we retrieve the value from the map
-    const int *ref_retrieved = (const int*)ar__map__get(own_map, "test_key");
+    const int *ref_retrieved = (const int*)ar_map__get(own_map, "test_key");
     
     // Then the value should be retrieved successfully
     assert(ref_retrieved != NULL);
@@ -79,71 +79,71 @@ static void test_map_set_get_simple(void) {
     
     // Cleanup
     // Following the guideline to free containers first, then contents
-    ar__map__destroy(own_map);
+    ar_map__destroy(own_map);
     AR__HEAP__FREE(own_value); // Now free the referenced value after freeing the container
     
-    printf("ar__map__set() and ar__map__get() simple value test passed!\n");
+    printf("ar_map__set() and ar_map__get() simple value test passed!\n");
 }
 
 
 static void test_map_count(void) {
-    printf("Testing ar__map__count()...\n");
+    printf("Testing ar_map__count()...\n");
     
     // Given a new map
-    map_t *own_map = ar__map__create();
+    map_t *own_map = ar_map__create();
     assert(own_map != NULL);
     
     // When the map is empty
     // Then the count should be 0
-    assert(ar__map__count(own_map) == 0);
+    assert(ar_map__count(own_map) == 0);
     
     // When adding some entries
-    ar__map__set(own_map, "key1", (void*)1);
-    assert(ar__map__count(own_map) == 1);
+    ar_map__set(own_map, "key1", (void*)1);
+    assert(ar_map__count(own_map) == 1);
     
-    ar__map__set(own_map, "key2", (void*)2);
-    assert(ar__map__count(own_map) == 2);
+    ar_map__set(own_map, "key2", (void*)2);
+    assert(ar_map__count(own_map) == 2);
     
-    ar__map__set(own_map, "key3", (void*)3);
-    assert(ar__map__count(own_map) == 3);
+    ar_map__set(own_map, "key3", (void*)3);
+    assert(ar_map__count(own_map) == 3);
     
     // When updating an existing entry
-    ar__map__set(own_map, "key2", (void*)22);
+    ar_map__set(own_map, "key2", (void*)22);
     // Then the count should remain the same
-    assert(ar__map__count(own_map) == 3);
+    assert(ar_map__count(own_map) == 3);
     
     // Cleanup
-    ar__map__destroy(own_map);
+    ar_map__destroy(own_map);
     
     // Edge case: NULL map
-    assert(ar__map__count(NULL) == 0);
+    assert(ar_map__count(NULL) == 0);
     
-    printf("ar__map__count() tests passed!\n");
+    printf("ar_map__count() tests passed!\n");
 }
 
 static void test_map_refs(void) {
-    printf("Testing ar__map__refs()...\n");
+    printf("Testing ar_map__refs()...\n");
     
     // Given a new map
-    map_t *own_map = ar__map__create();
+    map_t *own_map = ar_map__create();
     assert(own_map != NULL);
     
     // When the map is empty
-    // Then ar__map__refs should return NULL
-    assert(ar__map__refs(own_map) == NULL);
+    // Then ar_map__refs should return NULL
+    assert(ar_map__refs(own_map) == NULL);
     
     // When adding some entries
     int val1 = 10, val2 = 20, val3 = 30;
-    ar__map__set(own_map, "key1", &val1);
-    ar__map__set(own_map, "key2", &val2);
-    ar__map__set(own_map, "key3", &val3);
+    ar_map__set(own_map, "key1", &val1);
+    ar_map__set(own_map, "key2", &val2);
+    ar_map__set(own_map, "key3", &val3);
     
-    // Then ar__map__refs should return a valid array
-    void **own_refs = ar__map__refs(own_map);
+    // Then ar_map__refs should return a valid array
+    void **own_refs = ar_map__refs(own_map);
     assert(own_refs != NULL);
     
     // And the count should match
-    size_t count = ar__map__count(own_map);
+    size_t count = ar_map__count(own_map);
     assert(count == 3);
     
     // Check that all values are present
@@ -158,12 +158,12 @@ static void test_map_refs(void) {
     
     // Cleanup
     AR__HEAP__FREE(own_refs);
-    ar__map__destroy(own_map);
+    ar_map__destroy(own_map);
     
     // Edge case: NULL map
-    assert(ar__map__refs(NULL) == NULL);
+    assert(ar_map__refs(NULL) == NULL);
     
-    printf("ar__map__refs() tests passed!\n");
+    printf("ar_map__refs() tests passed!\n");
 }
 
 int main(void) {

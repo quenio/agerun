@@ -34,7 +34,7 @@
  * This function is automatically called at program exit, but can also be
  * manually called to generate reports at specific points during execution.
  */
-void ar__heap__memory_report(void);
+void ar_heap__memory_report(void);
 
 /**
  * Tracked memory allocation function (wrapper for malloc)
@@ -49,7 +49,7 @@ void ar__heap__memory_report(void);
  * @return Pointer to allocated memory (owned by caller, must be freed with AR__HEAP__FREE)
  * @note Ownership: Returns an owned pointer that caller must free with AR__HEAP__FREE
  */
-void *ar__heap__malloc(size_t size, const char *file, int line, const char *description);
+void *ar_heap__malloc(size_t size, const char *file, int line, const char *description);
 
 /**
  * Tracked memory allocation with zero-initialization (wrapper for calloc)
@@ -65,7 +65,7 @@ void *ar__heap__malloc(size_t size, const char *file, int line, const char *desc
  * @return Pointer to zero-initialized allocated memory (owned by caller, must be freed with AR__HEAP__FREE)
  * @note Ownership: Returns an owned pointer that caller must free with AR__HEAP__FREE
  */
-void *ar__heap__calloc(size_t count, size_t size, const char *file, int line, const char *description);
+void *ar_heap__calloc(size_t count, size_t size, const char *file, int line, const char *description);
 
 /**
  * Tracked memory reallocation function (wrapper for realloc)
@@ -82,7 +82,7 @@ void *ar__heap__calloc(size_t count, size_t size, const char *file, int line, co
  * @note Ownership: Returns an owned pointer that caller must free with AR__HEAP__FREE
  *       The original ptr should not be used after this call, as it may have been freed
  */
-void *ar__heap__realloc(void *ptr, size_t size, const char *file, int line, const char *description);
+void *ar_heap__realloc(void *ptr, size_t size, const char *file, int line, const char *description);
 
 /**
  * Tracked string duplication function (wrapper for strdup)
@@ -97,7 +97,7 @@ void *ar__heap__realloc(void *ptr, size_t size, const char *file, int line, cons
  * @return Pointer to newly allocated copy of the string (owned by caller, must be freed with AR__HEAP__FREE)
  * @note Ownership: Returns an owned pointer that caller must free with AR__HEAP__FREE
  */
-char *ar__heap__strdup(const char *str, const char *file, int line, const char *description);
+char *ar_heap__strdup(const char *str, const char *file, int line, const char *description);
 
 /**
  * Tracked memory deallocation function (wrapper for free)
@@ -109,7 +109,7 @@ char *ar__heap__strdup(const char *str, const char *file, int line, const char *
  * @note After calling AR__HEAP__FREE, you MUST set the pointer to NULL to prevent use-after-free errors.
  *       AR__HEAP__FREE(ptr); ptr = NULL;
  */
-void ar__heap__free(void *ptr);
+void ar_heap__free(void *ptr);
 
 /**
  * Memory allocation and tracking macros
@@ -130,11 +130,11 @@ void ar__heap__free(void *ptr);
  *   AR__HEAP__FREE(own_buffer);
  *   own_buffer = NULL;  // IMPORTANT: Always set to NULL after freeing
  */
-#define AR__HEAP__MALLOC(size, desc) ar__heap__malloc((size), __FILE__, __LINE__, (desc))
-#define AR__HEAP__CALLOC(count, size, desc) ar__heap__calloc((count), (size), __FILE__, __LINE__, (desc))
-#define AR__HEAP__REALLOC(ptr, size, desc) ar__heap__realloc((ptr), (size), __FILE__, __LINE__, (desc))
-#define AR__HEAP__STRDUP(str, desc) ar__heap__strdup((str), __FILE__, __LINE__, (desc))
-#define AR__HEAP__FREE(ptr) ar__heap__free(ptr)
+#define AR__HEAP__MALLOC(size, desc) ar_heap__malloc((size), __FILE__, __LINE__, (desc))
+#define AR__HEAP__CALLOC(count, size, desc) ar_heap__calloc((count), (size), __FILE__, __LINE__, (desc))
+#define AR__HEAP__REALLOC(ptr, size, desc) ar_heap__realloc((ptr), (size), __FILE__, __LINE__, (desc))
+#define AR__HEAP__STRDUP(str, desc) ar_heap__strdup((str), __FILE__, __LINE__, (desc))
+#define AR__HEAP__FREE(ptr) ar_heap__free(ptr)
 
 #else
 

@@ -16,7 +16,7 @@
  * @note Ownership: This function creates and takes ownership of the method.
  *       The caller should not worry about destroying the method.
  */
-bool ar__methodology__create_method(const char *ref_name, const char *ref_instructions, 
+bool ar_methodology__create_method(const char *ref_name, const char *ref_instructions, 
                                 const char *ref_version);
 
 /**
@@ -27,7 +27,7 @@ bool ar__methodology__create_method(const char *ref_name, const char *ref_instru
  * @note Ownership: Returns a borrowed reference to the internal method. The caller
  *       should not modify or free the returned method.
  */
-method_t* ar__methodology__get_method(const char *ref_name, const char *ref_version);
+method_t* ar_methodology__get_method(const char *ref_name, const char *ref_version);
 
 
 /* Internal functions removed to comply with Parnas principles */
@@ -36,19 +36,19 @@ method_t* ar__methodology__get_method(const char *ref_name, const char *ref_vers
  * Save all method definitions to disk
  * @return true if successful, false otherwise
  */
-bool ar__methodology__save_methods(void);
+bool ar_methodology__save_methods(void);
 
 /**
  * Load all method definitions from disk
  * @return true if successful, false otherwise
  */
-bool ar__methodology__load_methods(void);
+bool ar_methodology__load_methods(void);
 
 /**
  * Clean up all method definitions and free resources
  * This should be called during system shutdown
  */
-void ar__methodology__cleanup(void);
+void ar_methodology__cleanup(void);
 
 /**
  * Register a method with the methodology module
@@ -56,7 +56,7 @@ void ar__methodology__cleanup(void);
  * @note Ownership: The methodology module takes ownership of the method.
  *       The caller should not access or free the method after this call.
  */
-void ar__methodology__register_method(method_t *own_method);
+void ar_methodology__register_method(method_t *own_method);
 
 /**
  * Unregister a method from the methodology
@@ -65,6 +65,6 @@ void ar__methodology__register_method(method_t *own_method);
  * @return true if method was successfully unregistered, false otherwise
  * @note This will fail if there are active agents using this method
  */
-bool ar__methodology__unregister_method(const char *ref_name, const char *ref_version);
+bool ar_methodology__unregister_method(const char *ref_name, const char *ref_version);
 
 #endif /* AGERUN_METHODOLOGY_H */

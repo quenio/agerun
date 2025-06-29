@@ -64,7 +64,7 @@ Key features:
 The module follows strict memory ownership rules:
 - The evaluator instance owns its internal structure but not the dependencies
 - Expression evaluator and memory are borrowed references stored in the instance
-- Message ownership is transferred to `ar__agency__send_to_agent()`
+- Message ownership is transferred to `ar_agency__send_to_agent()`
 - If send fails, the message is properly destroyed
 - Result values are created and stored when assignment is specified
 - The create function returns ownership to the caller
@@ -93,8 +93,8 @@ The module evaluates both arguments:
 
 ```c
 // Create memory and expression evaluator
-data_t *memory = ar__data__create_map();
-ar_expression_evaluator_t *expr_eval = ar__expression_evaluator__create(memory, NULL);
+data_t *memory = ar_data__create_map();
+ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
 
 // Create send instruction evaluator
 ar_send_instruction_evaluator_t *send_eval = ar_send_instruction_evaluator__create(
@@ -111,8 +111,8 @@ bool success = ar_send_instruction_evaluator__evaluate(send_eval, ast);
 
 // Cleanup
 ar_send_instruction_evaluator__destroy(send_eval);
-ar__expression_evaluator__destroy(expr_eval);
-ar__data__destroy(memory);
+ar_expression_evaluator__destroy(expr_eval);
+ar_data__destroy(memory);
 ```
 
 ## Testing

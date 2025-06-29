@@ -937,7 +937,7 @@ The [expression AST module](ar_expression_ast.md) provides Abstract Syntax Tree 
 - **Type-Safe Creation**: Provides creation functions for each node type with proper ownership semantics
 - **Accessor Functions**: Exposes node data through type-safe accessor functions
 - **Memory Management**: Implements recursive destruction with proper cleanup of all child nodes
-- **Ownership Transfer**: Array accessor follows ar__list__items pattern, transferring ownership to caller
+- **Ownership Transfer**: Array accessor follows ar_list__items pattern, transferring ownership to caller
 - **Independent Design**: No dependencies on expression module, ensuring clean separation
 - **Opaque Types**: Uses opaque node structure to hide implementation details
 - **Depends on List**: Uses the list module for storing memory access path components
@@ -1232,14 +1232,14 @@ The agent module provides individual agent lifecycle management and message hand
 - **Memory Management**: Agents have persistent memory maps for state storage
 - **Context Handling**: Supports read-only context data provided at agent creation
 - **Registry Integration**: Uses internal agent_registry for ID management and agent tracking
-- **Registry Access**: Provides `ar__agency__get_registry()` for agency and agent_store modules
+- **Registry Access**: Provides `ar_agency__get_registry()` for agency and agent_store modules
 - **Dynamic Agent Limit**: No hardcoded MAX_AGENTS limit - uses dynamic allocation via registry
 - **Opaque Type**: Agent structure is fully opaque with accessor functions:
-  - `ar__agent__get_memory()`: Returns read-only access to agent's memory
-  - `ar__agent__get_mutable_memory()`: Returns mutable access to agent's memory
-  - `ar__agent__get_context()`: Returns read-only access to agent's context
-  - `ar__agent__get_method()`: Returns agent's method reference
-  - `ar__agency__get_registry()`: Returns agent registry for persistence/management operations
+  - `ar_agent__get_memory()`: Returns read-only access to agent's memory
+  - `ar_agent__get_mutable_memory()`: Returns mutable access to agent's memory
+  - `ar_agent__get_context()`: Returns read-only access to agent's context
+  - `ar_agent__get_method()`: Returns agent's method reference
+  - `ar_agency__get_registry()`: Returns agent registry for persistence/management operations
 - **Zero Memory Leaks**: Proper cleanup of agent resources including message queues
 - **Depends on Agent Registry**: Uses agent_registry module for ID allocation and tracking
 - **Depends on Map and List**: Uses core data structures for internal state management

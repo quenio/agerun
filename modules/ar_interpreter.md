@@ -154,7 +154,7 @@ All expressions are evaluated using the expression module:
 - Memory access returns references (not owned)
 - Arithmetic operations return new values (owned)
 - String operations return new values (owned)
-- The interpreter always takes ownership via `ar__expression__take_ownership`
+- The interpreter always takes ownership via `ar_expression__take_ownership`
 
 ### Memory Updates
 Memory updates follow these rules:
@@ -215,7 +215,7 @@ The interpreter ensures memory safety through:
 interpreter_t *interpreter = ar__interpreter__create();
 
 // Create instruction context
-instruction_context_t *ctx = ar__instruction__create_context(
+instruction_context_t *ctx = ar_instruction__create_context(
     agent_memory,    // Mutable memory reference
     agent_context,   // Context reference
     message         // Message reference (can be NULL)
@@ -238,7 +238,7 @@ success = ar__interpreter__execute_method(
 );
 
 // Cleanup
-ar__instruction__destroy_context(ctx);
+ar_instruction__destroy_context(ctx);
 ar__interpreter__destroy(interpreter);
 ```
 
@@ -293,7 +293,7 @@ Potential improvements:
 ## Memory Management
 
 The interpreter follows the AgeRun Memory Management Model:
-- Takes ownership of expression results via `ar__expression__take_ownership`
+- Takes ownership of expression results via `ar_expression__take_ownership`
 - Transfers ownership to storage locations (memory, agency)
 - Cleans up all temporary values
 - Uses heap tracking macros for all allocations

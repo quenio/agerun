@@ -27,7 +27,7 @@ struct instruction_ast_s {
 /**
  * Get the type of an AST node.
  */
-ar_instruction_ast_type_t ar__instruction_ast__get_type(const ar_instruction_ast_t *ref_node) {
+ar_instruction_ast_type_t ar_instruction_ast__get_type(const ar_instruction_ast_t *ref_node) {
     if (!ref_node) {
         return AR_INST__ASSIGNMENT; /* Default type */
     }
@@ -37,7 +37,7 @@ ar_instruction_ast_type_t ar__instruction_ast__get_type(const ar_instruction_ast
 /**
  * Create an assignment instruction AST node.
  */
-ar_instruction_ast_t* ar__instruction_ast__create_assignment(
+ar_instruction_ast_t* ar_instruction_ast__create_assignment(
     const char *ref_memory_path,
     const char *ref_expression
 ) {
@@ -66,7 +66,7 @@ ar_instruction_ast_t* ar__instruction_ast__create_assignment(
     
     /* Check for allocation failures */
     if (!own_node->own_memory_path || !own_node->own_expression) {
-        ar__instruction_ast__destroy(own_node);
+        ar_instruction_ast__destroy(own_node);
         return NULL;
     }
     
@@ -76,7 +76,7 @@ ar_instruction_ast_t* ar__instruction_ast__create_assignment(
 /**
  * Create a function call instruction AST node.
  */
-ar_instruction_ast_t* ar__instruction_ast__create_function_call(
+ar_instruction_ast_t* ar_instruction_ast__create_function_call(
     ar_instruction_ast_type_t type,
     const char *ref_function_name,
     const char **ref_args,
@@ -107,14 +107,14 @@ ar_instruction_ast_t* ar__instruction_ast__create_function_call(
     /* Copy function name */
     own_node->own_function_name = AR__HEAP__STRDUP(ref_function_name, "function name");
     if (!own_node->own_function_name) {
-        ar__instruction_ast__destroy(own_node);
+        ar_instruction_ast__destroy(own_node);
         return NULL;
     }
     
     /* Copy result path if provided */
     own_node->own_result_path = ref_result_path ? AR__HEAP__STRDUP(ref_result_path, "result path") : NULL;
     if (ref_result_path && !own_node->own_result_path) {
-        ar__instruction_ast__destroy(own_node);
+        ar_instruction_ast__destroy(own_node);
         return NULL;
     }
     
@@ -122,7 +122,7 @@ ar_instruction_ast_t* ar__instruction_ast__create_function_call(
     if (arg_count > 0 && ref_args) {
         own_node->own_args = AR__HEAP__MALLOC(sizeof(char*) * arg_count, "function arguments array");
         if (!own_node->own_args) {
-            ar__instruction_ast__destroy(own_node);
+            ar_instruction_ast__destroy(own_node);
             return NULL;
         }
         
@@ -139,7 +139,7 @@ ar_instruction_ast_t* ar__instruction_ast__create_function_call(
                 AR__HEAP__FREE(own_node->own_args);
                 own_node->own_args = NULL;
                 own_node->arg_count = 0;
-                ar__instruction_ast__destroy(own_node);
+                ar_instruction_ast__destroy(own_node);
                 return NULL;
             }
         }
@@ -154,7 +154,7 @@ ar_instruction_ast_t* ar__instruction_ast__create_function_call(
 /**
  * Destroy an AST node and all its components.
  */
-void ar__instruction_ast__destroy(ar_instruction_ast_t *own_node) {
+void ar_instruction_ast__destroy(ar_instruction_ast_t *own_node) {
     if (!own_node) {
         return;
     }
@@ -167,7 +167,7 @@ void ar__instruction_ast__destroy(ar_instruction_ast_t *own_node) {
         AR__HEAP__FREE(own_node->own_expression);
     }
     if (own_node->own_expression_ast) {
-        ar__expression_ast__destroy(own_node->own_expression_ast);
+        ar_expression_ast__destroy(own_node->own_expression_ast);
     }
     
     /* Free function call fields */
@@ -191,18 +191,18 @@ void ar__instruction_ast__destroy(ar_instruction_ast_t *own_node) {
     /* Free argument ASTs list */
     if (own_node->own_arg_asts) {
         /* Destroy all expression ASTs in the list */
-        void **items = ar__list__items(own_node->own_arg_asts);
+        void **items = ar_list__items(own_node->own_arg_asts);
         if (items) {
-            size_t list_count = ar__list__count(own_node->own_arg_asts);
+            size_t list_count = ar_list__count(own_node->own_arg_asts);
             for (size_t i = 0; i < list_count; i++) {
                 ar_expression_ast_t *own_ast = (ar_expression_ast_t*)items[i];
                 if (own_ast) {
-                    ar__expression_ast__destroy(own_ast);
+                    ar_expression_ast__destroy(own_ast);
                 }
             }
             AR__HEAP__FREE(items);
         }
-        ar__list__destroy(own_node->own_arg_asts);
+        ar_list__destroy(own_node->own_arg_asts);
     }
     
     AR__HEAP__FREE(own_node);
@@ -211,7 +211,7 @@ void ar__instruction_ast__destroy(ar_instruction_ast_t *own_node) {
 /**
  * Get memory path from an assignment node.
  */
-const char* ar__instruction_ast__get_assignment_path(const ar_instruction_ast_t *ref_node) {
+const char* ar_instruction_ast__get_assignment_path(const ar_instruction_ast_t *ref_node) {
     if (!ref_node || ref_node->type != AR_INST__ASSIGNMENT) {
         return NULL;
     }
@@ -221,7 +221,7 @@ const char* ar__instruction_ast__get_assignment_path(const ar_instruction_ast_t 
 /**
  * Get expression from an assignment node.
  */
-const char* ar__instruction_ast__get_assignment_expression(const ar_instruction_ast_t *ref_node) {
+const char* ar_instruction_ast__get_assignment_expression(const ar_instruction_ast_t *ref_node) {
     if (!ref_node || ref_node->type != AR_INST__ASSIGNMENT) {
         return NULL;
     }
@@ -231,7 +231,7 @@ const char* ar__instruction_ast__get_assignment_expression(const ar_instruction_
 /**
  * Get expression AST from an assignment node.
  */
-const ar_expression_ast_t* ar__instruction_ast__get_assignment_expression_ast(const ar_instruction_ast_t *ref_node) {
+const ar_expression_ast_t* ar_instruction_ast__get_assignment_expression_ast(const ar_instruction_ast_t *ref_node) {
     if (!ref_node || ref_node->type != AR_INST__ASSIGNMENT) {
         return NULL;
     }
@@ -241,14 +241,14 @@ const ar_expression_ast_t* ar__instruction_ast__get_assignment_expression_ast(co
 /**
  * Set expression AST for an assignment node.
  */
-bool ar__instruction_ast__set_assignment_expression_ast(ar_instruction_ast_t *mut_node, ar_expression_ast_t *own_expression_ast) {
+bool ar_instruction_ast__set_assignment_expression_ast(ar_instruction_ast_t *mut_node, ar_expression_ast_t *own_expression_ast) {
     if (!mut_node || mut_node->type != AR_INST__ASSIGNMENT) {
         return false;
     }
     
     /* Destroy any existing expression AST */
     if (mut_node->own_expression_ast) {
-        ar__expression_ast__destroy(mut_node->own_expression_ast);
+        ar_expression_ast__destroy(mut_node->own_expression_ast);
     }
     
     /* Set the new expression AST */
@@ -259,7 +259,7 @@ bool ar__instruction_ast__set_assignment_expression_ast(ar_instruction_ast_t *mu
 /**
  * Get function name from a function call node.
  */
-const char* ar__instruction_ast__get_function_name(const ar_instruction_ast_t *ref_node) {
+const char* ar_instruction_ast__get_function_name(const ar_instruction_ast_t *ref_node) {
     if (!ref_node || ref_node->type == AR_INST__ASSIGNMENT) {
         return NULL;
     }
@@ -269,21 +269,21 @@ const char* ar__instruction_ast__get_function_name(const ar_instruction_ast_t *r
 /**
  * Get arguments from a function call node.
  */
-list_t* ar__instruction_ast__get_function_args(const ar_instruction_ast_t *ref_node) {
+list_t* ar_instruction_ast__get_function_args(const ar_instruction_ast_t *ref_node) {
     if (!ref_node || ref_node->type == AR_INST__ASSIGNMENT || ref_node->arg_count == 0) {
         return NULL;
     }
     
     /* Create a new list */
-    list_t *own_list = ar__list__create();
+    list_t *own_list = ar_list__create();
     if (!own_list) {
         return NULL;
     }
     
     /* Add each argument to the list (as borrowed references) */
     for (size_t i = 0; i < ref_node->arg_count; i++) {
-        if (!ar__list__add_last(own_list, ref_node->own_args[i])) {
-            ar__list__destroy(own_list);
+        if (!ar_list__add_last(own_list, ref_node->own_args[i])) {
+            ar_list__destroy(own_list);
             return NULL;
         }
     }
@@ -294,7 +294,7 @@ list_t* ar__instruction_ast__get_function_args(const ar_instruction_ast_t *ref_n
 /**
  * Get argument ASTs from a function call node.
  */
-const list_t* ar__instruction_ast__get_function_arg_asts(const ar_instruction_ast_t *ref_node) {
+const list_t* ar_instruction_ast__get_function_arg_asts(const ar_instruction_ast_t *ref_node) {
     if (!ref_node || ref_node->type == AR_INST__ASSIGNMENT) {
         return NULL;
     }
@@ -304,7 +304,7 @@ const list_t* ar__instruction_ast__get_function_arg_asts(const ar_instruction_as
 /**
  * Set argument ASTs for a function call node.
  */
-bool ar__instruction_ast__set_function_arg_asts(
+bool ar_instruction_ast__set_function_arg_asts(
     ar_instruction_ast_t *mut_node, 
     list_t *own_arg_asts
 ) {
@@ -314,18 +314,18 @@ bool ar__instruction_ast__set_function_arg_asts(
     
     /* Destroy any existing argument ASTs */
     if (mut_node->own_arg_asts) {
-        void **items = ar__list__items(mut_node->own_arg_asts);
+        void **items = ar_list__items(mut_node->own_arg_asts);
         if (items) {
-            size_t list_count = ar__list__count(mut_node->own_arg_asts);
+            size_t list_count = ar_list__count(mut_node->own_arg_asts);
             for (size_t i = 0; i < list_count; i++) {
                 ar_expression_ast_t *own_ast = (ar_expression_ast_t*)items[i];
                 if (own_ast) {
-                    ar__expression_ast__destroy(own_ast);
+                    ar_expression_ast__destroy(own_ast);
                 }
             }
             AR__HEAP__FREE(items);
         }
-        ar__list__destroy(mut_node->own_arg_asts);
+        ar_list__destroy(mut_node->own_arg_asts);
     }
     
     /* Set the new argument ASTs list */
@@ -336,7 +336,7 @@ bool ar__instruction_ast__set_function_arg_asts(
 /**
  * Get result path from a function call node.
  */
-const char* ar__instruction_ast__get_function_result_path(const ar_instruction_ast_t *ref_node) {
+const char* ar_instruction_ast__get_function_result_path(const ar_instruction_ast_t *ref_node) {
     if (!ref_node || ref_node->type == AR_INST__ASSIGNMENT) {
         return NULL;
     }
@@ -346,7 +346,7 @@ const char* ar__instruction_ast__get_function_result_path(const ar_instruction_a
 /**
  * Check if a function call has a result assignment.
  */
-bool ar__instruction_ast__has_result_assignment(const ar_instruction_ast_t *ref_node) {
+bool ar_instruction_ast__has_result_assignment(const ar_instruction_ast_t *ref_node) {
     if (!ref_node || ref_node->type == AR_INST__ASSIGNMENT) {
         return false;
     }

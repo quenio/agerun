@@ -6,7 +6,7 @@
  * Returns non-zero if c is a whitespace character.
  * This wrapper safely handles signed char values by casting to unsigned char.
  */
-int ar__string__isspace(int c);
+int ar_string__isspace(int c);
 
 /**
  * Trims leading and trailing whitespace from a string.
@@ -14,7 +14,7 @@ int ar__string__isspace(int c);
  * @param mut_str The string to trim (modified in-place)
  * @return BORROW: Pointer to the trimmed string within original buffer
  */
-char* ar__string__trim(char *mut_str);
+char* ar_string__trim(char *mut_str);
 
 /**
  * Counts the number of segments in a path separated by the given separator.
@@ -23,7 +23,7 @@ char* ar__string__trim(char *mut_str);
  * @param separator The character used as separator (e.g., '.')
  * @return Number of segments in the string (0 if ref_str is NULL)
  */
-size_t ar__string__path_count(const char *ref_str, char separator);
+size_t ar_string__path_count(const char *ref_str, char separator);
 
 /**
  * Extracts a segment from a separated string.
@@ -34,7 +34,7 @@ size_t ar__string__path_count(const char *ref_str, char separator);
  * @return OWNER: Heap-allocated string containing the extracted segment, or NULL on error
  *         Caller is responsible for freeing the returned string.
  */
-char* ar__string__path_segment(const char *ref_str, char separator, size_t index);
+char* ar_string__path_segment(const char *ref_str, char separator, size_t index);
 
 /**
  * Extracts the parent path from a path string.
@@ -44,6 +44,6 @@ char* ar__string__path_segment(const char *ref_str, char separator, size_t index
  * @return OWNER: Heap-allocated string containing the parent path, or NULL if no parent exists
  *         (i.e., for root paths or errors). Caller is responsible for freeing the returned string.
  */
-char* ar__string__path_parent(const char *ref_str, char separator);
+char* ar_string__path_parent(const char *ref_str, char separator);
 
 #endif /* AGERUN_STRING_H */

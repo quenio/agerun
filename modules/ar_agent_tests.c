@@ -20,7 +20,7 @@ static void test_agent_exists(system_fixture_t *mut_fixture);
 static void test_agent_persistence(system_fixture_t *mut_fixture);
 
 static void test_agent_create_destroy(system_fixture_t *mut_fixture) {
-    printf("Testing ar__agent__create() and ar__agent__destroy()...\n");
+    printf("Testing ar_agent__create() and ar_agent__destroy()...\n");
     
     // Given a simple method for an agent
     const char *method_name = "test_method";
@@ -28,34 +28,34 @@ static void test_agent_create_destroy(system_fixture_t *mut_fixture) {
     const char *version = "1.0.0";
     
     // Use fixture to register the method
-    method_t *own_method = ar__system_fixture__register_method(mut_fixture, method_name, instructions, version);
+    method_t *own_method = ar_system_fixture__register_method(mut_fixture, method_name, instructions, version);
     assert(own_method != NULL);
     
     // When we create an agent with this method
-    int64_t agent_id = ar__agency__create_agent(method_name, version, NULL);
+    int64_t agent_id = ar_agency__create_agent(method_name, version, NULL);
     
     // Then the agent should be created successfully
     assert(agent_id > 0);
     
     // And the agent should exist in the system
-    bool exists = ar__agency__agent_exists(agent_id);
+    bool exists = ar_agency__agent_exists(agent_id);
     assert(exists);
     
     // When we destroy the agent
-    ar__agency__destroy_agent(agent_id);
+    ar_agency__destroy_agent(agent_id);
     
     // Then the agent should be destroyed successfully
     // Agency destroy returns void
     
     // And the agent should no longer exist in the system
-    exists = ar__agency__agent_exists(agent_id);
+    exists = ar_agency__agent_exists(agent_id);
     assert(!exists);
     
-    printf("ar__agent__create() and ar__agent__destroy() tests passed!\n");
+    printf("ar_agent__create() and ar_agent__destroy() tests passed!\n");
 }
 
 static void test_agent_send(system_fixture_t *mut_fixture) {
-    printf("Testing ar__agent__send()...\n");
+    printf("Testing ar_agent__send()...\n");
     
     // Given an echo method and an agent using it
     const char *method_name = "echo_method";
@@ -63,36 +63,36 @@ static void test_agent_send(system_fixture_t *mut_fixture) {
     const char *version = "1.0.0";
     
     // Use fixture to register the method
-    method_t *own_method = ar__system_fixture__register_method(mut_fixture, method_name, instructions, version);
+    method_t *own_method = ar_system_fixture__register_method(mut_fixture, method_name, instructions, version);
     assert(own_method != NULL);
     
-    int64_t agent_id = ar__agency__create_agent(method_name, version, NULL);
+    int64_t agent_id = ar_agency__create_agent(method_name, version, NULL);
     assert(agent_id > 0);
     
     // When we send a message to the agent
-    data_t *own_message_data = ar__data__create_string(g_hello_message);
+    data_t *own_message_data = ar_data__create_string(g_hello_message);
     assert(own_message_data != NULL);
-    bool send_result = ar__agency__send_to_agent(agent_id, own_message_data);
+    bool send_result = ar_agency__send_to_agent(agent_id, own_message_data);
     own_message_data = NULL; // Mark as transferred
     
     // Then the message should be sent successfully
     assert(send_result);
     
     // Process the message to prevent memory leaks
-    ar__system__process_next_message();
+    ar_system__process_next_message();
     
     // Since we can't directly access the message queue in an opaque map,
     // we'll verify the agent was created (which was already tested)
     // and that the message was sent (which was verified by send_result)
-    assert(ar__agency__agent_exists(agent_id));
+    assert(ar_agency__agent_exists(agent_id));
     
     // Note: We don't destroy the agent - fixture handles cleanup
     
-    printf("ar__agent__send() test passed!\n");
+    printf("ar_agent__send() test passed!\n");
 }
 
 static void test_agent_exists(system_fixture_t *mut_fixture) {
-    printf("Testing ar__agent__exists()...\n");
+    printf("Testing ar_agent__exists()...\n");
     
     // Given a method and an agent created with it
     const char *method_name = "exists_method";
@@ -100,37 +100,37 @@ static void test_agent_exists(system_fixture_t *mut_fixture) {
     const char *version = "1.0.0";
     
     // Use fixture to register the method
-    method_t *own_method = ar__system_fixture__register_method(mut_fixture, method_name, instructions, version);
+    method_t *own_method = ar_system_fixture__register_method(mut_fixture, method_name, instructions, version);
     assert(own_method != NULL);
     
-    int64_t agent_id = ar__agency__create_agent(method_name, version, NULL);
+    int64_t agent_id = ar_agency__create_agent(method_name, version, NULL);
     assert(agent_id > 0);
     
     // When we check if the valid agent ID exists
-    bool exists = ar__agency__agent_exists(agent_id);
+    bool exists = ar_agency__agent_exists(agent_id);
     
     // Then it should exist
     assert(exists);
     
     // When we check if invalid agent IDs exist
-    bool exists_zero = ar__agency__agent_exists(0);
-    bool exists_large = ar__agency__agent_exists(999999);
+    bool exists_zero = ar_agency__agent_exists(0);
+    bool exists_large = ar_agency__agent_exists(999999);
     
     // Then they should not exist
     assert(!exists_zero);
     assert(!exists_large);
     
     // When we destroy the agent
-    ar__agency__destroy_agent(agent_id);
+    ar_agency__destroy_agent(agent_id);
     // Agency destroy returns void
     
     // And check if it still exists
-    exists = ar__agency__agent_exists(agent_id);
+    exists = ar_agency__agent_exists(agent_id);
     
     // Then it should no longer exist
     assert(!exists);
     
-    printf("ar__agent__exists() test passed!\n");
+    printf("ar_agent__exists() test passed!\n");
 }
 
 static void test_agent_persistence(system_fixture_t *mut_fixture) {
@@ -146,20 +146,20 @@ static void test_agent_persistence(system_fixture_t *mut_fixture) {
     const char *version = "1.0.0";
     
     // Use fixture to register the method
-    method_t *own_method = ar__system_fixture__register_method(mut_fixture, method_name, instructions, version);
+    method_t *own_method = ar_system_fixture__register_method(mut_fixture, method_name, instructions, version);
     assert(own_method != NULL);
     
     // Create a context with data_t
-    data_t *own_context = ar__data__create_map();
+    data_t *own_context = ar_data__create_map();
     assert(own_context != NULL);
-    ar__data__set_map_string(own_context, "test_key", "test_value");
+    ar_data__set_map_string(own_context, "test_key", "test_value");
     
     // And an agent created with this persistent method - agent doesn't take ownership
-    int64_t agent_id = ar__agency__create_agent(method_name, version, own_context);
+    int64_t agent_id = ar_agency__create_agent(method_name, version, own_context);
     assert(agent_id > 0);
     
     // When we save agents to disk
-    bool save_result = ar__agency__save_agents();
+    bool save_result = ar_agency__save_agents();
     
     // Then the save operation should succeed
     assert(save_result);
@@ -169,11 +169,11 @@ static void test_agent_persistence(system_fixture_t *mut_fixture) {
     assert(stat("agency.agerun", &st) == 0);
     
     // Verify the agent still exists in memory
-    bool exists = ar__agency__agent_exists(agent_id);
+    bool exists = ar_agency__agent_exists(agent_id);
     assert(exists);
     
     // Since the agent didn't take ownership, we need to cleanup our context
-    ar__data__destroy(own_context);
+    ar_data__destroy(own_context);
     own_context = NULL; // Mark as destroyed
     
     printf("Agent save test passed!\n");
@@ -183,11 +183,11 @@ int main(void) {
     printf("Starting Agent Module Tests...\n");
     
     // Create a system fixture for all tests
-    system_fixture_t *mut_fixture = ar__system_fixture__create("agent_tests");
+    system_fixture_t *mut_fixture = ar_system_fixture__create("agent_tests");
     assert(mut_fixture != NULL);
     
     // Initialize the fixture
-    bool init_result = ar__system_fixture__initialize(mut_fixture);
+    bool init_result = ar_system_fixture__initialize(mut_fixture);
     assert(init_result);
     
     // When we run all agent tests with the fixture
@@ -197,13 +197,13 @@ int main(void) {
     test_agent_persistence(mut_fixture);
     
     // Check for memory leaks
-    bool no_leaks = ar__system_fixture__check_memory(mut_fixture);
+    bool no_leaks = ar_system_fixture__check_memory(mut_fixture);
     if (!no_leaks) {
         printf("WARNING: Memory leaks detected in agent tests\n");
     }
     
     // Clean up the fixture
-    ar__system_fixture__destroy(mut_fixture);
+    ar_system_fixture__destroy(mut_fixture);
     mut_fixture = NULL;
     
     // And report success

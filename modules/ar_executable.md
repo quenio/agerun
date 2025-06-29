@@ -64,18 +64,18 @@ The executable sends several demonstration messages:
 
 ```c
 // String builder demonstration
-ar__agent__send(/* to */ 2, /* from */ 0, 
-    ar__data__create_map_2("op", "concat", 
-                          "values", ar__data__create_list_2("Hello", "World")));
+ar_agent__send(/* to */ 2, /* from */ 0, 
+    ar_data__create_map_2("op", "concat", 
+                          "values", ar_data__create_list_2("Hello", "World")));
 
 // Message routing demonstration  
-ar__agent__send(/* to */ 3, /* from */ 0,
-    ar__data__create_map_2("type", "urgent",
+ar_agent__send(/* to */ 3, /* from */ 0,
+    ar_data__create_map_2("type", "urgent",
                           "content", "Alert!"));
 
 // Agent management demonstration
-ar__agent__send(/* to */ 4, /* from */ 0,
-    ar__data__create_map_3("action", "create",
+ar_agent__send(/* to */ 4, /* from */ 0,
+    ar_data__create_map_3("action", "create",
                           "method", "string-builder",
                           "version", "1.0.0"));
 ```
