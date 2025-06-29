@@ -179,16 +179,17 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Refactored all 9 instruction evaluators to use public method
   - [x] Fixed build instruction evaluator memory corruption bug
 
-**Code Duplication Cleanup (Completed 2025-06-29)**
-- [x] TDD Cycle 6: Move _copy_data_value to data module
+**Code Duplication Cleanup (In Progress)**
+- [ ] TDD Cycle 6: Move _copy_data_value to data module
   - [x] Created ar_data__shallow_copy() function in data module
   - [x] Created ar_data__is_primitive_type() helper function
   - [x] Created ar_data__map_contains_only_primitives() helper function
   - [x] Created ar_data__list_contains_only_primitives() helper function
   - [x] Refactored shallow_copy to use helper functions for better maintainability
-  - [x] All evaluators will be updated to use the new data module function
+  - [ ] Update all evaluators to use the new data module function
   - [x] Test thoroughly to ensure all data types are properly copied
-  - [x] This eliminates code duplication and provides a proper abstraction
+  - [ ] Remove duplicated implementations from evaluators
+  - [ ] This eliminates code duplication and provides a proper abstraction
 
 #### Phase 3: Update Instruction Evaluators (One by One)
 - [ ] TDD Cycle 7: Assignment evaluator
