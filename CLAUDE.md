@@ -46,6 +46,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 ### 0. Documentation Protocol
 
 **Always search CLAUDE.md first** when asked about procedures. Don't overthink - start with exact keywords.
+**When reading TODO.md**: Check [ ] = incomplete, [x] = complete. Read completion dates.
 
 ### 1. Memory Management (ZERO TOLERANCE FOR LEAKS)
 
@@ -390,8 +391,8 @@ Never compile directly with gcc.
 ### 10. Session & Commit Management
 
 **Task Management**:
-- **Session todos**: Current TDD cycles, implementations, bug fixes
-- **TODO.md**: Future architectural work, refactoring plans
+- **Session todos (TodoWrite/TodoRead)**: Current TDD cycles, implementations, bug fixes
+- **TODO.md file**: Long-term architecture, future features (check [ ] vs [x] for completion)
 - **User feedback**: May reveal design issues, not just implementation bugs
 
 **Pre-Commit Checklist** (MANDATORY):
