@@ -46,7 +46,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 ### 0. Documentation Protocol
 
 **Always search CLAUDE.md first** when asked about procedures. Don't overthink - start with exact keywords.
-**When reading TODO.md**: Check [ ] = incomplete, [x] = complete. Read completion dates.
+**When reading TODO.md**: Check [ ] = incomplete, [x] = complete. Read completion dates. Be explicit - list all components.
 
 ### 1. Memory Management (ZERO TOLERANCE FOR LEAKS)
 
@@ -125,6 +125,8 @@ ar_data__destroy(own_args);  // Add cleanup
 ```
 
 **Debug Strategy**: When leak detected → Check memory report → Trace allocation source → Verify ownership semantics → Fix variable naming → Add proper cleanup
+
+**Use-After-Free Prevention**: Watch error paths + ownership transfer interactions. Run ASan always when both present.
 
 ### 2. Test-Driven Development (MANDATORY)
 
@@ -362,7 +364,12 @@ cd bin  # Wrong - avoid relative paths
 - Context lifetime: NEVER destroy context or its elements in evaluators
 - Debug ownership: Use `ar_data__hold_ownership()` to verify status
 
-### 8. Agent Lifecycle
+### 8. Error Propagation Pattern
+
+**Implementation**: Set errors at source → Store in struct → Propagate via get_error() → Print once at top level
+**Key Rule**: Evaluators set errors, interpreter prints them. Never print errors where they occur.
+
+### 9. Agent Lifecycle
 
 **Critical Points**:
 - Agents receive `__wake__` on creation
@@ -370,7 +377,7 @@ cd bin  # Wrong - avoid relative paths
 - ALWAYS process messages after sending to prevent leaks
 - Call `ar_system__process_next_message()` after `ar_agent__send()`
 
-### 9. Building Individual Tests
+### 10. Building Individual Tests
 
 Always use make to build tests:
 ```bash
@@ -388,12 +395,12 @@ Never compile directly with gcc.
   3. Run the test automatically from the bin directory
   4. Generate a memory report specific to that test
 
-### 10. Session & Commit Management
+### 11. Session & Commit Management
 
 **Task Management**:
 - **Session todos (TodoWrite/TodoRead)**: Current TDD cycles, implementations, bug fixes
 - **TODO.md file**: Long-term architecture, future features (check [ ] vs [x] for completion)
-- **User feedback**: May reveal design issues, not just implementation bugs
+- **User feedback**: May reveal design issues, not just implementation bugs. Listen for concerns about output/behavior.
 
 **Pre-Commit Checklist** (MANDATORY):
 1. `./clean_build.sh` - Fix ALL issues before proceeding (includes doc validation)
@@ -412,7 +419,7 @@ Never compile directly with gcc.
 - Include brief summary of what was accomplished
 - Update CLAUDE.md with any new patterns or learnings from the session
 
-### 11. Refactoring Patterns
+### 12. Refactoring Patterns
 
 **Core Principles**:
 - **Preserve behavior**: Tests define expected behavior - fix implementation, not tests
@@ -450,7 +457,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - **Complexity warning**: If "simple" change touches many modules → approach is wrong
 - **Complete implementations**: All cases or none - partial implementations create bugs
 
-### 12. Plan Verification and Review
+### 13. Plan Verification and Review
 
 **When Creating Development Plans**:
 - **Always include critical verification steps**: Plans must include diff verification, test running, memory checking
@@ -470,7 +477,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
   - Some have fixed argument counts (method: exactly 3, build: exactly 2)
 - **Always check**: Read existing tests to understand specific requirements
 
-### 13. Task Tool Guidelines
+### 14. Task Tool Guidelines
 
 **Core Rule**: Read before write - examine Task output before modifying
 
