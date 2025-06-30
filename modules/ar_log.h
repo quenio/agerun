@@ -10,6 +10,8 @@
 #ifndef AGERUN_LOG_H
 #define AGERUN_LOG_H
 
+#include "ar_event.h"
+
 /**
  * Opaque type for a log instance
  */
@@ -87,5 +89,29 @@ void ar_log__warning_at(ar_log_t *mut_log, const char *message, int position);
  *       the buffer is full or the log is destroyed.
  */
 void ar_log__info_at(ar_log_t *mut_log, const char *message, int position);
+
+/**
+ * Gets the last error event from the log
+ * @param ref_log The log instance (borrowed reference)
+ * @return The last error event, or NULL if no errors exist
+ * @note Ownership: Returns a borrowed reference. Do not destroy.
+ */
+ar_event_t* ar_log__get_last_error(ar_log_t *ref_log);
+
+/**
+ * Gets the last warning event from the log
+ * @param ref_log The log instance (borrowed reference)
+ * @return The last warning event, or NULL if no warnings exist
+ * @note Ownership: Returns a borrowed reference. Do not destroy.
+ */
+ar_event_t* ar_log__get_last_warning(ar_log_t *ref_log);
+
+/**
+ * Gets the last info event from the log
+ * @param ref_log The log instance (borrowed reference)
+ * @return The last info event, or NULL if no info events exist
+ * @note Ownership: Returns a borrowed reference. Do not destroy.
+ */
+ar_event_t* ar_log__get_last_info(ar_log_t *ref_log);
 
 #endif /* AGERUN_LOG_H */

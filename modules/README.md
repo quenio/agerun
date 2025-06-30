@@ -862,6 +862,34 @@ The [semver module](ar_semver.md) provides semantic versioning support for the m
 - **Strict Validation**: Enforces semver rules like non-negative version components
 - **Extensible Design**: Supports future extensions like pre-release and build metadata
 
+### Event Module (`ar_event`)
+
+The [event module](ar_event.md) provides event representation for error handling and logging throughout the system:
+
+- **Event Types**: Supports ERROR, WARNING, and INFO event types for different severity levels
+- **Automatic Timestamps**: Captures ISO 8601 timestamps automatically on event creation
+- **Position Tracking**: Optional position information for parser errors and source location
+- **Immutable Events**: Events are immutable after creation for thread safety and consistency
+- **Memory Efficient**: Single allocation per event with all data in contiguous memory
+- **Type-Safe API**: Strong typing prevents mixing event types or invalid operations
+- **Zero Dependencies**: Standalone module with no dependencies on other AgeRun modules
+- **Ownership Semantics**: Clear ownership transfer on creation and destruction
+
+### Log Module (`ar_log`)
+
+The [log module](ar_log.md) provides buffered event logging with automatic disk persistence:
+
+- **Buffered Logging**: Events are buffered in memory until buffer is full (10 events by default)
+- **Automatic Flushing**: Buffer flushes when full or on destroy, ensuring no event loss
+- **Event Retrieval**: Get the last event of each type from the buffer for error reporting
+- **Position-Aware Logging**: Supports logging with optional position information for parsers
+- **Persistent Storage**: Events are written to "agerun.log" file in append mode
+- **Structured Format**: Events written with timestamp, type, message, and optional position
+- **Memory Safe**: Zero memory leaks with proper ownership tracking of all events
+- **Depends on Event**: Uses ar_event module for event representation
+- **Depends on List**: Uses ar_list module for buffer management
+- **Depends on IO**: Uses ar_io module for file operations
+
 ## Foundation Modules
 
 Foundation modules build upon core modules to provide essential data structures and services that support the execution environment. These modules depend on one or more core modules and add type safety, memory management, and other critical services required by higher-level components.
