@@ -8,7 +8,7 @@
 #include "ar_expression_ast.h"
 #include "ar_method.h"
 #include "ar_methodology.h"
-#include "ar_io.h"
+#include "ar_log.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -26,20 +26,21 @@ bool ar_method_instruction_evaluator__evaluate_legacy(
  * ar_methodology__register_method() uses a global singleton internally.
  */
 struct ar_method_instruction_evaluator_s {
+    ar_log_t *ref_log;                           /* Borrowed reference to log instance */
     ar_expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
     data_t *mut_memory;                          /* Memory map (mutable reference) */
-    char *own_error_message;                     /* Owned error message string */
 };
 
 /**
  * Creates a new method instruction evaluator instance
  */
 ar_method_instruction_evaluator_t* ar_method_instruction_evaluator__create(
+    ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 ) {
     // Validate required parameters
-    if (ref_expr_evaluator == NULL || mut_memory == NULL) {
+    if (ref_log == NULL || ref_expr_evaluator == NULL || mut_memory == NULL) {
         return NULL;
     }
     
@@ -53,9 +54,9 @@ ar_method_instruction_evaluator_t* ar_method_instruction_evaluator__create(
     }
     
     // Initialize fields
+    evaluator->ref_log = ref_log;
     evaluator->ref_expr_evaluator = ref_expr_evaluator;
     evaluator->mut_memory = mut_memory;
-    evaluator->own_error_message = NULL;
     
     return evaluator;
 }
@@ -70,11 +71,6 @@ void ar_method_instruction_evaluator__destroy(
         return;
     }
     
-    // Free error message if any
-    if (own_evaluator->own_error_message) {
-        AR__HEAP__FREE(own_evaluator->own_error_message);
-    }
-    
     // Free the evaluator structure
     AR__HEAP__FREE(own_evaluator);
 }
@@ -83,18 +79,10 @@ void ar_method_instruction_evaluator__destroy(
 static const char* MEMORY_PREFIX = "memory.";
 static const size_t MEMORY_PREFIX_LEN = 7;
 
-/* Helper function to set error message */
-static void _set_error(ar_method_instruction_evaluator_t *mut_evaluator, const char *message) {
-    // Free existing error message if any
-    if (mut_evaluator->own_error_message) {
-        AR__HEAP__FREE(mut_evaluator->own_error_message);
-        mut_evaluator->own_error_message = NULL;
-    }
-    
-    // Set new error message
-    if (message) {
-        mut_evaluator->own_error_message = AR__HEAP__STRDUP(message, "evaluator error message");
-        ar_io__error("%s", message);
+/* Helper function to log error message */
+static void _log_error(ar_method_instruction_evaluator_t *mut_evaluator, const char *message) {
+    if (message && mut_evaluator->ref_log) {
+        ar_log__error(mut_evaluator->ref_log, message);
     }
 }
 
@@ -196,7 +184,7 @@ static bool _evaluate_three_string_args(
         } else {
             *out_arg1 = ar_data__shallow_copy(result1);
             if (!*out_arg1) {
-                _set_error(mut_evaluator, "Cannot create method with nested containers in argument 1 (no deep copy support)");
+                _log_error(mut_evaluator, "Cannot create method with nested containers in argument 1 (no deep copy support)");
                 if (result2) {
                     if (ar_data__hold_ownership(result2, mut_evaluator)) {
                         ar_data__transfer_ownership(result2, mut_evaluator);
@@ -224,7 +212,7 @@ static bool _evaluate_three_string_args(
         } else {
             *out_arg2 = ar_data__shallow_copy(result2);
             if (!*out_arg2) {
-                _set_error(mut_evaluator, "Cannot create method with nested containers in argument 2 (no deep copy support)");
+                _log_error(mut_evaluator, "Cannot create method with nested containers in argument 2 (no deep copy support)");
                 ar_data__destroy(*out_arg1);
                 if (result3) {
                     if (ar_data__hold_ownership(result3, mut_evaluator)) {
@@ -247,7 +235,7 @@ static bool _evaluate_three_string_args(
         } else {
             *out_arg3 = ar_data__shallow_copy(result3);
             if (!*out_arg3) {
-                _set_error(mut_evaluator, "Cannot create method with nested containers in argument 3 (no deep copy support)");
+                _log_error(mut_evaluator, "Cannot create method with nested containers in argument 3 (no deep copy support)");
                 ar_data__destroy(*out_arg1);
                 ar_data__destroy(*out_arg2);
                 return false;
@@ -277,7 +265,7 @@ bool ar_method_instruction_evaluator__evaluate(
     }
     
     // Clear any previous error
-    _set_error(mut_evaluator, NULL);
+    _log_error(mut_evaluator, NULL);
     
     // Extract dependencies from the evaluator instance
     ar_expression_evaluator_t *mut_expr_evaluator = mut_evaluator->ref_expr_evaluator;
@@ -333,14 +321,5 @@ bool ar_method_instruction_evaluator__evaluate(
     }
     
     return success;
-}
-
-const char* ar_method_instruction_evaluator__get_error(
-    const ar_method_instruction_evaluator_t *ref_evaluator
-) {
-    if (!ref_evaluator) {
-        return NULL;
-    }
-    return ref_evaluator->own_error_message;
 }
 

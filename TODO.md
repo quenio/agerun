@@ -66,7 +66,10 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Get last event by type functionality
   - [x] Buffer overflow triggers automatic flush
   - [x] Destroy flushes buffered events to disk
-  - [ ] Integration with evaluators and parsers
+  - [x] Integration with evaluators and parsers (Completed 2025-06-30)
+    - [x] All 9 instruction evaluators updated to use ar_log
+    - [x] Instruction evaluator facade updated to coordinate logging
+    - [ ] Parsers still need integration with position tracking
 
 #### 2. Extract Memory Path Utilities Module  
 - [ ] Create `ar_memory_path` module for memory path operations
@@ -90,18 +93,19 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Ensure consistent cleanup on errors
 
 #### 5. Create Base Evaluator Structure
-- [ ] Design base evaluator pattern or shared utilities
-  - [ ] Common error message field management
-  - [ ] Shared initialization/cleanup patterns
-  - [ ] Standardize get_error implementations
-  - [ ] Consider composition over inheritance approach
+- [x] Design base evaluator pattern or shared utilities (Completed 2025-06-30)
+  - [x] Common error message field management - replaced with ar_log
+  - [x] Shared initialization/cleanup patterns - all use ar_log pattern
+  - [x] Standardize get_error implementations - removed in favor of ar_log
+  - [x] Consider composition over inheritance approach - using ar_log composition
 
 #### 6. Refactor All Evaluators to Use Shared Components
-- [ ] Update all 9 evaluators to use new shared modules
-  - [ ] Replace duplicated code with shared function calls
-  - [ ] Ensure no functionality is lost
-  - [ ] Verify all tests still pass
-  - [ ] Check for memory leaks after refactoring
+- [x] Update all 9 evaluators to use new shared modules (Partially completed 2025-06-30)
+  - [x] Replace duplicated error handling with ar_log calls
+  - [ ] Replace remaining duplicated code (memory path, ownership, result storage)
+  - [x] Ensure no functionality is lost
+  - [x] Verify all tests still pass
+  - [x] Check for memory leaks after refactoring
 
 ### Parnas Principles - Interface Violations (HIGH PRIORITY)
 

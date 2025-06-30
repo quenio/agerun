@@ -10,18 +10,21 @@
 #include "ar_expression_evaluator.h"
 #include "ar_instruction_ast.h"
 #include "ar_data.h"
+#include "ar_log.h"
 
 /* Forward declaration of opaque struct */
 typedef struct ar_destroy_agent_instruction_evaluator_s ar_destroy_agent_instruction_evaluator_t;
 
 /**
  * Creates a new destroy agent instruction evaluator instance
+ * @param ref_log The log instance to use for error reporting (borrowed reference)
  * @param mut_expr_evaluator Expression evaluator to use (mutable reference)
  * @param mut_memory Memory data structure (mutable reference)
  * @return New evaluator instance, or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy
  */
 ar_destroy_agent_instruction_evaluator_t* ar_destroy_agent_instruction_evaluator__create(
+    ar_log_t *ref_log,
     ar_expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory
 );
@@ -45,15 +48,6 @@ bool ar_destroy_agent_instruction_evaluator__evaluate(
     const ar_instruction_ast_t *ref_ast
 );
 
-/**
- * Get the last error message from the evaluator
- * @param ref_evaluator The evaluator to get the error from
- * @return Error message string, or NULL if no error
- * @note Ownership: Returns a borrowed reference, do not free
- */
-const char* ar_destroy_agent_instruction_evaluator__get_error(
-    const ar_destroy_agent_instruction_evaluator_t *ref_evaluator
-);
 
 
 #endif /* AGERUN_DESTROY_AGENT_INSTRUCTION_EVALUATOR_H */

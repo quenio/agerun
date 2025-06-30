@@ -10,16 +10,16 @@
 #include "ar_instruction_ast.h"
 #include "ar_expression_ast.h"
 #include "ar_expression_evaluator.h"
-#include "ar_io.h"
+#include "ar_log.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
 /* Struct definition for parse instruction evaluator */
 struct ar_parse_instruction_evaluator_s {
+    ar_log_t *ref_log;                           /* Borrowed reference to log instance */
     ar_expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
     data_t *mut_memory;                          /* Memory map (mutable reference) */
-    char *own_error_message;                     /* Owned error message string */
 };
 
 /* Constants */
@@ -30,20 +30,12 @@ static const size_t MEMORY_PREFIX_LEN = 7;
 static const char* _get_memory_key_path(const char *ref_path);
 static bool _store_result_if_assigned(data_t *mut_memory, const ar_instruction_ast_t *ref_ast, data_t *own_result);
 static data_t* _parse_value_string(const char *value_str);
-static void _set_error(ar_parse_instruction_evaluator_t *mut_evaluator, const char *message);
+static void _log_error(ar_parse_instruction_evaluator_t *mut_evaluator, const char *message);
 
-/* Helper function to set error message */
-static void _set_error(ar_parse_instruction_evaluator_t *mut_evaluator, const char *message) {
-    // Free existing error message if any
-    if (mut_evaluator->own_error_message) {
-        AR__HEAP__FREE(mut_evaluator->own_error_message);
-        mut_evaluator->own_error_message = NULL;
-    }
-    
-    // Set new error message
-    if (message) {
-        mut_evaluator->own_error_message = AR__HEAP__STRDUP(message, "evaluator error message");
-        ar_io__error("%s", message);
+/* Helper function to log error message */
+static void _log_error(ar_parse_instruction_evaluator_t *mut_evaluator, const char *message) {
+    if (message && mut_evaluator->ref_log) {
+        ar_log__error(mut_evaluator->ref_log, message);
     }
 }
 
@@ -120,10 +112,11 @@ static data_t* _parse_value_string(const char *value_str) {
  * Creates a new parse instruction evaluator
  */
 ar_parse_instruction_evaluator_t* ar_parse_instruction_evaluator__create(
+    ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 ) {
-    if (!ref_expr_evaluator || !mut_memory) {
+    if (!ref_log || !ref_expr_evaluator || !mut_memory) {
         return NULL;
     }
     
@@ -135,9 +128,9 @@ ar_parse_instruction_evaluator_t* ar_parse_instruction_evaluator__create(
         return NULL;
     }
     
+    own_evaluator->ref_log = ref_log;
     own_evaluator->ref_expr_evaluator = ref_expr_evaluator;
     own_evaluator->mut_memory = mut_memory;
-    own_evaluator->own_error_message = NULL;
     
     // Ownership transferred to caller
     return own_evaluator;
@@ -151,11 +144,6 @@ void ar_parse_instruction_evaluator__destroy(
 ) {
     if (!own_evaluator) {
         return;
-    }
-    
-    // Free error message if any
-    if (own_evaluator->own_error_message) {
-        AR__HEAP__FREE(own_evaluator->own_error_message);
     }
     
     AR__HEAP__FREE(own_evaluator);
@@ -173,7 +161,7 @@ bool ar_parse_instruction_evaluator__evaluate(
     }
     
     // Clear any previous error
-    _set_error(mut_evaluator, NULL);
+    _log_error(mut_evaluator, NULL);
     
     // Verify this is a parse AST node
     if (ar_instruction_ast__get_type(ref_ast) != AR_INST__PARSE) {
@@ -226,7 +214,7 @@ bool ar_parse_instruction_evaluator__evaluate(
         // It's owned by someone else - we need to make a copy
         own_template_data = ar_data__shallow_copy(template_result);
         if (!own_template_data) {
-            _set_error(mut_evaluator, "Cannot parse with nested containers in template (no deep copy support)");
+            _log_error(mut_evaluator, "Cannot parse with nested containers in template (no deep copy support)");
             AR__HEAP__FREE(items);
             return false;
         }
@@ -254,7 +242,7 @@ bool ar_parse_instruction_evaluator__evaluate(
         // It's owned by someone else - we need to make a copy
         own_input_data = ar_data__shallow_copy(input_result);
         if (!own_input_data) {
-            _set_error(mut_evaluator, "Cannot parse with nested containers in input (no deep copy support)");
+            _log_error(mut_evaluator, "Cannot parse with nested containers in input (no deep copy support)");
             ar_data__destroy(own_template_data);
             AR__HEAP__FREE(items);
             return false;
@@ -409,14 +397,5 @@ bool ar_parse_instruction_evaluator__evaluate(
     
     // Store result if assigned, otherwise just destroy it
     return _store_result_if_assigned(mut_evaluator->mut_memory, ref_ast, own_result);
-}
-
-const char* ar_parse_instruction_evaluator__get_error(
-    const ar_parse_instruction_evaluator_t *ref_evaluator
-) {
-    if (!ref_evaluator) {
-        return NULL;
-    }
-    return ref_evaluator->own_error_message;
 }
 

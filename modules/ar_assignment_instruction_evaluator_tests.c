@@ -2,22 +2,28 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <unistd.h>
 #include "ar_assignment_instruction_evaluator.h"
 #include "ar_expression_evaluator.h"
 #include "ar_instruction_ast.h"
 #include "ar_expression_ast.h"
 #include "ar_data.h"
+#include "ar_log.h"
+#include "ar_event.h"
 
 static void test_assignment_instruction_evaluator__create_destroy(void) {
-    // Given expression evaluator and memory
+    // Given expression evaluator, memory, and log
     data_t *own_memory = ar_data__create_map();
     assert(own_memory != NULL);
     
     ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_memory, NULL);
     assert(own_expr_eval != NULL);
     
+    ar_log_t *own_log = ar_log__create();
+    assert(own_log != NULL);
+    
     // When creating an assignment instruction evaluator
-    ar_assignment_instruction_evaluator_t *own_evaluator = ar_assignment_instruction_evaluator__create(own_expr_eval, own_memory);
+    ar_assignment_instruction_evaluator_t *own_evaluator = ar_assignment_instruction_evaluator__create(own_log, own_expr_eval, own_memory);
     
     // Then it should be created successfully
     assert(own_evaluator != NULL);
@@ -28,6 +34,7 @@ static void test_assignment_instruction_evaluator__create_destroy(void) {
     // Then cleanup other resources
     ar_expression_evaluator__destroy(own_expr_eval);
     ar_data__destroy(own_memory);
+    ar_log__destroy(own_log);
 }
 
 static void test_assignment_instruction_evaluator__evaluate_with_instance(void) {
@@ -38,7 +45,10 @@ static void test_assignment_instruction_evaluator__evaluate_with_instance(void) 
     ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_memory, NULL);
     assert(own_expr_eval != NULL);
     
-    ar_assignment_instruction_evaluator_t *own_evaluator = ar_assignment_instruction_evaluator__create(own_expr_eval, own_memory);
+    ar_log_t *own_log = ar_log__create();
+    assert(own_log != NULL);
+    
+    ar_assignment_instruction_evaluator_t *own_evaluator = ar_assignment_instruction_evaluator__create(own_log, own_expr_eval, own_memory);
     assert(own_evaluator != NULL);
     
     // When evaluating an assignment instruction: memory.count := 42
@@ -65,6 +75,7 @@ static void test_assignment_instruction_evaluator__evaluate_with_instance(void) 
     ar_assignment_instruction_evaluator__destroy(own_evaluator);
     ar_expression_evaluator__destroy(own_expr_eval);
     ar_data__destroy(own_memory);
+    ar_log__destroy(own_log);
 }
 
 static void test_assignment_instruction_evaluator__evaluate_integer(void) {
@@ -75,8 +86,11 @@ static void test_assignment_instruction_evaluator__evaluate_integer(void) {
     ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
     ar_assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(
-        expr_eval, memory
+        log, expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -104,6 +118,7 @@ static void test_assignment_instruction_evaluator__evaluate_integer(void) {
     ar_assignment_instruction_evaluator__destroy(evaluator);
     ar_expression_evaluator__destroy(expr_eval);
     ar_data__destroy(memory);
+    ar_log__destroy(log);
 }
 
 static void test_assignment_instruction_evaluator__evaluate_string(void) {
@@ -114,8 +129,11 @@ static void test_assignment_instruction_evaluator__evaluate_string(void) {
     ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
     ar_assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(
-        expr_eval, memory
+        log, expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -144,6 +162,7 @@ static void test_assignment_instruction_evaluator__evaluate_string(void) {
     ar_assignment_instruction_evaluator__destroy(evaluator);
     ar_expression_evaluator__destroy(expr_eval);
     ar_data__destroy(memory);
+    ar_log__destroy(log);
 }
 
 static void test_assignment_instruction_evaluator__evaluate_nested_path(void) {
@@ -158,8 +177,11 @@ static void test_assignment_instruction_evaluator__evaluate_nested_path(void) {
     ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
     ar_assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(
-        expr_eval, memory
+        log, expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -189,6 +211,7 @@ static void test_assignment_instruction_evaluator__evaluate_nested_path(void) {
     ar_assignment_instruction_evaluator__destroy(evaluator);
     ar_expression_evaluator__destroy(expr_eval);
     ar_data__destroy(memory);
+    ar_log__destroy(log);
 }
 
 static void test_assignment_instruction_evaluator__evaluate_expression(void) {
@@ -201,8 +224,11 @@ static void test_assignment_instruction_evaluator__evaluate_expression(void) {
     ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
     ar_assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(
-        expr_eval, memory
+        log, expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -238,6 +264,7 @@ static void test_assignment_instruction_evaluator__evaluate_expression(void) {
     ar_assignment_instruction_evaluator__destroy(evaluator);
     ar_expression_evaluator__destroy(expr_eval);
     ar_data__destroy(memory);
+    ar_log__destroy(log);
 }
 
 static void test_assignment_instruction_evaluator__evaluate_invalid_path(void) {
@@ -248,8 +275,11 @@ static void test_assignment_instruction_evaluator__evaluate_invalid_path(void) {
     ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     assert(expr_eval != NULL);
     
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
     ar_assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(
-        expr_eval, memory
+        log, expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -268,12 +298,21 @@ static void test_assignment_instruction_evaluator__evaluate_invalid_path(void) {
     // Then it should return false
     assert(result == false);
     
+    // And error should be logged
+    ar_event_t *error_event = ar_log__get_last_error(log);
+    assert(error_event != NULL);
+    const char *error_msg = ar_event__get_message(error_event);
+    assert(error_msg != NULL);
+    assert(strstr(error_msg, "Assignment target must start with 'memory.'") != NULL);
+    
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_assignment_instruction_evaluator__destroy(evaluator);
     ar_expression_evaluator__destroy(expr_eval);
     ar_data__destroy(memory);
+    ar_log__destroy(log);
 }
+
 
 int main(void) {
     printf("Starting assignment instruction_evaluator tests...\n");

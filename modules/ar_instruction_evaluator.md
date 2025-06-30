@@ -9,8 +9,8 @@ The instruction evaluator acts as a facade that coordinates specialized instruct
 - Manages instances of all specialized instruction evaluators
 - Delegates evaluation requests to the appropriate specialized evaluator
 - Provides a single entry point for instruction evaluation
-- Maintains shared dependencies (expression evaluator, memory, context)
-- Ensures consistent error handling across all instruction types
+- Maintains shared dependencies (expression evaluator, memory, context, log)
+- Ensures consistent error reporting through centralized logging
 
 ## Architecture
 
@@ -43,6 +43,7 @@ The module follows a **composition pattern** where it creates and manages instan
 - `ar_instruction_ast`: For accessing parsed instruction structures
 - `ar_data`: For data manipulation and storage
 - `ar_heap`: For memory tracking
+- `ar_log`: For centralized error reporting
 
 ## API Reference
 
@@ -60,6 +61,7 @@ An opaque type representing an instruction evaluator instance.
 
 ```c
 instruction_evaluator_t* ar_instruction_evaluator__create(
+    ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory,
     data_t *ref_context,
@@ -70,6 +72,7 @@ instruction_evaluator_t* ar_instruction_evaluator__create(
 Creates a new instruction evaluator instance and initializes all specialized evaluators.
 
 **Parameters:**
+- `ref_log`: Log instance for error reporting (required, borrowed reference)
 - `ref_expr_evaluator`: Expression evaluator to use (required, borrowed reference)
 - `mut_memory`: Memory map for storing values (required, mutable reference)
 - `ref_context`: Optional context map (can be NULL, borrowed reference)
@@ -81,7 +84,7 @@ Creates a new instruction evaluator instance and initializes all specialized eva
 
 **Behavior:**
 - Creates instances of all 9 specialized instruction evaluators
-- Passes shared dependencies to each specialized evaluator
+- Passes shared dependencies (including log) to each specialized evaluator
 - Returns NULL if any specialized evaluator creation fails
 
 #### ar_instruction_evaluator__destroy
@@ -174,7 +177,7 @@ bool ar_instruction_evaluator__evaluate_destroy(
 ```c
 // Create evaluator with dependencies
 instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-    expr_eval, memory, NULL, NULL
+    log, expr_eval, memory, NULL, NULL
 );
 
 // Create assignment AST: memory.count := 10
@@ -210,7 +213,7 @@ The instruction evaluator demonstrates the **facade pattern** by providing a uni
 ```c
 // Single evaluator manages all specialized evaluators
 instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-    expr_eval, memory, context, message
+    log, expr_eval, memory, context, message
 );
 
 // Each instruction type is handled by its specialized evaluator
@@ -241,12 +244,13 @@ ar_instruction_evaluator__destroy(evaluator);
 
 ## Error Handling
 
-Error handling is delegated to the specialized evaluators:
+Error handling uses the centralized logging system:
 
-- Each specialized evaluator provides its own error checking and validation
+- All errors are reported through the ar_log instance passed at creation
+- Each specialized evaluator reports errors to the shared log
 - The instruction evaluator simply returns the result from the specialized evaluator
 - No additional error handling logic is needed at the coordination level
-- Consistent error reporting across all instruction types
+- Consistent error reporting across all instruction types through centralized logging
 
 ## Performance Considerations
 

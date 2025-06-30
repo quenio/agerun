@@ -13,18 +13,23 @@
 #include "ar_methodology.h"
 #include "ar_agency.h"
 #include "ar_system.h"
+#include "ar_log.h"
+#include "ar_event.h"
 
 static void test_method_instruction_evaluator__create_destroy(void) {
-    // Given memory and expression evaluator
+    // Given memory, expression evaluator, and log
     data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     assert(expr_eval != NULL);
     
     // When creating a method instruction evaluator
     ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
-        expr_eval, memory
+        log, expr_eval, memory
     );
     
     // Then it should be created successfully
@@ -36,19 +41,23 @@ static void test_method_instruction_evaluator__create_destroy(void) {
     // Then cleanup dependencies
     ar_expression_evaluator__destroy(expr_eval);
     ar_data__destroy(memory);
+    ar_log__destroy(log);
 }
 
 static void test_method_instruction_evaluator__evaluate_with_instance(void) {
-    // Given memory and expression evaluator
+    // Given memory, expression evaluator, and log
     data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     assert(expr_eval != NULL);
     
     // When creating a method instruction evaluator instance
     ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
-        expr_eval, memory
+        log, expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -89,22 +98,26 @@ static void test_method_instruction_evaluator__evaluate_with_instance(void) {
     ar_method_instruction_evaluator__destroy(evaluator);
     ar_expression_evaluator__destroy(expr_eval);
     ar_data__destroy(memory);
+    ar_log__destroy(log);
     
     // Clean up the method we registered
     ar_methodology__cleanup();
 }
 
 static void test_method_instruction_evaluator__evaluate_legacy(void) {
-    // Given memory and expression evaluator
+    // Given memory, expression evaluator, and log
     data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     assert(expr_eval != NULL);
     
     // Create an evaluator instance
     ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
-        expr_eval, memory
+        log, expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -149,6 +162,7 @@ static void test_method_instruction_evaluator__evaluate_legacy(void) {
     ar_method_instruction_evaluator__destroy(evaluator);
     ar_expression_evaluator__destroy(expr_eval);
     ar_data__destroy(memory);
+    ar_log__destroy(log);
     
     // Clean up the method we registered
     ar_methodology__cleanup();
@@ -160,10 +174,13 @@ static void test_instruction_evaluator__evaluate_method_simple(void) {
     assert(memory != NULL);
     
     ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     assert(expr_eval != NULL);
     
     ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
-        expr_eval, memory
+        log, expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -203,6 +220,7 @@ static void test_instruction_evaluator__evaluate_method_simple(void) {
     ar_method_instruction_evaluator__destroy(evaluator);
     ar_expression_evaluator__destroy(expr_eval);
     ar_data__destroy(memory);
+    ar_log__destroy(log);
     
     // Clean up the method we registered
     ar_methodology__cleanup();
@@ -214,10 +232,13 @@ static void test_instruction_evaluator__evaluate_method_with_result(void) {
     assert(memory != NULL);
     
     ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     assert(expr_eval != NULL);
     
     ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
-        expr_eval, memory
+        log, expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -261,6 +282,7 @@ static void test_instruction_evaluator__evaluate_method_with_result(void) {
     ar_method_instruction_evaluator__destroy(evaluator);
     ar_expression_evaluator__destroy(expr_eval);
     ar_data__destroy(memory);
+    ar_log__destroy(log);
     
     // Clean up the method we registered
     ar_methodology__cleanup();
@@ -272,10 +294,13 @@ static void test_instruction_evaluator__evaluate_method_invalid_instructions(voi
     assert(memory != NULL);
     
     ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     assert(expr_eval != NULL);
     
     ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
-        expr_eval, memory
+        log, expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -316,6 +341,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_instructions(voi
     ar_method_instruction_evaluator__destroy(evaluator);
     ar_expression_evaluator__destroy(expr_eval);
     ar_data__destroy(memory);
+    ar_log__destroy(log);
     
     // Clean up the method we registered
     ar_methodology__cleanup();
@@ -327,10 +353,13 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     assert(memory != NULL);
     
     ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     assert(expr_eval != NULL);
     
     ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
-        expr_eval, memory
+        log, expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -447,6 +476,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     ar_method_instruction_evaluator__destroy(evaluator);
     ar_expression_evaluator__destroy(expr_eval);
     ar_data__destroy(memory);
+    ar_log__destroy(log);
     
     // Clean up any methods that might have been registered
     ar_methodology__cleanup();

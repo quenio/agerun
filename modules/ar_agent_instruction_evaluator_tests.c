@@ -13,6 +13,8 @@
 #include "ar_methodology.h"
 #include "ar_agency.h"
 #include "ar_system.h"
+#include "ar_log.h"
+#include "ar_event.h"
 
 static void test_agent_instruction_evaluator__evaluate_with_context(void) {
     // Initialize system for agent creation
@@ -27,10 +29,13 @@ static void test_agent_instruction_evaluator__evaluate_with_context(void) {
     ar_data__set_map_string(context, "config", "production");
     
     ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, context);
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     assert(expr_eval != NULL);
     
     ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
-        expr_eval, memory
+        log, expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -79,6 +84,7 @@ static void test_agent_instruction_evaluator__evaluate_with_context(void) {
     ar_expression_evaluator__destroy(expr_eval);
     ar_data__destroy(context);
     ar_data__destroy(memory);
+    ar_log__destroy(log);
     
     // Clean up agency before shutting down
     ar_agency__reset();
@@ -98,10 +104,13 @@ static void test_agent_instruction_evaluator__evaluate_with_result(void) {
     assert(memory != NULL);
     
     ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     assert(expr_eval != NULL);
     
     ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
-        expr_eval, memory
+        log, expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -153,6 +162,7 @@ static void test_agent_instruction_evaluator__evaluate_with_result(void) {
     ar_agent_instruction_evaluator__destroy(evaluator);
     ar_expression_evaluator__destroy(expr_eval);
     ar_data__destroy(memory);
+    ar_log__destroy(log);
     
     // Clean up agency before shutting down
     ar_agency__reset();
@@ -172,10 +182,13 @@ static void test_agent_instruction_evaluator__evaluate_invalid_method(void) {
     assert(memory != NULL);
     
     ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     assert(expr_eval != NULL);
     
     ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
-        expr_eval, memory
+        log, expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -196,6 +209,7 @@ static void test_agent_instruction_evaluator__evaluate_invalid_method(void) {
     ar_agent_instruction_evaluator__destroy(evaluator);
     ar_expression_evaluator__destroy(expr_eval);
     ar_data__destroy(memory);
+    ar_log__destroy(log);
     
     // Clean up agency before shutting down
     ar_agency__reset();
@@ -215,10 +229,13 @@ static void test_agent_instruction_evaluator__evaluate_invalid_args(void) {
     assert(memory != NULL);
     
     ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     assert(expr_eval != NULL);
     
     ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
-        expr_eval, memory
+        log, expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -274,6 +291,7 @@ static void test_agent_instruction_evaluator__evaluate_invalid_args(void) {
     ar_agent_instruction_evaluator__destroy(evaluator);
     ar_expression_evaluator__destroy(expr_eval);
     ar_data__destroy(memory);
+    ar_log__destroy(log);
     
     // Shutdown system
     ar_system__shutdown();
@@ -285,10 +303,13 @@ static void test_agent_instruction_evaluator__create_destroy(void) {
     assert(memory != NULL);
     
     ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     assert(expr_eval != NULL);
     
     // When creating an agent instruction evaluator instance
-    ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(expr_eval, memory);
+    ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(log, expr_eval, memory);
     
     // Then it should be created successfully
     assert(evaluator != NULL);
@@ -301,6 +322,7 @@ static void test_agent_instruction_evaluator__create_destroy(void) {
     // Cleanup dependencies
     ar_expression_evaluator__destroy(expr_eval);
     ar_data__destroy(memory);
+    ar_log__destroy(log);
 }
 
 static void test_agent_instruction_evaluator__evaluate_with_instance(void) {
@@ -313,9 +335,12 @@ static void test_agent_instruction_evaluator__evaluate_with_instance(void) {
     ar_data__set_map_string(memory, "config", "test");
     
     ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     assert(expr_eval != NULL);
     
-    ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(expr_eval, memory);
+    ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(log, expr_eval, memory);
     assert(evaluator != NULL);
     
     // Register a method to create agents with
@@ -362,6 +387,7 @@ static void test_agent_instruction_evaluator__evaluate_with_instance(void) {
     ar_agent_instruction_evaluator__destroy(evaluator);
     ar_expression_evaluator__destroy(expr_eval);
     ar_data__destroy(memory);
+    ar_log__destroy(log);
     
     // Clean up agency before shutting down
     ar_agency__reset();
@@ -383,11 +409,14 @@ static void test_agent_instruction_evaluator__legacy_evaluate_function(void) {
     ar_data__set_map_string(memory, "status", "legacy");
     
     ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     assert(expr_eval != NULL);
     
     // Create an evaluator instance
     ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
-        expr_eval, memory
+        log, expr_eval, memory
     );
     assert(evaluator != NULL);
     
@@ -435,6 +464,7 @@ static void test_agent_instruction_evaluator__legacy_evaluate_function(void) {
     ar_agent_instruction_evaluator__destroy(evaluator);
     ar_expression_evaluator__destroy(expr_eval);
     ar_data__destroy(memory);
+    ar_log__destroy(log);
     
     // Clean up agency before shutting down
     ar_agency__reset();

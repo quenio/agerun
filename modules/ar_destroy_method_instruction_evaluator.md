@@ -17,13 +17,14 @@ The module follows an instantiable design pattern with lifecycle management:
 ```c
 // Create evaluator instance with dependencies
 ar_destroy_method_instruction_evaluator_t* ar_destroy_method_instruction_evaluator__create(
+    ar_log_t *ref_log,
     ar_expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory
 );
 
 // Evaluate using stored dependencies
 bool ar_destroy_method_instruction_evaluator__evaluate(
-    const ar_destroy_method_instruction_evaluator_t *ref_evaluator,
+    ar_destroy_method_instruction_evaluator_t *mut_evaluator,
     const ar_instruction_ast_t *ref_ast
 );
 
@@ -62,13 +63,18 @@ This ensures proper cleanup and lifecycle event handling.
 ### Memory Management
 
 The module follows strict memory ownership rules:
+- The evaluator instance owns its internal structure but not the dependencies
+- Expression evaluator, memory, and log are borrowed references stored in the instance
 - Method name and version evaluations create temporary data
 - Sleep messages are created and ownership transferred via send
 - Result value is created and transferred to memory when assignment specified
 - All temporary values properly destroyed
+- The create function returns ownership to the caller
+- The destroy function takes ownership and frees all resources
 
 ## Dependencies
 
+- `ar_log`: For centralized error reporting
 - `ar_expression_evaluator`: For evaluating expressions
 - `ar_expression_parser`: For parsing expression strings
 - `ar_expression_ast`: For expression AST nodes
@@ -103,7 +109,7 @@ ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, N
 
 // Create destroy method evaluator instance
 ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
-    expr_eval, memory
+    log, expr_eval, memory
 );
 
 // Parse destroy instruction: memory.result := destroy("calculator", "1.0.0")
@@ -143,4 +149,4 @@ The module includes comprehensive tests covering:
 - Agent lifecycle event handling
 - Memory leak verification
 
-All tests pass with zero memory leaks (315 allocations, 0 active).
+All tests pass with zero memory leaks. Errors are now reported through the centralized logging system rather than stored internally.

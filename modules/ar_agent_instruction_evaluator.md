@@ -17,14 +17,14 @@ The module follows an instantiable design pattern with lifecycle management:
 ```c
 // Create evaluator instance with dependencies
 ar_agent_instruction_evaluator_t* ar_agent_instruction_evaluator__create(
+    ar_log_t *ref_log,
     ar_expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory
 );
 
 // Evaluate using stored dependencies
 bool ar_agent_instruction_evaluator__evaluate(
-    const ar_agent_instruction_evaluator_t *ref_evaluator,
-    data_t *ref_context,
+    ar_agent_instruction_evaluator_t *mut_evaluator,
     const ar_instruction_ast_t *ref_ast
 );
 
@@ -60,13 +60,18 @@ The module includes an optimization for context handling:
 ### Memory Management
 
 The module follows strict memory ownership rules:
+- The evaluator instance owns its internal structure but not the dependencies
+- Expression evaluator, memory, and log are borrowed references stored in the instance
 - Method name and version evaluations are temporary
 - Context is passed as reference (not owned by agent)
 - Agent ID result is created when assignment specified
 - All temporary values properly cleaned up
+- The create function returns ownership to the caller
+- The destroy function takes ownership and frees all resources
 
 ## Dependencies
 
+- `ar_log`: For centralized error reporting
 - `ar_expression_evaluator`: For evaluating expressions
 - `ar_expression_parser`: For parsing expression strings
 - `ar_expression_ast`: For expression AST nodes
@@ -98,14 +103,14 @@ ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, N
 
 // Create agent evaluator instance
 ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
-    expr_eval, memory
+    log, expr_eval, memory
 );
 
 // Parse agent instruction: memory.worker := agent("processor", "1.0.0", context)
 ar_instruction_ast_t *ast = ar_instruction_parser__parse_agent(parser);
 
 // Evaluate using instance
-bool success = ar_agent_instruction_evaluator__evaluate(evaluator, context, ast);
+bool success = ar_agent_instruction_evaluator__evaluate(evaluator, ast);
 
 // Clean up
 ar_agent_instruction_evaluator__destroy(evaluator);
@@ -134,4 +139,4 @@ The module includes comprehensive tests covering:
 - Invalid argument handling
 - Memory leak verification
 
-All tests pass with zero memory leaks (511 allocations, 0 active). The test suite follows TDD methodology with Red-Green-Refactor cycles.
+All tests pass with zero memory leaks. The test suite follows TDD methodology with Red-Green-Refactor cycles. Errors are now reported through the centralized logging system rather than stored internally.

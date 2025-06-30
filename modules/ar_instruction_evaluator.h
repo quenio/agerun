@@ -18,6 +18,7 @@
 #include "ar_instruction_ast.h"
 #include "ar_data.h"
 #include "ar_expression_evaluator.h"
+#include "ar_log.h"
 
 /**
  * Opaque type for instruction evaluator
@@ -26,6 +27,7 @@ typedef struct instruction_evaluator_s instruction_evaluator_t;
 
 /**
  * Creates a new instruction evaluator
+ * @param ref_log The log instance to use for error reporting (borrowed reference)
  * @param ref_expr_evaluator The expression evaluator to use for evaluating expressions (borrowed reference)
  * @param mut_memory The memory map containing variables (mutable reference)
  * @param ref_context Optional context map with additional data (borrowed reference, can be NULL)
@@ -35,6 +37,7 @@ typedef struct instruction_evaluator_s instruction_evaluator_t;
  *       The function does not take ownership of any parameters.
  */
 instruction_evaluator_t* ar_instruction_evaluator__create(
+    ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory,
     data_t *ref_context,

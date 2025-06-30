@@ -26,6 +26,7 @@
  * Internal structure for instruction evaluator
  */
 struct instruction_evaluator_s {
+    ar_log_t *ref_log;                           /* Log instance (borrowed reference) */
     ar_expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
     data_t *mut_memory;                          /* Memory map (mutable reference) */
     data_t *ref_context;                         /* Context map (borrowed reference, can be NULL) */
@@ -45,13 +46,14 @@ struct instruction_evaluator_s {
  * Creates a new instruction evaluator
  */
 instruction_evaluator_t* ar_instruction_evaluator__create(
+    ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory,
     data_t *ref_context,
     data_t *ref_message
 ) {
     // Validate required parameters
-    if (ref_expr_evaluator == NULL || mut_memory == NULL) {
+    if (ref_log == NULL || ref_expr_evaluator == NULL || mut_memory == NULL) {
         return NULL;
     }
     
@@ -62,6 +64,7 @@ instruction_evaluator_t* ar_instruction_evaluator__create(
     }
     
     // Initialize fields
+    evaluator->ref_log = ref_log;
     evaluator->ref_expr_evaluator = ref_expr_evaluator;
     evaluator->mut_memory = mut_memory;
     evaluator->ref_context = ref_context;
@@ -69,6 +72,7 @@ instruction_evaluator_t* ar_instruction_evaluator__create(
     
     // Create assignment evaluator instance
     evaluator->own_assignment_evaluator = ar_assignment_instruction_evaluator__create(
+        ref_log,
         ref_expr_evaluator,
         mut_memory
     );
@@ -79,6 +83,7 @@ instruction_evaluator_t* ar_instruction_evaluator__create(
     
     // Create send evaluator instance
     evaluator->own_send_evaluator = ar_send_instruction_evaluator__create(
+        ref_log,
         ref_expr_evaluator,
         mut_memory
     );
@@ -90,6 +95,7 @@ instruction_evaluator_t* ar_instruction_evaluator__create(
     
     // Create condition evaluator instance
     evaluator->own_condition_evaluator = ar_condition_instruction_evaluator__create(
+        ref_log,
         ref_expr_evaluator,
         mut_memory
     );
@@ -102,6 +108,7 @@ instruction_evaluator_t* ar_instruction_evaluator__create(
     
     // Create parse evaluator instance
     evaluator->own_parse_evaluator = ar_parse_instruction_evaluator__create(
+        ref_log,
         ref_expr_evaluator,
         mut_memory
     );
@@ -115,6 +122,7 @@ instruction_evaluator_t* ar_instruction_evaluator__create(
     
     // Create build evaluator instance
     evaluator->own_build_evaluator = ar_build_instruction_evaluator__create(
+        ref_log,
         ref_expr_evaluator,
         mut_memory
     );
@@ -129,6 +137,7 @@ instruction_evaluator_t* ar_instruction_evaluator__create(
     
     // Create method evaluator instance
     evaluator->own_method_evaluator = ar_method_instruction_evaluator__create(
+        ref_log,
         ref_expr_evaluator,
         mut_memory
     );
@@ -144,6 +153,7 @@ instruction_evaluator_t* ar_instruction_evaluator__create(
     
     // Create agent evaluator instance
     evaluator->own_agent_evaluator = ar_agent_instruction_evaluator__create(
+        ref_log,
         ref_expr_evaluator,
         mut_memory
     );
@@ -160,6 +170,7 @@ instruction_evaluator_t* ar_instruction_evaluator__create(
     
     // Create destroy agent evaluator instance
     evaluator->own_destroy_agent_evaluator = ar_destroy_agent_instruction_evaluator__create(
+        ref_log,
         ref_expr_evaluator,
         mut_memory
     );
@@ -177,6 +188,7 @@ instruction_evaluator_t* ar_instruction_evaluator__create(
     
     // Create destroy method evaluator instance
     evaluator->own_destroy_method_evaluator = ar_destroy_method_instruction_evaluator__create(
+        ref_log,
         ref_expr_evaluator,
         mut_memory
     );

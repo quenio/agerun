@@ -10,7 +10,7 @@
 #include "ar_method.h"
 #include "ar_methodology.h"
 #include "ar_list.h"
-#include "ar_io.h"
+#include "ar_log.h"
 #include <string.h>
 #include <stdio.h>
 #include <inttypes.h>
@@ -18,16 +18,17 @@
 
 /* Opaque struct definition */
 struct ar_agent_instruction_evaluator_s {
+    ar_log_t *ref_log;                           /* Borrowed reference to log instance */
     ar_expression_evaluator_t *mut_expr_evaluator;
     data_t *mut_memory;
-    char *own_error_message;  /* Owned error message string */
 };
 
 ar_agent_instruction_evaluator_t* ar_agent_instruction_evaluator__create(
+    ar_log_t *ref_log,
     ar_expression_evaluator_t *mut_expr_evaluator,
     data_t *mut_memory
 ) {
-    if (!mut_expr_evaluator || !mut_memory) {
+    if (!ref_log || !mut_expr_evaluator || !mut_memory) {
         return NULL;
     }
     
@@ -36,9 +37,9 @@ ar_agent_instruction_evaluator_t* ar_agent_instruction_evaluator__create(
         return NULL;
     }
     
+    own_evaluator->ref_log = ref_log;
     own_evaluator->mut_expr_evaluator = mut_expr_evaluator;
     own_evaluator->mut_memory = mut_memory;
-    own_evaluator->own_error_message = NULL;
     
     return own_evaluator;
 }
@@ -48,11 +49,6 @@ void ar_agent_instruction_evaluator__destroy(ar_agent_instruction_evaluator_t *o
         return;
     }
     
-    // Free error message if any
-    if (own_evaluator->own_error_message) {
-        AR__HEAP__FREE(own_evaluator->own_error_message);
-    }
-    
     AR__HEAP__FREE(own_evaluator);
 }
 
@@ -60,18 +56,10 @@ void ar_agent_instruction_evaluator__destroy(ar_agent_instruction_evaluator_t *o
 static const char* MEMORY_PREFIX = "memory.";
 static const size_t MEMORY_PREFIX_LEN = 7;
 
-/* Helper function to set error message */
-static void _set_error(ar_agent_instruction_evaluator_t *mut_evaluator, const char *message) {
-    // Free existing error message if any
-    if (mut_evaluator->own_error_message) {
-        AR__HEAP__FREE(mut_evaluator->own_error_message);
-        mut_evaluator->own_error_message = NULL;
-    }
-    
-    // Set new error message
-    if (message) {
-        mut_evaluator->own_error_message = AR__HEAP__STRDUP(message, "evaluator error message");
-        ar_io__error("%s", message);
+/* Helper function to log error message */
+static void _log_error(ar_agent_instruction_evaluator_t *mut_evaluator, const char *message) {
+    if (message && mut_evaluator->ref_log) {
+        ar_log__error(mut_evaluator->ref_log, message);
     }
 }
 
@@ -133,7 +121,7 @@ bool ar_agent_instruction_evaluator__evaluate(
     }
     
     // Clear any previous error
-    _set_error(mut_evaluator, NULL);
+    _log_error(mut_evaluator, NULL);
     
     ar_expression_evaluator_t *mut_expr_evaluator = mut_evaluator->mut_expr_evaluator;
     data_t *mut_memory = mut_evaluator->mut_memory;
@@ -183,7 +171,7 @@ bool ar_agent_instruction_evaluator__evaluate(
         } else {
             own_method_name = ar_data__shallow_copy(method_result);
             if (!own_method_name) {
-                _set_error(mut_evaluator, "Cannot create agent with nested containers in method name (no deep copy support)");
+                _log_error(mut_evaluator, "Cannot create agent with nested containers in method name (no deep copy support)");
                 AR__HEAP__FREE(items);
                 return false;
             }
@@ -199,7 +187,7 @@ bool ar_agent_instruction_evaluator__evaluate(
         } else {
             own_version = ar_data__shallow_copy(version_result);
             if (!own_version) {
-                _set_error(mut_evaluator, "Cannot create agent with nested containers in version (no deep copy support)");
+                _log_error(mut_evaluator, "Cannot create agent with nested containers in version (no deep copy support)");
                 if (own_method_name) ar_data__destroy(own_method_name);
                 AR__HEAP__FREE(items);
                 return false;
@@ -256,13 +244,4 @@ bool ar_agent_instruction_evaluator__evaluate(
     }
     
     return success;
-}
-
-const char* ar_agent_instruction_evaluator__get_error(
-    const ar_agent_instruction_evaluator_t *ref_evaluator
-) {
-    if (!ref_evaluator) {
-        return NULL;
-    }
-    return ref_evaluator->own_error_message;
 }

@@ -24,11 +24,12 @@ An opaque type representing a send instruction evaluator instance.
 
 ```c
 ar_send_instruction_evaluator_t* ar_send_instruction_evaluator__create(
+    ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
 ```
-Creates a new send instruction evaluator that stores its dependencies.
+Creates a new send instruction evaluator that stores its dependencies including the log for error reporting.
 
 ```c
 void ar_send_instruction_evaluator__destroy(
@@ -63,7 +64,7 @@ Key features:
 
 The module follows strict memory ownership rules:
 - The evaluator instance owns its internal structure but not the dependencies
-- Expression evaluator and memory are borrowed references stored in the instance
+- Expression evaluator, memory, and log are borrowed references stored in the instance
 - Message ownership is transferred to `ar_agency__send_to_agent()`
 - If send fails, the message is properly destroyed
 - Result values are created and stored when assignment is specified
@@ -72,6 +73,7 @@ The module follows strict memory ownership rules:
 
 ## Dependencies
 
+- `ar_log`: For centralized error reporting
 - `ar_expression_evaluator`: For evaluating expressions
 - `ar_expression_parser`: For parsing expression strings
 - `ar_expression_ast`: For expression AST nodes
@@ -98,7 +100,7 @@ ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, N
 
 // Create send instruction evaluator
 ar_send_instruction_evaluator_t *send_eval = ar_send_instruction_evaluator__create(
-    expr_eval, memory
+    log, expr_eval, memory
 );
 
 // Parse send instruction: send(1, "Hello")
@@ -122,7 +124,7 @@ The module includes comprehensive tests covering:
 - Sending to agent 0 (no-op case)
 - Send with result assignment
 - Various message types
-- Invalid agent ID handling
+- Invalid agent ID handling (errors reported through log)
 - Memory leak verification
 
-All tests pass with zero memory leaks.
+All tests pass with zero memory leaks. Errors are now reported through the centralized logging system rather than stored internally.

@@ -24,11 +24,12 @@ An opaque type representing a method instruction evaluator instance.
 
 ```c
 ar_method_instruction_evaluator_t* ar_method_instruction_evaluator__create(
+    ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
 ```
-Creates a new method instruction evaluator that stores its dependencies.
+Creates a new method instruction evaluator that stores its dependencies including the log for error reporting.
 
 ```c
 void ar_method_instruction_evaluator__destroy(
@@ -61,7 +62,7 @@ Key features:
 
 The module follows strict memory ownership rules:
 - The evaluator instance owns its internal structure but not the dependencies
-- Expression evaluator and memory are borrowed references stored in the instance
+- Expression evaluator, memory, and log are borrowed references stored in the instance
 - Method name, instructions, and version are evaluated to owned strings
 - Method creation takes ownership of the instruction string
 - Method registration transfers ownership to methodology
@@ -71,6 +72,7 @@ The module follows strict memory ownership rules:
 
 ## Dependencies
 
+- `ar_log`: For centralized error reporting
 - `ar_expression_evaluator`: For evaluating expressions
 - `ar_expression_parser`: For parsing expression strings
 - `ar_expression_ast`: For expression AST nodes
@@ -99,7 +101,7 @@ ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, N
 
 // Create method instruction evaluator
 ar_method_instruction_evaluator_t *method_eval = ar_method_instruction_evaluator__create(
-    expr_eval, memory
+    log, expr_eval, memory
 );
 
 // Parse method instruction: method("echo", "send(0, message)", "1.0.0")
@@ -126,4 +128,4 @@ The module includes comprehensive tests covering:
 - Method retrieval after registration
 - Memory leak verification
 
-All tests pass with zero memory leaks.
+All tests pass with zero memory leaks. Errors are now reported through the centralized logging system rather than stored internally.

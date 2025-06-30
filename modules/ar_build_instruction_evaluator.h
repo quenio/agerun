@@ -15,6 +15,7 @@
 typedef struct expression_evaluator_s ar_expression_evaluator_t;
 typedef struct data_s data_t;
 typedef struct instruction_ast_s ar_instruction_ast_t;
+typedef struct ar_log_s ar_log_t;
 
 /* Opaque type for build instruction evaluator */
 typedef struct ar_build_instruction_evaluator_s ar_build_instruction_evaluator_t;
@@ -22,6 +23,7 @@ typedef struct ar_build_instruction_evaluator_s ar_build_instruction_evaluator_t
 /**
  * Creates a new build instruction evaluator
  *
+ * @param ref_log The log instance to use for error reporting (borrowed reference)
  * @param ref_expr_evaluator Expression evaluator to use (borrowed reference)
  * @param mut_memory Memory map to use (mutable reference)
  * @return A new build instruction evaluator or NULL on failure
@@ -30,6 +32,7 @@ typedef struct ar_build_instruction_evaluator_s ar_build_instruction_evaluator_t
  * @note The evaluator stores references to the provided dependencies
  */
 ar_build_instruction_evaluator_t* ar_build_instruction_evaluator__create(
+    ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
@@ -70,15 +73,6 @@ bool ar_build_instruction_evaluator__evaluate(
     const ar_instruction_ast_t *ref_ast
 );
 
-/**
- * Get the last error message from the evaluator
- * @param ref_evaluator The evaluator to get the error from
- * @return Error message string, or NULL if no error
- * @note Ownership: Returns a borrowed reference, do not free
- */
-const char* ar_build_instruction_evaluator__get_error(
-    const ar_build_instruction_evaluator_t *ref_evaluator
-);
 
 
 #endif /* AGERUN_BUILD_INSTRUCTION_EVALUATOR_H */

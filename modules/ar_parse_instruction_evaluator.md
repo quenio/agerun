@@ -24,11 +24,12 @@ An opaque type representing a parse instruction evaluator instance.
 
 ```c
 ar_parse_instruction_evaluator_t* ar_parse_instruction_evaluator__create(
+    ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
 ```
-Creates a new parse instruction evaluator that stores its dependencies.
+Creates a new parse instruction evaluator that stores its dependencies including the log for error reporting.
 
 ```c
 void ar_parse_instruction_evaluator__destroy(
@@ -68,7 +69,7 @@ Templates use curly braces to mark placeholders:
 
 The module follows strict memory ownership rules:
 - The evaluator instance owns its internal structure but not the dependencies
-- Expression evaluator and memory are borrowed references stored in the instance
+- Expression evaluator, memory, and log are borrowed references stored in the instance
 - Template and input string evaluations are owned temporarily
 - Extracted values are stored in a new map
 - Map ownership is transferred to memory storage
@@ -78,6 +79,7 @@ The module follows strict memory ownership rules:
 
 ## Dependencies
 
+- `ar_log`: For centralized error reporting
 - `ar_expression_evaluator`: For evaluating expressions
 - `ar_expression_parser`: For parsing expression strings
 - `ar_expression_ast`: For expression AST nodes
@@ -105,7 +107,7 @@ ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, N
 
 // Create parse instruction evaluator
 ar_parse_instruction_evaluator_t *parse_eval = ar_parse_instruction_evaluator__create(
-    expr_eval, memory
+    log, expr_eval, memory
 );
 
 // Parse instruction: memory.data := parse("Hello {name}!", "Hello World!")
@@ -129,7 +131,7 @@ The module includes comprehensive tests covering:
 - Multiple placeholder extraction
 - Templates with literal text
 - Edge cases (empty strings, no placeholders)
-- Invalid arguments handling
+- Invalid arguments handling (errors reported through log)
 - Memory leak verification
 
-All tests pass with zero memory leaks.
+All tests pass with zero memory leaks. Errors are now reported through the centralized logging system rather than stored internally.

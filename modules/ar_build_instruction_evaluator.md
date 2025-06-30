@@ -24,11 +24,12 @@ An opaque type representing a build instruction evaluator instance.
 
 ```c
 ar_build_instruction_evaluator_t* ar_build_instruction_evaluator__create(
+    ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
 ```
-Creates a new build instruction evaluator that stores its dependencies.
+Creates a new build instruction evaluator that stores its dependencies including the log for error reporting.
 
 ```c
 void ar_build_instruction_evaluator__destroy(
@@ -68,7 +69,7 @@ Templates use curly braces for placeholders:
 
 The module follows strict memory ownership rules:
 - The evaluator instance owns its internal structure but not the dependencies
-- Expression evaluator and memory are borrowed references stored in the instance
+- Expression evaluator, memory, and log are borrowed references stored in the instance
 - Template and values map evaluations are temporary
 - Values are accessed as references from the map
 - Result string is created with proper ownership
@@ -78,6 +79,7 @@ The module follows strict memory ownership rules:
 
 ## Dependencies
 
+- `ar_log`: For centralized error reporting
 - `ar_expression_evaluator`: For evaluating expressions
 - `ar_expression_parser`: For parsing expression strings
 - `ar_expression_ast`: For expression AST nodes
@@ -105,7 +107,7 @@ ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, N
 
 // Create build instruction evaluator
 ar_build_instruction_evaluator_t *build_eval = ar_build_instruction_evaluator__create(
-    expr_eval, memory
+    log, expr_eval, memory
 );
 
 // Set up values in memory
@@ -138,4 +140,4 @@ The module includes comprehensive tests covering:
 - Empty templates and maps
 - Memory leak verification
 
-All tests pass with zero memory leaks.
+All tests pass with zero memory leaks. Errors are now reported through the centralized logging system rather than stored internally.

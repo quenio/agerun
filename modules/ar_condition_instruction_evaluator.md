@@ -24,11 +24,12 @@ An opaque type representing a condition instruction evaluator instance.
 
 ```c
 ar_condition_instruction_evaluator_t* ar_condition_instruction_evaluator__create(
+    ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 );
 ```
-Creates a new condition instruction evaluator that stores its dependencies.
+Creates a new condition instruction evaluator that stores its dependencies including the log for error reporting.
 
 ```c
 void ar_condition_instruction_evaluator__destroy(
@@ -62,7 +63,7 @@ Key features:
 
 The module follows strict memory ownership rules:
 - The evaluator instance owns its internal structure but not the dependencies
-- Expression evaluator and memory are borrowed references stored in the instance
+- Expression evaluator, memory, and log are borrowed references stored in the instance
 - Condition evaluation results are owned and must be destroyed
 - Branch evaluation results are owned by the caller when assigned
 - The create function returns ownership to the caller
@@ -70,6 +71,7 @@ The module follows strict memory ownership rules:
 
 ## Dependencies
 
+- `ar_log`: For centralized error reporting
 - `ar_expression_evaluator`: For evaluating expressions
 - `ar_expression_parser`: For parsing expression strings
 - `ar_expression_ast`: For expression AST nodes
@@ -95,20 +97,20 @@ data_t *memory = ar_data__create_map();
 ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
 
 // Create condition instruction evaluator
-ar_condition_instruction_evaluator_t *cond_eval = ar__condition_instruction_evaluator__create(
-    expr_eval, memory
+ar_condition_instruction_evaluator_t *cond_eval = ar_condition_instruction_evaluator__create(
+    log, expr_eval, memory
 );
 
 // Parse if instruction: result := if(x > 5, 100, 200)
 ar_instruction_ast_t *ast = ar__instruction_parser__parse_if(parser);
 
 // Evaluate the condition
-bool success = ar__condition_instruction_evaluator__evaluate(cond_eval, ast);
+bool success = ar_condition_instruction_evaluator__evaluate(cond_eval, ast);
 
 // The appropriate value (100 or 200) has been stored in memory.result
 
 // Cleanup
-ar__condition_instruction_evaluator__destroy(cond_eval);
+ar_condition_instruction_evaluator__destroy(cond_eval);
 ar_expression_evaluator__destroy(expr_eval);
 ar_data__destroy(memory);
 ```
@@ -123,4 +125,4 @@ The module includes comprehensive tests covering:
 - Multiple instructions in branches
 - Memory leak verification
 
-All tests pass with zero memory leaks.
+All tests pass with zero memory leaks. Errors are now reported through the centralized logging system rather than stored internally.

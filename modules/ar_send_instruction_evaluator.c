@@ -8,7 +8,7 @@
 #include "ar_expression_ast.h"
 #include "ar_agency.h"
 #include "ar_list.h"
-#include "ar_io.h"
+#include "ar_log.h"
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
@@ -19,27 +19,19 @@
  * Internal structure for send instruction evaluator
  */
 struct ar_send_instruction_evaluator_s {
+    ar_log_t *ref_log;                           /* Borrowed reference to log instance */
     ar_expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
     data_t *mut_memory;                          /* Memory map (mutable reference) */
-    char *own_error_message;                     /* Owned error message string */
 };
 
 /* Constants */
 static const char* MEMORY_PREFIX = "memory.";
 static const size_t MEMORY_PREFIX_LEN = 7;
 
-/* Helper function to set error message */
-static void _set_error(ar_send_instruction_evaluator_t *mut_evaluator, const char *message) {
-    // Free existing error message if any
-    if (mut_evaluator->own_error_message) {
-        AR__HEAP__FREE(mut_evaluator->own_error_message);
-        mut_evaluator->own_error_message = NULL;
-    }
-    
-    // Set new error message
-    if (message) {
-        mut_evaluator->own_error_message = AR__HEAP__STRDUP(message, "evaluator error message");
-        ar_io__error("%s", message);
+/* Helper function to log error message */
+static void _log_error(ar_send_instruction_evaluator_t *mut_evaluator, const char *message) {
+    if (message && mut_evaluator->ref_log) {
+        ar_log__error(mut_evaluator->ref_log, message);
     }
 }
 
@@ -63,10 +55,11 @@ static const char* _get_memory_key_path(const char *ref_path) {
  * Creates a new send instruction evaluator
  */
 ar_send_instruction_evaluator_t* ar_send_instruction_evaluator__create(
+    ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
     data_t *mut_memory
 ) {
-    if (!ref_expr_evaluator || !mut_memory) {
+    if (!ref_log || !ref_expr_evaluator || !mut_memory) {
         return NULL;
     }
     
@@ -78,9 +71,9 @@ ar_send_instruction_evaluator_t* ar_send_instruction_evaluator__create(
         return NULL;
     }
     
+    own_evaluator->ref_log = ref_log;
     own_evaluator->ref_expr_evaluator = ref_expr_evaluator;
     own_evaluator->mut_memory = mut_memory;
-    own_evaluator->own_error_message = NULL;
     
     // Ownership transferred to caller
     return own_evaluator;
@@ -94,11 +87,6 @@ void ar_send_instruction_evaluator__destroy(
 ) {
     if (!own_evaluator) {
         return;
-    }
-    
-    // Free error message if any
-    if (own_evaluator->own_error_message) {
-        AR__HEAP__FREE(own_evaluator->own_error_message);
     }
     
     // Note: We don't destroy the dependencies as they are borrowed references
@@ -117,7 +105,7 @@ bool ar_send_instruction_evaluator__evaluate(
     }
     
     // Clear any previous error
-    _set_error(mut_evaluator, NULL);
+    _log_error(mut_evaluator, NULL);
     
     // Verify this is a send AST node
     if (ar_instruction_ast__get_type(ref_ast) != AR_INST__SEND) {
@@ -189,7 +177,7 @@ bool ar_send_instruction_evaluator__evaluate(
         // It's owned by someone else - we need to make a copy
         own_message = ar_data__shallow_copy(message_result);
         if (!own_message) {
-            _set_error(mut_evaluator, "Cannot send message with nested containers (no deep copy support)");
+            _log_error(mut_evaluator, "Cannot send message with nested containers (no deep copy support)");
             return false;
         }
     }
@@ -226,13 +214,4 @@ bool ar_send_instruction_evaluator__evaluate(
     }
     
     return send_result;
-}
-
-const char* ar_send_instruction_evaluator__get_error(
-    const ar_send_instruction_evaluator_t *ref_evaluator
-) {
-    if (!ref_evaluator) {
-        return NULL;
-    }
-    return ref_evaluator->own_error_message;
 }
