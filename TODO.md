@@ -69,6 +69,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Integration with evaluators and parsers (Completed 2025-06-30)
     - [x] All 9 instruction evaluators updated to use ar_log
     - [x] Instruction evaluator facade updated to coordinate logging
+    - [ ] Expression evaluator needs ar_log integration (HIGH PRIORITY)
     - [ ] Parsers still need integration with position tracking
 
 #### 2. Extract Memory Path Utilities Module  
