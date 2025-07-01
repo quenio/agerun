@@ -51,21 +51,21 @@ Each precedence level has its own parsing function:
 
 ### Parser Lifecycle
 
-- `ar__expression_parser__create(const char *expression)` - Creates parser instance
-- `ar__expression_parser__destroy(parser)` - Destroys parser instance
+- `ar_expression_parser__create(ar_log_t *log, const char *expression)` - Creates parser instance with error logging
+- `ar_expression_parser__destroy(parser)` - Destroys parser instance
 
 ### Parser State
 
-- `ar__expression_parser__get_position(parser)` - Returns current parse position
-- `ar__expression_parser__get_error(parser)` - Returns error message if parse failed
+- `ar_expression_parser__get_position(parser)` - Returns current parse position
+- `ar_expression_parser__get_error(parser)` - Returns error message if parse failed
 
 ### Parsing Functions
 
-- `ar__expression_parser__parse_expression(parser)` - Main entry point, parses complete expression
-- `ar__expression_parser__parse_literal(parser)` - Parses integer, double, or string literals
-- `ar__expression_parser__parse_memory_access(parser)` - Parses memory/message/context access
-- `ar__expression_parser__parse_arithmetic(parser)` - Parses arithmetic expressions
-- `ar__expression_parser__parse_comparison(parser)` - Parses comparison expressions
+- `ar_expression_parser__parse_expression(parser)` - Main entry point, parses complete expression
+- `ar_expression_parser__parse_literal(parser)` - Parses integer, double, or string literals
+- `ar_expression_parser__parse_memory_access(parser)` - Parses memory/message/context access
+- `ar_expression_parser__parse_arithmetic(parser)` - Parses arithmetic expressions
+- `ar_expression_parser__parse_comparison(parser)` - Parses comparison expressions
 
 ## Supported Expression Types
 
@@ -95,8 +95,9 @@ Each precedence level has its own parsing function:
 The parser provides detailed error messages with position information:
 
 ```c
-ar_expression_parser_t *parser = ar__expression_parser__create("2 + + 3");
-ar_expression_ast_t *ast = ar__expression_parser__parse_expression(parser);
+ar_log_t *log = ar_log__create();
+ar_expression_parser_t *parser = ar_expression_parser__create(log, "2 + + 3");
+ar_expression_ast_t *ast = ar_expression_parser__parse_expression(parser);
 if (!ast) {
     printf("Error: %s\n", ar__expression_parser__get_error(parser));
     // Output: "Error at position 4: Expected literal (string or number)"

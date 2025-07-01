@@ -87,7 +87,7 @@ instruction_parser_t* ar_instruction_parser__create(void) {
     memset(own_parser, 0, sizeof(instruction_parser_t));
     
     // Create assignment parser
-    own_parser->own_assignment_parser = ar_assignment_instruction_parser__create();
+    own_parser->own_assignment_parser = ar_assignment_instruction_parser__create(NULL);
     if (!own_parser->own_assignment_parser) {
         goto error;
     }

@@ -4,6 +4,7 @@
 #include "ar_expression_parser.h"
 #include "ar_expression_ast.h"
 #include "ar_list.h"
+#include "ar_log.h"
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -203,8 +204,16 @@ static list_t* _parse_arguments_to_asts(ar_agent_instruction_parser_t *mut_parse
         return NULL;
     }
     
+    // Create temporary ar_log for expression parsing
+    ar_log_t *own_log = ar_log__create();
+    if (!own_log) {
+        ar_list__destroy(own_arg_asts);
+        _set_error(mut_parser, "Failed to create ar_log", error_offset);
+        return NULL;
+    }
+    
     for (size_t i = 0; i < arg_count; i++) {
-        ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(ref_args[i]);
+        ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(own_log, ref_args[i]);
         if (!own_expr_parser) {
             _cleanup_arg_asts(own_arg_asts);
             _set_error(mut_parser, "Failed to create expression parser", error_offset);
@@ -233,6 +242,7 @@ static list_t* _parse_arguments_to_asts(ar_agent_instruction_parser_t *mut_parse
         ar_expression_parser__destroy(own_expr_parser);
     }
     
+    ar_log__destroy(own_log);
     return own_arg_asts;
 }
 
@@ -371,7 +381,15 @@ ar_instruction_ast_t* ar_agent_instruction_parser__parse(
     /* If we added a "null" context, add it to the AST list */
     if (arg_count == 2) {
         /* Create a null literal AST for the third argument */
-        ar_expression_parser_t *own_null_parser = ar_expression_parser__create("null");
+        ar_log_t *own_log_for_null = ar_log__create();
+        if (!own_log_for_null) {
+            _cleanup_string_array(args, arg_count);
+            ar_list__destroy(own_arg_asts);
+            ar_instruction_ast__destroy(own_ast);
+            _set_error(mut_parser, "Failed to create ar_log", pos);
+            return NULL;
+        }
+        ar_expression_parser_t *own_null_parser = ar_expression_parser__create(own_log_for_null, "null");
         if (own_null_parser) {
             ar_expression_ast_t *own_null_ast = ar_expression_parser__parse_expression(own_null_parser);
             if (own_null_ast) {
@@ -379,6 +397,7 @@ ar_instruction_ast_t* ar_agent_instruction_parser__parse(
             }
             ar_expression_parser__destroy(own_null_parser);
         }
+        ar_log__destroy(own_log_for_null);
     }
     
     if (!ar_instruction_ast__set_function_arg_asts(own_ast, own_arg_asts)) {

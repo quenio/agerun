@@ -13,6 +13,7 @@
  * Tracks the expression being parsed and current position.
  */
 struct expression_parser_s {
+    ar_log_t *ref_log;         /* Log instance for error reporting (borrowed) */
     char *own_expression;      /* Copy of the expression string */
     size_t position;           /* Current parsing position */
     char *own_error_message;   /* Last error message (if any) */
@@ -34,7 +35,7 @@ static ar_expression_ast_t* _parse_equality(ar_expression_parser_t *mut_parser);
 /**
  * Create a new expression parser instance.
  */
-ar_expression_parser_t* ar_expression_parser__create(const char *ref_expression) {
+ar_expression_parser_t* ar_expression_parser__create(ar_log_t *ref_log, const char *ref_expression) {
     if (!ref_expression) {
         return NULL;
     }
@@ -44,6 +45,7 @@ ar_expression_parser_t* ar_expression_parser__create(const char *ref_expression)
         return NULL;
     }
     
+    own_parser->ref_log = ref_log;
     own_parser->own_expression = AR__HEAP__STRDUP(ref_expression, "Parser expression copy");
     if (!own_parser->own_expression) {
         AR__HEAP__FREE(own_parser);
@@ -168,6 +170,11 @@ static void _set_error(ar_expression_parser_t *mut_parser, const char *ref_messa
              mut_parser->position, ref_message);
     
     mut_parser->own_error_message = AR__HEAP__STRDUP(buffer, "Parser error message");
+    
+    // Also log the error with position
+    if (mut_parser->ref_log) {
+        ar_log__error_at(mut_parser->ref_log, ref_message, (int)mut_parser->position);
+    }
 }
 
 /**

@@ -6,6 +6,7 @@
 #include "ar_expression_parser.h"
 #include "ar_list.h"
 #include "ar_heap.h"
+#include "ar_log.h"
 
 static void test_create_assignment_instruction(void) {
     printf("Testing assignment instruction creation...\n");
@@ -318,6 +319,8 @@ static void test_empty_arguments(void) {
 
 static void test_instruction_ast__assignment_expression_ast(void) {
     printf("Testing assignment instruction with expression AST...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Given an assignment instruction
     const char *memory_path = "memory.x";
@@ -331,7 +334,7 @@ static void test_instruction_ast__assignment_expression_ast(void) {
     assert(ar_instruction_ast__get_assignment_expression_ast(own_node) == NULL);
     
     // When setting an expression AST
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, expression);
     assert(own_parser != NULL);
     
     ar_expression_ast_t *own_expr_ast = ar_expression_parser__parse_expression(own_parser);
@@ -351,10 +354,13 @@ static void test_instruction_ast__assignment_expression_ast(void) {
     
     // Cleanup (should destroy the embedded expression AST)
     ar_instruction_ast__destroy(own_node);
+    ar_log__destroy(log);
 }
 
 static void test_instruction_ast__function_arg_asts(void) {
     printf("Testing function instruction with argument ASTs...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Given a send function with arguments
     const char *function_name = "send";
@@ -375,7 +381,7 @@ static void test_instruction_ast__function_arg_asts(void) {
     assert(own_arg_asts != NULL);
     
     for (size_t i = 0; i < arg_count; i++) {
-        ar_expression_parser_t *own_parser = ar_expression_parser__create(args[i]);
+        ar_expression_parser_t *own_parser = ar_expression_parser__create(log, args[i]);
         assert(own_parser != NULL);
         ar_expression_ast_t *own_arg_ast = ar_expression_parser__parse_expression(own_parser);
         assert(own_arg_ast != NULL);
@@ -400,16 +406,19 @@ static void test_instruction_ast__function_arg_asts(void) {
     
     // Cleanup (should destroy all embedded expression ASTs)
     ar_instruction_ast__destroy(own_node);
+    ar_log__destroy(log);
 }
 
 static void test_instruction_ast__expression_ast_replacement(void) {
     printf("Testing expression AST replacement...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Given an assignment with an expression AST
     ar_instruction_ast_t *own_node = ar_instruction_ast__create_assignment("memory.x", "42");
     assert(own_node != NULL);
     
-    ar_expression_parser_t *own_parser1 = ar_expression_parser__create("42");
+    ar_expression_parser_t *own_parser1 = ar_expression_parser__create(log, "42");
     assert(own_parser1 != NULL);
     
     ar_expression_ast_t *own_first_ast = ar_expression_parser__parse_expression(own_parser1);
@@ -419,7 +428,7 @@ static void test_instruction_ast__expression_ast_replacement(void) {
     ar_instruction_ast__set_assignment_expression_ast(own_node, own_first_ast);
     
     // When replacing the expression AST with a new one
-    ar_expression_parser_t *own_parser2 = ar_expression_parser__create("100");
+    ar_expression_parser_t *own_parser2 = ar_expression_parser__create(log, "100");
     assert(own_parser2 != NULL);
     
     ar_expression_ast_t *own_second_ast = ar_expression_parser__parse_expression(own_parser2);
@@ -435,10 +444,13 @@ static void test_instruction_ast__expression_ast_replacement(void) {
     
     // Cleanup
     ar_instruction_ast__destroy(own_node);
+    ar_log__destroy(log);
 }
 
 static void test_instruction_ast__expression_ast_null_handling(void) {
     printf("Testing expression AST null handling...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Test setting expression AST on wrong node type
     ar_instruction_ast_t *own_send_node = ar_instruction_ast__create_function_call(
@@ -446,7 +458,7 @@ static void test_instruction_ast__expression_ast_null_handling(void) {
     );
     assert(own_send_node != NULL);
     
-    ar_expression_parser_t *own_parser = ar_expression_parser__create("42");
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, "42");
     ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
     ar_expression_parser__destroy(own_parser);
     
@@ -477,6 +489,7 @@ static void test_instruction_ast__expression_ast_null_handling(void) {
     assert(ar_instruction_ast__get_function_arg_asts(own_assign_node) == NULL);
     
     ar_instruction_ast__destroy(own_assign_node);
+    ar_log__destroy(log);
 }
 
 int main(void) {

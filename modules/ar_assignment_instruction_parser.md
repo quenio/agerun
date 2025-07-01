@@ -23,7 +23,7 @@ This module is part of the specialized parser architecture, where each instructi
 
 #### Creation and Destruction
 
-- **`ar_assignment_instruction_parser__create()`**: Create a new parser instance
+- **`ar_assignment_instruction_parser__create(ar_log_t *log)`**: Create a new parser instance with error logging
 - **`ar_assignment_instruction_parser__destroy()`**: Destroy a parser instance
 
 #### Parsing
@@ -38,8 +38,9 @@ This module is part of the specialized parser architecture, where each instructi
 ## Usage Example
 
 ```c
-// Create parser
-ar_assignment_instruction_parser_t *parser = ar_assignment_instruction_parser__create();
+// Create log and parser
+ar_log_t *log = ar_log__create();
+ar_assignment_instruction_parser_t *parser = ar_assignment_instruction_parser__create(log);
 
 // Parse assignment instruction
 ar_instruction_ast_t *ast = ar_assignment_instruction_parser__parse(

@@ -175,7 +175,7 @@ static list_t* _parse_argument_to_ast(ar_destroy_agent_instruction_parser_t *mut
         return NULL;
     }
     
-    ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(ref_arg);
+    ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(NULL, ref_arg);
     if (!own_expr_parser) {
         ar_list__destroy(own_arg_asts);
         _set_error(mut_parser, "Failed to create expression parser", error_offset);

@@ -3,6 +3,7 @@
 
 #include "ar_instruction_ast.h"
 #include "ar_expression_parser.h"
+#include "ar_log.h"
 
 /**
  * Opaque parser structure for assignment instructions.
@@ -13,10 +14,11 @@ typedef struct ar_assignment_instruction_parser_s ar_assignment_instruction_pars
 /**
  * Create a new assignment instruction parser instance.
  * 
+ * @param ref_log The log instance for error reporting (borrowed reference)
  * @return Newly created parser instance (owned by caller), or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy.
  */
-ar_assignment_instruction_parser_t* ar_assignment_instruction_parser__create(void);
+ar_assignment_instruction_parser_t* ar_assignment_instruction_parser__create(ar_log_t *ref_log);
 
 /**
  * Destroy an assignment instruction parser instance.

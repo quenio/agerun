@@ -5,13 +5,33 @@
 #include "ar_instruction_ast.h"
 #include "ar_expression_ast.h"
 #include "ar_heap.h"
+#include "ar_log.h"
+#include "ar_event.h"
+
+static void test_create_parser_with_log(void) {
+    printf("Testing parser creation with ar_log...\n");
+    
+    // Given an ar_log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
+    // When creating a parser with ar_log
+    ar_assignment_instruction_parser_t *parser = ar_assignment_instruction_parser__create(log);
+    
+    // Then the parser should be created successfully
+    assert(parser != NULL);
+    
+    // Clean up
+    ar_assignment_instruction_parser__destroy(parser);
+    ar_log__destroy(log);
+}
 
 static void test_assignment_instruction_parser__create_destroy(void) {
     printf("Testing assignment instruction parser create/destroy...\n");
     
     // Given the need for an assignment parser
     // When creating a parser
-    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create();
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(NULL);
     
     // Then it should create successfully
     assert(own_parser != NULL);
@@ -25,7 +45,7 @@ static void test_assignment_instruction_parser__parse_simple_assignment(void) {
     
     // Given an assignment instruction and a parser
     const char *instruction = "memory.x := 42";
-    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create();
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -46,7 +66,7 @@ static void test_assignment_instruction_parser__parse_string_assignment(void) {
     
     // Given a string assignment and a parser
     const char *instruction = "memory.greeting := \"Hello, World!\"";
-    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create();
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -67,7 +87,7 @@ static void test_assignment_instruction_parser__parse_nested_assignment(void) {
     
     // Given a nested path assignment and a parser
     const char *instruction = "memory.user.name := \"John\"";
-    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create();
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -88,7 +108,7 @@ static void test_assignment_instruction_parser__parse_expression_assignment(void
     
     // Given an expression assignment and a parser
     const char *instruction = "memory.result := 2 + 3 * 4";
-    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create();
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -108,7 +128,7 @@ static void test_assignment_instruction_parser__parse_whitespace_handling(void) 
     
     // Given an assignment with extra whitespace and a parser
     const char *instruction = "  memory.x  :=  42  ";
-    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create();
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -129,7 +149,7 @@ static void test_assignment_instruction_parser__parse_error_invalid_operator(voi
     
     // Given an invalid assignment operator and a parser
     const char *instruction = "memory.x = 42";  // Should be :=
-    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create();
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -151,7 +171,7 @@ static void test_assignment_instruction_parser__parse_error_invalid_path(void) {
     
     // Given a path without memory prefix and a parser
     const char *instruction = "x := 42";  // Missing memory prefix
-    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create();
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -168,7 +188,7 @@ static void test_assignment_instruction_parser__parse_empty_instruction(void) {
     
     // Given an empty instruction and a parser
     const char *instruction = "";
-    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create();
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     // When parsing the empty instruction
@@ -184,7 +204,7 @@ static void test_assignment_instruction_parser__reusability(void) {
     printf("Testing parser reusability...\n");
     
     // Given a parser instance
-    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create();
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     // When parsing multiple instructions with the same parser
@@ -212,7 +232,7 @@ static void test_assignment_instruction_parser__parse_with_expression_ast(void) 
     
     // Given an assignment instruction with integer literal and a parser
     const char *instruction = "memory.x := 42";
-    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create();
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -235,6 +255,9 @@ static void test_assignment_instruction_parser__parse_with_expression_ast(void) 
 
 int main(void) {
     printf("Running assignment instruction parser tests...\n\n");
+    
+    // Test with ar_log
+    test_create_parser_with_log();
     
     // Basic functionality
     test_assignment_instruction_parser__create_destroy();

@@ -5,13 +5,36 @@
 #include "ar_expression_parser.h"
 #include "ar_expression_ast.h"
 #include "ar_heap.h"
+#include "ar_log.h"
+#include "ar_event.h"
+
+static void test_create_parser_with_log(void) {
+    printf("Testing parser creation with ar_log...\n");
+    
+    // Given an ar_log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
+    // When creating a parser with ar_log
+    const char *expression = "42";
+    ar_expression_parser_t *parser = ar_expression_parser__create(log, expression);
+    
+    // Then the parser should be created successfully
+    assert(parser != NULL);
+    
+    // Clean up
+    ar_expression_parser__destroy(parser);
+    ar_log__destroy(log);
+}
 
 static void test_parse_integer_literal(void) {
     printf("Testing integer literal parsing...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Given an expression with an integer literal
     const char *expression = "42";
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, expression);
     
     // When parsing the expression
     ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
@@ -24,14 +47,17 @@ static void test_parse_integer_literal(void) {
     
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_negative_integer(void) {
     printf("Testing negative integer parsing...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Given an expression with a negative integer
     const char *expression = "-123";
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, expression);
     
     // When parsing the expression
     ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
@@ -43,14 +69,17 @@ static void test_parse_negative_integer(void) {
     
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_double_literal(void) {
     printf("Testing double literal parsing...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Given an expression with a double literal
     const char *expression = "3.14159";
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, expression);
     
     // When parsing the expression
     ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
@@ -62,14 +91,17 @@ static void test_parse_double_literal(void) {
     
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_string_literal(void) {
     printf("Testing string literal parsing...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Given an expression with a string literal
     const char *expression = "\"hello world\"";
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, expression);
     
     // When parsing the expression
     ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
@@ -81,14 +113,17 @@ static void test_parse_string_literal(void) {
     
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_empty_string(void) {
     printf("Testing empty string parsing...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Given an expression with an empty string
     const char *expression = "\"\"";
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, expression);
     
     // When parsing the expression
     ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
@@ -100,14 +135,17 @@ static void test_parse_empty_string(void) {
     
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_unterminated_string(void) {
     printf("Testing unterminated string error...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Given an expression with an unterminated string
     const char *expression = "\"hello";
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, expression);
     
     // When parsing the expression
     ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
@@ -118,14 +156,17 @@ static void test_parse_unterminated_string(void) {
     assert(strstr(ar_expression_parser__get_error(own_parser), "Unterminated string") != NULL);
     
     ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_simple_memory_access(void) {
     printf("Testing simple memory access parsing...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Given an expression with memory access
     const char *expression = "memory";
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, expression);
     
     // When parsing the expression
     ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
@@ -142,14 +183,17 @@ static void test_parse_simple_memory_access(void) {
     
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_memory_access_with_path(void) {
     printf("Testing memory access with path parsing...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Given an expression with memory access and path
     const char *expression = "message.user.name";
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, expression);
     
     // When parsing the expression
     ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
@@ -169,14 +213,17 @@ static void test_parse_memory_access_with_path(void) {
     
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_context_access(void) {
     printf("Testing context access parsing...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Given an expression with context access
     const char *expression = "context.request_id";
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, expression);
     
     // When parsing the expression
     ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
@@ -194,14 +241,17 @@ static void test_parse_context_access(void) {
     
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_simple_addition(void) {
     printf("Testing simple addition parsing...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Given an expression with addition
     const char *expression = "2 + 3";
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, expression);
     
     // When parsing the expression
     ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
@@ -218,14 +268,17 @@ static void test_parse_simple_addition(void) {
     
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_arithmetic_precedence(void) {
     printf("Testing arithmetic precedence...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Given an expression with mixed operators
     const char *expression = "2 + 3 * 4";
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, expression);
     
     // When parsing the expression
     ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
@@ -244,14 +297,17 @@ static void test_parse_arithmetic_precedence(void) {
     
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_parenthesized_expression(void) {
     printf("Testing parenthesized expression...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Given an expression with parentheses
     const char *expression = "(2 + 3) * 4";
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, expression);
     
     // When parsing the expression
     ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
@@ -273,10 +329,13 @@ static void test_parse_parenthesized_expression(void) {
     
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_comparison_operators(void) {
     printf("Testing comparison operators...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Test all comparison operators
     struct {
@@ -292,7 +351,7 @@ static void test_parse_comparison_operators(void) {
     };
     
     for (int i = 0; i < 6; i++) {
-        ar_expression_parser_t *own_parser = ar_expression_parser__create(test_cases[i].expression);
+        ar_expression_parser_t *own_parser = ar_expression_parser__create(log, test_cases[i].expression);
         ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
         
         assert(own_ast != NULL);
@@ -302,14 +361,17 @@ static void test_parse_comparison_operators(void) {
         ar_expression_ast__destroy(own_ast);
         ar_expression_parser__destroy(own_parser);
     }
+    ar_log__destroy(log);
 }
 
 static void test_parse_memory_in_arithmetic(void) {
     printf("Testing memory access in arithmetic...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Given an expression with memory access in arithmetic
     const char *expression = "memory.x + 5";
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, expression);
     
     // When parsing the expression
     ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
@@ -325,14 +387,17 @@ static void test_parse_memory_in_arithmetic(void) {
     
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_complex_expression(void) {
     printf("Testing complex expression...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Given a complex expression
     const char *expression = "(memory.count + 1) * 2 > message.limit";
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, expression);
     
     // When parsing the expression
     ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
@@ -344,14 +409,17 @@ static void test_parse_complex_expression(void) {
     
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_whitespace_handling(void) {
     printf("Testing whitespace handling...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Given an expression with various whitespace
     const char *expression = "  42   +   \t\n  8  ";
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, expression);
     
     // When parsing the expression
     ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
@@ -363,14 +431,17 @@ static void test_parse_whitespace_handling(void) {
     
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_invalid_expression(void) {
     printf("Testing invalid expression error...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Given an invalid expression
     const char *expression = "2 + + 3";
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, expression);
     
     // When parsing the expression
     ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
@@ -380,14 +451,17 @@ static void test_parse_invalid_expression(void) {
     assert(ar_expression_parser__get_error(own_parser) != NULL);
     
     ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_trailing_characters(void) {
     printf("Testing trailing characters error...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Given an expression with trailing characters
     const char *expression = "42 abc";
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, expression);
     
     // When parsing the expression
     ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
@@ -398,14 +472,17 @@ static void test_parse_trailing_characters(void) {
     assert(strstr(ar_expression_parser__get_error(own_parser), "Unexpected characters") != NULL);
     
     ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_position_tracking(void) {
     printf("Testing position tracking...\n");
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     
     // Given a parser
     const char *expression = "42 + 3";
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(expression);
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, expression);
     
     // When checking initial position
     assert(ar_expression_parser__get_position(own_parser) == 0);
@@ -417,13 +494,14 @@ static void test_parse_position_tracking(void) {
     
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_null_safety(void) {
     printf("Testing NULL safety...\n");
     
     // Test NULL expression
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(NULL);
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(NULL, NULL);
     assert(own_parser == NULL);
     
     // Test NULL parser parameter
@@ -438,6 +516,7 @@ static void test_parse_null_safety(void) {
 int main(void) {
     printf("Running expression parser tests...\n\n");
     
+    test_create_parser_with_log();
     test_parse_integer_literal();
     test_parse_negative_integer();
     test_parse_double_literal();

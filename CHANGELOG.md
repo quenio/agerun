@@ -3,6 +3,32 @@
 This document tracks completed milestones and major achievements for the AgeRun project.
 
 ## 2025-07-01
+
+### Parser ar_log Integration Progress
+- ✅ **Integrated ar_log into Expression and Assignment Parsers**:
+  - ✅ **Expression Parser (TDD Cycle 11)**:
+    - ✅ Updated ar_expression_parser__create to accept ar_log parameter
+    - ✅ Added ar_log_t field to parser struct
+    - ✅ Updated _set_error to use ar_log__error_at for position tracking
+    - ✅ Updated all test files to create and pass ar_log
+    - ✅ Temporarily allow NULL log parameter for gradual migration
+    - ✅ All 21 tests pass with zero memory leaks
+  - ✅ **Assignment Instruction Parser (TDD Cycle 12)**:
+    - ✅ Updated ar_assignment_instruction_parser__create to accept ar_log
+    - ✅ Added ar_log_t field to parser struct  
+    - ✅ Updated _set_error to use ar_log__error_at for position tracking
+    - ✅ Parser now passes ar_log to expression parser
+    - ✅ All 12 tests pass with zero memory leaks
+  - ✅ **Temporary Migration Support**:
+    - ✅ All parsers that use expression parser updated to pass NULL
+    - ✅ instruction_parser facade updated to pass NULL to assignment parser
+    - ✅ Clean build passes with all 59 tests succeeding
+  - ✅ **Documentation Updates**:
+    - ✅ ar_expression_parser.md updated with new create signature
+    - ✅ ar_assignment_instruction_parser.md updated with ar_log parameter
+    - ✅ Fixed incorrect function names in expression parser docs
+
+## 2025-07-01
 - ✅ **Integrated ar_log Module into Expression Evaluator**:
   - ✅ **Updated ar_expression_evaluator to accept ar_log as first parameter**:
     - ✅ Modified create function signature: ar_expression_evaluator__create(ar_log_t*, data_t*, data_t*)

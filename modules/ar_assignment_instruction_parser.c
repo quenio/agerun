@@ -12,6 +12,7 @@
  * Opaque parser structure for assignment instructions.
  */
 struct ar_assignment_instruction_parser_s {
+    ar_log_t *ref_log;       /* Log instance for error reporting (borrowed) */
     char *own_error;         /* Error message if parsing fails */
     size_t error_position;   /* Position where error occurred */
 };
@@ -27,6 +28,11 @@ static void _set_error(ar_assignment_instruction_parser_t *mut_parser, const cha
     AR__HEAP__FREE(mut_parser->own_error);
     mut_parser->own_error = AR__HEAP__STRDUP(error, "parser error message");
     mut_parser->error_position = position;
+    
+    // Also log the error with position
+    if (mut_parser->ref_log) {
+        ar_log__error_at(mut_parser->ref_log, error, (int)position);
+    }
 }
 
 /**
@@ -84,7 +90,7 @@ static bool _parse_and_set_expression_ast(ar_assignment_instruction_parser_t *mu
                                          ar_instruction_ast_t *mut_inst_ast, 
                                          const char *ref_expression,
                                          size_t error_offset) {
-    ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(ref_expression);
+    ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(mut_parser->ref_log, ref_expression);
     if (!own_expr_parser) {
         _set_error(mut_parser, "Failed to create expression parser", error_offset);
         return false;
@@ -114,7 +120,7 @@ static bool _parse_and_set_expression_ast(ar_assignment_instruction_parser_t *mu
 /**
  * Create a new assignment instruction parser instance.
  */
-ar_assignment_instruction_parser_t* ar_assignment_instruction_parser__create(void) {
+ar_assignment_instruction_parser_t* ar_assignment_instruction_parser__create(ar_log_t *ref_log) {
     ar_assignment_instruction_parser_t *own_parser = AR__HEAP__MALLOC(
         sizeof(ar_assignment_instruction_parser_t), 
         "assignment_instruction_parser"
@@ -123,6 +129,7 @@ ar_assignment_instruction_parser_t* ar_assignment_instruction_parser__create(voi
         return NULL;
     }
     
+    own_parser->ref_log = ref_log;
     own_parser->own_error = NULL;
     own_parser->error_position = 0;
     

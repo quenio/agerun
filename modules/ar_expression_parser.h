@@ -2,6 +2,7 @@
 #define AGERUN_EXPRESSION_PARSER_H
 
 #include "ar_expression_ast.h"
+#include "ar_log.h"
 #include <stdbool.h>
 
 /**
@@ -13,12 +14,13 @@ typedef struct expression_parser_s ar_expression_parser_t;
 /**
  * Create a new expression parser instance.
  * 
+ * @param ref_log The log instance for error reporting (borrowed reference)
  * @param ref_expression The expression string to parse (borrowed reference)
  * @return Newly created parser instance (owned by caller), or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy.
  *       The parser makes a copy of the expression string.
  */
-ar_expression_parser_t* ar_expression_parser__create(const char *ref_expression);
+ar_expression_parser_t* ar_expression_parser__create(ar_log_t *ref_log, const char *ref_expression);
 
 /**
  * Destroy an expression parser instance.

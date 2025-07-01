@@ -240,7 +240,7 @@ static list_t* _parse_arguments_to_asts(ar_condition_instruction_parser_t *mut_p
     }
     
     for (size_t i = 0; i < arg_count; i++) {
-        ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(ref_args[i]);
+        ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(NULL, ref_args[i]);
         if (!own_expr_parser) {
             _cleanup_arg_asts(own_arg_asts);
             _set_error(mut_parser, "Failed to create expression parser", error_offset);
