@@ -7,13 +7,33 @@
 #include "ar_expression_ast.h"
 #include "ar_list.h"
 #include "ar_heap.h"
+#include "ar_log.h"
+#include "ar_event.h"
+
+static void test_create_parser_with_log(void) {
+    printf("Testing parser creation with ar_log...\n");
+    
+    // Given an ar_log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
+    // When creating a parser with ar_log
+    ar_parse_instruction_parser_t *parser = ar_parse_instruction_parser__create(log);
+    
+    // Then the parser should be created successfully
+    assert(parser != NULL);
+    
+    // Clean up
+    ar_parse_instruction_parser__destroy(parser);
+    ar_log__destroy(log);
+}
 
 static void test_parse_instruction_parser__create_destroy(void) {
     printf("Testing parse instruction parser create/destroy...\n");
     
     // Given the need for a parser
     // When creating a parser
-    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create();
+    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(NULL);
     
     // Then it should be created successfully
     assert(own_parser != NULL);
@@ -31,7 +51,7 @@ static void test_parse_instruction_parser__parse_simple(void) {
     const char *instruction = "parse(\"name={name}\", \"name=John\")";
     
     // When parsing the instruction
-    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create();
+    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_parse_instruction_parser__parse(own_parser, instruction, NULL);
@@ -68,7 +88,7 @@ static void test_parse_instruction_parser__parse_with_assignment(void) {
     const char *instruction = "memory.parsed := parse(\"name={name}\", \"name=John\")";
     
     // When parsing the instruction
-    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create();
+    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_parse_instruction_parser__parse(own_parser, instruction, "memory.parsed");
@@ -102,7 +122,7 @@ static void test_parse_instruction_parser__parse_complex_template(void) {
     const char *instruction = "parse(\"Hello {name}, you are {age} years old\", \"Hello Alice, you are 30 years old\")";
     
     // When parsing the instruction
-    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create();
+    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_parse_instruction_parser__parse(own_parser, instruction, NULL);
@@ -136,7 +156,7 @@ static void test_parse_instruction_parser__parse_with_escaped_quotes(void) {
     const char *instruction = "parse(\"Say \\\"Hello {name}!\\\"\", \"Say \\\"Hello World!\\\"\")";
     
     // When parsing the instruction
-    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create();
+    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_parse_instruction_parser__parse(own_parser, instruction, NULL);
@@ -174,7 +194,7 @@ static void test_parse_instruction_parser__error_wrong_function(void) {
     const char *instruction = "build(\"template\", \"input\")";
     
     // When parsing the instruction
-    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create();
+    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_parse_instruction_parser__parse(own_parser, instruction, NULL);
@@ -201,7 +221,7 @@ static void test_parse_instruction_parser__error_wrong_arg_count(void) {
     const char *instruction = "parse(\"template\")";  // Missing second argument
     
     // When parsing the instruction
-    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create();
+    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_parse_instruction_parser__parse(own_parser, instruction, NULL);
@@ -224,7 +244,7 @@ static void test_parse_instruction_parser__error_missing_parenthesis(void) {
     const char *instruction = "parse \"template\", \"input\"";
     
     // When parsing the instruction
-    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create();
+    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_parse_instruction_parser__parse(own_parser, instruction, NULL);
@@ -247,7 +267,7 @@ static void test_parse_instruction_parser__reusability(void) {
     printf("Testing parser reusability...\n");
     
     // Given a parser instance
-    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create();
+    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     // When parsing multiple instructions
@@ -286,7 +306,7 @@ static void test_parse_instruction_parser__parse_with_expression_asts(void) {
     
     // Given a parse instruction with string literal arguments
     const char *instruction = "parse(\"User: {name}, Age: {age}\", \"User: Alice, Age: 25\")";
-    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create();
+    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -322,6 +342,9 @@ static void test_parse_instruction_parser__parse_with_expression_asts(void) {
 
 int main(void) {
     printf("Running parse instruction parser tests...\n\n");
+    
+    // Test with ar_log
+    test_create_parser_with_log();
     
     // Directory check
     char cwd[1024];

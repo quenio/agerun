@@ -6,6 +6,26 @@
 #include "ar_method_ast.h"
 #include "ar_instruction_ast.h"
 #include "ar_heap.h"
+#include "ar_log.h"
+#include "ar_event.h"
+
+static void test_create_parser_with_log(void) {
+    printf("Testing parser creation with ar_log...\n");
+    
+    // Given an ar_log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
+    // When creating a parser with ar_log
+    ar_method_parser_t *parser = ar_method_parser__create(log);
+    
+    // Then the parser should be created successfully
+    assert(parser != NULL);
+    
+    // Clean up
+    ar_method_parser__destroy(parser);
+    ar_log__destroy(log);
+}
 
 // Test create and destroy
 static void test_method_parser__create_destroy(void) {
@@ -14,7 +34,7 @@ static void test_method_parser__create_destroy(void) {
     // Given the need to create a method parser
     
     // When creating a new method parser
-    ar_method_parser_t *own_parser = ar_method_parser__create();
+    ar_method_parser_t *own_parser = ar_method_parser__create(NULL);
     
     // Then the parser should be created successfully
     assert(own_parser != NULL);
@@ -44,7 +64,7 @@ static void test_method_parser__parse_empty_method(void) {
     printf("Testing method parser parse empty method...\n");
     
     // Given a parser and an empty method source
-    ar_method_parser_t *own_parser = ar_method_parser__create();
+    ar_method_parser_t *own_parser = ar_method_parser__create(NULL);
     assert(own_parser != NULL);
     const char *ref_source = "";
     
@@ -67,7 +87,7 @@ static void test_method_parser__parse_single_instruction(void) {
     printf("Testing method parser parse single instruction...\n");
     
     // Given a parser and a method with one instruction
-    ar_method_parser_t *own_parser = ar_method_parser__create();
+    ar_method_parser_t *own_parser = ar_method_parser__create(NULL);
     assert(own_parser != NULL);
     const char *ref_source = "memory.x := 42";
     
@@ -95,7 +115,7 @@ static void test_method_parser__parse_multiple_instructions(void) {
     printf("Testing method parser parse multiple instructions...\n");
     
     // Given a parser and a method with multiple instructions
-    ar_method_parser_t *own_parser = ar_method_parser__create();
+    ar_method_parser_t *own_parser = ar_method_parser__create(NULL);
     assert(own_parser != NULL);
     const char *ref_source = "memory.x := 10\nmemory.y := 20\nmemory.z := 30";
     
@@ -131,7 +151,7 @@ static void test_method_parser__parse_with_empty_lines(void) {
     printf("Testing method parser parse with empty lines...\n");
     
     // Given a parser and a method with instructions and empty lines
-    ar_method_parser_t *own_parser = ar_method_parser__create();
+    ar_method_parser_t *own_parser = ar_method_parser__create(NULL);
     assert(own_parser != NULL);
     const char *ref_source = "memory.x := 10\n\nmemory.y := 20\n\n\nmemory.z := 30\n";
     
@@ -154,7 +174,7 @@ static void test_method_parser__parse_with_comments(void) {
     printf("Testing method parser parse with comments...\n");
     
     // Given a parser and a method with comments
-    ar_method_parser_t *own_parser = ar_method_parser__create();
+    ar_method_parser_t *own_parser = ar_method_parser__create(NULL);
     assert(own_parser != NULL);
     const char *ref_source = "# This is a comment\nmemory.x := 10\n# Another comment\nmemory.y := 20\nmemory.z := 30 # Inline comment";
     
@@ -182,7 +202,7 @@ static void test_method_parser__parse_hash_in_string(void) {
     printf("Testing method parser parse with hash in string...\n");
     
     // Given a parser and a method with # inside a string
-    ar_method_parser_t *own_parser = ar_method_parser__create();
+    ar_method_parser_t *own_parser = ar_method_parser__create(NULL);
     assert(own_parser != NULL);
     const char *ref_source = "memory.msg := \"Item #1\"";
     
@@ -205,7 +225,7 @@ static void test_method_parser__parse_invalid_instruction(void) {
     printf("Testing method parser parse with invalid instruction...\n");
     
     // Given a parser and a method with invalid syntax
-    ar_method_parser_t *own_parser = ar_method_parser__create();
+    ar_method_parser_t *own_parser = ar_method_parser__create(NULL);
     assert(own_parser != NULL);
     const char *ref_source = "memory.x := 10\ninvalid syntax here\nmemory.z := 30";
     
@@ -235,7 +255,7 @@ static void test_method_parser__error_cleared_on_success(void) {
     printf("Testing method parser error cleared on successful parse...\n");
     
     // Given a parser that had a previous error
-    ar_method_parser_t *own_parser = ar_method_parser__create();
+    ar_method_parser_t *own_parser = ar_method_parser__create(NULL);
     assert(own_parser != NULL);
     
     // First, cause an error
@@ -265,6 +285,9 @@ static void test_method_parser__error_cleared_on_success(void) {
 
 int main(void) {
     printf("Running method parser tests...\n\n");
+    
+    // Test with ar_log
+    test_create_parser_with_log();
     
     test_method_parser__create_destroy();
     test_method_parser__destroy_null();

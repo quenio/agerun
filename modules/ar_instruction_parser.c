@@ -22,6 +22,7 @@
  * Opaque parser structure.
  */
 struct instruction_parser_s {
+    ar_log_t *ref_log;       /* Log instance for error reporting (borrowed) */
     char *own_error;         /* Error message if parsing fails */
     size_t error_position;   /* Position where error occurred */
     
@@ -77,7 +78,7 @@ static void _destroy_specialized_parsers(instruction_parser_t *mut_parser) {
 /**
  * Create a new instruction parser instance.
  */
-instruction_parser_t* ar_instruction_parser__create(void) {
+instruction_parser_t* ar_instruction_parser__create(ar_log_t *ref_log) {
     instruction_parser_t *own_parser = AR__HEAP__MALLOC(sizeof(instruction_parser_t), "instruction_parser");
     if (!own_parser) {
         return NULL;
@@ -86,56 +87,59 @@ instruction_parser_t* ar_instruction_parser__create(void) {
     // Initialize all fields to NULL first
     memset(own_parser, 0, sizeof(instruction_parser_t));
     
+    // Store the log reference
+    own_parser->ref_log = ref_log;
+    
     // Create assignment parser
-    own_parser->own_assignment_parser = ar_assignment_instruction_parser__create(NULL);
+    own_parser->own_assignment_parser = ar_assignment_instruction_parser__create(ref_log);
     if (!own_parser->own_assignment_parser) {
         goto error;
     }
     
     // Create send parser
-    own_parser->own_send_parser = ar_send_instruction_parser__create();
+    own_parser->own_send_parser = ar_send_instruction_parser__create(ref_log);
     if (!own_parser->own_send_parser) {
         goto error;
     }
     
     // Create condition parser
-    own_parser->own_condition_parser = ar_condition_instruction_parser__create();
+    own_parser->own_condition_parser = ar_condition_instruction_parser__create(ref_log);
     if (!own_parser->own_condition_parser) {
         goto error;
     }
     
     // Create parse parser
-    own_parser->own_parse_parser = ar_parse_instruction_parser__create();
+    own_parser->own_parse_parser = ar_parse_instruction_parser__create(ref_log);
     if (!own_parser->own_parse_parser) {
         goto error;
     }
     
     // Create build parser
-    own_parser->own_build_parser = ar_build_instruction_parser__create();
+    own_parser->own_build_parser = ar_build_instruction_parser__create(ref_log);
     if (!own_parser->own_build_parser) {
         goto error;
     }
     
     // Create method parser
-    own_parser->own_method_parser = ar_method_instruction_parser__create();
+    own_parser->own_method_parser = ar_method_instruction_parser__create(ref_log);
     if (!own_parser->own_method_parser) {
         goto error;
     }
     
     // Create agent parser
-    own_parser->own_agent_parser = ar_agent_instruction_parser__create();
+    own_parser->own_agent_parser = ar_agent_instruction_parser__create(ref_log);
     if (!own_parser->own_agent_parser) {
         goto error;
     }
     
     // Create destroy agent parser
-    own_parser->own_destroy_agent_parser = ar_destroy_agent_instruction_parser__create();
+    own_parser->own_destroy_agent_parser = ar_destroy_agent_instruction_parser__create(ref_log);
     if (!own_parser->own_destroy_agent_parser) {
         goto error;
     }
     
     // Create destroy method parser
-    own_parser->own_destroy_method_parser = ar_destroy_method_instruction_parser__create();
+    own_parser->own_destroy_method_parser = ar_destroy_method_instruction_parser__create(ref_log);
     if (!own_parser->own_destroy_method_parser) {
         goto error;
     }
@@ -194,6 +198,11 @@ static void _set_error(instruction_parser_t *mut_parser, const char *error, size
     AR__HEAP__FREE(mut_parser->own_error);
     mut_parser->own_error = AR__HEAP__STRDUP(error, "parser error message");
     mut_parser->error_position = position;
+    
+    /* Also log the error with position */
+    if (mut_parser->ref_log) {
+        ar_log__error_at(mut_parser->ref_log, error, (int)position);
+    }
 }
 
 /**

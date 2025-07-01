@@ -85,7 +85,7 @@ method_t* ar_method__create(const char *ref_name, const char *ref_instructions,
     mut_method->instructions[MAX_INSTRUCTIONS_LENGTH - 1] = '\0';
     
     // Parse the instructions into AST
-    ar_method_parser_t *own_parser = ar_method_parser__create();
+    ar_method_parser_t *own_parser = ar_method_parser__create(NULL);
     if (!own_parser) {
         AR__HEAP__FREE(mut_method);
         return NULL;

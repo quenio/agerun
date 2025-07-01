@@ -2,6 +2,7 @@
 #define AGERUN_AGENT_INSTRUCTION_PARSER_H
 
 #include "ar_instruction_ast.h"
+#include "ar_log.h"
 
 /**
  * @file agerun_agent_instruction_parser.h
@@ -17,10 +18,11 @@ typedef struct ar_agent_instruction_parser_s ar_agent_instruction_parser_t;
 
 /**
  * Create a new agent instruction parser instance
+ * @param ref_log Optional log instance for error reporting (borrowed reference, may be NULL)
  * @return A new parser instance, or NULL on allocation failure
  * @note Ownership: Returns an owned value that caller must destroy
  */
-ar_agent_instruction_parser_t* ar_agent_instruction_parser__create(void);
+ar_agent_instruction_parser_t* ar_agent_instruction_parser__create(ar_log_t *ref_log);
 
 /**
  * Destroy an agent instruction parser instance

@@ -9,6 +9,26 @@
 #include "ar_heap.h"
 #include "ar_list.h"
 #include "ar_expression_ast.h"
+#include "ar_log.h"
+#include "ar_event.h"
+
+static void test_create_parser_with_log(void) {
+    printf("Testing parser creation with ar_log...\n");
+    
+    // Given an ar_log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
+    // When creating a parser with ar_log
+    ar_destroy_agent_instruction_parser_t *parser = ar_destroy_agent_instruction_parser__create(log);
+    
+    // Then the parser should be created successfully
+    assert(parser != NULL);
+    
+    // Clean up
+    ar_destroy_agent_instruction_parser__destroy(parser);
+    ar_log__destroy(log);
+}
 
 /**
  * Test create/destroy lifecycle
@@ -17,7 +37,7 @@ static void test_destroy_agent_parser__create_destroy(void) {
     printf("Testing destroy agent parser create/destroy...\n");
     
     // When creating a parser
-    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create();
+    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create(NULL);
     
     // Then it should be created successfully
     assert(own_parser != NULL);
@@ -38,7 +58,7 @@ static void test_destroy_agent_parser__parse_integer_id(void) {
     const char *instruction = "destroy(123)";
     
     // When creating a parser and parsing the instruction
-    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create();
+    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_destroy_agent_instruction_parser__parse(own_parser, instruction, NULL);
@@ -72,7 +92,7 @@ static void test_destroy_agent_parser__parse_memory_reference(void) {
     const char *instruction = "destroy(memory.agent_id)";
     
     // When creating a parser and parsing the instruction
-    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create();
+    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_destroy_agent_instruction_parser__parse(own_parser, instruction, NULL);
@@ -105,7 +125,7 @@ static void test_destroy_agent_parser__parse_with_assignment(void) {
     const char *instruction = "memory.result := destroy(memory.agent_id)";
     
     // When creating a parser and parsing the instruction
-    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create();
+    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_destroy_agent_instruction_parser__parse(own_parser, instruction, "memory.result");
@@ -135,7 +155,7 @@ static void test_destroy_agent_parser__parse_with_assignment(void) {
 static void test_destroy_agent_parser__error_handling(void) {
     printf("Testing destroy agent parser error handling...\n");
     
-    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create();
+    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     // Test 1: Missing parentheses
@@ -176,7 +196,7 @@ static void test_destroy_agent_parser__parse_with_expression_asts(void) {
     
     // Given a destroy instruction with integer literal and memory access arguments
     const char *instruction = "memory.destroyed := destroy(42)";
-    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create();
+    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -236,6 +256,9 @@ static void test_destroy_agent_parser__parse_with_expression_asts(void) {
 }
 
 int main(void) {
+    // Test with ar_log
+    test_create_parser_with_log();
+    
     test_destroy_agent_parser__create_destroy();
     test_destroy_agent_parser__parse_integer_id();
     test_destroy_agent_parser__parse_memory_reference();

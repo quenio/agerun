@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdbool.h>
+#include "ar_log.h"
 
 /**
  * @file agerun_condition_instruction_parser.h
@@ -25,10 +26,11 @@ typedef struct instruction_ast_s ar_instruction_ast_t;
 
 /**
  * Create a new condition instruction parser.
+ * @param ref_log Optional log instance for error reporting (borrowed reference, may be NULL)
  * @return A new parser instance, or NULL on allocation failure
  * @note Ownership: Returns an owned value that caller must destroy
  */
-ar_condition_instruction_parser_t* ar_condition_instruction_parser__create(void);
+ar_condition_instruction_parser_t* ar_condition_instruction_parser__create(ar_log_t *ref_log);
 
 /**
  * Destroy a condition instruction parser.

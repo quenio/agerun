@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include "ar_instruction_ast.h"
+#include "ar_log.h"
 
 /**
  * Opaque destroy agent instruction parser structure.
@@ -12,10 +13,11 @@ typedef struct ar_destroy_agent_instruction_parser_s ar_destroy_agent_instructio
 /**
  * Creates a new destroy agent instruction parser.
  * 
+ * @param ref_log Optional log instance for error reporting (borrowed reference, may be NULL)
  * @return A new parser instance (owned by caller), or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy.
  */
-ar_destroy_agent_instruction_parser_t* ar_destroy_agent_instruction_parser__create(void);
+ar_destroy_agent_instruction_parser_t* ar_destroy_agent_instruction_parser__create(ar_log_t *ref_log);
 
 /**
  * Destroys a destroy agent instruction parser.

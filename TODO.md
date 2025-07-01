@@ -71,8 +71,19 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] Instruction evaluator facade updated to coordinate logging
     - [x] Expression evaluator updated to use ar_log (Completed 2025-07-01)
     - [x] Expression parser updated to use ar_log with position tracking (Completed 2025-07-01)
-    - [x] Assignment instruction parser updated to use ar_log (Completed 2025-07-01)
-    - [ ] Remaining parsers need integration with position tracking
+    - [x] All instruction parsers updated to use ar_log (Completed 2025-07-01)
+    - [x] Method parser propagates ar_log to instruction parser (Completed 2025-07-01)
+    - [ ] Update method module to accept ar_log parameter and propagate to method parser
+      - [ ] Add ar_log parameter to ar_method__create() function
+      - [ ] Pass ar_log from method creation to method parser
+      - [ ] Update all method creation call sites to pass ar_log instance
+      - [ ] This ensures complete log propagation from top-level through entire parsing hierarchy
+    - [ ] Remove legacy error handling from parsers now that ar_log is integrated
+      - [ ] Remove get_error() and get_error_position() functions from all parser modules
+      - [ ] Remove error message and error position fields from parser structs
+      - [ ] Remove _set_error() and _clear_error() helper functions from parsers
+      - [ ] Update any remaining code that calls parser get_error functions to use ar_log instead
+      - [ ] This completes the transition to centralized error logging via ar_log
 
 #### 2. Extract Memory Path Utilities Module  
 - [ ] Create `ar_memory_path` module for memory path operations

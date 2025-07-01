@@ -13,6 +13,7 @@
 
 // Opaque structure definition
 struct ar_method_parser_s {
+    ar_log_t *ref_log;                       /* Log instance for error reporting (borrowed) */
     instruction_parser_t *instruction_parser;
     char *own_error_message;
     int error_line;
@@ -29,6 +30,11 @@ static void _set_error(ar_method_parser_t *mut_parser, int line_number, const ch
         mut_parser->own_error_message = AR__HEAP__STRDUP("Unknown parse error", "error message");
     }
     mut_parser->error_line = line_number;
+    
+    /* Also log the error with line number */
+    if (mut_parser->ref_log) {
+        ar_log__error_at(mut_parser->ref_log, mut_parser->own_error_message, line_number);
+    }
 }
 
 // Helper function to parse a single line
@@ -87,13 +93,14 @@ static bool _parse_line(ar_method_parser_t *mut_parser, ar_method_ast_t *mut_ast
     return true;
 }
 
-ar_method_parser_t* ar_method_parser__create(void) {
+ar_method_parser_t* ar_method_parser__create(ar_log_t *ref_log) {
     ar_method_parser_t *own_parser = AR__HEAP__MALLOC(sizeof(ar_method_parser_t), "method_parser");
     if (!own_parser) {
         return NULL;
     }
     
-    own_parser->instruction_parser = ar_instruction_parser__create();
+    own_parser->ref_log = ref_log;
+    own_parser->instruction_parser = ar_instruction_parser__create(ref_log);
     if (!own_parser->instruction_parser) {
         AR__HEAP__FREE(own_parser);
         return NULL;

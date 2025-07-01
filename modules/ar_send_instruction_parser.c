@@ -13,6 +13,7 @@
  * Opaque parser structure.
  */
 struct ar_send_instruction_parser_s {
+    ar_log_t *ref_log;       /* Log instance for error reporting (borrowed) */
     char *own_error;         /* Error message if parsing fails */
     size_t error_position;   /* Position where error occurred */
 };
@@ -20,12 +21,13 @@ struct ar_send_instruction_parser_s {
 /**
  * Create a new send instruction parser instance.
  */
-ar_send_instruction_parser_t* ar_send_instruction_parser__create(void) {
+ar_send_instruction_parser_t* ar_send_instruction_parser__create(ar_log_t *ref_log) {
     ar_send_instruction_parser_t *own_parser = AR__HEAP__MALLOC(sizeof(ar_send_instruction_parser_t), "send_instruction_parser");
     if (!own_parser) {
         return NULL;
     }
     
+    own_parser->ref_log = ref_log;
     own_parser->own_error = NULL;
     own_parser->error_position = 0;
     
@@ -75,6 +77,11 @@ static void _set_error(ar_send_instruction_parser_t *mut_parser, const char *err
     AR__HEAP__FREE(mut_parser->own_error);
     mut_parser->own_error = AR__HEAP__STRDUP(error, "parser error message");
     mut_parser->error_position = position;
+    
+    // Also log the error with position
+    if (mut_parser->ref_log) {
+        ar_log__error_at(mut_parser->ref_log, error, (int)position);
+    }
 }
 
 /**
@@ -240,7 +247,7 @@ static list_t* _parse_arguments_to_asts(ar_send_instruction_parser_t *mut_parser
     }
     
     for (size_t i = 0; i < arg_count; i++) {
-        ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(NULL, ref_args[i]);
+        ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(mut_parser->ref_log, ref_args[i]);
         if (!own_expr_parser) {
             _cleanup_arg_asts(own_arg_asts);
             _set_error(mut_parser, "Failed to create expression parser", error_offset);

@@ -14,6 +14,7 @@
 
 /* Dependencies */
 #include "ar_instruction_ast.h"
+#include "ar_log.h"
 
 /* Opaque type for parse instruction parser */
 typedef struct ar_parse_instruction_parser_s ar_parse_instruction_parser_t;
@@ -21,10 +22,11 @@ typedef struct ar_parse_instruction_parser_s ar_parse_instruction_parser_t;
 /**
  * Creates a new parse instruction parser instance
  *
+ * @param ref_log The log instance for error reporting (borrowed reference)
  * @return A new parser instance or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy
  */
-ar_parse_instruction_parser_t* ar_parse_instruction_parser__create(void);
+ar_parse_instruction_parser_t* ar_parse_instruction_parser__create(ar_log_t *ref_log);
 
 /**
  * Destroys a parse instruction parser instance

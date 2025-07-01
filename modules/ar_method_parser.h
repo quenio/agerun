@@ -10,6 +10,7 @@
  */
 
 #include "ar_method_ast.h"
+#include "ar_log.h"
 
 // Forward declaration of opaque type
 typedef struct ar_method_parser_s ar_method_parser_t;
@@ -17,10 +18,11 @@ typedef struct ar_method_parser_s ar_method_parser_t;
 /**
  * @brief Create a new method parser
  * 
+ * @param ref_log Optional log instance for error reporting (borrowed reference, may be NULL)
  * @return Owned parser instance, or NULL on allocation failure
  * @note Ownership: Caller owns the returned parser
  */
-ar_method_parser_t* ar_method_parser__create(void);
+ar_method_parser_t* ar_method_parser__create(ar_log_t *ref_log);
 
 /**
  * @brief Destroy a method parser

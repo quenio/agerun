@@ -10,6 +10,7 @@
 #include <ctype.h>
 
 struct ar_method_instruction_parser_s {
+    ar_log_t *ref_log;       /* Log instance for error reporting (borrowed) */
     char *own_error;
     size_t error_position;
 };
@@ -32,6 +33,11 @@ static void _set_error(ar_method_instruction_parser_t *mut_parser, const char *r
     _clear_error(mut_parser);
     mut_parser->own_error = AR__HEAP__STRDUP(ref_message, "error message");
     mut_parser->error_position = position;
+    
+    /* Also log the error with position */
+    if (mut_parser->ref_log) {
+        ar_log__error_at(mut_parser->ref_log, ref_message, (int)position);
+    }
 }
 
 /**
@@ -233,7 +239,7 @@ static list_t* _parse_arguments_to_asts(ar_method_instruction_parser_t *mut_pars
     }
     
     for (size_t i = 0; i < arg_count; i++) {
-        ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(NULL, ref_args[i]);
+        ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(mut_parser->ref_log, ref_args[i]);
         if (!own_expr_parser) {
             _cleanup_arg_asts(own_arg_asts);
             _set_error(mut_parser, "Failed to create expression parser", error_offset);
@@ -265,11 +271,13 @@ static list_t* _parse_arguments_to_asts(ar_method_instruction_parser_t *mut_pars
     return own_arg_asts;
 }
 
-ar_method_instruction_parser_t* ar_method_instruction_parser__create(void) {
+ar_method_instruction_parser_t* ar_method_instruction_parser__create(ar_log_t *ref_log) {
     ar_method_instruction_parser_t *own_parser = AR__HEAP__CALLOC(1, sizeof(ar_method_instruction_parser_t), "method parser");
     if (!own_parser) {
         return NULL;
     }
+    
+    own_parser->ref_log = ref_log;
     
     return own_parser;
 }

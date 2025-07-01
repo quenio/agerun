@@ -17,6 +17,7 @@
 
 /* Parser state structure */
 struct ar_agent_instruction_parser_s {
+    ar_log_t *ref_log;          /* Log instance for error reporting (borrowed) */
     char *own_error_message;    /* Error message from last parse */
     size_t error_position;      /* Position where error occurred */
 };
@@ -30,6 +31,11 @@ static void _set_error(ar_agent_instruction_parser_t *mut_parser, const char *er
     AR__HEAP__FREE(mut_parser->own_error_message);
     mut_parser->own_error_message = AR__HEAP__STRDUP(error, "parser error message");
     mut_parser->error_position = position;
+    
+    /* Also log the error with position */
+    if (mut_parser->ref_log) {
+        ar_log__error_at(mut_parser->ref_log, error, (int)position);
+    }
 }
 
 static void _clear_error(ar_agent_instruction_parser_t *mut_parser) {
@@ -204,16 +210,8 @@ static list_t* _parse_arguments_to_asts(ar_agent_instruction_parser_t *mut_parse
         return NULL;
     }
     
-    // Create temporary ar_log for expression parsing
-    ar_log_t *own_log = ar_log__create();
-    if (!own_log) {
-        ar_list__destroy(own_arg_asts);
-        _set_error(mut_parser, "Failed to create ar_log", error_offset);
-        return NULL;
-    }
-    
     for (size_t i = 0; i < arg_count; i++) {
-        ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(own_log, ref_args[i]);
+        ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(mut_parser->ref_log, ref_args[i]);
         if (!own_expr_parser) {
             _cleanup_arg_asts(own_arg_asts);
             _set_error(mut_parser, "Failed to create expression parser", error_offset);
@@ -242,19 +240,19 @@ static list_t* _parse_arguments_to_asts(ar_agent_instruction_parser_t *mut_parse
         ar_expression_parser__destroy(own_expr_parser);
     }
     
-    ar_log__destroy(own_log);
     return own_arg_asts;
 }
 
 /**
  * Create a new agent instruction parser instance
  */
-ar_agent_instruction_parser_t* ar_agent_instruction_parser__create(void) {
+ar_agent_instruction_parser_t* ar_agent_instruction_parser__create(ar_log_t *ref_log) {
     ar_agent_instruction_parser_t *own_parser = AR__HEAP__MALLOC(sizeof(ar_agent_instruction_parser_t), "agent parser");
     if (!own_parser) {
         return NULL;
     }
     
+    own_parser->ref_log = ref_log;
     own_parser->own_error_message = NULL;
     own_parser->error_position = 0;
     

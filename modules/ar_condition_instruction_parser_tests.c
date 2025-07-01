@@ -6,13 +6,33 @@
 #include "ar_expression_ast.h"
 #include "ar_list.h"
 #include "ar_heap.h"
+#include "ar_log.h"
+#include "ar_event.h"
+
+static void test_create_parser_with_log(void) {
+    printf("Testing parser creation with ar_log...\n");
+    
+    // Given an ar_log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
+    // When creating a parser with ar_log
+    ar_condition_instruction_parser_t *parser = ar_condition_instruction_parser__create(log);
+    
+    // Then the parser should be created successfully
+    assert(parser != NULL);
+    
+    // Clean up
+    ar_condition_instruction_parser__destroy(parser);
+    ar_log__destroy(log);
+}
 
 static void test_condition_parser__create_destroy(void) {
     printf("Testing condition parser create/destroy...\n");
     
     // Given the need to create a parser
     // When creating a condition instruction parser
-    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create();
+    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(NULL);
     
     // Then it should be created successfully
     assert(own_parser != NULL);
@@ -28,7 +48,7 @@ static void test_condition_parser__parse_simple_if(void) {
     const char *instruction = "if(1 > 0, \"true\", \"false\")";
     
     // When creating a parser and parsing the instruction
-    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create();
+    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
@@ -61,7 +81,7 @@ static void test_condition_parser__parse_if_with_assignment(void) {
     const char *instruction = "memory.level := if(memory.count > 5, \"High\", \"Low\")";
     
     // When creating a parser and parsing the instruction
-    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create();
+    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, "memory.level");
@@ -97,7 +117,7 @@ static void test_condition_parser__parse_nested_conditions(void) {
     const char *instruction = "if(memory.age >= 18 && memory.registered, \"Welcome\", \"Access Denied\")";
     
     // When creating a parser and parsing the instruction
-    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create();
+    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
@@ -127,7 +147,7 @@ static void test_condition_parser__parse_nested_function_calls(void) {
     const char *instruction = "if(send(0, \"check\"), send(1, \"true\"), send(1, \"false\"))";
     
     // When creating a parser and parsing the instruction
-    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create();
+    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
@@ -157,7 +177,7 @@ static void test_condition_parser__error_wrong_function(void) {
     const char *instruction = "send(0, \"hello\")";
     
     // When trying to parse as if
-    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create();
+    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
@@ -177,7 +197,7 @@ static void test_condition_parser__error_missing_parenthesis(void) {
     const char *instruction = "if 1 > 0, \"true\", \"false\")";
     
     // When trying to parse
-    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create();
+    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
@@ -196,7 +216,7 @@ static void test_condition_parser__error_wrong_arg_count(void) {
     const char *instruction = "if(1 > 0, \"true\")";  // Missing else clause
     
     // When trying to parse
-    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create();
+    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
@@ -212,7 +232,7 @@ static void test_condition_parser__reusability(void) {
     printf("Testing parser reusability...\n");
     
     // Given a parser
-    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create();
+    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     // First parse
@@ -238,7 +258,7 @@ static void test_condition_parser__parse_with_expression_asts(void) {
     
     // Given an if instruction with various expression types
     const char *instruction = "if(memory.count > 5, \"High\", memory.default)";
-    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create();
+    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -286,6 +306,9 @@ static void test_condition_parser__parse_with_expression_asts(void) {
 
 int main(void) {
     printf("Running condition instruction parser tests...\n\n");
+    
+    // Test with ar_log
+    test_create_parser_with_log();
     
     // Basic functionality
     test_condition_parser__create_destroy();

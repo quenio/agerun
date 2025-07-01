@@ -6,6 +6,26 @@
 #include "ar_data.h"
 #include "ar_expression_ast.h"
 #include "ar_heap.h"
+#include "ar_log.h"
+#include "ar_event.h"
+
+static void test_create_parser_with_log(void) {
+    printf("Testing parser creation with ar_log...\n");
+    
+    // Given an ar_log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
+    // When creating a parser with ar_log
+    ar_agent_instruction_parser_t *parser = ar_agent_instruction_parser__create(log);
+    
+    // Then the parser should be created successfully
+    assert(parser != NULL);
+    
+    // Clean up
+    ar_agent_instruction_parser__destroy(parser);
+    ar_log__destroy(log);
+}
 
 /**
  * Test create and destroy functions
@@ -16,7 +36,7 @@ static void test_agent_parser__create_destroy(void) {
     // Given nothing
     
     // When creating a parser
-    ar_agent_instruction_parser_t *own_parser = ar_agent_instruction_parser__create();
+    ar_agent_instruction_parser_t *own_parser = ar_agent_instruction_parser__create(NULL);
     
     // Then it should be created successfully
     assert(own_parser != NULL);
@@ -37,7 +57,7 @@ static void test_agent_parser__parse_with_context(void) {
     const char *instruction = "memory.agent_id := agent(\"echo\", \"1.0.0\", memory.context)";
     
     // When creating a parser and parsing the instruction
-    ar_agent_instruction_parser_t *own_parser = ar_agent_instruction_parser__create();
+    ar_agent_instruction_parser_t *own_parser = ar_agent_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_agent_instruction_parser__parse(own_parser, instruction, "memory.agent_id");
@@ -65,7 +85,7 @@ static void test_agent_parser__parse_without_context(void) {
     const char *instruction = "agent(\"echo\", \"1.0.0\")";
     
     // When creating a parser and parsing the instruction
-    ar_agent_instruction_parser_t *own_parser = ar_agent_instruction_parser__create();
+    ar_agent_instruction_parser_t *own_parser = ar_agent_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_agent_instruction_parser__parse(own_parser, instruction, NULL);
@@ -89,7 +109,7 @@ static void test_agent_parser__parse_without_context(void) {
 static void test_agent_parser__error_handling(void) {
     printf("Testing agent parser error handling...\n");
     
-    ar_agent_instruction_parser_t *own_parser = ar_agent_instruction_parser__create();
+    ar_agent_instruction_parser_t *own_parser = ar_agent_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     // Test missing parentheses
@@ -123,7 +143,7 @@ static void test_agent_parser__parse_with_expression_asts(void) {
     
     // Given an agent instruction with string literal method/version and memory access context
     const char *instruction = "memory.worker := agent(\"process\", \"2.1.0\", memory.config)";
-    ar_agent_instruction_parser_t *own_parser = ar_agent_instruction_parser__create();
+    ar_agent_instruction_parser_t *own_parser = ar_agent_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -172,6 +192,9 @@ static void test_agent_parser__parse_with_expression_asts(void) {
 
 int main(void) {
     printf("=== Agent Instruction Parser Tests ===\n");
+    
+    // Test with ar_log
+    test_create_parser_with_log();
     
     test_agent_parser__create_destroy();
     test_agent_parser__parse_with_context();

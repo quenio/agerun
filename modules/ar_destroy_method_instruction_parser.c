@@ -13,6 +13,7 @@
  * Internal parser structure.
  */
 struct ar_destroy_method_instruction_parser_s {
+    ar_log_t *ref_log;         /* Log instance for error reporting (borrowed) */
     char *own_error_message;
     size_t error_position;
 };
@@ -20,7 +21,7 @@ struct ar_destroy_method_instruction_parser_s {
 /**
  * Creates a new destroy method instruction parser.
  */
-ar_destroy_method_instruction_parser_t* ar_destroy_method_instruction_parser__create(void) {
+ar_destroy_method_instruction_parser_t* ar_destroy_method_instruction_parser__create(ar_log_t *ref_log) {
     ar_destroy_method_instruction_parser_t *own_parser = AR__HEAP__MALLOC(
         sizeof(ar_destroy_method_instruction_parser_t),
         "destroy method instruction parser"
@@ -30,6 +31,7 @@ ar_destroy_method_instruction_parser_t* ar_destroy_method_instruction_parser__cr
         return NULL;
     }
     
+    own_parser->ref_log = ref_log;
     own_parser->own_error_message = NULL;
     own_parser->error_position = 0;
     
@@ -62,6 +64,11 @@ static void _set_error(ar_destroy_method_instruction_parser_t *mut_parser, const
     AR__HEAP__FREE(mut_parser->own_error_message);
     mut_parser->own_error_message = AR__HEAP__STRDUP(error, "parser error message");
     mut_parser->error_position = position;
+    
+    /* Also log the error with position */
+    if (mut_parser->ref_log) {
+        ar_log__error_at(mut_parser->ref_log, error, (int)position);
+    }
 }
 
 /**
@@ -177,7 +184,7 @@ static list_t* _parse_arguments_to_asts(ar_destroy_method_instruction_parser_t *
     }
     
     for (size_t i = 0; i < arg_count; i++) {
-        ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(NULL, ref_args[i]);
+        ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(mut_parser->ref_log, ref_args[i]);
         if (!own_expr_parser) {
             _cleanup_arg_asts(own_arg_asts);
             _set_error(mut_parser, "Failed to create expression parser", error_offset);
