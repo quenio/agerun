@@ -14,7 +14,7 @@ The method parser module is responsible for parsing method source code and creat
 
 #### Creation and Destruction
 
-- `ar_method_parser__create()`: Creates a new parser instance
+- `ar_method_parser__create(ar_log_t *ref_log)`: Creates a new parser instance
 - `ar_method_parser__destroy()`: Destroys a parser instance
 
 #### Parsing
@@ -29,8 +29,9 @@ The method parser module is responsible for parsing method source code and creat
 ## Usage Example
 
 ```c
-// Create a parser
-ar_method_parser_t *own_parser = ar_method_parser__create();
+// Create a parser (with optional logging)
+ar_log_t *own_log = ar_log__create(); // Optional - can be NULL
+ar_method_parser_t *own_parser = ar_method_parser__create(own_log);
 if (!own_parser) {
     // Handle allocation failure
     return;
@@ -41,6 +42,7 @@ if (!own_parser) {
 
 // Clean up
 ar_method_parser__destroy(own_parser);
+ar_log__destroy(own_log); // Only if log was created
 ```
 
 ## Memory Management

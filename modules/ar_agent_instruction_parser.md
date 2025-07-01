@@ -19,8 +19,9 @@ The `ar_agent_instruction_parser` module provides specialized parsing for `agent
 ```c
 #include "ar_agent_instruction_parser.h"
 
-// Create parser instance
-ar_agent_instruction_parser_t *parser = ar_agent_instruction_parser__create();
+// Create parser instance (with optional ar_log for error reporting)
+ar_log_t *log = ar_log__create();  // Optional - can pass NULL
+ar_agent_instruction_parser_t *parser = ar_agent_instruction_parser__create(log);
 
 // Parse agent instruction with 2 parameters
 const char *instruction = "agent(\"echo\", \"1.0.0\")";

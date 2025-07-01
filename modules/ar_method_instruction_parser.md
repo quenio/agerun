@@ -16,7 +16,7 @@ This module extracts the parsing logic for method() function calls from the gene
 
 ### Functions
 
-- `ar_method_instruction_parser__create()` - Create a new parser instance
+- `ar_method_instruction_parser__create(ar_log_t *ref_log)` - Create a new parser instance
 - `ar_method_instruction_parser__destroy()` - Destroy a parser instance
 - `ar_method_instruction_parser__parse()` - Parse a method instruction
 - `ar_method_instruction_parser__get_error()` - Get error message from last parse
@@ -25,8 +25,9 @@ This module extracts the parsing logic for method() function calls from the gene
 ## Usage Example
 
 ```c
-// Create parser
-ar_method_instruction_parser_t *parser = ar_method_instruction_parser__create();
+// Create parser (with optional logging)
+ar_log_t *own_log = ar_log__create(); // Optional - can be NULL
+ar_method_instruction_parser_t *parser = ar_method_instruction_parser__create(own_log);
 
 // Parse simple method function
 ar_instruction_ast_t *ast1 = ar_method_instruction_parser__parse(
@@ -53,6 +54,7 @@ if (!ast2) {
 ar__instruction_ast__destroy(ast1);
 ar__instruction_ast__destroy(ast2);
 ar_method_instruction_parser__destroy(parser);
+ar_log__destroy(own_log); // Only if log was created
 ```
 
 ## Syntax Supported

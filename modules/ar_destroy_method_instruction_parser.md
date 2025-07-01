@@ -6,7 +6,7 @@ The `ar_destroy_method_instruction_parser` module provides specialized parsing f
 
 ## Features
 
-- **Instantiable Design**: Create parser instances with `ar_destroy_method_instruction_parser__create()` and destroy with `ar_destroy_method_instruction_parser__destroy()`
+- **Instantiable Design**: Create parser instances with `ar_destroy_method_instruction_parser__create(ar_log_t *ref_log)` and destroy with `ar_destroy_method_instruction_parser__destroy()`
 - **Two Argument Parsing**: Specifically handles `destroy("method_name", "version")` syntax
 - **Error Handling**: Comprehensive error reporting with specific error messages and position tracking
 - **Memory Safety**: Zero memory leaks with proper ownership management following MMM guidelines
@@ -19,8 +19,9 @@ The `ar_destroy_method_instruction_parser` module provides specialized parsing f
 ```c
 #include "ar_destroy_method_instruction_parser.h"
 
-// Create parser instance
-ar_destroy_method_instruction_parser_t *parser = ar_destroy_method_instruction_parser__create();
+// Create parser instance (with optional logging)
+ar_log_t *own_log = ar_log__create(); // Optional - can be NULL
+ar_destroy_method_instruction_parser_t *parser = ar_destroy_method_instruction_parser__create(own_log);
 
 // Parse destroy method instruction
 const char *instruction = "destroy(\"calculator\", \"1.0.0\")";
@@ -40,6 +41,7 @@ if (ast) {
 
 // Cleanup
 ar_destroy_method_instruction_parser__destroy(parser);
+ar_log__destroy(own_log); // Only if log was created
 ```
 
 ### Assignment Form

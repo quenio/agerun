@@ -110,9 +110,11 @@ And similar methods for:
 ### Using the Unified Parser (Recommended)
 
 ```c
-// Create parser
-instruction_parser_t *parser = ar__instruction_parser__create();
+// Create parser (with optional ar_log for error reporting)
+ar_log_t *log = ar_log__create();  // Optional - can pass NULL
+instruction_parser_t *parser = ar_instruction_parser__create(log);
 if (!parser) {
+    ar_log__destroy(log);
     return;
 }
 
@@ -141,7 +143,8 @@ for (int i = 0; i < 8; i++) {
     }
 }
 
-ar__instruction_parser__destroy(parser);
+ar_instruction_parser__destroy(parser);
+ar_log__destroy(log);
 ```
 
 ### Parsing an Assignment

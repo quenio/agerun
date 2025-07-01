@@ -16,7 +16,7 @@ This module extracts the parsing logic for build() function calls from the gener
 
 ### Functions
 
-- `ar_build_instruction_parser__create()` - Create a new parser instance
+- `ar_build_instruction_parser__create(ar_log_t *ref_log)` - Create a new parser instance with optional logging
 - `ar_build_instruction_parser__destroy()` - Destroy a parser instance
 - `ar_build_instruction_parser__parse()` - Parse a build instruction
 - `ar_build_instruction_parser__get_error()` - Get error message from last parse
@@ -25,8 +25,9 @@ This module extracts the parsing logic for build() function calls from the gener
 ## Usage Example
 
 ```c
-// Create parser
-ar_build_instruction_parser_t *parser = ar_build_instruction_parser__create();
+// Create parser (with optional ar_log for error reporting)
+ar_log_t *log = ar_log__create();  // Optional - can pass NULL
+ar_build_instruction_parser_t *parser = ar_build_instruction_parser__create(log);
 
 // Parse simple build function
 ar_instruction_ast_t *ast1 = ar_build_instruction_parser__parse(

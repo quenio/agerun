@@ -22,7 +22,7 @@ The module uses an opaque `ar_send_instruction_parser_t` structure that maintain
 
 ### Key Functions
 
-- `ar_send_instruction_parser__create()` - Creates a new parser instance
+- `ar_send_instruction_parser__create(ar_log_t *ref_log)` - Creates a new parser instance
 - `ar_send_instruction_parser__destroy()` - Destroys a parser instance
 - `ar_send_instruction_parser__parse()` - Parses a send instruction
 - `ar_send_instruction_parser__get_error()` - Returns last error message
@@ -31,8 +31,9 @@ The module uses an opaque `ar_send_instruction_parser_t` structure that maintain
 ## Usage Example
 
 ```c
-// Create parser
-ar_send_instruction_parser_t *parser = ar_send_instruction_parser__create();
+// Create parser (with optional logging)
+ar_log_t *own_log = ar_log__create(); // Optional - can be NULL
+ar_send_instruction_parser_t *parser = ar_send_instruction_parser__create(own_log);
 
 // Parse simple send
 ar_instruction_ast_t *ast = ar_send_instruction_parser__parse(
@@ -59,6 +60,7 @@ if (!ast) {
 ar__instruction_ast__destroy(ast);
 ar__instruction_ast__destroy(ast2);
 ar_send_instruction_parser__destroy(parser);
+ar_log__destroy(own_log); // Only if log was created
 ```
 
 ## Supported Syntax
