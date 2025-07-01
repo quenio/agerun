@@ -208,6 +208,7 @@ For each new behavior/feature:
 - **Build on previous cycles**: Later cycles can assume earlier cycles work correctly
 - **Example pattern**: 9 cycles for facade refactoring (assignment, send, if, parse, build, method, agent, destroy, error handling)
 - **Refactor phase is critical**: Use refactor phase to eliminate duplication and extract common patterns
+- **Verify integration points**: Check that related cycles properly connect (e.g., log propagation through hierarchies)
 - **All cycles before commit**: Complete ALL planned cycles before documentation and commit
 
 ### 3. Parnas Design Principles (STRICT ENFORCEMENT) ✅
@@ -405,7 +406,7 @@ Never compile directly with gcc.
 
 **Pre-Commit Checklist** (MANDATORY):
 1. `./clean_build.sh` - Fix ALL issues before proceeding (includes doc validation)
-2. Update module .md files if interfaces changed
+2. **Update module .md files if interfaces changed** - CRITICAL: Interface changes MUST include docs in same commit
 3. Update TODO.md - Mark completed, add new tasks
 4. Update CHANGELOG.md (NON-NEGOTIABLE)
 5. `git diff` - Verify all changes intentional
@@ -464,8 +465,10 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - **Always include critical verification steps**: Plans must include diff verification, test running, memory checking
 - **User feedback is valuable**: If user points out missing steps, update the plan immediately
 - **Example**: "We're missing the comparison of previous and new implementation" - this feedback prevents bugs
+- **Documentation oversight**: User catching missing docs is common - verify docs are part of plan
 - **Plan completeness checklist**:
   - [ ] Verification steps included (diff, tests, memory)
+  - [ ] Documentation updates specified for interface changes
   - [ ] File paths and line numbers specified
   - [ ] Success criteria defined
   - [ ] Error handling considered
