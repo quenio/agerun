@@ -91,13 +91,6 @@ static void test_create_null_memory(void) {
     // Then creation should fail
     assert(evaluator == NULL);
     
-    // And an error should be logged
-    ar_event_t *error_event = ar_log__get_last_error(log);
-    assert(error_event != NULL);
-    const char *error_msg = ar_event__get_message(error_event);
-    assert(error_msg != NULL);
-    assert(strstr(error_msg, "NULL memory") != NULL);
-    
     // Clean up
     ar_log__destroy(log);
     
@@ -155,13 +148,9 @@ static void test_evaluate_literal_int(void) {
 static void test_evaluate_literal_int_wrong_type(void) {
     printf("Testing expression evaluator literal int with wrong type...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
-    
     // Given a memory map and evaluator
     data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
+    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(memory, NULL);
     assert(evaluator != NULL);
     
     // Given a string literal AST node (wrong type)
@@ -179,8 +168,6 @@ static void test_evaluate_literal_int_wrong_type(void) {
     ar_expression_evaluator__destroy(evaluator);
     ar_data__destroy(memory);
     
-    ar_log__destroy(log);
-    
     printf("  ✓ Return NULL for non-integer node\n");
 }
 
@@ -190,13 +177,9 @@ static void test_evaluate_literal_int_wrong_type(void) {
 static void test_evaluate_literal_double(void) {
     printf("Testing expression evaluator literal double...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
-    
     // Given a memory map and evaluator
     data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
+    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(memory, NULL);
     assert(evaluator != NULL);
     
     // Given a double literal AST node
@@ -217,8 +200,6 @@ static void test_evaluate_literal_double(void) {
     ar_expression_evaluator__destroy(evaluator);
     ar_data__destroy(memory);
     
-    ar_log__destroy(log);
-    
     printf("  ✓ Evaluate double literal\n");
 }
 
@@ -228,13 +209,9 @@ static void test_evaluate_literal_double(void) {
 static void test_evaluate_literal_double_wrong_type(void) {
     printf("Testing expression evaluator literal double with wrong type...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
-    
     // Given a memory map and evaluator
     data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
+    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(memory, NULL);
     assert(evaluator != NULL);
     
     // Given an integer literal AST node (wrong type)
@@ -252,10 +229,6 @@ static void test_evaluate_literal_double_wrong_type(void) {
     ar_expression_evaluator__destroy(evaluator);
     ar_data__destroy(memory);
     
-    ar_log__destroy(log);
-    
-    ar_log__destroy(log);
-    
     printf("  ✓ Return NULL for non-double node\n");
 }
 
@@ -265,13 +238,9 @@ static void test_evaluate_literal_double_wrong_type(void) {
 static void test_evaluate_literal_string(void) {
     printf("Testing expression evaluator literal string...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
-    
     // Given a memory map and evaluator
     data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
+    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(memory, NULL);
     assert(evaluator != NULL);
     
     // Given a string literal AST node
@@ -300,8 +269,6 @@ static void test_evaluate_literal_string(void) {
     ar_expression_evaluator__destroy(evaluator);
     ar_data__destroy(memory);
     
-    ar_log__destroy(log);
-    
     printf("  ✓ Evaluate string literal\n");
 }
 
@@ -311,13 +278,9 @@ static void test_evaluate_literal_string(void) {
 static void test_evaluate_literal_string_wrong_type(void) {
     printf("Testing expression evaluator literal string with wrong type...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
-    
     // Given a memory map and evaluator
     data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
+    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(memory, NULL);
     assert(evaluator != NULL);
     
     // Given an integer literal AST node (wrong type)
@@ -335,10 +298,6 @@ static void test_evaluate_literal_string_wrong_type(void) {
     ar_expression_evaluator__destroy(evaluator);
     ar_data__destroy(memory);
     
-    ar_log__destroy(log);
-    
-    ar_log__destroy(log);
-    
     printf("  ✓ Return NULL for non-string node\n");
 }
 
@@ -348,13 +307,9 @@ static void test_evaluate_literal_string_wrong_type(void) {
 static void test_evaluate_literal_string_empty(void) {
     printf("Testing expression evaluator literal empty string...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
-    
     // Given a memory map and evaluator
     data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
+    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(memory, NULL);
     assert(evaluator != NULL);
     
     // Given an empty string literal AST node
@@ -375,10 +330,6 @@ static void test_evaluate_literal_string_empty(void) {
     ar_expression_evaluator__destroy(evaluator);
     ar_data__destroy(memory);
     
-    ar_log__destroy(log);
-    
-    ar_log__destroy(log);
-    
     printf("  ✓ Evaluate empty string literal\n");
 }
 
@@ -388,15 +339,11 @@ static void test_evaluate_literal_string_empty(void) {
 static void test_evaluate_memory_access(void) {
     printf("Testing expression evaluator memory access...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
-    
     // Given a memory map with some values and an evaluator
     data_t *memory = ar_data__create_map();
     ar_data__set_map_integer(memory, "x", 42);
     ar_data__set_map_string(memory, "name", "Alice");
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
+    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(memory, NULL);
     assert(evaluator != NULL);
     
     // Given a memory access AST node for "memory.x"
@@ -422,8 +369,6 @@ static void test_evaluate_memory_access(void) {
     ar_expression_evaluator__destroy(evaluator);
     ar_data__destroy(memory);
     
-    ar_log__destroy(log);
-    
     printf("  ✓ Evaluate memory access\n");
 }
 
@@ -433,13 +378,9 @@ static void test_evaluate_memory_access(void) {
 static void test_evaluate_memory_access_wrong_type(void) {
     printf("Testing expression evaluator memory access with wrong type...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
-    
     // Given a memory map and evaluator
     data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
+    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(memory, NULL);
     assert(evaluator != NULL);
     
     // Given an integer literal AST node (wrong type)
@@ -457,10 +398,6 @@ static void test_evaluate_memory_access_wrong_type(void) {
     ar_expression_evaluator__destroy(evaluator);
     ar_data__destroy(memory);
     
-    ar_log__destroy(log);
-    
-    ar_log__destroy(log);
-    
     printf("  ✓ Return NULL for non-memory-access node\n");
 }
 
@@ -470,10 +407,6 @@ static void test_evaluate_memory_access_wrong_type(void) {
 static void test_evaluate_memory_access_nested(void) {
     printf("Testing expression evaluator nested memory access...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
-    
     // Given a memory map with nested structure
     data_t *memory = ar_data__create_map();
     data_t *user = ar_data__create_map();
@@ -481,7 +414,7 @@ static void test_evaluate_memory_access_nested(void) {
     ar_data__set_map_integer(user, "age", 30);
     ar_data__set_map_data(memory, "user", user);
     
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
+    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(memory, NULL);
     assert(evaluator != NULL);
     
     // Given a memory access AST node for "memory.user.name"
@@ -502,10 +435,6 @@ static void test_evaluate_memory_access_nested(void) {
     ar_expression_evaluator__destroy(evaluator);
     ar_data__destroy(memory);
     
-    ar_log__destroy(log);
-    
-    ar_log__destroy(log);
-    
     printf("  ✓ Evaluate nested memory access\n");
 }
 
@@ -515,13 +444,9 @@ static void test_evaluate_memory_access_nested(void) {
 static void test_evaluate_memory_access_missing(void) {
     printf("Testing expression evaluator memory access for missing key...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
-    
     // Given an empty memory map and evaluator
     data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
+    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(memory, NULL);
     assert(evaluator != NULL);
     
     // Given a memory access AST node for "memory.missing"
@@ -540,10 +465,6 @@ static void test_evaluate_memory_access_missing(void) {
     ar_expression_evaluator__destroy(evaluator);
     ar_data__destroy(memory);
     
-    ar_log__destroy(log);
-    
-    ar_log__destroy(log);
-    
     printf("  ✓ Return NULL for missing memory key\n");
 }
 
@@ -553,13 +474,9 @@ static void test_evaluate_memory_access_missing(void) {
 static void test_evaluate_binary_op_add_integers(void) {
     printf("Testing expression evaluator binary op add integers...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
-    
     // Given a memory map and evaluator
     data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
+    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(memory, NULL);
     assert(evaluator != NULL);
     
     // Given a binary addition AST node for "5 + 3"
@@ -590,8 +507,6 @@ static void test_evaluate_binary_op_add_integers(void) {
     ar_expression_evaluator__destroy(evaluator);
     ar_data__destroy(memory);
     
-    ar_log__destroy(log);
-    
     printf("  ✓ Evaluate binary addition of integers\n");
 }
 
@@ -601,13 +516,9 @@ static void test_evaluate_binary_op_add_integers(void) {
 static void test_evaluate_binary_op_multiply_doubles(void) {
     printf("Testing expression evaluator binary op multiply doubles...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
-    
     // Given a memory map and evaluator
     data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
+    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(memory, NULL);
     assert(evaluator != NULL);
     
     // Given a binary multiplication AST node for "2.5 * 4.0"
@@ -630,8 +541,6 @@ static void test_evaluate_binary_op_multiply_doubles(void) {
     ar_expression_evaluator__destroy(evaluator);
     ar_data__destroy(memory);
     
-    ar_log__destroy(log);
-    
     printf("  ✓ Evaluate binary multiplication of doubles\n");
 }
 
@@ -641,13 +550,9 @@ static void test_evaluate_binary_op_multiply_doubles(void) {
 static void test_evaluate_binary_op_concatenate_strings(void) {
     printf("Testing expression evaluator binary op concatenate strings...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
-    
     // Given a memory map and evaluator
     data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
+    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(memory, NULL);
     assert(evaluator != NULL);
     
     // Given a binary addition AST node for "Hello" + " World"
@@ -670,8 +575,6 @@ static void test_evaluate_binary_op_concatenate_strings(void) {
     ar_expression_evaluator__destroy(evaluator);
     ar_data__destroy(memory);
     
-    ar_log__destroy(log);
-    
     printf("  ✓ Evaluate binary string concatenation\n");
 }
 
@@ -681,13 +584,9 @@ static void test_evaluate_binary_op_concatenate_strings(void) {
 static void test_evaluate_binary_op_wrong_type(void) {
     printf("Testing expression evaluator binary op with wrong type...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
-    
     // Given a memory map and evaluator
     data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
+    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(memory, NULL);
     assert(evaluator != NULL);
     
     // Given an integer literal AST node (wrong type)
@@ -705,8 +604,6 @@ static void test_evaluate_binary_op_wrong_type(void) {
     ar_expression_evaluator__destroy(evaluator);
     ar_data__destroy(memory);
     
-    ar_log__destroy(log);
-    
     printf("  ✓ Return NULL for non-binary-op node\n");
 }
 
@@ -716,15 +613,11 @@ static void test_evaluate_binary_op_wrong_type(void) {
 static void test_evaluate_binary_op_nested(void) {
     printf("Testing expression evaluator nested binary operations...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
-    
     // Given a memory map with some values
     data_t *memory = ar_data__create_map();
     ar_data__set_map_integer(memory, "x", 10);
     ar_data__set_map_integer(memory, "y", 5);
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
+    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(memory, NULL);
     assert(evaluator != NULL);
     
     // Given a nested binary operation AST node for "(memory.x + 2) * memory.y"
@@ -765,8 +658,6 @@ static void test_evaluate_binary_op_nested(void) {
     ar_expression_ast__destroy(ast);
     ar_expression_evaluator__destroy(evaluator);
     ar_data__destroy(memory);
-    
-    ar_log__destroy(log);
     
     printf("  ✓ Evaluate nested binary operations\n");
 }

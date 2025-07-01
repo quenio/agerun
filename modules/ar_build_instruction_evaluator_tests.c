@@ -16,10 +16,10 @@ static void test_build_instruction_evaluator__create_destroy(void) {
     data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
-
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
+    
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
     assert(expr_eval != NULL);
     
     // When creating a build instruction evaluator
@@ -44,15 +44,15 @@ static void test_build_instruction_evaluator__evaluate_with_instance(void) {
     data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
     data_t *values = ar_data__create_map();
     assert(values != NULL);
     assert(ar_data__set_map_data(values, "name", ar_data__create_string("Alice")));
     assert(ar_data__set_map_data(memory, "data", values));
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
-
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
     assert(expr_eval != NULL);
     
     // When creating a build instruction evaluator instance
@@ -107,15 +107,15 @@ static void test_build_instruction_evaluator__evaluate_legacy(void) {
     data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
     data_t *values = ar_data__create_map();
     assert(values != NULL);
     assert(ar_data__set_map_data(values, "greeting", ar_data__create_string("Hi")));
     assert(ar_data__set_map_data(memory, "vars", values));
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
-
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
     assert(expr_eval != NULL);
     
     // Create an evaluator instance
@@ -170,16 +170,16 @@ static void test_build_instruction_evaluator__evaluate_simple(void) {
     data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
     // Create a map with values to use in building
     data_t *values = ar_data__create_map();
     assert(values != NULL);
     assert(ar_data__set_map_data(values, "name", ar_data__create_string("Alice")));
     assert(ar_data__set_map_data(memory, "data", values));
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
-
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
     assert(expr_eval != NULL);
     
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
@@ -233,6 +233,9 @@ static void test_build_instruction_evaluator__evaluate_multiple_variables(void) 
     data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
     // Create a map with multiple values
     data_t *values = ar_data__create_map();
     assert(values != NULL);
@@ -241,10 +244,7 @@ static void test_build_instruction_evaluator__evaluate_multiple_variables(void) 
     assert(ar_data__set_map_data(values, "role", ar_data__create_string("Admin")));
     assert(ar_data__set_map_data(memory, "user", values));
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
-
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
     assert(expr_eval != NULL);
     
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
@@ -298,6 +298,9 @@ static void test_build_instruction_evaluator__evaluate_with_types(void) {
     data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
     // Create a map with values of different types
     data_t *values = ar_data__create_map();
     assert(values != NULL);
@@ -306,10 +309,7 @@ static void test_build_instruction_evaluator__evaluate_with_types(void) {
     assert(ar_data__set_map_data(values, "score", ar_data__create_double(95.5)));
     assert(ar_data__set_map_data(memory, "stats", values));
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
-
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
     assert(expr_eval != NULL);
     
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
@@ -363,6 +363,9 @@ static void test_build_instruction_evaluator__evaluate_missing_values(void) {
     data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
     // Create a map with only some values
     data_t *values = ar_data__create_map();
     assert(values != NULL);
@@ -370,10 +373,7 @@ static void test_build_instruction_evaluator__evaluate_missing_values(void) {
     // Note: lastName is missing
     assert(ar_data__set_map_data(memory, "person", values));
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
-
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
     assert(expr_eval != NULL);
     
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
@@ -427,10 +427,10 @@ static void test_build_instruction_evaluator__evaluate_invalid_args(void) {
     data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
-
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
+    
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
     assert(expr_eval != NULL);
     
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
@@ -552,3 +552,4 @@ int main(void) {
     
     return 0;
 }
+

@@ -15,10 +15,12 @@ static void test_condition_instruction_evaluator__create_destroy(void) {
     // Given memory, expression evaluator, and log
     data_t *own_memory = ar_data__create_map();
     assert(own_memory != NULL);
-    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_memory, NULL);
-    assert(own_expr_eval != NULL);
+    
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
+    
+    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log, own_memory, NULL);
+    assert(own_expr_eval != NULL);
     
     // When creating a condition instruction evaluator
     ar_condition_instruction_evaluator_t *own_evaluator = ar_condition_instruction_evaluator__create(
@@ -43,10 +45,10 @@ static void test_condition_instruction_evaluator__evaluate_with_instance(void) {
     assert(own_memory != NULL);
     assert(ar_data__set_map_data(own_memory, "x", ar_data__create_integer(10)));
     
-    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_memory, NULL);
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
     
+    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log, own_memory, NULL);
     assert(own_expr_eval != NULL);
     
     ar_condition_instruction_evaluator_t *own_evaluator = ar_condition_instruction_evaluator__create(
@@ -107,10 +109,10 @@ static void test_condition_instruction_evaluator__evaluate_without_legacy(void) 
     assert(own_memory != NULL);
     assert(ar_data__set_map_data(own_memory, "flag", ar_data__create_integer(0)));
     
-    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_memory, NULL);
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
     
+    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log, own_memory, NULL);
     assert(own_expr_eval != NULL);
     
     // When creating a condition instruction evaluator instance
@@ -168,11 +170,12 @@ static void test_instruction_evaluator__evaluate_if_true_condition(void) {
     // Given an evaluator with memory containing a condition
     data_t *memory = ar_data__create_map();
     assert(memory != NULL);
-    assert(ar_data__set_map_data(memory, "x", ar_data__create_integer(10)));
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
+    assert(ar_data__set_map_data(memory, "x", ar_data__create_integer(10)));
+    
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
     
     assert(expr_eval != NULL);
     
@@ -232,11 +235,12 @@ static void test_instruction_evaluator__evaluate_if_false_condition(void) {
     // Given an evaluator with memory containing a condition
     data_t *memory = ar_data__create_map();
     assert(memory != NULL);
-    assert(ar_data__set_map_data(memory, "x", ar_data__create_integer(3)));
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
+    assert(ar_data__set_map_data(memory, "x", ar_data__create_integer(3)));
+    
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
     
     assert(expr_eval != NULL);
     
@@ -296,13 +300,14 @@ static void test_instruction_evaluator__evaluate_if_with_expressions(void) {
     // Given an evaluator with memory containing values
     data_t *memory = ar_data__create_map();
     assert(memory != NULL);
+    
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     assert(ar_data__set_map_data(memory, "a", ar_data__create_integer(10)));
     assert(ar_data__set_map_data(memory, "b", ar_data__create_integer(20)));
     assert(ar_data__set_map_data(memory, "flag", ar_data__create_integer(1)));
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
     
     assert(expr_eval != NULL);
     
@@ -368,11 +373,12 @@ static void test_instruction_evaluator__evaluate_if_nested(void) {
     // Given an evaluator with memory
     data_t *memory = ar_data__create_map();
     assert(memory != NULL);
-    assert(ar_data__set_map_data(memory, "x", ar_data__create_integer(15)));
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
+    assert(ar_data__set_map_data(memory, "x", ar_data__create_integer(15)));
+    
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
     
     assert(expr_eval != NULL);
     
@@ -435,9 +441,10 @@ static void test_instruction_evaluator__evaluate_if_invalid_args(void) {
     data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
+    
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
     
     assert(expr_eval != NULL);
     
@@ -524,3 +531,4 @@ int main(void) {
     
     return 0;
 }
+

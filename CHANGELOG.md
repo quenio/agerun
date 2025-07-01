@@ -2,6 +2,31 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-07-01
+- ✅ **Integrated ar_log Module into Expression Evaluator**:
+  - ✅ **Updated ar_expression_evaluator to accept ar_log as first parameter**:
+    - ✅ Modified create function signature: ar_expression_evaluator__create(ar_log_t*, data_t*, data_t*)
+    - ✅ Added ar_log_t field to internal evaluator struct
+    - ✅ Replaced all 21 ar_io__error calls with ar_log__error
+    - ✅ Added _log_error helper function for consistent error reporting
+  - ✅ **Updated all 11 test files to pass ar_log to expression evaluator**:
+    - ✅ ar_expression_evaluator_tests.c - updated to create and pass ar_log
+    - ✅ ar_assignment_instruction_evaluator_tests.c - fixed declaration order
+    - ✅ ar_send_instruction_evaluator_tests.c - added ar_log creation
+    - ✅ ar_condition_instruction_evaluator_tests.c - fixed log before use issues
+    - ✅ ar_parse_instruction_evaluator_tests.c - corrected variable order
+    - ✅ ar_build_instruction_evaluator_tests.c - removed duplicate declarations
+    - ✅ ar_method_instruction_evaluator_tests.c - updated for new signature
+    - ✅ ar_agent_instruction_evaluator_tests.c - fixed log passing
+    - ✅ ar_destroy_agent_instruction_evaluator_tests.c - added ar_log
+    - ✅ ar_destroy_method_instruction_evaluator_tests.c - updated calls
+    - ✅ ar_instruction_evaluator_tests.c - fixed null memory test
+  - ✅ **Preserved special case for NULL log parameter**:
+    - ✅ ar_io__error used when log is NULL (can't log without log instance)
+    - ✅ ar_log__error used for all other error cases
+  - ✅ **All tests compile and pass (22/23) with zero memory leaks**
+  - ✅ **Updated module documentation to reflect ar_log dependency**
+
 ## 2025-06-30
 - ✅ **Integrated ar_log Module into All Instruction Evaluators**:
   - ✅ **Updated all 9 instruction evaluators to use centralized ar_log for error handling**:

@@ -12,6 +12,7 @@
 
 #include "ar_expression_ast.h"
 #include "ar_data.h"
+#include "ar_log.h"
 
 /**
  * Opaque type for expression evaluator
@@ -20,12 +21,14 @@ typedef struct expression_evaluator_s ar_expression_evaluator_t;
 
 /**
  * Creates a new expression evaluator
+ * @param ref_log The log instance for error reporting (borrowed reference)
  * @param ref_memory The memory map containing variables (borrowed reference)
  * @param ref_context Optional context map with additional data (borrowed reference, can be NULL)
  * @return A new evaluator instance
  * @note Ownership: Returns an owned value that caller must destroy
  */
 ar_expression_evaluator_t* ar_expression_evaluator__create(
+    ar_log_t *ref_log,
     data_t *ref_memory,
     data_t *ref_context
 );

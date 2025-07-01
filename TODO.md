@@ -66,10 +66,10 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Get last event by type functionality
   - [x] Buffer overflow triggers automatic flush
   - [x] Destroy flushes buffered events to disk
-  - [x] Integration with evaluators and parsers (Completed 2025-06-30)
+  - [x] Integration with evaluators and parsers (Completed 2025-07-01)
     - [x] All 9 instruction evaluators updated to use ar_log
     - [x] Instruction evaluator facade updated to coordinate logging
-    - [ ] Expression evaluator needs ar_log integration (HIGH PRIORITY)
+    - [x] Expression evaluator updated to use ar_log (Completed 2025-07-01)
     - [ ] Parsers still need integration with position tracking
 
 #### 2. Extract Memory Path Utilities Module  

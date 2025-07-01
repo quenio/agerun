@@ -19,6 +19,7 @@ The expression evaluator module provides functionality for evaluating expression
 The module is designed with clean separation of concerns:
 - Depends on ar_expression_ast for node inspection
 - Depends on data module for value creation and manipulation  
+- Depends on ar_log for centralized error reporting
 - No dependency on expression or instruction modules
 - Maintains memory and context references throughout evaluation
 
@@ -26,7 +27,7 @@ The module is designed with clean separation of concerns:
 
 ### Creation and Destruction
 
-- `ar_expression_evaluator__create()` - Creates evaluator with memory and optional context
+- `ar_expression_evaluator__create()` - Creates evaluator with log, memory and optional context
 - `ar_expression_evaluator__destroy()` - Destroys evaluator and releases resources
 
 ### Evaluation Functions

@@ -15,9 +15,10 @@ static void test_parse_instruction_evaluator__create_destroy(void) {
     // Given memory, expression evaluator, and log
     data_t *own_memory = ar_data__create_map();
     assert(own_memory != NULL);
-    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_memory, NULL);
+
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
+    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log, own_memory, NULL);
     
     assert(own_expr_eval != NULL);
     
@@ -43,9 +44,10 @@ static void test_parse_instruction_evaluator__evaluate_with_instance(void) {
     data_t *own_memory = ar_data__create_map();
     assert(own_memory != NULL);
     
-    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_memory, NULL);
+
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
+    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log, own_memory, NULL);
     
     assert(own_expr_eval != NULL);
     
@@ -103,9 +105,10 @@ static void test_parse_instruction_evaluator__evaluate_without_legacy(void) {
     data_t *own_memory = ar_data__create_map();
     assert(own_memory != NULL);
     
-    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_memory, NULL);
+
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
+    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log, own_memory, NULL);
     
     assert(own_expr_eval != NULL);
     
@@ -169,9 +172,10 @@ static void test_instruction_evaluator__evaluate_parse_simple(void) {
     data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
+    
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
     
     assert(expr_eval != NULL);
     
@@ -230,9 +234,10 @@ static void test_instruction_evaluator__evaluate_parse_multiple_variables(void) 
     data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
+    
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
     
     assert(expr_eval != NULL);
     
@@ -296,9 +301,10 @@ static void test_instruction_evaluator__evaluate_parse_with_types(void) {
     data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
+    
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
     
     assert(expr_eval != NULL);
     
@@ -367,9 +373,10 @@ static void test_instruction_evaluator__evaluate_parse_no_match(void) {
     data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
+    
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
     
     assert(expr_eval != NULL);
     
@@ -427,9 +434,10 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
+    
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
     
     assert(expr_eval != NULL);
     
