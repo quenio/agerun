@@ -254,8 +254,6 @@ static void test_evaluate_literal_double_wrong_type(void) {
     
     ar_log__destroy(log);
     
-    ar_log__destroy(log);
-    
     printf("  ✓ Return NULL for non-double node\n");
 }
 
@@ -337,8 +335,6 @@ static void test_evaluate_literal_string_wrong_type(void) {
     
     ar_log__destroy(log);
     
-    ar_log__destroy(log);
-    
     printf("  ✓ Return NULL for non-string node\n");
 }
 
@@ -374,8 +370,6 @@ static void test_evaluate_literal_string_empty(void) {
     ar_expression_ast__destroy(ast);
     ar_expression_evaluator__destroy(evaluator);
     ar_data__destroy(memory);
-    
-    ar_log__destroy(log);
     
     ar_log__destroy(log);
     
@@ -459,8 +453,6 @@ static void test_evaluate_memory_access_wrong_type(void) {
     
     ar_log__destroy(log);
     
-    ar_log__destroy(log);
-    
     printf("  ✓ Return NULL for non-memory-access node\n");
 }
 
@@ -504,8 +496,6 @@ static void test_evaluate_memory_access_nested(void) {
     
     ar_log__destroy(log);
     
-    ar_log__destroy(log);
-    
     printf("  ✓ Evaluate nested memory access\n");
 }
 
@@ -539,8 +529,6 @@ static void test_evaluate_memory_access_missing(void) {
     ar_expression_ast__destroy(ast);
     ar_expression_evaluator__destroy(evaluator);
     ar_data__destroy(memory);
-    
-    ar_log__destroy(log);
     
     ar_log__destroy(log);
     
