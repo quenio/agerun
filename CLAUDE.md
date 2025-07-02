@@ -407,11 +407,12 @@ Never compile directly with gcc.
 **Pre-Commit Checklist** (MANDATORY):
 1. `./clean_build.sh` - Fix ALL issues before proceeding (includes doc validation)
 2. **Update module .md files if interfaces changed** - CRITICAL: Interface changes MUST include docs in same commit
-3. Update TODO.md - Mark completed, add new tasks
-4. Update CHANGELOG.md (NON-NEGOTIABLE)
-5. `git diff` - Verify all changes intentional
-6. Check for backup files outside ./bin (*.backup, *.bak, *.tmp)
-7. Only then: `git commit`
+3. `grep -l "function_name" modules/*.md` - Check docs for any API changes
+4. Update TODO.md - Mark completed, add new tasks
+5. Update CHANGELOG.md (NON-NEGOTIABLE)
+6. `git diff` - Verify all changes intentional
+7. Check for backup files outside ./bin (*.backup, *.bak, *.tmp)
+8. Only then: `git commit`
 
 **Remember**: Complete ALL TDD Cycles → Docs → TODO → CHANGELOG → Commit
 
@@ -458,6 +459,8 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - **Strategic analysis**: Check if modern solution exists before refactoring legacy code
 - **Complexity warning**: If "simple" change touches many modules → approach is wrong
 - **Complete implementations**: All cases or none - partial implementations create bugs
+- **Deprecation pattern**: `(void)param; return NULL/0;` with DEPRECATED docs/comments
+- **Facade redundancy**: If specialized modules log errors, facades shouldn't duplicate
 
 ### 13. Plan Verification and Review
 
