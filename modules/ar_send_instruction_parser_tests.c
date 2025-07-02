@@ -44,9 +44,11 @@ static void test_send_instruction_parser__create_destroy(void) {
 static void test_send_instruction_parser__parse_simple_send(void) {
     printf("Testing simple send parsing...\n");
     
-    // Given a send function call and a parser
+    // Given a send function call and a parser with log
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "send(0, \"Hello\")";
-    ar_send_instruction_parser_t *own_parser = ar_send_instruction_parser__create(NULL);
+    ar_send_instruction_parser_t *own_parser = ar_send_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -69,16 +71,22 @@ static void test_send_instruction_parser__parse_simple_send(void) {
     AR__HEAP__FREE(own_items);
     ar_list__destroy(own_args);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_instruction_ast__destroy(own_ast);
     ar_send_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_send_instruction_parser__parse_send_with_assignment(void) {
     printf("Testing send with assignment parsing...\n");
     
-    // Given a send with result assignment and a parser
+    // Given a send with result assignment and a parser with log
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "send(1, \"Test\")";
-    ar_send_instruction_parser_t *own_parser = ar_send_instruction_parser__create(NULL);
+    ar_send_instruction_parser_t *own_parser = ar_send_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // When parsing with a result path
@@ -90,16 +98,22 @@ static void test_send_instruction_parser__parse_send_with_assignment(void) {
     assert(ar_instruction_ast__has_result_assignment(own_ast) == true);
     assert(strcmp(ar_instruction_ast__get_function_result_path(own_ast), "memory.result") == 0);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_instruction_ast__destroy(own_ast);
     ar_send_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_send_instruction_parser__parse_send_with_expression_args(void) {
     printf("Testing send with expression arguments...\n");
     
-    // Given a send with complex arguments and a parser
+    // Given a send with complex arguments and a parser with log
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "send(memory.agent_id, \"Count: \" + memory.count)";
-    ar_send_instruction_parser_t *own_parser = ar_send_instruction_parser__create(NULL);
+    ar_send_instruction_parser_t *own_parser = ar_send_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -120,16 +134,22 @@ static void test_send_instruction_parser__parse_send_with_expression_args(void) 
     AR__HEAP__FREE(own_items);
     ar_list__destroy(own_args);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_instruction_ast__destroy(own_ast);
     ar_send_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_send_instruction_parser__parse_error_missing_args(void) {
     printf("Testing error handling - missing arguments...\n");
     
-    // Given a send with missing arguments and a parser
+    // Given a send with missing arguments and a parser with log
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "send()";
-    ar_send_instruction_parser_t *own_parser = ar_send_instruction_parser__create(NULL);
+    ar_send_instruction_parser_t *own_parser = ar_send_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -139,18 +159,20 @@ static void test_send_instruction_parser__parse_error_missing_args(void) {
     assert(own_ast == NULL);
     
     // And error information should be available
-    const char *error = ar_send_instruction_parser__get_error(own_parser);
-    assert(error != NULL);
+    assert(ar_log__get_last_error_message(log) != NULL);
     
     ar_send_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_send_instruction_parser__parse_error_invalid_syntax(void) {
     printf("Testing error handling - invalid syntax...\n");
     
-    // Given invalid send syntax and a parser
+    // Given invalid send syntax and a parser with log
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "send(1,)";  // Missing second argument
-    ar_send_instruction_parser_t *own_parser = ar_send_instruction_parser__create(NULL);
+    ar_send_instruction_parser_t *own_parser = ar_send_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -159,7 +181,11 @@ static void test_send_instruction_parser__parse_error_invalid_syntax(void) {
     // Then it should return NULL
     assert(own_ast == NULL);
     
+    // And error information should be available
+    assert(ar_log__get_last_error_message(log) != NULL);
+    
     ar_send_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 // TODO: Function calls in expressions not supported yet
@@ -198,8 +224,10 @@ static void test_send_instruction_parser__parse_nested_parentheses(void) {
 static void test_send_instruction_parser__reusability(void) {
     printf("Testing parser reusability...\n");
     
-    // Given a parser instance
-    ar_send_instruction_parser_t *own_parser = ar_send_instruction_parser__create(NULL);
+    // Given a parser instance with log
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_send_instruction_parser_t *own_parser = ar_send_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // When parsing multiple instructions with the same parser
@@ -231,17 +259,23 @@ static void test_send_instruction_parser__reusability(void) {
     AR__HEAP__FREE(own_items2);
     ar_list__destroy(own_args2);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_instruction_ast__destroy(own_ast1);
     ar_instruction_ast__destroy(own_ast2);
     ar_send_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_send_instruction_parser__parse_with_expression_asts(void) {
     printf("Testing send parsing with expression ASTs...\n");
     
-    // Given a send function call with integer and string arguments
+    // Given a send function call with integer and string arguments and log
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "send(42, \"Hello World\")";
-    ar_send_instruction_parser_t *own_parser = ar_send_instruction_parser__create(NULL);
+    ar_send_instruction_parser_t *own_parser = ar_send_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -270,9 +304,13 @@ static void test_send_instruction_parser__parse_with_expression_asts(void) {
     assert(ar_expression_ast__get_type(ref_second_arg) == AR_EXPR__LITERAL_STRING);
     assert(strcmp(ar_expression_ast__get_string_value(ref_second_arg), "Hello World") == 0);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     AR__HEAP__FREE(items);
     ar_instruction_ast__destroy(own_ast);
     ar_send_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 int main(void) {

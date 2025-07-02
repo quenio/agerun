@@ -16,8 +16,6 @@
  */
 struct ar_condition_instruction_parser_s {
     ar_log_t *ref_log;       /* Log instance for error reporting (borrowed) */
-    char *own_error;         /* Error message if parsing fails */
-    size_t error_position;   /* Position where error occurred */
 };
 
 /**
@@ -33,8 +31,6 @@ ar_condition_instruction_parser_t* ar_condition_instruction_parser__create(ar_lo
     }
     
     own_parser->ref_log = ref_log;
-    own_parser->own_error = NULL;
-    own_parser->error_position = 0;
     
     return own_parser;
 }
@@ -47,60 +43,24 @@ void ar_condition_instruction_parser__destroy(ar_condition_instruction_parser_t 
         return;
     }
     
-    AR__HEAP__FREE(own_parser->own_error);
     AR__HEAP__FREE(own_parser);
 }
 
-/**
- * Get the last error message from the parser.
- */
-const char* ar_condition_instruction_parser__get_error(const ar_condition_instruction_parser_t *ref_parser) {
-    if (!ref_parser) {
-        return NULL;
-    }
-    return ref_parser->own_error;
-}
 
 /**
- * Get the error position from the last parse attempt.
+ * Internal: Log error message with position.
  */
-size_t ar_condition_instruction_parser__get_error_position(const ar_condition_instruction_parser_t *ref_parser) {
-    if (!ref_parser) {
-        return 0;
-    }
-    return ref_parser->error_position;
-}
-
-/**
- * Internal: Set error message and position.
- */
-static void _set_error(ar_condition_instruction_parser_t *mut_parser, const char *error, size_t position) {
+static void _log_error(ar_condition_instruction_parser_t *mut_parser, const char *error, size_t position) {
     if (!mut_parser) {
         return;
     }
     
-    AR__HEAP__FREE(mut_parser->own_error);
-    mut_parser->own_error = AR__HEAP__STRDUP(error, "parser error message");
-    mut_parser->error_position = position;
-    
-    /* Also log the error with position */
+    /* Log the error with position */
     if (mut_parser->ref_log) {
         ar_log__error_at(mut_parser->ref_log, error, (int)position);
     }
 }
 
-/**
- * Internal: Clear any previous error.
- */
-static void _clear_error(ar_condition_instruction_parser_t *mut_parser) {
-    if (!mut_parser) {
-        return;
-    }
-    
-    AR__HEAP__FREE(mut_parser->own_error);
-    mut_parser->own_error = NULL;
-    mut_parser->error_position = 0;
-}
 
 /**
  * Internal: Skip whitespace in string.
@@ -242,7 +202,7 @@ static list_t* _parse_arguments_to_asts(ar_condition_instruction_parser_t *mut_p
                                         size_t error_offset) {
     list_t *own_arg_asts = ar_list__create();
     if (!own_arg_asts) {
-        _set_error(mut_parser, "Failed to create argument AST list", error_offset);
+        _log_error(mut_parser, "Failed to create argument AST list", error_offset);
         return NULL;
     }
     
@@ -250,7 +210,7 @@ static list_t* _parse_arguments_to_asts(ar_condition_instruction_parser_t *mut_p
         ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(mut_parser->ref_log, ref_args[i]);
         if (!own_expr_parser) {
             _cleanup_arg_asts(own_arg_asts);
-            _set_error(mut_parser, "Failed to create expression parser", error_offset);
+            _log_error(mut_parser, "Failed to create expression parser", error_offset);
             return NULL;
         }
         
@@ -260,7 +220,7 @@ static list_t* _parse_arguments_to_asts(ar_condition_instruction_parser_t *mut_p
             char *own_error_copy = expr_error ? AR__HEAP__STRDUP(expr_error, "error message copy") : NULL;
             _cleanup_arg_asts(own_arg_asts);
             ar_expression_parser__destroy(own_expr_parser);
-            _set_error(mut_parser, own_error_copy ? own_error_copy : "Failed to parse argument expression", error_offset);
+            _log_error(mut_parser, own_error_copy ? own_error_copy : "Failed to parse argument expression", error_offset);
             AR__HEAP__FREE(own_error_copy);
             return NULL;
         }
@@ -269,7 +229,7 @@ static list_t* _parse_arguments_to_asts(ar_condition_instruction_parser_t *mut_p
             _cleanup_arg_asts(own_arg_asts);
             ar_expression_ast__destroy(own_expr_ast);
             ar_expression_parser__destroy(own_expr_parser);
-            _set_error(mut_parser, "Failed to add argument AST to list", error_offset);
+            _log_error(mut_parser, "Failed to add argument AST to list", error_offset);
             return NULL;
         }
         
@@ -291,7 +251,6 @@ ar_instruction_ast_t* ar_condition_instruction_parser__parse(
         return NULL;
     }
     
-    _clear_error(mut_parser);
     
     size_t pos = 0;
     
@@ -310,7 +269,7 @@ ar_instruction_ast_t* ar_condition_instruction_parser__parse(
     
     /* Check for "if" */
     if (strncmp(ref_instruction + pos, "if", 2) != 0) {
-        _set_error(mut_parser, "Expected 'if' function", pos);
+        _log_error(mut_parser, "Expected 'if' function", pos);
         return NULL;
     }
     pos += 2;
@@ -320,7 +279,7 @@ ar_instruction_ast_t* ar_condition_instruction_parser__parse(
     
     /* Expect opening parenthesis */
     if (ref_instruction[pos] != '(') {
-        _set_error(mut_parser, "Expected '(' after 'if'", pos);
+        _log_error(mut_parser, "Expected '(' after 'if'", pos);
         return NULL;
     }
     pos++;
@@ -329,7 +288,7 @@ ar_instruction_ast_t* ar_condition_instruction_parser__parse(
     char **args = NULL;
     size_t arg_count = 0;
     if (!_parse_arguments(ref_instruction, &pos, &args, &arg_count, 3)) {
-        _set_error(mut_parser, "Failed to parse if arguments", pos);
+        _log_error(mut_parser, "Failed to parse if arguments", pos);
         return NULL;
     }
     
@@ -343,7 +302,7 @@ ar_instruction_ast_t* ar_condition_instruction_parser__parse(
             AR__HEAP__FREE(args[i]);
         }
         AR__HEAP__FREE(args);
-        _set_error(mut_parser, "Memory allocation failed", 0);
+        _log_error(mut_parser, "Memory allocation failed", 0);
         return NULL;
     }
     for (size_t i = 0; i < arg_count; i++) {
@@ -358,7 +317,7 @@ ar_instruction_ast_t* ar_condition_instruction_parser__parse(
     
     if (!own_ast) {
         _cleanup_args(args, arg_count);
-        _set_error(mut_parser, "Failed to create AST node", 0);
+        _log_error(mut_parser, "Failed to create AST node", 0);
         return NULL;
     }
     
@@ -374,11 +333,29 @@ ar_instruction_ast_t* ar_condition_instruction_parser__parse(
         _cleanup_args(args, arg_count);
         ar_instruction_ast__destroy(own_ast);
         _cleanup_arg_asts(own_arg_asts);
-        _set_error(mut_parser, "Failed to set argument ASTs", 0);
+        _log_error(mut_parser, "Failed to set argument ASTs", 0);
         return NULL;
     }
     
     _cleanup_args(args, arg_count);
     
     return own_ast;
+}
+
+/**
+ * Gets the last error message from the parser
+ * DEPRECATED: This function always returns NULL. Use ar_log for error reporting.
+ */
+const char* ar_condition_instruction_parser__get_error(const ar_condition_instruction_parser_t *ref_parser) {
+    (void)ref_parser; // Suppress unused parameter warning
+    return NULL;
+}
+
+/**
+ * Gets the position where the last error occurred
+ * DEPRECATED: This function always returns 0. Use ar_log for error reporting.
+ */
+size_t ar_condition_instruction_parser__get_error_position(const ar_condition_instruction_parser_t *ref_parser) {
+    (void)ref_parser; // Suppress unused parameter warning
+    return 0;
 }

@@ -6,7 +6,7 @@
 #include "ar_expression_ast.h"
 #include "ar_heap.h"
 #include "ar_log.h"
-#include "ar_event.h"
+
 
 static void test_create_parser_with_log(void) {
     printf("Testing parser creation with ar_log...\n");
@@ -43,7 +43,7 @@ static void test_parse_integer_literal(void) {
     assert(own_ast != NULL);
     assert(ar_expression_ast__get_type(own_ast) == AR_EXPR__LITERAL_INT);
     assert(ar_expression_ast__get_int_value(own_ast) == 42);
-    assert(ar_expression_parser__get_error(own_parser) == NULL);
+    assert(ar_log__get_last_error_message(log) == NULL);
     
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
@@ -152,8 +152,9 @@ static void test_parse_unterminated_string(void) {
     
     // Then it should fail with an error
     assert(own_ast == NULL);
-    assert(ar_expression_parser__get_error(own_parser) != NULL);
-    assert(strstr(ar_expression_parser__get_error(own_parser), "Unterminated string") != NULL);
+    const char *error_msg = ar_log__get_last_error_message(log);
+    assert(error_msg != NULL);
+    assert(strstr(error_msg, "Unterminated string") != NULL);
     
     ar_expression_parser__destroy(own_parser);
     ar_log__destroy(log);
@@ -314,8 +315,10 @@ static void test_parse_parenthesized_expression(void) {
     
     // Check for error
     if (own_ast == NULL) {
-        printf("Parse error: %s\n", ar_expression_parser__get_error(own_parser));
+        const char *error_msg = ar_log__get_last_error_message(log);
+        printf("Parse error: %s\n", error_msg ? error_msg : "Unknown error");
         ar_expression_parser__destroy(own_parser);
+        ar_log__destroy(log);
         assert(false && "Failed to parse parenthesized expression");
     }
     
@@ -448,7 +451,7 @@ static void test_parse_invalid_expression(void) {
     
     // Then it should fail with an error
     assert(own_ast == NULL);
-    assert(ar_expression_parser__get_error(own_parser) != NULL);
+    assert(ar_log__get_last_error_message(log) != NULL);
     
     ar_expression_parser__destroy(own_parser);
     ar_log__destroy(log);
@@ -468,8 +471,9 @@ static void test_parse_trailing_characters(void) {
     
     // Then it should fail with an error
     assert(own_ast == NULL);
-    assert(ar_expression_parser__get_error(own_parser) != NULL);
-    assert(strstr(ar_expression_parser__get_error(own_parser), "Unexpected characters") != NULL);
+    const char *error_msg = ar_log__get_last_error_message(log);
+    assert(error_msg != NULL);
+    assert(strstr(error_msg, "Unexpected characters") != NULL);
     
     ar_expression_parser__destroy(own_parser);
     ar_log__destroy(log);
@@ -507,7 +511,7 @@ static void test_parse_null_safety(void) {
     // Test NULL parser parameter
     assert(ar_expression_parser__parse_expression(NULL) == NULL);
     assert(ar_expression_parser__get_position(NULL) == 0);
-    assert(ar_expression_parser__get_error(NULL) == NULL);
+    // Note: get_error test removed - will be removed from API
     
     // Test destroy with NULL
     ar_expression_parser__destroy(NULL);

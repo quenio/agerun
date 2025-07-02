@@ -54,22 +54,19 @@ ar_instruction_ast_t* ar_condition_instruction_parser__parse(
 );
 
 /**
- * Get the last error message from the parser.
- * @param ref_parser The parser to query (borrowed reference)
- * @return Error message or NULL if no error
- * @note Ownership: Returns a borrowed reference, do not free
+ * Gets the last error message from the parser.
+ * DEPRECATED: Use ar_log for error reporting.
+ * @param ref_parser The parser instance (borrowed reference)
+ * @return The last error message or NULL if no error occurred
  */
-const char* ar_condition_instruction_parser__get_error(
-    const ar_condition_instruction_parser_t *ref_parser
-);
+const char* ar_condition_instruction_parser__get_error(const ar_condition_instruction_parser_t *ref_parser);
 
 /**
- * Get the position where the last error occurred.
- * @param ref_parser The parser to query (borrowed reference)
- * @return Character position of error, or 0 if no error
+ * Gets the position where the last error occurred.
+ * DEPRECATED: Use ar_log for error reporting.
+ * @param ref_parser The parser instance (borrowed reference)
+ * @return The character position where the error occurred, or 0 if no error
  */
-size_t ar_condition_instruction_parser__get_error_position(
-    const ar_condition_instruction_parser_t *ref_parser
-);
+size_t ar_condition_instruction_parser__get_error_position(const ar_condition_instruction_parser_t *ref_parser);
 
 #endif /* AGERUN_CONDITION_INSTRUCTION_PARSER_H */

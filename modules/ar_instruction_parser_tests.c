@@ -44,11 +44,13 @@ static void test_instruction_parser__create_destroy_with_parsers(void) {
 static void test_instruction_parser__parse_assignment(void) {
     printf("Testing unified parse method for assignments...\n");
     
-    // Given an assignment instruction
+    // Given an assignment instruction and a parser with log
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "memory.x := 42";
     
     // When creating a parser and parsing via unified method
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    instruction_parser_t *own_parser = ar_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -59,8 +61,12 @@ static void test_instruction_parser__parse_assignment(void) {
     assert(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.x") == 0);
     assert(strcmp(ar_instruction_ast__get_assignment_expression(own_ast), "42") == 0);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_instruction_ast__destroy(own_ast);
     ar_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_instruction_parser__parse_send(void) {
@@ -263,21 +269,24 @@ static void test_instruction_parser__parse_destroy_method(void) {
 static void test_instruction_parser__parse_unknown(void) {
     printf("Testing unified parse method for unknown instruction...\n");
     
-    // Given an unknown instruction
+    // Given an unknown instruction and a parser with log
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "unknown()";
     
     // When creating a parser and parsing via unified method
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    instruction_parser_t *own_parser = ar_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
     // Then it should fail
     assert(own_ast == NULL);
-    assert(ar_instruction_parser__get_error(own_parser) != NULL);
-    assert(strstr(ar_instruction_parser__get_error(own_parser), "Unknown") != NULL);
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "Unknown") != NULL);
     
     ar_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_instruction_parser__parse_empty(void) {
@@ -601,30 +610,35 @@ static void test_parse_error_handling(void) {
     
     // Test 1: Invalid assignment operator
     {
+        ar_log_t *log = ar_log__create();
+        assert(log != NULL);
         const char *instruction = "memory.x = 42";  // Should be :=
-        instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+        instruction_parser_t *own_parser = ar_instruction_parser__create(log);
         assert(own_parser != NULL);
         
         ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
         assert(own_ast == NULL);
         
-        const char *error = ar_instruction_parser__get_error(own_parser);
-        assert(error != NULL);
-        assert(ar_instruction_parser__get_error_position(own_parser) > 0);
+        assert(ar_log__get_last_error_message(log) != NULL);
+        assert(ar_log__get_last_error_position(log) > 0);
         
         ar_instruction_parser__destroy(own_parser);
+        ar_log__destroy(log);
     }
     
     // Test 2: Invalid memory path
     {
+        ar_log_t *log = ar_log__create();
+        assert(log != NULL);
         const char *instruction = "x := 42";  // Missing memory prefix
-        instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+        instruction_parser_t *own_parser = ar_instruction_parser__create(log);
         assert(own_parser != NULL);
         
         ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
         assert(own_ast == NULL);
         
         ar_instruction_parser__destroy(own_parser);
+        ar_log__destroy(log);
     }
     
     // Test 3: Send error tests moved to agerun_send_instruction_parser_tests.c

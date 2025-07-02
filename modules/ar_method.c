@@ -93,14 +93,8 @@ method_t* ar_method__create(const char *ref_name, const char *ref_instructions,
     
     mut_method->own_ast = ar_method_parser__parse(own_parser, ref_instructions);
     if (!mut_method->own_ast) {
-        // Get error information for debugging
-        const char *ref_error = ar_method_parser__get_error(own_parser);
-        int error_line = ar_method_parser__get_error_line(own_parser);
-        if (ref_error) {
-            // For now, we'll just log the error but continue
-            // This allows legacy tests to continue working
-            printf("Warning: Failed to parse method instructions: %s (line %d)\n", ref_error, error_line);
-        }
+        // Parser will have logged error to ar_log if one was provided
+        // Since we're passing NULL for log, no error reporting is available
         // Continue without AST for backward compatibility
     }
     

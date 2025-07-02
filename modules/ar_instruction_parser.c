@@ -23,8 +23,6 @@
  */
 struct instruction_parser_s {
     ar_log_t *ref_log;       /* Log instance for error reporting (borrowed) */
-    char *own_error;         /* Error message if parsing fails */
-    size_t error_position;   /* Position where error occurred */
     
     /* Specialized parser instances */
     ar_assignment_instruction_parser_t *own_assignment_parser;
@@ -163,59 +161,39 @@ void ar_instruction_parser__destroy(instruction_parser_t *own_parser) {
     // Destroy all specialized parsers
     _destroy_specialized_parsers(own_parser);
     
-    AR__HEAP__FREE(own_parser->own_error);
     AR__HEAP__FREE(own_parser);
 }
 
 /**
  * Get the last error message from the parser.
+ * DEPRECATED: This function always returns NULL. Use ar_log for error reporting.
  */
 const char* ar_instruction_parser__get_error(const instruction_parser_t *ref_parser) {
-    if (!ref_parser) {
-        return NULL;
-    }
-    return ref_parser->own_error;
+    (void)ref_parser; // Suppress unused parameter warning
+    return NULL;
 }
 
 /**
  * Get the error position from the last parse attempt.
+ * DEPRECATED: This function always returns 0. Use ar_log for error reporting.
  */
 size_t ar_instruction_parser__get_error_position(const instruction_parser_t *ref_parser) {
-    if (!ref_parser) {
-        return 0;
-    }
-    return ref_parser->error_position;
+    (void)ref_parser; // Suppress unused parameter warning
+    return 0;
 }
 
 /**
- * Internal: Set error message and position.
+ * Internal: Log error message with position.
  */
-static void _set_error(instruction_parser_t *mut_parser, const char *error, size_t position) {
+static void _log_error(instruction_parser_t *mut_parser, const char *error, size_t position) {
     if (!mut_parser) {
         return;
     }
     
-    AR__HEAP__FREE(mut_parser->own_error);
-    mut_parser->own_error = AR__HEAP__STRDUP(error, "parser error message");
-    mut_parser->error_position = position;
-    
-    /* Also log the error with position */
+    /* Log the error with position */
     if (mut_parser->ref_log) {
         ar_log__error_at(mut_parser->ref_log, error, (int)position);
     }
-}
-
-/**
- * Internal: Clear any previous error.
- */
-static void _clear_error(instruction_parser_t *mut_parser) {
-    if (!mut_parser) {
-        return;
-    }
-    
-    AR__HEAP__FREE(mut_parser->own_error);
-    mut_parser->own_error = NULL;
-    mut_parser->error_position = 0;
 }
 
 
@@ -247,12 +225,7 @@ static ar_instruction_ast_t* _dispatch_function(instruction_parser_t *mut_parser
             own_result_path
         );
         
-        if (!own_ast) {
-            const char *ref_error = ar_send_instruction_parser__get_error(mut_parser->own_send_parser);
-            size_t error_pos = ar_send_instruction_parser__get_error_position(mut_parser->own_send_parser);
-            _set_error(mut_parser, ref_error ? ref_error : "Send parsing failed", error_pos);
-        }
-        
+        /* Error already logged by send parser to shared log if parsing failed */
         return own_ast;
     }
     
@@ -264,12 +237,7 @@ static ar_instruction_ast_t* _dispatch_function(instruction_parser_t *mut_parser
             own_result_path
         );
         
-        if (!own_ast) {
-            const char *ref_error = ar_condition_instruction_parser__get_error(mut_parser->own_condition_parser);
-            size_t error_pos = ar_condition_instruction_parser__get_error_position(mut_parser->own_condition_parser);
-            _set_error(mut_parser, ref_error ? ref_error : "If parsing failed", error_pos);
-        }
-        
+        /* Error already logged by condition parser to shared log if parsing failed */
         return own_ast;
     }
     
@@ -281,12 +249,7 @@ static ar_instruction_ast_t* _dispatch_function(instruction_parser_t *mut_parser
             own_result_path
         );
         
-        if (!own_ast) {
-            const char *ref_error = ar_parse_instruction_parser__get_error(mut_parser->own_parse_parser);
-            size_t error_pos = ar_parse_instruction_parser__get_error_position(mut_parser->own_parse_parser);
-            _set_error(mut_parser, ref_error ? ref_error : "Parse parsing failed", error_pos);
-        }
-        
+        /* Error already logged by parse parser to shared log if parsing failed */
         return own_ast;
     }
     
@@ -298,12 +261,7 @@ static ar_instruction_ast_t* _dispatch_function(instruction_parser_t *mut_parser
             own_result_path
         );
         
-        if (!own_ast) {
-            const char *ref_error = ar_build_instruction_parser__get_error(mut_parser->own_build_parser);
-            size_t error_pos = ar_build_instruction_parser__get_error_position(mut_parser->own_build_parser);
-            _set_error(mut_parser, ref_error ? ref_error : "Build parsing failed", error_pos);
-        }
-        
+        /* Error already logged by build parser to shared log if parsing failed */
         return own_ast;
     }
     
@@ -315,12 +273,7 @@ static ar_instruction_ast_t* _dispatch_function(instruction_parser_t *mut_parser
             own_result_path
         );
         
-        if (!own_ast) {
-            const char *ref_error = ar_method_instruction_parser__get_error(mut_parser->own_method_parser);
-            size_t error_pos = ar_method_instruction_parser__get_error_position(mut_parser->own_method_parser);
-            _set_error(mut_parser, ref_error ? ref_error : "Method parsing failed", error_pos);
-        }
-        
+        /* Error already logged by method parser to shared log if parsing failed */
         return own_ast;
     }
     
@@ -332,12 +285,7 @@ static ar_instruction_ast_t* _dispatch_function(instruction_parser_t *mut_parser
             own_result_path
         );
         
-        if (!own_ast) {
-            const char *ref_error = ar_agent_instruction_parser__get_error(mut_parser->own_agent_parser);
-            size_t error_pos = ar_agent_instruction_parser__get_error_position(mut_parser->own_agent_parser);
-            _set_error(mut_parser, ref_error ? ref_error : "Agent parsing failed", error_pos);
-        }
-        
+        /* Error already logged by agent parser to shared log if parsing failed */
         return own_ast;
     }
     
@@ -355,24 +303,18 @@ static ar_instruction_ast_t* _dispatch_function(instruction_parser_t *mut_parser
         }
         
         // Clear error and try destroy agent
-        _clear_error(mut_parser);
-        own_ast = ar_destroy_agent_instruction_parser__parse(
+            own_ast = ar_destroy_agent_instruction_parser__parse(
             mut_parser->own_destroy_agent_parser,
             ref_instruction,
             own_result_path
         );
         
-        if (!own_ast) {
-            const char *ref_error = ar_destroy_agent_instruction_parser__get_error(mut_parser->own_destroy_agent_parser);
-            size_t error_pos = ar_destroy_agent_instruction_parser__get_error_position(mut_parser->own_destroy_agent_parser);
-            _set_error(mut_parser, ref_error ? ref_error : "Destroy parsing failed", error_pos);
-        }
-        
+        /* Error already logged by destroy agent parser to shared log if parsing failed */
         return own_ast;
     }
     
     // Unknown function
-    _set_error(mut_parser, "Unknown function type", 0);
+    _log_error(mut_parser, "Unknown function type", 0);
     return NULL;
 }
 
@@ -384,7 +326,6 @@ ar_instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_par
         return NULL;
     }
     
-    _clear_error(mut_parser);
     
     // Minimal lookahead to detect instruction type
     const char *p = ref_instruction;
@@ -423,7 +364,7 @@ ar_instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_par
             
             char *own_result_path = AR__HEAP__MALLOC(path_len + 1, "result path");
             if (!own_result_path) {
-                _set_error(mut_parser, "Memory allocation failed", 0);
+                _log_error(mut_parser, "Memory allocation failed", 0);
                 return NULL;
             }
             memcpy(own_result_path, path_start, path_len);
@@ -451,13 +392,7 @@ ar_instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_par
                 ref_instruction
             );
             
-            if (!own_ast) {
-                // Get error from specialized parser
-                const char *ref_error = ar_assignment_instruction_parser__get_error(mut_parser->own_assignment_parser);
-                size_t error_pos = ar_assignment_instruction_parser__get_error_position(mut_parser->own_assignment_parser);
-                _set_error(mut_parser, ref_error ? ref_error : "Assignment parsing failed", error_pos);
-            }
-            
+            /* Error already logged by assignment parser to shared log if parsing failed */
             return own_ast;
         }
     }
@@ -489,14 +424,14 @@ ar_instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_par
                   (p == ref_instruction || *(p-1) != ':') && 
                   (*(p+1) != '=')) {
             // Found a single = that's not part of := or ==
-            _set_error(mut_parser, "Invalid assignment operator, expected ':='", (size_t)(p - ref_instruction));
+            _log_error(mut_parser, "Invalid assignment operator, expected ':='", (size_t)(p - ref_instruction));
             return NULL;
         }
         p++;
     }
     
     // Unknown instruction type
-    _set_error(mut_parser, "Unknown instruction type", 0);
+    _log_error(mut_parser, "Unknown instruction type", 0);
     return NULL;
 }
 

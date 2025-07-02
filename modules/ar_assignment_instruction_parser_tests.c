@@ -6,7 +6,7 @@
 #include "ar_expression_ast.h"
 #include "ar_heap.h"
 #include "ar_log.h"
-#include "ar_event.h"
+
 
 static void test_create_parser_with_log(void) {
     printf("Testing parser creation with ar_log...\n");
@@ -43,9 +43,11 @@ static void test_assignment_instruction_parser__create_destroy(void) {
 static void test_assignment_instruction_parser__parse_simple_assignment(void) {
     printf("Testing simple assignment parsing...\n");
     
-    // Given an assignment instruction and a parser
+    // Given an assignment instruction, a log instance, and a parser
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "memory.x := 42";
-    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(NULL);
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -57,16 +59,22 @@ static void test_assignment_instruction_parser__parse_simple_assignment(void) {
     assert(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.x") == 0);
     assert(strcmp(ar_instruction_ast__get_assignment_expression(own_ast), "42") == 0);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_instruction_ast__destroy(own_ast);
     ar_assignment_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_assignment_instruction_parser__parse_string_assignment(void) {
     printf("Testing string assignment parsing...\n");
     
-    // Given a string assignment and a parser
+    // Given a string assignment, a log instance, and a parser
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "memory.greeting := \"Hello, World!\"";
-    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(NULL);
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -78,16 +86,22 @@ static void test_assignment_instruction_parser__parse_string_assignment(void) {
     assert(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.greeting") == 0);
     assert(strcmp(ar_instruction_ast__get_assignment_expression(own_ast), "\"Hello, World!\"") == 0);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_instruction_ast__destroy(own_ast);
     ar_assignment_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_assignment_instruction_parser__parse_nested_assignment(void) {
     printf("Testing nested assignment parsing...\n");
     
-    // Given a nested path assignment and a parser
+    // Given a nested path assignment, a log instance, and a parser
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "memory.user.name := \"John\"";
-    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(NULL);
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -99,16 +113,22 @@ static void test_assignment_instruction_parser__parse_nested_assignment(void) {
     assert(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.user.name") == 0);
     assert(strcmp(ar_instruction_ast__get_assignment_expression(own_ast), "\"John\"") == 0);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_instruction_ast__destroy(own_ast);
     ar_assignment_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_assignment_instruction_parser__parse_expression_assignment(void) {
     printf("Testing expression assignment parsing...\n");
     
-    // Given an expression assignment and a parser
+    // Given an expression assignment, a log instance, and a parser
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "memory.result := 2 + 3 * 4";
-    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(NULL);
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -119,16 +139,22 @@ static void test_assignment_instruction_parser__parse_expression_assignment(void
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__ASSIGNMENT);
     assert(strcmp(ar_instruction_ast__get_assignment_expression(own_ast), "2 + 3 * 4") == 0);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_instruction_ast__destroy(own_ast);
     ar_assignment_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_assignment_instruction_parser__parse_whitespace_handling(void) {
     printf("Testing whitespace handling...\n");
     
-    // Given an assignment with extra whitespace and a parser
+    // Given an assignment with extra whitespace, a log instance, and a parser
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "  memory.x  :=  42  ";
-    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(NULL);
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -140,16 +166,22 @@ static void test_assignment_instruction_parser__parse_whitespace_handling(void) 
     assert(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.x") == 0);
     assert(strcmp(ar_instruction_ast__get_assignment_expression(own_ast), "42") == 0);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_instruction_ast__destroy(own_ast);
     ar_assignment_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_assignment_instruction_parser__parse_error_invalid_operator(void) {
     printf("Testing error handling - invalid assignment operator...\n");
     
-    // Given an invalid assignment operator and a parser
+    // Given a log instance and parser with invalid assignment operator
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "memory.x = 42";  // Should be :=
-    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(NULL);
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -158,12 +190,13 @@ static void test_assignment_instruction_parser__parse_error_invalid_operator(voi
     // Then it should return NULL
     assert(own_ast == NULL);
     
-    // And error information should be available
-    const char *error = ar_assignment_instruction_parser__get_error(own_parser);
+    // And error information should be available in the log
+    const char *error = ar_log__get_last_error_message(log);
     assert(error != NULL);
-    assert(ar_assignment_instruction_parser__get_error_position(own_parser) > 0);
+    assert(ar_log__get_last_error_position(log) > 0);
     
     ar_assignment_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_assignment_instruction_parser__parse_error_invalid_path(void) {
@@ -203,8 +236,10 @@ static void test_assignment_instruction_parser__parse_empty_instruction(void) {
 static void test_assignment_instruction_parser__reusability(void) {
     printf("Testing parser reusability...\n");
     
-    // Given a parser instance
-    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(NULL);
+    // Given a log instance and a parser instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // When parsing multiple instructions with the same parser
@@ -222,17 +257,23 @@ static void test_assignment_instruction_parser__reusability(void) {
     assert(strcmp(ar_instruction_ast__get_assignment_path(own_ast2), "memory.y") == 0);
     assert(strcmp(ar_instruction_ast__get_assignment_expression(own_ast2), "20") == 0);
     
+    // And no errors should be logged (log persists all events)
+    // Note: We can't check for NULL here as the log may contain events from both parses
+    
     ar_instruction_ast__destroy(own_ast1);
     ar_instruction_ast__destroy(own_ast2);
     ar_assignment_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_assignment_instruction_parser__parse_with_expression_ast(void) {
     printf("Testing assignment parsing with expression AST...\n");
     
-    // Given an assignment instruction with integer literal and a parser
+    // Given an assignment instruction with integer literal, a log instance, and a parser
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "memory.x := 42";
-    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(NULL);
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -249,8 +290,12 @@ static void test_assignment_instruction_parser__parse_with_expression_ast(void) 
     assert(ar_expression_ast__get_type(ref_expr_ast) == AR_EXPR__LITERAL_INT);
     assert(ar_expression_ast__get_int_value(ref_expr_ast) == 42);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_instruction_ast__destroy(own_ast);
     ar_assignment_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 int main(void) {

@@ -10,7 +10,6 @@
 #include "ar_list.h"
 #include "ar_expression_ast.h"
 #include "ar_log.h"
-#include "ar_event.h"
 
 static void test_create_parser_with_log(void) {
     printf("Testing parser creation with ar_log...\n");
@@ -54,11 +53,13 @@ static void test_destroy_agent_parser__create_destroy(void) {
 static void test_destroy_agent_parser__parse_integer_id(void) {
     printf("Testing destroy agent parsing with integer ID...\n");
     
-    // Given a destroy function call with integer agent ID
+    // Given a destroy function call with integer agent ID and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "destroy(123)";
     
     // When creating a parser and parsing the instruction
-    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create(NULL);
+    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_destroy_agent_instruction_parser__parse(own_parser, instruction, NULL);
@@ -77,9 +78,13 @@ static void test_destroy_agent_parser__parse_integer_id(void) {
     assert(strcmp(arg, "123") == 0);
     AR__HEAP__FREE(items);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_list__destroy(own_args);
     ar_instruction_ast__destroy(own_ast);
     ar_destroy_agent_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 /**
@@ -88,11 +93,13 @@ static void test_destroy_agent_parser__parse_integer_id(void) {
 static void test_destroy_agent_parser__parse_memory_reference(void) {
     printf("Testing destroy agent parsing with memory reference...\n");
     
-    // Given a destroy function call with memory reference
+    // Given a destroy function call with memory reference and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "destroy(memory.agent_id)";
     
     // When creating a parser and parsing the instruction
-    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create(NULL);
+    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_destroy_agent_instruction_parser__parse(own_parser, instruction, NULL);
@@ -110,9 +117,13 @@ static void test_destroy_agent_parser__parse_memory_reference(void) {
     assert(strcmp(arg, "memory.agent_id") == 0);
     AR__HEAP__FREE(items);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_list__destroy(own_args);
     ar_instruction_ast__destroy(own_ast);
     ar_destroy_agent_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 /**
@@ -121,11 +132,13 @@ static void test_destroy_agent_parser__parse_memory_reference(void) {
 static void test_destroy_agent_parser__parse_with_assignment(void) {
     printf("Testing destroy agent parsing with assignment...\n");
     
-    // Given a destroy function call with assignment
+    // Given a destroy function call with assignment and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "memory.result := destroy(memory.agent_id)";
     
     // When creating a parser and parsing the instruction
-    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create(NULL);
+    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_destroy_agent_instruction_parser__parse(own_parser, instruction, "memory.result");
@@ -144,9 +157,13 @@ static void test_destroy_agent_parser__parse_with_assignment(void) {
     assert(strcmp(arg, "memory.agent_id") == 0);
     AR__HEAP__FREE(items);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_list__destroy(own_args);
     ar_instruction_ast__destroy(own_ast);
     ar_destroy_agent_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 /**
@@ -155,37 +172,42 @@ static void test_destroy_agent_parser__parse_with_assignment(void) {
 static void test_destroy_agent_parser__error_handling(void) {
     printf("Testing destroy agent parser error handling...\n");
     
-    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create(NULL);
+    // Given a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
+    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // Test 1: Missing parentheses
     ar_instruction_ast_t *ast = ar_destroy_agent_instruction_parser__parse(own_parser, "destroy 123", NULL);
     assert(ast == NULL);
-    assert(ar_destroy_agent_instruction_parser__get_error(own_parser) != NULL);
-    assert(strstr(ar_destroy_agent_instruction_parser__get_error(own_parser), "Expected '(' after 'destroy'") != NULL);
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "Expected '(' after 'destroy'") != NULL);
     
     // Test 2: Wrong function name
     ast = ar_destroy_agent_instruction_parser__parse(own_parser, "delete(123)", NULL);
     assert(ast == NULL);
-    assert(strstr(ar_destroy_agent_instruction_parser__get_error(own_parser), "Expected 'destroy' function") != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "Expected 'destroy' function") != NULL);
     
     // Test 3: Empty arguments
     ast = ar_destroy_agent_instruction_parser__parse(own_parser, "destroy()", NULL);
     assert(ast == NULL);
-    assert(strstr(ar_destroy_agent_instruction_parser__get_error(own_parser), "Failed to parse destroy argument") != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "Failed to parse destroy argument") != NULL);
     
     // Test 4: Multiple arguments - should fail because destroy() only accepts one argument
     ast = ar_destroy_agent_instruction_parser__parse(own_parser, "destroy(123, 456)", NULL);
     assert(ast == NULL);
-    assert(ar_destroy_agent_instruction_parser__get_error(own_parser) != NULL);
-    assert(strstr(ar_destroy_agent_instruction_parser__get_error(own_parser), "destroy() expects exactly one argument") != NULL);
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "destroy() expects exactly one argument") != NULL);
     
     // Test 5: Multiple arguments with spaces
     ast = ar_destroy_agent_instruction_parser__parse(own_parser, "destroy(  123  ,  456  )", NULL);
     assert(ast == NULL);
-    assert(strstr(ar_destroy_agent_instruction_parser__get_error(own_parser), "destroy() expects exactly one argument") != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "destroy() expects exactly one argument") != NULL);
     
     ar_destroy_agent_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 /**
@@ -194,9 +216,11 @@ static void test_destroy_agent_parser__error_handling(void) {
 static void test_destroy_agent_parser__parse_with_expression_asts(void) {
     printf("Testing destroy agent instruction with expression ASTs...\n");
     
-    // Given a destroy instruction with integer literal and memory access arguments
+    // Given a destroy instruction with integer literal and memory access arguments, and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "memory.destroyed := destroy(42)";
-    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create(NULL);
+    ar_destroy_agent_instruction_parser_t *own_parser = ar_destroy_agent_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -222,6 +246,10 @@ static void test_destroy_agent_parser__parse_with_expression_asts(void) {
     assert(ar_expression_ast__get_int_value(ref_arg) == 42);
     
     AR__HEAP__FREE(items);
+    
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_instruction_ast__destroy(own_ast);
     
     // Test with memory reference
@@ -253,6 +281,7 @@ static void test_destroy_agent_parser__parse_with_expression_asts(void) {
     ar_instruction_ast__destroy(own_ast2);
     
     ar_destroy_agent_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 int main(void) {

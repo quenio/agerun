@@ -4,6 +4,7 @@
 #include "ar_system.h"
 #include "ar_methodology.h"
 #include "ar_agency.h"
+#include "ar_log.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -271,6 +272,7 @@ static void test_method_parse_ast_on_create(void) {
     
     printf("Method parse AST on create test passed!\n");
 }
+
 
 int main(void) {
     printf("Starting Method Module Tests...\n");

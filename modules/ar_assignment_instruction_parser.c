@@ -13,40 +13,22 @@
  */
 struct ar_assignment_instruction_parser_s {
     ar_log_t *ref_log;       /* Log instance for error reporting (borrowed) */
-    char *own_error;         /* Error message if parsing fails */
-    size_t error_position;   /* Position where error occurred */
 };
 
 /**
- * Internal: Set error message and position.
+ * Internal: Log error with position.
  */
-static void _set_error(ar_assignment_instruction_parser_t *mut_parser, const char *error, size_t position) {
-    if (!mut_parser) {
+static void _log_error(ar_assignment_instruction_parser_t *mut_parser, const char *error, size_t position) {
+    if (!mut_parser || !error) {
         return;
     }
     
-    AR__HEAP__FREE(mut_parser->own_error);
-    mut_parser->own_error = AR__HEAP__STRDUP(error, "parser error message");
-    mut_parser->error_position = position;
-    
-    // Also log the error with position
+    // Log the error with position
     if (mut_parser->ref_log) {
         ar_log__error_at(mut_parser->ref_log, error, (int)position);
     }
 }
 
-/**
- * Internal: Clear any previous error.
- */
-static void _clear_error(ar_assignment_instruction_parser_t *mut_parser) {
-    if (!mut_parser) {
-        return;
-    }
-    
-    AR__HEAP__FREE(mut_parser->own_error);
-    mut_parser->own_error = NULL;
-    mut_parser->error_position = 0;
-}
 
 /**
  * Internal: Skip whitespace in string.
@@ -92,22 +74,19 @@ static bool _parse_and_set_expression_ast(ar_assignment_instruction_parser_t *mu
                                          size_t error_offset) {
     ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(mut_parser->ref_log, ref_expression);
     if (!own_expr_parser) {
-        _set_error(mut_parser, "Failed to create expression parser", error_offset);
+        _log_error(mut_parser, "Failed to create expression parser", error_offset);
         return false;
     }
     
     ar_expression_ast_t *own_expr_ast = ar_expression_parser__parse_expression(own_expr_parser);
     if (!own_expr_ast) {
-        const char *expr_error = ar_expression_parser__get_error(own_expr_parser);
-        char *own_error_copy = expr_error ? AR__HEAP__STRDUP(expr_error, "error message copy") : NULL;
         ar_expression_parser__destroy(own_expr_parser);
-        _set_error(mut_parser, own_error_copy ? own_error_copy : "Failed to parse expression", error_offset);
-        AR__HEAP__FREE(own_error_copy);
+        _log_error(mut_parser, "Failed to parse expression", error_offset);
         return false;
     }
     
     if (!ar_instruction_ast__set_assignment_expression_ast(mut_inst_ast, own_expr_ast)) {
-        _set_error(mut_parser, "Failed to set expression AST", error_offset);
+        _log_error(mut_parser, "Failed to set expression AST", error_offset);
         ar_expression_ast__destroy(own_expr_ast);
         ar_expression_parser__destroy(own_expr_parser);
         return false;
@@ -130,8 +109,6 @@ ar_assignment_instruction_parser_t* ar_assignment_instruction_parser__create(ar_
     }
     
     own_parser->ref_log = ref_log;
-    own_parser->own_error = NULL;
-    own_parser->error_position = 0;
     
     return own_parser;
 }
@@ -144,7 +121,6 @@ void ar_assignment_instruction_parser__destroy(ar_assignment_instruction_parser_
         return;
     }
     
-    AR__HEAP__FREE(own_parser->own_error);
     AR__HEAP__FREE(own_parser);
 }
 
@@ -159,7 +135,6 @@ ar_instruction_ast_t* ar_assignment_instruction_parser__parse(
         return NULL;
     }
     
-    _clear_error(mut_parser);
     
     size_t pos = 0;
     size_t len = strlen(ref_instruction);
@@ -169,7 +144,7 @@ ar_instruction_ast_t* ar_assignment_instruction_parser__parse(
     
     /* Check for empty instruction */
     if (pos >= len) {
-        _set_error(mut_parser, "Empty instruction", pos);
+        _log_error(mut_parser, "Empty instruction", pos);
         return NULL;
     }
     
@@ -179,13 +154,13 @@ ar_instruction_ast_t* ar_assignment_instruction_parser__parse(
     size_t path_end = pos;
     
     if (path_start == path_end) {
-        _set_error(mut_parser, "Expected memory path", pos);
+        _log_error(mut_parser, "Expected memory path", pos);
         return NULL;
     }
     
     /* Check that path starts with "memory" */
     if (path_end - path_start < 6 || strncmp(ref_instruction + path_start, "memory", 6) != 0) {
-        _set_error(mut_parser, "Path must start with 'memory'", path_start);
+        _log_error(mut_parser, "Path must start with 'memory'", path_start);
         return NULL;
     }
     
@@ -194,7 +169,7 @@ ar_instruction_ast_t* ar_assignment_instruction_parser__parse(
     
     /* Check for assignment operator */
     if (pos + 1 >= len || ref_instruction[pos] != ':' || ref_instruction[pos + 1] != '=') {
-        _set_error(mut_parser, "Expected ':=' operator", pos);
+        _log_error(mut_parser, "Expected ':=' operator", pos);
         return NULL;
     }
     pos += 2;
@@ -207,14 +182,14 @@ ar_instruction_ast_t* ar_assignment_instruction_parser__parse(
     size_t expr_end = _find_expression_end(ref_instruction, pos);
     
     if (expr_start == expr_end) {
-        _set_error(mut_parser, "Expected expression after ':='", pos);
+        _log_error(mut_parser, "Expected expression after ':='", pos);
         return NULL;
     }
     
     /* Extract path and expression */
     char *own_path = AR__HEAP__MALLOC(path_end - path_start + 1, "assignment path");
     if (!own_path) {
-        _set_error(mut_parser, "Memory allocation failed", 0);
+        _log_error(mut_parser, "Memory allocation failed", 0);
         return NULL;
     }
     memcpy(own_path, ref_instruction + path_start, path_end - path_start);
@@ -223,7 +198,7 @@ ar_instruction_ast_t* ar_assignment_instruction_parser__parse(
     char *own_expr = AR__HEAP__MALLOC(expr_end - expr_start + 1, "assignment expression");
     if (!own_expr) {
         AR__HEAP__FREE(own_path);
-        _set_error(mut_parser, "Memory allocation failed", 0);
+        _log_error(mut_parser, "Memory allocation failed", 0);
         return NULL;
     }
     memcpy(own_expr, ref_instruction + expr_start, expr_end - expr_start);
@@ -235,7 +210,7 @@ ar_instruction_ast_t* ar_assignment_instruction_parser__parse(
     if (!own_ast) {
         AR__HEAP__FREE(own_path);
         AR__HEAP__FREE(own_expr);
-        _set_error(mut_parser, "Failed to create AST node", 0);
+        _log_error(mut_parser, "Failed to create AST node", 0);
         return NULL;
     }
     
@@ -255,24 +230,23 @@ ar_instruction_ast_t* ar_assignment_instruction_parser__parse(
 
 /**
  * Get the last error message from the parser.
+ * DEPRECATED: This function always returns NULL. Use ar_log for error reporting.
  */
 const char* ar_assignment_instruction_parser__get_error(
     const ar_assignment_instruction_parser_t *ref_parser
 ) {
-    if (!ref_parser) {
-        return NULL;
-    }
-    return ref_parser->own_error;
+    (void)ref_parser; // Suppress unused parameter warning
+    return NULL;
 }
 
 /**
  * Get the error position from the last parse attempt.
+ * DEPRECATED: This function always returns 0. Use ar_log for error reporting.
  */
 size_t ar_assignment_instruction_parser__get_error_position(
     const ar_assignment_instruction_parser_t *ref_parser
 ) {
-    if (!ref_parser) {
-        return 0;
-    }
-    return ref_parser->error_position;
+    (void)ref_parser; // Suppress unused parameter warning
+    return 0;
 }
+

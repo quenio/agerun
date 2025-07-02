@@ -244,3 +244,22 @@ ar_event_t* ar_log__get_last_warning(ar_log_t *ref_log) {
 ar_event_t* ar_log__get_last_info(ar_log_t *ref_log) {
     return _get_last_event_by_type(ref_log, AR_EVENT_INFO);
 }
+
+const char* ar_log__get_last_error_message(ar_log_t *ref_log) {
+    ar_event_t *error_event = ar_log__get_last_error(ref_log);
+    if (!error_event) {
+        return NULL;
+    }
+    return ar_event__get_message(error_event);
+}
+
+int ar_log__get_last_error_position(ar_log_t *ref_log) {
+    ar_event_t *error_event = ar_log__get_last_error(ref_log);
+    if (!error_event) {
+        return 0;
+    }
+    if (!ar_event__has_position(error_event)) {
+        return 0;
+    }
+    return ar_event__get_position(error_event);
+}

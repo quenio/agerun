@@ -42,21 +42,5 @@ void ar_method_parser__destroy(ar_method_parser_t *own_parser);
  */
 ar_method_ast_t* ar_method_parser__parse(ar_method_parser_t *mut_parser, const char *ref_source);
 
-/**
- * @brief Get the last error message from the parser
- * 
- * @param ref_parser Parser instance to query
- * @return Error message or NULL if no error
- * @note Ownership: Returns borrowed reference, do not free
- */
-const char* ar_method_parser__get_error(const ar_method_parser_t *ref_parser);
-
-/**
- * @brief Get the line number where the last error occurred
- * 
- * @param ref_parser Parser instance to query
- * @return Line number (1-based) or 0 if no error
- */
-int ar_method_parser__get_error_line(const ar_method_parser_t *ref_parser);
 
 #endif // AR_METHOD_PARSER_H

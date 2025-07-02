@@ -11,30 +11,18 @@
 
 struct ar_build_instruction_parser_s {
     ar_log_t *ref_log;       /* Log instance for error reporting (borrowed) */
-    char *own_error;
-    size_t error_position;
 };
 
-/**
- * Clear any previous error state.
- */
-static void _clear_error(ar_build_instruction_parser_t *mut_parser) {
-    if (mut_parser->own_error) {
-        AR__HEAP__FREE(mut_parser->own_error);
-        mut_parser->own_error = NULL;
-    }
-    mut_parser->error_position = 0;
-}
 
 /**
- * Set an error message with position.
+ * Log an error message with position.
  */
-static void _set_error(ar_build_instruction_parser_t *mut_parser, const char *ref_message, size_t position) {
-    _clear_error(mut_parser);
-    mut_parser->own_error = AR__HEAP__STRDUP(ref_message, "error message");
-    mut_parser->error_position = position;
+static void _log_error(ar_build_instruction_parser_t *mut_parser, const char *ref_message, size_t position) {
+    if (!mut_parser || !ref_message) {
+        return;
+    }
     
-    /* Also log the error with position */
+    /* Log the error with position */
     if (mut_parser->ref_log) {
         ar_log__error_at(mut_parser->ref_log, ref_message, (int)position);
     }
@@ -258,7 +246,7 @@ static list_t* _parse_arguments_to_asts(ar_build_instruction_parser_t *mut_parse
                                         size_t error_offset) {
     list_t *own_arg_asts = ar_list__create();
     if (!own_arg_asts) {
-        _set_error(mut_parser, "Failed to create argument AST list", error_offset);
+        _log_error(mut_parser, "Failed to create argument AST list", error_offset);
         return NULL;
     }
     
@@ -266,18 +254,15 @@ static list_t* _parse_arguments_to_asts(ar_build_instruction_parser_t *mut_parse
         ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(mut_parser->ref_log, ref_args[i]);
         if (!own_expr_parser) {
             _cleanup_arg_asts(own_arg_asts);
-            _set_error(mut_parser, "Failed to create expression parser", error_offset);
+            _log_error(mut_parser, "Failed to create expression parser", error_offset);
             return NULL;
         }
         
         ar_expression_ast_t *own_expr_ast = ar_expression_parser__parse_expression(own_expr_parser);
         if (!own_expr_ast) {
-            const char *expr_error = ar_expression_parser__get_error(own_expr_parser);
-            char *own_error_copy = expr_error ? AR__HEAP__STRDUP(expr_error, "error message copy") : NULL;
             _cleanup_arg_asts(own_arg_asts);
             ar_expression_parser__destroy(own_expr_parser);
-            _set_error(mut_parser, own_error_copy ? own_error_copy : "Failed to parse argument expression", error_offset);
-            AR__HEAP__FREE(own_error_copy);
+            _log_error(mut_parser, "Failed to parse argument expression", error_offset);
             return NULL;
         }
         
@@ -285,7 +270,7 @@ static list_t* _parse_arguments_to_asts(ar_build_instruction_parser_t *mut_parse
             _cleanup_arg_asts(own_arg_asts);
             ar_expression_ast__destroy(own_expr_ast);
             ar_expression_parser__destroy(own_expr_parser);
-            _set_error(mut_parser, "Failed to add argument AST to list", error_offset);
+            _log_error(mut_parser, "Failed to add argument AST to list", error_offset);
             return NULL;
         }
         
@@ -311,7 +296,6 @@ void ar_build_instruction_parser__destroy(ar_build_instruction_parser_t *own_par
         return;
     }
     
-    _clear_error(own_parser);
     AR__HEAP__FREE(own_parser);
 }
 
@@ -324,7 +308,6 @@ ar_instruction_ast_t* ar_build_instruction_parser__parse(
         return NULL;
     }
     
-    _clear_error(mut_parser);
     
     size_t pos = 0;
     
@@ -343,7 +326,7 @@ ar_instruction_ast_t* ar_build_instruction_parser__parse(
     
     /* Check for "build" */
     if (strncmp(ref_instruction + pos, "build", 5) != 0) {
-        _set_error(mut_parser, "Expected 'build' function", pos);
+        _log_error(mut_parser, "Expected 'build' function", pos);
         return NULL;
     }
     pos += 5;
@@ -353,7 +336,7 @@ ar_instruction_ast_t* ar_build_instruction_parser__parse(
     
     /* Expect opening parenthesis */
     if (ref_instruction[pos] != '(') {
-        _set_error(mut_parser, "Expected '(' after 'build'", pos);
+        _log_error(mut_parser, "Expected '(' after 'build'", pos);
         return NULL;
     }
     pos++;
@@ -362,7 +345,7 @@ ar_instruction_ast_t* ar_build_instruction_parser__parse(
     char **args = NULL;
     size_t arg_count = 0;
     if (!_parse_arguments(ref_instruction, &pos, &args, &arg_count, 2)) {
-        _set_error(mut_parser, "Failed to parse build arguments", pos);
+        _log_error(mut_parser, "Failed to parse build arguments", pos);
         return NULL;
     }
     
@@ -376,7 +359,7 @@ ar_instruction_ast_t* ar_build_instruction_parser__parse(
             AR__HEAP__FREE(args[i]);
         }
         AR__HEAP__FREE(args);
-        _set_error(mut_parser, "Memory allocation failed", 0);
+        _log_error(mut_parser, "Memory allocation failed", 0);
         return NULL;
     }
     for (size_t i = 0; i < arg_count; i++) {
@@ -391,7 +374,7 @@ ar_instruction_ast_t* ar_build_instruction_parser__parse(
     
     if (!own_ast) {
         _cleanup_args(args, arg_count);
-        _set_error(mut_parser, "Failed to create AST node", 0);
+        _log_error(mut_parser, "Failed to create AST node", 0);
         return NULL;
     }
     
@@ -407,7 +390,7 @@ ar_instruction_ast_t* ar_build_instruction_parser__parse(
         _cleanup_args(args, arg_count);
         ar_instruction_ast__destroy(own_ast);
         _cleanup_arg_asts(own_arg_asts);
-        _set_error(mut_parser, "Failed to set argument ASTs", 0);
+        _log_error(mut_parser, "Failed to set argument ASTs", 0);
         return NULL;
     }
     
@@ -416,16 +399,21 @@ ar_instruction_ast_t* ar_build_instruction_parser__parse(
     return own_ast;
 }
 
+/**
+ * Gets the last error message from the parser
+ * DEPRECATED: This function always returns NULL. Use ar_log for error reporting.
+ */
 const char* ar_build_instruction_parser__get_error(const ar_build_instruction_parser_t *ref_parser) {
-    if (!ref_parser) {
-        return NULL;
-    }
-    return ref_parser->own_error;
+    (void)ref_parser; // Suppress unused parameter warning
+    return NULL;
 }
 
+/**
+ * Gets the position where the last error occurred
+ * DEPRECATED: This function always returns 0. Use ar_log for error reporting.
+ */
 size_t ar_build_instruction_parser__get_error_position(const ar_build_instruction_parser_t *ref_parser) {
-    if (!ref_parser) {
-        return 0;
-    }
-    return ref_parser->error_position;
+    (void)ref_parser; // Suppress unused parameter warning
+    return 0;
 }
+

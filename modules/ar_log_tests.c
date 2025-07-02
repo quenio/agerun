@@ -12,6 +12,8 @@ static void test_log__error(void);
 static void test_log__warning_and_info(void);
 static void test_log__position_variants(void);
 static void test_log__get_last_event_by_type(void);
+static void test_log__get_last_error_message(void);
+static void test_log__get_last_error_position(void);
 static void test_log__buffer_overflow_triggers_flush(void);
 static void test_log__destroy_flushes_buffer(void);
 
@@ -36,6 +38,8 @@ int main(void) {
     test_log__warning_and_info();
     test_log__position_variants();
     test_log__get_last_event_by_type();
+    test_log__get_last_error_message();
+    test_log__get_last_error_position();
     test_log__buffer_overflow_triggers_flush();
     test_log__destroy_flushes_buffer();
     
@@ -341,6 +345,150 @@ static void test_log__get_last_event_by_type(void) {
     ref_last_info = ar_log__get_last_info(own_log);
     if (ref_last_info != NULL) {
         fprintf(stderr, "    FAIL: Expected NULL for info, but got an event\n");
+        ar_log__destroy(own_log);
+        return;
+    }
+    
+    // Clean up
+    ar_log__destroy(own_log);
+    remove("agerun.log");
+    
+    printf("    PASS\n");
+}
+
+static void test_log__get_last_error_message(void) {
+    printf("  test_log__get_last_error_message...\n");
+    
+    // Given a clean state
+    remove("agerun.log");
+    
+    // When creating a log
+    ar_log_t *own_log = ar_log__create();
+    if (!own_log) {
+        fprintf(stderr, "    FAIL: Log creation returned NULL\n");
+        return;
+    }
+    
+    // Test when no errors exist
+    const char *ref_message = ar_log__get_last_error_message(own_log);
+    if (ref_message != NULL) {
+        fprintf(stderr, "    FAIL: Expected NULL when no errors, got '%s'\n", ref_message);
+        ar_log__destroy(own_log);
+        return;
+    }
+    
+    // Add some non-error events
+    ar_log__warning(own_log, "A warning");
+    ar_log__info(own_log, "Some info");
+    
+    // Should still get NULL
+    ref_message = ar_log__get_last_error_message(own_log);
+    if (ref_message != NULL) {
+        fprintf(stderr, "    FAIL: Expected NULL when only warnings/info exist, got '%s'\n", ref_message);
+        ar_log__destroy(own_log);
+        return;
+    }
+    
+    // Add an error
+    ar_log__error(own_log, "First error message");
+    
+    // Should get the error message
+    ref_message = ar_log__get_last_error_message(own_log);
+    if (!ref_message) {
+        fprintf(stderr, "    FAIL: Expected error message, got NULL\n");
+        ar_log__destroy(own_log);
+        return;
+    }
+    if (strcmp(ref_message, "First error message") != 0) {
+        fprintf(stderr, "    FAIL: Expected 'First error message', got '%s'\n", ref_message);
+        ar_log__destroy(own_log);
+        return;
+    }
+    
+    // Add another error
+    ar_log__error(own_log, "Second error message");
+    
+    // Should get the most recent error
+    ref_message = ar_log__get_last_error_message(own_log);
+    if (!ref_message) {
+        fprintf(stderr, "    FAIL: Expected second error message, got NULL\n");
+        ar_log__destroy(own_log);
+        return;
+    }
+    if (strcmp(ref_message, "Second error message") != 0) {
+        fprintf(stderr, "    FAIL: Expected 'Second error message', got '%s'\n", ref_message);
+        ar_log__destroy(own_log);
+        return;
+    }
+    
+    // Clean up
+    ar_log__destroy(own_log);
+    remove("agerun.log");
+    
+    printf("    PASS\n");
+}
+
+static void test_log__get_last_error_position(void) {
+    printf("  test_log__get_last_error_position...\n");
+    
+    // Given a clean state
+    remove("agerun.log");
+    
+    // When creating a log
+    ar_log_t *own_log = ar_log__create();
+    if (!own_log) {
+        fprintf(stderr, "    FAIL: Log creation returned NULL\n");
+        return;
+    }
+    
+    // Test when no errors exist
+    int position = ar_log__get_last_error_position(own_log);
+    if (position != 0) {
+        fprintf(stderr, "    FAIL: Expected 0 when no errors, got %d\n", position);
+        ar_log__destroy(own_log);
+        return;
+    }
+    
+    // Add an error without position
+    ar_log__error(own_log, "Error without position");
+    
+    // Should get 0 (no position set)
+    position = ar_log__get_last_error_position(own_log);
+    if (position != 0) {
+        fprintf(stderr, "    FAIL: Expected 0 for error without position, got %d\n", position);
+        ar_log__destroy(own_log);
+        return;
+    }
+    
+    // Add an error with position
+    ar_log__error_at(own_log, "Error at position 42", 42);
+    
+    // Should get the position
+    position = ar_log__get_last_error_position(own_log);
+    if (position != 42) {
+        fprintf(stderr, "    FAIL: Expected 42, got %d\n", position);
+        ar_log__destroy(own_log);
+        return;
+    }
+    
+    // Add another error with different position
+    ar_log__error_at(own_log, "Error at position 100", 100);
+    
+    // Should get the most recent position
+    position = ar_log__get_last_error_position(own_log);
+    if (position != 100) {
+        fprintf(stderr, "    FAIL: Expected 100, got %d\n", position);
+        ar_log__destroy(own_log);
+        return;
+    }
+    
+    // Add a warning with position (should not affect error position)
+    ar_log__warning_at(own_log, "Warning at position 200", 200);
+    
+    // Should still get the last error position
+    position = ar_log__get_last_error_position(own_log);
+    if (position != 100) {
+        fprintf(stderr, "    FAIL: Expected 100 after warning, got %d\n", position);
         ar_log__destroy(own_log);
         return;
     }

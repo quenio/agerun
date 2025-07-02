@@ -7,7 +7,7 @@
 #include "ar_instruction_ast.h"
 #include "ar_heap.h"
 #include "ar_log.h"
-#include "ar_event.h"
+
 
 static void test_create_parser_with_log(void) {
     printf("Testing parser creation with ar_log...\n");
@@ -63,8 +63,10 @@ static void test_method_parser__destroy_null(void) {
 static void test_method_parser__parse_empty_method(void) {
     printf("Testing method parser parse empty method...\n");
     
-    // Given a parser and an empty method source
-    ar_method_parser_t *own_parser = ar_method_parser__create(NULL);
+    // Given a log instance, a parser and an empty method source
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_method_parser_t *own_parser = ar_method_parser__create(log);
     assert(own_parser != NULL);
     const char *ref_source = "";
     
@@ -75,9 +77,13 @@ static void test_method_parser__parse_empty_method(void) {
     assert(own_ast != NULL);
     assert(ar_method_ast__get_instruction_count(own_ast) == 0);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     // Clean up
     ar_method_ast__destroy(own_ast);
     ar_method_parser__destroy(own_parser);
+    ar_log__destroy(log);
     
     printf("✓ test_method_parser__parse_empty_method passed\n");
 }
@@ -86,8 +92,10 @@ static void test_method_parser__parse_empty_method(void) {
 static void test_method_parser__parse_single_instruction(void) {
     printf("Testing method parser parse single instruction...\n");
     
-    // Given a parser and a method with one instruction
-    ar_method_parser_t *own_parser = ar_method_parser__create(NULL);
+    // Given a log instance, a parser and a method with one instruction
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_method_parser_t *own_parser = ar_method_parser__create(log);
     assert(own_parser != NULL);
     const char *ref_source = "memory.x := 42";
     
@@ -103,9 +111,13 @@ static void test_method_parser__parse_single_instruction(void) {
     assert(ref_instruction != NULL);
     assert(ar_instruction_ast__get_type(ref_instruction) == AR_INST__ASSIGNMENT);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     // Clean up
     ar_method_ast__destroy(own_ast);
     ar_method_parser__destroy(own_parser);
+    ar_log__destroy(log);
     
     printf("✓ test_method_parser__parse_single_instruction passed\n");
 }
@@ -114,8 +126,10 @@ static void test_method_parser__parse_single_instruction(void) {
 static void test_method_parser__parse_multiple_instructions(void) {
     printf("Testing method parser parse multiple instructions...\n");
     
-    // Given a parser and a method with multiple instructions
-    ar_method_parser_t *own_parser = ar_method_parser__create(NULL);
+    // Given a log instance, a parser and a method with multiple instructions
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_method_parser_t *own_parser = ar_method_parser__create(log);
     assert(own_parser != NULL);
     const char *ref_source = "memory.x := 10\nmemory.y := 20\nmemory.z := 30";
     
@@ -139,9 +153,13 @@ static void test_method_parser__parse_multiple_instructions(void) {
     assert(ref_instruction3 != NULL);
     assert(ar_instruction_ast__get_type(ref_instruction3) == AR_INST__ASSIGNMENT);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     // Clean up
     ar_method_ast__destroy(own_ast);
     ar_method_parser__destroy(own_parser);
+    ar_log__destroy(log);
     
     printf("✓ test_method_parser__parse_multiple_instructions passed\n");
 }
@@ -150,8 +168,10 @@ static void test_method_parser__parse_multiple_instructions(void) {
 static void test_method_parser__parse_with_empty_lines(void) {
     printf("Testing method parser parse with empty lines...\n");
     
-    // Given a parser and a method with instructions and empty lines
-    ar_method_parser_t *own_parser = ar_method_parser__create(NULL);
+    // Given a log instance, a parser and a method with instructions and empty lines
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_method_parser_t *own_parser = ar_method_parser__create(log);
     assert(own_parser != NULL);
     const char *ref_source = "memory.x := 10\n\nmemory.y := 20\n\n\nmemory.z := 30\n";
     
@@ -162,9 +182,13 @@ static void test_method_parser__parse_with_empty_lines(void) {
     assert(own_ast != NULL);
     assert(ar_method_ast__get_instruction_count(own_ast) == 3);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     // Clean up
     ar_method_ast__destroy(own_ast);
     ar_method_parser__destroy(own_parser);
+    ar_log__destroy(log);
     
     printf("✓ test_method_parser__parse_with_empty_lines passed\n");
 }
@@ -173,8 +197,10 @@ static void test_method_parser__parse_with_empty_lines(void) {
 static void test_method_parser__parse_with_comments(void) {
     printf("Testing method parser parse with comments...\n");
     
-    // Given a parser and a method with comments
-    ar_method_parser_t *own_parser = ar_method_parser__create(NULL);
+    // Given a log instance, a parser and a method with comments
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_method_parser_t *own_parser = ar_method_parser__create(log);
     assert(own_parser != NULL);
     const char *ref_source = "# This is a comment\nmemory.x := 10\n# Another comment\nmemory.y := 20\nmemory.z := 30 # Inline comment";
     
@@ -190,9 +216,13 @@ static void test_method_parser__parse_with_comments(void) {
     assert(ref_instruction1 != NULL);
     assert(ar_instruction_ast__get_type(ref_instruction1) == AR_INST__ASSIGNMENT);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     // Clean up
     ar_method_ast__destroy(own_ast);
     ar_method_parser__destroy(own_parser);
+    ar_log__destroy(log);
     
     printf("✓ test_method_parser__parse_with_comments passed\n");
 }
@@ -201,8 +231,10 @@ static void test_method_parser__parse_with_comments(void) {
 static void test_method_parser__parse_hash_in_string(void) {
     printf("Testing method parser parse with hash in string...\n");
     
-    // Given a parser and a method with # inside a string
-    ar_method_parser_t *own_parser = ar_method_parser__create(NULL);
+    // Given a log instance, a parser and a method with # inside a string
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_method_parser_t *own_parser = ar_method_parser__create(log);
     assert(own_parser != NULL);
     const char *ref_source = "memory.msg := \"Item #1\"";
     
@@ -213,9 +245,13 @@ static void test_method_parser__parse_hash_in_string(void) {
     assert(own_ast != NULL);
     assert(ar_method_ast__get_instruction_count(own_ast) == 1);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     // Clean up
     ar_method_ast__destroy(own_ast);
     ar_method_parser__destroy(own_parser);
+    ar_log__destroy(log);
     
     printf("✓ test_method_parser__parse_hash_in_string passed\n");
 }
@@ -224,8 +260,10 @@ static void test_method_parser__parse_hash_in_string(void) {
 static void test_method_parser__parse_invalid_instruction(void) {
     printf("Testing method parser parse with invalid instruction...\n");
     
-    // Given a parser and a method with invalid syntax
-    ar_method_parser_t *own_parser = ar_method_parser__create(NULL);
+    // Given a log instance and parser
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_method_parser_t *own_parser = ar_method_parser__create(log);
     assert(own_parser != NULL);
     const char *ref_source = "memory.x := 10\ninvalid syntax here\nmemory.z := 30";
     
@@ -235,35 +273,38 @@ static void test_method_parser__parse_invalid_instruction(void) {
     // Then parsing should fail
     assert(own_ast == NULL);
     
-    // And an error message should be available
-    const char *ref_error = ar_method_parser__get_error(own_parser);
+    // And an error message should be available in the log
+    const char *ref_error = ar_log__get_last_error_message(log);
     assert(ref_error != NULL);
     assert(strlen(ref_error) > 0);
     
-    // And the error line should be correct
-    int error_line = ar_method_parser__get_error_line(own_parser);
-    assert(error_line == 2);
+    // And the error position should be correct (line 2)
+    int error_pos = ar_log__get_last_error_position(log);
+    assert(error_pos == 2);
     
     // Clean up
     ar_method_parser__destroy(own_parser);
+    ar_log__destroy(log);
     
     printf("✓ test_method_parser__parse_invalid_instruction passed\n");
 }
 
-// Test error cleared on successful parse
-static void test_method_parser__error_cleared_on_success(void) {
-    printf("Testing method parser error cleared on successful parse...\n");
+// Test successful parse after failed parse
+static void test_method_parser__successful_parse_after_failure(void) {
+    printf("Testing method parser successful parse after failure...\n");
     
-    // Given a parser that had a previous error
-    ar_method_parser_t *own_parser = ar_method_parser__create(NULL);
+    // Given a log instance and parser
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_method_parser_t *own_parser = ar_method_parser__create(log);
     assert(own_parser != NULL);
     
     // First, cause an error
     const char *ref_bad_source = "invalid syntax";
     ar_method_ast_t *own_bad_ast = ar_method_parser__parse(own_parser, ref_bad_source);
     assert(own_bad_ast == NULL);
-    assert(ar_method_parser__get_error(own_parser) != NULL);
-    assert(ar_method_parser__get_error_line(own_parser) == 1);
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(ar_log__get_last_error_position(log) == 1);
     
     // When parsing valid source
     const char *ref_good_source = "memory.x := 42";
@@ -272,15 +313,15 @@ static void test_method_parser__error_cleared_on_success(void) {
     // Then parsing should succeed
     assert(own_good_ast != NULL);
     
-    // And error should be cleared
-    assert(ar_method_parser__get_error(own_parser) == NULL);
-    assert(ar_method_parser__get_error_line(own_parser) == 0);
+    // Note: ar_log persists errors, so we can't test for cleared errors
+    // The important thing is that parsing succeeded
     
     // Clean up
     ar_method_ast__destroy(own_good_ast);
     ar_method_parser__destroy(own_parser);
+    ar_log__destroy(log);
     
-    printf("✓ test_method_parser__error_cleared_on_success passed\n");
+    printf("✓ test_method_parser__successful_parse_after_failure passed\n");
 }
 
 int main(void) {
@@ -298,7 +339,7 @@ int main(void) {
     test_method_parser__parse_with_comments();
     test_method_parser__parse_hash_in_string();
     test_method_parser__parse_invalid_instruction();
-    test_method_parser__error_cleared_on_success();
+    test_method_parser__successful_parse_after_failure();
     
     printf("\nAll method parser tests passed!\n");
     return 0;

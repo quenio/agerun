@@ -40,12 +40,13 @@ size_t ar_expression_parser__get_position(const ar_expression_parser_t *ref_pars
 
 /**
  * Get the last error message from the parser.
+ * DEPRECATED: This function always returns NULL. Use ar_log for error reporting.
  * 
  * @param ref_parser The parser instance (borrowed reference)
- * @return The error message (borrowed reference), or NULL if no error
- * @note Ownership: Returns a borrowed reference. Do not free.
+ * @return Always returns NULL
  */
 const char* ar_expression_parser__get_error(const ar_expression_parser_t *ref_parser);
+
 
 /**
  * Parse an expression and return the AST.

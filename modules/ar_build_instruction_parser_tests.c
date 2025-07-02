@@ -7,7 +7,6 @@
 #include "ar_list.h"
 #include "ar_heap.h"
 #include "ar_log.h"
-#include "ar_event.h"
 
 static void test_create_parser_with_log(void) {
     printf("Testing parser creation with ar_log...\n");
@@ -44,11 +43,13 @@ static void test_build_instruction_parser__create_destroy(void) {
 static void test_build_instruction_parser__parse_simple(void) {
     printf("Testing simple build function parsing...\n");
     
-    // Given a build function call
+    // Given a build function call and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "build(\"Hello {name}!\", memory.data)";
     
     // When creating a parser and parsing the instruction
-    ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(NULL);
+    ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_build_instruction_parser__parse(own_parser, instruction, NULL);
@@ -69,18 +70,24 @@ static void test_build_instruction_parser__parse_simple(void) {
     AR__HEAP__FREE(own_items);
     ar_list__destroy(own_args);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_instruction_ast__destroy(own_ast);
     ar_build_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_build_instruction_parser__parse_with_assignment(void) {
     printf("Testing build function with assignment...\n");
     
-    // Given a build function call with assignment
+    // Given a build function call with assignment and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "memory.greeting := build(\"Hello {name}!\", memory.values)";
     
     // When creating a parser and parsing the instruction
-    ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(NULL);
+    ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_build_instruction_parser__parse(own_parser, instruction, "memory.greeting");
@@ -101,18 +108,24 @@ static void test_build_instruction_parser__parse_with_assignment(void) {
     AR__HEAP__FREE(own_items);
     ar_list__destroy(own_args);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_instruction_ast__destroy(own_ast);
     ar_build_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_build_instruction_parser__parse_multiple_placeholders(void) {
     printf("Testing build with multiple placeholders...\n");
     
-    // Given a build function with multiple placeholders
+    // Given a build function with multiple placeholders and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "build(\"User: {firstName} {lastName}, Role: {role}\", memory.user)";
     
     // When parsing
-    ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(NULL);
+    ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_build_instruction_parser__parse(own_parser, instruction, NULL);
@@ -131,8 +144,12 @@ static void test_build_instruction_parser__parse_multiple_placeholders(void) {
     AR__HEAP__FREE(own_items);
     ar_list__destroy(own_args);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_instruction_ast__destroy(own_ast);
     ar_build_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 // TODO: Fix expression parser handling of quoted strings
@@ -169,11 +186,13 @@ static void test_build_instruction_parser__parse_escaped_quotes(void) {
 static void test_build_instruction_parser__parse_whitespace_handling(void) {
     printf("Testing build with whitespace variations...\n");
     
-    // Given a build function with extra whitespace
+    // Given a build function with extra whitespace and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "  build  (  \"Hello {name}!\"  ,  memory.data  )  ";
     
     // When parsing
-    ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(NULL);
+    ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_build_instruction_parser__parse(own_parser, instruction, NULL);
@@ -182,62 +201,76 @@ static void test_build_instruction_parser__parse_whitespace_handling(void) {
     assert(own_ast != NULL);
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__BUILD);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_instruction_ast__destroy(own_ast);
     ar_build_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_build_instruction_parser__parse_error_wrong_function(void) {
     printf("Testing error on wrong function name...\n");
     
-    // Given a non-build function
+    // Given a non-build function and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "notbuild(\"template\", memory.data)";
     
     // When parsing
-    ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(NULL);
+    ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_build_instruction_parser__parse(own_parser, instruction, NULL);
     
     // Then it should fail
     assert(own_ast == NULL);
-    assert(ar_build_instruction_parser__get_error(own_parser) != NULL);
-    assert(ar_build_instruction_parser__get_error_position(own_parser) == 0);
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(ar_log__get_last_error_position(log) == 0);
     
     ar_build_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_build_instruction_parser__parse_error_missing_parenthesis(void) {
     printf("Testing error on missing parenthesis...\n");
     
-    // Given a build without opening parenthesis
+    // Given a build without opening parenthesis and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "build \"template\", memory.data";
     
     // When parsing
-    ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(NULL);
+    ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_build_instruction_parser__parse(own_parser, instruction, NULL);
     
     // Then it should fail
     assert(own_ast == NULL);
-    assert(ar_build_instruction_parser__get_error(own_parser) != NULL);
-    assert(ar_build_instruction_parser__get_error_position(own_parser) == 6);  // After "build "
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(ar_log__get_last_error_position(log) == 6);  // After "build "
     
     ar_build_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_build_instruction_parser__parse_error_wrong_arg_count(void) {
     printf("Testing error on wrong argument count...\n");
     
+    // Given a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
     // Test with 1 argument (needs 2)
     {
         const char *instruction = "build(\"template\")";
-        ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(NULL);
+        ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(log);
         assert(own_parser != NULL);
         
         ar_instruction_ast_t *own_ast = ar_build_instruction_parser__parse(own_parser, instruction, NULL);
         assert(own_ast == NULL);
-        assert(ar_build_instruction_parser__get_error(own_parser) != NULL);
+        assert(ar_log__get_last_error_message(log) != NULL);
         
         ar_build_instruction_parser__destroy(own_parser);
     }
@@ -245,22 +278,26 @@ static void test_build_instruction_parser__parse_error_wrong_arg_count(void) {
     // Test with 3 arguments (needs 2)
     {
         const char *instruction = "build(\"template\", memory.data, \"extra\")";
-        ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(NULL);
+        ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(log);
         assert(own_parser != NULL);
         
         ar_instruction_ast_t *own_ast = ar_build_instruction_parser__parse(own_parser, instruction, NULL);
         assert(own_ast == NULL);
-        assert(ar_build_instruction_parser__get_error(own_parser) != NULL);
+        assert(ar_log__get_last_error_message(log) != NULL);
         
         ar_build_instruction_parser__destroy(own_parser);
     }
+    
+    ar_log__destroy(log);
 }
 
 static void test_build_instruction_parser__parser_reusability(void) {
     printf("Testing parser reusability...\n");
     
-    // Given a parser
-    ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(NULL);
+    // Given a log instance and a parser
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // First parse
@@ -292,15 +329,20 @@ static void test_build_instruction_parser__parser_reusability(void) {
     ar_list__destroy(own_args2);
     ar_instruction_ast__destroy(own_ast2);
     
+    // Note: We can't check for NULL here as the log may contain events from both parses
+    
     ar_build_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_build_instruction_parser__parse_with_expression_asts(void) {
     printf("Testing build instruction with expression ASTs...\n");
     
-    // Given a build instruction with a string literal template and memory access for map
+    // Given a build instruction with a string literal template and memory access for map, and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "build(\"User: {name}, Age: {age}\", memory.userdata)";
-    ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(NULL);
+    ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -336,8 +378,13 @@ static void test_build_instruction_parser__parse_with_expression_asts(void) {
     AR__HEAP__FREE(path_components);
     
     AR__HEAP__FREE(items);
+    
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_instruction_ast__destroy(own_ast);
     ar_build_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 int main(void) {

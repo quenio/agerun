@@ -9,7 +9,6 @@
 #include "ar_list.h"
 #include "ar_expression_ast.h"
 #include "ar_log.h"
-#include "ar_event.h"
 
 static void test_create_parser_with_log(void) {
     printf("Testing parser creation with ar_log...\n");
@@ -53,11 +52,13 @@ static void test_destroy_method_parser__create_destroy(void) {
 static void test_destroy_method_parser__parse_two_strings(void) {
     printf("Testing destroy method parsing with two string arguments...\n");
     
-    // Given a destroy function call with method name and version
+    // Given a destroy function call with method name and version and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "destroy(\"calculator\", \"1.0.0\")";
     
     // When creating a parser and parsing the instruction
-    ar_destroy_method_instruction_parser_t *own_parser = ar_destroy_method_instruction_parser__create(NULL);
+    ar_destroy_method_instruction_parser_t *own_parser = ar_destroy_method_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_destroy_method_instruction_parser__parse(own_parser, instruction, NULL);
@@ -81,9 +82,13 @@ static void test_destroy_method_parser__parse_two_strings(void) {
     
     AR__HEAP__FREE(items);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_list__destroy(own_args);
     ar_instruction_ast__destroy(own_ast);
     ar_destroy_method_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 /**
@@ -92,11 +97,13 @@ static void test_destroy_method_parser__parse_two_strings(void) {
 static void test_destroy_method_parser__parse_with_assignment(void) {
     printf("Testing destroy method parsing with assignment...\n");
     
-    // Given a destroy function call with assignment
+    // Given a destroy function call with assignment and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "memory.result := destroy(\"test_method\", \"2.0.0\")";
     
     // When creating a parser and parsing the instruction
-    ar_destroy_method_instruction_parser_t *own_parser = ar_destroy_method_instruction_parser__create(NULL);
+    ar_destroy_method_instruction_parser_t *own_parser = ar_destroy_method_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_destroy_method_instruction_parser__parse(own_parser, instruction, "memory.result");
@@ -115,9 +122,13 @@ static void test_destroy_method_parser__parse_with_assignment(void) {
     assert(strcmp((const char*)items[1], "\"2.0.0\"") == 0);
     AR__HEAP__FREE(items);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_list__destroy(own_args);
     ar_instruction_ast__destroy(own_ast);
     ar_destroy_method_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 /**
@@ -126,31 +137,36 @@ static void test_destroy_method_parser__parse_with_assignment(void) {
 static void test_destroy_method_parser__error_handling(void) {
     printf("Testing destroy method parser error handling...\n");
     
-    ar_destroy_method_instruction_parser_t *own_parser = ar_destroy_method_instruction_parser__create(NULL);
+    // Given a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
+    ar_destroy_method_instruction_parser_t *own_parser = ar_destroy_method_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // Test 1: Missing parentheses
     ar_instruction_ast_t *ast = ar_destroy_method_instruction_parser__parse(own_parser, "destroy \"method\", \"1.0.0\"", NULL);
     assert(ast == NULL);
-    assert(ar_destroy_method_instruction_parser__get_error(own_parser) != NULL);
-    assert(strstr(ar_destroy_method_instruction_parser__get_error(own_parser), "Expected '(' after 'destroy'") != NULL);
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "Expected '(' after 'destroy'") != NULL);
     
     // Test 2: Wrong function name
     ast = ar_destroy_method_instruction_parser__parse(own_parser, "delete(\"method\", \"1.0.0\")", NULL);
     assert(ast == NULL);
-    assert(strstr(ar_destroy_method_instruction_parser__get_error(own_parser), "Expected 'destroy' function") != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "Expected 'destroy' function") != NULL);
     
     // Test 3: Single argument (should fail)
     ast = ar_destroy_method_instruction_parser__parse(own_parser, "destroy(\"method\")", NULL);
     assert(ast == NULL);
-    assert(strstr(ar_destroy_method_instruction_parser__get_error(own_parser), "Failed to parse method name argument") != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "Failed to parse method name argument") != NULL);
     
     // Test 4: Non-string arguments - now properly rejected by expression parser
     ast = ar_destroy_method_instruction_parser__parse(own_parser, "destroy(method, version)", NULL);
     assert(ast == NULL);  // Expression parser rejects non-literals
-    assert(strstr(ar_destroy_method_instruction_parser__get_error(own_parser), "Expected literal") != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "Failed to parse argument expression") != NULL);
     
     ar_destroy_method_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 /**
@@ -196,9 +212,11 @@ static void test_destroy_method_parser__complex_strings(void) {
 static void test_destroy_method_parser__parse_with_expression_asts(void) {
     printf("Testing destroy method instruction with expression ASTs...\n");
     
-    // Given a destroy method instruction with quoted string arguments
+    // Given a destroy method instruction with quoted string arguments and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "memory.result := destroy(\"calculator\", \"1.0.0\")";
-    ar_destroy_method_instruction_parser_t *own_parser = ar_destroy_method_instruction_parser__create(NULL);
+    ar_destroy_method_instruction_parser_t *own_parser = ar_destroy_method_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -230,6 +248,10 @@ static void test_destroy_method_parser__parse_with_expression_asts(void) {
     assert(strcmp(ar_expression_ast__get_string_value(ref_arg2), "1.0.0") == 0);
     
     AR__HEAP__FREE(items);
+    
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_instruction_ast__destroy(own_ast);
     
     // Test with memory references (even though not typical for destroy method)
@@ -260,6 +282,7 @@ static void test_destroy_method_parser__parse_with_expression_asts(void) {
     ar_instruction_ast__destroy(own_ast2);
     
     ar_destroy_method_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 int main(void) {

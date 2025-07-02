@@ -15,25 +15,19 @@
 struct ar_method_parser_s {
     ar_log_t *ref_log;                       /* Log instance for error reporting (borrowed) */
     instruction_parser_t *instruction_parser;
-    char *own_error_message;
-    int error_line;
 };
 
-// Helper function to set error message with line number
-static void _set_error(ar_method_parser_t *mut_parser, int line_number, const char *ref_instruction_error) {
-    if (ref_instruction_error) {
-        // Format error message with line number
-        char error_buffer[ERROR_BUFFER_SIZE];
-        snprintf(error_buffer, sizeof(error_buffer), "Line %d: %s", line_number, ref_instruction_error);
-        mut_parser->own_error_message = AR__HEAP__STRDUP(error_buffer, "error message");
-    } else {
-        mut_parser->own_error_message = AR__HEAP__STRDUP("Unknown parse error", "error message");
-    }
-    mut_parser->error_line = line_number;
-    
-    /* Also log the error with line number */
+// Helper function to log error with line number
+static void _log_error(ar_method_parser_t *mut_parser, int line_number, const char *ref_instruction_error) {
     if (mut_parser->ref_log) {
-        ar_log__error_at(mut_parser->ref_log, mut_parser->own_error_message, line_number);
+        if (ref_instruction_error) {
+            // Format error message with line number
+            char error_buffer[ERROR_BUFFER_SIZE];
+            snprintf(error_buffer, sizeof(error_buffer), "Line %d: %s", line_number, ref_instruction_error);
+            ar_log__error_at(mut_parser->ref_log, error_buffer, line_number);
+        } else {
+            ar_log__error_at(mut_parser->ref_log, "Unknown parse error", line_number);
+        }
     }
 }
 
@@ -106,9 +100,6 @@ ar_method_parser_t* ar_method_parser__create(ar_log_t *ref_log) {
         return NULL;
     }
     
-    own_parser->own_error_message = NULL;
-    own_parser->error_line = 0;
-    
     return own_parser;
     // Ownership transferred to caller
 }
@@ -122,10 +113,6 @@ void ar_method_parser__destroy(ar_method_parser_t *own_parser) {
         ar_instruction_parser__destroy(own_parser->instruction_parser);
     }
     
-    if (own_parser->own_error_message) {
-        AR__HEAP__FREE(own_parser->own_error_message);
-    }
-    
     AR__HEAP__FREE(own_parser);
 }
 
@@ -134,12 +121,6 @@ ar_method_ast_t* ar_method_parser__parse(ar_method_parser_t *mut_parser, const c
         return NULL;
     }
     
-    // Clear any previous error
-    if (mut_parser->own_error_message) {
-        AR__HEAP__FREE(mut_parser->own_error_message);
-        mut_parser->own_error_message = NULL;
-    }
-    mut_parser->error_line = 0;
     
     // Make a copy and trim the source to remove leading/trailing whitespace
     char *own_copy = AR__HEAP__STRDUP(ref_source, "method source copy");
@@ -181,7 +162,7 @@ ar_method_ast_t* ar_method_parser__parse(ar_method_parser_t *mut_parser, const c
         if (!_parse_line(mut_parser, own_ast, mut_line_start)) {
             // Parse failed - capture error from instruction parser
             const char *ref_inst_error = ar_instruction_parser__get_error(mut_parser->instruction_parser);
-            _set_error(mut_parser, current_line, ref_inst_error);
+            _log_error(mut_parser, current_line, ref_inst_error);
             
             AR__HEAP__FREE(own_copy);
             ar_method_ast__destroy(own_ast);
@@ -217,18 +198,3 @@ ar_method_ast_t* ar_method_parser__parse(ar_method_parser_t *mut_parser, const c
     // Ownership transferred to caller
 }
 
-const char* ar_method_parser__get_error(const ar_method_parser_t *ref_parser) {
-    if (!ref_parser) {
-        return NULL;
-    }
-    
-    return ref_parser->own_error_message;
-}
-
-int ar_method_parser__get_error_line(const ar_method_parser_t *ref_parser) {
-    if (!ref_parser) {
-        return 0;
-    }
-    
-    return ref_parser->error_line;
-}

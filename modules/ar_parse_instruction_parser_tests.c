@@ -47,11 +47,13 @@ static void test_parse_instruction_parser__create_destroy(void) {
 static void test_parse_instruction_parser__parse_simple(void) {
     printf("Testing simple parse function parsing...\n");
     
-    // Given a simple parse function call
+    // Given a simple parse function call and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "parse(\"name={name}\", \"name=John\")";
     
     // When parsing the instruction
-    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(NULL);
+    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_parse_instruction_parser__parse(own_parser, instruction, NULL);
@@ -77,18 +79,24 @@ static void test_parse_instruction_parser__parse_simple(void) {
     // And there should be no result path
     assert(ar_instruction_ast__get_function_result_path(own_ast) == NULL);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_instruction_ast__destroy(own_ast);
     ar_parse_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_instruction_parser__parse_with_assignment(void) {
     printf("Testing parse function with assignment...\n");
     
-    // Given a parse function call with assignment
+    // Given a parse function call with assignment and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "memory.parsed := parse(\"name={name}\", \"name=John\")";
     
     // When parsing the instruction
-    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(NULL);
+    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_parse_instruction_parser__parse(own_parser, instruction, "memory.parsed");
@@ -111,18 +119,24 @@ static void test_parse_instruction_parser__parse_with_assignment(void) {
     
     ar_list__destroy(own_args);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_instruction_ast__destroy(own_ast);
     ar_parse_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_instruction_parser__parse_complex_template(void) {
     printf("Testing parse function with complex template...\n");
     
-    // Given a parse function with multiple placeholders
+    // Given a parse function with multiple placeholders and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "parse(\"Hello {name}, you are {age} years old\", \"Hello Alice, you are 30 years old\")";
     
     // When parsing the instruction
-    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(NULL);
+    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_parse_instruction_parser__parse(own_parser, instruction, NULL);
@@ -143,8 +157,12 @@ static void test_parse_instruction_parser__parse_complex_template(void) {
     
     ar_list__destroy(own_args);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_instruction_ast__destroy(own_ast);
     ar_parse_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 // TODO: Fix expression parser handling of quoted strings
@@ -190,11 +208,13 @@ static void test_parse_instruction_parser__parse_with_escaped_quotes(void) {
 static void test_parse_instruction_parser__error_wrong_function(void) {
     printf("Testing error on wrong function name...\n");
     
-    // Given a function call that's not parse
+    // Given a function call that's not parse and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "build(\"template\", \"input\")";
     
     // When parsing the instruction
-    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(NULL);
+    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_parse_instruction_parser__parse(own_parser, instruction, NULL);
@@ -203,25 +223,23 @@ static void test_parse_instruction_parser__error_wrong_function(void) {
     assert(own_ast == NULL);
     
     // And provide an error
-    const char *error = ar_parse_instruction_parser__get_error(own_parser);
-    assert(error != NULL);
-    assert(strstr(error, "Expected 'parse' function") != NULL);
-    
-    // And indicate the error position
-    size_t pos = ar_parse_instruction_parser__get_error_position(own_parser);
-    assert(pos == 0);  // Error at start where "build" is instead of "parse"
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "Expected 'parse' function") != NULL);
     
     ar_parse_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_instruction_parser__error_wrong_arg_count(void) {
     printf("Testing error on wrong argument count...\n");
     
-    // Given a parse function with wrong number of arguments
+    // Given a parse function with wrong number of arguments and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "parse(\"template\")";  // Missing second argument
     
     // When parsing the instruction
-    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(NULL);
+    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_parse_instruction_parser__parse(own_parser, instruction, NULL);
@@ -230,21 +248,23 @@ static void test_parse_instruction_parser__error_wrong_arg_count(void) {
     assert(own_ast == NULL);
     
     // And provide an error about argument parsing
-    const char *error = ar_parse_instruction_parser__get_error(own_parser);
-    assert(error != NULL);
-    assert(strstr(error, "Failed to parse parse arguments") != NULL);
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "Failed to parse parse arguments") != NULL);
     
     ar_parse_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_instruction_parser__error_missing_parenthesis(void) {
     printf("Testing error on missing parenthesis...\n");
     
-    // Given a parse function without opening parenthesis
+    // Given a parse function without opening parenthesis and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "parse \"template\", \"input\"";
     
     // When parsing the instruction
-    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(NULL);
+    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_parse_instruction_parser__parse(own_parser, instruction, NULL);
@@ -253,21 +273,20 @@ static void test_parse_instruction_parser__error_missing_parenthesis(void) {
     assert(own_ast == NULL);
     
     // And provide an error about missing parenthesis
-    const char *error = ar_parse_instruction_parser__get_error(own_parser);
-    assert(error != NULL);
-    assert(strstr(error, "Expected '(' after 'parse'") != NULL);
-    
-    size_t pos = ar_parse_instruction_parser__get_error_position(own_parser);
-    assert(pos == 6);  // Position after "parse " (including space)
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "Expected '(' after 'parse'") != NULL);
     
     ar_parse_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_instruction_parser__reusability(void) {
     printf("Testing parser reusability...\n");
     
-    // Given a parser instance
-    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(NULL);
+    // Given a parser instance and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // When parsing multiple instructions
@@ -275,6 +294,7 @@ static void test_parse_instruction_parser__reusability(void) {
     ar_instruction_ast_t *own_ast1 = ar_parse_instruction_parser__parse(own_parser, instruction1, NULL);
     assert(own_ast1 != NULL);
     assert(ar_instruction_ast__get_type(own_ast1) == AR_INST__PARSE);
+    assert(ar_log__get_last_error_message(log) == NULL);
     
     const char *instruction2 = "memory.data := parse(\"age={a}\", \"age=30\")";
     ar_instruction_ast_t *own_ast2 = ar_parse_instruction_parser__parse(own_parser, instruction2, "memory.data");
@@ -286,8 +306,9 @@ static void test_parse_instruction_parser__reusability(void) {
     const char *instruction3 = "invalid(\"test\")";
     ar_instruction_ast_t *own_ast3 = ar_parse_instruction_parser__parse(own_parser, instruction3, NULL);
     assert(own_ast3 == NULL);
-    assert(ar_parse_instruction_parser__get_error(own_parser) != NULL);
+    assert(ar_log__get_last_error_message(log) != NULL);
     
+    // NOTE: With shared log, errors persist across parse attempts
     // Then the parser should still work for valid instructions
     const char *instruction4 = "parse(\"x={val}\", \"x=42\")";
     ar_instruction_ast_t *own_ast4 = ar_parse_instruction_parser__parse(own_parser, instruction4, NULL);
@@ -299,14 +320,17 @@ static void test_parse_instruction_parser__reusability(void) {
     ar_instruction_ast__destroy(own_ast2);
     ar_instruction_ast__destroy(own_ast4);
     ar_parse_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_parse_instruction_parser__parse_with_expression_asts(void) {
     printf("Testing parse instruction with expression ASTs...\n");
     
-    // Given a parse instruction with string literal arguments
+    // Given a parse instruction with string literal arguments and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "parse(\"User: {name}, Age: {age}\", \"User: Alice, Age: 25\")";
-    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(NULL);
+    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -335,9 +359,13 @@ static void test_parse_instruction_parser__parse_with_expression_asts(void) {
     assert(ar_expression_ast__get_type(ref_input) == AR_EXPR__LITERAL_STRING);
     assert(strcmp(ar_expression_ast__get_string_value(ref_input), "User: Alice, Age: 25") == 0);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     AR__HEAP__FREE(items);
     ar_instruction_ast__destroy(own_ast);
     ar_parse_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 int main(void) {

@@ -114,4 +114,23 @@ ar_event_t* ar_log__get_last_warning(ar_log_t *ref_log);
  */
 ar_event_t* ar_log__get_last_info(ar_log_t *ref_log);
 
+/**
+ * Gets the last error message from the log
+ * @param ref_log The log instance (borrowed reference)
+ * @return The error message, or NULL if no errors exist
+ * @note Ownership: Returns a borrowed reference. Do not destroy.
+ *       This is a convenience function that combines ar_log__get_last_error
+ *       and ar_event__get_message.
+ */
+const char* ar_log__get_last_error_message(ar_log_t *ref_log);
+
+/**
+ * Gets the position of the last error from the log
+ * @param ref_log The log instance (borrowed reference)
+ * @return The error position, or 0 if no errors exist or position not set
+ * @note This is a convenience function that combines ar_log__get_last_error,
+ *       ar_event__has_position, and ar_event__get_position.
+ */
+int ar_log__get_last_error_position(ar_log_t *ref_log);
+
 #endif /* AGERUN_LOG_H */

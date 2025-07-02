@@ -59,18 +59,19 @@ ar_instruction_ast_t* ar_parse_instruction_parser__parse(
 
 /**
  * Gets the last error message from the parser
+ * DEPRECATED: Use ar_log for error reporting.
  *
  * @param ref_parser The parser instance (borrowed reference)
- * @return Error message or NULL if no error
- * @note The returned string is owned by the parser and valid until next parse or destroy
+ * @return Always returns NULL
  */
 const char* ar_parse_instruction_parser__get_error(const ar_parse_instruction_parser_t *ref_parser);
 
 /**
  * Gets the position where the last error occurred
+ * DEPRECATED: Use ar_log for error reporting.
  *
  * @param ref_parser The parser instance (borrowed reference)
- * @return Character position of the error in the input string
+ * @return Always returns 0
  */
 size_t ar_parse_instruction_parser__get_error_position(const ar_parse_instruction_parser_t *ref_parser);
 

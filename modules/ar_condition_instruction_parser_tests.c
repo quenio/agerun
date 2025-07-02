@@ -7,7 +7,6 @@
 #include "ar_list.h"
 #include "ar_heap.h"
 #include "ar_log.h"
-#include "ar_event.h"
 
 static void test_create_parser_with_log(void) {
     printf("Testing parser creation with ar_log...\n");
@@ -44,11 +43,13 @@ static void test_condition_parser__create_destroy(void) {
 static void test_condition_parser__parse_simple_if(void) {
     printf("Testing simple if parsing...\n");
     
-    // Given an if instruction
+    // Given an if instruction and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "if(1 > 0, \"true\", \"false\")";
     
     // When creating a parser and parsing the instruction
-    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(NULL);
+    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
@@ -58,6 +59,9 @@ static void test_condition_parser__parse_simple_if(void) {
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__IF);
     assert(strcmp(ar_instruction_ast__get_function_name(own_ast), "if") == 0);
     assert(ar_instruction_ast__has_result_assignment(own_ast) == false);
+    
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
     
     // Verify arguments
     list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
@@ -72,16 +76,19 @@ static void test_condition_parser__parse_simple_if(void) {
     
     ar_instruction_ast__destroy(own_ast);
     ar_condition_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_condition_parser__parse_if_with_assignment(void) {
     printf("Testing if with assignment parsing...\n");
     
-    // Given an if function call with assignment
+    // Given an if function call with assignment and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "memory.level := if(memory.count > 5, \"High\", \"Low\")";
     
     // When creating a parser and parsing the instruction
-    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(NULL);
+    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, "memory.level");
@@ -92,6 +99,9 @@ static void test_condition_parser__parse_if_with_assignment(void) {
     assert(strcmp(ar_instruction_ast__get_function_name(own_ast), "if") == 0);
     assert(ar_instruction_ast__has_result_assignment(own_ast) == true);
     assert(strcmp(ar_instruction_ast__get_function_result_path(own_ast), "memory.level") == 0);
+    
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
     
     // Verify arguments
     list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
@@ -106,6 +116,7 @@ static void test_condition_parser__parse_if_with_assignment(void) {
     
     ar_instruction_ast__destroy(own_ast);
     ar_condition_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 // TODO: Expression parser doesn't support logical operators yet
@@ -173,66 +184,77 @@ static void test_condition_parser__parse_nested_function_calls(void) {
 static void test_condition_parser__error_wrong_function(void) {
     printf("Testing error handling for wrong function...\n");
     
-    // Given a non-if instruction
+    // Given a non-if instruction and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "send(0, \"hello\")";
     
     // When trying to parse as if
-    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(NULL);
+    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
     
     // Then it should fail
     assert(own_ast == NULL);
-    assert(ar_condition_instruction_parser__get_error(own_parser) != NULL);
-    assert(ar_condition_instruction_parser__get_error_position(own_parser) == 0);
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(ar_log__get_last_error_position(log) == 0);
     
     ar_condition_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_condition_parser__error_missing_parenthesis(void) {
     printf("Testing error handling for missing parenthesis...\n");
     
-    // Given an if without opening parenthesis
+    // Given an if without opening parenthesis and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "if 1 > 0, \"true\", \"false\")";
     
     // When trying to parse
-    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(NULL);
+    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
     
     // Then it should fail
     assert(own_ast == NULL);
-    assert(ar_condition_instruction_parser__get_error(own_parser) != NULL);
+    assert(ar_log__get_last_error_message(log) != NULL);
     
     ar_condition_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_condition_parser__error_wrong_arg_count(void) {
     printf("Testing error handling for wrong argument count...\n");
     
-    // Given an if with wrong number of arguments
+    // Given an if with wrong number of arguments and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "if(1 > 0, \"true\")";  // Missing else clause
     
     // When trying to parse
-    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(NULL);
+    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
     
     // Then it should fail
     assert(own_ast == NULL);
-    assert(ar_condition_instruction_parser__get_error(own_parser) != NULL);
+    assert(ar_log__get_last_error_message(log) != NULL);
     
     ar_condition_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_condition_parser__reusability(void) {
     printf("Testing parser reusability...\n");
     
-    // Given a parser
-    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(NULL);
+    // Given a parser and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // First parse
@@ -247,10 +269,10 @@ static void test_condition_parser__reusability(void) {
     assert(own_ast2 != NULL);
     ar_instruction_ast__destroy(own_ast2);
     
-    // Error should be cleared between parses
-    assert(ar_condition_instruction_parser__get_error(own_parser) == NULL);
+    // Log persists all events, so we just verify parsing succeeded
     
     ar_condition_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 static void test_condition_parser__parse_with_expression_asts(void) {

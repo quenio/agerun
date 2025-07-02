@@ -30,18 +30,19 @@ void ar_instruction_parser__destroy(instruction_parser_t *own_parser);
 
 /**
  * Get the last error message from the parser.
+ * DEPRECATED: Use ar_log for error reporting.
  * 
  * @param ref_parser The parser instance (borrowed reference)
- * @return The error message (borrowed reference), or NULL if no error
- * @note Ownership: Returns a borrowed reference. Do not free.
+ * @return Always returns NULL
  */
 const char* ar_instruction_parser__get_error(const instruction_parser_t *ref_parser);
 
 /**
  * Get the error position from the last parse attempt.
+ * DEPRECATED: Use ar_log for error reporting.
  * 
  * @param ref_parser The parser instance (borrowed reference)
- * @return The character offset where the error occurred, or 0 if no error
+ * @return Always returns 0
  */
 size_t ar_instruction_parser__get_error_position(const instruction_parser_t *ref_parser);
 

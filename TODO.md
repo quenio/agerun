@@ -78,12 +78,12 @@ This document tracks pending tasks and improvements for the AgeRun project.
       - [ ] Pass ar_log from method creation to method parser
       - [ ] Update all method creation call sites to pass ar_log instance
       - [ ] This ensures complete log propagation from top-level through entire parsing hierarchy
-    - [ ] Remove legacy error handling from parsers now that ar_log is integrated
-      - [ ] Remove get_error() and get_error_position() functions from all parser modules
-      - [ ] Remove error message and error position fields from parser structs
-      - [ ] Remove _set_error() and _clear_error() helper functions from parsers
-      - [ ] Update any remaining code that calls parser get_error functions to use ar_log instead
-      - [ ] This completes the transition to centralized error logging via ar_log
+    - [x] Remove legacy error handling from parsers now that ar_log is integrated (Completed 2025-07-02)
+      - [x] Remove get_error() and get_error_position() functions from all parser modules
+      - [x] Remove error message and error position fields from parser structs
+      - [x] Remove _set_error() and _clear_error() helper functions from parsers
+      - [x] Update any remaining code that calls parser get_error functions to use ar_log instead
+      - [x] This completes the transition to centralized error logging via ar_log
 
 #### 2. Extract Memory Path Utilities Module  
 - [ ] Create `ar_memory_path` module for memory path operations

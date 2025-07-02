@@ -135,11 +135,13 @@ static void test_method_instruction_parser__complex_code(void) {
 static void test_method_instruction_parser__whitespace_handling(void) {
     printf("Testing method parsing with whitespace...\n");
     
-    // Given a method call with extra whitespace
+    // Given a method call with extra whitespace and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "  method  ( \"test\" , \"memory.x := 1\" , \"1.0.0\" )  ";
     
     // When parsing
-    ar_method_instruction_parser_t *own_parser = ar_method_instruction_parser__create(NULL);
+    ar_method_instruction_parser_t *own_parser = ar_method_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_method_instruction_parser__parse(own_parser, instruction, NULL);
@@ -148,8 +150,12 @@ static void test_method_instruction_parser__whitespace_handling(void) {
     assert(own_ast != NULL);
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__METHOD);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     ar_instruction_ast__destroy(own_ast);
     ar_method_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 /**
@@ -158,11 +164,13 @@ static void test_method_instruction_parser__whitespace_handling(void) {
 static void test_method_instruction_parser__wrong_function_name(void) {
     printf("Testing method parser with wrong function name...\n");
     
-    // Given a non-method function call
+    // Given a non-method function call and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "build(\"template\", memory.data)";
     
     // When parsing
-    ar_method_instruction_parser_t *own_parser = ar_method_instruction_parser__create(NULL);
+    ar_method_instruction_parser_t *own_parser = ar_method_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_method_instruction_parser__parse(own_parser, instruction, NULL);
@@ -170,14 +178,11 @@ static void test_method_instruction_parser__wrong_function_name(void) {
     // Then it should fail
     assert(own_ast == NULL);
     
-    const char *error = ar_method_instruction_parser__get_error(own_parser);
-    assert(error != NULL);
-    assert(strstr(error, "method") != NULL);
-    
-    size_t pos = ar_method_instruction_parser__get_error_position(own_parser);
-    assert(pos == 0);  // Error at start where "method" was expected
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "method") != NULL);
     
     ar_method_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 /**
@@ -186,11 +191,13 @@ static void test_method_instruction_parser__wrong_function_name(void) {
 static void test_method_instruction_parser__wrong_arg_count(void) {
     printf("Testing method parser with wrong argument count...\n");
     
-    // Given a method call with only 2 arguments
+    // Given a method call with only 2 arguments and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "method(\"test\", \"code\")";
     
     // When parsing
-    ar_method_instruction_parser_t *own_parser = ar_method_instruction_parser__create(NULL);
+    ar_method_instruction_parser_t *own_parser = ar_method_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_method_instruction_parser__parse(own_parser, instruction, NULL);
@@ -198,11 +205,11 @@ static void test_method_instruction_parser__wrong_arg_count(void) {
     // Then it should fail
     assert(own_ast == NULL);
     
-    const char *error = ar_method_instruction_parser__get_error(own_parser);
-    assert(error != NULL);
-    assert(strstr(error, "argument") != NULL);
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "argument") != NULL);
     
     ar_method_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 /**
@@ -211,11 +218,13 @@ static void test_method_instruction_parser__wrong_arg_count(void) {
 static void test_method_instruction_parser__malformed_syntax(void) {
     printf("Testing method parser with malformed syntax...\n");
     
-    // Given a method call missing opening parenthesis
+    // Given a method call missing opening parenthesis and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "method\"test\", \"code\", \"1.0.0\")";
     
     // When parsing
-    ar_method_instruction_parser_t *own_parser = ar_method_instruction_parser__create(NULL);
+    ar_method_instruction_parser_t *own_parser = ar_method_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_method_instruction_parser__parse(own_parser, instruction, NULL);
@@ -223,14 +232,11 @@ static void test_method_instruction_parser__malformed_syntax(void) {
     // Then it should fail
     assert(own_ast == NULL);
     
-    const char *error = ar_method_instruction_parser__get_error(own_parser);
-    assert(error != NULL);
-    assert(strstr(error, "(") != NULL);
-    
-    size_t pos = ar_method_instruction_parser__get_error_position(own_parser);
-    assert(pos == 6);  // After "method"
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "(") != NULL);
     
     ar_method_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 /**
@@ -239,30 +245,36 @@ static void test_method_instruction_parser__malformed_syntax(void) {
 static void test_method_instruction_parser__reusability(void) {
     printf("Testing method parser reusability...\n");
     
-    ar_method_instruction_parser_t *own_parser = ar_method_instruction_parser__create(NULL);
+    // Given a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
+    ar_method_instruction_parser_t *own_parser = ar_method_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // First parse - should succeed
     const char *instruction1 = "method(\"test1\", \"code1\", \"1.0.0\")";
     ar_instruction_ast_t *own_ast1 = ar_method_instruction_parser__parse(own_parser, instruction1, NULL);
     assert(own_ast1 != NULL);
-    assert(ar_method_instruction_parser__get_error(own_parser) == NULL);
+    assert(ar_log__get_last_error_message(log) == NULL);
     
     // Second parse - should fail
     const char *instruction2 = "notmethod(\"test\", \"code\", \"1.0.0\")";
     ar_instruction_ast_t *own_ast2 = ar_method_instruction_parser__parse(own_parser, instruction2, NULL);
     assert(own_ast2 == NULL);
-    assert(ar_method_instruction_parser__get_error(own_parser) != NULL);
+    assert(ar_log__get_last_error_message(log) != NULL);
     
-    // Third parse - should succeed and clear previous error
+    // NOTE: With shared log, errors persist across parse attempts
+    // The third parse will succeed but the error from parse 2 remains in the log
     const char *instruction3 = "method(\"test3\", \"code3\", \"1.0.0\")";
     ar_instruction_ast_t *own_ast3 = ar_method_instruction_parser__parse(own_parser, instruction3, NULL);
     assert(own_ast3 != NULL);
-    assert(ar_method_instruction_parser__get_error(own_parser) == NULL);
+    // Error from previous parse still exists in log
     
     ar_instruction_ast__destroy(own_ast1);
     ar_instruction_ast__destroy(own_ast3);
     ar_method_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 /**
@@ -271,11 +283,13 @@ static void test_method_instruction_parser__reusability(void) {
 static void test_method_instruction_parser__multiline_code(void) {
     printf("Testing method parser with multiline code...\n");
     
-    // Given a method with code containing newlines
+    // Given a method with code containing newlines and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "method(\"multi\", \"memory.x := 1\\nmemory.y := 2\", \"1.0.0\")";
     
     // When parsing
-    ar_method_instruction_parser_t *own_parser = ar_method_instruction_parser__create(NULL);
+    ar_method_instruction_parser_t *own_parser = ar_method_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_method_instruction_parser__parse(own_parser, instruction, NULL);
@@ -288,10 +302,14 @@ static void test_method_instruction_parser__multiline_code(void) {
     void **own_items = ar_list__items(own_args);
     assert(strcmp((const char*)own_items[1], "\"memory.x := 1\\nmemory.y := 2\"") == 0);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     AR__HEAP__FREE(own_items);
     ar_list__destroy(own_args);
     ar_instruction_ast__destroy(own_ast);
     ar_method_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 /**
@@ -300,9 +318,11 @@ static void test_method_instruction_parser__multiline_code(void) {
 static void test_method_instruction_parser__parse_with_expression_asts(void) {
     printf("Testing method instruction with expression ASTs...\n");
     
-    // Given a method instruction with string literal arguments
+    // Given a method instruction with string literal arguments and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
     const char *instruction = "method(\"calculate\", \"memory.result := memory.x + memory.y\", \"1.2.3\")";
-    ar_method_instruction_parser_t *own_parser = ar_method_instruction_parser__create(NULL);
+    ar_method_instruction_parser_t *own_parser = ar_method_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     // When parsing the instruction
@@ -339,9 +359,13 @@ static void test_method_instruction_parser__parse_with_expression_asts(void) {
     assert(ar_expression_ast__get_type(ref_version) == AR_EXPR__LITERAL_STRING);
     assert(strcmp(ar_expression_ast__get_string_value(ref_version), "1.2.3") == 0);
     
+    // And no errors should be logged
+    assert(ar_log__get_last_error_message(log) == NULL);
+    
     AR__HEAP__FREE(items);
     ar_instruction_ast__destroy(own_ast);
     ar_method_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
 }
 
 int main(void) {

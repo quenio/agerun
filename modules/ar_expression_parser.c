@@ -16,7 +16,6 @@ struct expression_parser_s {
     ar_log_t *ref_log;         /* Log instance for error reporting (borrowed) */
     char *own_expression;      /* Copy of the expression string */
     size_t position;           /* Current parsing position */
-    char *own_error_message;   /* Last error message (if any) */
 };
 
 /* Forward declarations for internal parsing functions */
@@ -53,7 +52,6 @@ ar_expression_parser_t* ar_expression_parser__create(ar_log_t *ref_log, const ch
     }
     
     own_parser->position = 0;
-    own_parser->own_error_message = NULL;
     
     return own_parser; // Ownership transferred to caller
 }
@@ -68,10 +66,6 @@ void ar_expression_parser__destroy(ar_expression_parser_t *own_parser) {
     
     if (own_parser->own_expression) {
         AR__HEAP__FREE(own_parser->own_expression);
-    }
-    
-    if (own_parser->own_error_message) {
-        AR__HEAP__FREE(own_parser->own_error_message);
     }
     
     AR__HEAP__FREE(own_parser);
@@ -89,13 +83,13 @@ size_t ar_expression_parser__get_position(const ar_expression_parser_t *ref_pars
 
 /**
  * Get the last error message from the parser.
+ * DEPRECATED: This function always returns NULL. Use ar_log for error reporting.
  */
 const char* ar_expression_parser__get_error(const ar_expression_parser_t *ref_parser) {
-    if (!ref_parser) {
-        return NULL;
-    }
-    return ref_parser->own_error_message;
+    (void)ref_parser; // Suppress unused parameter warning
+    return NULL;
 }
+
 
 /**
  * Skip whitespace characters.
@@ -159,19 +153,7 @@ static void _set_error(ar_expression_parser_t *mut_parser, const char *ref_messa
         return;
     }
     
-    // Free any existing error message
-    if (mut_parser->own_error_message) {
-        AR__HEAP__FREE(mut_parser->own_error_message);
-    }
-    
-    // Create formatted error message with position
-    char buffer[256];
-    snprintf(buffer, sizeof(buffer), "Error at position %zu: %s", 
-             mut_parser->position, ref_message);
-    
-    mut_parser->own_error_message = AR__HEAP__STRDUP(buffer, "Parser error message");
-    
-    // Also log the error with position
+    // Log the error with position
     if (mut_parser->ref_log) {
         ar_log__error_at(mut_parser->ref_log, ref_message, (int)mut_parser->position);
     }
@@ -334,7 +316,8 @@ ar_expression_ast_t* ar_expression_parser__parse_memory_access(ar_expression_par
     }
     
     if (!base) {
-        _set_error(mut_parser, "Expected memory, message, or context");
+        // Not a memory access - return NULL without setting error
+        // This allows the parser to try other expression types
         return NULL;
     }
     
@@ -482,11 +465,7 @@ static ar_expression_ast_t* _parse_primary(ar_expression_parser_t *mut_parser) {
         return own_node;
     }
     
-    // Clear error from failed memory access attempt
-    if (mut_parser->own_error_message) {
-        AR__HEAP__FREE(mut_parser->own_error_message);
-        mut_parser->own_error_message = NULL;
-    }
+    // Note: Error from failed memory access attempt is already logged to ar_log
     
     // Try literal
     return ar_expression_parser__parse_literal(mut_parser);

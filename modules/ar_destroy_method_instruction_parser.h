@@ -45,11 +45,10 @@ ar_instruction_ast_t* ar_destroy_method_instruction_parser__parse(
 
 /**
  * Gets the last error message from the parser.
+ * DEPRECATED: Use ar_log for error reporting.
  * 
  * @param ref_parser The parser instance (borrowed reference)
- * @return The error message (borrowed reference), or NULL if no error
- * @note Ownership: Returns a borrowed reference that remains valid until
- *       the next parse operation or parser destruction.
+ * @return Always returns NULL
  */
 const char* ar_destroy_method_instruction_parser__get_error(
     const ar_destroy_method_instruction_parser_t *ref_parser
@@ -57,9 +56,10 @@ const char* ar_destroy_method_instruction_parser__get_error(
 
 /**
  * Gets the position of the last error.
+ * DEPRECATED: Use ar_log for error reporting.
  * 
  * @param ref_parser The parser instance (borrowed reference)
- * @return The error position, or 0 if no error
+ * @return Always returns 0
  */
 size_t ar_destroy_method_instruction_parser__get_error_position(
     const ar_destroy_method_instruction_parser_t *ref_parser
