@@ -64,12 +64,12 @@ Destroys a parser instance and frees all associated memory.
 ```c
 const char* ar__instruction_parser__get_error(const instruction_parser_t *ref_parser);
 ```
-Returns the last error message, or NULL if no error occurred.
+DEPRECATED: Always returns NULL. Use ar_log for error reporting.
 
 ```c
 size_t ar__instruction_parser__get_error_position(const instruction_parser_t *ref_parser);
 ```
-Returns the character position where the last error occurred.
+DEPRECATED: Always returns 0. Error positions are reported through ar_log.
 
 ### Parse Methods
 
@@ -138,8 +138,9 @@ for (int i = 0; i < 8; i++) {
                ar__instruction_ast__get_type(ast));
         ar__instruction_ast__destroy(ast);
     } else {
-        printf("Failed to parse: %s - %s\n", instructions[i],
-               ar__instruction_parser__get_error(parser));
+        // Errors are reported through the ar_log instance
+        // The get_error() function is deprecated and always returns NULL
+        printf("Failed to parse: %s\n", instructions[i]);
     }
 }
 
@@ -168,10 +169,9 @@ if (ast) {
     // Clean up
     ar__instruction_ast__destroy(ast);
 } else {
-    // Handle parse error
-    const char *error = ar__instruction_parser__get_error(parser);
-    size_t position = ar__instruction_parser__get_error_position(parser);
-    fprintf(stderr, "Parse error at position %zu: %s\n", position, error);
+    // Parse errors are reported through the ar_log instance
+    // The get_error() and get_error_position() functions are deprecated
+    fprintf(stderr, "Parse error occurred\n");
 }
 
 // Destroy parser
@@ -242,7 +242,7 @@ The module follows the AgeRun Memory Management Model:
 
 1. **Parser Lifetime**: Create parser once, use many times, destroy when done
 2. **AST Ownership**: Parse methods return owned AST nodes that caller must destroy
-3. **Error Messages**: Error messages are owned by the parser and valid until next parse
+3. **Error Messages**: Errors are reported through ar_log (get_error() is deprecated)
 4. **String Parameters**: All string parameters are borrowed references
 5. **Thread Safety**: Parser instances are not thread-safe
 
@@ -256,7 +256,7 @@ Common parse errors include:
 - Malformed expressions
 - Empty instructions
 
-Error messages include the position where the error occurred, making it easier to provide helpful feedback to users.
+Errors are reported through the ar_log instance provided during parser creation. The deprecated get_error() and get_error_position() functions always return NULL and 0 respectively.
 
 ## Testing
 

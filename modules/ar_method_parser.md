@@ -23,8 +23,8 @@ The method parser module is responsible for parsing method source code and creat
 
 #### Error Handling
 
-- `ar_method_parser__get_error()`: Returns the last error message
-- `ar_method_parser__get_error_line()`: Returns the line number where the error occurred
+- `ar_method_parser__get_error()`: DEPRECATED - Always returns NULL. Use ar_log for error reporting
+- `ar_method_parser__get_error_line()`: DEPRECATED - Always returns 0. Error line numbers are reported through ar_log
 
 ## Usage Example
 
@@ -76,5 +76,5 @@ The module follows strict ownership rules:
 8. **Line Ending Support**: Handles Unix (\n), Windows (\r\n), and Mac (\r) line endings
 9. **Comment Support**: Supports `#` for comments (both full line and inline)
 10. **Quote-Aware Parsing**: Correctly handles `#` inside quoted strings (not treated as comments)
-11. **Error Reporting**: Provides line numbers and error messages for parse failures
-12. **Error State Management**: Clears error state on successful parse
+11. **Error Reporting**: Reports errors through ar_log (deprecated get_error functions return NULL/0)
+12. **Error State Management**: Error state is managed through ar_log

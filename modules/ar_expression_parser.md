@@ -56,8 +56,8 @@ Each precedence level has its own parsing function:
 
 ### Parser State
 
-- `ar_expression_parser__get_position(parser)` - Returns current parse position
-- `ar_expression_parser__get_error(parser)` - Returns error message if parse failed
+- `ar_expression_parser__get_position(parser)` - DEPRECATED: Always returns 0
+- `ar_expression_parser__get_error(parser)` - DEPRECATED: Always returns NULL. Use ar_log for error reporting
 
 ### Parsing Functions
 
@@ -92,15 +92,15 @@ Each precedence level has its own parsing function:
 
 ## Error Handling
 
-The parser provides detailed error messages with position information:
+The parser reports errors through the ar_log instance provided during creation:
 
 ```c
 ar_log_t *log = ar_log__create();
 ar_expression_parser_t *parser = ar_expression_parser__create(log, "2 + + 3");
 ar_expression_ast_t *ast = ar_expression_parser__parse_expression(parser);
 if (!ast) {
-    printf("Error: %s\n", ar__expression_parser__get_error(parser));
-    // Output: "Error at position 4: Expected literal (string or number)"
+    // Check the log for error details
+    // The get_error() function is deprecated and always returns NULL
 }
 ```
 
@@ -117,7 +117,7 @@ The parser follows strict ownership semantics:
 
 1. **Parser Creation**: Makes a copy of the expression string
 2. **AST Creation**: Returns owned AST nodes that caller must destroy
-3. **Error Messages**: Maintained internally, returned as borrowed references
+3. **Error Messages**: Reported through ar_log instance (get_error() is deprecated)
 4. **Path Arrays**: Temporary arrays properly cleaned up during parsing
 
 ## Usage Example
@@ -129,7 +129,8 @@ ar_expression_parser_t *own_parser = ar__expression_parser__create("memory.x + 5
 // Parse expression
 ar_expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
 if (!own_ast) {
-    fprintf(stderr, "Parse error: %s\n", ar__expression_parser__get_error(own_parser));
+    // Errors are reported via the ar_log instance provided during creation
+    // The get_error() function is deprecated and always returns NULL
     ar__expression_parser__destroy(own_parser);
     return;
 }
@@ -158,7 +159,7 @@ The module includes comprehensive tests (`ar_expression_parser_tests.c`) that ve
 - Memory access with various path depths
 - All binary operators with correct precedence
 - Parenthesized and nested expressions
-- Error handling and position tracking
+- Error handling through ar_log (get_error/get_error_position are deprecated)
 - NULL safety
 - Zero memory leaks (234 allocations, all freed)
 

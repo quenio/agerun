@@ -11,7 +11,7 @@ This module is part of the specialized parser architecture, where each instructi
 - Validates assignment syntax (memory path, := operator, expression)
 - Extracts the memory path and expression components
 - Creates appropriate AST nodes for assignment instructions
-- Provides detailed error reporting with position information
+- Reports errors through ar_log (get_error functions are deprecated)
 
 ## Interface
 
@@ -32,8 +32,8 @@ This module is part of the specialized parser architecture, where each instructi
 
 #### Error Handling
 
-- **`ar_assignment_instruction_parser__get_error()`**: Get the last error message
-- **`ar_assignment_instruction_parser__get_error_position()`**: Get the position where error occurred
+- **`ar_assignment_instruction_parser__get_error()`**: DEPRECATED - Always returns NULL. Use ar_log for error reporting
+- **`ar_assignment_instruction_parser__get_error_position()`**: DEPRECATED - Always returns 0. Error positions are reported through ar_log
 
 ## Usage Example
 
@@ -56,10 +56,9 @@ if (ast) {
     // Clean up
     ar__instruction_ast__destroy(ast);
 } else {
-    // Handle error
-    const char *error = ar_assignment_instruction_parser__get_error(parser);
-    size_t pos = ar_assignment_instruction_parser__get_error_position(parser);
-    fprintf(stderr, "Parse error at position %zu: %s\n", pos, error);
+    // Parse errors are reported through the ar_log instance
+    // The get_error() and get_error_position() functions are deprecated
+    fprintf(stderr, "Parse error occurred\n");
 }
 
 // Destroy parser
@@ -85,7 +84,7 @@ ar_assignment_instruction_parser__destroy(parser);
 
 ### Memory Management
 
-- Parser maintains its own error message string (owned)
+- Parser reports errors through ar_log (deprecated get_error functions return NULL/0)
 - Returns owned AST nodes that caller must destroy
 - All internal allocations are cleaned up on error
 

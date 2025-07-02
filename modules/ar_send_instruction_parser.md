@@ -16,17 +16,17 @@ This module provides:
 
 ### Opaque Structure
 
-The module uses an opaque `ar_send_instruction_parser_t` structure that maintains:
-- Error message from last parse attempt
-- Character position where error occurred
+The module uses an opaque `ar_send_instruction_parser_t` structure that:
+- Reports errors through ar_log (deprecated get_error functions return NULL/0)
+- Maintains internal parsing state
 
 ### Key Functions
 
 - `ar_send_instruction_parser__create(ar_log_t *ref_log)` - Creates a new parser instance
 - `ar_send_instruction_parser__destroy()` - Destroys a parser instance
 - `ar_send_instruction_parser__parse()` - Parses a send instruction
-- `ar_send_instruction_parser__get_error()` - Returns last error message
-- `ar_send_instruction_parser__get_error_position()` - Returns error position
+- `ar_send_instruction_parser__get_error()` - DEPRECATED: Always returns NULL. Use ar_log for error reporting
+- `ar_send_instruction_parser__get_error_position()` - DEPRECATED: Always returns 0. Error positions are reported through ar_log
 
 ## Usage Example
 
@@ -51,9 +51,9 @@ ar_instruction_ast_t *ast2 = ar_send_instruction_parser__parse(
 
 // Check for errors
 if (!ast) {
-    const char *error = ar_send_instruction_parser__get_error(parser);
-    size_t pos = ar_send_instruction_parser__get_error_position(parser);
-    printf("Parse error at position %zu: %s\n", pos, error);
+    // Parse errors are reported through the ar_log instance
+    // The get_error() and get_error_position() functions are deprecated
+    printf("Parse error occurred\n");
 }
 
 // Clean up
@@ -73,16 +73,17 @@ The parser handles:
 
 ## Error Handling
 
-The parser detects and reports:
+The parser reports errors through the ar_log instance provided during creation:
 - Missing or invalid function name
 - Missing parentheses
 - Invalid argument count
 - Empty or malformed arguments
 - Syntax errors in expressions
+- The deprecated get_error() and get_error_position() functions always return NULL and 0
 
 ## Memory Management
 
-- Parser instance owns its error message
+- Parser reports errors through ar_log (deprecated get_error functions return NULL/0)
 - Caller owns returned AST nodes
 - Arguments are properly cleaned up on parse failure
 - Parser can be reused for multiple parse operations

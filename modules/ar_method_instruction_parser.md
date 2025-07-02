@@ -19,8 +19,8 @@ This module extracts the parsing logic for method() function calls from the gene
 - `ar_method_instruction_parser__create(ar_log_t *ref_log)` - Create a new parser instance
 - `ar_method_instruction_parser__destroy()` - Destroy a parser instance
 - `ar_method_instruction_parser__parse()` - Parse a method instruction
-- `ar_method_instruction_parser__get_error()` - Get error message from last parse
-- `ar_method_instruction_parser__get_error_position()` - Get error position
+- `ar_method_instruction_parser__get_error()` - DEPRECATED: Always returns NULL. Use ar_log for error reporting
+- `ar_method_instruction_parser__get_error_position()` - DEPRECATED: Always returns 0. Error positions are reported through ar_log
 
 ## Usage Example
 
@@ -45,9 +45,9 @@ ar_instruction_ast_t *ast2 = ar_method_instruction_parser__parse(
 
 // Check for errors
 if (!ast2) {
-    const char *error = ar_method_instruction_parser__get_error(parser);
-    size_t pos = ar_method_instruction_parser__get_error_position(parser);
-    printf("Parse error at position %zu: %s\n", pos, error);
+    // Parse errors are reported through the ar_log instance
+    // The get_error() and get_error_position() functions are deprecated
+    printf("Parse error occurred\n");
 }
 
 // Clean up
@@ -83,17 +83,17 @@ The parser:
 
 ## Error Handling
 
-The parser provides detailed error messages including:
-- Position where the error occurred
-- Description of what was expected
+The parser reports errors through the ar_log instance provided during creation:
+- Errors include position and description information
 - Validation of argument count (must be exactly 3)
 - Validation that all arguments are strings
+- The deprecated get_error() and get_error_position() functions always return NULL and 0
 
 ## Memory Management
 
 - Parser instance must be destroyed when no longer needed
 - Returned AST nodes are owned by caller and must be destroyed
-- Error messages are owned by the parser and valid until next parse or destroy
+- Errors are reported through ar_log (deprecated get_error functions return NULL/0)
 - All internal allocations are properly tracked with heap macros
 
 ## Integration

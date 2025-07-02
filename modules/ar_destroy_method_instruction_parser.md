@@ -33,10 +33,9 @@ if (ast) {
     // ... use AST ...
     ar__instruction_ast__destroy(ast);
 } else {
-    // Parse error occurred
-    const char *error = ar_destroy_method_instruction_parser__get_error(parser);
-    size_t pos = ar_destroy_method_instruction_parser__get_error_position(parser);
-    printf("Parse error at position %zu: %s\n", pos, error);
+    // Parse errors are reported through the ar_log instance
+    // The get_error() and get_error_position() functions are deprecated
+    printf("Parse error occurred\n");
 }
 
 // Cleanup
@@ -79,7 +78,7 @@ destroy("multi\nline", "1.0.0")
 
 ## Error Handling
 
-The parser provides detailed error reporting for common issues:
+The parser reports errors through the ar_log instance provided during creation. Common issues include:
 
 - **Missing parentheses**: `"Expected '(' after 'destroy'"`
 - **Wrong function name**: `"Expected 'destroy' function"`
@@ -88,14 +87,14 @@ The parser provides detailed error reporting for common issues:
 - **Memory allocation failures**: `"Memory allocation failed"`
 
 Access error information using:
-- `ar_destroy_method_instruction_parser__get_error()` - Get error message
-- `ar_destroy_method_instruction_parser__get_error_position()` - Get error position
+- `ar_destroy_method_instruction_parser__get_error()` - DEPRECATED: Always returns NULL. Use ar_log for error reporting
+- `ar_destroy_method_instruction_parser__get_error_position()` - DEPRECATED: Always returns 0. Error positions are reported through ar_log
 
 ## Implementation Details
 
 ### Architecture
 - **Opaque Type**: `ar_destroy_method_instruction_parser_t` hides implementation details
-- **Error State**: Tracks last error message and position
+- **Error State**: Reports errors through ar_log (deprecated get_error functions return NULL/0)
 - **Instance-Based**: Each parser instance maintains its own state
 - **AST Type**: Creates `AR_INST__DESTROY_METHOD` nodes
 
