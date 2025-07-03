@@ -82,14 +82,6 @@ size_t ar_path__get_segment_count(const ar_path_t *ref_path);
  */
 const char* ar_path__get_segment(const ar_path_t *ref_path, size_t index);
 
-/**
- * Gets a copy of a segment from the path by index.
- *
- * @param ref_path The path object
- * @param index The zero-based index of the segment
- * @return OWNER: A copy of the segment, or NULL if index is out of bounds. Caller must free.
- */
-char* ar_path__get_segment_copy(const ar_path_t *ref_path, size_t index);
 
 /**
  * Gets the parent path (all segments except the last).

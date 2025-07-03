@@ -36,7 +36,6 @@ char ar_path__get_separator(const ar_path_t *ref_path);
 ```c
 size_t ar_path__get_segment_count(const ar_path_t *ref_path);
 const char* ar_path__get_segment(const ar_path_t *ref_path, size_t index);
-char* ar_path__get_segment_copy(const ar_path_t *ref_path, size_t index);
 ```
 
 ### Path Manipulation

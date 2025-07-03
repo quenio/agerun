@@ -190,13 +190,6 @@ const char* ar_path__get_segment(const ar_path_t *ref_path, size_t index) {
     return ref_path->own_segments[index];
 }
 
-char* ar_path__get_segment_copy(const ar_path_t *ref_path, size_t index) {
-    if (!ref_path || index >= ref_path->segment_count) {
-        return NULL;
-    }
-    
-    return AR__HEAP__STRDUP(ref_path->own_segments[index], "segment copy");
-}
 
 ar_path_t* ar_path__get_parent(const ar_path_t *ref_path) {
     if (!ref_path || ref_path->segment_count <= 1) {

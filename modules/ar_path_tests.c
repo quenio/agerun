@@ -144,6 +144,30 @@ static void test_path__get_segment_count(void) {
     ar_path__destroy(own_path5);
 }
 
+static void test_path__get_segment_count_edge_cases(void) {
+    printf("Testing ar_path get_segment_count edge cases...\n");
+    
+    // Given edge case paths (matching ar_string tests)
+    ar_path_t *own_only_separators = ar_path__create(".....", '.');
+    ar_path_t *own_trailing_separator = ar_path__create("key.sub_key.", '.');
+    ar_path_t *own_leading_separator = ar_path__create(".key.sub_key", '.');
+    
+    // When getting segment counts
+    size_t only_separators_count = ar_path__get_segment_count(own_only_separators);
+    size_t trailing_count = ar_path__get_segment_count(own_trailing_separator);
+    size_t leading_count = ar_path__get_segment_count(own_leading_separator);
+    
+    // Then counts should match ar_string behavior
+    assert(only_separators_count == 6);  // 5 separators = 6 segments
+    assert(trailing_count == 3);          // 2 keys + empty segment
+    assert(leading_count == 3);           // empty + 2 keys
+    
+    // Clean up
+    ar_path__destroy(own_only_separators);
+    ar_path__destroy(own_trailing_separator);
+    ar_path__destroy(own_leading_separator);
+}
+
 static void test_path__get_segment(void) {
     printf("Testing ar_path get_segment...\n");
     
@@ -176,40 +200,32 @@ static void test_path__get_segment(void) {
     ar_path__destroy(own_path);
 }
 
-static void test_path__get_segment_copy(void) {
-    printf("Testing ar_path get_segment_copy...\n");
+static void test_path__get_segment_edge_cases(void) {
+    printf("Testing ar_path get_segment edge cases...\n");
     
-    // Given a path
-    ar_path_t *own_path = ar_path__create("context.request.id", '.');
+    // Given a path with empty segments (matching ar_string test)
+    ar_path_t *own_path = ar_path__create("..key..end.", '.');
     
-    // When getting segment copies
-    char *own_segment0 = ar_path__get_segment_copy(own_path, 0);
-    char *own_segment1 = ar_path__get_segment_copy(own_path, 1);
-    char *own_segment2 = ar_path__get_segment_copy(own_path, 2);
-    char *own_segment_invalid = ar_path__get_segment_copy(own_path, 3);
+    // When getting segments
+    const char *seg0 = ar_path__get_segment(own_path, 0);
+    const char *seg1 = ar_path__get_segment(own_path, 1);
+    const char *seg2 = ar_path__get_segment(own_path, 2);
+    const char *seg3 = ar_path__get_segment(own_path, 3);
+    const char *seg4 = ar_path__get_segment(own_path, 4);
+    const char *seg5 = ar_path__get_segment(own_path, 5);
     
-    // Then segments should be correct copies
-    assert(own_segment0 != NULL);
-    assert(strcmp(own_segment0, "context") == 0);
-    assert(own_segment1 != NULL);
-    assert(strcmp(own_segment1, "request") == 0);
-    assert(own_segment2 != NULL);
-    assert(strcmp(own_segment2, "id") == 0);
-    assert(own_segment_invalid == NULL);  // Out of bounds
+    // Then segments should match ar_string behavior
+    assert(seg0 != NULL && strcmp(seg0, "") == 0);    // First empty
+    assert(seg1 != NULL && strcmp(seg1, "") == 0);    // Second empty
+    assert(seg2 != NULL && strcmp(seg2, "key") == 0); // "key"
+    assert(seg3 != NULL && strcmp(seg3, "") == 0);    // Third empty
+    assert(seg4 != NULL && strcmp(seg4, "end") == 0); // "end"
+    assert(seg5 != NULL && strcmp(seg5, "") == 0);    // Trailing empty
     
-    // Test that copies are different allocations
-    const char *ref_segment0 = ar_path__get_segment(own_path, 0);
-    assert(own_segment0 != ref_segment0);  // Different pointers
-    assert(strcmp(own_segment0, ref_segment0) == 0);  // Same content
-    
-    // Clean up owned copies
-    AR__HEAP__FREE(own_segment0);
-    AR__HEAP__FREE(own_segment1);
-    AR__HEAP__FREE(own_segment2);
-    
-    // Clean up path
+    // Clean up
     ar_path__destroy(own_path);
 }
+
 
 static void test_path__get_segment_with_null(void) {
     printf("Testing ar_path get_segment with NULL...\n");
@@ -217,12 +233,10 @@ static void test_path__get_segment_with_null(void) {
     // When getting segment count/segments from NULL
     size_t count = ar_path__get_segment_count(NULL);
     const char *segment = ar_path__get_segment(NULL, 0);
-    char *segment_copy = ar_path__get_segment_copy(NULL, 0);
     
     // Then all should handle NULL gracefully
     assert(count == 0);
     assert(segment == NULL);
-    assert(segment_copy == NULL);
 }
 
 static void test_path__get_parent(void) {
@@ -275,6 +289,38 @@ static void test_path__get_parent_with_null(void) {
     
     // Then should return NULL
     assert(parent == NULL);
+}
+
+static void test_path__get_parent_edge_cases(void) {
+    printf("Testing ar_path get_parent edge cases...\n");
+    
+    // Given edge case paths (matching ar_string tests)
+    ar_path_t *own_leading_separator = ar_path__create(".key.sub_key", '.');
+    ar_path_t *own_trailing_separator = ar_path__create("key.sub_key.", '.');
+    ar_path_t *own_only_separators = ar_path__create(".....", '.');
+    
+    // When getting parent paths
+    ar_path_t *own_parent_leading = ar_path__get_parent(own_leading_separator);
+    ar_path_t *own_parent_trailing = ar_path__get_parent(own_trailing_separator);
+    ar_path_t *own_parent_separators = ar_path__get_parent(own_only_separators);
+    
+    // Then results should match ar_string behavior
+    assert(own_parent_leading != NULL);
+    assert(strcmp(ar_path__get_string(own_parent_leading), ".key") == 0);
+    
+    assert(own_parent_trailing != NULL);
+    assert(strcmp(ar_path__get_string(own_parent_trailing), "key.sub_key") == 0);
+    
+    assert(own_parent_separators != NULL);
+    assert(strcmp(ar_path__get_string(own_parent_separators), "....") == 0);
+    
+    // Clean up
+    ar_path__destroy(own_leading_separator);
+    ar_path__destroy(own_trailing_separator);
+    ar_path__destroy(own_only_separators);
+    ar_path__destroy(own_parent_leading);
+    ar_path__destroy(own_parent_trailing);
+    ar_path__destroy(own_parent_separators);
 }
 
 static void test_path__starts_with(void) {
@@ -562,11 +608,13 @@ int main(void) {
     test_path__create_with_null();
     test_path__destroy_null();
     test_path__get_segment_count();
+    test_path__get_segment_count_edge_cases();
     test_path__get_segment();
-    test_path__get_segment_copy();
+    test_path__get_segment_edge_cases();
     test_path__get_segment_with_null();
     test_path__get_parent();
     test_path__get_parent_with_null();
+    test_path__get_parent_edge_cases();
     test_path__starts_with();
     test_path__starts_with_null();
     test_path__variable_functions();

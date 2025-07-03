@@ -96,6 +96,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Prefix checking functions (starts_with, is_memory_path, is_context_path, is_message_path)
   - [x] Replaces duplicated path logic across evaluators
   - [x] Zero memory leaks with comprehensive testing
+  - [x] Removed ar_path__get_segment_copy per YAGNI principle
   - [ ] TODO: Migrate evaluators to use ar_path instead of string manipulation
 
 #### 3. Extract Ownership Handling Utilities
