@@ -484,6 +484,16 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
   - Some have fixed argument counts (method: exactly 3, build: exactly 2)
 - **Always check**: Read existing tests to understand specific requirements
 
+**Generic Module Design Patterns**:
+- **Consider generic solutions**: User may suggest specific module (e.g., memory_path), but generic approach may be better
+- **Example**: Creating ar_path instead of ar_memory_path provides broader utility
+- **Benefits of generic design**:
+  - Reduces overall code duplication
+  - Provides reusable functionality
+  - Supports multiple use cases (variable paths, file paths)
+  - Better long-term maintainability
+- **Always propose generic alternative**: When user suggests specific module, explain generic benefits
+
 ### 14. Task Tool Guidelines
 
 **Core Rule**: Read before write - examine Task output before modifying

@@ -89,11 +89,14 @@ This document tracks pending tasks and improvements for the AgeRun project.
       - [x] This completes the transition to centralized error logging via ar_log
 
 #### 2. Extract Memory Path Utilities Module  
-- [ ] Create `ar_memory_path` module for memory path operations
-  - [ ] Move `_get_memory_key_path` function (duplicated in 6+ evaluators)
-  - [ ] Move `MEMORY_PREFIX` and `MEMORY_PREFIX_LEN` constants
-  - [ ] Add validation and error handling
-  - [ ] Ensure consistent memory path handling
+- [x] Create `ar_path` module for generic path operations (Completed 2025-07-03)
+  - [x] Implemented instantiable path objects with segment caching
+  - [x] Support for both variable paths (dot-separated) and file paths (slash-separated)
+  - [x] Path manipulation functions (join, normalize, get_parent)
+  - [x] Prefix checking functions (starts_with, is_memory_path, is_context_path, is_message_path)
+  - [x] Replaces duplicated path logic across evaluators
+  - [x] Zero memory leaks with comprehensive testing
+  - [ ] TODO: Migrate evaluators to use ar_path instead of string manipulation
 
 #### 3. Extract Ownership Handling Utilities
 - [ ] Create ownership handling utilities in appropriate module

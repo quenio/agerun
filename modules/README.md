@@ -862,6 +862,20 @@ The [semver module](ar_semver.md) provides semantic versioning support for the m
 - **Strict Validation**: Enforces semver rules like non-negative version components
 - **Extensible Design**: Supports future extensions like pre-release and build metadata
 
+### Path Module (`ar_path`)
+
+The [path module](ar_path.md) provides comprehensive path manipulation functionality for the AgeRun system:
+
+- **Instantiable Path Objects**: Creates path objects that cache parsed segments for efficient operations
+- **Multiple Path Types**: Supports variable paths (dot-separated) and file paths (slash-separated)
+- **Segment Operations**: Provides O(1) access to individual path segments by index
+- **Path Manipulation**: Supports joining paths, getting parent paths, and normalizing paths
+- **Prefix Operations**: Checks if paths start with given prefixes (e.g., "memory", "context")
+- **Variable Path Support**: Built-in functions to identify memory, context, and message paths
+- **Memory Safe**: All functions handle NULL inputs gracefully with clear ownership semantics
+- **Minimal Dependencies**: Only depends on heap tracking and standard C library
+- **Migration Path**: Replaces path-related functions from ar_string module
+
 ### Event Module (`ar_event`)
 
 The [event module](ar_event.md) provides event representation for error handling and logging throughout the system:
