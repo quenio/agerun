@@ -73,11 +73,14 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] Expression parser updated to use ar_log with position tracking (Completed 2025-07-01)
     - [x] All instruction parsers updated to use ar_log (Completed 2025-07-01)
     - [x] Method parser propagates ar_log to instruction parser (Completed 2025-07-01)
-    - [ ] Update method module to accept ar_log parameter and propagate to method parser
+    - [ ] BLOCKED: Update method module to accept ar_log parameter and propagate to method parser
+      - [ ] Cannot proceed until methodology module is refactored from singleton to instantiable
+      - [ ] Methodology singleton pattern prevents proper ar_log propagation
       - [ ] Add ar_log parameter to ar_method__create() function
       - [ ] Pass ar_log from method creation to method parser
       - [ ] Update all method creation call sites to pass ar_log instance
       - [ ] This ensures complete log propagation from top-level through entire parsing hierarchy
+      - [ ] See "Refactor Methodology Module to Instantiable" task in High Priority section
     - [x] Remove legacy error handling from parsers now that ar_log is integrated (Completed 2025-07-02)
       - [x] Remove get_error() and get_error_position() functions from all parser modules
       - [x] Remove error message and error position fields from parser structs
@@ -336,6 +339,29 @@ This document tracks pending tasks and improvements for the AgeRun project.
 **Remaining TDD Cycles**:
 - [ ] TDD Cycle 11: Error handling
 - [ ] TDD Cycle 12-13: Integrate with method module
+
+### HIGH PRIORITY - Refactor Methodology Module to Instantiable (Required for ar_log)
+
+**Problem**: Methodology is currently a singleton, preventing proper ar_log propagation to method creation.
+
+**Status**: Discovered during ar_log integration attempt (2025-07-02). The singleton pattern in methodology prevents passing ar_log through the hierarchy.
+
+- [ ] Make methodology instantiable instead of singleton
+  - [ ] Add ar_methodology__create(ar_log_t *ref_log) function
+  - [ ] Add ar_methodology__destroy() function  
+  - [ ] Store ar_log reference in methodology instance
+  - [ ] Pass ar_log to all ar_method__create calls
+- [ ] Update all callers to create/manage methodology instances
+  - [ ] System module creates methodology with ar_log
+  - [ ] Agent module accesses methodology through system
+  - [ ] Tests create their own methodology instances
+- [ ] Remove global state from methodology implementation
+  - [ ] Convert static arrays to dynamic allocations
+  - [ ] Move method storage into instance struct
+  - [ ] Ensure thread safety if needed
+- [ ] Update methodology persistence
+  - [ ] Pass file operations through instance methods
+  - [ ] Consider per-instance persistence files
 
 ### HIGH PRIORITY - Complete Instruction and Expression Module Refactoring
 
