@@ -412,7 +412,8 @@ Never compile directly with gcc.
 5. Update CHANGELOG.md (NON-NEGOTIABLE)
 6. `git diff` - Verify all changes intentional
 7. Check for backup files outside ./bin (*.backup, *.bak, *.tmp)
-8. Only then: `git commit`
+8. Remove any log files: `find . -name "*.log" -type f | grep -v bin/ | xargs rm -f`
+9. Only then: `git commit`
 
 **Remember**: Complete ALL TDD Cycles → Docs → TODO → CHANGELOG → Commit
 
