@@ -515,6 +515,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - Cross-platform modules where C portability becomes complex
 - New modules that would benefit from compile-time safety guarantees
 - Components requiring precise memory layout control
+- Pure computation modules (parsers, validators) - often need no heap
 
 **Key Zig Features for AgeRun**:
 - **Manual Memory Management**: Aligns with AgeRun's ownership model
@@ -533,6 +534,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - Debug detection: `builtin.mode == .Debug or builtin.mode == .ReleaseSafe` (not `#ifdef DEBUG`)
 - Exit-time safety: Check `!g_initialized` early, never call init during cleanup
 - Avoid C macros returning void/anyopaque (e.g., AR_ASSERT_*)
+- Audit dependencies before conversion - remove unused includes
 - Delete C file when creating Zig replacement + update all .md refs (no Makefile changes needed)
 - Zig funcs use same `ar_<module>__<function>` naming as C
 - Clean imports (inline functions only): `const ar_assert = @import("ar_assert.zig"); const ar_assert__func = ar_assert.ar_assert__func;`
