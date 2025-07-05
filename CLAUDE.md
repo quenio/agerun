@@ -528,9 +528,11 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - Use Zig's allocator pattern with AgeRun's heap tracking
 - Compile-time validation for method language constraints
 - Zero-cost abstractions for performance-critical paths
-- Type mappings: `c_int`→`c_int`, `char*`→`?[*:0]u8`, `c_uchar`→`u8`
+- Type mappings: `c_int`→`c_int`, `char*`→`?[*:0]u8`, `c_uchar`→`u8`, string literals→`@as([*c]const u8, "str")`
+- Debug detection: `builtin.mode == .Debug or builtin.mode == .ReleaseSafe` (not `#ifdef DEBUG`)
+- Exit-time safety: Check `!g_initialized` early, never call init during cleanup
 - Avoid C macros returning void/anyopaque (e.g., AR_ASSERT_*)
-- Delete C file when creating Zig replacement (no Makefile changes needed)
+- Delete C file when creating Zig replacement + update all .md refs (no Makefile changes needed)
 - Zig funcs use same `ar_<module>__<function>` naming as C
 - Clean imports: `const ar_assert = @import("ar_assert.zig"); const ar_assert__func = ar_assert.ar_assert__func;`
 - Create ar_assert.zig for Zig modules (C modules keep using ar_assert.h macros)
