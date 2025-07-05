@@ -52,8 +52,8 @@ endif
 
 # Source files (excluding test files)
 ALL_C_FILES = $(wildcard modules/*.c)
-# Exclude ar_string.c and ar_assert.c since we're using Zig implementations
-C_SRC = $(filter-out modules/ar_string.c modules/ar_assert.c %_tests.c %_fixture_tests.c,$(ALL_C_FILES))
+# Exclude test files
+C_SRC = $(filter-out %_tests.c %_fixture_tests.c,$(ALL_C_FILES))
 ZIG_SRC = $(wildcard modules/*.zig)
 C_OBJ = $(patsubst modules/%.c,bin/obj/%.o,$(C_SRC))
 ZIG_OBJ = $(patsubst modules/%.zig,bin/obj/%.o,$(ZIG_SRC))
