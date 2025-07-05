@@ -527,6 +527,9 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - Use Zig's allocator pattern with AgeRun's heap tracking
 - Compile-time validation for method language constraints
 - Zero-cost abstractions for performance-critical paths
+- Type mappings: `c_int`→`c_int`, `char*`→`?[*:0]u8`, `c_uchar`→`u8`
+- Avoid C macros returning void/anyopaque (e.g., AR_ASSERT_*)
+- Exclude C source when Zig replacement exists in Makefile
 
 **Example Integration Pattern**:
 ```zig
@@ -550,6 +553,8 @@ export fn ar_zigmodule__create() ?*c.data_t {
 - Create hybrid build rules for C/Zig modules
 - Maintain consistent test infrastructure
 - Use Zig's built-in testing alongside AgeRun tests
+- Verify Zig builds: check strings in .o for "zig X.X.X"
+- Pattern rule: `$(ZIG) build-obj -O ReleaseSafe -target native`
 
 ## AgeRun Language Notes
 
