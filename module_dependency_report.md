@@ -121,7 +121,7 @@ This report analyzes the dependencies between AgeRun modules by examining #inclu
 ### ar_expression.c
 - **Direct includes**: ar_expression.h, ar_string.h, ar_data.h, ar_list.h, ar_map.h, ar_heap.h
 
-### ar_heap.c
+### ar_heap.zig
 - **Direct includes**: ar_heap.h, ar_io.h
 
 ### ar_instruction.c
