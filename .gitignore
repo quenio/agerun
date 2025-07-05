@@ -62,7 +62,6 @@ dkms.conf
 build/
 bin/
 
-# Debug logs
-debug*.log
-heap_memory_report.log
+# Log files
+*.log
 **/.claude/settings.local.json
