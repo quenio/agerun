@@ -535,6 +535,8 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - Delete C file when creating Zig replacement + update all .md refs (no Makefile changes needed)
 - Zig funcs use same `ar_<module>__<function>` naming as C
 - Clean imports: `const ar_assert = @import("ar_assert.zig"); const ar_assert__func = ar_assert.ar_assert__func;`
+- C header imports: Keep related headers in same @cImport block (macros need dependencies)
+- Zig modules with exports: Access via C headers to avoid duplicate symbols at link time
 - Create ar_assert.zig for Zig modules (C modules keep using ar_assert.h macros)
 
 **Example Integration Pattern**:
