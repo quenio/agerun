@@ -507,6 +507,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 ### 15. Leveraging Zig for AgeRun Development
 
 **Zig Documentation Reference**: https://ziglang.org/documentation/0.14.1/
+**C Interop Guide**: https://ziglang.org/documentation/0.14.1/#C - Follow for full C compatibility
 
 **When to Consider Zig**:
 - Performance-critical components requiring zero-cost abstractions
