@@ -282,7 +282,7 @@ while (*p) {
 **Naming Patterns** (verify with grep before large changes):
 | Type | Pattern | Example |
 |------|---------|---------|
-| Module functions | `ar_<module>__<function>` | `ar_data__create_map()` |
+| Module functions | `ar_<module>__<function>` | `ar_data__create_map()` (C & Zig) |
 | Static functions | `_<function>` | `_validate_file()` |
 | Test functions | `test_<module>__<name>` | `test_string__trim()` |
 | Heap macros | `AR__HEAP__<OP>` | `AR__HEAP__MALLOC` |
@@ -530,7 +530,10 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - Zero-cost abstractions for performance-critical paths
 - Type mappings: `c_int`→`c_int`, `char*`→`?[*:0]u8`, `c_uchar`→`u8`
 - Avoid C macros returning void/anyopaque (e.g., AR_ASSERT_*)
-- Exclude C source when Zig replacement exists in Makefile
+- Delete C file when creating Zig replacement (no Makefile changes needed)
+- Zig funcs use same `ar_<module>__<function>` naming as C
+- Clean imports: `const ar_assert = @import("ar_assert.zig"); const ar_assert__func = ar_assert.ar_assert__func;`
+- Create ar_assert.zig for Zig modules (C modules keep using ar_assert.h macros)
 
 **Example Integration Pattern**:
 ```zig
