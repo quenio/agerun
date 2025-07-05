@@ -282,6 +282,10 @@ The IO module is designed to work across different platforms with specific adapt
 - **Unix/Linux/macOS**: Uses POSIX-compliant file operations (`chmod`)
 - **Cross-Platform API**: Maintains a consistent API across all platforms
 
+## Implementation Notes
+
+This module is implemented in Zig (`ar_io.zig`) while maintaining full C ABI compatibility. The Zig implementation provides additional memory safety guarantees while preserving the exact same interface and behavior as the original C implementation.
+
 ## Dependencies
 
 The IO module is a foundational module with minimal dependencies:

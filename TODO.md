@@ -47,6 +47,15 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Zero memory leaks across all tests
 - [x] Full documentation for both modules
 
+### ar_io Module Zig Conversion (Completed 2025-07-05)
+- [x] Converted ar_io.c to ar_io.zig with full C compatibility
+- [x] Maintained exact C API - header file unchanged
+- [x] Resolved circular dependency with ar_heap by using stack allocation
+- [x] Platform-specific handling for macOS (stderr/stdout as functions)
+- [x] Proper errno access through helper functions
+- [x] All 26 tests pass without modification
+- [x] Updated ar_io.md to note Zig implementation
+
 ### ar_heap Module Zig Conversion (Completed 2025-07-05)
 - [x] Converted ar_heap.c to ar_heap.zig with full C compatibility
 - [x] Maintained exact C API - header file unchanged

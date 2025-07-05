@@ -2,7 +2,9 @@
 
 ## What is a Module?
 
-In the AgeRun system, a module is a self-contained unit of functionality that consists of an implementation file (`.c`) and a header file (`.h`). Each module encapsulates a specific set of related functions and data structures that work together to provide a particular capability to the system. Modules are designed to have clear interfaces and dependencies, making the system more maintainable and easier to understand.
+In the AgeRun system, a module is a self-contained unit of functionality that consists of an implementation file (`.c` or `.zig`) and a header file (`.h`). Each module encapsulates a specific set of related functions and data structures that work together to provide a particular capability to the system. Modules are designed to have clear interfaces and dependencies, making the system more maintainable and easier to understand.
+
+**Zig Integration**: Some modules are now implemented in Zig (`.zig` files) while maintaining full C ABI compatibility. Currently implemented in Zig: `ar_assert`, `ar_heap`, `ar_io`, and `ar_string`.
 
 Each module typically follows a consistent naming convention with an `ar_` prefix (e.g., `ar_data`, `ar_string`), and has its own test file (`ar_*_tests.c`) that verifies its functionality. Note: File names are being transitioned from `ar_` to `ar_` prefix gradually as files are modified for other reasons.
 
@@ -91,8 +93,9 @@ This tree illustrates the dependency relationships between modules in the AgeRun
 
 Each module depends on the modules listed under it (its children in the tree). For example, `ar_executable` depends on both `ar_system` and `ar_methodology` in its implementation.
 
-**Note**: The `ar_heap` and `ar_io` modules are not shown as top-level entries in the tree to avoid clutter, as they are used by many modules. However, there is one remaining circular dependency:
-- `ar_heap` ↔ `ar_io`*: heap uses io for error reporting, while io uses heap for memory tracking. This is a fundamental design challenge where memory tracking needs error reporting.
+**Note**: The `ar_heap` and `ar_io` modules are not shown as top-level entries in the tree to avoid clutter, as they are used by many modules. The previous circular dependency between these modules has been resolved:
+- `ar_heap` → `ar_io`: heap uses io for error reporting (one-way dependency)
+- `ar_io` (Zig implementation): uses stack allocation instead of heap, breaking the circular dependency
 
 ```
 Main Modules:
@@ -108,8 +111,8 @@ ar_system
 │       ├──h──> ar_data
 │       │       ├──h──> ar_map
 │       │       ├──h──> ar_list
-│       │       ├──c──> ar_string
-│       │       └──c──> ar_assert
+│       │       ├──c──> ar_string (Zig)
+│       │       └──c──> ar_assert (Zig)
 │       ├──h──> ar_list
 │       ├──c──> ar_method
 │       │       ├──h──> ar_data
@@ -118,24 +121,24 @@ ar_system
 │       │       │       │       ├──h──> ar_data
 │       │       │       │       ├──c──> ar_expression
 │       │       │       │       │       ├──h──> ar_data
-│       │       │       │       │       ├──c──> ar_string
+│       │       │       │       │       ├──c──> ar_string (Zig)
 │       │       │       │       │       ├──c──> ar_list
 │       │       │       │       │       └──c──> ar_map
-│       │       │       │       ├──c──> ar_string
-│       │       │       │       └──c──> ar_assert
+│       │       │       │       ├──c──> ar_string (Zig)
+│       │       │       │       └──c──> ar_assert (Zig)
 │       │       │       ├──c──> ar_agency
 │       │       │       ├──c──> ar_agent
-│       │       │       ├──c──> ar_string
+│       │       │       ├──c──> ar_string (Zig)
 │       │       │       ├──c──> ar_data
 │       │       │       ├──c──> ar_expression
 │       │       │       ├──c──> ar_map
 │       │       │       ├──c──> ar_methodology
-│       │       │       └──c──> ar_assert
-│       │       ├──c──> ar_string
+│       │       │       └──c──> ar_assert (Zig)
+│       │       ├──c──> ar_string (Zig)
 │       │       ├──c──> ar_agent
 │       │       ├──c──> ar_agency
 │       │       ├──c──> ar_map
-│       │       └──c──> ar_assert
+│       │       └──c──> ar_assert (Zig)
 │       ├──c──> ar_methodology
 │       └──c──> ar_map
 ├──c──> ar_method
@@ -143,9 +146,9 @@ ar_system
 │       ├──h──> ar_method
 │       ├──c──> ar_semver
 │       ├──c──> ar_agency
-│       ├──c──> ar_io
-│       ├──c──> ar_string
-│       └──c──> ar_assert
+│       ├──c──> ar_io (Zig)
+│       ├──c──> ar_string (Zig)
+│       └──c──> ar_assert (Zig)
 ├──c──> ar_agency
 │       ├──h──> ar_data
 │       ├──h──> ar_agent_registry
@@ -155,7 +158,7 @@ ar_system
 │       ├──c──> ar_agent
 │       ├──c──> ar_agent_store
 │       │       ├──h──> ar_agent_registry
-│       │       ├──c──> ar_io
+│       │       ├──c──> ar_io (Zig)
 │       │       ├──c──> ar_agent
 │       │       ├──c──> ar_method
 │       │       ├──c──> ar_data
@@ -165,94 +168,94 @@ ar_system
 │               ├──h──> ar_method
 │               ├──c──> ar_agent
 │               ├──c──> ar_semver
-│               └──c──> ar_io
+│               └──c──> ar_io (Zig)
 ├──c──> ar_data
 ├──c──> ar_list
 └──c──> ar_map
 
 ar_expression_ast
 ├──c──> ar_list
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_instruction_ast
 ├──c──> ar_list
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_method_ast
 ├──c──> ar_list
 ├──c──> ar_instruction_ast
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_instruction_parser
 ├──c──> ar_instruction_ast
 │       ├──c──> ar_list
-│       └──c──> ar_heap
+│       └──c──> ar_heap (Zig)
 ├──c──> ar_list
-├──c──> ar_string
-└──c──> ar_heap
+├──c──> ar_string (Zig)
+└──c──> ar_heap (Zig)
 
 ar_assignment_instruction_parser
 ├──c──> ar_instruction_ast
 │       ├──c──> ar_list
-│       └──c──> ar_heap
-└──c──> ar_heap
+│       └──c──> ar_heap (Zig)
+└──c──> ar_heap (Zig)
 
 ar_send_instruction_parser
 ├──c──> ar_instruction_ast
 │       ├──c──> ar_list
-│       └──c──> ar_heap
-├──c──> ar_string
-└──c──> ar_heap
+│       └──c──> ar_heap (Zig)
+├──c──> ar_string (Zig)
+└──c──> ar_heap (Zig)
 
 ar_condition_instruction_parser
 ├──c──> ar_instruction_ast
 │       ├──c──> ar_list
-│       └──c──> ar_heap
-├──c──> ar_string
-└──c──> ar_heap
+│       └──c──> ar_heap (Zig)
+├──c──> ar_string (Zig)
+└──c──> ar_heap (Zig)
 
 ar_parse_instruction_parser
 ├──c──> ar_instruction_ast
 │       ├──c──> ar_list
-│       └──c──> ar_heap
-├──c──> ar_string
-└──c──> ar_heap
+│       └──c──> ar_heap (Zig)
+├──c──> ar_string (Zig)
+└──c──> ar_heap (Zig)
 
 ar_build_instruction_parser
 ├──c──> ar_instruction_ast
 │       ├──c──> ar_list
-│       └──c──> ar_heap
-├──c──> ar_string
-└──c──> ar_heap
+│       └──c──> ar_heap (Zig)
+├──c──> ar_string (Zig)
+└──c──> ar_heap (Zig)
 
 ar_method_instruction_parser
 ├──c──> ar_instruction_ast
 │       ├──c──> ar_list
-│       └──c──> ar_heap
-├──c──> ar_string
-└──c──> ar_heap
+│       └──c──> ar_heap (Zig)
+├──c──> ar_string (Zig)
+└──c──> ar_heap (Zig)
 
 ar_agent_instruction_parser
 ├──c──> ar_instruction_ast
 │       ├──c──> ar_list
-│       └──c──> ar_heap
-├──c──> ar_string
-└──c──> ar_heap
+│       └──c──> ar_heap (Zig)
+├──c──> ar_string (Zig)
+└──c──> ar_heap (Zig)
 
 ar_expression_parser
 ├──c──> ar_expression_ast
 │       ├──c──> ar_list
-│       └──c──> ar_heap
+│       └──c──> ar_heap (Zig)
 ├──c──> ar_list
-├──c──> ar_string
-└──c──> ar_heap
+├──c──> ar_string (Zig)
+└──c──> ar_heap (Zig)
 
 ar_expression_evaluator
 ├──h──> ar_expression_ast
 ├──h──> ar_data
-├──c──> ar_string
-├──c──> ar_io
-└──c──> ar_heap
+├──c──> ar_string (Zig)
+├──c──> ar_io (Zig)
+└──c──> ar_heap (Zig)
 
 ar_frame
 └──h──> ar_data
@@ -267,8 +270,8 @@ ar_instruction_evaluator
 │       ├──h──> ar_data
 │       ├──c──> ar_expression_parser
 │       ├──c──> ar_expression_ast
-│       ├──c──> ar_string
-│       └──c──> ar_heap
+│       ├──c──> ar_string (Zig)
+│       └──c──> ar_heap (Zig)
 ├──c──> ar_send_instruction_evaluator
 │       ├──h──> ar_expression_evaluator
 │       ├──h──> ar_instruction_ast
@@ -276,16 +279,16 @@ ar_instruction_evaluator
 │       ├──c──> ar_expression_parser
 │       ├──c──> ar_expression_ast
 │       ├──c──> ar_agency
-│       ├──c──> ar_string
-│       └──c──> ar_heap
+│       ├──c──> ar_string (Zig)
+│       └──c──> ar_heap (Zig)
 ├──c──> ar_condition_instruction_evaluator
 │       ├──h──> ar_expression_evaluator
 │       ├──h──> ar_instruction_ast
 │       ├──h──> ar_data
 │       ├──c──> ar_expression_parser
 │       ├──c──> ar_expression_ast
-│       ├──c──> ar_string
-│       └──c──> ar_heap
+│       ├──c──> ar_string (Zig)
+│       └──c──> ar_heap (Zig)
 ├──c──> ar_parse_instruction_evaluator
 │       ├──h──> ar_expression_evaluator
 │       ├──h──> ar_instruction_ast
@@ -293,16 +296,16 @@ ar_instruction_evaluator
 │       ├──c──> ar_expression_parser
 │       ├──c──> ar_expression_ast
 │       ├──c──> ar_instruction
-│       ├──c──> ar_string
-│       └──c──> ar_heap
+│       ├──c──> ar_string (Zig)
+│       └──c──> ar_heap (Zig)
 ├──c──> ar_build_instruction_evaluator
 │       ├──h──> ar_expression_evaluator
 │       ├──h──> ar_instruction_ast
 │       ├──h──> ar_data
 │       ├──c──> ar_expression_parser
 │       ├──c──> ar_expression_ast
-│       ├──c──> ar_string
-│       └──c──> ar_heap
+│       ├──c──> ar_string (Zig)
+│       └──c──> ar_heap (Zig)
 ├──c──> ar_method_instruction_evaluator
 │       ├──h──> ar_expression_evaluator
 │       ├──h──> ar_instruction_ast
@@ -311,8 +314,8 @@ ar_instruction_evaluator
 │       ├──c──> ar_expression_ast
 │       ├──c──> ar_methodology
 │       ├──c──> ar_method
-│       ├──c──> ar_string
-│       └──c──> ar_heap
+│       ├──c──> ar_string (Zig)
+│       └──c──> ar_heap (Zig)
 ├──c──> ar_agent_instruction_evaluator
 │       ├──h──> ar_expression_evaluator
 │       ├──h──> ar_instruction_ast
@@ -322,8 +325,8 @@ ar_instruction_evaluator
 │       ├──c──> ar_agency
 │       ├──c──> ar_method
 │       ├──c──> ar_methodology
-│       ├──c──> ar_string
-│       └──c──> ar_heap
+│       ├──c──> ar_string (Zig)
+│       └──c──> ar_heap (Zig)
 ├──c──> ar_destroy_agent_instruction_evaluator
 │       ├──h──> ar_expression_evaluator
 │       ├──h──> ar_instruction_ast
@@ -331,7 +334,7 @@ ar_instruction_evaluator
 │       ├──c──> ar_expression_parser
 │       ├──c──> ar_expression_ast
 │       ├──c──> ar_agency
-│       └──c──> ar_heap
+│       └──c──> ar_heap (Zig)
 ├──c──> ar_destroy_method_instruction_evaluator
 │       ├──h──> ar_expression_evaluator
 │       ├──h──> ar_instruction_ast
@@ -341,36 +344,36 @@ ar_instruction_evaluator
 │       ├──c──> ar_agency
 │       ├──c──> ar_method
 │       ├──c──> ar_methodology
-│       └──c──> ar_heap
-└──c──> ar_heap
+│       └──c──> ar_heap (Zig)
+└──c──> ar_heap (Zig)
 
 Fixture Modules:
 ar_method_fixture
 ├──c──> ar_system
 ├──c──> ar_methodology
 ├──c──> ar_agency
-├──c──> ar_io
-└──c──> ar_heap
+├──c──> ar_io (Zig)
+└──c──> ar_heap (Zig)
 
 ar_system_fixture
 ├──c──> ar_system
 ├──c──> ar_methodology
 ├──c──> ar_agency
 ├──c──> ar_method
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_instruction_fixture
 ├──h──> ar_data
 ├──h──> ar_expression
 ├──c──> ar_list
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_interpreter_fixture
 ├──h──> ar_interpreter
 ├──h──> ar_instruction
 ├──h──> ar_data
 ├──h──> ar_method
-├──c──> ar_heap
+├──c──> ar_heap (Zig)
 ├──c──> ar_list
 ├──c──> ar_agency
 ├──c──> ar_methodology
@@ -396,64 +399,64 @@ Test files often have different dependency patterns than their corresponding mod
 Core Tests:
 ar_assert_tests
 ├──c──> ar_assert (module under test)
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_heap_tests
 └──c──> ar_heap (module under test)
 
 ar_string_tests
 ├──c──> ar_string (module under test)
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_list_tests
 ├──c──> ar_list (module under test)
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_map_tests
 ├──c──> ar_map (module under test)
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_semver_tests
 ├──c──> ar_semver (module under test)
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 Foundation Tests:
 ar_data_tests
 ├──c──> ar_data (module under test)
-├──c──> ar_string
+├──c──> ar_string (Zig)
 ├──c──> ar_map
 ├──c──> ar_list
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_expression_tests
 ├──c──> ar_expression (module under test)
 ├──c──> ar_data
-├──c──> ar_string
+├──c──> ar_string (Zig)
 ├──c──> ar_list
 ├──c──> ar_map
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_expression_ast_tests
 ├──c──> ar_expression_ast (module under test)
 ├──c──> ar_list
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_expression_parser_tests
 ├──c──> ar_expression_parser (module under test)
 ├──c──> ar_expression_ast
 ├──c──> ar_list
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_expression_evaluator_tests
 ├──c──> ar_expression_evaluator (module under test)
 ├──c──> ar_expression_ast
 ├──c──> ar_data
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_frame_tests
 ├──c──> ar_frame (module under test)
 ├──c──> ar_data
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_assignment_instruction_evaluator_tests
 ├──c──> ar_assignment_instruction_evaluator (module under test)
@@ -461,7 +464,7 @@ ar_assignment_instruction_evaluator_tests
 ├──c──> ar_expression_evaluator
 ├──c──> ar_instruction_ast
 ├──c──> ar_data
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_send_instruction_evaluator_tests
 ├──c──> ar_send_instruction_evaluator (module under test)
@@ -470,7 +473,7 @@ ar_send_instruction_evaluator_tests
 ├──c──> ar_instruction_ast
 ├──c──> ar_agency
 ├──c──> ar_data
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_condition_instruction_evaluator_tests
 ├──c──> ar_condition_instruction_evaluator (module under test)
@@ -478,7 +481,7 @@ ar_condition_instruction_evaluator_tests
 ├──c──> ar_expression_evaluator
 ├──c──> ar_instruction_ast
 ├──c──> ar_data
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_parse_instruction_evaluator_tests
 ├──c──> ar_parse_instruction_evaluator (module under test)
@@ -486,7 +489,7 @@ ar_parse_instruction_evaluator_tests
 ├──c──> ar_expression_evaluator
 ├──c──> ar_instruction_ast
 ├──c──> ar_data
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_build_instruction_evaluator_tests
 ├──c──> ar_build_instruction_evaluator (module under test)
@@ -494,7 +497,7 @@ ar_build_instruction_evaluator_tests
 ├──c──> ar_expression_evaluator
 ├──c──> ar_instruction_ast
 ├──c──> ar_data
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_method_instruction_evaluator_tests
 ├──c──> ar_method_instruction_evaluator (module under test)
@@ -504,7 +507,7 @@ ar_method_instruction_evaluator_tests
 ├──c──> ar_methodology
 ├──c──> ar_system
 ├──c──> ar_data
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_agent_instruction_evaluator_tests
 ├──c──> ar_agent_instruction_evaluator (module under test)
@@ -515,7 +518,7 @@ ar_agent_instruction_evaluator_tests
 ├──c──> ar_methodology
 ├──c──> ar_system
 ├──c──> ar_data
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_instruction_evaluator_tests
 ├──c──> ar_instruction_evaluator (module under test)
@@ -526,73 +529,73 @@ ar_instruction_evaluator_tests
 ├──c──> ar_method
 ├──c──> ar_system
 ├──c──> ar_data
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_instruction_tests
 ├──c──> ar_instruction (module under test)
 ├──c──> ar_data
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_instruction_ast_tests
 ├──c──> ar_instruction_ast (module under test)
 ├──c──> ar_list
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_method_ast_tests
 ├──c──> ar_method_ast (module under test)
 ├──c──> ar_instruction_ast
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_method_parser_tests
 ├──c──> ar_method_parser (module under test)
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_instruction_parser_tests
 ├──c──> ar_instruction_parser (module under test)
 ├──c──> ar_instruction_ast
 ├──c──> ar_list
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_assignment_instruction_parser_tests
 ├──c──> ar_assignment_instruction_parser (module under test)
 ├──c──> ar_instruction_ast
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_send_instruction_parser_tests
 ├──c──> ar_send_instruction_parser (module under test)
 ├──c──> ar_instruction_ast
 ├──c──> ar_list
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_condition_instruction_parser_tests
 ├──c──> ar_condition_instruction_parser (module under test)
 ├──c──> ar_instruction_ast
 ├──c──> ar_list
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_parse_instruction_parser_tests
 ├──c──> ar_parse_instruction_parser (module under test)
 ├──c──> ar_instruction_ast
 ├──c──> ar_list
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_build_instruction_parser_tests
 ├──c──> ar_build_instruction_parser (module under test)
 ├──c──> ar_instruction_ast
 ├──c──> ar_list
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_method_instruction_parser_tests
 ├──c──> ar_method_instruction_parser (module under test)
 ├──c──> ar_instruction_ast
 ├──c──> ar_list
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_agent_instruction_parser_tests
 ├──c──> ar_agent_instruction_parser (module under test)
 ├──c──> ar_instruction_ast
 ├──c──> ar_list
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_interpreter_tests
 ├──c──> ar_interpreter (module under test)
@@ -603,21 +606,21 @@ ar_interpreter_tests
 ├──c──> ar_agency
 ├──c──> ar_system
 ├──c──> ar_data
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_method_tests
 ├──c──> ar_method (module under test)
 ├──c──> ar_system_fixture
 ├──c──> ar_data
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_methodology_tests
 ├──c──> ar_methodology (module under test)
 ├──c──> ar_method
 ├──c──> ar_system
 ├──c──> ar_agency
-├──c──> ar_io
-└──c──> ar_heap
+├──c──> ar_io (Zig)
+└──c──> ar_heap (Zig)
 
 System Tests:
 ar_agent_tests
@@ -627,13 +630,13 @@ ar_agent_tests
 ├──c──> ar_method
 ├──c──> ar_methodology
 ├──c──> ar_data
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_agent_registry_tests
 ├──c──> ar_agent_registry (module under test)
 ├──c──> ar_agent
 ├──c──> ar_data
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_agent_store_tests
 ├──c──> ar_agent_store (module under test)
@@ -644,8 +647,8 @@ ar_agent_store_tests
 ├──c──> ar_method
 ├──c──> ar_methodology
 ├──c──> ar_data
-├──c──> ar_io
-└──c──> ar_heap
+├──c──> ar_io (Zig)
+└──c──> ar_heap (Zig)
 
 ar_agent_update_tests
 ├──c──> ar_agent_update (module under test)
@@ -657,7 +660,7 @@ ar_agent_update_tests
 ├──c──> ar_methodology
 ├──c──> ar_semver
 ├──c──> ar_data
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_agency_tests
 ├──c──> ar_agency (module under test)
@@ -666,7 +669,7 @@ ar_agency_tests
 ├──c──> ar_method
 ├──c──> ar_methodology
 ├──c──> ar_data
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_system_tests
 ├──c──> ar_system (module under test)
@@ -676,15 +679,15 @@ ar_system_tests
 ├──c──> ar_methodology
 ├──c──> ar_data
 ├──c──> ar_list
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_executable_tests
 ├──c──> ar_executable (module under test)
 ├──c──> ar_system
 ├──c──> ar_methodology
 ├──c──> ar_agency
-├──c──> ar_io
-└──c──> ar_heap
+├──c──> ar_io (Zig)
+└──c──> ar_heap (Zig)
 
 Fixture Tests:
 ar_method_fixture_tests
@@ -692,8 +695,8 @@ ar_method_fixture_tests
 ├──c──> ar_methodology
 ├──c──> ar_system
 ├──c──> ar_agency
-├──c──> ar_io
-└──c──> ar_heap
+├──c──> ar_io (Zig)
+└──c──> ar_heap (Zig)
 
 ar_system_fixture_tests
 ├──c──> ar_system_fixture (module under test)
@@ -701,14 +704,14 @@ ar_system_fixture_tests
 ├──c──> ar_methodology
 ├──c──> ar_method
 ├──c──> ar_data
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_instruction_fixture_tests
 ├──c──> ar_instruction_fixture (module under test)
 ├──c──> ar_data
 ├──c──> ar_expression
 ├──c──> ar_list
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 
 ar_interpreter_fixture_tests
 ├──c──> ar_interpreter_fixture (module under test)
@@ -716,7 +719,7 @@ ar_interpreter_fixture_tests
 ├──c──> ar_system
 ├──c──> ar_methodology
 ├──c──> ar_data
-└──c──> ar_heap
+└──c──> ar_heap (Zig)
 ```
 
 **Key Observations:**

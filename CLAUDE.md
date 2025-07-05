@@ -539,6 +539,9 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - C header imports: Keep related headers in same @cImport block (macros need dependencies)
 - Zig modules with exports: Access via C headers to avoid duplicate symbols at link time
 - Create ar_assert.zig for Zig modules (C modules keep using ar_assert.h macros)
+- Circular dependencies: Use stack allocation to break heap→io→heap cycles
+- Platform differences: Handle stderr/stdout as functions on macOS with c.stderr()
+- errno access: Create helper functions like getErrno() for cross-platform compatibility
 
 **Example Integration Pattern**:
 ```zig

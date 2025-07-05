@@ -61,6 +61,7 @@ This report analyzes the dependencies between AgeRun modules by examining #inclu
 
 ### ar_io.h
 - **Includes**: None
+- **Implementation**: ar_io.zig (Zig implementation with C ABI compatibility)
 
 ### ar_list.h
 - **Includes**: None
@@ -136,8 +137,9 @@ This report analyzes the dependencies between AgeRun modules by examining #inclu
 ### ar_interpreter_fixture.c
 - **Direct includes**: ar_interpreter_fixture.h, ar_heap.h, ar_list.h, ar_agency.h, ar_methodology.h, ar_system.h
 
-### ar_io.c
-- **Direct includes**: ar_io.h, ar_heap.h
+### ar_io.zig
+- **Direct includes**: ar_io.h (exports C ABI)
+- **Note**: Uses stack allocation to avoid ar_heap dependency (resolves circular dependency)
 
 ### ar_list.c
 - **Direct includes**: ar_list.h, ar_heap.h
