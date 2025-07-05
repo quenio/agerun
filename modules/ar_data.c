@@ -3,6 +3,7 @@
 #include "ar_list.h"
 #include "ar_assert.h"
 #include "ar_heap.h"
+#include "ar_path.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -603,8 +604,14 @@ data_t *ar_data__get_map_data(const data_t *ref_data, const char *ref_key) {
         return ar_map__get(ref_map, ref_key);
     }
     
+    // Create a path object for parsing
+    ar_path_t *own_path = ar_path__create_variable(ref_key);
+    if (!own_path) {
+        return NULL;
+    }
+    
     // Count path segments for multi-segment paths
-    size_t segment_count = ar_string__path_count(ref_key, '.');
+    size_t segment_count = ar_path__get_segment_count(own_path);
     
     // Keep track of current data as we traverse the path
     data_t *result = NULL;
@@ -613,36 +620,37 @@ data_t *ar_data__get_map_data(const data_t *ref_data, const char *ref_key) {
     // Process each segment
     for (size_t i = 0; i < segment_count; i++) {
         // Get the current segment
-        char *segment = ar_string__path_segment(ref_key, '.', i);
-        if (!segment) {
+        const char *ref_segment = ar_path__get_segment(own_path, i);
+        if (!ref_segment) {
+            ar_path__destroy(own_path);
             return NULL;
         }
         
         // Get the map from the current data
         map_t *ref_current_map = ar_data__get_map(ref_current_data);
         if (!ref_current_map) {
-            AR__HEAP__FREE(segment);
+            ar_path__destroy(own_path);
             return NULL;
         }
         
         // Get the value for this segment
-        result = ar_map__get(ref_current_map, segment);
+        result = ar_map__get(ref_current_map, ref_segment);
         
         if (!result) {
-            AR__HEAP__FREE(segment);
+            ar_path__destroy(own_path);
             return NULL;
         }
         
         // For all but the last segment, the value must be a map
         if (i < segment_count - 1 && result->type != DATA_MAP) {
-            AR__HEAP__FREE(segment);
+            ar_path__destroy(own_path);
             return NULL;
         }
         
         ref_current_data = result;
-        AR__HEAP__FREE(segment);
     }
     
+    ar_path__destroy(own_path);
     return result;
 }
 
@@ -862,43 +870,52 @@ bool ar_data__set_map_data(data_t *mut_data, const char *ref_key, data_t *own_va
     }
     
     // Handle path-based access for keys with dots
-    // Extract the parent path and final key
-    size_t segment_count = ar_string__path_count(ref_key, '.');
-    if (segment_count == 0) {
+    // Create a path object for parsing
+    ar_path_t *own_path = ar_path__create_variable(ref_key);
+    if (!own_path) {
         return false;
     }
     
-    // Get the parent path using ar_string__path_parent
-    char *parent_path = ar_string__path_parent(ref_key, '.');
-    if (!parent_path) {
+    size_t segment_count = ar_path__get_segment_count(own_path);
+    if (segment_count == 0) {
+        ar_path__destroy(own_path);
+        return false;
+    }
+    
+    // Get the parent path
+    ar_path_t *own_parent_path = ar_path__get_parent(own_path);
+    if (!own_parent_path) {
+        ar_path__destroy(own_path);
         return false;
     }
     
     // Get the final key segment
-    char *final_key = ar_string__path_segment(ref_key, '.', segment_count - 1);
-    if (!final_key) {
-        AR__HEAP__FREE(parent_path);
+    const char *ref_final_key = ar_path__get_segment(own_path, segment_count - 1);
+    if (!ref_final_key) {
+        ar_path__destroy(own_parent_path);
+        ar_path__destroy(own_path);
         return false;
     }
     
     // Get the parent map data - this will fail if any part of the path doesn't exist
     // or if any part of the path is not a map
-    data_t *parent_data = ar_data__get_map_data(mut_data, parent_path);
+    const char *ref_parent_path_str = ar_path__get_string(own_parent_path);
+    data_t *parent_data = ar_data__get_map_data(mut_data, ref_parent_path_str);
     if (!parent_data || ar_data__get_type(parent_data) != DATA_MAP) {
-        AR__HEAP__FREE(final_key);
-        AR__HEAP__FREE(parent_path);
+        ar_path__destroy(own_parent_path);
+        ar_path__destroy(own_path);
         return false;
     }
     
     // Recursively call set_map_data with the parent data and final key
-    bool success = ar_data__set_map_data(parent_data, final_key, own_value);
+    bool success = ar_data__set_map_data(parent_data, ref_final_key, own_value);
     
     // The recursive call now completely handles the ownership of own_value
     // If successful, ownership was transferred to parent_data
     // If not successful, the recursive call will have freed own_value
     
-    AR__HEAP__FREE(final_key);
-    AR__HEAP__FREE(parent_path);
+    ar_path__destroy(own_parent_path);
+    ar_path__destroy(own_path);
     return success;
 }
 
