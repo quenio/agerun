@@ -24,13 +24,19 @@
       "Bash(git push:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(chmod:*)",
+      "Bash(./rename_modules.sh)",
+      "Bash(./update_docs.sh)",
+      "WebFetch(domain:ziglang.org)",
+      "Bash(zig build-obj:*)",
+      "Bash(./ar_*_tests)"
     ],
     "deny": []
   },
   "enableAllProjectMcpServers": false,
   "env": {
-    "BASH_DEFAULT_TIMEOUT_MS": "180000",
+    "BASH_DEFAULT_TIMEOUT_MS": "240000",
     "BASH_MAX_TIMEOUT_MS": "300000"
   }
 }
