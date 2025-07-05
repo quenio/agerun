@@ -125,7 +125,11 @@ AR_ASSERT_NOT_USED_AFTER_FREE(own_data);
 
 ## Implementation Details
 
-The assert macros are implemented using the standard C `assert` macro and are conditionally compiled based on the `DEBUG` macro:
+The assert module has two implementations:
+
+### C Implementation (ar_assert.h)
+
+For C modules, assertions are implemented using preprocessor macros and are conditionally compiled based on the `DEBUG` macro:
 
 ```c
 #ifdef DEBUG
@@ -136,3 +140,25 @@ The assert macros are implemented using the standard C `assert` macro and are co
 ```
 
 In release builds (`DEBUG` not defined), these macros expand to `((void)0)`, which is a no-op expression that generates no code, ensuring zero runtime overhead.
+
+### Zig Implementation (ar_assert.zig)
+
+For Zig modules, equivalent functions are provided that follow the same naming convention and performance characteristics:
+
+```zig
+pub inline fn ar_assert__assert(condition: bool, comptime message: []const u8) void {
+    if (builtin.mode == .Debug or builtin.mode == .ReleaseSafe) {
+        if (!condition) {
+            std.debug.panic("Assertion failed: {s}", .{message});
+        }
+    }
+}
+```
+
+The Zig implementation:
+- Uses `inline` to force inlining (no function call overhead)
+- Uses `comptime` for the message (compile-time only, no runtime cost)
+- Is active in Debug and ReleaseSafe modes (providing safety in production)
+- Is completely eliminated in ReleaseFast and ReleaseSmall modes (zero overhead)
+
+Both implementations provide identical zero-cost performance in release builds while maintaining the same external interface.

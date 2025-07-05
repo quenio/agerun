@@ -109,8 +109,8 @@ This report analyzes the dependencies between AgeRun modules by examining #inclu
 ### ar_agent_update.c
 - **Direct includes**: ar_agent_update.h, ar_agent.h, ar_method.h, ar_semver.h, ar_io.h, ar_heap.h
 
-### ar_assert.c
-- **Direct includes**: ar_assert.h
+### ar_assert.zig
+- **Direct includes**: ar_assert.h (via Zig - provides assertions for Zig modules)
 
 ### ar_data.c
 - **Direct includes**: ar_data.h, ar_string.h, ar_list.h, ar_assert.h, ar_heap.h

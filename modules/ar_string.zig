@@ -1,10 +1,13 @@
 const std = @import("std");
 const c = @cImport({
     @cInclude("ar_heap.h");
-    @cInclude("ar_assert.h");
     @cInclude("string.h");
     @cInclude("ctype.h");
 });
+
+// Import ar_assert module and alias the functions we need
+const ar_assert = @import("ar_assert.zig");
+const ar_assert__assert_ownership = ar_assert.ar_assert__assert_ownership;
 
 /// Returns non-zero if c is a whitespace character.
 /// This wrapper safely handles signed char values by casting to unsigned char.
@@ -114,6 +117,7 @@ export fn ar_string__path_segment(ref_str: ?[*:0]const u8, separator: u8, index:
     if (own_segment == null) {
         return null;
     }
+    ar_assert__assert_ownership(own_segment);
     
     _ = c.memcpy(own_segment, ref_start, length);
     const segment_ptr: [*]u8 = @ptrCast(own_segment);
@@ -159,6 +163,7 @@ export fn ar_string__path_parent(ref_str: ?[*:0]const u8, separator: u8) ?[*:0]u
     if (own_parent == null) {
         return null;
     }
+    ar_assert__assert_ownership(own_parent);
     
     _ = c.memcpy(own_parent, ref_str.?, parent_len);
     const parent_ptr: [*]u8 = @ptrCast(own_parent);

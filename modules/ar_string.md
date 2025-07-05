@@ -4,6 +4,8 @@
 
 The String Module provides utility functions for string manipulation in the AgeRun system. It offers a set of tools for common string operations that are used throughout the codebase, with a particular focus on path handling and whitespace management.
 
+**Implementation Note**: This module is implemented in Zig (ar_string.zig) while maintaining full C API compatibility. All functions export the exact same C interface as the original implementation.
+
 ## Key Features
 
 - **Whitespace Handling**: Safely detect and trim whitespace from strings
