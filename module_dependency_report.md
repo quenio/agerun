@@ -157,8 +157,8 @@ This report analyzes the dependencies between AgeRun modules by examining #inclu
 ### ar_semver.c
 - **Direct includes**: ar_semver.h, ar_heap.h
 
-### ar_string.c
-- **Direct includes**: ar_string.h, ar_heap.h, ar_assert.h
+### ar_string.zig
+- **Direct includes**: ar_string.h, ar_heap.h, ar_assert.h (via @cImport)
 
 ### ar_system.c
 - **Direct includes**: ar_system.h, ar_method.h, ar_methodology.h, ar_data.h, ar_agent.h, ar_agency.h, ar_list.h, ar_map.h, ar_heap.h, ar_interpreter.h

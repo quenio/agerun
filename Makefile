@@ -4,6 +4,9 @@ UNAME_S := $(shell uname -s)
 # Default compiler
 CC = gcc-13
 
+# Zig compiler
+ZIG = zig
+
 # Sanitizer compiler selection based on OS
 ifeq ($(UNAME_S),Darwin)
     SANITIZER_CC := clang
@@ -49,8 +52,12 @@ endif
 
 # Source files (excluding test files)
 ALL_C_FILES = $(wildcard modules/*.c)
-SRC = $(filter-out %_tests.c %_fixture_tests.c,$(ALL_C_FILES))
-OBJ = $(patsubst modules/%.c,bin/obj/%.o,$(SRC))
+# Exclude ar_string.c since we're using ar_string.zig
+C_SRC = $(filter-out modules/ar_string.c %_tests.c %_fixture_tests.c,$(ALL_C_FILES))
+ZIG_SRC = $(wildcard modules/*.zig)
+C_OBJ = $(patsubst modules/%.c,bin/obj/%.o,$(C_SRC))
+ZIG_OBJ = $(patsubst modules/%.zig,bin/obj/%.o,$(ZIG_SRC))
+OBJ = $(C_OBJ) $(ZIG_OBJ)
 
 # Test source files
 TEST_SRC = $(wildcard modules/*_tests.c)
@@ -171,6 +178,10 @@ bin/obj/%_tests.o: methods/%_tests.c | bin
 # Compile regular source files
 bin/obj/%.o: modules/%.c | bin
 	$(CC) $(CFLAGS) -c $< -o $@
+
+# Compile Zig source files
+bin/obj/%.o: modules/%.zig | bin
+	$(ZIG) build-obj -O ReleaseSafe -target native -mcpu=native -I./modules $< -femit-bin=$@
 
 # Clean target
 clean:
