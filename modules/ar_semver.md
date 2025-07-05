@@ -142,3 +142,4 @@ if (latest_idx >= 0) {
 - The module ignores pre-release identifiers and build metadata (e.g., "1.0.0-alpha+001")
 - Version components must be non-negative integers
 - The module handles NULL and invalid version strings gracefully
+- Implemented in Zig with full C ABI compatibility for enhanced safety and performance

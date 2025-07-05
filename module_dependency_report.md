@@ -156,8 +156,9 @@ This report analyzes the dependencies between AgeRun modules by examining #inclu
 ### ar_methodology.c
 - **Direct includes**: ar_methodology.h, ar_method.h, ar_string.h, ar_heap.h, ar_semver.h, ar_agency.h, ar_io.h, ar_assert.h
 
-### ar_semver.c
-- **Direct includes**: ar_semver.h, ar_heap.h
+### ar_semver.zig
+- **Direct includes**: None (standalone Zig module)
+- **Implementation**: Zig implementation with C ABI compatibility
 
 ### ar_string.zig
 - **Direct includes**: ar_string.h, ar_heap.h, ar_assert.h (via @cImport)
