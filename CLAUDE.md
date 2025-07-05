@@ -504,6 +504,53 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 3. Use Edit (not Write) for improvements
 4. Be specific: "analyze only" vs "create files"
 
+### 15. Leveraging Zig for AgeRun Development
+
+**Zig Documentation Reference**: https://ziglang.org/documentation/0.14.1/
+
+**When to Consider Zig**:
+- Performance-critical components requiring zero-cost abstractions
+- Cross-platform modules where C portability becomes complex
+- New modules that would benefit from compile-time safety guarantees
+- Components requiring precise memory layout control
+
+**Key Zig Features for AgeRun**:
+- **Manual Memory Management**: Aligns with AgeRun's ownership model
+- **Compile-time Safety**: Catches errors before runtime
+- **C Interoperability**: Can interface directly with existing AgeRun C modules
+- **No Hidden Control Flow**: Matches AgeRun's explicit design philosophy
+- **Error Handling**: Explicit error unions complement AgeRun's error propagation
+
+**Integration Guidelines**:
+- Maintain C API compatibility for Zig modules
+- Follow AgeRun's ownership conventions (own_, mut_, ref_)
+- Use Zig's allocator pattern with AgeRun's heap tracking
+- Compile-time validation for method language constraints
+- Zero-cost abstractions for performance-critical paths
+
+**Example Integration Pattern**:
+```zig
+// Zig module exposing C-compatible interface
+const std = @import("std");
+const c = @cImport({
+    @cInclude("ar_heap.h");
+    @cInclude("ar_data.h");
+});
+
+// Export functions with C ABI
+export fn ar_zigmodule__create() ?*c.data_t {
+    // Use AgeRun's heap tracking
+    const data = c.ar_data__create_string("Zig integrated!");
+    return data;
+}
+```
+
+**Build Integration**:
+- Add Zig compiler detection to Makefile
+- Create hybrid build rules for C/Zig modules
+- Maintain consistent test infrastructure
+- Use Zig's built-in testing alongside AgeRun tests
+
 ## AgeRun Language Notes
 
 - No null type - use integer 0
