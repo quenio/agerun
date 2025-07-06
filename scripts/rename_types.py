@@ -47,6 +47,35 @@ TYPE_RENAMES = {
     'system_fixture_t': 'ar_system_fixture_t',
 }
 
+# Define struct tag renames (typedef struct foo_s bar_t; -> typedef struct ar_foo_s bar_t;)
+STRUCT_TAG_RENAMES = {
+    # Core struct tags
+    'data_s': 'ar_data_s',
+    'list_s': 'ar_list_s', 
+    'map_s': 'ar_map_s',
+    
+    # Domain struct tags
+    'agent_s': 'ar_agent_s',
+    'method_s': 'ar_method_s',
+    'agent_registry_s': 'ar_agent_registry_s',
+    
+    # Context struct tags
+    'expression_context_s': 'ar_expression_context_s',
+    'instruction_context_s': 'ar_instruction_context_s',
+    
+    # Parser struct tags  
+    'parsed_instruction_s': 'ar_parsed_instruction_s',
+    'instruction_parser_s': 'ar_instruction_parser_s',
+    'instruction_evaluator_s': 'ar_instruction_evaluator_s',
+    
+    # System struct tags
+    'interpreter_s': 'ar_interpreter_s',
+    'instruction_fixture_s': 'ar_instruction_fixture_s',
+    'interpreter_fixture_s': 'ar_interpreter_fixture_s',
+    'method_fixture_s': 'ar_method_fixture_s',
+    'system_fixture_s': 'ar_system_fixture_s',
+}
+
 # File patterns to process
 FILE_PATTERNS = ['*.c', '*.h', '*.md', '*.method', '*.zig']
 
@@ -164,13 +193,18 @@ class TypeRenamer:
         files = sorted(set(files))
         return files
     
-    def run(self, type_mapping: Dict[str, str] = None):
+    def run(self, type_mapping: Dict[str, str] = None, struct_tag_mapping: Dict[str, str] = None):
         """Run the renaming process."""
         if type_mapping is None:
             type_mapping = TYPE_RENAMES
+        if struct_tag_mapping is None:
+            struct_tag_mapping = STRUCT_TAG_RENAMES
+        
+        # Combine both mappings
+        all_mappings = {**type_mapping, **struct_tag_mapping}
         
         print(f"Type Renaming {'(DRY RUN)' if self.dry_run else '(LIVE RUN)'}")
-        print(f"Processing {len(type_mapping)} type renames")
+        print(f"Processing {len(type_mapping)} type renames + {len(struct_tag_mapping)} struct tag renames")
         print("-" * 60)
         
         files = self.find_files()
@@ -178,7 +212,7 @@ class TypeRenamer:
         
         modified_count = 0
         for file_path in files:
-            if self.process_file(file_path, type_mapping):
+            if self.process_file(file_path, all_mappings):
                 modified_count += 1
         
         # Print summary
@@ -186,7 +220,7 @@ class TypeRenamer:
         print(f"Files {'would be' if self.dry_run else ''} modified: {modified_count}")
         print("\nChanges by type:")
         for old_type in sorted(self.stats.keys()):
-            new_type = type_mapping[old_type]
+            new_type = all_mappings[old_type]
             count = self.stats[old_type]
             print(f"  {old_type} -> {new_type}: {count} occurrences")
         
@@ -206,18 +240,27 @@ def main():
                        help='Show detailed output')
     parser.add_argument('--types', nargs='+', 
                        help='Specific types to rename (e.g., data_t list_t)')
-    parser.add_argument('--group', choices=['enums', 'core', 'domain', 'context', 'parser', 'system', 'all'],
+    parser.add_argument('--group', choices=['enums', 'core', 'domain', 'context', 'parser', 'system', 'struct-tags', 'all'],
                        default='all', help='Group of types to rename')
+    parser.add_argument('--include-struct-tags', action='store_true',
+                       help='Include struct tag renames (enabled by default for --group=all)')
     
     args = parser.parse_args()
     
     # Determine which types to rename
+    type_mapping = {}
+    struct_tag_mapping = {}
+    
     if args.types:
         # Only rename specified types
         type_mapping = {t: TYPE_RENAMES[t] for t in args.types if t in TYPE_RENAMES}
         if not type_mapping:
             print("Error: No valid types specified")
             return 1
+        # No struct tags when specific types are requested
+    elif args.group == 'struct-tags':
+        # Only rename struct tags
+        struct_tag_mapping = STRUCT_TAG_RENAMES
     elif args.group != 'all':
         # Rename a specific group
         groups = {
@@ -231,13 +274,27 @@ def main():
         }
         type_names = groups.get(args.group, [])
         type_mapping = {t: TYPE_RENAMES[t] for t in type_names}
+        
+        # Include struct tags if requested
+        if args.include_struct_tags:
+            struct_tag_groups = {
+                'core': ['data_s', 'list_s', 'map_s'],
+                'domain': ['agent_s', 'method_s', 'agent_registry_s'],
+                'context': ['expression_context_s', 'instruction_context_s'],
+                'parser': ['parsed_instruction_s', 'instruction_parser_s', 'instruction_evaluator_s'],
+                'system': ['interpreter_s', 'instruction_fixture_s', 'interpreter_fixture_s', 
+                          'method_fixture_s', 'system_fixture_s'],
+            }
+            struct_tag_names = struct_tag_groups.get(args.group, [])
+            struct_tag_mapping = {t: STRUCT_TAG_RENAMES[t] for t in struct_tag_names}
     else:
-        # Rename all types
+        # Rename all types and struct tags
         type_mapping = TYPE_RENAMES
+        struct_tag_mapping = STRUCT_TAG_RENAMES
     
     # Create renamer and run
     renamer = TypeRenamer(dry_run=not args.live, verbose=args.verbose)
-    renamer.run(type_mapping)
+    renamer.run(type_mapping, struct_tag_mapping)
     
     if not args.live:
         print("\nThis was a dry run. Use --live to actually modify files.")
