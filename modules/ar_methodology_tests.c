@@ -2,6 +2,7 @@
 #include "ar_system.h"
 #include "ar_method.h"
 #include "ar_io.h"
+#include "ar_log.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,10 +10,35 @@
 #include <time.h> // For time(NULL) as fallback
 
 // Forward declarations
+static void test_methodology__create_destroy(void);
 static void test_methodology_get_method(void);
 static void test_methodology_register_and_get(void);
 static void test_methodology_save_load(void);
 static void test_method_counts(void);
+
+static void test_methodology__create_destroy(void) {
+    printf("Testing ar_methodology__create() and ar_methodology__destroy()...\n");
+    
+    // Given an ar_log instance
+    ar_log_t *own_log = ar_log__create();
+    assert(own_log != NULL);
+    
+    // When we create a methodology instance with the log
+    ar_methodology_t *own_methodology = ar_methodology__create(own_log);
+    
+    // Then the methodology instance should be created successfully
+    assert(own_methodology != NULL);
+    
+    // When we destroy the methodology
+    ar_methodology__destroy(own_methodology);
+    own_methodology = NULL;
+    
+    // Clean up the log
+    ar_log__destroy(own_log);
+    own_log = NULL;
+    
+    printf("test_methodology__create_destroy passed\n");
+}
 
 static void test_methodology_get_method(void) {
     printf("Testing ar_methodology__get_method()...\n");
@@ -209,6 +235,9 @@ static void test_method_counts(void) {
 int main(void) {
     printf("Starting Methodology Module Tests...\n");
     
+    // Run create/destroy test first (doesn't need system initialized)
+    test_methodology__create_destroy();
+    
     // Given a test method and initialized system
     const char *init_method = "methodology_test_method";
     const char *init_instructions = "memory.result = \"Test methodology\"";
@@ -239,6 +268,6 @@ int main(void) {
     test_methodology_save_load();
     
     // And report success
-    printf("All 8 tests passed!\n");
+    printf("All 9 tests passed!\n");
     return 0;
 }

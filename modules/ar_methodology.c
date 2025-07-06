@@ -206,6 +206,12 @@ static method_t* methods[MAX_METHODS][MAX_VERSIONS_PER_METHOD];
 static int method_counts[MAX_METHODS];
 static int method_name_count = 0;
 
+/* Methodology instance structure */
+struct ar_methodology_s {
+    ar_log_t *ref_log;  /* Borrowed reference to log instance */
+    /* For now, we continue using static storage (will migrate in TDD Cycle 3) */
+};
+
 /**
  * Creates a new method object and registers it with the methodology module
  * @param ref_name Method name (borrowed reference)
@@ -968,4 +974,36 @@ bool ar_methodology__unregister_method(const char *ref_name, const char *ref_ver
     ar_methodology__save_methods();
     
     return true;
+}
+
+/**
+ * Create a new methodology instance
+ * @param ref_log Log instance for error reporting (borrowed reference, may be NULL)
+ * @return New methodology instance or NULL on allocation failure
+ * @note Ownership: Caller owns the returned instance and must destroy it
+ */
+ar_methodology_t* ar_methodology__create(ar_log_t *ref_log) {
+    // Allocate memory for the methodology instance
+    ar_methodology_t *own_methodology = AR__HEAP__MALLOC(sizeof(ar_methodology_t), "ar_methodology_t");
+    if (!own_methodology) {
+        return NULL;
+    }
+    
+    // Store the log reference
+    own_methodology->ref_log = ref_log;
+    
+    return own_methodology;
+}
+
+/**
+ * Destroy a methodology instance
+ * @param own_methodology The methodology instance to destroy (takes ownership)
+ * @note Ownership: Takes ownership and destroys the instance
+ */
+void ar_methodology__destroy(ar_methodology_t *own_methodology) {
+    if (own_methodology) {
+        // For now, just free the instance
+        // In TDD Cycle 3, we'll clean up the dynamic storage
+        AR__HEAP__FREE(own_methodology);
+    }
 }

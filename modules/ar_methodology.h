@@ -3,9 +3,13 @@
 
 #include <stdbool.h>
 #include "ar_method.h"
+#include "ar_log.h"
 
 /* Constants */
 #define METHODOLOGY_FILE_NAME "methodology.agerun"
+
+/* Opaque type for methodology instance */
+typedef struct ar_methodology_s ar_methodology_t;
 
 /**
  * Creates a new method object and registers it with the methodology module
@@ -66,5 +70,20 @@ void ar_methodology__register_method(method_t *own_method);
  * @note This will fail if there are active agents using this method
  */
 bool ar_methodology__unregister_method(const char *ref_name, const char *ref_version);
+
+/**
+ * Create a new methodology instance
+ * @param ref_log Log instance for error reporting (borrowed reference, may be NULL)
+ * @return New methodology instance or NULL on allocation failure
+ * @note Ownership: Caller owns the returned instance and must destroy it
+ */
+ar_methodology_t* ar_methodology__create(ar_log_t *ref_log);
+
+/**
+ * Destroy a methodology instance
+ * @param own_methodology The methodology instance to destroy (takes ownership)
+ * @note Ownership: Takes ownership and destroys the instance
+ */
+void ar_methodology__destroy(ar_methodology_t *own_methodology);
 
 #endif /* AGERUN_METHODOLOGY_H */
