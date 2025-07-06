@@ -11,7 +11,7 @@ The AgeRun build system uses `scan-build` for static analysis to detect potentia
 The following Makefile targets require scan-build:
 - `make analyze` - Runs static analysis on the library
 - `make analyze-tests` - Runs static analysis on the test files
-- `./full_build.sh` - Includes static analysis as part of the full build verification
+- `make full-build` - Includes static analysis as part of the full build verification
 
 If you encounter errors like "scan-build: command not found" when running these commands, you need to install clang-tools:
 

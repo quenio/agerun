@@ -23,11 +23,15 @@ help:
 	@echo "  make check-naming - Check naming conventions"
 	@echo "  make check-docs   - Check documentation validity"
 	@echo "  make check-all    - Run all code quality checks"
+	@echo "  make full-build   - Run complete build with all checks and tests"
 	@echo ""
 	@echo "Run targets:"
 	@echo "  make run          - Build and run the executable"
 	@echo "  make run-sanitize - Run executable with sanitizers"
 	@echo "  make run-tsan     - Run executable with ThreadSanitizer"
+	@echo ""
+	@echo "Utility targets:"
+	@echo "  make add-newline FILE=<file> - Add newline to end of file if missing"
 
 # Detect OS for sanitizer compiler selection
 UNAME_S := $(shell uname -s)
@@ -286,20 +290,20 @@ analyze-tests: install-scan-build
 
 # Check naming conventions across all source files
 check-naming:
-	@if [ -x ./check_naming_conventions.sh ]; then \
-		./check_naming_conventions.sh; \
+	@if [ -x ./scripts/check_naming_conventions.sh ]; then \
+		./scripts/check_naming_conventions.sh; \
 	else \
-		echo "ERROR: check_naming_conventions.sh not found or not executable"; \
+		echo "ERROR: scripts/check_naming_conventions.sh not found or not executable"; \
 		echo "Make sure the script exists and has execute permissions"; \
 		exit 1; \
 	fi
 
 # Check documentation validity (file references, module names, function/type refs)
 check-docs:
-	@if [ -x ./check_docs.sh ]; then \
-		./check_docs.sh; \
+	@if [ -x ./scripts/check_docs.sh ]; then \
+		./scripts/check_docs.sh; \
 	else \
-		echo "ERROR: check_docs.sh not found or not executable"; \
+		echo "ERROR: scripts/check_docs.sh not found or not executable"; \
 		echo "Make sure the script exists and has execute permissions"; \
 		exit 1; \
 	fi
@@ -309,7 +313,32 @@ check-all: check-naming check-docs
 	@echo ""
 	@echo "All code quality checks completed!"
 
-.PHONY: help all debug release sanitize clean test test-sanitize executable executable-sanitize run run-sanitize analyze analyze-tests check-naming check-docs check-all
+# Run full build script (clean build, static analysis, all tests, sanitizers, doc validation)
+full-build:
+	@if [ -x ./scripts/full_build.sh ]; then \
+		./scripts/full_build.sh; \
+	else \
+		echo "ERROR: scripts/full_build.sh not found or not executable"; \
+		echo "Make sure the script exists and has execute permissions"; \
+		exit 1; \
+	fi
+
+# Add newline to end of file if missing
+add-newline:
+	@if [ -z "$(FILE)" ]; then \
+		echo "ERROR: Please specify a file using FILE=<filename>"; \
+		echo "Usage: make add-newline FILE=<filename>"; \
+		exit 1; \
+	fi
+	@if [ -x ./scripts/add_newline.sh ]; then \
+		./scripts/add_newline.sh "$(FILE)"; \
+	else \
+		echo "ERROR: scripts/add_newline.sh not found or not executable"; \
+		echo "Make sure the script exists and has execute permissions"; \
+		exit 1; \
+	fi
+
+.PHONY: help all debug release sanitize clean test test-sanitize executable executable-sanitize run run-sanitize analyze analyze-tests check-naming check-docs check-all full-build add-newline
 
 # Debug targets
 print-src:

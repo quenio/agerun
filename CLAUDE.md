@@ -8,7 +8,7 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 
 ## Quick Start
 
-**Primary Build Tool**: `./full_build.sh` - runs everything with minimal output (~20 lines)
+**Primary Build Tool**: `make full-build` - runs everything with minimal output (~20 lines)
 - Use before commits and for quick verification
 - Includes: clean, build, static analysis, all tests, sanitizers, leak check, doc validation
 
@@ -21,9 +21,15 @@ make test             # Run tests (auto-rebuilds)
 make test-sanitize    # Run with ASan
 make run              # Run executable
 make bin/test_name    # Build/run specific test
+make check-naming     # Check naming conventions
+make check-docs       # Check documentation validity
+make check-all        # Run all code quality checks
+make add-newline FILE=<file>  # Add missing newline to file
 ```
 
 **Note**: Always run from repo root. Makefile handles directory changes automatically (runs `make clean debug` before tests). Doc-only changes don't require testing. Always pause before build commands to check for custom scripts.
+
+**Scripts Directory**: All build and utility scripts are located in `/scripts/`. Never run these scripts directly - always use the corresponding make targets. Scripts will fail with an error message if run outside the repository root.
 
 ## Git Workflow (CRITICAL)
 
@@ -40,6 +46,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - **/modules**: Core implementation (.c/.h files and tests)
 - **/bin**: Generated binaries (ignored by git, NEVER read these files)
 - **/methods**: Method definitions (.method files with docs and tests)
+- **/scripts**: Build and utility scripts (run via make targets, not directly)
 
 ## Critical Development Rules
 
@@ -359,7 +366,7 @@ cd bin  # Wrong - avoid relative paths
 - **Static Analysis**: `make analyze` (requires scan-build: `brew install llvm` or `apt install clang-tools`)
 - **Test Failures**: Often just wrong directory - 4-step check: pwd → cd /path → pwd → run
 - **Pattern Testing**: Test regex/sed/awk patterns before using in scripts
-- **Doc Validation**: full_build.sh validates file refs, function names, types
+- **Doc Validation**: `make full-build` validates file refs, function names, types
 
 **Expression Ownership** (CRITICAL):
 - References (`memory.x`): Don't destroy - borrowed from memory/context
@@ -407,7 +414,7 @@ Never compile directly with gcc.
 - **User feedback**: May reveal design issues, not just implementation bugs. Listen for concerns about output/behavior.
 
 **Pre-Commit Checklist** (MANDATORY):
-1. `./full_build.sh` - Fix ALL issues before proceeding (includes doc validation)
+1. `make full-build` - Fix ALL issues before proceeding (includes doc validation)
 2. **Update module .md files if interfaces changed** - CRITICAL: Interface changes MUST include docs in same commit
 3. `grep -l "function_name" modules/*.md` - Check docs for any API changes
 4. Update TODO.md - Mark completed, add new tasks

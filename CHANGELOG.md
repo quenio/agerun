@@ -4,6 +4,26 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-07-06
 
+### ✅ COMPLETED: Reorganized Scripts and Enhanced Build System
+- ✅ **Moved all shell scripts to /scripts/ directory**:
+  - ✅ full_build.sh, check_docs.sh, check_naming_conventions.sh, add_newline.sh
+  - ✅ Added directory checks to prevent scripts from running outside repo root
+  - ✅ Scripts now suggest appropriate make targets when run incorrectly
+- ✅ **Enhanced Makefile with new targets**:
+  - ✅ Added `make full-build` target to replace direct script execution
+  - ✅ Added `make add-newline FILE=<file>` utility target
+  - ✅ All scripts are now run via make targets, not directly
+- ✅ **Updated all documentation**:
+  - ✅ Changed all references from `./full_build.sh` to `make full-build`
+  - ✅ Updated CLAUDE.md, AGENTS.md, TODO.md, CHANGELOG.md
+  - ✅ Updated slash command from /clean-build to /full-build
+  - ✅ Added /scripts/ to project structure documentation
+- ✅ **Benefits**:
+  - ✅ Cleaner repository root directory
+  - ✅ Consistent interface through make targets
+  - ✅ Better error handling and user guidance
+  - ✅ Scripts protected from being run in wrong directory
+
 ### ✅ COMPLETED: Renamed Enum Types to Follow ar_ Convention
 - ✅ **Successfully renamed enum types**:
   - ✅ data_type_t → ar_data_type_t (33 occurrences)
@@ -452,7 +472,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - ✅ **Updated all documentation to match new naming**:
     - ✅ Fixed 104 invalid function references in documentation
     - ✅ Updated CLAUDE.md and all module documentation files
-    - ✅ Documentation validation in clean_build.sh now passes completely
+    - ✅ Documentation validation in clean_build.sh (now full_build.sh) now passes completely
   - ✅ **Verified correctness with full test suite**:
     - ✅ All 57 tests pass with zero failures
     - ✅ No memory leaks detected
@@ -1242,7 +1262,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
     - ✅ `test-tsan`: Run all tests with ThreadSanitizer
     - ✅ `executable-tsan`: Build executable with ThreadSanitizer
     - ✅ `run-tsan`: Run executable with ThreadSanitizer
-  - ✅ Updated clean_build.sh to include full sanitizer coverage:
+  - ✅ Updated clean_build.sh (now full_build.sh) to include full sanitizer coverage:
     - ✅ Tests and executable now run with ASan + UBSan
     - ✅ Added TSan test runs for both tests and executable
     - ✅ Enhanced error detection and reporting for all sanitizer types
@@ -1272,7 +1292,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - ✅ Supports automated installation without user prompts (-y flag)
 - ✅ Enhanced AGENTS.md with build tool requirements:
   - ✅ Added specific note about scan-build requirement for static analysis
-  - ✅ Listed Makefile targets that require scan-build (analyze, analyze-tests, clean_build.sh)
+  - ✅ Listed Makefile targets that require scan-build (analyze, analyze-tests, full_build.sh)
   - ✅ Provided quick installation commands for macOS and Ubuntu/Debian
   - ✅ Referenced CLAUDE.md for detailed setup instructions
 
@@ -1438,8 +1458,8 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - ✅ Fixed grep pattern to handle both "bug" and "bugs" in scan-build output
   - ✅ Makefile now shows "✗ X bugs found in <filename>" for each file with issues
   - ✅ Configured scan-build to use `--status-bugs` flag for non-zero exit on bugs found
-  - ✅ Updated clean_build.sh to properly capture and report static analysis failures
-  - ✅ Enhanced clean_build.sh to show specific files and line numbers for static analysis issues
+  - ✅ Updated clean_build.sh (now full_build.sh) to properly capture and report static analysis failures
+  - ✅ Enhanced clean_build.sh (now full_build.sh) to show specific files and line numbers for static analysis issues
   - ✅ Script now displays "✗ X bugs found in <filename>" and "file:line:column: warning" format
   - ✅ Verified script shows "✗" with detailed error output when static analysis finds issues
   - ✅ Confirmed scan-build works correctly regardless of compiler (gcc/clang) when invoked per-file
@@ -1481,14 +1501,14 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - ✅ Fixed build() function to preserve placeholders for missing variables
   - ✅ Updated interpreter tests to explicitly create intermediate maps
   - ✅ Updated agent-manager tests to mark expected failures with "EXPECTED FAIL"
-  - ✅ Updated clean_build.sh to filter out expected failures
+  - ✅ Updated clean_build.sh (now full_build.sh) to filter out expected failures
   - ✅ Removed tests for unimplemented features (destroy, ownership, error handling)
   - ✅ Added TODO tasks for implementing removed test scenarios
   - ✅ **Achieved clean build with all 29 tests passing**
 
 - ✅ Completed test output standardization:
   - ✅ Verified all 29 test files print "All X tests passed!" message
-  - ✅ Fixed clean_build.sh test counting (was showing 11 of 32, now correctly shows 29)
+  - ✅ Fixed clean_build.sh (now full_build.sh) test counting (was showing 11 of 32, now correctly shows 29)
   - ✅ All tests are now properly reported in clean build summary
   - ✅ Clean build output is consistent and reliable for CI/CD integration
 

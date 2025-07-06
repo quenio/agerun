@@ -3,6 +3,13 @@
 # Documentation validation script for AgeRun
 # Checks file references, module names, and function/type consistency
 
+# Check if running from repo root
+if [ ! -f "Makefile" ] || [ ! -d "modules" ] || [ ! -d "methods" ]; then
+    echo "ERROR: This script must be run from the AgeRun repository root directory."
+    echo "Please run 'make check-docs' from the repository root instead."
+    exit 1
+fi
+
 echo "=== AgeRun Documentation Check ==="
 echo "Starting at $(date)"
 echo

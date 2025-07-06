@@ -120,7 +120,7 @@ The executable module depends on:
 
 ## Testing
 
-While the executable itself is not unit tested (being a main entry point), it serves as an integration test for the entire system. The full_build.sh script runs the executable and verifies:
+While the executable itself is not unit tested (being a main entry point), it serves as an integration test for the entire system. The `make full-build` target runs the executable and verifies:
 - Successful execution
 - No memory leaks
 - Proper persistence functionality

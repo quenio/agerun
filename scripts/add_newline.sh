@@ -1,5 +1,13 @@
 #!/bin/bash
 # Script to ensure file ends with newline
+
+# Check if running from repo root
+if [ ! -f "Makefile" ] || [ ! -d "modules" ] || [ ! -d "methods" ]; then
+    echo "ERROR: This script must be run from the AgeRun repository root directory."
+    echo "Please change to the repository root directory and run again."
+    exit 1
+fi
+
 if [ $# -eq 0 ]; then
     echo "Usage: $0 <filename>"
     exit 1
