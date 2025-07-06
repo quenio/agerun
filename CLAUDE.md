@@ -427,6 +427,7 @@ Never compile directly with gcc.
 1. `make full-build` - Fix ALL issues before proceeding (includes doc validation)
    - **Exception**: Type renames only need `make check-naming && make test`
    - **Exception**: Doc-only changes only need `make check-docs`
+   - **Exception**: Skip tests if just run successfully (avoid redundant execution)
 2. **Update module .md files if interfaces changed** - CRITICAL: Interface changes MUST include docs in same commit
 3. `grep -l "function_name" modules/*.md` - Check docs for any API changes
 4. Update TODO.md - Mark completed, add new tasks
@@ -488,6 +489,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 ### 13. Plan Verification and Review
 
 **When Creating Development Plans**:
+- **Single task focus**: Create plans for one todo item at a time, not multi-task plans
 - **Always include critical verification steps**: Plans must include diff verification, test running, memory checking
 - **User feedback is valuable**: If user points out missing steps, update the plan immediately
 - **Example**: "We're missing the comparison of previous and new implementation" - this feedback prevents bugs
