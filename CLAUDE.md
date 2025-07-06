@@ -208,6 +208,7 @@ For each new behavior/feature:
 - **Build on previous cycles**: Later cycles can assume earlier cycles work correctly
 - **Example pattern**: 9 cycles for facade refactoring (assignment, send, if, parse, build, method, agent, destroy, error handling)
 - **Refactor phase is critical**: Use refactor phase to eliminate duplication and extract common patterns
+- **Accept partial improvements**: Better implementation with some duplication > wrong abstraction
 - **Verify integration points**: Check that related cycles properly connect (e.g., log propagation through hierarchies)
 - **All cycles before commit**: Complete ALL planned cycles before documentation and commit
 
@@ -316,6 +317,7 @@ while (*p) {
 ✓ Parameters ≤ 5 (use structs for more)  
 ✓ No speculative generality  
 ✓ Self-documenting (comments = "why" not "what")  
+✓ Named constants > magic numbers (e.g., MEMORY_PREFIX_LEN = 7)
 ✓ Incremental changes with frequent compilation
 ✓ Verify each change with tests
 ✓ Remove unused functions immediately
@@ -462,6 +464,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - **Complete implementations**: All cases or none - partial implementations create bugs
 - **Deprecation pattern**: `(void)param; return NULL/0;` with DEPRECATED docs/comments
 - **Facade redundancy**: If specialized modules log errors, facades shouldn't duplicate
+- **Migration verification**: Use TDD cycles even for mechanical refactoring (test→break→fix→verify)
 
 ### 13. Plan Verification and Review
 
