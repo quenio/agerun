@@ -361,6 +361,12 @@ cd bin  # Wrong - avoid relative paths
 - `git diff > changes.patch` for patches
 - If created accidentally: `git reset HEAD <file>`
 
+**Script Development**: All new, reusable Python/Bash scripts should be added under the `./scripts` dir
+- Add directory check to ensure scripts run from repo root
+- Create corresponding make target for user-facing scripts
+- Scripts should fail with helpful error messages suggesting the make target
+- Document the make target in the Makefile help section
+
 **Debug Tools**:
 - **Memory**: `make test-sanitize` → Check `bin/memory_report_<test_name>.log`
 - **Static Analysis**: `make analyze` (requires scan-build: `brew install llvm` or `apt install clang-tools`)
