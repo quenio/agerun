@@ -225,7 +225,7 @@ static bool _store_write_function(FILE *fp, void *context) {
             }
             
             // Write based on the value type
-            data_type_t value_type = ar_data__get_type(ref_value);
+            ar_data_type_t value_type = ar_data__get_type(ref_value);
             switch (value_type) {
                 case DATA_INTEGER: {
                     // Write key and type

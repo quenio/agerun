@@ -161,7 +161,7 @@ else if (strcmp(function_name, "if") == 0) {
     
     // 4. Evaluate condition (integer != 0, double != 0.0, non-empty string)
     bool condition = false;
-    data_type_t cond_type = ar_data_get_type(cond_to_use);
+    ar_data_type_t cond_type = ar_data_get_type(cond_to_use);
     if (cond_type == DATA_INTEGER) {
         condition = (ar_data_get_integer(cond_to_use) != 0);
     } else if (cond_type == DATA_DOUBLE) {

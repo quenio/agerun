@@ -12,7 +12,7 @@
  * Data structure for storing various data types
  */
 struct data_s {
-    data_type_t type;
+    ar_data_type_t type;
     union {
         int int_value;         // Primitive type, no prefix needed
         double double_value;   // Primitive type, no prefix needed
@@ -370,7 +370,7 @@ data_t* ar_data__shallow_copy(const data_t *ref_value) {
         return NULL;
     }
     
-    data_type_t type = ar_data__get_type(ref_value);
+    ar_data_type_t type = ar_data__get_type(ref_value);
     
     switch (type) {
         case DATA_INTEGER:
@@ -399,7 +399,7 @@ data_t* ar_data__shallow_copy(const data_t *ref_value) {
  * @return The data type or DATA_INTEGER if data is NULL
  * @note Ownership: Does not take ownership of the data parameter.
  */
-data_type_t ar_data__get_type(const data_t *ref_data) {
+ar_data_type_t ar_data__get_type(const data_t *ref_data) {
     if (!ref_data) {
         return DATA_INTEGER; // Default to int if NULL
     }
@@ -417,7 +417,7 @@ bool ar_data__is_primitive_type(const data_t *ref_data) {
         return false;
     }
     
-    data_type_t type = ar_data__get_type(ref_data);
+    ar_data_type_t type = ar_data__get_type(ref_data);
     return (type == DATA_INTEGER || type == DATA_DOUBLE || type == DATA_STRING);
 }
 

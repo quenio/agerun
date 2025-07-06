@@ -455,7 +455,7 @@ static const data_t* parse_memory_access(expression_context_t *mut_ctx) {
     
     // Look up the data by path
     data_t *ref_value = NULL;
-    data_type_t source_type = ar_data__get_type(ref_source);
+    ar_data_type_t source_type = ar_data__get_type(ref_source);
     
     
     if (source_type == DATA_MAP) {
@@ -558,8 +558,8 @@ static const data_t* parse_multiplicative(expression_context_t *ctx) {
         }
         
         // Perform the operation
-        data_type_t left_type = ar_data__get_type(left);
-        data_type_t right_type = ar_data__get_type(right);
+        ar_data_type_t left_type = ar_data__get_type(left);
+        ar_data_type_t right_type = ar_data__get_type(right);
         data_t *result = NULL;
         
         // Both operands are integers
@@ -652,8 +652,8 @@ static const data_t* parse_additive(expression_context_t *ctx) {
         }
         
         // Perform the operation
-        data_type_t left_type = ar_data__get_type(left);
-        data_type_t right_type = ar_data__get_type(right);
+        ar_data_type_t left_type = ar_data__get_type(left);
+        ar_data_type_t right_type = ar_data__get_type(right);
         data_t *result = NULL;
         
         // String concatenation with +
@@ -796,8 +796,8 @@ static const data_t* parse_comparison(expression_context_t *ctx) {
     }
     
     // Perform the comparison
-    data_type_t left_type = ar_data__get_type(left);
-    data_type_t right_type = ar_data__get_type(right);
+    ar_data_type_t left_type = ar_data__get_type(left);
+    ar_data_type_t right_type = ar_data__get_type(right);
     bool result = false;
     
     // Handle case where both operands are numeric

@@ -15,7 +15,7 @@ typedef enum {
     DATA_STRING,
     DATA_LIST,
     DATA_MAP
-} data_type_t;
+} ar_data_type_t;
 
 /**
  * Opaque data structure for storing various data types
@@ -100,7 +100,7 @@ data_t* ar_data__shallow_copy(const data_t *ref_value);
  * @return The data type or DATA_INTEGER if data is NULL
  * @note Ownership: Does not take ownership of the data parameter.
  */
-data_type_t ar_data__get_type(const data_t *ref_data);
+ar_data_type_t ar_data__get_type(const data_t *ref_data);
 
 /**
  * Check if a data value is a primitive type

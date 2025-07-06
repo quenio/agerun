@@ -142,7 +142,7 @@ bool ar_system__process_next_message(void) {
                     printf("DEBUG: Agent has method\n");
                     // Print message based on its type
                     printf("Agent %" PRId64 " received message: ", agent_id);
-                    data_type_t msg_type = ar_data__get_type(own_message);
+                    ar_data_type_t msg_type = ar_data__get_type(own_message);
                     if (msg_type == DATA_STRING) {
                         printf("%s\n", ar_data__get_string(own_message));
                     } else if (msg_type == DATA_INTEGER) {

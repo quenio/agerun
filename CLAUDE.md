@@ -228,7 +228,7 @@ For each new behavior/feature:
 - **Composition Over Inheritance**: Prefer composition patterns to create flexible, maintainable architectures
 
 **Important Clarifications**:
-- **Enums in Public APIs**: Some enums (like `data_type_t`) are part of the abstract model, not implementation details. These are acceptable when they represent abstract concepts needed by clients.
+- **Enums in Public APIs**: Some enums (like `ar_data_type_t`) are part of the abstract model, not implementation details. These are acceptable when they represent abstract concepts needed by clients.
 - **Internal Functions**: Never expose functions marked "internal use only" in public headers
 - **Implementation Details**: Keep struct definitions, array indices, and storage mechanisms private
 

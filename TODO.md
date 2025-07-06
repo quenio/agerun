@@ -210,7 +210,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] Move `ar_heap_memory_remove()` to internal header or make static
   - [x] **agerun_string.h** - Convert inline function to regular function
     - [x] Move `ar_string_isspace()` implementation to .c file
-  - [x] **agerun_data.h** - Evaluated `data_type_t` enum (2025-06-08)
+  - [x] **agerun_data.h** - Evaluated `ar_data_type_t` enum (2025-06-08)
     - [x] Assessment: Enum does NOT violate Parnas principles
     - [x] Rationale: Exposes abstract type information, not implementation details
     - [x] Decision: No changes needed - legitimate part of public interface
@@ -240,7 +240,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] No special access between modules - all communication through public APIs
   - [x] This ensures clean module boundaries and proper information hiding
 - [x] Document enum usage guidelines:
-  - [x] Document which enums are considered part of the abstract model (like `data_type_t`)
+  - [x] Document which enums are considered part of the abstract model (like `ar_data_type_t`)
   - [x] Add comments clarifying the distinction between public and internal APIs
 - [x] Continue enforcing Opaque Type pattern for all complex data structures
 - [x] Ensure API stability by avoiding exposure of internal implementation details
@@ -992,7 +992,7 @@ This order ensures clean separation of concerns across all modules.
   - [x] Verify complete documentation for each module (Completed 2025-06-14)
 - [x] Create missing module design documents
 - [x] Document enum usage guidelines:
-  - [x] Document which enums are considered part of the abstract model (like `data_type_t`)
+  - [x] Document which enums are considered part of the abstract model (like `ar_data_type_t`)
   - [x] Add comments clarifying the distinction between public and internal APIs
 
 ### LOW - Create Method Files (After Architecture is Stable)

@@ -306,8 +306,8 @@ data_t* ar_expression_evaluator__evaluate_binary_op(
     }
     
     // Get the types of both operands
-    data_type_t left_type = ar_data__get_type(left);
-    data_type_t right_type = ar_data__get_type(right);
+    ar_data_type_t left_type = ar_data__get_type(left);
+    ar_data_type_t right_type = ar_data__get_type(right);
     
     data_t *result = NULL;
     

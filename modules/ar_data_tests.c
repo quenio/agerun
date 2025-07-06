@@ -132,12 +132,12 @@ static void test_data_getters(void) {
     data_t *map_data = ar_data__create_map();
     
     // When we use the type getter
-    data_type_t int_type = ar_data__get_type(int_data);
-    data_type_t double_type = ar_data__get_type(double_data);
-    data_type_t string_type = ar_data__get_type(string_data);
-    data_type_t list_type = ar_data__get_type(list_data);
-    data_type_t map_type = ar_data__get_type(map_data);
-    data_type_t null_type = ar_data__get_type(NULL);
+    ar_data_type_t int_type = ar_data__get_type(int_data);
+    ar_data_type_t double_type = ar_data__get_type(double_data);
+    ar_data_type_t string_type = ar_data__get_type(string_data);
+    ar_data_type_t list_type = ar_data__get_type(list_data);
+    ar_data_type_t map_type = ar_data__get_type(map_data);
+    ar_data_type_t null_type = ar_data__get_type(NULL);
     
     // Then the types should be correct
     assert(int_type == DATA_INTEGER);

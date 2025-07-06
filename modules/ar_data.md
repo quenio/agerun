@@ -33,7 +33,7 @@ typedef enum {
     DATA_STRING,
     DATA_LIST,
     DATA_MAP
-} data_type_t;
+} ar_data_type_t;
 
 /**
  * Opaque data structure for storing various data types
@@ -95,7 +95,7 @@ void ar_data__destroy(data_t *own_data);
  * @return The data type or DATA_INTEGER if data is NULL
  * @note Ownership: Does not take ownership of the data parameter.
  */
-data_type_t ar_data__get_type(const data_t *ref_data);
+ar_data_type_t ar_data__get_type(const data_t *ref_data);
 
 /**
  * Check if a data value is a primitive type
@@ -940,7 +940,7 @@ The data module's internal structure follows the AgeRun Memory Management Model 
 
 ```c
 struct data_s {
-    data_type_t type;
+    ar_data_type_t type;
     union {
         int int_value;         // Primitive type, no prefix needed
         double double_value;   // Primitive type, no prefix needed
@@ -958,7 +958,7 @@ struct data_s {
 - The data struct owns and must destroy the own_keys list when destroyed
 - Strings, lists, and maps are stored as references but are managed by the data module
 - Both list and map data types handle proper memory management of contained items
-- The data_type_t enum is still exposed to allow clients to specify types
+- The ar_data_type_t enum is still exposed to allow clients to specify types
 - Each data instance is heap-allocated and must be explicitly destroyed 
 - All accessor functions include appropriate NULL checks
 - Type mismatch handling provides safe default values for mismatches

@@ -744,7 +744,7 @@ static void test_arithmetic_expression(void) {
         fflush(stdout);
         
         if (result) {
-            data_type_t type = ar_data__get_type(result);
+            ar_data_type_t type = ar_data__get_type(result);
             printf("Result type: %d\n", type);
             
             // Print detailed type information
