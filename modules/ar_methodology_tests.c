@@ -16,6 +16,10 @@ static void test_methodology_get_method(void);
 static void test_methodology_register_and_get(void);
 static void test_methodology_save_load(void);
 static void test_method_counts(void);
+static void test_methodology__get_method_with_instance(void);
+static void test_methodology__register_method_with_instance(void);
+static void test_methodology__create_method_with_instance(void);
+static void test_methodology__save_load_with_instance(void);
 
 static void test_methodology__create_destroy(void) {
     printf("Testing ar_methodology__create() and ar_methodology__destroy()...\n");
@@ -271,6 +275,143 @@ static void test_method_counts(void) {
     printf("Multiple method registration tests passed!\n");
 }
 
+static void test_methodology__get_method_with_instance(void) {
+    printf("Testing ar_methodology__get_method_with_instance()...\n");
+    
+    // Given a methodology instance
+    ar_methodology_t *own_methodology = ar_methodology__create(NULL);
+    assert(own_methodology != NULL);
+    
+    // And a method registered to this instance
+    method_t *own_method = ar_method__create("instance_method", "memory.result = \"Instance\"", "1.0.0");
+    assert(own_method != NULL);
+    ar_methodology__register_method_with_instance(own_methodology, own_method);
+    own_method = NULL; // ownership transferred
+    
+    // When we get the method using the instance
+    method_t *ref_method = ar_methodology__get_method_with_instance(own_methodology, "instance_method", "1.0.0");
+    
+    // Then we should get the method
+    assert(ref_method != NULL);
+    assert(strcmp(ar_method__get_name(ref_method), "instance_method") == 0);
+    
+    // And when we get with NULL version (latest)
+    ref_method = ar_methodology__get_method_with_instance(own_methodology, "instance_method", NULL);
+    assert(ref_method != NULL);
+    
+    // Clean up
+    ar_methodology__destroy(own_methodology);
+    
+    printf("test_methodology__get_method_with_instance passed\n");
+}
+
+static void test_methodology__register_method_with_instance(void) {
+    printf("Testing ar_methodology__register_method_with_instance()...\n");
+    
+    // Given a methodology instance
+    ar_methodology_t *own_methodology = ar_methodology__create(NULL);
+    assert(own_methodology != NULL);
+    
+    // And a method to register
+    method_t *own_method = ar_method__create("register_test", "memory.result = \"Register\"", "1.0.0");
+    assert(own_method != NULL);
+    
+    // When we register the method to the instance
+    ar_methodology__register_method_with_instance(own_methodology, own_method);
+    own_method = NULL; // ownership transferred
+    
+    // Then we should be able to retrieve it
+    method_t *ref_method = ar_methodology__get_method_with_instance(own_methodology, "register_test", "1.0.0");
+    assert(ref_method != NULL);
+    assert(strcmp(ar_method__get_name(ref_method), "register_test") == 0);
+    
+    // Clean up
+    ar_methodology__destroy(own_methodology);
+    
+    printf("test_methodology__register_method_with_instance passed\n");
+}
+
+static void test_methodology__create_method_with_instance(void) {
+    printf("Testing ar_methodology__create_method_with_instance()...\n");
+    
+    // Given a methodology instance with a log
+    ar_log_t *own_log = ar_log__create();
+    assert(own_log != NULL);
+    ar_methodology_t *own_methodology = ar_methodology__create(own_log);
+    assert(own_methodology != NULL);
+    
+    // When we create and register a method in one step
+    bool result = ar_methodology__create_method_with_instance(own_methodology, 
+                                                             "create_test", 
+                                                             "memory.result = \"Created\"", 
+                                                             "1.0.0");
+    
+    // Then the creation should succeed
+    assert(result == true);
+    
+    // And the method should be retrievable
+    method_t *ref_method = ar_methodology__get_method_with_instance(own_methodology, "create_test", "1.0.0");
+    assert(ref_method != NULL);
+    assert(strcmp(ar_method__get_name(ref_method), "create_test") == 0);
+    assert(strcmp(ar_method__get_instructions(ref_method), "memory.result = \"Created\"") == 0);
+    
+    // Clean up
+    ar_methodology__destroy(own_methodology);
+    ar_log__destroy(own_log);
+    
+    printf("test_methodology__create_method_with_instance passed\n");
+}
+
+static void test_methodology__save_load_with_instance(void) {
+    printf("Testing ar_methodology__save_load_with_instance()...\n");
+    
+    // Given a methodology instance with methods
+    ar_methodology_t *own_methodology1 = ar_methodology__create(NULL);
+    assert(own_methodology1 != NULL);
+    
+    // Add multiple methods
+    bool result = ar_methodology__create_method_with_instance(own_methodology1, 
+                                                             "save_test1", 
+                                                             "memory.result = \"Save1\"", 
+                                                             "1.0.0");
+    assert(result == true);
+    
+    result = ar_methodology__create_method_with_instance(own_methodology1, 
+                                                        "save_test2", 
+                                                        "memory.result = \"Save2\"", 
+                                                        "1.0.0");
+    assert(result == true);
+    
+    // When we save to a custom file
+    const char *test_filename = "test_methodology.agerun";
+    result = ar_methodology__save_methods_with_instance(own_methodology1, test_filename);
+    assert(result == true);
+    
+    // And create a new instance
+    ar_methodology_t *own_methodology2 = ar_methodology__create(NULL);
+    assert(own_methodology2 != NULL);
+    
+    // And load from the custom file
+    result = ar_methodology__load_methods_with_instance(own_methodology2, test_filename);
+    assert(result == true);
+    
+    // Then both methods should be available in the new instance
+    method_t *ref_method = ar_methodology__get_method_with_instance(own_methodology2, "save_test1", "1.0.0");
+    assert(ref_method != NULL);
+    assert(strcmp(ar_method__get_instructions(ref_method), "memory.result = \"Save1\"") == 0);
+    
+    ref_method = ar_methodology__get_method_with_instance(own_methodology2, "save_test2", "1.0.0");
+    assert(ref_method != NULL);
+    assert(strcmp(ar_method__get_instructions(ref_method), "memory.result = \"Save2\"") == 0);
+    
+    // Clean up
+    ar_methodology__destroy(own_methodology1);
+    ar_methodology__destroy(own_methodology2);
+    remove(test_filename);
+    
+    printf("test_methodology__save_load_with_instance passed\n");
+}
+
 int main(void) {
     printf("Starting Methodology Module Tests...\n");
     
@@ -309,7 +450,13 @@ int main(void) {
     // Run persistence test (doesn't need system initialized)
     test_methodology_save_load();
     
+    // Run instance-aware tests
+    test_methodology__get_method_with_instance();
+    test_methodology__register_method_with_instance();
+    test_methodology__create_method_with_instance();
+    test_methodology__save_load_with_instance();
+    
     // And report success
-    printf("All 10 tests passed!\n");
+    printf("All 14 tests passed!\n");
     return 0;
 }

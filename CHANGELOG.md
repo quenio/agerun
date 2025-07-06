@@ -4,6 +4,26 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-07-06
 
+### ✅ COMPLETED: Add Instance-Aware APIs to Methodology Module (TDD Cycle 4)
+- ✅ **Successfully added instance-aware versions of all public functions**:
+  - ✅ ar_methodology__get_method_with_instance()
+  - ✅ ar_methodology__register_method_with_instance()
+  - ✅ ar_methodology__create_method_with_instance()
+  - ✅ ar_methodology__save_methods_with_instance()
+  - ✅ ar_methodology__load_methods_with_instance()
+  - ✅ ar_methodology__unregister_method_with_instance()
+- ✅ **Implementation Details**:
+  - ✅ All existing public functions refactored to use instance-aware versions internally
+  - ✅ Instance-aware functions accept ar_methodology_t as first parameter
+  - ✅ Backward compatibility maintained - global functions delegate to instance versions
+  - ✅ Added comprehensive tests for all new instance-aware functions
+  - ✅ Save/load format remains unchanged for compatibility
+- ✅ **Benefits**:
+  - ✅ API now supports both global and instance-based usage patterns
+  - ✅ Foundation for ar_log propagation through methodology to method creation
+  - ✅ Enables future transition to fully instance-based architecture
+  - ✅ All tests pass with zero memory leaks
+
 ### ✅ COMPLETED: Refactor Methodology Module to Instantiable
 - ✅ **Successfully refactored methodology module from singleton to instantiable**:
   - ✅ Added ar_methodology__create() and ar_methodology__destroy() functions
@@ -20,7 +40,8 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - ✅ TDD Cycle 1: Basic create/destroy functions
   - ✅ TDD Cycle 2: Store ar_log reference (already done in cycle 1)
   - ✅ TDD Cycle 3: Convert to dynamic storage with global instance
-  - ✅ Future cycles will add instance-aware APIs and ar_log propagation
+  - ✅ TDD Cycle 4: Add instance-aware APIs (completed)
+  - ✅ Future cycles will add ar_log propagation to method creation
 - ✅ **Benefits**:
   - ✅ Unblocked ar_log propagation to method creation
   - ✅ Maintains 100% backward compatibility
