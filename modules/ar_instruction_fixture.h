@@ -44,7 +44,7 @@ void ar_instruction_fixture__destroy(instruction_fixture_t *own_fixture);
  * @note Ownership: Returns a borrowed reference; fixture owns and will destroy it
  * @note The context is created with pre-populated memory, context, and message maps
  */
-expression_context_t* ar_instruction_fixture__create_expression_context(
+ar_expression_context_t* ar_instruction_fixture__create_expression_context(
     instruction_fixture_t *mut_fixture,
     const char *ref_expression
 );
@@ -62,7 +62,7 @@ expression_context_t* ar_instruction_fixture__create_expression_context(
  *       references to memory fields. While expressions don't modify memory, the API
  *       requires mutable access for type correctness when returning these references.
  */
-expression_context_t* ar_instruction_fixture__create_custom_expression_context(
+ar_expression_context_t* ar_instruction_fixture__create_custom_expression_context(
     instruction_fixture_t *mut_fixture,
     ar_data_t *mut_memory,
     const ar_data_t *ref_context,
@@ -138,7 +138,7 @@ void ar_instruction_fixture__track_data(
  */
 void ar_instruction_fixture__track_expression_context(
     instruction_fixture_t *mut_fixture,
-    expression_context_t *own_context
+    ar_expression_context_t *own_context
 );
 
 /**

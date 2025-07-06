@@ -16,7 +16,7 @@ static void test_parse_assignment_instructions(void) {
     ar_data_t *mut_memory = ar_data__create_map();
     assert(mut_memory != NULL);
     
-    instruction_context_t *mut_ctx = ar_instruction__create_context(mut_memory, NULL, NULL);
+    ar_instruction_context_t *mut_ctx = ar_instruction__create_context(mut_memory, NULL, NULL);
     assert(mut_ctx != NULL);
     
     // Test 1: Simple assignment with integer literal
@@ -116,7 +116,7 @@ static void test_parse_function_call_instructions(void) {
     ar_data_t *mut_memory = ar_data__create_map();
     assert(mut_memory != NULL);
     
-    instruction_context_t *mut_ctx = ar_instruction__create_context(mut_memory, NULL, NULL);
+    ar_instruction_context_t *mut_ctx = ar_instruction__create_context(mut_memory, NULL, NULL);
     assert(mut_ctx != NULL);
     
     // Test 1: Simple send function call
@@ -343,7 +343,7 @@ static void test_parse_function_calls_with_assignment(void) {
     ar_data_t *mut_memory = ar_data__create_map();
     assert(mut_memory != NULL);
     
-    instruction_context_t *mut_ctx = ar_instruction__create_context(mut_memory, NULL, NULL);
+    ar_instruction_context_t *mut_ctx = ar_instruction__create_context(mut_memory, NULL, NULL);
     assert(mut_ctx != NULL);
     
     // Test 1: Send with assignment
@@ -562,7 +562,7 @@ static void test_basic_context_creation(void) {
     assert(mut_memory != NULL);
     
     // When creating an instruction context
-    instruction_context_t *mut_ctx = ar_instruction__create_context(mut_memory, NULL, NULL);
+    ar_instruction_context_t *mut_ctx = ar_instruction__create_context(mut_memory, NULL, NULL);
     
     // Then the context should be created successfully
     assert(mut_ctx != NULL);
@@ -584,7 +584,7 @@ static void test_error_handling_and_invalid_syntax(void) {
     ar_data_t *mut_memory = ar_data__create_map();
     assert(mut_memory != NULL);
     
-    instruction_context_t *mut_ctx = ar_instruction__create_context(mut_memory, NULL, NULL);
+    ar_instruction_context_t *mut_ctx = ar_instruction__create_context(mut_memory, NULL, NULL);
     assert(mut_ctx != NULL);
     
     // Test 1: Empty instruction

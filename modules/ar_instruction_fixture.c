@@ -87,7 +87,7 @@ void ar_instruction_fixture__destroy(instruction_fixture_t *own_fixture) {
     
     // Destroy all tracked expression contexts
     while (!ar_list__empty(own_fixture->own_tracked_contexts)) {
-        expression_context_t *own_context = (expression_context_t*)ar_list__remove_first(own_fixture->own_tracked_contexts);
+        ar_expression_context_t *own_context = (ar_expression_context_t*)ar_list__remove_first(own_fixture->own_tracked_contexts);
         if (own_context) {
             ar_expression__destroy_context(own_context);
         }
@@ -124,7 +124,7 @@ void ar_instruction_fixture__destroy(instruction_fixture_t *own_fixture) {
     AR__HEAP__FREE(own_fixture);
 }
 
-expression_context_t* ar_instruction_fixture__create_expression_context(
+ar_expression_context_t* ar_instruction_fixture__create_expression_context(
     instruction_fixture_t *mut_fixture,
     const char *ref_expression) {
     
@@ -171,7 +171,7 @@ expression_context_t* ar_instruction_fixture__create_expression_context(
     ar_list__add_last(mut_fixture->own_tracked_data, own_message);
     
     // Create expression context
-    expression_context_t *own_expr_ctx = ar_expression__create_context(
+    ar_expression_context_t *own_expr_ctx = ar_expression__create_context(
         own_memory, own_context, own_message, ref_expression
     );
     
@@ -185,7 +185,7 @@ expression_context_t* ar_instruction_fixture__create_expression_context(
     return own_expr_ctx; // Return borrowed reference
 }
 
-expression_context_t* ar_instruction_fixture__create_custom_expression_context(
+ar_expression_context_t* ar_instruction_fixture__create_custom_expression_context(
     instruction_fixture_t *mut_fixture,
     ar_data_t *mut_memory,
     const ar_data_t *ref_context,
@@ -197,7 +197,7 @@ expression_context_t* ar_instruction_fixture__create_custom_expression_context(
     }
     
     // Create expression context
-    expression_context_t *own_expr_ctx = ar_expression__create_context(
+    ar_expression_context_t *own_expr_ctx = ar_expression__create_context(
         mut_memory, ref_context, ref_message, ref_expression
     );
     
@@ -333,7 +333,7 @@ void ar_instruction_fixture__track_data(
 
 void ar_instruction_fixture__track_expression_context(
     instruction_fixture_t *mut_fixture,
-    expression_context_t *own_context) {
+    ar_expression_context_t *own_context) {
     
     if (!mut_fixture || !own_context) {
         return;

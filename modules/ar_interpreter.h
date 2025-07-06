@@ -36,7 +36,7 @@ void ar_interpreter__destroy(interpreter_t *own_interpreter);
  *       This function will contain the core logic moved from ar_instruction__run.
  */
 bool ar_interpreter__execute_instruction(interpreter_t *mut_interpreter, 
-                                         instruction_context_t *mut_context, 
+                                         ar_instruction_context_t *mut_context, 
                                          const char *ref_instruction);
 
 /**

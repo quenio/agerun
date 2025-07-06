@@ -24,7 +24,7 @@ the context has been destroyed.
 ### Types
 
 ```c
-typedef struct expression_context_s expression_context_t;
+typedef struct expression_context_s ar_expression_context_t;
 ```
 
 An opaque type representing the context for expression evaluation. It contains the
@@ -35,7 +35,7 @@ expression string, current parsing position, and references to memory, context, 
 #### ar_expression__create_context
 
 ```c
-expression_context_t* ar_expression__create_context(ar_data_t *mut_memory, const ar_data_t *ref_context, const ar_data_t *ref_message, const char *ref_expr);
+ar_expression_context_t* ar_expression__create_context(ar_data_t *mut_memory, const ar_data_t *ref_context, const ar_data_t *ref_message, const char *ref_expr);
 ```
 
 Creates a new expression evaluation context.
@@ -51,7 +51,7 @@ Creates a new expression evaluation context.
 #### ar_expression__destroy_context
 
 ```c
-void ar_expression__destroy_context(expression_context_t *ctx);
+void ar_expression__destroy_context(ar_expression_context_t *ctx);
 ```
 
 Destroys an expression context.
@@ -64,7 +64,7 @@ Destroys an expression context.
 #### ar_expression__offset
 
 ```c
-int ar_expression__offset(const expression_context_t *ctx);
+int ar_expression__offset(const ar_expression_context_t *ctx);
 ```
 
 Gets the current parsing offset in the expression string.
@@ -76,7 +76,7 @@ Gets the current parsing offset in the expression string.
 #### ar_expression__evaluate
 
 ```c
-ar_data_t* ar_expression__evaluate(expression_context_t *ctx);
+ar_data_t* ar_expression__evaluate(ar_expression_context_t *ctx);
 ```
 
 Evaluate an expression in the agent's context using recursive descent parsing.
@@ -90,7 +90,7 @@ Evaluate an expression in the agent's context using recursive descent parsing.
 #### ar_expression__take_ownership
 
 ```c
-bool ar_expression__take_ownership(expression_context_t *ctx, ar_data_t *result);
+bool ar_expression__take_ownership(ar_expression_context_t *ctx, ar_data_t *result);
 ```
 
 Take ownership of a result from the expression context.
@@ -137,7 +137,7 @@ The expression grammar follows this BNF definition:
 
 ```c
 // Create an expression context
-expression_context_t *ctx = ar_expression__create_context(memory, context, message, "memory.count + 1");
+ar_expression_context_t *ctx = ar_expression__create_context(memory, context, message, "memory.count + 1");
 
 // Evaluate the expression
 ar_data_t *result = ar_expression__evaluate(ctx);

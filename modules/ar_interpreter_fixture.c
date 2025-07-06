@@ -203,7 +203,7 @@ bool ar_interpreter_fixture__execute_with_message(
     }
     
     // Create instruction context
-    instruction_context_t *own_ctx = ar_instruction__create_context(mut_memory, ref_context, ref_message);
+    ar_instruction_context_t *own_ctx = ar_instruction__create_context(mut_memory, ref_context, ref_message);
     if (!own_ctx) {
         return false;
     }

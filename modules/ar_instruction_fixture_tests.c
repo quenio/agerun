@@ -37,7 +37,7 @@ static void test_expression_context_creation(void) {
     assert(own_fixture != NULL);
     
     // When we create an expression context
-    expression_context_t *ref_ctx = ar_instruction_fixture__create_expression_context(
+    ar_expression_context_t *ref_ctx = ar_instruction_fixture__create_expression_context(
         own_fixture, "memory.count + 10"
     );
     
@@ -67,7 +67,7 @@ static void test_custom_expression_context(void) {
     ar_data__set_map_integer(own_memory, "x", 100);
     
     // When we create a custom expression context
-    expression_context_t *ref_ctx = ar_instruction_fixture__create_custom_expression_context(
+    ar_expression_context_t *ref_ctx = ar_instruction_fixture__create_custom_expression_context(
         own_fixture, own_memory, NULL, NULL, "memory.x * 2"
     );
     
@@ -151,7 +151,7 @@ static void test_resource_tracking(void) {
     own_external_map = NULL; // Ownership transferred
     
     // When we create an expression context outside
-    expression_context_t *own_external_ctx = ar_expression__create_context(
+    ar_expression_context_t *own_external_ctx = ar_expression__create_context(
         NULL, NULL, NULL, "42"
     );
     ar_instruction_fixture__track_expression_context(own_fixture, own_external_ctx);
@@ -174,7 +174,7 @@ static void test_memory_check(void) {
     ar_data_t *ref_map = ar_instruction_fixture__create_test_map(own_fixture, NULL);
     assert(ref_map != NULL);
     
-    expression_context_t *ref_ctx = ar_instruction_fixture__create_expression_context(
+    ar_expression_context_t *ref_ctx = ar_instruction_fixture__create_expression_context(
         own_fixture, "1 + 1"
     );
     assert(ref_ctx != NULL);

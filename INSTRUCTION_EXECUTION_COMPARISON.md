@@ -12,14 +12,14 @@ This document compares the execution logic between the old instruction module (w
 ### Old Implementation (parse_assignment)
 ```c
 // Lines 142-224
-static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
+static bool parse_assignment(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
     // 1. Parse memory access path
     char *path = NULL;
     parse_memory_access(ref_instruction, mut_pos, &path);
     
     // 2. Parse ':=' operator
     // 3. Create expression context
-    expression_context_t *own_context = ar_expression_create_context(
+    ar_expression_context_t *own_context = ar_expression_create_context(
         mut_ctx->mut_memory, 
         mut_ctx->ref_context, 
         mut_ctx->ref_message, 
@@ -40,13 +40,13 @@ static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_ins
 ### New Implementation (_execute_assignment)
 ```c
 // Lines 204-258
-static bool _execute_assignment(interpreter_t *mut_interpreter, instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
+static bool _execute_assignment(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
     // 1. Get parsed path and expression
     const char *ref_path = ar_instruction__get_assignment_path(ref_parsed);
     const char *ref_expression = ar_instruction__get_assignment_expression(ref_parsed);
     
     // 2. Create expression context
-    expression_context_t *own_expr_ctx = ar_expression__create_context(
+    ar_expression_context_t *own_expr_ctx = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_expression
     );
     
@@ -81,7 +81,7 @@ static bool _execute_assignment(interpreter_t *mut_interpreter, instruction_cont
 // Lines 360-462
 if (strcmp(function_name, "send") == 0) {
     // 1. Parse agent_id expression
-    expression_context_t *own_context = ar_expression_create_context(...);
+    ar_expression_context_t *own_context = ar_expression_create_context(...);
     ar_data_t *own_agent_id = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
     
     // 2. Parse message expression
@@ -110,9 +110,9 @@ if (strcmp(function_name, "send") == 0) {
 ### New Implementation (_execute_send)
 ```c
 // Lines 261-339
-static bool _execute_send(interpreter_t *mut_interpreter, instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
+static bool _execute_send(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
     // 1. Evaluate agent ID
-    expression_context_t *own_expr_ctx = ar_expression__create_context(...);
+    ar_expression_context_t *own_expr_ctx = ar_expression__create_context(...);
     const ar_data_t *ref_agent_id_data = ar_expression__evaluate(own_expr_ctx);
     int64_t agent_id = (int64_t)ar_data__get_integer(ref_agent_id_data);
     

@@ -24,14 +24,14 @@ struct interpreter_s {
 };
 
 // Forward declarations for execution functions
-static bool _execute_assignment(interpreter_t *mut_interpreter, instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed);
-static bool _execute_send(interpreter_t *mut_interpreter, instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed);
-static bool _execute_if(interpreter_t *mut_interpreter, instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed);
-static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed);
-static bool _execute_build(interpreter_t *mut_interpreter, instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed);
-static bool _execute_method(interpreter_t *mut_interpreter, instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed);
-static bool _execute_agent(interpreter_t *mut_interpreter, instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed);
-static bool _execute_destroy(interpreter_t *mut_interpreter, instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed);
+static bool _execute_assignment(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed);
+static bool _execute_send(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed);
+static bool _execute_if(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed);
+static bool _execute_parse(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed);
+static bool _execute_build(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed);
+static bool _execute_method(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed);
+static bool _execute_agent(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed);
+static bool _execute_destroy(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed);
 
 // Helper function to send messages
 static bool _send_message(int64_t target_id, ar_data_t *own_message);
@@ -66,7 +66,7 @@ void ar_interpreter__destroy(interpreter_t *own_interpreter) {
  * Executes a single instruction in the given context
  */
 bool ar_interpreter__execute_instruction(interpreter_t *mut_interpreter, 
-                                         instruction_context_t *mut_context, 
+                                         ar_instruction_context_t *mut_context, 
                                          const char *ref_instruction) {
     if (!mut_interpreter || !mut_context || !ref_instruction) {
         return false;
@@ -147,7 +147,7 @@ bool ar_interpreter__execute_method(interpreter_t *mut_interpreter,
             agent_id, (void*)mut_memory, (const void*)ref_context, (const void*)ref_message);
     
     // Create an instruction context
-    instruction_context_t *own_ctx = ar_instruction__create_context(
+    ar_instruction_context_t *own_ctx = ar_instruction__create_context(
         mut_memory,
         ref_context,
         ref_message
@@ -210,7 +210,7 @@ static bool _send_message(int64_t target_id, ar_data_t *own_message) {
 }
 
 // Execute an assignment instruction
-static bool _execute_assignment(interpreter_t *mut_interpreter, instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
+static bool _execute_assignment(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
     (void)mut_interpreter; // Unused for now
     
     // Get assignment details
@@ -227,7 +227,7 @@ static bool _execute_assignment(interpreter_t *mut_interpreter, instruction_cont
     const ar_data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Create expression context
-    expression_context_t *own_expr_ctx = ar_expression__create_context(
+    ar_expression_context_t *own_expr_ctx = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_expression
     );
     if (!own_expr_ctx) {
@@ -275,7 +275,7 @@ static bool _execute_assignment(interpreter_t *mut_interpreter, instruction_cont
 }
 
 // Execute a send instruction
-static bool _execute_send(interpreter_t *mut_interpreter, instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
+static bool _execute_send(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
     (void)mut_interpreter; // Unused for now
     
     // Get function call details
@@ -301,7 +301,7 @@ static bool _execute_send(interpreter_t *mut_interpreter, instruction_context_t 
     const ar_data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Evaluate first argument (agent ID)
-    expression_context_t *own_expr_ctx = ar_expression__create_context(
+    ar_expression_context_t *own_expr_ctx = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[0]
     );
     if (!own_expr_ctx) {
@@ -365,7 +365,7 @@ static bool _execute_send(interpreter_t *mut_interpreter, instruction_context_t 
 }
 
 // Execute an if instruction
-static bool _execute_if(interpreter_t *mut_interpreter, instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
+static bool _execute_if(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
     (void)mut_interpreter; // Unused for now
     
     // Get function call details
@@ -389,7 +389,7 @@ static bool _execute_if(interpreter_t *mut_interpreter, instruction_context_t *m
     const ar_data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Evaluate condition
-    expression_context_t *own_expr_ctx = ar_expression__create_context(
+    ar_expression_context_t *own_expr_ctx = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[0]
     );
     if (!own_expr_ctx) {
@@ -541,7 +541,7 @@ static bool _execute_if(interpreter_t *mut_interpreter, instruction_context_t *m
 }
 
 // Execute a parse instruction
-static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
+static bool _execute_parse(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
     (void)mut_interpreter; // Unused for now
     
     // Get function call details
@@ -565,7 +565,7 @@ static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t
     const ar_data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Evaluate template argument
-    expression_context_t *own_expr_ctx = ar_expression__create_context(
+    ar_expression_context_t *own_expr_ctx = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[0]
     );
     if (!own_expr_ctx) {
@@ -845,7 +845,7 @@ static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t
 }
 
 // Execute a build instruction
-static bool _execute_build(interpreter_t *mut_interpreter, instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
+static bool _execute_build(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
     (void)mut_interpreter; // Unused for now
     
     // Get function call details
@@ -869,7 +869,7 @@ static bool _execute_build(interpreter_t *mut_interpreter, instruction_context_t
     const ar_data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Evaluate template argument
-    expression_context_t *own_expr_ctx = ar_expression__create_context(
+    ar_expression_context_t *own_expr_ctx = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[0]
     );
     if (!own_expr_ctx) {
@@ -1126,7 +1126,7 @@ static bool _execute_build(interpreter_t *mut_interpreter, instruction_context_t
 }
 
 // Execute a method instruction
-static bool _execute_method(interpreter_t *mut_interpreter, instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
+static bool _execute_method(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
     (void)mut_interpreter; // Unused for now
     
     // Get function call details
@@ -1150,7 +1150,7 @@ static bool _execute_method(interpreter_t *mut_interpreter, instruction_context_
     const ar_data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Evaluate name argument
-    expression_context_t *own_context = ar_expression__create_context(
+    ar_expression_context_t *own_context = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[0]
     );
     if (!own_context) {
@@ -1301,7 +1301,7 @@ static bool _execute_method(interpreter_t *mut_interpreter, instruction_context_
 }
 
 // Execute an agent instruction
-static bool _execute_agent(interpreter_t *mut_interpreter, instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
+static bool _execute_agent(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
     (void)mut_interpreter; // Unused for now
     
     // Get function call details
@@ -1325,7 +1325,7 @@ static bool _execute_agent(interpreter_t *mut_interpreter, instruction_context_t
     const ar_data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Evaluate method name argument
-    expression_context_t *own_context = ar_expression__create_context(
+    ar_expression_context_t *own_context = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[0]
     );
     if (!own_context) {
@@ -1464,7 +1464,7 @@ static bool _execute_agent(interpreter_t *mut_interpreter, instruction_context_t
 }
 
 // Execute a destroy instruction
-static bool _execute_destroy(interpreter_t *mut_interpreter, instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
+static bool _execute_destroy(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
     (void)mut_interpreter; // Unused for now
     
     // Get function call details
@@ -1488,7 +1488,7 @@ static bool _execute_destroy(interpreter_t *mut_interpreter, instruction_context
     const ar_data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Evaluate first argument
-    expression_context_t *own_context = ar_expression__create_context(
+    ar_expression_context_t *own_context = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_args[0]
     );
     if (!own_context) {

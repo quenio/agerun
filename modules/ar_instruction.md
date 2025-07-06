@@ -51,7 +51,7 @@ The instruction module implements the following BNF grammar:
 ### Instruction Context
 
 ```c
-instruction_context_t* ar_instruction__create_context(ar_data_t *mut_memory, const ar_data_t *ref_context, const ar_data_t *ref_message);
+ar_instruction_context_t* ar_instruction__create_context(ar_data_t *mut_memory, const ar_data_t *ref_context, const ar_data_t *ref_message);
 ```
 
 Creates a new instruction context for parsing and executing instructions.
@@ -69,7 +69,7 @@ Creates a new instruction context for parsing and executing instructions.
 - Does not take ownership of any parameters
 
 ```c
-void ar_instruction__destroy_context(instruction_context_t *own_ctx);
+void ar_instruction__destroy_context(ar_instruction_context_t *own_ctx);
 ```
 
 Destroys an instruction context.
@@ -84,7 +84,7 @@ Destroys an instruction context.
 ### Instruction Parsing
 
 ```c
-parsed_instruction_t* ar_instruction__parse(const char *ref_instruction, instruction_context_t *mut_ctx);
+parsed_instruction_t* ar_instruction__parse(const char *ref_instruction, ar_instruction_context_t *mut_ctx);
 ```
 
 Parses a single instruction without executing it.
@@ -106,7 +106,7 @@ Parses a single instruction without executing it.
 ### Accessor Functions
 
 ```c
-ar_data_t* ar_instruction__get_memory(const instruction_context_t *ref_ctx);
+ar_data_t* ar_instruction__get_memory(const ar_instruction_context_t *ref_ctx);
 ```
 
 Gets the memory from the instruction context.
@@ -118,7 +118,7 @@ Gets the memory from the instruction context.
 - Mutable reference to the memory (not owned by caller)
 
 ```c
-const ar_data_t* ar_instruction__get_context(const instruction_context_t *ref_ctx);
+const ar_data_t* ar_instruction__get_context(const ar_instruction_context_t *ref_ctx);
 ```
 
 Gets the context data from the instruction context.
@@ -130,7 +130,7 @@ Gets the context data from the instruction context.
 - Borrowed reference to the context data (not owned by caller)
 
 ```c
-const ar_data_t* ar_instruction__get_message(const instruction_context_t *ref_ctx);
+const ar_data_t* ar_instruction__get_message(const ar_instruction_context_t *ref_ctx);
 ```
 
 Gets the message from the instruction context.
@@ -163,7 +163,7 @@ Sends a message to another agent.
 ### Error Reporting
 
 ```c
-const char* ar_instruction__get_last_error(const instruction_context_t *ref_ctx);
+const char* ar_instruction__get_last_error(const ar_instruction_context_t *ref_ctx);
 ```
 
 Gets the last error message from the instruction context.
@@ -179,7 +179,7 @@ Gets the last error message from the instruction context.
 - The returned string is owned by the context and should not be freed
 
 ```c
-int ar_instruction__get_error_position(const instruction_context_t *ref_ctx);
+int ar_instruction__get_error_position(const ar_instruction_context_t *ref_ctx);
 ```
 
 Gets the position in the instruction string where the last error occurred.
@@ -199,7 +199,7 @@ Gets the position in the instruction string where the last error occurred.
 
 ```c
 // Create an instruction context
-instruction_context_t *own_ctx = ar_instruction__create_context(mut_memory, ref_context, ref_message);
+ar_instruction_context_t *own_ctx = ar_instruction__create_context(mut_memory, ref_context, ref_message);
 if (!own_ctx) {
     // Handle error
     return false;

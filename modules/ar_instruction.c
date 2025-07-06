@@ -38,22 +38,22 @@ struct parsed_instruction_s {
 };
 
 // Function prototypes for recursive descent parsing
-static parsed_instruction_t* _parse_instruction(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos);
-static parsed_instruction_t* _parse_assignment(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos);
-static parsed_instruction_t* _parse_function_instruction(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos);
+static parsed_instruction_t* _parse_instruction(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos);
+static parsed_instruction_t* _parse_assignment(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos);
+static parsed_instruction_t* _parse_function_instruction(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos);
 static bool _parse_memory_access(const char *ref_instruction, int *mut_pos, char **path);
-static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos, char **out_result_path);
+static parsed_instruction_t* _parse_function_call(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos, char **out_result_path);
 static bool _skip_whitespace(const char *ref_instruction, int *mut_pos);
 static bool _extract_identifier(const char *ref_instruction, int *mut_pos, char *mut_identifier, int max_size);
 
 // Error handling helper functions
-static void _set_error(instruction_context_t *mut_ctx, const char *ref_message, int position);
-static void _clear_error(instruction_context_t *mut_ctx);
+static void _set_error(ar_instruction_context_t *mut_ctx, const char *ref_message, int position);
+static void _clear_error(ar_instruction_context_t *mut_ctx);
 
 // Create a new instruction context
-instruction_context_t* ar_instruction__create_context(ar_data_t *mut_memory, const ar_data_t *ref_context, const ar_data_t *ref_message) {
+ar_instruction_context_t* ar_instruction__create_context(ar_data_t *mut_memory, const ar_data_t *ref_context, const ar_data_t *ref_message) {
     // Allocate memory for the context
-    instruction_context_t *own_ctx = (instruction_context_t*)AR__HEAP__MALLOC(sizeof(instruction_context_t), "Instruction context");
+    ar_instruction_context_t *own_ctx = (ar_instruction_context_t*)AR__HEAP__MALLOC(sizeof(ar_instruction_context_t), "Instruction context");
     if (!own_ctx) {
         return NULL;
     }
@@ -70,7 +70,7 @@ instruction_context_t* ar_instruction__create_context(ar_data_t *mut_memory, con
 }
 
 // Destroy an instruction context
-void ar_instruction__destroy_context(instruction_context_t *own_ctx) {
+void ar_instruction__destroy_context(ar_instruction_context_t *own_ctx) {
     if (own_ctx) {
         // Free the owned error message if any
         if (own_ctx->own_error_message) {
@@ -82,7 +82,7 @@ void ar_instruction__destroy_context(instruction_context_t *own_ctx) {
 }
 
 // Get the memory from the instruction context
-ar_data_t* ar_instruction__get_memory(const instruction_context_t *ref_ctx) {
+ar_data_t* ar_instruction__get_memory(const ar_instruction_context_t *ref_ctx) {
     if (!ref_ctx) {
         return NULL;
     }
@@ -90,7 +90,7 @@ ar_data_t* ar_instruction__get_memory(const instruction_context_t *ref_ctx) {
 }
 
 // Get the context data from the instruction context
-const ar_data_t* ar_instruction__get_context(const instruction_context_t *ref_ctx) {
+const ar_data_t* ar_instruction__get_context(const ar_instruction_context_t *ref_ctx) {
     if (!ref_ctx) {
         return NULL;
     }
@@ -98,7 +98,7 @@ const ar_data_t* ar_instruction__get_context(const instruction_context_t *ref_ct
 }
 
 // Get the message from the instruction context
-const ar_data_t* ar_instruction__get_message(const instruction_context_t *ref_ctx) {
+const ar_data_t* ar_instruction__get_message(const ar_instruction_context_t *ref_ctx) {
     if (!ref_ctx) {
         return NULL;
     }
@@ -108,7 +108,7 @@ const ar_data_t* ar_instruction__get_message(const instruction_context_t *ref_ct
 
 // Parse and execute a single instruction
 // This is now the main parse function that builds AST
-parsed_instruction_t* ar_instruction__parse(const char *ref_instruction, instruction_context_t *mut_ctx) {
+parsed_instruction_t* ar_instruction__parse(const char *ref_instruction, ar_instruction_context_t *mut_ctx) {
     if (!mut_ctx || !ref_instruction) {
         return NULL;
     }
@@ -224,7 +224,7 @@ bool ar_instruction__get_function_call(const parsed_instruction_t *ref_parsed,
 
 
 // <instruction> ::= <assignment> | <function-instruction>
-static parsed_instruction_t* _parse_instruction(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
+static parsed_instruction_t* _parse_instruction(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
     _skip_whitespace(ref_instruction, mut_pos);
     
     // Check for assignment or function instruction
@@ -243,7 +243,7 @@ static parsed_instruction_t* _parse_instruction(instruction_context_t *mut_ctx, 
 }
 
 // <assignment> ::= <memory-access> ':=' <expression>
-static parsed_instruction_t* _parse_assignment(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
+static parsed_instruction_t* _parse_assignment(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
     char *own_path = NULL;
     
     // Parse memory access (left side)
@@ -271,7 +271,7 @@ static parsed_instruction_t* _parse_assignment(instruction_context_t *mut_ctx, c
     
     // Validate that the right-hand side is a valid expression by trying to parse it
     // This follows the original implementation approach
-    expression_context_t *own_expr_test = ar_expression__create_context(
+    ar_expression_context_t *own_expr_test = ar_expression__create_context(
         ar_instruction__get_memory(mut_ctx),
         ar_instruction__get_context(mut_ctx), 
         ar_instruction__get_message(mut_ctx),
@@ -337,7 +337,7 @@ static parsed_instruction_t* _parse_assignment(instruction_context_t *mut_ctx, c
 }
 
 // <function-instruction> ::= [<memory-access> ':='] <function-call>
-static parsed_instruction_t* _parse_function_instruction(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
+static parsed_instruction_t* _parse_function_instruction(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
     char *own_result_path = NULL;
     bool has_assignment = false;
     
@@ -445,7 +445,7 @@ static bool _parse_memory_access(const char *ref_instruction, int *mut_pos, char
 // Parse function call and execute it
 // <function-call> ::= <send-function> | <parse-function> | <build-function> | <method-function> |
 //                     <agent-function> | <destroy-function> | <if-function>
-static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos, char **out_result_path) {
+static parsed_instruction_t* _parse_function_call(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos, char **out_result_path) {
     fprintf(stderr, "DEBUG: _parse_function_call starting at: '%s'\n", ref_instruction + *mut_pos);
     
     // Extract function name
@@ -1153,7 +1153,7 @@ static parsed_instruction_t* _parse_function_call(instruction_context_t *mut_ctx
 // Error reporting functions
 
 // Gets the last error message from the instruction context
-const char* ar_instruction__get_last_error(const instruction_context_t *ref_ctx) {
+const char* ar_instruction__get_last_error(const ar_instruction_context_t *ref_ctx) {
     if (!ref_ctx) {
         return NULL;
     }
@@ -1161,7 +1161,7 @@ const char* ar_instruction__get_last_error(const instruction_context_t *ref_ctx)
 }
 
 // Gets the position in the instruction string where the last error occurred
-int ar_instruction__get_error_position(const instruction_context_t *ref_ctx) {
+int ar_instruction__get_error_position(const ar_instruction_context_t *ref_ctx) {
     if (!ref_ctx) {
         return 0;
     }
@@ -1169,7 +1169,7 @@ int ar_instruction__get_error_position(const instruction_context_t *ref_ctx) {
 }
 
 // Helper function to set error in context
-static void _set_error(instruction_context_t *mut_ctx, const char *ref_message, int position) {
+static void _set_error(ar_instruction_context_t *mut_ctx, const char *ref_message, int position) {
     if (!mut_ctx) {
         return;
     }
@@ -1185,7 +1185,7 @@ static void _set_error(instruction_context_t *mut_ctx, const char *ref_message, 
 }
 
 // Helper function to clear error state
-static void _clear_error(instruction_context_t *mut_ctx) {
+static void _clear_error(ar_instruction_context_t *mut_ctx) {
     if (!mut_ctx) {
         return;
     }

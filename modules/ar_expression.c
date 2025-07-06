@@ -34,12 +34,12 @@ struct expression_context_s {
  * @param ref_expr The expression string to evaluate (borrowed reference)
  * @return Newly created expression context (owned by caller), or NULL on failure
  */
-expression_context_t* ar_expression__create_context(ar_data_t *mut_memory, const ar_data_t *ref_context, const ar_data_t *ref_message, const char *ref_expr) {
+ar_expression_context_t* ar_expression__create_context(ar_data_t *mut_memory, const ar_data_t *ref_context, const ar_data_t *ref_message, const char *ref_expr) {
     if (!ref_expr) {
         return NULL;
     }
     
-    expression_context_t *own_ctx = AR__HEAP__MALLOC(sizeof(expression_context_t), "Expression context");
+    ar_expression_context_t *own_ctx = AR__HEAP__MALLOC(sizeof(ar_expression_context_t), "Expression context");
     if (!own_ctx) {
         return NULL;
     }
@@ -65,7 +65,7 @@ expression_context_t* ar_expression__create_context(ar_data_t *mut_memory, const
  * 
  * @param own_ctx The expression context to destroy (ownership transferred to function)
  */
-void ar_expression__destroy_context(expression_context_t *own_ctx) {
+void ar_expression__destroy_context(ar_expression_context_t *own_ctx) {
     if (!own_ctx) {
         return;
     }
@@ -111,7 +111,7 @@ void ar_expression__destroy_context(expression_context_t *own_ctx) {
  * @param ref_ctx The expression context (borrowed reference)
  * @return Current offset in the expression string
  */
-int ar_expression__offset(const expression_context_t *ref_ctx) {
+int ar_expression__offset(const ar_expression_context_t *ref_ctx) {
     if (!ref_ctx) {
         return 0;
     }
@@ -148,21 +148,21 @@ int ar_expression__offset(const expression_context_t *ref_ctx) {
  */
 
 // Forward declarations for recursive descent functions
-static const ar_data_t* parse_expression(expression_context_t *ctx);
-static const ar_data_t* parse_primary(expression_context_t *ctx);
-static const ar_data_t* parse_string_literal(expression_context_t *ctx);
-static const ar_data_t* parse_number_literal(expression_context_t *ctx);
-static const ar_data_t* parse_memory_access(expression_context_t *ctx);
-static void _skip_whitespace(expression_context_t *ctx);
-static bool _is_comparison_operator(expression_context_t *ctx);
-static bool _match(expression_context_t *ctx, const char *to_match);
+static const ar_data_t* parse_expression(ar_expression_context_t *ctx);
+static const ar_data_t* parse_primary(ar_expression_context_t *ctx);
+static const ar_data_t* parse_string_literal(ar_expression_context_t *ctx);
+static const ar_data_t* parse_number_literal(ar_expression_context_t *ctx);
+static const ar_data_t* parse_memory_access(ar_expression_context_t *ctx);
+static void _skip_whitespace(ar_expression_context_t *ctx);
+static bool _is_comparison_operator(ar_expression_context_t *ctx);
+static bool _match(ar_expression_context_t *ctx, const char *to_match);
 static bool _is_identifier_start(char c);
 static bool _is_identifier_part(char c);
-static char* parse_identifier(expression_context_t *ctx);
+static char* parse_identifier(ar_expression_context_t *ctx);
 static bool _is_digit(char c);
 
 // Skip whitespace characters in the expression
-static void _skip_whitespace(expression_context_t *mut_ctx) {
+static void _skip_whitespace(ar_expression_context_t *mut_ctx) {
     while (mut_ctx->ref_expr[mut_ctx->offset] && ar_string__isspace(mut_ctx->ref_expr[mut_ctx->offset])) {
         mut_ctx->offset++;
     }
@@ -184,7 +184,7 @@ static bool _is_identifier_part(char c) {
 }
 
 // Parse an identifier from the expression
-static char* parse_identifier(expression_context_t *mut_ctx) {
+static char* parse_identifier(ar_expression_context_t *mut_ctx) {
     int start = mut_ctx->offset;
     
     // First character must be a letter
@@ -217,7 +217,7 @@ static char* parse_identifier(expression_context_t *mut_ctx) {
 
 // Check if the string at the current offset matches the expected string
 // If it does, advance offset past the matched string and return true
-static bool _match(expression_context_t *mut_ctx, const char *ref_to_match) {
+static bool _match(ar_expression_context_t *mut_ctx, const char *ref_to_match) {
     size_t len = strlen(ref_to_match);
     if (strncmp(mut_ctx->ref_expr + mut_ctx->offset, ref_to_match, len) == 0) {
         // Make sure it's not part of a longer identifier
@@ -233,7 +233,7 @@ static bool _match(expression_context_t *mut_ctx, const char *ref_to_match) {
 
 
 // Check if the next sequence of characters is a comparison operator
-static bool _is_comparison_operator(expression_context_t *ref_ctx) {
+static bool _is_comparison_operator(ar_expression_context_t *ref_ctx) {
     if (ref_ctx->ref_expr[ref_ctx->offset] == '=') {
         return true;
     }
@@ -253,7 +253,7 @@ static bool _is_comparison_operator(expression_context_t *ref_ctx) {
 }
 
 // Parse a string literal from the expression
-static const ar_data_t* parse_string_literal(expression_context_t *mut_ctx) {
+static const ar_data_t* parse_string_literal(ar_expression_context_t *mut_ctx) {
     if (mut_ctx->ref_expr[mut_ctx->offset] != '"') {
         return NULL;
     }
@@ -298,7 +298,7 @@ static const ar_data_t* parse_string_literal(expression_context_t *mut_ctx) {
 }
 
 // Parse a number literal (integer or double) from the expression
-static const ar_data_t* parse_number_literal(expression_context_t *mut_ctx) {
+static const ar_data_t* parse_number_literal(ar_expression_context_t *mut_ctx) {
     bool is_negative = false;
     if (mut_ctx->ref_expr[mut_ctx->offset] == '-') {
         is_negative = true;
@@ -365,7 +365,7 @@ static const ar_data_t* parse_number_literal(expression_context_t *mut_ctx) {
 }
 
 // Parse a memory access (message, memory, context) expression
-static const ar_data_t* parse_memory_access(expression_context_t *mut_ctx) {
+static const ar_data_t* parse_memory_access(ar_expression_context_t *mut_ctx) {
     enum {
         ACCESS_TYPE_MESSAGE,
         ACCESS_TYPE_MEMORY,
@@ -476,7 +476,7 @@ static const ar_data_t* parse_memory_access(expression_context_t *mut_ctx) {
 
 
 // Parse a primary expression (literal or memory access)
-static const ar_data_t* parse_primary(expression_context_t *mut_ctx) {
+static const ar_data_t* parse_primary(ar_expression_context_t *mut_ctx) {
     _skip_whitespace(mut_ctx);
     
     // Check for string literal
@@ -528,12 +528,12 @@ static const ar_data_t* parse_primary(expression_context_t *mut_ctx) {
 }
 
 // Forward declarations for recursive descent functions
-static const ar_data_t* parse_multiplicative(expression_context_t *ctx);
-static const ar_data_t* parse_additive(expression_context_t *ctx);
-static const ar_data_t* parse_comparison(expression_context_t *ctx);
+static const ar_data_t* parse_multiplicative(ar_expression_context_t *ctx);
+static const ar_data_t* parse_additive(ar_expression_context_t *ctx);
+static const ar_data_t* parse_comparison(ar_expression_context_t *ctx);
 
 // Parse a multiplicative expression (higher precedence: *, /)
-static const ar_data_t* parse_multiplicative(expression_context_t *ctx) {
+static const ar_data_t* parse_multiplicative(ar_expression_context_t *ctx) {
     // Parse the left operand
     const ar_data_t *left = parse_primary(ctx);
     if (!left) {
@@ -627,7 +627,7 @@ static const ar_data_t* parse_multiplicative(expression_context_t *ctx) {
 }
 
 // Parse an additive expression (medium precedence: +, -)
-static const ar_data_t* parse_additive(expression_context_t *ctx) {
+static const ar_data_t* parse_additive(ar_expression_context_t *ctx) {
     // Parse the left operand (which is a multiplicative expression)
     const ar_data_t *left = parse_multiplicative(ctx);
     if (!left) {
@@ -760,7 +760,7 @@ static const ar_data_t* parse_additive(expression_context_t *ctx) {
 }
 
 // Parse a comparison expression (lowest precedence: =, <>, <, <=, >, >=)
-static const ar_data_t* parse_comparison(expression_context_t *ctx) {
+static const ar_data_t* parse_comparison(ar_expression_context_t *ctx) {
     // Parse the left operand (which is an additive expression)
     const ar_data_t *left = parse_additive(ctx);
     if (!left) {
@@ -929,7 +929,7 @@ static const ar_data_t* parse_comparison(expression_context_t *ctx) {
 }
 
 // Parse and evaluate an expression
-static const ar_data_t* parse_expression(expression_context_t *ctx) {
+static const ar_data_t* parse_expression(ar_expression_context_t *ctx) {
     return parse_comparison(ctx);
 }
 
@@ -939,7 +939,7 @@ static const ar_data_t* parse_expression(expression_context_t *ctx) {
  * @param mut_ctx Pointer to the expression evaluation context (mutable reference)
  * @return Pointer to the evaluated data result, or NULL on failure
  */
-const ar_data_t* ar_expression__evaluate(expression_context_t *mut_ctx) {
+const ar_data_t* ar_expression__evaluate(ar_expression_context_t *mut_ctx) {
     if (!mut_ctx || !mut_ctx->ref_expr) {
         return NULL;
     }
@@ -969,7 +969,7 @@ const ar_data_t* ar_expression__evaluate(expression_context_t *mut_ctx) {
  * @param ref_result The result to take ownership of (becomes owned by caller)
  * @return true if ownership was successfully transferred, false otherwise
  */
-ar_data_t* ar_expression__take_ownership(expression_context_t *mut_ctx, const ar_data_t *ref_result) {
+ar_data_t* ar_expression__take_ownership(ar_expression_context_t *mut_ctx, const ar_data_t *ref_result) {
     if (!mut_ctx || !ref_result || !mut_ctx->own_results) {
         return NULL;
     }

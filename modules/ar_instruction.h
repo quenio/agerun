@@ -12,7 +12,7 @@
  * This is an opaque type. Clients should use the provided functions to create,
  * manipulate, and destroy instruction contexts.
  */
-typedef struct instruction_context_s instruction_context_t;
+typedef struct instruction_context_s ar_instruction_context_t;
 
 /**
  * Instruction type enumeration
@@ -44,7 +44,7 @@ typedef struct parsed_instruction_s parsed_instruction_t;
  * @note Ownership: Returns an owned value that caller must destroy.
  *       The function does not take ownership of the memory, context, or message parameters.
  */
-instruction_context_t* ar_instruction__create_context(ar_data_t *mut_memory, const ar_data_t *ref_context, const ar_data_t *ref_message);
+ar_instruction_context_t* ar_instruction__create_context(ar_data_t *mut_memory, const ar_data_t *ref_context, const ar_data_t *ref_message);
 
 /**
  * Destroys an instruction context.
@@ -54,7 +54,7 @@ instruction_context_t* ar_instruction__create_context(ar_data_t *mut_memory, con
  *       This only frees the context structure itself,
  *       not the memory, context, or message data structures which are owned by the caller.
  */
-void ar_instruction__destroy_context(instruction_context_t *own_ctx);
+void ar_instruction__destroy_context(ar_instruction_context_t *own_ctx);
 
 
 /**
@@ -67,7 +67,7 @@ void ar_instruction__destroy_context(instruction_context_t *own_ctx);
  *       The function does not take ownership of the instruction string.
  *       Parse errors are reported through the context's error mechanism.
  */
-parsed_instruction_t* ar_instruction__parse(const char *ref_instruction, instruction_context_t *mut_ctx);
+parsed_instruction_t* ar_instruction__parse(const char *ref_instruction, ar_instruction_context_t *mut_ctx);
 
 /**
  * Destroys a parsed instruction and frees its resources
@@ -130,7 +130,7 @@ bool ar_instruction__get_function_call(const parsed_instruction_t *ref_parsed,
  * @note Ownership: Does not take ownership of the context parameter.
  *       The returned memory is still owned by the context.
  */
-ar_data_t* ar_instruction__get_memory(const instruction_context_t *ref_ctx);
+ar_data_t* ar_instruction__get_memory(const ar_instruction_context_t *ref_ctx);
 
 /**
  * Gets the context data from the instruction context.
@@ -140,7 +140,7 @@ ar_data_t* ar_instruction__get_memory(const instruction_context_t *ref_ctx);
  * @note Ownership: Does not take ownership of the context parameter.
  *       The returned context data is still owned by the context owner.
  */
-const ar_data_t* ar_instruction__get_context(const instruction_context_t *ref_ctx);
+const ar_data_t* ar_instruction__get_context(const ar_instruction_context_t *ref_ctx);
 
 /**
  * Gets the message from the instruction context.
@@ -150,7 +150,7 @@ const ar_data_t* ar_instruction__get_context(const instruction_context_t *ref_ct
  * @note Ownership: Does not take ownership of the context parameter.
  *       The returned message is still owned by the context owner.
  */
-const ar_data_t* ar_instruction__get_message(const instruction_context_t *ref_ctx);
+const ar_data_t* ar_instruction__get_message(const ar_instruction_context_t *ref_ctx);
 
 
 /**
@@ -161,7 +161,7 @@ const ar_data_t* ar_instruction__get_message(const instruction_context_t *ref_ct
  * @note Ownership: Does not take ownership of the context parameter.
  *       The returned string is owned by the context and should not be freed.
  */
-const char* ar_instruction__get_last_error(const instruction_context_t *ref_ctx);
+const char* ar_instruction__get_last_error(const ar_instruction_context_t *ref_ctx);
 
 /**
  * Gets the position in the instruction string where the last error occurred.
@@ -170,6 +170,6 @@ const char* ar_instruction__get_last_error(const instruction_context_t *ref_ctx)
  * @return The error position (1-based column), or 0 if no error
  * @note Ownership: Does not take ownership of the context parameter.
  */
-int ar_instruction__get_error_position(const instruction_context_t *ref_ctx);
+int ar_instruction__get_error_position(const ar_instruction_context_t *ref_ctx);
 
 #endif /* AGERUN_INSTRUCTION_H */

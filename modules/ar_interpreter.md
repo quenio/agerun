@@ -215,7 +215,7 @@ The interpreter ensures memory safety through:
 interpreter_t *interpreter = ar_interpreter__create();
 
 // Create instruction context
-instruction_context_t *ctx = ar_instruction__create_context(
+ar_instruction_context_t *ctx = ar_instruction__create_context(
     agent_memory,    // Mutable memory reference
     agent_context,   // Context reference
     message         // Message reference (can be NULL)

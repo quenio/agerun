@@ -39,7 +39,7 @@ Creates a new test fixture with the given name. The fixture must be destroyed wh
 ### Expression Context Creation
 
 ```c
-expression_context_t* ar_instruction__fixture_create_expression_context(
+ar_expression_context_t* ar_instruction__fixture_create_expression_context(
     instruction_fixture_t *mut_fixture,
     const char *ref_expression
 );
@@ -51,7 +51,7 @@ Creates an expression context with standard test data:
 - Message map with: action="test", sender=0
 
 ```c
-expression_context_t* ar_instruction__fixture_create_custom_expression_context(
+ar_expression_context_t* ar_instruction__fixture_create_custom_expression_context(
     instruction_fixture_t *mut_fixture,
     ar_data_t *mut_memory,
     const ar_data_t *ref_context,
@@ -136,7 +136,7 @@ void ar_instruction__fixture_track_data(
 
 void ar_instruction__fixture_track_expression_context(
     instruction_fixture_t *mut_fixture,
-    expression_context_t *own_context
+    ar_expression_context_t *own_context
 );
 
 void ar_instruction__fixture_track_resource(
@@ -179,7 +179,7 @@ static void test_instruction_with_agent(void) {
     const ar_data_t *ref_context = ar_agent__get_context(agent);
     
     // Create instruction context (manually, as instruction module provides this)
-    instruction_context_t *own_ctx = ar_instruction__create_context(
+    ar_instruction_context_t *own_ctx = ar_instruction__create_context(
         mut_memory, ref_context, NULL
     );
     
@@ -210,7 +210,7 @@ static void test_arithmetic_expression(void) {
     assert(own_fixture != NULL);
     
     // Create expression context with standard test data
-    expression_context_t *ref_ctx = ar_instruction__fixture_create_expression_context(
+    ar_expression_context_t *ref_ctx = ar_instruction__fixture_create_expression_context(
         own_fixture, "memory.count + 10"
     );
     assert(ref_ctx != NULL);
