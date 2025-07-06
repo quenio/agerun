@@ -95,6 +95,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
   - Each test generates its own report file automatically
   - Example: `bin/memory_report_ar_string_tests.log`
   - Workflow: `make bin/test_name` → Check test-specific memory report
+- **Complete verification**: `grep "Actual memory leaks:" bin/memory_report_*.log | grep -v "0 (0 bytes)"` checks ALL reports
 - Enhanced per-test reporting: The build system generates unique memory reports for each test
   - `make bin/test_name` automatically creates test-specific report files
   - Manual runs can use `AGERUN_MEMORY_REPORT` environment variable
