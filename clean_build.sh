@@ -513,10 +513,10 @@ else
     all_types=""
     
     for header in $header_files; do
-        # Extract function declarations (ar__module__function pattern)
+        # Extract function declarations (ar_module__function pattern)
         # Match function declarations that may have return types, asterisks, etc.
-        functions=$(grep -E 'ar__[a-zA-Z0-9_]+__[a-zA-Z0-9_]+\s*\(' "$header" 2>/dev/null | \
-                   sed -E 's/.*[^a-zA-Z0-9_](ar__[a-zA-Z0-9_]+__[a-zA-Z0-9_]+)\s*\(.*/\1/' | sort -u)
+        functions=$(grep -E 'ar_[a-zA-Z0-9]+__[a-zA-Z0-9_]+\s*\(' "$header" 2>/dev/null | \
+                   sed -E 's/.*[^a-zA-Z0-9_](ar_[a-zA-Z0-9]+__[a-zA-Z0-9_]+)\s*\(.*/\1/' | sort -u)
         all_functions="$all_functions $functions"
         
         # Extract typedef struct names
@@ -552,9 +552,16 @@ else
     for doc in $doc_files; do
         checked_files=$((checked_files + 1))
         
-        # Look for function references in backticks (e.g., `ar__module__function()`)
-        function_refs=$(grep -Eo '\`ar__[a-zA-Z0-9_]+__[a-zA-Z0-9_]+\(\)?\`' "$doc" 2>/dev/null | \
-                       sed -E 's/\`(ar__[a-zA-Z0-9_]+__[a-zA-Z0-9_]+)\(\)?\`/\1/' | sort -u)
+        # First check for incorrect double underscore patterns (ar__module__)
+        double_underscore_refs=$(grep -Eo 'ar__[a-zA-Z0-9_]+__[a-zA-Z0-9_]+' "$doc" 2>/dev/null | sort -u)
+        for bad_ref in $double_underscore_refs; do
+            all_refs_valid=false
+            broken_function_refs="$broken_function_refs\n  - $doc contains invalid double underscore pattern '$bad_ref' (should be ar_module__function)"
+        done
+        
+        # Look for function references in backticks (e.g., `ar_module__function()`)
+        function_refs=$(grep -Eo '\`ar_[a-zA-Z0-9]+__[a-zA-Z0-9_]+\(\)?\`' "$doc" 2>/dev/null | \
+                       sed -E 's/\`(ar_[a-zA-Z0-9]+__[a-zA-Z0-9_]+)\(\)?\`/\1/' | sort -u)
         
         for func_ref in $function_refs; do
             # Check if this function exists in our extracted functions
