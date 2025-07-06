@@ -461,7 +461,65 @@ else
     echo -e "    Issues:$struct_issues" | head -10
 fi
 
-# Step 8: Summary
+# Step 8: Check Zig-specific naming conventions
+echo
+echo "Checking Zig-specific naming conventions..."
+
+# Check Zig struct types
+echo -n "  Zig struct types... "
+bad_zig_structs=0
+zig_struct_issues=""
+
+for file in modules/*.zig; do
+    if [ -f "$file" ]; then
+        # Look for struct definitions that don't follow naming convention
+        # Pattern: const StructName = struct {
+        bad_structs=$(grep -E "^const [A-Z][a-zA-Z0-9_]* = struct" "$file" 2>/dev/null | \
+            grep -v -E "^const ar_[a-zA-Z0-9_]+_t = struct" | \
+            sed "s|^|$file: |")
+        
+        if [ ! -z "$bad_structs" ]; then
+            zig_struct_issues="$zig_struct_issues\n$bad_structs"
+            ((bad_zig_structs++))
+        fi
+    fi
+done
+
+if [ $bad_zig_structs -eq 0 ]; then
+    print_success "All Zig struct types follow naming convention"
+else
+    print_error "Found Zig struct types not following ar_<type>_t convention"
+    echo -e "    Issues:$zig_struct_issues" | head -10
+fi
+
+# Check Zig global variables
+echo -n "  Zig global variables... "
+bad_zig_globals=0
+zig_global_issues=""
+
+for file in modules/*.zig; do
+    if [ -f "$file" ]; then
+        # Look for global variables (var declarations at module level)
+        # They should use g_ prefix
+        bad_globals=$(grep -E "^(pub )?var [a-zA-Z]" "$file" 2>/dev/null | \
+            grep -v -E "^(pub )?var g_" | \
+            sed "s|^|$file: |")
+        
+        if [ ! -z "$bad_globals" ]; then
+            zig_global_issues="$zig_global_issues\n$bad_globals"
+            ((bad_zig_globals++))
+        fi
+    fi
+done
+
+if [ $bad_zig_globals -eq 0 ]; then
+    print_success "All Zig global variables follow g_ prefix convention"
+else
+    print_error "Found Zig global variables not following g_ prefix convention"
+    echo -e "    Issues:$zig_global_issues" | head -10
+fi
+
+# Step 9: Summary
 echo
 echo "=== Naming Convention Check Summary ==="
 echo "Completed at $(date)"
@@ -475,11 +533,12 @@ else
     echo "Naming Convention Guidelines:"
     echo "  - Module files: ar_<module>.{c,h,zig}"
     echo "  - Public functions: ar_<module>__<function>"
-    echo "  - Static functions: _<function>"
+    echo "  - Static/private functions: _<function>"
     echo "  - Test functions: test_<module>__<test_name>"
     echo "  - Types: ar_<type>_t"
-    echo "  - Structs: ar_<name>_s"
+    echo "  - Structs: ar_<name>_s (C), ar_<name>_t (Zig)"
     echo "  - Enum values: AR_<ENUM_TYPE>__<VALUE>"
+    echo "  - Global variables: g_<name>"
     echo "  - Heap macros: AR__HEAP__<OPERATION>"
     echo "  - Assert macros: AR_ASSERT_<TYPE>"
 fi
