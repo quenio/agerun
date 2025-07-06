@@ -50,7 +50,8 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - **/modules**: Core implementation (.c/.h files and tests)
 - **/bin**: Generated binaries (ignored by git, NEVER read these files)
 - **/methods**: Method definitions (.method files with docs and tests)
-- **/scripts**: Build and utility scripts (run via make targets, not directly)
+- **/scripts**: Build and utility scripts (run via make targets, not directly - includes slash commands)
+- **.claude/commands**: Slash command definitions (must use make targets, not direct scripts)
 
 ## Critical Development Rules
 
