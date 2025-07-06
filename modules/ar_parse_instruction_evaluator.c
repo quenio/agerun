@@ -11,11 +11,10 @@
 #include "ar_expression_ast.h"
 #include "ar_expression_evaluator.h"
 #include "ar_log.h"
-#include "ar_path.h"
+#include "ar_memory_accessor.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdbool.h>
 
 /* Struct definition for parse instruction evaluator */
 struct ar_parse_instruction_evaluator_s {
@@ -24,11 +23,8 @@ struct ar_parse_instruction_evaluator_s {
     data_t *mut_memory;                          /* Memory map (mutable reference) */
 };
 
-/* Constants */
-static const size_t MEMORY_PREFIX_LEN = 7; // Length of "memory."
 
 /* Forward declarations of helper functions */
-static const char* _get_memory_key_path(const char *ref_path);
 static bool _store_result_if_assigned(data_t *mut_memory, const ar_instruction_ast_t *ref_ast, data_t *own_result);
 static data_t* _parse_value_string(const char *value_str);
 static void _log_error(ar_parse_instruction_evaluator_t *mut_evaluator, const char *message);
@@ -40,27 +36,6 @@ static void _log_error(ar_parse_instruction_evaluator_t *mut_evaluator, const ch
     }
 }
 
-/* Helper function to check if a path starts with "memory." and return the key path */
-static const char* _get_memory_key_path(const char *ref_path) {
-    if (!ref_path) {
-        return NULL;
-    }
-    
-    ar_path_t *own_path = ar_path__create_variable(ref_path);
-    if (!own_path) {
-        return NULL;
-    }
-    
-    bool is_memory = ar_path__is_memory_path(own_path);
-    ar_path__destroy(own_path);
-    
-    if (!is_memory) {
-        return NULL;
-    }
-    
-    // Skip "memory." prefix
-    return ref_path + MEMORY_PREFIX_LEN;
-}
 
 
 
@@ -78,7 +53,7 @@ static bool _store_result_if_assigned(
     }
     
     // Get memory key path
-    const char *key_path = _get_memory_key_path(ref_result_path);
+    const char *key_path = ar_memory_accessor__get_key(ref_result_path);
     if (!key_path) {
         ar_data__destroy(own_result);
         return false;

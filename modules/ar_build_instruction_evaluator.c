@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stddef.h>
-#include <stdbool.h>
 
 #include "ar_instruction_ast.h"
 #include "ar_expression_ast.h"
@@ -17,11 +16,9 @@
 #include "ar_list.h"
 #include "ar_heap.h"
 #include "ar_log.h"
-#include "ar_path.h"
+#include "ar_memory_accessor.h"
 
 
-/* Memory prefix for path extraction */
-static const size_t MEMORY_PREFIX_LEN = 7; // Length of "memory."
 
 /* Opaque struct definition */
 struct ar_build_instruction_evaluator_s {
@@ -75,32 +72,6 @@ static void _log_error(ar_build_instruction_evaluator_t *mut_evaluator, const ch
     }
 }
 
-/**
- * Gets memory key path by removing "memory." prefix
- * 
- * @param ref_path The full path (e.g., "memory.foo.bar")
- * @return The key path without prefix (e.g., "foo.bar") or NULL
- */
-static const char* _get_memory_key_path(const char *ref_path) {
-    if (!ref_path) {
-        return NULL;
-    }
-    
-    ar_path_t *own_path = ar_path__create_variable(ref_path);
-    if (!own_path) {
-        return NULL;
-    }
-    
-    bool is_memory = ar_path__is_memory_path(own_path);
-    ar_path__destroy(own_path);
-    
-    if (!is_memory) {
-        return NULL;
-    }
-    
-    // Skip "memory." prefix
-    return ref_path + MEMORY_PREFIX_LEN;
-}
 
 /**
  * Converts data value to string representation
@@ -261,7 +232,7 @@ static bool _store_result_if_assigned(
     }
     
     // Get memory key path
-    const char *key_path = _get_memory_key_path(ref_result_path);
+    const char *key_path = ar_memory_accessor__get_key(ref_result_path);
     if (!key_path) {
         ar_data__destroy(own_result);
         return false;

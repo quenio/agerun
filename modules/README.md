@@ -4,7 +4,7 @@
 
 In the AgeRun system, a module is a self-contained unit of functionality that consists of an implementation file (`.c` or `.zig`) and a header file (`.h`). Each module encapsulates a specific set of related functions and data structures that work together to provide a particular capability to the system. Modules are designed to have clear interfaces and dependencies, making the system more maintainable and easier to understand.
 
-**Zig Integration**: Some modules are now implemented in Zig (`.zig` files) while maintaining full C ABI compatibility. Currently implemented in Zig: `ar_assert`, `ar_heap`, `ar_io`, and `ar_string`.
+**Zig Integration**: Some modules are now implemented in Zig (`.zig` files) while maintaining full C ABI compatibility. Currently implemented in Zig: `ar_assert`, `ar_heap`, `ar_io`, `ar_memory_accessor`, `ar_semver`, and `ar_string`.
 
 Each module typically follows a consistent naming convention with an `ar_` prefix (e.g., `ar_data`, `ar_string`), and has its own test file (`ar_*_tests.c`) that verifies its functionality. Note: File names are being transitioned from `ar_` to `ar_` prefix gradually as files are modified for other reasons.
 
@@ -268,6 +268,7 @@ ar_instruction_evaluator
 │       ├──h──> ar_expression_evaluator
 │       ├──h──> ar_instruction_ast
 │       ├──h──> ar_data
+│       ├──c──> ar_memory_accessor (Zig)
 │       ├──c──> ar_expression_parser
 │       ├──c──> ar_expression_ast
 │       ├──c──> ar_string (Zig)
@@ -276,6 +277,7 @@ ar_instruction_evaluator
 │       ├──h──> ar_expression_evaluator
 │       ├──h──> ar_instruction_ast
 │       ├──h──> ar_data
+│       ├──c──> ar_memory_accessor (Zig)
 │       ├──c──> ar_expression_parser
 │       ├──c──> ar_expression_ast
 │       ├──c──> ar_agency
@@ -285,6 +287,7 @@ ar_instruction_evaluator
 │       ├──h──> ar_expression_evaluator
 │       ├──h──> ar_instruction_ast
 │       ├──h──> ar_data
+│       ├──c──> ar_memory_accessor (Zig)
 │       ├──c──> ar_expression_parser
 │       ├──c──> ar_expression_ast
 │       ├──c──> ar_string (Zig)
@@ -293,6 +296,7 @@ ar_instruction_evaluator
 │       ├──h──> ar_expression_evaluator
 │       ├──h──> ar_instruction_ast
 │       ├──h──> ar_data
+│       ├──c──> ar_memory_accessor (Zig)
 │       ├──c──> ar_expression_parser
 │       ├──c──> ar_expression_ast
 │       ├──c──> ar_instruction
@@ -302,6 +306,7 @@ ar_instruction_evaluator
 │       ├──h──> ar_expression_evaluator
 │       ├──h──> ar_instruction_ast
 │       ├──h──> ar_data
+│       ├──c──> ar_memory_accessor (Zig)
 │       ├──c──> ar_expression_parser
 │       ├──c──> ar_expression_ast
 │       ├──c──> ar_string (Zig)
@@ -310,6 +315,7 @@ ar_instruction_evaluator
 │       ├──h──> ar_expression_evaluator
 │       ├──h──> ar_instruction_ast
 │       ├──h──> ar_data
+│       ├──c──> ar_memory_accessor (Zig)
 │       ├──c──> ar_expression_parser
 │       ├──c──> ar_expression_ast
 │       ├──c──> ar_methodology
@@ -320,6 +326,7 @@ ar_instruction_evaluator
 │       ├──h──> ar_expression_evaluator
 │       ├──h──> ar_instruction_ast
 │       ├──h──> ar_data
+│       ├──c──> ar_memory_accessor (Zig)
 │       ├──c──> ar_expression_parser
 │       ├──c──> ar_expression_ast
 │       ├──c──> ar_agency
@@ -331,6 +338,7 @@ ar_instruction_evaluator
 │       ├──h──> ar_expression_evaluator
 │       ├──h──> ar_instruction_ast
 │       ├──h──> ar_data
+│       ├──c──> ar_memory_accessor (Zig)
 │       ├──c──> ar_expression_parser
 │       ├──c──> ar_expression_ast
 │       ├──c──> ar_agency
@@ -339,6 +347,7 @@ ar_instruction_evaluator
 │       ├──h──> ar_expression_evaluator
 │       ├──h──> ar_instruction_ast
 │       ├──h──> ar_data
+│       ├──c──> ar_memory_accessor (Zig)
 │       ├──c──> ar_expression_parser
 │       ├──c──> ar_expression_ast
 │       ├──c──> ar_agency
@@ -879,6 +888,7 @@ The [path module](ar_path.md) provides comprehensive path manipulation functiona
 - **Minimal Dependencies**: Only depends on heap tracking and standard C library
 - **Migration Path**: Replaces path-related functions from ar_string module
 
+
 ### Event Module (`ar_event`)
 
 The [event module](ar_event.md) provides event representation for error handling and logging throughout the system:
@@ -1029,6 +1039,19 @@ The expression evaluator module provides evaluation of expression ASTs against m
 - **Recursive Evaluation**: Properly evaluates nested expressions
 - **Depends on AST**: Uses expression_ast module for node inspection
 - **Depends on Data**: Uses data module for value creation and manipulation
+
+### Memory Accessor Module (`ar_memory_accessor`)
+
+The [memory accessor module](ar_memory_accessor.md) provides utilities for accessing memory paths used by instruction evaluators:
+
+- **Memory Path Validation**: Checks if paths are valid memory paths with the format "memory.key"
+- **Key Extraction**: Extracts the key portion from memory paths (e.g., "user.name" from "memory.user.name")
+- **Zig Implementation**: Implemented in Zig for zero-cost abstraction while maintaining C compatibility
+- **Strict Validation**: Ensures first segment equals exactly "memory" (not just starts with)
+- **Segment Count Check**: Requires at least 2 segments for a valid memory path
+- **No Memory Allocation**: Returns pointers into original strings, avoiding allocation overhead
+- **Centralized Logic**: Eliminates duplicated memory path checking across 9 instruction evaluators
+- **Depends on Path**: Uses ar_path module for path parsing and validation
 
 ### Instruction Evaluator Module (`ar_instruction_evaluator`)
 

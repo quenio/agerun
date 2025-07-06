@@ -135,6 +135,11 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] ar_destroy_method_instruction_evaluator - migrated _get_memory_key_path to use ar_path
     - [x] All evaluators now include ar_path.h and stdbool.h
     - [x] Removed MEMORY_PREFIX string constant from all evaluators
+  - [x] Created `ar_memory_accessor` module to eliminate _get_memory_key_path duplication (Completed 2025-07-06)
+    - [x] Implemented as C-compatible Zig module with strict validation
+    - [x] All 9 evaluators now use ar_memory_accessor__get_key instead of duplicated function
+    - [x] Validates first segment equals exactly "memory" and has at least 2 segments
+    - [x] Zero memory allocation - returns pointer into original string
     - [x] Kept MEMORY_PREFIX_LEN constant (7) to avoid magic numbers
     - [x] All tests pass with zero memory leaks
 

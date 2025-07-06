@@ -7,11 +7,10 @@
 #include "ar_heap.h"
 #include "ar_expression_ast.h"
 #include "ar_log.h"
-#include "ar_path.h"
+#include "ar_memory_accessor.h"
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
-#include <stdbool.h>
 
 
 /* Internal structure for the assignment instruction evaluator */
@@ -21,8 +20,6 @@ struct ar_assignment_instruction_evaluator_s {
     data_t *mut_memory;                          /* Mutable reference to memory map */
 };
 
-/* Constants */
-static const size_t MEMORY_PREFIX_LEN = 7; // Length of "memory."
 
 ar_assignment_instruction_evaluator_t* ar_assignment_instruction_evaluator__create(
     ar_log_t *ref_log,
@@ -64,27 +61,6 @@ static void _log_error(ar_assignment_instruction_evaluator_t *mut_evaluator, con
     }
 }
 
-/* Helper function to check if a path starts with "memory." and return the key path */
-static const char* _get_memory_key_path(const char *ref_path) {
-    if (!ref_path) {
-        return NULL;
-    }
-    
-    ar_path_t *own_path = ar_path__create_variable(ref_path);
-    if (!own_path) {
-        return NULL;
-    }
-    
-    bool is_memory = ar_path__is_memory_path(own_path);
-    ar_path__destroy(own_path);
-    
-    if (!is_memory) {
-        return NULL;
-    }
-    
-    // Skip "memory." prefix
-    return ref_path + MEMORY_PREFIX_LEN;
-}
 
 
 
@@ -111,7 +87,7 @@ bool ar_assignment_instruction_evaluator__evaluate(
     }
     
     // Get memory key path
-    const char *key_path = _get_memory_key_path(ref_path);
+    const char *key_path = ar_memory_accessor__get_key(ref_path);
     if (!key_path) {
         _log_error(mut_evaluator, "Assignment target must start with 'memory.'");
         return false;
