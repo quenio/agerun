@@ -1,3 +1,34 @@
+# Default target
+.DEFAULT_GOAL := help
+
+# Help target - displays available make targets
+help:
+	@echo "AgeRun Makefile Targets:"
+	@echo ""
+	@echo "Build targets:"
+	@echo "  make              - Build the library (debug mode)"
+	@echo "  make debug        - Build the library in debug mode"
+	@echo "  make release      - Build the library in release mode"
+	@echo "  make executable   - Build the executable"
+	@echo "  make clean        - Remove all build artifacts"
+	@echo ""
+	@echo "Test targets:"
+	@echo "  make test         - Run all tests"
+	@echo "  make test-sanitize - Run tests with AddressSanitizer + UBSan"
+	@echo "  make test-tsan    - Run tests with ThreadSanitizer"
+	@echo ""
+	@echo "Analysis targets:"
+	@echo "  make analyze      - Run static analysis on library"
+	@echo "  make analyze-tests - Run static analysis on tests"
+	@echo "  make check-naming - Check naming conventions"
+	@echo "  make check-docs   - Check documentation validity"
+	@echo "  make check-all    - Run all code quality checks"
+	@echo ""
+	@echo "Run targets:"
+	@echo "  make run          - Build and run the executable"
+	@echo "  make run-sanitize - Run executable with sanitizers"
+	@echo "  make run-tsan     - Run executable with ThreadSanitizer"
+
 # Detect OS for sanitizer compiler selection
 UNAME_S := $(shell uname -s)
 
@@ -263,7 +294,22 @@ check-naming:
 		exit 1; \
 	fi
 
-.PHONY: all debug release sanitize clean test test-sanitize executable executable-sanitize run run-sanitize analyze analyze-tests check-naming
+# Check documentation validity (file references, module names, function/type refs)
+check-docs:
+	@if [ -x ./check_docs.sh ]; then \
+		./check_docs.sh; \
+	else \
+		echo "ERROR: check_docs.sh not found or not executable"; \
+		echo "Make sure the script exists and has execute permissions"; \
+		exit 1; \
+	fi
+
+# Run all code quality checks (naming conventions and documentation)
+check-all: check-naming check-docs
+	@echo ""
+	@echo "All code quality checks completed!"
+
+.PHONY: help all debug release sanitize clean test test-sanitize executable executable-sanitize run run-sanitize analyze analyze-tests check-naming check-docs check-all
 
 # Debug targets
 print-src:
