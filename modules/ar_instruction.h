@@ -32,7 +32,7 @@ typedef enum {
  * Parsed instruction structure (opaque type)
  * Contains the parsed representation of an instruction
  */
-typedef struct parsed_instruction_s parsed_instruction_t;
+typedef struct ar_parsed_instruction_s ar_parsed_instruction_t;
 
 /**
  * Creates a new instruction context for parsing and executing instructions.
@@ -67,7 +67,7 @@ void ar_instruction__destroy_context(ar_instruction_context_t *own_ctx);
  *       The function does not take ownership of the instruction string.
  *       Parse errors are reported through the context's error mechanism.
  */
-parsed_instruction_t* ar_instruction__parse(const char *ref_instruction, ar_instruction_context_t *mut_ctx);
+ar_parsed_instruction_t* ar_instruction__parse(const char *ref_instruction, ar_instruction_context_t *mut_ctx);
 
 /**
  * Destroys a parsed instruction and frees its resources
@@ -76,7 +76,7 @@ parsed_instruction_t* ar_instruction__parse(const char *ref_instruction, ar_inst
  * @note Ownership: This function takes ownership of the parsed instruction and frees it.
  *       The pointer will be invalid after this call.
  */
-void ar_instruction__destroy_parsed(parsed_instruction_t *own_parsed);
+void ar_instruction__destroy_parsed(ar_parsed_instruction_t *own_parsed);
 
 /**
  * Gets the type of a parsed instruction
@@ -85,7 +85,7 @@ void ar_instruction__destroy_parsed(parsed_instruction_t *own_parsed);
  * @return The instruction type
  * @note Ownership: Does not take ownership of the parsed instruction.
  */
-ar_instruction_type_t ar_instruction__get_type(const parsed_instruction_t *ref_parsed);
+ar_instruction_type_t ar_instruction__get_type(const ar_parsed_instruction_t *ref_parsed);
 
 /**
  * Gets the memory path for an assignment instruction
@@ -94,7 +94,7 @@ ar_instruction_type_t ar_instruction__get_type(const parsed_instruction_t *ref_p
  * @return The memory path (e.g., "memory.x.y"), or NULL if not an assignment
  * @note Ownership: Returns a borrowed reference. The caller should not free the result.
  */
-const char* ar_instruction__get_assignment_path(const parsed_instruction_t *ref_parsed);
+const char* ar_instruction__get_assignment_path(const ar_parsed_instruction_t *ref_parsed);
 
 /**
  * Gets the expression for an assignment instruction
@@ -103,7 +103,7 @@ const char* ar_instruction__get_assignment_path(const parsed_instruction_t *ref_
  * @return The expression string, or NULL if not an assignment
  * @note Ownership: Returns a borrowed reference. The caller should not free the result.
  */
-const char* ar_instruction__get_assignment_expression(const parsed_instruction_t *ref_parsed);
+const char* ar_instruction__get_assignment_expression(const ar_parsed_instruction_t *ref_parsed);
 
 /**
  * Gets function call details from a parsed instruction
@@ -116,7 +116,7 @@ const char* ar_instruction__get_assignment_expression(const parsed_instruction_t
  * @return true if this is a function call instruction, false otherwise
  * @note Ownership: All output parameters are borrowed references that remain owned by the parsed instruction.
  */
-bool ar_instruction__get_function_call(const parsed_instruction_t *ref_parsed,
+bool ar_instruction__get_function_call(const ar_parsed_instruction_t *ref_parsed,
                                         const char **out_function_name,
                                         const char ***out_args,
                                         int *out_arg_count,

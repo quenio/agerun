@@ -20,6 +20,12 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] map_t → ar_map_t (62 occurrences) - using rename_types.py
   - [x] agent_t → ar_agent_t (68 occurrences) - using rename_types.py
   - [x] method_t → ar_method_t (186 occurrences) - using rename_types.py
+  - [x] agent_registry_t → ar_agent_registry_t (49 occurrences) - using rename_types.py
+  - [x] expression_context_t → ar_expression_context_t (117 occurrences) - using rename_types.py
+  - [x] instruction_context_t → ar_instruction_context_t (71 occurrences) - using rename_types.py
+  - [x] parsed_instruction_t → ar_parsed_instruction_t (88 occurrences) - using rename_types.py
+  - [x] instruction_parser_t → ar_instruction_parser_t (64 occurrences) - using rename_types.py
+  - [x] instruction_evaluator_t → ar_instruction_evaluator_t (32 occurrences) - using rename_types.py
 - [x] Fixed check-naming script to show all typedef issues (removed output truncation)
 - [x] Updated Makefile help to show single test build command
 - [x] Updated CLAUDE.md with Makefile usage clarification (default shows help, not build)
@@ -532,7 +538,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [ ] **Detailed integration plan using FACADES ONLY**:
   - [ ] TDD Cycle 1: Add parser/evaluator instances to interpreter struct
     - [ ] Red: Test that interpreter has parser instances
-    - [ ] Green: Add fields: instruction_parser_t*, expression_parser_t*, expression_evaluator_t*
+    - [ ] Green: Add fields: ar_instruction_parser_t*, expression_parser_t*, expression_evaluator_t*
     - [ ] Refactor: Ensure proper ownership prefixes
   - [ ] TDD Cycle 2: Update includes and create/destroy lifecycle
     - [ ] Red: Test parser lifecycle
@@ -573,7 +579,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [ ] **Remove legacy parsing code from instruction module**:
   - [ ] Remove the 704-line `_parse_function_call` function entirely
   - [ ] Remove `_parse_instruction`, `_parse_function_instruction`, and related legacy parsing functions
-  - [ ] Remove legacy `parsed_instruction_t` structures and related types
+  - [ ] Remove legacy `ar_parsed_instruction_t` structures and related types
   - [ ] Keep only functions still needed by other modules (if any)
   - [ ] Update or remove `ar__instruction__parse()` public function
 - [ ] **Remove legacy execution code from expression module**:
@@ -717,7 +723,7 @@ This order ensures clean separation of concerns across all modules.
   - [x] Write comprehensive tests following TDD methodology
 - [x] Create instruction_parser module to extract parsing from instruction (Completed 2025-06-16):
   - [x] Create agerun_instruction_parser.h with public interface
-  - [x] Define opaque instruction_parser_t structure
+  - [x] Define opaque ar_instruction_parser_t structure
   - [x] Implement ar__instruction_parser__create() to create parser instance (no parameter - reusable)
   - [x] Implement ar__instruction_parser__destroy() for cleanup
   - [x] Implement specific parse methods for each instruction type (no general parse function)
@@ -728,7 +734,7 @@ This order ensures clean separation of concerns across all modules.
   - [x] Created comprehensive documentation (agerun_instruction_parser.md)
 - [x] Create instruction_evaluator module to extract evaluation from interpreter (Completed 2025-06-19):
   - [x] Create agerun_instruction_evaluator.h with public interface (Completed 2025-06-17)
-  - [x] Define opaque instruction_evaluator_t structure (Completed 2025-06-17)
+  - [x] Define opaque ar_instruction_evaluator_t structure (Completed 2025-06-17)
   - [x] Implement ar__instruction_evaluator__create() with expression evaluator and data parameters (Completed 2025-06-17)
   - [x] Implement ar__instruction_evaluator__destroy() for cleanup (Completed 2025-06-17)
   - [x] Write TDD tests for create/destroy functions (Completed 2025-06-17)

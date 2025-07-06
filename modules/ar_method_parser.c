@@ -14,7 +14,7 @@
 // Opaque structure definition
 struct ar_method_parser_s {
     ar_log_t *ref_log;                       /* Log instance for error reporting (borrowed) */
-    instruction_parser_t *instruction_parser;
+    ar_instruction_parser_t *instruction_parser;
 };
 
 // Helper function to log error with line number

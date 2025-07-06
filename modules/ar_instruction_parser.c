@@ -21,7 +21,7 @@
 /**
  * Opaque parser structure.
  */
-struct instruction_parser_s {
+struct ar_instruction_parser_s {
     ar_log_t *ref_log;       /* Log instance for error reporting (borrowed) */
     
     /* Specialized parser instances */
@@ -39,7 +39,7 @@ struct instruction_parser_s {
 /**
  * Internal helper to destroy all specialized parsers.
  */
-static void _destroy_specialized_parsers(instruction_parser_t *mut_parser) {
+static void _destroy_specialized_parsers(ar_instruction_parser_t *mut_parser) {
     if (!mut_parser) {
         return;
     }
@@ -76,14 +76,14 @@ static void _destroy_specialized_parsers(instruction_parser_t *mut_parser) {
 /**
  * Create a new instruction parser instance.
  */
-instruction_parser_t* ar_instruction_parser__create(ar_log_t *ref_log) {
-    instruction_parser_t *own_parser = AR__HEAP__MALLOC(sizeof(instruction_parser_t), "instruction_parser");
+ar_instruction_parser_t* ar_instruction_parser__create(ar_log_t *ref_log) {
+    ar_instruction_parser_t *own_parser = AR__HEAP__MALLOC(sizeof(ar_instruction_parser_t), "instruction_parser");
     if (!own_parser) {
         return NULL;
     }
     
     // Initialize all fields to NULL first
-    memset(own_parser, 0, sizeof(instruction_parser_t));
+    memset(own_parser, 0, sizeof(ar_instruction_parser_t));
     
     // Store the log reference
     own_parser->ref_log = ref_log;
@@ -153,7 +153,7 @@ error:
 /**
  * Destroy an instruction parser instance.
  */
-void ar_instruction_parser__destroy(instruction_parser_t *own_parser) {
+void ar_instruction_parser__destroy(ar_instruction_parser_t *own_parser) {
     if (!own_parser) {
         return;
     }
@@ -168,7 +168,7 @@ void ar_instruction_parser__destroy(instruction_parser_t *own_parser) {
  * Get the last error message from the parser.
  * DEPRECATED: This function always returns NULL. Use ar_log for error reporting.
  */
-const char* ar_instruction_parser__get_error(const instruction_parser_t *ref_parser) {
+const char* ar_instruction_parser__get_error(const ar_instruction_parser_t *ref_parser) {
     (void)ref_parser; // Suppress unused parameter warning
     return NULL;
 }
@@ -177,7 +177,7 @@ const char* ar_instruction_parser__get_error(const instruction_parser_t *ref_par
  * Get the error position from the last parse attempt.
  * DEPRECATED: This function always returns 0. Use ar_log for error reporting.
  */
-size_t ar_instruction_parser__get_error_position(const instruction_parser_t *ref_parser) {
+size_t ar_instruction_parser__get_error_position(const ar_instruction_parser_t *ref_parser) {
     (void)ref_parser; // Suppress unused parameter warning
     return 0;
 }
@@ -185,7 +185,7 @@ size_t ar_instruction_parser__get_error_position(const instruction_parser_t *ref
 /**
  * Internal: Log error message with position.
  */
-static void _log_error(instruction_parser_t *mut_parser, const char *error, size_t position) {
+static void _log_error(ar_instruction_parser_t *mut_parser, const char *error, size_t position) {
     if (!mut_parser) {
         return;
     }
@@ -201,7 +201,7 @@ static void _log_error(instruction_parser_t *mut_parser, const char *error, size
 // /**
 //  * Internal: Propagate error from specialized parser.
 //  */
-// static void _propagate_error(instruction_parser_t *mut_parser, 
+// static void _propagate_error(ar_instruction_parser_t *mut_parser, 
 //                             const char *ref_error, 
 //                             size_t error_pos,
 //                             const char *ref_default_msg) {
@@ -212,7 +212,7 @@ static void _log_error(instruction_parser_t *mut_parser, const char *error, size
 /**
  * Internal: Extract and dispatch to appropriate parser based on function name.
  */
-static ar_instruction_ast_t* _dispatch_function(instruction_parser_t *mut_parser, 
+static ar_instruction_ast_t* _dispatch_function(ar_instruction_parser_t *mut_parser, 
                                            const char *ref_instruction,
                                            const char *func_name, 
                                            size_t func_len,
@@ -321,7 +321,7 @@ static ar_instruction_ast_t* _dispatch_function(instruction_parser_t *mut_parser
 /**
  * Parse an instruction using the unified parser facade.
  */
-ar_instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser, const char *ref_instruction) {
+ar_instruction_ast_t* ar_instruction_parser__parse(ar_instruction_parser_t *mut_parser, const char *ref_instruction) {
     if (!mut_parser || !ref_instruction) {
         return NULL;
     }

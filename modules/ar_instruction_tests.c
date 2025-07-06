@@ -22,7 +22,7 @@ static void test_parse_assignment_instructions(void) {
     // Test 1: Simple assignment with integer literal
     {
         // When parsing an integer assignment
-        parsed_instruction_t *own_parsed = ar_instruction__parse("memory.x := 42", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.x := 42", mut_ctx);
         
         // Then it should parse successfully as an assignment
         assert(own_parsed != NULL);
@@ -36,7 +36,7 @@ static void test_parse_assignment_instructions(void) {
     // Test 2: Assignment with string literal
     {
         // When parsing a string assignment
-        parsed_instruction_t *own_parsed = ar_instruction__parse("memory.greeting := \"Hello, World!\"", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.greeting := \"Hello, World!\"", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
@@ -50,7 +50,7 @@ static void test_parse_assignment_instructions(void) {
     // Test 3: Assignment with nested memory path
     {
         // When parsing an assignment with nested path
-        parsed_instruction_t *own_parsed = ar_instruction__parse("memory.user.name := \"Alice\"", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.user.name := \"Alice\"", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
@@ -64,7 +64,7 @@ static void test_parse_assignment_instructions(void) {
     // Test 4: Assignment with arithmetic expression
     {
         // When parsing an assignment with arithmetic
-        parsed_instruction_t *own_parsed = ar_instruction__parse("memory.result := 2 + 3 * 4", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.result := 2 + 3 * 4", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
@@ -81,7 +81,7 @@ static void test_parse_assignment_instructions(void) {
         ar_data__set_map_string(mut_memory, "original", "test value");
         
         // When parsing an assignment referencing other memory
-        parsed_instruction_t *own_parsed = ar_instruction__parse("memory.copy := memory.original", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.copy := memory.original", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
@@ -95,7 +95,7 @@ static void test_parse_assignment_instructions(void) {
     // Test 6: Assignment with whitespace variations
     {
         // When parsing with extra whitespace
-        parsed_instruction_t *own_parsed = ar_instruction__parse("  memory.x  :=  42  ", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("  memory.x  :=  42  ", mut_ctx);
         
         // Then it should parse successfully, trimming whitespace
         assert(own_parsed != NULL);
@@ -122,7 +122,7 @@ static void test_parse_function_call_instructions(void) {
     // Test 1: Simple send function call
     {
         // When parsing a send function call
-        parsed_instruction_t *own_parsed = ar_instruction__parse("send(0, \"Hello\")", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("send(0, \"Hello\")", mut_ctx);
         
         // Then it should parse successfully as a function call
         assert(own_parsed != NULL);
@@ -149,7 +149,7 @@ static void test_parse_function_call_instructions(void) {
     // Test 2: Parse function call
     {
         // When parsing a parse function call
-        parsed_instruction_t *own_parsed = ar_instruction__parse("parse(\"name={name}\", \"name=John\")", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("parse(\"name={name}\", \"name=John\")", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
@@ -179,7 +179,7 @@ static void test_parse_function_call_instructions(void) {
         ar_data__set_map_data(mut_memory, "values", own_values);
         
         // When parsing a build function call
-        parsed_instruction_t *own_parsed = ar_instruction__parse("build(\"Hello {name}\", memory.values)", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("build(\"Hello {name}\", memory.values)", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
@@ -204,7 +204,7 @@ static void test_parse_function_call_instructions(void) {
     // Test 4: Method function call
     {
         // When parsing a method function call
-        parsed_instruction_t *own_parsed = ar_instruction__parse("method(\"greet\", \"memory.msg := \\\"Hi\\\"\", \"1.0.0\")", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("method(\"greet\", \"memory.msg := \\\"Hi\\\"\", \"1.0.0\")", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
@@ -235,7 +235,7 @@ static void test_parse_function_call_instructions(void) {
         ar_data__set_map_data(mut_memory, "ctx", own_context);
         
         // When parsing an agent function call
-        parsed_instruction_t *own_parsed = ar_instruction__parse("agent(\"echo\", \"1.0.0\", memory.ctx)", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("agent(\"echo\", \"1.0.0\", memory.ctx)", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
@@ -261,7 +261,7 @@ static void test_parse_function_call_instructions(void) {
     // Test 6: Destroy function call (single argument)
     {
         // When parsing a destroy agent function call
-        parsed_instruction_t *own_parsed = ar_instruction__parse("destroy(42)", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("destroy(42)", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
@@ -285,7 +285,7 @@ static void test_parse_function_call_instructions(void) {
     // Test 7: Destroy function call (two arguments)
     {
         // When parsing a destroy method function call
-        parsed_instruction_t *own_parsed = ar_instruction__parse("destroy(\"calculator\", \"1.0.0\")", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("destroy(\"calculator\", \"1.0.0\")", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
@@ -310,7 +310,7 @@ static void test_parse_function_call_instructions(void) {
     // Test 8: If function call
     {
         // When parsing an if function call
-        parsed_instruction_t *own_parsed = ar_instruction__parse("if(5 > 3, \"yes\", \"no\")", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("if(5 > 3, \"yes\", \"no\")", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
@@ -349,7 +349,7 @@ static void test_parse_function_calls_with_assignment(void) {
     // Test 1: Send with assignment
     {
         // When parsing a send function call with assignment
-        parsed_instruction_t *own_parsed = ar_instruction__parse("memory.success := send(0, \"Hello\")", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.success := send(0, \"Hello\")", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
@@ -376,7 +376,7 @@ static void test_parse_function_calls_with_assignment(void) {
     // Test 2: Parse with assignment
     {
         // When parsing a parse function call with assignment
-        parsed_instruction_t *own_parsed = ar_instruction__parse("memory.parsed := parse(\"name={name}\", \"name=John\")", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.parsed := parse(\"name={name}\", \"name=John\")", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
@@ -405,7 +405,7 @@ static void test_parse_function_calls_with_assignment(void) {
         ar_data__set_map_data(mut_memory, "values", own_values);
         
         // When parsing a build function call with assignment
-        parsed_instruction_t *own_parsed = ar_instruction__parse("memory.greeting := build(\"Hello {name}\", memory.values)", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.greeting := build(\"Hello {name}\", memory.values)", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
@@ -429,7 +429,7 @@ static void test_parse_function_calls_with_assignment(void) {
     // Test 4: Method with assignment
     {
         // When parsing a method function call with assignment
-        parsed_instruction_t *own_parsed = ar_instruction__parse("memory.created := method(\"greet\", \"memory.msg := \\\"Hi\\\"\", \"1.0.0\")", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.created := method(\"greet\", \"memory.msg := \\\"Hi\\\"\", \"1.0.0\")", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
@@ -458,7 +458,7 @@ static void test_parse_function_calls_with_assignment(void) {
         ar_data__set_map_data(mut_memory, "ctx", own_context);
         
         // When parsing an agent function call with assignment
-        parsed_instruction_t *own_parsed = ar_instruction__parse("memory.agent_id := agent(\"echo\", \"1.0.0\", memory.ctx)", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.agent_id := agent(\"echo\", \"1.0.0\", memory.ctx)", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
@@ -482,7 +482,7 @@ static void test_parse_function_calls_with_assignment(void) {
     // Test 6: Destroy with assignment
     {
         // When parsing a destroy function call with assignment
-        parsed_instruction_t *own_parsed = ar_instruction__parse("memory.destroyed := destroy(42)", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.destroyed := destroy(42)", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
@@ -506,7 +506,7 @@ static void test_parse_function_calls_with_assignment(void) {
     // Test 7: If with assignment
     {
         // When parsing an if function call with assignment
-        parsed_instruction_t *own_parsed = ar_instruction__parse("memory.result := if(5 > 3, \"yes\", \"no\")", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.result := if(5 > 3, \"yes\", \"no\")", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
@@ -530,7 +530,7 @@ static void test_parse_function_calls_with_assignment(void) {
     // Test 8: Nested path assignment
     {
         // When parsing a function call with nested path assignment
-        parsed_instruction_t *own_parsed = ar_instruction__parse("memory.user.status := if(1 = 1, \"active\", \"inactive\")", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.user.status := if(1 = 1, \"active\", \"inactive\")", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
@@ -590,7 +590,7 @@ static void test_error_handling_and_invalid_syntax(void) {
     // Test 1: Empty instruction
     {
         // When parsing an empty string
-        parsed_instruction_t *own_parsed = ar_instruction__parse("", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("", mut_ctx);
         
         // Then it should fail
         assert(own_parsed == NULL);
@@ -600,7 +600,7 @@ static void test_error_handling_and_invalid_syntax(void) {
     // Test 2: Invalid assignment operator
     {
         // When parsing with wrong assignment operator
-        parsed_instruction_t *own_parsed = ar_instruction__parse("memory.x = 42", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.x = 42", mut_ctx);
         
         // Then it should fail
         assert(own_parsed == NULL);
@@ -609,7 +609,7 @@ static void test_error_handling_and_invalid_syntax(void) {
     // Test 3: Assignment without memory prefix
     {
         // When parsing assignment without memory prefix
-        parsed_instruction_t *own_parsed = ar_instruction__parse("x := 42", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("x := 42", mut_ctx);
         
         // Then it should fail
         assert(own_parsed == NULL);
@@ -618,7 +618,7 @@ static void test_error_handling_and_invalid_syntax(void) {
     // Test 4: Invalid function name
     {
         // When parsing unknown function
-        parsed_instruction_t *own_parsed = ar_instruction__parse("unknown_func(1, 2)", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("unknown_func(1, 2)", mut_ctx);
         
         // Then it should fail
         assert(own_parsed == NULL);
@@ -628,7 +628,7 @@ static void test_error_handling_and_invalid_syntax(void) {
     // Test 5: Function with unclosed parenthesis
     {
         // When parsing malformed function call
-        parsed_instruction_t *own_parsed = ar_instruction__parse("send(0, \"hello\"", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("send(0, \"hello\"", mut_ctx);
         
         // Then it should fail
         assert(own_parsed == NULL);
@@ -638,7 +638,7 @@ static void test_error_handling_and_invalid_syntax(void) {
     // Test 6: Function with unmatched quotes
     {
         // When parsing with unmatched quotes
-        parsed_instruction_t *own_parsed = ar_instruction__parse("send(0, \"hello)", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("send(0, \"hello)", mut_ctx);
         
         // Then it should fail
         assert(own_parsed == NULL);
@@ -648,7 +648,7 @@ static void test_error_handling_and_invalid_syntax(void) {
     // Test 7: Assignment with invalid expression
     {
         // When parsing assignment with invalid expression
-        parsed_instruction_t *own_parsed = ar_instruction__parse("memory.x := memory.nonexistent", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.x := memory.nonexistent", mut_ctx);
         
         // Then it should fail (expression validation should catch this)
         assert(own_parsed == NULL);
@@ -658,7 +658,7 @@ static void test_error_handling_and_invalid_syntax(void) {
     // Test 8: Function call with wrong number of arguments
     {
         // When parsing send with wrong number of args
-        parsed_instruction_t *own_parsed = ar_instruction__parse("send(0)", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("send(0)", mut_ctx);
         
         // Then it should fail (send requires 2 arguments)
         assert(own_parsed == NULL);
@@ -668,7 +668,7 @@ static void test_error_handling_and_invalid_syntax(void) {
     // Test 9: Assignment to invalid memory path
     {
         // When parsing assignment with invalid path characters
-        parsed_instruction_t *own_parsed = ar_instruction__parse("memory.x/y := 42", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.x/y := 42", mut_ctx);
         
         // Then it should fail
         assert(own_parsed == NULL);
@@ -681,7 +681,7 @@ static void test_error_handling_and_invalid_syntax(void) {
     /*
     {
         // When parsing nested function calls
-        parsed_instruction_t *own_parsed = ar_instruction__parse("send(0, build(\"msg\", memory.data))", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("send(0, build(\"msg\", memory.data))", mut_ctx);
         
         // Then it should fail (nested calls not supported)
         assert(own_parsed == NULL);
@@ -691,7 +691,7 @@ static void test_error_handling_and_invalid_syntax(void) {
     // Test 11: Error position reporting
     {
         // When parsing with an error
-        parsed_instruction_t *own_parsed = ar_instruction__parse("memory.x = wrong", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.x = wrong", mut_ctx);
         
         // Then it should fail
         assert(own_parsed == NULL);
@@ -701,7 +701,7 @@ static void test_error_handling_and_invalid_syntax(void) {
     // Test 12: Multiple statements in one instruction
     {
         // When parsing multiple statements
-        parsed_instruction_t *own_parsed = ar_instruction__parse("memory.x := 1; memory.y := 2", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.x := 1; memory.y := 2", mut_ctx);
         
         // Then it should fail (only one instruction per parse)
         assert(own_parsed == NULL);

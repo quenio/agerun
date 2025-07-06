@@ -16,7 +16,7 @@ static void test_create_parser_with_log(void) {
     assert(log != NULL);
     
     // When creating a parser with ar_log
-    instruction_parser_t *parser = ar_instruction_parser__create(log);
+    ar_instruction_parser_t *parser = ar_instruction_parser__create(log);
     
     // Then the parser should be created successfully
     assert(parser != NULL);
@@ -30,7 +30,7 @@ static void test_instruction_parser__create_destroy_with_parsers(void) {
     printf("Testing instruction parser creation with all specialized parsers...\n");
     
     // When creating an instruction parser
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     
     // Then it should successfully create with all specialized parsers initialized
     assert(own_parser != NULL);
@@ -50,7 +50,7 @@ static void test_instruction_parser__parse_assignment(void) {
     const char *instruction = "memory.x := 42";
     
     // When creating a parser and parsing via unified method
-    instruction_parser_t *own_parser = ar_instruction_parser__create(log);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -76,7 +76,7 @@ static void test_instruction_parser__parse_send(void) {
     const char *instruction = "send(1, \"Hello\")";
     
     // When creating a parser and parsing via unified method
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -105,7 +105,7 @@ static void test_instruction_parser__parse_send_with_assignment(void) {
     const char *instruction = "memory.result := send(1, \"Hello\")";
     
     // When creating a parser and parsing via unified method
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -133,7 +133,7 @@ static void test_instruction_parser__parse_if(void) {
     const char *instruction = "if(memory.x > 0, 1, 0)";
     
     // When creating a parser and parsing via unified method
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -153,7 +153,7 @@ static void test_instruction_parser__parse_parse(void) {
     const char *instruction = "parse(\"{x}\", \"x=42\")";
     
     // When creating a parser and parsing via unified method
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -173,7 +173,7 @@ static void test_instruction_parser__parse_build(void) {
     const char *instruction = "build(\"{x}\", memory.vars)";
     
     // When creating a parser and parsing via unified method
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -193,7 +193,7 @@ static void test_instruction_parser__parse_method(void) {
     const char *instruction = "method(\"test\", \"send(1, message)\", \"1.0.0\")";
     
     // When creating a parser and parsing via unified method
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -213,7 +213,7 @@ static void test_instruction_parser__parse_agent(void) {
     const char *instruction = "agent(\"echo\", \"1.0.0\")";
     
     // When creating a parser and parsing via unified method
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -233,7 +233,7 @@ static void test_instruction_parser__parse_destroy_agent(void) {
     const char *instruction = "destroy(1)";
     
     // When creating a parser and parsing via unified method
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -253,7 +253,7 @@ static void test_instruction_parser__parse_destroy_method(void) {
     const char *instruction = "destroy(\"echo\", \"1.0.0\")";
     
     // When creating a parser and parsing via unified method
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -275,7 +275,7 @@ static void test_instruction_parser__parse_unknown(void) {
     const char *instruction = "unknown()";
     
     // When creating a parser and parsing via unified method
-    instruction_parser_t *own_parser = ar_instruction_parser__create(log);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(log);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -296,7 +296,7 @@ static void test_instruction_parser__parse_empty(void) {
     const char *instruction = "";
     
     // When creating a parser and parsing via unified method
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -311,7 +311,7 @@ static void test_instruction_parser__parse_reusability(void) {
     printf("Testing unified parser reusability...\n");
     
     // Given a parser instance
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     // When parsing multiple instructions
@@ -336,7 +336,7 @@ static void test_parse_simple_assignment(void) {
     const char *instruction = "memory.x := 42";
     
     // When creating a parser and parsing the instruction
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -358,7 +358,7 @@ static void test_parse_string_assignment(void) {
     const char *instruction = "memory.greeting := \"Hello, World!\"";
     
     // When creating a parser and parsing the instruction
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -380,7 +380,7 @@ static void test_parse_nested_assignment(void) {
     const char *instruction = "memory.user.name := \"John\"";
     
     // When creating a parser and parsing the instruction
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -402,7 +402,7 @@ static void test_parse_expression_assignment(void) {
     const char *instruction = "memory.result := 2 + 3 * 4";
     
     // When creating a parser and parsing the instruction
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -425,7 +425,7 @@ static void test_parse_if_function(void) {
     const char *instruction = "memory.level := if(memory.count > 5, \"High\", \"Low\")";
     
     // When creating a parser and parsing the instruction
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -457,7 +457,7 @@ static void test_parse_method_function(void) {
     const char *instruction = "method(\"greet\", \"memory.msg := 42\", \"1.0.0\")";
     
     // When creating a parser and parsing the instruction
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -477,7 +477,7 @@ static void test_parse_agent_function(void) {
     const char *instruction = "memory.agent_id := agent(\"echo\", \"1.0.0\", memory.context)";
     
     // When creating a parser and parsing the instruction
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -502,7 +502,7 @@ static void test_parse_destroy_one_arg(void) {
     const char *instruction = "destroy(memory.agent_id)";
     
     // When creating a parser and parsing the instruction
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -526,7 +526,7 @@ static void test_parse_destroy_two_args(void) {
     const char *instruction = "destroy(\"calculator\", \"1.0.0\")";
     
     // When creating a parser and parsing the instruction
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -550,7 +550,7 @@ static void test_parse_parse_function(void) {
     const char *instruction = "memory.parsed := parse(\"name={name}\", \"name=John\")";
     
     // When creating a parser and parsing the instruction
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -570,7 +570,7 @@ static void test_parse_build_function(void) {
     const char *instruction = "memory.greeting := build(\"Hello {name}!\", memory.data)";
     
     // When creating a parser and parsing the instruction
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -590,7 +590,7 @@ static void test_parse_whitespace_handling(void) {
     const char *instruction = "  memory.x  :=  42  ";
     
     // When creating a parser and parsing the instruction
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -613,7 +613,7 @@ static void test_parse_error_handling(void) {
         ar_log_t *log = ar_log__create();
         assert(log != NULL);
         const char *instruction = "memory.x = 42";  // Should be :=
-        instruction_parser_t *own_parser = ar_instruction_parser__create(log);
+        ar_instruction_parser_t *own_parser = ar_instruction_parser__create(log);
         assert(own_parser != NULL);
         
         ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -631,7 +631,7 @@ static void test_parse_error_handling(void) {
         ar_log_t *log = ar_log__create();
         assert(log != NULL);
         const char *instruction = "x := 42";  // Missing memory prefix
-        instruction_parser_t *own_parser = ar_instruction_parser__create(log);
+        ar_instruction_parser_t *own_parser = ar_instruction_parser__create(log);
         assert(own_parser != NULL);
         
         ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -651,7 +651,7 @@ static void test_parse_empty_instruction(void) {
     const char *instruction = "";
     
     // When creating a parser and trying to parse empty instruction
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
@@ -666,7 +666,7 @@ static void test_parser_reusability(void) {
     printf("Testing parser reusability...\n");
     
     // Given a parser
-    instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
     // First parse

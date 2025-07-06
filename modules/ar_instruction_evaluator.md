@@ -50,7 +50,7 @@ The module follows a **composition pattern** where it creates and manages instan
 ### Types
 
 ```c
-typedef struct instruction_evaluator_s instruction_evaluator_t;
+typedef struct ar_instruction_evaluator_s ar_instruction_evaluator_t;
 ```
 
 An opaque type representing an instruction evaluator instance.
@@ -60,7 +60,7 @@ An opaque type representing an instruction evaluator instance.
 #### ar_instruction_evaluator__create
 
 ```c
-instruction_evaluator_t* ar_instruction_evaluator__create(
+ar_instruction_evaluator_t* ar_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
     ar_data_t *mut_memory,
@@ -90,7 +90,7 @@ Creates a new instruction evaluator instance and initializes all specialized eva
 #### ar_instruction_evaluator__destroy
 
 ```c
-void ar_instruction_evaluator__destroy(instruction_evaluator_t *own_evaluator);
+void ar_instruction_evaluator__destroy(ar_instruction_evaluator_t *own_evaluator);
 ```
 
 Destroys an instruction evaluator instance and all its specialized evaluators.
@@ -115,7 +115,7 @@ Each delegation function follows the same pattern:
 
 ```c
 bool ar_instruction_evaluator__evaluate_assignment(
-    instruction_evaluator_t *mut_evaluator,
+    ar_instruction_evaluator_t *mut_evaluator,
     const ar_instruction_ast_t *ref_ast
 );
 ```
@@ -133,35 +133,35 @@ The instruction evaluator provides delegation functions for each instruction typ
 ```c
 // Delegates to assignment_instruction_evaluator
 bool ar_instruction_evaluator__evaluate_assignment(
-    instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
+    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
 
 // Delegates to send_instruction_evaluator
 bool ar_instruction_evaluator__evaluate_send(
-    instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
+    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
 
 // Delegates to condition_instruction_evaluator
 bool ar_instruction_evaluator__evaluate_if(
-    instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
+    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
 
 // Delegates to parse_instruction_evaluator
 bool ar_instruction_evaluator__evaluate_parse(
-    instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
+    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
 
 // Delegates to build_instruction_evaluator
 bool ar_instruction_evaluator__evaluate_build(
-    instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
+    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
 
 // Delegates to method_instruction_evaluator
 bool ar_instruction_evaluator__evaluate_method(
-    instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
+    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
 
 // Delegates to agent_instruction_evaluator
 bool ar_instruction_evaluator__evaluate_agent(
-    instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
+    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
 
 // Dispatches to destroy_agent_instruction_evaluator or destroy_method_instruction_evaluator
 bool ar_instruction_evaluator__evaluate_destroy(
-    instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
+    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
 ```
 
 **Common Behavior:**
@@ -176,7 +176,7 @@ bool ar_instruction_evaluator__evaluate_destroy(
 
 ```c
 // Create evaluator with dependencies
-instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
+ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
     log, expr_eval, memory, NULL, NULL
 );
 
@@ -212,7 +212,7 @@ The instruction evaluator demonstrates the **facade pattern** by providing a uni
 
 ```c
 // Single evaluator manages all specialized evaluators
-instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
+ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
     log, expr_eval, memory, context, message
 );
 

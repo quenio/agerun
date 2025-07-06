@@ -23,7 +23,7 @@
 /**
  * Opaque type for instruction evaluator
  */
-typedef struct instruction_evaluator_s instruction_evaluator_t;
+typedef struct ar_instruction_evaluator_s ar_instruction_evaluator_t;
 
 /**
  * Creates a new instruction evaluator
@@ -36,7 +36,7 @@ typedef struct instruction_evaluator_s instruction_evaluator_t;
  * @note Ownership: Returns an owned value that caller must destroy.
  *       The function does not take ownership of any parameters.
  */
-instruction_evaluator_t* ar_instruction_evaluator__create(
+ar_instruction_evaluator_t* ar_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
     ar_data_t *mut_memory,
@@ -49,7 +49,7 @@ instruction_evaluator_t* ar_instruction_evaluator__create(
  * @param own_evaluator The evaluator to destroy
  * @note Ownership: Takes ownership and destroys the evaluator
  */
-void ar_instruction_evaluator__destroy(instruction_evaluator_t *own_evaluator);
+void ar_instruction_evaluator__destroy(ar_instruction_evaluator_t *own_evaluator);
 
 /**
  * Evaluates any instruction AST node
@@ -61,7 +61,7 @@ void ar_instruction_evaluator__destroy(instruction_evaluator_t *own_evaluator);
  *       assignments, function calls, and control flow.
  */
 bool ar_instruction_evaluator__evaluate(
-    instruction_evaluator_t *mut_evaluator,
+    ar_instruction_evaluator_t *mut_evaluator,
     const ar_instruction_ast_t *ref_ast
 );
 

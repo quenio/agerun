@@ -40,7 +40,7 @@ static bool parse_assignment(ar_instruction_context_t *mut_ctx, const char *ref_
 ### New Implementation (_execute_assignment)
 ```c
 // Lines 204-258
-static bool _execute_assignment(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
+static bool _execute_assignment(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed) {
     // 1. Get parsed path and expression
     const char *ref_path = ar_instruction__get_assignment_path(ref_parsed);
     const char *ref_expression = ar_instruction__get_assignment_expression(ref_parsed);
@@ -110,7 +110,7 @@ if (strcmp(function_name, "send") == 0) {
 ### New Implementation (_execute_send)
 ```c
 // Lines 261-339
-static bool _execute_send(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
+static bool _execute_send(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed) {
     // 1. Evaluate agent ID
     ar_expression_context_t *own_expr_ctx = ar_expression__create_context(...);
     const ar_data_t *ref_agent_id_data = ar_expression__evaluate(own_expr_ctx);

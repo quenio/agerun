@@ -180,7 +180,7 @@ All instruction parsers follow this pattern:
 The method parser has additional complexity for line-based parsing:
 ```c
 struct ar_method_parser_s {
-    instruction_parser_t *instruction_parser;
+    ar_instruction_parser_t *instruction_parser;
     char *own_error_message;
     int error_line;  // Line number instead of character position
 };

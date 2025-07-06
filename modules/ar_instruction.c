@@ -23,7 +23,7 @@ struct instruction_context_s {
 };
 
 // Parsed instruction structure definition
-struct parsed_instruction_s {
+struct ar_parsed_instruction_s {
     ar_instruction_type_t type;
     
     // For assignments
@@ -38,11 +38,11 @@ struct parsed_instruction_s {
 };
 
 // Function prototypes for recursive descent parsing
-static parsed_instruction_t* _parse_instruction(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos);
-static parsed_instruction_t* _parse_assignment(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos);
-static parsed_instruction_t* _parse_function_instruction(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos);
+static ar_parsed_instruction_t* _parse_instruction(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos);
+static ar_parsed_instruction_t* _parse_assignment(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos);
+static ar_parsed_instruction_t* _parse_function_instruction(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos);
 static bool _parse_memory_access(const char *ref_instruction, int *mut_pos, char **path);
-static parsed_instruction_t* _parse_function_call(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos, char **out_result_path);
+static ar_parsed_instruction_t* _parse_function_call(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos, char **out_result_path);
 static bool _skip_whitespace(const char *ref_instruction, int *mut_pos);
 static bool _extract_identifier(const char *ref_instruction, int *mut_pos, char *mut_identifier, int max_size);
 
@@ -108,13 +108,13 @@ const ar_data_t* ar_instruction__get_message(const ar_instruction_context_t *ref
 
 // Parse and execute a single instruction
 // This is now the main parse function that builds AST
-parsed_instruction_t* ar_instruction__parse(const char *ref_instruction, ar_instruction_context_t *mut_ctx) {
+ar_parsed_instruction_t* ar_instruction__parse(const char *ref_instruction, ar_instruction_context_t *mut_ctx) {
     if (!mut_ctx || !ref_instruction) {
         return NULL;
     }
     
     int pos = 0;
-    parsed_instruction_t *result = _parse_instruction(mut_ctx, ref_instruction, &pos);
+    ar_parsed_instruction_t *result = _parse_instruction(mut_ctx, ref_instruction, &pos);
     
     if (result) {
         // Clear error state on success
@@ -125,19 +125,19 @@ parsed_instruction_t* ar_instruction__parse(const char *ref_instruction, ar_inst
 }
 
 // Creates a new empty parsed instruction
-static parsed_instruction_t* _create_parsed_instruction(void) {
-    parsed_instruction_t *own_parsed = AR__HEAP__MALLOC(sizeof(parsed_instruction_t), "Parsed instruction");
+static ar_parsed_instruction_t* _create_parsed_instruction(void) {
+    ar_parsed_instruction_t *own_parsed = AR__HEAP__MALLOC(sizeof(ar_parsed_instruction_t), "Parsed instruction");
     if (!own_parsed) {
         return NULL;
     }
     
     // Initialize all fields to NULL/0
-    memset(own_parsed, 0, sizeof(parsed_instruction_t));
+    memset(own_parsed, 0, sizeof(ar_parsed_instruction_t));
     return own_parsed;
 }
 
 // Destroys a parsed instruction and frees its resources
-void ar_instruction__destroy_parsed(parsed_instruction_t *own_parsed) {
+void ar_instruction__destroy_parsed(ar_parsed_instruction_t *own_parsed) {
     if (!own_parsed) {
         return;
     }
@@ -172,7 +172,7 @@ void ar_instruction__destroy_parsed(parsed_instruction_t *own_parsed) {
 }
 
 // Gets the type of a parsed instruction
-ar_instruction_type_t ar_instruction__get_type(const parsed_instruction_t *ref_parsed) {
+ar_instruction_type_t ar_instruction__get_type(const ar_parsed_instruction_t *ref_parsed) {
     if (!ref_parsed) {
         return INST_ASSIGNMENT; // Default, though caller should check for NULL
     }
@@ -180,7 +180,7 @@ ar_instruction_type_t ar_instruction__get_type(const parsed_instruction_t *ref_p
 }
 
 // Gets the memory path for an assignment instruction
-const char* ar_instruction__get_assignment_path(const parsed_instruction_t *ref_parsed) {
+const char* ar_instruction__get_assignment_path(const ar_parsed_instruction_t *ref_parsed) {
     if (!ref_parsed || ref_parsed->type != INST_ASSIGNMENT) {
         return NULL;
     }
@@ -188,7 +188,7 @@ const char* ar_instruction__get_assignment_path(const parsed_instruction_t *ref_
 }
 
 // Gets the expression for an assignment instruction
-const char* ar_instruction__get_assignment_expression(const parsed_instruction_t *ref_parsed) {
+const char* ar_instruction__get_assignment_expression(const ar_parsed_instruction_t *ref_parsed) {
     if (!ref_parsed || ref_parsed->type != INST_ASSIGNMENT) {
         return NULL;
     }
@@ -196,7 +196,7 @@ const char* ar_instruction__get_assignment_expression(const parsed_instruction_t
 }
 
 // Gets function call details from a parsed instruction
-bool ar_instruction__get_function_call(const parsed_instruction_t *ref_parsed,
+bool ar_instruction__get_function_call(const ar_parsed_instruction_t *ref_parsed,
                                         const char **out_function_name,
                                         const char ***out_args,
                                         int *out_arg_count,
@@ -224,7 +224,7 @@ bool ar_instruction__get_function_call(const parsed_instruction_t *ref_parsed,
 
 
 // <instruction> ::= <assignment> | <function-instruction>
-static parsed_instruction_t* _parse_instruction(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
+static ar_parsed_instruction_t* _parse_instruction(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
     _skip_whitespace(ref_instruction, mut_pos);
     
     // Check for assignment or function instruction
@@ -232,7 +232,7 @@ static parsed_instruction_t* _parse_instruction(ar_instruction_context_t *mut_ct
     int save_pos = *mut_pos;
     
     // Try to parse as assignment first
-    parsed_instruction_t *result = _parse_assignment(mut_ctx, ref_instruction, mut_pos);
+    ar_parsed_instruction_t *result = _parse_assignment(mut_ctx, ref_instruction, mut_pos);
     if (result) {
         return result;
     }
@@ -243,7 +243,7 @@ static parsed_instruction_t* _parse_instruction(ar_instruction_context_t *mut_ct
 }
 
 // <assignment> ::= <memory-access> ':=' <expression>
-static parsed_instruction_t* _parse_assignment(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
+static ar_parsed_instruction_t* _parse_assignment(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
     char *own_path = NULL;
     
     // Parse memory access (left side)
@@ -311,7 +311,7 @@ static parsed_instruction_t* _parse_assignment(ar_instruction_context_t *mut_ctx
     }
     
     // Create the parsed instruction
-    parsed_instruction_t *own_result = _create_parsed_instruction();
+    ar_parsed_instruction_t *own_result = _create_parsed_instruction();
     if (!own_result) {
         AR__HEAP__FREE(own_path);
         return NULL;
@@ -337,7 +337,7 @@ static parsed_instruction_t* _parse_assignment(ar_instruction_context_t *mut_ctx
 }
 
 // <function-instruction> ::= [<memory-access> ':='] <function-call>
-static parsed_instruction_t* _parse_function_instruction(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
+static ar_parsed_instruction_t* _parse_function_instruction(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos) {
     char *own_result_path = NULL;
     bool has_assignment = false;
     
@@ -364,7 +364,7 @@ static parsed_instruction_t* _parse_function_instruction(ar_instruction_context_
     }
     
     // Parse function call and build AST
-    parsed_instruction_t *own_result = _parse_function_call(mut_ctx, ref_instruction, mut_pos, 
+    ar_parsed_instruction_t *own_result = _parse_function_call(mut_ctx, ref_instruction, mut_pos, 
                                                            has_assignment ? &own_result_path : NULL);
     
     if (!own_result) {
@@ -445,7 +445,7 @@ static bool _parse_memory_access(const char *ref_instruction, int *mut_pos, char
 // Parse function call and execute it
 // <function-call> ::= <send-function> | <parse-function> | <build-function> | <method-function> |
 //                     <agent-function> | <destroy-function> | <if-function>
-static parsed_instruction_t* _parse_function_call(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos, char **out_result_path) {
+static ar_parsed_instruction_t* _parse_function_call(ar_instruction_context_t *mut_ctx, const char *ref_instruction, int *mut_pos, char **out_result_path) {
     fprintf(stderr, "DEBUG: _parse_function_call starting at: '%s'\n", ref_instruction + *mut_pos);
     
     // Extract function name
@@ -467,7 +467,7 @@ static parsed_instruction_t* _parse_function_call(ar_instruction_context_t *mut_
     (*mut_pos)++; // Skip '('
     
     // Create the parsed instruction
-    parsed_instruction_t *own_result = _create_parsed_instruction();
+    ar_parsed_instruction_t *own_result = _create_parsed_instruction();
     if (!own_result) {
         return NULL;
     }

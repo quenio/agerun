@@ -25,7 +25,7 @@
 /**
  * Internal structure for instruction evaluator
  */
-struct instruction_evaluator_s {
+struct ar_instruction_evaluator_s {
     ar_log_t *ref_log;                           /* Log instance (borrowed reference) */
     ar_expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
     ar_data_t *mut_memory;                          /* Memory map (mutable reference) */
@@ -45,7 +45,7 @@ struct instruction_evaluator_s {
 /**
  * Creates a new instruction evaluator
  */
-instruction_evaluator_t* ar_instruction_evaluator__create(
+ar_instruction_evaluator_t* ar_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
     ar_data_t *mut_memory,
@@ -58,7 +58,7 @@ instruction_evaluator_t* ar_instruction_evaluator__create(
     }
     
     // Allocate evaluator structure
-    instruction_evaluator_t *evaluator = AR__HEAP__MALLOC(sizeof(instruction_evaluator_t), "instruction_evaluator");
+    ar_instruction_evaluator_t *evaluator = AR__HEAP__MALLOC(sizeof(ar_instruction_evaluator_t), "instruction_evaluator");
     if (evaluator == NULL) {
         return NULL;
     }
@@ -211,7 +211,7 @@ instruction_evaluator_t* ar_instruction_evaluator__create(
 /**
  * Destroys an instruction evaluator
  */
-void ar_instruction_evaluator__destroy(instruction_evaluator_t *own_evaluator) {
+void ar_instruction_evaluator__destroy(ar_instruction_evaluator_t *own_evaluator) {
     if (own_evaluator == NULL) {
         return;
     }
@@ -255,7 +255,7 @@ void ar_instruction_evaluator__destroy(instruction_evaluator_t *own_evaluator) {
  * Evaluates any instruction AST node
  */
 bool ar_instruction_evaluator__evaluate(
-    instruction_evaluator_t *mut_evaluator,
+    ar_instruction_evaluator_t *mut_evaluator,
     const ar_instruction_ast_t *ref_ast
 ) {
     if (!mut_evaluator || !ref_ast) {

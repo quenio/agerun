@@ -84,7 +84,7 @@ Destroys an instruction context.
 ### Instruction Parsing
 
 ```c
-parsed_instruction_t* ar_instruction__parse(const char *ref_instruction, ar_instruction_context_t *mut_ctx);
+ar_parsed_instruction_t* ar_instruction__parse(const char *ref_instruction, ar_instruction_context_t *mut_ctx);
 ```
 
 Parses a single instruction without executing it.
@@ -206,7 +206,7 @@ if (!own_ctx) {
 }
 
 // Parse an instruction
-parsed_instruction_t *own_parsed = ar_instruction__parse("memory.greeting := \"Hello, World!\"", own_ctx);
+ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.greeting := \"Hello, World!\"", own_ctx);
 
 // Check for errors
 if (!own_parsed) {
@@ -234,7 +234,7 @@ ar_instruction__destroy_context(own_ctx);
 // (Execution would be handled by the interpreter module)
 
 // Store a string in memory
-parsed_instruction_t *parsed = ar_instruction__parse("memory.greeting := \"Hello, World!\"", ctx);
+ar_parsed_instruction_t *parsed = ar_instruction__parse("memory.greeting := \"Hello, World!\"", ctx);
 
 // Store a number in memory
 parsed = ar_instruction__parse("memory.count := 42", ctx);
@@ -253,7 +253,7 @@ parsed = ar_instruction__parse("memory.user.name := \"John\"", ctx);
 // (Execution would be handled by the interpreter module)
 
 // Send a message to another agent
-parsed_instruction_t *parsed = ar_instruction__parse("send(target_id, \"Hello\")", ctx);
+ar_parsed_instruction_t *parsed = ar_instruction__parse("send(target_id, \"Hello\")", ctx);
 
 // Parse a string into a structured map
 parsed = ar_instruction__parse("memory.parsed := parse(\"name={name}\", \"name=John\")", ctx);

@@ -31,6 +31,16 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - ✅ file_result_t → ar_file_result_t (91 occurrences)
 - ✅ **Successfully renamed typedef structs**:
   - ✅ data_t → ar_data_t (1439 occurrences) - using rename_types.py
+  - ✅ list_t → ar_list_t (268 occurrences) - using rename_types.py
+  - ✅ map_t → ar_map_t (62 occurrences) - using rename_types.py
+  - ✅ agent_t → ar_agent_t (68 occurrences) - using rename_types.py
+  - ✅ method_t → ar_method_t (186 occurrences) - using rename_types.py
+  - ✅ agent_registry_t → ar_agent_registry_t (49 occurrences) - using rename_types.py
+  - ✅ expression_context_t → ar_expression_context_t (117 occurrences) - using rename_types.py
+  - ✅ instruction_context_t → ar_instruction_context_t (71 occurrences) - using rename_types.py
+  - ✅ parsed_instruction_t → ar_parsed_instruction_t (88 occurrences) - using rename_types.py
+  - ✅ instruction_parser_t → ar_instruction_parser_t (64 occurrences) - using rename_types.py
+  - ✅ instruction_evaluator_t → ar_instruction_evaluator_t (32 occurrences) - using rename_types.py
   - ✅ Fixed check-naming script to show all typedef issues (removed output truncation)
   - ✅ Updated Makefile help to show single test build command
 - ✅ **Implementation Details**:

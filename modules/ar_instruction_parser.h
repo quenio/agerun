@@ -9,7 +9,7 @@
  * Opaque parser structure.
  * Maintains parsing state and can be reused for multiple instructions.
  */
-typedef struct instruction_parser_s instruction_parser_t;
+typedef struct ar_instruction_parser_s ar_instruction_parser_t;
 
 /**
  * Create a new instruction parser instance.
@@ -18,7 +18,7 @@ typedef struct instruction_parser_s instruction_parser_t;
  * @return Newly created parser instance (owned by caller), or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy.
  */
-instruction_parser_t* ar_instruction_parser__create(ar_log_t *ref_log);
+ar_instruction_parser_t* ar_instruction_parser__create(ar_log_t *ref_log);
 
 /**
  * Destroy an instruction parser instance.
@@ -26,7 +26,7 @@ instruction_parser_t* ar_instruction_parser__create(ar_log_t *ref_log);
  * @param own_parser The parser instance to destroy (ownership transferred)
  * @note Ownership: Takes ownership of the parser and destroys it.
  */
-void ar_instruction_parser__destroy(instruction_parser_t *own_parser);
+void ar_instruction_parser__destroy(ar_instruction_parser_t *own_parser);
 
 /**
  * Get the last error message from the parser.
@@ -35,7 +35,7 @@ void ar_instruction_parser__destroy(instruction_parser_t *own_parser);
  * @param ref_parser The parser instance (borrowed reference)
  * @return Always returns NULL
  */
-const char* ar_instruction_parser__get_error(const instruction_parser_t *ref_parser);
+const char* ar_instruction_parser__get_error(const ar_instruction_parser_t *ref_parser);
 
 /**
  * Get the error position from the last parse attempt.
@@ -44,7 +44,7 @@ const char* ar_instruction_parser__get_error(const instruction_parser_t *ref_par
  * @param ref_parser The parser instance (borrowed reference)
  * @return Always returns 0
  */
-size_t ar_instruction_parser__get_error_position(const instruction_parser_t *ref_parser);
+size_t ar_instruction_parser__get_error_position(const ar_instruction_parser_t *ref_parser);
 
 /**
  * Parse an instruction using the unified parser facade.
@@ -55,7 +55,7 @@ size_t ar_instruction_parser__get_error_position(const instruction_parser_t *ref
  * @return Parsed instruction AST node (owned by caller), or NULL on failure
  * @note Ownership: Returns an owned AST node that caller must destroy.
  */
-ar_instruction_ast_t* ar_instruction_parser__parse(instruction_parser_t *mut_parser, const char *ref_instruction);
+ar_instruction_ast_t* ar_instruction_parser__parse(ar_instruction_parser_t *mut_parser, const char *ref_instruction);
 
 
 #endif /* AGERUN_INSTRUCTION_PARSER_H */
