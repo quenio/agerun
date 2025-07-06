@@ -211,6 +211,7 @@ echo -n "  Enum values... "
 bad_enum_values=0
 enum_value_issues=""
 
+# Check C header files
 for file in modules/*.h; do
     # First find typedef enum blocks and their type names
     # Use a simpler approach with sed and grep
@@ -248,11 +249,49 @@ for file in modules/*.h; do
     done
 done
 
+# Check Zig files for enum definitions
+for file in modules/*.zig; do
+    if [ -f "$file" ]; then
+        # Extract Zig enum type definitions (pub const name = enum)
+        zig_enums=$(grep -E "pub const ar_[a-zA-Z0-9_]+_t = enum" "$file" 2>/dev/null | sed -E 's/pub const (ar_[a-zA-Z0-9_]+_t).*/\1/')
+        
+        for enum_type in $zig_enums; do
+            if [ ! -z "$enum_type" ]; then
+                # Find the enum block for this type in Zig
+                # Extract from "pub const $enum_type = enum" to "};"
+                enum_block=$(awk -v type="$enum_type" '
+                    $0 ~ "pub const " type " = enum" { capture=1; block="" }
+                    capture { block = block "\n" $0 }
+                    capture && /^};/ { print block; capture=0 }
+                ' "$file" 2>/dev/null)
+                
+                # Extract enum values from the Zig enum block
+                # Zig format: VALUE_NAME = number,
+                enum_values=$(echo "$enum_block" | grep -E '^[[:space:]]*[A-Z][A-Z0-9_]+[[:space:]]*=' | sed -E 's/^[[:space:]]*([A-Z][A-Z0-9_]+)[[:space:]]*=.*/\1/')
+                
+                # Convert type name to expected prefix: ar_file_result_t -> AR_FILE_RESULT
+                expected_prefix=$(echo "$enum_type" | sed -E 's/^ar_//; s/_t$//' | tr '[:lower:]' '[:upper:]')
+                
+                # Check each enum value
+                for value in $enum_values; do
+                    if [ ! -z "$value" ]; then
+                        # Check if value follows the pattern AR_<TYPE>__<VALUE>
+                        if ! echo "$value" | grep -qE "^AR_${expected_prefix}__"; then
+                            enum_value_issues="${enum_value_issues}\n    $file: $value (in $enum_type, should start with AR_${expected_prefix}__)"
+                            ((bad_enum_values++))
+                        fi
+                    fi
+                done
+            fi
+        done
+    fi
+done
+
 if [ $bad_enum_values -eq 0 ]; then
     print_success "All enum values follow AR_<ENUM_TYPE>__<VALUE> convention"
 else
     print_error "Found enum values not following AR_<ENUM_TYPE>__<VALUE> convention"
-    echo -e "    Issues:$enum_value_issues" | head -10
+    echo -e "    Issues:$enum_value_issues" | head -40
 fi
 
 # Typedef structs should be ar_<type>_t
@@ -295,6 +334,21 @@ for file in modules/*.h; do
     if [ ! -z "$bad_enum_types" ]; then
         enum_issues="$enum_issues\n$bad_enum_types"
         ((bad_enums++))
+    fi
+done
+
+# Check Zig files for enum type definitions
+for file in modules/*.zig; do
+    if [ -f "$file" ]; then
+        # Look for Zig enum definitions that don't follow ar_<type>_t pattern
+        bad_zig_enum_types=$(grep -E "pub const [a-zA-Z0-9_]+ = enum" "$file" 2>/dev/null | \
+            grep -v -E "pub const ar_[a-zA-Z0-9_]+_t = enum" | \
+            sed "s|^|$file: |")
+        
+        if [ ! -z "$bad_zig_enum_types" ]; then
+            enum_issues="$enum_issues\n$bad_zig_enum_types"
+            ((bad_enums++))
+        fi
     fi
 done
 
