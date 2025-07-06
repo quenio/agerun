@@ -26,7 +26,7 @@ typedef enum {
     INST_DESTROY,        // destroy(type, arg1, arg2)
     INST_PARSE,          // parse(string)
     INST_BUILD           // build(template, map)
-} instruction_type_t;
+} ar_instruction_type_t;
 
 /**
  * Parsed instruction structure (opaque type)
@@ -85,7 +85,7 @@ void ar_instruction__destroy_parsed(parsed_instruction_t *own_parsed);
  * @return The instruction type
  * @note Ownership: Does not take ownership of the parsed instruction.
  */
-instruction_type_t ar_instruction__get_type(const parsed_instruction_t *ref_parsed);
+ar_instruction_type_t ar_instruction__get_type(const parsed_instruction_t *ref_parsed);
 
 /**
  * Gets the memory path for an assignment instruction

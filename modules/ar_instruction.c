@@ -24,7 +24,7 @@ struct instruction_context_s {
 
 // Parsed instruction structure definition
 struct parsed_instruction_s {
-    instruction_type_t type;
+    ar_instruction_type_t type;
     
     // For assignments
     char *own_assignment_path;       // Owned: e.g., "memory.x.y"
@@ -172,7 +172,7 @@ void ar_instruction__destroy_parsed(parsed_instruction_t *own_parsed) {
 }
 
 // Gets the type of a parsed instruction
-instruction_type_t ar_instruction__get_type(const parsed_instruction_t *ref_parsed) {
+ar_instruction_type_t ar_instruction__get_type(const parsed_instruction_t *ref_parsed) {
     if (!ref_parsed) {
         return INST_ASSIGNMENT; // Default, though caller should check for NULL
     }

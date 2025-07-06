@@ -80,7 +80,7 @@ bool ar_interpreter__execute_instruction(interpreter_t *mut_interpreter,
     
     // Execute based on instruction type
     bool result = false;
-    instruction_type_t type = ar_instruction__get_type(own_parsed);
+    ar_instruction_type_t type = ar_instruction__get_type(own_parsed);
     
     fprintf(stderr, "DEBUG: Instruction type: %d\n", type);
     
