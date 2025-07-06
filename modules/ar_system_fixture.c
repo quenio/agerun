@@ -84,7 +84,7 @@ bool ar_system_fixture__initialize(system_fixture_t *mut_fixture) {
     return true;
 }
 
-method_t* ar_system_fixture__register_method(system_fixture_t *mut_fixture,
+ar_method_t* ar_system_fixture__register_method(system_fixture_t *mut_fixture,
                                                 const char *ref_method_name,
                                                 const char *ref_instructions,
                                                 const char *ref_version) {
@@ -97,7 +97,7 @@ method_t* ar_system_fixture__register_method(system_fixture_t *mut_fixture,
     }
     
     // Create method
-    method_t *own_method = ar_method__create(ref_method_name, ref_instructions, ref_version);
+    ar_method_t *own_method = ar_method__create(ref_method_name, ref_instructions, ref_version);
     if (!own_method) {
         return NULL;
     }

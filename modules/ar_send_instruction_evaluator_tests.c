@@ -62,7 +62,7 @@ static void test_send_instruction_evaluator__evaluate_with_instance(void) {
     assert(own_ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *own_arg_asts = ar_list__create();
+    ar_list_t *own_arg_asts = ar_list__create();
     assert(own_arg_asts != NULL);
     
     ar_expression_ast_t *own_agent_ast = ar_expression_ast__create_literal_int(0);
@@ -114,7 +114,7 @@ static void test_instruction_evaluator__evaluate_send_integer_message(void) {
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     ar_expression_ast_t *agent_ast = ar_expression_ast__create_literal_int(0);
@@ -166,7 +166,7 @@ static void test_instruction_evaluator__evaluate_send_string_message(void) {
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     ar_expression_ast_t *agent_ast = ar_expression_ast__create_literal_int(0);
@@ -218,7 +218,7 @@ static void test_instruction_evaluator__evaluate_send_with_result(void) {
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     ar_expression_ast_t *agent_ast = ar_expression_ast__create_literal_int(0);
@@ -279,7 +279,7 @@ static void test_instruction_evaluator__evaluate_send_memory_reference(void) {
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     ar_expression_ast_t *agent_ast = ar_expression_ast__create_literal_int(0);
@@ -332,7 +332,7 @@ static void test_instruction_evaluator__evaluate_send_invalid_args(void) {
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments (only one arg)
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     ar_expression_ast_t *agent_ast = ar_expression_ast__create_literal_int(0);

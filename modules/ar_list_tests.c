@@ -12,7 +12,7 @@ static void test_create_destroy(void) {
     printf("Running test_create_destroy...\n");
     
     // Given an empty list
-    list_t *own_list = ar_list__create();
+    ar_list_t *own_list = ar_list__create();
     assert(own_list != NULL);
     
     // When checking its properties
@@ -41,7 +41,7 @@ static void test_add_last(void) {
     printf("Running test_add_last...\n");
     
     // Given an empty list
-    list_t *own_list = ar_list__create();
+    ar_list_t *own_list = ar_list__create();
     assert(own_list != NULL);
     
     // And some test string items
@@ -86,7 +86,7 @@ static void test_add_first(void) {
     printf("Running test_add_first...\n");
     
     // Given an empty list
-    list_t *own_list = ar_list__create();
+    ar_list_t *own_list = ar_list__create();
     assert(own_list != NULL);
     
     // And some test string items
@@ -131,7 +131,7 @@ static void test_first_last(void) {
     printf("Running test_first_last...\n");
     
     // Given an empty list
-    list_t *own_list = ar_list__create();
+    ar_list_t *own_list = ar_list__create();
     assert(own_list != NULL);
     
     // When getting first and last items from empty list
@@ -175,7 +175,7 @@ static void test_remove_first_last(void) {
     printf("Running test_remove_first_last...\n");
     
     // Given an empty list
-    list_t *own_list = ar_list__create();
+    ar_list_t *own_list = ar_list__create();
     assert(own_list != NULL);
     
     // When removing from an empty list
@@ -237,7 +237,7 @@ static void test_stack_operations(void) {
     printf("Running test_stack_operations...\n");
     
     // Given an empty list
-    list_t *own_list = ar_list__create();
+    ar_list_t *own_list = ar_list__create();
     assert(own_list != NULL);
     
     // And some test string items
@@ -281,7 +281,7 @@ static void test_queue_operations(void) {
     printf("Running test_queue_operations...\n");
     
     // Given an empty list
-    list_t *own_list = ar_list__create();
+    ar_list_t *own_list = ar_list__create();
     assert(own_list != NULL);
     
     // And some test string items
@@ -326,7 +326,7 @@ static void test_add_many(void) {
     printf("Running test_add_many...\n");
     
     // Given an empty list
-    list_t *own_list = ar_list__create();
+    ar_list_t *own_list = ar_list__create();
     assert(own_list != NULL);
     
     // And an array to track items for later verification
@@ -385,7 +385,7 @@ static void test_null_parameters(void) {
     assert(ar_list__remove_last(NULL) == NULL);
     
     // Create a valid list for testing NULL items
-    list_t *own_list = ar_list__create();
+    ar_list_t *own_list = ar_list__create();
     assert(ar_list__add_last(own_list, NULL) == true);  // NULL items are allowed
     assert(ar_list__count(own_list) == 1);
     assert(ar_list__first(own_list) == NULL);
@@ -409,7 +409,7 @@ static void test_remove(void) {
     printf("Running test_remove...\n");
     
     // Given an empty list
-    list_t *own_list = ar_list__create();
+    ar_list_t *own_list = ar_list__create();
     assert(own_list != NULL);
     
     // When trying to remove from an empty list

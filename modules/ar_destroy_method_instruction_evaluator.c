@@ -128,7 +128,7 @@ bool ar_destroy_method_instruction_evaluator__evaluate(
     }
     
     // Get pre-parsed expression ASTs for arguments
-    const list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(ref_ast);
+    const ar_list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(ref_ast);
     if (!ref_arg_asts) {
         return false;
     }
@@ -204,7 +204,7 @@ bool ar_destroy_method_instruction_evaluator__evaluate(
         const char *method_version = ar_data__get_string(own_version);
         
         // Get the method to check if agents are using it
-        method_t *ref_method = ar_methodology__get_method(method_name, method_version);
+        ar_method_t *ref_method = ar_methodology__get_method(method_name, method_version);
         if (ref_method) {
             // Count agents using this method
             int agent_count = ar_agency__count_agents_using_method(ref_method);
@@ -213,7 +213,7 @@ bool ar_destroy_method_instruction_evaluator__evaluate(
                 // Send __sleep__ messages to all agents using this method
                 int64_t agent_id = ar_agency__get_first_agent();
                 while (agent_id > 0) {
-                    const method_t *agent_method = ar_agency__get_agent_method(agent_id);
+                    const ar_method_t *agent_method = ar_agency__get_agent_method(agent_id);
                     if (agent_method == ref_method) {
                         ar_data_t *sleep_msg = ar_data__create_string("__sleep__");
                         if (sleep_msg) {
@@ -231,7 +231,7 @@ bool ar_destroy_method_instruction_evaluator__evaluate(
                 agent_id = ar_agency__get_first_agent();
                 while (agent_id > 0) {
                     int64_t next_id = ar_agency__get_next_agent(agent_id);
-                    const method_t *agent_method = ar_agency__get_agent_method(agent_id);
+                    const ar_method_t *agent_method = ar_agency__get_agent_method(agent_id);
                     if (agent_method == ref_method) {
                         ar_agency__destroy_agent(agent_id);
                     }

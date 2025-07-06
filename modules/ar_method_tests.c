@@ -26,7 +26,7 @@ static void test_method_create(void) {
     const char *instructions = "memory.message := \"Hello from test method\"";
     
     // When we create the method
-    method_t *own_method = ar_method__create(name, instructions, "1.0.0");
+    ar_method_t *own_method = ar_method__create(name, instructions, "1.0.0");
     
     // Then the method should be created successfully
     assert(own_method != NULL);
@@ -46,7 +46,7 @@ static void test_method_create_with_previous_version(void) {
     const char *instructions_v1 = "memory.message := \"Version 1\"";
     
     // Create version 1
-    method_t *own_method_v1 = ar_method__create(name, instructions_v1, "1.0.0");
+    ar_method_t *own_method_v1 = ar_method__create(name, instructions_v1, "1.0.0");
     assert(own_method_v1 != NULL);
     
     // Register with methodology
@@ -58,7 +58,7 @@ static void test_method_create_with_previous_version(void) {
     
     // When we create a new version of the method
     const char *instructions_v2 = "memory.message := \"Version 2\"";
-    method_t *own_method_v2 = ar_method__create(name, instructions_v2, "2.0.0");
+    ar_method_t *own_method_v2 = ar_method__create(name, instructions_v2, "2.0.0");
     assert(own_method_v2 != NULL);
     
     // Register with methodology
@@ -84,7 +84,7 @@ static void test_method_run(void) {
     const char *instructions = "memory.message := memory.message";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method__create(method_name, instructions, "1.0.0");
+    ar_method_t *own_method = ar_method__create(method_name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -98,7 +98,7 @@ static void test_method_run(void) {
     int64_t agent_id = ar_agency__create_agent(method_name, version, NULL);
     assert(agent_id > 0);
     
-    // With map_t now opaque, we can't directly access the agent
+    // With ar_map_t now opaque, we can't directly access the agent
     // We'll test indirectly by sending a message
     assert(ar_agency__agent_exists(agent_id));
     
@@ -133,7 +133,7 @@ static void test_method_persistence(void) {
     const char *instructions = "memory.message := \"I am persistent\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method__create(name, instructions, "1.0.0");
+    ar_method_t *own_method = ar_method__create(name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -148,7 +148,7 @@ static void test_method_persistence(void) {
     const char *instructions2 = "memory.message := \"I am not persistent\"";
     
     // Create method and register it with methodology 
-    method_t *own_method2 = ar_method__create(name2, instructions2, "1.0.0");
+    ar_method_t *own_method2 = ar_method__create(name2, instructions2, "1.0.0");
     assert(own_method2 != NULL);
     
     // Register with methodology
@@ -170,7 +170,7 @@ static void test_method_persistence(void) {
     assert(load_result);
     
     // Verify methods were loaded correctly
-    method_t *method = ar_methodology__get_method(name, version);
+    ar_method_t *method = ar_methodology__get_method(name, version);
     if (method == NULL) {
         printf("Warning: Method %s not loaded correctly, skipping detailed check\n", name);
     } else {
@@ -189,7 +189,7 @@ static void test_method_persistence(void) {
         // assert(strcmp(ar_method__get_instructions(method), instructions) == 0);
     }
     
-    method_t *method2 = ar_methodology__get_method(name2, version2);
+    ar_method_t *method2 = ar_methodology__get_method(name2, version2);
     if (method2 == NULL) {
         printf("Warning: Method %s not loaded correctly, skipping detailed check\n", name2);
     } else {
@@ -222,7 +222,7 @@ static void test_method_get_ast(void) {
     const char *instructions = "memory.x := 42\nmemory.y := 84";
     
     // When we create the method
-    method_t *own_method = ar_method__create(name, instructions, "1.0.0");
+    ar_method_t *own_method = ar_method__create(name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Then we should be able to get the AST
@@ -246,7 +246,7 @@ static void test_method_parse_ast_on_create(void) {
     const char *instructions = "memory.x := 42\nmemory.y := 84";
     
     // When we create the method
-    method_t *own_method = ar_method__create(name, instructions, "1.0.0");
+    ar_method_t *own_method = ar_method__create(name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Then the AST should be parsed automatically
@@ -282,7 +282,7 @@ int main(void) {
     const char *init_instructions = "memory.result := \"Method test init\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method__create(init_method, init_instructions, "1.0.0");
+    ar_method_t *own_method = ar_method__create(init_method, init_instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology

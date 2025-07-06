@@ -32,7 +32,7 @@ The map module follows the AgeRun Memory Management Model (MMM) with these key p
 
 ```c
 // Opaque map type - implementation details hidden
-typedef struct map_s map_t;
+typedef struct map_s ar_map_t;
 ```
 
 ### Functions
@@ -45,7 +45,7 @@ typedef struct map_s map_t;
  * @return Pointer to the new map, or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy.
  */
-map_t* ar_map__create(void);
+ar_map_t* ar_map__create(void);
 ```
 
 #### Getting and Setting Values
@@ -58,7 +58,7 @@ map_t* ar_map__create(void);
  * @return Pointer to the referenced value, or NULL if not found
  * @note Ownership: Returns a borrowed reference. Caller does not own the returned value.
  */
-void* ar_map__get(const map_t *ref_map, const char *ref_key);
+void* ar_map__get(const ar_map_t *ref_map, const char *ref_key);
 
 /**
  * Set a reference in map
@@ -70,7 +70,7 @@ void* ar_map__get(const map_t *ref_map, const char *ref_key);
  *       The caller remains responsible for allocating and freeing the key string.
  *       The key string must remain valid for the lifetime of the map entry.
  */
-bool ar_map__set(map_t *mut_map, const char *ref_key, void *ref_value);
+bool ar_map__set(ar_map_t *mut_map, const char *ref_key, void *ref_value);
 ```
 
 #### Map Information and Access
@@ -81,7 +81,7 @@ bool ar_map__set(map_t *mut_map, const char *ref_key, void *ref_value);
  * @param ref_map The map to count (borrowed reference)
  * @return The number of used entries
  */
-size_t ar_map__count(const map_t *ref_map);
+size_t ar_map__count(const ar_map_t *ref_map);
 
 /**
  * Get an array of all refs in the map
@@ -92,7 +92,7 @@ size_t ar_map__count(const map_t *ref_map);
  *       The refs themselves are borrowed references and remain owned by their original owners.
  *       The caller can use ar_map__count() to determine the size of the array.
  */
-void** ar_map__refs(const map_t *ref_map);
+void** ar_map__refs(const ar_map_t *ref_map);
 ```
 
 #### Memory Management
@@ -105,7 +105,7 @@ void** ar_map__refs(const map_t *ref_map);
  *       It does not free memory for keys or referenced values.
  *       The caller remains responsible for freeing all keys and values that were added to the map.
  */
-void ar_map__destroy(map_t *own_map);
+void ar_map__destroy(ar_map_t *own_map);
 ```
 
 ## Usage Examples
@@ -114,7 +114,7 @@ void ar_map__destroy(map_t *own_map);
 
 ```c
 // Create a map (owned by caller)
-map_t *own_map = ar_map__create();
+ar_map_t *own_map = ar_map__create();
 
 // Key must remain valid for the lifetime of the map entry
 // Using const char* for better compatibility with string literals
@@ -141,7 +141,7 @@ free(own_value);
 
 ```c
 // Create and populate a map
-map_t *own_map = ar_map__create();
+ar_map_t *own_map = ar_map__create();
 ar_map__set(own_map, "key1", value1);
 ar_map__set(own_map, "key2", value2);
 ar_map__set(own_map, "key3", value3);
@@ -170,7 +170,7 @@ ar_map__destroy(own_map);
 
 ```c
 // Create and populate a map with heap-allocated keys and values
-map_t *own_map = ar_map__create();
+ar_map_t *own_map = ar_map__create();
 char* own_key1 = strdup("key1");
 char* own_key2 = strdup("key2");
 int *own_value1 = malloc(sizeof(int));
@@ -218,10 +218,10 @@ ar_map__destroy(own_map);
 
 ```c
 // Create outer map (owned)
-map_t *own_outer_map = ar_map__create();
+ar_map_t *own_outer_map = ar_map__create();
 
 // Create inner map (owned)
-map_t *own_inner_map = ar_map__create();
+ar_map_t *own_inner_map = ar_map__create();
 
 // Create keys (must remain valid for the lifetime of the map entries)
 // Using string literals for simplicity
@@ -237,7 +237,7 @@ int *own_value = malloc(sizeof(int));
 ar_map__set(own_inner_map, ref_inner_key, own_value);
 
 // Retrieve through nested structure (borrowed references)
-const map_t *ref_retrieved_inner = (const map_t*)ar_map__get(own_outer_map, "inner");
+const ar_map_t *ref_retrieved_inner = (const ar_map_t*)ar_map__get(own_outer_map, "inner");
 const int *ref_retrieved_value = (const int*)ar_map__get(ref_retrieved_inner, "count");
 printf("The count is: %d\n", *ref_retrieved_value);
 

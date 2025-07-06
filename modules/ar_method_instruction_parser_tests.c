@@ -78,7 +78,7 @@ static void test_method_instruction_parser__with_assignment(void) {
     assert(strcmp(result_path, "memory.method_ref") == 0);
     
     // And should have 3 arguments
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
     assert(ar_list__count(own_args) == 3);
     
@@ -114,7 +114,7 @@ static void test_method_instruction_parser__complex_code(void) {
     assert(own_ast != NULL);
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__METHOD);
     
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(ar_list__count(own_args) == 3);
     
     void **own_items = ar_list__items(own_args);
@@ -298,7 +298,7 @@ static void test_method_instruction_parser__multiline_code(void) {
     assert(own_ast != NULL);
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__METHOD);
     
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     void **own_items = ar_list__items(own_args);
     assert(strcmp((const char*)own_items[1], "\"memory.x := 1\\nmemory.y := 2\"") == 0);
     
@@ -333,7 +333,7 @@ static void test_method_instruction_parser__parse_with_expression_asts(void) {
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__METHOD);
     
     // And the arguments should be available as expression ASTs
-    const list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
+    const ar_list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
     assert(ref_arg_asts != NULL);
     assert(ar_list__count(ref_arg_asts) == 3);
     

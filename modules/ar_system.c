@@ -137,7 +137,7 @@ bool ar_system__process_next_message(void) {
             if (own_message) {
                 printf("DEBUG: Got message from agent %" PRId64 "\n", agent_id);
                 // Get the agent's method
-                const method_t *ref_method = ar_agency__get_agent_method(agent_id);
+                const ar_method_t *ref_method = ar_agency__get_agent_method(agent_id);
                 if (ref_method) {
                     printf("DEBUG: Agent has method\n");
                     // Print message based on its type

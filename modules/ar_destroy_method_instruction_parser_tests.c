@@ -68,7 +68,7 @@ static void test_destroy_method_parser__parse_two_strings(void) {
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__DESTROY_METHOD);
     assert(ar_instruction_ast__has_result_assignment(own_ast) == false);
     
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(ar_list__count(own_args) == 2);
     
     void **items = ar_list__items(own_args);
@@ -113,7 +113,7 @@ static void test_destroy_method_parser__parse_with_assignment(void) {
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__DESTROY_METHOD);
     assert(ar_instruction_ast__has_result_assignment(own_ast) == true);
     
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(ar_list__count(own_args) == 2);
     
     void **items = ar_list__items(own_args);
@@ -187,7 +187,7 @@ static void test_destroy_method_parser__complex_strings(void) {
     assert(own_ast != NULL);
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__DESTROY_METHOD);
     
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(ar_list__count(own_args) == 2);
     
     void **items = ar_list__items(own_args);
@@ -228,7 +228,7 @@ static void test_destroy_method_parser__parse_with_expression_asts(void) {
     assert(ar_instruction_ast__has_result_assignment(own_ast) == true);
     
     // And the arguments should be available as expression ASTs
-    const list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
+    const ar_list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
     assert(ref_arg_asts != NULL);
     assert(ar_list__count(ref_arg_asts) == 2);
     
@@ -261,7 +261,7 @@ static void test_destroy_method_parser__parse_with_expression_asts(void) {
     assert(own_ast2 != NULL);
     assert(ar_instruction_ast__get_type(own_ast2) == AR_INST__DESTROY_METHOD);
     
-    const list_t *ref_arg_asts2 = ar_instruction_ast__get_function_arg_asts(own_ast2);
+    const ar_list_t *ref_arg_asts2 = ar_instruction_ast__get_function_arg_asts(own_ast2);
     assert(ref_arg_asts2 != NULL);
     assert(ar_list__count(ref_arg_asts2) == 2);
     

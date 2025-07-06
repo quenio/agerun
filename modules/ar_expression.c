@@ -22,7 +22,7 @@ struct expression_context_s {
     const ar_data_t *ref_message;  /* The message being processed (borrowed reference) */
     const char *ref_expr;       /* The expression to evaluate (borrowed reference) */
     int offset;                 /* Current position in the expression */
-    list_t *own_results;        /* List of results owned by this context (to be freed when context is destroyed) */
+    ar_list_t *own_results;        /* List of results owned by this context (to be freed when context is destroyed) */
 };
 
 /**

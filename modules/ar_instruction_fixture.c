@@ -22,9 +22,9 @@ typedef struct {
 /* Instruction fixture structure */
 struct instruction_fixture_s {
     char *own_test_name;                    /* Name of the test */
-    list_t *own_tracked_data;               /* List of data objects to destroy */
-    list_t *own_tracked_contexts;           /* List of expression contexts to destroy */
-    list_t *own_tracked_resources;          /* List of generic resources to destroy */
+    ar_list_t *own_tracked_data;               /* List of data objects to destroy */
+    ar_list_t *own_tracked_contexts;           /* List of expression contexts to destroy */
+    ar_list_t *own_tracked_resources;          /* List of generic resources to destroy */
     int64_t test_agent_id;               /* Agent created by fixture, 0 if none */
     bool system_initialized;                /* Whether system was initialized by fixture */
 };
@@ -357,7 +357,7 @@ int64_t ar_instruction_fixture__create_test_agent(
     }
     
     // Create method and register it with methodology
-    method_t *own_method = ar_method__create(ref_method_name, ref_instructions, "1.0.0");
+    ar_method_t *own_method = ar_method__create(ref_method_name, ref_instructions, "1.0.0");
     if (!own_method) {
         return 0;
     }
@@ -424,7 +424,7 @@ bool ar_instruction_fixture__init_system(
     }
     
     // Create and register initialization method
-    method_t *own_method = ar_method__create(ref_init_method_name, ref_init_instructions, "1.0.0");
+    ar_method_t *own_method = ar_method__create(ref_init_method_name, ref_init_instructions, "1.0.0");
     if (!own_method) {
         return false;
     }

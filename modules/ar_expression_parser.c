@@ -325,7 +325,7 @@ ar_expression_ast_t* ar_expression_parser__parse_memory_access(ar_expression_par
     mut_parser->position += base_len;
     
     // Parse path components if present
-    list_t *own_path_list = ar_list__create();
+    ar_list_t *own_path_list = ar_list__create();
     if (!own_path_list) {
         _set_error(mut_parser, "Out of memory");
         return NULL;

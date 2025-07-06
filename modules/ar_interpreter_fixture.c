@@ -15,8 +15,8 @@
 struct interpreter_fixture_s {
     char *own_test_name;              // Name of the test
     interpreter_t *own_interpreter;   // The interpreter instance
-    list_t *own_tracked_data;         // List of data objects to destroy
-    list_t *own_agent_ids;            // List of agent IDs to destroy
+    ar_list_t *own_tracked_data;         // List of data objects to destroy
+    ar_list_t *own_agent_ids;            // List of agent IDs to destroy
 };
 
 /**
@@ -144,7 +144,7 @@ int64_t ar_interpreter_fixture__create_agent(
     const char *version = ref_version ? ref_version : "1.0.0";
     
     // Create and register method
-    method_t *own_method = ar_method__create(ref_method_name, ref_instructions, version);
+    ar_method_t *own_method = ar_method__create(ref_method_name, ref_instructions, version);
     if (!own_method) {
         return 0;
     }
@@ -242,7 +242,7 @@ bool ar_interpreter_fixture__create_method(
     const char *version = ref_version ? ref_version : "1.0.0";
     
     // Create method
-    method_t *own_method = ar_method__create(ref_method_name, ref_instructions, version);
+    ar_method_t *own_method = ar_method__create(ref_method_name, ref_instructions, version);
     if (!own_method) {
         return false;
     }

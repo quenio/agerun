@@ -139,7 +139,7 @@ const char* ar_instruction_ast__get_function_name(const ar_instruction_ast_t *re
  *       The strings in the list are borrowed references and should not be freed individually.
  * @note Despite the "get" in the name, this function allocates memory.
  */
-list_t* ar_instruction_ast__get_function_args(const ar_instruction_ast_t *ref_node);
+ar_list_t* ar_instruction_ast__get_function_args(const ar_instruction_ast_t *ref_node);
 
 /**
  * Get argument ASTs from a function call node.
@@ -149,7 +149,7 @@ list_t* ar_instruction_ast__get_function_args(const ar_instruction_ast_t *ref_no
  * @note Ownership: Returns a borrowed reference to the list. Do not free.
  *       Use ar_list__get() to access individual ASTs as borrowed references.
  */
-const list_t* ar_instruction_ast__get_function_arg_asts(const ar_instruction_ast_t *ref_node);
+const ar_list_t* ar_instruction_ast__get_function_arg_asts(const ar_instruction_ast_t *ref_node);
 
 /**
  * Set argument ASTs for a function call node.
@@ -161,7 +161,7 @@ const list_t* ar_instruction_ast__get_function_arg_asts(const ar_instruction_ast
  */
 bool ar_instruction_ast__set_function_arg_asts(
     ar_instruction_ast_t *mut_node, 
-    list_t *own_arg_asts
+    ar_list_t *own_arg_asts
 );
 
 /**

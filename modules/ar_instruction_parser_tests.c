@@ -85,7 +85,7 @@ static void test_instruction_parser__parse_send(void) {
     assert(own_ast != NULL);
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__SEND);
     
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
     assert(ar_list__count(own_args) == 2);
     void **items = ar_list__items(own_args);
@@ -117,7 +117,7 @@ static void test_instruction_parser__parse_send_with_assignment(void) {
     assert(strcmp(ar_instruction_ast__get_function_result_path(own_ast), "memory.result") == 0);
     
     // Verify arguments
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
     assert(ar_list__count(own_args) == 2);
     ar_list__destroy(own_args);
@@ -436,7 +436,7 @@ static void test_parse_if_function(void) {
     assert(strcmp(ar_instruction_ast__get_function_name(own_ast), "if") == 0);
     
     // Verify arguments
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
     assert(ar_list__count(own_args) == 3);
     void **own_items = ar_list__items(own_args);
@@ -487,7 +487,7 @@ static void test_parse_agent_function(void) {
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__AGENT);
     assert(ar_instruction_ast__has_result_assignment(own_ast) == true);
     
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(ar_list__count(own_args) == 3);
     ar_list__destroy(own_args);
     
@@ -511,7 +511,7 @@ static void test_parse_destroy_one_arg(void) {
     assert(own_ast != NULL);
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__DESTROY_AGENT);
     
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(ar_list__count(own_args) == 1);
     ar_list__destroy(own_args);
     
@@ -535,7 +535,7 @@ static void test_parse_destroy_two_args(void) {
     assert(own_ast != NULL);
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__DESTROY_METHOD);
     
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(ar_list__count(own_args) == 2);
     ar_list__destroy(own_args);
     

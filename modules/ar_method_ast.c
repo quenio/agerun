@@ -10,7 +10,7 @@
  * Contains a list of instruction ASTs.
  */
 struct ar_method_ast_s {
-    list_t *instructions;  // List of ar_instruction_ast_t*
+    ar_list_t *instructions;  // List of ar_instruction_ast_t*
 };
 
 /**

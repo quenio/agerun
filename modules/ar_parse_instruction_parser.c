@@ -163,7 +163,7 @@ static void _cleanup_args(char **args, size_t arg_count) {
 /**
  * Internal: Cleanup argument AST list and all contained ASTs.
  */
-static void _cleanup_arg_asts(list_t *arg_asts) {
+static void _cleanup_arg_asts(ar_list_t *arg_asts) {
     if (arg_asts) {
         void **items = ar_list__items(arg_asts);
         if (items) {
@@ -180,11 +180,11 @@ static void _cleanup_arg_asts(list_t *arg_asts) {
 /**
  * Internal: Parse argument strings into expression ASTs and return as a list.
  */
-static list_t* _parse_arguments_to_asts(ar_parse_instruction_parser_t *mut_parser, 
+static ar_list_t* _parse_arguments_to_asts(ar_parse_instruction_parser_t *mut_parser, 
                                         char **ref_args, 
                                         size_t arg_count,
                                         size_t error_offset) {
-    list_t *own_arg_asts = ar_list__create();
+    ar_list_t *own_arg_asts = ar_list__create();
     if (!own_arg_asts) {
         _log_error(mut_parser, "Failed to create argument AST list", error_offset);
         return NULL;
@@ -316,7 +316,7 @@ ar_instruction_ast_t* ar_parse_instruction_parser__parse(ar_parse_instruction_pa
     }
     
     /* Parse arguments into expression ASTs and set them in the instruction AST */
-    list_t *own_arg_asts = _parse_arguments_to_asts(mut_parser, args, arg_count, pos);
+    ar_list_t *own_arg_asts = _parse_arguments_to_asts(mut_parser, args, arg_count, pos);
     if (!own_arg_asts) {
         _cleanup_args(args, arg_count);
         ar_instruction_ast__destroy(own_ast);

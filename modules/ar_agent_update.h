@@ -6,7 +6,7 @@
 #include "ar_agent_registry.h"
 
 /* Forward declarations */
-typedef struct method_s method_t;
+typedef struct method_s ar_method_t;
 
 /**
  * @file agerun_agent_update.h
@@ -33,8 +33,8 @@ typedef struct method_s method_t;
  *       if lifecycle events are enabled to ensure all sleep and wake messages are processed.
  */
 int ar_agent_update__update_methods(agent_registry_t *ref_registry,
-                                    const method_t *ref_old_method, 
-                                    const method_t *ref_new_method,
+                                    const ar_method_t *ref_old_method, 
+                                    const ar_method_t *ref_new_method,
                                     bool send_lifecycle_events);
 
 /**
@@ -45,7 +45,7 @@ int ar_agent_update__update_methods(agent_registry_t *ref_registry,
  * @note Ownership: Does not take ownership of any references.
  */
 int ar_agent_update__count_using_method(agent_registry_t *ref_registry,
-                                        const method_t *ref_method);
+                                        const ar_method_t *ref_method);
 
 /**
  * Check if two method versions are compatible for update
@@ -54,7 +54,7 @@ int ar_agent_update__count_using_method(agent_registry_t *ref_registry,
  * @return true if methods are compatible (same name, compatible versions)
  * @note Ownership: Does not take ownership of either method reference.
  */
-bool ar_agent_update__are_compatible(const method_t *ref_old_method,
-                                     const method_t *ref_new_method);
+bool ar_agent_update__are_compatible(const ar_method_t *ref_old_method,
+                                     const ar_method_t *ref_new_method);
 
 #endif /* AGERUN_AGENT_UPDATE_H */

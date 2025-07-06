@@ -164,8 +164,8 @@ while (agent_id != 0) {
 
 ```c
 // Update all agents using old version to new version
-const method_t *ref_old = ar_methodology__find_method("calc", "1.0.0");
-const method_t *ref_new = ar_methodology__find_method("calc", "1.1.0");
+const ar_method_t *ref_old = ar_methodology__find_method("calc", "1.0.0");
+const ar_method_t *ref_new = ar_methodology__find_method("calc", "1.1.0");
 
 // Update with lifecycle events
 int count = ar_agency__update_agent_methods(ref_old, ref_new, true);

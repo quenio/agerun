@@ -464,7 +464,7 @@ ar_data__destroy(own_int_data);
 
 ```c
 // Create a map
-map_t *map = ar_map__create();
+ar_map_t *map = ar_map__create();
 
 // Create data value with type-specific creator
 ar_data_t *int_data = ar_data__create_integer(42);
@@ -496,16 +496,16 @@ ar_data_t *child_map = ar_data__create_map();
 ar_data_t *count_data = ar_data__create_integer(100);
 
 // Store the count in the child map
-ar_map__set((map_t*)ar_data__get_map(child_map), "count", count_data);
+ar_map__set((ar_map_t*)ar_data__get_map(child_map), "count", count_data);
 
 // Store the child map in the parent map
-ar_map__set((map_t*)ar_data__get_map(parent_map), "child", child_map);
+ar_map__set((ar_map_t*)ar_data__get_map(parent_map), "child", child_map);
 
 // Retrieve and use the nested data
 const ar_data_t *retrieved_child = (const ar_data_t*)ar_map__get(
-    (map_t*)ar_data__get_map(parent_map), "child");
+    (ar_map_t*)ar_data__get_map(parent_map), "child");
 if (retrieved_child && ar_data__get_type(retrieved_child) == DATA_MAP) {
-    const map_t *child = ar_data__get_map(retrieved_child);
+    const ar_map_t *child = ar_data__get_map(retrieved_child);
     const ar_data_t *count = (const ar_data_t*)ar_map__get(child, "count");
     if (count && ar_data__get_type(count) == DATA_INTEGER) {
         printf("Count value: %d\n", ar_data__get_integer(count));
@@ -521,7 +521,7 @@ if (retrieved_child && ar_data__get_type(retrieved_child) == DATA_MAP) {
 ```c
 // Create a map
 ar_data_t *map_data = ar_data__create_map();
-map_t *map = ar_data__get_map(map_data);
+ar_map_t *map = ar_data__get_map(map_data);
 
 // Create and store values of different types using the traditional approach
 ar_data_t *int_data = ar_data__create_integer(42);
@@ -536,7 +536,7 @@ ar_map__set(map, "string_key", string_data);
 ar_map__set(map, "map_key", nested_map_data);
 
 // Add data to the nested map
-map_t *nested_map = ar_data__get_map(nested_map_data);
+ar_map_t *nested_map = ar_data__get_map(nested_map_data);
 ar_data_t *nested_int = ar_data__create_integer(100);
 ar_map__set(nested_map, "nested_int", nested_int);
 
@@ -546,9 +546,9 @@ double double_value = ar_data__get_map_double(map_data, "double_key");
 const char *string_value = ar_data__get_map_string(map_data, "string_key");
 
 // Access nested map through map function
-const map_t *map = ar_data__get_map(map_data);
+const ar_map_t *map = ar_data__get_map(map_data);
 const ar_data_t *map_value = (const ar_data_t*)ar_map__get(map, "map_key");
-const map_t *sub_map = ar_data__get_map(map_value);
+const ar_map_t *sub_map = ar_data__get_map(map_value);
 const ar_data_t *nested_value = (const ar_data_t*)ar_map__get(sub_map, "nested_int");
 int nested_int_value = ar_data__get_integer(nested_value);
 
@@ -577,7 +577,7 @@ ar_data_t *nested_map_data = ar_data__create_map();
 ar_data__set_map_integer(nested_map_data, "nested_int", 100);
 
 // Add the nested map to the main map
-map_t *map = ar_data__get_map(map_data);
+ar_map_t *map = ar_data__get_map(map_data);
 ar_map__set(map, "map_key", nested_map_data);
 
 // Access values using the map-data getter functions
@@ -772,7 +772,7 @@ ar_data__set_map_integer(scores_map, "science", 87);
 ar_data__set_map_double(scores_map, "average", 91.0);
 
 // Add the scores map to the user map
-map_t *user_map_ptr = ar_data__get_map(ar_data__get_map_data(root_map, "user"));
+ar_map_t *user_map_ptr = ar_data__get_map(ar_data__get_map_data(root_map, "user"));
 ar_map__set(user_map_ptr, "scores", scores_map);
 
 // Access nested data directly with ar_data__get_map_data
@@ -809,7 +809,7 @@ if (scores_data && ar_data__get_type(scores_data) == DATA_MAP) {
     }
     
     // You can also enumerate all scores by getting the map and iterating
-    map_t *scores = ar_data__get_map(scores_data);
+    ar_map_t *scores = ar_data__get_map(scores_data);
     // (iteration code would go here)
 }
 
@@ -945,10 +945,10 @@ struct data_s {
         int int_value;         // Primitive type, no prefix needed
         double double_value;   // Primitive type, no prefix needed
         char *own_string;      // Owned string that ar_data_t owns and must free
-        list_t *own_list;      // Owned list that ar_data_t owns and must free
-        map_t *own_map;        // Owned map that ar_data_t owns and must free
+        ar_list_t *own_list;      // Owned list that ar_data_t owns and must free
+        ar_map_t *own_map;        // Owned map that ar_data_t owns and must free
     } data;
-    list_t *own_keys;          // Owned list of keys (data struct is responsible for freeing)
+    ar_list_t *own_keys;          // Owned list of keys (data struct is responsible for freeing)
 };
 ```
 

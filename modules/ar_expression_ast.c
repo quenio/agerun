@@ -31,7 +31,7 @@ typedef struct {
  */
 typedef struct {
     char *own_base;        /* "memory", "message", or "context" */
-    list_t *own_path;      /* List of path components (strings) */
+    ar_list_t *own_path;      /* List of path components (strings) */
 } memory_access_data_t;
 
 /**

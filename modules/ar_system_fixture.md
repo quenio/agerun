@@ -49,7 +49,7 @@ Initializes the test environment by:
 ### Registering Methods
 
 ```c
-method_t* ar_system__fixture_register_method(system_fixture_t *mut_fixture,
+ar_method_t* ar_system__fixture_register_method(system_fixture_t *mut_fixture,
                                                 const char *ref_method_name,
                                                 const char *ref_instructions,
                                                 const char *ref_version);
@@ -93,7 +93,7 @@ static void test_my_system_function(void) {
     assert(ar_system__fixture_initialize(own_fixture));
     
     // Register a test method
-    method_t *ref_method = ar_system__fixture_register_method(
+    ar_method_t *ref_method = ar_system__fixture_register_method(
         own_fixture, 
         "test_method", 
         "send(0, \"Hello\")",

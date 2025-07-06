@@ -25,7 +25,7 @@ static void test_agency_count_agents(void) {
     const char *instructions = "message -> \"Count Test\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method__create(method_name, instructions, "1.0.0");
+    ar_method_t *own_method = ar_method__create(method_name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -79,7 +79,7 @@ static void test_agency_persistence(void) {
     const char *instructions = "message -> \"Agency Persistence Test\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method__create(method_name, instructions, "1.0.0");
+    ar_method_t *own_method = ar_method__create(method_name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -130,7 +130,7 @@ static void test_agency_reset(void) {
     const char *instructions = "message -> \"Reset Test\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method__create(method_name, instructions, "1.0.0");
+    ar_method_t *own_method = ar_method__create(method_name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -170,7 +170,7 @@ int main(void) {
     const char *instructions = "message -> \"Test\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method__create(method_name, instructions, "1.0.0");
+    ar_method_t *own_method = ar_method__create(method_name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology

@@ -10,7 +10,7 @@
 #define BUFFER_LIMIT 10
 
 struct ar_log_s {
-    list_t *own_events;     /* Owned list of events */
+    ar_list_t *own_events;     /* Owned list of events */
     FILE *file;             /* Log file handle */
 };
 

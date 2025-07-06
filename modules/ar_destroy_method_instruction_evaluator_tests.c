@@ -77,7 +77,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_instance(vo
     ar_methodology__create_method("test_destroyer", "memory.x := 1", "1.0.0");
     
     // Verify method exists
-    method_t *method = ar_methodology__get_method("test_destroyer", "1.0.0");
+    ar_method_t *method = ar_methodology__get_method("test_destroyer", "1.0.0");
     assert(method != NULL);
     
     // Create destroy AST with method name and version
@@ -88,7 +88,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_instance(vo
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Method name: "test_destroyer"
@@ -165,7 +165,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_legacy(void) {
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Method name: "test_destroyer"
@@ -186,7 +186,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_legacy(void) {
     assert(result == true);
     
     // And the method should be destroyed
-    method_t *method = ar_methodology__get_method("test_destroyer", "1.0.0");
+    ar_method_t *method = ar_methodology__get_method("test_destroyer", "1.0.0");
     assert(method == NULL);
     
     // Cleanup
@@ -249,7 +249,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Method name: "test_destroyer"
@@ -281,7 +281,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void
     assert(ar_agency__agent_exists(agent2) == false);
     
     // And the method should be destroyed
-    method_t *method = ar_methodology__get_method("test_destroyer", "1.0.0");
+    ar_method_t *method = ar_methodology__get_method("test_destroyer", "1.0.0");
     assert(method == NULL);
     
     // Cleanup
@@ -333,7 +333,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Method name: "nonexistent"
@@ -401,7 +401,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_invalid_name_typ
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Method name: 123 (integer, not string)
@@ -454,7 +454,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_wrong_arg_count(
     assert(ast != NULL);
     
     // Create and attach the expression AST for the single argument
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Method name only (missing version - should cause error)

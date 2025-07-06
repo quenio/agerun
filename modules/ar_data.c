@@ -17,10 +17,10 @@ struct data_s {
         int int_value;         // Primitive type, no prefix needed
         double double_value;   // Primitive type, no prefix needed
         char *own_string;      // Owned string that ar_data_t owns and must free
-        list_t *own_list;      // Owned list that ar_data_t owns and must free
-        map_t *own_map;        // Owned map that ar_data_t owns and must free
+        ar_list_t *own_list;      // Owned list that ar_data_t owns and must free
+        ar_map_t *own_map;        // Owned map that ar_data_t owns and must free
     } data;
-    list_t *own_keys;  // List of keys that belong to this data's map (only used for DATA_MAP type)
+    ar_list_t *own_keys;  // List of keys that belong to this data's map (only used for DATA_MAP type)
     void *owner;       // NULL = unowned, non-NULL = owned
 };
 
@@ -331,7 +331,7 @@ static ar_data_t* _shallow_copy_list(const ar_data_t *ref_list) {
     if (!own_new_list) return NULL;
     
     // Get list items
-    list_t *ref_internal_list = ref_list->data.own_list;
+    ar_list_t *ref_internal_list = ref_list->data.own_list;
     void **items = ar_list__items(ref_internal_list);
     size_t count = ar_list__count(ref_internal_list);
     
@@ -558,7 +558,7 @@ const char *ar_data__get_string(const ar_data_t *ref_data) {
  * @note Ownership: Does not take ownership of the ref_data parameter.
  *       Returns a borrowed reference that caller must not destroy.
  */
-static list_t *ar_data__get_list(const ar_data_t *ref_data) {
+static ar_list_t *ar_data__get_list(const ar_data_t *ref_data) {
     if (!ref_data || ref_data->type != DATA_LIST) {
         return NULL;
     }
@@ -573,7 +573,7 @@ static list_t *ar_data__get_list(const ar_data_t *ref_data) {
  * @note Ownership: Does not take ownership of the ref_data parameter.
  *       Returns a borrowed reference that caller must not destroy.
  */
-static map_t *ar_data__get_map(const ar_data_t *ref_data) {
+static ar_map_t *ar_data__get_map(const ar_data_t *ref_data) {
     if (!ref_data || ref_data->type != DATA_MAP) {
         return NULL;
     }
@@ -593,7 +593,7 @@ ar_data_t *ar_data__get_map_data(const ar_data_t *ref_data, const char *ref_key)
     }
     
     // Get the map from the data
-    map_t *ref_map = ar_data__get_map(ref_data);
+    ar_map_t *ref_map = ar_data__get_map(ref_data);
     if (!ref_map) {
         return NULL;
     }
@@ -627,7 +627,7 @@ ar_data_t *ar_data__get_map_data(const ar_data_t *ref_data, const char *ref_key)
         }
         
         // Get the map from the current data
-        map_t *ref_current_map = ar_data__get_map(ref_current_data);
+        ar_map_t *ref_current_map = ar_data__get_map(ref_current_data);
         if (!ref_current_map) {
             ar_path__destroy(own_path);
             return NULL;
@@ -821,7 +821,7 @@ bool ar_data__set_map_data(ar_data_t *mut_data, const char *ref_key, ar_data_t *
     
     // For simple keys with no dots, use direct access
     if (strchr(ref_key, '.') == NULL) {
-        map_t *map = mut_data->data.own_map;
+        ar_map_t *map = mut_data->data.own_map;
         if (!map) {
             return false;
         }
@@ -969,7 +969,7 @@ bool ar_data__list_add_first_integer(ar_data_t *mut_data, int value) {
     }
     
     // Get the list from the data
-    list_t *ref_list = ar_data__get_list(mut_data);
+    ar_list_t *ref_list = ar_data__get_list(mut_data);
     if (!ref_list) {
         ar_data__destroy(own_int_data);
         return false;
@@ -1003,7 +1003,7 @@ bool ar_data__list_add_first_double(ar_data_t *mut_data, double value) {
     }
     
     // Get the list from the data
-    list_t *ref_list = ar_data__get_list(mut_data);
+    ar_list_t *ref_list = ar_data__get_list(mut_data);
     if (!ref_list) {
         ar_data__destroy(own_double_data);
         return false;
@@ -1037,7 +1037,7 @@ bool ar_data__list_add_first_string(ar_data_t *mut_data, const char *ref_value) 
     }
     
     // Get the list from the data
-    list_t *ref_list = ar_data__get_list(mut_data);
+    ar_list_t *ref_list = ar_data__get_list(mut_data);
     if (!ref_list) {
         ar_data__destroy(own_string_data);
         return false;
@@ -1068,7 +1068,7 @@ bool ar_data__list_add_first_data(ar_data_t *mut_data, ar_data_t *own_value) {
     }
     
     // Get the list from the data
-    list_t *ref_list = ar_data__get_list(mut_data);
+    ar_list_t *ref_list = ar_data__get_list(mut_data);
     if (!ref_list) {
         return false;
     }
@@ -1111,7 +1111,7 @@ bool ar_data__list_add_last_integer(ar_data_t *mut_data, int value) {
     }
     
     // Get the list from the data
-    list_t *ref_list = ar_data__get_list(mut_data);
+    ar_list_t *ref_list = ar_data__get_list(mut_data);
     if (!ref_list) {
         ar_data__destroy(own_int_data);
         return false;
@@ -1145,7 +1145,7 @@ bool ar_data__list_add_last_double(ar_data_t *mut_data, double value) {
     }
     
     // Get the list from the data
-    list_t *ref_list = ar_data__get_list(mut_data);
+    ar_list_t *ref_list = ar_data__get_list(mut_data);
     if (!ref_list) {
         ar_data__destroy(own_double_data);
         return false;
@@ -1179,7 +1179,7 @@ bool ar_data__list_add_last_string(ar_data_t *mut_data, const char *ref_value) {
     }
     
     // Get the list from the data
-    list_t *ref_list = ar_data__get_list(mut_data);
+    ar_list_t *ref_list = ar_data__get_list(mut_data);
     if (!ref_list) {
         ar_data__destroy(own_string_data);
         return false;
@@ -1210,7 +1210,7 @@ bool ar_data__list_add_last_data(ar_data_t *mut_data, ar_data_t *own_value) {
     }
     
     // Get the list from the data
-    list_t *ref_list = ar_data__get_list(mut_data);
+    ar_list_t *ref_list = ar_data__get_list(mut_data);
     if (!ref_list) {
         return false;
     }
@@ -1258,7 +1258,7 @@ ar_data_t *ar_data__list_remove_first(ar_data_t *mut_data) {
     }
     
     // Get the list from the data
-    list_t *ref_list = ar_data__get_list(mut_data);
+    ar_list_t *ref_list = ar_data__get_list(mut_data);
     if (!ref_list) {
         return NULL;
     }
@@ -1281,7 +1281,7 @@ ar_data_t *ar_data__list_remove_last(ar_data_t *mut_data) {
     }
     
     // Get the list from the data
-    list_t *ref_list = ar_data__get_list(mut_data);
+    ar_list_t *ref_list = ar_data__get_list(mut_data);
     if (!ref_list) {
         return NULL;
     }
@@ -1304,7 +1304,7 @@ ar_data_t *ar_data__list_first(const ar_data_t *ref_data) {
     }
     
     // Get the list from the data
-    list_t *ref_list = ar_data__get_list(ref_data);
+    ar_list_t *ref_list = ar_data__get_list(ref_data);
     if (!ref_list) {
         return NULL;
     }
@@ -1325,7 +1325,7 @@ ar_data_t *ar_data__list_last(const ar_data_t *ref_data) {
     }
     
     // Get the list from the data
-    list_t *ref_list = ar_data__get_list(ref_data);
+    ar_list_t *ref_list = ar_data__get_list(ref_data);
     if (!ref_list) {
         return NULL;
     }
@@ -1346,7 +1346,7 @@ int ar_data__list_remove_first_integer(ar_data_t *data) {
     }
     
     // Get the list from the data
-    list_t *list = ar_data__get_list(data);
+    ar_list_t *list = ar_data__get_list(data);
     if (!list) {
         return 0;
     }
@@ -1385,7 +1385,7 @@ double ar_data__list_remove_first_double(ar_data_t *data) {
     }
     
     // Get the list from the data
-    list_t *list = ar_data__get_list(data);
+    ar_list_t *list = ar_data__get_list(data);
     if (!list) {
         return 0.0;
     }
@@ -1424,7 +1424,7 @@ char *ar_data__list_remove_first_string(ar_data_t *data) {
     }
     
     // Get the list from the data
-    list_t *list = ar_data__get_list(data);
+    ar_list_t *list = ar_data__get_list(data);
     if (!list) {
         return NULL;
     }
@@ -1470,7 +1470,7 @@ int ar_data__list_remove_last_integer(ar_data_t *data) {
     }
     
     // Get the list from the data
-    list_t *list = ar_data__get_list(data);
+    ar_list_t *list = ar_data__get_list(data);
     if (!list) {
         return 0;
     }
@@ -1509,7 +1509,7 @@ double ar_data__list_remove_last_double(ar_data_t *data) {
     }
     
     // Get the list from the data
-    list_t *list = ar_data__get_list(data);
+    ar_list_t *list = ar_data__get_list(data);
     if (!list) {
         return 0.0;
     }
@@ -1548,7 +1548,7 @@ char *ar_data__list_remove_last_string(ar_data_t *data) {
     }
     
     // Get the list from the data
-    list_t *list = ar_data__get_list(data);
+    ar_list_t *list = ar_data__get_list(data);
     if (!list) {
         return NULL;
     }
@@ -1593,7 +1593,7 @@ size_t ar_data__list_count(const ar_data_t *data) {
     }
     
     // Get the list from the data
-    list_t *list = ar_data__get_list(data);
+    ar_list_t *list = ar_data__get_list(data);
     if (!list) {
         return 0;
     }

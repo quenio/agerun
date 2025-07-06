@@ -64,7 +64,7 @@ static void test_condition_instruction_evaluator__evaluate_with_instance(void) {
     assert(own_ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Condition: memory.x > 5
@@ -129,7 +129,7 @@ static void test_condition_instruction_evaluator__evaluate_without_legacy(void) 
     assert(own_ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Condition: memory.flag
@@ -192,7 +192,7 @@ static void test_instruction_evaluator__evaluate_if_true_condition(void) {
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Condition: memory.x > 5
@@ -257,7 +257,7 @@ static void test_instruction_evaluator__evaluate_if_false_condition(void) {
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Condition: memory.x > 5 (will be false since x=3)
@@ -324,7 +324,7 @@ static void test_instruction_evaluator__evaluate_if_with_expressions(void) {
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Condition: memory.flag
@@ -397,7 +397,7 @@ static void test_instruction_evaluator__evaluate_if_nested(void) {
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Condition: memory.x > 10
@@ -461,7 +461,7 @@ static void test_instruction_evaluator__evaluate_if_invalid_args(void) {
     assert(ast1 != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts1 = ar_list__create();
+    ar_list_t *arg_asts1 = ar_list__create();
     assert(arg_asts1 != NULL);
     
     // Only 2 arguments instead of required 3

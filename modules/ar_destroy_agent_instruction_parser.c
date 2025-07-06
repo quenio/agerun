@@ -132,7 +132,7 @@ static char* _extract_argument(const char *str, size_t *pos, char delimiter) {
 /**
  * Internal: Cleanup argument AST list and all contained ASTs.
  */
-static void _cleanup_arg_asts(list_t *arg_asts) {
+static void _cleanup_arg_asts(ar_list_t *arg_asts) {
     if (arg_asts) {
         void **items = ar_list__items(arg_asts);
         if (items) {
@@ -149,10 +149,10 @@ static void _cleanup_arg_asts(list_t *arg_asts) {
 /**
  * Internal: Parse argument string into expression AST and return as a list.
  */
-static list_t* _parse_argument_to_ast(ar_destroy_agent_instruction_parser_t *mut_parser, 
+static ar_list_t* _parse_argument_to_ast(ar_destroy_agent_instruction_parser_t *mut_parser, 
                                       const char *ref_arg,
                                       size_t error_offset) {
-    list_t *own_arg_asts = ar_list__create();
+    ar_list_t *own_arg_asts = ar_list__create();
     if (!own_arg_asts) {
         _log_error(mut_parser, "Failed to create argument AST list", error_offset);
         return NULL;
@@ -276,7 +276,7 @@ ar_instruction_ast_t* ar_destroy_agent_instruction_parser__parse(
     }
     
     /* Parse argument into expression AST and set it in the instruction AST */
-    list_t *own_arg_asts = _parse_argument_to_ast(mut_parser, arg, pos);
+    ar_list_t *own_arg_asts = _parse_argument_to_ast(mut_parser, arg, pos);
     
     /* Clean up argument string - no longer needed after parsing */
     AR__HEAP__FREE(arg);

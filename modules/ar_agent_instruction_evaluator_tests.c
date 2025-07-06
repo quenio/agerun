@@ -40,7 +40,7 @@ static void test_agent_instruction_evaluator__evaluate_with_context(void) {
     assert(evaluator != NULL);
     
     // Register a method to create agents with
-    method_t *method = ar_method__create("worker", "send(0, context.config)", "2.0.0");
+    ar_method_t *method = ar_method__create("worker", "send(0, context.config)", "2.0.0");
     assert(method != NULL);
     ar_methodology__register_method(method);
     
@@ -52,7 +52,7 @@ static void test_agent_instruction_evaluator__evaluate_with_context(void) {
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Method name: "worker"
@@ -115,7 +115,7 @@ static void test_agent_instruction_evaluator__evaluate_with_result(void) {
     assert(evaluator != NULL);
     
     // Register a method to create agents with
-    method_t *method = ar_method__create("counter", "memory.count := memory.count + 1", "1.0.0");
+    ar_method_t *method = ar_method__create("counter", "memory.count := memory.count + 1", "1.0.0");
     assert(method != NULL);
     ar_methodology__register_method(method);
     
@@ -127,7 +127,7 @@ static void test_agent_instruction_evaluator__evaluate_with_result(void) {
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Method name: "counter"
@@ -344,7 +344,7 @@ static void test_agent_instruction_evaluator__evaluate_with_instance(void) {
     assert(evaluator != NULL);
     
     // Register a method to create agents with
-    method_t *method = ar_method__create("tester", "send(0, memory.config)", "1.0.0");
+    ar_method_t *method = ar_method__create("tester", "send(0, memory.config)", "1.0.0");
     assert(method != NULL);
     ar_methodology__register_method(method);
     
@@ -356,7 +356,7 @@ static void test_agent_instruction_evaluator__evaluate_with_instance(void) {
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Method name: "tester"
@@ -421,7 +421,7 @@ static void test_agent_instruction_evaluator__legacy_evaluate_function(void) {
     assert(evaluator != NULL);
     
     // Register a method to create agents with
-    method_t *method = ar_method__create("legacy_worker", "send(0, memory.status)", "1.0.0");
+    ar_method_t *method = ar_method__create("legacy_worker", "send(0, memory.status)", "1.0.0");
     assert(method != NULL);
     ar_methodology__register_method(method);
     
@@ -433,7 +433,7 @@ static void test_agent_instruction_evaluator__legacy_evaluate_function(void) {
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Method name: "legacy_worker"

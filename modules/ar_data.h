@@ -158,7 +158,7 @@ const char *ar_data__get_string(const ar_data_t *ref_data);
  * NOTE: Removed ar_data_get_map and ar_data_get_map_mutable
  * These functions are no longer necessary since we have ar_data_get_map_data
  * and other accessor functions. Modules outside data.c should never
- * have direct access to map_t instances.
+ * have direct access to ar_map_t instances.
  */
 
 /**

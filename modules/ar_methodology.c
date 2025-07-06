@@ -206,7 +206,7 @@ static bool _validate_file(const char *filename, char *error_message, size_t err
 /* Methodology instance structure */
 struct ar_methodology_s {
     ar_log_t *ref_log;          /* Borrowed reference to log instance */
-    method_t ***own_methods;    /* Dynamic 2D array for instance storage */
+    ar_method_t ***own_methods;    /* Dynamic 2D array for instance storage */
     int *own_method_counts;     /* Dynamic array of method counts per name */
     int method_name_count;      /* Number of unique method names */
     int max_methods;            /* Current capacity for method names */
@@ -235,8 +235,8 @@ static bool _grow_instance_storage(ar_methodology_t *mut_methodology) {
     int new_capacity = mut_methodology->max_methods * 2;
     
     // Reallocate methods array
-    method_t ***new_methods = AR__HEAP__MALLOC(
-        sizeof(method_t**) * (size_t)new_capacity,
+    ar_method_t ***new_methods = AR__HEAP__MALLOC(
+        sizeof(ar_method_t**) * (size_t)new_capacity,
         "methodology methods array (grown)"
     );
     if (!new_methods) {
@@ -288,7 +288,7 @@ static bool _initialize_instance_storage(ar_methodology_t *mut_methodology, int 
     
     // Allocate the methods array (array of method name pointers)
     mut_methodology->own_methods = AR__HEAP__MALLOC(
-        sizeof(method_t**) * (size_t)mut_methodology->max_methods, 
+        sizeof(ar_method_t**) * (size_t)mut_methodology->max_methods, 
         "methodology methods array"
     );
     if (!mut_methodology->own_methods) {
@@ -349,7 +349,7 @@ static int _find_method_idx_in_instance(ar_methodology_t *ref_methodology, const
     return -1;
 }
 
-static method_t* _find_latest_method_in_instance(ar_methodology_t *ref_methodology, const char *ref_name) {
+static ar_method_t* _find_latest_method_in_instance(ar_methodology_t *ref_methodology, const char *ref_name) {
     int method_idx = _find_method_idx_in_instance(ref_methodology, ref_name);
     if (method_idx < 0 || ref_methodology->own_method_counts[method_idx] == 0) {
         return NULL;
@@ -375,7 +375,7 @@ static method_t* _find_latest_method_in_instance(ar_methodology_t *ref_methodolo
     return NULL;
 }
 
-static method_t* _find_method_in_instance(ar_methodology_t *ref_methodology, const char *ref_name, const char *ref_version) {
+static ar_method_t* _find_method_in_instance(ar_methodology_t *ref_methodology, const char *ref_name, const char *ref_version) {
     int method_idx = _find_method_idx_in_instance(ref_methodology, ref_name);
     if (method_idx < 0) {
         return NULL;
@@ -401,14 +401,14 @@ static method_t* _find_method_in_instance(ar_methodology_t *ref_methodology, con
 
 
 
-static void _set_method_storage_in_instance(ar_methodology_t *mut_methodology, int method_idx, int version_idx, method_t *ref_method) {
+static void _set_method_storage_in_instance(ar_methodology_t *mut_methodology, int method_idx, int version_idx, ar_method_t *ref_method) {
     AR_ASSERT(method_idx >= 0 && method_idx < mut_methodology->method_name_count, "Method index out of bounds");
     AR_ASSERT(version_idx >= 0, "Version index out of bounds");
     
     // Allocate versions array if needed
     if (!mut_methodology->own_methods[method_idx]) {
         mut_methodology->own_methods[method_idx] = AR__HEAP__MALLOC(
-            sizeof(method_t*) * MAX_VERSIONS_PER_METHOD,
+            sizeof(ar_method_t*) * MAX_VERSIONS_PER_METHOD,
             "method versions array"
         );
         if (!mut_methodology->own_methods[method_idx]) {
@@ -433,7 +433,7 @@ static void _set_method_storage_in_instance(ar_methodology_t *mut_methodology, i
 // Functions removed - were exposing internal state
 
 // Main method access function
-method_t* ar_methodology__get_method(const char *ref_name, const char *ref_version) {
+ar_method_t* ar_methodology__get_method(const char *ref_name, const char *ref_version) {
     ar_methodology_t *ref_instance = _get_global_instance();
     if (!ref_instance) {
         return NULL;
@@ -525,7 +525,7 @@ bool ar_methodology__save_methods(void) {
                 continue; // Skip NULL entries
             }
             
-            const method_t *ref_method = ref_instance->own_methods[i][j];
+            const ar_method_t *ref_method = ref_instance->own_methods[i][j];
             
             // Get version string with validation
             const char *version = ar_method__get_version(ref_method);
@@ -629,7 +629,7 @@ void ar_methodology__cleanup(void) {
     }
 }
 
-void ar_methodology__register_method(method_t *own_method) {
+void ar_methodology__register_method(ar_method_t *own_method) {
     ar_methodology_t *mut_instance = _get_global_instance();
     if (!mut_instance) {
         if (own_method) {
@@ -912,7 +912,7 @@ bool ar_methodology__load_methods(void) {
             }
             
             // Create a new method with data from the file
-            method_t *own_method = ar_method__create(name, instructions, version);
+            ar_method_t *own_method = ar_method__create(name, instructions, version);
             
             if (own_method) {
                 // Store the method in the instance
@@ -1002,7 +1002,7 @@ void ar_methodology__destroy(ar_methodology_t *own_methodology) {
 
 /* Instance-aware versions of public functions */
 
-method_t* ar_methodology__get_method_with_instance(ar_methodology_t *ref_methodology, 
+ar_method_t* ar_methodology__get_method_with_instance(ar_methodology_t *ref_methodology, 
                                                    const char *ref_name, 
                                                    const char *ref_version) {
     if (!ref_methodology) {
@@ -1012,7 +1012,7 @@ method_t* ar_methodology__get_method_with_instance(ar_methodology_t *ref_methodo
 }
 
 void ar_methodology__register_method_with_instance(ar_methodology_t *mut_methodology, 
-                                                   method_t *own_method) {
+                                                   ar_method_t *own_method) {
     if (!mut_methodology || !own_method) {
         if (own_method) {
             ar_method__destroy(own_method);
@@ -1067,7 +1067,7 @@ void ar_methodology__register_method_with_instance(ar_methodology_t *mut_methodo
     // Allocate or expand the versions array if needed
     if (!mut_methodology->own_methods[method_idx]) {
         mut_methodology->own_methods[method_idx] = AR__HEAP__MALLOC(
-            sizeof(method_t*) * MAX_VERSIONS_PER_METHOD,
+            sizeof(ar_method_t*) * MAX_VERSIONS_PER_METHOD,
             "method versions array"
         );
         if (!mut_methodology->own_methods[method_idx]) {
@@ -1097,7 +1097,7 @@ bool ar_methodology__create_method_with_instance(ar_methodology_t *mut_methodolo
     }
     
     // Pass the ar_log from the methodology instance to ar_method__create
-    method_t *own_method = ar_method__create_with_log(ref_name, ref_instructions, ref_version, mut_methodology->ref_log);
+    ar_method_t *own_method = ar_method__create_with_log(ref_name, ref_instructions, ref_version, mut_methodology->ref_log);
     if (!own_method) {
         return false;
     }
@@ -1168,7 +1168,7 @@ bool ar_methodology__save_methods_with_instance(ar_methodology_t *ref_methodolog
         
         // Write each version
         for (int j = 0; j < ref_methodology->own_method_counts[i]; j++) {
-            method_t *method = ref_methodology->own_methods[i][j];
+            ar_method_t *method = ref_methodology->own_methods[i][j];
             if (!method) continue;
             
             const char *version = ar_method__get_version(method);
@@ -1277,7 +1277,7 @@ bool ar_methodology__load_methods_with_instance(ar_methodology_t *mut_methodolog
             }
             
             // Create and register the method
-            method_t *method = ar_method__create(method_name, instructions, version);
+            ar_method_t *method = ar_method__create(method_name, instructions, version);
             AR__HEAP__FREE(version);
             AR__HEAP__FREE(instructions);
             
@@ -1311,7 +1311,7 @@ bool ar_methodology__unregister_method_with_instance(ar_methodology_t *mut_metho
     
     int version_idx = -1;
     for (int i = 0; i < mut_methodology->own_method_counts[method_idx]; i++) {
-        method_t *method = mut_methodology->own_methods[method_idx][i];
+        ar_method_t *method = mut_methodology->own_methods[method_idx][i];
         if (method && strcmp(ar_method__get_version(method), ref_version) == 0) {
             version_idx = i;
             break;
@@ -1323,7 +1323,7 @@ bool ar_methodology__unregister_method_with_instance(ar_methodology_t *mut_metho
     }
     
     // Get the method to check if it's in use
-    method_t *method_to_remove = mut_methodology->own_methods[method_idx][version_idx];
+    ar_method_t *method_to_remove = mut_methodology->own_methods[method_idx][version_idx];
     
     // Check if method is in use by any agents
     if (ar_agency__count_agents_using_method(method_to_remove) > 0) {

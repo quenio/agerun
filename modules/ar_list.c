@@ -24,8 +24,8 @@ struct list_s {
  * Create a new empty list
  * @return Pointer to the new list, or NULL on failure
  */
-list_t* ar_list__create(void) {
-    list_t *own_list = (list_t*)AR__HEAP__MALLOC(sizeof(list_t), "List structure");
+ar_list_t* ar_list__create(void) {
+    ar_list_t *own_list = (ar_list_t*)AR__HEAP__MALLOC(sizeof(ar_list_t), "List structure");
     if (!own_list) {
         return NULL;
     }
@@ -43,7 +43,7 @@ list_t* ar_list__create(void) {
  * @param item The item to add
  * @return true if successful, false otherwise
  */
-bool ar_list__add_last(list_t *mut_list, void *mut_item) {
+bool ar_list__add_last(ar_list_t *mut_list, void *mut_item) {
     if (!mut_list) {
         return false;
     }
@@ -75,7 +75,7 @@ bool ar_list__add_last(list_t *mut_list, void *mut_item) {
  * @param item The item to add
  * @return true if successful, false otherwise
  */
-bool ar_list__add_first(list_t *mut_list, void *mut_item) {
+bool ar_list__add_first(ar_list_t *mut_list, void *mut_item) {
     if (!mut_list) {
         return false;
     }
@@ -106,7 +106,7 @@ bool ar_list__add_first(list_t *mut_list, void *mut_item) {
  * @param list The list to get the first item from
  * @return Pointer to the first item, or NULL if the list is empty
  */
-void* ar_list__first(const list_t *ref_list) {
+void* ar_list__first(const ar_list_t *ref_list) {
     if (!ref_list || !ref_list->own_head) {
         return NULL;
     }
@@ -119,7 +119,7 @@ void* ar_list__first(const list_t *ref_list) {
  * @param list The list to get the last item from
  * @return Pointer to the last item, or NULL if the list is empty
  */
-void* ar_list__last(const list_t *ref_list) {
+void* ar_list__last(const ar_list_t *ref_list) {
     if (!ref_list || !ref_list->own_tail) {
         return NULL;
     }
@@ -132,7 +132,7 @@ void* ar_list__last(const list_t *ref_list) {
  * @param list The list to remove from
  * @return Pointer to the removed item, or NULL if the list is empty
  */
-void* ar_list__remove_first(list_t *mut_list) {
+void* ar_list__remove_first(ar_list_t *mut_list) {
     if (!mut_list || !mut_list->own_head) {
         return NULL;
     }
@@ -161,7 +161,7 @@ void* ar_list__remove_first(list_t *mut_list) {
  * @param list The list to remove from
  * @return Pointer to the removed item, or NULL if the list is empty
  */
-void* ar_list__remove_last(list_t *mut_list) {
+void* ar_list__remove_last(ar_list_t *mut_list) {
     if (!mut_list || !mut_list->own_tail) {
         return NULL;
     }
@@ -190,7 +190,7 @@ void* ar_list__remove_last(list_t *mut_list) {
  * @param list The list to count
  * @return The number of items
  */
-size_t ar_list__count(const list_t *ref_list) {
+size_t ar_list__count(const ar_list_t *ref_list) {
     if (!ref_list) {
         return 0;
     }
@@ -203,7 +203,7 @@ size_t ar_list__count(const list_t *ref_list) {
  * @param list The list to check
  * @return true if the list is empty, false otherwise
  */
-bool ar_list__empty(const list_t *ref_list) {
+bool ar_list__empty(const ar_list_t *ref_list) {
     if (!ref_list) {
         return true;
     }
@@ -219,7 +219,7 @@ bool ar_list__empty(const list_t *ref_list) {
  *       The items themselves are not copied and remain owned by the caller.
  *       The caller can use ar_list_count() to determine the size of the array.
  */
-void** ar_list__items(const list_t *ref_list) {
+void** ar_list__items(const ar_list_t *ref_list) {
     if (!ref_list) {
         return NULL;
     }
@@ -254,7 +254,7 @@ void** ar_list__items(const list_t *ref_list) {
  * @note This function compares the item pointer directly with the stored pointers,
  *       not the contents of what they point to.
  */
-void* ar_list__remove(list_t *mut_list, const void *ref_item) {
+void* ar_list__remove(ar_list_t *mut_list, const void *ref_item) {
     if (!mut_list || mut_list->count == 0) {
         return NULL;
     }
@@ -304,7 +304,7 @@ void* ar_list__remove(list_t *mut_list, const void *ref_item) {
  *       It does not free memory for items.
  *       The caller is responsible for freeing all items that were added to the list.
  */
-void ar_list__destroy(list_t *own_list) {
+void ar_list__destroy(ar_list_t *own_list) {
     if (!own_list) {
         return;
     }

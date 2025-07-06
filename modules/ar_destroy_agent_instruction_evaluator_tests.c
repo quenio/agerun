@@ -94,7 +94,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_with_instance(voi
     assert(ast != NULL);
     
     // Create and attach the expression AST for the argument
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Agent ID: memory.agent_id
@@ -174,7 +174,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_legacy(void) {
     assert(ast != NULL);
     
     // Create and attach the expression AST for the argument
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Agent ID: literal integer
@@ -252,7 +252,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_with_result(void)
     assert(ast != NULL);
     
     // Create and attach the expression AST for the argument
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Agent ID: literal integer
@@ -326,7 +326,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_nonexistent(void)
     assert(ast != NULL);
     
     // Create and attach the expression AST for the argument
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Agent ID: 999 (nonexistent)
@@ -390,7 +390,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_invalid_type(void
     assert(ast != NULL);
     
     // Create and attach the expression AST for the argument
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Agent ID: "not_a_number" (string, not integer)
@@ -439,7 +439,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_wrong_arg_count(v
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for the arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Agent ID: 1

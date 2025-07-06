@@ -31,7 +31,7 @@ bool ar_methodology__create_method(const char *ref_name, const char *ref_instruc
  * @note Ownership: Returns a borrowed reference to the internal method. The caller
  *       should not modify or free the returned method.
  */
-method_t* ar_methodology__get_method(const char *ref_name, const char *ref_version);
+ar_method_t* ar_methodology__get_method(const char *ref_name, const char *ref_version);
 
 
 /* Internal functions removed to comply with Parnas principles */
@@ -60,7 +60,7 @@ void ar_methodology__cleanup(void);
  * @note Ownership: The methodology module takes ownership of the method.
  *       The caller should not access or free the method after this call.
  */
-void ar_methodology__register_method(method_t *own_method);
+void ar_methodology__register_method(ar_method_t *own_method);
 
 /**
  * Unregister a method from the methodology
@@ -96,7 +96,7 @@ void ar_methodology__destroy(ar_methodology_t *own_methodology);
  * @return Pointer to method definition (borrowed reference), or NULL if not found
  * @note Ownership: Returns a borrowed reference to the internal method
  */
-method_t* ar_methodology__get_method_with_instance(ar_methodology_t *ref_methodology, 
+ar_method_t* ar_methodology__get_method_with_instance(ar_methodology_t *ref_methodology, 
                                                    const char *ref_name, 
                                                    const char *ref_version);
 
@@ -107,7 +107,7 @@ method_t* ar_methodology__get_method_with_instance(ar_methodology_t *ref_methodo
  * @note Ownership: The methodology instance takes ownership of the method
  */
 void ar_methodology__register_method_with_instance(ar_methodology_t *mut_methodology, 
-                                                   method_t *own_method);
+                                                   ar_method_t *own_method);
 
 /**
  * Create and register a method with a specific methodology instance

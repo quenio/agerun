@@ -50,7 +50,7 @@ bool ar_system_fixture__initialize(system_fixture_t *mut_fixture);
  * @return A newly created method object
  * @note Ownership: Returns an owned method that is automatically transferred to methodology
  */
-method_t* ar_system_fixture__register_method(system_fixture_t *mut_fixture,
+ar_method_t* ar_system_fixture__register_method(system_fixture_t *mut_fixture,
                                                 const char *ref_method_name,
                                                 const char *ref_instructions,
                                                 const char *ref_version);

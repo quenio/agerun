@@ -61,7 +61,7 @@ static void test_send_instruction_parser__parse_simple_send(void) {
     assert(ar_instruction_ast__has_result_assignment(own_ast) == false);
     
     // Verify arguments
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
     assert(ar_list__count(own_args) == 2);
     void **own_items = ar_list__items(own_args);
@@ -124,7 +124,7 @@ static void test_send_instruction_parser__parse_send_with_expression_args(void) 
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__SEND);
     
     // Verify arguments
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
     assert(ar_list__count(own_args) == 2);
     void **own_items = ar_list__items(own_args);
@@ -206,7 +206,7 @@ static void test_send_instruction_parser__parse_nested_parentheses(void) {
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__SEND);
     
     // Verify arguments
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
     assert(ar_list__count(own_args) == 2);
     void **own_items = ar_list__items(own_args);
@@ -242,7 +242,7 @@ static void test_send_instruction_parser__reusability(void) {
     assert(own_ast2 != NULL);
     
     // Verify first instruction
-    list_t *own_args1 = ar_instruction_ast__get_function_args(own_ast1);
+    ar_list_t *own_args1 = ar_instruction_ast__get_function_args(own_ast1);
     assert(own_args1 != NULL);
     void **own_items1 = ar_list__items(own_args1);
     assert(strcmp((const char*)own_items1[0], "0") == 0);
@@ -251,7 +251,7 @@ static void test_send_instruction_parser__reusability(void) {
     ar_list__destroy(own_args1);
     
     // Verify second instruction
-    list_t *own_args2 = ar_instruction_ast__get_function_args(own_ast2);
+    ar_list_t *own_args2 = ar_instruction_ast__get_function_args(own_ast2);
     assert(own_args2 != NULL);
     void **own_items2 = ar_list__items(own_args2);
     assert(strcmp((const char*)own_items2[0], "1") == 0);
@@ -286,7 +286,7 @@ static void test_send_instruction_parser__parse_with_expression_asts(void) {
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__SEND);
     
     // And the arguments should be available as expression ASTs
-    const list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
+    const ar_list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
     assert(ref_arg_asts != NULL);
     assert(ar_list__count(ref_arg_asts) == 2);
     

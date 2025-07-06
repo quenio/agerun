@@ -53,6 +53,6 @@ bool ar_interpreter__execute_instruction(interpreter_t *mut_interpreter,
 bool ar_interpreter__execute_method(interpreter_t *mut_interpreter,
                                     int64_t agent_id, 
                                     const ar_data_t *ref_message, 
-                                    const method_t *ref_method);
+                                    const ar_method_t *ref_method);
 
 #endif /* AGERUN_INTERPRETER_H */

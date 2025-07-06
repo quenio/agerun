@@ -7,8 +7,8 @@
 #include "ar_agent_registry.h"
 
 /* Forward declarations */
-typedef struct method_s method_t;
-typedef struct agent_s agent_t;
+typedef struct method_s ar_method_t;
+typedef struct agent_s ar_agent_t;
 
 /* Constants */
 #define AGENCY_FILE_NAME "agency.agerun"
@@ -61,7 +61,7 @@ bool ar_agency__load_agents(void);
  *       IMPORTANT: The caller must process 2*update_count messages after this call
  *       to ensure all sleep and wake messages are processed.
  */
-int ar_agency__update_agent_methods(const method_t *ref_old_method, const method_t *ref_new_method, bool send_lifecycle_events);
+int ar_agency__update_agent_methods(const ar_method_t *ref_old_method, const ar_method_t *ref_new_method, bool send_lifecycle_events);
 
 /**
  * Count the number of agents using a specific method
@@ -69,7 +69,7 @@ int ar_agency__update_agent_methods(const method_t *ref_old_method, const method
  * @return Number of active agents using the method
  * @note Ownership: Does not take ownership of the method reference.
  */
-int ar_agency__count_agents_using_method(const method_t *ref_method);
+int ar_agency__count_agents_using_method(const ar_method_t *ref_method);
 
 /**
  * Get the first active agent ID
@@ -162,7 +162,7 @@ bool ar_agency__is_agent_active(int64_t agent_id);
  * @return Const pointer to agent's method, or NULL if agent doesn't exist
  * @note Ownership: Returns a borrowed reference.
  */
-const method_t* ar_agency__get_agent_method(int64_t agent_id);
+const ar_method_t* ar_agency__get_agent_method(int64_t agent_id);
 
 /**
  * Get agent's method info by ID
@@ -189,7 +189,7 @@ ar_data_t* ar_agency__get_agent_mutable_memory(int64_t agent_id);
  * @param send_sleep_wake If true, send sleep/wake messages during update
  * @return true if successful, false otherwise
  */
-bool ar_agency__update_agent_method(int64_t agent_id, const method_t *ref_new_method, bool send_sleep_wake);
+bool ar_agency__update_agent_method(int64_t agent_id, const ar_method_t *ref_new_method, bool send_sleep_wake);
 
 /**
  * Set agent active status by ID

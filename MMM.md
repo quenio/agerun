@@ -130,16 +130,16 @@ bool ar_data_set_map_value(ar_data_t *mut_map, const char *ref_key, ar_data_t *o
 
 ```c
 // OWNER: Caller owns returned list
-list_t* ar_list_create();
+ar_list_t* ar_list_create();
 
 // BORROW: Caller borrows but doesn't own items
-void** ar_list_items(const list_t *ref_list);
+void** ar_list_items(const ar_list_t *ref_list);
 
 // BORROW: Items in list remain owned by their original owners
-void* ar_list_get(const list_t *ref_list, size_t index);
+void* ar_list_get(const ar_list_t *ref_list, size_t index);
 
 // NO-TRANSFER: List doesn't take ownership of item
-bool ar_list_add_last(list_t *mut_list, void *ref_item);
+bool ar_list_add_last(ar_list_t *mut_list, void *ref_item);
 ```
 
 **Key Rules:**
@@ -153,13 +153,13 @@ bool ar_list_add_last(list_t *mut_list, void *ref_item);
 
 ```c
 // OWNER: Caller owns returned map
-map_t* ar_map_create();
+ar_map_t* ar_map_create();
 
 // NO-TRANSFER: Map does not take ownership of value
-bool ar_map_set(map_t *mut_map, const char *ref_key, void *ref_value);
+bool ar_map_set(ar_map_t *mut_map, const char *ref_key, void *ref_value);
 
 // BORROW: Caller borrows but doesn't own returned value
-void* ar_map_get(const map_t *ref_map, const char *ref_key);
+void* ar_map_get(const ar_map_t *ref_map, const char *ref_key);
 ```
 
 **Key Rules:**
@@ -362,7 +362,7 @@ For clarity and consistency, all ownership prefixes should be used throughout th
     *       The map will be responsible for destroying own_value.
     *       Caller should set own_value = NULL after this call.
     */
-   bool ar_map_insert(map_t *mut_map, const char *ref_key, ar_data_t *own_value);
+   bool ar_map_insert(ar_map_t *mut_map, const char *ref_key, ar_data_t *own_value);
    ```
 
 5. **Struct Field Names:**

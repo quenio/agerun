@@ -25,22 +25,22 @@ static void test_update_compatibility(void) {
     assert(ar_system_fixture__initialize(own_fixture));
     
     // Register different versions
-    method_t *ref_v1_0 = ar_system_fixture__register_method(
+    ar_method_t *ref_v1_0 = ar_system_fixture__register_method(
         own_fixture, "echo", "send(sender, message)", "1.0.0"
     );
     assert(ref_v1_0 != NULL);
     
-    method_t *ref_v1_1 = ar_system_fixture__register_method(
+    ar_method_t *ref_v1_1 = ar_system_fixture__register_method(
         own_fixture, "echo", "send(sender, message)", "1.1.0"
     );
     assert(ref_v1_1 != NULL);
     
-    method_t *ref_v2_0 = ar_system_fixture__register_method(
+    ar_method_t *ref_v2_0 = ar_system_fixture__register_method(
         own_fixture, "echo", "send(sender, message)", "2.0.0"
     );
     assert(ref_v2_0 != NULL);
     
-    method_t *ref_other = ar_system_fixture__register_method(
+    ar_method_t *ref_other = ar_system_fixture__register_method(
         own_fixture, "calc", "send(0, \"result\")", "1.0.0"
     );
     assert(ref_other != NULL);
@@ -80,12 +80,12 @@ static void test_count_using_method(void) {
     assert(ar_system_fixture__initialize(own_fixture));
     
     // Register methods
-    method_t *ref_echo = ar_system_fixture__register_method(
+    ar_method_t *ref_echo = ar_system_fixture__register_method(
         own_fixture, "echo", "send(sender, message)", "1.0.0"
     );
     assert(ref_echo != NULL);
     
-    method_t *ref_calc = ar_system_fixture__register_method(
+    ar_method_t *ref_calc = ar_system_fixture__register_method(
         own_fixture, "calc", "send(0, \"result\")", "1.0.0"
     );
     assert(ref_calc != NULL);
@@ -125,12 +125,12 @@ static void test_update_without_lifecycle(void) {
     assert(ar_system_fixture__initialize(own_fixture));
     
     // Register two versions
-    method_t *ref_v1_0 = ar_system_fixture__register_method(
+    ar_method_t *ref_v1_0 = ar_system_fixture__register_method(
         own_fixture, "echo", "send(sender, \"v1.0: \" + message)", "1.0.0"
     );
     assert(ref_v1_0 != NULL);
     
-    method_t *ref_v1_1 = ar_system_fixture__register_method(
+    ar_method_t *ref_v1_1 = ar_system_fixture__register_method(
         own_fixture, "echo", "send(sender, \"v1.1: \" + message)", "1.1.0"
     );
     assert(ref_v1_1 != NULL);
@@ -182,14 +182,14 @@ static void test_update_with_lifecycle(void) {
     assert(ar_system_fixture__initialize(own_fixture));
     
     // Register two simple versions
-    method_t *ref_v1_0 = ar_system_fixture__register_method(
+    ar_method_t *ref_v1_0 = ar_system_fixture__register_method(
         own_fixture, "echo", 
         "send(sender, \"v1.0: \" + message)", 
         "1.0.0"
     );
     assert(ref_v1_0 != NULL);
     
-    method_t *ref_v1_1 = ar_system_fixture__register_method(
+    ar_method_t *ref_v1_1 = ar_system_fixture__register_method(
         own_fixture, "echo", 
         "send(sender, \"v1.1: \" + message)", 
         "1.1.0"
@@ -245,17 +245,17 @@ static void test_update_incompatible(void) {
     assert(ar_system_fixture__initialize(own_fixture));
     
     // Register incompatible versions
-    method_t *ref_v1_0 = ar_system_fixture__register_method(
+    ar_method_t *ref_v1_0 = ar_system_fixture__register_method(
         own_fixture, "echo", "send(sender, message)", "1.0.0"
     );
     assert(ref_v1_0 != NULL);
     
-    method_t *ref_v2_0 = ar_system_fixture__register_method(
+    ar_method_t *ref_v2_0 = ar_system_fixture__register_method(
         own_fixture, "echo", "send(sender, message)", "2.0.0"
     );
     assert(ref_v2_0 != NULL);
     
-    method_t *ref_other = ar_system_fixture__register_method(
+    ar_method_t *ref_other = ar_system_fixture__register_method(
         own_fixture, "calc", "send(0, \"result\")", "1.0.0"
     );
     assert(ref_other != NULL);
@@ -294,12 +294,12 @@ static void test_update_no_agents(void) {
     assert(ar_system_fixture__initialize(own_fixture));
     
     // Register methods
-    method_t *ref_v1_0 = ar_system_fixture__register_method(
+    ar_method_t *ref_v1_0 = ar_system_fixture__register_method(
         own_fixture, "echo", "send(sender, message)", "1.0.0"
     );
     assert(ref_v1_0 != NULL);
     
-    method_t *ref_v1_1 = ar_system_fixture__register_method(
+    ar_method_t *ref_v1_1 = ar_system_fixture__register_method(
         own_fixture, "echo", "send(sender, message)", "1.1.0"
     );
     assert(ref_v1_1 != NULL);

@@ -64,7 +64,7 @@ static void test_condition_parser__parse_simple_if(void) {
     assert(ar_log__get_last_error_message(log) == NULL);
     
     // Verify arguments
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
     assert(ar_list__count(own_args) == 3);
     void **own_items = ar_list__items(own_args);
@@ -104,7 +104,7 @@ static void test_condition_parser__parse_if_with_assignment(void) {
     assert(ar_log__get_last_error_message(log) == NULL);
     
     // Verify arguments
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
     assert(ar_list__count(own_args) == 3);
     void **own_items = ar_list__items(own_args);
@@ -137,7 +137,7 @@ static void test_condition_parser__parse_nested_conditions(void) {
     assert(own_ast != NULL);
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__IF);
     
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(ar_list__count(own_args) == 3);
     void **own_items = ar_list__items(own_args);
     assert(strcmp((const char*)own_items[0], "memory.age >= 18 && memory.registered") == 0);
@@ -167,7 +167,7 @@ static void test_condition_parser__parse_nested_function_calls(void) {
     assert(own_ast != NULL);
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__IF);
     
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(ar_list__count(own_args) == 3);
     void **own_items = ar_list__items(own_args);
     assert(strcmp((const char*)own_items[0], "send(0, \"check\")") == 0);
@@ -291,7 +291,7 @@ static void test_condition_parser__parse_with_expression_asts(void) {
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__IF);
     
     // And the arguments should be available as expression ASTs
-    const list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
+    const ar_list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
     assert(ref_arg_asts != NULL);
     assert(ar_list__count(ref_arg_asts) == 3);
     

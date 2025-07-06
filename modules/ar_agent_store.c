@@ -30,8 +30,8 @@ typedef struct {
 } store_save_context_t;
 
 /* Helper function to get list of all active agent IDs */
-static list_t* _get_active_agent_list(void) {
-    list_t *own_list = ar_list__create();
+static ar_list_t* _get_active_agent_list(void) {
+    ar_list_t *own_list = ar_list__create();
     if (!own_list) {
         return NULL;
     }
@@ -50,7 +50,7 @@ static list_t* _get_active_agent_list(void) {
 
 
 /* Helper function to clean up agent list and items */
-static void _cleanup_agent_list(list_t *own_agents, void **own_items, size_t count) {
+static void _cleanup_agent_list(ar_list_t *own_agents, void **own_items, size_t count) {
     // Destroy ar_data_t objects from the items array
     if (own_items) {
         for (size_t i = 0; i < count; i++) {
@@ -78,7 +78,7 @@ static bool _store_write_function(FILE *fp, void *context) {
     }
     
     // Get list of all active agents
-    list_t *own_agents = _get_active_agent_list();
+    ar_list_t *own_agents = _get_active_agent_list();
     if (!own_agents) {
         ar_io__error("Failed to get agent list");
         return false;
@@ -106,7 +106,7 @@ static bool _store_write_function(FILE *fp, void *context) {
         ar_data_t *ref_id_data = (ar_data_t*)own_items[i];
         if (ref_id_data) {
             int64_t agent_id = ar_data__get_integer(ref_id_data);
-            const method_t *ref_method = ar_agency__get_agent_method(agent_id);
+            const ar_method_t *ref_method = ar_agency__get_agent_method(agent_id);
             if (ref_method != NULL) {
                 count++;
             }
@@ -136,7 +136,7 @@ static bool _store_write_function(FILE *fp, void *context) {
         }
         
         int64_t agent_id = ar_data__get_integer(ref_id_data);
-        const method_t *ref_method = ar_agency__get_agent_method(agent_id);
+        const ar_method_t *ref_method = ar_agency__get_agent_method(agent_id);
         
         if (ref_method == NULL) {
             continue; // Skip agents without methods

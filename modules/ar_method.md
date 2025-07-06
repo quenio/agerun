@@ -14,7 +14,7 @@ The Method module provides functionality for creating and managing methods withi
 
 ```c
 // Opaque method type - the internal structure is hidden from client code
-typedef struct method_s method_t;
+typedef struct method_s ar_method_t;
 ```
 
 ### Functions
@@ -31,7 +31,7 @@ typedef struct method_s method_t;
  * @note Ownership: Returns an owned object that the caller must destroy with ar_method__destroy.
  *       The method copies the name, instructions, and version. The original strings remain owned by the caller.
  */
-method_t* ar_method__create(const char *ref_name, const char *ref_instructions, 
+ar_method_t* ar_method__create(const char *ref_name, const char *ref_instructions, 
                          const char *ref_version);
 
 /**
@@ -40,7 +40,7 @@ method_t* ar_method__create(const char *ref_name, const char *ref_instructions,
  * @note Ownership: This function takes ownership of the method and frees it.
  *       The pointer will be invalid after this call.
  */
-void ar_method__destroy(method_t *own_method);
+void ar_method__destroy(ar_method_t *own_method);
 ```
 
 #### Method Accessors
@@ -52,7 +52,7 @@ void ar_method__destroy(method_t *own_method);
  * @return Method name (borrowed reference)
  * @note Ownership: Returns a borrowed reference. The caller should not free the result.
  */
-const char* ar_method__get_name(const method_t *ref_method);
+const char* ar_method__get_name(const ar_method_t *ref_method);
 
 /**
  * Get the version of a method
@@ -60,7 +60,7 @@ const char* ar_method__get_name(const method_t *ref_method);
  * @return Method version string (borrowed reference)
  * @note Ownership: Returns a borrowed reference. The caller should not free the result.
  */
-const char* ar_method__get_version(const method_t *ref_method);
+const char* ar_method__get_version(const ar_method_t *ref_method);
 
 /**
  * Get the instructions of a method
@@ -68,7 +68,7 @@ const char* ar_method__get_version(const method_t *ref_method);
  * @return Method instructions (borrowed reference)
  * @note Ownership: Returns a borrowed reference. The caller should not free the result.
  */
-const char* ar_method__get_instructions(const method_t *ref_method);
+const char* ar_method__get_instructions(const ar_method_t *ref_method);
 ```
 
 
@@ -79,7 +79,7 @@ const char* ar_method__get_instructions(const method_t *ref_method);
 - The module is independent and follows proper encapsulation principles
 - Methods use semantic versioning strings (e.g., "1.0.0") to align with the specification
 - Proper memory management follows the AgeRun Memory Management Model (MMM)
-- The method_t type is fully opaque, with its definition visible only in method.c
+- The ar_method_t type is fully opaque, with its definition visible only in method.c
 
 ## Usage Examples
 
@@ -90,7 +90,7 @@ const char* ar_method__get_instructions(const method_t *ref_method);
 const char *name = "echo_method";
 const char *instructions = "memory.result := message";
 const char *version = "1.0.0"; // Using semantic versioning
-method_t *own_method = ar_method__create(name, instructions, version);
+ar_method_t *own_method = ar_method__create(name, instructions, version);
 
 if (own_method) {
     // Register the method with methodology (methodology takes ownership)

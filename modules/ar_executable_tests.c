@@ -93,7 +93,7 @@ int main(void) {
     const char *init_version = "1.0.0";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method__create(init_method, init_instructions, init_version);
+    ar_method_t *own_method = ar_method__create(init_method, init_instructions, init_version);
     assert(own_method != NULL);
     
     // Register with methodology

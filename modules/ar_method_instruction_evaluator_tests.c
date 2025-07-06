@@ -69,7 +69,7 @@ static void test_method_instruction_evaluator__evaluate_with_instance(void) {
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Method name: "test_method"
@@ -129,7 +129,7 @@ static void test_method_instruction_evaluator__evaluate_legacy(void) {
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Method name: "legacy_test"
@@ -192,7 +192,7 @@ static void test_instruction_evaluator__evaluate_method_simple(void) {
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Method name: "counter"
@@ -250,7 +250,7 @@ static void test_instruction_evaluator__evaluate_method_with_result(void) {
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Method name: "echo"
@@ -312,7 +312,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_instructions(voi
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Method name: "bad"
@@ -371,7 +371,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     assert(ast1 != NULL);
     
     // Create and attach expression ASTs - only 2 arguments (should fail)
-    list_t *arg_asts1 = ar_list__create();
+    ar_list_t *arg_asts1 = ar_list__create();
     assert(arg_asts1 != NULL);
     
     ar_expression_ast_t *name_ast1 = ar_expression_ast__create_literal_string("test");
@@ -396,7 +396,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     assert(ast2 != NULL);
     
     // Create and attach expression ASTs - first is integer, others are strings
-    list_t *arg_asts2 = ar_list__create();
+    ar_list_t *arg_asts2 = ar_list__create();
     assert(arg_asts2 != NULL);
     
     ar_expression_ast_t *name_ast2 = ar_expression_ast__create_literal_int(42);
@@ -424,7 +424,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     assert(ast3 != NULL);
     
     // Create and attach expression ASTs - second is integer, others are strings
-    list_t *arg_asts3 = ar_list__create();
+    ar_list_t *arg_asts3 = ar_list__create();
     assert(arg_asts3 != NULL);
     
     ar_expression_ast_t *name_ast3 = ar_expression_ast__create_literal_string("test");
@@ -452,7 +452,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     assert(ast4 != NULL);
     
     // Create and attach expression ASTs - third is double, others are strings
-    list_t *arg_asts4 = ar_list__create();
+    ar_list_t *arg_asts4 = ar_list__create();
     assert(arg_asts4 != NULL);
     
     ar_expression_ast_t *name_ast4 = ar_expression_ast__create_literal_string("test");

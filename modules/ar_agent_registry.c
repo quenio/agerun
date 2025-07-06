@@ -16,8 +16,8 @@
 
 /* Agent registry structure */
 struct agent_registry_s {
-    list_t *own_registered_ids;  // List of registered agent IDs
-    map_t *own_agent_map;        // Map of agent_id -> agent pointer
+    ar_list_t *own_registered_ids;  // List of registered agent IDs
+    ar_map_t *own_agent_map;        // Map of agent_id -> agent pointer
     int64_t next_agent_id;       // Next ID to allocate
 };
 

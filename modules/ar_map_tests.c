@@ -18,7 +18,7 @@ static void test_map_create(void) {
     // Given we need a new map
     
     // When we call ar_map__create
-    map_t *own_map = ar_map__create();
+    ar_map_t *own_map = ar_map__create();
     
     // Then the map should be created successfully
     assert(own_map != NULL);
@@ -48,7 +48,7 @@ static void test_map_set_get_simple(void) {
     printf("Testing ar_map__set() and ar_map__get() with simple value...\n");
     
     // Given a new map
-    map_t *own_map = ar_map__create();
+    ar_map_t *own_map = ar_map__create();
     if (own_map == NULL) {
         printf("Failed to create map, skipping test\n");
         return;
@@ -90,7 +90,7 @@ static void test_map_count(void) {
     printf("Testing ar_map__count()...\n");
     
     // Given a new map
-    map_t *own_map = ar_map__create();
+    ar_map_t *own_map = ar_map__create();
     assert(own_map != NULL);
     
     // When the map is empty
@@ -125,7 +125,7 @@ static void test_map_refs(void) {
     printf("Testing ar_map__refs()...\n");
     
     // Given a new map
-    map_t *own_map = ar_map__create();
+    ar_map_t *own_map = ar_map__create();
     assert(own_map != NULL);
     
     // When the map is empty

@@ -143,7 +143,7 @@ Get information from assignment nodes.
 
 ```c
 const char* ar_instruction_ast__get_function_name(const ar_instruction_ast_t *ref_node);
-list_t* ar_instruction_ast__get_function_args(const ar_instruction_ast_t *ref_node);
+ar_list_t* ar_instruction_ast__get_function_args(const ar_instruction_ast_t *ref_node);
 const char* ar_instruction_ast__get_function_result_path(const ar_instruction_ast_t *ref_node);
 bool ar_instruction_ast__has_result_assignment(const ar_instruction_ast_t *ref_node);
 ```
@@ -183,7 +183,7 @@ ar_instruction_ast_t *own_node = ar_instruction_ast__create_function_call(
 
 if (own_node) {
     // Access function arguments
-    list_t *own_args = ar_instruction_ast__get_function_args(own_node);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_node);
     if (own_args) {
         void **own_items = ar_list__items(own_args);
         // Use the arguments...

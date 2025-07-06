@@ -202,7 +202,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         assert(ast != NULL);
         
         // Create argument ASTs
-        list_t *arg_asts = ar_list__create();
+        ar_list_t *arg_asts = ar_list__create();
         ar_expression_ast_t *target_ast = ar_expression_ast__create_literal_int(0);
         ar_expression_ast_t *msg_ast = ar_expression_ast__create_literal_string("hello");
         ar_list__add_last(arg_asts, target_ast);
@@ -224,7 +224,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         assert(ast != NULL);
         
         // Create argument ASTs: if(1, "yes", "no")
-        list_t *arg_asts = ar_list__create();
+        ar_list_t *arg_asts = ar_list__create();
         ar_expression_ast_t *cond_ast = ar_expression_ast__create_literal_int(1);
         ar_expression_ast_t *true_ast = ar_expression_ast__create_literal_string("yes");
         ar_expression_ast_t *false_ast = ar_expression_ast__create_literal_string("no");
@@ -254,7 +254,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         assert(ast != NULL);
         
         // Create argument ASTs: parse("user={username}, role={role}", "user=alice, role=admin")
-        list_t *arg_asts = ar_list__create();
+        ar_list_t *arg_asts = ar_list__create();
         ar_expression_ast_t *template_ast = ar_expression_ast__create_literal_string("user={username}, role={role}");
         ar_expression_ast_t *input_ast = ar_expression_ast__create_literal_string("user=alice, role=admin");
         ar_list__add_last(arg_asts, template_ast);
@@ -295,7 +295,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         assert(ast != NULL);
         
         // Create argument ASTs: build("Hi {name}", memory)
-        list_t *arg_asts = ar_list__create();
+        ar_list_t *arg_asts = ar_list__create();
         ar_expression_ast_t *template_ast = ar_expression_ast__create_literal_string("Hi {name}");
         ar_expression_ast_t *values_ast = ar_expression_ast__create_memory_access("memory", NULL, 0);
         ar_list__add_last(arg_asts, template_ast);
@@ -357,7 +357,7 @@ static void test_instruction_evaluator__only_unified_interface_exposed(void) {
     assert(send_ast != NULL);
     
     // Create argument ASTs for send
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     ar_expression_ast_t *target_ast = ar_expression_ast__create_literal_int(0);
     ar_expression_ast_t *msg_ast = ar_expression_ast__create_literal_string("hello");
     ar_list__add_last(arg_asts, target_ast);

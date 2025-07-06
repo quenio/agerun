@@ -28,7 +28,7 @@ static void test_agent_create_destroy(system_fixture_t *mut_fixture) {
     const char *version = "1.0.0";
     
     // Use fixture to register the method
-    method_t *own_method = ar_system_fixture__register_method(mut_fixture, method_name, instructions, version);
+    ar_method_t *own_method = ar_system_fixture__register_method(mut_fixture, method_name, instructions, version);
     assert(own_method != NULL);
     
     // When we create an agent with this method
@@ -63,7 +63,7 @@ static void test_agent_send(system_fixture_t *mut_fixture) {
     const char *version = "1.0.0";
     
     // Use fixture to register the method
-    method_t *own_method = ar_system_fixture__register_method(mut_fixture, method_name, instructions, version);
+    ar_method_t *own_method = ar_system_fixture__register_method(mut_fixture, method_name, instructions, version);
     assert(own_method != NULL);
     
     int64_t agent_id = ar_agency__create_agent(method_name, version, NULL);
@@ -100,7 +100,7 @@ static void test_agent_exists(system_fixture_t *mut_fixture) {
     const char *version = "1.0.0";
     
     // Use fixture to register the method
-    method_t *own_method = ar_system_fixture__register_method(mut_fixture, method_name, instructions, version);
+    ar_method_t *own_method = ar_system_fixture__register_method(mut_fixture, method_name, instructions, version);
     assert(own_method != NULL);
     
     int64_t agent_id = ar_agency__create_agent(method_name, version, NULL);
@@ -146,7 +146,7 @@ static void test_agent_persistence(system_fixture_t *mut_fixture) {
     const char *version = "1.0.0";
     
     // Use fixture to register the method
-    method_t *own_method = ar_system_fixture__register_method(mut_fixture, method_name, instructions, version);
+    ar_method_t *own_method = ar_system_fixture__register_method(mut_fixture, method_name, instructions, version);
     assert(own_method != NULL);
     
     // Create a context with ar_data_t

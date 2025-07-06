@@ -14,8 +14,8 @@
 
 /* Update agents using a specific method to use a different method */
 int ar_agent_update__update_methods(agent_registry_t *ref_registry,
-                                  const method_t *ref_old_method, 
-                                  const method_t *ref_new_method,
+                                  const ar_method_t *ref_old_method, 
+                                  const ar_method_t *ref_new_method,
                                   bool send_lifecycle_events) {
     if (!ref_registry || !ref_old_method || !ref_new_method) {
         return 0;
@@ -39,7 +39,7 @@ int ar_agent_update__update_methods(agent_registry_t *ref_registry,
     int count = 0;
     int64_t agent_id = ar_agent_registry__get_first(ref_registry);
     while (agent_id != 0) {
-        agent_t *mut_agent = (agent_t*)ar_agent_registry__find_agent(ref_registry, agent_id);
+        ar_agent_t *mut_agent = (ar_agent_t*)ar_agent_registry__find_agent(ref_registry, agent_id);
         if (mut_agent && ar_agent__get_method(mut_agent) == ref_old_method) {
             if (ar_agent__update_method(mut_agent, ref_new_method, send_lifecycle_events)) {
                 count++;
@@ -60,7 +60,7 @@ int ar_agent_update__update_methods(agent_registry_t *ref_registry,
 
 /* Count the number of agents using a specific method */
 int ar_agent_update__count_using_method(agent_registry_t *ref_registry,
-                                      const method_t *ref_method) {
+                                      const ar_method_t *ref_method) {
     if (!ref_registry || !ref_method) {
         return 0;
     }
@@ -69,7 +69,7 @@ int ar_agent_update__count_using_method(agent_registry_t *ref_registry,
     int count = 0;
     int64_t agent_id = ar_agent_registry__get_first(ref_registry);
     while (agent_id != 0) {
-        agent_t *ref_agent = (agent_t*)ar_agent_registry__find_agent(ref_registry, agent_id);
+        ar_agent_t *ref_agent = (ar_agent_t*)ar_agent_registry__find_agent(ref_registry, agent_id);
         if (ref_agent && ar_agent__get_method(ref_agent) == ref_method) {
             count++;
         }
@@ -80,8 +80,8 @@ int ar_agent_update__count_using_method(agent_registry_t *ref_registry,
 }
 
 /* Check if two method versions are compatible for update */
-bool ar_agent_update__are_compatible(const method_t *ref_old_method,
-                                   const method_t *ref_new_method) {
+bool ar_agent_update__are_compatible(const ar_method_t *ref_old_method,
+                                   const ar_method_t *ref_new_method) {
     if (!ref_old_method || !ref_new_method) {
         return false;
     }

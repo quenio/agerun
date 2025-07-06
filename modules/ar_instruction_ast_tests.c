@@ -66,7 +66,7 @@ static void test_create_send_function_without_assignment(void) {
     assert(ar_instruction_ast__get_function_result_path(own_node) == NULL);
     
     // Verify arguments
-    list_t *own_args = ar_instruction_ast__get_function_args(own_node);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_node);
     assert(own_args != NULL);
     assert(ar_list__count(own_args) == 2);
     void **own_items = ar_list__items(own_args);
@@ -121,7 +121,7 @@ static void test_create_if_function(void) {
     assert(strcmp(ar_instruction_ast__get_function_name(own_node), "if") == 0);
     
     // Verify arguments
-    list_t *own_args = ar_instruction_ast__get_function_args(own_node);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_node);
     assert(own_args != NULL);
     assert(ar_list__count(own_args) == 3);
     void **own_items = ar_list__items(own_args);
@@ -198,7 +198,7 @@ static void test_create_destroy_agent_function(void) {
     assert(own_node != NULL);
     assert(ar_instruction_ast__get_type(own_node) == AR_INST__DESTROY_AGENT);
     
-    list_t *own_args = ar_instruction_ast__get_function_args(own_node);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_node);
     assert(own_args != NULL);
     assert(ar_list__count(own_args) == 1);
     void **own_items = ar_list__items(own_args);
@@ -228,7 +228,7 @@ static void test_create_destroy_method_function(void) {
     assert(ar_instruction_ast__get_type(own_node) == AR_INST__DESTROY_METHOD);
     assert(ar_instruction_ast__has_result_assignment(own_node) == false);
     
-    list_t *own_args = ar_instruction_ast__get_function_args(own_node);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_node);
     assert(own_args != NULL);
     assert(ar_list__count(own_args) == 2);
     ar_list__destroy(own_args);
@@ -311,7 +311,7 @@ static void test_empty_arguments(void) {
     // Then the node should handle empty arguments correctly
     assert(own_node != NULL);
     
-    list_t *own_args = ar_instruction_ast__get_function_args(own_node);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_node);
     assert(own_args == NULL);
     
     ar_instruction_ast__destroy(own_node);
@@ -377,7 +377,7 @@ static void test_instruction_ast__function_arg_asts(void) {
     assert(ar_instruction_ast__get_function_arg_asts(own_node) == NULL);
     
     // When creating expression ASTs for arguments
-    list_t *own_arg_asts = ar_list__create();
+    ar_list_t *own_arg_asts = ar_list__create();
     assert(own_arg_asts != NULL);
     
     for (size_t i = 0; i < arg_count; i++) {
@@ -394,12 +394,12 @@ static void test_instruction_ast__function_arg_asts(void) {
     assert(success == true);
     
     // Then the argument ASTs should be retrievable
-    const list_t *ref_stored_asts = ar_instruction_ast__get_function_arg_asts(own_node);
+    const ar_list_t *ref_stored_asts = ar_instruction_ast__get_function_arg_asts(own_node);
     assert(ref_stored_asts != NULL);
     assert(ar_list__count(ref_stored_asts) == 2);
     
     // And the string arguments should still be available
-    list_t *own_string_args = ar_instruction_ast__get_function_args(own_node);
+    ar_list_t *own_string_args = ar_instruction_ast__get_function_args(own_node);
     assert(own_string_args != NULL);
     assert(ar_list__count(own_string_args) == 2);
     ar_list__destroy(own_string_args);
@@ -478,7 +478,7 @@ static void test_instruction_ast__expression_ast_null_handling(void) {
     ar_instruction_ast_t *own_assign_node = ar_instruction_ast__create_assignment("memory.x", "42");
     assert(own_assign_node != NULL);
     
-    list_t *own_arg_asts = ar_list__create();
+    ar_list_t *own_arg_asts = ar_list__create();
     success = ar_instruction_ast__set_function_arg_asts(own_assign_node, own_arg_asts);
     assert(success == false);
     

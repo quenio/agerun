@@ -97,7 +97,7 @@ static void test_store_single_agent(void) {
     ar_agent_store__delete();
     
     // Register a test method
-    method_t *ref_method = ar_system_fixture__register_method(
+    ar_method_t *ref_method = ar_system_fixture__register_method(
         own_fixture, "echo", "send(sender, message)", "1.0.0"
     );
     assert(ref_method != NULL);
@@ -135,7 +135,7 @@ static void test_store_single_agent(void) {
     assert(restored_id > 0);
     
     // Verify the method
-    const method_t *ref_restored_method = ar_agency__get_agent_method(restored_id);
+    const ar_method_t *ref_restored_method = ar_agency__get_agent_method(restored_id);
     assert(ref_restored_method != NULL);
     assert(strcmp(ar_method__get_name(ref_restored_method), "echo") == 0);
     assert(strcmp(ar_method__get_version(ref_restored_method), "1.0.0") == 0);
@@ -178,12 +178,12 @@ static void test_store_multiple_agents(void) {
     ar_agent_store__delete();
     
     // Register methods
-    method_t *ref_echo = ar_system_fixture__register_method(
+    ar_method_t *ref_echo = ar_system_fixture__register_method(
         own_fixture, "echo", "send(sender, message)", "1.0.0"
     );
     assert(ref_echo != NULL);
     
-    method_t *ref_calc = ar_system_fixture__register_method(
+    ar_method_t *ref_calc = ar_system_fixture__register_method(
         own_fixture, "calc", "send(sender, \"result: \" + (2 + 2))", "2.0.0"
     );
     assert(ref_calc != NULL);
@@ -236,7 +236,7 @@ static void test_store_multiple_agents(void) {
     
     int64_t agent_id = ar_agency__get_first_agent();
     while (agent_id != 0) {
-        const method_t *ref_method = ar_agency__get_agent_method(agent_id);
+        const ar_method_t *ref_method = ar_agency__get_agent_method(agent_id);
         const char *method_name = ar_method__get_name(ref_method);
         
         // Get agent memory
@@ -342,7 +342,7 @@ static void test_store_missing_method(void) {
     ar_agent_store__delete();
     
     // Register a method and create an agent
-    method_t *ref_method = ar_system_fixture__register_method(
+    ar_method_t *ref_method = ar_system_fixture__register_method(
         own_fixture, "test", "send(0, \"ok\")", "1.0.0"
     );
     assert(ref_method != NULL);
@@ -385,7 +385,7 @@ static void test_store_id_preservation(void) {
     ar_agent_store__delete();
     
     // Register method
-    method_t *ref_method = ar_system_fixture__register_method(
+    ar_method_t *ref_method = ar_system_fixture__register_method(
         own_fixture, "test", "send(0, \"ok\")", "1.0.0"
     );
     assert(ref_method != NULL);

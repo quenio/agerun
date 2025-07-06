@@ -105,7 +105,7 @@ Returns read-only access to an agent's context data.
 
 #### `ar_agent__get_method`
 ```c
-const method_t* ar_agent__get_method(int64_t agent_id)
+const ar_method_t* ar_agent__get_method(int64_t agent_id)
 ```
 Returns the method associated with an agent.
 

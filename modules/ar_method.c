@@ -26,24 +26,24 @@ struct method_s {
 };
 
 /* Accessor functions implementation */
-const char* ar_method__get_name(const method_t *ref_method) {
+const char* ar_method__get_name(const ar_method_t *ref_method) {
     AR_ASSERT(ref_method != NULL, "Method pointer cannot be NULL");
     return ref_method->name;
 }
 
-const char* ar_method__get_version(const method_t *ref_method) {
+const char* ar_method__get_version(const ar_method_t *ref_method) {
     AR_ASSERT(ref_method != NULL, "Method pointer cannot be NULL");
     return ref_method->version;
 }
 
 // Removed ar_method_is_backward_compatible and ar_method_is_persistent implementations
 
-const char* ar_method__get_instructions(const method_t *ref_method) {
+const char* ar_method__get_instructions(const ar_method_t *ref_method) {
     AR_ASSERT(ref_method != NULL, "Method pointer cannot be NULL");
     return ref_method->instructions;
 }
 
-void ar_method__destroy(method_t *own_method) {
+void ar_method__destroy(ar_method_t *own_method) {
     if (own_method) {
         // Destroy the AST if it exists
         if (own_method->own_ast) {
@@ -62,7 +62,7 @@ void ar_method__destroy(method_t *own_method) {
  * @note Ownership: Returns an owned object that the caller must destroy with ar_method__destroy.
  *       The method copies the name, instructions, and version. The original strings remain owned by the caller.
  */
-method_t* ar_method__create(const char *ref_name, const char *ref_instructions, 
+ar_method_t* ar_method__create(const char *ref_name, const char *ref_instructions, 
                          const char *ref_version) {
     return ar_method__create_with_log(ref_name, ref_instructions, ref_version, NULL);
 }
@@ -77,14 +77,14 @@ method_t* ar_method__create(const char *ref_name, const char *ref_instructions,
  * @note Ownership: Returns an owned object that the caller must destroy with ar_method__destroy.
  *       The method copies the name, instructions, and version. The original strings remain owned by the caller.
  */
-method_t* ar_method__create_with_log(const char *ref_name, const char *ref_instructions, 
+ar_method_t* ar_method__create_with_log(const char *ref_name, const char *ref_instructions, 
                                     const char *ref_version, ar_log_t *ref_log) {
     if (!ref_name || !ref_instructions || !ref_version) {
         return NULL;
     }
     
     // Allocate memory for the new method
-    method_t *mut_method = AR__HEAP__MALLOC(sizeof(method_t), "Method structure");
+    ar_method_t *mut_method = AR__HEAP__MALLOC(sizeof(ar_method_t), "Method structure");
     if (!mut_method) {
         printf("Error: Failed to allocate memory for method\n");
         return NULL;
@@ -118,7 +118,7 @@ method_t* ar_method__create_with_log(const char *ref_name, const char *ref_instr
     return mut_method;
 }
 
-const ar_method_ast_t* ar_method__get_ast(const method_t *ref_method) {
+const ar_method_ast_t* ar_method__get_ast(const ar_method_t *ref_method) {
     AR_ASSERT(ref_method != NULL, "Method pointer cannot be NULL");
     return ref_method->own_ast;
 }

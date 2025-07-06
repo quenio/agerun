@@ -60,7 +60,7 @@ static void test_methodology__global_instance(void) {
     assert(result == true);
     
     // Then the method should be accessible
-    method_t *method = ar_methodology__get_method("instance_test", "1.0.0");
+    ar_method_t *method = ar_methodology__get_method("instance_test", "1.0.0");
     assert(method != NULL);
     
     // And when we call cleanup (which should clean the global instance)
@@ -92,7 +92,7 @@ static void test_methodology_get_method(void) {
     const char *instructions = "message -> \"Test Method\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method__create(name, instructions, "1.0.0");
+    ar_method_t *own_method = ar_method__create(name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -102,7 +102,7 @@ static void test_methodology_get_method(void) {
     // For test purposes, we use version "1.0.0" for this test
     
     // When we get the method by name and specific version
-    method_t *method = ar_methodology__get_method(name, "1.0.0");
+    ar_method_t *method = ar_methodology__get_method(name, "1.0.0");
     
     // Then the method should be found
     assert(method != NULL);
@@ -140,7 +140,7 @@ static void test_methodology_register_and_get(void) {
     const char *instructions = "message -> \"Storage Method\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method__create(name, instructions, "1.0.0");
+    ar_method_t *own_method = ar_method__create(name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -150,7 +150,7 @@ static void test_methodology_register_and_get(void) {
     // For test purposes, we use version "1.0.0" for this test
     
     // When we get the method
-    method_t *method = ar_methodology__get_method(name, "1.0.0");
+    ar_method_t *method = ar_methodology__get_method(name, "1.0.0");
     
     // Then the method storage should be returned
     assert(method != NULL);
@@ -174,7 +174,7 @@ static void test_methodology_save_load(void) {
     const char *instructions = "message -> \"Save Load Method\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method__create(name, instructions, "1.0.0");
+    ar_method_t *own_method = ar_method__create(name, instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -199,7 +199,7 @@ static void test_methodology_save_load(void) {
     assert(load_result);
     
     // And the previously saved method should be available
-    method_t *method = ar_methodology__get_method(name, "1.0.0");
+    ar_method_t *method = ar_methodology__get_method(name, "1.0.0");
     if (method == NULL) {
         printf("Warning: Method %s not loaded correctly, skipping detailed check\n", name);
     } else {
@@ -236,7 +236,7 @@ static void test_method_counts(void) {
     ar_io__string_format(unique_name, sizeof(unique_name), "unique_method_%u", random_id);
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method__create(unique_name, "message -> \"Unique\"", "1.0.0");
+    ar_method_t *own_method = ar_method__create(unique_name, "message -> \"Unique\"", "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology
@@ -248,7 +248,7 @@ static void test_method_counts(void) {
     // Method should be registered successfully
     
     // When we try to get the method we just registered
-    method_t *registered_method = ar_methodology__get_method(unique_name, "1.0.0");
+    ar_method_t *registered_method = ar_methodology__get_method(unique_name, "1.0.0");
     
     // Then we should get a valid method
     assert(registered_method != NULL);
@@ -257,7 +257,7 @@ static void test_method_counts(void) {
     assert(ar_methodology__get_method(unique_name, "1.0.0") != NULL);
     
     // When we create another version of the same method
-    method_t *own_method2 = ar_method__create(unique_name, "message -> \"Unique V2\"", "2.0.0");
+    ar_method_t *own_method2 = ar_method__create(unique_name, "message -> \"Unique V2\"", "2.0.0");
     assert(own_method2 != NULL);
     
     // Register with methodology
@@ -284,13 +284,13 @@ static void test_methodology__get_method_with_instance(void) {
     assert(own_methodology != NULL);
     
     // And a method registered to this instance
-    method_t *own_method = ar_method__create("instance_method", "memory.result = \"Instance\"", "1.0.0");
+    ar_method_t *own_method = ar_method__create("instance_method", "memory.result = \"Instance\"", "1.0.0");
     assert(own_method != NULL);
     ar_methodology__register_method_with_instance(own_methodology, own_method);
     own_method = NULL; // ownership transferred
     
     // When we get the method using the instance
-    method_t *ref_method = ar_methodology__get_method_with_instance(own_methodology, "instance_method", "1.0.0");
+    ar_method_t *ref_method = ar_methodology__get_method_with_instance(own_methodology, "instance_method", "1.0.0");
     
     // Then we should get the method
     assert(ref_method != NULL);
@@ -314,7 +314,7 @@ static void test_methodology__register_method_with_instance(void) {
     assert(own_methodology != NULL);
     
     // And a method to register
-    method_t *own_method = ar_method__create("register_test", "memory.result = \"Register\"", "1.0.0");
+    ar_method_t *own_method = ar_method__create("register_test", "memory.result = \"Register\"", "1.0.0");
     assert(own_method != NULL);
     
     // When we register the method to the instance
@@ -322,7 +322,7 @@ static void test_methodology__register_method_with_instance(void) {
     own_method = NULL; // ownership transferred
     
     // Then we should be able to retrieve it
-    method_t *ref_method = ar_methodology__get_method_with_instance(own_methodology, "register_test", "1.0.0");
+    ar_method_t *ref_method = ar_methodology__get_method_with_instance(own_methodology, "register_test", "1.0.0");
     assert(ref_method != NULL);
     assert(strcmp(ar_method__get_name(ref_method), "register_test") == 0);
     
@@ -351,7 +351,7 @@ static void test_methodology__create_method_with_instance(void) {
     assert(result == true);
     
     // And the method should be retrievable
-    method_t *ref_method = ar_methodology__get_method_with_instance(own_methodology, "create_test", "1.0.0");
+    ar_method_t *ref_method = ar_methodology__get_method_with_instance(own_methodology, "create_test", "1.0.0");
     assert(ref_method != NULL);
     assert(strcmp(ar_method__get_name(ref_method), "create_test") == 0);
     assert(strcmp(ar_method__get_instructions(ref_method), "memory.result = \"Created\"") == 0);
@@ -397,7 +397,7 @@ static void test_methodology__save_load_with_instance(void) {
     assert(result == true);
     
     // Then both methods should be available in the new instance
-    method_t *ref_method = ar_methodology__get_method_with_instance(own_methodology2, "save_test1", "1.0.0");
+    ar_method_t *ref_method = ar_methodology__get_method_with_instance(own_methodology2, "save_test1", "1.0.0");
     assert(ref_method != NULL);
     assert(strcmp(ar_method__get_instructions(ref_method), "memory.result = \"Save1\"") == 0);
     
@@ -463,7 +463,7 @@ int main(void) {
     const char *init_instructions = "memory.result = \"Test methodology\"";
     
     // Create method and register it with methodology 
-    method_t *own_method = ar_method__create(init_method, init_instructions, "1.0.0");
+    ar_method_t *own_method = ar_method__create(init_method, init_instructions, "1.0.0");
     assert(own_method != NULL);
     
     // Register with methodology

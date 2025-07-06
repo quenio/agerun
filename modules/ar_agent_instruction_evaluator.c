@@ -118,7 +118,7 @@ bool ar_agent_instruction_evaluator__evaluate(
     }
     
     // Get pre-parsed expression ASTs for arguments
-    const list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(ref_ast);
+    const ar_list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(ref_ast);
     if (!ref_arg_asts) {
         return false;
     }
@@ -205,7 +205,7 @@ bool ar_agent_instruction_evaluator__evaluate(
             const char *version = ar_data__get_string(own_version);
             
             // Check if method exists
-            method_t *ref_method = ar_methodology__get_method(method_name, version);
+            ar_method_t *ref_method = ar_methodology__get_method(method_name, version);
             if (ref_method) {
                 // Create the agent - context is borrowed, not owned
                 agent_id = ar_agency__create_agent(method_name, version, ref_context_data);

@@ -57,7 +57,7 @@ static void test_fixture_register_method(void) {
     assert(init_result == true);
     
     // When we register a method
-    method_t *ref_method = ar_system_fixture__register_method(
+    ar_method_t *ref_method = ar_system_fixture__register_method(
         own_fixture,
         "test_method",
         "send(0, \"Test Response\")",
@@ -88,7 +88,7 @@ static void test_fixture_reset_system(void) {
     
     // Then no assertion failures should occur (reset succeeded)
     // We could register a method again to verify the system is working
-    method_t *ref_method = ar_system_fixture__register_method(
+    ar_method_t *ref_method = ar_system_fixture__register_method(
         own_fixture,
         "test_method_after_reset",
         "send(0, \"After Reset\")",

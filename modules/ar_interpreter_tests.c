@@ -396,7 +396,7 @@ static void test_method_function(void) {
     assert(ar_data__get_integer(ref_result) == 1);
     
     // Verify method was created
-    const method_t *ref_method = ar_methodology__get_method("dynamic", "2.0.0");
+    const ar_method_t *ref_method = ar_methodology__get_method("dynamic", "2.0.0");
     assert(ref_method != NULL);
     assert(strcmp(ar_method__get_name(ref_method), "dynamic") == 0);
     assert(strcmp(ar_method__get_version(ref_method), "2.0.0") == 0);

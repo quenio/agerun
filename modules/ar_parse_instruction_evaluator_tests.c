@@ -64,7 +64,7 @@ static void test_parse_instruction_evaluator__evaluate_with_instance(void) {
     assert(own_ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Template: "name={name}"
@@ -126,7 +126,7 @@ static void test_parse_instruction_evaluator__evaluate_without_legacy(void) {
     assert(own_ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Template: "user={username}, role={role}"
@@ -192,7 +192,7 @@ static void test_instruction_evaluator__evaluate_parse_simple(void) {
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Template: "name={name}"
@@ -254,7 +254,7 @@ static void test_instruction_evaluator__evaluate_parse_multiple_variables(void) 
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Template: "user={username}, role={role}"
@@ -321,7 +321,7 @@ static void test_instruction_evaluator__evaluate_parse_with_types(void) {
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Template: "age={age}, score={score}, name={name}"
@@ -393,7 +393,7 @@ static void test_instruction_evaluator__evaluate_parse_no_match(void) {
     assert(ast != NULL);
     
     // Create and attach the expression ASTs for arguments
-    list_t *arg_asts = ar_list__create();
+    ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
     
     // Template: "name={name}, age={age}"
@@ -454,7 +454,7 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     assert(ast1 != NULL);
     
     // Create and attach expression ASTs - only one argument (should fail)
-    list_t *arg_asts1 = ar_list__create();
+    ar_list_t *arg_asts1 = ar_list__create();
     assert(arg_asts1 != NULL);
     
     ar_expression_ast_t *template_ast1 = ar_expression_ast__create_literal_string("template={value}");
@@ -476,7 +476,7 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     assert(ast2 != NULL);
     
     // Create and attach expression ASTs - first is integer, second is string
-    list_t *arg_asts2 = ar_list__create();
+    ar_list_t *arg_asts2 = ar_list__create();
     assert(arg_asts2 != NULL);
     
     ar_expression_ast_t *template_ast2 = ar_expression_ast__create_literal_int(123);
@@ -501,7 +501,7 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     assert(ast3 != NULL);
     
     // Create and attach expression ASTs - first is string, second is integer
-    list_t *arg_asts3 = ar_list__create();
+    ar_list_t *arg_asts3 = ar_list__create();
     assert(arg_asts3 != NULL);
     
     ar_expression_ast_t *template_ast3 = ar_expression_ast__create_literal_string("template={value}");

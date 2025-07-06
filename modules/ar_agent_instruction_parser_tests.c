@@ -68,7 +68,7 @@ static void test_agent_parser__parse_with_context(void) {
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__AGENT);
     assert(ar_instruction_ast__has_result_assignment(own_ast) == true);
     
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(ar_list__count(own_args) == 3);
     ar_list__destroy(own_args);
     
@@ -102,7 +102,7 @@ static void test_agent_parser__parse_without_context(void) {
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__AGENT);
     assert(ar_instruction_ast__has_result_assignment(own_ast) == false);
     
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(ar_list__count(own_args) == 3); // Parser adds "null" context for 2-arg calls
     ar_list__destroy(own_args);
     
@@ -172,7 +172,7 @@ static void test_agent_parser__parse_with_expression_asts(void) {
     assert(ar_instruction_ast__has_result_assignment(own_ast) == true);
     
     // And the arguments should be available as expression ASTs
-    const list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
+    const ar_list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
     assert(ref_arg_asts != NULL);
     assert(ar_list__count(ref_arg_asts) == 3);
     

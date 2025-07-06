@@ -80,16 +80,16 @@ int64_t agent_id = ar_agent_registry__allocate_id(registry);
 ar_agent_registry__register_id(registry, agent_id);
 
 // Track the agent object
-agent_t *agent = create_agent(...);
+ar_agent_t *agent = create_agent(...);
 ar_agent_registry__track_agent(registry, agent_id, agent);
 
 // Find agent by ID
-agent_t *found = ar_agent_registry__find_agent(registry, agent_id);
+ar_agent_t *found = ar_agent_registry__find_agent(registry, agent_id);
 
 // Iterate through all agents
 int64_t id = ar_agent_registry__get_first(registry);
 while (id != 0) {
-    agent_t *agent = ar_agent_registry__find_agent(registry, id);
+    ar_agent_t *agent = ar_agent_registry__find_agent(registry, id);
     // Process agent
     id = ar_agent_registry__get_next(registry, id);
 }

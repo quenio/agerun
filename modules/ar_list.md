@@ -25,7 +25,7 @@ This module follows the AgeRun Memory Management Model (MMM) with explicit owner
 
 ### Types
 
-- `list_t`: An opaque type representing a linked list.
+- `ar_list_t`: An opaque type representing a linked list.
 
 ### Memory Ownership Model
 
@@ -42,13 +42,13 @@ The list module follows these memory ownership rules:
 #### Creation and Destruction
 
 ```c
-list_t* ar_list__create(void);
+ar_list_t* ar_list__create(void);
 ```
 Creates a new empty list. Returns a pointer to the new list, or NULL on failure.  
 **Ownership**: Returns an owned value that the caller must eventually destroy using `ar_list__destroy()`.
 
 ```c
-void ar_list__destroy(list_t *own_list);
+void ar_list__destroy(ar_list_t *own_list);
 ```
 Frees all resources associated with the list. Note that this function only frees the list structure itself, not the items stored in the list.  
 **Ownership**: Takes ownership of the list parameter. The caller is responsible for freeing all items that were added to the list.
@@ -56,13 +56,13 @@ Frees all resources associated with the list. Note that this function only frees
 #### Adding Items
 
 ```c
-bool ar_list__add_last(list_t *mut_list, void *mut_item);
+bool ar_list__add_last(ar_list_t *mut_list, void *mut_item);
 ```
 Adds an item to the end of the list. Returns true if successful, false otherwise.  
 **Ownership**: Borrows the item without taking ownership. The caller remains responsible for the item's memory.
 
 ```c
-bool ar_list__add_first(list_t *mut_list, void *mut_item);
+bool ar_list__add_first(ar_list_t *mut_list, void *mut_item);
 ```
 Adds an item to the beginning of the list. Returns true if successful, false otherwise.  
 **Ownership**: Borrows the item without taking ownership. The caller remains responsible for the item's memory.
@@ -70,13 +70,13 @@ Adds an item to the beginning of the list. Returns true if successful, false oth
 #### Accessing Items
 
 ```c
-void* ar_list__first(const list_t *ref_list);
+void* ar_list__first(const ar_list_t *ref_list);
 ```
 Gets the first item in the list. Returns NULL if the list is empty or NULL.  
 **Ownership**: Returns a borrowed reference. The caller must not destroy the returned item.
 
 ```c
-void* ar_list__last(const list_t *ref_list);
+void* ar_list__last(const ar_list_t *ref_list);
 ```
 Gets the last item in the list. Returns NULL if the list is empty or NULL.  
 **Ownership**: Returns a borrowed reference. The caller must not destroy the returned item.
@@ -84,19 +84,19 @@ Gets the last item in the list. Returns NULL if the list is empty or NULL.
 #### Removing Items
 
 ```c
-void* ar_list__remove_first(list_t *mut_list);
+void* ar_list__remove_first(ar_list_t *mut_list);
 ```
 Removes and returns the first item from the list. Returns NULL if the list is empty or NULL.  
 **Ownership**: Returns a borrowed reference. The list does not transfer ownership to the caller.
 
 ```c
-void* ar_list__remove_last(list_t *mut_list);
+void* ar_list__remove_last(ar_list_t *mut_list);
 ```
 Removes and returns the last item from the list. Returns NULL if the list is empty or NULL.  
 **Ownership**: Returns a borrowed reference. The list does not transfer ownership to the caller.
 
 ```c
-void* ar_list__remove(list_t *mut_list, const void *ref_item);
+void* ar_list__remove(ar_list_t *mut_list, const void *ref_item);
 ```
 Removes the first occurrence of an item from the list by direct pointer comparison. Returns the removed item as a non-const pointer, or NULL if it was not found.  
 **Ownership**: This function does not affect ownership of the item. The caller remains responsible for freeing the item if necessary.
@@ -104,19 +104,19 @@ Removes the first occurrence of an item from the list by direct pointer comparis
 #### Querying
 
 ```c
-size_t ar_list__count(const list_t *ref_list);
+size_t ar_list__count(const ar_list_t *ref_list);
 ```
 Gets the number of items in the list. Returns 0 if the list is NULL.  
 **Ownership**: No ownership implications; this is a pure query operation.
 
 ```c
-bool ar_list__empty(const list_t *ref_list);
+bool ar_list__empty(const ar_list_t *ref_list);
 ```
 Checks if the list is empty. Returns true if the list is empty or NULL, false otherwise.  
 **Ownership**: No ownership implications; this is a pure query operation.
 
 ```c
-void** ar_list__items(const list_t *ref_list);
+void** ar_list__items(const ar_list_t *ref_list);
 ```
 Gets an array of all items in the list. Returns NULL if the list is empty or on failure.  
 **Ownership**: Transfers ownership of the returned array to the caller, who must free it using `free()`. The items in the array remain borrowed references. Use `ar_list__count()` to determine the size of the array.
@@ -127,7 +127,7 @@ Gets an array of all items in the list. Returns NULL if the list is empty or on 
 
 ```c
 // Create a list
-list_t *own_list = ar_list__create();
+ar_list_t *own_list = ar_list__create();
 
 // Add items
 char *own_item1 = strdup("item1");
@@ -161,7 +161,7 @@ ar_list__destroy(own_list);
 
 ```c
 // Create a stack
-list_t *own_stack = ar_list__create();
+ar_list_t *own_stack = ar_list__create();
 
 // Push items onto the stack
 ar_list__add_first(own_stack, strdup("bottom"));
@@ -186,7 +186,7 @@ ar_list__destroy(own_stack);
 
 ```c
 // Create a queue
-list_t *own_queue = ar_list__create();
+ar_list_t *own_queue = ar_list__create();
 
 // Enqueue items
 ar_list__add_last(own_queue, strdup("first"));
@@ -213,7 +213,7 @@ The list can store pointers to any type of data:
 
 ```c
 // Create a list
-list_t *own_list = ar_list__create();
+ar_list_t *own_list = ar_list__create();
 
 // Store different types
 int *own_int_value = malloc(sizeof(int));
@@ -253,7 +253,7 @@ ar_list__destroy(own_list);
 
 ```c
 // Create a list
-list_t *own_list = ar_list__create();
+ar_list_t *own_list = ar_list__create();
 
 // Add some items
 int *own_value1 = malloc(sizeof(int));
@@ -296,7 +296,7 @@ The list module can be used to track allocated memory that needs to be freed lat
 
 ```c
 // Create a tracking list
-list_t *own_allocations = ar_list__create();
+ar_list_t *own_allocations = ar_list__create();
 
 // Allocate and track memory
 char *own_str1 = strdup("string one");

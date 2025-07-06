@@ -229,7 +229,7 @@ bool success = ar_interpreter__execute_instruction(
 );
 
 // Execute method
-const method_t *method = ar_methodology__get_method("calculator", "1.0.0");
+const ar_method_t *method = ar_methodology__get_method("calculator", "1.0.0");
 success = ar_interpreter__execute_method(
     interpreter,
     agent_id,

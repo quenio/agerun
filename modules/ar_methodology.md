@@ -8,7 +8,7 @@ The Methodology module provides functionality for storing, managing, and retriev
 - Method versioning support
 - Persistence of methods to/from disk
 - Method search capabilities
-- Clean interface working with the opaque method_t type
+- Clean interface working with the opaque ar_method_t type
 - Instance-based architecture with global instance for backward compatibility
 - Support for ar_log propagation for error reporting
 
@@ -53,7 +53,7 @@ void ar_methodology__destroy(ar_methodology_t *own_methodology);
  * @note Ownership: Returns a borrowed reference to the internal method. The caller
  *       should not modify or free the returned method.
  */
-method_t* ar_methodology__get_method(const char *ref_name, const char *ref_version);
+ar_method_t* ar_methodology__get_method(const char *ref_name, const char *ref_version);
 ```
 
 #### Method Creation and Registration
@@ -77,7 +77,7 @@ bool ar_methodology__create_method(const char *ref_name, const char *ref_instruc
  * @note Ownership: The methodology module takes ownership of the method.
  *       The caller should not access or free the method after this call.
  */
-void ar_methodology__register_method(method_t *own_method);
+void ar_methodology__register_method(ar_method_t *own_method);
 
 /**
  * Unregister a method from the methodology
@@ -121,13 +121,13 @@ void ar_methodology__cleanup(void);
 
 ```c
 // Get the latest version of a method
-method_t *ref_method = ar_methodology__get_method("echo_method", NULL);
+ar_method_t *ref_method = ar_methodology__get_method("echo_method", NULL);
 if (ref_method) {
     // Use the method (borrowed reference - do not free)
 }
 
 // Get a specific version of a method
-method_t *ref_specific_method = ar_methodology__get_method("echo_method", "2.0.0");
+ar_method_t *ref_specific_method = ar_methodology__get_method("echo_method", "2.0.0");
 ```
 
 ### Creating and Registering Methods
@@ -139,7 +139,7 @@ bool created = ar_methodology__create_method("custom_method",
                                           "1.0.0");
 
 // Or create a method object and register it
-method_t *own_method = ar_method__create("another_method", 
+ar_method_t *own_method = ar_method__create("another_method", 
                                       "memory.result = \"Hello\"", 
                                       "1.0.0");
 if (own_method) {

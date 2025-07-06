@@ -16,8 +16,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Documentation references automatically updated
 - [x] Renamed typedef structs to follow ar_ prefix convention
   - [x] data_t → ar_data_t (1439 occurrences) - using rename_types.py
+  - [x] list_t → ar_list_t (268 occurrences) - using rename_types.py
+  - [x] map_t → ar_map_t (62 occurrences) - using rename_types.py
+  - [x] agent_t → ar_agent_t (68 occurrences) - using rename_types.py
+  - [x] method_t → ar_method_t (186 occurrences) - using rename_types.py
 - [x] Fixed check-naming script to show all typedef issues (removed output truncation)
 - [x] Updated Makefile help to show single test build command
+- [x] Updated CLAUDE.md with Makefile usage clarification (default shows help, not build)
 
 ### Static Analysis Reporting in Makefile (Completed 2025-06-13)
 - [x] Fixed static analysis reporting in clean_build.sh (now full_build.sh)

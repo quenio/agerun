@@ -19,7 +19,7 @@ struct instruction_ast_s {
     /* For function call instructions */
     char *own_function_name;     /* Owned: function name */
     char **own_args;             /* Owned: array of owned argument strings (legacy) */
-    list_t *own_arg_asts;        /* Owned: list of owned expression ASTs (new) */
+    ar_list_t *own_arg_asts;        /* Owned: list of owned expression ASTs (new) */
     size_t arg_count;            /* Number of arguments */
     char *own_result_path;       /* Owned: optional result assignment path (may be NULL) */
 };
@@ -269,13 +269,13 @@ const char* ar_instruction_ast__get_function_name(const ar_instruction_ast_t *re
 /**
  * Get arguments from a function call node.
  */
-list_t* ar_instruction_ast__get_function_args(const ar_instruction_ast_t *ref_node) {
+ar_list_t* ar_instruction_ast__get_function_args(const ar_instruction_ast_t *ref_node) {
     if (!ref_node || ref_node->type == AR_INST__ASSIGNMENT || ref_node->arg_count == 0) {
         return NULL;
     }
     
     /* Create a new list */
-    list_t *own_list = ar_list__create();
+    ar_list_t *own_list = ar_list__create();
     if (!own_list) {
         return NULL;
     }
@@ -294,7 +294,7 @@ list_t* ar_instruction_ast__get_function_args(const ar_instruction_ast_t *ref_no
 /**
  * Get argument ASTs from a function call node.
  */
-const list_t* ar_instruction_ast__get_function_arg_asts(const ar_instruction_ast_t *ref_node) {
+const ar_list_t* ar_instruction_ast__get_function_arg_asts(const ar_instruction_ast_t *ref_node) {
     if (!ref_node || ref_node->type == AR_INST__ASSIGNMENT) {
         return NULL;
     }
@@ -306,7 +306,7 @@ const list_t* ar_instruction_ast__get_function_arg_asts(const ar_instruction_ast
  */
 bool ar_instruction_ast__set_function_arg_asts(
     ar_instruction_ast_t *mut_node, 
-    list_t *own_arg_asts
+    ar_list_t *own_arg_asts
 ) {
     if (!mut_node || mut_node->type == AR_INST__ASSIGNMENT) {
         return false;

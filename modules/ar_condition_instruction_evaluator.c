@@ -97,7 +97,7 @@ bool ar_condition_instruction_evaluator__evaluate(
     }
     
     // Get pre-parsed expression ASTs for arguments
-    const list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(ref_ast);
+    const ar_list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(ref_ast);
     if (!ref_arg_asts) {
         return false;
     }

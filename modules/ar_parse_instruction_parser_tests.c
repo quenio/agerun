@@ -64,7 +64,7 @@ static void test_parse_instruction_parser__parse_simple(void) {
     assert(strcmp(ar_instruction_ast__get_function_name(own_ast), "parse") == 0);
     
     // And it should have exactly 2 arguments
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
     assert(ar_list__count(own_args) == 2);
     
@@ -109,7 +109,7 @@ static void test_parse_instruction_parser__parse_with_assignment(void) {
     assert(strcmp(ar_instruction_ast__get_function_result_path(own_ast), "memory.parsed") == 0);
     
     // And it should have the correct arguments
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
     assert(ar_list__count(own_args) == 2);
     void **own_items = ar_list__items(own_args);
@@ -146,7 +146,7 @@ static void test_parse_instruction_parser__parse_complex_template(void) {
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__PARSE);
     
     // And preserve the template with multiple placeholders
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
     assert(ar_list__count(own_args) == 2);
     
@@ -189,7 +189,7 @@ static void test_parse_instruction_parser__parse_with_escaped_quotes(void) {
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__PARSE);
     
     // And preserve the escaped quotes
-    list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
     assert(ar_list__count(own_args) == 2);
     
@@ -341,7 +341,7 @@ static void test_parse_instruction_parser__parse_with_expression_asts(void) {
     assert(ar_instruction_ast__get_type(own_ast) == AR_INST__PARSE);
     
     // And the arguments should be available as expression ASTs
-    const list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
+    const ar_list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
     assert(ref_arg_asts != NULL);
     assert(ar_list__count(ref_arg_asts) == 2);
     

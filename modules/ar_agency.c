@@ -68,7 +68,7 @@ bool ar_agency__load_agents(void) {
     return ar_agent_store__load();
 }
 
-int ar_agency__update_agent_methods(const method_t *ref_old_method, const method_t *ref_new_method, bool send_lifecycle_events) {
+int ar_agency__update_agent_methods(const ar_method_t *ref_old_method, const ar_method_t *ref_new_method, bool send_lifecycle_events) {
     if (!g_is_initialized || !g_own_registry) {
         return 0;
     }
@@ -77,7 +77,7 @@ int ar_agency__update_agent_methods(const method_t *ref_old_method, const method
     return ar_agent_update__update_methods(g_own_registry, ref_old_method, ref_new_method, send_lifecycle_events);
 }
 
-int ar_agency__count_agents_using_method(const method_t *ref_method) {
+int ar_agency__count_agents_using_method(const ar_method_t *ref_method) {
     if (!g_is_initialized || !g_own_registry) {
         return 0;
     }
@@ -105,7 +105,7 @@ bool ar_agency__agent_has_messages(int64_t agent_id) {
         return false;
     }
     
-    agent_t *ref_agent = (agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
+    ar_agent_t *ref_agent = (ar_agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
     if (!ref_agent) {
         return false;
     }
@@ -118,7 +118,7 @@ ar_data_t* ar_agency__get_agent_message(int64_t agent_id) {
         return NULL;
     }
     
-    agent_t *mut_agent = (agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
+    ar_agent_t *mut_agent = (ar_agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
     if (!mut_agent) {
         return NULL;
     }
@@ -132,7 +132,7 @@ int64_t ar_agency__create_agent(const char *ref_method_name, const char *ref_ver
     }
     
     // Create the agent using the agent module
-    agent_t *own_agent = ar_agent__create(ref_method_name, ref_version, ref_context);
+    ar_agent_t *own_agent = ar_agent__create(ref_method_name, ref_version, ref_context);
     if (!own_agent) {
         return 0;
     }
@@ -169,7 +169,7 @@ bool ar_agency__destroy_agent(int64_t agent_id) {
     }
     
     // Find the agent before unregistering
-    agent_t *own_agent = (agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
+    ar_agent_t *own_agent = (ar_agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
     if (!own_agent) {
         return false;
     }
@@ -191,7 +191,7 @@ bool ar_agency__send_to_agent(int64_t agent_id, ar_data_t *own_message) {
         return false;
     }
     
-    agent_t *mut_agent = (agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
+    ar_agent_t *mut_agent = (ar_agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
     if (!mut_agent) {
         if (own_message) {
             ar_data__destroy(own_message);
@@ -215,7 +215,7 @@ const ar_data_t* ar_agency__get_agent_memory(int64_t agent_id) {
         return NULL;
     }
     
-    agent_t *ref_agent = (agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
+    ar_agent_t *ref_agent = (ar_agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
     if (!ref_agent) {
         return NULL;
     }
@@ -228,7 +228,7 @@ const ar_data_t* ar_agency__get_agent_context(int64_t agent_id) {
         return NULL;
     }
     
-    agent_t *ref_agent = (agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
+    ar_agent_t *ref_agent = (ar_agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
     if (!ref_agent) {
         return NULL;
     }
@@ -241,7 +241,7 @@ bool ar_agency__is_agent_active(int64_t agent_id) {
         return false;
     }
     
-    agent_t *ref_agent = (agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
+    ar_agent_t *ref_agent = (ar_agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
     if (!ref_agent) {
         return false;
     }
@@ -249,12 +249,12 @@ bool ar_agency__is_agent_active(int64_t agent_id) {
     return ar_agent__is_active(ref_agent);
 }
 
-const method_t* ar_agency__get_agent_method(int64_t agent_id) {
+const ar_method_t* ar_agency__get_agent_method(int64_t agent_id) {
     if (!g_is_initialized || !g_own_registry) {
         return NULL;
     }
     
-    agent_t *ref_agent = (agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
+    ar_agent_t *ref_agent = (ar_agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
     if (!ref_agent) {
         return NULL;
     }
@@ -267,7 +267,7 @@ bool ar_agency__get_agent_method_info(int64_t agent_id, const char **out_method_
         return false;
     }
     
-    agent_t *ref_agent = (agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
+    ar_agent_t *ref_agent = (ar_agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
     if (!ref_agent) {
         return false;
     }
@@ -280,7 +280,7 @@ ar_data_t* ar_agency__get_agent_mutable_memory(int64_t agent_id) {
         return NULL;
     }
     
-    agent_t *mut_agent = (agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
+    ar_agent_t *mut_agent = (ar_agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
     if (!mut_agent) {
         return NULL;
     }
@@ -288,12 +288,12 @@ ar_data_t* ar_agency__get_agent_mutable_memory(int64_t agent_id) {
     return ar_agent__get_mutable_memory(mut_agent);
 }
 
-bool ar_agency__update_agent_method(int64_t agent_id, const method_t *ref_new_method, bool send_sleep_wake) {
+bool ar_agency__update_agent_method(int64_t agent_id, const ar_method_t *ref_new_method, bool send_sleep_wake) {
     if (!g_is_initialized || !g_own_registry) {
         return false;
     }
     
-    agent_t *mut_agent = (agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
+    ar_agent_t *mut_agent = (ar_agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
     if (!mut_agent) {
         return false;
     }
@@ -306,7 +306,7 @@ bool ar_agency__set_agent_active(int64_t agent_id, bool is_active) {
         return false;
     }
     
-    agent_t *mut_agent = (agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
+    ar_agent_t *mut_agent = (ar_agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
     if (!mut_agent) {
         return false;
     }
@@ -324,7 +324,7 @@ bool ar_agency__set_agent_id(int64_t old_id, int64_t new_id) {
         return false;
     }
     
-    agent_t *mut_agent = (agent_t*)ar_agent_registry__find_agent(g_own_registry, old_id);
+    ar_agent_t *mut_agent = (ar_agent_t*)ar_agent_registry__find_agent(g_own_registry, old_id);
     if (!mut_agent) {
         return false;
     }
