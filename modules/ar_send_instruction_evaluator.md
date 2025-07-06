@@ -104,7 +104,7 @@ ar_send_instruction_evaluator_t *send_eval = ar_send_instruction_evaluator__crea
 );
 
 // Parse send instruction: send(1, "Hello")
-ar_instruction_ast_t *ast = ar__instruction_parser__parse_send(parser);
+ar_instruction_ast_t *ast = ar_instruction_parser__parse_send(parser);
 
 // Evaluate the send
 bool success = ar_send_instruction_evaluator__evaluate(send_eval, ast);

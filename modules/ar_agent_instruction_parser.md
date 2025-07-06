@@ -30,7 +30,7 @@ ar_instruction_ast_t *ast = ar_agent_instruction_parser__parse(parser, instructi
 if (ast) {
     // Successfully parsed
     // ... use AST ...
-    ar__instruction_ast__destroy(ast);
+    ar_instruction_ast__destroy(ast);
 } else {
     // Parse errors are reported through the ar_log instance
     // The get_error() and get_error_position() functions are deprecated
@@ -49,7 +49,7 @@ const char *instruction = "memory.agent_id := agent(\"echo\", \"1.0.0\", memory.
 ar_instruction_ast_t *ast = ar_agent_instruction_parser__parse(parser, instruction, "memory.agent_id");
 
 if (ast) {
-    assert(ar__instruction_ast__has_result_assignment(ast) == true);
+    assert(ar_instruction_ast__has_result_assignment(ast) == true);
     // ... use AST ...
 }
 ```

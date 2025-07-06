@@ -42,26 +42,26 @@ static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_ins
 // Lines 204-258
 static bool _execute_assignment(interpreter_t *mut_interpreter, instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
     // 1. Get parsed path and expression
-    const char *ref_path = ar__instruction__get_assignment_path(ref_parsed);
-    const char *ref_expression = ar__instruction__get_assignment_expression(ref_parsed);
+    const char *ref_path = ar_instruction__get_assignment_path(ref_parsed);
+    const char *ref_expression = ar_instruction__get_assignment_expression(ref_parsed);
     
     // 2. Create expression context
-    expression_context_t *own_expr_ctx = ar__expression__create_context(
+    expression_context_t *own_expr_ctx = ar_expression__create_context(
         mut_memory, ref_context_data, ref_message, ref_expression
     );
     
     // 3. Evaluate expression
-    const data_t *ref_result = ar__expression__evaluate(own_expr_ctx);
-    data_t *own_value = ar__expression__take_ownership(own_expr_ctx, ref_result);
+    const data_t *ref_result = ar_expression__evaluate(own_expr_ctx);
+    data_t *own_value = ar_expression__take_ownership(own_expr_ctx, ref_result);
     
     // 4. Store in memory
     if (own_value) {
-        success = ar__data__set_map_data(mut_memory, ref_path, own_value);
+        success = ar_data__set_map_data(mut_memory, ref_path, own_value);
     } else {
         // Make a copy if we don't own it
-        data_t *own_copy = ar__data__copy(ref_result);
+        data_t *own_copy = ar_data__copy(ref_result);
         if (own_copy) {
-            success = ar__data__set_map_data(mut_memory, ref_path, own_copy);
+            success = ar_data__set_map_data(mut_memory, ref_path, own_copy);
         }
     }
 }
@@ -112,15 +112,15 @@ if (strcmp(function_name, "send") == 0) {
 // Lines 261-339
 static bool _execute_send(interpreter_t *mut_interpreter, instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
     // 1. Evaluate agent ID
-    expression_context_t *own_expr_ctx = ar__expression__create_context(...);
-    const data_t *ref_agent_id_data = ar__expression__evaluate(own_expr_ctx);
-    int64_t agent_id = (int64_t)ar__data__get_integer(ref_agent_id_data);
+    expression_context_t *own_expr_ctx = ar_expression__create_context(...);
+    const data_t *ref_agent_id_data = ar_expression__evaluate(own_expr_ctx);
+    int64_t agent_id = (int64_t)ar_data__get_integer(ref_agent_id_data);
     
     // 2. Evaluate message
-    const data_t *ref_msg_data = ar__expression__evaluate(own_expr_ctx);
-    data_t *own_msg = ar__expression__take_ownership(own_expr_ctx, ref_msg_data);
+    const data_t *ref_msg_data = ar_expression__evaluate(own_expr_ctx);
+    data_t *own_msg = ar_expression__take_ownership(own_expr_ctx, ref_msg_data);
     if (!own_msg) {
-        own_msg = ar__data__copy(ref_msg_data);
+        own_msg = ar_data__copy(ref_msg_data);
     }
     
     // 3. Send message
@@ -128,8 +128,8 @@ static bool _execute_send(interpreter_t *mut_interpreter, instruction_context_t 
     
     // 4. Store result if needed
     if (ref_result_path) {
-        data_t *own_result = ar__data__create_integer(send_result ? 1 : 0);
-        ar__data__set_map_data(mut_memory, ref_result_path, own_result);
+        data_t *own_result = ar_data__create_integer(send_result ? 1 : 0);
+        ar_data__set_map_data(mut_memory, ref_result_path, own_result);
     }
 }
 ```
@@ -297,7 +297,7 @@ else if (strcmp(function_name, "method") == 0) {
     }
     
     // 3. Create method
-    bool success = ar__methodology__create_method(method_name, instructions, version_str);
+    bool success = ar_methodology__create_method(method_name, instructions, version_str);
     
     // 4. Return result
     *own_result = ar_data_create_integer(success ? 1 : 0);
@@ -327,7 +327,7 @@ else if (strcmp(function_name, "agent") == 0) {
     const data_t *ref_agent_context = ...;
     
     // 2. Create agent
-    int64_t agent_id = ar__agency__create_agent(method_name, version_str, ref_agent_context);
+    int64_t agent_id = ar_agency__create_agent(method_name, version_str, ref_agent_context);
     
     // 3. Handle errors
     if (agent_id == 0) {
@@ -361,12 +361,12 @@ else if (strcmp(function_name, "destroy") == 0) {
         // destroy(method_name, version)
         const char *method_name = ar_data_get_string(arg1);
         const char *version_str = ar_data_get_string(version);
-        bool success = ar__methodology__unregister_method(method_name, version_str);
+        bool success = ar_methodology__unregister_method(method_name, version_str);
         *own_result = ar_data_create_integer(success ? 1 : 0);
     } else {
         // destroy(agent_id)
         int64_t agent_id = ar_data_get_integer(arg1);
-        bool success = ar__agency__destroy_agent(agent_id);
+        bool success = ar_agency__destroy_agent(agent_id);
         *own_result = ar_data_create_integer(success ? 1 : 0);
     }
 }

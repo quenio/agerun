@@ -76,9 +76,9 @@ else if (strcmp(function_name, "if") == 0) {
 The old if() implementation parsed arguments using expression contexts:
 ```c
 // Parse condition expression
-own_context = ar__expression__create_context(...);
-const data_t *ref_cond_eval = ar__expression__evaluate(own_context);
-*mut_pos += ar__expression__offset(own_context);
+own_context = ar_expression__create_context(...);
+const data_t *ref_cond_eval = ar_expression__evaluate(own_context);
+*mut_pos += ar_expression__offset(own_context);
 
 _skip_whitespace(ref_instruction, mut_pos);
 
@@ -136,9 +136,9 @@ else if (strcmp(function_name, "parse") == 0) {
 The old parse() implementation:
 ```c
 // Parse template expression
-own_context = ar__expression__create_context(...);
-const data_t *ref_eval_result = ar__expression__evaluate(own_context);
-*mut_pos += ar__expression__offset(own_context);
+own_context = ar_expression__create_context(...);
+const data_t *ref_eval_result = ar_expression__evaluate(own_context);
+*mut_pos += ar_expression__offset(own_context);
 
 _skip_whitespace(ref_instruction, mut_pos);
 
@@ -194,9 +194,9 @@ else if (strcmp(function_name, "build") == 0) {
 ### Old Execution Code (lines 1235-1505)
 ```c
 // Parse template expression
-own_context = ar__expression__create_context(...);
-const data_t *ref_template_eval = ar__expression__evaluate(own_context);
-*mut_pos += ar__expression__offset(own_context);
+own_context = ar_expression__create_context(...);
+const data_t *ref_template_eval = ar_expression__evaluate(own_context);
+*mut_pos += ar_expression__offset(own_context);
 
 _skip_whitespace(ref_instruction, mut_pos);
 
@@ -253,9 +253,9 @@ else if (strcmp(function_name, "method") == 0) {
 ### Old Execution Code (lines 1587-1880)
 ```c
 // Parse method name expression
-own_context = ar__expression__create_context(...);
-const data_t *ref_name_eval = ar__expression__evaluate(own_context);
-*mut_pos += ar__expression__offset(own_context);
+own_context = ar_expression__create_context(...);
+const data_t *ref_name_eval = ar_expression__evaluate(own_context);
+*mut_pos += ar_expression__offset(own_context);
 
 _skip_whitespace(ref_instruction, mut_pos);
 
@@ -315,9 +315,9 @@ else if (strcmp(function_name, "agent") == 0) {
 ### Old Execution Code (lines 1881-2100)
 ```c
 // Parse method name expression
-own_context = ar__expression__create_context(...);
-const data_t *ref_method_name_eval = ar__expression__evaluate(own_context);
-*mut_pos += ar__expression__offset(own_context);
+own_context = ar_expression__create_context(...);
+const data_t *ref_method_name_eval = ar_expression__evaluate(own_context);
+*mut_pos += ar_expression__offset(own_context);
 
 _skip_whitespace(ref_instruction, mut_pos);
 
@@ -386,9 +386,9 @@ else if (strcmp(function_name, "destroy") == 0) {
 ### Old Execution Code (lines 2203-2373)
 ```c
 // Parse first argument
-own_context = ar__expression__create_context(...);
-const data_t *ref_arg1 = ar__expression__evaluate(own_context);
-*mut_pos += ar__expression__offset(own_context);
+own_context = ar_expression__create_context(...);
+const data_t *ref_arg1 = ar_expression__evaluate(own_context);
+*mut_pos += ar_expression__offset(own_context);
 
 _skip_whitespace(ref_instruction, mut_pos);
 
@@ -399,9 +399,9 @@ if (ref_instruction[*mut_pos] == ',') {
     _skip_whitespace(ref_instruction, mut_pos);
     
     // Parse version expression
-    own_context = ar__expression__create_context(...);
-    const data_t *ref_version_eval = ar__expression__evaluate(own_context);
-    *mut_pos += ar__expression__offset(own_context);
+    own_context = ar_expression__create_context(...);
+    const data_t *ref_version_eval = ar_expression__evaluate(own_context);
+    *mut_pos += ar_expression__offset(own_context);
     
     _skip_whitespace(ref_instruction, mut_pos);
     

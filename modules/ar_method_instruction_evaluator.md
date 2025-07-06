@@ -105,7 +105,7 @@ ar_method_instruction_evaluator_t *method_eval = ar_method_instruction_evaluator
 );
 
 // Parse method instruction: method("echo", "send(0, message)", "1.0.0")
-ar_instruction_ast_t *ast = ar__instruction_parser__parse_method(parser);
+ar_instruction_ast_t *ast = ar_instruction_parser__parse_method(parser);
 
 // Evaluate the method creation
 bool success = ar_method_instruction_evaluator__evaluate(method_eval, ast);

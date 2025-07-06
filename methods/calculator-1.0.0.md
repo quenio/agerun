@@ -30,33 +30,33 @@ send(message.sender, memory.result)
 ### Creating a Calculator Agent
 
 ```c
-int64_t calc = ar__agent__create("calculator", "1.0.0", NULL);
+int64_t calc = ar_agent__create("calculator", "1.0.0", NULL);
 ```
 
 ### Performing Operations
 
 ```c
 // Addition: 10 + 5 = 15
-ar__data__t *msg = ar__data__create_map();
-ar__data__set_map_data(msg, "operation", ar__data__create_string("add"));
-ar__data__set_map_data(msg, "a", ar__data__create_integer(10));
-ar__data__set_map_data(msg, "b", ar__data__create_integer(5));
-ar__data__set_map_data(msg, "sender", ar__data__create_integer(my_agent_id));
-ar__agent__send_data(calc, msg);
+ar_data_t *msg = ar_data__create_map();
+ar_data__set_map_data(msg, "operation", ar_data__create_string("add"));
+ar_data__set_map_data(msg, "a", ar_data__create_integer(10));
+ar_data__set_map_data(msg, "b", ar_data__create_integer(5));
+ar_data__set_map_data(msg, "sender", ar_data__create_integer(my_agent_id));
+ar_agent__send_data(calc, msg);
 // Receives back: 15
 
 // Multiplication: 7 * 8 = 56
-ar__data__set_map_data(msg, "operation", ar__data__create_string("multiply"));
-ar__data__set_map_data(msg, "a", ar__data__create_integer(7));
-ar__data__set_map_data(msg, "b", ar__data__create_integer(8));
-ar__agent__send_data(calc, msg);
+ar_data__set_map_data(msg, "operation", ar_data__create_string("multiply"));
+ar_data__set_map_data(msg, "a", ar_data__create_integer(7));
+ar_data__set_map_data(msg, "b", ar_data__create_integer(8));
+ar_agent__send_data(calc, msg);
 // Receives back: 56
 
 // Division: 100 / 4 = 25
-ar__data__set_map_data(msg, "operation", ar__data__create_string("divide"));
-ar__data__set_map_data(msg, "a", ar__data__create_integer(100));
-ar__data__set_map_data(msg, "b", ar__data__create_integer(4));
-ar__agent__send_data(calc, msg);
+ar_data__set_map_data(msg, "operation", ar_data__create_string("divide"));
+ar_data__set_map_data(msg, "a", ar_data__create_integer(100));
+ar_data__set_map_data(msg, "b", ar_data__create_integer(4));
+ar_agent__send_data(calc, msg);
 // Receives back: 25
 ```
 

@@ -102,19 +102,19 @@ Developers are encouraged to run both dynamic (ASan) and static analysis regular
 
 int main(void) {
     // Define a simple echo method with semantic version "1.0.0"
-    const char *echo_version = ar__method__create("echo", "send(0, message)", "1.0.0");
+    const char *echo_version = ar_method__create("echo", "send(0, message)", "1.0.0");
 
     // Initialize the runtime with the echo method
-    int64_t initial_agent = ar__system__init("echo", echo_version);
+    int64_t initial_agent = ar_system__init("echo", echo_version);
 
     // Send a message to the echo agent
-    ar__agent__send(initial_agent, "Hello, AgeRun!");
+    ar_agent__send(initial_agent, "Hello, AgeRun!");
 
     // Process all messages
-    ar__system__process_all_messages();
+    ar_system__process_all_messages();
 
     // Shutdown the runtime
-    ar__system__shutdown();
+    ar_system__shutdown();
 
     return 0;
 }
@@ -124,40 +124,40 @@ int main(void) {
 
 ```c
 // Define a counter method
-const char *counter_version = ar__method__create("counter",
+const char *counter_version = ar_method__create("counter",
     "if(message = \"increment\", memory.count := memory.count + 1, \"\")\n"
     "if(message = \"get\", send(0, build(\"Count: {}\", memory.count)), \"\")",
     "1.0.0");
 
 // Create a counter agent
-int64_t counter_id = ar__agent__create("counter", counter_version, NULL);
+int64_t counter_id = ar_agent__create("counter", counter_version, NULL);
 
 // Send messages to the counter agent
-ar__agent__send(counter_id, "increment");
-ar__agent__send(counter_id, "increment");
-ar__agent__send(counter_id, "get");
+ar_agent__send(counter_id, "increment");
+ar_agent__send(counter_id, "increment");
+ar_agent__send(counter_id, "get");
 
 // Process all messages
-ar__system__process_all_messages();
+ar_system__process_all_messages();
 ```
 
 ### Persistence
 
 ```c
 // Save agents and methods to disk
-ar__agency__save_agents();
-ar__methodology__save_methods();
+ar_agency__save_agents();
+ar_methodology__save_methods();
 
 // Shutdown the runtime
-ar__system__shutdown();
+ar_system__shutdown();
 
 // Later, in a new session:
 
 // Load methods
-ar__methodology__load_methods();
+ar_methodology__load_methods();
 
 // Initialize runtime (will also load persistent agents)
-ar__system__init("some_method", some_version);
+ar_system__init("some_method", some_version);
 ```
 
 ## Method Expressions and Instructions

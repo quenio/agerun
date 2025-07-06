@@ -87,7 +87,7 @@ if (!own_ast) {
 }
 
 // Parse and add instructions
-instruction_parser_t *parser = ar__instruction_parser__create();
+instruction_parser_t *parser = ar_instruction_parser__create();
 ar_instruction_ast_t *own_instr = ar_instruction_parser__parse(parser, "memory.x := 42");
 ar_method_ast__add_instruction(own_ast, own_instr);
 
@@ -96,7 +96,7 @@ size_t count = ar_method_ast__get_instruction_count(own_ast);
 printf("Method has %zu instructions\n", count);
 
 // Cleanup
-ar__instruction_parser__destroy(parser);
+ar_instruction_parser__destroy(parser);
 ar_method_ast__destroy(own_ast);
 ```
 

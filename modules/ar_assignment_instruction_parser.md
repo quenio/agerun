@@ -50,11 +50,11 @@ ar_instruction_ast_t *ast = ar_assignment_instruction_parser__parse(
 
 if (ast) {
     // Use the AST
-    const char *path = ar__instruction_ast__get_assignment_path(ast);
-    const char *expr = ar__instruction_ast__get_assignment_expression(ast);
+    const char *path = ar_instruction_ast__get_assignment_path(ast);
+    const char *expr = ar_instruction_ast__get_assignment_expression(ast);
     
     // Clean up
-    ar__instruction_ast__destroy(ast);
+    ar_instruction_ast__destroy(ast);
 } else {
     // Parse errors are reported through the ar_log instance
     // The get_error() and get_error_position() functions are deprecated

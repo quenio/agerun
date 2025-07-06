@@ -117,7 +117,7 @@ ar_data__set_map_data(values, "count", ar_data__create_integer(42));
 ar_data__set_map_data(memory, "values", values);
 
 // Parse build instruction: memory.msg := build("Hello {name}! Count: {count}", memory.values)
-ar_instruction_ast_t *ast = ar__instruction_parser__parse_build(parser);
+ar_instruction_ast_t *ast = ar_instruction_parser__parse_build(parser);
 
 // Evaluate the build
 bool success = ar_build_instruction_evaluator__evaluate(build_eval, ast);

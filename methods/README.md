@@ -188,7 +188,7 @@ When creating a new method, also create a corresponding test file. The test shou
 
 4. Use assertions to verify expected behavior
 
-5. Use `ar_method__fixture_check_memory()` to ensure zero memory leaks
+5. Use `ar_method_fixture__check_memory()` to ensure zero memory leaks
 
 ### Example Test Pattern
 
@@ -197,17 +197,17 @@ static void test_method_basic(void) {
     printf("Testing method basic functionality...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar_method__fixture_create("method_basic");
+    method_fixture_t *own_fixture = ar_method_fixture__create("method_basic");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar_method__fixture_initialize(own_fixture));
+    assert(ar_method_fixture__initialize(own_fixture));
     
     // Verify correct directory
-    assert(ar_method__fixture_verify_directory(own_fixture));
+    assert(ar_method_fixture__verify_directory(own_fixture));
     
     // Load method
-    assert(ar_method__fixture_load_method(own_fixture, "method-name", 
+    assert(ar_method_fixture__load_method(own_fixture, "method-name", 
                                        "../methods/method-name-1.0.0.method", "1.0.0"));
     
     // Create agent
@@ -231,10 +231,10 @@ static void test_method_basic(void) {
     // ...
     
     // Check for memory leaks
-    assert(ar_method__fixture_check_memory(own_fixture));
+    assert(ar_method_fixture__check_memory(own_fixture));
     
     // Destroy fixture (handles all cleanup)
-    ar_method__fixture_destroy(own_fixture);
+    ar_method_fixture__destroy(own_fixture);
     
     printf("✓ Method basic test passed\n");
 }

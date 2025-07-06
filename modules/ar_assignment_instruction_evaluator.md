@@ -101,7 +101,7 @@ ar_assignment_instruction_evaluator_t *assign_eval = ar_assignment_instruction_e
 );
 
 // Parse assignment instruction: memory.result := 42
-ar_instruction_ast_t *ast = ar__instruction_parser__parse_assignment(parser);
+ar_instruction_ast_t *ast = ar_instruction_parser__parse_assignment(parser);
 
 // Evaluate the assignment
 bool success = ar_assignment_instruction_evaluator__evaluate(assign_eval, ast);

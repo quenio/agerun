@@ -101,7 +101,7 @@ Parses a single instruction without executing it.
 - Returns an owned value that caller must destroy with ar_instruction__destroy_parsed
 - Does not take ownership of any parameters
 
-**Note:** Execution of parsed instructions is handled by the Interpreter module using ar__interpreter__execute_instruction
+**Note:** Execution of parsed instructions is handled by the Interpreter module using ar_interpreter__execute_instruction
 
 ### Accessor Functions
 
@@ -217,7 +217,7 @@ if (!own_parsed) {
     }
 } else {
     // Use the parsed instruction (typically passed to interpreter)
-    // ar__interpreter__execute_instruction(interpreter, ctx, instruction_string);
+    // ar_interpreter__execute_instruction(interpreter, ctx, instruction_string);
     
     // Clean up parsed instruction
     ar_instruction__destroy_parsed(own_parsed);
@@ -347,7 +347,7 @@ method("greet", "memory.greeting := \"Hello\"", 1)
 - 0 if an error occurred
 
 **Implementation Notes:**
-- The method function calls `ar__methodology__create_method` directly
+- The method function calls `ar_methodology__create_method` directly
 - Default values are used for some parameters:
   - `previous_version`: 0 (automatically detected if method exists)
   - `backward_compatible`: true (methods are backward compatible by default)
@@ -438,7 +438,7 @@ memory.success := destroy("calculator", "1.0.0")  // Returns 1 on success, 0 on 
 - 0 if the method didn't exist, has active agents using it, or unregistration failed
 
 **Implementation Notes:**
-- The function calls `ar__methodology__unregister_method` with the provided parameters
+- The function calls `ar_methodology__unregister_method` with the provided parameters
 - Methods can only be unregistered if no agents are currently using them
 - The function checks for active agents before attempting unregistration
 - Attempting to unregister a non-existent method returns 0

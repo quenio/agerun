@@ -51,8 +51,8 @@ if (!ast2) {
 }
 
 // Clean up
-ar__instruction_ast__destroy(ast1);
-ar__instruction_ast__destroy(ast2);
+ar_instruction_ast__destroy(ast1);
+ar_instruction_ast__destroy(ast2);
 ar_build_instruction_parser__destroy(parser);
 ```
 

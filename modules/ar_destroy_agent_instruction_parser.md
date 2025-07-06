@@ -29,9 +29,9 @@ ar_instruction_ast_t *ast = ar_destroy_agent_instruction_parser__parse(parser, i
 
 if (ast) {
     // Successfully parsed
-    assert(ar__instruction_ast__get_type(ast) == AR_INST__DESTROY_AGENT);
+    assert(ar_instruction_ast__get_type(ast) == AR_INST__DESTROY_AGENT);
     // ... use AST ...
-    ar__instruction_ast__destroy(ast);
+    ar_instruction_ast__destroy(ast);
 } else {
     // Parse errors are reported through the ar_log instance
     // The get_error() and get_error_position() functions are deprecated
@@ -51,7 +51,7 @@ const char *instruction = "memory.result := destroy(memory.agent_id)";
 ar_instruction_ast_t *ast = ar_destroy_agent_instruction_parser__parse(parser, instruction, "memory.result");
 
 if (ast) {
-    assert(ar__instruction_ast__has_result_assignment(ast) == true);
+    assert(ar_instruction_ast__has_result_assignment(ast) == true);
     // ... use AST ...
 }
 ```

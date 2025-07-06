@@ -29,9 +29,9 @@ ar_instruction_ast_t *ast = ar_destroy_method_instruction_parser__parse(parser, 
 
 if (ast) {
     // Successfully parsed
-    assert(ar__instruction_ast__get_type(ast) == AR_INST__DESTROY_METHOD);
+    assert(ar_instruction_ast__get_type(ast) == AR_INST__DESTROY_METHOD);
     // ... use AST ...
-    ar__instruction_ast__destroy(ast);
+    ar_instruction_ast__destroy(ast);
 } else {
     // Parse errors are reported through the ar_log instance
     // The get_error() and get_error_position() functions are deprecated
@@ -51,7 +51,7 @@ const char *instruction = "memory.result := destroy(\"test_method\", \"2.0.0\")"
 ar_instruction_ast_t *ast = ar_destroy_method_instruction_parser__parse(parser, instruction, "memory.result");
 
 if (ast) {
-    assert(ar__instruction_ast__has_result_assignment(ast) == true);
+    assert(ar_instruction_ast__has_result_assignment(ast) == true);
     // ... use AST ...
 }
 ```

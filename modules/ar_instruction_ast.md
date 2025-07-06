@@ -52,7 +52,7 @@ typedef struct ar_instruction_ast_s ar_instruction_ast_t;
 #### Assignment Instructions
 
 ```c
-ar_instruction_ast_t* ar__instruction_ast__create_assignment(
+ar_instruction_ast_t* ar_instruction_ast__create_assignment(
     const char *ref_memory_path,
     const char *ref_expression
 );
@@ -74,7 +74,7 @@ Creates an AST node for an assignment instruction.
 #### Function Call Instructions
 
 ```c
-ar_instruction_ast_t* ar__instruction_ast__create_function_call(
+ar_instruction_ast_t* ar_instruction_ast__create_function_call(
     ar_instruction_ast_type_t type,
     const char *ref_function_name,
     const char **ref_args,
@@ -102,7 +102,7 @@ Creates an AST node for a function call instruction.
 ### Node Destruction
 
 ```c
-void ar__instruction_ast__destroy(ar_instruction_ast_t *own_node);
+void ar_instruction_ast__destroy(ar_instruction_ast_t *own_node);
 ```
 
 Destroys an AST node and all its components.
@@ -119,7 +119,7 @@ Destroys an AST node and all its components.
 #### General Node Information
 
 ```c
-ar_instruction_ast_type_t ar__instruction_ast__get_type(const ar_instruction_ast_t *ref_node);
+ar_instruction_ast_type_t ar_instruction_ast__get_type(const ar_instruction_ast_t *ref_node);
 ```
 
 Gets the type of an AST node.
@@ -130,8 +130,8 @@ Gets the type of an AST node.
 #### Assignment Node Accessors
 
 ```c
-const char* ar__instruction_ast__get_assignment_path(const ar_instruction_ast_t *ref_node);
-const char* ar__instruction_ast__get_assignment_expression(const ar_instruction_ast_t *ref_node);
+const char* ar_instruction_ast__get_assignment_path(const ar_instruction_ast_t *ref_node);
+const char* ar_instruction_ast__get_assignment_expression(const ar_instruction_ast_t *ref_node);
 ```
 
 Get information from assignment nodes.
@@ -142,16 +142,16 @@ Get information from assignment nodes.
 #### Function Call Node Accessors
 
 ```c
-const char* ar__instruction_ast__get_function_name(const ar_instruction_ast_t *ref_node);
-list_t* ar__instruction_ast__get_function_args(const ar_instruction_ast_t *ref_node);
-const char* ar__instruction_ast__get_function_result_path(const ar_instruction_ast_t *ref_node);
-bool ar__instruction_ast__has_result_assignment(const ar_instruction_ast_t *ref_node);
+const char* ar_instruction_ast__get_function_name(const ar_instruction_ast_t *ref_node);
+list_t* ar_instruction_ast__get_function_args(const ar_instruction_ast_t *ref_node);
+const char* ar_instruction_ast__get_function_result_path(const ar_instruction_ast_t *ref_node);
+bool ar_instruction_ast__has_result_assignment(const ar_instruction_ast_t *ref_node);
 ```
 
 Get information from function call nodes.
 
 **Ownership:**
-- `ar__instruction_ast__get_function_args` returns an owned list that caller must destroy
+- `ar_instruction_ast__get_function_args` returns an owned list that caller must destroy
 - The strings in the returned list are borrowed references and should not be freed
 - Other functions return borrowed references
 
@@ -161,14 +161,14 @@ Get information from function call nodes.
 
 ```c
 // Create an assignment: memory.count := 42
-ar_instruction_ast_t *own_node = ar__instruction_ast__create_assignment("memory.count", "42");
+ar_instruction_ast_t *own_node = ar_instruction_ast__create_assignment("memory.count", "42");
 if (own_node) {
     // Use the node...
-    assert(ar__instruction_ast__get_type(own_node) == AR_INST__ASSIGNMENT);
-    assert(strcmp(ar__instruction_ast__get_assignment_path(own_node), "memory.count") == 0);
+    assert(ar_instruction_ast__get_type(own_node) == AR_INST__ASSIGNMENT);
+    assert(strcmp(ar_instruction_ast__get_assignment_path(own_node), "memory.count") == 0);
     
     // Clean up
-    ar__instruction_ast__destroy(own_node);
+    ar_instruction_ast__destroy(own_node);
 }
 ```
 
@@ -177,13 +177,13 @@ if (own_node) {
 ```c
 // Create a send call: send(0, "Hello")
 const char *args[] = {"0", "\"Hello\""};
-ar_instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
+ar_instruction_ast_t *own_node = ar_instruction_ast__create_function_call(
     AR_INST__SEND, "send", args, 2, NULL
 );
 
 if (own_node) {
     // Access function arguments
-    list_t *own_args = ar__instruction_ast__get_function_args(own_node);
+    list_t *own_args = ar_instruction_ast__get_function_args(own_node);
     if (own_args) {
         void **own_items = ar_list__items(own_args);
         // Use the arguments...
@@ -192,7 +192,7 @@ if (own_node) {
     }
     
     // Clean up
-    ar__instruction_ast__destroy(own_node);
+    ar_instruction_ast__destroy(own_node);
 }
 ```
 
@@ -201,15 +201,15 @@ if (own_node) {
 ```c
 // Create: memory.result := if(x > 5, "High", "Low")
 const char *args[] = {"x > 5", "\"High\"", "\"Low\""};
-ar_instruction_ast_t *own_node = ar__instruction_ast__create_function_call(
+ar_instruction_ast_t *own_node = ar_instruction_ast__create_function_call(
     AR_INST__IF, "if", args, 3, "memory.result"
 );
 
 if (own_node) {
-    assert(ar__instruction_ast__has_result_assignment(own_node) == true);
-    assert(strcmp(ar__instruction_ast__get_function_result_path(own_node), "memory.result") == 0);
+    assert(ar_instruction_ast__has_result_assignment(own_node) == true);
+    assert(strcmp(ar_instruction_ast__get_function_result_path(own_node), "memory.result") == 0);
     
-    ar__instruction_ast__destroy(own_node);
+    ar_instruction_ast__destroy(own_node);
 }
 ```
 

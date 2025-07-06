@@ -102,7 +102,7 @@ ar_condition_instruction_evaluator_t *cond_eval = ar_condition_instruction_evalu
 );
 
 // Parse if instruction: result := if(x > 5, 100, 200)
-ar_instruction_ast_t *ast = ar__instruction_parser__parse_if(parser);
+ar_instruction_ast_t *ast = ar_instruction_parser__parse_if(parser);
 
 // Evaluate the condition
 bool success = ar_condition_instruction_evaluator__evaluate(cond_eval, ast);

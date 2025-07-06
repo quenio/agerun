@@ -44,18 +44,18 @@ All resources created through the fixture are automatically tracked and cleaned 
 
 ### Core Functions
 
-#### `ar__interpreter_fixture__create`
+#### `ar_interpreter_fixture__create`
 Creates a new test fixture for interpreter tests.
 - **Parameters**: Test name for identification
 - **Returns**: New fixture instance
 - **Note**: Automatically creates an interpreter and initializes the system
 
-#### `ar__interpreter_fixture__destroy`
+#### `ar_interpreter_fixture__destroy`
 Destroys a test fixture and cleans up all resources.
 - **Parameters**: Fixture to destroy
 - **Note**: Automatically destroys all tracked agents and data
 
-#### `ar__interpreter_fixture__get_interpreter`
+#### `ar_interpreter_fixture__get_interpreter`
 Gets the interpreter instance managed by the fixture.
 - **Parameters**: Fixture reference
 - **Returns**: Borrowed reference to the interpreter
@@ -63,7 +63,7 @@ Gets the interpreter instance managed by the fixture.
 
 ### Agent Functions
 
-#### `ar__interpreter_fixture__create_agent`
+#### `ar_interpreter_fixture__create_agent`
 Creates a test agent with the specified method.
 - **Parameters**: 
   - Fixture reference
@@ -73,7 +73,7 @@ Creates a test agent with the specified method.
 - **Returns**: Agent ID or 0 on error
 - **Note**: Automatically registers the method and processes wake message
 
-#### `ar__interpreter_fixture__get_agent_memory`
+#### `ar_interpreter_fixture__get_agent_memory`
 Gets an agent's memory for testing.
 - **Parameters**: Fixture reference, agent ID
 - **Returns**: Mutable reference to agent's memory
@@ -81,7 +81,7 @@ Gets an agent's memory for testing.
 
 ### Execution Functions
 
-#### `ar__interpreter_fixture__execute_instruction`
+#### `ar_interpreter_fixture__execute_instruction`
 Executes a single instruction in an agent's context.
 - **Parameters**:
   - Fixture reference
@@ -90,7 +90,7 @@ Executes a single instruction in an agent's context.
 - **Returns**: true on success, false on error
 - **Note**: Uses the fixture's interpreter instance
 
-#### `ar__interpreter_fixture__execute_with_message`
+#### `ar_interpreter_fixture__execute_with_message`
 Executes an instruction with a custom message context.
 - **Parameters**:
   - Fixture reference
@@ -102,7 +102,7 @@ Executes an instruction with a custom message context.
 
 ### Helper Functions
 
-#### `ar__interpreter_fixture__create_method`
+#### `ar_interpreter_fixture__create_method`
 Creates and registers a method without creating an agent.
 - **Parameters**:
   - Fixture reference
@@ -112,7 +112,7 @@ Creates and registers a method without creating an agent.
 - **Returns**: true on success
 - **Note**: Useful for testing method-related functionality
 
-#### `ar__interpreter_fixture__send_message`
+#### `ar_interpreter_fixture__send_message`
 Sends a message to an agent and processes it.
 - **Parameters**:
   - Fixture reference
@@ -121,13 +121,13 @@ Sends a message to an agent and processes it.
 - **Returns**: true if sent and processed successfully
 - **Note**: Takes ownership of the message
 
-#### `ar__interpreter_fixture__create_test_map`
+#### `ar_interpreter_fixture__create_test_map`
 Creates a test data map with common values.
 - **Parameters**: Fixture reference, map name
 - **Returns**: Borrowed reference to created map
 - **Note**: Map contains: name, count (42), value (3.14), flag (1)
 
-#### `ar__interpreter_fixture__track_data`
+#### `ar_interpreter_fixture__track_data`
 Tracks a data object for automatic cleanup.
 - **Parameters**: Fixture reference, data object (ownership transferred)
 - **Note**: Use for data created outside fixture helpers
@@ -138,11 +138,11 @@ Tracks a data object for automatic cleanup.
 ```c
 static void test_interpreter_functionality(void) {
     // Given a test fixture
-    interpreter_fixture_t *own_fixture = ar__interpreter_fixture__create("test_name");
+    interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_name");
     assert(own_fixture != NULL);
     
     // When creating an agent
-    int64_t agent_id = ar__interpreter_fixture__create_agent(
+    int64_t agent_id = ar_interpreter_fixture__create_agent(
         own_fixture,
         "test_method",
         "memory.x := 1",
@@ -151,7 +151,7 @@ static void test_interpreter_functionality(void) {
     assert(agent_id > 0);
     
     // And executing an instruction
-    bool result = ar__interpreter_fixture__execute_instruction(
+    bool result = ar_interpreter_fixture__execute_instruction(
         own_fixture,
         agent_id,
         "memory.y := memory.x + 1"
@@ -159,22 +159,22 @@ static void test_interpreter_functionality(void) {
     assert(result == true);
     
     // Then verify the result
-    data_t *mut_memory = ar__interpreter_fixture__get_agent_memory(own_fixture, agent_id);
+    data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
     data_t *ref_y = ar_data__get_map_data(mut_memory, "y");
     assert(ar_data__get_integer(ref_y) == 2);
     
     // Cleanup is automatic
-    ar__interpreter_fixture__destroy(own_fixture);
+    ar_interpreter_fixture__destroy(own_fixture);
 }
 ```
 
 ### Testing with Messages
 ```c
 static void test_message_handling(void) {
-    interpreter_fixture_t *own_fixture = ar__interpreter_fixture__create("test_message");
+    interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_message");
     
     // Create agent that processes messages
-    int64_t agent_id = ar__interpreter_fixture__create_agent(
+    int64_t agent_id = ar_interpreter_fixture__create_agent(
         own_fixture,
         "echo_method",
         "memory.echo := message",
@@ -183,7 +183,7 @@ static void test_message_handling(void) {
     
     // Execute with a custom message
     data_t *own_message = ar_data__create_string("Hello");
-    bool result = ar__interpreter_fixture__execute_with_message(
+    bool result = ar_interpreter_fixture__execute_with_message(
         own_fixture,
         agent_id,
         "memory.result := message",
@@ -194,30 +194,30 @@ static void test_message_handling(void) {
     assert(result == true);
     
     // Verify message was used
-    data_t *mut_memory = ar__interpreter_fixture__get_agent_memory(own_fixture, agent_id);
+    data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
     data_t *ref_result = ar_data__get_map_data(mut_memory, "result");
     assert(strcmp(ar_data__get_string(ref_result), "Hello") == 0);
     
-    ar__interpreter_fixture__destroy(own_fixture);
+    ar_interpreter_fixture__destroy(own_fixture);
 }
 ```
 
 ### Resource Tracking
 ```c
 static void test_resource_tracking(void) {
-    interpreter_fixture_t *own_fixture = ar__interpreter_fixture__create("test_tracking");
+    interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_tracking");
     
     // Create test data that fixture will track
-    data_t *ref_map = ar__interpreter_fixture__create_test_map(own_fixture, "test");
+    data_t *ref_map = ar_interpreter_fixture__create_test_map(own_fixture, "test");
     assert(ref_map != NULL);
     
     // Create additional data and track it
     data_t *own_list = ar_data__create_list();
-    ar__interpreter_fixture__track_data(own_fixture, own_list);
+    ar_interpreter_fixture__track_data(own_fixture, own_list);
     // Ownership transferred - fixture will destroy it
     
     // All resources cleaned up automatically
-    ar__interpreter_fixture__destroy(own_fixture);
+    ar_interpreter_fixture__destroy(own_fixture);
 }
 ```
 

@@ -111,7 +111,7 @@ ar_parse_instruction_evaluator_t *parse_eval = ar_parse_instruction_evaluator__c
 );
 
 // Parse instruction: memory.data := parse("Hello {name}!", "Hello World!")
-ar_instruction_ast_t *ast = ar__instruction_parser__parse_parse(parser);
+ar_instruction_ast_t *ast = ar_instruction_parser__parse_parse(parser);
 
 // Evaluate the parse
 bool success = ar_parse_instruction_evaluator__evaluate(parse_eval, ast);

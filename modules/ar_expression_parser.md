@@ -124,14 +124,14 @@ The parser follows strict ownership semantics:
 
 ```c
 // Create parser
-ar_expression_parser_t *own_parser = ar__expression_parser__create("memory.x + 5");
+ar_expression_parser_t *own_parser = ar_expression_parser__create("memory.x + 5");
 
 // Parse expression
-ar_expression_ast_t *own_ast = ar__expression_parser__parse_expression(own_parser);
+ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
 if (!own_ast) {
     // Errors are reported via the ar_log instance provided during creation
     // The get_error() function is deprecated and always returns NULL
-    ar__expression_parser__destroy(own_parser);
+    ar_expression_parser__destroy(own_parser);
     return;
 }
 
@@ -141,7 +141,7 @@ assert(ar_expression_ast__get_operator(own_ast) == AR_OP__ADD);
 
 // Clean up
 ar_expression_ast__destroy(own_ast);
-ar__expression_parser__destroy(own_parser);
+ar_expression_parser__destroy(own_parser);
 ```
 
 ## Dependencies

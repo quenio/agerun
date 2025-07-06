@@ -57,8 +57,8 @@ if (!ast) {
 }
 
 // Clean up
-ar__instruction_ast__destroy(ast);
-ar__instruction_ast__destroy(ast2);
+ar_instruction_ast__destroy(ast);
+ar_instruction_ast__destroy(ast2);
 ar_send_instruction_parser__destroy(parser);
 ar_log__destroy(own_log); // Only if log was created
 ```

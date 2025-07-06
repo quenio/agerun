@@ -107,19 +107,19 @@ Executes destruction operations:
 
 ### Core Functions
 
-#### `ar__interpreter__create`
+#### `ar_interpreter__create`
 Creates a new interpreter instance.
 - **Returns**: New interpreter or NULL on failure
 - **Ownership**: Caller owns returned interpreter
 
-#### `ar__interpreter__destroy`
+#### `ar_interpreter__destroy`
 Destroys an interpreter instance.
 - **Parameters**: Interpreter to destroy
 - **Ownership**: Takes ownership and destroys
 
 ### Execution Functions
 
-#### `ar__interpreter__execute_instruction`
+#### `ar_interpreter__execute_instruction`
 Executes a single instruction string.
 - **Parameters**:
   - Interpreter instance
@@ -132,7 +132,7 @@ Executes a single instruction string.
   3. Cleans up AST
   4. Returns result
 
-#### `ar__interpreter__execute_method`
+#### `ar_interpreter__execute_method`
 Executes a complete method.
 - **Parameters**:
   - Interpreter instance
@@ -212,7 +212,7 @@ The interpreter ensures memory safety through:
 
 ```c
 // Create interpreter
-interpreter_t *interpreter = ar__interpreter__create();
+interpreter_t *interpreter = ar_interpreter__create();
 
 // Create instruction context
 instruction_context_t *ctx = ar_instruction__create_context(
@@ -222,15 +222,15 @@ instruction_context_t *ctx = ar_instruction__create_context(
 );
 
 // Execute single instruction
-bool success = ar__interpreter__execute_instruction(
+bool success = ar_interpreter__execute_instruction(
     interpreter,
     ctx,
     "memory.result := 2 + 2"
 );
 
 // Execute method
-const method_t *method = ar__methodology__get_method("calculator", "1.0.0");
-success = ar__interpreter__execute_method(
+const method_t *method = ar_methodology__get_method("calculator", "1.0.0");
+success = ar_interpreter__execute_method(
     interpreter,
     agent_id,
     message,
@@ -239,7 +239,7 @@ success = ar__interpreter__execute_method(
 
 // Cleanup
 ar_instruction__destroy_context(ctx);
-ar__interpreter__destroy(interpreter);
+ar_interpreter__destroy(interpreter);
 ```
 
 ## Design Decisions
