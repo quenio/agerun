@@ -51,7 +51,7 @@ typedef enum file_result_e {
     FILE_ERROR_CORRUPT,       // File is corrupt or malformed
     FILE_ERROR_ALREADY_EXISTS, // File already exists (for creation operations)
     FILE_ERROR_UNKNOWN        // Unknown error
-} file_result_t;
+} ar_file_result_t;
 
 /**
  * Helper function for secure file reading with bounds checking
@@ -72,7 +72,7 @@ bool ar_io__read_line(FILE *fp, char *buffer, int buffer_size, const char *filen
  * @param file_ptr Pointer to store the opened file handle
  * @return FILE_SUCCESS if successful, appropriate error code otherwise
  */
-file_result_t ar_io__open_file(const char *filename, const char *mode, FILE **file_ptr);
+ar_file_result_t ar_io__open_file(const char *filename, const char *mode, FILE **file_ptr);
 
 /**
  * Safely closes a file with error checking
@@ -81,7 +81,7 @@ file_result_t ar_io__open_file(const char *filename, const char *mode, FILE **fi
  * @param filename Name of the file (for error reporting)
  * @return FILE_SUCCESS if successful, appropriate error code otherwise
  */
-file_result_t ar_io__close_file(FILE *fp, const char *filename);
+ar_file_result_t ar_io__close_file(FILE *fp, const char *filename);
 
 /**
  * Creates a backup of a file before modifying it
@@ -89,7 +89,7 @@ file_result_t ar_io__close_file(FILE *fp, const char *filename);
  * @param filename Path to the file to backup
  * @return FILE_SUCCESS if backup was created successfully, appropriate error code otherwise
  */
-file_result_t ar_io__create_backup(const char *filename);
+ar_file_result_t ar_io__create_backup(const char *filename);
 
 /**
  * Restores a backup file if the main operation failed
@@ -97,7 +97,7 @@ file_result_t ar_io__create_backup(const char *filename);
  * @param filename Path to the file to restore
  * @return FILE_SUCCESS if backup was restored successfully, appropriate error code otherwise
  */
-file_result_t ar_io__restore_backup(const char *filename);
+ar_file_result_t ar_io__restore_backup(const char *filename);
 
 /**
  * Applies secure permissions to a file (owner read/write only)
@@ -105,7 +105,7 @@ file_result_t ar_io__restore_backup(const char *filename);
  * @param filename Path to the file to secure
  * @return FILE_SUCCESS if permissions were set successfully, appropriate error code otherwise
  */
-file_result_t ar_io__set_secure_permissions(const char *filename);
+ar_file_result_t ar_io__set_secure_permissions(const char *filename);
 
 /**
  * Safely writes a file using a temporary file and atomic rename
@@ -115,17 +115,17 @@ file_result_t ar_io__set_secure_permissions(const char *filename);
  * @param context Context passed to the write function
  * @return FILE_SUCCESS if successful, appropriate error code otherwise
  */
-file_result_t ar_io__write_file(const char *filename,
+ar_file_result_t ar_io__write_file(const char *filename,
                            bool (*write_func)(FILE *fp, void *context),
                            void *context);
 
 /**
- * Gets a detailed error message for a file_result_t code
+ * Gets a detailed error message for a ar_file_result_t code
  *
  * @param result The result code to get a message for
  * @return A human-readable error message
  */
-const char* ar_io__error_message(file_result_t result);
+const char* ar_io__error_message(ar_file_result_t result);
 
 /**
  * Safely copies a string with proper bounds checking and null termination

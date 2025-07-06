@@ -99,7 +99,7 @@ bool ar_method_fixture__load_method(method_fixture_t *mut_fixture,
     
     // Read method file
     FILE *fp = NULL;
-    file_result_t result = ar_io__open_file(ref_method_file, "r", &fp);
+    ar_file_result_t result = ar_io__open_file(ref_method_file, "r", &fp);
     if (result != FILE_SUCCESS) {
         ar_io__error("Failed to open method file %s: %s\n", 
                     ref_method_file, ar_io__error_message(result));

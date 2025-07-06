@@ -345,7 +345,7 @@ typedef struct {
 /* Validate the format of an agent store file */
 static bool _validate_store_file(const char *filename, char *error_message, size_t error_size) {
     FILE *fp;
-    file_result_t result = ar_io__open_file(filename, "r", &fp);
+    ar_file_result_t result = ar_io__open_file(filename, "r", &fp);
     
     if (result == FILE_ERROR_NOT_FOUND) {
         snprintf(error_message, error_size, "Agent store file %s not found", filename);
@@ -489,7 +489,7 @@ bool ar_agent_store__save(void) {
     // Create backup of existing file if it exists
     struct stat st;
     if (stat(AGENT_STORE_FILE_NAME, &st) == 0) {
-        file_result_t backup_result = ar_io__create_backup(AGENT_STORE_FILE_NAME);
+        ar_file_result_t backup_result = ar_io__create_backup(AGENT_STORE_FILE_NAME);
         if (backup_result != FILE_SUCCESS) {
             ar_io__warning("Failed to create backup of agent store file: %s",
                          ar_io__error_message(backup_result));
@@ -500,7 +500,7 @@ bool ar_agent_store__save(void) {
     }
     
     // Use the safe file writing utility
-    file_result_t result = ar_io__write_file(AGENT_STORE_FILE_NAME, _store_write_function, &context);
+    ar_file_result_t result = ar_io__write_file(AGENT_STORE_FILE_NAME, _store_write_function, &context);
     if (result != FILE_SUCCESS) {
         ar_io__error("Failed to save agent store file: %s", ar_io__error_message(result));
         
@@ -552,7 +552,7 @@ bool ar_agent_store__load(void) {
     
     // Open the file (now that we know it's valid)
     FILE *fp;
-    file_result_t result = ar_io__open_file(AGENT_STORE_FILE_NAME, "r", &fp);
+    ar_file_result_t result = ar_io__open_file(AGENT_STORE_FILE_NAME, "r", &fp);
     
     if (result != FILE_SUCCESS) {
         ar_io__error("Failed to open agent store file: %s", ar_io__error_message(result));
@@ -906,7 +906,7 @@ bool ar_agent_store__delete(void) {
     }
     
     // Create backup before deletion
-    file_result_t backup_result = ar_io__create_backup(AGENT_STORE_FILE_NAME);
+    ar_file_result_t backup_result = ar_io__create_backup(AGENT_STORE_FILE_NAME);
     if (backup_result != FILE_SUCCESS) {
         ar_io__warning("Failed to create backup before deletion: %s",
                      ar_io__error_message(backup_result));

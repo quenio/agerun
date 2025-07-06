@@ -45,7 +45,7 @@ static void test_io__error_message_success(void) {
     printf("Testing ar_io__error_message() with FILE_SUCCESS...\n");
     
     // Given a success code
-    file_result_t code = FILE_SUCCESS;
+    ar_file_result_t code = FILE_SUCCESS;
     
     // When getting the error message
     const char *message = ar_io__error_message(code);
@@ -61,7 +61,7 @@ static void test_io__error_message_all_codes(void) {
     
     // Given various error codes and their expected messages
     struct {
-        file_result_t code;
+        ar_file_result_t code;
         const char *expected;
     } test_cases[] = {
         {FILE_ERROR_OPEN, "Failed to open file"},
@@ -231,7 +231,7 @@ static void test_io__open_file_write_mode(void) {
     
     // When opening the file for writing
     FILE *fp = NULL;
-    file_result_t result = ar_io__open_file(temp_filename, "w", &fp);
+    ar_file_result_t result = ar_io__open_file(temp_filename, "w", &fp);
     
     // Then it should succeed
     assert(result == FILE_SUCCESS);
@@ -255,7 +255,7 @@ static void test_io__open_file_read_mode(void) {
     
     // When opening the file for reading
     FILE *fp = NULL;
-    file_result_t result = ar_io__open_file(temp_filename, "r", &fp);
+    ar_file_result_t result = ar_io__open_file(temp_filename, "r", &fp);
     
     // Then it should succeed
     assert(result == FILE_SUCCESS);
@@ -276,7 +276,7 @@ static void test_io__open_file_non_existent(void) {
     
     // When trying to open it for reading
     FILE *fp = NULL;
-    file_result_t result = ar_io__open_file(filename, "r", &fp);
+    ar_file_result_t result = ar_io__open_file(filename, "r", &fp);
     
     // Then it should fail with FILE_ERROR_NOT_FOUND
     assert(result == FILE_ERROR_NOT_FOUND);
@@ -292,7 +292,7 @@ static void test_io__open_file_null_parameters(void) {
     
     // Given NULL filename
     // When opening
-    file_result_t result = ar_io__open_file(NULL, "r", &fp);
+    ar_file_result_t result = ar_io__open_file(NULL, "r", &fp);
     // Then it should fail
     assert(result == FILE_ERROR_UNKNOWN);
     
@@ -321,7 +321,7 @@ static void test_io__close_file_normal(void) {
     close(fd);
     
     FILE *fp = NULL;
-    file_result_t result = ar_io__open_file(temp_filename, "w", &fp);
+    ar_file_result_t result = ar_io__open_file(temp_filename, "w", &fp);
     assert(result == FILE_SUCCESS);
     assert(fp != NULL);
     
@@ -344,7 +344,7 @@ static void test_io__close_file_null_handle(void) {
     FILE *fp = NULL;
     
     // When closing it
-    file_result_t result = ar_io__close_file(fp, "dummy.txt");
+    ar_file_result_t result = ar_io__close_file(fp, "dummy.txt");
     
     // Then it should succeed (no-op)
     assert(result == FILE_SUCCESS);
@@ -364,7 +364,7 @@ static void test_io__read_line_normal(void) {
     close(fd);
     
     FILE *fp = NULL;
-    file_result_t result = ar_io__open_file(temp_filename, "r", &fp);
+    ar_file_result_t result = ar_io__open_file(temp_filename, "r", &fp);
     assert(result == FILE_SUCCESS);
     
     char buffer[100];
@@ -400,7 +400,7 @@ static void test_io__read_line_empty_line(void) {
     close(fd);
     
     FILE *fp = NULL;
-    file_result_t result = ar_io__open_file(temp_filename, "r", &fp);
+    ar_file_result_t result = ar_io__open_file(temp_filename, "r", &fp);
     assert(result == FILE_SUCCESS);
     
     char buffer[100];
@@ -469,7 +469,7 @@ static void test_io__create_backup_normal(void) {
     close(fd);
     
     // When creating a backup
-    file_result_t result = ar_io__create_backup(temp_filename);
+    ar_file_result_t result = ar_io__create_backup(temp_filename);
     
     // Then it should succeed and backup file should exist
     assert(result == FILE_SUCCESS);
@@ -492,7 +492,7 @@ static void test_io__create_backup_non_existent(void) {
     const char *filename = "/tmp/non_existent_file_12345.txt";
     
     // When creating a backup
-    file_result_t result = ar_io__create_backup(filename);
+    ar_file_result_t result = ar_io__create_backup(filename);
     
     // Then it should succeed (no-op)
     assert(result == FILE_SUCCESS);
@@ -512,7 +512,7 @@ static void test_io__restore_backup_normal(void) {
     close(fd);
     
     // Create backup
-    file_result_t result = ar_io__create_backup(temp_filename);
+    ar_file_result_t result = ar_io__create_backup(temp_filename);
     assert(result == FILE_SUCCESS);
     
     // Modify original file
@@ -547,7 +547,7 @@ static void test_io__restore_backup_non_existent(void) {
     const char *filename = "/tmp/non_existent_file_12345.txt";
     
     // When trying to restore
-    file_result_t result = ar_io__restore_backup(filename);
+    ar_file_result_t result = ar_io__restore_backup(filename);
     
     // Then it should fail with FILE_ERROR_NOT_FOUND
     assert(result == FILE_ERROR_NOT_FOUND);
@@ -565,7 +565,7 @@ static void test_io__set_secure_permissions_normal(void) {
     close(fd);
     
     // When setting secure permissions
-    file_result_t result = ar_io__set_secure_permissions(temp_filename);
+    ar_file_result_t result = ar_io__set_secure_permissions(temp_filename);
     
     // Then it should succeed
     assert(result == FILE_SUCCESS);
@@ -583,7 +583,7 @@ static void test_io__set_secure_permissions_non_existent(void) {
     const char *filename = "/tmp/non_existent_file_12345.txt";
     
     // When setting permissions
-    file_result_t result = ar_io__set_secure_permissions(filename);
+    ar_file_result_t result = ar_io__set_secure_permissions(filename);
     
     // Then it should fail
     assert(result == FILE_ERROR_PERMISSIONS);
@@ -603,7 +603,7 @@ static void test_io__write_file_normal(void) {
     const char *content = "Test content for write_file\n";
     
     // When writing the file
-    file_result_t result = ar_io__write_file(temp_filename, write_test_content, (void *)(uintptr_t)content);
+    ar_file_result_t result = ar_io__write_file(temp_filename, write_test_content, (void *)(uintptr_t)content);
     
     // Then it should succeed and content should be written
     assert(result == FILE_SUCCESS);
@@ -628,7 +628,7 @@ static void test_io__write_file_null_parameters(void) {
     
     // Given NULL filename
     // When writing
-    file_result_t result = ar_io__write_file(NULL, write_test_content, (void *)(uintptr_t)content);
+    ar_file_result_t result = ar_io__write_file(NULL, write_test_content, (void *)(uintptr_t)content);
     // Then it should fail
     assert(result == FILE_ERROR_UNKNOWN);
     

@@ -33,7 +33,7 @@
  */
 static bool _validate_file(const char *filename, char *error_message, size_t error_size) {
     FILE *fp;
-    file_result_t result = ar_io__open_file(filename, "r", &fp);
+    ar_file_result_t result = ar_io__open_file(filename, "r", &fp);
 
     if (result == FILE_ERROR_NOT_FOUND) {
         snprintf(error_message, error_size, "Methodology file %s not found", filename);
@@ -453,7 +453,7 @@ bool ar_methodology__save_methods(void) {
     
     // Use restricted mode "w" to ensure we only create/write, not execute
     FILE *mut_fp;
-    file_result_t result = ar_io__open_file(temp_filename, "w", &mut_fp);
+    ar_file_result_t result = ar_io__open_file(temp_filename, "w", &mut_fp);
     if (result != FILE_SUCCESS) {
         ar_io__error("Could not open %s for writing: %s",
                 temp_filename, ar_io__error_message(result));
@@ -668,7 +668,7 @@ bool ar_methodology__load_methods(void) {
 
     // Securely open the file with proper error handling (now that we know it's valid)
     FILE *mut_fp;
-    file_result_t result = ar_io__open_file(METHODOLOGY_FILE_NAME, "r", &mut_fp);
+    ar_file_result_t result = ar_io__open_file(METHODOLOGY_FILE_NAME, "r", &mut_fp);
 
     if (result != FILE_SUCCESS) {
         ar_io__error("Failed to open methodology file: %s", ar_io__error_message(result));
@@ -1115,7 +1115,7 @@ bool ar_methodology__save_methods_with_instance(ar_methodology_t *ref_methodolog
     }
     
     FILE *fp;
-    file_result_t result = ar_io__open_file(ref_filename, "w", &fp);
+    ar_file_result_t result = ar_io__open_file(ref_filename, "w", &fp);
     if (result != FILE_SUCCESS) {
         ar_io__error("Failed to open file %s for writing: %s", ref_filename, 
                     ar_io__error_message(result));
@@ -1203,7 +1203,7 @@ bool ar_methodology__load_methods_with_instance(ar_methodology_t *mut_methodolog
     }
     
     FILE *fp;
-    file_result_t result = ar_io__open_file(ref_filename, "r", &fp);
+    ar_file_result_t result = ar_io__open_file(ref_filename, "r", &fp);
     if (result != FILE_SUCCESS) {
         if (result != FILE_ERROR_NOT_FOUND) {
             ar_io__error("Failed to open file %s for reading: %s", ref_filename,

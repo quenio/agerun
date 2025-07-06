@@ -30,7 +30,7 @@ ar_log_t* ar_log__create(void) {
     }
     
     // Open log file in append mode
-    file_result_t result = ar_io__open_file(LOG_FILE_NAME, "a", &own_log->file);
+    ar_file_result_t result = ar_io__open_file(LOG_FILE_NAME, "a", &own_log->file);
     if (result != FILE_SUCCESS) {
         ar_list__destroy(own_log->own_events);
         AR__HEAP__FREE(own_log);
