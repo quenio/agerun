@@ -41,6 +41,11 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - ✅ parsed_instruction_t → ar_parsed_instruction_t (88 occurrences) - using rename_types.py
   - ✅ instruction_parser_t → ar_instruction_parser_t (64 occurrences) - using rename_types.py
   - ✅ instruction_evaluator_t → ar_instruction_evaluator_t (32 occurrences) - using rename_types.py
+  - ✅ interpreter_t → ar_interpreter_t (36 occurrences) - using rename_types.py
+  - ✅ instruction_fixture_t → ar_instruction_fixture_t (62 occurrences) - using rename_types.py
+  - ✅ interpreter_fixture_t → ar_interpreter_fixture_t (44 occurrences) - using rename_types.py
+  - ✅ method_fixture_t → ar_method_fixture_t (47 occurrences) - using rename_types.py
+  - ✅ system_fixture_t → ar_system_fixture_t (55 occurrences) - using rename_types.py
   - ✅ Fixed check-naming script to show all typedef issues (removed output truncation)
   - ✅ Updated Makefile help to show single test build command
 - ✅ **Implementation Details**:

@@ -11,7 +11,7 @@ static void test_method_creator_create_simple(void) {
     printf("Testing method-creator method with simple method creation...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar_method_fixture__create("method_creator_create_simple");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("method_creator_create_simple");
     assert(own_fixture != NULL);
     
     // Initialize test environment
@@ -89,7 +89,7 @@ static void test_method_creator_invalid_syntax(void) {
     printf("Testing method-creator method with invalid syntax...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar_method_fixture__create("method_creator_invalid_syntax");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("method_creator_invalid_syntax");
     assert(own_fixture != NULL);
     
     // Initialize test environment

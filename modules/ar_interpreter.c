@@ -17,21 +17,21 @@
 /**
  * Interpreter structure (private implementation)
  */
-struct interpreter_s {
+struct ar_interpreter_s {
     // Future: Could add configuration options, optimization flags, etc.
     // For now, keeping it simple as we extract functionality
     int placeholder; // C doesn't allow empty structs
 };
 
 // Forward declarations for execution functions
-static bool _execute_assignment(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed);
-static bool _execute_send(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed);
-static bool _execute_if(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed);
-static bool _execute_parse(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed);
-static bool _execute_build(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed);
-static bool _execute_method(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed);
-static bool _execute_agent(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed);
-static bool _execute_destroy(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed);
+static bool _execute_assignment(ar_interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed);
+static bool _execute_send(ar_interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed);
+static bool _execute_if(ar_interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed);
+static bool _execute_parse(ar_interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed);
+static bool _execute_build(ar_interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed);
+static bool _execute_method(ar_interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed);
+static bool _execute_agent(ar_interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed);
+static bool _execute_destroy(ar_interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed);
 
 // Helper function to send messages
 static bool _send_message(int64_t target_id, ar_data_t *own_message);
@@ -39,8 +39,8 @@ static bool _send_message(int64_t target_id, ar_data_t *own_message);
 /**
  * Creates a new interpreter instance
  */
-interpreter_t* ar_interpreter__create(void) {
-    interpreter_t *own_interpreter = AR__HEAP__MALLOC(sizeof(interpreter_t), "interpreter");
+ar_interpreter_t* ar_interpreter__create(void) {
+    ar_interpreter_t *own_interpreter = AR__HEAP__MALLOC(sizeof(ar_interpreter_t), "interpreter");
     if (!own_interpreter) {
         return NULL;
     }
@@ -54,7 +54,7 @@ interpreter_t* ar_interpreter__create(void) {
 /**
  * Destroys an interpreter instance and frees its resources
  */
-void ar_interpreter__destroy(interpreter_t *own_interpreter) {
+void ar_interpreter__destroy(ar_interpreter_t *own_interpreter) {
     if (!own_interpreter) {
         return;
     }
@@ -65,7 +65,7 @@ void ar_interpreter__destroy(interpreter_t *own_interpreter) {
 /**
  * Executes a single instruction in the given context
  */
-bool ar_interpreter__execute_instruction(interpreter_t *mut_interpreter, 
+bool ar_interpreter__execute_instruction(ar_interpreter_t *mut_interpreter, 
                                          ar_instruction_context_t *mut_context, 
                                          const char *ref_instruction) {
     if (!mut_interpreter || !mut_context || !ref_instruction) {
@@ -125,7 +125,7 @@ bool ar_interpreter__execute_instruction(interpreter_t *mut_interpreter,
 /**
  * Executes a method in the context of an agent
  */
-bool ar_interpreter__execute_method(interpreter_t *mut_interpreter,
+bool ar_interpreter__execute_method(ar_interpreter_t *mut_interpreter,
                                     int64_t agent_id, 
                                     const ar_data_t *ref_message, 
                                     const ar_method_t *ref_method) {
@@ -210,7 +210,7 @@ static bool _send_message(int64_t target_id, ar_data_t *own_message) {
 }
 
 // Execute an assignment instruction
-static bool _execute_assignment(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed) {
+static bool _execute_assignment(ar_interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed) {
     (void)mut_interpreter; // Unused for now
     
     // Get assignment details
@@ -275,7 +275,7 @@ static bool _execute_assignment(interpreter_t *mut_interpreter, ar_instruction_c
 }
 
 // Execute a send instruction
-static bool _execute_send(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed) {
+static bool _execute_send(ar_interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed) {
     (void)mut_interpreter; // Unused for now
     
     // Get function call details
@@ -365,7 +365,7 @@ static bool _execute_send(interpreter_t *mut_interpreter, ar_instruction_context
 }
 
 // Execute an if instruction
-static bool _execute_if(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed) {
+static bool _execute_if(ar_interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed) {
     (void)mut_interpreter; // Unused for now
     
     // Get function call details
@@ -541,7 +541,7 @@ static bool _execute_if(interpreter_t *mut_interpreter, ar_instruction_context_t
 }
 
 // Execute a parse instruction
-static bool _execute_parse(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed) {
+static bool _execute_parse(ar_interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed) {
     (void)mut_interpreter; // Unused for now
     
     // Get function call details
@@ -845,7 +845,7 @@ static bool _execute_parse(interpreter_t *mut_interpreter, ar_instruction_contex
 }
 
 // Execute a build instruction
-static bool _execute_build(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed) {
+static bool _execute_build(ar_interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed) {
     (void)mut_interpreter; // Unused for now
     
     // Get function call details
@@ -1126,7 +1126,7 @@ static bool _execute_build(interpreter_t *mut_interpreter, ar_instruction_contex
 }
 
 // Execute a method instruction
-static bool _execute_method(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed) {
+static bool _execute_method(ar_interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed) {
     (void)mut_interpreter; // Unused for now
     
     // Get function call details
@@ -1301,7 +1301,7 @@ static bool _execute_method(interpreter_t *mut_interpreter, ar_instruction_conte
 }
 
 // Execute an agent instruction
-static bool _execute_agent(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed) {
+static bool _execute_agent(ar_interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed) {
     (void)mut_interpreter; // Unused for now
     
     // Get function call details
@@ -1464,7 +1464,7 @@ static bool _execute_agent(interpreter_t *mut_interpreter, ar_instruction_contex
 }
 
 // Execute a destroy instruction
-static bool _execute_destroy(interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed) {
+static bool _execute_destroy(ar_interpreter_t *mut_interpreter, ar_instruction_context_t *mut_context, const ar_parsed_instruction_t *ref_parsed) {
     (void)mut_interpreter; // Unused for now
     
     // Get function call details

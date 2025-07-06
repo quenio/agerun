@@ -138,7 +138,7 @@ Tracks a data object for automatic cleanup.
 ```c
 static void test_interpreter_functionality(void) {
     // Given a test fixture
-    interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_name");
+    ar_interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_name");
     assert(own_fixture != NULL);
     
     // When creating an agent
@@ -171,7 +171,7 @@ static void test_interpreter_functionality(void) {
 ### Testing with Messages
 ```c
 static void test_message_handling(void) {
-    interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_message");
+    ar_interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_message");
     
     // Create agent that processes messages
     int64_t agent_id = ar_interpreter_fixture__create_agent(
@@ -205,7 +205,7 @@ static void test_message_handling(void) {
 ### Resource Tracking
 ```c
 static void test_resource_tracking(void) {
-    interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_tracking");
+    ar_interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_tracking");
     
     // Create test data that fixture will track
     ar_data_t *ref_map = ar_interpreter_fixture__create_test_map(own_fixture, "test");

@@ -11,7 +11,7 @@ static void test_echo_simple_message(void) {
     printf("Testing echo method with simple message...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar_method_fixture__create("echo_simple_message");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("echo_simple_message");
     assert(own_fixture != NULL);
     
     // Initialize test environment
@@ -82,7 +82,7 @@ static void test_echo_map_message(void) {
     printf("Testing echo method with map message...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar_method_fixture__create("echo_map_message");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("echo_map_message");
     assert(own_fixture != NULL);
     
     // Initialize test environment

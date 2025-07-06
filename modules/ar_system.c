@@ -37,7 +37,7 @@ static char g_wake_message[] = "__wake__";
 
 /* Global State */
 static bool is_initialized = false;
-static interpreter_t *g_interpreter = NULL;
+static ar_interpreter_t *g_interpreter = NULL;
 
 /* Implementation */
 int64_t ar_system__init(const char *ref_method_name, const char *ref_version) {

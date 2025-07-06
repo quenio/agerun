@@ -14,17 +14,17 @@
  */
 
 /* System fixture structure */
-struct system_fixture_s {
+struct ar_system_fixture_s {
     char *own_test_name;          /* Name of the test */
     bool initialized;             /* Whether fixture has been initialized */
 };
 
-system_fixture_t* ar_system_fixture__create(const char *ref_test_name) {
+ar_system_fixture_t* ar_system_fixture__create(const char *ref_test_name) {
     if (!ref_test_name) {
         return NULL;
     }
     
-    system_fixture_t *own_fixture = AR__HEAP__MALLOC(sizeof(system_fixture_t), "System fixture");
+    ar_system_fixture_t *own_fixture = AR__HEAP__MALLOC(sizeof(ar_system_fixture_t), "System fixture");
     if (!own_fixture) {
         return NULL;
     }
@@ -40,7 +40,7 @@ system_fixture_t* ar_system_fixture__create(const char *ref_test_name) {
     return own_fixture; // Ownership transferred to caller
 }
 
-void ar_system_fixture__destroy(system_fixture_t *own_fixture) {
+void ar_system_fixture__destroy(ar_system_fixture_t *own_fixture) {
     if (!own_fixture) {
         return;
     }
@@ -60,7 +60,7 @@ void ar_system_fixture__destroy(system_fixture_t *own_fixture) {
     AR__HEAP__FREE(own_fixture);
 }
 
-bool ar_system_fixture__initialize(system_fixture_t *mut_fixture) {
+bool ar_system_fixture__initialize(ar_system_fixture_t *mut_fixture) {
     if (!mut_fixture) {
         return false;
     }
@@ -84,7 +84,7 @@ bool ar_system_fixture__initialize(system_fixture_t *mut_fixture) {
     return true;
 }
 
-ar_method_t* ar_system_fixture__register_method(system_fixture_t *mut_fixture,
+ar_method_t* ar_system_fixture__register_method(ar_system_fixture_t *mut_fixture,
                                                 const char *ref_method_name,
                                                 const char *ref_instructions,
                                                 const char *ref_version) {
@@ -110,7 +110,7 @@ ar_method_t* ar_system_fixture__register_method(system_fixture_t *mut_fixture,
     return own_method;
 }
 
-const char* ar_system_fixture__get_name(const system_fixture_t *ref_fixture) {
+const char* ar_system_fixture__get_name(const ar_system_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return NULL;
     }
@@ -118,7 +118,7 @@ const char* ar_system_fixture__get_name(const system_fixture_t *ref_fixture) {
     return ref_fixture->own_test_name;
 }
 
-bool ar_system_fixture__check_memory(const system_fixture_t *ref_fixture) {
+bool ar_system_fixture__check_memory(const ar_system_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return false;
     }
@@ -130,7 +130,7 @@ bool ar_system_fixture__check_memory(const system_fixture_t *ref_fixture) {
     return true;
 }
 
-void ar_system_fixture__reset_system(system_fixture_t *mut_fixture) {
+void ar_system_fixture__reset_system(ar_system_fixture_t *mut_fixture) {
     if (!mut_fixture || !mut_fixture->initialized) {
         return;
     }
@@ -148,7 +148,7 @@ void ar_system_fixture__reset_system(system_fixture_t *mut_fixture) {
     ar_system__init(NULL, NULL);
 }
 
-void ar_system_fixture__shutdown_preserve_files(system_fixture_t *mut_fixture) {
+void ar_system_fixture__shutdown_preserve_files(ar_system_fixture_t *mut_fixture) {
     if (!mut_fixture || !mut_fixture->initialized) {
         return;
     }

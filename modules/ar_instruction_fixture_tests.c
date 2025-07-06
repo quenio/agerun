@@ -12,7 +12,7 @@ static void test_fixture_create_destroy(void) {
     const char *test_name = "sample_instruction_test";
     
     // When we create an instruction fixture
-    instruction_fixture_t *own_fixture = ar_instruction_fixture__create(test_name);
+    ar_instruction_fixture_t *own_fixture = ar_instruction_fixture__create(test_name);
     
     // Then the fixture should be created successfully
     assert(own_fixture != NULL);
@@ -33,7 +33,7 @@ static void test_expression_context_creation(void) {
     printf("Testing expression context creation...\n");
     
     // Given an instruction fixture
-    instruction_fixture_t *own_fixture = ar_instruction_fixture__create("expr_test");
+    ar_instruction_fixture_t *own_fixture = ar_instruction_fixture__create("expr_test");
     assert(own_fixture != NULL);
     
     // When we create an expression context
@@ -60,7 +60,7 @@ static void test_custom_expression_context(void) {
     printf("Testing custom expression context creation...\n");
     
     // Given an instruction fixture and custom data
-    instruction_fixture_t *own_fixture = ar_instruction_fixture__create("custom_expr");
+    ar_instruction_fixture_t *own_fixture = ar_instruction_fixture__create("custom_expr");
     assert(own_fixture != NULL);
     
     ar_data_t *own_memory = ar_data__create_map();
@@ -88,7 +88,7 @@ static void test_map_creation(void) {
     printf("Testing test map creation...\n");
     
     // Given an instruction fixture
-    instruction_fixture_t *own_fixture = ar_instruction_fixture__create("map_test");
+    ar_instruction_fixture_t *own_fixture = ar_instruction_fixture__create("map_test");
     assert(own_fixture != NULL);
     
     // When we create a user map
@@ -118,7 +118,7 @@ static void test_list_creation(void) {
     printf("Testing test list creation...\n");
     
     // Given an instruction fixture
-    instruction_fixture_t *own_fixture = ar_instruction_fixture__create("list_test");
+    ar_instruction_fixture_t *own_fixture = ar_instruction_fixture__create("list_test");
     assert(own_fixture != NULL);
     
     // When we create a test list
@@ -139,7 +139,7 @@ static void test_resource_tracking(void) {
     printf("Testing resource tracking...\n");
     
     // Given an instruction fixture
-    instruction_fixture_t *own_fixture = ar_instruction_fixture__create("tracking_test");
+    ar_instruction_fixture_t *own_fixture = ar_instruction_fixture__create("tracking_test");
     assert(own_fixture != NULL);
     
     // When we create data outside the fixture
@@ -167,7 +167,7 @@ static void test_memory_check(void) {
     printf("Testing memory check function...\n");
     
     // Given an instruction fixture
-    instruction_fixture_t *own_fixture = ar_instruction_fixture__create("memory_test");
+    ar_instruction_fixture_t *own_fixture = ar_instruction_fixture__create("memory_test");
     assert(own_fixture != NULL);
     
     // Create some test resources
@@ -195,7 +195,7 @@ static void test_system_initialization(void) {
     printf("Testing system initialization...\n");
     
     // Given an instruction fixture
-    instruction_fixture_t *own_fixture = ar_instruction_fixture__create("system_init_test");
+    ar_instruction_fixture_t *own_fixture = ar_instruction_fixture__create("system_init_test");
     assert(own_fixture != NULL);
     
     // When we initialize the system
@@ -226,7 +226,7 @@ static void test_agent_creation(void) {
     printf("Testing agent creation...\n");
     
     // Given an instruction fixture with initialized system
-    instruction_fixture_t *own_fixture = ar_instruction_fixture__create("agent_test");
+    ar_instruction_fixture_t *own_fixture = ar_instruction_fixture__create("agent_test");
     assert(own_fixture != NULL);
     
     assert(ar_instruction_fixture__init_system(own_fixture, "init_method", "memory.ready := 1"));
@@ -273,7 +273,7 @@ static void test_generic_resource_tracking(void) {
     test_resource_destroyed = 0;
     
     // Given an instruction fixture
-    instruction_fixture_t *own_fixture = ar_instruction_fixture__create("generic_tracking");
+    ar_instruction_fixture_t *own_fixture = ar_instruction_fixture__create("generic_tracking");
     assert(own_fixture != NULL);
     
     // When we create a generic resource

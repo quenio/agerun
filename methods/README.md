@@ -197,7 +197,7 @@ static void test_method_basic(void) {
     printf("Testing method basic functionality...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar_method_fixture__create("method_basic");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("method_basic");
     assert(own_fixture != NULL);
     
     // Initialize test environment

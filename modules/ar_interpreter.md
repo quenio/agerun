@@ -212,7 +212,7 @@ The interpreter ensures memory safety through:
 
 ```c
 // Create interpreter
-interpreter_t *interpreter = ar_interpreter__create();
+ar_interpreter_t *interpreter = ar_interpreter__create();
 
 // Create instruction context
 ar_instruction_context_t *ctx = ar_instruction__create_context(

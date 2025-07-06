@@ -20,7 +20,7 @@ static void test_store_basics(void) {
     printf("Testing store basic operations...\n");
     
     // Given a system
-    system_fixture_t *own_fixture = ar_system_fixture__create("test_basics");
+    ar_system_fixture_t *own_fixture = ar_system_fixture__create("test_basics");
     assert(own_fixture != NULL);
     assert(ar_system_fixture__initialize(own_fixture));
     
@@ -58,7 +58,7 @@ static void test_store_empty_save_load(void) {
     printf("Testing empty store save/load...\n");
     
     // Given a system with no agents
-    system_fixture_t *own_fixture = ar_system_fixture__create("test_empty");
+    ar_system_fixture_t *own_fixture = ar_system_fixture__create("test_empty");
     assert(own_fixture != NULL);
     assert(ar_system_fixture__initialize(own_fixture));
     
@@ -89,7 +89,7 @@ static void test_store_single_agent(void) {
     printf("Testing single agent persistence...\n");
     
     // Given a system with one agent
-    system_fixture_t *own_fixture = ar_system_fixture__create("test_single");
+    ar_system_fixture_t *own_fixture = ar_system_fixture__create("test_single");
     assert(own_fixture != NULL);
     assert(ar_system_fixture__initialize(own_fixture));
     
@@ -170,7 +170,7 @@ static void test_store_multiple_agents(void) {
     printf("Testing multiple agent persistence...\n");
     
     // Given a system with multiple agents
-    system_fixture_t *own_fixture = ar_system_fixture__create("test_multiple");
+    ar_system_fixture_t *own_fixture = ar_system_fixture__create("test_multiple");
     assert(own_fixture != NULL);
     assert(ar_system_fixture__initialize(own_fixture));
     
@@ -290,7 +290,7 @@ static void test_store_file_corruption(void) {
     printf("Testing store file corruption handling...\n");
     
     // Given a system
-    system_fixture_t *own_fixture = ar_system_fixture__create("test_corrupt");
+    ar_system_fixture_t *own_fixture = ar_system_fixture__create("test_corrupt");
     assert(own_fixture != NULL);
     assert(ar_system_fixture__initialize(own_fixture));
     
@@ -334,7 +334,7 @@ static void test_store_missing_method(void) {
     printf("Testing store with missing method...\n");
     
     // Given a system with an agent
-    system_fixture_t *own_fixture = ar_system_fixture__create("test_missing");
+    ar_system_fixture_t *own_fixture = ar_system_fixture__create("test_missing");
     assert(own_fixture != NULL);
     assert(ar_system_fixture__initialize(own_fixture));
     
@@ -377,7 +377,7 @@ static void test_store_id_preservation(void) {
     printf("Testing agent ID preservation...\n");
     
     // Given a system
-    system_fixture_t *own_fixture = ar_system_fixture__create("test_ids");
+    ar_system_fixture_t *own_fixture = ar_system_fixture__create("test_ids");
     assert(own_fixture != NULL);
     assert(ar_system_fixture__initialize(own_fixture));
     

@@ -10,7 +10,7 @@ static void test_fixture_create_destroy(void) {
     const char *test_name = "sample_module_test";
     
     // When we create a system fixture
-    system_fixture_t *own_fixture = ar_system_fixture__create(test_name);
+    ar_system_fixture_t *own_fixture = ar_system_fixture__create(test_name);
     
     // Then the fixture should be created successfully
     assert(own_fixture != NULL);
@@ -31,7 +31,7 @@ static void test_fixture_initialize(void) {
     printf("Testing ar_system_fixture__initialize()...\n");
     
     // Given a system fixture
-    system_fixture_t *own_fixture = ar_system_fixture__create("init_test");
+    ar_system_fixture_t *own_fixture = ar_system_fixture__create("init_test");
     assert(own_fixture != NULL);
     
     // When we initialize the test environment
@@ -50,7 +50,7 @@ static void test_fixture_register_method(void) {
     printf("Testing ar_system_fixture__register_method()...\n");
     
     // Given an initialized system fixture
-    system_fixture_t *own_fixture = ar_system_fixture__create("register_test");
+    ar_system_fixture_t *own_fixture = ar_system_fixture__create("register_test");
     assert(own_fixture != NULL);
     
     bool init_result = ar_system_fixture__initialize(own_fixture);
@@ -77,7 +77,7 @@ static void test_fixture_reset_system(void) {
     printf("Testing ar_system_fixture__reset_system()...\n");
     
     // Given an initialized system fixture
-    system_fixture_t *own_fixture = ar_system_fixture__create("reset_test");
+    ar_system_fixture_t *own_fixture = ar_system_fixture__create("reset_test");
     assert(own_fixture != NULL);
     
     bool init_result = ar_system_fixture__initialize(own_fixture);
@@ -106,7 +106,7 @@ static void test_fixture_check_memory(void) {
     printf("Testing ar_system_fixture__check_memory()...\n");
     
     // Given an initialized system fixture
-    system_fixture_t *own_fixture = ar_system_fixture__create("memory_test");
+    ar_system_fixture_t *own_fixture = ar_system_fixture__create("memory_test");
     assert(own_fixture != NULL);
     
     bool init_result = ar_system_fixture__initialize(own_fixture);

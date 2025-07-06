@@ -12,9 +12,9 @@
 /**
  * Interpreter fixture structure (private implementation)
  */
-struct interpreter_fixture_s {
+struct ar_interpreter_fixture_s {
     char *own_test_name;              // Name of the test
-    interpreter_t *own_interpreter;   // The interpreter instance
+    ar_interpreter_t *own_interpreter;   // The interpreter instance
     ar_list_t *own_tracked_data;         // List of data objects to destroy
     ar_list_t *own_agent_ids;            // List of agent IDs to destroy
 };
@@ -22,12 +22,12 @@ struct interpreter_fixture_s {
 /**
  * Creates a new test fixture for AgeRun interpreter module tests
  */
-interpreter_fixture_t* ar_interpreter_fixture__create(const char *ref_test_name) {
+ar_interpreter_fixture_t* ar_interpreter_fixture__create(const char *ref_test_name) {
     if (!ref_test_name) {
         return NULL;
     }
     
-    interpreter_fixture_t *own_fixture = AR__HEAP__MALLOC(sizeof(interpreter_fixture_t), "Interpreter fixture");
+    ar_interpreter_fixture_t *own_fixture = AR__HEAP__MALLOC(sizeof(ar_interpreter_fixture_t), "Interpreter fixture");
     if (!own_fixture) {
         return NULL;
     }
@@ -71,7 +71,7 @@ interpreter_fixture_t* ar_interpreter_fixture__create(const char *ref_test_name)
 /**
  * Destroys a test fixture and performs cleanup
  */
-void ar_interpreter_fixture__destroy(interpreter_fixture_t *own_fixture) {
+void ar_interpreter_fixture__destroy(ar_interpreter_fixture_t *own_fixture) {
     if (!own_fixture) {
         return;
     }
@@ -121,7 +121,7 @@ void ar_interpreter_fixture__destroy(interpreter_fixture_t *own_fixture) {
 /**
  * Gets the interpreter managed by the fixture
  */
-interpreter_t* ar_interpreter_fixture__get_interpreter(const interpreter_fixture_t *ref_fixture) {
+ar_interpreter_t* ar_interpreter_fixture__get_interpreter(const ar_interpreter_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return NULL;
     }
@@ -132,7 +132,7 @@ interpreter_t* ar_interpreter_fixture__get_interpreter(const interpreter_fixture
  * Creates a test agent with the given method
  */
 int64_t ar_interpreter_fixture__create_agent(
-    interpreter_fixture_t *mut_fixture,
+    ar_interpreter_fixture_t *mut_fixture,
     const char *ref_method_name,
     const char *ref_instructions,
     const char *ref_version) {
@@ -174,7 +174,7 @@ int64_t ar_interpreter_fixture__create_agent(
  * Executes an instruction in the context of an agent
  */
 bool ar_interpreter_fixture__execute_instruction(
-    interpreter_fixture_t *mut_fixture,
+    ar_interpreter_fixture_t *mut_fixture,
     int64_t agent_id,
     const char *ref_instruction) {
     
@@ -185,7 +185,7 @@ bool ar_interpreter_fixture__execute_instruction(
  * Executes an instruction with a custom message
  */
 bool ar_interpreter_fixture__execute_with_message(
-    interpreter_fixture_t *mut_fixture,
+    ar_interpreter_fixture_t *mut_fixture,
     int64_t agent_id,
     const char *ref_instruction,
     const ar_data_t *ref_message) {
@@ -230,7 +230,7 @@ bool ar_interpreter_fixture__execute_with_message(
  * Creates and registers a method for testing
  */
 bool ar_interpreter_fixture__create_method(
-    interpreter_fixture_t *mut_fixture,
+    ar_interpreter_fixture_t *mut_fixture,
     const char *ref_method_name,
     const char *ref_instructions,
     const char *ref_version) {
@@ -258,7 +258,7 @@ bool ar_interpreter_fixture__create_method(
  * Gets an agent's memory
  */
 ar_data_t* ar_interpreter_fixture__get_agent_memory(
-    const interpreter_fixture_t *ref_fixture,
+    const ar_interpreter_fixture_t *ref_fixture,
     int64_t agent_id) {
     
     (void)ref_fixture; // Not used, but kept for API consistency
@@ -269,7 +269,7 @@ ar_data_t* ar_interpreter_fixture__get_agent_memory(
  * Sends a message to an agent and processes it
  */
 bool ar_interpreter_fixture__send_message(
-    interpreter_fixture_t *mut_fixture,
+    ar_interpreter_fixture_t *mut_fixture,
     int64_t agent_id,
     ar_data_t *own_message) {
     
@@ -296,7 +296,7 @@ bool ar_interpreter_fixture__send_message(
  * Creates a test data map with common test values
  */
 ar_data_t* ar_interpreter_fixture__create_test_map(
-    interpreter_fixture_t *mut_fixture,
+    ar_interpreter_fixture_t *mut_fixture,
     const char *ref_name) {
     
     if (!mut_fixture) {
@@ -340,7 +340,7 @@ ar_data_t* ar_interpreter_fixture__create_test_map(
  * Tracks a data object for automatic cleanup
  */
 void ar_interpreter_fixture__track_data(
-    interpreter_fixture_t *mut_fixture,
+    ar_interpreter_fixture_t *mut_fixture,
     ar_data_t *own_data) {
     
     if (!mut_fixture || !own_data) {
@@ -353,7 +353,7 @@ void ar_interpreter_fixture__track_data(
 /**
  * Gets the test name from a fixture
  */
-const char* ar_interpreter_fixture__get_name(const interpreter_fixture_t *ref_fixture) {
+const char* ar_interpreter_fixture__get_name(const ar_interpreter_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return NULL;
     }

@@ -20,7 +20,7 @@ typedef struct {
 } resource_entry_t;
 
 /* Instruction fixture structure */
-struct instruction_fixture_s {
+struct ar_instruction_fixture_s {
     char *own_test_name;                    /* Name of the test */
     ar_list_t *own_tracked_data;               /* List of data objects to destroy */
     ar_list_t *own_tracked_contexts;           /* List of expression contexts to destroy */
@@ -29,12 +29,12 @@ struct instruction_fixture_s {
     bool system_initialized;                /* Whether system was initialized by fixture */
 };
 
-instruction_fixture_t* ar_instruction_fixture__create(const char *ref_test_name) {
+ar_instruction_fixture_t* ar_instruction_fixture__create(const char *ref_test_name) {
     if (!ref_test_name) {
         return NULL;
     }
     
-    instruction_fixture_t *own_fixture = AR__HEAP__MALLOC(sizeof(instruction_fixture_t), "Instruction fixture");
+    ar_instruction_fixture_t *own_fixture = AR__HEAP__MALLOC(sizeof(ar_instruction_fixture_t), "Instruction fixture");
     if (!own_fixture) {
         return NULL;
     }
@@ -75,7 +75,7 @@ instruction_fixture_t* ar_instruction_fixture__create(const char *ref_test_name)
     return own_fixture; // Ownership transferred to caller
 }
 
-void ar_instruction_fixture__destroy(instruction_fixture_t *own_fixture) {
+void ar_instruction_fixture__destroy(ar_instruction_fixture_t *own_fixture) {
     if (!own_fixture) {
         return;
     }
@@ -125,7 +125,7 @@ void ar_instruction_fixture__destroy(instruction_fixture_t *own_fixture) {
 }
 
 ar_expression_context_t* ar_instruction_fixture__create_expression_context(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     const char *ref_expression) {
     
     if (!mut_fixture || !ref_expression) {
@@ -186,7 +186,7 @@ ar_expression_context_t* ar_instruction_fixture__create_expression_context(
 }
 
 ar_expression_context_t* ar_instruction_fixture__create_custom_expression_context(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     ar_data_t *mut_memory,
     const ar_data_t *ref_context,
     const ar_data_t *ref_message,
@@ -212,7 +212,7 @@ ar_expression_context_t* ar_instruction_fixture__create_custom_expression_contex
 }
 
 ar_data_t* ar_instruction_fixture__create_test_map(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     const char *ref_name) {
     
     if (!mut_fixture) {
@@ -247,7 +247,7 @@ ar_data_t* ar_instruction_fixture__create_test_map(
 }
 
 ar_data_t* ar_instruction_fixture__create_empty_map(
-    instruction_fixture_t *mut_fixture) {
+    ar_instruction_fixture_t *mut_fixture) {
     
     if (!mut_fixture) {
         return NULL;
@@ -265,7 +265,7 @@ ar_data_t* ar_instruction_fixture__create_empty_map(
 }
 
 ar_data_t* ar_instruction_fixture__create_test_list(
-    instruction_fixture_t *mut_fixture) {
+    ar_instruction_fixture_t *mut_fixture) {
     
     if (!mut_fixture) {
         return NULL;
@@ -301,7 +301,7 @@ ar_data_t* ar_instruction_fixture__create_test_list(
     return own_list; // Return borrowed reference
 }
 
-const char* ar_instruction_fixture__get_name(const instruction_fixture_t *ref_fixture) {
+const char* ar_instruction_fixture__get_name(const ar_instruction_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return NULL;
     }
@@ -309,7 +309,7 @@ const char* ar_instruction_fixture__get_name(const instruction_fixture_t *ref_fi
     return ref_fixture->own_test_name;
 }
 
-bool ar_instruction_fixture__check_memory(const instruction_fixture_t *ref_fixture) {
+bool ar_instruction_fixture__check_memory(const ar_instruction_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return false;
     }
@@ -321,7 +321,7 @@ bool ar_instruction_fixture__check_memory(const instruction_fixture_t *ref_fixtu
 }
 
 void ar_instruction_fixture__track_data(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     ar_data_t *own_data) {
     
     if (!mut_fixture || !own_data) {
@@ -332,7 +332,7 @@ void ar_instruction_fixture__track_data(
 }
 
 void ar_instruction_fixture__track_expression_context(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     ar_expression_context_t *own_context) {
     
     if (!mut_fixture || !own_context) {
@@ -343,7 +343,7 @@ void ar_instruction_fixture__track_expression_context(
 }
 
 int64_t ar_instruction_fixture__create_test_agent(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     const char *ref_method_name,
     const char *ref_instructions) {
     
@@ -381,7 +381,7 @@ int64_t ar_instruction_fixture__create_test_agent(
     return agent_id;
 }
 
-int64_t ar_instruction_fixture__get_agent(const instruction_fixture_t *ref_fixture) {
+int64_t ar_instruction_fixture__get_agent(const ar_instruction_fixture_t *ref_fixture) {
     if (!ref_fixture) {
         return 0;
     }
@@ -390,7 +390,7 @@ int64_t ar_instruction_fixture__get_agent(const instruction_fixture_t *ref_fixtu
 }
 
 void ar_instruction_fixture__track_resource(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     void *own_resource,
     void (*destructor)(void*)) {
     
@@ -410,7 +410,7 @@ void ar_instruction_fixture__track_resource(
 }
 
 bool ar_instruction_fixture__init_system(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     const char *ref_init_method_name,
     const char *ref_init_instructions) {
     

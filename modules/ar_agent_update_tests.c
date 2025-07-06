@@ -20,7 +20,7 @@ static void test_update_compatibility(void) {
     printf("Testing update compatibility checks...\n");
     
     // Given a system with methods
-    system_fixture_t *own_fixture = ar_system_fixture__create("test_compat");
+    ar_system_fixture_t *own_fixture = ar_system_fixture__create("test_compat");
     assert(own_fixture != NULL);
     assert(ar_system_fixture__initialize(own_fixture));
     
@@ -75,7 +75,7 @@ static void test_count_using_method(void) {
     printf("Testing count agents using method...\n");
     
     // Given a system with agents
-    system_fixture_t *own_fixture = ar_system_fixture__create("test_count");
+    ar_system_fixture_t *own_fixture = ar_system_fixture__create("test_count");
     assert(own_fixture != NULL);
     assert(ar_system_fixture__initialize(own_fixture));
     
@@ -120,7 +120,7 @@ static void test_update_without_lifecycle(void) {
     printf("Testing update without lifecycle events...\n");
     
     // Given a system with agents
-    system_fixture_t *own_fixture = ar_system_fixture__create("test_no_lifecycle");
+    ar_system_fixture_t *own_fixture = ar_system_fixture__create("test_no_lifecycle");
     assert(own_fixture != NULL);
     assert(ar_system_fixture__initialize(own_fixture));
     
@@ -177,7 +177,7 @@ static void test_update_with_lifecycle(void) {
     printf("Testing update with lifecycle events...\n");
     
     // Given a system with agents
-    system_fixture_t *own_fixture = ar_system_fixture__create("test_lifecycle");
+    ar_system_fixture_t *own_fixture = ar_system_fixture__create("test_lifecycle");
     assert(own_fixture != NULL);
     assert(ar_system_fixture__initialize(own_fixture));
     
@@ -240,7 +240,7 @@ static void test_update_incompatible(void) {
     printf("Testing update with incompatible versions...\n");
     
     // Given a system with agents
-    system_fixture_t *own_fixture = ar_system_fixture__create("test_incompat");
+    ar_system_fixture_t *own_fixture = ar_system_fixture__create("test_incompat");
     assert(own_fixture != NULL);
     assert(ar_system_fixture__initialize(own_fixture));
     
@@ -289,7 +289,7 @@ static void test_update_no_agents(void) {
     printf("Testing update with no matching agents...\n");
     
     // Given a system with no agents
-    system_fixture_t *own_fixture = ar_system_fixture__create("test_no_agents");
+    ar_system_fixture_t *own_fixture = ar_system_fixture__create("test_no_agents");
     assert(own_fixture != NULL);
     assert(ar_system_fixture__initialize(own_fixture));
     

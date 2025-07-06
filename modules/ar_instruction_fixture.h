@@ -19,7 +19,7 @@
  */
 
 /* Opaque instruction fixture type */
-typedef struct instruction_fixture_s instruction_fixture_t;
+typedef struct ar_instruction_fixture_s ar_instruction_fixture_t;
 
 /**
  * Creates a new test fixture for AgeRun instruction module tests
@@ -27,14 +27,14 @@ typedef struct instruction_fixture_s instruction_fixture_t;
  * @return A newly created test fixture
  * @note Ownership: Returns an owned fixture that caller must destroy
  */
-instruction_fixture_t* ar_instruction_fixture__create(const char *ref_test_name);
+ar_instruction_fixture_t* ar_instruction_fixture__create(const char *ref_test_name);
 
 /**
  * Destroys a test fixture and performs cleanup
  * @param own_fixture The fixture to destroy
  * @note Ownership: Takes ownership and destroys the fixture and all tracked resources
  */
-void ar_instruction_fixture__destroy(instruction_fixture_t *own_fixture);
+void ar_instruction_fixture__destroy(ar_instruction_fixture_t *own_fixture);
 
 /**
  * Creates an expression context with standard test data
@@ -45,7 +45,7 @@ void ar_instruction_fixture__destroy(instruction_fixture_t *own_fixture);
  * @note The context is created with pre-populated memory, context, and message maps
  */
 ar_expression_context_t* ar_instruction_fixture__create_expression_context(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     const char *ref_expression
 );
 
@@ -63,7 +63,7 @@ ar_expression_context_t* ar_instruction_fixture__create_expression_context(
  *       requires mutable access for type correctness when returning these references.
  */
 ar_expression_context_t* ar_instruction_fixture__create_custom_expression_context(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     ar_data_t *mut_memory,
     const ar_data_t *ref_context,
     const ar_data_t *ref_message,
@@ -79,7 +79,7 @@ ar_expression_context_t* ar_instruction_fixture__create_custom_expression_contex
  * @note The map is pre-populated with common test values
  */
 ar_data_t* ar_instruction_fixture__create_test_map(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     const char *ref_name
 );
 
@@ -90,7 +90,7 @@ ar_data_t* ar_instruction_fixture__create_test_map(
  * @note Ownership: Returns a borrowed reference; fixture owns and will destroy it
  */
 ar_data_t* ar_instruction_fixture__create_empty_map(
-    instruction_fixture_t *mut_fixture
+    ar_instruction_fixture_t *mut_fixture
 );
 
 /**
@@ -100,7 +100,7 @@ ar_data_t* ar_instruction_fixture__create_empty_map(
  * @note Ownership: Returns a borrowed reference; fixture owns and will destroy it
  */
 ar_data_t* ar_instruction_fixture__create_test_list(
-    instruction_fixture_t *mut_fixture
+    ar_instruction_fixture_t *mut_fixture
 );
 
 /**
@@ -108,14 +108,14 @@ ar_data_t* ar_instruction_fixture__create_test_list(
  * @param ref_fixture The fixture to query
  * @return The test name (borrowed reference)
  */
-const char* ar_instruction_fixture__get_name(const instruction_fixture_t *ref_fixture);
+const char* ar_instruction_fixture__get_name(const ar_instruction_fixture_t *ref_fixture);
 
 /**
  * Checks if there were any memory leaks during the test
  * @param ref_fixture The fixture to check
  * @return true if no memory leaks, false if leaks detected
  */
-bool ar_instruction_fixture__check_memory(const instruction_fixture_t *ref_fixture);
+bool ar_instruction_fixture__check_memory(const ar_instruction_fixture_t *ref_fixture);
 
 /**
  * Tracks a data object for automatic cleanup
@@ -125,7 +125,7 @@ bool ar_instruction_fixture__check_memory(const instruction_fixture_t *ref_fixtu
  * @note Use this for data objects created outside the fixture helpers
  */
 void ar_instruction_fixture__track_data(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     ar_data_t *own_data
 );
 
@@ -137,7 +137,7 @@ void ar_instruction_fixture__track_data(
  * @note Use this for contexts created outside the fixture helpers
  */
 void ar_instruction_fixture__track_expression_context(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     ar_expression_context_t *own_context
 );
 
@@ -151,7 +151,7 @@ void ar_instruction_fixture__track_expression_context(
  * @note Processes the wake message automatically
  */
 int64_t ar_instruction_fixture__create_test_agent(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     const char *ref_method_name,
     const char *ref_instructions
 );
@@ -161,7 +161,7 @@ int64_t ar_instruction_fixture__create_test_agent(
  * @param ref_fixture The fixture to query
  * @return Agent ID if created, 0 otherwise
  */
-int64_t ar_instruction_fixture__get_agent(const instruction_fixture_t *ref_fixture);
+int64_t ar_instruction_fixture__get_agent(const ar_instruction_fixture_t *ref_fixture);
 
 /**
  * Tracks a generic pointer for cleanup with a custom destructor
@@ -171,7 +171,7 @@ int64_t ar_instruction_fixture__get_agent(const instruction_fixture_t *ref_fixtu
  * @note Ownership: Takes ownership of the resource
  */
 void ar_instruction_fixture__track_resource(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     void *own_resource,
     void (*destructor)(void*)
 );
@@ -185,7 +185,7 @@ void ar_instruction_fixture__track_resource(
  * @note This must be called before creating agents if system needs initialization
  */
 bool ar_instruction_fixture__init_system(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     const char *ref_init_method_name,
     const char *ref_init_instructions
 );

@@ -11,7 +11,7 @@ static void test_string_builder_parse_build(void) {
     printf("Testing string-builder method with parse and build...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar_method_fixture__create("string_builder_parse_build");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("string_builder_parse_build");
     assert(own_fixture != NULL);
     
     // Initialize test environment
@@ -137,7 +137,7 @@ __attribute__((unused)) static void test_string_builder_parse_failure(void) {
     printf("Testing string-builder method with parse failure...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar_method_fixture__create("string_builder_parse_failure");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("string_builder_parse_failure");
     assert(own_fixture != NULL);
     
     // Initialize test environment

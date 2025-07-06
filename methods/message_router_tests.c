@@ -11,7 +11,7 @@ static void test_message_router_routing(void) {
     printf("Testing message-router method with routing...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar_method_fixture__create("message_router_routing");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("message_router_routing");
     assert(own_fixture != NULL);
     
     // Initialize test environment

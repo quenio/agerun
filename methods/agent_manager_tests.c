@@ -11,7 +11,7 @@ static void test_agent_manager_create_destroy(void) {
     printf("Testing agent-manager method with create and destroy...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar_method_fixture__create("agent_manager_create_destroy");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("agent_manager_create_destroy");
     assert(own_fixture != NULL);
     
     // Initialize test environment
@@ -130,7 +130,7 @@ static void test_agent_manager_invalid_action(void) {
     printf("Testing agent-manager method with invalid action...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar_method_fixture__create("agent_manager_invalid_action");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("agent_manager_invalid_action");
     assert(own_fixture != NULL);
     
     // Initialize test environment

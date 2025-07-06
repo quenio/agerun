@@ -62,14 +62,14 @@ static void test_fixture_create_destroy(void) {
     
     // Given the need for a fixture
     // When we create one
-    interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_create");
+    ar_interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_create");
     
     // Then it should be created successfully
     assert(own_fixture != NULL);
     assert(strcmp(ar_interpreter_fixture__get_name(own_fixture), "test_create") == 0);
     
     // And it should have an interpreter
-    interpreter_t *ref_interpreter = ar_interpreter_fixture__get_interpreter(own_fixture);
+    ar_interpreter_t *ref_interpreter = ar_interpreter_fixture__get_interpreter(own_fixture);
     assert(ref_interpreter != NULL);
     
     // When we destroy it
@@ -83,7 +83,7 @@ static void test_fixture_create_agent(void) {
     printf("Testing fixture create agent...\n");
     
     // Given a fixture
-    interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_agent");
+    ar_interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_agent");
     assert(own_fixture != NULL);
     
     // When we create an agent
@@ -111,7 +111,7 @@ static void test_fixture_execute_instruction(void) {
     printf("Testing fixture execute instruction...\n");
     
     // Given a fixture with an agent
-    interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_execute");
+    ar_interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_execute");
     assert(own_fixture != NULL);
     
     int64_t agent_id = ar_interpreter_fixture__create_agent(
@@ -183,7 +183,7 @@ static void test_fixture_data_tracking(void) {
     printf("Testing fixture data tracking...\n");
     
     // Given a fixture
-    interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_tracking");
+    ar_interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_tracking");
     assert(own_fixture != NULL);
     
     // When we create a test map

@@ -14,12 +14,12 @@
 static const char *g_hello_message = "Hello Agent!";
 
 // Forward declarations
-static void test_agent_create_destroy(system_fixture_t *mut_fixture);
-static void test_agent_send(system_fixture_t *mut_fixture);
-static void test_agent_exists(system_fixture_t *mut_fixture);
-static void test_agent_persistence(system_fixture_t *mut_fixture);
+static void test_agent_create_destroy(ar_system_fixture_t *mut_fixture);
+static void test_agent_send(ar_system_fixture_t *mut_fixture);
+static void test_agent_exists(ar_system_fixture_t *mut_fixture);
+static void test_agent_persistence(ar_system_fixture_t *mut_fixture);
 
-static void test_agent_create_destroy(system_fixture_t *mut_fixture) {
+static void test_agent_create_destroy(ar_system_fixture_t *mut_fixture) {
     printf("Testing ar_agent__create() and ar_agent__destroy()...\n");
     
     // Given a simple method for an agent
@@ -54,7 +54,7 @@ static void test_agent_create_destroy(system_fixture_t *mut_fixture) {
     printf("ar_agent__create() and ar_agent__destroy() tests passed!\n");
 }
 
-static void test_agent_send(system_fixture_t *mut_fixture) {
+static void test_agent_send(ar_system_fixture_t *mut_fixture) {
     printf("Testing ar_agent__send()...\n");
     
     // Given an echo method and an agent using it
@@ -91,7 +91,7 @@ static void test_agent_send(system_fixture_t *mut_fixture) {
     printf("ar_agent__send() test passed!\n");
 }
 
-static void test_agent_exists(system_fixture_t *mut_fixture) {
+static void test_agent_exists(ar_system_fixture_t *mut_fixture) {
     printf("Testing ar_agent__exists()...\n");
     
     // Given a method and an agent created with it
@@ -133,7 +133,7 @@ static void test_agent_exists(system_fixture_t *mut_fixture) {
     printf("ar_agent__exists() test passed!\n");
 }
 
-static void test_agent_persistence(system_fixture_t *mut_fixture) {
+static void test_agent_persistence(ar_system_fixture_t *mut_fixture) {
     printf("Testing agent save functionality...\n");
     
     // Note: This test only verifies that agents can be saved to disk.
@@ -183,7 +183,7 @@ int main(void) {
     printf("Starting Agent Module Tests...\n");
     
     // Create a system fixture for all tests
-    system_fixture_t *mut_fixture = ar_system_fixture__create("agent_tests");
+    ar_system_fixture_t *mut_fixture = ar_system_fixture__create("agent_tests");
     assert(mut_fixture != NULL);
     
     // Initialize the fixture

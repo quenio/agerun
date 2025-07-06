@@ -10,7 +10,7 @@ static void test_fixture_create_destroy(void) {
     const char *test_name = "sample_test";
     
     // When we create a method fixture
-    method_fixture_t *own_fixture = ar_method_fixture__create(test_name);
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create(test_name);
     
     // Then the fixture should be created successfully
     assert(own_fixture != NULL);
@@ -31,7 +31,7 @@ static void test_fixture_initialize(void) {
     printf("Testing ar_method_fixture__initialize()...\n");
     
     // Given a method fixture
-    method_fixture_t *own_fixture = ar_method_fixture__create("init_test");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("init_test");
     assert(own_fixture != NULL);
     
     // When we initialize the test environment
@@ -50,7 +50,7 @@ static void test_fixture_verify_directory(void) {
     printf("Testing ar_method_fixture__verify_directory()...\n");
     
     // Given a method fixture
-    method_fixture_t *own_fixture = ar_method_fixture__create("dir_test");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("dir_test");
     assert(own_fixture != NULL);
     
     // When we verify the directory
@@ -70,7 +70,7 @@ static void test_fixture_check_memory(void) {
     printf("Testing ar_method_fixture__check_memory()...\n");
     
     // Given an initialized method fixture
-    method_fixture_t *own_fixture = ar_method_fixture__create("memory_test");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("memory_test");
     assert(own_fixture != NULL);
     
     bool init_result = ar_method_fixture__initialize(own_fixture);

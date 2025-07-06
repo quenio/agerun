@@ -84,7 +84,7 @@ static void test_interpreter_create_destroy(void) {
     
     // Given the need for an interpreter
     // When we create one
-    interpreter_t *own_interpreter = ar_interpreter__create();
+    ar_interpreter_t *own_interpreter = ar_interpreter__create();
     
     // Then it should be created successfully
     assert(own_interpreter != NULL);
@@ -101,7 +101,7 @@ static void test_interpreter_execute_method(void) {
     printf("Testing interpreter execute method...\n");
     
     // Given a fixture
-    interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_execute_method");
+    ar_interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_execute_method");
     assert(own_fixture != NULL);
     
     // When we create an agent with a method that uses string concatenation
@@ -147,7 +147,7 @@ static void test_interpreter_execute_instruction(void) {
     printf("Testing interpreter execute instruction...\n");
     
     // Given a fixture
-    interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_execute_instruction");
+    ar_interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_execute_instruction");
     assert(own_fixture != NULL);
     
     // And an agent
@@ -187,7 +187,7 @@ static void test_simple_instructions(void) {
     printf("Testing simple instructions...\n");
     
     // Given a fixture
-    interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_simple");
+    ar_interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_simple");
     assert(own_fixture != NULL);
     
     // And an agent
@@ -225,7 +225,7 @@ static void test_memory_access_instructions(void) {
     printf("Testing memory access instructions...\n");
     
     // Given a fixture
-    interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_memory_access");
+    ar_interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_memory_access");
     assert(own_fixture != NULL);
     
     // And an agent with nested memory
@@ -272,7 +272,7 @@ static void test_condition_instructions(void) {
     printf("Testing condition instructions...\n");
     
     // Given a fixture
-    interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_conditions");
+    ar_interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_conditions");
     assert(own_fixture != NULL);
     
     // And an agent
@@ -315,7 +315,7 @@ static void test_message_send_instructions(void) {
     printf("Testing message send instructions...\n");
     
     // Given a fixture
-    interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_send");
+    ar_interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_send");
     assert(own_fixture != NULL);
     
     // Create two agents
@@ -372,7 +372,7 @@ static void test_method_function(void) {
     printf("Testing method function...\n");
     
     // Given a fixture
-    interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_method_func");
+    ar_interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_method_func");
     assert(own_fixture != NULL);
     
     // And an agent
@@ -421,7 +421,7 @@ static void test_parse_function(void) {
     printf("Testing parse function...\n");
     
     // Given a fixture
-    interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_parse");
+    ar_interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_parse");
     assert(own_fixture != NULL);
     
     // And an agent
@@ -474,7 +474,7 @@ static void test_build_function(void) {
     printf("Testing build function...\n");
     
     // Given a fixture
-    interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_build");
+    ar_interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_build");
     assert(own_fixture != NULL);
     
     // And an agent
@@ -525,7 +525,7 @@ static void test_agent_function(void) {
     printf("Testing agent function...\n");
     
     // Given a fixture
-    interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_agent_func");
+    ar_interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_agent_func");
     assert(own_fixture != NULL);
     
     // Create a method for new agents

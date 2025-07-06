@@ -11,7 +11,7 @@ static void test_calculator_add(void) {
     printf("Testing calculator method with add operation...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar_method_fixture__create("calculator_add");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("calculator_add");
     assert(own_fixture != NULL);
     
     // Initialize test environment
@@ -77,7 +77,7 @@ static void test_calculator_multiply(void) {
     printf("Testing calculator method with multiply operation...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar_method_fixture__create("calculator_multiply");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("calculator_multiply");
     assert(own_fixture != NULL);
     
     // Initialize test environment
@@ -142,7 +142,7 @@ static void test_calculator_subtract(void) {
     printf("Testing calculator method with subtract operation...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar_method_fixture__create("calculator_subtract");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("calculator_subtract");
     assert(own_fixture != NULL);
     
     // Initialize test environment
@@ -208,7 +208,7 @@ static void test_calculator_divide(void) {
     printf("Testing calculator method with divide operation...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar_method_fixture__create("calculator_divide");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("calculator_divide");
     assert(own_fixture != NULL);
     
     // Initialize test environment
@@ -276,7 +276,7 @@ static void test_calculator_unknown_operation(void) {
     printf("Testing calculator method with unknown operation...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar_method_fixture__create("calculator_unknown");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("calculator_unknown");
     assert(own_fixture != NULL);
     
     // Initialize test environment

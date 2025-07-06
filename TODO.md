@@ -26,6 +26,11 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] parsed_instruction_t → ar_parsed_instruction_t (88 occurrences) - using rename_types.py
   - [x] instruction_parser_t → ar_instruction_parser_t (64 occurrences) - using rename_types.py
   - [x] instruction_evaluator_t → ar_instruction_evaluator_t (32 occurrences) - using rename_types.py
+  - [x] interpreter_t → ar_interpreter_t (36 occurrences) - using rename_types.py
+  - [x] instruction_fixture_t → ar_instruction_fixture_t (62 occurrences) - using rename_types.py
+  - [x] interpreter_fixture_t → ar_interpreter_fixture_t (44 occurrences) - using rename_types.py
+  - [x] method_fixture_t → ar_method_fixture_t (47 occurrences) - using rename_types.py
+  - [x] system_fixture_t → ar_system_fixture_t (55 occurrences) - using rename_types.py
 - [x] Fixed check-naming script to show all typedef issues (removed output truncation)
 - [x] Updated Makefile help to show single test build command
 - [x] Updated CLAUDE.md with Makefile usage clarification (default shows help, not build)

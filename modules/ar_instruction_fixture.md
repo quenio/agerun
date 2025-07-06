@@ -16,7 +16,7 @@ This module follows Parnas design principles by hiding implementation details be
 
 ## Key Features
 
-- **Opaque Type**: The `instruction_fixture_t` type is opaque, hiding implementation details
+- **Opaque Type**: The `ar_instruction_fixture_t` type is opaque, hiding implementation details
 - **Agent Management**: Creates and tracks test agents with automatic cleanup
 - **Method Registration**: Handles method creation and registration for tests
 - **System Initialization**: Optional system initialization for tests that need it
@@ -30,8 +30,8 @@ This module follows Parnas design principles by hiding implementation details be
 ### Creating and Destroying Fixtures
 
 ```c
-instruction_fixture_t* ar_instruction__fixture_create(const char *ref_test_name);
-void ar_instruction__fixture_destroy(instruction_fixture_t *own_fixture);
+ar_instruction_fixture_t* ar_instruction__fixture_create(const char *ref_test_name);
+void ar_instruction__fixture_destroy(ar_instruction_fixture_t *own_fixture);
 ```
 
 Creates a new test fixture with the given name. The fixture must be destroyed when the test completes to ensure proper cleanup of all tracked resources.
@@ -40,7 +40,7 @@ Creates a new test fixture with the given name. The fixture must be destroyed wh
 
 ```c
 ar_expression_context_t* ar_instruction__fixture_create_expression_context(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     const char *ref_expression
 );
 ```
@@ -52,7 +52,7 @@ Creates an expression context with standard test data:
 
 ```c
 ar_expression_context_t* ar_instruction__fixture_create_custom_expression_context(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     ar_data_t *mut_memory,
     const ar_data_t *ref_context,
     const ar_data_t *ref_message,
@@ -68,7 +68,7 @@ Creates an expression context with custom data maps. The fixture tracks the cont
 
 ```c
 ar_data_t* ar_instruction__fixture_create_test_map(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     const char *ref_name
 );
 ```
@@ -80,7 +80,7 @@ Creates a map with test data based on the name:
 
 ```c
 ar_data_t* ar_instruction__fixture_create_empty_map(
-    instruction_fixture_t *mut_fixture
+    ar_instruction_fixture_t *mut_fixture
 );
 ```
 
@@ -88,7 +88,7 @@ Creates an empty map for tests that need to populate it manually.
 
 ```c
 ar_data_t* ar_instruction__fixture_create_test_list(
-    instruction_fixture_t *mut_fixture
+    ar_instruction_fixture_t *mut_fixture
 );
 ```
 
@@ -98,7 +98,7 @@ Creates a list with sample values: ["first", 42, 3.14]
 
 ```c
 bool ar_instruction__fixture_init_system(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     const char *ref_init_method_name,
     const char *ref_init_instructions
 );
@@ -108,7 +108,7 @@ Initializes the system with the specified method. Must be called before creating
 
 ```c
 int64_t ar_instruction__fixture_create_test_agent(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     const char *ref_method_name,
     const char *ref_instructions
 );
@@ -121,7 +121,7 @@ Creates a test agent with the specified method. The fixture:
 - Tracks the agent for cleanup
 
 ```c
-int64_t ar_instruction__fixture_get_agent(const instruction_fixture_t *ref_fixture);
+int64_t ar_instruction__fixture_get_agent(const ar_instruction_fixture_t *ref_fixture);
 ```
 
 Returns the agent ID created by the fixture, or 0 if no agent was created.
@@ -130,17 +130,17 @@ Returns the agent ID created by the fixture, or 0 if no agent was created.
 
 ```c
 void ar_instruction__fixture_track_data(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     ar_data_t *own_data
 );
 
 void ar_instruction__fixture_track_expression_context(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     ar_expression_context_t *own_context
 );
 
 void ar_instruction__fixture_track_resource(
-    instruction_fixture_t *mut_fixture,
+    ar_instruction_fixture_t *mut_fixture,
     void *own_resource,
     void (*destructor)(void*)
 );
@@ -151,8 +151,8 @@ Tracks resources created outside the fixture helpers for automatic cleanup. The 
 ### Utility Functions
 
 ```c
-const char* ar_instruction__fixture_get_name(const instruction_fixture_t *ref_fixture);
-bool ar_instruction__fixture_check_memory(const instruction_fixture_t *ref_fixture);
+const char* ar_instruction__fixture_get_name(const ar_instruction_fixture_t *ref_fixture);
+bool ar_instruction__fixture_check_memory(const ar_instruction_fixture_t *ref_fixture);
 ```
 
 ## Usage Examples
@@ -162,7 +162,7 @@ bool ar_instruction__fixture_check_memory(const instruction_fixture_t *ref_fixtu
 ```c
 static void test_instruction_with_agent(void) {
     // Create fixture
-    instruction_fixture_t *own_fixture = ar_instruction__fixture_create("test_agent_instruction");
+    ar_instruction_fixture_t *own_fixture = ar_instruction__fixture_create("test_agent_instruction");
     assert(own_fixture != NULL);
     
     // Initialize system
@@ -206,7 +206,7 @@ static void test_instruction_with_agent(void) {
 ```c
 static void test_arithmetic_expression(void) {
     // Create fixture for this test
-    instruction_fixture_t *own_fixture = ar_instruction__fixture_create("test_arithmetic");
+    ar_instruction_fixture_t *own_fixture = ar_instruction__fixture_create("test_arithmetic");
     assert(own_fixture != NULL);
     
     // Create expression context with standard test data
@@ -237,7 +237,7 @@ static void test_arithmetic_expression(void) {
 ```c
 static void test_map_operations(void) {
     // Create fixture for this test
-    instruction_fixture_t *own_fixture = ar_instruction__fixture_create("test_map_ops");
+    ar_instruction_fixture_t *own_fixture = ar_instruction__fixture_create("test_map_ops");
     assert(own_fixture != NULL);
     
     // Create test map with user data

@@ -11,7 +11,7 @@ static void test_grade_evaluator_grades(void) {
     printf("Testing grade-evaluator method with grade evaluation...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar_method_fixture__create("grade_evaluator_grades");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("grade_evaluator_grades");
     assert(own_fixture != NULL);
     
     // Initialize test environment
@@ -154,7 +154,7 @@ static void test_grade_evaluator_status(void) {
     printf("Testing grade-evaluator method with status evaluation...\n");
     
     // Create test fixture
-    method_fixture_t *own_fixture = ar_method_fixture__create("grade_evaluator_status");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("grade_evaluator_status");
     assert(own_fixture != NULL);
     
     // Initialize test environment
