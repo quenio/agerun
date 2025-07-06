@@ -13,7 +13,7 @@
 #include <stdint.h>
 
 /* Agent Definition (moved from header for opaque type) */
-struct agent_s {
+struct ar_agent_s {
     int64_t id;
     const ar_method_t *ref_method; // Borrowed reference to method
     bool is_active;

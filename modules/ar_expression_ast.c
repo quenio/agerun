@@ -47,7 +47,7 @@ typedef struct {
  * Full definition of the AST node structure.
  * This is only visible in the implementation file.
  */
-struct expression_ast_s {
+struct ar_expression_ast_s {
     ar_expression_ast_type_t type;
     union {
         literal_int_data_t literal_int;

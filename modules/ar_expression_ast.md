@@ -20,7 +20,7 @@ The expression AST module serves as the foundation for separating expression par
 The module uses opaque types to hide implementation details:
 
 ```c
-typedef struct expression_ast_s ar_expression_ast_t;
+typedef struct ar_expression_ast_s ar_expression_ast_t;
 ```
 
 This ensures that clients cannot directly access or modify the internal structure of AST nodes.

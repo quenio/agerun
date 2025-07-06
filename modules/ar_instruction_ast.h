@@ -26,7 +26,7 @@ typedef enum {
  * Opaque AST node structure.
  * Internal structure is hidden to maintain encapsulation.
  */
-typedef struct instruction_ast_s ar_instruction_ast_t;
+typedef struct ar_instruction_ast_s ar_instruction_ast_t;
 
 /**
  * Get the type of an AST node.

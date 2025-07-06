@@ -10,10 +10,10 @@
 #define MAX_AGENTS 1024
 
 /* Forward declaration for ar_method_t */
-typedef struct method_s ar_method_t;
+typedef struct ar_method_s ar_method_t;
 
 /* Opaque agent type */
-typedef struct agent_s ar_agent_t;
+typedef struct ar_agent_s ar_agent_t;
 
 
 /**

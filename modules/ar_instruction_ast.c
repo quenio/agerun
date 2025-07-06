@@ -8,7 +8,7 @@
 /**
  * Internal structure for instruction AST nodes.
  */
-struct instruction_ast_s {
+struct ar_instruction_ast_s {
     ar_instruction_ast_type_t type;
     
     /* For assignment instructions */

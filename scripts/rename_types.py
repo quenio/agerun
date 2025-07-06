@@ -67,6 +67,12 @@ STRUCT_TAG_RENAMES = {
     'parsed_instruction_s': 'ar_parsed_instruction_s',
     'instruction_parser_s': 'ar_instruction_parser_s',
     'instruction_evaluator_s': 'ar_instruction_evaluator_s',
+    'expression_parser_s': 'ar_expression_parser_s',
+    'expression_evaluator_s': 'ar_expression_evaluator_s',
+    
+    # AST struct tags
+    'expression_ast_s': 'ar_expression_ast_s',
+    'instruction_ast_s': 'ar_instruction_ast_s',
     
     # System struct tags
     'interpreter_s': 'ar_interpreter_s',

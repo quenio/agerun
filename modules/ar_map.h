@@ -9,7 +9,7 @@
  * The map never owns or manages the memory for keys or values.
  * The caller is always responsible for allocating and freeing memory for both keys and values.
  */
-typedef struct map_s ar_map_t;
+typedef struct ar_map_s ar_map_t;
 
 /**
  * Create a new heap-allocated empty map

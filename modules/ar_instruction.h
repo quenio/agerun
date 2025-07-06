@@ -12,7 +12,7 @@
  * This is an opaque type. Clients should use the provided functions to create,
  * manipulate, and destroy instruction contexts.
  */
-typedef struct instruction_context_s ar_instruction_context_t;
+typedef struct ar_instruction_context_s ar_instruction_context_t;
 
 /**
  * Instruction type enumeration

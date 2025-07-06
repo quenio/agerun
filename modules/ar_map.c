@@ -18,7 +18,7 @@ typedef struct entry_s {
 /**
  * Map implementation structure
  */
-struct map_s {
+struct ar_map_s {
     entry_t entries[MAP_SIZE];
     int count;
 };

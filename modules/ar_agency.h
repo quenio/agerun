@@ -7,8 +7,8 @@
 #include "ar_agent_registry.h"
 
 /* Forward declarations */
-typedef struct method_s ar_method_t;
-typedef struct agent_s ar_agent_t;
+typedef struct ar_method_s ar_method_t;
+typedef struct ar_agent_s ar_agent_t;
 
 /* Constants */
 #define AGENCY_FILE_NAME "agency.agerun"

@@ -350,7 +350,7 @@ ar_list__destroy(own_allocations);
   - `ref_item` - borrowed reference to the item (list doesn't own items)
   - `mut_next`, `mut_prev` - mutable references to neighboring nodes
   
-- The list_s structure uses ownership prefixes for fields:
+- The ar_list_s structure uses ownership prefixes for fields:
   - `own_head`, `own_tail` - owned references to the head and tail nodes (list owns its nodes)
   - The list is responsible for freeing all nodes via ar_list__destroy
 

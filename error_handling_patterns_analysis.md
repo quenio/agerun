@@ -106,7 +106,7 @@ struct ar_<parser_name>_s {
 
 **Exception**: The expression parser uses a slightly different field name:
 ```c
-struct expression_parser_s {
+struct ar_expression_parser_s {
     char *own_error_message;   /* Last error message (if any) */
     // Note: No error_position field - uses parser position instead
 };

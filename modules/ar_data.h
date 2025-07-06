@@ -20,7 +20,7 @@ typedef enum {
 /**
  * Opaque data structure for storing various data types
  */
-typedef struct data_s ar_data_t;
+typedef struct ar_data_s ar_data_t;
 
 /**
  * Create a new integer data value

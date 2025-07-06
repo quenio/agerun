@@ -22,7 +22,7 @@
 typedef struct ar_condition_instruction_parser_s ar_condition_instruction_parser_t;
 
 /* Forward declaration of instruction AST type */
-typedef struct instruction_ast_s ar_instruction_ast_t;
+typedef struct ar_instruction_ast_s ar_instruction_ast_t;
 
 /**
  * Create a new condition instruction parser.

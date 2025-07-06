@@ -17,7 +17,7 @@
 /**
  * Opaque type for expression evaluator
  */
-typedef struct expression_evaluator_s ar_expression_evaluator_t;
+typedef struct ar_expression_evaluator_s ar_expression_evaluator_t;
 
 /**
  * Creates a new expression evaluator

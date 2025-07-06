@@ -15,7 +15,7 @@
 #include <inttypes.h>
 
 /* Agent registry structure */
-struct agent_registry_s {
+struct ar_agent_registry_s {
     ar_list_t *own_registered_ids;  // List of registered agent IDs
     ar_map_t *own_agent_map;        // Map of agent_id -> agent pointer
     int64_t next_agent_id;       // Next ID to allocate

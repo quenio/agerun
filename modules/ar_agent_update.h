@@ -6,7 +6,7 @@
 #include "ar_agent_registry.h"
 
 /* Forward declarations */
-typedef struct method_s ar_method_t;
+typedef struct ar_method_s ar_method_t;
 
 /**
  * @file agerun_agent_update.h

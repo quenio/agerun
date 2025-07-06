@@ -32,7 +32,7 @@ The map module follows the AgeRun Memory Management Model (MMM) with these key p
 
 ```c
 // Opaque map type - implementation details hidden
-typedef struct map_s ar_map_t;
+typedef struct ar_map_s ar_map_t;
 ```
 
 ### Functions
@@ -280,7 +280,7 @@ typedef struct entry_s {
     bool is_used;           // No prefix for primitive types
 } entry_t;
 
-struct map_s {
+struct ar_map_s {
     entry_t entries[MAP_SIZE];  // Fixed-size array, no prefix needed
     int count;                  // No prefix for primitive types
 };

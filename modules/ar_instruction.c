@@ -14,7 +14,7 @@
 #include <stdint.h>
 
 // Instruction context structure definition
-struct instruction_context_s {
+struct ar_instruction_context_s {
     ar_data_t *mut_memory;        // Mutable reference to memory, not owned
     const ar_data_t *ref_context; // Borrowed reference to context, not owned
     const ar_data_t *ref_message; // Borrowed reference to message, not owned

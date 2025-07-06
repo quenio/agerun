@@ -24,7 +24,7 @@ the context has been destroyed.
 ### Types
 
 ```c
-typedef struct expression_context_s ar_expression_context_t;
+typedef struct ar_expression_context_s ar_expression_context_t;
 ```
 
 An opaque type representing the context for expression evaluation. It contains the

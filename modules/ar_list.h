@@ -15,7 +15,7 @@
  * - Functions like ar_list_first() return borrowed references that should not be destroyed
  * - The ar_list_items() function transfers ownership of the returned array but not the items
  */
-typedef struct list_s ar_list_t;
+typedef struct ar_list_s ar_list_t;
 
 /**
  * Create a new empty list

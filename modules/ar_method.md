@@ -14,7 +14,7 @@ The Method module provides functionality for creating and managing methods withi
 
 ```c
 // Opaque method type - the internal structure is hidden from client code
-typedef struct method_s ar_method_t;
+typedef struct ar_method_s ar_method_t;
 ```
 
 ### Functions

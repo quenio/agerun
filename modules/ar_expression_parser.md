@@ -20,7 +20,7 @@ The expression parser module serves as the foundation for separating expression 
 The module uses an opaque type to hide parsing state:
 
 ```c
-typedef struct expression_parser_s ar_expression_parser_t;
+typedef struct ar_expression_parser_s ar_expression_parser_t;
 ```
 
 The parser maintains:

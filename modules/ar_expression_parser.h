@@ -9,7 +9,7 @@
  * Opaque parser structure.
  * Maintains parsing state including the expression string and current position.
  */
-typedef struct expression_parser_s ar_expression_parser_t;
+typedef struct ar_expression_parser_s ar_expression_parser_t;
 
 /**
  * Create a new expression parser instance.

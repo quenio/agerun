@@ -5,8 +5,8 @@
 #include <stdint.h>
 
 /* Forward declarations */
-typedef struct data_s ar_data_t;
-typedef struct agent_registry_s ar_agent_registry_t;
+typedef struct ar_data_s ar_data_t;
+typedef struct ar_agent_registry_s ar_agent_registry_t;
 
 /**
  * @file agerun_agent_registry.h

@@ -11,7 +11,7 @@
  * This is an opaque type. Clients should use the provided functions to create,
  * manipulate, and destroy expression contexts.
  */
-typedef struct expression_context_s ar_expression_context_t;
+typedef struct ar_expression_context_s ar_expression_context_t;
 
 /**
  * Creates a new expression evaluation context.

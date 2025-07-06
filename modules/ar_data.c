@@ -11,7 +11,7 @@
 /**
  * Data structure for storing various data types
  */
-struct data_s {
+struct ar_data_s {
     ar_data_type_t type;
     union {
         int int_value;         // Primitive type, no prefix needed

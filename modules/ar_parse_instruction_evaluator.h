@@ -12,9 +12,9 @@
 #include <stdbool.h>
 
 /* Forward declarations */
-typedef struct expression_evaluator_s ar_expression_evaluator_t;
-typedef struct data_s ar_data_t;
-typedef struct instruction_ast_s ar_instruction_ast_t;
+typedef struct ar_expression_evaluator_s ar_expression_evaluator_t;
+typedef struct ar_data_s ar_data_t;
+typedef struct ar_instruction_ast_s ar_instruction_ast_t;
 typedef struct ar_log_s ar_log_t;
 
 /* Opaque type for parse instruction evaluator */

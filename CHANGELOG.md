@@ -46,6 +46,20 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - ✅ interpreter_fixture_t → ar_interpreter_fixture_t (44 occurrences) - using rename_types.py
   - ✅ method_fixture_t → ar_method_fixture_t (47 occurrences) - using rename_types.py
   - ✅ system_fixture_t → ar_system_fixture_t (55 occurrences) - using rename_types.py
+- ✅ **Fixed struct name inconsistencies (struct tags without ar_ prefix)**:
+  - ✅ struct expression_ast_s → struct ar_expression_ast_s (3 occurrences)
+  - ✅ struct instruction_ast_s → struct ar_instruction_ast_s (5 occurrences)
+  - ✅ struct expression_evaluator_s → struct ar_expression_evaluator_s (4 occurrences)
+  - ✅ struct expression_parser_s → struct ar_expression_parser_s (4 occurrences)
+  - ✅ struct agent_s → struct ar_agent_s (3 occurrences)
+  - ✅ struct data_s → struct ar_data_s (7 occurrences)
+  - ✅ struct list_s → struct ar_list_s (3 occurrences)
+  - ✅ struct map_s → struct ar_map_s (4 occurrences)
+  - ✅ struct method_s → struct ar_method_s (6 occurrences)
+  - ✅ struct agent_registry_s → struct ar_agent_registry_s (2 occurrences)
+  - ✅ struct expression_context_s → struct ar_expression_context_s (3 occurrences)
+  - ✅ struct instruction_context_s → struct ar_instruction_context_s (2 occurrences)
+  - ✅ Enhanced rename_types.py script to include missing struct tag mappings
   - ✅ Fixed check-naming script to show all typedef issues (removed output truncation)
   - ✅ Updated Makefile help to show single test build command
 - ✅ **Implementation Details**:

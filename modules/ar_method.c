@@ -18,7 +18,7 @@
 /* Method Definition (full structure) */
 #define MAX_VERSION_LENGTH 16 // Enough for semver (e.g., "1.2.3")
 
-struct method_s {
+struct ar_method_s {
     char name[MAX_METHOD_NAME_LENGTH];
     char version[MAX_VERSION_LENGTH];
     char instructions[MAX_INSTRUCTIONS_LENGTH];

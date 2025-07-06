@@ -40,7 +40,7 @@ typedef enum {
  * Opaque AST node structure.
  * Internal structure is hidden to maintain encapsulation.
  */
-typedef struct expression_ast_s ar_expression_ast_t;
+typedef struct ar_expression_ast_s ar_expression_ast_t;
 
 /**
  * Get the type of an AST node.

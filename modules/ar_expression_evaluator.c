@@ -13,7 +13,7 @@
 /**
  * Internal structure for expression evaluator
  */
-struct expression_evaluator_s {
+struct ar_expression_evaluator_s {
     ar_log_t *ref_log;     /**< Log instance for error reporting (borrowed) */
     ar_data_t *ref_memory;    /**< Memory map with variables (borrowed) */
     ar_data_t *ref_context;   /**< Optional context map (borrowed, may be NULL) */

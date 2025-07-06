@@ -16,7 +16,7 @@
  * Full definition of the expression context structure.
  * This is only visible in the implementation file.
  */
-struct expression_context_s {
+struct ar_expression_context_s {
     ar_data_t *mut_memory;         /* The agent's memory (mutable reference) */
     const ar_data_t *ref_context;  /* The agent's context (borrowed reference) */
     const ar_data_t *ref_message;  /* The message being processed (borrowed reference) */

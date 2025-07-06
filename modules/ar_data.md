@@ -38,7 +38,7 @@ typedef enum {
 /**
  * Opaque data structure for storing various data types
  */
-typedef struct data_s ar_data_t;
+typedef struct ar_data_s ar_data_t;
 ```
 
 ### Functions
@@ -939,7 +939,7 @@ own_value = NULL; // Mark as transferred, don't use after this point
 The data module's internal structure follows the AgeRun Memory Management Model (MMM) for field naming:
 
 ```c
-struct data_s {
+struct ar_data_s {
     ar_data_type_t type;
     union {
         int int_value;         // Primitive type, no prefix needed

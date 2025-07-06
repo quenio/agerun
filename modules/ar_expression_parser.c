@@ -12,7 +12,7 @@
  * Parser state structure.
  * Tracks the expression being parsed and current position.
  */
-struct expression_parser_s {
+struct ar_expression_parser_s {
     ar_log_t *ref_log;         /* Log instance for error reporting (borrowed) */
     char *own_expression;      /* Copy of the expression string */
     size_t position;           /* Current parsing position */

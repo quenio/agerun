@@ -14,7 +14,7 @@ struct list_node_s {
 /**
  * List structure
  */
-struct list_s {
+struct ar_list_s {
     struct list_node_s *own_head; // Pointer to the first node (owned by list)
     struct list_node_s *own_tail; // Pointer to the last node (owned by list)
     size_t count;                 // Number of items in the list

@@ -8,7 +8,7 @@
 #include "ar_log.h"
 
 /* Method Definition (opaque type) */
-typedef struct method_s ar_method_t;
+typedef struct ar_method_s ar_method_t;
 
 /**
  * Creates a new method object with the given parameters
