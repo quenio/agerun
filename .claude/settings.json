@@ -30,7 +30,14 @@
       "Bash(./update_docs.sh)",
       "WebFetch(domain:ziglang.org)",
       "Bash(zig build-obj:*)",
-      "Bash(./ar_*_tests)"
+      "Bash(./ar_*_tests)",
+      "Bash(./migrate_remaining_evaluators.sh:*)",
+      "Bash(rm:*.log)",
+      "Bash(rm:*.bak)",
+      "Bash(rm:/tmp/*)",
+      "Bash(rm:./bin/*)",
+      "Bash(python3:*)",
+      "Bash(./check_naming_conventions.sh:*)"
     ],
     "deny": []
   },
