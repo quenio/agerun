@@ -26,7 +26,7 @@ int64_t echo_agent = ar_agent__create("echo", "1.0.0", NULL);
 
 ```c
 // Send a message with sender and content fields
-data_t *message = ar_data__create_map();
+ar_data_t *message = ar_data__create_map();
 ar_data__set_map_integer(message, "sender", 0); // 0 = system
 ar_data__set_map_string(message, "content", "Hello, World!");
 ar_agent__send(echo_agent, message);

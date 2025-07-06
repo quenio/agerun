@@ -97,7 +97,7 @@ bool ar_agency__agent_has_messages(int64_t agent_id);
  * @return Message data (ownership transferred), or NULL if no messages
  * @note Ownership: Returns an owned value that caller must destroy
  */
-data_t* ar_agency__get_agent_message(int64_t agent_id);
+ar_data_t* ar_agency__get_agent_message(int64_t agent_id);
 
 /**
  * Create a new agent with ID allocation and tracking
@@ -107,7 +107,7 @@ data_t* ar_agency__get_agent_message(int64_t agent_id);
  * @return Unique agent ID, or 0 on failure
  * @note Ownership: Function does not take ownership of ref_context.
  */
-int64_t ar_agency__create_agent(const char *ref_method_name, const char *ref_version, const data_t *ref_context);
+int64_t ar_agency__create_agent(const char *ref_method_name, const char *ref_version, const ar_data_t *ref_context);
 
 /**
  * Destroy an agent by ID
@@ -124,7 +124,7 @@ bool ar_agency__destroy_agent(int64_t agent_id);
  * @return true if successful, false otherwise
  * @note Ownership: Function takes ownership of own_message.
  */
-bool ar_agency__send_to_agent(int64_t agent_id, data_t *own_message);
+bool ar_agency__send_to_agent(int64_t agent_id, ar_data_t *own_message);
 
 /**
  * Check if an agent exists
@@ -139,7 +139,7 @@ bool ar_agency__agent_exists(int64_t agent_id);
  * @return Const pointer to agent's memory data, or NULL if agent doesn't exist
  * @note Ownership: Returns a borrowed reference.
  */
-const data_t* ar_agency__get_agent_memory(int64_t agent_id);
+const ar_data_t* ar_agency__get_agent_memory(int64_t agent_id);
 
 /**
  * Get agent context by ID
@@ -147,7 +147,7 @@ const data_t* ar_agency__get_agent_memory(int64_t agent_id);
  * @return Const pointer to agent's context data, or NULL if agent doesn't exist
  * @note Ownership: Returns a borrowed reference.
  */
-const data_t* ar_agency__get_agent_context(int64_t agent_id);
+const ar_data_t* ar_agency__get_agent_context(int64_t agent_id);
 
 /**
  * Check if an agent is active
@@ -180,7 +180,7 @@ bool ar_agency__get_agent_method_info(int64_t agent_id, const char **out_method_
  * @return Mutable pointer to agent's memory data
  * @note Ownership: Returns a mutable reference, do not destroy.
  */
-data_t* ar_agency__get_agent_mutable_memory(int64_t agent_id);
+ar_data_t* ar_agency__get_agent_mutable_memory(int64_t agent_id);
 
 /**
  * Update agent method by ID

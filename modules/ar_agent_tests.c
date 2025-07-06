@@ -70,7 +70,7 @@ static void test_agent_send(system_fixture_t *mut_fixture) {
     assert(agent_id > 0);
     
     // When we send a message to the agent
-    data_t *own_message_data = ar_data__create_string(g_hello_message);
+    ar_data_t *own_message_data = ar_data__create_string(g_hello_message);
     assert(own_message_data != NULL);
     bool send_result = ar_agency__send_to_agent(agent_id, own_message_data);
     own_message_data = NULL; // Mark as transferred
@@ -149,8 +149,8 @@ static void test_agent_persistence(system_fixture_t *mut_fixture) {
     method_t *own_method = ar_system_fixture__register_method(mut_fixture, method_name, instructions, version);
     assert(own_method != NULL);
     
-    // Create a context with data_t
-    data_t *own_context = ar_data__create_map();
+    // Create a context with ar_data_t
+    ar_data_t *own_context = ar_data__create_map();
     assert(own_context != NULL);
     ar_data__set_map_string(own_context, "test_key", "test_value");
     

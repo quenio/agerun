@@ -13,7 +13,7 @@
 
 static void test_assignment_instruction_evaluator__create_destroy(void) {
     // Given expression evaluator, memory, and log
-    data_t *own_memory = ar_data__create_map();
+    ar_data_t *own_memory = ar_data__create_map();
     assert(own_memory != NULL);
     
     ar_log_t *own_log = ar_log__create();
@@ -39,7 +39,7 @@ static void test_assignment_instruction_evaluator__create_destroy(void) {
 
 static void test_assignment_instruction_evaluator__evaluate_with_instance(void) {
     // Given an assignment instruction evaluator
-    data_t *own_memory = ar_data__create_map();
+    ar_data_t *own_memory = ar_data__create_map();
     assert(own_memory != NULL);
     
     ar_log_t *own_log = ar_log__create();
@@ -80,7 +80,7 @@ static void test_assignment_instruction_evaluator__evaluate_with_instance(void) 
 
 static void test_assignment_instruction_evaluator__evaluate_integer(void) {
     // Given an assignment evaluator with empty memory
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -123,7 +123,7 @@ static void test_assignment_instruction_evaluator__evaluate_integer(void) {
 
 static void test_assignment_instruction_evaluator__evaluate_string(void) {
     // Given an evaluator with empty memory
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -167,10 +167,10 @@ static void test_assignment_instruction_evaluator__evaluate_string(void) {
 
 static void test_assignment_instruction_evaluator__evaluate_nested_path(void) {
     // Given an evaluator with memory containing a nested map
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    data_t *user = ar_data__create_map();
+    ar_data_t *user = ar_data__create_map();
     assert(user != NULL);
     ar_data__set_map_data(memory, "user", user);
     
@@ -201,7 +201,7 @@ static void test_assignment_instruction_evaluator__evaluate_nested_path(void) {
     assert(result == true);
     
     // And the value should be stored in the nested map
-    data_t *stored_user = ar_data__get_map_data(memory, "user");
+    ar_data_t *stored_user = ar_data__get_map_data(memory, "user");
     assert(stored_user != NULL);
     int age = ar_data__get_map_integer(stored_user, "age");
     assert(age == 25);
@@ -216,7 +216,7 @@ static void test_assignment_instruction_evaluator__evaluate_nested_path(void) {
 
 static void test_assignment_instruction_evaluator__evaluate_expression(void) {
     // Given an evaluator with memory containing initial values
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     ar_data__set_map_integer(memory, "x", 10);
     ar_data__set_map_integer(memory, "y", 5);
@@ -269,7 +269,7 @@ static void test_assignment_instruction_evaluator__evaluate_expression(void) {
 
 static void test_assignment_instruction_evaluator__evaluate_invalid_path(void) {
     // Given an evaluator with empty memory
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();

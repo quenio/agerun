@@ -21,7 +21,7 @@
 struct ar_destroy_agent_instruction_evaluator_s {
     ar_log_t *ref_log;                           /* Borrowed reference to log instance */
     ar_expression_evaluator_t *mut_expr_evaluator;
-    data_t *mut_memory;
+    ar_data_t *mut_memory;
 };
 
 /* Helper function to log error message */
@@ -37,9 +37,9 @@ static void _log_error(ar_destroy_agent_instruction_evaluator_t *mut_evaluator, 
 
 /* Helper function to store result in memory if assignment path is provided */
 static bool _store_result_if_assigned(
-    data_t *mut_memory,
+    ar_data_t *mut_memory,
     const ar_instruction_ast_t *ref_ast,
-    data_t *own_result
+    ar_data_t *own_result
 ) {
     const char *ref_result_path = ar_instruction_ast__get_function_result_path(ref_ast);
     if (!ref_result_path) {
@@ -71,7 +71,7 @@ static bool _store_result_if_assigned(
 ar_destroy_agent_instruction_evaluator_t* ar_destroy_agent_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory
+    ar_data_t *mut_memory
 ) {
     if (!ref_log || !mut_expr_evaluator || !mut_memory) {
         return NULL;
@@ -118,7 +118,7 @@ bool ar_destroy_agent_instruction_evaluator__evaluate(
     _log_error(mut_evaluator, NULL);
     
     ar_expression_evaluator_t *mut_expr_evaluator = mut_evaluator->mut_expr_evaluator;
-    data_t *mut_memory = mut_evaluator->mut_memory;
+    ar_data_t *mut_memory = mut_evaluator->mut_memory;
     
     // Validate AST type
     if (ar_instruction_ast__get_type(ref_ast) != AR_INST__DESTROY_AGENT) {
@@ -149,10 +149,10 @@ bool ar_destroy_agent_instruction_evaluator__evaluate(
     }
     
     // Evaluate the agent ID expression AST using public method
-    data_t *agent_id_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_agent_id_ast);
+    ar_data_t *agent_id_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_agent_id_ast);
     
     // Check if we need to make a copy (if result is owned by memory/context)
-    data_t *own_agent_id = NULL;
+    ar_data_t *own_agent_id = NULL;
     if (agent_id_result) {
         if (ar_data__hold_ownership(agent_id_result, mut_expr_evaluator)) {
             // We can claim ownership - it's an unowned value (literal or operation result)
@@ -187,7 +187,7 @@ bool ar_destroy_agent_instruction_evaluator__evaluate(
     
     // Store result if assigned
     if (success && ar_instruction_ast__has_result_assignment(ref_ast)) {
-        data_t *own_result = ar_data__create_integer(destroy_result ? 1 : 0);
+        ar_data_t *own_result = ar_data__create_integer(destroy_result ? 1 : 0);
         if (own_result) {
             _store_result_if_assigned(mut_memory, ref_ast, own_result);
         }

@@ -93,8 +93,8 @@ The module provides comprehensive error handling:
 
 ```c
 // Create evaluator with memory and context
-data_t *memory = ar_data__create_map();
-data_t *context = ar_data__create_map();
+ar_data_t *memory = ar_data__create_map();
+ar_data_t *context = ar_data__create_map();
 ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(memory, context);
 
 // Parse an expression to AST
@@ -102,7 +102,7 @@ ar_expression_parser_t *parser = ar_expression_parser__create("memory.x + 5");
 ar_expression_ast_t *ast = ar_expression_parser__parse(parser);
 
 // Evaluate the AST
-data_t *result = ar_expression_evaluator__evaluate_binary_op(evaluator, ast);
+ar_data_t *result = ar_expression_evaluator__evaluate_binary_op(evaluator, ast);
 
 // Clean up
 ar_data__destroy(result);  // Owned value from operation

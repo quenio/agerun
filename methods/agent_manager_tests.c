@@ -32,13 +32,13 @@ static void test_agent_manager_create_destroy(void) {
     ar_system__process_next_message();
     
     // When we send a message to create an echo agent
-    data_t *own_message = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_map();
     assert(own_message != NULL);
     
     ar_data__set_map_string(own_message, "action", "create");
     ar_data__set_map_string(own_message, "method_name", "echo");
     ar_data__set_map_string(own_message, "version", "1.0.0");
-    data_t *own_context = ar_data__create_map();
+    ar_data_t *own_context = ar_data__create_map();
     ar_data__set_map_string(own_context, "name", "Test Echo");
     ar_data__set_map_data(own_message, "context", own_context);
     own_context = NULL; // Ownership transferred
@@ -52,10 +52,10 @@ static void test_agent_manager_create_destroy(void) {
     assert(processed);
     
     // Check agent memory for result
-    const data_t *agent_memory = ar_agency__get_agent_memory(manager_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(manager_agent);
     assert(agent_memory != NULL);
     
-    const data_t *result = ar_data__get_map_data(agent_memory, "result");
+    const ar_data_t *result = ar_data__get_map_data(agent_memory, "result");
     if (result != NULL) {
         assert(ar_data__get_type(result) == DATA_INTEGER);
         int64_t created_agent = (int64_t)ar_data__get_integer(result);
@@ -67,13 +67,13 @@ static void test_agent_manager_create_destroy(void) {
     }
     
     // Test checks for memory fields that don't exist yet (implementation incomplete)
-    const data_t *is_create = ar_data__get_map_data(agent_memory, "is_create");
+    const ar_data_t *is_create = ar_data__get_map_data(agent_memory, "is_create");
     if (!is_create) {
         printf("EXPECTED FAIL: memory.is_create not found - if() comparison failed\n");
         printf("NOTE: String comparison in if() is not yet implemented\n");
     }
     
-    const data_t *is_destroy = ar_data__get_map_data(agent_memory, "is_destroy");
+    const ar_data_t *is_destroy = ar_data__get_map_data(agent_memory, "is_destroy");
     if (!is_destroy) {
         printf("EXPECTED FAIL: memory.is_destroy not found - if() comparison failed\n");
         printf("NOTE: String comparison in if() is not yet implemented\n");
@@ -85,7 +85,7 @@ static void test_agent_manager_create_destroy(void) {
     }
     
     // Now test destroy action
-    data_t *own_destroy_message = ar_data__create_map();
+    ar_data_t *own_destroy_message = ar_data__create_map();
     assert(own_destroy_message != NULL);
     
     ar_data__set_map_string(own_destroy_message, "action", "destroy");
@@ -100,7 +100,7 @@ static void test_agent_manager_create_destroy(void) {
     assert(processed);
     
     // Check if destroy worked
-    const data_t *destroy_result = ar_data__get_map_data(agent_memory, "destroy_result");
+    const ar_data_t *destroy_result = ar_data__get_map_data(agent_memory, "destroy_result");
     if (!destroy_result) {
         printf("EXPECTED FAIL: memory.destroy_result not found - destroy() instruction failed to execute\n");
         printf("NOTE: This is expected until destroy() function is implemented in instruction module\n");
@@ -150,7 +150,7 @@ static void test_agent_manager_invalid_action(void) {
     ar_system__process_next_message();
     
     // When we send a message with an invalid action
-    data_t *own_message = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_map();
     assert(own_message != NULL);
     
     ar_data__set_map_string(own_message, "action", "invalid");
@@ -163,23 +163,23 @@ static void test_agent_manager_invalid_action(void) {
     ar_system__process_next_message();
     
     // Check agent memory - invalid actions should be handled gracefully
-    const data_t *agent_memory = ar_agency__get_agent_memory(manager_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(manager_agent);
     assert(agent_memory != NULL);
     
     // For invalid actions, the method should fail gracefully
-    const data_t *is_create = ar_data__get_map_data(agent_memory, "is_create");
+    const ar_data_t *is_create = ar_data__get_map_data(agent_memory, "is_create");
     if (!is_create) {
         printf("EXPECTED FAIL: memory.is_create not found - if() comparison failed\n");
         printf("NOTE: String comparison in if() is not yet implemented\n");
     }
     
-    const data_t *is_destroy = ar_data__get_map_data(agent_memory, "is_destroy");
+    const ar_data_t *is_destroy = ar_data__get_map_data(agent_memory, "is_destroy");
     if (!is_destroy) {
         printf("EXPECTED FAIL: memory.is_destroy not found - if() comparison failed\n");
         printf("NOTE: String comparison in if() is not yet implemented\n");
     }
     
-    const data_t *result = ar_data__get_map_data(agent_memory, "result");
+    const ar_data_t *result = ar_data__get_map_data(agent_memory, "result");
     if (!result) {
         printf("EXPECTED FAIL: memory.result not found - conditional assignment failed\n");
         printf("NOTE: Depends on if() comparison which is not yet implemented\n");

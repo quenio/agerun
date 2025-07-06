@@ -39,9 +39,9 @@ typedef struct instruction_evaluator_s instruction_evaluator_t;
 instruction_evaluator_t* ar_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
-    data_t *mut_memory,
-    data_t *ref_context,
-    data_t *ref_message
+    ar_data_t *mut_memory,
+    ar_data_t *ref_context,
+    ar_data_t *ref_message
 );
 
 /**

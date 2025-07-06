@@ -28,9 +28,9 @@
 struct instruction_evaluator_s {
     ar_log_t *ref_log;                           /* Log instance (borrowed reference) */
     ar_expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
-    data_t *mut_memory;                          /* Memory map (mutable reference) */
-    data_t *ref_context;                         /* Context map (borrowed reference, can be NULL) */
-    data_t *ref_message;                         /* Message data (borrowed reference, can be NULL) */
+    ar_data_t *mut_memory;                          /* Memory map (mutable reference) */
+    ar_data_t *ref_context;                         /* Context map (borrowed reference, can be NULL) */
+    ar_data_t *ref_message;                         /* Message data (borrowed reference, can be NULL) */
     ar_assignment_instruction_evaluator_t *own_assignment_evaluator;  /* Assignment evaluator instance (owned) */
     ar_send_instruction_evaluator_t *own_send_evaluator;  /* Send evaluator instance (owned) */
     ar_condition_instruction_evaluator_t *own_condition_evaluator;  /* Condition evaluator instance (owned) */
@@ -48,9 +48,9 @@ struct instruction_evaluator_s {
 instruction_evaluator_t* ar_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
-    data_t *mut_memory,
-    data_t *ref_context,
-    data_t *ref_message
+    ar_data_t *mut_memory,
+    ar_data_t *ref_context,
+    ar_data_t *ref_message
 ) {
     // Validate required parameters
     if (ref_log == NULL || ref_expr_evaluator == NULL || mut_memory == NULL) {

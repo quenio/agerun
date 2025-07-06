@@ -113,7 +113,7 @@ bool ar_agency__agent_has_messages(int64_t agent_id) {
     return ar_agent__has_messages(ref_agent);
 }
 
-data_t* ar_agency__get_agent_message(int64_t agent_id) {
+ar_data_t* ar_agency__get_agent_message(int64_t agent_id) {
     if (!g_is_initialized || !g_own_registry) {
         return NULL;
     }
@@ -126,7 +126,7 @@ data_t* ar_agency__get_agent_message(int64_t agent_id) {
     return ar_agent__get_message(mut_agent);
 }
 
-int64_t ar_agency__create_agent(const char *ref_method_name, const char *ref_version, const data_t *ref_context) {
+int64_t ar_agency__create_agent(const char *ref_method_name, const char *ref_version, const ar_data_t *ref_context) {
     if (!g_is_initialized || !g_own_registry) {
         return 0;
     }
@@ -183,7 +183,7 @@ bool ar_agency__destroy_agent(int64_t agent_id) {
     return true;
 }
 
-bool ar_agency__send_to_agent(int64_t agent_id, data_t *own_message) {
+bool ar_agency__send_to_agent(int64_t agent_id, ar_data_t *own_message) {
     if (!g_is_initialized || !g_own_registry) {
         if (own_message) {
             ar_data__destroy(own_message);
@@ -210,7 +210,7 @@ bool ar_agency__agent_exists(int64_t agent_id) {
     return ar_agent_registry__is_registered(g_own_registry, agent_id);
 }
 
-const data_t* ar_agency__get_agent_memory(int64_t agent_id) {
+const ar_data_t* ar_agency__get_agent_memory(int64_t agent_id) {
     if (!g_is_initialized || !g_own_registry) {
         return NULL;
     }
@@ -223,7 +223,7 @@ const data_t* ar_agency__get_agent_memory(int64_t agent_id) {
     return ar_agent__get_memory(ref_agent);
 }
 
-const data_t* ar_agency__get_agent_context(int64_t agent_id) {
+const ar_data_t* ar_agency__get_agent_context(int64_t agent_id) {
     if (!g_is_initialized || !g_own_registry) {
         return NULL;
     }
@@ -275,7 +275,7 @@ bool ar_agency__get_agent_method_info(int64_t agent_id, const char **out_method_
     return ar_agent__get_method_info(ref_agent, out_method_name, out_method_version);
 }
 
-data_t* ar_agency__get_agent_mutable_memory(int64_t agent_id) {
+ar_data_t* ar_agency__get_agent_mutable_memory(int64_t agent_id) {
     if (!g_is_initialized || !g_own_registry) {
         return NULL;
     }

@@ -90,7 +90,7 @@ bool ar_interpreter_fixture__execute_with_message(
     interpreter_fixture_t *mut_fixture,
     int64_t agent_id,
     const char *ref_instruction,
-    const data_t *ref_message
+    const ar_data_t *ref_message
 );
 
 /**
@@ -116,7 +116,7 @@ bool ar_interpreter_fixture__create_method(
  * @return The agent's memory (borrowed reference) or NULL if not found
  * @note Ownership: Returns a mutable borrowed reference for testing
  */
-data_t* ar_interpreter_fixture__get_agent_memory(
+ar_data_t* ar_interpreter_fixture__get_agent_memory(
     const interpreter_fixture_t *ref_fixture,
     int64_t agent_id
 );
@@ -132,7 +132,7 @@ data_t* ar_interpreter_fixture__get_agent_memory(
 bool ar_interpreter_fixture__send_message(
     interpreter_fixture_t *mut_fixture,
     int64_t agent_id,
-    data_t *own_message
+    ar_data_t *own_message
 );
 
 /**
@@ -143,7 +143,7 @@ bool ar_interpreter_fixture__send_message(
  * @note Ownership: Returns a borrowed reference; fixture owns and will destroy it
  * @note The map is pre-populated with common test values
  */
-data_t* ar_interpreter_fixture__create_test_map(
+ar_data_t* ar_interpreter_fixture__create_test_map(
     interpreter_fixture_t *mut_fixture,
     const char *ref_name
 );
@@ -157,7 +157,7 @@ data_t* ar_interpreter_fixture__create_test_map(
  */
 void ar_interpreter_fixture__track_data(
     interpreter_fixture_t *mut_fixture,
-    data_t *own_data
+    ar_data_t *own_data
 );
 
 /**

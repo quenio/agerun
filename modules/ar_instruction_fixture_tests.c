@@ -45,7 +45,7 @@ static void test_expression_context_creation(void) {
     assert(ref_ctx != NULL);
     
     // And we can evaluate expressions using the test data
-    const data_t *ref_result = ar_expression__evaluate(ref_ctx);
+    const ar_data_t *ref_result = ar_expression__evaluate(ref_ctx);
     assert(ref_result != NULL);
     assert(ar_data__get_type(ref_result) == DATA_INTEGER);
     assert(ar_data__get_integer(ref_result) == 52); // 42 + 10
@@ -63,7 +63,7 @@ static void test_custom_expression_context(void) {
     instruction_fixture_t *own_fixture = ar_instruction_fixture__create("custom_expr");
     assert(own_fixture != NULL);
     
-    data_t *own_memory = ar_data__create_map();
+    ar_data_t *own_memory = ar_data__create_map();
     ar_data__set_map_integer(own_memory, "x", 100);
     
     // When we create a custom expression context
@@ -73,7 +73,7 @@ static void test_custom_expression_context(void) {
     
     // Then the context should use our custom data
     assert(ref_ctx != NULL);
-    const data_t *ref_result = ar_expression__evaluate(ref_ctx);
+    const ar_data_t *ref_result = ar_expression__evaluate(ref_ctx);
     assert(ref_result != NULL);
     assert(ar_data__get_integer(ref_result) == 200);
     
@@ -92,7 +92,7 @@ static void test_map_creation(void) {
     assert(own_fixture != NULL);
     
     // When we create a user map
-    data_t *ref_user = ar_instruction_fixture__create_test_map(own_fixture, "user");
+    ar_data_t *ref_user = ar_instruction_fixture__create_test_map(own_fixture, "user");
     
     // Then it should have the expected values
     assert(ref_user != NULL);
@@ -101,7 +101,7 @@ static void test_map_creation(void) {
     assert(ar_data__get_map_integer(ref_user, "id") == 123);
     
     // When we create a config map
-    data_t *ref_config = ar_instruction_fixture__create_test_map(own_fixture, "config");
+    ar_data_t *ref_config = ar_instruction_fixture__create_test_map(own_fixture, "config");
     
     // Then it should have different values
     assert(ref_config != NULL);
@@ -122,7 +122,7 @@ static void test_list_creation(void) {
     assert(own_fixture != NULL);
     
     // When we create a test list
-    data_t *ref_list = ar_instruction_fixture__create_test_list(own_fixture);
+    ar_data_t *ref_list = ar_instruction_fixture__create_test_list(own_fixture);
     
     // Then it should have the expected values
     assert(ref_list != NULL);
@@ -143,7 +143,7 @@ static void test_resource_tracking(void) {
     assert(own_fixture != NULL);
     
     // When we create data outside the fixture
-    data_t *own_external_map = ar_data__create_map();
+    ar_data_t *own_external_map = ar_data__create_map();
     ar_data__set_map_string(own_external_map, "external", "data");
     
     // And track it with the fixture
@@ -171,7 +171,7 @@ static void test_memory_check(void) {
     assert(own_fixture != NULL);
     
     // Create some test resources
-    data_t *ref_map = ar_instruction_fixture__create_test_map(own_fixture, NULL);
+    ar_data_t *ref_map = ar_instruction_fixture__create_test_map(own_fixture, NULL);
     assert(ref_map != NULL);
     
     expression_context_t *ref_ctx = ar_instruction_fixture__create_expression_context(

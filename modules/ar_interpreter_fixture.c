@@ -82,7 +82,7 @@ void ar_interpreter_fixture__destroy(interpreter_fixture_t *own_fixture) {
         void **items = ar_list__items(own_fixture->own_agent_ids);
         if (items) {
             for (size_t i = 0; i < agent_count; i++) {
-                data_t *own_id_data = (data_t *)items[i];
+                ar_data_t *own_id_data = (ar_data_t *)items[i];
                 if (own_id_data && ar_data__get_type(own_id_data) == DATA_INTEGER) {
                     int64_t agent_id = (int64_t)ar_data__get_integer(own_id_data);
                     ar_agency__destroy_agent(agent_id);
@@ -100,7 +100,7 @@ void ar_interpreter_fixture__destroy(interpreter_fixture_t *own_fixture) {
         void **items = ar_list__items(own_fixture->own_tracked_data);
         if (items) {
             for (size_t i = 0; i < data_count; i++) {
-                data_t *own_data = (data_t *)items[i];
+                ar_data_t *own_data = (ar_data_t *)items[i];
                 if (own_data) {
                     ar_data__destroy(own_data);
                 }
@@ -159,7 +159,7 @@ int64_t ar_interpreter_fixture__create_agent(
     }
     
     // Track agent ID
-    data_t *own_id_data = ar_data__create_integer((int)agent_id);
+    ar_data_t *own_id_data = ar_data__create_integer((int)agent_id);
     if (own_id_data) {
         ar_list__add_last(mut_fixture->own_agent_ids, own_id_data);
     }
@@ -188,15 +188,15 @@ bool ar_interpreter_fixture__execute_with_message(
     interpreter_fixture_t *mut_fixture,
     int64_t agent_id,
     const char *ref_instruction,
-    const data_t *ref_message) {
+    const ar_data_t *ref_message) {
     
     if (!mut_fixture || agent_id == 0 || !ref_instruction) {
         return false;
     }
     
     // Get agent memory and context
-    data_t *mut_memory = ar_agency__get_agent_mutable_memory(agent_id);
-    const data_t *ref_context = ar_agency__get_agent_context(agent_id);
+    ar_data_t *mut_memory = ar_agency__get_agent_mutable_memory(agent_id);
+    const ar_data_t *ref_context = ar_agency__get_agent_context(agent_id);
     
     if (!mut_memory) {
         return false;
@@ -257,7 +257,7 @@ bool ar_interpreter_fixture__create_method(
 /**
  * Gets an agent's memory
  */
-data_t* ar_interpreter_fixture__get_agent_memory(
+ar_data_t* ar_interpreter_fixture__get_agent_memory(
     const interpreter_fixture_t *ref_fixture,
     int64_t agent_id) {
     
@@ -271,7 +271,7 @@ data_t* ar_interpreter_fixture__get_agent_memory(
 bool ar_interpreter_fixture__send_message(
     interpreter_fixture_t *mut_fixture,
     int64_t agent_id,
-    data_t *own_message) {
+    ar_data_t *own_message) {
     
     (void)mut_fixture; // Not used, but kept for API consistency
     
@@ -295,7 +295,7 @@ bool ar_interpreter_fixture__send_message(
 /**
  * Creates a test data map with common test values
  */
-data_t* ar_interpreter_fixture__create_test_map(
+ar_data_t* ar_interpreter_fixture__create_test_map(
     interpreter_fixture_t *mut_fixture,
     const char *ref_name) {
     
@@ -304,28 +304,28 @@ data_t* ar_interpreter_fixture__create_test_map(
     }
     
     // Create map
-    data_t *own_map = ar_data__create_map();
+    ar_data_t *own_map = ar_data__create_map();
     if (!own_map) {
         return NULL;
     }
     
     // Add common test values
-    data_t *own_name = ar_data__create_string(ref_name ? ref_name : "test");
+    ar_data_t *own_name = ar_data__create_string(ref_name ? ref_name : "test");
     if (own_name) {
         ar_data__set_map_data(own_map, "name", own_name);
     }
     
-    data_t *own_count = ar_data__create_integer(42);
+    ar_data_t *own_count = ar_data__create_integer(42);
     if (own_count) {
         ar_data__set_map_data(own_map, "count", own_count);
     }
     
-    data_t *own_value = ar_data__create_double(3.14);
+    ar_data_t *own_value = ar_data__create_double(3.14);
     if (own_value) {
         ar_data__set_map_data(own_map, "value", own_value);
     }
     
-    data_t *own_flag = ar_data__create_integer(1);
+    ar_data_t *own_flag = ar_data__create_integer(1);
     if (own_flag) {
         ar_data__set_map_data(own_map, "flag", own_flag);
     }
@@ -341,7 +341,7 @@ data_t* ar_interpreter_fixture__create_test_map(
  */
 void ar_interpreter_fixture__track_data(
     interpreter_fixture_t *mut_fixture,
-    data_t *own_data) {
+    ar_data_t *own_data) {
     
     if (!mut_fixture || !own_data) {
         return;

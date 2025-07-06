@@ -17,14 +17,14 @@
 struct ar_assignment_instruction_evaluator_s {
     ar_log_t *ref_log;                           /* Borrowed reference to log instance */
     ar_expression_evaluator_t *ref_expr_evaluator;  /* Borrowed reference to expression evaluator */
-    data_t *mut_memory;                          /* Mutable reference to memory map */
+    ar_data_t *mut_memory;                          /* Mutable reference to memory map */
 };
 
 
 ar_assignment_instruction_evaluator_t* ar_assignment_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
-    data_t *mut_memory
+    ar_data_t *mut_memory
 ) {
     if (!ref_log || !ref_expr_evaluator || !mut_memory) {
         return NULL;
@@ -100,14 +100,14 @@ bool ar_assignment_instruction_evaluator__evaluate(
     }
     
     // Evaluate the expression AST
-    data_t *result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_expr_ast);
+    ar_data_t *result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_expr_ast);
     
     if (!result) {
         return false;
     }
     
     // Check if we need to make a copy (if result is owned by memory/context)
-    data_t *own_value;
+    ar_data_t *own_value;
     if (ar_data__hold_ownership(result, mut_evaluator)) {
         // We can claim ownership - it's an unowned value (literal or operation result)
         ar_data__transfer_ownership(result, mut_evaluator);  // Transfer to NULL

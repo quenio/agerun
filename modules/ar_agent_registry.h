@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 /* Forward declarations */
-typedef struct data_s data_t;
+typedef struct data_s ar_data_t;
 typedef struct agent_registry_s agent_registry_t;
 
 /**

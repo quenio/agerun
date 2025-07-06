@@ -44,7 +44,7 @@ typedef struct parsed_instruction_s parsed_instruction_t;
  * @note Ownership: Returns an owned value that caller must destroy.
  *       The function does not take ownership of the memory, context, or message parameters.
  */
-instruction_context_t* ar_instruction__create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message);
+instruction_context_t* ar_instruction__create_context(ar_data_t *mut_memory, const ar_data_t *ref_context, const ar_data_t *ref_message);
 
 /**
  * Destroys an instruction context.
@@ -130,7 +130,7 @@ bool ar_instruction__get_function_call(const parsed_instruction_t *ref_parsed,
  * @note Ownership: Does not take ownership of the context parameter.
  *       The returned memory is still owned by the context.
  */
-data_t* ar_instruction__get_memory(const instruction_context_t *ref_ctx);
+ar_data_t* ar_instruction__get_memory(const instruction_context_t *ref_ctx);
 
 /**
  * Gets the context data from the instruction context.
@@ -140,7 +140,7 @@ data_t* ar_instruction__get_memory(const instruction_context_t *ref_ctx);
  * @note Ownership: Does not take ownership of the context parameter.
  *       The returned context data is still owned by the context owner.
  */
-const data_t* ar_instruction__get_context(const instruction_context_t *ref_ctx);
+const ar_data_t* ar_instruction__get_context(const instruction_context_t *ref_ctx);
 
 /**
  * Gets the message from the instruction context.
@@ -150,7 +150,7 @@ const data_t* ar_instruction__get_context(const instruction_context_t *ref_ctx);
  * @note Ownership: Does not take ownership of the context parameter.
  *       The returned message is still owned by the context owner.
  */
-const data_t* ar_instruction__get_message(const instruction_context_t *ref_ctx);
+const ar_data_t* ar_instruction__get_message(const instruction_context_t *ref_ctx);
 
 
 /**

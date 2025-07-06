@@ -39,7 +39,7 @@ static void test_data_creation(void) {
     // Given we need to create data of different types
     
     // When we create an integer data item with default value
-    data_t *own_int_data_default = ar_data__create_integer(0); // We own this value
+    ar_data_t *own_int_data_default = ar_data__create_integer(0); // We own this value
     
     // Then it should have the correct type and default value
     assert(own_int_data_default != NULL);
@@ -47,7 +47,7 @@ static void test_data_creation(void) {
     assert(ar_data__get_integer(own_int_data_default) == 0);
     
     // When we create a double data item with default value
-    data_t *own_double_data_default = ar_data__create_double(0.0); // We own this value
+    ar_data_t *own_double_data_default = ar_data__create_double(0.0); // We own this value
     
     // Then it should have the correct type and default value
     assert(own_double_data_default != NULL);
@@ -55,7 +55,7 @@ static void test_data_creation(void) {
     assert(ar_data__get_double(own_double_data_default) == 0.0);
     
     // When we create a string data item with NULL value
-    data_t *own_string_data_default = ar_data__create_string(NULL); // We own this value
+    ar_data_t *own_string_data_default = ar_data__create_string(NULL); // We own this value
     
     // Then it should have the correct type and null string
     assert(own_string_data_default != NULL);
@@ -63,14 +63,14 @@ static void test_data_creation(void) {
     assert(ar_data__get_string(own_string_data_default) == NULL);
     
     // When we create an empty list data item
-    data_t *own_list_data_default = ar_data__create_list(); // We own this value
+    ar_data_t *own_list_data_default = ar_data__create_list(); // We own this value
     
     // Then it should have the correct type
     assert(own_list_data_default != NULL);
     assert(ar_data__get_type(own_list_data_default) == DATA_LIST);
     
     // When we create an empty map data item
-    data_t *own_map_data_default = ar_data__create_map(); // We own this value
+    ar_data_t *own_map_data_default = ar_data__create_map(); // We own this value
     
     // Then it should have the correct type and a valid map
     assert(own_map_data_default != NULL);
@@ -78,11 +78,11 @@ static void test_data_creation(void) {
     // We can verify it's a map by checking its type - can't check ar_data_get_map anymore
     
     // When we create data items with the specialized functions
-    data_t *own_int_data = ar_data__create_integer(42); // We own this value
-    data_t *own_double_data = ar_data__create_double(3.14159); // We own this value
-    data_t *own_string_data = ar_data__create_string("Hello, World!"); // We own this value
-    data_t *own_list_data = ar_data__create_list(); // We own this value
-    data_t *own_map_data = ar_data__create_map(); // We own this value
+    ar_data_t *own_int_data = ar_data__create_integer(42); // We own this value
+    ar_data_t *own_double_data = ar_data__create_double(3.14159); // We own this value
+    ar_data_t *own_string_data = ar_data__create_string("Hello, World!"); // We own this value
+    ar_data_t *own_list_data = ar_data__create_list(); // We own this value
+    ar_data_t *own_map_data = ar_data__create_map(); // We own this value
     
     // Then they should have the correct types and values
     assert(own_int_data != NULL);
@@ -125,11 +125,11 @@ static void test_data_getters(void) {
     printf("Testing data getters...\n");
     
     // Given data values of different types
-    data_t *int_data = ar_data__create_integer(42);
-    data_t *double_data = ar_data__create_double(3.14159);
-    data_t *string_data = ar_data__create_string("Hello, World!");
-    data_t *list_data = ar_data__create_list();
-    data_t *map_data = ar_data__create_map();
+    ar_data_t *int_data = ar_data__create_integer(42);
+    ar_data_t *double_data = ar_data__create_double(3.14159);
+    ar_data_t *string_data = ar_data__create_string("Hello, World!");
+    ar_data_t *list_data = ar_data__create_list();
+    ar_data_t *map_data = ar_data__create_map();
     
     // When we use the type getter
     ar_data_type_t int_type = ar_data__get_type(int_data);
@@ -191,7 +191,7 @@ static void test_integer_values(void) {
     printf("Testing integer values in map...\n");
     
     // Create a data wrapper for the map parameter
-    data_t *own_map_data = ar_data__create_map(); // We own this value
+    ar_data_t *own_map_data = ar_data__create_map(); // We own this value
     
     // When we set an integer value in the map
     bool result = ar_data__set_map_integer(own_map_data, "answer", 42);
@@ -200,7 +200,7 @@ static void test_integer_values(void) {
     assert(result);
     
     // When we retrieve the referenced value from the map
-    const data_t *ref_value = ar_data__get_map_data(own_map_data, "answer"); // Borrowed reference
+    const ar_data_t *ref_value = ar_data__get_map_data(own_map_data, "answer"); // Borrowed reference
     
     // Then the value should be correctly retrieved
     assert(ref_value != NULL);
@@ -222,7 +222,7 @@ static void test_string_values(void) {
     printf("Testing string values in map...\n");
     
     // Create a data wrapper for the map parameter
-    data_t *map_data = ar_data__create_map();
+    ar_data_t *map_data = ar_data__create_map();
     
     // When we set a string value in the map
     bool result = ar_data__set_map_string(map_data, "greeting", "Hello, World!");
@@ -231,7 +231,7 @@ static void test_string_values(void) {
     assert(result);
     
     // When we retrieve the referenced value from the map
-    const data_t *value = ar_data__get_map_data(map_data, "greeting");
+    const ar_data_t *value = ar_data__get_map_data(map_data, "greeting");
     
     // Then the value should be correctly retrieved
     assert(value != NULL);
@@ -253,12 +253,12 @@ static void test_nested_maps(void) {
     printf("Testing nested maps...\n");
     
     // Given a data structure to store nested maps
-    data_t *own_root_data = ar_data__create_map(); // We own this value
+    ar_data_t *own_root_data = ar_data__create_map(); // We own this value
     assert(own_root_data != NULL);
     assert(ar_data__get_type(own_root_data) == DATA_MAP);
     
     // Create first level map
-    data_t *own_first_level = ar_data__create_map(); // We own this value
+    ar_data_t *own_first_level = ar_data__create_map(); // We own this value
     assert(own_first_level != NULL);
     
     // Set an integer value in the first level map
@@ -275,11 +275,11 @@ static void test_nested_maps(void) {
     assert(count_value == 100);
     
     // Create second level map
-    data_t *own_second_level = ar_data__create_map(); // We own this value
+    ar_data_t *own_second_level = ar_data__create_map(); // We own this value
     assert(own_second_level != NULL);
     
     // Create third level map with a string value
-    data_t *own_third_level = ar_data__create_map(); // We own this value
+    ar_data_t *own_third_level = ar_data__create_map(); // We own this value
     assert(own_third_level != NULL);
     result = ar_data__set_map_string(own_third_level, "key", "Deep value!");
     assert(result);
@@ -290,7 +290,7 @@ static void test_nested_maps(void) {
     own_third_level = NULL; // Don't use after this point
     
     // Get a borrowed reference to the first level map
-    data_t *ref_first_level = ar_data__get_map_data(own_root_data, "user_data");
+    ar_data_t *ref_first_level = ar_data__get_map_data(own_root_data, "user_data");
     assert(ref_first_level != NULL);
     
     // Add the second level map to the first level map - ownership is transferred
@@ -314,7 +314,7 @@ static void test_map_data_getters(void) {
     printf("Testing map data getters...\n");
     
     // Given a map data structure with different data types
-    data_t *map_data = ar_data__create_map();
+    ar_data_t *map_data = ar_data__create_map();
     
     // Set values of different types in the map using ar_data__set_map_* functions
     bool int_result = ar_data__set_map_integer(map_data, "int_key", 42);
@@ -322,7 +322,7 @@ static void test_map_data_getters(void) {
     bool string_result = ar_data__set_map_string(map_data, "string_key", "Hello, World!");
     
     // Create a nested map and set it in the parent map
-    data_t *nested_map_data = ar_data__create_map();
+    ar_data_t *nested_map_data = ar_data__create_map();
     bool map_result = ar_data__set_map_data(map_data, "map_key", nested_map_data);
     
     // All operations should succeed
@@ -342,10 +342,10 @@ static void test_map_data_getters(void) {
     assert(strcmp(string_value, "Hello, World!") == 0);
     
     // When we use ar_data__get_map_data with correct keys
-    const data_t *int_data_direct = ar_data__get_map_data(map_data, "int_key");
-    const data_t *double_data_direct = ar_data__get_map_data(map_data, "double_key");
-    const data_t *string_data_direct = ar_data__get_map_data(map_data, "string_key");
-    const data_t *map_data_direct = ar_data__get_map_data(map_data, "map_key");
+    const ar_data_t *int_data_direct = ar_data__get_map_data(map_data, "int_key");
+    const ar_data_t *double_data_direct = ar_data__get_map_data(map_data, "double_key");
+    const ar_data_t *string_data_direct = ar_data__get_map_data(map_data, "string_key");
+    const ar_data_t *map_data_direct = ar_data__get_map_data(map_data, "map_key");
     
     // Then it should return the correct data objects
     assert(int_data_direct != NULL);
@@ -370,7 +370,7 @@ static void test_map_data_getters(void) {
     int wrong_int = ar_data__get_map_integer(map_data, "nonexistent_key");
     double wrong_double = ar_data__get_map_double(map_data, "nonexistent_key");
     const char *wrong_string = ar_data__get_map_string(map_data, "nonexistent_key");
-    const data_t *wrong_data = ar_data__get_map_data(map_data, "nonexistent_key");
+    const ar_data_t *wrong_data = ar_data__get_map_data(map_data, "nonexistent_key");
     
     // Then they should return default values
     assert(wrong_int == 0);
@@ -381,8 +381,8 @@ static void test_map_data_getters(void) {
     // When we use the map data getters with NULL data or key
     int null_data_int = ar_data__get_map_integer(NULL, "int_key");
     double null_key_double = ar_data__get_map_double(map_data, NULL);
-    const data_t *null_data_obj = ar_data__get_map_data(NULL, "int_key");
-    const data_t *null_key_obj = ar_data__get_map_data(map_data, NULL);
+    const ar_data_t *null_data_obj = ar_data__get_map_data(NULL, "int_key");
+    const ar_data_t *null_key_obj = ar_data__get_map_data(map_data, NULL);
     
     // Then they should return default values
     assert(null_data_int == 0);
@@ -401,7 +401,7 @@ static void test_map_data_getters(void) {
     assert(wrong_type_string == NULL);
     
     // Create a data wrapper for the nested map value
-    data_t *nested_data = ar_data__create_map();
+    ar_data_t *nested_data = ar_data__create_map();
     
     // Set a value in the nested map
     bool nested_result = ar_data__set_map_integer(nested_data, "nested_int", 100);
@@ -420,7 +420,7 @@ static void test_map_data_setters(void) {
     printf("Testing map data setters...\n");
     
     // Given a map data structure for storing different data types
-    data_t *map_data = ar_data__create_map();
+    ar_data_t *map_data = ar_data__create_map();
     
     // When we set different data types using the map data setters
     bool int_result = ar_data__set_map_integer(map_data, "int_key", 42);
@@ -477,7 +477,7 @@ static void test_map_data_setters(void) {
     assert(!null_key_result);
     
     // When we set values in a non-map data type
-    data_t *int_data = ar_data__create_integer(42);
+    ar_data_t *int_data = ar_data__create_integer(42);
     bool wrong_type_result = ar_data__set_map_string(int_data, "key", "value");
     
     // Then the operation should fail
@@ -494,12 +494,12 @@ static void test_map_data_path_getters(void) {
     printf("Testing map data path getters...\n");
     
     // Given a nested map data structure with various data types
-    data_t *root_map = ar_data__create_map();
+    ar_data_t *root_map = ar_data__create_map();
     
     // Create the nested maps
-    data_t *user_map = ar_data__create_map();
-    data_t *address_map = ar_data__create_map();
-    data_t *scores_map = ar_data__create_map();
+    ar_data_t *user_map = ar_data__create_map();
+    ar_data_t *address_map = ar_data__create_map();
+    ar_data_t *scores_map = ar_data__create_map();
     
     // Set values in the address map
     bool result = ar_data__set_map_string(address_map, "street", "123 Main St");
@@ -554,14 +554,14 @@ static void test_map_data_path_getters(void) {
     assert(avg_score == 91.0);
     
     // When we use ar_data__get_map_data with paths
-    const data_t *user_data = ar_data__get_map_data(root_map, "user");
-    const data_t *address_data = ar_data__get_map_data(root_map, "user.address");
-    const data_t *scores_data = ar_data__get_map_data(root_map, "user.scores");
-    const data_t *name_data = ar_data__get_map_data(root_map, "user.name");
-    const data_t *age_data = ar_data__get_map_data(root_map, "user.age");
-    const data_t *street_data = ar_data__get_map_data(root_map, "user.address.street");
-    const data_t *math_data = ar_data__get_map_data(root_map, "user.scores.math");
-    const data_t *avg_data = ar_data__get_map_data(root_map, "user.scores.average");
+    const ar_data_t *user_data = ar_data__get_map_data(root_map, "user");
+    const ar_data_t *address_data = ar_data__get_map_data(root_map, "user.address");
+    const ar_data_t *scores_data = ar_data__get_map_data(root_map, "user.scores");
+    const ar_data_t *name_data = ar_data__get_map_data(root_map, "user.name");
+    const ar_data_t *age_data = ar_data__get_map_data(root_map, "user.age");
+    const ar_data_t *street_data = ar_data__get_map_data(root_map, "user.address.street");
+    const ar_data_t *math_data = ar_data__get_map_data(root_map, "user.scores.math");
+    const ar_data_t *avg_data = ar_data__get_map_data(root_map, "user.scores.average");
     
     // Then the data objects should be correctly retrieved
     assert(user_data != NULL);
@@ -594,8 +594,8 @@ static void test_map_data_path_getters(void) {
     int invalid_age = ar_data__get_map_integer(root_map, "user.invalid.age");
     const char *invalid_name = ar_data__get_map_string(root_map, "invalid.user.name");
     double invalid_avg = ar_data__get_map_double(root_map, "user.scores.invalid");
-    const data_t *invalid_data = ar_data__get_map_data(root_map, "user.invalid.path");
-    const data_t *nonexistent_data = ar_data__get_map_data(root_map, "nonexistent");
+    const ar_data_t *invalid_data = ar_data__get_map_data(root_map, "user.invalid.path");
+    const ar_data_t *nonexistent_data = ar_data__get_map_data(root_map, "nonexistent");
     
     // Then they should return default values
     assert(invalid_age == 0);
@@ -624,7 +624,7 @@ static void test_map_data_path_setters(void) {
     printf("Testing map data path setters...\n");
     
     // Given a root map data structure
-    data_t *root_map = ar_data__create_map();
+    ar_data_t *root_map = ar_data__create_map();
     
     // When we try to set values using path-based setters for paths that don't exist yet
     printf("Setting integer value on non-existent path...\n");
@@ -647,10 +647,10 @@ static void test_map_data_path_setters(void) {
     
     // First create intermediate maps for a proper test
     // Create the intermediate maps for a test path
-    data_t *user_map = ar_data__create_map();
-    data_t *prefs_map = ar_data__create_map();
-    data_t *account_map = ar_data__create_map();
-    data_t *profile_map = ar_data__create_map();
+    ar_data_t *user_map = ar_data__create_map();
+    ar_data_t *prefs_map = ar_data__create_map();
+    ar_data_t *account_map = ar_data__create_map();
+    ar_data_t *profile_map = ar_data__create_map();
     
     // Add to root using data interface
     ar_data__set_map_data(root_map, "user", user_map);
@@ -671,7 +671,7 @@ static void test_map_data_path_setters(void) {
     printf("Setting double value on valid path...\n");
     
     // Verify account map exists before setting
-    data_t *pre_account_data = ar_data__get_map_data(root_map, "user.account");
+    ar_data_t *pre_account_data = ar_data__get_map_data(root_map, "user.account");
     printf("account data exists before setting: %s\n", pre_account_data ? "yes" : "no");
     
     // Set the double value and check result
@@ -680,14 +680,14 @@ static void test_map_data_path_setters(void) {
     printf("Testing double value after setting...\n");
     
     // Get the target map to directly inspect if needed
-    data_t *user_data = ar_data__get_map_data(root_map, "user");
+    ar_data_t *user_data = ar_data__get_map_data(root_map, "user");
     printf("user data type: %d\n", ar_data__get_type(user_data));
-    data_t *account_data = ar_data__get_map_data(root_map, "user.account");
+    ar_data_t *account_data = ar_data__get_map_data(root_map, "user.account");
     printf("account data type: %d\n", ar_data__get_type(account_data));
     
     // Use data interface for inspection
     printf("Direct check of account_map entries:\n");
-    data_t *balance_direct = ar_data__get_map_data(account_data, "balance");
+    ar_data_t *balance_direct = ar_data__get_map_data(account_data, "balance");
     printf("Direct map lookup of 'balance': %p\n", (void *)balance_direct);
     if (balance_direct) {
         printf("Direct balance data type: %d\n", ar_data__get_type(balance_direct));
@@ -696,7 +696,7 @@ static void test_map_data_path_setters(void) {
         }
     }
     
-    data_t *balance_data = ar_data__get_map_data(root_map, "user.account.balance");
+    ar_data_t *balance_data = ar_data__get_map_data(root_map, "user.account.balance");
     printf("balance data type: %d\n", balance_data ? (int)ar_data__get_type(balance_data) : -1);
     
     double double_val = ar_data__get_map_double(root_map, "user.account.balance");
@@ -756,7 +756,7 @@ static void test_list_operations(void) {
     printf("Testing list operations...\n");
     
     // Given a list data structure
-    data_t *own_list_data = ar_data__create_list(); // We own this value
+    ar_data_t *own_list_data = ar_data__create_list(); // We own this value
     assert(own_list_data != NULL);
     assert(ar_data__get_type(own_list_data) == DATA_LIST);
     
@@ -778,8 +778,8 @@ static void test_list_operations(void) {
     assert(ar_data__list_count(own_list_data) == 2);
     
     // When we get the first and last items - these are borrowed references
-    data_t *ref_first_item = ar_data__list_first(own_list_data);
-    data_t *ref_last_item = ar_data__list_last(own_list_data);
+    ar_data_t *ref_first_item = ar_data__list_first(own_list_data);
+    ar_data_t *ref_last_item = ar_data__list_last(own_list_data);
     
     // Then they should be valid data items with the correct values
     assert(ref_first_item != NULL);
@@ -836,8 +836,8 @@ static void test_list_operations(void) {
     assert(strcmp(ar_data__get_string(ref_last_item), "world") == 0);
     
     // When we add data directly to the list
-    data_t *own_int_data = ar_data__create_integer(42); // We own this value
-    data_t *own_double_data = ar_data__create_double(3.14159); // We own this value
+    ar_data_t *own_int_data = ar_data__create_integer(42); // We own this value
+    ar_data_t *own_double_data = ar_data__create_double(3.14159); // We own this value
     
     // These operations transfer ownership to the list
     bool add_first_data_result = ar_data__list_add_first_data(own_list_data, own_int_data);
@@ -867,8 +867,8 @@ static void test_list_operations(void) {
     assert(ar_data__get_double(ref_last_item) == 3.14159);
     
     // When we remove items from the list - we get owned values back
-    data_t *own_removed_first = ar_data__list_remove_first(own_list_data);
-    data_t *own_removed_last = ar_data__list_remove_last(own_list_data);
+    ar_data_t *own_removed_first = ar_data__list_remove_first(own_list_data);
+    ar_data_t *own_removed_last = ar_data__list_remove_last(own_list_data);
     
     // Then the operations should succeed and return the correct items
     assert(own_removed_first != NULL);
@@ -884,7 +884,7 @@ static void test_list_operations(void) {
     // Test the typed removal functions
     
     // Start with a fresh list
-    data_t *own_typed_list = ar_data__create_list(); // We own this value
+    ar_data_t *own_typed_list = ar_data__create_list(); // We own this value
     assert(own_typed_list != NULL);
     
     // Add items of different types in a specific order for our tests
@@ -999,7 +999,7 @@ static void test_list_operations(void) {
     assert(ar_data__list_remove_last_string(NULL) == NULL);
     
     // Test error handling for wrong data type
-    data_t *own_int_data2 = ar_data__create_integer(42); // We own this value
+    ar_data_t *own_int_data2 = ar_data__create_integer(42); // We own this value
     assert(!ar_data__list_add_first_integer(own_int_data2, 10));
     assert(!ar_data__list_add_last_integer(own_int_data2, 10));
     assert(!ar_data__list_add_first_double(own_int_data2, 3.14));
@@ -1025,7 +1025,7 @@ static void test_list_basic_create_destroy(void) {
     printf("Testing list basic create/destroy...\n");
     
     // Create and immediately destroy an empty list
-    data_t *list = ar_data__create_list();
+    ar_data_t *list = ar_data__create_list();
     assert(list != NULL);
     assert(ar_data__get_type(list) == DATA_LIST);
     assert(ar_data__list_count(list) == 0);
@@ -1037,7 +1037,7 @@ static void test_list_basic_create_destroy(void) {
 static void test_list_add_integers(void) {
     printf("Testing list add integers...\n");
     
-    data_t *list = ar_data__create_list();
+    ar_data_t *list = ar_data__create_list();
     
     // Add one integer
     assert(ar_data__list_add_first_integer(list, 42) == true);
@@ -1052,7 +1052,7 @@ static void test_list_add_integers(void) {
 static void test_list_add_remove_integers(void) {
     printf("Testing list add/remove integers...\n");
     
-    data_t *list = ar_data__create_list();
+    ar_data_t *list = ar_data__create_list();
     
     // Add integers
     assert(ar_data__list_add_first_integer(list, 10) == true);
@@ -1072,7 +1072,7 @@ static void test_list_add_remove_integers(void) {
 static void test_map_empty_destroy(void) {
     printf("Testing map empty create/destroy...\n");
     
-    data_t *map = ar_data__create_map();
+    ar_data_t *map = ar_data__create_map();
     assert(map != NULL);
     assert(ar_data__get_type(map) == DATA_MAP);
     ar_data__destroy(map);
@@ -1083,7 +1083,7 @@ static void test_map_empty_destroy(void) {
 static void test_map_add_one_integer(void) {
     printf("Testing map add one integer...\n");
     
-    data_t *map = ar_data__create_map();
+    ar_data_t *map = ar_data__create_map();
     assert(ar_data__set_map_integer(map, "count", 42) == true);
     ar_data__destroy(map);
     
@@ -1093,7 +1093,7 @@ static void test_map_add_one_integer(void) {
 static void test_map_update_integer(void) {
     printf("Testing map update integer...\n");
     
-    data_t *map = ar_data__create_map();
+    ar_data_t *map = ar_data__create_map();
     assert(ar_data__set_map_integer(map, "count", 42) == true);
     assert(ar_data__set_map_integer(map, "count", 100) == true);  // Update same key
     assert(ar_data__get_map_integer(map, "count") == 100);
@@ -1109,11 +1109,11 @@ static void test_map_get_keys(void) {
     // Test 1: Empty map should return empty list
     {
         // Given an empty map
-        data_t *own_empty_map = ar_data__create_map();
+        ar_data_t *own_empty_map = ar_data__create_map();
         assert(own_empty_map != NULL);
         
         // When we get the keys
-        data_t *own_keys_list = ar_data__get_map_keys(own_empty_map);
+        ar_data_t *own_keys_list = ar_data__get_map_keys(own_empty_map);
         
         // Then we should get an empty list (not NULL)
         assert(own_keys_list != NULL);
@@ -1128,12 +1128,12 @@ static void test_map_get_keys(void) {
     // Test 2: Map with single key
     {
         // Given a map with one key
-        data_t *own_single_map = ar_data__create_map();
+        ar_data_t *own_single_map = ar_data__create_map();
         assert(own_single_map != NULL);
         ar_data__set_map_integer(own_single_map, "count", 42);
         
         // When we get the keys
-        data_t *own_keys_list = ar_data__get_map_keys(own_single_map);
+        ar_data_t *own_keys_list = ar_data__get_map_keys(own_single_map);
         
         // Then we should get a list with one string item
         assert(own_keys_list != NULL);
@@ -1141,7 +1141,7 @@ static void test_map_get_keys(void) {
         assert(ar_data__list_count(own_keys_list) == 1);
         
         // Verify the key is correct
-        data_t *ref_key_data = ar_data__list_first(own_keys_list);
+        ar_data_t *ref_key_data = ar_data__list_first(own_keys_list);
         assert(ref_key_data != NULL);
         assert(ar_data__get_type(ref_key_data) == DATA_STRING);
         assert(strcmp(ar_data__get_string(ref_key_data), "count") == 0);
@@ -1154,14 +1154,14 @@ static void test_map_get_keys(void) {
     // Test 3: Map with multiple keys
     {
         // Given a map with multiple keys
-        data_t *own_multi_map = ar_data__create_map();
+        ar_data_t *own_multi_map = ar_data__create_map();
         assert(own_multi_map != NULL);
         ar_data__set_map_integer(own_multi_map, "age", 25);
         ar_data__set_map_string(own_multi_map, "name", "Alice");
         ar_data__set_map_double(own_multi_map, "score", 95.5);
         
         // When we get the keys
-        data_t *own_keys_list = ar_data__get_map_keys(own_multi_map);
+        ar_data_t *own_keys_list = ar_data__get_map_keys(own_multi_map);
         
         // Then we should get a list with three string items
         assert(own_keys_list != NULL);
@@ -1176,7 +1176,7 @@ static void test_map_get_keys(void) {
         // We need to iterate through the list and check each key
         // Since we can't iterate directly, we'll remove and check each item
         while (ar_data__list_count(own_keys_list) > 0) {
-            data_t *own_key_data = ar_data__list_remove_first(own_keys_list);
+            ar_data_t *own_key_data = ar_data__list_remove_first(own_keys_list);
             assert(own_key_data != NULL);
             assert(ar_data__get_type(own_key_data) == DATA_STRING);
             
@@ -1200,7 +1200,7 @@ static void test_map_get_keys(void) {
     // Test 4: NULL input should return NULL
     {
         // When we pass NULL
-        data_t *keys = ar_data__get_map_keys(NULL);
+        ar_data_t *keys = ar_data__get_map_keys(NULL);
         
         // Then we should get NULL
         assert(keys == NULL);
@@ -1209,11 +1209,11 @@ static void test_map_get_keys(void) {
     // Test 5: Non-map data type should return NULL
     {
         // Given a non-map data type
-        data_t *own_integer = ar_data__create_integer(42);
+        ar_data_t *own_integer = ar_data__create_integer(42);
         assert(own_integer != NULL);
         
         // When we try to get keys from non-map
-        data_t *keys = ar_data__get_map_keys(own_integer);
+        ar_data_t *keys = ar_data__get_map_keys(own_integer);
         
         // Then we should get NULL
         assert(keys == NULL);
@@ -1225,8 +1225,8 @@ static void test_map_get_keys(void) {
     // Test 6: Map with nested map value (keys should only be top-level)
     {
         // Given a map with a nested map
-        data_t *own_parent_map = ar_data__create_map();
-        data_t *own_child_map = ar_data__create_map();
+        ar_data_t *own_parent_map = ar_data__create_map();
+        ar_data_t *own_child_map = ar_data__create_map();
         assert(own_parent_map != NULL);
         assert(own_child_map != NULL);
         
@@ -1235,7 +1235,7 @@ static void test_map_get_keys(void) {
         ar_data__set_map_string(own_parent_map, "parent_key", "value");
         
         // When we get the keys
-        data_t *own_keys_list = ar_data__get_map_keys(own_parent_map);
+        ar_data_t *own_keys_list = ar_data__get_map_keys(own_parent_map);
         
         // Then we should only get top-level keys
         assert(own_keys_list != NULL);
@@ -1246,7 +1246,7 @@ static void test_map_get_keys(void) {
         bool found_parent_key = false;
         
         while (ar_data__list_count(own_keys_list) > 0) {
-            data_t *own_key_data = ar_data__list_remove_first(own_keys_list);
+            ar_data_t *own_key_data = ar_data__list_remove_first(own_keys_list);
             const char *key = ar_data__get_string(own_key_data);
             
             if (strcmp(key, "child") == 0) found_child = true;
@@ -1274,11 +1274,11 @@ static void test_data_ownership(void) {
     printf("Testing data ownership tracking...\n");
     
     // Test 1: New data has no owner - can be destroyed
-    data_t *data1 = ar_data__create_integer(42);
+    ar_data_t *data1 = ar_data__create_integer(42);
     ar_data__destroy(data1);  // Should succeed - unowned
     
     // Test 2: Can claim unowned data
-    data_t *data = ar_data__create_integer(42);
+    ar_data_t *data = ar_data__create_integer(42);
     void *owner1 = (void*)0x1234;
     assert(ar_data__hold_ownership(data, owner1) == true);
     
@@ -1308,18 +1308,18 @@ static void test_list_ownership(void) {
     printf("Testing list ownership behavior...\n");
     
     // Test 1: list_add_first_data should hold ownership of added data
-    data_t *list = ar_data__create_list();
-    data_t *data1 = ar_data__create_integer(42);
+    ar_data_t *list = ar_data__create_list();
+    ar_data_t *data1 = ar_data__create_integer(42);
     
     // List should hold ownership when data is added
     assert(ar_data__list_add_first_data(list, data1) == true);
     
     // Test 2: list_add_last_data should hold ownership of added data
-    data_t *data2 = ar_data__create_integer(84);
+    ar_data_t *data2 = ar_data__create_integer(84);
     assert(ar_data__list_add_last_data(list, data2) == true);
     
     // Test 3: Cannot add data already owned by another
-    data_t *data3 = ar_data__create_integer(100);
+    ar_data_t *data3 = ar_data__create_integer(100);
     void *other_owner = (void*)0x9999;
     assert(ar_data__hold_ownership(data3, other_owner) == true);
     assert(ar_data__list_add_first_data(list, data3) == false);  // Should fail
@@ -1330,7 +1330,7 @@ static void test_list_ownership(void) {
     ar_data__destroy(data3);
     
     // Test 4: Test that convenience functions work (they don't use ownership tracking)
-    data_t *list2 = ar_data__create_list();
+    ar_data_t *list2 = ar_data__create_list();
     assert(ar_data__list_add_first_integer(list2, 10) == true);
     assert(ar_data__list_add_first_double(list2, 3.14) == true);
     assert(ar_data__list_add_first_string(list2, "test") == true);
@@ -1353,22 +1353,22 @@ static void test_list_remove_ownership(void) {
     printf("Testing list remove functions with ownership...\n");
     
     // Test 1: list_remove_first should transfer ownership back to caller
-    data_t *list = ar_data__create_list();
-    data_t *data1 = ar_data__create_integer(42);
-    data_t *data2 = ar_data__create_integer(84);
+    ar_data_t *list = ar_data__create_list();
+    ar_data_t *data1 = ar_data__create_integer(42);
+    ar_data_t *data2 = ar_data__create_integer(84);
     
     // Add data to list (list takes ownership)
     assert(ar_data__list_add_first_data(list, data1) == true);
     assert(ar_data__list_add_last_data(list, data2) == true);
     
     // Remove first should transfer ownership back
-    data_t *removed1 = ar_data__list_remove_first(list);
+    ar_data_t *removed1 = ar_data__list_remove_first(list);
     assert(removed1 == data1);
     // We should now be able to destroy it since ownership was transferred
     ar_data__destroy(removed1);
     
     // Remove last should transfer ownership back
-    data_t *removed2 = ar_data__list_remove_last(list);
+    ar_data_t *removed2 = ar_data__list_remove_last(list);
     assert(removed2 == data2);
     // We should now be able to destroy it since ownership was transferred
     ar_data__destroy(removed2);
@@ -1378,9 +1378,9 @@ static void test_list_remove_ownership(void) {
     assert(ar_data__list_remove_last(list) == NULL);
     
     // Test 3: Test with mixed ownership (some owned by list, some by others)
-    data_t *data3 = ar_data__create_integer(100);
-    data_t *data4 = ar_data__create_integer(200);
-    data_t *data5 = ar_data__create_integer(300);
+    ar_data_t *data3 = ar_data__create_integer(100);
+    ar_data_t *data4 = ar_data__create_integer(200);
+    ar_data_t *data5 = ar_data__create_integer(300);
     
     // Add data3 and data4 to list
     assert(ar_data__list_add_last_data(list, data3) == true);
@@ -1392,11 +1392,11 @@ static void test_list_remove_ownership(void) {
     assert(ar_data__list_add_last_data(list, data5) == false);  // Should fail
     
     // Remove data3 and data4
-    data_t *removed3 = ar_data__list_remove_first(list);
+    ar_data_t *removed3 = ar_data__list_remove_first(list);
     assert(removed3 == data3);
     ar_data__destroy(removed3);
     
-    data_t *removed4 = ar_data__list_remove_first(list);
+    ar_data_t *removed4 = ar_data__list_remove_first(list);
     assert(removed4 == data4);
     ar_data__destroy(removed4);
     
@@ -1414,14 +1414,14 @@ static void test_map_ownership(void) {
     printf("Testing map ownership behavior...\n");
     
     // Test 1: set_map_data should hold ownership of added data
-    data_t *map = ar_data__create_map();
-    data_t *data1 = ar_data__create_integer(42);
+    ar_data_t *map = ar_data__create_map();
+    ar_data_t *data1 = ar_data__create_integer(42);
     
     // Map should hold ownership when data is added
     assert(ar_data__set_map_data(map, "key1", data1) == true);
     
     // Test 2: Cannot add data already owned by another
-    data_t *data2 = ar_data__create_string("hello");
+    ar_data_t *data2 = ar_data__create_string("hello");
     void *other_owner = (void*)0x8888;
     assert(ar_data__hold_ownership(data2, other_owner) == true);
     assert(ar_data__set_map_data(map, "key2", data2) == false);  // Should fail
@@ -1431,12 +1431,12 @@ static void test_map_ownership(void) {
     ar_data__destroy(data2);
     
     // Test 3: Replacing a value should transfer ownership of old value
-    data_t *data3 = ar_data__create_integer(100);
+    ar_data_t *data3 = ar_data__create_integer(100);
     assert(ar_data__set_map_data(map, "key1", data3) == true);  // Replace existing
     // Old data1 should have been destroyed internally
     
     // Test 4: Test that convenience functions work (they don't use ownership tracking)
-    data_t *map2 = ar_data__create_map();
+    ar_data_t *map2 = ar_data__create_map();
     assert(ar_data__set_map_integer(map2, "int", 10) == true);
     assert(ar_data__set_map_double(map2, "double", 3.14) == true);
     assert(ar_data__set_map_string(map2, "string", "test") == true);
@@ -1460,20 +1460,20 @@ static void test_data_shallow_copy(void) {
     printf("Testing data shallow copy...\n");
     
     // Given a NULL input
-    data_t *ref_null_value = NULL;
+    ar_data_t *ref_null_value = NULL;
     
     // When we try to copy NULL
-    data_t *own_result = ar_data__shallow_copy(ref_null_value);
+    ar_data_t *own_result = ar_data__shallow_copy(ref_null_value);
     
     // Then we should get NULL back
     assert(own_result == NULL);
     
     // Given an integer value
-    data_t *own_int_value = ar_data__create_integer(42);
+    ar_data_t *own_int_value = ar_data__create_integer(42);
     assert(own_int_value != NULL);
     
     // When we copy the integer
-    data_t *own_int_copy = ar_data__shallow_copy(own_int_value);
+    ar_data_t *own_int_copy = ar_data__shallow_copy(own_int_value);
     
     // Then we should get a new integer with the same value
     assert(own_int_copy != NULL);
@@ -1486,11 +1486,11 @@ static void test_data_shallow_copy(void) {
     ar_data__destroy(own_int_copy);
     
     // Given a double value
-    data_t *own_double_value = ar_data__create_double(3.14159);
+    ar_data_t *own_double_value = ar_data__create_double(3.14159);
     assert(own_double_value != NULL);
     
     // When we copy the double
-    data_t *own_double_copy = ar_data__shallow_copy(own_double_value);
+    ar_data_t *own_double_copy = ar_data__shallow_copy(own_double_value);
     
     // Then we should get a new double with the same value
     assert(own_double_copy != NULL);
@@ -1503,11 +1503,11 @@ static void test_data_shallow_copy(void) {
     ar_data__destroy(own_double_copy);
     
     // Given a string value
-    data_t *own_string_value = ar_data__create_string("Hello, World!");
+    ar_data_t *own_string_value = ar_data__create_string("Hello, World!");
     assert(own_string_value != NULL);
     
     // When we copy the string
-    data_t *own_string_copy = ar_data__shallow_copy(own_string_value);
+    ar_data_t *own_string_copy = ar_data__shallow_copy(own_string_value);
     
     // Then we should get a new string with the same value
     assert(own_string_copy != NULL);
@@ -1520,11 +1520,11 @@ static void test_data_shallow_copy(void) {
     ar_data__destroy(own_string_copy);
     
     // Given an empty map
-    data_t *own_empty_map = ar_data__create_map();
+    ar_data_t *own_empty_map = ar_data__create_map();
     assert(own_empty_map != NULL);
     
     // When we copy the empty map
-    data_t *own_map_copy = ar_data__shallow_copy(own_empty_map);
+    ar_data_t *own_map_copy = ar_data__shallow_copy(own_empty_map);
     
     // Then we should get a new empty map
     assert(own_map_copy != NULL);
@@ -1532,7 +1532,7 @@ static void test_data_shallow_copy(void) {
     assert(own_map_copy != own_empty_map); // Different instance
     
     // Verify it's empty by checking keys
-    data_t *own_keys = ar_data__get_map_keys(own_map_copy);
+    ar_data_t *own_keys = ar_data__get_map_keys(own_map_copy);
     assert(own_keys != NULL);
     assert(ar_data__list_count(own_keys) == 0);
     
@@ -1542,14 +1542,14 @@ static void test_data_shallow_copy(void) {
     ar_data__destroy(own_map_copy);
     
     // Given a map with primitive values
-    data_t *own_map_with_primitives = ar_data__create_map();
+    ar_data_t *own_map_with_primitives = ar_data__create_map();
     assert(own_map_with_primitives != NULL);
     assert(ar_data__set_map_integer(own_map_with_primitives, "age", 25));
     assert(ar_data__set_map_double(own_map_with_primitives, "score", 95.5));
     assert(ar_data__set_map_string(own_map_with_primitives, "name", "Alice"));
     
     // When we copy the map
-    data_t *own_map_primitives_copy = ar_data__shallow_copy(own_map_with_primitives);
+    ar_data_t *own_map_primitives_copy = ar_data__shallow_copy(own_map_with_primitives);
     
     // Then we should get a new map with the same primitive values
     assert(own_map_primitives_copy != NULL);
@@ -1566,12 +1566,12 @@ static void test_data_shallow_copy(void) {
     ar_data__destroy(own_map_primitives_copy);
     
     // Given a map with a nested map
-    data_t *own_map_with_nested = ar_data__create_map();
+    ar_data_t *own_map_with_nested = ar_data__create_map();
     assert(own_map_with_nested != NULL);
     assert(ar_data__set_map_integer(own_map_with_nested, "age", 30));
     
     // Create a nested map
-    data_t *own_nested_map = ar_data__create_map();
+    ar_data_t *own_nested_map = ar_data__create_map();
     assert(own_nested_map != NULL);
     assert(ar_data__set_map_string(own_nested_map, "city", "New York"));
     
@@ -1579,7 +1579,7 @@ static void test_data_shallow_copy(void) {
     assert(ar_data__set_map_data(own_map_with_nested, "address", own_nested_map));
     
     // When we try to copy the map with nested container
-    data_t *result_nested_map = ar_data__shallow_copy(own_map_with_nested);
+    ar_data_t *result_nested_map = ar_data__shallow_copy(own_map_with_nested);
     
     // Then we should get NULL (cannot shallow copy nested containers)
     assert(result_nested_map == NULL);
@@ -1588,12 +1588,12 @@ static void test_data_shallow_copy(void) {
     ar_data__destroy(own_map_with_nested);
     
     // Given a map with a nested list
-    data_t *own_map_with_list = ar_data__create_map();
+    ar_data_t *own_map_with_list = ar_data__create_map();
     assert(own_map_with_list != NULL);
     assert(ar_data__set_map_string(own_map_with_list, "name", "Bob"));
     
     // Create a nested list
-    data_t *own_nested_list = ar_data__create_list();
+    ar_data_t *own_nested_list = ar_data__create_list();
     assert(own_nested_list != NULL);
     assert(ar_data__list_add_last_string(own_nested_list, "reading"));
     assert(ar_data__list_add_last_string(own_nested_list, "gaming"));
@@ -1602,7 +1602,7 @@ static void test_data_shallow_copy(void) {
     assert(ar_data__set_map_data(own_map_with_list, "hobbies", own_nested_list));
     
     // When we try to copy the map with nested list
-    data_t *result_nested_list = ar_data__shallow_copy(own_map_with_list);
+    ar_data_t *result_nested_list = ar_data__shallow_copy(own_map_with_list);
     
     // Then we should get NULL (cannot shallow copy nested containers)
     assert(result_nested_list == NULL);
@@ -1611,11 +1611,11 @@ static void test_data_shallow_copy(void) {
     ar_data__destroy(own_map_with_list);
     
     // Given an empty list
-    data_t *own_empty_list = ar_data__create_list();
+    ar_data_t *own_empty_list = ar_data__create_list();
     assert(own_empty_list != NULL);
     
     // When we copy the empty list
-    data_t *own_list_copy = ar_data__shallow_copy(own_empty_list);
+    ar_data_t *own_list_copy = ar_data__shallow_copy(own_empty_list);
     
     // Then we should get a new empty list
     assert(own_list_copy != NULL);
@@ -1628,14 +1628,14 @@ static void test_data_shallow_copy(void) {
     ar_data__destroy(own_list_copy);
     
     // Given a list with primitive values
-    data_t *own_list_with_primitives = ar_data__create_list();
+    ar_data_t *own_list_with_primitives = ar_data__create_list();
     assert(own_list_with_primitives != NULL);
     assert(ar_data__list_add_last_integer(own_list_with_primitives, 10));
     assert(ar_data__list_add_last_double(own_list_with_primitives, 2.5));
     assert(ar_data__list_add_last_string(own_list_with_primitives, "test"));
     
     // When we copy the list
-    data_t *own_list_primitives_copy = ar_data__shallow_copy(own_list_with_primitives);
+    ar_data_t *own_list_primitives_copy = ar_data__shallow_copy(own_list_with_primitives);
     
     // Then we should get a new list with the same primitive values
     assert(own_list_primitives_copy != NULL);
@@ -1644,7 +1644,7 @@ static void test_data_shallow_copy(void) {
     assert(ar_data__list_count(own_list_primitives_copy) == 3);
     
     // Verify the values were copied (check first item)
-    data_t *ref_first = ar_data__list_first(own_list_primitives_copy);
+    ar_data_t *ref_first = ar_data__list_first(own_list_primitives_copy);
     assert(ref_first != NULL);
     assert(ar_data__get_type(ref_first) == DATA_INTEGER);
     assert(ar_data__get_integer(ref_first) == 10);
@@ -1654,12 +1654,12 @@ static void test_data_shallow_copy(void) {
     ar_data__destroy(own_list_primitives_copy);
     
     // Given a list with a nested map
-    data_t *own_list_with_map = ar_data__create_list();
+    ar_data_t *own_list_with_map = ar_data__create_list();
     assert(own_list_with_map != NULL);
     assert(ar_data__list_add_last_integer(own_list_with_map, 5));
     
     // Create a nested map
-    data_t *own_nested_map_in_list = ar_data__create_map();
+    ar_data_t *own_nested_map_in_list = ar_data__create_map();
     assert(own_nested_map_in_list != NULL);
     assert(ar_data__set_map_string(own_nested_map_in_list, "key", "value"));
     
@@ -1667,7 +1667,7 @@ static void test_data_shallow_copy(void) {
     assert(ar_data__list_add_last_data(own_list_with_map, own_nested_map_in_list));
     
     // When we try to copy the list with nested map
-    data_t *result_list_with_map = ar_data__shallow_copy(own_list_with_map);
+    ar_data_t *result_list_with_map = ar_data__shallow_copy(own_list_with_map);
     
     // Then we should get NULL (cannot shallow copy nested containers)
     assert(result_list_with_map == NULL);
@@ -1676,12 +1676,12 @@ static void test_data_shallow_copy(void) {
     ar_data__destroy(own_list_with_map);
     
     // Given a list with a nested list
-    data_t *own_list_with_list = ar_data__create_list();
+    ar_data_t *own_list_with_list = ar_data__create_list();
     assert(own_list_with_list != NULL);
     assert(ar_data__list_add_last_string(own_list_with_list, "first"));
     
     // Create a nested list
-    data_t *own_nested_list_in_list = ar_data__create_list();
+    ar_data_t *own_nested_list_in_list = ar_data__create_list();
     assert(own_nested_list_in_list != NULL);
     assert(ar_data__list_add_last_integer(own_nested_list_in_list, 100));
     
@@ -1689,7 +1689,7 @@ static void test_data_shallow_copy(void) {
     assert(ar_data__list_add_last_data(own_list_with_list, own_nested_list_in_list));
     
     // When we try to copy the list with nested list
-    data_t *result_list_with_list = ar_data__shallow_copy(own_list_with_list);
+    ar_data_t *result_list_with_list = ar_data__shallow_copy(own_list_with_list);
     
     // Then we should get NULL (cannot shallow copy nested containers)
     assert(result_list_with_list == NULL);
@@ -1709,24 +1709,24 @@ static void test_data_is_primitive_type(void) {
     assert(ar_data__is_primitive_type(NULL) == false);
     
     // When we check primitive types
-    data_t *own_int = ar_data__create_integer(42);
+    ar_data_t *own_int = ar_data__create_integer(42);
     assert(ar_data__is_primitive_type(own_int) == true);
     ar_data__destroy(own_int);
     
-    data_t *own_double = ar_data__create_double(3.14);
+    ar_data_t *own_double = ar_data__create_double(3.14);
     assert(ar_data__is_primitive_type(own_double) == true);
     ar_data__destroy(own_double);
     
-    data_t *own_string = ar_data__create_string("test");
+    ar_data_t *own_string = ar_data__create_string("test");
     assert(ar_data__is_primitive_type(own_string) == true);
     ar_data__destroy(own_string);
     
     // When we check container types
-    data_t *own_map = ar_data__create_map();
+    ar_data_t *own_map = ar_data__create_map();
     assert(ar_data__is_primitive_type(own_map) == false);
     ar_data__destroy(own_map);
     
-    data_t *own_list = ar_data__create_list();
+    ar_data_t *own_list = ar_data__create_list();
     assert(ar_data__is_primitive_type(own_list) == false);
     ar_data__destroy(own_list);
     
@@ -1742,17 +1742,17 @@ static void test_data_map_contains_only_primitives(void) {
     assert(ar_data__map_contains_only_primitives(NULL) == false);
     
     // When we check non-map type
-    data_t *own_int = ar_data__create_integer(42);
+    ar_data_t *own_int = ar_data__create_integer(42);
     assert(ar_data__map_contains_only_primitives(own_int) == false);
     ar_data__destroy(own_int);
     
     // When we check empty map
-    data_t *own_empty_map = ar_data__create_map();
+    ar_data_t *own_empty_map = ar_data__create_map();
     assert(ar_data__map_contains_only_primitives(own_empty_map) == true);
     ar_data__destroy(own_empty_map);
     
     // When we check map with only primitives
-    data_t *own_primitive_map = ar_data__create_map();
+    ar_data_t *own_primitive_map = ar_data__create_map();
     ar_data__set_map_integer(own_primitive_map, "int", 42);
     ar_data__set_map_double(own_primitive_map, "double", 3.14);
     ar_data__set_map_string(own_primitive_map, "string", "test");
@@ -1760,17 +1760,17 @@ static void test_data_map_contains_only_primitives(void) {
     ar_data__destroy(own_primitive_map);
     
     // When we check map with nested map
-    data_t *own_nested_map = ar_data__create_map();
+    ar_data_t *own_nested_map = ar_data__create_map();
     ar_data__set_map_integer(own_nested_map, "int", 42);
-    data_t *own_inner_map = ar_data__create_map();
+    ar_data_t *own_inner_map = ar_data__create_map();
     ar_data__set_map_data(own_nested_map, "map", own_inner_map);
     assert(ar_data__map_contains_only_primitives(own_nested_map) == false);
     ar_data__destroy(own_nested_map);
     
     // When we check map with nested list
-    data_t *own_list_map = ar_data__create_map();
+    ar_data_t *own_list_map = ar_data__create_map();
     ar_data__set_map_string(own_list_map, "string", "test");
-    data_t *own_inner_list = ar_data__create_list();
+    ar_data_t *own_inner_list = ar_data__create_list();
     ar_data__set_map_data(own_list_map, "list", own_inner_list);
     assert(ar_data__map_contains_only_primitives(own_list_map) == false);
     ar_data__destroy(own_list_map);
@@ -1787,17 +1787,17 @@ static void test_data_list_contains_only_primitives(void) {
     assert(ar_data__list_contains_only_primitives(NULL) == false);
     
     // When we check non-list type
-    data_t *own_int = ar_data__create_integer(42);
+    ar_data_t *own_int = ar_data__create_integer(42);
     assert(ar_data__list_contains_only_primitives(own_int) == false);
     ar_data__destroy(own_int);
     
     // When we check empty list
-    data_t *own_empty_list = ar_data__create_list();
+    ar_data_t *own_empty_list = ar_data__create_list();
     assert(ar_data__list_contains_only_primitives(own_empty_list) == true);
     ar_data__destroy(own_empty_list);
     
     // When we check list with only primitives
-    data_t *own_primitive_list = ar_data__create_list();
+    ar_data_t *own_primitive_list = ar_data__create_list();
     ar_data__list_add_last_integer(own_primitive_list, 42);
     ar_data__list_add_last_double(own_primitive_list, 3.14);
     ar_data__list_add_last_string(own_primitive_list, "test");
@@ -1805,17 +1805,17 @@ static void test_data_list_contains_only_primitives(void) {
     ar_data__destroy(own_primitive_list);
     
     // When we check list with nested map
-    data_t *own_map_list = ar_data__create_list();
+    ar_data_t *own_map_list = ar_data__create_list();
     ar_data__list_add_last_integer(own_map_list, 42);
-    data_t *own_inner_map = ar_data__create_map();
+    ar_data_t *own_inner_map = ar_data__create_map();
     ar_data__list_add_last_data(own_map_list, own_inner_map);
     assert(ar_data__list_contains_only_primitives(own_map_list) == false);
     ar_data__destroy(own_map_list);
     
     // When we check list with nested list
-    data_t *own_list_list = ar_data__create_list();
+    ar_data_t *own_list_list = ar_data__create_list();
     ar_data__list_add_last_string(own_list_list, "test");
-    data_t *own_inner_list = ar_data__create_list();
+    ar_data_t *own_inner_list = ar_data__create_list();
     ar_data__list_add_last_data(own_list_list, own_inner_list);
     assert(ar_data__list_contains_only_primitives(own_list_list) == false);
     ar_data__destroy(own_list_list);

@@ -13,7 +13,7 @@
 
 static void test_parse_assignment_instructions(void) {
     // Given an instruction context with memory
-    data_t *mut_memory = ar_data__create_map();
+    ar_data_t *mut_memory = ar_data__create_map();
     assert(mut_memory != NULL);
     
     instruction_context_t *mut_ctx = ar_instruction__create_context(mut_memory, NULL, NULL);
@@ -113,7 +113,7 @@ static void test_parse_assignment_instructions(void) {
 
 static void test_parse_function_call_instructions(void) {
     // Given an instruction context with memory
-    data_t *mut_memory = ar_data__create_map();
+    ar_data_t *mut_memory = ar_data__create_map();
     assert(mut_memory != NULL);
     
     instruction_context_t *mut_ctx = ar_instruction__create_context(mut_memory, NULL, NULL);
@@ -174,7 +174,7 @@ static void test_parse_function_call_instructions(void) {
     // Test 3: Build function call
     {
         // Add a map value for the build function to reference
-        data_t *own_values = ar_data__create_map();
+        ar_data_t *own_values = ar_data__create_map();
         ar_data__set_map_string(own_values, "name", "Alice");
         ar_data__set_map_data(mut_memory, "values", own_values);
         
@@ -230,7 +230,7 @@ static void test_parse_function_call_instructions(void) {
     // Test 5: Agent function call with context
     {
         // Add context for agent creation
-        data_t *own_context = ar_data__create_map();
+        ar_data_t *own_context = ar_data__create_map();
         ar_data__set_map_string(own_context, "name", "Test Agent");
         ar_data__set_map_data(mut_memory, "ctx", own_context);
         
@@ -340,7 +340,7 @@ static void test_parse_function_call_instructions(void) {
 
 static void test_parse_function_calls_with_assignment(void) {
     // Given an instruction context with memory
-    data_t *mut_memory = ar_data__create_map();
+    ar_data_t *mut_memory = ar_data__create_map();
     assert(mut_memory != NULL);
     
     instruction_context_t *mut_ctx = ar_instruction__create_context(mut_memory, NULL, NULL);
@@ -400,7 +400,7 @@ static void test_parse_function_calls_with_assignment(void) {
     // Test 3: Build with assignment
     {
         // Add a map value for the build function to reference
-        data_t *own_values = ar_data__create_map();
+        ar_data_t *own_values = ar_data__create_map();
         ar_data__set_map_string(own_values, "name", "Alice");
         ar_data__set_map_data(mut_memory, "values", own_values);
         
@@ -453,7 +453,7 @@ static void test_parse_function_calls_with_assignment(void) {
     // Test 5: Agent with assignment
     {
         // Add context for agent creation
-        data_t *own_context = ar_data__create_map();
+        ar_data_t *own_context = ar_data__create_map();
         ar_data__set_map_string(own_context, "name", "Test Agent");
         ar_data__set_map_data(mut_memory, "ctx", own_context);
         
@@ -558,7 +558,7 @@ static void test_parse_function_calls_with_assignment(void) {
 
 static void test_basic_context_creation(void) {
     // Given empty data structures
-    data_t *mut_memory = ar_data__create_map();
+    ar_data_t *mut_memory = ar_data__create_map();
     assert(mut_memory != NULL);
     
     // When creating an instruction context
@@ -581,7 +581,7 @@ static void test_basic_context_creation(void) {
 #if 0
 static void test_error_handling_and_invalid_syntax(void) {
     // Given an instruction context with memory
-    data_t *mut_memory = ar_data__create_map();
+    ar_data_t *mut_memory = ar_data__create_map();
     assert(mut_memory != NULL);
     
     instruction_context_t *mut_ctx = ar_instruction__create_context(mut_memory, NULL, NULL);

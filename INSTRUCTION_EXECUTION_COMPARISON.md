@@ -27,7 +27,7 @@ static bool parse_assignment(instruction_context_t *mut_ctx, const char *ref_ins
     );
     
     // 4. Evaluate expression
-    data_t *own_value = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
+    ar_data_t *own_value = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
     
     // 5. Store in memory
     bool success = ar_data_set_map_data(mut_ctx->mut_memory, path, own_value);
@@ -51,15 +51,15 @@ static bool _execute_assignment(interpreter_t *mut_interpreter, instruction_cont
     );
     
     // 3. Evaluate expression
-    const data_t *ref_result = ar_expression__evaluate(own_expr_ctx);
-    data_t *own_value = ar_expression__take_ownership(own_expr_ctx, ref_result);
+    const ar_data_t *ref_result = ar_expression__evaluate(own_expr_ctx);
+    ar_data_t *own_value = ar_expression__take_ownership(own_expr_ctx, ref_result);
     
     // 4. Store in memory
     if (own_value) {
         success = ar_data__set_map_data(mut_memory, ref_path, own_value);
     } else {
         // Make a copy if we don't own it
-        data_t *own_copy = ar_data__copy(ref_result);
+        ar_data_t *own_copy = ar_data__copy(ref_result);
         if (own_copy) {
             success = ar_data__set_map_data(mut_memory, ref_path, own_copy);
         }
@@ -82,10 +82,10 @@ static bool _execute_assignment(interpreter_t *mut_interpreter, instruction_cont
 if (strcmp(function_name, "send") == 0) {
     // 1. Parse agent_id expression
     expression_context_t *own_context = ar_expression_create_context(...);
-    data_t *own_agent_id = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
+    ar_data_t *own_agent_id = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
     
     // 2. Parse message expression
-    data_t *own_msg = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
+    ar_data_t *own_msg = ar_expression_take_ownership(own_context, ar_expression_evaluate(own_context));
     
     // 3. Extract agent ID
     int64_t target_id = 0;
@@ -113,12 +113,12 @@ if (strcmp(function_name, "send") == 0) {
 static bool _execute_send(interpreter_t *mut_interpreter, instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed) {
     // 1. Evaluate agent ID
     expression_context_t *own_expr_ctx = ar_expression__create_context(...);
-    const data_t *ref_agent_id_data = ar_expression__evaluate(own_expr_ctx);
+    const ar_data_t *ref_agent_id_data = ar_expression__evaluate(own_expr_ctx);
     int64_t agent_id = (int64_t)ar_data__get_integer(ref_agent_id_data);
     
     // 2. Evaluate message
-    const data_t *ref_msg_data = ar_expression__evaluate(own_expr_ctx);
-    data_t *own_msg = ar_expression__take_ownership(own_expr_ctx, ref_msg_data);
+    const ar_data_t *ref_msg_data = ar_expression__evaluate(own_expr_ctx);
+    ar_data_t *own_msg = ar_expression__take_ownership(own_expr_ctx, ref_msg_data);
     if (!own_msg) {
         own_msg = ar_data__copy(ref_msg_data);
     }
@@ -128,7 +128,7 @@ static bool _execute_send(interpreter_t *mut_interpreter, instruction_context_t 
     
     // 4. Store result if needed
     if (ref_result_path) {
-        data_t *own_result = ar_data__create_integer(send_result ? 1 : 0);
+        ar_data_t *own_result = ar_data__create_integer(send_result ? 1 : 0);
         ar_data__set_map_data(mut_memory, ref_result_path, own_result);
     }
 }
@@ -148,16 +148,16 @@ static bool _execute_send(interpreter_t *mut_interpreter, instruction_context_t 
 // Lines 463-666
 else if (strcmp(function_name, "if") == 0) {
     // 1. Parse and evaluate condition
-    const data_t *ref_cond_eval = ar_expression_evaluate(own_context);
-    data_t *own_cond = ar_expression_take_ownership(own_context, ref_cond_eval);
+    const ar_data_t *ref_cond_eval = ar_expression_evaluate(own_context);
+    ar_data_t *own_cond = ar_expression_take_ownership(own_context, ref_cond_eval);
     
     // 2. Parse and evaluate true value
-    const data_t *ref_true_eval = ar_expression_evaluate(own_context);
-    data_t *own_true = ar_expression_take_ownership(own_context, ref_true_eval);
+    const ar_data_t *ref_true_eval = ar_expression_evaluate(own_context);
+    ar_data_t *own_true = ar_expression_take_ownership(own_context, ref_true_eval);
     
     // 3. Parse and evaluate false value
-    const data_t *ref_false_eval = ar_expression_evaluate(own_context);
-    data_t *own_false = ar_expression_take_ownership(own_context, ref_false_eval);
+    const ar_data_t *ref_false_eval = ar_expression_evaluate(own_context);
+    ar_data_t *own_false = ar_expression_take_ownership(own_context, ref_false_eval);
     
     // 4. Evaluate condition (integer != 0, double != 0.0, non-empty string)
     bool condition = false;
@@ -243,7 +243,7 @@ else if (strcmp(function_name, "parse") == 0) {
 else if (strcmp(function_name, "build") == 0) {
     // 1. Parse template and values map
     const char *template_str = ar_data_get_string(template);
-    const data_t *values_map = ...;
+    const ar_data_t *values_map = ...;
     
     // 2. Build result string
     char *own_result_str = AR_HEAP_MALLOC(...);
@@ -254,7 +254,7 @@ else if (strcmp(function_name, "build") == 0) {
             // Find closing brace
             // Extract variable name
             // Look up in values map
-            const data_t *ref_value = ar_data_get_map_data(values_to_use, var_name);
+            const ar_data_t *ref_value = ar_data_get_map_data(values_to_use, var_name);
             // Convert to string (handle integer, double, string)
             // Append to result
         } else {
@@ -324,7 +324,7 @@ else if (strcmp(function_name, "agent") == 0) {
     // 1. Parse method_name, version, context
     const char *method_name = ar_data_get_string(method);
     const char *version_str = ar_data_get_string(version);
-    const data_t *ref_agent_context = ...;
+    const ar_data_t *ref_agent_context = ...;
     
     // 2. Create agent
     int64_t agent_id = ar_agency__create_agent(method_name, version_str, ref_agent_context);

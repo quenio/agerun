@@ -31,7 +31,7 @@ static void test_string_builder_parse_build(void) {
     ar_system__process_next_message();
     
     // When we send a message to parse and build
-    data_t *own_message = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_map();
     assert(own_message != NULL);
     
     ar_data__set_map_string(own_message, "template", "user={username}, role={role}");
@@ -51,7 +51,7 @@ static void test_string_builder_parse_build(void) {
     // Expected: "Welcome alice! Your role is: admin"
     
     // Verify agent memory state
-    const data_t *agent_memory = ar_agency__get_agent_memory(builder_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(builder_agent);
     assert(agent_memory != NULL);
     
     // Verify method execution by checking agent's memory
@@ -61,7 +61,7 @@ static void test_string_builder_parse_build(void) {
     // 3. Send the result back to the sender
     
     // Check memory.parsed - should contain extracted values from parse() function
-    const data_t *parsed = ar_data__get_map_data(agent_memory, "parsed");
+    const ar_data_t *parsed = ar_data__get_map_data(agent_memory, "parsed");
     if (parsed == NULL) {
         printf("FAIL: memory.parsed not found - parse() instruction failed to execute\n");
         printf("NOTE: This is expected until parse() function is implemented in instruction module\n");
@@ -74,25 +74,25 @@ static void test_string_builder_parse_build(void) {
         printf("  - Checking possible keys in parsed map:\n");
         
         // Try "username"
-        const data_t *test_username = ar_data__get_map_data(parsed, "username");
+        const ar_data_t *test_username = ar_data__get_map_data(parsed, "username");
         if (test_username) {
             printf("    username: %s\n", ar_data__get_string(test_username));
         }
         
         // Try "user"
-        const data_t *test_user = ar_data__get_map_data(parsed, "user");
+        const ar_data_t *test_user = ar_data__get_map_data(parsed, "user");
         if (test_user) {
             printf("    user: %s\n", ar_data__get_string(test_user));
         }
         
         // Try "role"
-        const data_t *test_role = ar_data__get_map_data(parsed, "role");
+        const ar_data_t *test_role = ar_data__get_map_data(parsed, "role");
         if (test_role) {
             printf("    role: %s\n", ar_data__get_string(test_role));
         }
         
         // Check that parsed contains username and role
-        const data_t *username = ar_data__get_map_data(parsed, "username");
+        const ar_data_t *username = ar_data__get_map_data(parsed, "username");
         if (username != NULL) {
             assert(ar_data__get_type(username) == DATA_STRING);
             assert(strcmp(ar_data__get_string(username), "alice") == 0);
@@ -101,7 +101,7 @@ static void test_string_builder_parse_build(void) {
             printf("  - WARNING: 'username' key not found in parsed map\n");
         }
         
-        const data_t *role = ar_data__get_map_data(parsed, "role");
+        const ar_data_t *role = ar_data__get_map_data(parsed, "role");
         if (role != NULL) {
             assert(ar_data__get_type(role) == DATA_STRING);
             assert(strcmp(ar_data__get_string(role), "admin") == 0);
@@ -112,7 +112,7 @@ static void test_string_builder_parse_build(void) {
     }
     
     // Check memory.result - should contain the built string from build() function
-    const data_t *result = ar_data__get_map_data(agent_memory, "result");
+    const ar_data_t *result = ar_data__get_map_data(agent_memory, "result");
     if (result == NULL) {
         printf("FAIL: memory.result not found - build() instruction failed to execute\n");
         printf("NOTE: This is expected until build() function is implemented in instruction module\n");
@@ -157,7 +157,7 @@ __attribute__((unused)) static void test_string_builder_parse_failure(void) {
     ar_system__process_next_message();
     
     // When we send a message where the template doesn't match the input
-    data_t *own_message = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_map();
     assert(own_message != NULL);
     
     ar_data__set_map_string(own_message, "template", "name={name}, age={age}");
@@ -177,14 +177,14 @@ __attribute__((unused)) static void test_string_builder_parse_failure(void) {
     // Expected: "Hello , you are  years old"
     
     // Verify agent memory state
-    const data_t *agent_memory = ar_agency__get_agent_memory(builder_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(builder_agent);
     assert(agent_memory != NULL);
     
     // Verify method execution with mismatched template
     // When template doesn't match input, parse() should return empty map or fail gracefully
     
     // Check memory.parsed - should exist but may be empty due to mismatch
-    const data_t *parsed = ar_data__get_map_data(agent_memory, "parsed");
+    const ar_data_t *parsed = ar_data__get_map_data(agent_memory, "parsed");
     if (parsed == NULL) {
         printf("FAIL: memory.parsed not found - parse() instruction failed to execute\n");
         printf("NOTE: This is expected until parse() function is implemented in instruction module\n");
@@ -195,7 +195,7 @@ __attribute__((unused)) static void test_string_builder_parse_failure(void) {
     }
     
     // Check memory.result - build() should handle missing values gracefully
-    const data_t *result = ar_data__get_map_data(agent_memory, "result");
+    const ar_data_t *result = ar_data__get_map_data(agent_memory, "result");
     if (result == NULL) {
         printf("FAIL: memory.result not found - build() instruction failed to execute\n");
         printf("NOTE: This is expected until build() function is implemented in instruction module\n");

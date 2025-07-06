@@ -38,9 +38,9 @@ static void test_frame__create_destroy_with_all_parameters(void) {
     printf("  test_frame__create_destroy_with_all_parameters...\n");
     
     // Given valid memory, context, and message data
-    data_t *own_memory = ar_data__create_map();
-    data_t *own_context = ar_data__create_map();
-    data_t *own_message = ar_data__create_string("test message");
+    ar_data_t *own_memory = ar_data__create_map();
+    ar_data_t *own_context = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_string("test message");
     
     // When creating a frame with all parameters
     ar_frame_t *own_frame = ar_frame__create(own_memory, own_context, own_message);
@@ -67,21 +67,21 @@ static void test_frame__getters_return_parameters(void) {
     printf("  test_frame__getters_return_parameters...\n");
     
     // Given valid memory, context, and message data
-    data_t *own_memory = ar_data__create_map();
+    ar_data_t *own_memory = ar_data__create_map();
     ar_data__set_map_integer(own_memory, "x", 42);
     
-    data_t *own_context = ar_data__create_map();
+    ar_data_t *own_context = ar_data__create_map();
     ar_data__set_map_string(own_context, "agent_id", "123");
     
-    data_t *own_message = ar_data__create_string("test message");
+    ar_data_t *own_message = ar_data__create_string("test message");
     
     // When creating a frame and accessing via getters
     ar_frame_t *own_frame = ar_frame__create(own_memory, own_context, own_message);
     
     // Then the getters should return the same references
-    data_t *ref_memory = ar_frame__get_memory(own_frame);
-    const data_t *ref_context = ar_frame__get_context(own_frame);
-    const data_t *ref_message = ar_frame__get_message(own_frame);
+    ar_data_t *ref_memory = ar_frame__get_memory(own_frame);
+    const ar_data_t *ref_context = ar_frame__get_context(own_frame);
+    const ar_data_t *ref_message = ar_frame__get_message(own_frame);
     
     if (ref_memory != own_memory) {
         fprintf(stderr, "    FAIL: Memory getter returned different reference\n");
@@ -154,9 +154,9 @@ static void test_frame__create_with_null_fields_not_allowed(void) {
     printf("  test_frame__create_with_null_fields_not_allowed...\n");
     
     // Given valid data for testing
-    data_t *own_memory = ar_data__create_map();
-    data_t *own_context = ar_data__create_map();
-    data_t *own_message = ar_data__create_string("test");
+    ar_data_t *own_memory = ar_data__create_map();
+    ar_data_t *own_context = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_string("test");
     
     // When creating a frame with null memory
     ar_frame_t *frame1 = ar_frame__create(NULL, own_context, own_message);

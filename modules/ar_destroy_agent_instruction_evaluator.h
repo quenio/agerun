@@ -26,7 +26,7 @@ typedef struct ar_destroy_agent_instruction_evaluator_s ar_destroy_agent_instruc
 ar_destroy_agent_instruction_evaluator_t* ar_destroy_agent_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory
+    ar_data_t *mut_memory
 );
 
 /**

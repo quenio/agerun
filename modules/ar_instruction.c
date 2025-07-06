@@ -15,9 +15,9 @@
 
 // Instruction context structure definition
 struct instruction_context_s {
-    data_t *mut_memory;        // Mutable reference to memory, not owned
-    const data_t *ref_context; // Borrowed reference to context, not owned
-    const data_t *ref_message; // Borrowed reference to message, not owned
+    ar_data_t *mut_memory;        // Mutable reference to memory, not owned
+    const ar_data_t *ref_context; // Borrowed reference to context, not owned
+    const ar_data_t *ref_message; // Borrowed reference to message, not owned
     char *own_error_message;   // Owned error message string
     int error_position;        // Position where error occurred (1-based, 0 if no error)
 };
@@ -51,7 +51,7 @@ static void _set_error(instruction_context_t *mut_ctx, const char *ref_message, 
 static void _clear_error(instruction_context_t *mut_ctx);
 
 // Create a new instruction context
-instruction_context_t* ar_instruction__create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message) {
+instruction_context_t* ar_instruction__create_context(ar_data_t *mut_memory, const ar_data_t *ref_context, const ar_data_t *ref_message) {
     // Allocate memory for the context
     instruction_context_t *own_ctx = (instruction_context_t*)AR__HEAP__MALLOC(sizeof(instruction_context_t), "Instruction context");
     if (!own_ctx) {
@@ -82,7 +82,7 @@ void ar_instruction__destroy_context(instruction_context_t *own_ctx) {
 }
 
 // Get the memory from the instruction context
-data_t* ar_instruction__get_memory(const instruction_context_t *ref_ctx) {
+ar_data_t* ar_instruction__get_memory(const instruction_context_t *ref_ctx) {
     if (!ref_ctx) {
         return NULL;
     }
@@ -90,7 +90,7 @@ data_t* ar_instruction__get_memory(const instruction_context_t *ref_ctx) {
 }
 
 // Get the context data from the instruction context
-const data_t* ar_instruction__get_context(const instruction_context_t *ref_ctx) {
+const ar_data_t* ar_instruction__get_context(const instruction_context_t *ref_ctx) {
     if (!ref_ctx) {
         return NULL;
     }
@@ -98,7 +98,7 @@ const data_t* ar_instruction__get_context(const instruction_context_t *ref_ctx) 
 }
 
 // Get the message from the instruction context
-const data_t* ar_instruction__get_message(const instruction_context_t *ref_ctx) {
+const ar_data_t* ar_instruction__get_message(const instruction_context_t *ref_ctx) {
     if (!ref_ctx) {
         return NULL;
     }
@@ -284,7 +284,7 @@ static parsed_instruction_t* _parse_assignment(instruction_context_t *mut_ctx, c
     }
     
     // Try to evaluate the expression - if this fails, it's not a valid expression
-    const data_t *ref_test_result = ar_expression__evaluate(own_expr_test);
+    const ar_data_t *ref_test_result = ar_expression__evaluate(own_expr_test);
     int expr_offset = ar_expression__offset(own_expr_test);
     ar_expression__destroy_context(own_expr_test);
     

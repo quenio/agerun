@@ -13,7 +13,7 @@
 
 static void test_parse_instruction_evaluator__create_destroy(void) {
     // Given memory, expression evaluator, and log
-    data_t *own_memory = ar_data__create_map();
+    ar_data_t *own_memory = ar_data__create_map();
     assert(own_memory != NULL);
 
     ar_log_t *own_log = ar_log__create();
@@ -41,7 +41,7 @@ static void test_parse_instruction_evaluator__create_destroy(void) {
 
 static void test_parse_instruction_evaluator__evaluate_with_instance(void) {
     // Given memory, evaluator instance, and log
-    data_t *own_memory = ar_data__create_map();
+    ar_data_t *own_memory = ar_data__create_map();
     assert(own_memory != NULL);
     
 
@@ -83,11 +83,11 @@ static void test_parse_instruction_evaluator__evaluate_with_instance(void) {
     
     // Then it should succeed and store the parsed value
     assert(result == true);
-    data_t *ref_result_value = ar_data__get_map_data(own_memory, "result");
+    ar_data_t *ref_result_value = ar_data__get_map_data(own_memory, "result");
     assert(ref_result_value != NULL);
     assert(ar_data__get_type(ref_result_value) == DATA_MAP);
     
-    data_t *ref_name_value = ar_data__get_map_data(ref_result_value, "name");
+    ar_data_t *ref_name_value = ar_data__get_map_data(ref_result_value, "name");
     assert(ref_name_value != NULL);
     assert(ar_data__get_type(ref_name_value) == DATA_STRING);
     assert(strcmp(ar_data__get_string(ref_name_value), "John") == 0);
@@ -102,7 +102,7 @@ static void test_parse_instruction_evaluator__evaluate_with_instance(void) {
 
 static void test_parse_instruction_evaluator__evaluate_without_legacy(void) {
     // Given memory and expression evaluator
-    data_t *own_memory = ar_data__create_map();
+    ar_data_t *own_memory = ar_data__create_map();
     assert(own_memory != NULL);
     
 
@@ -145,16 +145,16 @@ static void test_parse_instruction_evaluator__evaluate_without_legacy(void) {
     
     // Then it should succeed and store the parsed values
     assert(result == true);
-    data_t *ref_result_value = ar_data__get_map_data(own_memory, "result");
+    ar_data_t *ref_result_value = ar_data__get_map_data(own_memory, "result");
     assert(ref_result_value != NULL);
     assert(ar_data__get_type(ref_result_value) == DATA_MAP);
     
-    data_t *ref_username_value = ar_data__get_map_data(ref_result_value, "username");
+    ar_data_t *ref_username_value = ar_data__get_map_data(ref_result_value, "username");
     assert(ref_username_value != NULL);
     assert(ar_data__get_type(ref_username_value) == DATA_STRING);
     assert(strcmp(ar_data__get_string(ref_username_value), "alice") == 0);
     
-    data_t *ref_role_value = ar_data__get_map_data(ref_result_value, "role");
+    ar_data_t *ref_role_value = ar_data__get_map_data(ref_result_value, "role");
     assert(ref_role_value != NULL);
     assert(ar_data__get_type(ref_role_value) == DATA_STRING);
     assert(strcmp(ar_data__get_string(ref_role_value), "admin") == 0);
@@ -169,7 +169,7 @@ static void test_parse_instruction_evaluator__evaluate_without_legacy(void) {
 
 static void test_instruction_evaluator__evaluate_parse_simple(void) {
     // Given an evaluator with memory and log
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -211,12 +211,12 @@ static void test_instruction_evaluator__evaluate_parse_simple(void) {
     
     // Then it should succeed and store a map with the parsed value
     assert(result == true);
-    data_t *result_value = ar_data__get_map_data(memory, "result");
+    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == DATA_MAP);
     
     // Check the extracted value
-    data_t *name_value = ar_data__get_map_data(result_value, "name");
+    ar_data_t *name_value = ar_data__get_map_data(result_value, "name");
     assert(name_value != NULL);
     assert(ar_data__get_type(name_value) == DATA_STRING);
     assert(strcmp(ar_data__get_string(name_value), "John") == 0);
@@ -231,7 +231,7 @@ static void test_instruction_evaluator__evaluate_parse_simple(void) {
 
 static void test_instruction_evaluator__evaluate_parse_multiple_variables(void) {
     // Given an evaluator with memory and log
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -273,17 +273,17 @@ static void test_instruction_evaluator__evaluate_parse_multiple_variables(void) 
     
     // Then it should succeed and store a map with the parsed values
     assert(result == true);
-    data_t *result_value = ar_data__get_map_data(memory, "result");
+    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == DATA_MAP);
     
     // Check the extracted values
-    data_t *username_value = ar_data__get_map_data(result_value, "username");
+    ar_data_t *username_value = ar_data__get_map_data(result_value, "username");
     assert(username_value != NULL);
     assert(ar_data__get_type(username_value) == DATA_STRING);
     assert(strcmp(ar_data__get_string(username_value), "alice") == 0);
     
-    data_t *role_value = ar_data__get_map_data(result_value, "role");
+    ar_data_t *role_value = ar_data__get_map_data(result_value, "role");
     assert(role_value != NULL);
     assert(ar_data__get_type(role_value) == DATA_STRING);
     assert(strcmp(ar_data__get_string(role_value), "admin") == 0);
@@ -298,7 +298,7 @@ static void test_instruction_evaluator__evaluate_parse_multiple_variables(void) 
 
 static void test_instruction_evaluator__evaluate_parse_with_types(void) {
     // Given an evaluator with memory and log
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -340,22 +340,22 @@ static void test_instruction_evaluator__evaluate_parse_with_types(void) {
     
     // Then it should succeed and store a map with the parsed values of correct types
     assert(result == true);
-    data_t *result_value = ar_data__get_map_data(memory, "result");
+    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == DATA_MAP);
     
     // Check the extracted values have correct types
-    data_t *age_value = ar_data__get_map_data(result_value, "age");
+    ar_data_t *age_value = ar_data__get_map_data(result_value, "age");
     assert(age_value != NULL);
     assert(ar_data__get_type(age_value) == DATA_INTEGER);
     assert(ar_data__get_integer(age_value) == 25);
     
-    data_t *score_value = ar_data__get_map_data(result_value, "score");
+    ar_data_t *score_value = ar_data__get_map_data(result_value, "score");
     assert(score_value != NULL);
     assert(ar_data__get_type(score_value) == DATA_DOUBLE);
     assert(ar_data__get_double(score_value) == 98.5);
     
-    data_t *name_value = ar_data__get_map_data(result_value, "name");
+    ar_data_t *name_value = ar_data__get_map_data(result_value, "name");
     assert(name_value != NULL);
     assert(ar_data__get_type(name_value) == DATA_STRING);
     assert(strcmp(ar_data__get_string(name_value), "Bob") == 0);
@@ -370,7 +370,7 @@ static void test_instruction_evaluator__evaluate_parse_with_types(void) {
 
 static void test_instruction_evaluator__evaluate_parse_no_match(void) {
     // Given an evaluator with memory and log
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -412,7 +412,7 @@ static void test_instruction_evaluator__evaluate_parse_no_match(void) {
     
     // Then it should succeed but store an empty map
     assert(result == true);
-    data_t *result_value = ar_data__get_map_data(memory, "result");
+    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == DATA_MAP);
     
@@ -431,7 +431,7 @@ static void test_instruction_evaluator__evaluate_parse_no_match(void) {
 
 static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     // Given an evaluator with memory and log
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();

@@ -25,7 +25,7 @@ typedef struct agent_s agent_t;
  * @note Ownership: Function does not take ownership of ref_context, it just references it.
  *       Caller takes ownership of the returned agent.
  */
-agent_t* ar_agent__create(const char *ref_method_name, const char *ref_version, const data_t *ref_context);
+agent_t* ar_agent__create(const char *ref_method_name, const char *ref_version, const ar_data_t *ref_context);
 
 /**
  * Destroy an agent instance
@@ -43,7 +43,7 @@ void ar_agent__destroy(agent_t *own_agent);
  *       Caller should set own_message = NULL after this call.
  *       If sending fails, function will destroy the message.
  */
-bool ar_agent__send(agent_t *mut_agent, data_t *own_message);
+bool ar_agent__send(agent_t *mut_agent, ar_data_t *own_message);
 
 /**
  * Get the ID of an agent
@@ -59,7 +59,7 @@ int64_t ar_agent__get_id(const agent_t *ref_agent);
  * @note Ownership: Returns a borrowed reference to the agent's memory.
  *       Caller must not modify or destroy the returned data.
  */
-const data_t* ar_agent__get_memory(const agent_t *ref_agent);
+const ar_data_t* ar_agent__get_memory(const agent_t *ref_agent);
 
 /**
  * Get the mutable memory data of an agent (for internal use)
@@ -68,7 +68,7 @@ const data_t* ar_agent__get_memory(const agent_t *ref_agent);
  * @note Ownership: Returns a mutable reference to the agent's memory.
  *       Caller must not destroy the returned data.
  */
-data_t* ar_agent__get_mutable_memory(agent_t *mut_agent);
+ar_data_t* ar_agent__get_mutable_memory(agent_t *mut_agent);
 
 /**
  * Get the context data of an agent
@@ -77,7 +77,7 @@ data_t* ar_agent__get_mutable_memory(agent_t *mut_agent);
  * @note Ownership: Returns a borrowed reference to the agent's context.
  *       Caller must not modify or destroy the returned data.
  */
-const data_t* ar_agent__get_context(const agent_t *ref_agent);
+const ar_data_t* ar_agent__get_context(const agent_t *ref_agent);
 
 /**
  * Check if an agent is active
@@ -128,7 +128,7 @@ bool ar_agent__has_messages(const agent_t *ref_agent);
  * @return Message data (ownership transferred), or NULL if no messages
  * @note Ownership: Returns an owned value that caller must destroy
  */
-data_t* ar_agent__get_message(agent_t *mut_agent);
+ar_data_t* ar_agent__get_message(agent_t *mut_agent);
 
 
 /**

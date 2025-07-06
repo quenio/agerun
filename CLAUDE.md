@@ -107,19 +107,19 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 // SYMPTOM: Memory leak detected in test_instruction_parser
 // 1. Isolate the specific test causing the leak
 // 2. Check memory report: bin/memory_report_instruction_parser_tests.log
-//    Shows: "data_t (list) allocated at instruction_ast.c:142"
+//    Shows: "ar_data_t (list) allocated at instruction_ast.c:142"
 
 // 3. Examine the leaking function:
-data_t* ar_instruction_ast__get_function_args(ast_t *ast) {
+ar_data_t* ar_instruction_ast__get_function_args(ast_t *ast) {
     return ar_data__create_list();  // Creates NEW list (ownership transfer)
 }
 
 // 4. Find usage in tests - variable naming reveals the bug:
-data_t *ref_args = ar_instruction_ast__get_function_args(ast);  // WRONG: ref_ implies borrowed
+ar_data_t *ref_args = ar_instruction_ast__get_function_args(ast);  // WRONG: ref_ implies borrowed
 // ... no ar_data__destroy(ref_args) call found
 
 // 5. Fix by updating variable name and adding cleanup:
-data_t *own_args = ar_instruction_ast__get_function_args(ast);  // Correct prefix
+ar_data_t *own_args = ar_instruction_ast__get_function_args(ast);  // Correct prefix
 // ... use args ...
 ar_data__destroy(own_args);  // Add cleanup
 
@@ -571,7 +571,7 @@ const c = @cImport({
 });
 
 // Export functions with C ABI
-export fn ar_zigmodule__create() ?*c.data_t {
+export fn ar_zigmodule__create() ?*c.ar_data_t {
     // Use AgeRun's heap tracking
     const data = c.ar_data__create_string("Zig integrated!");
     return data;

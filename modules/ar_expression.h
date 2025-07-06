@@ -24,7 +24,7 @@ typedef struct expression_context_s expression_context_t;
  * @note Ownership: Returns an owned value that caller must destroy.
  *       The function does not take ownership of the memory, context, or message parameters.
  */
-expression_context_t* ar_expression__create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message, const char *ref_expr);
+expression_context_t* ar_expression__create_context(ar_data_t *mut_memory, const ar_data_t *ref_context, const ar_data_t *ref_message, const char *ref_expr);
 
 /**
  * Destroys an expression context.
@@ -82,7 +82,7 @@ int ar_expression__offset(const expression_context_t *ref_ctx);
  *       using ar_expression_take_ownership().
  *       The return value may be const or non-const depending on the type of expression.
  */
-const data_t* ar_expression__evaluate(expression_context_t *mut_ctx);
+const ar_data_t* ar_expression__evaluate(expression_context_t *mut_ctx);
 
 /**
  * Take ownership of a result from the expression context.
@@ -101,6 +101,6 @@ const data_t* ar_expression__evaluate(expression_context_t *mut_ctx);
  *       The const qualifier is removed from ref_result after ownership transfer,
  *       and the returned pointer can be used with functions that take ownership.
  */
-data_t* ar_expression__take_ownership(expression_context_t *mut_ctx, const data_t *ref_result);
+ar_data_t* ar_expression__take_ownership(expression_context_t *mut_ctx, const ar_data_t *ref_result);
 
 #endif /* AGERUN_EXPRESSION_H */

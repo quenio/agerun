@@ -29,9 +29,9 @@ typedef struct ar_frame_s ar_frame_t;
  *       The frame does not take ownership of any parameters.
  */
 ar_frame_t* ar_frame__create(
-    data_t *mut_memory,
-    const data_t *ref_context,
-    const data_t *ref_message
+    ar_data_t *mut_memory,
+    const ar_data_t *ref_context,
+    const ar_data_t *ref_message
 );
 
 /**
@@ -48,7 +48,7 @@ void ar_frame__destroy(ar_frame_t *own_frame);
  * @return The memory map (mutable reference)
  * @note Ownership: Returns a borrowed reference. Do not destroy.
  */
-data_t* ar_frame__get_memory(const ar_frame_t *ref_frame);
+ar_data_t* ar_frame__get_memory(const ar_frame_t *ref_frame);
 
 /**
  * Gets the context map from a frame
@@ -56,7 +56,7 @@ data_t* ar_frame__get_memory(const ar_frame_t *ref_frame);
  * @return The context map (const reference)
  * @note Ownership: Returns a borrowed reference. Do not destroy.
  */
-const data_t* ar_frame__get_context(const ar_frame_t *ref_frame);
+const ar_data_t* ar_frame__get_context(const ar_frame_t *ref_frame);
 
 /**
  * Gets the message from a frame
@@ -64,6 +64,6 @@ const data_t* ar_frame__get_context(const ar_frame_t *ref_frame);
  * @return The message (const reference)
  * @note Ownership: Returns a borrowed reference. Do not destroy.
  */
-const data_t* ar_frame__get_message(const ar_frame_t *ref_frame);
+const ar_data_t* ar_frame__get_message(const ar_frame_t *ref_frame);
 
 #endif /* AGERUN_FRAME_H */

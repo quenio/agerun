@@ -13,7 +13,7 @@
 
 /* Forward declarations */
 typedef struct expression_evaluator_s ar_expression_evaluator_t;
-typedef struct data_s data_t;
+typedef struct data_s ar_data_t;
 typedef struct instruction_ast_s ar_instruction_ast_t;
 typedef struct ar_log_s ar_log_t;
 
@@ -34,7 +34,7 @@ typedef struct ar_build_instruction_evaluator_s ar_build_instruction_evaluator_t
 ar_build_instruction_evaluator_t* ar_build_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
-    data_t *mut_memory
+    ar_data_t *mut_memory
 );
 
 /**

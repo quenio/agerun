@@ -21,7 +21,7 @@
 // Test create/destroy lifecycle
 static void test_destroy_method_instruction_evaluator__create_destroy(void) {
     // Given dependencies
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -59,7 +59,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_instance(vo
     ar_system__init(NULL, NULL);
     
     // Given an evaluator instance with a registered method
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -139,7 +139,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_legacy(void) {
     ar_system__init(NULL, NULL);
     
     // Given dependencies
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -216,7 +216,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void
     ar_system__init(NULL, NULL);
     
     // Given an evaluator instance with a method and agents using it
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -270,7 +270,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void
     assert(result == true);
     
     // And the result should be true (1)
-    data_t *result_value = ar_data__get_map_data(memory, "result");
+    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == DATA_INTEGER);
     assert(ar_data__get_integer(result_value) == 1);
@@ -311,7 +311,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void
     ar_system__init(NULL, NULL);
     
     // Given an evaluator instance with no methods
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -354,7 +354,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void
     assert(result == true);
     
     // But the result should be false (0) since method doesn't exist
-    data_t *result_value = ar_data__get_map_data(memory, "result");
+    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == DATA_INTEGER);
     assert(ar_data__get_integer(result_value) == 0);
@@ -379,7 +379,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void
 // Test destroy with invalid method name type
 static void test_destroy_method_instruction_evaluator__evaluate_invalid_name_type(void) {
     // Given an evaluator instance
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -432,7 +432,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_invalid_name_typ
 // Test destroy with wrong number of arguments
 static void test_destroy_method_instruction_evaluator__evaluate_wrong_arg_count(void) {
     // Given an evaluator instance
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();

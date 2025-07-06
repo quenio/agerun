@@ -24,11 +24,15 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - ✅ Better error handling and user guidance
   - ✅ Scripts protected from being run in wrong directory
 
-### ✅ COMPLETED: Renamed Enum Types to Follow ar_ Convention
+### ✅ COMPLETED: Renamed Types to Follow ar_ Convention
 - ✅ **Successfully renamed enum types**:
   - ✅ data_type_t → ar_data_type_t (33 occurrences)
   - ✅ instruction_type_t → ar_instruction_type_t (5 occurrences)
   - ✅ file_result_t → ar_file_result_t (91 occurrences)
+- ✅ **Successfully renamed typedef structs**:
+  - ✅ data_t → ar_data_t (1439 occurrences) - using rename_types.py
+  - ✅ Fixed check-naming script to show all typedef issues (removed output truncation)
+  - ✅ Updated Makefile help to show single test build command
 - ✅ **Implementation Details**:
   - ✅ Used whole-word regex matching for safe bulk renaming
   - ✅ Created Python script rename_types.py for automated renaming
@@ -343,7 +347,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 ## 2025-07-01
 - ✅ **Integrated ar_log Module into Expression Evaluator**:
   - ✅ **Updated ar_expression_evaluator to accept ar_log as first parameter**:
-    - ✅ Modified create function signature: ar_expression_evaluator__create(ar_log_t*, data_t*, data_t*)
+    - ✅ Modified create function signature: ar_expression_evaluator__create(ar_log_t*, ar_data_t*, ar_data_t*)
     - ✅ Added ar_log_t field to internal evaluator struct
     - ✅ Replaced all 21 ar_io__error calls with ar_log__error
     - ✅ Added _log_error helper function for consistent error reporting
@@ -511,7 +515,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
     - ✅ All 19 tests pass with zero memory leaks
   - ✅ **Key design decisions**:
     - ✅ Minimalist approach: single void* owner field, no complex state machines
-    - ✅ Only data_t objects participate in ownership (not convenience functions)
+    - ✅ Only ar_data_t objects participate in ownership (not convenience functions)
     - ✅ Collections can contain mixed ownership items
     - ✅ Ownership must be transferred to NULL before destruction
   - ✅ **Implementation details**:

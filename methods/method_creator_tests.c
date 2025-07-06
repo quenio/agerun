@@ -31,7 +31,7 @@ static void test_method_creator_create_simple(void) {
     ar_system__process_next_message();
     
     // When we send a message to create a new method
-    data_t *own_message = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_map();
     assert(own_message != NULL);
     
     ar_data__set_map_string(own_message, "method_name", "doubler");
@@ -54,11 +54,11 @@ static void test_method_creator_create_simple(void) {
     // 3. Send the result back to the sender
     
     // Get agent memory for verification
-    const data_t *agent_memory = ar_agency__get_agent_memory(creator_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(creator_agent);
     assert(agent_memory != NULL);
     
     // Check memory.result - should contain the result of method() function
-    const data_t *result = ar_data__get_map_data(agent_memory, "result");
+    const ar_data_t *result = ar_data__get_map_data(agent_memory, "result");
     if (result == NULL) {
         printf("FAIL: memory.result not found - method() instruction failed to execute\n");
         printf("NOTE: This indicates the method() function in instruction module needs implementation\n");
@@ -109,7 +109,7 @@ static void test_method_creator_invalid_syntax(void) {
     ar_system__process_next_message();
     
     // When we send a message to create a method with invalid syntax
-    data_t *own_message = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_map();
     assert(own_message != NULL);
     
     ar_data__set_map_string(own_message, "method_name", "broken");
@@ -129,11 +129,11 @@ static void test_method_creator_invalid_syntax(void) {
     // The method() function should validate syntax and return 0 for invalid instructions
     
     // Get agent memory for verification
-    const data_t *agent_memory = ar_agency__get_agent_memory(creator_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(creator_agent);
     assert(agent_memory != NULL);
     
     // Check memory.result - should be 0 for invalid syntax
-    const data_t *result = ar_data__get_map_data(agent_memory, "result");
+    const ar_data_t *result = ar_data__get_map_data(agent_memory, "result");
     if (result == NULL) {
         printf("FAIL: memory.result not found - method() instruction failed to execute\n");
         printf("NOTE: This is expected until method() function is implemented in instruction module\n");

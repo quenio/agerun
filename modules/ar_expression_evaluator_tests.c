@@ -23,7 +23,7 @@ static void test_create_destroy_with_log(void) {
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     // When creating an evaluator with ar_log, memory, and no context
@@ -52,8 +52,8 @@ static void test_create_with_context(void) {
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
-    data_t *memory = ar_data__create_map();
-    data_t *context = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
+    ar_data_t *context = ar_data__create_map();
     assert(memory != NULL);
     assert(context != NULL);
     
@@ -115,7 +115,7 @@ static void test_evaluate_literal_int(void) {
     assert(log != NULL);
     
     // Given a memory map and evaluator
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
     assert(evaluator != NULL);
     
@@ -124,7 +124,7 @@ static void test_evaluate_literal_int(void) {
     assert(ast != NULL);
     
     // When evaluating the integer literal using the public evaluate method
-    data_t *result = ar_expression_evaluator__evaluate(evaluator, ast);
+    ar_data_t *result = ar_expression_evaluator__evaluate(evaluator, ast);
     
     // Then it should return the integer value
     assert(result != NULL);
@@ -160,7 +160,7 @@ static void test_evaluate_literal_int_wrong_type(void) {
     assert(log != NULL);
     
     // Given a memory map and evaluator
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
     assert(evaluator != NULL);
     
@@ -169,7 +169,7 @@ static void test_evaluate_literal_int_wrong_type(void) {
     assert(ast != NULL);
     
     // When evaluating with integer evaluator
-    data_t *result = ar_expression_evaluator__evaluate_literal_int(evaluator, ast);
+    ar_data_t *result = ar_expression_evaluator__evaluate_literal_int(evaluator, ast);
     
     // Then it should return NULL
     assert(result == NULL);
@@ -195,7 +195,7 @@ static void test_evaluate_literal_double(void) {
     assert(log != NULL);
     
     // Given a memory map and evaluator
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
     assert(evaluator != NULL);
     
@@ -204,7 +204,7 @@ static void test_evaluate_literal_double(void) {
     assert(ast != NULL);
     
     // When evaluating the double literal
-    data_t *result = ar_expression_evaluator__evaluate_literal_double(evaluator, ast);
+    ar_data_t *result = ar_expression_evaluator__evaluate_literal_double(evaluator, ast);
     
     // Then it should return the double value
     assert(result != NULL);
@@ -233,7 +233,7 @@ static void test_evaluate_literal_double_wrong_type(void) {
     assert(log != NULL);
     
     // Given a memory map and evaluator
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
     assert(evaluator != NULL);
     
@@ -242,7 +242,7 @@ static void test_evaluate_literal_double_wrong_type(void) {
     assert(ast != NULL);
     
     // When evaluating with double evaluator
-    data_t *result = ar_expression_evaluator__evaluate_literal_double(evaluator, ast);
+    ar_data_t *result = ar_expression_evaluator__evaluate_literal_double(evaluator, ast);
     
     // Then it should return NULL
     assert(result == NULL);
@@ -268,7 +268,7 @@ static void test_evaluate_literal_string(void) {
     assert(log != NULL);
     
     // Given a memory map and evaluator
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
     assert(evaluator != NULL);
     
@@ -277,7 +277,7 @@ static void test_evaluate_literal_string(void) {
     assert(ast != NULL);
     
     // When evaluating the string literal using the public evaluate method
-    data_t *result = ar_expression_evaluator__evaluate(evaluator, ast);
+    ar_data_t *result = ar_expression_evaluator__evaluate(evaluator, ast);
     
     // Then it should return the string value
     assert(result != NULL);
@@ -314,7 +314,7 @@ static void test_evaluate_literal_string_wrong_type(void) {
     assert(log != NULL);
     
     // Given a memory map and evaluator
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
     assert(evaluator != NULL);
     
@@ -323,7 +323,7 @@ static void test_evaluate_literal_string_wrong_type(void) {
     assert(ast != NULL);
     
     // When evaluating with string evaluator
-    data_t *result = ar_expression_evaluator__evaluate_literal_string(evaluator, ast);
+    ar_data_t *result = ar_expression_evaluator__evaluate_literal_string(evaluator, ast);
     
     // Then it should return NULL
     assert(result == NULL);
@@ -349,7 +349,7 @@ static void test_evaluate_literal_string_empty(void) {
     assert(log != NULL);
     
     // Given a memory map and evaluator
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
     assert(evaluator != NULL);
     
@@ -358,7 +358,7 @@ static void test_evaluate_literal_string_empty(void) {
     assert(ast != NULL);
     
     // When evaluating the empty string literal
-    data_t *result = ar_expression_evaluator__evaluate_literal_string(evaluator, ast);
+    ar_data_t *result = ar_expression_evaluator__evaluate_literal_string(evaluator, ast);
     
     // Then it should return an empty string value
     assert(result != NULL);
@@ -387,7 +387,7 @@ static void test_evaluate_memory_access(void) {
     assert(log != NULL);
     
     // Given a memory map with some values and an evaluator
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     ar_data__set_map_integer(memory, "x", 42);
     ar_data__set_map_string(memory, "name", "Alice");
     ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
@@ -399,7 +399,7 @@ static void test_evaluate_memory_access(void) {
     assert(ast != NULL);
     
     // When evaluating the memory access using the public evaluate method
-    data_t *result = ar_expression_evaluator__evaluate(evaluator, ast);
+    ar_data_t *result = ar_expression_evaluator__evaluate(evaluator, ast);
     
     // Then it should return the value from memory (a reference, not owned)
     assert(result != NULL);
@@ -432,7 +432,7 @@ static void test_evaluate_memory_access_wrong_type(void) {
     assert(log != NULL);
     
     // Given a memory map and evaluator
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
     assert(evaluator != NULL);
     
@@ -441,7 +441,7 @@ static void test_evaluate_memory_access_wrong_type(void) {
     assert(ast != NULL);
     
     // When evaluating with memory access evaluator
-    data_t *result = ar_expression_evaluator__evaluate_memory_access(evaluator, ast);
+    ar_data_t *result = ar_expression_evaluator__evaluate_memory_access(evaluator, ast);
     
     // Then it should return NULL
     assert(result == NULL);
@@ -467,8 +467,8 @@ static void test_evaluate_memory_access_nested(void) {
     assert(log != NULL);
     
     // Given a memory map with nested structure
-    data_t *memory = ar_data__create_map();
-    data_t *user = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
+    ar_data_t *user = ar_data__create_map();
     ar_data__set_map_string(user, "name", "Bob");
     ar_data__set_map_integer(user, "age", 30);
     ar_data__set_map_data(memory, "user", user);
@@ -482,7 +482,7 @@ static void test_evaluate_memory_access_nested(void) {
     assert(ast != NULL);
     
     // When evaluating the nested memory access
-    data_t *result = ar_expression_evaluator__evaluate_memory_access(evaluator, ast);
+    ar_data_t *result = ar_expression_evaluator__evaluate_memory_access(evaluator, ast);
     
     // Then it should return the nested value (a reference, not owned)
     assert(result != NULL);
@@ -510,7 +510,7 @@ static void test_evaluate_memory_access_missing(void) {
     assert(log != NULL);
     
     // Given an empty memory map and evaluator
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
     assert(evaluator != NULL);
     
@@ -520,7 +520,7 @@ static void test_evaluate_memory_access_missing(void) {
     assert(ast != NULL);
     
     // When evaluating the memory access for a missing key
-    data_t *result = ar_expression_evaluator__evaluate_memory_access(evaluator, ast);
+    ar_data_t *result = ar_expression_evaluator__evaluate_memory_access(evaluator, ast);
     
     // Then it should return NULL
     assert(result == NULL);
@@ -546,7 +546,7 @@ static void test_evaluate_binary_op_add_integers(void) {
     assert(log != NULL);
     
     // Given a memory map and evaluator
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
     assert(evaluator != NULL);
     
@@ -557,7 +557,7 @@ static void test_evaluate_binary_op_add_integers(void) {
     assert(ast != NULL);
     
     // When evaluating the binary operation using the public evaluate method
-    data_t *result = ar_expression_evaluator__evaluate(evaluator, ast);
+    ar_data_t *result = ar_expression_evaluator__evaluate(evaluator, ast);
     
     // Then it should return the sum (a new owned value)
     assert(result != NULL);
@@ -594,7 +594,7 @@ static void test_evaluate_binary_op_multiply_doubles(void) {
     assert(log != NULL);
     
     // Given a memory map and evaluator
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
     assert(evaluator != NULL);
     
@@ -605,7 +605,7 @@ static void test_evaluate_binary_op_multiply_doubles(void) {
     assert(ast != NULL);
     
     // When evaluating the binary operation
-    data_t *result = ar_expression_evaluator__evaluate_binary_op(evaluator, ast);
+    ar_data_t *result = ar_expression_evaluator__evaluate_binary_op(evaluator, ast);
     
     // Then it should return the product (a new owned value)
     assert(result != NULL);
@@ -634,7 +634,7 @@ static void test_evaluate_binary_op_concatenate_strings(void) {
     assert(log != NULL);
     
     // Given a memory map and evaluator
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
     assert(evaluator != NULL);
     
@@ -645,7 +645,7 @@ static void test_evaluate_binary_op_concatenate_strings(void) {
     assert(ast != NULL);
     
     // When evaluating the binary operation
-    data_t *result = ar_expression_evaluator__evaluate_binary_op(evaluator, ast);
+    ar_data_t *result = ar_expression_evaluator__evaluate_binary_op(evaluator, ast);
     
     // Then it should return the concatenated string (a new owned value)
     assert(result != NULL);
@@ -674,7 +674,7 @@ static void test_evaluate_binary_op_wrong_type(void) {
     assert(log != NULL);
     
     // Given a memory map and evaluator
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
     assert(evaluator != NULL);
     
@@ -683,7 +683,7 @@ static void test_evaluate_binary_op_wrong_type(void) {
     assert(ast != NULL);
     
     // When evaluating with binary op evaluator
-    data_t *result = ar_expression_evaluator__evaluate_binary_op(evaluator, ast);
+    ar_data_t *result = ar_expression_evaluator__evaluate_binary_op(evaluator, ast);
     
     // Then it should return NULL
     assert(result == NULL);
@@ -709,7 +709,7 @@ static void test_evaluate_binary_op_nested(void) {
     assert(log != NULL);
     
     // Given a memory map with some values
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     ar_data__set_map_integer(memory, "x", 10);
     ar_data__set_map_integer(memory, "y", 5);
     ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
@@ -733,7 +733,7 @@ static void test_evaluate_binary_op_nested(void) {
     assert(ast != NULL);
     
     // When evaluating the nested binary operation using the public evaluate method
-    data_t *result = ar_expression_evaluator__evaluate(evaluator, ast);
+    ar_data_t *result = ar_expression_evaluator__evaluate(evaluator, ast);
     
     // Then it should return (10 + 2) * 5 = 60 (a new owned value)
     assert(result != NULL);

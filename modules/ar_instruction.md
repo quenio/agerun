@@ -51,7 +51,7 @@ The instruction module implements the following BNF grammar:
 ### Instruction Context
 
 ```c
-instruction_context_t* ar_instruction__create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message);
+instruction_context_t* ar_instruction__create_context(ar_data_t *mut_memory, const ar_data_t *ref_context, const ar_data_t *ref_message);
 ```
 
 Creates a new instruction context for parsing and executing instructions.
@@ -106,7 +106,7 @@ Parses a single instruction without executing it.
 ### Accessor Functions
 
 ```c
-data_t* ar_instruction__get_memory(const instruction_context_t *ref_ctx);
+ar_data_t* ar_instruction__get_memory(const instruction_context_t *ref_ctx);
 ```
 
 Gets the memory from the instruction context.
@@ -118,7 +118,7 @@ Gets the memory from the instruction context.
 - Mutable reference to the memory (not owned by caller)
 
 ```c
-const data_t* ar_instruction__get_context(const instruction_context_t *ref_ctx);
+const ar_data_t* ar_instruction__get_context(const instruction_context_t *ref_ctx);
 ```
 
 Gets the context data from the instruction context.
@@ -130,7 +130,7 @@ Gets the context data from the instruction context.
 - Borrowed reference to the context data (not owned by caller)
 
 ```c
-const data_t* ar_instruction__get_message(const instruction_context_t *ref_ctx);
+const ar_data_t* ar_instruction__get_message(const instruction_context_t *ref_ctx);
 ```
 
 Gets the message from the instruction context.
@@ -144,7 +144,7 @@ Gets the message from the instruction context.
 ### Message Sending
 
 ```c
-bool ar_instruction__send_message(int64_t target_id, data_t *own_message);
+bool ar_instruction__send_message(int64_t target_id, ar_data_t *own_message);
 ```
 
 Sends a message to another agent.

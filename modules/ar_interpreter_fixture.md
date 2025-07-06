@@ -159,8 +159,8 @@ static void test_interpreter_functionality(void) {
     assert(result == true);
     
     // Then verify the result
-    data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
-    data_t *ref_y = ar_data__get_map_data(mut_memory, "y");
+    ar_data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
+    ar_data_t *ref_y = ar_data__get_map_data(mut_memory, "y");
     assert(ar_data__get_integer(ref_y) == 2);
     
     // Cleanup is automatic
@@ -182,7 +182,7 @@ static void test_message_handling(void) {
     );
     
     // Execute with a custom message
-    data_t *own_message = ar_data__create_string("Hello");
+    ar_data_t *own_message = ar_data__create_string("Hello");
     bool result = ar_interpreter_fixture__execute_with_message(
         own_fixture,
         agent_id,
@@ -194,8 +194,8 @@ static void test_message_handling(void) {
     assert(result == true);
     
     // Verify message was used
-    data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
-    data_t *ref_result = ar_data__get_map_data(mut_memory, "result");
+    ar_data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
+    ar_data_t *ref_result = ar_data__get_map_data(mut_memory, "result");
     assert(strcmp(ar_data__get_string(ref_result), "Hello") == 0);
     
     ar_interpreter_fixture__destroy(own_fixture);
@@ -208,11 +208,11 @@ static void test_resource_tracking(void) {
     interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_tracking");
     
     // Create test data that fixture will track
-    data_t *ref_map = ar_interpreter_fixture__create_test_map(own_fixture, "test");
+    ar_data_t *ref_map = ar_interpreter_fixture__create_test_map(own_fixture, "test");
     assert(ref_map != NULL);
     
     // Create additional data and track it
-    data_t *own_list = ar_data__create_list();
+    ar_data_t *own_list = ar_data__create_list();
     ar_interpreter_fixture__track_data(own_fixture, own_list);
     // Ownership transferred - fixture will destroy it
     

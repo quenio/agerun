@@ -43,7 +43,7 @@ static void test_message_router_routing(void) {
     ar_system__process_next_message(); // calc wake
     
     // Test routing to echo agent
-    data_t *own_message = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_map();
     assert(own_message != NULL);
     
     ar_data__set_map_string(own_message, "route", "echo");
@@ -60,26 +60,26 @@ static void test_message_router_routing(void) {
     assert(processed);
     
     // Check router memory
-    const data_t *router_memory = ar_agency__get_agent_memory(router_agent);
+    const ar_data_t *router_memory = ar_agency__get_agent_memory(router_agent);
     assert(router_memory != NULL);
     
-    const data_t *is_echo = ar_data__get_map_data(router_memory, "is_echo");
+    const ar_data_t *is_echo = ar_data__get_map_data(router_memory, "is_echo");
     if (is_echo && ar_data__get_type(is_echo) == DATA_INTEGER && ar_data__get_integer(is_echo) == 1) {
         printf("SUCCESS: if() correctly identified route = \"echo\"\n");
     }
     
-    const data_t *target = ar_data__get_map_data(router_memory, "target");
+    const ar_data_t *target = ar_data__get_map_data(router_memory, "target");
     if (target && ar_data__get_type(target) == DATA_INTEGER && ar_data__get_integer(target) == echo_agent) {
         printf("SUCCESS: Target correctly set to echo agent ID %lld\n", (long long)echo_agent);
     }
     
-    const data_t *sent_result = ar_data__get_map_data(router_memory, "sent");
+    const ar_data_t *sent_result = ar_data__get_map_data(router_memory, "sent");
     if (!sent_result) {
         printf("FAIL: memory.sent not found - send() function failed\n");
     }
     
     // Test routing to calculator agent
-    data_t *own_message2 = ar_data__create_map();
+    ar_data_t *own_message2 = ar_data__create_map();
     assert(own_message2 != NULL);
     
     ar_data__set_map_string(own_message2, "route", "calc");
@@ -98,7 +98,7 @@ static void test_message_router_routing(void) {
     assert(processed);
     
     // Test invalid route
-    data_t *own_message3 = ar_data__create_map();
+    ar_data_t *own_message3 = ar_data__create_map();
     assert(own_message3 != NULL);
     
     ar_data__set_map_string(own_message3, "route", "invalid");

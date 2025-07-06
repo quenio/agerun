@@ -34,7 +34,7 @@ static bool _execute_agent(interpreter_t *mut_interpreter, instruction_context_t
 static bool _execute_destroy(interpreter_t *mut_interpreter, instruction_context_t *mut_context, const parsed_instruction_t *ref_parsed);
 
 // Helper function to send messages
-static bool _send_message(int64_t target_id, data_t *own_message);
+static bool _send_message(int64_t target_id, ar_data_t *own_message);
 
 /**
  * Creates a new interpreter instance
@@ -127,15 +127,15 @@ bool ar_interpreter__execute_instruction(interpreter_t *mut_interpreter,
  */
 bool ar_interpreter__execute_method(interpreter_t *mut_interpreter,
                                     int64_t agent_id, 
-                                    const data_t *ref_message, 
+                                    const ar_data_t *ref_message, 
                                     const method_t *ref_method) {
     if (!mut_interpreter || !ref_method) {
         return false;
     }
     
     // Get agent memory and context
-    data_t *mut_memory = ar_agency__get_agent_mutable_memory(agent_id);
-    const data_t *ref_context = ar_agency__get_agent_context(agent_id);
+    ar_data_t *mut_memory = ar_agency__get_agent_mutable_memory(agent_id);
+    const ar_data_t *ref_context = ar_agency__get_agent_context(agent_id);
     
     if (!mut_memory) {
         fprintf(stderr, "DEBUG: Agent %" PRId64 " has no memory\n", agent_id);
@@ -198,7 +198,7 @@ bool ar_interpreter__execute_method(interpreter_t *mut_interpreter,
 }
 
 // Helper function to send messages
-static bool _send_message(int64_t target_id, data_t *own_message) {
+static bool _send_message(int64_t target_id, ar_data_t *own_message) {
     if (target_id == 0) {
         // Special case: agent_id 0 is a no-op that always returns true
         ar_data__destroy(own_message);
@@ -222,9 +222,9 @@ static bool _execute_assignment(interpreter_t *mut_interpreter, instruction_cont
     }
     
     // Get the memory from context
-    data_t *mut_memory = ar_instruction__get_memory(mut_context);
-    const data_t *ref_context_data = ar_instruction__get_context(mut_context);
-    const data_t *ref_message = ar_instruction__get_message(mut_context);
+    ar_data_t *mut_memory = ar_instruction__get_memory(mut_context);
+    const ar_data_t *ref_context_data = ar_instruction__get_context(mut_context);
+    const ar_data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Create expression context
     expression_context_t *own_expr_ctx = ar_expression__create_context(
@@ -235,7 +235,7 @@ static bool _execute_assignment(interpreter_t *mut_interpreter, instruction_cont
     }
     
     // Evaluate the expression and take ownership (old code always did this)
-    const data_t *ref_result = ar_expression__evaluate(own_expr_ctx);
+    const ar_data_t *ref_result = ar_expression__evaluate(own_expr_ctx);
     if (!ref_result) {
         fprintf(stderr, "DEBUG: Expression evaluation returned NULL for: %s\n", ref_expression);
         ar_expression__destroy_context(own_expr_ctx);
@@ -248,7 +248,7 @@ static bool _execute_assignment(interpreter_t *mut_interpreter, instruction_cont
         fprintf(stderr, "DEBUG: Expression result string: '%s'\n", ar_data__get_string(ref_result));
     }
     
-    data_t *own_value = ar_expression__take_ownership(own_expr_ctx, ref_result);
+    ar_data_t *own_value = ar_expression__take_ownership(own_expr_ctx, ref_result);
     if (!own_value) {
         fprintf(stderr, "DEBUG: Failed to take ownership of expression result (this matches old behavior)\n");
         ar_expression__destroy_context(own_expr_ctx);
@@ -296,9 +296,9 @@ static bool _execute_send(interpreter_t *mut_interpreter, instruction_context_t 
     }
     
     // Get context data
-    data_t *mut_memory = ar_instruction__get_memory(mut_context);
-    const data_t *ref_context_data = ar_instruction__get_context(mut_context);
-    const data_t *ref_message = ar_instruction__get_message(mut_context);
+    ar_data_t *mut_memory = ar_instruction__get_memory(mut_context);
+    const ar_data_t *ref_context_data = ar_instruction__get_context(mut_context);
+    const ar_data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Evaluate first argument (agent ID)
     expression_context_t *own_expr_ctx = ar_expression__create_context(
@@ -308,8 +308,8 @@ static bool _execute_send(interpreter_t *mut_interpreter, instruction_context_t 
         return false;
     }
     
-    const data_t *ref_agent_id_data = ar_expression__evaluate(own_expr_ctx);
-    data_t *own_agent_id = ar_expression__take_ownership(own_expr_ctx, ref_agent_id_data);
+    const ar_data_t *ref_agent_id_data = ar_expression__evaluate(own_expr_ctx);
+    ar_data_t *own_agent_id = ar_expression__take_ownership(own_expr_ctx, ref_agent_id_data);
     
     // Clean up context immediately
     ar_expression__destroy_context(own_expr_ctx);
@@ -336,8 +336,8 @@ static bool _execute_send(interpreter_t *mut_interpreter, instruction_context_t 
         return false;
     }
     
-    const data_t *ref_msg_data = ar_expression__evaluate(own_expr_ctx);
-    data_t *own_msg = ar_expression__take_ownership(own_expr_ctx, ref_msg_data);
+    const ar_data_t *ref_msg_data = ar_expression__evaluate(own_expr_ctx);
+    ar_data_t *own_msg = ar_expression__take_ownership(own_expr_ctx, ref_msg_data);
     
     // Clean up context immediately
     ar_expression__destroy_context(own_expr_ctx);
@@ -353,7 +353,7 @@ static bool _execute_send(interpreter_t *mut_interpreter, instruction_context_t 
     
     // If there's a result path, store the result
     if (ref_result_path) {
-        data_t *own_result = ar_data__create_integer(send_result ? 1 : 0);
+        ar_data_t *own_result = ar_data__create_integer(send_result ? 1 : 0);
         // The result_path from parsing already has "memory." stripped
         ar_data__set_map_data(mut_memory, ref_result_path, own_result);
         fprintf(stderr, "DEBUG: Stored result in memory.%s, returning true for assignment\n", ref_result_path);
@@ -384,9 +384,9 @@ static bool _execute_if(interpreter_t *mut_interpreter, instruction_context_t *m
     }
     
     // Get context data
-    data_t *mut_memory = ar_instruction__get_memory(mut_context);
-    const data_t *ref_context_data = ar_instruction__get_context(mut_context);
-    const data_t *ref_message = ar_instruction__get_message(mut_context);
+    ar_data_t *mut_memory = ar_instruction__get_memory(mut_context);
+    const ar_data_t *ref_context_data = ar_instruction__get_context(mut_context);
+    const ar_data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Evaluate condition
     expression_context_t *own_expr_ctx = ar_expression__create_context(
@@ -396,14 +396,14 @@ static bool _execute_if(interpreter_t *mut_interpreter, instruction_context_t *m
         return false;
     }
     
-    const data_t *ref_cond_eval = ar_expression__evaluate(own_expr_ctx);
-    data_t *own_cond = ar_expression__take_ownership(own_expr_ctx, ref_cond_eval);
+    const ar_data_t *ref_cond_eval = ar_expression__evaluate(own_expr_ctx);
+    ar_data_t *own_cond = ar_expression__take_ownership(own_expr_ctx, ref_cond_eval);
     
     // Clean up context immediately
     ar_expression__destroy_context(own_expr_ctx);
     
     // Handle both owned values and references
-    const data_t *cond_to_use = own_cond ? own_cond : ref_cond_eval;
+    const ar_data_t *cond_to_use = own_cond ? own_cond : ref_cond_eval;
     if (!cond_to_use) {
         return false;
     }
@@ -419,14 +419,14 @@ static bool _execute_if(interpreter_t *mut_interpreter, instruction_context_t *m
         return false;
     }
     
-    const data_t *ref_true_eval = ar_expression__evaluate(own_expr_ctx);
-    data_t *own_true = ar_expression__take_ownership(own_expr_ctx, ref_true_eval);
+    const ar_data_t *ref_true_eval = ar_expression__evaluate(own_expr_ctx);
+    ar_data_t *own_true = ar_expression__take_ownership(own_expr_ctx, ref_true_eval);
     
     // Clean up context immediately
     ar_expression__destroy_context(own_expr_ctx);
     
     // Handle both owned values and references
-    const data_t *true_to_use = own_true ? own_true : ref_true_eval;
+    const ar_data_t *true_to_use = own_true ? own_true : ref_true_eval;
     if (!true_to_use) {
         if (own_cond) {
             ar_data__destroy(own_cond);
@@ -448,14 +448,14 @@ static bool _execute_if(interpreter_t *mut_interpreter, instruction_context_t *m
         return false;
     }
     
-    const data_t *ref_false_eval = ar_expression__evaluate(own_expr_ctx);
-    data_t *own_false = ar_expression__take_ownership(own_expr_ctx, ref_false_eval);
+    const ar_data_t *ref_false_eval = ar_expression__evaluate(own_expr_ctx);
+    ar_data_t *own_false = ar_expression__take_ownership(own_expr_ctx, ref_false_eval);
     
     // Clean up context immediately
     ar_expression__destroy_context(own_expr_ctx);
     
     // Handle both owned values and references
-    const data_t *false_to_use = own_false ? own_false : ref_false_eval;
+    const ar_data_t *false_to_use = own_false ? own_false : ref_false_eval;
     if (!false_to_use) {
         if (own_cond) {
             ar_data__destroy(own_cond);
@@ -478,7 +478,7 @@ static bool _execute_if(interpreter_t *mut_interpreter, instruction_context_t *m
     }
     
     // Create result based on condition
-    data_t *own_result = NULL;
+    ar_data_t *own_result = NULL;
     if (condition_is_true) {
         // If we own the true value, transfer ownership
         if (own_true) {
@@ -560,9 +560,9 @@ static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t
     }
     
     // Get context data
-    data_t *mut_memory = ar_instruction__get_memory(mut_context);
-    const data_t *ref_context_data = ar_instruction__get_context(mut_context);
-    const data_t *ref_message = ar_instruction__get_message(mut_context);
+    ar_data_t *mut_memory = ar_instruction__get_memory(mut_context);
+    const ar_data_t *ref_context_data = ar_instruction__get_context(mut_context);
+    const ar_data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Evaluate template argument
     expression_context_t *own_expr_ctx = ar_expression__create_context(
@@ -572,8 +572,8 @@ static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t
         return false;
     }
     
-    const data_t *ref_eval_result = ar_expression__evaluate(own_expr_ctx);
-    data_t *own_template = ar_expression__take_ownership(own_expr_ctx, ref_eval_result);
+    const ar_data_t *ref_eval_result = ar_expression__evaluate(own_expr_ctx);
+    ar_data_t *own_template = ar_expression__take_ownership(own_expr_ctx, ref_eval_result);
     
     // Clean up context after getting the value
     ar_expression__destroy_context(own_expr_ctx);
@@ -608,8 +608,8 @@ static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t
         return false;
     }
     
-    const data_t *ref_input_eval = ar_expression__evaluate(own_expr_ctx);
-    data_t *own_input = ar_expression__take_ownership(own_expr_ctx, ref_input_eval);
+    const ar_data_t *ref_input_eval = ar_expression__evaluate(own_expr_ctx);
+    ar_data_t *own_input = ar_expression__take_ownership(own_expr_ctx, ref_input_eval);
     
     // Clean up context immediately
     ar_expression__destroy_context(own_expr_ctx);
@@ -640,7 +640,7 @@ static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t
     }
     
     // Create result map (owned by us)
-    data_t *own_result = ar_data__create_map();
+    ar_data_t *own_result = ar_data__create_map();
     if (!own_result) {
         if (owns_input && own_input) {
             ar_data__destroy(own_input);
@@ -765,7 +765,7 @@ static bool _execute_parse(interpreter_t *mut_interpreter, instruction_context_t
                         value_str[value_len] = '\0';
                         
                         // Try to parse as integer first, then double, then string
-                        data_t *own_value = NULL;
+                        ar_data_t *own_value = NULL;
                         char *endptr;
                         
                         // Try integer
@@ -864,9 +864,9 @@ static bool _execute_build(interpreter_t *mut_interpreter, instruction_context_t
     }
     
     // Get context data
-    data_t *mut_memory = ar_instruction__get_memory(mut_context);
-    const data_t *ref_context_data = ar_instruction__get_context(mut_context);
-    const data_t *ref_message = ar_instruction__get_message(mut_context);
+    ar_data_t *mut_memory = ar_instruction__get_memory(mut_context);
+    const ar_data_t *ref_context_data = ar_instruction__get_context(mut_context);
+    const ar_data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Evaluate template argument
     expression_context_t *own_expr_ctx = ar_expression__create_context(
@@ -876,8 +876,8 @@ static bool _execute_build(interpreter_t *mut_interpreter, instruction_context_t
         return false;
     }
     
-    const data_t *ref_eval_result = ar_expression__evaluate(own_expr_ctx);
-    data_t *own_template = ar_expression__take_ownership(own_expr_ctx, ref_eval_result);
+    const ar_data_t *ref_eval_result = ar_expression__evaluate(own_expr_ctx);
+    ar_data_t *own_template = ar_expression__take_ownership(own_expr_ctx, ref_eval_result);
     
     // Clean up context after getting the value
     ar_expression__destroy_context(own_expr_ctx);
@@ -912,16 +912,16 @@ static bool _execute_build(interpreter_t *mut_interpreter, instruction_context_t
         return false;
     }
     
-    const data_t *ref_values = ar_expression__evaluate(own_expr_ctx);
+    const ar_data_t *ref_values = ar_expression__evaluate(own_expr_ctx);
     
     // Try to take ownership. If it fails, the value is a reference to existing data
-    data_t *own_values = ar_expression__take_ownership(own_expr_ctx, ref_values);
+    ar_data_t *own_values = ar_expression__take_ownership(own_expr_ctx, ref_values);
     
     // Clean up context immediately
     ar_expression__destroy_context(own_expr_ctx);
     
     // Use ref_values if we couldn't take ownership
-    const data_t *values_to_use = own_values ? own_values : ref_values;
+    const ar_data_t *values_to_use = own_values ? own_values : ref_values;
     
     // Ensure values is a map
     if (ar_data__get_type(values_to_use) != DATA_MAP) {
@@ -977,7 +977,7 @@ static bool _execute_build(interpreter_t *mut_interpreter, instruction_context_t
                 var_name[var_len] = '\0';
                 
                 // Look up value in the map
-                const data_t *ref_value = ar_data__get_map_data(values_to_use, var_name);
+                const ar_data_t *ref_value = ar_data__get_map_data(values_to_use, var_name);
                 if (ref_value) {
                     // Convert value to string
                     char value_buffer[256];
@@ -1108,7 +1108,7 @@ static bool _execute_build(interpreter_t *mut_interpreter, instruction_context_t
     }
     
     // Create result string data
-    data_t *own_result = ar_data__create_string(own_result_str);
+    ar_data_t *own_result = ar_data__create_string(own_result_str);
     AR__HEAP__FREE(own_result_str);
     
     if (!own_result) {
@@ -1145,9 +1145,9 @@ static bool _execute_method(interpreter_t *mut_interpreter, instruction_context_
     }
     
     // Get context data
-    data_t *mut_memory = ar_instruction__get_memory(mut_context);
-    const data_t *ref_context_data = ar_instruction__get_context(mut_context);
-    const data_t *ref_message = ar_instruction__get_message(mut_context);
+    ar_data_t *mut_memory = ar_instruction__get_memory(mut_context);
+    const ar_data_t *ref_context_data = ar_instruction__get_context(mut_context);
+    const ar_data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Evaluate name argument
     expression_context_t *own_context = ar_expression__create_context(
@@ -1157,8 +1157,8 @@ static bool _execute_method(interpreter_t *mut_interpreter, instruction_context_
         return false;
     }
     
-    const data_t *ref_name_eval = ar_expression__evaluate(own_context);
-    data_t *own_name = ar_expression__take_ownership(own_context, ref_name_eval);
+    const ar_data_t *ref_name_eval = ar_expression__evaluate(own_context);
+    ar_data_t *own_name = ar_expression__take_ownership(own_context, ref_name_eval);
     
     // Clean up context immediately
     ar_expression__destroy_context(own_context);
@@ -1193,8 +1193,8 @@ static bool _execute_method(interpreter_t *mut_interpreter, instruction_context_
         return false;
     }
     
-    const data_t *ref_instr_eval = ar_expression__evaluate(own_context);
-    data_t *own_instr = ar_expression__take_ownership(own_context, ref_instr_eval);
+    const ar_data_t *ref_instr_eval = ar_expression__evaluate(own_context);
+    ar_data_t *own_instr = ar_expression__take_ownership(own_context, ref_instr_eval);
     
     // Clean up context immediately
     ar_expression__destroy_context(own_context);
@@ -1238,8 +1238,8 @@ static bool _execute_method(interpreter_t *mut_interpreter, instruction_context_
         return false;
     }
     
-    const data_t *ref_version_eval = ar_expression__evaluate(own_context);
-    data_t *own_version = ar_expression__take_ownership(own_context, ref_version_eval);
+    const ar_data_t *ref_version_eval = ar_expression__evaluate(own_context);
+    ar_data_t *own_version = ar_expression__take_ownership(own_context, ref_version_eval);
     
     // Clean up context immediately
     ar_expression__destroy_context(own_context);
@@ -1288,7 +1288,7 @@ static bool _execute_method(interpreter_t *mut_interpreter, instruction_context_
     }
     
     // Return success indicator
-    data_t *own_result = ar_data__create_integer(success ? 1 : 0);
+    ar_data_t *own_result = ar_data__create_integer(success ? 1 : 0);
     
     // Store result if there's a result path
     if (ref_result_path && own_result) {
@@ -1320,9 +1320,9 @@ static bool _execute_agent(interpreter_t *mut_interpreter, instruction_context_t
     }
     
     // Get context data
-    data_t *mut_memory = ar_instruction__get_memory(mut_context);
-    const data_t *ref_context_data = ar_instruction__get_context(mut_context);
-    const data_t *ref_message = ar_instruction__get_message(mut_context);
+    ar_data_t *mut_memory = ar_instruction__get_memory(mut_context);
+    const ar_data_t *ref_context_data = ar_instruction__get_context(mut_context);
+    const ar_data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Evaluate method name argument
     expression_context_t *own_context = ar_expression__create_context(
@@ -1332,8 +1332,8 @@ static bool _execute_agent(interpreter_t *mut_interpreter, instruction_context_t
         return false;
     }
     
-    const data_t *ref_method_eval = ar_expression__evaluate(own_context);
-    data_t *own_method_name = ar_expression__take_ownership(own_context, ref_method_eval);
+    const ar_data_t *ref_method_eval = ar_expression__evaluate(own_context);
+    ar_data_t *own_method_name = ar_expression__take_ownership(own_context, ref_method_eval);
     
     // Clean up context immediately
     ar_expression__destroy_context(own_context);
@@ -1368,8 +1368,8 @@ static bool _execute_agent(interpreter_t *mut_interpreter, instruction_context_t
         return false;
     }
     
-    const data_t *ref_version_eval = ar_expression__evaluate(own_context);
-    data_t *own_version = ar_expression__take_ownership(own_context, ref_version_eval);
+    const ar_data_t *ref_version_eval = ar_expression__evaluate(own_context);
+    ar_data_t *own_version = ar_expression__take_ownership(own_context, ref_version_eval);
     
     // Clean up context immediately
     ar_expression__destroy_context(own_context);
@@ -1416,18 +1416,18 @@ static bool _execute_agent(interpreter_t *mut_interpreter, instruction_context_t
         return false;
     }
     
-    const data_t *ref_ctx_eval = ar_expression__evaluate(own_context);
-    data_t *own_ctx = ar_expression__take_ownership(own_context, ref_ctx_eval);
+    const ar_data_t *ref_ctx_eval = ar_expression__evaluate(own_context);
+    ar_data_t *own_ctx = ar_expression__take_ownership(own_context, ref_ctx_eval);
     
     // Clean up context immediately
     ar_expression__destroy_context(own_context);
     
     // Handle both owned values and references for context
-    const data_t *ctx_to_use = own_ctx ? own_ctx : ref_ctx_eval;
+    const ar_data_t *ctx_to_use = own_ctx ? own_ctx : ref_ctx_eval;
     bool owns_ctx = (own_ctx != NULL);
     
     // Default to empty map if context is null
-    data_t *empty_context = NULL;
+    ar_data_t *empty_context = NULL;
     if (!ctx_to_use) {
         empty_context = ar_data__create_map();
         ctx_to_use = empty_context;
@@ -1451,7 +1451,7 @@ static bool _execute_agent(interpreter_t *mut_interpreter, instruction_context_t
     }
     
     // Return agent ID as result (0 if creation failed)
-    data_t *own_result = ar_data__create_integer((int)agent_id);
+    ar_data_t *own_result = ar_data__create_integer((int)agent_id);
     
     // Store result if there's a result path
     if (ref_result_path && own_result) {
@@ -1483,9 +1483,9 @@ static bool _execute_destroy(interpreter_t *mut_interpreter, instruction_context
     }
     
     // Get context data
-    data_t *mut_memory = ar_instruction__get_memory(mut_context);
-    const data_t *ref_context_data = ar_instruction__get_context(mut_context);
-    const data_t *ref_message = ar_instruction__get_message(mut_context);
+    ar_data_t *mut_memory = ar_instruction__get_memory(mut_context);
+    const ar_data_t *ref_context_data = ar_instruction__get_context(mut_context);
+    const ar_data_t *ref_message = ar_instruction__get_message(mut_context);
     
     // Evaluate first argument
     expression_context_t *own_context = ar_expression__create_context(
@@ -1495,14 +1495,14 @@ static bool _execute_destroy(interpreter_t *mut_interpreter, instruction_context
         return false;
     }
     
-    const data_t *ref_arg1_eval = ar_expression__evaluate(own_context);
-    data_t *own_arg1 = ar_expression__take_ownership(own_context, ref_arg1_eval);
+    const ar_data_t *ref_arg1_eval = ar_expression__evaluate(own_context);
+    ar_data_t *own_arg1 = ar_expression__take_ownership(own_context, ref_arg1_eval);
     
     // Clean up context immediately
     ar_expression__destroy_context(own_context);
     
     // Handle both owned values and references
-    const data_t *arg1_to_use = own_arg1 ? own_arg1 : ref_arg1_eval;
+    const ar_data_t *arg1_to_use = own_arg1 ? own_arg1 : ref_arg1_eval;
     if (!arg1_to_use) {
         return false;
     }
@@ -1531,8 +1531,8 @@ static bool _execute_destroy(interpreter_t *mut_interpreter, instruction_context
             return false;
         }
         
-        const data_t *ref_version_eval = ar_expression__evaluate(own_context);
-        data_t *own_version = ar_expression__take_ownership(own_context, ref_version_eval);
+        const ar_data_t *ref_version_eval = ar_expression__evaluate(own_context);
+        ar_data_t *own_version = ar_expression__take_ownership(own_context, ref_version_eval);
         
         // Clean up context immediately
         ar_expression__destroy_context(own_context);
@@ -1593,7 +1593,7 @@ static bool _execute_destroy(interpreter_t *mut_interpreter, instruction_context
     }
     
     // Return success indicator
-    data_t *own_result = ar_data__create_integer(success ? 1 : 0);
+    ar_data_t *own_result = ar_data__create_integer(success ? 1 : 0);
     
     // Store result if there's a result path
     if (ref_result_path && own_result) {

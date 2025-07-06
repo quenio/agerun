@@ -32,7 +32,7 @@ static void test_calculator_add(void) {
     ar_system__process_next_message();
     
     // Create and send add operation message
-    data_t *own_message = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_map();
     assert(own_message != NULL);
     ar_data__set_map_integer(own_message, "sender", 0);
     ar_data__set_map_string(own_message, "operation", "add");
@@ -49,12 +49,12 @@ static void test_calculator_add(void) {
     assert(processed);
     
     // Get agent memory to check result
-    const data_t *agent_memory = ar_agency__get_agent_memory(calc_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(calc_agent);
     assert(agent_memory != NULL);
     assert(ar_data__get_type(agent_memory) == DATA_MAP);
     
     // Check if result exists
-    const data_t *result = ar_data__get_map_data(agent_memory, "result");
+    const ar_data_t *result = ar_data__get_map_data(agent_memory, "result");
     assert(result != NULL);
     assert(ar_data__get_type(result) == DATA_INTEGER);
     assert(ar_data__get_integer(result) == 8);
@@ -98,7 +98,7 @@ static void test_calculator_multiply(void) {
     ar_system__process_next_message();
     
     // Create and send multiply operation message
-    data_t *own_message = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_map();
     assert(own_message != NULL);
     ar_data__set_map_integer(own_message, "sender", 0);
     ar_data__set_map_string(own_message, "operation", "multiply");
@@ -115,11 +115,11 @@ static void test_calculator_multiply(void) {
     assert(processed);
     
     // Get agent memory to check result
-    const data_t *agent_memory = ar_agency__get_agent_memory(calc_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(calc_agent);
     assert(agent_memory != NULL);
     
     // Check if result exists
-    const data_t *result = ar_data__get_map_data(agent_memory, "result");
+    const ar_data_t *result = ar_data__get_map_data(agent_memory, "result");
     assert(result != NULL);
     assert(ar_data__get_type(result) == DATA_INTEGER);
     assert(ar_data__get_integer(result) == 10);
@@ -163,7 +163,7 @@ static void test_calculator_subtract(void) {
     ar_system__process_next_message();
     
     // Create and send subtract operation message
-    data_t *own_message = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_map();
     assert(own_message != NULL);
     ar_data__set_map_integer(own_message, "sender", 0);
     ar_data__set_map_string(own_message, "operation", "subtract");
@@ -180,11 +180,11 @@ static void test_calculator_subtract(void) {
     assert(processed);
     
     // Get agent memory to check result
-    const data_t *agent_memory = ar_agency__get_agent_memory(calc_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(calc_agent);
     assert(agent_memory != NULL);
     
     // Check if result exists
-    const data_t *result = ar_data__get_map_data(agent_memory, "result");
+    const ar_data_t *result = ar_data__get_map_data(agent_memory, "result");
     assert(result != NULL);
     assert(ar_data__get_type(result) == DATA_INTEGER);
     
@@ -229,7 +229,7 @@ static void test_calculator_divide(void) {
     ar_system__process_next_message();
     
     // Create and send divide operation message
-    data_t *own_message = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_map();
     assert(own_message != NULL);
     ar_data__set_map_integer(own_message, "sender", 0);
     ar_data__set_map_string(own_message, "operation", "divide");
@@ -246,11 +246,11 @@ static void test_calculator_divide(void) {
     assert(processed);
     
     // Get agent memory to check result
-    const data_t *agent_memory = ar_agency__get_agent_memory(calc_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(calc_agent);
     assert(agent_memory != NULL);
     
     // Check if result exists (integer division)
-    const data_t *result = ar_data__get_map_data(agent_memory, "result");
+    const ar_data_t *result = ar_data__get_map_data(agent_memory, "result");
     assert(result != NULL);
     
     // Divide returns integer (integer division)
@@ -297,7 +297,7 @@ static void test_calculator_unknown_operation(void) {
     ar_system__process_next_message();
     
     // Create and send unknown operation message
-    data_t *own_message = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_map();
     assert(own_message != NULL);
     ar_data__set_map_integer(own_message, "sender", 0);
     ar_data__set_map_string(own_message, "operation", "modulo");
@@ -314,11 +314,11 @@ static void test_calculator_unknown_operation(void) {
     assert(processed);
     
     // Get agent memory to check result
-    const data_t *agent_memory = ar_agency__get_agent_memory(calc_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(calc_agent);
     assert(agent_memory != NULL);
     
     // Check if result exists (should be 0 for unknown operations)
-    const data_t *result = ar_data__get_map_data(agent_memory, "result");
+    const ar_data_t *result = ar_data__get_map_data(agent_memory, "result");
     assert(result != NULL);
     assert(ar_data__get_type(result) == DATA_INTEGER);
     

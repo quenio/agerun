@@ -23,17 +23,17 @@ The frame abstraction enables:
 
 ```c
 // Create execution context
-data_t *own_memory = ar_data__create_map();
-data_t *own_context = ar_data__create_map();
-data_t *own_message = ar_data__create_string("__wake__");
+ar_data_t *own_memory = ar_data__create_map();
+ar_data_t *own_context = ar_data__create_map();
+ar_data_t *own_message = ar_data__create_string("__wake__");
 
 // Create frame bundling the context
 ar_frame_t *own_frame = ar_frame__create(own_memory, own_context, own_message);
 
 // Access data through frame
-data_t *mut_memory = ar_frame__get_memory(own_frame);
-const data_t *ref_context = ar_frame__get_context(own_frame);
-const data_t *ref_message = ar_frame__get_message(own_frame);
+ar_data_t *mut_memory = ar_frame__get_memory(own_frame);
+const ar_data_t *ref_context = ar_frame__get_context(own_frame);
+const ar_data_t *ref_message = ar_frame__get_message(own_frame);
 
 // Use frame in evaluators...
 

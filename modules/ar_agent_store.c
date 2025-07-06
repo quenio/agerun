@@ -38,7 +38,7 @@ static list_t* _get_active_agent_list(void) {
     
     int64_t agent_id = ar_agency__get_first_agent();
     while (agent_id != 0) {
-        data_t *own_id_data = ar_data__create_integer((int)agent_id);
+        ar_data_t *own_id_data = ar_data__create_integer((int)agent_id);
         if (own_id_data) {
             ar_list__add_last(own_list, own_id_data);
         }
@@ -51,11 +51,11 @@ static list_t* _get_active_agent_list(void) {
 
 /* Helper function to clean up agent list and items */
 static void _cleanup_agent_list(list_t *own_agents, void **own_items, size_t count) {
-    // Destroy data_t objects from the items array
+    // Destroy ar_data_t objects from the items array
     if (own_items) {
         for (size_t i = 0; i < count; i++) {
             if (own_items[i]) {
-                ar_data__destroy((data_t*)own_items[i]);
+                ar_data__destroy((ar_data_t*)own_items[i]);
             }
         }
         AR__HEAP__FREE(own_items);
@@ -103,7 +103,7 @@ static bool _store_write_function(FILE *fp, void *context) {
     // Count agents with methods
     int count = 0;
     for (size_t i = 0; i < total_agents; i++) {
-        data_t *ref_id_data = (data_t*)own_items[i];
+        ar_data_t *ref_id_data = (ar_data_t*)own_items[i];
         if (ref_id_data) {
             int64_t agent_id = ar_data__get_integer(ref_id_data);
             const method_t *ref_method = ar_agency__get_agent_method(agent_id);
@@ -130,7 +130,7 @@ static bool _store_write_function(FILE *fp, void *context) {
     
     // Save each agent's data
     for (size_t i = 0; i < total_agents; i++) {
-        data_t *ref_id_data = (data_t*)own_items[i];
+        ar_data_t *ref_id_data = (ar_data_t*)own_items[i];
         if (!ref_id_data) {
             continue;
         }
@@ -167,7 +167,7 @@ static bool _store_write_function(FILE *fp, void *context) {
         }
         
         // Get agent memory
-        data_t *ref_memory = ar_agency__get_agent_mutable_memory(agent_id);
+        ar_data_t *ref_memory = ar_agency__get_agent_mutable_memory(agent_id);
         
         if (!ref_memory || ar_data__get_type(ref_memory) != DATA_MAP) {
             // No memory or not a map - write 0 items
@@ -180,7 +180,7 @@ static bool _store_write_function(FILE *fp, void *context) {
         }
         
         // Get all keys from the memory map
-        data_t *own_keys = ar_data__get_map_keys(ref_memory);
+        ar_data_t *own_keys = ar_data__get_map_keys(ref_memory);
         if (!own_keys) {
             ar_io__error("Failed to get keys from agent memory");
             _cleanup_agent_list(own_agents, own_items, total_agents);
@@ -206,7 +206,7 @@ static bool _store_write_function(FILE *fp, void *context) {
         
         // Write each memory key-value pair
         while (ar_data__list_count(own_keys) > 0) {
-            data_t *own_key_data = ar_data__list_remove_first(own_keys);
+            ar_data_t *own_key_data = ar_data__list_remove_first(own_keys);
             if (!own_key_data) {
                 break;
             }
@@ -218,7 +218,7 @@ static bool _store_write_function(FILE *fp, void *context) {
             }
             
             // Get the value for this key
-            data_t *ref_value = ar_data__get_map_data(ref_memory, key);
+            ar_data_t *ref_value = ar_data__get_map_data(ref_memory, key);
             if (!ref_value) {
                 ar_data__destroy(own_key_data);
                 continue;
@@ -763,7 +763,7 @@ bool ar_agent_store__load(void) {
         }
         
         // Get mutable memory for this agent
-        data_t *mut_memory = ar_agency__get_agent_mutable_memory(own_agent_info[i].id);
+        ar_data_t *mut_memory = ar_agency__get_agent_mutable_memory(own_agent_info[i].id);
         if (!mut_memory && mem_count > 0) {
             ar_io__error("Agent %" PRId64 " has no memory map but file indicates %d items", 
                        own_agent_info[i].id, mem_count);
@@ -803,7 +803,7 @@ bool ar_agent_store__load(void) {
             ar_io__string_copy(type, token, sizeof(type));
             
             // Process based on type
-            data_t *own_value = NULL;
+            ar_data_t *own_value = NULL;
             
             if (strcmp(type, "int") == 0) {
                 // Read value line

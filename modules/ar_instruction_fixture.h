@@ -64,9 +64,9 @@ expression_context_t* ar_instruction_fixture__create_expression_context(
  */
 expression_context_t* ar_instruction_fixture__create_custom_expression_context(
     instruction_fixture_t *mut_fixture,
-    data_t *mut_memory,
-    const data_t *ref_context,
-    const data_t *ref_message,
+    ar_data_t *mut_memory,
+    const ar_data_t *ref_context,
+    const ar_data_t *ref_message,
     const char *ref_expression
 );
 
@@ -78,7 +78,7 @@ expression_context_t* ar_instruction_fixture__create_custom_expression_context(
  * @note Ownership: Returns a borrowed reference; fixture owns and will destroy it
  * @note The map is pre-populated with common test values
  */
-data_t* ar_instruction_fixture__create_test_map(
+ar_data_t* ar_instruction_fixture__create_test_map(
     instruction_fixture_t *mut_fixture,
     const char *ref_name
 );
@@ -89,7 +89,7 @@ data_t* ar_instruction_fixture__create_test_map(
  * @return A newly created empty data map
  * @note Ownership: Returns a borrowed reference; fixture owns and will destroy it
  */
-data_t* ar_instruction_fixture__create_empty_map(
+ar_data_t* ar_instruction_fixture__create_empty_map(
     instruction_fixture_t *mut_fixture
 );
 
@@ -99,7 +99,7 @@ data_t* ar_instruction_fixture__create_empty_map(
  * @return A newly created data list
  * @note Ownership: Returns a borrowed reference; fixture owns and will destroy it
  */
-data_t* ar_instruction_fixture__create_test_list(
+ar_data_t* ar_instruction_fixture__create_test_list(
     instruction_fixture_t *mut_fixture
 );
 
@@ -126,7 +126,7 @@ bool ar_instruction_fixture__check_memory(const instruction_fixture_t *ref_fixtu
  */
 void ar_instruction_fixture__track_data(
     instruction_fixture_t *mut_fixture,
-    data_t *own_data
+    ar_data_t *own_data
 );
 
 /**

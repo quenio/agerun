@@ -24,7 +24,7 @@
 struct ar_build_instruction_evaluator_s {
     ar_log_t *ref_log;                           /* Borrowed reference to log instance */
     ar_expression_evaluator_t *ref_expr_evaluator;
-    data_t *mut_memory;
+    ar_data_t *mut_memory;
 };
 
 /**
@@ -33,7 +33,7 @@ struct ar_build_instruction_evaluator_s {
 ar_build_instruction_evaluator_t* ar_build_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
-    data_t *mut_memory
+    ar_data_t *mut_memory
 ) {
     if (!ref_log || !ref_expr_evaluator || !mut_memory) {
         return NULL;
@@ -81,7 +81,7 @@ static void _log_error(ar_build_instruction_evaluator_t *mut_evaluator, const ch
  * @param buffer_size Size of the buffer
  * @return String representation or NULL
  */
-static const char* _data_to_string(const data_t *ref_data, char *buffer, size_t buffer_size) {
+static const char* _data_to_string(const ar_data_t *ref_data, char *buffer, size_t buffer_size) {
     if (!ref_data || !buffer || buffer_size == 0) {
         return NULL;
     }
@@ -148,7 +148,7 @@ static char* _ensure_buffer_capacity(char *own_buffer, size_t *mut_capacity, siz
  */
 static bool _process_placeholder(
     const char *ref_template_ptr,
-    const data_t *ref_values,
+    const ar_data_t *ref_values,
     char **mut_result_str,
     size_t *mut_result_size,
     size_t *mut_result_pos,
@@ -171,7 +171,7 @@ static bool _process_placeholder(
     var_name[var_len] = '\0';
     
     // Look up value and convert to string
-    const data_t *ref_value = ar_data__get_map_data(ref_values, var_name);
+    const ar_data_t *ref_value = ar_data__get_map_data(ref_values, var_name);
     char value_buffer[256];
     const char *value_str = ref_value ? _data_to_string(ref_value, value_buffer, sizeof(value_buffer)) : NULL;
     
@@ -220,9 +220,9 @@ static bool _process_placeholder(
  * @note Ownership: Takes ownership of own_result
  */
 static bool _store_result_if_assigned(
-    data_t *mut_memory,
+    ar_data_t *mut_memory,
     const ar_instruction_ast_t *ref_ast,
-    data_t *own_result
+    ar_data_t *own_result
 ) {
     const char *ref_result_path = ar_instruction_ast__get_function_result_path(ref_ast);
     if (!ref_result_path) {
@@ -263,7 +263,7 @@ bool ar_build_instruction_evaluator__evaluate(
     _log_error(mut_evaluator, NULL);
     
     ar_expression_evaluator_t *mut_expr_evaluator = mut_evaluator->ref_expr_evaluator;
-    data_t *mut_memory = mut_evaluator->mut_memory;
+    ar_data_t *mut_memory = mut_evaluator->mut_memory;
     
     // Verify this is a build AST node
     if (ar_instruction_ast__get_type(ref_ast) != AR_INST__BUILD) {
@@ -296,7 +296,7 @@ bool ar_build_instruction_evaluator__evaluate(
     }
     
     // Evaluate template expression AST
-    data_t *template_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_template_ast);
+    ar_data_t *template_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_template_ast);
     if (!template_result || ar_data__get_type(template_result) != DATA_STRING) {
         fprintf(stderr, "DEBUG: build evaluator - template evaluation failed or not string\n");
         if (template_result && ar_data__hold_ownership(template_result, mut_evaluator)) {
@@ -308,7 +308,7 @@ bool ar_build_instruction_evaluator__evaluate(
     }
     
     // Get ownership of template data
-    data_t *own_template_data;
+    ar_data_t *own_template_data;
     if (ar_data__hold_ownership(template_result, mut_evaluator)) {
         // We can claim ownership - it's an unowned value
         ar_data__transfer_ownership(template_result, mut_evaluator);
@@ -324,9 +324,9 @@ bool ar_build_instruction_evaluator__evaluate(
     }
     
     // Evaluate values expression AST to check for map
-    data_t *values_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_values_ast);
-    const data_t *ref_values_data = values_result;
-    data_t *own_values_data = NULL;
+    ar_data_t *values_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_values_ast);
+    const ar_data_t *ref_values_data = values_result;
+    ar_data_t *own_values_data = NULL;
     
     // Check if we need to make a copy (if result is owned by memory/context)
     // CRITICAL: Never try to take ownership of memory itself!
@@ -398,7 +398,7 @@ bool ar_build_instruction_evaluator__evaluate(
     own_result_str[result_pos] = '\0';
     
     // Create result data object
-    data_t *own_result = ar_data__create_string(own_result_str);
+    ar_data_t *own_result = ar_data__create_string(own_result_str);
     AR__HEAP__FREE(own_result_str);
     
     if (!own_result) {

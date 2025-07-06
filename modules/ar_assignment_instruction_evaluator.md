@@ -26,7 +26,7 @@ An opaque type representing an assignment instruction evaluator instance.
 ar_assignment_instruction_evaluator_t* ar_assignment_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
-    data_t *mut_memory
+    ar_data_t *mut_memory
 );
 ```
 Creates a new assignment instruction evaluator that stores its dependencies including the log for error reporting.
@@ -92,7 +92,7 @@ The module includes helper functions for:
 
 ```c
 // Create memory and expression evaluator
-data_t *memory = ar_data__create_map();
+ar_data_t *memory = ar_data__create_map();
 ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
 
 // Create assignment instruction evaluator

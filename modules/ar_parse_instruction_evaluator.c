@@ -20,13 +20,13 @@
 struct ar_parse_instruction_evaluator_s {
     ar_log_t *ref_log;                           /* Borrowed reference to log instance */
     ar_expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
-    data_t *mut_memory;                          /* Memory map (mutable reference) */
+    ar_data_t *mut_memory;                          /* Memory map (mutable reference) */
 };
 
 
 /* Forward declarations of helper functions */
-static bool _store_result_if_assigned(data_t *mut_memory, const ar_instruction_ast_t *ref_ast, data_t *own_result);
-static data_t* _parse_value_string(const char *value_str);
+static bool _store_result_if_assigned(ar_data_t *mut_memory, const ar_instruction_ast_t *ref_ast, ar_data_t *own_result);
+static ar_data_t* _parse_value_string(const char *value_str);
 static void _log_error(ar_parse_instruction_evaluator_t *mut_evaluator, const char *message);
 
 /* Helper function to log error message */
@@ -41,9 +41,9 @@ static void _log_error(ar_parse_instruction_evaluator_t *mut_evaluator, const ch
 
 /* Helper function to store result in memory if assignment path is provided */
 static bool _store_result_if_assigned(
-    data_t *mut_memory,
+    ar_data_t *mut_memory,
     const ar_instruction_ast_t *ref_ast,
-    data_t *own_result
+    ar_data_t *own_result
 ) {
     const char *ref_result_path = ar_instruction_ast__get_function_result_path(ref_ast);
     if (!ref_result_path) {
@@ -71,7 +71,7 @@ static bool _store_result_if_assigned(
 
 
 /* Helper function to parse a value string and determine its type */
-static data_t* _parse_value_string(const char *value_str) {
+static ar_data_t* _parse_value_string(const char *value_str) {
     if (!value_str || *value_str == '\0') {
         return ar_data__create_string("");
     }
@@ -99,7 +99,7 @@ static data_t* _parse_value_string(const char *value_str) {
 ar_parse_instruction_evaluator_t* ar_parse_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
-    data_t *mut_memory
+    ar_data_t *mut_memory
 ) {
     if (!ref_log || !ref_expr_evaluator || !mut_memory) {
         return NULL;
@@ -179,7 +179,7 @@ bool ar_parse_instruction_evaluator__evaluate(
     }
     
     // Evaluate template expression AST
-    data_t *template_result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_template_ast);
+    ar_data_t *template_result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_template_ast);
     if (!template_result || ar_data__get_type(template_result) != DATA_STRING) {
         if (template_result && ar_data__hold_ownership(template_result, mut_evaluator)) {
             ar_data__transfer_ownership(template_result, mut_evaluator);
@@ -190,7 +190,7 @@ bool ar_parse_instruction_evaluator__evaluate(
     }
     
     // Get ownership of template data
-    data_t *own_template_data;
+    ar_data_t *own_template_data;
     if (ar_data__hold_ownership(template_result, mut_evaluator)) {
         // We can claim ownership - it's an unowned value
         ar_data__transfer_ownership(template_result, mut_evaluator);
@@ -206,7 +206,7 @@ bool ar_parse_instruction_evaluator__evaluate(
     }
     
     // Evaluate input expression AST
-    data_t *input_result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_input_ast);
+    ar_data_t *input_result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_input_ast);
     if (!input_result || ar_data__get_type(input_result) != DATA_STRING) {
         if (input_result && ar_data__hold_ownership(input_result, mut_evaluator)) {
             ar_data__transfer_ownership(input_result, mut_evaluator);
@@ -218,7 +218,7 @@ bool ar_parse_instruction_evaluator__evaluate(
     }
     
     // Get ownership of input data
-    data_t *own_input_data;
+    ar_data_t *own_input_data;
     if (ar_data__hold_ownership(input_result, mut_evaluator)) {
         // We can claim ownership - it's an unowned value
         ar_data__transfer_ownership(input_result, mut_evaluator);
@@ -241,7 +241,7 @@ bool ar_parse_instruction_evaluator__evaluate(
     AR__HEAP__FREE(items);
     
     // Create result map
-    data_t *own_result = ar_data__create_map();
+    ar_data_t *own_result = ar_data__create_map();
     if (!own_result) {
         ar_data__destroy(own_input_data);
         ar_data__destroy(own_template_data);
@@ -356,7 +356,7 @@ bool ar_parse_instruction_evaluator__evaluate(
         value_str[value_len] = '\0';
         
         // Parse the value and store in result map
-        data_t *own_value = _parse_value_string(value_str);
+        ar_data_t *own_value = _parse_value_string(value_str);
         AR__HEAP__FREE(value_str);
         
         if (own_value) {

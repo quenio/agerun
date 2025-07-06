@@ -26,7 +26,7 @@ An opaque type representing a send instruction evaluator instance.
 ar_send_instruction_evaluator_t* ar_send_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
-    data_t *mut_memory
+    ar_data_t *mut_memory
 );
 ```
 Creates a new send instruction evaluator that stores its dependencies including the log for error reporting.
@@ -95,7 +95,7 @@ The module evaluates both arguments:
 
 ```c
 // Create memory and expression evaluator
-data_t *memory = ar_data__create_map();
+ar_data_t *memory = ar_data__create_map();
 ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
 
 // Create send instruction evaluator

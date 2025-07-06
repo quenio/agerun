@@ -21,10 +21,10 @@ static void test_agent_instruction_evaluator__evaluate_with_context(void) {
     ar_system__init(NULL, NULL);
     
     // Given an agent instruction evaluator with memory and a registered method
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    data_t *context = ar_data__create_map();
+    ar_data_t *context = ar_data__create_map();
     assert(context != NULL);
     ar_data__set_map_string(context, "config", "production");
     
@@ -100,7 +100,7 @@ static void test_agent_instruction_evaluator__evaluate_with_result(void) {
     // Initialize system for agent creation
     ar_system__init(NULL, NULL);
     // Given an instruction evaluator with memory and a registered method
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -178,7 +178,7 @@ static void test_agent_instruction_evaluator__evaluate_invalid_method(void) {
     // Initialize system for agent creation
     ar_system__init(NULL, NULL);
     // Given an instruction evaluator with memory (no methods registered)
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -225,7 +225,7 @@ static void test_agent_instruction_evaluator__evaluate_invalid_args(void) {
     // Initialize system for agent creation
     ar_system__init(NULL, NULL);
     // Given an instruction evaluator with memory
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -299,7 +299,7 @@ static void test_agent_instruction_evaluator__evaluate_invalid_args(void) {
 
 static void test_agent_instruction_evaluator__create_destroy(void) {
     // Given expression evaluator and memory dependencies
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -330,7 +330,7 @@ static void test_agent_instruction_evaluator__evaluate_with_instance(void) {
     ar_system__init(NULL, NULL);
     
     // Given an agent instruction evaluator instance with dependencies
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -404,7 +404,7 @@ static void test_agent_instruction_evaluator__legacy_evaluate_function(void) {
     ar_system__init(NULL, NULL);
     
     // Given legacy-style usage of evaluate function with explicit parameters
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();

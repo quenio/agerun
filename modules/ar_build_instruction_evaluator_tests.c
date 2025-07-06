@@ -13,7 +13,7 @@
 
 static void test_build_instruction_evaluator__create_destroy(void) {
     // Given memory, expression evaluator, and log
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -41,13 +41,13 @@ static void test_build_instruction_evaluator__create_destroy(void) {
 
 static void test_build_instruction_evaluator__evaluate_with_instance(void) {
     // Given memory with a map of values and log
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
-    data_t *values = ar_data__create_map();
+    ar_data_t *values = ar_data__create_map();
     assert(values != NULL);
     assert(ar_data__set_map_data(values, "name", ar_data__create_string("Alice")));
     assert(ar_data__set_map_data(memory, "data", values));
@@ -89,7 +89,7 @@ static void test_build_instruction_evaluator__evaluate_with_instance(void) {
     
     // Then it should succeed and build the string
     assert(result == true);
-    data_t *result_value = ar_data__get_map_data(memory, "result");
+    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == DATA_STRING);
     assert(strcmp(ar_data__get_string(result_value), "Hello Alice!") == 0);
@@ -104,13 +104,13 @@ static void test_build_instruction_evaluator__evaluate_with_instance(void) {
 
 static void test_build_instruction_evaluator__evaluate_legacy(void) {
     // Given memory with a map of values and log
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
-    data_t *values = ar_data__create_map();
+    ar_data_t *values = ar_data__create_map();
     assert(values != NULL);
     assert(ar_data__set_map_data(values, "greeting", ar_data__create_string("Hi")));
     assert(ar_data__set_map_data(memory, "vars", values));
@@ -152,7 +152,7 @@ static void test_build_instruction_evaluator__evaluate_legacy(void) {
     
     // Then it should succeed and build the string
     assert(result == true);
-    data_t *result_value = ar_data__get_map_data(memory, "message");
+    ar_data_t *result_value = ar_data__get_map_data(memory, "message");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == DATA_STRING);
     assert(strcmp(ar_data__get_string(result_value), "Hi there!") == 0);
@@ -167,14 +167,14 @@ static void test_build_instruction_evaluator__evaluate_legacy(void) {
 
 static void test_build_instruction_evaluator__evaluate_simple(void) {
     // Given an evaluator with memory containing a map
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
     // Create a map with values to use in building
-    data_t *values = ar_data__create_map();
+    ar_data_t *values = ar_data__create_map();
     assert(values != NULL);
     assert(ar_data__set_map_data(values, "name", ar_data__create_string("Alice")));
     assert(ar_data__set_map_data(memory, "data", values));
@@ -215,7 +215,7 @@ static void test_build_instruction_evaluator__evaluate_simple(void) {
     
     // Then it should succeed and build the string
     assert(result == true);
-    data_t *result_value = ar_data__get_map_data(memory, "result");
+    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == DATA_STRING);
     assert(strcmp(ar_data__get_string(result_value), "Hello Alice!") == 0);
@@ -230,14 +230,14 @@ static void test_build_instruction_evaluator__evaluate_simple(void) {
 }
 static void test_build_instruction_evaluator__evaluate_multiple_variables(void) {
     // Given an evaluator with memory containing a map
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
     // Create a map with multiple values
-    data_t *values = ar_data__create_map();
+    ar_data_t *values = ar_data__create_map();
     assert(values != NULL);
     assert(ar_data__set_map_data(values, "firstName", ar_data__create_string("Bob")));
     assert(ar_data__set_map_data(values, "lastName", ar_data__create_string("Smith")));
@@ -280,7 +280,7 @@ static void test_build_instruction_evaluator__evaluate_multiple_variables(void) 
     
     // Then it should succeed and build the string with all values
     assert(result == true);
-    data_t *result_value = ar_data__get_map_data(memory, "result");
+    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == DATA_STRING);
     assert(strcmp(ar_data__get_string(result_value), "User: Bob Smith, Role: Admin") == 0);
@@ -295,14 +295,14 @@ static void test_build_instruction_evaluator__evaluate_multiple_variables(void) 
 
 static void test_build_instruction_evaluator__evaluate_with_types(void) {
     // Given an evaluator with memory containing a map with different types
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
     // Create a map with values of different types
-    data_t *values = ar_data__create_map();
+    ar_data_t *values = ar_data__create_map();
     assert(values != NULL);
     assert(ar_data__set_map_data(values, "name", ar_data__create_string("Charlie")));
     assert(ar_data__set_map_data(values, "age", ar_data__create_integer(30)));
@@ -345,7 +345,7 @@ static void test_build_instruction_evaluator__evaluate_with_types(void) {
     
     // Then it should succeed and convert all types to strings
     assert(result == true);
-    data_t *result_value = ar_data__get_map_data(memory, "result");
+    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == DATA_STRING);
     assert(strcmp(ar_data__get_string(result_value), "Name: Charlie, Age: 30, Score: 95.5") == 0);
@@ -360,14 +360,14 @@ static void test_build_instruction_evaluator__evaluate_with_types(void) {
 
 static void test_build_instruction_evaluator__evaluate_missing_values(void) {
     // Given an evaluator with memory containing a map with some missing values
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
     // Create a map with only some values
-    data_t *values = ar_data__create_map();
+    ar_data_t *values = ar_data__create_map();
     assert(values != NULL);
     assert(ar_data__set_map_data(values, "firstName", ar_data__create_string("David")));
     // Note: lastName is missing
@@ -409,7 +409,7 @@ static void test_build_instruction_evaluator__evaluate_missing_values(void) {
     
     // Then it should succeed but preserve the placeholder for missing value
     assert(result == true);
-    data_t *result_value = ar_data__get_map_data(memory, "result");
+    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == DATA_STRING);
     assert(strcmp(ar_data__get_string(result_value), "Name: David {lastName}") == 0);
@@ -424,7 +424,7 @@ static void test_build_instruction_evaluator__evaluate_missing_values(void) {
 
 static void test_build_instruction_evaluator__evaluate_invalid_args(void) {
     // Given an evaluator with memory
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -461,7 +461,7 @@ static void test_build_instruction_evaluator__evaluate_invalid_args(void) {
     ar_instruction_ast__destroy(ast1);
     
     // Test case 2: Non-string template argument
-    data_t *dummy_map = ar_data__create_map();
+    ar_data_t *dummy_map = ar_data__create_map();
     assert(ar_data__set_map_data(memory, "dummy", dummy_map));
     
     const char *args2[] = {"123", "memory.dummy"};

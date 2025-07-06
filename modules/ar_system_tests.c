@@ -84,7 +84,7 @@ static void test_agent_creation(void) {
     assert(ar_agency__agent_exists(agent_id));
     
     // When we send a message to the agent
-    data_t *test_message = ar_data__create_string(g_test_message);
+    ar_data_t *test_message = ar_data__create_string(g_test_message);
     assert(test_message != NULL);
     bool send_result = ar_agency__send_to_agent(agent_id, test_message);
     
@@ -143,8 +143,8 @@ static void test_message_passing(void) {
     assert(sender_id > 0);
     
     // When we send __wake__ messages to both agents
-    data_t *wake_message1 = ar_data__create_string(g_wake_message);
-    data_t *wake_message2 = ar_data__create_string(g_wake_message);
+    ar_data_t *wake_message1 = ar_data__create_string(g_wake_message);
+    ar_data_t *wake_message2 = ar_data__create_string(g_wake_message);
     assert(wake_message1 != NULL);
     assert(wake_message2 != NULL);
     bool receiver_send = ar_agency__send_to_agent(receiver_id, wake_message1);
@@ -209,7 +209,7 @@ int main(void) {
     }
     
     // When we send a wake message to the initial agent
-    data_t *wake_message3 = ar_data__create_string(g_wake_message);
+    ar_data_t *wake_message3 = ar_data__create_string(g_wake_message);
     assert(wake_message3 != NULL);
     bool send_result = ar_agency__send_to_agent(initial_agent, wake_message3);
     

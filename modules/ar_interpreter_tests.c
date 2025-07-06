@@ -115,13 +115,13 @@ static void test_interpreter_execute_method(void) {
     assert(agent_id > 0);
     
     // And send a message
-    data_t *own_message = ar_data__create_string("Hello, interpreter!");
+    ar_data_t *own_message = ar_data__create_string("Hello, interpreter!");
     bool sent = ar_interpreter_fixture__send_message(own_fixture, agent_id, own_message);
     assert(sent == true);
     // Ownership transferred
     
     // Then the agent's memory should contain the result
-    data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
+    ar_data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
     assert(mut_memory != NULL);
     
     // Debug: Print what's in memory - simplified version
@@ -131,7 +131,7 @@ static void test_interpreter_execute_method(void) {
         printf("DEBUG: Memory type is %d\n", ar_data__get_type(mut_memory));
     }
     
-    data_t *ref_result = ar_data__get_map_data(mut_memory, "result");
+    ar_data_t *ref_result = ar_data__get_map_data(mut_memory, "result");
     printf("DEBUG: Result is %s\n", ref_result ? "not null" : "null");
     assert(ref_result != NULL);
     assert(ar_data__get_type(ref_result) == DATA_STRING);
@@ -170,8 +170,8 @@ static void test_interpreter_execute_instruction(void) {
     assert(result == true);
     
     // And the memory should be updated
-    data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
-    data_t *ref_y = ar_data__get_map_data(mut_memory, "y");
+    ar_data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
+    ar_data_t *ref_y = ar_data__get_map_data(mut_memory, "y");
     assert(ref_y != NULL);
     assert(ar_data__get_type(ref_y) == DATA_INTEGER);
     assert(ar_data__get_integer(ref_y) == 10);
@@ -201,18 +201,18 @@ static void test_simple_instructions(void) {
     
     // Test integer assignment
     assert(ar_interpreter_fixture__execute_instruction(own_fixture, agent_id, "memory.x := 42"));
-    data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
-    data_t *ref_x = ar_data__get_map_data(mut_memory, "x");
+    ar_data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
+    ar_data_t *ref_x = ar_data__get_map_data(mut_memory, "x");
     assert(ar_data__get_integer(ref_x) == 42);
     
     // Test string assignment
     assert(ar_interpreter_fixture__execute_instruction(own_fixture, agent_id, "memory.msg := \"Hello\""));
-    data_t *ref_msg = ar_data__get_map_data(mut_memory, "msg");
+    ar_data_t *ref_msg = ar_data__get_map_data(mut_memory, "msg");
     assert(strcmp(ar_data__get_string(ref_msg), "Hello") == 0);
     
     // Test double assignment
     assert(ar_interpreter_fixture__execute_instruction(own_fixture, agent_id, "memory.pi := 3.14"));
-    data_t *ref_pi = ar_data__get_map_data(mut_memory, "pi");
+    ar_data_t *ref_pi = ar_data__get_map_data(mut_memory, "pi");
     assert(ar_data__get_double(ref_pi) == 3.14);
     
     // Clean up
@@ -238,15 +238,15 @@ static void test_memory_access_instructions(void) {
     assert(agent_id > 0);
     
     // Set up nested structure - need to create parent map first (AgeRun doesn't auto-create intermediate maps)
-    data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
-    data_t *own_user_map = ar_data__create_map();
+    ar_data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
+    ar_data_t *own_user_map = ar_data__create_map();
     ar_data__set_map_data(mut_memory, "user", own_user_map);
     
     assert(ar_interpreter_fixture__execute_instruction(own_fixture, agent_id, "memory.user.name := \"Alice\""));
     assert(ar_interpreter_fixture__execute_instruction(own_fixture, agent_id, "memory.user.age := 30"));
     
     // Debug: Check if the values were actually set
-    data_t *ref_user_name = ar_data__get_map_data(mut_memory, "user.name");
+    ar_data_t *ref_user_name = ar_data__get_map_data(mut_memory, "user.name");
     printf("DEBUG: user.name type=%d, value=%s\n", 
            ref_user_name ? (int)ar_data__get_type(ref_user_name) : -1,
            ref_user_name ? ar_data__get_string(ref_user_name) : "NULL");
@@ -259,7 +259,7 @@ static void test_memory_access_instructions(void) {
     
     // Test arithmetic with nested values  
     assert(ar_interpreter_fixture__execute_instruction(own_fixture, agent_id, "memory.next_age := memory.user.age + 1"));
-    data_t *ref_next = ar_data__get_map_data(mut_memory, "next_age");
+    ar_data_t *ref_next = ar_data__get_map_data(mut_memory, "next_age");
     assert(ar_data__get_integer(ref_next) == 31);
     
     // Clean up
@@ -286,8 +286,8 @@ static void test_condition_instructions(void) {
     
     // Test if with true condition
     assert(ar_interpreter_fixture__execute_instruction(own_fixture, agent_id, "memory.result := if(1, \"yes\", \"no\")"));
-    data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
-    data_t *ref_result = ar_data__get_map_data(mut_memory, "result");
+    ar_data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
+    ar_data_t *ref_result = ar_data__get_map_data(mut_memory, "result");
     assert(strcmp(ar_data__get_string(ref_result), "yes") == 0);
     
     // Test if with false condition
@@ -344,8 +344,8 @@ static void test_message_send_instructions(void) {
     ar_system__process_next_message();
     
     // Check receiver got the message
-    data_t *receiver_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, receiver_id);
-    data_t *ref_received = ar_data__get_map_data(receiver_memory, "received");
+    ar_data_t *receiver_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, receiver_id);
+    ar_data_t *ref_received = ar_data__get_map_data(receiver_memory, "received");
     assert(ref_received != NULL);
     assert(strcmp(ar_data__get_string(ref_received), "Got: Test message") == 0);
     
@@ -353,8 +353,8 @@ static void test_message_send_instructions(void) {
     snprintf(send_cmd, sizeof(send_cmd), "memory.sent := send(%" PRId64 ", \"Another message\")", receiver_id);
     assert(ar_interpreter_fixture__execute_instruction(own_fixture, sender_id, send_cmd));
     
-    data_t *sender_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, sender_id);
-    data_t *ref_sent = ar_data__get_map_data(sender_memory, "sent");
+    ar_data_t *sender_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, sender_id);
+    ar_data_t *ref_sent = ar_data__get_map_data(sender_memory, "sent");
     assert(ar_data__get_integer(ref_sent) == 1);
     
     // Test send to agent 0 (no-op)
@@ -391,8 +391,8 @@ static void test_method_function(void) {
         "memory.result := method(\"dynamic\", \"memory.x := 99\", \"2.0.0\")"
     ));
     
-    data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
-    data_t *ref_result = ar_data__get_map_data(mut_memory, "result");
+    ar_data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
+    ar_data_t *ref_result = ar_data__get_map_data(mut_memory, "result");
     assert(ar_data__get_integer(ref_result) == 1);
     
     // Verify method was created
@@ -440,11 +440,11 @@ static void test_parse_function(void) {
         "memory.parsed := parse(\"Hello {name}\", \"Hello World\")"
     ));
     
-    data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
-    data_t *ref_parsed = ar_data__get_map_data(mut_memory, "parsed");
+    ar_data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
+    ar_data_t *ref_parsed = ar_data__get_map_data(mut_memory, "parsed");
     assert(ar_data__get_type(ref_parsed) == DATA_MAP);
     
-    data_t *ref_name = ar_data__get_map_data(ref_parsed, "name");
+    ar_data_t *ref_name = ar_data__get_map_data(ref_parsed, "name");
     assert(ref_name != NULL);
     assert(strcmp(ar_data__get_string(ref_name), "World") == 0);
     
@@ -455,13 +455,13 @@ static void test_parse_function(void) {
         "memory.user := parse(\"Name: {name}, Age: {age}\", \"Name: Bob, Age: 25\")"
     ));
     
-    data_t *ref_user = ar_data__get_map_data(mut_memory, "user");
+    ar_data_t *ref_user = ar_data__get_map_data(mut_memory, "user");
     assert(ar_data__get_type(ref_user) == DATA_MAP);
     
     ref_name = ar_data__get_map_data(ref_user, "name");
     assert(strcmp(ar_data__get_string(ref_name), "Bob") == 0);
     
-    data_t *ref_age = ar_data__get_map_data(ref_user, "age");
+    ar_data_t *ref_age = ar_data__get_map_data(ref_user, "age");
     assert(ar_data__get_integer(ref_age) == 25);
     
     // Clean up
@@ -487,8 +487,8 @@ static void test_build_function(void) {
     assert(agent_id > 0);
     
     // Set up data for building - need to create intermediate map first
-    data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
-    data_t *own_data_map = ar_data__create_map();
+    ar_data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
+    ar_data_t *own_data_map = ar_data__create_map();
     ar_data__set_map_data(mut_memory, "data", own_data_map);
     own_data_map = NULL; // Ownership transferred to memory
     
@@ -502,7 +502,7 @@ static void test_build_function(void) {
         "memory.result := build(\"Hello {name}, count is {count}\", memory.data)"
     ));
     
-    data_t *ref_result = ar_data__get_map_data(mut_memory, "result");
+    ar_data_t *ref_result = ar_data__get_map_data(mut_memory, "result");
     assert(strcmp(ar_data__get_string(ref_result), "Hello Alice, count is 42") == 0);
     
     // Test building with missing variable
@@ -512,7 +512,7 @@ static void test_build_function(void) {
         "memory.partial := build(\"Name: {name}, Age: {age}\", memory.data)"
     ));
     
-    data_t *ref_partial = ar_data__get_map_data(mut_memory, "partial");
+    ar_data_t *ref_partial = ar_data__get_map_data(mut_memory, "partial");
     assert(strcmp(ar_data__get_string(ref_partial), "Name: Alice, Age: {age}") == 0);
     
     // Clean up
@@ -552,8 +552,8 @@ static void test_agent_function(void) {
         "memory.worker1 := agent(\"worker\", \"1.0.0\", 0)"
     ));
     
-    data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, creator_id);
-    data_t *ref_worker1 = ar_data__get_map_data(mut_memory, "worker1");
+    ar_data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, creator_id);
+    ar_data_t *ref_worker1 = ar_data__get_map_data(mut_memory, "worker1");
     int64_t worker1_id = ar_data__get_integer(ref_worker1);
     assert(worker1_id > 0);
     
@@ -561,14 +561,14 @@ static void test_agent_function(void) {
     ar_system__process_next_message();
     
     // Verify worker was initialized
-    data_t *worker1_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, worker1_id);
+    ar_data_t *worker1_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, worker1_id);
     assert(worker1_memory != NULL);
-    data_t *ref_init = ar_data__get_map_data(worker1_memory, "initialized");
+    ar_data_t *ref_init = ar_data__get_map_data(worker1_memory, "initialized");
     assert(ref_init != NULL);
     assert(ar_data__get_integer(ref_init) == 1);
     
     // Create agent with context - need to create intermediate map first
-    data_t *own_ctx_map = ar_data__create_map();
+    ar_data_t *own_ctx_map = ar_data__create_map();
     ar_data__set_map_data(mut_memory, "ctx", own_ctx_map);
     assert(ar_interpreter_fixture__execute_instruction(own_fixture, creator_id, "memory.ctx.role := \"supervisor\""));
     assert(ar_interpreter_fixture__execute_instruction(
@@ -577,7 +577,7 @@ static void test_agent_function(void) {
         "memory.worker2 := agent(\"worker\", \"1.0.0\", memory.ctx)"
     ));
     
-    data_t *ref_worker2 = ar_data__get_map_data(mut_memory, "worker2");
+    ar_data_t *ref_worker2 = ar_data__get_map_data(mut_memory, "worker2");
     int64_t worker2_id = ar_data__get_integer(ref_worker2);
     assert(worker2_id > 0);
     assert(worker2_id != worker1_id);
@@ -589,7 +589,7 @@ static void test_agent_function(void) {
         "memory.worker3 := agent(\"worker\", 1, 0)"
     ));
     
-    data_t *ref_worker3 = ar_data__get_map_data(mut_memory, "worker3");
+    ar_data_t *ref_worker3 = ar_data__get_map_data(mut_memory, "worker3");
     int64_t worker3_id = ar_data__get_integer(ref_worker3);
     assert(worker3_id > 0);
     

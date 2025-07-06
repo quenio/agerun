@@ -26,7 +26,7 @@ An opaque type representing a build instruction evaluator instance.
 ar_build_instruction_evaluator_t* ar_build_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
-    data_t *mut_memory
+    ar_data_t *mut_memory
 );
 ```
 Creates a new build instruction evaluator that stores its dependencies including the log for error reporting.
@@ -102,7 +102,7 @@ The module:
 
 ```c
 // Create memory and expression evaluator
-data_t *memory = ar_data__create_map();
+ar_data_t *memory = ar_data__create_map();
 ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
 
 // Create build instruction evaluator
@@ -111,7 +111,7 @@ ar_build_instruction_evaluator_t *build_eval = ar_build_instruction_evaluator__c
 );
 
 // Set up values in memory
-data_t *values = ar_data__create_map();
+ar_data_t *values = ar_data__create_map();
 ar_data__set_map_data(values, "name", ar_data__create_string("World"));
 ar_data__set_map_data(values, "count", ar_data__create_integer(42));
 ar_data__set_map_data(memory, "values", values);

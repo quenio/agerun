@@ -13,7 +13,7 @@
 
 static void test_condition_instruction_evaluator__create_destroy(void) {
     // Given memory, expression evaluator, and log
-    data_t *own_memory = ar_data__create_map();
+    ar_data_t *own_memory = ar_data__create_map();
     assert(own_memory != NULL);
     
     ar_log_t *own_log = ar_log__create();
@@ -41,7 +41,7 @@ static void test_condition_instruction_evaluator__create_destroy(void) {
 
 static void test_condition_instruction_evaluator__evaluate_with_instance(void) {
     // Given memory with a condition value, evaluator instance, and log
-    data_t *own_memory = ar_data__create_map();
+    ar_data_t *own_memory = ar_data__create_map();
     assert(own_memory != NULL);
     assert(ar_data__set_map_data(own_memory, "x", ar_data__create_integer(10)));
     
@@ -90,7 +90,7 @@ static void test_condition_instruction_evaluator__evaluate_with_instance(void) {
     
     // Then it should succeed and store the true value
     assert(result == true);
-    data_t *ref_result_value = ar_data__get_map_data(own_memory, "result");
+    ar_data_t *ref_result_value = ar_data__get_map_data(own_memory, "result");
     assert(ref_result_value != NULL);
     assert(ar_data__get_type(ref_result_value) == DATA_INTEGER);
     assert(ar_data__get_integer(ref_result_value) == 100);
@@ -105,7 +105,7 @@ static void test_condition_instruction_evaluator__evaluate_with_instance(void) {
 
 static void test_condition_instruction_evaluator__evaluate_without_legacy(void) {
     // Given memory and expression evaluator
-    data_t *own_memory = ar_data__create_map();
+    ar_data_t *own_memory = ar_data__create_map();
     assert(own_memory != NULL);
     assert(ar_data__set_map_data(own_memory, "flag", ar_data__create_integer(0)));
     
@@ -153,7 +153,7 @@ static void test_condition_instruction_evaluator__evaluate_without_legacy(void) 
     
     // Then it should succeed and store the false value
     assert(result == true);
-    data_t *ref_result_value = ar_data__get_map_data(own_memory, "result");
+    ar_data_t *ref_result_value = ar_data__get_map_data(own_memory, "result");
     assert(ref_result_value != NULL);
     assert(ar_data__get_type(ref_result_value) == DATA_STRING);
     assert(strcmp(ar_data__get_string(ref_result_value), "no") == 0);
@@ -168,7 +168,7 @@ static void test_condition_instruction_evaluator__evaluate_without_legacy(void) 
 
 static void test_instruction_evaluator__evaluate_if_true_condition(void) {
     // Given an evaluator with memory containing a condition
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -218,7 +218,7 @@ static void test_instruction_evaluator__evaluate_if_true_condition(void) {
     
     // Then it should succeed and store the true value
     assert(result == true);
-    data_t *result_value = ar_data__get_map_data(memory, "result");
+    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == DATA_INTEGER);
     assert(ar_data__get_integer(result_value) == 100);
@@ -233,7 +233,7 @@ static void test_instruction_evaluator__evaluate_if_true_condition(void) {
 
 static void test_instruction_evaluator__evaluate_if_false_condition(void) {
     // Given an evaluator with memory containing a condition
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -283,7 +283,7 @@ static void test_instruction_evaluator__evaluate_if_false_condition(void) {
     
     // Then it should succeed and store the false value
     assert(result == true);
-    data_t *result_value = ar_data__get_map_data(memory, "result");
+    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == DATA_INTEGER);
     assert(ar_data__get_integer(result_value) == 200);
@@ -298,7 +298,7 @@ static void test_instruction_evaluator__evaluate_if_false_condition(void) {
 
 static void test_instruction_evaluator__evaluate_if_with_expressions(void) {
     // Given an evaluator with memory containing values
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -356,7 +356,7 @@ static void test_instruction_evaluator__evaluate_if_with_expressions(void) {
     
     // Then it should succeed and evaluate the true expression
     assert(result == true);
-    data_t *result_value = ar_data__get_map_data(memory, "result");
+    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == DATA_INTEGER);
     assert(ar_data__get_integer(result_value) == 30);
@@ -371,7 +371,7 @@ static void test_instruction_evaluator__evaluate_if_with_expressions(void) {
 
 static void test_instruction_evaluator__evaluate_if_nested(void) {
     // Given an evaluator with memory
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -423,7 +423,7 @@ static void test_instruction_evaluator__evaluate_if_nested(void) {
     
     // Then it should succeed and return the correct string
     assert(result == true);
-    data_t *result_value = ar_data__get_map_data(memory, "result");
+    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == DATA_STRING);
     assert(strcmp(ar_data__get_string(result_value), "medium") == 0);
@@ -438,7 +438,7 @@ static void test_instruction_evaluator__evaluate_if_nested(void) {
 
 static void test_instruction_evaluator__evaluate_if_invalid_args(void) {
     // Given an evaluator with memory
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();

@@ -53,9 +53,9 @@ Creates an expression context with standard test data:
 ```c
 expression_context_t* ar_instruction__fixture_create_custom_expression_context(
     instruction_fixture_t *mut_fixture,
-    data_t *mut_memory,
-    const data_t *ref_context,
-    const data_t *ref_message,
+    ar_data_t *mut_memory,
+    const ar_data_t *ref_context,
+    const ar_data_t *ref_message,
     const char *ref_expression
 );
 ```
@@ -67,7 +67,7 @@ Creates an expression context with custom data maps. The fixture tracks the cont
 ### Test Data Creation
 
 ```c
-data_t* ar_instruction__fixture_create_test_map(
+ar_data_t* ar_instruction__fixture_create_test_map(
     instruction_fixture_t *mut_fixture,
     const char *ref_name
 );
@@ -79,7 +79,7 @@ Creates a map with test data based on the name:
 - default: test="value", number=42, decimal=3.14
 
 ```c
-data_t* ar_instruction__fixture_create_empty_map(
+ar_data_t* ar_instruction__fixture_create_empty_map(
     instruction_fixture_t *mut_fixture
 );
 ```
@@ -87,7 +87,7 @@ data_t* ar_instruction__fixture_create_empty_map(
 Creates an empty map for tests that need to populate it manually.
 
 ```c
-data_t* ar_instruction__fixture_create_test_list(
+ar_data_t* ar_instruction__fixture_create_test_list(
     instruction_fixture_t *mut_fixture
 );
 ```
@@ -131,7 +131,7 @@ Returns the agent ID created by the fixture, or 0 if no agent was created.
 ```c
 void ar_instruction__fixture_track_data(
     instruction_fixture_t *mut_fixture,
-    data_t *own_data
+    ar_data_t *own_data
 );
 
 void ar_instruction__fixture_track_expression_context(
@@ -175,8 +175,8 @@ static void test_instruction_with_agent(void) {
     assert(agent > 0);
     
     // Get agent's memory for instruction testing
-    data_t *mut_memory = ar_agent__get_mutable_memory(agent);
-    const data_t *ref_context = ar_agent__get_context(agent);
+    ar_data_t *mut_memory = ar_agent__get_mutable_memory(agent);
+    const ar_data_t *ref_context = ar_agent__get_context(agent);
     
     // Create instruction context (manually, as instruction module provides this)
     instruction_context_t *own_ctx = ar_instruction__create_context(
@@ -216,7 +216,7 @@ static void test_arithmetic_expression(void) {
     assert(ref_ctx != NULL);
     
     // Evaluate expression
-    data_t *own_result = ar_expression__evaluate(ref_ctx);
+    ar_data_t *own_result = ar_expression__evaluate(ref_ctx);
     assert(own_result != NULL);
     assert(ar_data__get_type(own_result) == DATA_TYPE_INTEGER);
     assert(ar_data__get_integer(own_result) == 52); // 42 + 10
@@ -241,7 +241,7 @@ static void test_map_operations(void) {
     assert(own_fixture != NULL);
     
     // Create test map with user data
-    data_t *ref_user = ar_instruction__fixture_create_test_map(own_fixture, "user");
+    ar_data_t *ref_user = ar_instruction__fixture_create_test_map(own_fixture, "user");
     assert(ref_user != NULL);
     
     // Verify pre-populated values
@@ -249,7 +249,7 @@ static void test_map_operations(void) {
     assert(ar_data__get_map_integer(ref_user, "id") == 123);
     
     // Create another map
-    data_t *ref_config = ar_instruction__fixture_create_test_map(own_fixture, "config");
+    ar_data_t *ref_config = ar_instruction__fixture_create_test_map(own_fixture, "config");
     assert(ref_config != NULL);
     
     // All cleanup handled by fixture

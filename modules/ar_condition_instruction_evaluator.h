@@ -31,7 +31,7 @@ typedef struct ar_condition_instruction_evaluator_s ar_condition_instruction_eva
 ar_condition_instruction_evaluator_t* ar_condition_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
-    data_t *mut_memory
+    ar_data_t *mut_memory
 );
 
 /**
@@ -68,7 +68,7 @@ bool ar_condition_instruction_evaluator__evaluate(
  */
 bool ar_condition_instruction_evaluator__evaluate_legacy(
     ar_expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
+    ar_data_t *mut_memory,
     const ar_instruction_ast_t *ref_ast
 );
 

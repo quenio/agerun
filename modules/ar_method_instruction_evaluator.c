@@ -16,7 +16,7 @@
 /* Forward declaration of legacy function */
 bool ar_method_instruction_evaluator__evaluate_legacy(
     ar_expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory,
+    ar_data_t *mut_memory,
     const ar_instruction_ast_t *ref_ast
 );
 
@@ -29,7 +29,7 @@ bool ar_method_instruction_evaluator__evaluate_legacy(
 struct ar_method_instruction_evaluator_s {
     ar_log_t *ref_log;                           /* Borrowed reference to log instance */
     ar_expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
-    data_t *mut_memory;                          /* Memory map (mutable reference) */
+    ar_data_t *mut_memory;                          /* Memory map (mutable reference) */
 };
 
 /**
@@ -38,7 +38,7 @@ struct ar_method_instruction_evaluator_s {
 ar_method_instruction_evaluator_t* ar_method_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
-    data_t *mut_memory
+    ar_data_t *mut_memory
 ) {
     // Validate required parameters
     if (ref_log == NULL || ref_expr_evaluator == NULL || mut_memory == NULL) {
@@ -91,9 +91,9 @@ static void _log_error(ar_method_instruction_evaluator_t *mut_evaluator, const c
 
 /* Helper function to store result in memory if assignment path is provided */
 static bool _store_result_if_assigned(
-    data_t *mut_memory,
+    ar_data_t *mut_memory,
     const ar_instruction_ast_t *ref_ast,
-    data_t *own_result
+    ar_data_t *own_result
 ) {
     const char *ref_result_path = ar_instruction_ast__get_function_result_path(ref_ast);
     if (!ref_result_path) {
@@ -125,9 +125,9 @@ static bool _evaluate_three_string_args(
     ar_expression_evaluator_t *mut_expr_evaluator,
     const ar_instruction_ast_t *ref_ast,
     size_t expected_arg_count,
-    data_t **out_arg1,
-    data_t **out_arg2,
-    data_t **out_arg3
+    ar_data_t **out_arg1,
+    ar_data_t **out_arg2,
+    ar_data_t **out_arg3
 ) {
     // Get pre-parsed expression ASTs for arguments
     const list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(ref_ast);
@@ -156,9 +156,9 @@ static bool _evaluate_three_string_args(
     }
     
     // Evaluate expression ASTs using public method
-    data_t *result1 = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_ast1);
-    data_t *result2 = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_ast2);
-    data_t *result3 = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_ast3);
+    ar_data_t *result1 = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_ast1);
+    ar_data_t *result2 = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_ast2);
+    ar_data_t *result3 = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_ast3);
     
     AR__HEAP__FREE(items);
     
@@ -255,7 +255,7 @@ bool ar_method_instruction_evaluator__evaluate(
     
     // Extract dependencies from the evaluator instance
     ar_expression_evaluator_t *mut_expr_evaluator = mut_evaluator->ref_expr_evaluator;
-    data_t *mut_memory = mut_evaluator->mut_memory;
+    ar_data_t *mut_memory = mut_evaluator->mut_memory;
     
     if (!mut_expr_evaluator || !mut_memory) {
         return false;
@@ -267,9 +267,9 @@ bool ar_method_instruction_evaluator__evaluate(
     }
     
     // Evaluate three string arguments
-    data_t *own_method_name = NULL;
-    data_t *own_instructions = NULL;
-    data_t *own_version = NULL;
+    ar_data_t *own_method_name = NULL;
+    ar_data_t *own_instructions = NULL;
+    ar_data_t *own_version = NULL;
     
     bool args_valid = _evaluate_three_string_args(
         mut_evaluator, mut_expr_evaluator, ref_ast, 3,
@@ -300,7 +300,7 @@ bool ar_method_instruction_evaluator__evaluate(
     
     // Store result if assigned
     if (ar_instruction_ast__has_result_assignment(ref_ast)) {
-        data_t *own_result = ar_data__create_integer(success ? 1 : 0);
+        ar_data_t *own_result = ar_data__create_integer(success ? 1 : 0);
         if (own_result) {
             _store_result_if_assigned(mut_memory, ref_ast, own_result);
         }

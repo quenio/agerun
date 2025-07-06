@@ -29,7 +29,7 @@ typedef struct ar_agent_instruction_evaluator_s ar_agent_instruction_evaluator_t
 ar_agent_instruction_evaluator_t* ar_agent_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory
+    ar_data_t *mut_memory
 );
 
 /**
@@ -49,7 +49,7 @@ void ar_agent_instruction_evaluator__destroy(ar_agent_instruction_evaluator_t *o
  */
 bool ar_agent_instruction_evaluator__evaluate(
     ar_agent_instruction_evaluator_t *mut_evaluator,
-    data_t *ref_context,
+    ar_data_t *ref_context,
     const ar_instruction_ast_t *ref_ast
 );
 

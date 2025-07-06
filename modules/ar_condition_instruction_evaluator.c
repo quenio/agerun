@@ -20,7 +20,7 @@
 struct ar_condition_instruction_evaluator_s {
     ar_log_t *ref_log;                           /* Borrowed reference to log instance */
     ar_expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
-    data_t *mut_memory;                          /* Memory map (mutable reference) */
+    ar_data_t *mut_memory;                          /* Memory map (mutable reference) */
 };
 
 
@@ -41,7 +41,7 @@ static void _log_error(ar_condition_instruction_evaluator_t *mut_evaluator, cons
 ar_condition_instruction_evaluator_t* ar_condition_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
-    data_t *mut_memory
+    ar_data_t *mut_memory
 ) {
     if (!ref_log || !ref_expr_evaluator || !mut_memory) {
         return NULL;
@@ -123,7 +123,7 @@ bool ar_condition_instruction_evaluator__evaluate(
     }
     
     // Evaluate condition expression
-    data_t *condition_result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_condition_ast);
+    ar_data_t *condition_result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_condition_ast);
     if (!condition_result) {
         AR__HEAP__FREE(items);
         return false;
@@ -145,7 +145,7 @@ bool ar_condition_instruction_evaluator__evaluate(
     const ar_expression_ast_t *ref_ast_to_eval = condition_is_true ? ref_true_ast : ref_false_ast;
     
     // Evaluate the selected expression AST
-    data_t *result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_ast_to_eval);
+    ar_data_t *result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_ast_to_eval);
     
     // Clean up the items array as we're done with it
     AR__HEAP__FREE(items);
@@ -169,7 +169,7 @@ bool ar_condition_instruction_evaluator__evaluate(
         }
         
         // Get ownership of result for storing
-        data_t *own_result;
+        ar_data_t *own_result;
         if (ar_data__hold_ownership(result, mut_evaluator)) {
             // We can claim ownership
             ar_data__transfer_ownership(result, mut_evaluator);

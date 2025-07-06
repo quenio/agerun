@@ -15,8 +15,8 @@
  */
 struct expression_evaluator_s {
     ar_log_t *ref_log;     /**< Log instance for error reporting (borrowed) */
-    data_t *ref_memory;    /**< Memory map with variables (borrowed) */
-    data_t *ref_context;   /**< Optional context map (borrowed, may be NULL) */
+    ar_data_t *ref_memory;    /**< Memory map with variables (borrowed) */
+    ar_data_t *ref_context;   /**< Optional context map (borrowed, may be NULL) */
 };
 
 /* Helper function to log error messages */
@@ -28,8 +28,8 @@ static void _log_error(ar_expression_evaluator_t *mut_evaluator, const char *mes
 
 ar_expression_evaluator_t* ar_expression_evaluator__create(
     ar_log_t *ref_log,
-    data_t *ref_memory,
-    data_t *ref_context)
+    ar_data_t *ref_memory,
+    ar_data_t *ref_context)
 {
     if (!ref_log) {
         ar_io__error("ar_expression_evaluator__create: NULL log");
@@ -61,7 +61,7 @@ void ar_expression_evaluator__destroy(ar_expression_evaluator_t *own_evaluator)
     }
 }
 
-data_t* ar_expression_evaluator__evaluate_literal_int(
+ar_data_t* ar_expression_evaluator__evaluate_literal_int(
     ar_expression_evaluator_t *mut_evaluator,
     const ar_expression_ast_t *ref_node)
 {
@@ -76,12 +76,12 @@ data_t* ar_expression_evaluator__evaluate_literal_int(
         return NULL;
     }
     
-    // Get the integer value and create a data_t
+    // Get the integer value and create a ar_data_t
     int value = ar_expression_ast__get_int_value(ref_node);
     return ar_data__create_integer(value);
 }
 
-data_t* ar_expression_evaluator__evaluate_literal_double(
+ar_data_t* ar_expression_evaluator__evaluate_literal_double(
     ar_expression_evaluator_t *mut_evaluator,
     const ar_expression_ast_t *ref_node)
 {
@@ -96,12 +96,12 @@ data_t* ar_expression_evaluator__evaluate_literal_double(
         return NULL;
     }
     
-    // Get the double value and create a data_t
+    // Get the double value and create a ar_data_t
     double value = ar_expression_ast__get_double_value(ref_node);
     return ar_data__create_double(value);
 }
 
-data_t* ar_expression_evaluator__evaluate_literal_string(
+ar_data_t* ar_expression_evaluator__evaluate_literal_string(
     ar_expression_evaluator_t *mut_evaluator,
     const ar_expression_ast_t *ref_node)
 {
@@ -116,12 +116,12 @@ data_t* ar_expression_evaluator__evaluate_literal_string(
         return NULL;
     }
     
-    // Get the string value and create a data_t
+    // Get the string value and create a ar_data_t
     const char *value = ar_expression_ast__get_string_value(ref_node);
     return ar_data__create_string(value);
 }
 
-data_t* ar_expression_evaluator__evaluate_memory_access(
+ar_data_t* ar_expression_evaluator__evaluate_memory_access(
     ar_expression_evaluator_t *mut_evaluator,
     const ar_expression_ast_t *ref_node)
 {
@@ -148,7 +148,7 @@ data_t* ar_expression_evaluator__evaluate_memory_access(
     char **path = ar_expression_ast__get_memory_path(ref_node, &path_count);
     
     // Determine which map to use based on the base
-    data_t *map = NULL;
+    ar_data_t *map = NULL;
     if (strcmp(base, "memory") == 0) {
         map = mut_evaluator->ref_memory;
     } else if (strcmp(base, "context") == 0) {
@@ -168,7 +168,7 @@ data_t* ar_expression_evaluator__evaluate_memory_access(
     }
     
     // Navigate through the path
-    data_t *current = map;
+    ar_data_t *current = map;
     for (size_t i = 0; i < path_count; i++) {
         if (ar_data__get_type(current) != DATA_MAP) {
             // Can't navigate further if not a map
@@ -191,7 +191,7 @@ data_t* ar_expression_evaluator__evaluate_memory_access(
     return current;
 }
 
-data_t* ar_expression_evaluator__evaluate(
+ar_data_t* ar_expression_evaluator__evaluate(
     ar_expression_evaluator_t *mut_evaluator,
     const ar_expression_ast_t *ref_ast)
 {
@@ -224,7 +224,7 @@ data_t* ar_expression_evaluator__evaluate(
  * Helper function to evaluate any expression AST node
  * This is used internally by binary operations to evaluate operands
  */
-static data_t* _evaluate_expression(
+static ar_data_t* _evaluate_expression(
     ar_expression_evaluator_t *mut_evaluator,
     const ar_expression_ast_t *ref_node)
 {
@@ -242,7 +242,7 @@ static data_t* _evaluate_expression(
         case AR_EXPR__MEMORY_ACCESS:
             // Memory access returns a reference, we need to make a copy for binary ops
             {
-                data_t *ref_value = ar_expression_evaluator__evaluate_memory_access(mut_evaluator, ref_node);
+                ar_data_t *ref_value = ar_expression_evaluator__evaluate_memory_access(mut_evaluator, ref_node);
                 if (!ref_value) return NULL;
                 
                 // Create a copy based on type
@@ -266,7 +266,7 @@ static data_t* _evaluate_expression(
     }
 }
 
-data_t* ar_expression_evaluator__evaluate_binary_op(
+ar_data_t* ar_expression_evaluator__evaluate_binary_op(
     ar_expression_evaluator_t *mut_evaluator,
     const ar_expression_ast_t *ref_node)
 {
@@ -292,13 +292,13 @@ data_t* ar_expression_evaluator__evaluate_binary_op(
     }
     
     // Recursively evaluate both operands
-    data_t *left = _evaluate_expression(mut_evaluator, left_node);
+    ar_data_t *left = _evaluate_expression(mut_evaluator, left_node);
     if (!left) {
         _log_error(mut_evaluator, "evaluate_binary_op: Failed to evaluate left operand");
         return NULL;
     }
     
-    data_t *right = _evaluate_expression(mut_evaluator, right_node);
+    ar_data_t *right = _evaluate_expression(mut_evaluator, right_node);
     if (!right) {
         ar_data__destroy(left);
         _log_error(mut_evaluator, "evaluate_binary_op: Failed to evaluate right operand");
@@ -309,7 +309,7 @@ data_t* ar_expression_evaluator__evaluate_binary_op(
     ar_data_type_t left_type = ar_data__get_type(left);
     ar_data_type_t right_type = ar_data__get_type(right);
     
-    data_t *result = NULL;
+    ar_data_t *result = NULL;
     
     // Handle operations based on types
     if (left_type == DATA_INTEGER && right_type == DATA_INTEGER) {

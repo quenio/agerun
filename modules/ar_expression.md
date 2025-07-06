@@ -35,7 +35,7 @@ expression string, current parsing position, and references to memory, context, 
 #### ar_expression__create_context
 
 ```c
-expression_context_t* ar_expression__create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message, const char *ref_expr);
+expression_context_t* ar_expression__create_context(ar_data_t *mut_memory, const ar_data_t *ref_context, const ar_data_t *ref_message, const char *ref_expr);
 ```
 
 Creates a new expression evaluation context.
@@ -76,7 +76,7 @@ Gets the current parsing offset in the expression string.
 #### ar_expression__evaluate
 
 ```c
-data_t* ar_expression__evaluate(expression_context_t *ctx);
+ar_data_t* ar_expression__evaluate(expression_context_t *ctx);
 ```
 
 Evaluate an expression in the agent's context using recursive descent parsing.
@@ -90,7 +90,7 @@ Evaluate an expression in the agent's context using recursive descent parsing.
 #### ar_expression__take_ownership
 
 ```c
-bool ar_expression__take_ownership(expression_context_t *ctx, data_t *result);
+bool ar_expression__take_ownership(expression_context_t *ctx, ar_data_t *result);
 ```
 
 Take ownership of a result from the expression context.
@@ -140,7 +140,7 @@ The expression grammar follows this BNF definition:
 expression_context_t *ctx = ar_expression__create_context(memory, context, message, "memory.count + 1");
 
 // Evaluate the expression
-data_t *result = ar_expression__evaluate(ctx);
+ar_data_t *result = ar_expression__evaluate(ctx);
 
 // If result is NULL, handle the error and destroy the context
 if (!result) {

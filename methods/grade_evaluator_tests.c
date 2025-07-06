@@ -43,11 +43,11 @@ static void test_grade_evaluator_grades(void) {
     }
     
     // Verify agent memory was initialized
-    const data_t *agent_memory = ar_agency__get_agent_memory(evaluator_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(evaluator_agent);
     assert(agent_memory != NULL);
     
     // Test case 1: Grade A (90+)
-    data_t *own_message = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_map();
     assert(own_message != NULL);
     
     ar_data__set_map_integer(own_message, "sender", 0);
@@ -63,17 +63,17 @@ static void test_grade_evaluator_grades(void) {
     assert(processed);
     
     // Check the result
-    const data_t *type = ar_data__get_map_data(agent_memory, "type");
+    const ar_data_t *type = ar_data__get_map_data(agent_memory, "type");
     if (type && ar_data__get_type(type) == DATA_STRING) {
         printf("SUCCESS: if() correctly identified type = \"%s\"\n", ar_data__get_string(type));
     }
     
-    const data_t *value = ar_data__get_map_data(agent_memory, "value");
+    const ar_data_t *value = ar_data__get_map_data(agent_memory, "value");
     if (value && ar_data__get_type(value) == DATA_INTEGER && ar_data__get_integer(value) >= 90) {
         printf("SUCCESS: if() correctly identified value >= 90\n");
     }
     
-    const data_t *grade = ar_data__get_map_data(agent_memory, "grade");
+    const ar_data_t *grade = ar_data__get_map_data(agent_memory, "grade");
     if (grade && ar_data__get_type(grade) == DATA_STRING) {
         const char *grade_str = ar_data__get_string(grade);
         printf("SUCCESS: Grade correctly set to \"%s\"\n", grade_str);
@@ -82,7 +82,7 @@ static void test_grade_evaluator_grades(void) {
     }
     
     // Test case 2: Grade B (80-89)
-    data_t *own_message2 = ar_data__create_map();
+    ar_data_t *own_message2 = ar_data__create_map();
     assert(own_message2 != NULL);
     
     ar_data__set_map_integer(own_message2, "sender", 0);
@@ -102,7 +102,7 @@ static void test_grade_evaluator_grades(void) {
     assert(strcmp(ar_data__get_string(grade), "B") == 0);
     
     // Test case 3: Grade C (70-79)
-    data_t *own_message3 = ar_data__create_map();
+    ar_data_t *own_message3 = ar_data__create_map();
     assert(own_message3 != NULL);
     
     ar_data__set_map_integer(own_message3, "sender", 0);
@@ -122,7 +122,7 @@ static void test_grade_evaluator_grades(void) {
     assert(strcmp(ar_data__get_string(grade), "C") == 0);
     
     // Test case 4: Grade F (below 70)
-    data_t *own_message4 = ar_data__create_map();
+    ar_data_t *own_message4 = ar_data__create_map();
     assert(own_message4 != NULL);
     
     ar_data__set_map_integer(own_message4, "sender", 0);
@@ -185,7 +185,7 @@ static void test_grade_evaluator_status(void) {
     }
     
     // Test case 1: Status active (value > 0)
-    data_t *own_message = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_map();
     assert(own_message != NULL);
     
     ar_data__set_map_integer(own_message, "sender", 0);
@@ -199,16 +199,16 @@ static void test_grade_evaluator_status(void) {
     bool processed = ar_system__process_next_message();
     assert(processed);
     
-    const data_t *agent_memory = ar_agency__get_agent_memory(evaluator_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(evaluator_agent);
     assert(agent_memory != NULL);
     
-    const data_t *status = ar_data__get_map_data(agent_memory, "status");
+    const ar_data_t *status = ar_data__get_map_data(agent_memory, "status");
     assert(status != NULL && ar_data__get_type(status) == DATA_STRING);
     printf("Status for value 5: %s\n", ar_data__get_string(status));
     assert(strcmp(ar_data__get_string(status), "active") == 0);
     
     // Test case 2: Status inactive (value <= 0)
-    data_t *own_message2 = ar_data__create_map();
+    ar_data_t *own_message2 = ar_data__create_map();
     assert(own_message2 != NULL);
     
     ar_data__set_map_integer(own_message2, "sender", 0);
@@ -228,7 +228,7 @@ static void test_grade_evaluator_status(void) {
     assert(strcmp(ar_data__get_string(status), "inactive") == 0);
     
     // Test case 3: Unknown type
-    data_t *own_message3 = ar_data__create_map();
+    ar_data_t *own_message3 = ar_data__create_map();
     assert(own_message3 != NULL);
     
     ar_data__set_map_integer(own_message3, "sender", 0);
@@ -242,7 +242,7 @@ static void test_grade_evaluator_status(void) {
     processed = ar_system__process_next_message();
     assert(processed);
     
-    const data_t *result = ar_data__get_map_data(agent_memory, "result");
+    const ar_data_t *result = ar_data__get_map_data(agent_memory, "result");
     assert(result != NULL && ar_data__get_type(result) == DATA_STRING);
     printf("Result for unknown type: %s\n", ar_data__get_string(result));
     assert(strcmp(ar_data__get_string(result), "unknown") == 0);

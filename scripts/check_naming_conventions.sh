@@ -323,7 +323,7 @@ if [ $bad_typedefs -eq 0 ]; then
     print_success "All typedef structs follow ar_<type>_t convention"
 else
     print_error "Found typedef structs not following ar_<type>_t convention"
-    echo -e "    Issues:$typedef_issues" | head -10
+    echo -e "    Issues:$typedef_issues"
 fi
 
 # Enum types should be ar_<type>_t

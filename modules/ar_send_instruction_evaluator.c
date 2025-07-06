@@ -22,7 +22,7 @@
 struct ar_send_instruction_evaluator_s {
     ar_log_t *ref_log;                           /* Borrowed reference to log instance */
     ar_expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
-    data_t *mut_memory;                          /* Memory map (mutable reference) */
+    ar_data_t *mut_memory;                          /* Memory map (mutable reference) */
 };
 
 
@@ -43,7 +43,7 @@ static void _log_error(ar_send_instruction_evaluator_t *mut_evaluator, const cha
 ar_send_instruction_evaluator_t* ar_send_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
-    data_t *mut_memory
+    ar_data_t *mut_memory
 ) {
     if (!ref_log || !ref_expr_evaluator || !mut_memory) {
         return NULL;
@@ -124,7 +124,7 @@ bool ar_send_instruction_evaluator__evaluate(
     }
     
     // Evaluate agent ID expression
-    data_t *agent_id_result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_agent_id_ast);
+    ar_data_t *agent_id_result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_agent_id_ast);
     if (!agent_id_result) {
         AR__HEAP__FREE(items);
         return false;
@@ -144,7 +144,7 @@ bool ar_send_instruction_evaluator__evaluate(
     }
     
     // Evaluate message expression
-    data_t *message_result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_message_ast);
+    ar_data_t *message_result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_message_ast);
     
     // Clean up the items array as we're done with it
     AR__HEAP__FREE(items);
@@ -154,7 +154,7 @@ bool ar_send_instruction_evaluator__evaluate(
     }
     
     // Get ownership of message for sending
-    data_t *own_message;
+    ar_data_t *own_message;
     if (ar_data__hold_ownership(message_result, mut_evaluator)) {
         // We can claim ownership - it's an unowned value
         ar_data__transfer_ownership(message_result, mut_evaluator);
@@ -189,7 +189,7 @@ bool ar_send_instruction_evaluator__evaluate(
         }
         
         // Create result value (true = 1, false = 0)
-        data_t *own_result = ar_data__create_integer(send_result ? 1 : 0);
+        ar_data_t *own_result = ar_data__create_integer(send_result ? 1 : 0);
         bool store_success = ar_data__set_map_data(mut_evaluator->mut_memory, key_path, own_result);
         if (!store_success) {
             ar_data__destroy(own_result);

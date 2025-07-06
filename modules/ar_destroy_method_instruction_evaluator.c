@@ -23,7 +23,7 @@
 struct ar_destroy_method_instruction_evaluator_s {
     ar_log_t *ref_log;                           /* Borrowed reference to log instance */
     ar_expression_evaluator_t *mut_expr_evaluator;
-    data_t *mut_memory;
+    ar_data_t *mut_memory;
 };
 
 /* Helper function to log error message */
@@ -39,9 +39,9 @@ static void _log_error(ar_destroy_method_instruction_evaluator_t *mut_evaluator,
 
 /* Helper function to store result in memory if assignment path is provided */
 static bool _store_result_if_assigned(
-    data_t *mut_memory,
+    ar_data_t *mut_memory,
     const ar_instruction_ast_t *ref_ast,
-    data_t *own_result
+    ar_data_t *own_result
 ) {
     const char *ref_result_path = ar_instruction_ast__get_function_result_path(ref_ast);
     if (!ref_result_path) {
@@ -73,7 +73,7 @@ static bool _store_result_if_assigned(
 ar_destroy_method_instruction_evaluator_t* ar_destroy_method_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory
+    ar_data_t *mut_memory
 ) {
     if (!ref_log || !mut_expr_evaluator || !mut_memory) {
         return NULL;
@@ -120,7 +120,7 @@ bool ar_destroy_method_instruction_evaluator__evaluate(
     _log_error(mut_evaluator, NULL);
     
     ar_expression_evaluator_t *mut_expr_evaluator = mut_evaluator->mut_expr_evaluator;
-    data_t *mut_memory = mut_evaluator->mut_memory;
+    ar_data_t *mut_memory = mut_evaluator->mut_memory;
     
     // Validate AST type
     if (ar_instruction_ast__get_type(ref_ast) != AR_INST__DESTROY_METHOD) {
@@ -153,11 +153,11 @@ bool ar_destroy_method_instruction_evaluator__evaluate(
     }
     
     // Evaluate expression ASTs using public method
-    data_t *name_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_name_ast);
-    data_t *version_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_version_ast);
+    ar_data_t *name_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_name_ast);
+    ar_data_t *version_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_version_ast);
     
     // Handle ownership for name
-    data_t *own_name = NULL;
+    ar_data_t *own_name = NULL;
     if (name_result) {
         if (ar_data__hold_ownership(name_result, mut_expr_evaluator)) {
             // We can claim ownership - it's an unowned value
@@ -175,7 +175,7 @@ bool ar_destroy_method_instruction_evaluator__evaluate(
     }
     
     // Handle ownership for version
-    data_t *own_version = NULL;
+    ar_data_t *own_version = NULL;
     if (version_result) {
         if (ar_data__hold_ownership(version_result, mut_expr_evaluator)) {
             // We can claim ownership - it's an unowned value
@@ -215,7 +215,7 @@ bool ar_destroy_method_instruction_evaluator__evaluate(
                 while (agent_id > 0) {
                     const method_t *agent_method = ar_agency__get_agent_method(agent_id);
                     if (agent_method == ref_method) {
-                        data_t *sleep_msg = ar_data__create_string("__sleep__");
+                        ar_data_t *sleep_msg = ar_data__create_string("__sleep__");
                         if (sleep_msg) {
                             bool sent = ar_agency__send_to_agent(agent_id, sleep_msg);
                             if (!sent) {
@@ -257,7 +257,7 @@ bool ar_destroy_method_instruction_evaluator__evaluate(
     
     // Store result if assigned
     if (success && ar_instruction_ast__has_result_assignment(ref_ast)) {
-        data_t *own_result = ar_data__create_integer(destroy_result ? 1 : 0);
+        ar_data_t *own_result = ar_data__create_integer(destroy_result ? 1 : 0);
         if (own_result) {
             _store_result_if_assigned(mut_memory, ref_ast, own_result);
         }

@@ -19,7 +19,7 @@ The module follows an instantiable design pattern with lifecycle management:
 ar_destroy_agent_instruction_evaluator_t* ar_destroy_agent_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory
+    ar_data_t *mut_memory
 );
 
 // Evaluate using stored dependencies
@@ -86,7 +86,7 @@ The module:
 
 ```c
 // Create dependencies
-data_t *memory = ar_data__create_map();
+ar_data_t *memory = ar_data__create_map();
 ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
 
 // Create destroy agent evaluator instance

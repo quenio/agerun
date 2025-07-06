@@ -17,9 +17,9 @@
  * This is only visible in the implementation file.
  */
 struct expression_context_s {
-    data_t *mut_memory;         /* The agent's memory (mutable reference) */
-    const data_t *ref_context;  /* The agent's context (borrowed reference) */
-    const data_t *ref_message;  /* The message being processed (borrowed reference) */
+    ar_data_t *mut_memory;         /* The agent's memory (mutable reference) */
+    const ar_data_t *ref_context;  /* The agent's context (borrowed reference) */
+    const ar_data_t *ref_message;  /* The message being processed (borrowed reference) */
     const char *ref_expr;       /* The expression to evaluate (borrowed reference) */
     int offset;                 /* Current position in the expression */
     list_t *own_results;        /* List of results owned by this context (to be freed when context is destroyed) */
@@ -34,7 +34,7 @@ struct expression_context_s {
  * @param ref_expr The expression string to evaluate (borrowed reference)
  * @return Newly created expression context (owned by caller), or NULL on failure
  */
-expression_context_t* ar_expression__create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message, const char *ref_expr) {
+expression_context_t* ar_expression__create_context(ar_data_t *mut_memory, const ar_data_t *ref_context, const ar_data_t *ref_message, const char *ref_expr) {
     if (!ref_expr) {
         return NULL;
     }
@@ -79,7 +79,7 @@ void ar_expression__destroy_context(expression_context_t *own_ctx) {
         if (own_items && count > 0) {
             // Free each result that isn't a direct reference
             for (size_t i = 0; i < count; i++) {
-                data_t *ref_result = (data_t *)own_items[i];
+                ar_data_t *ref_result = (ar_data_t *)own_items[i];
                 if (ref_result) {
                     // Skip memory, context, and message - these are owned by caller
                     if (ref_result != own_ctx->mut_memory && 
@@ -148,11 +148,11 @@ int ar_expression__offset(const expression_context_t *ref_ctx) {
  */
 
 // Forward declarations for recursive descent functions
-static const data_t* parse_expression(expression_context_t *ctx);
-static const data_t* parse_primary(expression_context_t *ctx);
-static const data_t* parse_string_literal(expression_context_t *ctx);
-static const data_t* parse_number_literal(expression_context_t *ctx);
-static const data_t* parse_memory_access(expression_context_t *ctx);
+static const ar_data_t* parse_expression(expression_context_t *ctx);
+static const ar_data_t* parse_primary(expression_context_t *ctx);
+static const ar_data_t* parse_string_literal(expression_context_t *ctx);
+static const ar_data_t* parse_number_literal(expression_context_t *ctx);
+static const ar_data_t* parse_memory_access(expression_context_t *ctx);
 static void _skip_whitespace(expression_context_t *ctx);
 static bool _is_comparison_operator(expression_context_t *ctx);
 static bool _match(expression_context_t *ctx, const char *to_match);
@@ -253,7 +253,7 @@ static bool _is_comparison_operator(expression_context_t *ref_ctx) {
 }
 
 // Parse a string literal from the expression
-static const data_t* parse_string_literal(expression_context_t *mut_ctx) {
+static const ar_data_t* parse_string_literal(expression_context_t *mut_ctx) {
     if (mut_ctx->ref_expr[mut_ctx->offset] != '"') {
         return NULL;
     }
@@ -285,7 +285,7 @@ static const data_t* parse_string_literal(expression_context_t *mut_ctx) {
     
     mut_ctx->offset++; // Skip closing quote
     
-    data_t *own_result = ar_data__create_string(own_temp_str);
+    ar_data_t *own_result = ar_data__create_string(own_temp_str);
     AR__HEAP__FREE(own_temp_str);
     own_temp_str = NULL; // Mark as transferred
     
@@ -298,7 +298,7 @@ static const data_t* parse_string_literal(expression_context_t *mut_ctx) {
 }
 
 // Parse a number literal (integer or double) from the expression
-static const data_t* parse_number_literal(expression_context_t *mut_ctx) {
+static const ar_data_t* parse_number_literal(expression_context_t *mut_ctx) {
     bool is_negative = false;
     if (mut_ctx->ref_expr[mut_ctx->offset] == '-') {
         is_negative = true;
@@ -339,7 +339,7 @@ static const data_t* parse_number_literal(expression_context_t *mut_ctx) {
             double_value = -double_value;
         }
         
-        data_t *own_result = ar_data__create_double(double_value);
+        ar_data_t *own_result = ar_data__create_double(double_value);
         
         // Track this result since we created it
         if (own_result) {
@@ -354,7 +354,7 @@ static const data_t* parse_number_literal(expression_context_t *mut_ctx) {
         value = -value;
     }
     
-    data_t *own_result = ar_data__create_integer(value);
+    ar_data_t *own_result = ar_data__create_integer(value);
     
     // Track this result since we created it
     if (own_result) {
@@ -365,7 +365,7 @@ static const data_t* parse_number_literal(expression_context_t *mut_ctx) {
 }
 
 // Parse a memory access (message, memory, context) expression
-static const data_t* parse_memory_access(expression_context_t *mut_ctx) {
+static const ar_data_t* parse_memory_access(expression_context_t *mut_ctx) {
     enum {
         ACCESS_TYPE_MESSAGE,
         ACCESS_TYPE_MEMORY,
@@ -435,7 +435,7 @@ static const data_t* parse_memory_access(expression_context_t *mut_ctx) {
     }
     
     // Now we have the full path, get the data
-    const data_t *ref_source = NULL;
+    const ar_data_t *ref_source = NULL;
     switch (access_type) {
         case ACCESS_TYPE_MESSAGE:
             ref_source = mut_ctx->ref_message;
@@ -454,7 +454,7 @@ static const data_t* parse_memory_access(expression_context_t *mut_ctx) {
     }
     
     // Look up the data by path
-    data_t *ref_value = NULL;
+    ar_data_t *ref_value = NULL;
     ar_data_type_t source_type = ar_data__get_type(ref_source);
     
     
@@ -476,7 +476,7 @@ static const data_t* parse_memory_access(expression_context_t *mut_ctx) {
 
 
 // Parse a primary expression (literal or memory access)
-static const data_t* parse_primary(expression_context_t *mut_ctx) {
+static const ar_data_t* parse_primary(expression_context_t *mut_ctx) {
     _skip_whitespace(mut_ctx);
     
     // Check for string literal
@@ -528,14 +528,14 @@ static const data_t* parse_primary(expression_context_t *mut_ctx) {
 }
 
 // Forward declarations for recursive descent functions
-static const data_t* parse_multiplicative(expression_context_t *ctx);
-static const data_t* parse_additive(expression_context_t *ctx);
-static const data_t* parse_comparison(expression_context_t *ctx);
+static const ar_data_t* parse_multiplicative(expression_context_t *ctx);
+static const ar_data_t* parse_additive(expression_context_t *ctx);
+static const ar_data_t* parse_comparison(expression_context_t *ctx);
 
 // Parse a multiplicative expression (higher precedence: *, /)
-static const data_t* parse_multiplicative(expression_context_t *ctx) {
+static const ar_data_t* parse_multiplicative(expression_context_t *ctx) {
     // Parse the left operand
-    const data_t *left = parse_primary(ctx);
+    const ar_data_t *left = parse_primary(ctx);
     if (!left) {
         return NULL;
     }
@@ -551,7 +551,7 @@ static const data_t* parse_multiplicative(expression_context_t *ctx) {
         _skip_whitespace(ctx);
         
         // Parse the right operand (which is a primary)
-        const data_t *right = parse_primary(ctx);
+        const ar_data_t *right = parse_primary(ctx);
         if (!right) {
             // Don't destroy left - it's a borrowed reference
             return NULL;
@@ -560,7 +560,7 @@ static const data_t* parse_multiplicative(expression_context_t *ctx) {
         // Perform the operation
         ar_data_type_t left_type = ar_data__get_type(left);
         ar_data_type_t right_type = ar_data__get_type(right);
-        data_t *result = NULL;
+        ar_data_t *result = NULL;
         
         // Both operands are integers
         if (left_type == DATA_INTEGER && right_type == DATA_INTEGER) {
@@ -627,9 +627,9 @@ static const data_t* parse_multiplicative(expression_context_t *ctx) {
 }
 
 // Parse an additive expression (medium precedence: +, -)
-static const data_t* parse_additive(expression_context_t *ctx) {
+static const ar_data_t* parse_additive(expression_context_t *ctx) {
     // Parse the left operand (which is a multiplicative expression)
-    const data_t *left = parse_multiplicative(ctx);
+    const ar_data_t *left = parse_multiplicative(ctx);
     if (!left) {
         return NULL;
     }
@@ -645,7 +645,7 @@ static const data_t* parse_additive(expression_context_t *ctx) {
         _skip_whitespace(ctx);
         
         // Parse the right operand (which is a multiplicative expression)
-        const data_t *right = parse_multiplicative(ctx);
+        const ar_data_t *right = parse_multiplicative(ctx);
         if (!right) {
             // Don't destroy left - it's a borrowed reference
             return NULL;
@@ -654,7 +654,7 @@ static const data_t* parse_additive(expression_context_t *ctx) {
         // Perform the operation
         ar_data_type_t left_type = ar_data__get_type(left);
         ar_data_type_t right_type = ar_data__get_type(right);
-        data_t *result = NULL;
+        ar_data_t *result = NULL;
         
         // String concatenation with +
         if (op == '+' && (left_type == DATA_STRING || right_type == DATA_STRING)) {
@@ -760,9 +760,9 @@ static const data_t* parse_additive(expression_context_t *ctx) {
 }
 
 // Parse a comparison expression (lowest precedence: =, <>, <, <=, >, >=)
-static const data_t* parse_comparison(expression_context_t *ctx) {
+static const ar_data_t* parse_comparison(expression_context_t *ctx) {
     // Parse the left operand (which is an additive expression)
-    const data_t *left = parse_additive(ctx);
+    const ar_data_t *left = parse_additive(ctx);
     if (!left) {
         return NULL;
     }
@@ -789,7 +789,7 @@ static const data_t* parse_comparison(expression_context_t *ctx) {
     _skip_whitespace(ctx);
     
     // Parse the right operand (which is an additive expression)
-    const data_t *right = parse_additive(ctx);
+    const ar_data_t *right = parse_additive(ctx);
     if (!right) {
         // Don't destroy left - it's a borrowed reference
         return NULL;
@@ -918,7 +918,7 @@ static const data_t* parse_comparison(expression_context_t *ctx) {
     }
     
     // Create a new integer result (0 for false, 1 for true)
-    data_t *comparison_result = ar_data__create_integer(result ? 1 : 0);
+    ar_data_t *comparison_result = ar_data__create_integer(result ? 1 : 0);
     
     // Track this result since we created it
     if (comparison_result) {
@@ -929,7 +929,7 @@ static const data_t* parse_comparison(expression_context_t *ctx) {
 }
 
 // Parse and evaluate an expression
-static const data_t* parse_expression(expression_context_t *ctx) {
+static const ar_data_t* parse_expression(expression_context_t *ctx) {
     return parse_comparison(ctx);
 }
 
@@ -939,14 +939,14 @@ static const data_t* parse_expression(expression_context_t *ctx) {
  * @param mut_ctx Pointer to the expression evaluation context (mutable reference)
  * @return Pointer to the evaluated data result, or NULL on failure
  */
-const data_t* ar_expression__evaluate(expression_context_t *mut_ctx) {
+const ar_data_t* ar_expression__evaluate(expression_context_t *mut_ctx) {
     if (!mut_ctx || !mut_ctx->ref_expr) {
         return NULL;
     }
     
     
     // Parse the expression
-    const data_t *ref_result = parse_expression(mut_ctx);
+    const ar_data_t *ref_result = parse_expression(mut_ctx);
     
     // If parsing failed, return NULL to indicate a syntax error
     // The offset should already be at the position where the error was detected
@@ -969,7 +969,7 @@ const data_t* ar_expression__evaluate(expression_context_t *mut_ctx) {
  * @param ref_result The result to take ownership of (becomes owned by caller)
  * @return true if ownership was successfully transferred, false otherwise
  */
-data_t* ar_expression__take_ownership(expression_context_t *mut_ctx, const data_t *ref_result) {
+ar_data_t* ar_expression__take_ownership(expression_context_t *mut_ctx, const ar_data_t *ref_result) {
     if (!mut_ctx || !ref_result || !mut_ctx->own_results) {
         return NULL;
     }
@@ -986,7 +986,7 @@ data_t* ar_expression__take_ownership(expression_context_t *mut_ctx, const data_
     
     // Remove the result from the list
     // The ar_list__remove function returns the removed item as a non-const pointer
-    data_t *own_result = ar_list__remove(mut_ctx->own_results, ref_result);
+    ar_data_t *own_result = ar_list__remove(mut_ctx->own_results, ref_result);
     
     // If result was found and removed, ownership is now transferred to the caller
     return own_result;

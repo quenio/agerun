@@ -74,7 +74,7 @@ int64_t ar_system__init(const char *ref_method_name, const char *ref_version) {
         int64_t initial_agent = ar_agency__create_agent(ref_method_name, ref_version, NULL);
         if (initial_agent != 0) {
             // Send wake message to initial agent
-            data_t *own_wake_data = ar_data__create_string(g_wake_message);
+            ar_data_t *own_wake_data = ar_data__create_string(g_wake_message);
             if (own_wake_data) {
                 ar_agency__send_to_agent(initial_agent, own_wake_data);
                 // Ownership transferred to agent's message queue
@@ -133,7 +133,7 @@ bool ar_system__process_next_message(void) {
         if (ar_agency__agent_has_messages(agent_id)) {
             printf("DEBUG: Agent %" PRId64 " has messages\n", agent_id);
             // Process one message
-            data_t *own_message = ar_agency__get_agent_message(agent_id);
+            ar_data_t *own_message = ar_agency__get_agent_message(agent_id);
             if (own_message) {
                 printf("DEBUG: Got message from agent %" PRId64 "\n", agent_id);
                 // Get the agent's method

@@ -3,7 +3,7 @@
  * @brief Expression evaluator module for AgeRun
  * 
  * This module provides functionality to evaluate expression AST nodes
- * into data_t values. It handles all expression types including
+ * into ar_data_t values. It handles all expression types including
  * literals, memory access, and binary operations.
  */
 
@@ -29,8 +29,8 @@ typedef struct expression_evaluator_s ar_expression_evaluator_t;
  */
 ar_expression_evaluator_t* ar_expression_evaluator__create(
     ar_log_t *ref_log,
-    data_t *ref_memory,
-    data_t *ref_context
+    ar_data_t *ref_memory,
+    ar_data_t *ref_context
 );
 
 /**
@@ -44,11 +44,11 @@ void ar_expression_evaluator__destroy(ar_expression_evaluator_t *own_evaluator);
  * Evaluates an integer literal AST node
  * @param mut_evaluator The evaluator instance (mutable reference)
  * @param ref_node The AST node to evaluate (borrowed reference)
- * @return The integer value as data_t
+ * @return The integer value as ar_data_t
  * @note Ownership: Returns an owned value that caller must destroy
  *       Returns NULL if node is not an integer literal
  */
-data_t* ar_expression_evaluator__evaluate_literal_int(
+ar_data_t* ar_expression_evaluator__evaluate_literal_int(
     ar_expression_evaluator_t *mut_evaluator,
     const ar_expression_ast_t *ref_node
 );
@@ -57,11 +57,11 @@ data_t* ar_expression_evaluator__evaluate_literal_int(
  * Evaluates a double literal AST node
  * @param mut_evaluator The evaluator instance (mutable reference)
  * @param ref_node The AST node to evaluate (borrowed reference)
- * @return The double value as data_t
+ * @return The double value as ar_data_t
  * @note Ownership: Returns an owned value that caller must destroy
  *       Returns NULL if node is not a double literal
  */
-data_t* ar_expression_evaluator__evaluate_literal_double(
+ar_data_t* ar_expression_evaluator__evaluate_literal_double(
     ar_expression_evaluator_t *mut_evaluator,
     const ar_expression_ast_t *ref_node
 );
@@ -70,11 +70,11 @@ data_t* ar_expression_evaluator__evaluate_literal_double(
  * Evaluates a string literal AST node
  * @param mut_evaluator The evaluator instance (mutable reference)
  * @param ref_node The AST node to evaluate (borrowed reference)
- * @return The string value as data_t
+ * @return The string value as ar_data_t
  * @note Ownership: Returns an owned value that caller must destroy
  *       Returns NULL if node is not a string literal
  */
-data_t* ar_expression_evaluator__evaluate_literal_string(
+ar_data_t* ar_expression_evaluator__evaluate_literal_string(
     ar_expression_evaluator_t *mut_evaluator,
     const ar_expression_ast_t *ref_node
 );
@@ -83,11 +83,11 @@ data_t* ar_expression_evaluator__evaluate_literal_string(
  * Evaluates a memory access AST node
  * @param mut_evaluator The evaluator instance (mutable reference)
  * @param ref_node The AST node to evaluate (borrowed reference)
- * @return The accessed value as data_t
+ * @return The accessed value as ar_data_t
  * @note Ownership: Returns an owned value that caller must destroy
  *       Returns NULL if variable not found or node is not a memory access
  */
-data_t* ar_expression_evaluator__evaluate_memory_access(
+ar_data_t* ar_expression_evaluator__evaluate_memory_access(
     ar_expression_evaluator_t *mut_evaluator,
     const ar_expression_ast_t *ref_node
 );
@@ -96,11 +96,11 @@ data_t* ar_expression_evaluator__evaluate_memory_access(
  * Evaluates a binary operation AST node
  * @param mut_evaluator The evaluator instance (mutable reference)
  * @param ref_node The AST node to evaluate (borrowed reference)
- * @return The operation result as data_t
+ * @return The operation result as ar_data_t
  * @note Ownership: Returns an owned value that caller must destroy
  *       Returns NULL on evaluation errors or if node is not a binary operation
  */
-data_t* ar_expression_evaluator__evaluate_binary_op(
+ar_data_t* ar_expression_evaluator__evaluate_binary_op(
     ar_expression_evaluator_t *mut_evaluator,
     const ar_expression_ast_t *ref_node
 );
@@ -115,7 +115,7 @@ data_t* ar_expression_evaluator__evaluate_binary_op(
  *       - Literals: Returns owned value that caller must destroy
  *       - Operations: Returns owned value that caller must destroy
  */
-data_t* ar_expression_evaluator__evaluate(
+ar_data_t* ar_expression_evaluator__evaluate(
     ar_expression_evaluator_t *mut_evaluator,
     const ar_expression_ast_t *ref_ast
 );

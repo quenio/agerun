@@ -110,7 +110,7 @@ static void test_store_single_agent(void) {
     ar_system__process_next_message();
     
     // Add some data to agent memory
-    data_t *mut_memory = ar_agency__get_agent_mutable_memory(agent_id);
+    ar_data_t *mut_memory = ar_agency__get_agent_mutable_memory(agent_id);
     assert(mut_memory != NULL);
     ar_data__set_map_string(mut_memory, "name", "Test Agent");
     ar_data__set_map_integer(mut_memory, "count", 42);
@@ -141,7 +141,7 @@ static void test_store_single_agent(void) {
     assert(strcmp(ar_method__get_version(ref_restored_method), "1.0.0") == 0);
     
     // Verify the memory was persisted
-    data_t *ref_restored_memory = ar_agency__get_agent_mutable_memory(restored_id);
+    ar_data_t *ref_restored_memory = ar_agency__get_agent_mutable_memory(restored_id);
     assert(ref_restored_memory != NULL);
     assert(ar_data__get_type(ref_restored_memory) == DATA_MAP);
     
@@ -202,15 +202,15 @@ static void test_store_multiple_agents(void) {
     ar_system__process_all_messages();
     
     // Add unique data to each agent
-    data_t *mut_memory1 = ar_agency__get_agent_mutable_memory(echo1);
+    ar_data_t *mut_memory1 = ar_agency__get_agent_mutable_memory(echo1);
     ar_data__set_map_string(mut_memory1, "name", "Echo One");
     ar_data__set_map_integer(mut_memory1, "id", 1);
     
-    data_t *mut_memory2 = ar_agency__get_agent_mutable_memory(echo2);
+    ar_data_t *mut_memory2 = ar_agency__get_agent_mutable_memory(echo2);
     ar_data__set_map_string(mut_memory2, "name", "Echo Two");
     ar_data__set_map_integer(mut_memory2, "id", 2);
     
-    data_t *mut_memory3 = ar_agency__get_agent_mutable_memory(calc1);
+    ar_data_t *mut_memory3 = ar_agency__get_agent_mutable_memory(calc1);
     ar_data__set_map_string(mut_memory3, "name", "Calculator");
     ar_data__set_map_double(mut_memory3, "pi", 3.14159);
     
@@ -240,7 +240,7 @@ static void test_store_multiple_agents(void) {
         const char *method_name = ar_method__get_name(ref_method);
         
         // Get agent memory
-        data_t *ref_memory = ar_agency__get_agent_mutable_memory(agent_id);
+        ar_data_t *ref_memory = ar_agency__get_agent_mutable_memory(agent_id);
         assert(ref_memory != NULL);
         
         if (strcmp(method_name, "echo") == 0) {

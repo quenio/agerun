@@ -218,7 +218,7 @@ static void test_method_basic(void) {
     ar_system__process_next_message();
     
     // When we send a test message
-    data_t *own_message = ar_data__create_string("test");
+    ar_data_t *own_message = ar_data__create_string("test");
     bool sent = ar_agent__send(agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred

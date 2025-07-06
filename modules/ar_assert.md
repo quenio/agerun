@@ -46,7 +46,7 @@ Verifies that a pointer is not NULL, primarily used to validate that memory allo
 
 **Example:**
 ```c
-data_t *own_data = create_data();
+ar_data_t *own_data = create_data();
 AR_ASSERT_OWNERSHIP(own_data);
 ```
 

@@ -13,7 +13,7 @@
 
 static void test_send_instruction_evaluator__create_destroy(void) {
     // Given memory, expression evaluator, and log
-    data_t *own_memory = ar_data__create_map();
+    ar_data_t *own_memory = ar_data__create_map();
     assert(own_memory != NULL);
     
     ar_log_t *own_log = ar_log__create();
@@ -39,7 +39,7 @@ static void test_send_instruction_evaluator__create_destroy(void) {
 
 static void test_send_instruction_evaluator__evaluate_with_instance(void) {
     // Given memory, expression evaluator, and log
-    data_t *own_memory = ar_data__create_map();
+    ar_data_t *own_memory = ar_data__create_map();
     assert(own_memory != NULL);
     
     ar_log_t *own_log = ar_log__create();
@@ -92,7 +92,7 @@ static void test_send_instruction_evaluator__evaluate_with_instance(void) {
 
 static void test_instruction_evaluator__evaluate_send_integer_message(void) {
     // Given an evaluator with memory, agency mock capability, and log
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -144,7 +144,7 @@ static void test_instruction_evaluator__evaluate_send_integer_message(void) {
 
 static void test_instruction_evaluator__evaluate_send_string_message(void) {
     // Given an evaluator with memory and log
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -196,7 +196,7 @@ static void test_instruction_evaluator__evaluate_send_string_message(void) {
 
 static void test_instruction_evaluator__evaluate_send_with_result(void) {
     // Given an evaluator with memory and log
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -239,7 +239,7 @@ static void test_instruction_evaluator__evaluate_send_with_result(void) {
     assert(result == true);
     
     // And the result should be stored in memory (send returns true for agent 0)
-    data_t *result_value = ar_data__get_map_data(memory, "result");
+    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == DATA_INTEGER);
     assert(ar_data__get_integer(result_value) == 1); // true as integer
@@ -254,13 +254,13 @@ static void test_instruction_evaluator__evaluate_send_with_result(void) {
 
 static void test_instruction_evaluator__evaluate_send_memory_reference(void) {
     // Given an evaluator with memory containing a message
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
-    data_t *msg_value = ar_data__create_string("Hello from memory");
+    ar_data_t *msg_value = ar_data__create_string("Hello from memory");
     ar_data__set_map_data(memory, "msg", msg_value);
     
     ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
@@ -310,7 +310,7 @@ static void test_instruction_evaluator__evaluate_send_memory_reference(void) {
 
 static void test_instruction_evaluator__evaluate_send_invalid_args(void) {
     // Given an evaluator with memory
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();

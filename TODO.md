@@ -14,6 +14,10 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Created rename_types.py script for safe bulk renaming with whole-word matching
 - [x] All tests pass with zero issues after enum renames
 - [x] Documentation references automatically updated
+- [x] Renamed typedef structs to follow ar_ prefix convention
+  - [x] data_t → ar_data_t (1439 occurrences) - using rename_types.py
+- [x] Fixed check-naming script to show all typedef issues (removed output truncation)
+- [x] Updated Makefile help to show single test build command
 
 ### Static Analysis Reporting in Makefile (Completed 2025-06-13)
 - [x] Fixed static analysis reporting in clean_build.sh (now full_build.sh)

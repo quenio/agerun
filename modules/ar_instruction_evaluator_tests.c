@@ -17,13 +17,13 @@
 
 static void test_instruction_evaluator__create_destroy(void) {
     // Given an expression evaluator and memory/context/message data
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    data_t *context = ar_data__create_map();
+    ar_data_t *context = ar_data__create_map();
     assert(context != NULL);
     
-    data_t *message = ar_data__create_string("test message");
+    ar_data_t *message = ar_data__create_string("test message");
     assert(message != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -53,7 +53,7 @@ static void test_instruction_evaluator__create_destroy(void) {
 
 static void test_instruction_evaluator__create_with_null_context(void) {
     // Given an expression evaluator and memory, but no context or message
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -87,7 +87,7 @@ static void test_instruction_evaluator__destroy_null(void) {
 
 static void test_instruction_evaluator__create_with_null_expr_evaluator(void) {
     // Given memory but no expression evaluator
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -108,7 +108,7 @@ static void test_instruction_evaluator__create_with_null_expr_evaluator(void) {
 
 static void test_instruction_evaluator__create_with_null_memory(void) {
     // Given an expression evaluator created with dummy memory
-    data_t *dummy_memory = ar_data__create_map();
+    ar_data_t *dummy_memory = ar_data__create_map();
     
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
@@ -132,7 +132,7 @@ static void test_instruction_evaluator__create_with_null_memory(void) {
 
 static void test_instruction_evaluator__stores_evaluator_instances_internally(void) {
     // Given an instruction evaluator
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -172,14 +172,14 @@ static void test_instruction_evaluator__stores_evaluator_instances_internally(vo
 
 static void test_instruction_evaluator__unified_evaluate_all_types(void) {
     // Given an evaluator with memory, context, and message
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
-    data_t *context = ar_data__create_map();
+    ar_data_t *context = ar_data__create_map();
     assert(context != NULL);
     ar_data__set_map_integer(context, "test_context", 123);
     
-    data_t *message = ar_data__create_string("test message");
+    ar_data_t *message = ar_data__create_string("test message");
     assert(message != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -237,7 +237,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         assert(result == true);
         
         // Verify result was stored
-        data_t *value = ar_data__get_map_data(memory, "result");
+        ar_data_t *value = ar_data__get_map_data(memory, "result");
         assert(value != NULL);
         assert(ar_data__get_type(value) == DATA_STRING);
         assert(strcmp(ar_data__get_string(value), "yes") == 0);
@@ -265,17 +265,17 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         assert(result == true);
         
         // Verify result was stored as a map
-        data_t *value = ar_data__get_map_data(memory, "parsed");
+        ar_data_t *value = ar_data__get_map_data(memory, "parsed");
         assert(value != NULL);
         assert(ar_data__get_type(value) == DATA_MAP);
         
         // Check parsed values
-        data_t *username_value = ar_data__get_map_data(value, "username");
+        ar_data_t *username_value = ar_data__get_map_data(value, "username");
         assert(username_value != NULL);
         assert(ar_data__get_type(username_value) == DATA_STRING);
         assert(strcmp(ar_data__get_string(username_value), "alice") == 0);
         
-        data_t *role_value = ar_data__get_map_data(value, "role");
+        ar_data_t *role_value = ar_data__get_map_data(value, "role");
         assert(role_value != NULL);
         assert(ar_data__get_type(role_value) == DATA_STRING);
         assert(strcmp(ar_data__get_string(role_value), "admin") == 0);
@@ -306,7 +306,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         assert(result == true);
         
         // Verify result was stored
-        data_t *value = ar_data__get_map_data(memory, "built");
+        ar_data_t *value = ar_data__get_map_data(memory, "built");
         assert(value != NULL);
         assert(ar_data__get_type(value) == DATA_STRING);
         assert(strcmp(ar_data__get_string(value), "Hi Alice") == 0);
@@ -328,7 +328,7 @@ static void test_instruction_evaluator__only_unified_interface_exposed(void) {
     // and that individual evaluate functions are not accessible
     
     // Given an evaluator
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -387,7 +387,7 @@ static void test_instruction_evaluator__only_unified_interface_exposed(void) {
 
 static void test_instruction_evaluator__unified_evaluate_assignment(void) {
     // Given an evaluator with memory and an assignment AST
-    data_t *memory = ar_data__create_map();
+    ar_data_t *memory = ar_data__create_map();
     assert(memory != NULL);
     
     ar_log_t *log = ar_log__create();
@@ -421,7 +421,7 @@ static void test_instruction_evaluator__unified_evaluate_assignment(void) {
     assert(result == true);
     
     // And the value should be stored in memory
-    data_t *value = ar_data__get_map_data(memory, "x");
+    ar_data_t *value = ar_data__get_map_data(memory, "x");
     assert(value != NULL);
     assert(ar_data__get_type(value) == DATA_INTEGER);
     assert(ar_data__get_integer(value) == 42);

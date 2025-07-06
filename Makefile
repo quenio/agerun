@@ -16,6 +16,7 @@ help:
 	@echo "  make test         - Run all tests"
 	@echo "  make test-sanitize - Run tests with AddressSanitizer + UBSan"
 	@echo "  make test-tsan    - Run tests with ThreadSanitizer"
+	@echo "  make bin/<test_name> - Build and run a single test (e.g. make bin/ar_data_tests)"
 	@echo ""
 	@echo "Analysis targets:"
 	@echo "  make analyze      - Run static analysis on library"

@@ -21,13 +21,13 @@
 struct ar_agent_instruction_evaluator_s {
     ar_log_t *ref_log;                           /* Borrowed reference to log instance */
     ar_expression_evaluator_t *mut_expr_evaluator;
-    data_t *mut_memory;
+    ar_data_t *mut_memory;
 };
 
 ar_agent_instruction_evaluator_t* ar_agent_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *mut_expr_evaluator,
-    data_t *mut_memory
+    ar_data_t *mut_memory
 ) {
     if (!ref_log || !mut_expr_evaluator || !mut_memory) {
         return NULL;
@@ -68,9 +68,9 @@ static void _log_error(ar_agent_instruction_evaluator_t *mut_evaluator, const ch
 
 /* Helper function to store result in memory if assignment path is provided */
 static bool _store_result_if_assigned(
-    data_t *mut_memory,
+    ar_data_t *mut_memory,
     const ar_instruction_ast_t *ref_ast,
-    data_t *own_result
+    ar_data_t *own_result
 ) {
     const char *ref_result_path = ar_instruction_ast__get_function_result_path(ref_ast);
     if (!ref_result_path) {
@@ -99,7 +99,7 @@ static bool _store_result_if_assigned(
 
 bool ar_agent_instruction_evaluator__evaluate(
     ar_agent_instruction_evaluator_t *mut_evaluator,
-    data_t *ref_context __attribute__((unused)),
+    ar_data_t *ref_context __attribute__((unused)),
     const ar_instruction_ast_t *ref_ast
 ) {
     if (!mut_evaluator || !ref_ast) {
@@ -110,7 +110,7 @@ bool ar_agent_instruction_evaluator__evaluate(
     _log_error(mut_evaluator, NULL);
     
     ar_expression_evaluator_t *mut_expr_evaluator = mut_evaluator->mut_expr_evaluator;
-    data_t *mut_memory = mut_evaluator->mut_memory;
+    ar_data_t *mut_memory = mut_evaluator->mut_memory;
     
     // Validate AST type
     if (ar_instruction_ast__get_type(ref_ast) != AR_INST__AGENT) {
@@ -144,12 +144,12 @@ bool ar_agent_instruction_evaluator__evaluate(
     }
     
     // Evaluate expression ASTs using public method
-    data_t *method_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_method_ast);
-    data_t *version_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_version_ast);
-    data_t *context_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_context_ast);
+    ar_data_t *method_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_method_ast);
+    ar_data_t *version_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_version_ast);
+    ar_data_t *context_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_context_ast);
     
     // Handle ownership for method name
-    data_t *own_method_name = NULL;
+    ar_data_t *own_method_name = NULL;
     if (method_result) {
         if (ar_data__hold_ownership(method_result, mut_expr_evaluator)) {
             ar_data__transfer_ownership(method_result, mut_expr_evaluator);
@@ -165,7 +165,7 @@ bool ar_agent_instruction_evaluator__evaluate(
     }
     
     // Handle ownership for version
-    data_t *own_version = NULL;
+    ar_data_t *own_version = NULL;
     if (version_result) {
         if (ar_data__hold_ownership(version_result, mut_expr_evaluator)) {
             ar_data__transfer_ownership(version_result, mut_expr_evaluator);
@@ -182,7 +182,7 @@ bool ar_agent_instruction_evaluator__evaluate(
     }
     
     // For context, use the reference directly - agency expects a borrowed reference
-    const data_t *ref_context_data = context_result;
+    const ar_data_t *ref_context_data = context_result;
     
     AR__HEAP__FREE(items);
     
@@ -223,7 +223,7 @@ bool ar_agent_instruction_evaluator__evaluate(
     
     // Store result if assigned
     if (ar_instruction_ast__has_result_assignment(ref_ast)) {
-        data_t *own_result = ar_data__create_integer((int)agent_id);
+        ar_data_t *own_result = ar_data__create_integer((int)agent_id);
         if (own_result) {
             _store_result_if_assigned(mut_memory, ref_ast, own_result);
         }

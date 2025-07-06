@@ -112,7 +112,7 @@ if (agent_id == 0) {
 }
 
 // Create an agent with specific version and context
-data_t *own_context = ar_data__create_map();
+ar_data_t *own_context = ar_data__create_map();
 ar_data__set_int(own_context, "max_retries", 3);
 int64_t agent_id2 = ar_agency__create_agent("router", "1.2.0", own_context);
 ar_data__destroy(own_context);  // Agency doesn't take ownership
@@ -122,7 +122,7 @@ ar_data__destroy(own_context);  // Agency doesn't take ownership
 
 ```c
 // Send a message to an agent
-data_t *own_message = ar_data__create_string("Hello, agent!");
+ar_data_t *own_message = ar_data__create_string("Hello, agent!");
 if (!ar_agency__send_to_agent(agent_id, own_message)) {
     ar_data__destroy(own_message);  // Clean up on failure
     printf("Failed to send message\n");
@@ -135,7 +135,7 @@ if (!ar_agency__send_to_agent(agent_id, own_message)) {
 ```c
 // Check for messages
 if (ar_agency__agent_has_messages(agent_id)) {
-    data_t *own_message = ar_agency__get_agent_message(agent_id);
+    ar_data_t *own_message = ar_agency__get_agent_message(agent_id);
     if (own_message) {
         // Process the message...
         ar_data__destroy(own_message);  // Caller owns the message

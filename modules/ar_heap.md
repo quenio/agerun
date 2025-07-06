@@ -44,7 +44,7 @@ Verifies that a pointer that should have valid ownership actually has a non-NULL
 
 **Usage Example:**
 ```c
-data_t *own_data = ar_data__create_integer(42);
+ar_data_t *own_data = ar_data__create_integer(42);
 AR_ASSERT_OWNERSHIP(own_data); // Ensures creation succeeded
 ```
 
@@ -207,7 +207,7 @@ ar_heap__memory_report();
 
 ```c
 // Instead of using standard malloc/free...
-void *own_data = AR__HEAP__MALLOC(sizeof(data_t), "Data structure for parser");
+void *own_data = AR__HEAP__MALLOC(sizeof(ar_data_t), "Data structure for parser");
 if (!own_data) {
     return NULL;
 }
@@ -239,7 +239,7 @@ own_copy = NULL;
 ### Verifying Ownership After Creation
 
 ```c
-data_t *own_data = ar_data__create_integer(42);
+ar_data_t *own_data = ar_data__create_integer(42);
 AR_ASSERT_OWNERSHIP(own_data);
 
 // Use the data...
@@ -252,7 +252,7 @@ AR_ASSERT_NOT_USED_AFTER_FREE(own_data);
 ### Enforcing Ownership Transfer Rules
 
 ```c
-data_t *own_value = ar_data__create_string("test");
+ar_data_t *own_value = ar_data__create_string("test");
 AR_ASSERT_OWNERSHIP(own_value);
 
 // Transfer ownership to map
@@ -266,7 +266,7 @@ AR_ASSERT_TRANSFERRED(own_value);
 ### Using in Complex Functions
 
 ```c
-bool process_data(data_t *own_input) {
+bool process_data(ar_data_t *own_input) {
     AR_ASSERT_OWNERSHIP(own_input);
     
     // Allocate additional memory

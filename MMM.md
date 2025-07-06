@@ -82,14 +82,14 @@ AgeRun implements a memory ownership model with three fundamental value categori
 ```c
 // OWNER: Caller owns memory, context, message
 // OWNER: Context owns newly created results
-expression_context_t* ar_expression_create_context(data_t *mut_memory, const data_t *ref_context, const data_t *ref_message, const char *ref_expr);
+expression_context_t* ar_expression_create_context(ar_data_t *mut_memory, const ar_data_t *ref_context, const ar_data_t *ref_message, const char *ref_expr);
 
 // BORROW: Returns reference to existing data or newly created data
 // OWNER: Context maintains ownership of result
-data_t* ar_expression_evaluate(expression_context_t *mut_ctx);
+ar_data_t* ar_expression_evaluate(expression_context_t *mut_ctx);
 
 // TRANSFER: Transfers ownership from context to caller
-bool ar_expression_take_ownership(expression_context_t *mut_ctx, data_t *ref_result);
+bool ar_expression_take_ownership(expression_context_t *mut_ctx, ar_data_t *ref_result);
 ```
 
 **Key Rules:**
@@ -104,19 +104,19 @@ bool ar_expression_take_ownership(expression_context_t *mut_ctx, data_t *ref_res
 
 ```c
 // OWNER: Caller is new owner of returned data
-data_t* ar_data_create_integer(int value);
-data_t* ar_data_create_double(double value);
-data_t* ar_data_create_string(const char *ref_value);
-data_t* ar_data_create_map();
-data_t* ar_data_create_list();
+ar_data_t* ar_data_create_integer(int value);
+ar_data_t* ar_data_create_double(double value);
+ar_data_t* ar_data_create_string(const char *ref_value);
+ar_data_t* ar_data_create_map();
+ar_data_t* ar_data_create_list();
 
 // BORROW: Returns reference, caller does not own
-int ar_data_get_integer(const data_t *ref_data);
-double ar_data_get_double(const data_t *ref_data);
-const char* ar_data_get_string(const data_t *ref_data);
+int ar_data_get_integer(const ar_data_t *ref_data);
+double ar_data_get_double(const ar_data_t *ref_data);
+const char* ar_data_get_string(const ar_data_t *ref_data);
 
 // TRANSFER: Takes ownership from caller
-bool ar_data_set_map_value(data_t *mut_map, const char *ref_key, data_t *own_value);
+bool ar_data_set_map_value(ar_data_t *mut_map, const char *ref_key, ar_data_t *own_value);
 ```
 
 **Key Rules:**
@@ -176,8 +176,8 @@ void* ar_map_get(const map_t *ref_map, const char *ref_key);
 
 ```c
 // Factory function pattern - returns owned value
-data_t* create_something() {
-    data_t *own_result = ar_data_create_map();
+ar_data_t* create_something() {
+    ar_data_t *own_result = ar_data_create_map();
     // configure result...
     return own_result; // Ownership transferred to caller
     // Comment: Ownership transferred to caller
@@ -188,24 +188,24 @@ data_t* create_something() {
 
 ```c
 // Container takes ownership of value
-data_t *own_value = ar_data_create_integer(42);
+ar_data_t *own_value = ar_data_create_integer(42);
 ar_data_set_map_value(mut_map, "key", own_value);
 // own_value is now owned by map, don't use or free it
 own_value = NULL; // Mark as transferred
 // Don't use own_value after this point
 
 // Taking ownership from container
-data_t *ref_result = ar_expression_evaluate(mut_ctx);
+ar_data_t *ref_result = ar_expression_evaluate(mut_ctx);
 ar_expression_take_ownership(mut_ctx, ref_result);
 // ref_result becomes own_result as it is now owned by caller, not context
-data_t *own_result = ref_result;
+ar_data_t *own_result = ref_result;
 ```
 
 ### Borrowing Pattern
 
 ```c
 // Borrowing pattern - doesn't take ownership
-void process_data(const data_t *ref_data) {
+void process_data(const ar_data_t *ref_data) {
     // Use but don't modify or destroy ref_data
     int value = ar_data_get_integer(ref_data);
     // ...
@@ -216,21 +216,21 @@ void process_data(const data_t *ref_data) {
 
 ```c
 // Direct memory access (returns reference)
-data_t *ref_value = ar_expression_evaluate(mut_ctx); // expression: "memory.x"
+ar_data_t *ref_value = ar_expression_evaluate(mut_ctx); // expression: "memory.x"
 // No need to destroy ref_value (borrowed reference)
 
 // Arithmetic expressions (returns new owned object)
-data_t *own_result = ar_expression_evaluate(mut_ctx); // expression: "2 + 3"
+ar_data_t *own_result = ar_expression_evaluate(mut_ctx); // expression: "2 + 3"
 ar_expression_take_ownership(mut_ctx, own_result); // Take ownership
 // Must destroy own_result when done
 
 // Arithmetic with memory access (returns new owned object)
-data_t *own_calc = ar_expression_evaluate(mut_ctx); // expression: "memory.x + 5"
+ar_data_t *own_calc = ar_expression_evaluate(mut_ctx); // expression: "memory.x + 5"
 ar_expression_take_ownership(mut_ctx, own_calc); // Take ownership
 // Must destroy own_calc when done
 
 // String expressions (returns new owned object)
-data_t *own_str = ar_expression_evaluate(mut_ctx); // expression: "\"Hello\" + \" World\""
+ar_data_t *own_str = ar_expression_evaluate(mut_ctx); // expression: "\"Hello\" + \" World\""
 ar_expression_take_ownership(mut_ctx, own_str); // Take ownership
 // Must destroy own_str when done
 ```
@@ -272,7 +272,7 @@ AgeRun enforces the following restrictions to prevent memory errors:
    - Code review should verify that transferred pointers are set to NULL immediately after transfer
    - Example:
    ```c
-   data_t *own_value = ar_data_create_integer(42);
+   ar_data_t *own_value = ar_data_create_integer(42);
    ar_data_set_map_value(mut_map, "key", own_value); // ownership transferred
    own_value = NULL; // mark as transferred
    // Using own_value after this point is a programming error
@@ -284,7 +284,7 @@ AgeRun enforces the following restrictions to prevent memory errors:
    - Functions that take ownership should document this clearly
    - Example of INCORRECT usage:
    ```c
-   data_t *own_value = ar_data_create_integer(42);
+   ar_data_t *own_value = ar_data_create_integer(42);
    ar_data_set_map_value(mut_map, "key", own_value); // ownership transferred
    int value = ar_data_get_integer(own_value); // ERROR: Using after transfer
    ```
@@ -308,13 +308,13 @@ AgeRun enforces the following restrictions to prevent memory errors:
    - Example:
    ```c
    // CORRECT: Take ownership of expression result
-   data_t *own_result = ar_expression_evaluate(mut_ctx);
+   ar_data_t *own_result = ar_expression_evaluate(mut_ctx);
    ar_expression_take_ownership(mut_ctx, own_result);
    // use own_result...
    ar_data_destroy(own_result);
 
    // INCORRECT: Not taking ownership of temporary
-   data_t *ref_result = ar_expression_evaluate(mut_ctx);
+   ar_data_t *ref_result = ar_expression_evaluate(mut_ctx);
    // use ref_result...
    // Memory leak: Expression result not properly handled
    ```
@@ -326,15 +326,15 @@ For clarity and consistency, all ownership prefixes should be used throughout th
 1. **Header Files (.h)**:
    - Function parameters should use ownership prefixes:
    ```c
-   bool ar_module_function(module_t *own_object, const data_t *ref_data);
+   bool ar_module_function(module_t *own_object, const ar_data_t *ref_data);
    ```
 
 2. **Implementation Files (.c)**:
    - Local variables should use ownership prefixes:
    ```c
-   bool ar_module_function(module_t *own_object, const data_t *ref_data) {
-       data_t *own_result = ar_data_create_map();
-       data_t *ref_value = ar_data_get_map_value(ref_data, "key");
+   bool ar_module_function(module_t *own_object, const ar_data_t *ref_data) {
+       ar_data_t *own_result = ar_data_create_map();
+       ar_data_t *ref_value = ar_data_get_map_value(ref_data, "key");
        // ...
    }
    ```
@@ -344,7 +344,7 @@ For clarity and consistency, all ownership prefixes should be used throughout th
    ```c
    void test_module_function() {
        own_module_t *own_object = ar_module_create();
-       data_t *own_map = ar_data_create_map();
+       ar_data_t *own_map = ar_data_create_map();
        // ...
    }
    ```
@@ -362,7 +362,7 @@ For clarity and consistency, all ownership prefixes should be used throughout th
     *       The map will be responsible for destroying own_value.
     *       Caller should set own_value = NULL after this call.
     */
-   bool ar_map_insert(map_t *mut_map, const char *ref_key, data_t *own_value);
+   bool ar_map_insert(map_t *mut_map, const char *ref_key, ar_data_t *own_value);
    ```
 
 5. **Struct Field Names:**
@@ -370,7 +370,7 @@ For clarity and consistency, all ownership prefixes should be used throughout th
    ```c
    typedef struct example_s {
        int *own_resource;       // Struct owns this resource and must free it
-       data_t *mut_data;        // Field can be modified but struct doesn't own it
+       ar_data_t *mut_data;        // Field can be modified but struct doesn't own it
        const char *ref_name;    // Read-only reference to data owned elsewhere
    } example_t;
    ```
@@ -416,19 +416,19 @@ When debugging memory issues:
 4. Use valgrind to identify leaks and double-free errors
 5. When transferring ownership, set the source pointer to NULL:
    ```c
-   data_t *own_value = ar_data_create_integer(42);
+   ar_data_t *own_value = ar_data_create_integer(42);
    ar_data_set_map_value(mut_map, "key", own_value);
    own_value = NULL; // Mark as transferred
    ```
 6. When a function uses another function that might take ownership, always ensure proper cleanup:
    ```c
    // INCORRECT: Memory leak if ar_data_set_map_data returns false
-   data_t *own_data = ar_data_create_string("value");
+   ar_data_t *own_data = ar_data_create_string("value");
    bool result = ar_data_set_map_data(mut_map, "key", own_data);
    // If result is false, own_data might be leaked
 
    // CORRECT: Handle cleanup properly
-   data_t *own_data = ar_data_create_string("value");
+   ar_data_t *own_data = ar_data_create_string("value");
    bool result = ar_data_set_map_data(mut_map, "key", own_data);
    if (!result) {
        ar_data_destroy(own_data); // Clean up if ownership transfer failed
@@ -438,17 +438,17 @@ When debugging memory issues:
 7. Use consistent prefixes in variable declarations to clearly indicate ownership:
    ```c
    // For owned values (RValues)
-   data_t *own_data = ar_data_create_integer(42);
+   ar_data_t *own_data = ar_data_create_integer(42);
    
    // For mutable references (LValues)
    mut_data_t *mut_data = some_mutable_reference;
    
    // For borrowed references (BValues)
-   const data_t *ref_data = ar_data_get_map_value(map, "key");
+   const ar_data_t *ref_data = ar_data_get_map_value(map, "key");
    ```
 7. Use assertion macros from the assert module to verify ownership invariants:
    ```c
-   data_t *own_value = ar_data_create_integer(42);
+   ar_data_t *own_value = ar_data_create_integer(42);
    AR_ASSERT_OWNERSHIP(own_value); // Verify ownership after creation
    
    ar_data_set_map_value(mut_map, "key", own_value);
