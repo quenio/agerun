@@ -123,7 +123,20 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Replaces duplicated path logic across evaluators
   - [x] Zero memory leaks with comprehensive testing
   - [x] Removed ar_path__get_segment_copy per YAGNI principle
-  - [ ] TODO: Migrate evaluators to use ar_path instead of string manipulation
+  - [x] Migrated all 9 evaluators to use ar_path instead of string manipulation (Completed 2025-07-05)
+    - [x] ar_assignment_instruction_evaluator - migrated _get_memory_key_path to use ar_path
+    - [x] ar_send_instruction_evaluator - migrated _get_memory_key_path to use ar_path
+    - [x] ar_condition_instruction_evaluator - migrated _get_memory_key_path to use ar_path
+    - [x] ar_parse_instruction_evaluator - migrated _get_memory_key_path to use ar_path
+    - [x] ar_build_instruction_evaluator - migrated _get_memory_key_path to use ar_path
+    - [x] ar_method_instruction_evaluator - migrated _get_memory_key_path to use ar_path
+    - [x] ar_agent_instruction_evaluator - migrated _get_memory_key_path to use ar_path
+    - [x] ar_destroy_agent_instruction_evaluator - migrated _get_memory_key_path to use ar_path
+    - [x] ar_destroy_method_instruction_evaluator - migrated _get_memory_key_path to use ar_path
+    - [x] All evaluators now include ar_path.h and stdbool.h
+    - [x] Removed MEMORY_PREFIX string constant from all evaluators
+    - [x] Kept MEMORY_PREFIX_LEN constant (7) to avoid magic numbers
+    - [x] All tests pass with zero memory leaks
 
 ### Zig Module Conversion Experiment (Completed 2025-07-05)
 - [x] Converted ar_string module from C to Zig maintaining full C compatibility

@@ -8,9 +8,11 @@
 #include "ar_expression_ast.h"
 #include "ar_list.h"
 #include "ar_log.h"
+#include "ar_path.h"
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 
 /**
@@ -23,8 +25,7 @@ struct ar_condition_instruction_evaluator_s {
 };
 
 /* Constants */
-static const char* MEMORY_PREFIX = "memory.";
-static const size_t MEMORY_PREFIX_LEN = 7;
+static const size_t MEMORY_PREFIX_LEN = 7; // Length of "memory."
 
 /* Helper function to log error message */
 static void _log_error(ar_condition_instruction_evaluator_t *mut_evaluator, const char *message) {
@@ -39,10 +40,19 @@ static const char* _get_memory_key_path(const char *ref_path) {
         return NULL;
     }
     
-    if (strncmp(ref_path, MEMORY_PREFIX, MEMORY_PREFIX_LEN) != 0) {
+    ar_path_t *own_path = ar_path__create_variable(ref_path);
+    if (!own_path) {
         return NULL;
     }
     
+    bool is_memory = ar_path__is_memory_path(own_path);
+    ar_path__destroy(own_path);
+    
+    if (!is_memory) {
+        return NULL;
+    }
+    
+    // Skip "memory." prefix
     return ref_path + MEMORY_PREFIX_LEN;
 }
 
