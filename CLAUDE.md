@@ -425,6 +425,8 @@ Never compile directly with gcc.
 
 **Pre-Commit Checklist** (MANDATORY):
 1. `make full-build` - Fix ALL issues before proceeding (includes doc validation)
+   - **Exception**: Type renames only need `make check-naming && make test`
+   - **Exception**: Doc-only changes only need `make check-docs`
 2. **Update module .md files if interfaces changed** - CRITICAL: Interface changes MUST include docs in same commit
 3. `grep -l "function_name" modules/*.md` - Check docs for any API changes
 4. Update TODO.md - Mark completed, add new tasks
