@@ -4,7 +4,7 @@ Create a git commit following the exact workflow specified in CLAUDE.md.
 
 Before starting the commit process, ensure you have completed ALL of these steps:
 
-1. **Run Tests**: Use `./full_build.sh` for comprehensive build verification (~20 lines output) to ensure all changes work correctly and no memory leaks. **If full build fails, STOP - do not proceed with commit until all issues are fixed.**
+1. **Run Tests**: Use `make full-build` for comprehensive build verification (~20 lines output) to ensure all changes work correctly and no memory leaks. **If full build fails, STOP - do not proceed with commit until all issues are fixed.**
 2. **Update Module Documentation**: If you changed a module's interface, update its .md file
 3. **Update TODO.md**: Mark completed tasks and add any new tasks identified
 4. **Update CHANGELOG.md**: Document completed milestones and achievements (NON-NEGOTIABLE)
