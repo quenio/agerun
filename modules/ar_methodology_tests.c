@@ -11,6 +11,7 @@
 
 // Forward declarations
 static void test_methodology__create_destroy(void);
+static void test_methodology__global_instance(void);
 static void test_methodology_get_method(void);
 static void test_methodology_register_and_get(void);
 static void test_methodology_save_load(void);
@@ -38,6 +39,44 @@ static void test_methodology__create_destroy(void) {
     own_log = NULL;
     
     printf("test_methodology__create_destroy passed\n");
+}
+
+static void test_methodology__global_instance(void) {
+    printf("Testing methodology uses global instance...\n");
+    
+    // This test verifies that the global API uses a global instance
+    // rather than static arrays directly
+    
+    // Given we clean up to start fresh
+    ar_methodology__cleanup();
+    
+    // When we register a method through the global API
+    bool result = ar_methodology__create_method("instance_test", "message -> \"Test\"", "1.0.0");
+    assert(result == true);
+    
+    // Then the method should be accessible
+    method_t *method = ar_methodology__get_method("instance_test", "1.0.0");
+    assert(method != NULL);
+    
+    // And when we call cleanup (which should clean the global instance)
+    ar_methodology__cleanup();
+    
+    // And register another method (this will fail if global instance not re-initialized)
+    result = ar_methodology__create_method("after_cleanup", "message -> \"After\"", "1.0.0");
+    assert(result == true);
+    
+    // Then the new method should be accessible
+    method = ar_methodology__get_method("after_cleanup", "1.0.0");
+    assert(method != NULL);
+    
+    // But the old method should be gone
+    method = ar_methodology__get_method("instance_test", "1.0.0");
+    assert(method == NULL);
+    
+    // Clean up
+    ar_methodology__cleanup();
+    
+    printf("test_methodology__global_instance passed\n");
 }
 
 static void test_methodology_get_method(void) {
@@ -238,6 +277,9 @@ int main(void) {
     // Run create/destroy test first (doesn't need system initialized)
     test_methodology__create_destroy();
     
+    // Run global instance test (doesn't need system initialized)
+    test_methodology__global_instance();
+    
     // Given a test method and initialized system
     const char *init_method = "methodology_test_method";
     const char *init_instructions = "memory.result = \"Test methodology\"";
@@ -268,6 +310,6 @@ int main(void) {
     test_methodology_save_load();
     
     // And report success
-    printf("All 9 tests passed!\n");
+    printf("All 10 tests passed!\n");
     return 0;
 }

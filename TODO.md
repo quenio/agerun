@@ -99,14 +99,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] Expression parser updated to use ar_log with position tracking (Completed 2025-07-01)
     - [x] All instruction parsers updated to use ar_log (Completed 2025-07-01)
     - [x] Method parser propagates ar_log to instruction parser (Completed 2025-07-01)
-    - [ ] BLOCKED: Update method module to accept ar_log parameter and propagate to method parser
-      - [ ] Cannot proceed until methodology module is refactored from singleton to instantiable
-      - [ ] Methodology singleton pattern prevents proper ar_log propagation
+    - [ ] UNBLOCKED: Update method module to accept ar_log parameter and propagate to method parser
+      - [x] Methodology module refactored to instantiable (Completed 2025-07-06)
       - [ ] Add ar_log parameter to ar_method__create() function
       - [ ] Pass ar_log from method creation to method parser
       - [ ] Update all method creation call sites to pass ar_log instance
+      - [ ] Update methodology module to pass its ar_log to ar_method__create()
       - [ ] This ensures complete log propagation from top-level through entire parsing hierarchy
-      - [ ] See "Refactor Methodology Module to Instantiable" task in High Priority section
     - [x] Remove legacy error handling from parsers now that ar_log is integrated (Completed 2025-07-02)
       - [x] Remove get_error() and get_error_position() functions from all parser modules
       - [x] Remove error message and error position fields from parser structs
@@ -401,28 +400,30 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [ ] TDD Cycle 11: Error handling
 - [ ] TDD Cycle 12-13: Integrate with method module
 
-### HIGH PRIORITY - Refactor Methodology Module to Instantiable (Required for ar_log)
+### HIGH PRIORITY - Refactor Methodology Module to Instantiable (Completed 2025-07-06)
 
-**Problem**: Methodology is currently a singleton, preventing proper ar_log propagation to method creation.
+**Problem**: Methodology was a singleton, preventing proper ar_log propagation to method creation.
 
-**Status**: Discovered during ar_log integration attempt (2025-07-02). The singleton pattern in methodology prevents passing ar_log through the hierarchy.
+**Status**: COMPLETED using backward-compatible approach with global instance (2025-07-06).
 
-- [ ] Make methodology instantiable instead of singleton
-  - [ ] Add ar_methodology__create(ar_log_t *ref_log) function
-  - [ ] Add ar_methodology__destroy() function  
-  - [ ] Store ar_log reference in methodology instance
-  - [ ] Pass ar_log to all ar_method__create calls
-- [ ] Update all callers to create/manage methodology instances
-  - [ ] System module creates methodology with ar_log
-  - [ ] Agent module accesses methodology through system
-  - [ ] Tests create their own methodology instances
-- [ ] Remove global state from methodology implementation
-  - [ ] Convert static arrays to dynamic allocations
-  - [ ] Move method storage into instance struct
-  - [ ] Ensure thread safety if needed
-- [ ] Update methodology persistence
-  - [ ] Pass file operations through instance methods
-  - [ ] Consider per-instance persistence files
+- [x] Made methodology instantiable while maintaining backward compatibility
+  - [x] Added ar_methodology__create(ar_log_t *ref_log) function
+  - [x] Added ar_methodology__destroy() function  
+  - [x] Store ar_log reference in methodology instance
+  - [x] Prepared for ar_log propagation to ar_method__create calls (future cycle)
+- [x] Implemented global instance pattern for backward compatibility
+  - [x] All existing public APIs continue to work unchanged
+  - [x] Global instance created on first use via _get_global_instance()
+  - [x] No breaking changes to callers
+- [x] Removed static arrays from methodology implementation
+  - [x] Converted to dynamic allocations within instance
+  - [x] Method storage moved into instance struct
+  - [x] Automatic array growth when capacity exceeded
+  - [x] Thread safety not implemented (documented as not thread-safe)
+- [x] Updated methodology persistence to work with instance
+  - [x] save_methods and load_methods use global instance
+  - [x] File operations work through instance methods
+  - [x] Same persistence format maintained
 
 ### HIGH PRIORITY - Complete Instruction and Expression Module Refactoring
 

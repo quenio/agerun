@@ -4,17 +4,45 @@ The Methodology module provides functionality for storing, managing, and retriev
 
 ## Key Features
 
-- Method storage and retrieval
+- Method storage and retrieval with dynamic allocation
 - Method versioning support
 - Persistence of methods to/from disk
 - Method search capabilities
 - Clean interface working with the opaque method_t type
+- Instance-based architecture with global instance for backward compatibility
+- Support for ar_log propagation for error reporting
 
 ## API Reference
 
+### Types
+
+```c
+/* Opaque type for methodology instance */
+typedef struct ar_methodology_s ar_methodology_t;
+```
+
 ### Functions
 
-#### Method Lookup and Search
+#### Instance Management
+
+```c
+/**
+ * Create a new methodology instance
+ * @param ref_log Log instance for error reporting (borrowed reference, may be NULL)
+ * @return New methodology instance or NULL on allocation failure
+ * @note Ownership: Caller owns the returned instance and must destroy it
+ */
+ar_methodology_t* ar_methodology__create(ar_log_t *ref_log);
+
+/**
+ * Destroy a methodology instance
+ * @param own_methodology The methodology instance to destroy (takes ownership)
+ * @note Ownership: Takes ownership and destroys the instance
+ */
+void ar_methodology__destroy(ar_methodology_t *own_methodology);
+```
+
+#### Method Lookup
 
 ```c
 /**
@@ -25,54 +53,7 @@ The Methodology module provides functionality for storing, managing, and retriev
  * @note Ownership: Returns a borrowed reference to the internal method. The caller
  *       should not modify or free the returned method.
  */
-method_t* ar__methodology__get_method(const char *ref_name, const char *ref_version);
-
-/**
- * Find the index of a method by name in the methods array
- * @param ref_name Method name to search for (borrowed reference)
- * @return Index of the method, or -1 if not found
- */
-int ar__methodology__find_method_idx(const char *ref_name);
-```
-
-#### Method Storage Management
-
-```c
-/**
- * Get a pointer to a specific method storage location
- * @param method_idx Index of the method in the methods array
- * @param version_idx Index of the version for this method
- * @return Pointer to the method storage location (mutable reference)
- * @note Ownership: Returns a mutable reference to internal storage.
- *       The caller should not free the returned method.
- */
-method_t* ar__methodology__get_method_storage(int method_idx, int version_idx);
-
-/**
- * Set a method pointer in the method storage location
- * @param method_idx Index of the method in the methods array
- * @param version_idx Index of the version for this method
- * @param ref_method Method pointer to store (methodology takes ownership)
- * @note Ownership: Methodology takes ownership of the method pointer.
- *       The caller should not use or free the method after this call.
- */
-void ar__methodology__set_method_storage(int method_idx, int version_idx, method_t *ref_method);
-
-/**
- * Get a pointer to the array of method counts
- * @return Pointer to the array of method counts (mutable reference)
- * @note Ownership: Returns a mutable reference to internal storage.
- *       The caller should not free the returned array.
- */
-int* ar__methodology__get_method_counts(void);
-
-/**
- * Get a pointer to the method name count variable
- * @return Pointer to the method name count (mutable reference)
- * @note Ownership: Returns a mutable reference to internal storage.
- *       The caller should not free the returned pointer.
- */
-int* ar__methodology__get_method_name_count(void);
+method_t* ar_methodology__get_method(const char *ref_name, const char *ref_version);
 ```
 
 #### Method Creation and Registration
@@ -87,18 +68,25 @@ int* ar__methodology__get_method_name_count(void);
  * @note Ownership: This function creates and takes ownership of the method.
  *       The caller should not worry about destroying the method.
  */
-bool ar__methodology__create_method(const char *ref_name, const char *ref_instructions, 
-                              const char *ref_version);
-```
+bool ar_methodology__create_method(const char *ref_name, const char *ref_instructions, 
+                                const char *ref_version);
 
-```c
 /**
  * Register a method with the methodology module
  * @param own_method The method to register (ownership is transferred to methodology)
  * @note Ownership: The methodology module takes ownership of the method.
  *       The caller should not access or free the method after this call.
  */
-void ar__methodology__register_method(method_t *own_method);
+void ar_methodology__register_method(method_t *own_method);
+
+/**
+ * Unregister a method from the methodology
+ * @param ref_name Method name (borrowed reference)
+ * @param ref_version Version string of the method to unregister
+ * @return true if method was successfully unregistered, false otherwise
+ * @note This will fail if there are active agents using this method
+ */
+bool ar_methodology__unregister_method(const char *ref_name, const char *ref_version);
 ```
 
 #### Persistence
@@ -108,89 +96,89 @@ void ar__methodology__register_method(method_t *own_method);
  * Save all method definitions to disk
  * @return true if successful, false otherwise
  */
-bool ar__methodology__save_methods(void);
+bool ar_methodology__save_methods(void);
 
 /**
  * Load all method definitions from disk
  * @return true if successful, false otherwise
  */
-bool ar__methodology__load_methods(void);
+bool ar_methodology__load_methods(void);
+```
 
+#### Lifecycle Management
+
+```c
 /**
  * Clean up all method definitions and free resources
  * This should be called during system shutdown
  */
-void ar__methodology__cleanup(void);
+void ar_methodology__cleanup(void);
 ```
-
-## Implementation Notes
-
-- The methodology module stores methods using the opaque method_t type from the method module
-- It manages method versioning, allowing multiple versions of the same method to coexist
-- It provides facilities for finding compatible method versions when exact matches aren't available
-- The module handles persistence of methods to disk, saving and loading them for system restarts
-- Proper memory management follows the AgeRun Memory Management Model (MMM)
-- The methodology module is responsible for freeing method resources it owns
-- It uses `ar_method__destroy()` to properly clean up method resources
 
 ## Usage Examples
 
-### Method Lookup
+### Getting a Method
 
 ```c
 // Get the latest version of a method
-method_t *ref_method = ar__methodology__get_method("echo_method", NULL);
+method_t *ref_method = ar_methodology__get_method("echo_method", NULL);
 if (ref_method) {
-    // Use the method...
-    const char *instructions = ar_method__get_instructions(ref_method);
-    const char *version = ar_method__get_version(ref_method);
-    // Note: ref_method is owned by the methodology module, don't free it
+    // Use the method (borrowed reference - do not free)
 }
 
 // Get a specific version of a method
-method_t *ref_specific_method = ar__methodology__get_method("echo_method", "2.0.0");
-if (ref_specific_method) {
-    // Use the specific version...
-}
+method_t *ref_specific_method = ar_methodology__get_method("echo_method", "2.0.0");
 ```
 
-### Method Creation and Registration
+### Creating and Registering Methods
 
 ```c
-// Create and register a method using semantic versioning
-bool created = ar__methodology__create_method("custom_method", 
-                                        "memory.result := \"Custom: \" + message.text;", 
-                                        "1.0.0");
-if (created) {
-    printf("Method created and registered successfully\n");
-}
+// Create and register a new method directly
+bool created = ar_methodology__create_method("custom_method", 
+                                          "memory.result = memory.input", 
+                                          "1.0.0");
 
-// Alternative approach: Create method object manually and register it
+// Or create a method object and register it
 method_t *own_method = ar_method__create("another_method", 
-                                   "memory.greeting := \"Hello\";",
-                                   "1.0.0");
-
-// Register the method with the methodology module (transfers ownership)
-ar__methodology__register_method(own_method);
-own_method = NULL; // Mark as transferred
-// After this point, own_method is owned by the methodology module
+                                      "memory.result = \"Hello\"", 
+                                      "1.0.0");
+if (own_method) {
+    ar_methodology__register_method(own_method);
+    // ownership transferred - do not use own_method after this
+}
 ```
 
 ### Persistence
 
 ```c
 // Save all methods to disk
-bool save_result = ar__methodology__save_methods();
-if (save_result) {
-    printf("Methods saved successfully\n");
-}
+bool save_result = ar_methodology__save_methods();
 
 // Load methods from disk
-bool load_result = ar__methodology__load_methods();
-if (load_result) {
-    printf("Methods loaded successfully\n");
-}
-
-// Clean up resources during shutdown
-ar__methodology__cleanup();
+bool load_result = ar_methodology__load_methods();
 ```
+
+### Cleanup
+
+```c
+// Clean up all methods during shutdown
+ar_methodology__cleanup();
+```
+
+## Implementation Details
+
+The methodology module uses a global instance internally to maintain backward compatibility while providing dynamic storage capabilities. Methods are stored in a two-dimensional dynamic array structure, with one dimension for method names and another for versions of each method.
+
+The module automatically grows its storage capacity as needed when new methods are registered. The persistence format stores method count, followed by each method's name, version count, and version details.
+
+## Thread Safety
+
+The methodology module is NOT thread-safe. All access should be synchronized externally if used in a multi-threaded context.
+
+## Dependencies
+
+- ar_method: For method object creation and management
+- ar_io: For file operations and persistence
+- ar_heap: For memory management
+- ar_semver: For version comparison and management
+- ar_log: For error reporting (optional)
