@@ -253,7 +253,17 @@ analyze-tests: install-scan-build
 		exit 1; \
 	fi
 
-.PHONY: all debug release sanitize clean test test-sanitize executable executable-sanitize run run-sanitize analyze analyze-tests
+# Check naming conventions across all source files
+check-naming:
+	@if [ -x ./check_naming_conventions.sh ]; then \
+		./check_naming_conventions.sh; \
+	else \
+		echo "ERROR: check_naming_conventions.sh not found or not executable"; \
+		echo "Make sure the script exists and has execute permissions"; \
+		exit 1; \
+	fi
+
+.PHONY: all debug release sanitize clean test test-sanitize executable executable-sanitize run run-sanitize analyze analyze-tests check-naming
 
 # Debug targets
 print-src:

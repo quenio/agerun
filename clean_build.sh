@@ -363,7 +363,22 @@ else
     fi
 fi
 
-# Step 10: Check documentation file references
+# Step 10: Check naming conventions
+echo
+echo "Checking naming conventions..."
+if [ -x ./check_naming_conventions.sh ]; then
+    # Run the naming check but don't exit on error, just report
+    if ./check_naming_conventions.sh >/dev/null 2>&1; then
+        echo "Naming conventions: All conventions followed ✓"
+    else
+        echo "Naming conventions: VIOLATIONS FOUND ✗"
+        echo "Run './check_naming_conventions.sh' for details"
+    fi
+else
+    echo "Naming conventions: Script not found ⚠️"
+fi
+
+# Step 11: Check documentation file references
 echo
 echo "Checking documentation file references..."
 
@@ -415,7 +430,7 @@ else
     fi
 fi
 
-# Step 11: Check module name consistency in documentation
+# Step 12: Check module name consistency in documentation
 echo
 echo "Checking module name consistency..."
 
@@ -498,7 +513,7 @@ else
     fi
 fi
 
-# Step 12: Check function and type references in documentation
+# Step 13: Check function and type references in documentation
 echo
 echo -n "Checking function and type references..."
 
