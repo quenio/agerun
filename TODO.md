@@ -313,6 +313,79 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Immediate Priorities (Next Steps)
 
+### CRITICAL - Fix Naming Convention Violations (Found by check-naming)
+
+#### Static Functions Not Following _<function> Convention
+- [ ] Fix ar_io.zig static functions:
+  - [ ] Rename `getErrno()` to `_getErrno()`
+  - [ ] Rename `setErrno()` to `_setErrno()`
+- [ ] Fix ar_heap.zig static functions:
+  - [ ] Rename `memory_init()` to `_memory_init()`
+  - [ ] Rename `memory_add()` to `_memory_add()`
+  - [ ] Rename `memory_remove()` to `_memory_remove()`
+
+#### Enum Values Not Following AR_<ENUM_TYPE>__<VALUE> Convention
+- [ ] Fix ar_data.h enum values (ar_data_type_t):
+  - [ ] DATA_INTEGER → AR_DATA_TYPE__INTEGER
+  - [ ] DATA_DOUBLE → AR_DATA_TYPE__DOUBLE
+  - [ ] DATA_STRING → AR_DATA_TYPE__STRING
+  - [ ] DATA_LIST → AR_DATA_TYPE__LIST
+- [ ] Fix ar_event.h enum values (ar_event_type_t):
+  - [ ] AR_EVENT_ERROR → AR_EVENT_TYPE__ERROR
+  - [ ] AR_EVENT_WARNING → AR_EVENT_TYPE__WARNING
+- [ ] Fix ar_expression_ast.h enum values:
+  - [ ] ar_expression_ast_type_t values:
+    - [ ] AR_EXPR__LITERAL_INT → AR_EXPRESSION_AST_TYPE__LITERAL_INT
+    - [ ] AR_EXPR__LITERAL_DOUBLE → AR_EXPRESSION_AST_TYPE__LITERAL_DOUBLE
+    - [ ] AR_EXPR__LITERAL_STRING → AR_EXPRESSION_AST_TYPE__LITERAL_STRING
+    - [ ] AR_EXPR__MEMORY_ACCESS → AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS
+    - [ ] AR_EXPR__BINARY_OP → AR_EXPRESSION_AST_TYPE__BINARY_OP
+  - [ ] ar_binary_operator_t values:
+    - [ ] AR_OP__ADD → AR_BINARY_OPERATOR__ADD
+    - [ ] AR_OP__SUBTRACT → AR_BINARY_OPERATOR__SUBTRACT
+    - [ ] AR_OP__MULTIPLY → AR_BINARY_OPERATOR__MULTIPLY
+    - [ ] AR_OP__DIVIDE → AR_BINARY_OPERATOR__DIVIDE
+    - [ ] AR_OP__EQUAL → AR_BINARY_OPERATOR__EQUAL
+    - [ ] AR_OP__NOT_EQUAL → AR_BINARY_OPERATOR__NOT_EQUAL
+    - [ ] AR_OP__LESS → AR_BINARY_OPERATOR__LESS
+    - [ ] AR_OP__LESS_EQ → AR_BINARY_OPERATOR__LESS_EQ
+    - [ ] AR_OP__GREATER → AR_BINARY_OPERATOR__GREATER
+    - [ ] AR_OP__GREATER_EQ → AR_BINARY_OPERATOR__GREATER_EQ
+- [ ] Fix ar_instruction.h enum values (ar_instruction_type_t):
+  - [ ] INST_ASSIGNMENT → AR_INSTRUCTION_TYPE__ASSIGNMENT
+  - [ ] INST_SEND → AR_INSTRUCTION_TYPE__SEND
+  - [ ] INST_IF → AR_INSTRUCTION_TYPE__IF
+  - [ ] INST_METHOD → AR_INSTRUCTION_TYPE__METHOD
+  - [ ] INST_AGENT → AR_INSTRUCTION_TYPE__AGENT
+  - [ ] INST_DESTROY → AR_INSTRUCTION_TYPE__DESTROY
+  - [ ] INST_PARSE → AR_INSTRUCTION_TYPE__PARSE
+- [ ] Fix ar_instruction_ast.h enum values (ar_instruction_ast_type_t):
+  - [ ] AR_INST__ASSIGNMENT → AR_INSTRUCTION_AST_TYPE__ASSIGNMENT
+  - [ ] AR_INST__SEND → AR_INSTRUCTION_AST_TYPE__SEND
+  - [ ] AR_INST__IF → AR_INSTRUCTION_AST_TYPE__IF
+  - [ ] AR_INST__METHOD → AR_INSTRUCTION_AST_TYPE__METHOD
+  - [ ] AR_INST__AGENT → AR_INSTRUCTION_AST_TYPE__AGENT
+  - [ ] AR_INST__DESTROY_AGENT → AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT
+  - [ ] AR_INST__DESTROY_METHOD → AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD
+  - [ ] AR_INST__PARSE → AR_INSTRUCTION_AST_TYPE__PARSE
+  - [ ] AR_INST__BUILD → AR_INSTRUCTION_AST_TYPE__BUILD
+- [ ] Fix ar_io.h enum values (ar_file_result_t):
+  - [ ] FILE_SUCCESS → AR_FILE_RESULT__SUCCESS
+  - [ ] FILE_ERROR_OPEN → AR_FILE_RESULT__ERROR_OPEN
+
+#### Struct Definitions Not Following Convention
+- [ ] Fix ar_list.c struct definition:
+  - [ ] `struct list_node_s` → `struct ar_list_node_s`
+
+#### Zig Struct Types Not Following Convention
+- [ ] Fix ar_heap.zig struct type:
+  - [ ] `const MemoryRecord = struct` → Follow ar_<type>_t convention
+
+#### Old Naming Prefix Cleanup (Lower Priority)
+- [ ] Update 64 instances of old 'agerun_' prefix to 'ar_' prefix
+  - [ ] This appears mainly in comments and documentation
+  - [ ] Examples found in multiple test files and module headers
+
 ### HIGHEST PRIORITY - Frame-Based Execution Implementation (Revised Plan)
 
 **Status**: Previous attempt failed due to creating parallel implementations instead of modifying existing code. This revised plan addresses those issues.
