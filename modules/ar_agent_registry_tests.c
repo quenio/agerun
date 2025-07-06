@@ -14,7 +14,7 @@ static void test_registry_create_destroy(void) {
     printf("Testing registry create and destroy...\n");
     
     // Given a new registry
-    agent_registry_t *own_registry = ar_agent_registry__create();
+    ar_agent_registry_t *own_registry = ar_agent_registry__create();
     assert(own_registry != NULL);
     
     // When checking initial state
@@ -36,7 +36,7 @@ static void test_registry_id_management(void) {
     printf("Testing registry ID management...\n");
     
     // Given a new registry
-    agent_registry_t *own_registry = ar_agent_registry__create();
+    ar_agent_registry_t *own_registry = ar_agent_registry__create();
     assert(own_registry != NULL);
     
     // When allocating IDs
@@ -69,7 +69,7 @@ static void test_registry_registration(void) {
     printf("Testing registry registration...\n");
     
     // Given a new registry
-    agent_registry_t *own_registry = ar_agent_registry__create();
+    ar_agent_registry_t *own_registry = ar_agent_registry__create();
     assert(own_registry != NULL);
     
     // When registering agent IDs
@@ -106,7 +106,7 @@ static void test_registry_iteration(void) {
     printf("Testing registry iteration...\n");
     
     // Given a new registry with some agents
-    agent_registry_t *own_registry = ar_agent_registry__create();
+    ar_agent_registry_t *own_registry = ar_agent_registry__create();
     assert(own_registry != NULL);
     
     assert(ar_agent_registry__register_id(own_registry, 5));
@@ -139,7 +139,7 @@ static void test_registry_agent_tracking(void) {
     printf("Testing registry agent tracking...\n");
     
     // Given a new registry
-    agent_registry_t *own_registry = ar_agent_registry__create();
+    ar_agent_registry_t *own_registry = ar_agent_registry__create();
     assert(own_registry != NULL);
     
     // Create some dummy agent pointers (not real agents)
@@ -180,7 +180,7 @@ static void test_registry_clear(void) {
     printf("Testing registry clear...\n");
     
     // Given a registry with agents
-    agent_registry_t *own_registry = ar_agent_registry__create();
+    ar_agent_registry_t *own_registry = ar_agent_registry__create();
     assert(own_registry != NULL);
     
     // Register and track some agents

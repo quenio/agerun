@@ -32,7 +32,7 @@ typedef struct method_s ar_method_t;
  *       IMPORTANT: The caller must process 2*update_count messages after this call
  *       if lifecycle events are enabled to ensure all sleep and wake messages are processed.
  */
-int ar_agent_update__update_methods(agent_registry_t *ref_registry,
+int ar_agent_update__update_methods(ar_agent_registry_t *ref_registry,
                                     const ar_method_t *ref_old_method, 
                                     const ar_method_t *ref_new_method,
                                     bool send_lifecycle_events);
@@ -44,7 +44,7 @@ int ar_agent_update__update_methods(agent_registry_t *ref_registry,
  * @return Number of active agents using the method
  * @note Ownership: Does not take ownership of any references.
  */
-int ar_agent_update__count_using_method(agent_registry_t *ref_registry,
+int ar_agent_update__count_using_method(ar_agent_registry_t *ref_registry,
                                         const ar_method_t *ref_method);
 
 /**

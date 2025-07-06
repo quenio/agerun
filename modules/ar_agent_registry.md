@@ -70,7 +70,7 @@ This design allows:
 
 ```c
 // Create a registry
-agent_registry_t *registry = ar_agent_registry__create();
+ar_agent_registry_t *registry = ar_agent_registry__create();
 if (!registry) {
     // Handle error
 }

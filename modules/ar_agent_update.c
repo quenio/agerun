@@ -13,7 +13,7 @@
 #include <string.h>
 
 /* Update agents using a specific method to use a different method */
-int ar_agent_update__update_methods(agent_registry_t *ref_registry,
+int ar_agent_update__update_methods(ar_agent_registry_t *ref_registry,
                                   const ar_method_t *ref_old_method, 
                                   const ar_method_t *ref_new_method,
                                   bool send_lifecycle_events) {
@@ -59,7 +59,7 @@ int ar_agent_update__update_methods(agent_registry_t *ref_registry,
 }
 
 /* Count the number of agents using a specific method */
-int ar_agent_update__count_using_method(agent_registry_t *ref_registry,
+int ar_agent_update__count_using_method(ar_agent_registry_t *ref_registry,
                                       const ar_method_t *ref_method) {
     if (!ref_registry || !ref_method) {
         return 0;

@@ -218,7 +218,7 @@ bool ar_agency__set_agent_id(int64_t old_id, int64_t new_id);
  * @return The agent registry (borrowed reference), or NULL if not initialized
  * @note This is provided for agent_store module to access registry functions.
  */
-agent_registry_t* ar_agency__get_registry(void);
+ar_agent_registry_t* ar_agency__get_registry(void);
 
 #endif /* AGERUN_AGENCY_H */
 

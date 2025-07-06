@@ -9,7 +9,7 @@
 
 /* Global State */
 static bool g_is_initialized = false;
-static agent_registry_t *g_own_registry = NULL; /* Owned by the agency module */
+static ar_agent_registry_t *g_own_registry = NULL; /* Owned by the agency module */
 
 /* Implementation */
 void ar_agency__set_initialized(bool initialized) {
@@ -356,7 +356,7 @@ bool ar_agency__set_agent_id(int64_t old_id, int64_t new_id) {
     return true;
 }
 
-agent_registry_t* ar_agency__get_registry(void) {
+ar_agent_registry_t* ar_agency__get_registry(void) {
     return g_own_registry;
 }
 
