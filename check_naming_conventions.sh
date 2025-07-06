@@ -206,31 +206,52 @@ fi
 echo
 echo "Checking type naming conventions..."
 
-# Check enum values should have AR_ prefix
+# Check enum values should follow AR_<ENUM_TYPE>__<VALUE> pattern
 echo -n "  Enum values... "
 bad_enum_values=0
 enum_value_issues=""
 
 for file in modules/*.h; do
-    # Look for enum values inside enum definitions
-    # Extract enum blocks and check values
-    enum_blocks=$(awk '/typedef enum {/,/} ar_[a-zA-Z0-9_]+_t;/' "$file" 2>/dev/null)
+    # First find typedef enum blocks and their type names
+    # Use a simpler approach with sed and grep
     
-    if [ ! -z "$enum_blocks" ]; then
-        # Check for values that don't start with AR_
-        bad_values=$(echo "$enum_blocks" | grep -E "^\s*[A-Z][A-Z0-9_]+" | grep -v -E "^\s*AR_" | sed "s|^|$file: |")
-        
-        if [ ! -z "$bad_values" ]; then
-            enum_value_issues="$enum_value_issues\n$bad_values"
-            ((bad_enum_values++))
+    # Extract enum type definitions
+    enum_types=$(grep -E "} ar_[a-zA-Z0-9_]+_t;" "$file" 2>/dev/null | sed -E 's/.*} (ar_[a-zA-Z0-9_]+_t);.*/\1/')
+    
+    for enum_type in $enum_types; do
+        if [ ! -z "$enum_type" ]; then
+            # Find the enum block for this type
+            # Extract from "typedef enum {" to "} $enum_type;"
+            enum_block=$(awk -v type="$enum_type" '
+                /typedef enum/ { capture=1; block="" }
+                capture { block = block "\n" $0 }
+                capture && $0 ~ "} " type ";" { print block; capture=0 }
+            ' "$file" 2>/dev/null)
+            
+            # Extract enum values from the block
+            enum_values=$(echo "$enum_block" | grep -E '^\s*[A-Z][A-Z0-9_]+' | sed -E 's/^\s*([A-Z][A-Z0-9_]+)[,\s]*.*/\1/')
+            
+            # Convert type name to expected prefix: ar_data_type_t -> AR_DATA_TYPE
+            expected_prefix=$(echo "$enum_type" | sed -E 's/^ar_//; s/_t$//' | tr '[:lower:]' '[:upper:]')
+            
+            # Check each enum value
+            for value in $enum_values; do
+                if [ ! -z "$value" ]; then
+                    # Check if value follows the pattern AR_<TYPE>__<VALUE>
+                    if ! echo "$value" | grep -qE "^AR_${expected_prefix}__"; then
+                        enum_value_issues="$enum_value_issues\n    $file: $value (in $enum_type, should start with AR_${expected_prefix}__)"
+                        ((bad_enum_values++))
+                    fi
+                fi
+            done
         fi
-    fi
+    done
 done
 
 if [ $bad_enum_values -eq 0 ]; then
-    print_success "All enum values follow AR_<PREFIX>_<VALUE> convention"
+    print_success "All enum values follow AR_<ENUM_TYPE>__<VALUE> convention"
 else
-    print_error "Found enum values not following AR_<PREFIX>_<VALUE> convention"
+    print_error "Found enum values not following AR_<ENUM_TYPE>__<VALUE> convention"
     echo -e "    Issues:$enum_value_issues" | head -10
 fi
 
@@ -404,6 +425,7 @@ else
     echo "  - Test functions: test_<module>__<test_name>"
     echo "  - Types: ar_<type>_t"
     echo "  - Structs: ar_<name>_s"
+    echo "  - Enum values: AR_<ENUM_TYPE>__<VALUE>"
     echo "  - Heap macros: AR__HEAP__<OPERATION>"
     echo "  - Assert macros: AR_ASSERT_<TYPE>"
 fi
