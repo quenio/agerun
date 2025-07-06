@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include "ar_data.h"
 #include "ar_method_ast.h"
+#include "ar_log.h"
 
 /* Method Definition (opaque type) */
 typedef struct method_s method_t;
@@ -20,6 +21,19 @@ typedef struct method_s method_t;
  */
 method_t* ar_method__create(const char *ref_name, const char *ref_instructions, 
                            const char *ref_version);
+
+/**
+ * Creates a new method object with the given parameters and log support
+ * @param ref_name Method name (borrowed reference)
+ * @param ref_instructions The method implementation code (borrowed reference)
+ * @param ref_version Semantic version string for this method (e.g., "1.0.0")
+ * @param ref_log Optional log instance for error reporting (borrowed reference, may be NULL)
+ * @return Newly created method object, or NULL on failure
+ * @note Ownership: Returns an owned object that the caller must destroy with ar_method__destroy.
+ *       The method copies the name, instructions, and version. The original strings remain owned by the caller.
+ */
+method_t* ar_method__create_with_log(const char *ref_name, const char *ref_instructions, 
+                                    const char *ref_version, ar_log_t *ref_log);
 
 /**
  * Get the name of a method

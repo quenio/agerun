@@ -284,7 +284,7 @@ bool ar_method_instruction_evaluator__evaluate(
         const char *version = ar_data__get_string(own_version);
         
         // Create and register the method
-        method_t *own_method = ar_method__create(method_name, instructions, version);
+        method_t *own_method = ar_method__create_with_log(method_name, instructions, version, mut_evaluator->ref_log);
         if (own_method) {
             ar_methodology__register_method(own_method);
             // Ownership transferred to methodology

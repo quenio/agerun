@@ -1097,7 +1097,7 @@ bool ar_methodology__create_method_with_instance(ar_methodology_t *mut_methodolo
     }
     
     // Pass the ar_log from the methodology instance to ar_method__create
-    method_t *own_method = ar_method__create(ref_name, ref_instructions, ref_version);
+    method_t *own_method = ar_method__create_with_log(ref_name, ref_instructions, ref_version, mut_methodology->ref_log);
     if (!own_method) {
         return false;
     }

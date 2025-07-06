@@ -20,6 +20,7 @@ static void test_methodology__get_method_with_instance(void);
 static void test_methodology__register_method_with_instance(void);
 static void test_methodology__create_method_with_instance(void);
 static void test_methodology__save_load_with_instance(void);
+static void test_methodology__ar_log_propagation(void);
 
 static void test_methodology__create_destroy(void) {
     printf("Testing ar_methodology__create() and ar_methodology__destroy()...\n");
@@ -412,6 +413,42 @@ static void test_methodology__save_load_with_instance(void) {
     printf("test_methodology__save_load_with_instance passed\n");
 }
 
+static void test_methodology__ar_log_propagation(void) {
+    printf("Testing ar_log propagation through methodology to method parser...\n");
+    
+    // Given a methodology instance with an ar_log
+    ar_log_t *own_log = ar_log__create();
+    assert(own_log != NULL);
+    
+    ar_methodology_t *own_methodology = ar_methodology__create(own_log);
+    assert(own_methodology != NULL);
+    
+    // When we create a method with invalid syntax
+    bool result = ar_methodology__create_method_with_instance(own_methodology,
+                                                             "error_test",
+                                                             "invalid syntax here!@#$",
+                                                             "1.0.0");
+    
+    // Then the method creation should succeed (parser errors are non-fatal)
+    assert(result == true);
+    
+    // And the parse error should be logged to our ar_log instance
+    ar_event_t *ref_event = ar_log__get_last_error(own_log);
+    assert(ref_event != NULL);
+    
+    // Verify the error message contains something about parse error
+    const char *ref_message = ar_event__get_message(ref_event);
+    assert(ref_message != NULL);
+    assert(strstr(ref_message, "parse") != NULL || strstr(ref_message, "Parse") != NULL ||
+           strstr(ref_message, "syntax") != NULL || strstr(ref_message, "Syntax") != NULL);
+    
+    // Clean up
+    ar_methodology__destroy(own_methodology);
+    ar_log__destroy(own_log);
+    
+    printf("test_methodology__ar_log_propagation passed\n");
+}
+
 int main(void) {
     printf("Starting Methodology Module Tests...\n");
     
@@ -455,8 +492,9 @@ int main(void) {
     test_methodology__register_method_with_instance();
     test_methodology__create_method_with_instance();
     test_methodology__save_load_with_instance();
+    test_methodology__ar_log_propagation();
     
     // And report success
-    printf("All 14 tests passed!\n");
+    printf("All 15 tests passed!\n");
     return 0;
 }

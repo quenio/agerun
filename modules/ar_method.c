@@ -2,6 +2,7 @@
 #include "ar_method_ast.h"
 #include "ar_method_parser.h"
 #include "ar_heap.h"
+#include "ar_log.h"
 #include "ar_assert.h" /* Include the assertion utilities */
 
 #include <stdio.h>
@@ -63,6 +64,21 @@ void ar_method__destroy(method_t *own_method) {
  */
 method_t* ar_method__create(const char *ref_name, const char *ref_instructions, 
                          const char *ref_version) {
+    return ar_method__create_with_log(ref_name, ref_instructions, ref_version, NULL);
+}
+
+/**
+ * Creates a new method with the given parameters and log support
+ * @param ref_name Method name (borrowed reference)
+ * @param ref_instructions The method implementation code (borrowed reference)
+ * @param ref_version Semantic version string for this method (e.g., "1.0.0")
+ * @param ref_log Optional log instance for error reporting (borrowed reference, may be NULL)
+ * @return Newly created method object, or NULL on failure
+ * @note Ownership: Returns an owned object that the caller must destroy with ar_method__destroy.
+ *       The method copies the name, instructions, and version. The original strings remain owned by the caller.
+ */
+method_t* ar_method__create_with_log(const char *ref_name, const char *ref_instructions, 
+                                    const char *ref_version, ar_log_t *ref_log) {
     if (!ref_name || !ref_instructions || !ref_version) {
         return NULL;
     }
@@ -85,7 +101,7 @@ method_t* ar_method__create(const char *ref_name, const char *ref_instructions,
     mut_method->instructions[MAX_INSTRUCTIONS_LENGTH - 1] = '\0';
     
     // Parse the instructions into AST
-    ar_method_parser_t *own_parser = ar_method_parser__create(NULL);
+    ar_method_parser_t *own_parser = ar_method_parser__create(ref_log);
     if (!own_parser) {
         AR__HEAP__FREE(mut_method);
         return NULL;
@@ -94,7 +110,6 @@ method_t* ar_method__create(const char *ref_name, const char *ref_instructions,
     mut_method->own_ast = ar_method_parser__parse(own_parser, ref_instructions);
     if (!mut_method->own_ast) {
         // Parser will have logged error to ar_log if one was provided
-        // Since we're passing NULL for log, no error reporting is available
         // Continue without AST for backward compatibility
     }
     
