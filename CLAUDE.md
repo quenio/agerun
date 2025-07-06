@@ -8,7 +8,7 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 
 ## Quick Start
 
-**Primary Build Tool**: `./clean_build.sh` - runs everything with minimal output (~20 lines)
+**Primary Build Tool**: `./full_build.sh` - runs everything with minimal output (~20 lines)
 - Use before commits and for quick verification
 - Includes: clean, build, static analysis, all tests, sanitizers, leak check, doc validation
 
@@ -359,7 +359,7 @@ cd bin  # Wrong - avoid relative paths
 - **Static Analysis**: `make analyze` (requires scan-build: `brew install llvm` or `apt install clang-tools`)
 - **Test Failures**: Often just wrong directory - 4-step check: pwd → cd /path → pwd → run
 - **Pattern Testing**: Test regex/sed/awk patterns before using in scripts
-- **Doc Validation**: clean_build.sh validates file refs, function names, types
+- **Doc Validation**: full_build.sh validates file refs, function names, types
 
 **Expression Ownership** (CRITICAL):
 - References (`memory.x`): Don't destroy - borrowed from memory/context
@@ -407,7 +407,7 @@ Never compile directly with gcc.
 - **User feedback**: May reveal design issues, not just implementation bugs. Listen for concerns about output/behavior.
 
 **Pre-Commit Checklist** (MANDATORY):
-1. `./clean_build.sh` - Fix ALL issues before proceeding (includes doc validation)
+1. `./full_build.sh` - Fix ALL issues before proceeding (includes doc validation)
 2. **Update module .md files if interfaces changed** - CRITICAL: Interface changes MUST include docs in same commit
 3. `grep -l "function_name" modules/*.md` - Check docs for any API changes
 4. Update TODO.md - Mark completed, add new tasks

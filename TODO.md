@@ -1384,7 +1384,7 @@ This order ensures clean separation of concerns across all modules.
 - All core instruction functions are now implemented
 - Memory safety is verified through Address Sanitizer and static analysis
 - Enhanced memory leak detection with per-test reporting via unique heap_memory_report files
-- **Recommended**: Use `./clean_build.sh` for quick build verification (~20 lines output)
+- **Recommended**: Use `./full_build.sh` for quick build verification (~20 lines output)
 - **Architecture**: No internal headers or friend modules - functions are either public (in .h) or private (static in .c)
 - **MANDATORY**: All new development must follow TDD methodology (write tests first)
 - **MANDATORY**: All modules must comply with Parnas Design Principles

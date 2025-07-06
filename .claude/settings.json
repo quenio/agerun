@@ -5,7 +5,7 @@
       "Bash(rg:*)",
       "Bash(make:*)",
       "Bash(make:*)",
-      "Bash(./clean_build.sh:*)",
+      "Bash(./full_build.sh:*)",
       "Bash(awk:*)",
       "Bash(nm:*)",
       "Bash(od:*)",

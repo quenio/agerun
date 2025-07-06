@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Clean Build Script for AgeRun
-# Performs all build steps with minimal output
+# Full Build Script for AgeRun
+# Performs complete build with all tests, checks, and validations
 
-echo "=== AgeRun Clean Build ==="
+echo "=== AgeRun Full Build ==="
 echo "Starting at $(date)"
 echo
 
