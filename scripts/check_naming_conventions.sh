@@ -237,7 +237,9 @@ for file in modules/*.h; do
             ' "$file" 2>/dev/null)
             
             # Extract enum values from the block
-            enum_values=$(echo "$enum_block" | grep -E '^\s*[A-Z][A-Z0-9_]+' | sed -E 's/^\s*([A-Z][A-Z0-9_]+)[,\s]*.*/\1/')
+            # Look for enum values - they start with uppercase letters followed by comma or comment
+            # Use awk to reliably extract just the enum name
+            enum_values=$(echo "$enum_block" | awk '/^[[:space:]]*[A-Z][A-Z0-9_]+[[:space:]]*(,|\/\*)/ { gsub(/^[[:space:]]*/, ""); gsub(/[[:space:],].*/, ""); print }')
             
             # Convert type name to expected prefix: ar_data_type_t -> AR_DATA_TYPE
             expected_prefix=$(echo "$enum_type" | sed -E 's/^ar_//; s/_t$//' | tr '[:lower:]' '[:upper:]')
