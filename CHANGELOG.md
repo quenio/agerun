@@ -14,7 +14,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - ✅ ar_instruction_type_t: INST_ASSIGNMENT → AR_INSTRUCTION_TYPE__ASSIGNMENT (and 6 other values)
   - ✅ ar_instruction_ast_type_t: AR_INST__ASSIGNMENT → AR_INSTRUCTION_AST_TYPE__ASSIGNMENT (and 8 other values)
   - ✅ ar_file_result_t: FILE_SUCCESS → AR_FILE_RESULT__SUCCESS (and 7 other values)
-- ✅ **Enhanced rename_types.py script**:
+- ✅ **Enhanced rename_symbols.py script** (formerly rename_types.py):
   - ✅ Added support for enum value renaming with whole-word matching
   - ✅ Added new command groups: data-enums, event-enums, expr-enums, op-enums, inst-enums, inst-ast-enums, file-enums
   - ✅ Script safely handles 100+ files without corruption

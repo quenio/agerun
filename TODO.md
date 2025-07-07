@@ -11,7 +11,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] data_type_t → ar_data_type_t (33 occurrences)
   - [x] instruction_type_t → ar_instruction_type_t (5 occurrences)
   - [x] file_result_t → ar_file_result_t (91 occurrences)
-- [x] Created rename_types.py script for safe bulk renaming with whole-word matching
+- [x] Created rename_symbols.py script (formerly rename_types.py) for safe bulk renaming with whole-word matching
 - [x] All tests pass with zero issues after enum renames
 - [x] Documentation references automatically updated
 - [x] Renamed typedef structs to follow ar_ prefix convention

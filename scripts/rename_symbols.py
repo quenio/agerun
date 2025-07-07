@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-AgeRun Type Renaming Script
+AgeRun Symbol Renaming Script
 
-This script safely renames types in the AgeRun codebase to follow the ar_ prefix convention.
-It uses whole-word matching to avoid partial replacements and provides detailed reporting.
+This script safely renames symbols (types, enums, structs) in the AgeRun codebase to follow 
+naming conventions. It uses whole-word matching to avoid partial replacements and provides 
+detailed reporting.
 """
 
 import os
@@ -153,7 +154,7 @@ FILE_PATTERNS = ['*.c', '*.h', '*.md', '*.method', '*.zig']
 SEARCH_DIRS = ['modules', 'methods', '.']
 
 # Files to exclude
-EXCLUDE_FILES = {'rename_types.py', 'bin', '.git', 'build', '__pycache__'}
+EXCLUDE_FILES = {'rename_symbols.py', 'bin', '.git', 'build', '__pycache__'}
 
 
 class TypeRenamer:

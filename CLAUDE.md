@@ -458,11 +458,11 @@ Never compile directly with gcc.
 
 **Bulk Renaming Pattern**:
 ```bash
-# PREFERRED: Use rename_types.py for safe whole-word renaming
-python3 scripts/rename_types.py --group <group-name> --live
+# PREFERRED: Use rename_symbols.py for safe whole-word renaming
+python3 scripts/rename_symbols.py --group <group-name> --live
 
 # AVOID sed for bulk renames - error-prone with partial matches
-# If rename_types.py doesn't support your case, enhance it first
+# If rename_symbols.py doesn't support your case, enhance it first
 # Only use sed for one-off changes with careful verification
 ```
 
