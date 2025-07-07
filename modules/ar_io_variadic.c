@@ -12,6 +12,12 @@
 #include <string.h>
 #include <stdbool.h>
 
+// Disable format-nonliteral warning for variadic functions
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
+#endif
+
 void ar_io__error(const char *format, ...) {
     char buffer[2048];
     
@@ -146,3 +152,7 @@ bool ar_io__string_format(char *dest, size_t dest_size, const char *format, ...)
     
     return true;
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
