@@ -35,12 +35,12 @@ run_step() {
 
 # Step 1: Clean and build
 echo -n "Clean and build...            "
-if make clean >/dev/null 2>&1 && make >/dev/null 2>&1; then
+if make clean >/dev/null 2>&1 && make debug >/dev/null 2>&1; then
     echo "✓"
 else
     echo "✗"
     make clean 2>&1 | tail -5
-    make 2>&1 | tail -5
+    make debug 2>&1 | tail -5
 fi
 
 # Step 2: Static analysis
