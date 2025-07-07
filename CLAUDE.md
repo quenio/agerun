@@ -454,6 +454,7 @@ Never compile directly with gcc.
 - **Move code, don't rewrite**: Use diff to verify code is moved, not reimplemented  
 - **Clean state recovery**: If refactoring fails, revert completely rather than debug
 - **Validate changes**: After adding validation, test with intentional errors to ensure no false negatives
+- **Incremental commits**: Commit logical chunks even with remaining issues - note them for future work
 
 **Bulk Renaming with sed**:
 ```bash
@@ -466,6 +467,7 @@ for file in modules/*.c; do
 done
 # Always compile after bulk changes. Never use -i.bak (creates backups)
 # Include methods/*_tests.c when updating module APIs
+# For enum renaming: enhance rename_types.py instead of manual edits
 ```
 
 **Code Movement Verification**:
