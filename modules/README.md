@@ -4,7 +4,7 @@
 
 In the AgeRun system, a module is a self-contained unit of functionality that consists of an implementation file (`.c` or `.zig`) and a header file (`.h`). Each module encapsulates a specific set of related functions and data structures that work together to provide a particular capability to the system. Modules are designed to have clear interfaces and dependencies, making the system more maintainable and easier to understand.
 
-**Zig Integration**: Some modules are now implemented in Zig (`.zig` files) while maintaining full C ABI compatibility. Currently implemented in Zig: `ar_assert`, `ar_heap`, `ar_io`, `ar_memory_accessor`, `ar_semver`, and `ar_string`.
+**Zig Integration**: Some modules are now implemented in Zig (`.zig` files) while maintaining full C ABI compatibility. Currently implemented in Zig: `ar_assert`, `ar_heap`, `ar_memory_accessor`, `ar_semver`, and `ar_string`. The `ar_io` module uses a hybrid approach with most functions in Zig (`ar_io.zig`) and variadic functions in C (`ar_io_variadic.c`) due to platform-specific requirements.
 
 Each module typically follows a consistent naming convention with an `ar_` prefix (e.g., `ar_data`, `ar_string`), and has its own test file (`ar_*_tests.c`) that verifies its functionality. Note: File names are being transitioned from `ar_` to `ar_` prefix gradually as files are modified for other reasons.
 
@@ -146,7 +146,7 @@ ar_system
 │       ├──h──> ar_method
 │       ├──c──> ar_semver
 │       ├──c──> ar_agency
-│       ├──c──> ar_io (Zig)
+│       ├──c──> ar_io (Zig/C)
 │       ├──c──> ar_string (Zig)
 │       └──c──> ar_assert (Zig)
 ├──c──> ar_agency
@@ -158,7 +158,7 @@ ar_system
 │       ├──c──> ar_agent
 │       ├──c──> ar_agent_store
 │       │       ├──h──> ar_agent_registry
-│       │       ├──c──> ar_io (Zig)
+│       │       ├──c──> ar_io (Zig/C)
 │       │       ├──c──> ar_agent
 │       │       ├──c──> ar_method
 │       │       ├──c──> ar_data
@@ -168,7 +168,7 @@ ar_system
 │               ├──h──> ar_method
 │               ├──c──> ar_agent
 │               ├──c──> ar_semver
-│               └──c──> ar_io (Zig)
+│               └──c──> ar_io (Zig/C)
 ├──c──> ar_data
 ├──c──> ar_list
 └──c──> ar_map
@@ -254,7 +254,7 @@ ar_expression_evaluator
 ├──h──> ar_expression_ast
 ├──h──> ar_data
 ├──c──> ar_string (Zig)
-├──c──> ar_io (Zig)
+├──c──> ar_io (Zig/C)
 └──c──> ar_heap (Zig)
 
 ar_frame
@@ -361,7 +361,7 @@ ar_method_fixture
 ├──c──> ar_system
 ├──c──> ar_methodology
 ├──c──> ar_agency
-├──c──> ar_io (Zig)
+├──c──> ar_io (Zig/C)
 └──c──> ar_heap (Zig)
 
 ar_system_fixture
@@ -628,7 +628,7 @@ ar_methodology_tests
 ├──c──> ar_method
 ├──c──> ar_system
 ├──c──> ar_agency
-├──c──> ar_io (Zig)
+├──c──> ar_io (Zig/C)
 └──c──> ar_heap (Zig)
 
 System Tests:
@@ -656,7 +656,7 @@ ar_agent_store_tests
 ├──c──> ar_method
 ├──c──> ar_methodology
 ├──c──> ar_data
-├──c──> ar_io (Zig)
+├──c──> ar_io (Zig/C)
 └──c──> ar_heap (Zig)
 
 ar_agent_update_tests
@@ -695,7 +695,7 @@ ar_executable_tests
 ├──c──> ar_system
 ├──c──> ar_methodology
 ├──c──> ar_agency
-├──c──> ar_io (Zig)
+├──c──> ar_io (Zig/C)
 └──c──> ar_heap (Zig)
 
 Fixture Tests:
@@ -704,7 +704,7 @@ ar_method_fixture_tests
 ├──c──> ar_methodology
 ├──c──> ar_system
 ├──c──> ar_agency
-├──c──> ar_io (Zig)
+├──c──> ar_io (Zig/C)
 └──c──> ar_heap (Zig)
 
 ar_system_fixture_tests

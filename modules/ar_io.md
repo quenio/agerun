@@ -284,7 +284,12 @@ The IO module is designed to work across different platforms with specific adapt
 
 ## Implementation Notes
 
-This module is implemented in Zig (`ar_io.zig`) while maintaining full C ABI compatibility. The Zig implementation provides additional memory safety guarantees while preserving the exact same interface and behavior as the original C implementation.
+This module uses a hybrid implementation approach:
+
+- **Main implementation**: `ar_io.zig` - Implements most functions in Zig, providing additional memory safety guarantees
+- **Variadic functions**: `ar_io_variadic.c` - Implements variadic functions (`ar_io__error`, `ar_io__warning`, `ar_io__info`, `ar_io__fprintf`, `ar_io__string_format`) in C due to platform-specific va_list handling requirements in Zig
+
+Both implementations maintain full C ABI compatibility and preserve the exact same interface and behavior.
 
 ## Dependencies
 

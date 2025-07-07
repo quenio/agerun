@@ -71,143 +71,16 @@ fn _get_stdout() [*c]c.FILE {
     }
 }
 
-// Helper to convert VaList for vsnprintf
-fn _va_list_for_vsnprintf(args: anytype) c.va_list {
-    if (builtin.os.tag == .linux and builtin.cpu.arch == .x86_64) {
-        // On Linux x86_64, va_list is already the right type
-        return args;
-    } else {
-        // On other platforms, we need to cast
-        return @ptrCast(args);
-    }
-}
 
-/// Prints an error message to stderr
-/// @param format Printf-style format string
-export fn ar_io__error(format: [*c]const u8, ...) void {
-    var buffer: [2048]u8 = undefined;
-    
-    // Write prefix
-    const prefix = "Error: ";
-    @memcpy(buffer[0..prefix.len], prefix);
-    
-    // Format the message
-    var args = @cVaStart();
-    defer @cVaEnd(&args);
-    
-    const msg_len = c.vsnprintf(
-        @ptrCast(&buffer[prefix.len]),
-        buffer.len - prefix.len - 2, // Leave room for newline and null
-        format,
-        _va_list_for_vsnprintf(args)
-    );
-    
-    if (msg_len < 0 or prefix.len + @as(usize, @intCast(msg_len)) >= buffer.len - 2) {
-        // Message truncated
-        buffer[buffer.len - 2] = '\n';
-        buffer[buffer.len - 1] = 0;
-    } else {
-        // Add newline and null terminator
-        const total_len = prefix.len + @as(usize, @intCast(msg_len));
-        buffer[total_len] = '\n';
-        buffer[total_len + 1] = 0;
-    }
-    
-    // Write to stderr
-    _ = c.fputs(@ptrCast(&buffer), _get_stderr());
-}
+// Variadic functions are implemented in ar_io_variadic.c
+// due to platform-specific va_list handling in Zig
 
-/// Prints a warning message to stderr
-/// @param format Printf-style format string
-export fn ar_io__warning(format: [*c]const u8, ...) void {
-    var buffer: [2048]u8 = undefined;
-    
-    // Write prefix
-    const prefix = "Warning: ";
-    @memcpy(buffer[0..prefix.len], prefix);
-    
-    // Format the message
-    var args = @cVaStart();
-    defer @cVaEnd(&args);
-    
-    const msg_len = c.vsnprintf(
-        @ptrCast(&buffer[prefix.len]),
-        buffer.len - prefix.len - 2,
-        format,
-        _va_list_for_vsnprintf(args)
-    );
-    
-    if (msg_len < 0 or prefix.len + @as(usize, @intCast(msg_len)) >= buffer.len - 2) {
-        buffer[buffer.len - 2] = '\n';
-        buffer[buffer.len - 1] = 0;
-    } else {
-        const total_len = prefix.len + @as(usize, @intCast(msg_len));
-        buffer[total_len] = '\n';
-        buffer[total_len + 1] = 0;
-    }
-    
-    _ = c.fputs(@ptrCast(&buffer), _get_stderr());
-}
-
-/// Prints an informational message to stdout
-/// @param format Printf-style format string
-export fn ar_io__info(format: [*c]const u8, ...) void {
-    var buffer: [2048]u8 = undefined;
-    
-    // Format the message directly (no prefix for info)
-    var args = @cVaStart();
-    defer @cVaEnd(&args);
-    
-    const msg_len = c.vsnprintf(
-        @ptrCast(&buffer),
-        buffer.len - 2,
-        format,
-        _va_list_for_vsnprintf(args)
-    );
-    
-    if (msg_len < 0 or @as(usize, @intCast(msg_len)) >= buffer.len - 2) {
-        buffer[buffer.len - 2] = '\n';
-        buffer[buffer.len - 1] = 0;
-    } else {
-        buffer[@intCast(msg_len)] = '\n';
-        buffer[@as(usize, @intCast(msg_len)) + 1] = 0;
-    }
-    
-    _ = c.fputs(@ptrCast(&buffer), _get_stdout());
-}
-
-/// Safely prints to the specified stream with error checking
-/// @param stream Stream to print to
-/// @param format Printf-style format string
-export fn ar_io__fprintf(stream: [*c]c.FILE, format: [*c]const u8, ...) void {
-    if (stream == null or format == null) {
-        _ = c.fputs(@as([*c]const u8, "Error: Invalid parameters for ar_io__fprintf\n"), _get_stderr());
-        return;
-    }
-    
-    var buffer: [4096]u8 = undefined;
-    
-    // Format the message
-    var args = @cVaStart();
-    defer @cVaEnd(&args);
-    
-    const msg_len = c.vsnprintf(
-        @ptrCast(&buffer),
-        buffer.len,
-        format,
-        _va_list_for_vsnprintf(args)
-    );
-    
-    if (msg_len < 0 or @as(usize, @intCast(msg_len)) >= buffer.len) {
-        _ = c.fputs(@as([*c]const u8, "Error: Format string too long or formatting error\n"), c.stderr());
-        return;
-    }
-    
-    // Write to stream
-    if (c.fputs(@ptrCast(&buffer), stream) == c.EOF) {
-        _ = c.fputs(@as([*c]const u8, "Error: Failed to write to output stream\n"), c.stderr());
-    }
-}
+// External declarations for C-implemented variadic functions
+pub extern "c" fn ar_io__error(format: [*c]const u8, ...) void;
+pub extern "c" fn ar_io__warning(format: [*c]const u8, ...) void;
+pub extern "c" fn ar_io__info(format: [*c]const u8, ...) void;
+pub extern "c" fn ar_io__fprintf(stream: [*c]c.FILE, format: [*c]const u8, ...) void;
+pub extern "c" fn ar_io__string_format(dest: [*c]u8, dest_size: usize, format: [*c]const u8, ...) bool;
 
 /// Helper function for secure file reading with bounds checking
 export fn ar_io__read_line(fp: [*c]c.FILE, buffer: [*c]u8, buffer_size: c_int, filename: [*c]const u8) bool {
@@ -601,34 +474,7 @@ export fn ar_io__string_copy(dest: [*c]u8, src: [*c]const u8, dest_size: usize) 
     return true;
 }
 
-/// Securely formats a string with proper bounds checking
-export fn ar_io__string_format(dest: [*c]u8, dest_size: usize, format: [*c]const u8, ...) bool {
-    if (dest == null or format == null or dest_size == 0) {
-        if (dest != null and dest_size > 0) {
-            dest[0] = 0;
-        }
-        return false;
-    }
-    
-    // Initialize destination
-    dest[0] = 0;
-    
-    var args = @cVaStart();
-    defer @cVaEnd(&args);
-    
-    const result = c.vsnprintf(dest, dest_size, format, @ptrCast(args));
-    
-    if (result < 0) {
-        dest[0] = 0;
-        return false;
-    }
-    
-    if (@as(usize, @intCast(result)) >= dest_size) {
-        return false; // Truncation occurred
-    }
-    
-    return true;
-}
+// ar_io__string_format is implemented in ar_io_variadic.c
 
 /// Reports a memory allocation failure with consistent error formatting
 export fn ar_io__report_allocation_failure(
