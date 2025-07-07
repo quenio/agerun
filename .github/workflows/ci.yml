@@ -31,4 +31,4 @@ jobs:
           echo "CXX=g++-13" >> $GITHUB_ENV
 
       - name: Full build…
-        run: make full-build
+        run: make full-build CC=gcc-13 CXX=g++-13
