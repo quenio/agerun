@@ -113,11 +113,11 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 #### Struct Definitions Not Following Convention
 - [ ] Fix ar_list.c struct definition:
-  - [ ] `struct list_node_s` → `struct ar_list_node_s`
+  - [ ] `struct ar_list_node_s` → `struct ar_list_node_s`
 
 #### Zig Struct Types Not Following Convention
 - [ ] Fix ar_heap.zig struct type:
-  - [ ] `const MemoryRecord = struct` → Follow ar_<type>_t convention
+  - [ ] `const ar_memory_record_t = struct` → Follow ar_<type>_t convention
 
 #### Old Naming Prefix Cleanup (Lower Priority)
 - [ ] Update 64 instances of old 'agerun_' prefix to 'ar_' prefix

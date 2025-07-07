@@ -5,18 +5,18 @@
 /**
  * List node structure
  */
-struct list_node_s {
+struct ar_list_node_s {
     void *mut_item;              // Pointer to the item (mutable borrowed reference)
-    struct list_node_s *mut_next; // Pointer to the next node (mutable reference)
-    struct list_node_s *mut_prev; // Pointer to the previous node (mutable reference)
+    struct ar_list_node_s *mut_next; // Pointer to the next node (mutable reference)
+    struct ar_list_node_s *mut_prev; // Pointer to the previous node (mutable reference)
 };
 
 /**
  * List structure
  */
 struct ar_list_s {
-    struct list_node_s *own_head; // Pointer to the first node (owned by list)
-    struct list_node_s *own_tail; // Pointer to the last node (owned by list)
+    struct ar_list_node_s *own_head; // Pointer to the first node (owned by list)
+    struct ar_list_node_s *own_tail; // Pointer to the last node (owned by list)
     size_t count;                 // Number of items in the list
 };
 
@@ -48,7 +48,7 @@ bool ar_list__add_last(ar_list_t *mut_list, void *mut_item) {
         return false;
     }
     
-    struct list_node_s *own_node = (struct list_node_s*)AR__HEAP__MALLOC(sizeof(struct list_node_s), "List node");
+    struct ar_list_node_s *own_node = (struct ar_list_node_s*)AR__HEAP__MALLOC(sizeof(struct ar_list_node_s), "List node");
     if (!own_node) {
         return false;
     }
@@ -80,7 +80,7 @@ bool ar_list__add_first(ar_list_t *mut_list, void *mut_item) {
         return false;
     }
     
-    struct list_node_s *own_node = (struct list_node_s*)AR__HEAP__MALLOC(sizeof(struct list_node_s), "List node");
+    struct ar_list_node_s *own_node = (struct ar_list_node_s*)AR__HEAP__MALLOC(sizeof(struct ar_list_node_s), "List node");
     if (!own_node) {
         return false;
     }
@@ -137,7 +137,7 @@ void* ar_list__remove_first(ar_list_t *mut_list) {
         return NULL;
     }
     
-    struct list_node_s *mut_node = mut_list->own_head;
+    struct ar_list_node_s *mut_node = mut_list->own_head;
     void *mut_item = mut_node->mut_item;
     
     mut_list->own_head = mut_node->mut_next;
@@ -166,7 +166,7 @@ void* ar_list__remove_last(ar_list_t *mut_list) {
         return NULL;
     }
     
-    struct list_node_s *mut_node = mut_list->own_tail;
+    struct ar_list_node_s *mut_node = mut_list->own_tail;
     void *mut_item = mut_node->mut_item;
     
     mut_list->own_tail = mut_node->mut_prev;  // Update tail to the previous node
@@ -233,7 +233,7 @@ void** ar_list__items(const ar_list_t *ref_list) {
         return NULL;
     }
     
-    struct list_node_s *ref_current = ref_list->own_head;
+    struct ar_list_node_s *ref_current = ref_list->own_head;
     size_t index = 0;
     
     while (ref_current) {
@@ -259,7 +259,7 @@ void* ar_list__remove(ar_list_t *mut_list, const void *ref_item) {
         return NULL;
     }
     
-    struct list_node_s *mut_current = mut_list->own_head;
+    struct ar_list_node_s *mut_current = mut_list->own_head;
     
     while (mut_current) {
         // Check if this node contains the item to remove
@@ -309,9 +309,9 @@ void ar_list__destroy(ar_list_t *own_list) {
         return;
     }
     
-    struct list_node_s *mut_current = own_list->own_head;
+    struct ar_list_node_s *mut_current = own_list->own_head;
     while (mut_current) {
-        struct list_node_s *mut_next = mut_current->mut_next;
+        struct ar_list_node_s *mut_next = mut_current->mut_next;
         AR__HEAP__FREE(mut_current);
         // Move to next node
         mut_current = mut_next;

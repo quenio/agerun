@@ -50,7 +50,7 @@ typedef enum file_result_e {
     AR_FILE_RESULT__ERROR_NOT_FOUND,     // File not found
     AR_FILE_RESULT__ERROR_CORRUPT,       // File is corrupt or malformed
     AR_FILE_RESULT__ERROR_ALREADY_EXISTS, // File already exists (for creation operations)
-    FILE_ERROR_UNKNOWN        // Unknown error
+    AR_FILE_RESULT__ERROR_UNKNOWN        // Unknown error
 } ar_file_result_t;
 
 /**

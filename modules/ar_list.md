@@ -346,7 +346,7 @@ ar_list__destroy(own_allocations);
   - `mut_` prefix for mutable references (can be modified but not destroyed)
   - `ref_` prefix for borrowed references (should not be modified or destroyed)
   
-- The list_node_s structure uses ownership prefixes for fields:
+- The ar_list_node_s structure uses ownership prefixes for fields:
   - `ref_item` - borrowed reference to the item (list doesn't own items)
   - `mut_next`, `mut_prev` - mutable references to neighboring nodes
   

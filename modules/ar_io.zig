@@ -28,7 +28,7 @@ pub const ar_file_result_t = enum(c_int) {
     AR_FILE_RESULT__ERROR_NOT_FOUND = 5,
     AR_FILE_RESULT__ERROR_CORRUPT = 6,
     AR_FILE_RESULT__ERROR_ALREADY_EXISTS = 7,
-    FILE_ERROR_UNKNOWN = 8,
+    AR_FILE_RESULT__ERROR_UNKNOWN = 8,
 };
 
 // Helper to get errno value
@@ -247,7 +247,7 @@ export fn ar_io__open_file(filename: [*c]const u8, mode: [*c]const u8, file_ptr:
     // Validate parameters
     if (filename == null or mode == null or file_ptr == null) {
         ar_io__error(@as([*c]const u8, "Invalid parameters for safe_open_file"));
-        return @intFromEnum(ar_file_result_t.FILE_ERROR_UNKNOWN);
+        return @intFromEnum(ar_file_result_t.AR_FILE_RESULT__ERROR_UNKNOWN);
     }
     
     // Open file
@@ -287,7 +287,7 @@ export fn ar_io__close_file(fp: [*c]c.FILE, filename: [*c]const u8) c_int {
     // Close file
     if (c.fclose(fp) != 0) {
         ar_io__error(@as([*c]const u8, "Failed to close %s: %s"), filename, c.strerror(_get_errno()));
-        return @intFromEnum(ar_file_result_t.FILE_ERROR_UNKNOWN);
+        return @intFromEnum(ar_file_result_t.AR_FILE_RESULT__ERROR_UNKNOWN);
     }
     
     return @intFromEnum(ar_file_result_t.AR_FILE_RESULT__SUCCESS);
@@ -297,7 +297,7 @@ export fn ar_io__close_file(fp: [*c]c.FILE, filename: [*c]const u8) c_int {
 export fn ar_io__create_backup(filename: [*c]const u8) c_int {
     if (filename == null) {
         ar_io__error(@as([*c]const u8, "Invalid parameters for safe_create_backup"));
-        return @intFromEnum(ar_file_result_t.FILE_ERROR_UNKNOWN);
+        return @intFromEnum(ar_file_result_t.AR_FILE_RESULT__ERROR_UNKNOWN);
     }
     
     // Check if source exists
@@ -307,7 +307,7 @@ export fn ar_io__create_backup(filename: [*c]const u8) c_int {
             return @intFromEnum(ar_file_result_t.AR_FILE_RESULT__SUCCESS);
         }
         ar_io__error(@as([*c]const u8, "Failed to stat %s: %s"), filename, c.strerror(_get_errno()));
-        return @intFromEnum(ar_file_result_t.FILE_ERROR_UNKNOWN);
+        return @intFromEnum(ar_file_result_t.AR_FILE_RESULT__ERROR_UNKNOWN);
     }
     
     // Create backup filename using stack allocation
@@ -316,7 +316,7 @@ export fn ar_io__create_backup(filename: [*c]const u8) c_int {
     var backup_filename_buf: [4096]u8 = undefined;
     if (backup_len > backup_filename_buf.len) {
         ar_io__error(@as([*c]const u8, "Filename too long for backup"));
-        return @intFromEnum(ar_file_result_t.FILE_ERROR_UNKNOWN);
+        return @intFromEnum(ar_file_result_t.AR_FILE_RESULT__ERROR_UNKNOWN);
     }
     
     _ = c.snprintf(@ptrCast(&backup_filename_buf), backup_filename_buf.len, "%s%s", filename, BACKUP_EXTENSION);
@@ -358,14 +358,14 @@ export fn ar_io__create_backup(filename: [*c]const u8) c_int {
         success = false;
     }
     
-    return if (success) @intFromEnum(ar_file_result_t.AR_FILE_RESULT__SUCCESS) else @intFromEnum(ar_file_result_t.FILE_ERROR_UNKNOWN);
+    return if (success) @intFromEnum(ar_file_result_t.AR_FILE_RESULT__SUCCESS) else @intFromEnum(ar_file_result_t.AR_FILE_RESULT__ERROR_UNKNOWN);
 }
 
 /// Restores a backup file if the main operation failed
 export fn ar_io__restore_backup(filename: [*c]const u8) c_int {
     if (filename == null) {
         ar_io__error(@as([*c]const u8, "Invalid parameters for safe_restore_backup"));
-        return @intFromEnum(ar_file_result_t.FILE_ERROR_UNKNOWN);
+        return @intFromEnum(ar_file_result_t.AR_FILE_RESULT__ERROR_UNKNOWN);
     }
     
     // Create backup filename using stack allocation
@@ -374,7 +374,7 @@ export fn ar_io__restore_backup(filename: [*c]const u8) c_int {
     var backup_filename_buf: [4096]u8 = undefined;
     if (backup_len > backup_filename_buf.len) {
         ar_io__error(@as([*c]const u8, "Filename too long for backup"));
-        return @intFromEnum(ar_file_result_t.FILE_ERROR_UNKNOWN);
+        return @intFromEnum(ar_file_result_t.AR_FILE_RESULT__ERROR_UNKNOWN);
     }
     
     _ = c.snprintf(@ptrCast(&backup_filename_buf), backup_filename_buf.len, "%s%s", filename, BACKUP_EXTENSION);
@@ -388,20 +388,20 @@ export fn ar_io__restore_backup(filename: [*c]const u8) c_int {
             return @intFromEnum(ar_file_result_t.AR_FILE_RESULT__ERROR_NOT_FOUND);
         }
         ar_io__error(@as([*c]const u8, "Failed to stat backup file %s: %s"), backup_filename, c.strerror(_get_errno()));
-        return @intFromEnum(ar_file_result_t.FILE_ERROR_UNKNOWN);
+        return @intFromEnum(ar_file_result_t.AR_FILE_RESULT__ERROR_UNKNOWN);
     }
     
     // Remove target if exists
     if (c.remove(filename) != 0 and _get_errno() != c.ENOENT) {
         ar_io__error(@as([*c]const u8, "Failed to remove target file %s: %s"), filename, c.strerror(_get_errno()));
-        return @intFromEnum(ar_file_result_t.FILE_ERROR_UNKNOWN);
+        return @intFromEnum(ar_file_result_t.AR_FILE_RESULT__ERROR_UNKNOWN);
     }
     
     // Rename backup to original
     if (c.rename(backup_filename, filename) != 0) {
         ar_io__error(@as([*c]const u8, "Failed to restore backup %s to %s: %s"), 
                      backup_filename, filename, c.strerror(_get_errno()));
-        return @intFromEnum(ar_file_result_t.FILE_ERROR_UNKNOWN);
+        return @intFromEnum(ar_file_result_t.AR_FILE_RESULT__ERROR_UNKNOWN);
     }
     
     return @intFromEnum(ar_file_result_t.AR_FILE_RESULT__SUCCESS);
@@ -411,7 +411,7 @@ export fn ar_io__restore_backup(filename: [*c]const u8) c_int {
 export fn ar_io__set_secure_permissions(filename: [*c]const u8) c_int {
     if (filename == null) {
         ar_io__error(@as([*c]const u8, "Invalid parameters for safe_set_secure_permissions"));
-        return @intFromEnum(ar_file_result_t.FILE_ERROR_UNKNOWN);
+        return @intFromEnum(ar_file_result_t.AR_FILE_RESULT__ERROR_UNKNOWN);
     }
     
     // Platform-specific implementation
@@ -444,7 +444,7 @@ export fn ar_io__write_file(
 ) c_int {
     if (filename == null or write_func == null) {
         ar_io__error(@as([*c]const u8, "Invalid parameters for safe_write_file"));
-        return @intFromEnum(ar_file_result_t.FILE_ERROR_UNKNOWN);
+        return @intFromEnum(ar_file_result_t.AR_FILE_RESULT__ERROR_UNKNOWN);
     }
     
     // Create temp filename using stack allocation
@@ -453,7 +453,7 @@ export fn ar_io__write_file(
     var temp_filename_buf: [4096]u8 = undefined;
     if (temp_len > temp_filename_buf.len) {
         ar_io__error(@as([*c]const u8, "Filename too long for temporary file"));
-        return @intFromEnum(ar_file_result_t.FILE_ERROR_UNKNOWN);
+        return @intFromEnum(ar_file_result_t.AR_FILE_RESULT__ERROR_UNKNOWN);
     }
     
     _ = c.snprintf(@ptrCast(&temp_filename_buf), temp_filename_buf.len, "%s%s", filename, TEMP_EXTENSION);
@@ -509,7 +509,7 @@ export fn ar_io__write_file(
             ar_io__error(@as([*c]const u8, "Successfully restored from backup."));
         }
         
-        return @intFromEnum(ar_file_result_t.FILE_ERROR_UNKNOWN);
+        return @intFromEnum(ar_file_result_t.AR_FILE_RESULT__ERROR_UNKNOWN);
     }
     
     return @intFromEnum(ar_file_result_t.AR_FILE_RESULT__SUCCESS);
@@ -526,7 +526,7 @@ export fn ar_io__error_message(result: c_int) [*c]const u8 {
         .AR_FILE_RESULT__ERROR_NOT_FOUND => @as([*c]const u8, "File not found"),
         .AR_FILE_RESULT__ERROR_CORRUPT => @as([*c]const u8, "File is corrupt or malformed"),
         .AR_FILE_RESULT__ERROR_ALREADY_EXISTS => @as([*c]const u8, "File already exists"),
-        .FILE_ERROR_UNKNOWN => @as([*c]const u8, "Unknown error"),
+        .AR_FILE_RESULT__ERROR_UNKNOWN => @as([*c]const u8, "Unknown error"),
     };
 }
 

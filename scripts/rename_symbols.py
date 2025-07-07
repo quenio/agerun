@@ -54,6 +54,7 @@ STRUCT_TAG_RENAMES = {
     'data_s': 'ar_data_s',
     'list_s': 'ar_list_s', 
     'map_s': 'ar_map_s',
+    'list_node_s': 'ar_list_node_s',
     
     # Domain struct tags
     'agent_s': 'ar_agent_s',
@@ -145,6 +146,12 @@ ENUM_VALUE_RENAMES = {
     'FILE_ERROR_NOT_FOUND': 'AR_FILE_RESULT__ERROR_NOT_FOUND',
     'FILE_ERROR_CORRUPT': 'AR_FILE_RESULT__ERROR_CORRUPT',
     'FILE_ERROR_ALREADY_EXISTS': 'AR_FILE_RESULT__ERROR_ALREADY_EXISTS',
+    'FILE_ERROR_UNKNOWN': 'AR_FILE_RESULT__ERROR_UNKNOWN',
+}
+
+# Zig struct type renames (const FooBar = struct -> const ar_foo_bar_t = struct)
+ZIG_STRUCT_RENAMES = {
+    'MemoryRecord': 'ar_memory_record_t',
 }
 
 # File patterns to process
@@ -315,7 +322,7 @@ def main():
                        help='Specific types to rename (e.g., data_t list_t)')
     parser.add_argument('--group', choices=['enums', 'core', 'domain', 'context', 'parser', 'system', 'struct-tags', 
                                            'enum-values', 'data-enums', 'event-enums', 'expr-enums', 'op-enums', 
-                                           'inst-enums', 'inst-ast-enums', 'file-enums', 'all'],
+                                           'inst-enums', 'inst-ast-enums', 'file-enums', 'zig-structs', 'all'],
                        default='all', help='Group of types to rename')
     parser.add_argument('--include-struct-tags', action='store_true',
                        help='Include struct tag renames (enabled by default for --group=all)')
@@ -374,8 +381,11 @@ def main():
         # Only rename file result enum values
         file_enum_keys = ['FILE_SUCCESS', 'FILE_ERROR_OPEN', 'FILE_ERROR_READ', 'FILE_ERROR_WRITE',
                          'FILE_ERROR_PERMISSIONS', 'FILE_ERROR_NOT_FOUND', 'FILE_ERROR_CORRUPT',
-                         'FILE_ERROR_ALREADY_EXISTS']
+                         'FILE_ERROR_ALREADY_EXISTS', 'FILE_ERROR_UNKNOWN']
         enum_value_mapping = {k: ENUM_VALUE_RENAMES[k] for k in file_enum_keys}
+    elif args.group == 'zig-structs':
+        # Only rename Zig struct types
+        type_mapping = ZIG_STRUCT_RENAMES
     elif args.group != 'all':
         # Rename a specific group
         groups = {
@@ -403,8 +413,8 @@ def main():
             struct_tag_names = struct_tag_groups.get(args.group, [])
             struct_tag_mapping = {t: STRUCT_TAG_RENAMES[t] for t in struct_tag_names}
     else:
-        # Rename all types, struct tags, and enum values
-        type_mapping = TYPE_RENAMES
+        # Rename all types, struct tags, enum values, and Zig structs
+        type_mapping = {**TYPE_RENAMES, **ZIG_STRUCT_RENAMES}
         struct_tag_mapping = STRUCT_TAG_RENAMES
         enum_value_mapping = ENUM_VALUE_RENAMES
     

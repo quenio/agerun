@@ -71,7 +71,7 @@ static void test_io__error_message_all_codes(void) {
         {AR_FILE_RESULT__ERROR_NOT_FOUND, "File not found"},
         {AR_FILE_RESULT__ERROR_CORRUPT, "File is corrupt or malformed"},
         {AR_FILE_RESULT__ERROR_ALREADY_EXISTS, "File already exists"},
-        {FILE_ERROR_UNKNOWN, "Unknown error"}
+        {AR_FILE_RESULT__ERROR_UNKNOWN, "Unknown error"}
     };
     
     // When getting error messages for each code
@@ -294,19 +294,19 @@ static void test_io__open_file_null_parameters(void) {
     // When opening
     ar_file_result_t result = ar_io__open_file(NULL, "r", &fp);
     // Then it should fail
-    assert(result == FILE_ERROR_UNKNOWN);
+    assert(result == AR_FILE_RESULT__ERROR_UNKNOWN);
     
     // Given NULL mode
     // When opening
     result = ar_io__open_file("test.txt", NULL, &fp);
     // Then it should fail
-    assert(result == FILE_ERROR_UNKNOWN);
+    assert(result == AR_FILE_RESULT__ERROR_UNKNOWN);
     
     // Given NULL file pointer
     // When opening
     result = ar_io__open_file("test.txt", "r", NULL);
     // Then it should fail
-    assert(result == FILE_ERROR_UNKNOWN);
+    assert(result == AR_FILE_RESULT__ERROR_UNKNOWN);
     
     printf("ar_io__open_file() NULL parameters test passed!\n");
 }
@@ -630,13 +630,13 @@ static void test_io__write_file_null_parameters(void) {
     // When writing
     ar_file_result_t result = ar_io__write_file(NULL, write_test_content, (void *)(uintptr_t)content);
     // Then it should fail
-    assert(result == FILE_ERROR_UNKNOWN);
+    assert(result == AR_FILE_RESULT__ERROR_UNKNOWN);
     
     // Given NULL write function
     // When writing
     result = ar_io__write_file("test.txt", NULL, (void *)(uintptr_t)content);
     // Then it should fail
-    assert(result == FILE_ERROR_UNKNOWN);
+    assert(result == AR_FILE_RESULT__ERROR_UNKNOWN);
     
     printf("ar_io__write_file() NULL parameters test passed!\n");
 }

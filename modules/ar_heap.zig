@@ -14,18 +14,18 @@ const c = @cImport({
 const tracking_enabled = builtin.mode == .Debug or builtin.mode == .ReleaseSafe;
 
 // Memory tracking record structure
-const MemoryRecord = struct {
+const ar_memory_record_t = struct {
     ptr: *anyopaque,
     file: [*:0]const u8,
     line: c_int,
     size: usize,
     description: ?[*:0]u8,
     timestamp: c.time_t,
-    next: ?*MemoryRecord,
+    next: ?*ar_memory_record_t,
 };
 
 // Global state for memory tracking (only in debug builds)
-var g_memory_records: ?*MemoryRecord = null;
+var g_memory_records: ?*ar_memory_record_t = null;
 var g_active_allocations: usize = 0;
 var g_total_allocations: usize = 0;
 var g_active_memory: usize = 0;
@@ -61,7 +61,7 @@ fn _memory_add(ptr: *anyopaque, file: [*:0]const u8, line: c_int, size: usize, d
     if (!g_initialized) _memory_init();
     
     // Create a new record
-    const record_ptr = c.malloc(@sizeOf(MemoryRecord));
+    const record_ptr = c.malloc(@sizeOf(ar_memory_record_t));
     if (record_ptr == null) {
         c.ar_io__error("Failed to allocate memory for tracking record at %s:%d", file, line);
         c.ar_io__warning("Memory leak detection for allocation at %s:%d (%zu bytes) will be disabled", 
@@ -69,7 +69,7 @@ fn _memory_add(ptr: *anyopaque, file: [*:0]const u8, line: c_int, size: usize, d
         return;
     }
     
-    const record: *MemoryRecord = @ptrCast(@alignCast(record_ptr));
+    const record: *ar_memory_record_t = @ptrCast(@alignCast(record_ptr));
     
     // Setup the record
     record.ptr = ptr;
@@ -121,7 +121,7 @@ fn _memory_remove(ptr: *anyopaque) c_int {
     
     // Remove from list (not thread-safe, matching C implementation)
     
-    var prev: ?*MemoryRecord = null;
+    var prev: ?*ar_memory_record_t = null;
     var curr = g_memory_records;
     
     while (curr) |current| {
