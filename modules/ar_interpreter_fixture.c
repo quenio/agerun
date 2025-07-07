@@ -83,7 +83,7 @@ void ar_interpreter_fixture__destroy(ar_interpreter_fixture_t *own_fixture) {
         if (items) {
             for (size_t i = 0; i < agent_count; i++) {
                 ar_data_t *own_id_data = (ar_data_t *)items[i];
-                if (own_id_data && ar_data__get_type(own_id_data) == DATA_INTEGER) {
+                if (own_id_data && ar_data__get_type(own_id_data) == AR_DATA_TYPE__INTEGER) {
                     int64_t agent_id = (int64_t)ar_data__get_integer(own_id_data);
                     ar_agency__destroy_agent(agent_id);
                     ar_data__destroy(own_id_data); // Destroy the integer data object

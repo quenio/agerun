@@ -123,7 +123,7 @@ bool ar_destroy_method_instruction_evaluator__evaluate(
     ar_data_t *mut_memory = mut_evaluator->mut_memory;
     
     // Validate AST type
-    if (ar_instruction_ast__get_type(ref_ast) != AR_INST__DESTROY_METHOD) {
+    if (ar_instruction_ast__get_type(ref_ast) != AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD) {
         return false;
     }
     
@@ -197,8 +197,8 @@ bool ar_destroy_method_instruction_evaluator__evaluate(
     bool destroy_result = false;
     
     if (own_name && own_version &&
-        ar_data__get_type(own_name) == DATA_STRING &&
-        ar_data__get_type(own_version) == DATA_STRING) {
+        ar_data__get_type(own_name) == AR_DATA_TYPE__STRING &&
+        ar_data__get_type(own_version) == AR_DATA_TYPE__STRING) {
         
         const char *method_name = ar_data__get_string(own_name);
         const char *method_version = ar_data__get_string(own_version);

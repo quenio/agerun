@@ -20,9 +20,9 @@ The `ar_event` module provides a representation of individual events (errors, wa
 typedef struct ar_event_s ar_event_t;
 
 typedef enum {
-    AR_EVENT_ERROR,
-    AR_EVENT_WARNING,
-    AR_EVENT_INFO
+    AR_EVENT_TYPE__ERROR,
+    AR_EVENT_TYPE__WARNING,
+    AR_EVENT_TYPE__INFO
 } ar_event_type_t;
 ```
 
@@ -48,11 +48,11 @@ typedef enum {
 
 ```c
 // Create an error event with message
-ar_event_t *own_error = ar_event__create_typed(AR_EVENT_ERROR, "File not found");
+ar_event_t *own_error = ar_event__create_typed(AR_EVENT_TYPE__ERROR, "File not found");
 
 // Create an error with position info (for parsers)
 ar_event_t *own_parse_error = ar_event__create_with_position(
-    AR_EVENT_ERROR, 
+    AR_EVENT_TYPE__ERROR, 
     "Unexpected token", 
     42
 );

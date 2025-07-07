@@ -21,9 +21,9 @@ typedef struct ar_event_s ar_event_t;
  * Event types
  */
 typedef enum {
-    AR_EVENT_ERROR,
-    AR_EVENT_WARNING,
-    AR_EVENT_INFO
+    AR_EVENT_TYPE__ERROR,
+    AR_EVENT_TYPE__WARNING,
+    AR_EVENT_TYPE__INFO
 } ar_event_type_t;
 
 /**

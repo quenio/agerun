@@ -31,7 +31,7 @@ ar_log_t* ar_log__create(void) {
     
     // Open log file in append mode
     ar_file_result_t result = ar_io__open_file(LOG_FILE_NAME, "a", &own_log->file);
-    if (result != FILE_SUCCESS) {
+    if (result != AR_FILE_RESULT__SUCCESS) {
         ar_list__destroy(own_log->own_events);
         AR__HEAP__FREE(own_log);
         return NULL;
@@ -81,8 +81,8 @@ static void _write_event(FILE *file, ar_event_t *ref_event) {
     
     // Write event type
     ar_event_type_t type = ar_event__get_type(ref_event);
-    const char *type_str = (type == AR_EVENT_ERROR) ? "ERROR" :
-                          (type == AR_EVENT_WARNING) ? "WARNING" : "INFO";
+    const char *type_str = (type == AR_EVENT_TYPE__ERROR) ? "ERROR" :
+                          (type == AR_EVENT_TYPE__WARNING) ? "WARNING" : "INFO";
     fprintf(file, "%s: ", type_str);
     
     // Write message
@@ -180,27 +180,27 @@ static void _add_event_at(ar_log_t *mut_log, ar_event_type_t type, const char *m
 }
 
 void ar_log__error(ar_log_t *mut_log, const char *message) {
-    _add_event(mut_log, AR_EVENT_ERROR, message);
+    _add_event(mut_log, AR_EVENT_TYPE__ERROR, message);
 }
 
 void ar_log__warning(ar_log_t *mut_log, const char *message) {
-    _add_event(mut_log, AR_EVENT_WARNING, message);
+    _add_event(mut_log, AR_EVENT_TYPE__WARNING, message);
 }
 
 void ar_log__info(ar_log_t *mut_log, const char *message) {
-    _add_event(mut_log, AR_EVENT_INFO, message);
+    _add_event(mut_log, AR_EVENT_TYPE__INFO, message);
 }
 
 void ar_log__error_at(ar_log_t *mut_log, const char *message, int position) {
-    _add_event_at(mut_log, AR_EVENT_ERROR, message, position);
+    _add_event_at(mut_log, AR_EVENT_TYPE__ERROR, message, position);
 }
 
 void ar_log__warning_at(ar_log_t *mut_log, const char *message, int position) {
-    _add_event_at(mut_log, AR_EVENT_WARNING, message, position);
+    _add_event_at(mut_log, AR_EVENT_TYPE__WARNING, message, position);
 }
 
 void ar_log__info_at(ar_log_t *mut_log, const char *message, int position) {
-    _add_event_at(mut_log, AR_EVENT_INFO, message, position);
+    _add_event_at(mut_log, AR_EVENT_TYPE__INFO, message, position);
 }
 
 // Helper function to find the last event of a specific type
@@ -234,15 +234,15 @@ static ar_event_t* _get_last_event_by_type(ar_log_t *ref_log, ar_event_type_t ty
 }
 
 ar_event_t* ar_log__get_last_error(ar_log_t *ref_log) {
-    return _get_last_event_by_type(ref_log, AR_EVENT_ERROR);
+    return _get_last_event_by_type(ref_log, AR_EVENT_TYPE__ERROR);
 }
 
 ar_event_t* ar_log__get_last_warning(ar_log_t *ref_log) {
-    return _get_last_event_by_type(ref_log, AR_EVENT_WARNING);
+    return _get_last_event_by_type(ref_log, AR_EVENT_TYPE__WARNING);
 }
 
 ar_event_t* ar_log__get_last_info(ar_log_t *ref_log) {
-    return _get_last_event_by_type(ref_log, AR_EVENT_INFO);
+    return _get_last_event_by_type(ref_log, AR_EVENT_TYPE__INFO);
 }
 
 const char* ar_log__get_last_error_message(ar_log_t *ref_log) {

@@ -245,7 +245,7 @@ static void test_assignment_instruction_evaluator__evaluate_expression(void) {
     ar_expression_ast_t *right_ast = ar_expression_ast__create_memory_access("memory", y_path, 1);
     assert(right_ast != NULL);
     
-    ar_expression_ast_t *expr_ast = ar_expression_ast__create_binary_op(AR_OP__ADD, left_ast, right_ast);
+    ar_expression_ast_t *expr_ast = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__ADD, left_ast, right_ast);
     assert(expr_ast != NULL);
     bool ast_set = ar_instruction_ast__set_assignment_expression_ast(ast, expr_ast);
     assert(ast_set == true);

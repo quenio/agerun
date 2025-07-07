@@ -87,12 +87,12 @@ static const char* _data_to_string(const ar_data_t *ref_data, char *buffer, size
     }
     
     switch (ar_data__get_type(ref_data)) {
-        case DATA_STRING:
+        case AR_DATA_TYPE__STRING:
             return ar_data__get_string(ref_data);
-        case DATA_INTEGER:
+        case AR_DATA_TYPE__INTEGER:
             snprintf(buffer, buffer_size, "%d", ar_data__get_integer(ref_data));
             return buffer;
-        case DATA_DOUBLE:
+        case AR_DATA_TYPE__DOUBLE:
             snprintf(buffer, buffer_size, "%g", ar_data__get_double(ref_data));
             return buffer;
         default:
@@ -266,7 +266,7 @@ bool ar_build_instruction_evaluator__evaluate(
     ar_data_t *mut_memory = mut_evaluator->mut_memory;
     
     // Verify this is a build AST node
-    if (ar_instruction_ast__get_type(ref_ast) != AR_INST__BUILD) {
+    if (ar_instruction_ast__get_type(ref_ast) != AR_INSTRUCTION_AST_TYPE__BUILD) {
         return false;
     }
     
@@ -297,7 +297,7 @@ bool ar_build_instruction_evaluator__evaluate(
     
     // Evaluate template expression AST
     ar_data_t *template_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_template_ast);
-    if (!template_result || ar_data__get_type(template_result) != DATA_STRING) {
+    if (!template_result || ar_data__get_type(template_result) != AR_DATA_TYPE__STRING) {
         fprintf(stderr, "DEBUG: build evaluator - template evaluation failed or not string\n");
         if (template_result && ar_data__hold_ownership(template_result, mut_evaluator)) {
             ar_data__transfer_ownership(template_result, mut_evaluator);
@@ -339,7 +339,7 @@ bool ar_build_instruction_evaluator__evaluate(
     }
     
     // Validate it's a map
-    if (!ref_values_data || ar_data__get_type(ref_values_data) != DATA_MAP) {
+    if (!ref_values_data || ar_data__get_type(ref_values_data) != AR_DATA_TYPE__MAP) {
         if (own_values_data) ar_data__destroy(own_values_data);
         ar_data__destroy(own_template_data);
         AR__HEAP__FREE(items);

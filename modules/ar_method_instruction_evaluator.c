@@ -233,9 +233,9 @@ static bool _evaluate_three_string_args(
     
     // Validate all arguments are strings
     if (*out_arg1 && *out_arg2 && *out_arg3 &&
-        ar_data__get_type(*out_arg1) == DATA_STRING &&
-        ar_data__get_type(*out_arg2) == DATA_STRING &&
-        ar_data__get_type(*out_arg3) == DATA_STRING) {
+        ar_data__get_type(*out_arg1) == AR_DATA_TYPE__STRING &&
+        ar_data__get_type(*out_arg2) == AR_DATA_TYPE__STRING &&
+        ar_data__get_type(*out_arg3) == AR_DATA_TYPE__STRING) {
         return true;
     }
     
@@ -262,7 +262,7 @@ bool ar_method_instruction_evaluator__evaluate(
     }
     
     // Validate AST type
-    if (ar_instruction_ast__get_type(ref_ast) != AR_INST__METHOD) {
+    if (ar_instruction_ast__get_type(ref_ast) != AR_INSTRUCTION_AST_TYPE__METHOD) {
         return false;
     }
     

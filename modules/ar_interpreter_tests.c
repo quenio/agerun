@@ -134,7 +134,7 @@ static void test_interpreter_execute_method(void) {
     ar_data_t *ref_result = ar_data__get_map_data(mut_memory, "result");
     printf("DEBUG: Result is %s\n", ref_result ? "not null" : "null");
     assert(ref_result != NULL);
-    assert(ar_data__get_type(ref_result) == DATA_STRING);
+    assert(ar_data__get_type(ref_result) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(ref_result), "Received: Hello, interpreter!") == 0);
     
     // Clean up
@@ -173,7 +173,7 @@ static void test_interpreter_execute_instruction(void) {
     ar_data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
     ar_data_t *ref_y = ar_data__get_map_data(mut_memory, "y");
     assert(ref_y != NULL);
-    assert(ar_data__get_type(ref_y) == DATA_INTEGER);
+    assert(ar_data__get_type(ref_y) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(ref_y) == 10);
     
     // Clean up
@@ -442,7 +442,7 @@ static void test_parse_function(void) {
     
     ar_data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
     ar_data_t *ref_parsed = ar_data__get_map_data(mut_memory, "parsed");
-    assert(ar_data__get_type(ref_parsed) == DATA_MAP);
+    assert(ar_data__get_type(ref_parsed) == AR_DATA_TYPE__MAP);
     
     ar_data_t *ref_name = ar_data__get_map_data(ref_parsed, "name");
     assert(ref_name != NULL);
@@ -456,7 +456,7 @@ static void test_parse_function(void) {
     ));
     
     ar_data_t *ref_user = ar_data__get_map_data(mut_memory, "user");
-    assert(ar_data__get_type(ref_user) == DATA_MAP);
+    assert(ar_data__get_type(ref_user) == AR_DATA_TYPE__MAP);
     
     ref_name = ar_data__get_map_data(ref_user, "name");
     assert(strcmp(ar_data__get_string(ref_name), "Bob") == 0);

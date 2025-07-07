@@ -197,7 +197,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
     {
         const char *args[] = {"0", "\"hello\""};
         ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-            AR_INST__SEND, "send", args, 2, NULL
+            AR_INSTRUCTION_AST_TYPE__SEND, "send", args, 2, NULL
         );
         assert(ast != NULL);
         
@@ -219,7 +219,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
     {
         const char *args[] = {"1", "\"yes\"", "\"no\""};
         ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-            AR_INST__IF, "if", args, 3, "memory.result"
+            AR_INSTRUCTION_AST_TYPE__IF, "if", args, 3, "memory.result"
         );
         assert(ast != NULL);
         
@@ -239,7 +239,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         // Verify result was stored
         ar_data_t *value = ar_data__get_map_data(memory, "result");
         assert(value != NULL);
-        assert(ar_data__get_type(value) == DATA_STRING);
+        assert(ar_data__get_type(value) == AR_DATA_TYPE__STRING);
         assert(strcmp(ar_data__get_string(value), "yes") == 0);
         
         ar_instruction_ast__destroy(ast);
@@ -249,7 +249,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
     {
         const char *args[] = {"\"user={username}, role={role}\"", "\"user=alice, role=admin\""};
         ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-            AR_INST__PARSE, "parse", args, 2, "memory.parsed"
+            AR_INSTRUCTION_AST_TYPE__PARSE, "parse", args, 2, "memory.parsed"
         );
         assert(ast != NULL);
         
@@ -267,17 +267,17 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         // Verify result was stored as a map
         ar_data_t *value = ar_data__get_map_data(memory, "parsed");
         assert(value != NULL);
-        assert(ar_data__get_type(value) == DATA_MAP);
+        assert(ar_data__get_type(value) == AR_DATA_TYPE__MAP);
         
         // Check parsed values
         ar_data_t *username_value = ar_data__get_map_data(value, "username");
         assert(username_value != NULL);
-        assert(ar_data__get_type(username_value) == DATA_STRING);
+        assert(ar_data__get_type(username_value) == AR_DATA_TYPE__STRING);
         assert(strcmp(ar_data__get_string(username_value), "alice") == 0);
         
         ar_data_t *role_value = ar_data__get_map_data(value, "role");
         assert(role_value != NULL);
-        assert(ar_data__get_type(role_value) == DATA_STRING);
+        assert(ar_data__get_type(role_value) == AR_DATA_TYPE__STRING);
         assert(strcmp(ar_data__get_string(role_value), "admin") == 0);
         
         ar_instruction_ast__destroy(ast);
@@ -290,7 +290,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         
         const char *args[] = {"\"Hi {name}\"", "memory"};
         ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-            AR_INST__BUILD, "build", args, 2, "memory.built"
+            AR_INSTRUCTION_AST_TYPE__BUILD, "build", args, 2, "memory.built"
         );
         assert(ast != NULL);
         
@@ -308,7 +308,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         // Verify result was stored
         ar_data_t *value = ar_data__get_map_data(memory, "built");
         assert(value != NULL);
-        assert(ar_data__get_type(value) == DATA_STRING);
+        assert(ar_data__get_type(value) == AR_DATA_TYPE__STRING);
         assert(strcmp(ar_data__get_string(value), "Hi Alice") == 0);
         
         ar_instruction_ast__destroy(ast);
@@ -352,7 +352,7 @@ static void test_instruction_evaluator__only_unified_interface_exposed(void) {
     
     const char *send_args[] = {"0", "\"hello\""};
     ar_instruction_ast_t *send_ast = ar_instruction_ast__create_function_call(
-        AR_INST__SEND, "send", send_args, 2, NULL
+        AR_INSTRUCTION_AST_TYPE__SEND, "send", send_args, 2, NULL
     );
     assert(send_ast != NULL);
     
@@ -423,7 +423,7 @@ static void test_instruction_evaluator__unified_evaluate_assignment(void) {
     // And the value should be stored in memory
     ar_data_t *value = ar_data__get_map_data(memory, "x");
     assert(value != NULL);
-    assert(ar_data__get_type(value) == DATA_INTEGER);
+    assert(ar_data__get_type(value) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(value) == 42);
     
     // Cleanup

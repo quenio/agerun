@@ -43,7 +43,7 @@ static void test_data_creation(void) {
     
     // Then it should have the correct type and default value
     assert(own_int_data_default != NULL);
-    assert(ar_data__get_type(own_int_data_default) == DATA_INTEGER);
+    assert(ar_data__get_type(own_int_data_default) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(own_int_data_default) == 0);
     
     // When we create a double data item with default value
@@ -51,7 +51,7 @@ static void test_data_creation(void) {
     
     // Then it should have the correct type and default value
     assert(own_double_data_default != NULL);
-    assert(ar_data__get_type(own_double_data_default) == DATA_DOUBLE);
+    assert(ar_data__get_type(own_double_data_default) == AR_DATA_TYPE__DOUBLE);
     assert(ar_data__get_double(own_double_data_default) == 0.0);
     
     // When we create a string data item with NULL value
@@ -59,7 +59,7 @@ static void test_data_creation(void) {
     
     // Then it should have the correct type and null string
     assert(own_string_data_default != NULL);
-    assert(ar_data__get_type(own_string_data_default) == DATA_STRING);
+    assert(ar_data__get_type(own_string_data_default) == AR_DATA_TYPE__STRING);
     assert(ar_data__get_string(own_string_data_default) == NULL);
     
     // When we create an empty list data item
@@ -67,14 +67,14 @@ static void test_data_creation(void) {
     
     // Then it should have the correct type
     assert(own_list_data_default != NULL);
-    assert(ar_data__get_type(own_list_data_default) == DATA_LIST);
+    assert(ar_data__get_type(own_list_data_default) == AR_DATA_TYPE__LIST);
     
     // When we create an empty map data item
     ar_data_t *own_map_data_default = ar_data__create_map(); // We own this value
     
     // Then it should have the correct type and a valid map
     assert(own_map_data_default != NULL);
-    assert(ar_data__get_type(own_map_data_default) == DATA_MAP);
+    assert(ar_data__get_type(own_map_data_default) == AR_DATA_TYPE__MAP);
     // We can verify it's a map by checking its type - can't check ar_data_get_map anymore
     
     // When we create data items with the specialized functions
@@ -86,23 +86,23 @@ static void test_data_creation(void) {
     
     // Then they should have the correct types and values
     assert(own_int_data != NULL);
-    assert(ar_data__get_type(own_int_data) == DATA_INTEGER);
+    assert(ar_data__get_type(own_int_data) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(own_int_data) == 42);
     
     assert(own_double_data != NULL);
-    assert(ar_data__get_type(own_double_data) == DATA_DOUBLE);
+    assert(ar_data__get_type(own_double_data) == AR_DATA_TYPE__DOUBLE);
     assert(ar_data__get_double(own_double_data) == 3.14159);
     
     assert(own_string_data != NULL);
-    assert(ar_data__get_type(own_string_data) == DATA_STRING);
+    assert(ar_data__get_type(own_string_data) == AR_DATA_TYPE__STRING);
     assert(ar_data__get_string(own_string_data) != NULL);
     assert(strcmp(ar_data__get_string(own_string_data), "Hello, World!") == 0);
     
     assert(own_list_data != NULL);
-    assert(ar_data__get_type(own_list_data) == DATA_LIST);
+    assert(ar_data__get_type(own_list_data) == AR_DATA_TYPE__LIST);
     
     assert(own_map_data != NULL);
-    assert(ar_data__get_type(own_map_data) == DATA_MAP);
+    assert(ar_data__get_type(own_map_data) == AR_DATA_TYPE__MAP);
     // We can verify it's a map by checking its type - can't check ar_data_get_map anymore
     
     // Cleanup - we destroy all values we own
@@ -140,12 +140,12 @@ static void test_data_getters(void) {
     ar_data_type_t null_type = ar_data__get_type(NULL);
     
     // Then the types should be correct
-    assert(int_type == DATA_INTEGER);
-    assert(double_type == DATA_DOUBLE);
-    assert(string_type == DATA_STRING);
-    assert(list_type == DATA_LIST);
-    assert(map_type == DATA_MAP);
-    assert(null_type == DATA_INTEGER); // Default to int if NULL
+    assert(int_type == AR_DATA_TYPE__INTEGER);
+    assert(double_type == AR_DATA_TYPE__DOUBLE);
+    assert(string_type == AR_DATA_TYPE__STRING);
+    assert(list_type == AR_DATA_TYPE__LIST);
+    assert(map_type == AR_DATA_TYPE__MAP);
+    assert(null_type == AR_DATA_TYPE__INTEGER); // Default to int if NULL
     
     // When we use the value getters with the correct types
     int int_value = ar_data__get_integer(int_data);
@@ -204,7 +204,7 @@ static void test_integer_values(void) {
     
     // Then the value should be correctly retrieved
     assert(ref_value != NULL);
-    assert(ar_data__get_type(ref_value) == DATA_INTEGER);
+    assert(ar_data__get_type(ref_value) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(ref_value) == 42);
     
     // Verify the integer is accessible via getter
@@ -235,7 +235,7 @@ static void test_string_values(void) {
     
     // Then the value should be correctly retrieved
     assert(value != NULL);
-    assert(ar_data__get_type(value) == DATA_STRING);
+    assert(ar_data__get_type(value) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(value), "Hello, World!") == 0);
     
     // Verify the string is accessible via getter
@@ -255,7 +255,7 @@ static void test_nested_maps(void) {
     // Given a data structure to store nested maps
     ar_data_t *own_root_data = ar_data__create_map(); // We own this value
     assert(own_root_data != NULL);
-    assert(ar_data__get_type(own_root_data) == DATA_MAP);
+    assert(ar_data__get_type(own_root_data) == AR_DATA_TYPE__MAP);
     
     // Create first level map
     ar_data_t *own_first_level = ar_data__create_map(); // We own this value
@@ -354,17 +354,17 @@ static void test_map_data_getters(void) {
     assert(map_data_direct != NULL);
     
     // And the data objects should have the correct types
-    assert(ar_data__get_type(int_data_direct) == DATA_INTEGER);
-    assert(ar_data__get_type(double_data_direct) == DATA_DOUBLE);
-    assert(ar_data__get_type(string_data_direct) == DATA_STRING);
-    assert(ar_data__get_type(map_data_direct) == DATA_MAP);
+    assert(ar_data__get_type(int_data_direct) == AR_DATA_TYPE__INTEGER);
+    assert(ar_data__get_type(double_data_direct) == AR_DATA_TYPE__DOUBLE);
+    assert(ar_data__get_type(string_data_direct) == AR_DATA_TYPE__STRING);
+    assert(ar_data__get_type(map_data_direct) == AR_DATA_TYPE__MAP);
     
     // And the data objects should contain the correct values
     assert(ar_data__get_integer(int_data_direct) == 42);
     assert(ar_data__get_double(double_data_direct) == 3.14159);
     assert(strcmp(ar_data__get_string(string_data_direct), "Hello, World!") == 0);
     // For map data, we verify the type is correct
-    assert(ar_data__get_type(map_data_direct) == DATA_MAP);
+    assert(ar_data__get_type(map_data_direct) == AR_DATA_TYPE__MAP);
     
     // When we use the map data getters with incorrect keys
     int wrong_int = ar_data__get_map_integer(map_data, "nonexistent_key");
@@ -574,14 +574,14 @@ static void test_map_data_path_getters(void) {
     assert(avg_data != NULL);
     
     // And the data objects should have the correct types
-    assert(ar_data__get_type(user_data) == DATA_MAP);
-    assert(ar_data__get_type(address_data) == DATA_MAP);
-    assert(ar_data__get_type(scores_data) == DATA_MAP);
-    assert(ar_data__get_type(name_data) == DATA_STRING);
-    assert(ar_data__get_type(age_data) == DATA_INTEGER);
-    assert(ar_data__get_type(street_data) == DATA_STRING);
-    assert(ar_data__get_type(math_data) == DATA_INTEGER);
-    assert(ar_data__get_type(avg_data) == DATA_DOUBLE);
+    assert(ar_data__get_type(user_data) == AR_DATA_TYPE__MAP);
+    assert(ar_data__get_type(address_data) == AR_DATA_TYPE__MAP);
+    assert(ar_data__get_type(scores_data) == AR_DATA_TYPE__MAP);
+    assert(ar_data__get_type(name_data) == AR_DATA_TYPE__STRING);
+    assert(ar_data__get_type(age_data) == AR_DATA_TYPE__INTEGER);
+    assert(ar_data__get_type(street_data) == AR_DATA_TYPE__STRING);
+    assert(ar_data__get_type(math_data) == AR_DATA_TYPE__INTEGER);
+    assert(ar_data__get_type(avg_data) == AR_DATA_TYPE__DOUBLE);
     
     // And the data objects should contain the correct values
     assert(ar_data__get_integer(age_data) == 30);
@@ -691,7 +691,7 @@ static void test_map_data_path_setters(void) {
     printf("Direct map lookup of 'balance': %p\n", (void *)balance_direct);
     if (balance_direct) {
         printf("Direct balance data type: %d\n", ar_data__get_type(balance_direct));
-        if (ar_data__get_type(balance_direct) == DATA_DOUBLE) {
+        if (ar_data__get_type(balance_direct) == AR_DATA_TYPE__DOUBLE) {
             printf("Direct balance value: %f\n", ar_data__get_double(balance_direct));
         }
     }
@@ -758,7 +758,7 @@ static void test_list_operations(void) {
     // Given a list data structure
     ar_data_t *own_list_data = ar_data__create_list(); // We own this value
     assert(own_list_data != NULL);
-    assert(ar_data__get_type(own_list_data) == DATA_LIST);
+    assert(ar_data__get_type(own_list_data) == AR_DATA_TYPE__LIST);
     
     // When we check the initial list count
     size_t initial_count = ar_data__list_count(own_list_data);
@@ -784,8 +784,8 @@ static void test_list_operations(void) {
     // Then they should be valid data items with the correct values
     assert(ref_first_item != NULL);
     assert(ref_last_item != NULL);
-    assert(ar_data__get_type(ref_first_item) == DATA_INTEGER);
-    assert(ar_data__get_type(ref_last_item) == DATA_INTEGER);
+    assert(ar_data__get_type(ref_first_item) == AR_DATA_TYPE__INTEGER);
+    assert(ar_data__get_type(ref_last_item) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(ref_first_item) == 10);
     assert(ar_data__get_integer(ref_last_item) == 20);
     
@@ -807,8 +807,8 @@ static void test_list_operations(void) {
     // Then they should be valid data items with the correct values
     assert(ref_first_item != NULL);
     assert(ref_last_item != NULL);
-    assert(ar_data__get_type(ref_first_item) == DATA_DOUBLE);
-    assert(ar_data__get_type(ref_last_item) == DATA_DOUBLE);
+    assert(ar_data__get_type(ref_first_item) == AR_DATA_TYPE__DOUBLE);
+    assert(ar_data__get_type(ref_last_item) == AR_DATA_TYPE__DOUBLE);
     assert(ar_data__get_double(ref_first_item) == 3.14);
     assert(ar_data__get_double(ref_last_item) == 2.71);
     
@@ -830,8 +830,8 @@ static void test_list_operations(void) {
     // Then they should be valid data items with the correct values
     assert(ref_first_item != NULL);
     assert(ref_last_item != NULL);
-    assert(ar_data__get_type(ref_first_item) == DATA_STRING);
-    assert(ar_data__get_type(ref_last_item) == DATA_STRING);
+    assert(ar_data__get_type(ref_first_item) == AR_DATA_TYPE__STRING);
+    assert(ar_data__get_type(ref_last_item) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(ref_first_item), "hello") == 0);
     assert(strcmp(ar_data__get_string(ref_last_item), "world") == 0);
     
@@ -861,8 +861,8 @@ static void test_list_operations(void) {
     // Then they should be valid data items with the correct values
     assert(ref_first_item != NULL);
     assert(ref_last_item != NULL);
-    assert(ar_data__get_type(ref_first_item) == DATA_INTEGER);
-    assert(ar_data__get_type(ref_last_item) == DATA_DOUBLE);
+    assert(ar_data__get_type(ref_first_item) == AR_DATA_TYPE__INTEGER);
+    assert(ar_data__get_type(ref_last_item) == AR_DATA_TYPE__DOUBLE);
     assert(ar_data__get_integer(ref_first_item) == 42);
     assert(ar_data__get_double(ref_last_item) == 3.14159);
     
@@ -873,8 +873,8 @@ static void test_list_operations(void) {
     // Then the operations should succeed and return the correct items
     assert(own_removed_first != NULL);
     assert(own_removed_last != NULL);
-    assert(ar_data__get_type(own_removed_first) == DATA_INTEGER);
-    assert(ar_data__get_type(own_removed_last) == DATA_DOUBLE);
+    assert(ar_data__get_type(own_removed_first) == AR_DATA_TYPE__INTEGER);
+    assert(ar_data__get_type(own_removed_last) == AR_DATA_TYPE__DOUBLE);
     assert(ar_data__get_integer(own_removed_first) == 42);
     assert(ar_data__get_double(own_removed_last) == 3.14159);
     
@@ -1027,7 +1027,7 @@ static void test_list_basic_create_destroy(void) {
     // Create and immediately destroy an empty list
     ar_data_t *list = ar_data__create_list();
     assert(list != NULL);
-    assert(ar_data__get_type(list) == DATA_LIST);
+    assert(ar_data__get_type(list) == AR_DATA_TYPE__LIST);
     assert(ar_data__list_count(list) == 0);
     ar_data__destroy(list);
     
@@ -1074,7 +1074,7 @@ static void test_map_empty_destroy(void) {
     
     ar_data_t *map = ar_data__create_map();
     assert(map != NULL);
-    assert(ar_data__get_type(map) == DATA_MAP);
+    assert(ar_data__get_type(map) == AR_DATA_TYPE__MAP);
     ar_data__destroy(map);
     
     printf("Map empty create/destroy test passed!\n");
@@ -1117,7 +1117,7 @@ static void test_map_get_keys(void) {
         
         // Then we should get an empty list (not NULL)
         assert(own_keys_list != NULL);
-        assert(ar_data__get_type(own_keys_list) == DATA_LIST);
+        assert(ar_data__get_type(own_keys_list) == AR_DATA_TYPE__LIST);
         assert(ar_data__list_count(own_keys_list) == 0);
         
         // Cleanup
@@ -1137,13 +1137,13 @@ static void test_map_get_keys(void) {
         
         // Then we should get a list with one string item
         assert(own_keys_list != NULL);
-        assert(ar_data__get_type(own_keys_list) == DATA_LIST);
+        assert(ar_data__get_type(own_keys_list) == AR_DATA_TYPE__LIST);
         assert(ar_data__list_count(own_keys_list) == 1);
         
         // Verify the key is correct
         ar_data_t *ref_key_data = ar_data__list_first(own_keys_list);
         assert(ref_key_data != NULL);
-        assert(ar_data__get_type(ref_key_data) == DATA_STRING);
+        assert(ar_data__get_type(ref_key_data) == AR_DATA_TYPE__STRING);
         assert(strcmp(ar_data__get_string(ref_key_data), "count") == 0);
         
         // Cleanup
@@ -1165,7 +1165,7 @@ static void test_map_get_keys(void) {
         
         // Then we should get a list with three string items
         assert(own_keys_list != NULL);
-        assert(ar_data__get_type(own_keys_list) == DATA_LIST);
+        assert(ar_data__get_type(own_keys_list) == AR_DATA_TYPE__LIST);
         assert(ar_data__list_count(own_keys_list) == 3);
         
         // Collect all keys to verify they are all present
@@ -1178,7 +1178,7 @@ static void test_map_get_keys(void) {
         while (ar_data__list_count(own_keys_list) > 0) {
             ar_data_t *own_key_data = ar_data__list_remove_first(own_keys_list);
             assert(own_key_data != NULL);
-            assert(ar_data__get_type(own_key_data) == DATA_STRING);
+            assert(ar_data__get_type(own_key_data) == AR_DATA_TYPE__STRING);
             
             const char *key = ar_data__get_string(own_key_data);
             if (strcmp(key, "age") == 0) found_age = true;
@@ -1477,7 +1477,7 @@ static void test_data_shallow_copy(void) {
     
     // Then we should get a new integer with the same value
     assert(own_int_copy != NULL);
-    assert(ar_data__get_type(own_int_copy) == DATA_INTEGER);
+    assert(ar_data__get_type(own_int_copy) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(own_int_copy) == 42);
     assert(own_int_copy != own_int_value); // Different instance
     
@@ -1494,7 +1494,7 @@ static void test_data_shallow_copy(void) {
     
     // Then we should get a new double with the same value
     assert(own_double_copy != NULL);
-    assert(ar_data__get_type(own_double_copy) == DATA_DOUBLE);
+    assert(ar_data__get_type(own_double_copy) == AR_DATA_TYPE__DOUBLE);
     assert(ar_data__get_double(own_double_copy) == 3.14159);
     assert(own_double_copy != own_double_value); // Different instance
     
@@ -1511,7 +1511,7 @@ static void test_data_shallow_copy(void) {
     
     // Then we should get a new string with the same value
     assert(own_string_copy != NULL);
-    assert(ar_data__get_type(own_string_copy) == DATA_STRING);
+    assert(ar_data__get_type(own_string_copy) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(own_string_copy), "Hello, World!") == 0);
     assert(own_string_copy != own_string_value); // Different instance
     
@@ -1528,7 +1528,7 @@ static void test_data_shallow_copy(void) {
     
     // Then we should get a new empty map
     assert(own_map_copy != NULL);
-    assert(ar_data__get_type(own_map_copy) == DATA_MAP);
+    assert(ar_data__get_type(own_map_copy) == AR_DATA_TYPE__MAP);
     assert(own_map_copy != own_empty_map); // Different instance
     
     // Verify it's empty by checking keys
@@ -1553,7 +1553,7 @@ static void test_data_shallow_copy(void) {
     
     // Then we should get a new map with the same primitive values
     assert(own_map_primitives_copy != NULL);
-    assert(ar_data__get_type(own_map_primitives_copy) == DATA_MAP);
+    assert(ar_data__get_type(own_map_primitives_copy) == AR_DATA_TYPE__MAP);
     assert(own_map_primitives_copy != own_map_with_primitives); // Different instance
     
     // Verify the values were copied
@@ -1619,7 +1619,7 @@ static void test_data_shallow_copy(void) {
     
     // Then we should get a new empty list
     assert(own_list_copy != NULL);
-    assert(ar_data__get_type(own_list_copy) == DATA_LIST);
+    assert(ar_data__get_type(own_list_copy) == AR_DATA_TYPE__LIST);
     assert(own_list_copy != own_empty_list); // Different instance
     assert(ar_data__list_count(own_list_copy) == 0);
     
@@ -1639,14 +1639,14 @@ static void test_data_shallow_copy(void) {
     
     // Then we should get a new list with the same primitive values
     assert(own_list_primitives_copy != NULL);
-    assert(ar_data__get_type(own_list_primitives_copy) == DATA_LIST);
+    assert(ar_data__get_type(own_list_primitives_copy) == AR_DATA_TYPE__LIST);
     assert(own_list_primitives_copy != own_list_with_primitives); // Different instance
     assert(ar_data__list_count(own_list_primitives_copy) == 3);
     
     // Verify the values were copied (check first item)
     ar_data_t *ref_first = ar_data__list_first(own_list_primitives_copy);
     assert(ref_first != NULL);
-    assert(ar_data__get_type(ref_first) == DATA_INTEGER);
+    assert(ar_data__get_type(ref_first) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(ref_first) == 10);
     
     // Clean up

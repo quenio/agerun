@@ -10,11 +10,11 @@
  * Data type enumeration
  */
 typedef enum {
-    DATA_INTEGER,
-    DATA_DOUBLE,
-    DATA_STRING,
-    DATA_LIST,
-    DATA_MAP
+    AR_DATA_TYPE__INTEGER,
+    AR_DATA_TYPE__DOUBLE,
+    AR_DATA_TYPE__STRING,
+    AR_DATA_TYPE__LIST,
+    AR_DATA_TYPE__MAP
 } ar_data_type_t;
 
 /**
@@ -97,7 +97,7 @@ ar_data_t* ar_data__shallow_copy(const ar_data_t *ref_value);
 /**
  * Get the type of a data structure
  * @param ref_data Pointer to the data to check
- * @return The data type or DATA_INTEGER if data is NULL
+ * @return The data type or AR_DATA_TYPE__INTEGER if data is NULL
  * @note Ownership: Does not take ownership of the data parameter.
  */
 ar_data_type_t ar_data__get_type(const ar_data_t *ref_data);

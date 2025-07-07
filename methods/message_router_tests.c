@@ -64,12 +64,12 @@ static void test_message_router_routing(void) {
     assert(router_memory != NULL);
     
     const ar_data_t *is_echo = ar_data__get_map_data(router_memory, "is_echo");
-    if (is_echo && ar_data__get_type(is_echo) == DATA_INTEGER && ar_data__get_integer(is_echo) == 1) {
+    if (is_echo && ar_data__get_type(is_echo) == AR_DATA_TYPE__INTEGER && ar_data__get_integer(is_echo) == 1) {
         printf("SUCCESS: if() correctly identified route = \"echo\"\n");
     }
     
     const ar_data_t *target = ar_data__get_map_data(router_memory, "target");
-    if (target && ar_data__get_type(target) == DATA_INTEGER && ar_data__get_integer(target) == echo_agent) {
+    if (target && ar_data__get_type(target) == AR_DATA_TYPE__INTEGER && ar_data__get_integer(target) == echo_agent) {
         printf("SUCCESS: Target correctly set to echo agent ID %lld\n", (long long)echo_agent);
     }
     

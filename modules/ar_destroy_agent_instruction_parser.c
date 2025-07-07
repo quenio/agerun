@@ -266,7 +266,7 @@ ar_instruction_ast_t* ar_destroy_agent_instruction_parser__parse(
     /* Create AST node */
     const char *const_args[] = { arg };
     ar_instruction_ast_t *own_ast = ar_instruction_ast__create_function_call(
-        AR_INST__DESTROY_AGENT, "destroy", const_args, 1, ref_result_path
+        AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT, "destroy", const_args, 1, ref_result_path
     );
     
     if (!own_ast) {

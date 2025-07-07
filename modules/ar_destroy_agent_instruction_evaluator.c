@@ -121,7 +121,7 @@ bool ar_destroy_agent_instruction_evaluator__evaluate(
     ar_data_t *mut_memory = mut_evaluator->mut_memory;
     
     // Validate AST type
-    if (ar_instruction_ast__get_type(ref_ast) != AR_INST__DESTROY_AGENT) {
+    if (ar_instruction_ast__get_type(ref_ast) != AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT) {
         return false;
     }
     
@@ -172,7 +172,7 @@ bool ar_destroy_agent_instruction_evaluator__evaluate(
     bool success = false;
     bool destroy_result = false;
     
-    if (own_agent_id && ar_data__get_type(own_agent_id) == DATA_INTEGER) {
+    if (own_agent_id && ar_data__get_type(own_agent_id) == AR_DATA_TYPE__INTEGER) {
         int64_t agent_id = (int64_t)ar_data__get_integer(own_agent_id);
         destroy_result = ar_agency__destroy_agent(agent_id);
         success = true;

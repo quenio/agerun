@@ -143,7 +143,7 @@ static void test_store_single_agent(void) {
     // Verify the memory was persisted
     ar_data_t *ref_restored_memory = ar_agency__get_agent_mutable_memory(restored_id);
     assert(ref_restored_memory != NULL);
-    assert(ar_data__get_type(ref_restored_memory) == DATA_MAP);
+    assert(ar_data__get_type(ref_restored_memory) == AR_DATA_TYPE__MAP);
     
     // Check all persisted values
     const char *name = ar_data__get_map_string(ref_restored_memory, "name");

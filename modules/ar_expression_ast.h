@@ -9,11 +9,11 @@
  * Represents all possible expression types in the AgeRun language.
  */
 typedef enum {
-    AR_EXPR__LITERAL_INT,      /* Integer literal (e.g., 42, -10) */
-    AR_EXPR__LITERAL_DOUBLE,   /* Double literal (e.g., 3.14, -2.5) */
-    AR_EXPR__LITERAL_STRING,   /* String literal (e.g., "hello") */
-    AR_EXPR__MEMORY_ACCESS,    /* Memory/message/context access (e.g., memory.x, message.content) */
-    AR_EXPR__BINARY_OP         /* Binary operation (arithmetic or comparison) */
+    AR_EXPRESSION_AST_TYPE__LITERAL_INT,      /* Integer literal (e.g., 42, -10) */
+    AR_EXPRESSION_AST_TYPE__LITERAL_DOUBLE,   /* Double literal (e.g., 3.14, -2.5) */
+    AR_EXPRESSION_AST_TYPE__LITERAL_STRING,   /* String literal (e.g., "hello") */
+    AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS,    /* Memory/message/context access (e.g., memory.x, message.content) */
+    AR_EXPRESSION_AST_TYPE__BINARY_OP         /* Binary operation (arithmetic or comparison) */
 } ar_expression_ast_type_t;
 
 /**
@@ -22,18 +22,18 @@ typedef enum {
  */
 typedef enum {
     /* Arithmetic operators */
-    AR_OP__ADD,        /* + */
-    AR_OP__SUBTRACT,   /* - */
-    AR_OP__MULTIPLY,   /* * */
-    AR_OP__DIVIDE,     /* / */
+    AR_BINARY_OPERATOR__ADD,        /* + */
+    AR_BINARY_OPERATOR__SUBTRACT,   /* - */
+    AR_BINARY_OPERATOR__MULTIPLY,   /* * */
+    AR_BINARY_OPERATOR__DIVIDE,     /* / */
     
     /* Comparison operators */
-    AR_OP__EQUAL,      /* = */
-    AR_OP__NOT_EQUAL,  /* <> */
-    AR_OP__LESS,       /* < */
-    AR_OP__LESS_EQ,    /* <= */
-    AR_OP__GREATER,    /* > */
-    AR_OP__GREATER_EQ  /* >= */
+    AR_BINARY_OPERATOR__EQUAL,      /* = */
+    AR_BINARY_OPERATOR__NOT_EQUAL,  /* <> */
+    AR_BINARY_OPERATOR__LESS,       /* < */
+    AR_BINARY_OPERATOR__LESS_EQ,    /* <= */
+    AR_BINARY_OPERATOR__GREATER,    /* > */
+    AR_BINARY_OPERATOR__GREATER_EQ  /* >= */
 } ar_binary_operator_t;
 
 /**
@@ -172,7 +172,7 @@ char** ar_expression_ast__get_memory_path(
  * Get operator from a binary operation node.
  * 
  * @param ref_node The AST node (borrowed reference)
- * @return The binary operator, or AR_OP__ADD if not a binary operation
+ * @return The binary operator, or AR_BINARY_OPERATOR__ADD if not a binary operation
  */
 ar_binary_operator_t ar_expression_ast__get_operator(const ar_expression_ast_t *ref_node);
 

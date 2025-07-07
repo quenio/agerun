@@ -158,21 +158,21 @@ static void test_method_ast__get_instruction_by_line(void) {
     
     // Then it should return the first instruction
     assert(ref_instr1 != NULL);
-    assert(ar_instruction_ast__get_type(ref_instr1) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(ref_instr1) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
     
     // When getting instruction at line 2
     const ar_instruction_ast_t *ref_instr2 = ar_method_ast__get_instruction(own_ast, 2);
     
     // Then it should return the second instruction
     assert(ref_instr2 != NULL);
-    assert(ar_instruction_ast__get_type(ref_instr2) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(ref_instr2) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
     
     // When getting instruction at line 3
     const ar_instruction_ast_t *ref_instr3 = ar_method_ast__get_instruction(own_ast, 3);
     
     // Then it should return the third instruction
     assert(ref_instr3 != NULL);
-    assert(ar_instruction_ast__get_type(ref_instr3) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(ref_instr3) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
     
     // When getting instruction at line 0 (invalid)
     const ar_instruction_ast_t *ref_instr0 = ar_method_ast__get_instruction(own_ast, 0);
@@ -232,7 +232,7 @@ static void test_method_ast__memory_stress_test(void) {
     for (size_t i = 1; i <= STRESS_TEST_INSTRUCTION_COUNT; i++) {
         const ar_instruction_ast_t *ref_instruction = ar_method_ast__get_instruction(own_ast, i);
         assert(ref_instruction != NULL);
-        assert(ar_instruction_ast__get_type(ref_instruction) == AR_INST__ASSIGNMENT);
+        assert(ar_instruction_ast__get_type(ref_instruction) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
     }
     
     // Cleanup - this should free all instructions without leaks

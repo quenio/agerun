@@ -57,7 +57,7 @@ static void test_agent_manager_create_destroy(void) {
     
     const ar_data_t *result = ar_data__get_map_data(agent_memory, "result");
     if (result != NULL) {
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         int64_t created_agent = (int64_t)ar_data__get_integer(result);
         printf("SUCCESS: agent() instruction executed\n");
         printf("  - Created agent ID: %lld\n", (long long)created_agent);

@@ -56,7 +56,7 @@ static void test_build_instruction_parser__parse_simple(void) {
     
     // Then it should parse successfully as a build function
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__BUILD);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__BUILD);
     assert(strcmp(ar_instruction_ast__get_function_name(own_ast), "build") == 0);
     assert(ar_instruction_ast__has_result_assignment(own_ast) == false);
     
@@ -94,7 +94,7 @@ static void test_build_instruction_parser__parse_with_assignment(void) {
     
     // Then it should parse successfully with assignment
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__BUILD);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__BUILD);
     assert(ar_instruction_ast__has_result_assignment(own_ast) == true);
     assert(strcmp(ar_instruction_ast__get_function_result_path(own_ast), "memory.greeting") == 0);
     
@@ -132,7 +132,7 @@ static void test_build_instruction_parser__parse_multiple_placeholders(void) {
     
     // Then it should parse successfully
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__BUILD);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__BUILD);
     
     // Verify template with multiple placeholders
     ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
@@ -168,7 +168,7 @@ static void test_build_instruction_parser__parse_escaped_quotes(void) {
     
     // Then it should parse successfully
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__BUILD);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__BUILD);
     
     // Verify escaped quotes are preserved
     ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
@@ -199,7 +199,7 @@ static void test_build_instruction_parser__parse_whitespace_handling(void) {
     
     // Then it should parse successfully, handling whitespace
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__BUILD);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__BUILD);
     
     // And no errors should be logged
     assert(ar_log__get_last_error_message(log) == NULL);
@@ -350,7 +350,7 @@ static void test_build_instruction_parser__parse_with_expression_asts(void) {
     
     // Then it should parse successfully with argument ASTs
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__BUILD);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__BUILD);
     
     // And the arguments should be available as expression ASTs
     const ar_list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
@@ -362,13 +362,13 @@ static void test_build_instruction_parser__parse_with_expression_asts(void) {
     assert(items != NULL);
     const ar_expression_ast_t *ref_template = (const ar_expression_ast_t*)items[0];
     assert(ref_template != NULL);
-    assert(ar_expression_ast__get_type(ref_template) == AR_EXPR__LITERAL_STRING);
+    assert(ar_expression_ast__get_type(ref_template) == AR_EXPRESSION_AST_TYPE__LITERAL_STRING);
     assert(strcmp(ar_expression_ast__get_string_value(ref_template), "User: {name}, Age: {age}") == 0);
     
     // Second argument should be a memory access AST
     const ar_expression_ast_t *ref_map_expr = (const ar_expression_ast_t*)items[1];
     assert(ref_map_expr != NULL);
-    assert(ar_expression_ast__get_type(ref_map_expr) == AR_EXPR__MEMORY_ACCESS);
+    assert(ar_expression_ast__get_type(ref_map_expr) == AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS);
     // Verify memory path
     size_t path_count = 0;
     char **path_components = ar_expression_ast__get_memory_path(ref_map_expr, &path_count);

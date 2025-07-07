@@ -113,7 +113,7 @@ bool ar_agent_instruction_evaluator__evaluate(
     ar_data_t *mut_memory = mut_evaluator->mut_memory;
     
     // Validate AST type
-    if (ar_instruction_ast__get_type(ref_ast) != AR_INST__AGENT) {
+    if (ar_instruction_ast__get_type(ref_ast) != AR_INSTRUCTION_AST_TYPE__AGENT) {
         return false;
     }
     
@@ -191,12 +191,12 @@ bool ar_agent_instruction_evaluator__evaluate(
     
     // Validate method name and version are strings
     if (own_method_name && own_version &&
-        ar_data__get_type(own_method_name) == DATA_STRING &&
-        ar_data__get_type(own_version) == DATA_STRING) {
+        ar_data__get_type(own_method_name) == AR_DATA_TYPE__STRING &&
+        ar_data__get_type(own_version) == AR_DATA_TYPE__STRING) {
         
         // Validate context - must be a map (since parser requires 3 args)
         bool context_valid = false;
-        if (ref_context_data && ar_data__get_type(ref_context_data) == DATA_MAP) {
+        if (ref_context_data && ar_data__get_type(ref_context_data) == AR_DATA_TYPE__MAP) {
             context_valid = true;
         }
         

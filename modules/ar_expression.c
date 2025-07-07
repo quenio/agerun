@@ -458,7 +458,7 @@ static const ar_data_t* parse_memory_access(ar_expression_context_t *mut_ctx) {
     ar_data_type_t source_type = ar_data__get_type(ref_source);
     
     
-    if (source_type == DATA_MAP) {
+    if (source_type == AR_DATA_TYPE__MAP) {
         // For map type, use the map access function
         ref_value = ar_data__get_map_data(ref_source, path);
         if (ref_value) {
@@ -563,7 +563,7 @@ static const ar_data_t* parse_multiplicative(ar_expression_context_t *ctx) {
         ar_data_t *result = NULL;
         
         // Both operands are integers
-        if (left_type == DATA_INTEGER && right_type == DATA_INTEGER) {
+        if (left_type == AR_DATA_TYPE__INTEGER && right_type == AR_DATA_TYPE__INTEGER) {
             int left_val = ar_data__get_integer(left);
             int right_val = ar_data__get_integer(right);
             int result_val = 0;
@@ -580,13 +580,13 @@ static const ar_data_t* parse_multiplicative(ar_expression_context_t *ctx) {
             result = ar_data__create_integer(result_val);
         }
         // At least one operand is a double, result is a double
-        else if ((left_type == DATA_INTEGER || left_type == DATA_DOUBLE) &&
-                 (right_type == DATA_INTEGER || right_type == DATA_DOUBLE)) {
+        else if ((left_type == AR_DATA_TYPE__INTEGER || left_type == AR_DATA_TYPE__DOUBLE) &&
+                 (right_type == AR_DATA_TYPE__INTEGER || right_type == AR_DATA_TYPE__DOUBLE)) {
             
-            double left_val = (left_type == DATA_INTEGER) ? 
+            double left_val = (left_type == AR_DATA_TYPE__INTEGER) ? 
                 (double)ar_data__get_integer(left) : ar_data__get_double(left);
                 
-            double right_val = (right_type == DATA_INTEGER) ? 
+            double right_val = (right_type == AR_DATA_TYPE__INTEGER) ? 
                 (double)ar_data__get_integer(right) : ar_data__get_double(right);
             
             double result_val = 0.0;
@@ -657,12 +657,12 @@ static const ar_data_t* parse_additive(ar_expression_context_t *ctx) {
         ar_data_t *result = NULL;
         
         // String concatenation with +
-        if (op == '+' && (left_type == DATA_STRING || right_type == DATA_STRING)) {
+        if (op == '+' && (left_type == AR_DATA_TYPE__STRING || right_type == AR_DATA_TYPE__STRING)) {
             char left_str[512] = {0};
             char right_str[512] = {0};
             
             // Convert left operand to string
-            if (left_type == DATA_STRING) {
+            if (left_type == AR_DATA_TYPE__STRING) {
                 const char *str = ar_data__get_string(left);
                 if (str) {
                     // Safe string copy with bounds check and explicit null termination
@@ -673,14 +673,14 @@ static const ar_data_t* parse_additive(ar_expression_context_t *ctx) {
                     memcpy(left_str, str, copy_len);
                     left_str[copy_len] = '\0';  // Ensure null-termination
                 }
-            } else if (left_type == DATA_INTEGER) {
+            } else if (left_type == AR_DATA_TYPE__INTEGER) {
                 snprintf(left_str, sizeof(left_str), "%d", ar_data__get_integer(left));
-            } else if (left_type == DATA_DOUBLE) {
+            } else if (left_type == AR_DATA_TYPE__DOUBLE) {
                 snprintf(left_str, sizeof(left_str), "%.2f", ar_data__get_double(left));
             }
             
             // Convert right operand to string
-            if (right_type == DATA_STRING) {
+            if (right_type == AR_DATA_TYPE__STRING) {
                 const char *str = ar_data__get_string(right);
                 if (str) {
                     // Safe string copy with bounds check and explicit null termination
@@ -691,9 +691,9 @@ static const ar_data_t* parse_additive(ar_expression_context_t *ctx) {
                     memcpy(right_str, str, copy_len);
                     right_str[copy_len] = '\0';  // Ensure null-termination
                 }
-            } else if (right_type == DATA_INTEGER) {
+            } else if (right_type == AR_DATA_TYPE__INTEGER) {
                 snprintf(right_str, sizeof(right_str), "%d", ar_data__get_integer(right));
-            } else if (right_type == DATA_DOUBLE) {
+            } else if (right_type == AR_DATA_TYPE__DOUBLE) {
                 snprintf(right_str, sizeof(right_str), "%.2f", ar_data__get_double(right));
             }
             
@@ -704,7 +704,7 @@ static const ar_data_t* parse_additive(ar_expression_context_t *ctx) {
             result = ar_data__create_string(result_str);
         }
         // Both operands are integers
-        else if (left_type == DATA_INTEGER && right_type == DATA_INTEGER) {
+        else if (left_type == AR_DATA_TYPE__INTEGER && right_type == AR_DATA_TYPE__INTEGER) {
             int left_val = ar_data__get_integer(left);
             int right_val = ar_data__get_integer(right);
             int result_val = 0;
@@ -717,13 +717,13 @@ static const ar_data_t* parse_additive(ar_expression_context_t *ctx) {
             result = ar_data__create_integer(result_val);
         }
         // At least one operand is a double, result is a double
-        else if ((left_type == DATA_INTEGER || left_type == DATA_DOUBLE) &&
-                 (right_type == DATA_INTEGER || right_type == DATA_DOUBLE)) {
+        else if ((left_type == AR_DATA_TYPE__INTEGER || left_type == AR_DATA_TYPE__DOUBLE) &&
+                 (right_type == AR_DATA_TYPE__INTEGER || right_type == AR_DATA_TYPE__DOUBLE)) {
             
-            double left_val = (left_type == DATA_INTEGER) ? 
+            double left_val = (left_type == AR_DATA_TYPE__INTEGER) ? 
                 (double)ar_data__get_integer(left) : ar_data__get_double(left);
                 
-            double right_val = (right_type == DATA_INTEGER) ? 
+            double right_val = (right_type == AR_DATA_TYPE__INTEGER) ? 
                 (double)ar_data__get_integer(right) : ar_data__get_double(right);
             
             double result_val = 0.0;
@@ -801,18 +801,18 @@ static const ar_data_t* parse_comparison(ar_expression_context_t *ctx) {
     bool result = false;
     
     // Handle case where both operands are numeric
-    if ((left_type == DATA_INTEGER || left_type == DATA_DOUBLE) &&
-        (right_type == DATA_INTEGER || right_type == DATA_DOUBLE)) {
+    if ((left_type == AR_DATA_TYPE__INTEGER || left_type == AR_DATA_TYPE__DOUBLE) &&
+        (right_type == AR_DATA_TYPE__INTEGER || right_type == AR_DATA_TYPE__DOUBLE)) {
         
         double left_val, right_val;
         
-        if (left_type == DATA_INTEGER) {
+        if (left_type == AR_DATA_TYPE__INTEGER) {
             left_val = (double)ar_data__get_integer(left);
         } else {
             left_val = ar_data__get_double(left);
         }
         
-        if (right_type == DATA_INTEGER) {
+        if (right_type == AR_DATA_TYPE__INTEGER) {
             right_val = (double)ar_data__get_integer(right);
         } else {
             right_val = ar_data__get_double(right);
@@ -834,7 +834,7 @@ static const ar_data_t* parse_comparison(ar_expression_context_t *ctx) {
         }
     }
     // Handle case where both operands are strings
-    else if (left_type == DATA_STRING && right_type == DATA_STRING) {
+    else if (left_type == AR_DATA_TYPE__STRING && right_type == AR_DATA_TYPE__STRING) {
         const char *left_str = ar_data__get_string(left);
         const char *right_str = ar_data__get_string(right);
         
@@ -864,7 +864,7 @@ static const ar_data_t* parse_comparison(ar_expression_context_t *ctx) {
         char right_str[64] = {0};
         
         // Convert left operand to string
-        if (left_type == DATA_STRING) {
+        if (left_type == AR_DATA_TYPE__STRING) {
             const char *str = ar_data__get_string(left);
             if (str) {
                 // Safe string copy with bounds check and explicit null termination
@@ -875,14 +875,14 @@ static const ar_data_t* parse_comparison(ar_expression_context_t *ctx) {
                 memcpy(left_str, str, copy_len);
                 left_str[copy_len] = '\0';  // Ensure null-termination
             }
-        } else if (left_type == DATA_INTEGER) {
+        } else if (left_type == AR_DATA_TYPE__INTEGER) {
             snprintf(left_str, sizeof(left_str), "%d", ar_data__get_integer(left));
-        } else if (left_type == DATA_DOUBLE) {
+        } else if (left_type == AR_DATA_TYPE__DOUBLE) {
             snprintf(left_str, sizeof(left_str), "%.2f", ar_data__get_double(left));
         }
         
         // Convert right operand to string
-        if (right_type == DATA_STRING) {
+        if (right_type == AR_DATA_TYPE__STRING) {
             const char *str = ar_data__get_string(right);
             if (str) {
                 // Safe string copy with bounds check and explicit null termination
@@ -893,9 +893,9 @@ static const ar_data_t* parse_comparison(ar_expression_context_t *ctx) {
                 memcpy(right_str, str, copy_len);
                 right_str[copy_len] = '\0';  // Ensure null-termination
             }
-        } else if (right_type == DATA_INTEGER) {
+        } else if (right_type == AR_DATA_TYPE__INTEGER) {
             snprintf(right_str, sizeof(right_str), "%d", ar_data__get_integer(right));
-        } else if (right_type == DATA_DOUBLE) {
+        } else if (right_type == AR_DATA_TYPE__DOUBLE) {
             snprintf(right_str, sizeof(right_str), "%.2f", ar_data__get_double(right));
         }
         

@@ -261,11 +261,11 @@ static void test_method_parse_ast_on_create(void) {
     // And the instructions should be assignment type
     const ar_instruction_ast_t *ref_inst1 = ar_method_ast__get_instruction(ref_ast, 1);  // 1-based
     assert(ref_inst1 != NULL);
-    assert(ar_instruction_ast__get_type(ref_inst1) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(ref_inst1) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
     
     const ar_instruction_ast_t *ref_inst2 = ar_method_ast__get_instruction(ref_ast, 2);  // 1-based
     assert(ref_inst2 != NULL);
-    assert(ar_instruction_ast__get_type(ref_inst2) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(ref_inst2) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
     
     // Clean up
     ar_method__destroy(own_method);

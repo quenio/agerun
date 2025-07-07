@@ -31,11 +31,11 @@ The module defines all possible expression types:
 
 ```c
 typedef enum {
-    AR_EXPR__LITERAL_INT,      /* Integer literal (e.g., 42, -10) */
-    AR_EXPR__LITERAL_DOUBLE,   /* Double literal (e.g., 3.14, -2.5) */
-    AR_EXPR__LITERAL_STRING,   /* String literal (e.g., "hello") */
-    AR_EXPR__MEMORY_ACCESS,    /* Memory/message/context access */
-    AR_EXPR__BINARY_OP         /* Binary operation (arithmetic or comparison) */
+    AR_EXPRESSION_AST_TYPE__LITERAL_INT,      /* Integer literal (e.g., 42, -10) */
+    AR_EXPRESSION_AST_TYPE__LITERAL_DOUBLE,   /* Double literal (e.g., 3.14, -2.5) */
+    AR_EXPRESSION_AST_TYPE__LITERAL_STRING,   /* String literal (e.g., "hello") */
+    AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS,    /* Memory/message/context access */
+    AR_EXPRESSION_AST_TYPE__BINARY_OP         /* Binary operation (arithmetic or comparison) */
 } ar_expression_ast_type_t;
 ```
 
@@ -46,18 +46,18 @@ All binary operators are defined in a single enumeration:
 ```c
 typedef enum {
     /* Arithmetic operators */
-    AR_OP__ADD,        /* + */
-    AR_OP__SUBTRACT,   /* - */
-    AR_OP__MULTIPLY,   /* * */
-    AR_OP__DIVIDE,     /* / */
+    AR_BINARY_OPERATOR__ADD,        /* + */
+    AR_BINARY_OPERATOR__SUBTRACT,   /* - */
+    AR_BINARY_OPERATOR__MULTIPLY,   /* * */
+    AR_BINARY_OPERATOR__DIVIDE,     /* / */
     
     /* Comparison operators */
-    AR_OP__EQUAL,      /* = */
-    AR_OP__NOT_EQUAL,  /* <> */
-    AR_OP__LESS,       /* < */
-    AR_OP__LESS_EQ,    /* <= */
-    AR_OP__GREATER,    /* > */
-    AR_OP__GREATER_EQ  /* >= */
+    AR_BINARY_OPERATOR__EQUAL,      /* = */
+    AR_BINARY_OPERATOR__NOT_EQUAL,  /* <> */
+    AR_BINARY_OPERATOR__LESS,       /* < */
+    AR_BINARY_OPERATOR__LESS_EQ,    /* <= */
+    AR_BINARY_OPERATOR__GREATER,    /* > */
+    AR_BINARY_OPERATOR__GREATER_EQ  /* >= */
 } ar_binary_operator_t;
 ```
 
@@ -108,11 +108,11 @@ The module follows strict ownership semantics:
 const char *path[] = {"x"};
 ar_expression_ast_t *own_mem = ar_expression_ast__create_memory_access("memory", path, 1);
 ar_expression_ast_t *own_five = ar_expression_ast__create_literal_int(5);
-ar_expression_ast_t *own_add = ar_expression_ast__create_binary_op(AR_OP__ADD, own_mem, own_five);
+ar_expression_ast_t *own_add = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__ADD, own_mem, own_five);
 
 // Inspect the AST
-assert(ar_expression_ast__get_type(own_add) == AR_EXPR__BINARY_OP);
-assert(ar_expression_ast__get_operator(own_add) == AR_OP__ADD);
+assert(ar_expression_ast__get_type(own_add) == AR_EXPRESSION_AST_TYPE__BINARY_OP);
+assert(ar_expression_ast__get_operator(own_add) == AR_BINARY_OPERATOR__ADD);
 
 // Clean up
 ar_expression_ast__destroy(own_add);

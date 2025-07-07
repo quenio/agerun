@@ -63,7 +63,7 @@ struct ar_expression_ast_s {
  */
 ar_expression_ast_type_t ar_expression_ast__get_type(const ar_expression_ast_t *ref_node) {
     if (!ref_node) {
-        return AR_EXPR__LITERAL_INT; // Default value
+        return AR_EXPRESSION_AST_TYPE__LITERAL_INT; // Default value
     }
     return ref_node->type;
 }
@@ -77,7 +77,7 @@ ar_expression_ast_t* ar_expression_ast__create_literal_int(int value) {
         return NULL;
     }
     
-    own_node->type = AR_EXPR__LITERAL_INT;
+    own_node->type = AR_EXPRESSION_AST_TYPE__LITERAL_INT;
     own_node->data.literal_int.value = value;
     
     AR_ASSERT_OWNERSHIP(own_node);
@@ -93,7 +93,7 @@ ar_expression_ast_t* ar_expression_ast__create_literal_double(double value) {
         return NULL;
     }
     
-    own_node->type = AR_EXPR__LITERAL_DOUBLE;
+    own_node->type = AR_EXPRESSION_AST_TYPE__LITERAL_DOUBLE;
     own_node->data.literal_double.value = value;
     
     AR_ASSERT_OWNERSHIP(own_node);
@@ -113,7 +113,7 @@ ar_expression_ast_t* ar_expression_ast__create_literal_string(const char *ref_va
         return NULL;
     }
     
-    own_node->type = AR_EXPR__LITERAL_STRING;
+    own_node->type = AR_EXPRESSION_AST_TYPE__LITERAL_STRING;
     own_node->data.literal_string.own_value = AR__HEAP__STRDUP(ref_value, "String literal value");
     if (!own_node->data.literal_string.own_value) {
         AR__HEAP__FREE(own_node);
@@ -141,7 +141,7 @@ ar_expression_ast_t* ar_expression_ast__create_memory_access(
         return NULL;
     }
     
-    own_node->type = AR_EXPR__MEMORY_ACCESS;
+    own_node->type = AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS;
     own_node->data.memory_access.own_base = AR__HEAP__STRDUP(ref_base, "Memory access base");
     if (!own_node->data.memory_access.own_base) {
         AR__HEAP__FREE(own_node);
@@ -198,7 +198,7 @@ ar_expression_ast_t* ar_expression_ast__create_binary_op(
         return NULL;
     }
     
-    own_node->type = AR_EXPR__BINARY_OP;
+    own_node->type = AR_EXPRESSION_AST_TYPE__BINARY_OP;
     own_node->data.binary_op.op = op;
     own_node->data.binary_op.own_left = own_left;   // Ownership transferred
     own_node->data.binary_op.own_right = own_right; // Ownership transferred
@@ -217,18 +217,18 @@ void ar_expression_ast__destroy(ar_expression_ast_t *own_node) {
     }
     
     switch (own_node->type) {
-        case AR_EXPR__LITERAL_INT:
-        case AR_EXPR__LITERAL_DOUBLE:
+        case AR_EXPRESSION_AST_TYPE__LITERAL_INT:
+        case AR_EXPRESSION_AST_TYPE__LITERAL_DOUBLE:
             // No dynamic memory to free
             break;
             
-        case AR_EXPR__LITERAL_STRING:
+        case AR_EXPRESSION_AST_TYPE__LITERAL_STRING:
             if (own_node->data.literal_string.own_value) {
                 AR__HEAP__FREE(own_node->data.literal_string.own_value);
             }
             break;
             
-        case AR_EXPR__MEMORY_ACCESS:
+        case AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS:
             if (own_node->data.memory_access.own_base) {
                 AR__HEAP__FREE(own_node->data.memory_access.own_base);
             }
@@ -250,7 +250,7 @@ void ar_expression_ast__destroy(ar_expression_ast_t *own_node) {
             }
             break;
             
-        case AR_EXPR__BINARY_OP:
+        case AR_EXPRESSION_AST_TYPE__BINARY_OP:
             if (own_node->data.binary_op.own_left) {
                 ar_expression_ast__destroy(own_node->data.binary_op.own_left);
             }
@@ -266,28 +266,28 @@ void ar_expression_ast__destroy(ar_expression_ast_t *own_node) {
 /* Accessor function implementations */
 
 int ar_expression_ast__get_int_value(const ar_expression_ast_t *ref_node) {
-    if (!ref_node || ref_node->type != AR_EXPR__LITERAL_INT) {
+    if (!ref_node || ref_node->type != AR_EXPRESSION_AST_TYPE__LITERAL_INT) {
         return 0;
     }
     return ref_node->data.literal_int.value;
 }
 
 double ar_expression_ast__get_double_value(const ar_expression_ast_t *ref_node) {
-    if (!ref_node || ref_node->type != AR_EXPR__LITERAL_DOUBLE) {
+    if (!ref_node || ref_node->type != AR_EXPRESSION_AST_TYPE__LITERAL_DOUBLE) {
         return 0.0;
     }
     return ref_node->data.literal_double.value;
 }
 
 const char* ar_expression_ast__get_string_value(const ar_expression_ast_t *ref_node) {
-    if (!ref_node || ref_node->type != AR_EXPR__LITERAL_STRING) {
+    if (!ref_node || ref_node->type != AR_EXPRESSION_AST_TYPE__LITERAL_STRING) {
         return NULL;
     }
     return ref_node->data.literal_string.own_value;
 }
 
 const char* ar_expression_ast__get_memory_base(const ar_expression_ast_t *ref_node) {
-    if (!ref_node || ref_node->type != AR_EXPR__MEMORY_ACCESS) {
+    if (!ref_node || ref_node->type != AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS) {
         return NULL;
     }
     return ref_node->data.memory_access.own_base;
@@ -297,7 +297,7 @@ char** ar_expression_ast__get_memory_path(
     const ar_expression_ast_t *ref_node,
     size_t *out_count
 ) {
-    if (!ref_node || ref_node->type != AR_EXPR__MEMORY_ACCESS || !out_count) {
+    if (!ref_node || ref_node->type != AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS || !out_count) {
         if (out_count) *out_count = 0;
         return NULL;
     }
@@ -312,21 +312,21 @@ char** ar_expression_ast__get_memory_path(
 }
 
 ar_binary_operator_t ar_expression_ast__get_operator(const ar_expression_ast_t *ref_node) {
-    if (!ref_node || ref_node->type != AR_EXPR__BINARY_OP) {
-        return AR_OP__ADD; // Default value
+    if (!ref_node || ref_node->type != AR_EXPRESSION_AST_TYPE__BINARY_OP) {
+        return AR_BINARY_OPERATOR__ADD; // Default value
     }
     return ref_node->data.binary_op.op;
 }
 
 const ar_expression_ast_t* ar_expression_ast__get_left(const ar_expression_ast_t *ref_node) {
-    if (!ref_node || ref_node->type != AR_EXPR__BINARY_OP) {
+    if (!ref_node || ref_node->type != AR_EXPRESSION_AST_TYPE__BINARY_OP) {
         return NULL;
     }
     return ref_node->data.binary_op.own_left;
 }
 
 const ar_expression_ast_t* ar_expression_ast__get_right(const ar_expression_ast_t *ref_node) {
-    if (!ref_node || ref_node->type != AR_EXPR__BINARY_OP) {
+    if (!ref_node || ref_node->type != AR_EXPRESSION_AST_TYPE__BINARY_OP) {
         return NULL;
     }
     return ref_node->data.binary_op.own_right;

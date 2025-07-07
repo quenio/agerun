@@ -47,7 +47,7 @@ static void test_agent_instruction_evaluator__evaluate_with_context(void) {
     // When evaluating an agent instruction with context: agent("worker", "2.0.0", memory)
     const char *args[] = {"\"worker\"", "\"2.0.0\"", "memory"};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__AGENT, "agent", args, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__AGENT, "agent", args, 3, NULL
     );
     assert(ast != NULL);
     
@@ -122,7 +122,7 @@ static void test_agent_instruction_evaluator__evaluate_with_result(void) {
     // When evaluating an agent instruction with result assignment: memory.agent_id := agent("counter", "1.0.0", memory)
     const char *args[] = {"\"counter\"", "\"1.0.0\"", "memory"};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__AGENT, "agent", args, 3, "memory.agent_id"
+        AR_INSTRUCTION_AST_TYPE__AGENT, "agent", args, 3, "memory.agent_id"
     );
     assert(ast != NULL);
     
@@ -195,7 +195,7 @@ static void test_agent_instruction_evaluator__evaluate_invalid_method(void) {
     // When evaluating an agent instruction with non-existent method: agent("missing", "1.0.0", memory)
     const char *args[] = {"\"missing\"", "\"1.0.0\"", "memory"};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__AGENT, "agent", args, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__AGENT, "agent", args, 3, NULL
     );
     assert(ast != NULL);
     
@@ -242,7 +242,7 @@ static void test_agent_instruction_evaluator__evaluate_invalid_args(void) {
     // Test case 1: Wrong number of arguments
     const char *args1[] = {"\"test\"", "\"1.0.0\""};  // Missing context
     ar_instruction_ast_t *ast1 = ar_instruction_ast__create_function_call(
-        AR_INST__AGENT, "agent", args1, 2, NULL
+        AR_INSTRUCTION_AST_TYPE__AGENT, "agent", args1, 2, NULL
     );
     assert(ast1 != NULL);
     
@@ -254,7 +254,7 @@ static void test_agent_instruction_evaluator__evaluate_invalid_args(void) {
     // Test case 2: Non-string method name
     const char *args2[] = {"42", "\"1.0.0\"", "memory"};
     ar_instruction_ast_t *ast2 = ar_instruction_ast__create_function_call(
-        AR_INST__AGENT, "agent", args2, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__AGENT, "agent", args2, 3, NULL
     );
     assert(ast2 != NULL);
     
@@ -266,7 +266,7 @@ static void test_agent_instruction_evaluator__evaluate_invalid_args(void) {
     // Test case 3: Non-string version
     const char *args3[] = {"\"test\"", "1.0", "memory"};
     ar_instruction_ast_t *ast3 = ar_instruction_ast__create_function_call(
-        AR_INST__AGENT, "agent", args3, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__AGENT, "agent", args3, 3, NULL
     );
     assert(ast3 != NULL);
     
@@ -278,7 +278,7 @@ static void test_agent_instruction_evaluator__evaluate_invalid_args(void) {
     // Test case 4: Invalid context type (not map)
     const char *args4[] = {"\"test\"", "\"1.0.0\"", "42"};
     ar_instruction_ast_t *ast4 = ar_instruction_ast__create_function_call(
-        AR_INST__AGENT, "agent", args4, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__AGENT, "agent", args4, 3, NULL
     );
     assert(ast4 != NULL);
     
@@ -351,7 +351,7 @@ static void test_agent_instruction_evaluator__evaluate_with_instance(void) {
     // When evaluating an agent instruction with the instance: agent("tester", "1.0.0", memory)
     const char *args[] = {"\"tester\"", "\"1.0.0\"", "memory"};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__AGENT, "agent", args, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__AGENT, "agent", args, 3, NULL
     );
     assert(ast != NULL);
     
@@ -428,7 +428,7 @@ static void test_agent_instruction_evaluator__legacy_evaluate_function(void) {
     // When calling the instance-based evaluate function: agent("legacy_worker", "1.0.0", memory)
     const char *args[] = {"\"legacy_worker\"", "\"1.0.0\"", "memory"};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__AGENT, "agent", args, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__AGENT, "agent", args, 3, NULL
     );
     assert(ast != NULL);
     

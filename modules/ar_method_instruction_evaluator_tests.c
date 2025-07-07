@@ -64,7 +64,7 @@ static void test_method_instruction_evaluator__evaluate_with_instance(void) {
     // When creating a method AST node
     const char *args[] = {"\"test_method\"", "\"send(0, 42)\"", "\"1.0.0\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__METHOD, "method", args, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__METHOD, "method", args, 3, NULL
     );
     assert(ast != NULL);
     
@@ -124,7 +124,7 @@ static void test_method_instruction_evaluator__evaluate_legacy(void) {
     // When creating a method AST node with result assignment
     const char *args[] = {"\"legacy_test\"", "\"send(0, 99)\"", "\"2.0.0\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__METHOD, "method", args, 3, "memory.result"
+        AR_INSTRUCTION_AST_TYPE__METHOD, "method", args, 3, "memory.result"
     );
     assert(ast != NULL);
     
@@ -187,7 +187,7 @@ static void test_instruction_evaluator__evaluate_method_simple(void) {
     // When evaluating a method instruction: method("counter", "send(message.sender, memory.count + 1)", "1.0.0")
     const char *args[] = {"\"counter\"", "\"send(message.sender, memory.count + 1)\"", "\"1.0.0\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__METHOD, "method", args, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__METHOD, "method", args, 3, NULL
     );
     assert(ast != NULL);
     
@@ -245,7 +245,7 @@ static void test_instruction_evaluator__evaluate_method_with_result(void) {
     // When evaluating a method instruction with result assignment: memory.created := method("echo", "send(message.sender, message.content)", "2.0.0")
     const char *args[] = {"\"echo\"", "\"send(message.sender, message.content)\"", "\"2.0.0\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__METHOD, "method", args, 3, "memory.created"
+        AR_INSTRUCTION_AST_TYPE__METHOD, "method", args, 3, "memory.created"
     );
     assert(ast != NULL);
     
@@ -307,7 +307,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_instructions(voi
     // When evaluating a method instruction with invalid instructions: method("bad", "invalid syntax here", "1.0.0")
     const char *args[] = {"\"bad\"", "\"invalid syntax here\"", "\"1.0.0\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__METHOD, "method", args, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__METHOD, "method", args, 3, NULL
     );
     assert(ast != NULL);
     
@@ -366,7 +366,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     // Test case 1: Wrong number of arguments
     const char *args1[] = {"\"test\"", "\"send(0, 42)\""};  // Missing version
     ar_instruction_ast_t *ast1 = ar_instruction_ast__create_function_call(
-        AR_INST__METHOD, "method", args1, 2, NULL
+        AR_INSTRUCTION_AST_TYPE__METHOD, "method", args1, 2, NULL
     );
     assert(ast1 != NULL);
     
@@ -391,7 +391,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     // Test case 2: Non-string method name
     const char *args2[] = {"42", "\"send(0, 42)\"", "\"1.0.0\""};
     ar_instruction_ast_t *ast2 = ar_instruction_ast__create_function_call(
-        AR_INST__METHOD, "method", args2, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__METHOD, "method", args2, 3, NULL
     );
     assert(ast2 != NULL);
     
@@ -419,7 +419,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     // Test case 3: Non-string instructions
     const char *args3[] = {"\"test\"", "42", "\"1.0.0\""};
     ar_instruction_ast_t *ast3 = ar_instruction_ast__create_function_call(
-        AR_INST__METHOD, "method", args3, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__METHOD, "method", args3, 3, NULL
     );
     assert(ast3 != NULL);
     
@@ -447,7 +447,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     // Test case 4: Non-string version
     const char *args4[] = {"\"test\"", "\"send(0, 42)\"", "1.0"};
     ar_instruction_ast_t *ast4 = ar_instruction_ast__create_function_call(
-        AR_INST__METHOD, "method", args4, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__METHOD, "method", args4, 3, NULL
     );
     assert(ast4 != NULL);
     

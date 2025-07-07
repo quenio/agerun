@@ -136,8 +136,8 @@ if (!own_ast) {
 }
 
 // Use the AST
-assert(ar_expression_ast__get_type(own_ast) == AR_EXPR__BINARY_OP);
-assert(ar_expression_ast__get_operator(own_ast) == AR_OP__ADD);
+assert(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__BINARY_OP);
+assert(ar_expression_ast__get_operator(own_ast) == AR_BINARY_OPERATOR__ADD);
 
 // Clean up
 ar_expression_ast__destroy(own_ast);

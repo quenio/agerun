@@ -19,7 +19,7 @@ ar_event_t* ar_event__create(void) {
     }
     
     own_event->own_message = NULL;
-    own_event->type = AR_EVENT_INFO;  // Default to INFO
+    own_event->type = AR_EVENT_TYPE__INFO;  // Default to INFO
     own_event->position = -1;
     own_event->has_position = false;
     
@@ -82,7 +82,7 @@ ar_event_t* ar_event__create_typed(ar_event_type_t type, const char *message) {
 
 ar_event_type_t ar_event__get_type(const ar_event_t *ref_event) {
     if (!ref_event) {
-        return AR_EVENT_ERROR;  // Default for NULL
+        return AR_EVENT_TYPE__ERROR;  // Default for NULL
     }
     
     return ref_event->type;

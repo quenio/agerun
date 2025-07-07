@@ -57,7 +57,7 @@ static void test_send_instruction_evaluator__evaluate_with_instance(void) {
     // When creating a send AST node for "send(0, 42)"
     const char *args[] = {"0", "42"};
     ar_instruction_ast_t *own_ast = ar_instruction_ast__create_function_call(
-        AR_INST__SEND, "send", args, 2, NULL
+        AR_INSTRUCTION_AST_TYPE__SEND, "send", args, 2, NULL
     );
     assert(own_ast != NULL);
     
@@ -109,7 +109,7 @@ static void test_instruction_evaluator__evaluate_send_integer_message(void) {
     // When creating a send AST node for "send(0, 42)"
     const char *args[] = {"0", "42"};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__SEND, "send", args, 2, NULL
+        AR_INSTRUCTION_AST_TYPE__SEND, "send", args, 2, NULL
     );
     assert(ast != NULL);
     
@@ -161,7 +161,7 @@ static void test_instruction_evaluator__evaluate_send_string_message(void) {
     // When creating a send AST node for "send(0, \"hello\")"
     const char *args[] = {"0", "\"hello\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__SEND, "send", args, 2, NULL
+        AR_INSTRUCTION_AST_TYPE__SEND, "send", args, 2, NULL
     );
     assert(ast != NULL);
     
@@ -213,7 +213,7 @@ static void test_instruction_evaluator__evaluate_send_with_result(void) {
     // When creating a send AST node for "memory.result := send(0, \"test\")"
     const char *args[] = {"0", "\"test\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__SEND, "send", args, 2, "memory.result"
+        AR_INSTRUCTION_AST_TYPE__SEND, "send", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -241,7 +241,7 @@ static void test_instruction_evaluator__evaluate_send_with_result(void) {
     // And the result should be stored in memory (send returns true for agent 0)
     ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
-    assert(ar_data__get_type(result_value) == DATA_INTEGER);
+    assert(ar_data__get_type(result_value) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(result_value) == 1); // true as integer
     
     // Cleanup
@@ -274,7 +274,7 @@ static void test_instruction_evaluator__evaluate_send_memory_reference(void) {
     // When creating a send AST node for "send(0, memory.msg)"
     const char *args[] = {"0", "memory.msg"};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__SEND, "send", args, 2, NULL
+        AR_INSTRUCTION_AST_TYPE__SEND, "send", args, 2, NULL
     );
     assert(ast != NULL);
     
@@ -327,7 +327,7 @@ static void test_instruction_evaluator__evaluate_send_invalid_args(void) {
     // When creating a send AST node with only one argument
     const char *args[] = {"0"};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__SEND, "send", args, 1, NULL
+        AR_INSTRUCTION_AST_TYPE__SEND, "send", args, 1, NULL
     );
     assert(ast != NULL);
     

@@ -333,7 +333,7 @@ ar_instruction_ast_t* ar_agent_instruction_parser__parse(
     }
     
     ar_instruction_ast_t *own_ast = ar_instruction_ast__create_function_call(
-        AR_INST__AGENT, "agent", const_args, final_arg_count, ref_result_path
+        AR_INSTRUCTION_AST_TYPE__AGENT, "agent", const_args, final_arg_count, ref_result_path
     );
     
     AR__HEAP__FREE(const_args);

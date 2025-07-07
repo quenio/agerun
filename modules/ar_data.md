@@ -28,11 +28,11 @@ The data module (`ar_data`) provides a type-safe data storage system built on to
  * Data type enumeration
  */
 typedef enum {
-    DATA_INTEGER,
-    DATA_DOUBLE,
-    DATA_STRING,
-    DATA_LIST,
-    DATA_MAP
+    AR_DATA_TYPE__INTEGER,
+    AR_DATA_TYPE__DOUBLE,
+    AR_DATA_TYPE__STRING,
+    AR_DATA_TYPE__LIST,
+    AR_DATA_TYPE__MAP
 } ar_data_type_t;
 
 /**
@@ -92,7 +92,7 @@ void ar_data__destroy(ar_data_t *own_data);
 /**
  * Get the type of a data structure
  * @param ref_data Pointer to the data to check
- * @return The data type or DATA_INTEGER if data is NULL
+ * @return The data type or AR_DATA_TYPE__INTEGER if data is NULL
  * @note Ownership: Does not take ownership of the data parameter.
  */
 ar_data_type_t ar_data__get_type(const ar_data_t *ref_data);
@@ -504,10 +504,10 @@ ar_map__set((ar_map_t*)ar_data__get_map(parent_map), "child", child_map);
 // Retrieve and use the nested data
 const ar_data_t *retrieved_child = (const ar_data_t*)ar_map__get(
     (ar_map_t*)ar_data__get_map(parent_map), "child");
-if (retrieved_child && ar_data__get_type(retrieved_child) == DATA_MAP) {
+if (retrieved_child && ar_data__get_type(retrieved_child) == AR_DATA_TYPE__MAP) {
     const ar_map_t *child = ar_data__get_map(retrieved_child);
     const ar_data_t *count = (const ar_data_t*)ar_map__get(child, "count");
-    if (count && ar_data__get_type(count) == DATA_INTEGER) {
+    if (count && ar_data__get_type(count) == AR_DATA_TYPE__INTEGER) {
         printf("Count value: %d\n", ar_data__get_integer(count));
     }
 }
@@ -636,11 +636,11 @@ ar_data_t *ref_first_item = ar_data__list_first(own_list_data);
 ar_data_t *ref_last_item = ar_data__list_last(own_list_data);
 
 // Check the types and values
-if (ref_first_item && ar_data__get_type(ref_first_item) == DATA_DOUBLE) {
+if (ref_first_item && ar_data__get_type(ref_first_item) == AR_DATA_TYPE__DOUBLE) {
     printf("First item is a double: %f\n", ar_data__get_double(ref_first_item));
 }
 
-if (ref_last_item && ar_data__get_type(ref_last_item) == DATA_MAP) {
+if (ref_last_item && ar_data__get_type(ref_last_item) == AR_DATA_TYPE__MAP) {
     printf("Last item is a map\n");
     printf("Name: %s\n", ar_data__get_map_string(ref_last_item, "name"));
     printf("Age: %d\n", ar_data__get_map_integer(ref_last_item, "age"));
@@ -785,26 +785,26 @@ const ar_data_t *scores_data = ar_data__get_map_data(root_map, "user.scores");
 const ar_data_t *math_score_data = ar_data__get_map_data(root_map, "user.scores.math");
 
 // Check data types and access values appropriately
-if (profile_data && ar_data__get_type(profile_data) == DATA_MAP) {
+if (profile_data && ar_data__get_type(profile_data) == AR_DATA_TYPE__MAP) {
     printf("Profile is a map\n");
     
-    if (name_data && ar_data__get_type(name_data) == DATA_STRING) {
+    if (name_data && ar_data__get_type(name_data) == AR_DATA_TYPE__STRING) {
         printf("Name: %s\n", ar_data__get_string(name_data));
     }
     
-    if (age_data && ar_data__get_type(age_data) == DATA_INTEGER) {
+    if (age_data && ar_data__get_type(age_data) == AR_DATA_TYPE__INTEGER) {
         printf("Age: %d\n", ar_data__get_integer(age_data));
     }
 }
 
-if (stats_data && ar_data__get_type(stats_data) == DATA_MAP) {
-    if (height_data && ar_data__get_type(height_data) == DATA_DOUBLE) {
+if (stats_data && ar_data__get_type(stats_data) == AR_DATA_TYPE__MAP) {
+    if (height_data && ar_data__get_type(height_data) == AR_DATA_TYPE__DOUBLE) {
         printf("Height: %.1f cm\n", ar_data__get_double(height_data));
     }
 }
 
-if (scores_data && ar_data__get_type(scores_data) == DATA_MAP) {
-    if (math_score_data && ar_data__get_type(math_score_data) == DATA_INTEGER) {
+if (scores_data && ar_data__get_type(scores_data) == AR_DATA_TYPE__MAP) {
+    if (math_score_data && ar_data__get_type(math_score_data) == AR_DATA_TYPE__INTEGER) {
         printf("Math score: %d\n", ar_data__get_integer(math_score_data));
     }
     
@@ -852,13 +852,13 @@ if (own_keys_list) {
             // Print key and value based on type
             printf("  %s: ", key);
             switch (ar_data__get_type(ref_value)) {
-                case DATA_STRING:
+                case AR_DATA_TYPE__STRING:
                     printf("%s", ar_data__get_string(ref_value));
                     break;
-                case DATA_INTEGER:
+                case AR_DATA_TYPE__INTEGER:
                     printf("%d", ar_data__get_integer(ref_value));
                     break;
-                case DATA_DOUBLE:
+                case AR_DATA_TYPE__DOUBLE:
                     printf("%.1f", ar_data__get_double(ref_value));
                     break;
                 default:

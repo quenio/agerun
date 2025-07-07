@@ -42,14 +42,14 @@ void ar_io__fprintf(FILE *stream, const char *format, ...);
  * Enumeration for file operation results with detailed error types
  */
 typedef enum file_result_e {
-    FILE_SUCCESS,             // Operation completed successfully
-    FILE_ERROR_OPEN,          // Failed to open file
-    FILE_ERROR_READ,          // Failed to read from file
-    FILE_ERROR_WRITE,         // Failed to write to file
-    FILE_ERROR_PERMISSIONS,   // Insufficient permissions
-    FILE_ERROR_NOT_FOUND,     // File not found
-    FILE_ERROR_CORRUPT,       // File is corrupt or malformed
-    FILE_ERROR_ALREADY_EXISTS, // File already exists (for creation operations)
+    AR_FILE_RESULT__SUCCESS,             // Operation completed successfully
+    AR_FILE_RESULT__ERROR_OPEN,          // Failed to open file
+    AR_FILE_RESULT__ERROR_READ,          // Failed to read from file
+    AR_FILE_RESULT__ERROR_WRITE,         // Failed to write to file
+    AR_FILE_RESULT__ERROR_PERMISSIONS,   // Insufficient permissions
+    AR_FILE_RESULT__ERROR_NOT_FOUND,     // File not found
+    AR_FILE_RESULT__ERROR_CORRUPT,       // File is corrupt or malformed
+    AR_FILE_RESULT__ERROR_ALREADY_EXISTS, // File already exists (for creation operations)
     FILE_ERROR_UNKNOWN        // Unknown error
 } ar_file_result_t;
 
@@ -70,7 +70,7 @@ bool ar_io__read_line(FILE *fp, char *buffer, int buffer_size, const char *filen
  * @param filename Path to the file to open
  * @param mode Mode to open the file in ("r", "w", etc.)
  * @param file_ptr Pointer to store the opened file handle
- * @return FILE_SUCCESS if successful, appropriate error code otherwise
+ * @return AR_FILE_RESULT__SUCCESS if successful, appropriate error code otherwise
  */
 ar_file_result_t ar_io__open_file(const char *filename, const char *mode, FILE **file_ptr);
 
@@ -79,7 +79,7 @@ ar_file_result_t ar_io__open_file(const char *filename, const char *mode, FILE *
  *
  * @param fp Pointer to the file to close
  * @param filename Name of the file (for error reporting)
- * @return FILE_SUCCESS if successful, appropriate error code otherwise
+ * @return AR_FILE_RESULT__SUCCESS if successful, appropriate error code otherwise
  */
 ar_file_result_t ar_io__close_file(FILE *fp, const char *filename);
 
@@ -87,7 +87,7 @@ ar_file_result_t ar_io__close_file(FILE *fp, const char *filename);
  * Creates a backup of a file before modifying it
  *
  * @param filename Path to the file to backup
- * @return FILE_SUCCESS if backup was created successfully, appropriate error code otherwise
+ * @return AR_FILE_RESULT__SUCCESS if backup was created successfully, appropriate error code otherwise
  */
 ar_file_result_t ar_io__create_backup(const char *filename);
 
@@ -95,7 +95,7 @@ ar_file_result_t ar_io__create_backup(const char *filename);
  * Restores a backup file if the main operation failed
  *
  * @param filename Path to the file to restore
- * @return FILE_SUCCESS if backup was restored successfully, appropriate error code otherwise
+ * @return AR_FILE_RESULT__SUCCESS if backup was restored successfully, appropriate error code otherwise
  */
 ar_file_result_t ar_io__restore_backup(const char *filename);
 
@@ -103,7 +103,7 @@ ar_file_result_t ar_io__restore_backup(const char *filename);
  * Applies secure permissions to a file (owner read/write only)
  *
  * @param filename Path to the file to secure
- * @return FILE_SUCCESS if permissions were set successfully, appropriate error code otherwise
+ * @return AR_FILE_RESULT__SUCCESS if permissions were set successfully, appropriate error code otherwise
  */
 ar_file_result_t ar_io__set_secure_permissions(const char *filename);
 
@@ -113,7 +113,7 @@ ar_file_result_t ar_io__set_secure_permissions(const char *filename);
  * @param filename Path to the target file
  * @param write_func Function that writes the content to the temp file
  * @param context Context passed to the write function
- * @return FILE_SUCCESS if successful, appropriate error code otherwise
+ * @return AR_FILE_RESULT__SUCCESS if successful, appropriate error code otherwise
  */
 ar_file_result_t ar_io__write_file(const char *filename,
                            bool (*write_func)(FILE *fp, void *context),

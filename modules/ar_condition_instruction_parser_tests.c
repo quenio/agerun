@@ -56,7 +56,7 @@ static void test_condition_parser__parse_simple_if(void) {
     
     // Then it should parse successfully
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__IF);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__IF);
     assert(strcmp(ar_instruction_ast__get_function_name(own_ast), "if") == 0);
     assert(ar_instruction_ast__has_result_assignment(own_ast) == false);
     
@@ -95,7 +95,7 @@ static void test_condition_parser__parse_if_with_assignment(void) {
     
     // Then it should parse as an if function with assignment
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__IF);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__IF);
     assert(strcmp(ar_instruction_ast__get_function_name(own_ast), "if") == 0);
     assert(ar_instruction_ast__has_result_assignment(own_ast) == true);
     assert(strcmp(ar_instruction_ast__get_function_result_path(own_ast), "memory.level") == 0);
@@ -135,7 +135,7 @@ static void test_condition_parser__parse_nested_conditions(void) {
     
     // Then it should parse the complex condition
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__IF);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__IF);
     
     ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(ar_list__count(own_args) == 3);
@@ -165,7 +165,7 @@ static void test_condition_parser__parse_nested_function_calls(void) {
     
     // Then it should parse with nested function calls preserved
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__IF);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__IF);
     
     ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(ar_list__count(own_args) == 3);
@@ -288,7 +288,7 @@ static void test_condition_parser__parse_with_expression_asts(void) {
     
     // Then it should parse successfully with argument ASTs
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__IF);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__IF);
     
     // And the arguments should be available as expression ASTs
     const ar_list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
@@ -300,19 +300,19 @@ static void test_condition_parser__parse_with_expression_asts(void) {
     assert(items != NULL);
     const ar_expression_ast_t *ref_condition = (const ar_expression_ast_t*)items[0];
     assert(ref_condition != NULL);
-    assert(ar_expression_ast__get_type(ref_condition) == AR_EXPR__BINARY_OP);
-    assert(ar_expression_ast__get_operator(ref_condition) == AR_OP__GREATER);
+    assert(ar_expression_ast__get_type(ref_condition) == AR_EXPRESSION_AST_TYPE__BINARY_OP);
+    assert(ar_expression_ast__get_operator(ref_condition) == AR_BINARY_OPERATOR__GREATER);
     
     // Second argument should be a string literal AST
     const ar_expression_ast_t *ref_then_expr = (const ar_expression_ast_t*)items[1];
     assert(ref_then_expr != NULL);
-    assert(ar_expression_ast__get_type(ref_then_expr) == AR_EXPR__LITERAL_STRING);
+    assert(ar_expression_ast__get_type(ref_then_expr) == AR_EXPRESSION_AST_TYPE__LITERAL_STRING);
     assert(strcmp(ar_expression_ast__get_string_value(ref_then_expr), "High") == 0);
     
     // Third argument should be a memory access AST
     const ar_expression_ast_t *ref_else_expr = (const ar_expression_ast_t*)items[2];
     assert(ref_else_expr != NULL);
-    assert(ar_expression_ast__get_type(ref_else_expr) == AR_EXPR__MEMORY_ACCESS);
+    assert(ar_expression_ast__get_type(ref_else_expr) == AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS);
     // Verify memory path
     size_t path_count = 0;
     char **path_components = ar_expression_ast__get_memory_path(ref_else_expr, &path_count);

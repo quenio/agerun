@@ -46,7 +46,7 @@ static void test_method_instruction_parser__simple_parsing(void) {
     
     // Then it should parse as a method function
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__METHOD);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__METHOD);
     
     ar_instruction_ast__destroy(own_ast);
     ar_method_instruction_parser__destroy(own_parser);
@@ -70,7 +70,7 @@ static void test_method_instruction_parser__with_assignment(void) {
     
     // Then it should parse correctly with assignment
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__METHOD);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__METHOD);
     assert(ar_instruction_ast__has_result_assignment(own_ast) == true);
     
     const char *result_path = ar_instruction_ast__get_function_result_path(own_ast);
@@ -112,7 +112,7 @@ static void test_method_instruction_parser__complex_code(void) {
     
     // Then it should parse correctly
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__METHOD);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__METHOD);
     
     ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(ar_list__count(own_args) == 3);
@@ -148,7 +148,7 @@ static void test_method_instruction_parser__whitespace_handling(void) {
     
     // Then it should parse correctly ignoring whitespace
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__METHOD);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__METHOD);
     
     // And no errors should be logged
     assert(ar_log__get_last_error_message(log) == NULL);
@@ -296,7 +296,7 @@ static void test_method_instruction_parser__multiline_code(void) {
     
     // Then it should parse correctly
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__METHOD);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__METHOD);
     
     ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     void **own_items = ar_list__items(own_args);
@@ -330,7 +330,7 @@ static void test_method_instruction_parser__parse_with_expression_asts(void) {
     
     // Then it should parse successfully with argument ASTs
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__METHOD);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__METHOD);
     
     // And the arguments should be available as expression ASTs
     const ar_list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
@@ -344,19 +344,19 @@ static void test_method_instruction_parser__parse_with_expression_asts(void) {
     // First argument - method name
     const ar_expression_ast_t *ref_name = (const ar_expression_ast_t*)items[0];
     assert(ref_name != NULL);
-    assert(ar_expression_ast__get_type(ref_name) == AR_EXPR__LITERAL_STRING);
+    assert(ar_expression_ast__get_type(ref_name) == AR_EXPRESSION_AST_TYPE__LITERAL_STRING);
     assert(strcmp(ar_expression_ast__get_string_value(ref_name), "calculate") == 0);
     
     // Second argument - method code
     const ar_expression_ast_t *ref_code = (const ar_expression_ast_t*)items[1];
     assert(ref_code != NULL);
-    assert(ar_expression_ast__get_type(ref_code) == AR_EXPR__LITERAL_STRING);
+    assert(ar_expression_ast__get_type(ref_code) == AR_EXPRESSION_AST_TYPE__LITERAL_STRING);
     assert(strcmp(ar_expression_ast__get_string_value(ref_code), "memory.result := memory.x + memory.y") == 0);
     
     // Third argument - version
     const ar_expression_ast_t *ref_version = (const ar_expression_ast_t*)items[2];
     assert(ref_version != NULL);
-    assert(ar_expression_ast__get_type(ref_version) == AR_EXPR__LITERAL_STRING);
+    assert(ar_expression_ast__get_type(ref_version) == AR_EXPRESSION_AST_TYPE__LITERAL_STRING);
     assert(strcmp(ar_expression_ast__get_string_value(ref_version), "1.2.3") == 0);
     
     // And no errors should be logged

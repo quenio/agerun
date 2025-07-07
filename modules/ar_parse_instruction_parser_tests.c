@@ -60,7 +60,7 @@ static void test_parse_instruction_parser__parse_simple(void) {
     
     // Then it should parse successfully
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__PARSE);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__PARSE);
     assert(strcmp(ar_instruction_ast__get_function_name(own_ast), "parse") == 0);
     
     // And it should have exactly 2 arguments
@@ -103,7 +103,7 @@ static void test_parse_instruction_parser__parse_with_assignment(void) {
     
     // Then it should parse successfully
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__PARSE);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__PARSE);
     
     // And it should have the result path
     assert(strcmp(ar_instruction_ast__get_function_result_path(own_ast), "memory.parsed") == 0);
@@ -143,7 +143,7 @@ static void test_parse_instruction_parser__parse_complex_template(void) {
     
     // Then it should parse successfully
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__PARSE);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__PARSE);
     
     // And preserve the template with multiple placeholders
     ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
@@ -186,7 +186,7 @@ static void test_parse_instruction_parser__parse_with_escaped_quotes(void) {
                 ar_parse_instruction_parser__get_error_position(own_parser));
     }
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__PARSE);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__PARSE);
     
     // And preserve the escaped quotes
     ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
@@ -293,13 +293,13 @@ static void test_parse_instruction_parser__reusability(void) {
     const char *instruction1 = "parse(\"name={n}\", \"name=John\")";
     ar_instruction_ast_t *own_ast1 = ar_parse_instruction_parser__parse(own_parser, instruction1, NULL);
     assert(own_ast1 != NULL);
-    assert(ar_instruction_ast__get_type(own_ast1) == AR_INST__PARSE);
+    assert(ar_instruction_ast__get_type(own_ast1) == AR_INSTRUCTION_AST_TYPE__PARSE);
     assert(ar_log__get_last_error_message(log) == NULL);
     
     const char *instruction2 = "memory.data := parse(\"age={a}\", \"age=30\")";
     ar_instruction_ast_t *own_ast2 = ar_parse_instruction_parser__parse(own_parser, instruction2, "memory.data");
     assert(own_ast2 != NULL);
-    assert(ar_instruction_ast__get_type(own_ast2) == AR_INST__PARSE);
+    assert(ar_instruction_ast__get_type(own_ast2) == AR_INSTRUCTION_AST_TYPE__PARSE);
     assert(strcmp(ar_instruction_ast__get_function_result_path(own_ast2), "memory.data") == 0);
     
     // Parse an invalid instruction
@@ -313,7 +313,7 @@ static void test_parse_instruction_parser__reusability(void) {
     const char *instruction4 = "parse(\"x={val}\", \"x=42\")";
     ar_instruction_ast_t *own_ast4 = ar_parse_instruction_parser__parse(own_parser, instruction4, NULL);
     assert(own_ast4 != NULL);
-    assert(ar_instruction_ast__get_type(own_ast4) == AR_INST__PARSE);
+    assert(ar_instruction_ast__get_type(own_ast4) == AR_INSTRUCTION_AST_TYPE__PARSE);
     
     // Clean up
     ar_instruction_ast__destroy(own_ast1);
@@ -338,7 +338,7 @@ static void test_parse_instruction_parser__parse_with_expression_asts(void) {
     
     // Then it should parse successfully with argument ASTs
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__PARSE);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__PARSE);
     
     // And the arguments should be available as expression ASTs
     const ar_list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
@@ -350,13 +350,13 @@ static void test_parse_instruction_parser__parse_with_expression_asts(void) {
     assert(items != NULL);
     const ar_expression_ast_t *ref_template = (const ar_expression_ast_t*)items[0];
     assert(ref_template != NULL);
-    assert(ar_expression_ast__get_type(ref_template) == AR_EXPR__LITERAL_STRING);
+    assert(ar_expression_ast__get_type(ref_template) == AR_EXPRESSION_AST_TYPE__LITERAL_STRING);
     assert(strcmp(ar_expression_ast__get_string_value(ref_template), "User: {name}, Age: {age}") == 0);
     
     // Second argument should be a string literal AST with the input
     const ar_expression_ast_t *ref_input = (const ar_expression_ast_t*)items[1];
     assert(ref_input != NULL);
-    assert(ar_expression_ast__get_type(ref_input) == AR_EXPR__LITERAL_STRING);
+    assert(ar_expression_ast__get_type(ref_input) == AR_EXPRESSION_AST_TYPE__LITERAL_STRING);
     assert(strcmp(ar_expression_ast__get_string_value(ref_input), "User: Alice, Age: 25") == 0);
     
     // And no errors should be logged

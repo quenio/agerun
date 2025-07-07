@@ -51,12 +51,12 @@ static void test_calculator_add(void) {
     // Get agent memory to check result
     const ar_data_t *agent_memory = ar_agency__get_agent_memory(calc_agent);
     assert(agent_memory != NULL);
-    assert(ar_data__get_type(agent_memory) == DATA_MAP);
+    assert(ar_data__get_type(agent_memory) == AR_DATA_TYPE__MAP);
     
     // Check if result exists
     const ar_data_t *result = ar_data__get_map_data(agent_memory, "result");
     assert(result != NULL);
-    assert(ar_data__get_type(result) == DATA_INTEGER);
+    assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(result) == 8);
     
     printf("SUCCESS: Calculator add operation: 5 + 3 = 8\n");
@@ -121,7 +121,7 @@ static void test_calculator_multiply(void) {
     // Check if result exists
     const ar_data_t *result = ar_data__get_map_data(agent_memory, "result");
     assert(result != NULL);
-    assert(ar_data__get_type(result) == DATA_INTEGER);
+    assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(result) == 10);
     
     printf("SUCCESS: Calculator multiply operation: 5 * 2 = 10\n");
@@ -186,7 +186,7 @@ static void test_calculator_subtract(void) {
     // Check if result exists
     const ar_data_t *result = ar_data__get_map_data(agent_memory, "result");
     assert(result != NULL);
-    assert(ar_data__get_type(result) == DATA_INTEGER);
+    assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
     
     int subtract_result = ar_data__get_integer(result);
     printf("Subtract result: %d\n", subtract_result);
@@ -254,7 +254,7 @@ static void test_calculator_divide(void) {
     assert(result != NULL);
     
     // Divide returns integer (integer division)
-    assert(ar_data__get_type(result) == DATA_INTEGER);
+    assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
     
     int divide_result = ar_data__get_integer(result);
     printf("Divide result: %d\n", divide_result);
@@ -320,7 +320,7 @@ static void test_calculator_unknown_operation(void) {
     // Check if result exists (should be 0 for unknown operations)
     const ar_data_t *result = ar_data__get_map_data(agent_memory, "result");
     assert(result != NULL);
-    assert(ar_data__get_type(result) == DATA_INTEGER);
+    assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
     
     int unknown_result = ar_data__get_integer(result);
     printf("Unknown operation result: %d\n", unknown_result);

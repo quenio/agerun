@@ -64,7 +64,7 @@ static void test_build_instruction_evaluator__evaluate_with_instance(void) {
     // When creating a build AST node
     const char *args[] = {"\"Hello {name}!\"", "memory.data"};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__BUILD, "build", args, 2, "memory.result"
+        AR_INSTRUCTION_AST_TYPE__BUILD, "build", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -91,7 +91,7 @@ static void test_build_instruction_evaluator__evaluate_with_instance(void) {
     assert(result == true);
     ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
-    assert(ar_data__get_type(result_value) == DATA_STRING);
+    assert(ar_data__get_type(result_value) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(result_value), "Hello Alice!") == 0);
     
     // Cleanup
@@ -127,7 +127,7 @@ static void test_build_instruction_evaluator__evaluate_legacy(void) {
     // When creating a build AST node
     const char *args[] = {"\"{greeting} there!\"", "memory.vars"};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__BUILD, "build", args, 2, "memory.message"
+        AR_INSTRUCTION_AST_TYPE__BUILD, "build", args, 2, "memory.message"
     );
     assert(ast != NULL);
     
@@ -154,7 +154,7 @@ static void test_build_instruction_evaluator__evaluate_legacy(void) {
     assert(result == true);
     ar_data_t *result_value = ar_data__get_map_data(memory, "message");
     assert(result_value != NULL);
-    assert(ar_data__get_type(result_value) == DATA_STRING);
+    assert(ar_data__get_type(result_value) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(result_value), "Hi there!") == 0);
     
     // Cleanup
@@ -190,7 +190,7 @@ static void test_build_instruction_evaluator__evaluate_simple(void) {
     // When creating a build AST node with simple template
     const char *args[] = {"\"Hello {name}!\"", "memory.data"};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__BUILD, "build", args, 2, "memory.result"
+        AR_INSTRUCTION_AST_TYPE__BUILD, "build", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -217,7 +217,7 @@ static void test_build_instruction_evaluator__evaluate_simple(void) {
     assert(result == true);
     ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
-    assert(ar_data__get_type(result_value) == DATA_STRING);
+    assert(ar_data__get_type(result_value) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(result_value), "Hello Alice!") == 0);
     
     // Cleanup
@@ -255,7 +255,7 @@ static void test_build_instruction_evaluator__evaluate_multiple_variables(void) 
     // When creating a build AST node with multiple variables
     const char *args[] = {"\"User: {firstName} {lastName}, Role: {role}\"", "memory.user"};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__BUILD, "build", args, 2, "memory.result"
+        AR_INSTRUCTION_AST_TYPE__BUILD, "build", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -282,7 +282,7 @@ static void test_build_instruction_evaluator__evaluate_multiple_variables(void) 
     assert(result == true);
     ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
-    assert(ar_data__get_type(result_value) == DATA_STRING);
+    assert(ar_data__get_type(result_value) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(result_value), "User: Bob Smith, Role: Admin") == 0);
     
     // Cleanup
@@ -320,7 +320,7 @@ static void test_build_instruction_evaluator__evaluate_with_types(void) {
     // When creating a build AST node with different value types
     const char *args[] = {"\"Name: {name}, Age: {age}, Score: {score}\"", "memory.stats"};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__BUILD, "build", args, 2, "memory.result"
+        AR_INSTRUCTION_AST_TYPE__BUILD, "build", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -347,7 +347,7 @@ static void test_build_instruction_evaluator__evaluate_with_types(void) {
     assert(result == true);
     ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
-    assert(ar_data__get_type(result_value) == DATA_STRING);
+    assert(ar_data__get_type(result_value) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(result_value), "Name: Charlie, Age: 30, Score: 95.5") == 0);
     
     // Cleanup
@@ -384,7 +384,7 @@ static void test_build_instruction_evaluator__evaluate_missing_values(void) {
     // When creating a build AST node with a missing variable
     const char *args[] = {"\"Name: {firstName} {lastName}\"", "memory.person"};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__BUILD, "build", args, 2, "memory.result"
+        AR_INSTRUCTION_AST_TYPE__BUILD, "build", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -411,7 +411,7 @@ static void test_build_instruction_evaluator__evaluate_missing_values(void) {
     assert(result == true);
     ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
-    assert(ar_data__get_type(result_value) == DATA_STRING);
+    assert(ar_data__get_type(result_value) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(result_value), "Name: David {lastName}") == 0);
     
     // Cleanup
@@ -441,7 +441,7 @@ static void test_build_instruction_evaluator__evaluate_invalid_args(void) {
     // Test case 1: Wrong number of arguments (1 instead of 2)
     const char *args1[] = {"\"template {value}\""};
     ar_instruction_ast_t *ast1 = ar_instruction_ast__create_function_call(
-        AR_INST__BUILD, "build", args1, 1, NULL
+        AR_INSTRUCTION_AST_TYPE__BUILD, "build", args1, 1, NULL
     );
     assert(ast1 != NULL);
     
@@ -466,7 +466,7 @@ static void test_build_instruction_evaluator__evaluate_invalid_args(void) {
     
     const char *args2[] = {"123", "memory.dummy"};
     ar_instruction_ast_t *ast2 = ar_instruction_ast__create_function_call(
-        AR_INST__BUILD, "build", args2, 2, NULL
+        AR_INSTRUCTION_AST_TYPE__BUILD, "build", args2, 2, NULL
     );
     assert(ast2 != NULL);
     
@@ -492,7 +492,7 @@ static void test_build_instruction_evaluator__evaluate_invalid_args(void) {
     // Test case 3: Non-map values argument
     const char *args3[] = {"\"template {value}\"", "\"not a map\""};
     ar_instruction_ast_t *ast3 = ar_instruction_ast__create_function_call(
-        AR_INST__BUILD, "build", args3, 2, NULL
+        AR_INSTRUCTION_AST_TYPE__BUILD, "build", args3, 2, NULL
     );
     assert(ast3 != NULL);
     

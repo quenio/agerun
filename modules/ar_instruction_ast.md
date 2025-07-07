@@ -17,15 +17,15 @@ The Instruction AST module provides Abstract Syntax Tree (AST) representations f
 
 The module supports the following instruction types:
 
-- **AR_INST__ASSIGNMENT**: Assignment instructions (e.g., `memory.x := 42`)
-- **AR_INST__SEND**: Send function calls (e.g., `send(0, "Hello")`)
-- **AR_INST__IF**: Conditional function calls (e.g., `if(x > 5, "High", "Low")`)
-- **AR_INST__METHOD**: Method creation calls (e.g., `method("greet", "...", "1.0.0")`)
-- **AR_INST__AGENT**: Agent creation calls (e.g., `agent("echo", "1.0.0", context)`)
-- **AR_INST__DESTROY_AGENT**: Destroy agent calls (e.g., `destroy(agent_id)`)
-- **AR_INST__DESTROY_METHOD**: Destroy method calls (e.g., `destroy("method_name", "1.0.0")`)
-- **AR_INST__PARSE**: Parse function calls (e.g., `parse("{name}", "name=John")`)
-- **AR_INST__BUILD**: Build function calls (e.g., `build("Hello {name}", map)`)
+- **AR_INSTRUCTION_AST_TYPE__ASSIGNMENT**: Assignment instructions (e.g., `memory.x := 42`)
+- **AR_INSTRUCTION_AST_TYPE__SEND**: Send function calls (e.g., `send(0, "Hello")`)
+- **AR_INSTRUCTION_AST_TYPE__IF**: Conditional function calls (e.g., `if(x > 5, "High", "Low")`)
+- **AR_INSTRUCTION_AST_TYPE__METHOD**: Method creation calls (e.g., `method("greet", "...", "1.0.0")`)
+- **AR_INSTRUCTION_AST_TYPE__AGENT**: Agent creation calls (e.g., `agent("echo", "1.0.0", context)`)
+- **AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT**: Destroy agent calls (e.g., `destroy(agent_id)`)
+- **AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD**: Destroy method calls (e.g., `destroy("method_name", "1.0.0")`)
+- **AR_INSTRUCTION_AST_TYPE__PARSE**: Parse function calls (e.g., `parse("{name}", "name=John")`)
+- **AR_INSTRUCTION_AST_TYPE__BUILD**: Build function calls (e.g., `build("Hello {name}", map)`)
 
 ## API Reference
 
@@ -33,15 +33,15 @@ The module supports the following instruction types:
 
 ```c
 typedef enum {
-    AR_INST__ASSIGNMENT,
-    AR_INST__SEND,
-    AR_INST__IF,
-    AR_INST__METHOD,
-    AR_INST__AGENT,
-    AR_INST__DESTROY_AGENT,
-    AR_INST__DESTROY_METHOD,
-    AR_INST__PARSE,
-    AR_INST__BUILD
+    AR_INSTRUCTION_AST_TYPE__ASSIGNMENT,
+    AR_INSTRUCTION_AST_TYPE__SEND,
+    AR_INSTRUCTION_AST_TYPE__IF,
+    AR_INSTRUCTION_AST_TYPE__METHOD,
+    AR_INSTRUCTION_AST_TYPE__AGENT,
+    AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT,
+    AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD,
+    AR_INSTRUCTION_AST_TYPE__PARSE,
+    AR_INSTRUCTION_AST_TYPE__BUILD
 } ar_instruction_ast_type_t;
 
 typedef struct ar_instruction_ast_s ar_instruction_ast_t;
@@ -125,7 +125,7 @@ ar_instruction_ast_type_t ar_instruction_ast__get_type(const ar_instruction_ast_
 Gets the type of an AST node.
 
 **Returns:**
-- The type of the node, or AR_INST__ASSIGNMENT if node is NULL
+- The type of the node, or AR_INSTRUCTION_AST_TYPE__ASSIGNMENT if node is NULL
 
 #### Assignment Node Accessors
 
@@ -164,7 +164,7 @@ Get information from function call nodes.
 ar_instruction_ast_t *own_node = ar_instruction_ast__create_assignment("memory.count", "42");
 if (own_node) {
     // Use the node...
-    assert(ar_instruction_ast__get_type(own_node) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(own_node) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
     assert(strcmp(ar_instruction_ast__get_assignment_path(own_node), "memory.count") == 0);
     
     // Clean up
@@ -178,7 +178,7 @@ if (own_node) {
 // Create a send call: send(0, "Hello")
 const char *args[] = {"0", "\"Hello\""};
 ar_instruction_ast_t *own_node = ar_instruction_ast__create_function_call(
-    AR_INST__SEND, "send", args, 2, NULL
+    AR_INSTRUCTION_AST_TYPE__SEND, "send", args, 2, NULL
 );
 
 if (own_node) {
@@ -202,7 +202,7 @@ if (own_node) {
 // Create: memory.result := if(x > 5, "High", "Low")
 const char *args[] = {"x > 5", "\"High\"", "\"Low\""};
 ar_instruction_ast_t *own_node = ar_instruction_ast__create_function_call(
-    AR_INST__IF, "if", args, 3, "memory.result"
+    AR_INSTRUCTION_AST_TYPE__IF, "if", args, 3, "memory.result"
 );
 
 if (own_node) {

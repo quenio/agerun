@@ -136,7 +136,7 @@ static void test_fixture_execute_instruction(void) {
     ar_data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
     ar_data_t *ref_value = ar_data__get_map_data(mut_memory, "value");
     assert(ref_value != NULL);
-    assert(ar_data__get_type(ref_value) == DATA_INTEGER);
+    assert(ar_data__get_type(ref_value) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(ref_value) == 42);
     
     // Test execution with message - we need to create new values through operations
@@ -155,7 +155,7 @@ static void test_fixture_execute_instruction(void) {
     assert(result == true);
     ar_data_t *ref_greeting = ar_data__get_map_data(mut_memory, "greeting");
     assert(ref_greeting != NULL);
-    assert(ar_data__get_type(ref_greeting) == DATA_STRING);
+    assert(ar_data__get_type(ref_greeting) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(ref_greeting), "Message says: Hello") == 0);
     
     // Test arithmetic with message field
@@ -170,7 +170,7 @@ static void test_fixture_execute_instruction(void) {
     assert(result == true);
     ar_data_t *ref_doubled = ar_data__get_map_data(mut_memory, "doubled");
     assert(ref_doubled != NULL);
-    assert(ar_data__get_type(ref_doubled) == DATA_INTEGER);
+    assert(ar_data__get_type(ref_doubled) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(ref_doubled) == 84);
     
     // Clean up
@@ -191,7 +191,7 @@ static void test_fixture_data_tracking(void) {
     
     // Then it should be created with test values
     assert(ref_map != NULL);
-    assert(ar_data__get_type(ref_map) == DATA_MAP);
+    assert(ar_data__get_type(ref_map) == AR_DATA_TYPE__MAP);
     
     ar_data_t *ref_name = ar_data__get_map_data(ref_map, "name");
     assert(ref_name != NULL);

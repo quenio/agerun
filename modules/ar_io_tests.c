@@ -42,10 +42,10 @@ static bool write_test_content(FILE *fp, void *context) {
 }
 
 static void test_io__error_message_success(void) {
-    printf("Testing ar_io__error_message() with FILE_SUCCESS...\n");
+    printf("Testing ar_io__error_message() with AR_FILE_RESULT__SUCCESS...\n");
     
     // Given a success code
-    ar_file_result_t code = FILE_SUCCESS;
+    ar_file_result_t code = AR_FILE_RESULT__SUCCESS;
     
     // When getting the error message
     const char *message = ar_io__error_message(code);
@@ -53,7 +53,7 @@ static void test_io__error_message_success(void) {
     // Then it should return the correct message
     assert(strcmp(message, "Operation completed successfully") == 0);
     
-    printf("ar_io__error_message() FILE_SUCCESS test passed!\n");
+    printf("ar_io__error_message() AR_FILE_RESULT__SUCCESS test passed!\n");
 }
 
 static void test_io__error_message_all_codes(void) {
@@ -64,13 +64,13 @@ static void test_io__error_message_all_codes(void) {
         ar_file_result_t code;
         const char *expected;
     } test_cases[] = {
-        {FILE_ERROR_OPEN, "Failed to open file"},
-        {FILE_ERROR_READ, "Failed to read from file"},
-        {FILE_ERROR_WRITE, "Failed to write to file"},
-        {FILE_ERROR_PERMISSIONS, "Insufficient permissions"},
-        {FILE_ERROR_NOT_FOUND, "File not found"},
-        {FILE_ERROR_CORRUPT, "File is corrupt or malformed"},
-        {FILE_ERROR_ALREADY_EXISTS, "File already exists"},
+        {AR_FILE_RESULT__ERROR_OPEN, "Failed to open file"},
+        {AR_FILE_RESULT__ERROR_READ, "Failed to read from file"},
+        {AR_FILE_RESULT__ERROR_WRITE, "Failed to write to file"},
+        {AR_FILE_RESULT__ERROR_PERMISSIONS, "Insufficient permissions"},
+        {AR_FILE_RESULT__ERROR_NOT_FOUND, "File not found"},
+        {AR_FILE_RESULT__ERROR_CORRUPT, "File is corrupt or malformed"},
+        {AR_FILE_RESULT__ERROR_ALREADY_EXISTS, "File already exists"},
         {FILE_ERROR_UNKNOWN, "Unknown error"}
     };
     
@@ -234,7 +234,7 @@ static void test_io__open_file_write_mode(void) {
     ar_file_result_t result = ar_io__open_file(temp_filename, "w", &fp);
     
     // Then it should succeed
-    assert(result == FILE_SUCCESS);
+    assert(result == AR_FILE_RESULT__SUCCESS);
     assert(fp != NULL);
     
     // Clean up
@@ -258,7 +258,7 @@ static void test_io__open_file_read_mode(void) {
     ar_file_result_t result = ar_io__open_file(temp_filename, "r", &fp);
     
     // Then it should succeed
-    assert(result == FILE_SUCCESS);
+    assert(result == AR_FILE_RESULT__SUCCESS);
     assert(fp != NULL);
     
     // Clean up
@@ -278,8 +278,8 @@ static void test_io__open_file_non_existent(void) {
     FILE *fp = NULL;
     ar_file_result_t result = ar_io__open_file(filename, "r", &fp);
     
-    // Then it should fail with FILE_ERROR_NOT_FOUND
-    assert(result == FILE_ERROR_NOT_FOUND);
+    // Then it should fail with AR_FILE_RESULT__ERROR_NOT_FOUND
+    assert(result == AR_FILE_RESULT__ERROR_NOT_FOUND);
     assert(fp == NULL);
     
     printf("ar_io__open_file() non-existent file test passed!\n");
@@ -322,14 +322,14 @@ static void test_io__close_file_normal(void) {
     
     FILE *fp = NULL;
     ar_file_result_t result = ar_io__open_file(temp_filename, "w", &fp);
-    assert(result == FILE_SUCCESS);
+    assert(result == AR_FILE_RESULT__SUCCESS);
     assert(fp != NULL);
     
     // When closing the file
     result = ar_io__close_file(fp, temp_filename);
     
     // Then it should succeed
-    assert(result == FILE_SUCCESS);
+    assert(result == AR_FILE_RESULT__SUCCESS);
     
     // Clean up
     unlink(temp_filename);
@@ -347,7 +347,7 @@ static void test_io__close_file_null_handle(void) {
     ar_file_result_t result = ar_io__close_file(fp, "dummy.txt");
     
     // Then it should succeed (no-op)
-    assert(result == FILE_SUCCESS);
+    assert(result == AR_FILE_RESULT__SUCCESS);
     
     printf("ar_io__close_file() NULL handle test passed!\n");
 }
@@ -365,7 +365,7 @@ static void test_io__read_line_normal(void) {
     
     FILE *fp = NULL;
     ar_file_result_t result = ar_io__open_file(temp_filename, "r", &fp);
-    assert(result == FILE_SUCCESS);
+    assert(result == AR_FILE_RESULT__SUCCESS);
     
     char buffer[100];
     
@@ -401,7 +401,7 @@ static void test_io__read_line_empty_line(void) {
     
     FILE *fp = NULL;
     ar_file_result_t result = ar_io__open_file(temp_filename, "r", &fp);
-    assert(result == FILE_SUCCESS);
+    assert(result == AR_FILE_RESULT__SUCCESS);
     
     char buffer[100];
     
@@ -472,7 +472,7 @@ static void test_io__create_backup_normal(void) {
     ar_file_result_t result = ar_io__create_backup(temp_filename);
     
     // Then it should succeed and backup file should exist
-    assert(result == FILE_SUCCESS);
+    assert(result == AR_FILE_RESULT__SUCCESS);
     
     char backup_filename[256];
     snprintf(backup_filename, sizeof(backup_filename), "%s.bak", temp_filename);
@@ -495,7 +495,7 @@ static void test_io__create_backup_non_existent(void) {
     ar_file_result_t result = ar_io__create_backup(filename);
     
     // Then it should succeed (no-op)
-    assert(result == FILE_SUCCESS);
+    assert(result == AR_FILE_RESULT__SUCCESS);
     
     printf("ar_io__create_backup() non-existent test passed!\n");
 }
@@ -513,7 +513,7 @@ static void test_io__restore_backup_normal(void) {
     
     // Create backup
     ar_file_result_t result = ar_io__create_backup(temp_filename);
-    assert(result == FILE_SUCCESS);
+    assert(result == AR_FILE_RESULT__SUCCESS);
     
     // Modify original file
     FILE *fp = fopen(temp_filename, "w");
@@ -525,7 +525,7 @@ static void test_io__restore_backup_normal(void) {
     result = ar_io__restore_backup(temp_filename);
     
     // Then it should succeed and content should be restored
-    assert(result == FILE_SUCCESS);
+    assert(result == AR_FILE_RESULT__SUCCESS);
     
     fp = fopen(temp_filename, "r");
     assert(fp != NULL);
@@ -549,8 +549,8 @@ static void test_io__restore_backup_non_existent(void) {
     // When trying to restore
     ar_file_result_t result = ar_io__restore_backup(filename);
     
-    // Then it should fail with FILE_ERROR_NOT_FOUND
-    assert(result == FILE_ERROR_NOT_FOUND);
+    // Then it should fail with AR_FILE_RESULT__ERROR_NOT_FOUND
+    assert(result == AR_FILE_RESULT__ERROR_NOT_FOUND);
     
     printf("ar_io__restore_backup() non-existent test passed!\n");
 }
@@ -568,7 +568,7 @@ static void test_io__set_secure_permissions_normal(void) {
     ar_file_result_t result = ar_io__set_secure_permissions(temp_filename);
     
     // Then it should succeed
-    assert(result == FILE_SUCCESS);
+    assert(result == AR_FILE_RESULT__SUCCESS);
     
     // Clean up
     unlink(temp_filename);
@@ -586,7 +586,7 @@ static void test_io__set_secure_permissions_non_existent(void) {
     ar_file_result_t result = ar_io__set_secure_permissions(filename);
     
     // Then it should fail
-    assert(result == FILE_ERROR_PERMISSIONS);
+    assert(result == AR_FILE_RESULT__ERROR_PERMISSIONS);
     
     printf("ar_io__set_secure_permissions() non-existent test passed!\n");
 }
@@ -606,7 +606,7 @@ static void test_io__write_file_normal(void) {
     ar_file_result_t result = ar_io__write_file(temp_filename, write_test_content, (void *)(uintptr_t)content);
     
     // Then it should succeed and content should be written
-    assert(result == FILE_SUCCESS);
+    assert(result == AR_FILE_RESULT__SUCCESS);
     
     FILE *fp = fopen(temp_filename, "r");
     assert(fp != NULL);

@@ -63,7 +63,7 @@ static void test_method_creator_create_simple(void) {
         printf("FAIL: memory.result not found - method() instruction failed to execute\n");
         printf("NOTE: This indicates the method() function in instruction module needs implementation\n");
     } else {
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         int result_val = ar_data__get_integer(result);
         printf("SUCCESS: method() instruction executed and created memory.result\n");
         printf("  - Method creation result: %d\n", result_val);
@@ -138,7 +138,7 @@ static void test_method_creator_invalid_syntax(void) {
         printf("FAIL: memory.result not found - method() instruction failed to execute\n");
         printf("NOTE: This is expected until method() function is implemented in instruction module\n");
     } else {
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         int result_val = ar_data__get_integer(result);
         printf("SUCCESS: method() instruction executed with invalid syntax\n");
         printf("  - Method creation result: %d\n", result_val);

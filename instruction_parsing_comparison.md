@@ -7,7 +7,7 @@ This document compares the parsing logic between the old execution code (in `#if
 ### New Parsing Code (lines 450-548)
 ```c
 if (strcmp(function_name, "send") == 0) {
-    own_result->type = INST_SEND;
+    own_result->type = AR_INSTRUCTION_TYPE__SEND;
     // send(agent_id, message) - requires exactly 2 arguments
     
     // Allocate args array for 2 arguments
@@ -45,7 +45,7 @@ The old code didn't have a separate send parsing section in the `#if 0` blocks. 
 ### New Parsing Code (lines 550-628)
 ```c
 else if (strcmp(function_name, "if") == 0) {
-    own_result->type = INST_IF;
+    own_result->type = AR_INSTRUCTION_TYPE__IF;
     // if(condition, true_value, false_value) - requires exactly 3 arguments
     
     // Allocate args array for 3 arguments
@@ -114,7 +114,7 @@ if (ref_instruction[*mut_pos] != ')') {
 ### New Parsing Code (lines 793-862)
 ```c
 else if (strcmp(function_name, "parse") == 0) {
-    own_result->type = INST_PARSE;
+    own_result->type = AR_INSTRUCTION_TYPE__PARSE;
     // parse(string) - requires exactly 1 argument
     
     // Allocate args array for 1 argument
@@ -224,7 +224,7 @@ if (ref_instruction[*mut_pos] != ')') {
 ### New Parsing Code (lines 1507-1586)
 ```c
 else if (strcmp(function_name, "method") == 0) {
-    own_result->type = INST_METHOD;
+    own_result->type = AR_INSTRUCTION_TYPE__METHOD;
     // method(name, instructions, version) - requires exactly 3 arguments
     
     // Allocate args array for 3 arguments
@@ -286,7 +286,7 @@ if (ref_instruction[*mut_pos] != ')') {
 ### New Parsing Code (lines 1802-1880)
 ```c
 else if (strcmp(function_name, "agent") == 0) {
-    own_result->type = INST_AGENT;
+    own_result->type = AR_INSTRUCTION_TYPE__AGENT;
     // agent(method_name, version, context) - requires exactly 3 arguments
     
     // Allocate args array for 3 arguments
@@ -348,7 +348,7 @@ if (ref_instruction[*mut_pos] != ')') {
 ### New Parsing Code (lines 2102-2202)
 ```c
 else if (strcmp(function_name, "destroy") == 0) {
-    own_result->type = INST_DESTROY;
+    own_result->type = AR_INSTRUCTION_TYPE__DESTROY;
     
     // Allocate args array - destroy can have 1 or 2 arguments
     own_result->own_args = AR__HEAP__MALLOC(sizeof(char*) * 2, "Destroy arguments");

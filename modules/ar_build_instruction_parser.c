@@ -367,7 +367,7 @@ ar_instruction_ast_t* ar_build_instruction_parser__parse(
     }
     
     ar_instruction_ast_t *own_ast = ar_instruction_ast__create_function_call(
-        AR_INST__BUILD, "build", const_args, arg_count, ref_result_path
+        AR_INSTRUCTION_AST_TYPE__BUILD, "build", const_args, arg_count, ref_result_path
     );
     
     AR__HEAP__FREE(const_args);

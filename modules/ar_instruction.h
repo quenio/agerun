@@ -18,13 +18,13 @@ typedef struct ar_instruction_context_s ar_instruction_context_t;
  * Instruction type enumeration
  */
 typedef enum {
-    INST_ASSIGNMENT,      // memory.x := expression
-    INST_SEND,           // send(target, message) or result := send(...)
-    INST_IF,             // if(condition, true_val, false_val)
-    INST_METHOD,         // method(name, instructions, version)
-    INST_AGENT,          // agent(method, version, context)
-    INST_DESTROY,        // destroy(type, arg1, arg2)
-    INST_PARSE,          // parse(string)
+    AR_INSTRUCTION_TYPE__ASSIGNMENT,      // memory.x := expression
+    AR_INSTRUCTION_TYPE__SEND,           // send(target, message) or result := send(...)
+    AR_INSTRUCTION_TYPE__IF,             // if(condition, true_val, false_val)
+    AR_INSTRUCTION_TYPE__METHOD,         // method(name, instructions, version)
+    AR_INSTRUCTION_TYPE__AGENT,          // agent(method, version, context)
+    AR_INSTRUCTION_TYPE__DESTROY,        // destroy(type, arg1, arg2)
+    AR_INSTRUCTION_TYPE__PARSE,          // parse(string)
     INST_BUILD           // build(template, map)
 } ar_instruction_type_t;
 

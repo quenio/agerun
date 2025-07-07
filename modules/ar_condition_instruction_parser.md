@@ -77,7 +77,7 @@ The parser:
 2. Ensures opening parenthesis follows
 3. Extracts exactly 3 arguments (condition, then, else)
 4. Handles nested parentheses and quoted strings in arguments
-5. Creates an AR_INST__IF node with the parsed arguments
+5. Creates an AR_INSTRUCTION_AST_TYPE__IF node with the parsed arguments
 6. Tracks optional result assignment path
 
 ## Error Handling

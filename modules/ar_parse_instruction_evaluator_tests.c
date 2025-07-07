@@ -59,7 +59,7 @@ static void test_parse_instruction_evaluator__evaluate_with_instance(void) {
     // When creating a parse AST node
     const char *args[] = {"\"name={name}\"", "\"name=John\""};
     ar_instruction_ast_t *own_ast = ar_instruction_ast__create_function_call(
-        AR_INST__PARSE, "parse", args, 2, "memory.result"
+        AR_INSTRUCTION_AST_TYPE__PARSE, "parse", args, 2, "memory.result"
     );
     assert(own_ast != NULL);
     
@@ -85,11 +85,11 @@ static void test_parse_instruction_evaluator__evaluate_with_instance(void) {
     assert(result == true);
     ar_data_t *ref_result_value = ar_data__get_map_data(own_memory, "result");
     assert(ref_result_value != NULL);
-    assert(ar_data__get_type(ref_result_value) == DATA_MAP);
+    assert(ar_data__get_type(ref_result_value) == AR_DATA_TYPE__MAP);
     
     ar_data_t *ref_name_value = ar_data__get_map_data(ref_result_value, "name");
     assert(ref_name_value != NULL);
-    assert(ar_data__get_type(ref_name_value) == DATA_STRING);
+    assert(ar_data__get_type(ref_name_value) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(ref_name_value), "John") == 0);
     
     // Cleanup
@@ -121,7 +121,7 @@ static void test_parse_instruction_evaluator__evaluate_without_legacy(void) {
     // When creating a parse AST node
     const char *args[] = {"\"user={username}, role={role}\"", "\"user=alice, role=admin\""};
     ar_instruction_ast_t *own_ast = ar_instruction_ast__create_function_call(
-        AR_INST__PARSE, "parse", args, 2, "memory.result"
+        AR_INSTRUCTION_AST_TYPE__PARSE, "parse", args, 2, "memory.result"
     );
     assert(own_ast != NULL);
     
@@ -147,16 +147,16 @@ static void test_parse_instruction_evaluator__evaluate_without_legacy(void) {
     assert(result == true);
     ar_data_t *ref_result_value = ar_data__get_map_data(own_memory, "result");
     assert(ref_result_value != NULL);
-    assert(ar_data__get_type(ref_result_value) == DATA_MAP);
+    assert(ar_data__get_type(ref_result_value) == AR_DATA_TYPE__MAP);
     
     ar_data_t *ref_username_value = ar_data__get_map_data(ref_result_value, "username");
     assert(ref_username_value != NULL);
-    assert(ar_data__get_type(ref_username_value) == DATA_STRING);
+    assert(ar_data__get_type(ref_username_value) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(ref_username_value), "alice") == 0);
     
     ar_data_t *ref_role_value = ar_data__get_map_data(ref_result_value, "role");
     assert(ref_role_value != NULL);
-    assert(ar_data__get_type(ref_role_value) == DATA_STRING);
+    assert(ar_data__get_type(ref_role_value) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(ref_role_value), "admin") == 0);
     
     // Cleanup
@@ -187,7 +187,7 @@ static void test_instruction_evaluator__evaluate_parse_simple(void) {
     // When creating a parse AST node with simple template
     const char *args[] = {"\"name={name}\"", "\"name=John\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__PARSE, "parse", args, 2, "memory.result"
+        AR_INSTRUCTION_AST_TYPE__PARSE, "parse", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -213,12 +213,12 @@ static void test_instruction_evaluator__evaluate_parse_simple(void) {
     assert(result == true);
     ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
-    assert(ar_data__get_type(result_value) == DATA_MAP);
+    assert(ar_data__get_type(result_value) == AR_DATA_TYPE__MAP);
     
     // Check the extracted value
     ar_data_t *name_value = ar_data__get_map_data(result_value, "name");
     assert(name_value != NULL);
-    assert(ar_data__get_type(name_value) == DATA_STRING);
+    assert(ar_data__get_type(name_value) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(name_value), "John") == 0);
     
     // Cleanup
@@ -249,7 +249,7 @@ static void test_instruction_evaluator__evaluate_parse_multiple_variables(void) 
     // When creating a parse AST node with multiple variables
     const char *args[] = {"\"user={username}, role={role}\"", "\"user=alice, role=admin\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__PARSE, "parse", args, 2, "memory.result"
+        AR_INSTRUCTION_AST_TYPE__PARSE, "parse", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -275,17 +275,17 @@ static void test_instruction_evaluator__evaluate_parse_multiple_variables(void) 
     assert(result == true);
     ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
-    assert(ar_data__get_type(result_value) == DATA_MAP);
+    assert(ar_data__get_type(result_value) == AR_DATA_TYPE__MAP);
     
     // Check the extracted values
     ar_data_t *username_value = ar_data__get_map_data(result_value, "username");
     assert(username_value != NULL);
-    assert(ar_data__get_type(username_value) == DATA_STRING);
+    assert(ar_data__get_type(username_value) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(username_value), "alice") == 0);
     
     ar_data_t *role_value = ar_data__get_map_data(result_value, "role");
     assert(role_value != NULL);
-    assert(ar_data__get_type(role_value) == DATA_STRING);
+    assert(ar_data__get_type(role_value) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(role_value), "admin") == 0);
     
     // Cleanup
@@ -316,7 +316,7 @@ static void test_instruction_evaluator__evaluate_parse_with_types(void) {
     // When creating a parse AST node with values that should be parsed as different types
     const char *args[] = {"\"age={age}, score={score}, name={name}\"", "\"age=25, score=98.5, name=Bob\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__PARSE, "parse", args, 2, "memory.result"
+        AR_INSTRUCTION_AST_TYPE__PARSE, "parse", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -342,22 +342,22 @@ static void test_instruction_evaluator__evaluate_parse_with_types(void) {
     assert(result == true);
     ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
-    assert(ar_data__get_type(result_value) == DATA_MAP);
+    assert(ar_data__get_type(result_value) == AR_DATA_TYPE__MAP);
     
     // Check the extracted values have correct types
     ar_data_t *age_value = ar_data__get_map_data(result_value, "age");
     assert(age_value != NULL);
-    assert(ar_data__get_type(age_value) == DATA_INTEGER);
+    assert(ar_data__get_type(age_value) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(age_value) == 25);
     
     ar_data_t *score_value = ar_data__get_map_data(result_value, "score");
     assert(score_value != NULL);
-    assert(ar_data__get_type(score_value) == DATA_DOUBLE);
+    assert(ar_data__get_type(score_value) == AR_DATA_TYPE__DOUBLE);
     assert(ar_data__get_double(score_value) == 98.5);
     
     ar_data_t *name_value = ar_data__get_map_data(result_value, "name");
     assert(name_value != NULL);
-    assert(ar_data__get_type(name_value) == DATA_STRING);
+    assert(ar_data__get_type(name_value) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(name_value), "Bob") == 0);
     
     // Cleanup
@@ -388,7 +388,7 @@ static void test_instruction_evaluator__evaluate_parse_no_match(void) {
     // When creating a parse AST node where template doesn't match input
     const char *args[] = {"\"name={name}, age={age}\"", "\"username=John, level=5\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__PARSE, "parse", args, 2, "memory.result"
+        AR_INSTRUCTION_AST_TYPE__PARSE, "parse", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -414,7 +414,7 @@ static void test_instruction_evaluator__evaluate_parse_no_match(void) {
     assert(result == true);
     ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
-    assert(ar_data__get_type(result_value) == DATA_MAP);
+    assert(ar_data__get_type(result_value) == AR_DATA_TYPE__MAP);
     
     // Check the map is empty (no extracted values)
     // Since we don't have a way to check map size, we'll check that expected keys don't exist
@@ -449,7 +449,7 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     // Test case 1: Wrong number of arguments (1 instead of 2)
     const char *args1[] = {"\"template={value}\""};
     ar_instruction_ast_t *ast1 = ar_instruction_ast__create_function_call(
-        AR_INST__PARSE, "parse", args1, 1, NULL
+        AR_INSTRUCTION_AST_TYPE__PARSE, "parse", args1, 1, NULL
     );
     assert(ast1 != NULL);
     
@@ -471,7 +471,7 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     // Test case 2: Non-string template argument
     const char *args2[] = {"123", "\"input=value\""};
     ar_instruction_ast_t *ast2 = ar_instruction_ast__create_function_call(
-        AR_INST__PARSE, "parse", args2, 2, NULL
+        AR_INSTRUCTION_AST_TYPE__PARSE, "parse", args2, 2, NULL
     );
     assert(ast2 != NULL);
     
@@ -496,7 +496,7 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     // Test case 3: Non-string input argument
     const char *args3[] = {"\"template={value}\"", "456"};
     ar_instruction_ast_t *ast3 = ar_instruction_ast__create_function_call(
-        AR_INST__PARSE, "parse", args3, 2, NULL
+        AR_INSTRUCTION_AST_TYPE__PARSE, "parse", args3, 2, NULL
     );
     assert(ast3 != NULL);
     

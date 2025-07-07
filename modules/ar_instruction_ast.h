@@ -11,15 +11,15 @@
  * Represents all possible instruction types in the AgeRun language.
  */
 typedef enum {
-    AR_INST__ASSIGNMENT,      /* memory.x := expression */
-    AR_INST__SEND,           /* send(target, message) or result := send(...) */
-    AR_INST__IF,             /* if(condition, true_val, false_val) */
-    AR_INST__METHOD,         /* method(name, instructions, version) */
-    AR_INST__AGENT,          /* agent(method, version, context) */
-    AR_INST__DESTROY_AGENT,  /* destroy(agent_id) - specialized parser */
-    AR_INST__DESTROY_METHOD, /* destroy(method, version) - specialized parser */
-    AR_INST__PARSE,          /* parse(template, input) */
-    AR_INST__BUILD           /* build(template, values) */
+    AR_INSTRUCTION_AST_TYPE__ASSIGNMENT,      /* memory.x := expression */
+    AR_INSTRUCTION_AST_TYPE__SEND,           /* send(target, message) or result := send(...) */
+    AR_INSTRUCTION_AST_TYPE__IF,             /* if(condition, true_val, false_val) */
+    AR_INSTRUCTION_AST_TYPE__METHOD,         /* method(name, instructions, version) */
+    AR_INSTRUCTION_AST_TYPE__AGENT,          /* agent(method, version, context) */
+    AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT,  /* destroy(agent_id) - specialized parser */
+    AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD, /* destroy(method, version) - specialized parser */
+    AR_INSTRUCTION_AST_TYPE__PARSE,          /* parse(template, input) */
+    AR_INSTRUCTION_AST_TYPE__BUILD           /* build(template, values) */
 } ar_instruction_ast_type_t;
 
 /**
@@ -32,7 +32,7 @@ typedef struct ar_instruction_ast_s ar_instruction_ast_t;
  * Get the type of an AST node.
  * 
  * @param ref_node The AST node (borrowed reference)
- * @return The type of the node, or AR_INST__ASSIGNMENT if node is NULL
+ * @return The type of the node, or AR_INSTRUCTION_AST_TYPE__ASSIGNMENT if node is NULL
  */
 ar_instruction_ast_type_t ar_instruction_ast__get_type(const ar_instruction_ast_t *ref_node);
 

@@ -92,7 +92,7 @@ bool ar_condition_instruction_evaluator__evaluate(
     _log_error(mut_evaluator, NULL);
     
     // Verify this is an if AST node
-    if (ar_instruction_ast__get_type(ref_ast) != AR_INST__IF) {
+    if (ar_instruction_ast__get_type(ref_ast) != AR_INSTRUCTION_AST_TYPE__IF) {
         return false;
     }
     
@@ -131,7 +131,7 @@ bool ar_condition_instruction_evaluator__evaluate(
     
     // Check condition value (0 is false, non-zero is true)
     bool condition_is_true = false;
-    if (ar_data__get_type(condition_result) == DATA_INTEGER) {
+    if (ar_data__get_type(condition_result) == AR_DATA_TYPE__INTEGER) {
         condition_is_true = (ar_data__get_integer(condition_result) != 0);
     }
     

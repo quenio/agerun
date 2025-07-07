@@ -47,7 +47,7 @@ static void test_expression_context_creation(void) {
     // And we can evaluate expressions using the test data
     const ar_data_t *ref_result = ar_expression__evaluate(ref_ctx);
     assert(ref_result != NULL);
-    assert(ar_data__get_type(ref_result) == DATA_INTEGER);
+    assert(ar_data__get_type(ref_result) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(ref_result) == 52); // 42 + 10
     
     // Clean up
@@ -127,7 +127,7 @@ static void test_list_creation(void) {
     // Then it should have the expected values
     assert(ref_list != NULL);
     // For now, just verify the list was created
-    assert(ar_data__get_type(ref_list) == DATA_LIST);
+    assert(ar_data__get_type(ref_list) == AR_DATA_TYPE__LIST);
     
     // Clean up
     ar_instruction_fixture__destroy(own_fixture);

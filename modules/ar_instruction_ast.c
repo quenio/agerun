@@ -29,7 +29,7 @@ struct ar_instruction_ast_s {
  */
 ar_instruction_ast_type_t ar_instruction_ast__get_type(const ar_instruction_ast_t *ref_node) {
     if (!ref_node) {
-        return AR_INST__ASSIGNMENT; /* Default type */
+        return AR_INSTRUCTION_AST_TYPE__ASSIGNMENT; /* Default type */
     }
     return ref_node->type;
 }
@@ -52,7 +52,7 @@ ar_instruction_ast_t* ar_instruction_ast__create_assignment(
     }
     
     /* Initialize the node */
-    own_node->type = AR_INST__ASSIGNMENT;
+    own_node->type = AR_INSTRUCTION_AST_TYPE__ASSIGNMENT;
     own_node->own_memory_path = AR__HEAP__STRDUP(ref_memory_path, "assignment memory path");
     own_node->own_expression = AR__HEAP__STRDUP(ref_expression, "assignment expression");
     own_node->own_expression_ast = NULL; /* Will be set by parser in Phase 2 */
@@ -83,7 +83,7 @@ ar_instruction_ast_t* ar_instruction_ast__create_function_call(
     size_t arg_count,
     const char *ref_result_path
 ) {
-    if (!ref_function_name || type == AR_INST__ASSIGNMENT) {
+    if (!ref_function_name || type == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT) {
         return NULL;
     }
     
@@ -212,7 +212,7 @@ void ar_instruction_ast__destroy(ar_instruction_ast_t *own_node) {
  * Get memory path from an assignment node.
  */
 const char* ar_instruction_ast__get_assignment_path(const ar_instruction_ast_t *ref_node) {
-    if (!ref_node || ref_node->type != AR_INST__ASSIGNMENT) {
+    if (!ref_node || ref_node->type != AR_INSTRUCTION_AST_TYPE__ASSIGNMENT) {
         return NULL;
     }
     return ref_node->own_memory_path;
@@ -222,7 +222,7 @@ const char* ar_instruction_ast__get_assignment_path(const ar_instruction_ast_t *
  * Get expression from an assignment node.
  */
 const char* ar_instruction_ast__get_assignment_expression(const ar_instruction_ast_t *ref_node) {
-    if (!ref_node || ref_node->type != AR_INST__ASSIGNMENT) {
+    if (!ref_node || ref_node->type != AR_INSTRUCTION_AST_TYPE__ASSIGNMENT) {
         return NULL;
     }
     return ref_node->own_expression;
@@ -232,7 +232,7 @@ const char* ar_instruction_ast__get_assignment_expression(const ar_instruction_a
  * Get expression AST from an assignment node.
  */
 const ar_expression_ast_t* ar_instruction_ast__get_assignment_expression_ast(const ar_instruction_ast_t *ref_node) {
-    if (!ref_node || ref_node->type != AR_INST__ASSIGNMENT) {
+    if (!ref_node || ref_node->type != AR_INSTRUCTION_AST_TYPE__ASSIGNMENT) {
         return NULL;
     }
     return ref_node->own_expression_ast;
@@ -242,7 +242,7 @@ const ar_expression_ast_t* ar_instruction_ast__get_assignment_expression_ast(con
  * Set expression AST for an assignment node.
  */
 bool ar_instruction_ast__set_assignment_expression_ast(ar_instruction_ast_t *mut_node, ar_expression_ast_t *own_expression_ast) {
-    if (!mut_node || mut_node->type != AR_INST__ASSIGNMENT) {
+    if (!mut_node || mut_node->type != AR_INSTRUCTION_AST_TYPE__ASSIGNMENT) {
         return false;
     }
     
@@ -260,7 +260,7 @@ bool ar_instruction_ast__set_assignment_expression_ast(ar_instruction_ast_t *mut
  * Get function name from a function call node.
  */
 const char* ar_instruction_ast__get_function_name(const ar_instruction_ast_t *ref_node) {
-    if (!ref_node || ref_node->type == AR_INST__ASSIGNMENT) {
+    if (!ref_node || ref_node->type == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT) {
         return NULL;
     }
     return ref_node->own_function_name;
@@ -270,7 +270,7 @@ const char* ar_instruction_ast__get_function_name(const ar_instruction_ast_t *re
  * Get arguments from a function call node.
  */
 ar_list_t* ar_instruction_ast__get_function_args(const ar_instruction_ast_t *ref_node) {
-    if (!ref_node || ref_node->type == AR_INST__ASSIGNMENT || ref_node->arg_count == 0) {
+    if (!ref_node || ref_node->type == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT || ref_node->arg_count == 0) {
         return NULL;
     }
     
@@ -295,7 +295,7 @@ ar_list_t* ar_instruction_ast__get_function_args(const ar_instruction_ast_t *ref
  * Get argument ASTs from a function call node.
  */
 const ar_list_t* ar_instruction_ast__get_function_arg_asts(const ar_instruction_ast_t *ref_node) {
-    if (!ref_node || ref_node->type == AR_INST__ASSIGNMENT) {
+    if (!ref_node || ref_node->type == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT) {
         return NULL;
     }
     return ref_node->own_arg_asts;
@@ -308,7 +308,7 @@ bool ar_instruction_ast__set_function_arg_asts(
     ar_instruction_ast_t *mut_node, 
     ar_list_t *own_arg_asts
 ) {
-    if (!mut_node || mut_node->type == AR_INST__ASSIGNMENT) {
+    if (!mut_node || mut_node->type == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT) {
         return false;
     }
     
@@ -337,7 +337,7 @@ bool ar_instruction_ast__set_function_arg_asts(
  * Get result path from a function call node.
  */
 const char* ar_instruction_ast__get_function_result_path(const ar_instruction_ast_t *ref_node) {
-    if (!ref_node || ref_node->type == AR_INST__ASSIGNMENT) {
+    if (!ref_node || ref_node->type == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT) {
         return NULL;
     }
     return ref_node->own_result_path;
@@ -347,7 +347,7 @@ const char* ar_instruction_ast__get_function_result_path(const ar_instruction_as
  * Check if a function call has a result assignment.
  */
 bool ar_instruction_ast__has_result_assignment(const ar_instruction_ast_t *ref_node) {
-    if (!ref_node || ref_node->type == AR_INST__ASSIGNMENT) {
+    if (!ref_node || ref_node->type == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT) {
         return false;
     }
     return ref_node->own_result_path != NULL;

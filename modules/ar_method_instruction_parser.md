@@ -78,7 +78,7 @@ The parser:
 2. Ensures opening parenthesis follows
 3. Extracts exactly 3 string arguments (name, code, version)
 4. Handles quoted strings with escape sequences
-5. Creates an AR_INST__METHOD node with the parsed arguments
+5. Creates an AR_INSTRUCTION_AST_TYPE__METHOD node with the parsed arguments
 6. Tracks optional result assignment path
 
 ## Error Handling

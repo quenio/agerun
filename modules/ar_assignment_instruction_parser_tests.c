@@ -55,7 +55,7 @@ static void test_assignment_instruction_parser__parse_simple_assignment(void) {
     
     // Then it should parse successfully as an assignment
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
     assert(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.x") == 0);
     assert(strcmp(ar_instruction_ast__get_assignment_expression(own_ast), "42") == 0);
     
@@ -82,7 +82,7 @@ static void test_assignment_instruction_parser__parse_string_assignment(void) {
     
     // Then it should parse the string correctly
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
     assert(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.greeting") == 0);
     assert(strcmp(ar_instruction_ast__get_assignment_expression(own_ast), "\"Hello, World!\"") == 0);
     
@@ -109,7 +109,7 @@ static void test_assignment_instruction_parser__parse_nested_assignment(void) {
     
     // Then it should parse the nested path
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
     assert(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.user.name") == 0);
     assert(strcmp(ar_instruction_ast__get_assignment_expression(own_ast), "\"John\"") == 0);
     
@@ -136,7 +136,7 @@ static void test_assignment_instruction_parser__parse_expression_assignment(void
     
     // Then it should preserve the full expression
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
     assert(strcmp(ar_instruction_ast__get_assignment_expression(own_ast), "2 + 3 * 4") == 0);
     
     // And no errors should be logged
@@ -162,7 +162,7 @@ static void test_assignment_instruction_parser__parse_whitespace_handling(void) 
     
     // Then it should handle whitespace correctly
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
     assert(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.x") == 0);
     assert(strcmp(ar_instruction_ast__get_assignment_expression(own_ast), "42") == 0);
     
@@ -281,13 +281,13 @@ static void test_assignment_instruction_parser__parse_with_expression_ast(void) 
     
     // Then it should parse successfully with an expression AST
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
     assert(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.x") == 0);
     
     // And the expression should be available as an AST
     const ar_expression_ast_t *ref_expr_ast = ar_instruction_ast__get_assignment_expression_ast(own_ast);
     assert(ref_expr_ast != NULL);
-    assert(ar_expression_ast__get_type(ref_expr_ast) == AR_EXPR__LITERAL_INT);
+    assert(ar_expression_ast__get_type(ref_expr_ast) == AR_EXPRESSION_AST_TYPE__LITERAL_INT);
     assert(ar_expression_ast__get_int_value(ref_expr_ast) == 42);
     
     // And no errors should be logged

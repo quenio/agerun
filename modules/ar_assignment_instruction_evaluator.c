@@ -76,7 +76,7 @@ bool ar_assignment_instruction_evaluator__evaluate(
     }
     
     // Verify this is an assignment AST node
-    if (ar_instruction_ast__get_type(ref_ast) != AR_INST__ASSIGNMENT) {
+    if (ar_instruction_ast__get_type(ref_ast) != AR_INSTRUCTION_AST_TYPE__ASSIGNMENT) {
         return false;
     }
     

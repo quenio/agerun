@@ -199,7 +199,7 @@ ar_instruction_evaluator__destroy(evaluator);
 // Create send AST: send(1, "Hello")
 const char *args[] = {"1", "\"Hello\""};
 ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-    AR_INST__SEND, "send", args, 2, NULL
+    AR_INSTRUCTION_AST_TYPE__SEND, "send", args, 2, NULL
 );
 
 // Evaluate (delegates to send_instruction_evaluator)

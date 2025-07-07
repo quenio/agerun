@@ -56,7 +56,7 @@ static void test_send_instruction_parser__parse_simple_send(void) {
     
     // Then it should parse as a send function
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__SEND);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__SEND);
     assert(strcmp(ar_instruction_ast__get_function_name(own_ast), "send") == 0);
     assert(ar_instruction_ast__has_result_assignment(own_ast) == false);
     
@@ -94,7 +94,7 @@ static void test_send_instruction_parser__parse_send_with_assignment(void) {
     
     // Then it should parse with result assignment
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__SEND);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__SEND);
     assert(ar_instruction_ast__has_result_assignment(own_ast) == true);
     assert(strcmp(ar_instruction_ast__get_function_result_path(own_ast), "memory.result") == 0);
     
@@ -121,7 +121,7 @@ static void test_send_instruction_parser__parse_send_with_expression_args(void) 
     
     // Then it should parse the expressions as arguments
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__SEND);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__SEND);
     
     // Verify arguments
     ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
@@ -203,7 +203,7 @@ static void test_send_instruction_parser__parse_nested_parentheses(void) {
     
     // Then it should handle nested parentheses correctly
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__SEND);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__SEND);
     
     // Verify arguments
     ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
@@ -283,7 +283,7 @@ static void test_send_instruction_parser__parse_with_expression_asts(void) {
     
     // Then it should parse successfully with argument ASTs
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INST__SEND);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__SEND);
     
     // And the arguments should be available as expression ASTs
     const ar_list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
@@ -295,13 +295,13 @@ static void test_send_instruction_parser__parse_with_expression_asts(void) {
     assert(items != NULL);
     const ar_expression_ast_t *ref_first_arg = (const ar_expression_ast_t*)items[0];
     assert(ref_first_arg != NULL);
-    assert(ar_expression_ast__get_type(ref_first_arg) == AR_EXPR__LITERAL_INT);
+    assert(ar_expression_ast__get_type(ref_first_arg) == AR_EXPRESSION_AST_TYPE__LITERAL_INT);
     assert(ar_expression_ast__get_int_value(ref_first_arg) == 42);
     
     // Second argument should be a string literal AST
     const ar_expression_ast_t *ref_second_arg = (const ar_expression_ast_t*)items[1];
     assert(ref_second_arg != NULL);
-    assert(ar_expression_ast__get_type(ref_second_arg) == AR_EXPR__LITERAL_STRING);
+    assert(ar_expression_ast__get_type(ref_second_arg) == AR_EXPRESSION_AST_TYPE__LITERAL_STRING);
     assert(strcmp(ar_expression_ast__get_string_value(ref_second_arg), "Hello World") == 0);
     
     // And no errors should be logged

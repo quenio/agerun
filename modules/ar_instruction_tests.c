@@ -26,7 +26,7 @@ static void test_parse_assignment_instructions(void) {
         
         // Then it should parse successfully as an assignment
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == INST_ASSIGNMENT);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__ASSIGNMENT);
         assert(strcmp(ar_instruction__get_assignment_path(own_parsed), "x") == 0);  // Path stores only the part after "memory."
         assert(strcmp(ar_instruction__get_assignment_expression(own_parsed), "42") == 0);
         
@@ -40,7 +40,7 @@ static void test_parse_assignment_instructions(void) {
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == INST_ASSIGNMENT);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__ASSIGNMENT);
         assert(strcmp(ar_instruction__get_assignment_path(own_parsed), "greeting") == 0);
         assert(strcmp(ar_instruction__get_assignment_expression(own_parsed), "\"Hello, World!\"") == 0);
         
@@ -54,7 +54,7 @@ static void test_parse_assignment_instructions(void) {
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == INST_ASSIGNMENT);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__ASSIGNMENT);
         assert(strcmp(ar_instruction__get_assignment_path(own_parsed), "user.name") == 0);
         assert(strcmp(ar_instruction__get_assignment_expression(own_parsed), "\"Alice\"") == 0);
         
@@ -68,7 +68,7 @@ static void test_parse_assignment_instructions(void) {
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == INST_ASSIGNMENT);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__ASSIGNMENT);
         assert(strcmp(ar_instruction__get_assignment_path(own_parsed), "result") == 0);
         assert(strcmp(ar_instruction__get_assignment_expression(own_parsed), "2 + 3 * 4") == 0);
         
@@ -85,7 +85,7 @@ static void test_parse_assignment_instructions(void) {
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == INST_ASSIGNMENT);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__ASSIGNMENT);
         assert(strcmp(ar_instruction__get_assignment_path(own_parsed), "copy") == 0);
         assert(strcmp(ar_instruction__get_assignment_expression(own_parsed), "memory.original") == 0);
         
@@ -99,7 +99,7 @@ static void test_parse_assignment_instructions(void) {
         
         // Then it should parse successfully, trimming whitespace
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == INST_ASSIGNMENT);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__ASSIGNMENT);
         assert(strcmp(ar_instruction__get_assignment_path(own_parsed), "x") == 0);
         assert(strcmp(ar_instruction__get_assignment_expression(own_parsed), "42") == 0);
         
@@ -126,7 +126,7 @@ static void test_parse_function_call_instructions(void) {
         
         // Then it should parse successfully as a function call
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == INST_SEND);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__SEND);
         
         // Verify function call details
         const char *function_name = NULL;
@@ -153,7 +153,7 @@ static void test_parse_function_call_instructions(void) {
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == INST_PARSE);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__PARSE);
         
         const char *function_name = NULL;
         const char **args = NULL;
@@ -208,7 +208,7 @@ static void test_parse_function_call_instructions(void) {
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == INST_METHOD);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__METHOD);
         
         const char *function_name = NULL;
         const char **args = NULL;
@@ -239,7 +239,7 @@ static void test_parse_function_call_instructions(void) {
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == INST_AGENT);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__AGENT);
         
         const char *function_name = NULL;
         const char **args = NULL;
@@ -265,7 +265,7 @@ static void test_parse_function_call_instructions(void) {
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == INST_DESTROY);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__DESTROY);
         
         const char *function_name = NULL;
         const char **args = NULL;
@@ -289,7 +289,7 @@ static void test_parse_function_call_instructions(void) {
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == INST_DESTROY);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__DESTROY);
         
         const char *function_name = NULL;
         const char **args = NULL;
@@ -314,7 +314,7 @@ static void test_parse_function_call_instructions(void) {
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == INST_IF);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__IF);
         
         const char *function_name = NULL;
         const char **args = NULL;
@@ -353,7 +353,7 @@ static void test_parse_function_calls_with_assignment(void) {
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == INST_SEND);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__SEND);
         
         // Verify function call details with assignment
         const char *function_name = NULL;
@@ -380,7 +380,7 @@ static void test_parse_function_calls_with_assignment(void) {
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == INST_PARSE);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__PARSE);
         
         const char *function_name = NULL;
         const char **args = NULL;
@@ -433,7 +433,7 @@ static void test_parse_function_calls_with_assignment(void) {
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == INST_METHOD);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__METHOD);
         
         const char *function_name = NULL;
         const char **args = NULL;
@@ -462,7 +462,7 @@ static void test_parse_function_calls_with_assignment(void) {
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == INST_AGENT);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__AGENT);
         
         const char *function_name = NULL;
         const char **args = NULL;
@@ -486,7 +486,7 @@ static void test_parse_function_calls_with_assignment(void) {
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == INST_DESTROY);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__DESTROY);
         
         const char *function_name = NULL;
         const char **args = NULL;
@@ -510,7 +510,7 @@ static void test_parse_function_calls_with_assignment(void) {
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == INST_IF);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__IF);
         
         const char *function_name = NULL;
         const char **args = NULL;
@@ -534,7 +534,7 @@ static void test_parse_function_calls_with_assignment(void) {
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == INST_IF);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__IF);
         
         const char *function_name = NULL;
         const char **args = NULL;

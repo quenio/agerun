@@ -128,7 +128,7 @@ static void test_evaluate_literal_int(void) {
     
     // Then it should return the integer value
     assert(result != NULL);
-    assert(ar_data__get_type(result) == DATA_INTEGER);
+    assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(result) == 42);
     
     // Verify ownership: result should be unowned (we can claim it)
@@ -208,7 +208,7 @@ static void test_evaluate_literal_double(void) {
     
     // Then it should return the double value
     assert(result != NULL);
-    assert(ar_data__get_type(result) == DATA_DOUBLE);
+    assert(ar_data__get_type(result) == AR_DATA_TYPE__DOUBLE);
     assert(ar_data__get_double(result) == 3.14);
     
     // Clean up
@@ -281,7 +281,7 @@ static void test_evaluate_literal_string(void) {
     
     // Then it should return the string value
     assert(result != NULL);
-    assert(ar_data__get_type(result) == DATA_STRING);
+    assert(ar_data__get_type(result) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(result), "hello world") == 0);
     
     // Verify ownership: result should be unowned (we can claim it)
@@ -362,7 +362,7 @@ static void test_evaluate_literal_string_empty(void) {
     
     // Then it should return an empty string value
     assert(result != NULL);
-    assert(ar_data__get_type(result) == DATA_STRING);
+    assert(ar_data__get_type(result) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(result), "") == 0);
     
     // Clean up
@@ -403,7 +403,7 @@ static void test_evaluate_memory_access(void) {
     
     // Then it should return the value from memory (a reference, not owned)
     assert(result != NULL);
-    assert(ar_data__get_type(result) == DATA_INTEGER);
+    assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(result) == 42);
     
     // Verify ownership: result should be owned by the memory map
@@ -486,7 +486,7 @@ static void test_evaluate_memory_access_nested(void) {
     
     // Then it should return the nested value (a reference, not owned)
     assert(result != NULL);
-    assert(ar_data__get_type(result) == DATA_STRING);
+    assert(ar_data__get_type(result) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(result), "Bob") == 0);
     
     // Clean up (do NOT destroy result - it's a reference)
@@ -553,7 +553,7 @@ static void test_evaluate_binary_op_add_integers(void) {
     // Given a binary addition AST node for "5 + 3"
     ar_expression_ast_t *left = ar_expression_ast__create_literal_int(5);
     ar_expression_ast_t *right = ar_expression_ast__create_literal_int(3);
-    ar_expression_ast_t *ast = ar_expression_ast__create_binary_op(AR_OP__ADD, left, right);
+    ar_expression_ast_t *ast = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__ADD, left, right);
     assert(ast != NULL);
     
     // When evaluating the binary operation using the public evaluate method
@@ -561,7 +561,7 @@ static void test_evaluate_binary_op_add_integers(void) {
     
     // Then it should return the sum (a new owned value)
     assert(result != NULL);
-    assert(ar_data__get_type(result) == DATA_INTEGER);
+    assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(result) == 8);
     
     // Verify ownership: result should be unowned (we can claim it)
@@ -601,7 +601,7 @@ static void test_evaluate_binary_op_multiply_doubles(void) {
     // Given a binary multiplication AST node for "2.5 * 4.0"
     ar_expression_ast_t *left = ar_expression_ast__create_literal_double(2.5);
     ar_expression_ast_t *right = ar_expression_ast__create_literal_double(4.0);
-    ar_expression_ast_t *ast = ar_expression_ast__create_binary_op(AR_OP__MULTIPLY, left, right);
+    ar_expression_ast_t *ast = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__MULTIPLY, left, right);
     assert(ast != NULL);
     
     // When evaluating the binary operation
@@ -609,7 +609,7 @@ static void test_evaluate_binary_op_multiply_doubles(void) {
     
     // Then it should return the product (a new owned value)
     assert(result != NULL);
-    assert(ar_data__get_type(result) == DATA_DOUBLE);
+    assert(ar_data__get_type(result) == AR_DATA_TYPE__DOUBLE);
     assert(ar_data__get_double(result) == 10.0);
     
     // Clean up (MUST destroy result - it's owned)
@@ -641,7 +641,7 @@ static void test_evaluate_binary_op_concatenate_strings(void) {
     // Given a binary addition AST node for "Hello" + " World"
     ar_expression_ast_t *left = ar_expression_ast__create_literal_string("Hello");
     ar_expression_ast_t *right = ar_expression_ast__create_literal_string(" World");
-    ar_expression_ast_t *ast = ar_expression_ast__create_binary_op(AR_OP__ADD, left, right);
+    ar_expression_ast_t *ast = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__ADD, left, right);
     assert(ast != NULL);
     
     // When evaluating the binary operation
@@ -649,7 +649,7 @@ static void test_evaluate_binary_op_concatenate_strings(void) {
     
     // Then it should return the concatenated string (a new owned value)
     assert(result != NULL);
-    assert(ar_data__get_type(result) == DATA_STRING);
+    assert(ar_data__get_type(result) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(result), "Hello World") == 0);
     
     // Clean up (MUST destroy result - it's owned)
@@ -722,14 +722,14 @@ static void test_evaluate_binary_op_nested(void) {
     
     // Create memory.x + 2
     ar_expression_ast_t *two = ar_expression_ast__create_literal_int(2);
-    ar_expression_ast_t *add = ar_expression_ast__create_binary_op(AR_OP__ADD, mem_x, two);
+    ar_expression_ast_t *add = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__ADD, mem_x, two);
     
     // Create memory.y
     const char *path_y[] = {"y"};
     ar_expression_ast_t *mem_y = ar_expression_ast__create_memory_access("memory", path_y, 1);
     
     // Create (memory.x + 2) * memory.y
-    ar_expression_ast_t *ast = ar_expression_ast__create_binary_op(AR_OP__MULTIPLY, add, mem_y);
+    ar_expression_ast_t *ast = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__MULTIPLY, add, mem_y);
     assert(ast != NULL);
     
     // When evaluating the nested binary operation using the public evaluate method
@@ -737,7 +737,7 @@ static void test_evaluate_binary_op_nested(void) {
     
     // Then it should return (10 + 2) * 5 = 60 (a new owned value)
     assert(result != NULL);
-    assert(ar_data__get_type(result) == DATA_INTEGER);
+    assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(result) == 60);
     
     // Verify ownership: result should be unowned (we can claim it)

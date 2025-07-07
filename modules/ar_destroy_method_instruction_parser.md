@@ -29,7 +29,7 @@ ar_instruction_ast_t *ast = ar_destroy_method_instruction_parser__parse(parser, 
 
 if (ast) {
     // Successfully parsed
-    assert(ar_instruction_ast__get_type(ast) == AR_INST__DESTROY_METHOD);
+    assert(ar_instruction_ast__get_type(ast) == AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD);
     // ... use AST ...
     ar_instruction_ast__destroy(ast);
 } else {
@@ -96,7 +96,7 @@ Access error information using:
 - **Opaque Type**: `ar_destroy_method_instruction_parser_t` hides implementation details
 - **Error State**: Reports errors through ar_log (deprecated get_error functions return NULL/0)
 - **Instance-Based**: Each parser instance maintains its own state
-- **AST Type**: Creates `AR_INST__DESTROY_METHOD` nodes
+- **AST Type**: Creates `AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD` nodes
 
 ### Memory Management
 - **Heap Tracking**: Uses `AR__HEAP__MALLOC`, `AR__HEAP__FREE`, `AR__HEAP__STRDUP`

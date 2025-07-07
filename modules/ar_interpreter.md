@@ -184,8 +184,8 @@ The interpreter strictly follows ownership rules:
 The interpreter uses a switch statement for instruction dispatch:
 ```c
 switch (instruction_type) {
-    case INST_ASSIGNMENT: return _execute_assignment(...);
-    case INST_SEND: return _execute_send(...);
+    case AR_INSTRUCTION_TYPE__ASSIGNMENT: return _execute_assignment(...);
+    case AR_INSTRUCTION_TYPE__SEND: return _execute_send(...);
     // ... etc
 }
 ```

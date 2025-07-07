@@ -35,10 +35,10 @@ static bool _validate_file(const char *filename, char *error_message, size_t err
     FILE *fp;
     ar_file_result_t result = ar_io__open_file(filename, "r", &fp);
 
-    if (result == FILE_ERROR_NOT_FOUND) {
+    if (result == AR_FILE_RESULT__ERROR_NOT_FOUND) {
         snprintf(error_message, error_size, "Methodology file %s not found", filename);
         return false;
-    } else if (result != FILE_SUCCESS) {
+    } else if (result != AR_FILE_RESULT__SUCCESS) {
         snprintf(error_message, error_size, "Failed to open methodology file: %s",
                 ar_io__error_message(result));
         return false;
@@ -454,7 +454,7 @@ bool ar_methodology__save_methods(void) {
     // Use restricted mode "w" to ensure we only create/write, not execute
     FILE *mut_fp;
     ar_file_result_t result = ar_io__open_file(temp_filename, "w", &mut_fp);
-    if (result != FILE_SUCCESS) {
+    if (result != AR_FILE_RESULT__SUCCESS) {
         ar_io__error("Could not open %s for writing: %s",
                 temp_filename, ar_io__error_message(result));
         return false;
@@ -612,7 +612,7 @@ bool ar_methodology__save_methods(void) {
 
     // Set secure permissions on the permanent file
     result = ar_io__set_secure_permissions(METHODOLOGY_FILE_NAME);
-    if (result != FILE_SUCCESS) {
+    if (result != AR_FILE_RESULT__SUCCESS) {
         ar_io__warning("Failed to set secure permissions on %s: %s",
                  METHODOLOGY_FILE_NAME, ar_io__error_message(result));
         // Continue despite permission issues - file was saved successfully
@@ -670,14 +670,14 @@ bool ar_methodology__load_methods(void) {
     FILE *mut_fp;
     ar_file_result_t result = ar_io__open_file(METHODOLOGY_FILE_NAME, "r", &mut_fp);
 
-    if (result != FILE_SUCCESS) {
+    if (result != AR_FILE_RESULT__SUCCESS) {
         ar_io__error("Failed to open methodology file: %s", ar_io__error_message(result));
         return false;
     }
 
     // Verify file permissions (should be readable only by owner)
     result = ar_io__set_secure_permissions(METHODOLOGY_FILE_NAME);
-    if (result != FILE_SUCCESS) {
+    if (result != AR_FILE_RESULT__SUCCESS) {
         ar_io__warning("Failed to set secure permissions on methodology file: %s",
                    ar_io__error_message(result));
         // Continue anyway with a warning
@@ -1116,7 +1116,7 @@ bool ar_methodology__save_methods_with_instance(ar_methodology_t *ref_methodolog
     
     FILE *fp;
     ar_file_result_t result = ar_io__open_file(ref_filename, "w", &fp);
-    if (result != FILE_SUCCESS) {
+    if (result != AR_FILE_RESULT__SUCCESS) {
         ar_io__error("Failed to open file %s for writing: %s", ref_filename, 
                     ar_io__error_message(result));
         return false;
@@ -1204,8 +1204,8 @@ bool ar_methodology__load_methods_with_instance(ar_methodology_t *mut_methodolog
     
     FILE *fp;
     ar_file_result_t result = ar_io__open_file(ref_filename, "r", &fp);
-    if (result != FILE_SUCCESS) {
-        if (result != FILE_ERROR_NOT_FOUND) {
+    if (result != AR_FILE_RESULT__SUCCESS) {
+        if (result != AR_FILE_RESULT__ERROR_NOT_FOUND) {
             ar_io__error("Failed to open file %s for reading: %s", ref_filename,
                         ar_io__error_message(result));
         }

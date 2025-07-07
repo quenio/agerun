@@ -101,9 +101,9 @@ static void test_event__create_with_different_types(void) {
     const char *ref_info_msg = "Info: process started";
     
     // When creating events with different types
-    ar_event_t *own_error = ar_event__create_typed(AR_EVENT_ERROR, ref_error_msg);
-    ar_event_t *own_warning = ar_event__create_typed(AR_EVENT_WARNING, ref_warning_msg);
-    ar_event_t *own_info = ar_event__create_typed(AR_EVENT_INFO, ref_info_msg);
+    ar_event_t *own_error = ar_event__create_typed(AR_EVENT_TYPE__ERROR, ref_error_msg);
+    ar_event_t *own_warning = ar_event__create_typed(AR_EVENT_TYPE__WARNING, ref_warning_msg);
+    ar_event_t *own_info = ar_event__create_typed(AR_EVENT_TYPE__INFO, ref_info_msg);
     
     // Then all events should be created successfully
     if (!own_error || !own_warning || !own_info) {
@@ -116,9 +116,9 @@ static void test_event__create_with_different_types(void) {
     
     // And types should be retrievable and correct
     ar_event_type_t error_type = ar_event__get_type(own_error);
-    if (error_type != AR_EVENT_ERROR) {
+    if (error_type != AR_EVENT_TYPE__ERROR) {
         fprintf(stderr, "    FAIL: Error event type mismatch. Expected: %d, Got: %d\n",
-                AR_EVENT_ERROR, error_type);
+                AR_EVENT_TYPE__ERROR, error_type);
         ar_event__destroy(own_error);
         ar_event__destroy(own_warning);
         ar_event__destroy(own_info);
@@ -126,9 +126,9 @@ static void test_event__create_with_different_types(void) {
     }
     
     ar_event_type_t warning_type = ar_event__get_type(own_warning);
-    if (warning_type != AR_EVENT_WARNING) {
+    if (warning_type != AR_EVENT_TYPE__WARNING) {
         fprintf(stderr, "    FAIL: Warning event type mismatch. Expected: %d, Got: %d\n",
-                AR_EVENT_WARNING, warning_type);
+                AR_EVENT_TYPE__WARNING, warning_type);
         ar_event__destroy(own_error);
         ar_event__destroy(own_warning);
         ar_event__destroy(own_info);
@@ -136,9 +136,9 @@ static void test_event__create_with_different_types(void) {
     }
     
     ar_event_type_t info_type = ar_event__get_type(own_info);
-    if (info_type != AR_EVENT_INFO) {
+    if (info_type != AR_EVENT_TYPE__INFO) {
         fprintf(stderr, "    FAIL: Info event type mismatch. Expected: %d, Got: %d\n",
-                AR_EVENT_INFO, info_type);
+                AR_EVENT_TYPE__INFO, info_type);
         ar_event__destroy(own_error);
         ar_event__destroy(own_warning);
         ar_event__destroy(own_info);
@@ -170,7 +170,7 @@ static void test_event__create_with_position(void) {
     int position = 42;
     
     // When creating an event with position
-    ar_event_t *own_event = ar_event__create_with_position(AR_EVENT_ERROR, ref_error_msg, position);
+    ar_event_t *own_event = ar_event__create_with_position(AR_EVENT_TYPE__ERROR, ref_error_msg, position);
     
     // Then the event should be created successfully
     if (!own_event) {
@@ -187,7 +187,7 @@ static void test_event__create_with_position(void) {
     }
     
     // And the type should be correct
-    if (ar_event__get_type(own_event) != AR_EVENT_ERROR) {
+    if (ar_event__get_type(own_event) != AR_EVENT_TYPE__ERROR) {
         fprintf(stderr, "    FAIL: Event type incorrect\n");
         ar_event__destroy(own_event);
         return;
@@ -213,7 +213,7 @@ static void test_event__create_with_position(void) {
     ar_event__destroy(own_event);
     
     // Test event without position
-    ar_event_t *own_event_no_pos = ar_event__create_typed(AR_EVENT_INFO, "Just info");
+    ar_event_t *own_event_no_pos = ar_event__create_typed(AR_EVENT_TYPE__INFO, "Just info");
     if (!own_event_no_pos) {
         fprintf(stderr, "    FAIL: Event creation without position returned NULL\n");
         return;
@@ -234,7 +234,7 @@ static void test_event__has_timestamp(void) {
     printf("  test_event__has_timestamp...\n");
     
     // Given an event
-    ar_event_t *own_event = ar_event__create_typed(AR_EVENT_INFO, "System started");
+    ar_event_t *own_event = ar_event__create_typed(AR_EVENT_TYPE__INFO, "System started");
     
     // Then the event should have a timestamp
     if (!own_event) {
@@ -291,12 +291,12 @@ static void test_event__memory_stress(void) {
             // Event with type and message
             char message[50];
             snprintf(message, sizeof(message), "Warning #%d", i);
-            events[i] = ar_event__create_typed(AR_EVENT_WARNING, message);
+            events[i] = ar_event__create_typed(AR_EVENT_TYPE__WARNING, message);
         } else {
             // Event with position
             char message[50];
             snprintf(message, sizeof(message), "Error at position %d", i * 10);
-            events[i] = ar_event__create_with_position(AR_EVENT_ERROR, message, i * 10);
+            events[i] = ar_event__create_with_position(AR_EVENT_TYPE__ERROR, message, i * 10);
         }
         
         // Then each event should be created successfully

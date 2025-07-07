@@ -64,17 +64,17 @@ static void test_grade_evaluator_grades(void) {
     
     // Check the result
     const ar_data_t *type = ar_data__get_map_data(agent_memory, "type");
-    if (type && ar_data__get_type(type) == DATA_STRING) {
+    if (type && ar_data__get_type(type) == AR_DATA_TYPE__STRING) {
         printf("SUCCESS: if() correctly identified type = \"%s\"\n", ar_data__get_string(type));
     }
     
     const ar_data_t *value = ar_data__get_map_data(agent_memory, "value");
-    if (value && ar_data__get_type(value) == DATA_INTEGER && ar_data__get_integer(value) >= 90) {
+    if (value && ar_data__get_type(value) == AR_DATA_TYPE__INTEGER && ar_data__get_integer(value) >= 90) {
         printf("SUCCESS: if() correctly identified value >= 90\n");
     }
     
     const ar_data_t *grade = ar_data__get_map_data(agent_memory, "grade");
-    if (grade && ar_data__get_type(grade) == DATA_STRING) {
+    if (grade && ar_data__get_type(grade) == AR_DATA_TYPE__STRING) {
         const char *grade_str = ar_data__get_string(grade);
         printf("SUCCESS: Grade correctly set to \"%s\"\n", grade_str);
         assert(strcmp(grade_str, "A") == 0);
@@ -97,7 +97,7 @@ static void test_grade_evaluator_grades(void) {
     assert(processed);
     
     grade = ar_data__get_map_data(agent_memory, "grade");
-    assert(grade != NULL && ar_data__get_type(grade) == DATA_STRING);
+    assert(grade != NULL && ar_data__get_type(grade) == AR_DATA_TYPE__STRING);
     printf("Grade for 85: %s\n", ar_data__get_string(grade));
     assert(strcmp(ar_data__get_string(grade), "B") == 0);
     
@@ -117,7 +117,7 @@ static void test_grade_evaluator_grades(void) {
     assert(processed);
     
     grade = ar_data__get_map_data(agent_memory, "grade");
-    assert(grade != NULL && ar_data__get_type(grade) == DATA_STRING);
+    assert(grade != NULL && ar_data__get_type(grade) == AR_DATA_TYPE__STRING);
     printf("Grade for 75: %s\n", ar_data__get_string(grade));
     assert(strcmp(ar_data__get_string(grade), "C") == 0);
     
@@ -137,7 +137,7 @@ static void test_grade_evaluator_grades(void) {
     assert(processed);
     
     grade = ar_data__get_map_data(agent_memory, "grade");
-    assert(grade != NULL && ar_data__get_type(grade) == DATA_STRING);
+    assert(grade != NULL && ar_data__get_type(grade) == AR_DATA_TYPE__STRING);
     printf("Grade for 65: %s\n", ar_data__get_string(grade));
     assert(strcmp(ar_data__get_string(grade), "F") == 0);
     
@@ -203,7 +203,7 @@ static void test_grade_evaluator_status(void) {
     assert(agent_memory != NULL);
     
     const ar_data_t *status = ar_data__get_map_data(agent_memory, "status");
-    assert(status != NULL && ar_data__get_type(status) == DATA_STRING);
+    assert(status != NULL && ar_data__get_type(status) == AR_DATA_TYPE__STRING);
     printf("Status for value 5: %s\n", ar_data__get_string(status));
     assert(strcmp(ar_data__get_string(status), "active") == 0);
     
@@ -223,7 +223,7 @@ static void test_grade_evaluator_status(void) {
     assert(processed);
     
     status = ar_data__get_map_data(agent_memory, "status");
-    assert(status != NULL && ar_data__get_type(status) == DATA_STRING);
+    assert(status != NULL && ar_data__get_type(status) == AR_DATA_TYPE__STRING);
     printf("Status for value 0: %s\n", ar_data__get_string(status));
     assert(strcmp(ar_data__get_string(status), "inactive") == 0);
     
@@ -243,7 +243,7 @@ static void test_grade_evaluator_status(void) {
     assert(processed);
     
     const ar_data_t *result = ar_data__get_map_data(agent_memory, "result");
-    assert(result != NULL && ar_data__get_type(result) == DATA_STRING);
+    assert(result != NULL && ar_data__get_type(result) == AR_DATA_TYPE__STRING);
     printf("Result for unknown type: %s\n", ar_data__get_string(result));
     assert(strcmp(ar_data__get_string(result), "unknown") == 0);
     

@@ -67,7 +67,7 @@ static void test_string_builder_parse_build(void) {
         printf("NOTE: This is expected until parse() function is implemented in instruction module\n");
         // For now, we'll continue to check other aspects of the test
     } else {
-        assert(ar_data__get_type(parsed) == DATA_MAP);
+        assert(ar_data__get_type(parsed) == AR_DATA_TYPE__MAP);
         printf("SUCCESS: parse() instruction executed and created memory.parsed\n");
         
         // Debug: Try different possible keys in the parsed map
@@ -94,7 +94,7 @@ static void test_string_builder_parse_build(void) {
         // Check that parsed contains username and role
         const ar_data_t *username = ar_data__get_map_data(parsed, "username");
         if (username != NULL) {
-            assert(ar_data__get_type(username) == DATA_STRING);
+            assert(ar_data__get_type(username) == AR_DATA_TYPE__STRING);
             assert(strcmp(ar_data__get_string(username), "alice") == 0);
             printf("  - Extracted username: %s\n", ar_data__get_string(username));
         } else {
@@ -103,7 +103,7 @@ static void test_string_builder_parse_build(void) {
         
         const ar_data_t *role = ar_data__get_map_data(parsed, "role");
         if (role != NULL) {
-            assert(ar_data__get_type(role) == DATA_STRING);
+            assert(ar_data__get_type(role) == AR_DATA_TYPE__STRING);
             assert(strcmp(ar_data__get_string(role), "admin") == 0);
             printf("  - Extracted role: %s\n", ar_data__get_string(role));
         } else {
@@ -117,7 +117,7 @@ static void test_string_builder_parse_build(void) {
         printf("FAIL: memory.result not found - build() instruction failed to execute\n");
         printf("NOTE: This is expected until build() function is implemented in instruction module\n");
     } else {
-        assert(ar_data__get_type(result) == DATA_STRING);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__STRING);
         printf("SUCCESS: build() instruction executed and created memory.result\n");
         printf("  - Expected: 'Welcome alice! Your role is: admin'\n");
         printf("  - Actual:   '%s'\n", ar_data__get_string(result));
@@ -189,7 +189,7 @@ __attribute__((unused)) static void test_string_builder_parse_failure(void) {
         printf("FAIL: memory.parsed not found - parse() instruction failed to execute\n");
         printf("NOTE: This is expected until parse() function is implemented in instruction module\n");
     } else {
-        assert(ar_data__get_type(parsed) == DATA_MAP);
+        assert(ar_data__get_type(parsed) == AR_DATA_TYPE__MAP);
         printf("SUCCESS: parse() instruction executed even with mismatched template\n");
         // The map should be empty or contain no matches
     }
@@ -200,7 +200,7 @@ __attribute__((unused)) static void test_string_builder_parse_failure(void) {
         printf("FAIL: memory.result not found - build() instruction failed to execute\n");
         printf("NOTE: This is expected until build() function is implemented in instruction module\n");
     } else {
-        assert(ar_data__get_type(result) == DATA_STRING);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__STRING);
         // When parse fails to find values, build should produce empty substitutions
         const char *result_str = ar_data__get_string(result);
         printf("SUCCESS: build() instruction executed with missing values\n");

@@ -89,7 +89,7 @@ if (strcmp(function_name, "send") == 0) {
     
     // 3. Extract agent ID
     int64_t target_id = 0;
-    if (ar_data_get_type(own_agent_id) == DATA_INTEGER) {
+    if (ar_data_get_type(own_agent_id) == AR_DATA_TYPE__INTEGER) {
         target_id = (int64_t)ar_data_get_integer(own_agent_id);
     }
     
@@ -162,11 +162,11 @@ else if (strcmp(function_name, "if") == 0) {
     // 4. Evaluate condition (integer != 0, double != 0.0, non-empty string)
     bool condition = false;
     ar_data_type_t cond_type = ar_data_get_type(cond_to_use);
-    if (cond_type == DATA_INTEGER) {
+    if (cond_type == AR_DATA_TYPE__INTEGER) {
         condition = (ar_data_get_integer(cond_to_use) != 0);
-    } else if (cond_type == DATA_DOUBLE) {
+    } else if (cond_type == AR_DATA_TYPE__DOUBLE) {
         condition = (ar_data_get_double(cond_to_use) != 0.0);
-    } else if (cond_type == DATA_STRING) {
+    } else if (cond_type == AR_DATA_TYPE__STRING) {
         const char *str = ar_data_get_string(cond_to_use);
         condition = (str && *str); // True if non-empty string
     }
@@ -291,7 +291,7 @@ else if (strcmp(function_name, "method") == 0) {
     const char *version_str = ar_data_get_string(version);
     
     // 2. Handle version conversion (integer to "X.0.0")
-    if (ar_data_get_type(version) == DATA_INTEGER) {
+    if (ar_data_get_type(version) == AR_DATA_TYPE__INTEGER) {
         snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar_data_get_integer(version));
         version_str = version_buffer;
     }

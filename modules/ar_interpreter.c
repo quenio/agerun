@@ -85,29 +85,29 @@ bool ar_interpreter__execute_instruction(ar_interpreter_t *mut_interpreter,
     fprintf(stderr, "DEBUG: Instruction type: %d\n", type);
     
     switch (type) {
-        case INST_ASSIGNMENT:
+        case AR_INSTRUCTION_TYPE__ASSIGNMENT:
             result = _execute_assignment(mut_interpreter, mut_context, own_parsed);
             break;
-        case INST_SEND:
+        case AR_INSTRUCTION_TYPE__SEND:
             result = _execute_send(mut_interpreter, mut_context, own_parsed);
             fprintf(stderr, "DEBUG: _execute_send returned: %s\n", result ? "true" : "false");
             break;
-        case INST_IF:
+        case AR_INSTRUCTION_TYPE__IF:
             result = _execute_if(mut_interpreter, mut_context, own_parsed);
             break;
-        case INST_PARSE:
+        case AR_INSTRUCTION_TYPE__PARSE:
             result = _execute_parse(mut_interpreter, mut_context, own_parsed);
             break;
         case INST_BUILD:
             result = _execute_build(mut_interpreter, mut_context, own_parsed);
             break;
-        case INST_METHOD:
+        case AR_INSTRUCTION_TYPE__METHOD:
             result = _execute_method(mut_interpreter, mut_context, own_parsed);
             break;
-        case INST_AGENT:
+        case AR_INSTRUCTION_TYPE__AGENT:
             result = _execute_agent(mut_interpreter, mut_context, own_parsed);
             break;
-        case INST_DESTROY:
+        case AR_INSTRUCTION_TYPE__DESTROY:
             result = _execute_destroy(mut_interpreter, mut_context, own_parsed);
             break;
         default:
@@ -244,7 +244,7 @@ static bool _execute_assignment(ar_interpreter_t *mut_interpreter, ar_instructio
     
     // Debug: Check what type we got
     fprintf(stderr, "DEBUG: Expression evaluated to type %d\n", ar_data__get_type(ref_result));
-    if (ar_data__get_type(ref_result) == DATA_STRING) {
+    if (ar_data__get_type(ref_result) == AR_DATA_TYPE__STRING) {
         fprintf(stderr, "DEBUG: Expression result string: '%s'\n", ar_data__get_string(ref_result));
     }
     
@@ -320,7 +320,7 @@ static bool _execute_send(ar_interpreter_t *mut_interpreter, ar_instruction_cont
     
     // Extract agent_id
     int64_t agent_id = 0;
-    if (ar_data__get_type(own_agent_id) == DATA_INTEGER) {
+    if (ar_data__get_type(own_agent_id) == AR_DATA_TYPE__INTEGER) {
         agent_id = (int64_t)ar_data__get_integer(own_agent_id);
     }
     
@@ -468,12 +468,12 @@ static bool _execute_if(ar_interpreter_t *mut_interpreter, ar_instruction_contex
     
     // Check condition - any non-zero integer or non-empty string is true
     bool condition_is_true = false;
-    if (ar_data__get_type(cond_to_use) == DATA_INTEGER) {
+    if (ar_data__get_type(cond_to_use) == AR_DATA_TYPE__INTEGER) {
         condition_is_true = (ar_data__get_integer(cond_to_use) != 0);
-    } else if (ar_data__get_type(cond_to_use) == DATA_STRING) {
+    } else if (ar_data__get_type(cond_to_use) == AR_DATA_TYPE__STRING) {
         const char *str = ar_data__get_string(cond_to_use);
         condition_is_true = (str && strlen(str) > 0);
-    } else if (ar_data__get_type(cond_to_use) == DATA_DOUBLE) {
+    } else if (ar_data__get_type(cond_to_use) == AR_DATA_TYPE__DOUBLE) {
         condition_is_true = (ar_data__get_double(cond_to_use) != 0.0);
     }
     
@@ -486,11 +486,11 @@ static bool _execute_if(ar_interpreter_t *mut_interpreter, ar_instruction_contex
             own_true = NULL; // Mark as transferred
         } else {
             // Create a copy of the reference
-            if (ar_data__get_type(true_to_use) == DATA_INTEGER) {
+            if (ar_data__get_type(true_to_use) == AR_DATA_TYPE__INTEGER) {
                 own_result = ar_data__create_integer(ar_data__get_integer(true_to_use));
-            } else if (ar_data__get_type(true_to_use) == DATA_DOUBLE) {
+            } else if (ar_data__get_type(true_to_use) == AR_DATA_TYPE__DOUBLE) {
                 own_result = ar_data__create_double(ar_data__get_double(true_to_use));
-            } else if (ar_data__get_type(true_to_use) == DATA_STRING) {
+            } else if (ar_data__get_type(true_to_use) == AR_DATA_TYPE__STRING) {
                 own_result = ar_data__create_string(ar_data__get_string(true_to_use));
             } else {
                 // For maps and other types, we can't easily copy, so return 0
@@ -508,11 +508,11 @@ static bool _execute_if(ar_interpreter_t *mut_interpreter, ar_instruction_contex
             own_false = NULL; // Mark as transferred
         } else {
             // Create a copy of the reference
-            if (ar_data__get_type(false_to_use) == DATA_INTEGER) {
+            if (ar_data__get_type(false_to_use) == AR_DATA_TYPE__INTEGER) {
                 own_result = ar_data__create_integer(ar_data__get_integer(false_to_use));
-            } else if (ar_data__get_type(false_to_use) == DATA_DOUBLE) {
+            } else if (ar_data__get_type(false_to_use) == AR_DATA_TYPE__DOUBLE) {
                 own_result = ar_data__create_double(ar_data__get_double(false_to_use));
-            } else if (ar_data__get_type(false_to_use) == DATA_STRING) {
+            } else if (ar_data__get_type(false_to_use) == AR_DATA_TYPE__STRING) {
                 own_result = ar_data__create_string(ar_data__get_string(false_to_use));
             } else {
                 // For maps and other types, we can't easily copy, so return 0
@@ -584,14 +584,14 @@ static bool _execute_parse(ar_interpreter_t *mut_interpreter, ar_instruction_con
     
     if (owns_template) {
         // We own the value
-        if (ar_data__get_type(own_template) != DATA_STRING) {
+        if (ar_data__get_type(own_template) != AR_DATA_TYPE__STRING) {
             ar_data__destroy(own_template);
             return false;
         }
         template_str = ar_data__get_string(own_template);
     } else {
         // It's a reference - use the evaluation result directly
-        if (!ref_eval_result || ar_data__get_type(ref_eval_result) != DATA_STRING) {
+        if (!ref_eval_result || ar_data__get_type(ref_eval_result) != AR_DATA_TYPE__STRING) {
             return false;
         }
         template_str = ar_data__get_string(ref_eval_result);
@@ -620,7 +620,7 @@ static bool _execute_parse(ar_interpreter_t *mut_interpreter, ar_instruction_con
     
     if (owns_input) {
         // We own the value
-        if (ar_data__get_type(own_input) != DATA_STRING) {
+        if (ar_data__get_type(own_input) != AR_DATA_TYPE__STRING) {
             ar_data__destroy(own_input);
             if (owns_template && own_template) {
                 ar_data__destroy(own_template);
@@ -630,7 +630,7 @@ static bool _execute_parse(ar_interpreter_t *mut_interpreter, ar_instruction_con
         input_str = ar_data__get_string(own_input);
     } else {
         // It's a reference - use the evaluation result directly
-        if (!ref_input_eval || ar_data__get_type(ref_input_eval) != DATA_STRING) {
+        if (!ref_input_eval || ar_data__get_type(ref_input_eval) != AR_DATA_TYPE__STRING) {
             if (owns_template && own_template) {
                 ar_data__destroy(own_template);
             }
@@ -888,14 +888,14 @@ static bool _execute_build(ar_interpreter_t *mut_interpreter, ar_instruction_con
     
     if (owns_template) {
         // We own the value
-        if (ar_data__get_type(own_template) != DATA_STRING) {
+        if (ar_data__get_type(own_template) != AR_DATA_TYPE__STRING) {
             ar_data__destroy(own_template);
             return false;
         }
         template_str = ar_data__get_string(own_template);
     } else {
         // It's a reference - use the evaluation result directly
-        if (!ref_eval_result || ar_data__get_type(ref_eval_result) != DATA_STRING) {
+        if (!ref_eval_result || ar_data__get_type(ref_eval_result) != AR_DATA_TYPE__STRING) {
             return false;
         }
         template_str = ar_data__get_string(ref_eval_result);
@@ -924,7 +924,7 @@ static bool _execute_build(ar_interpreter_t *mut_interpreter, ar_instruction_con
     const ar_data_t *values_to_use = own_values ? own_values : ref_values;
     
     // Ensure values is a map
-    if (ar_data__get_type(values_to_use) != DATA_MAP) {
+    if (ar_data__get_type(values_to_use) != AR_DATA_TYPE__MAP) {
         if (own_values) {
             ar_data__destroy(own_values);
         }
@@ -983,12 +983,12 @@ static bool _execute_build(ar_interpreter_t *mut_interpreter, ar_instruction_con
                     char value_buffer[256];
                     const char *value_str = NULL;
                     
-                    if (ar_data__get_type(ref_value) == DATA_STRING) {
+                    if (ar_data__get_type(ref_value) == AR_DATA_TYPE__STRING) {
                         value_str = ar_data__get_string(ref_value);
-                    } else if (ar_data__get_type(ref_value) == DATA_INTEGER) {
+                    } else if (ar_data__get_type(ref_value) == AR_DATA_TYPE__INTEGER) {
                         snprintf(value_buffer, sizeof(value_buffer), "%d", ar_data__get_integer(ref_value));
                         value_str = value_buffer;
-                    } else if (ar_data__get_type(ref_value) == DATA_DOUBLE) {
+                    } else if (ar_data__get_type(ref_value) == AR_DATA_TYPE__DOUBLE) {
                         snprintf(value_buffer, sizeof(value_buffer), "%g", ar_data__get_double(ref_value));
                         value_str = value_buffer;
                     }
@@ -1169,14 +1169,14 @@ static bool _execute_method(ar_interpreter_t *mut_interpreter, ar_instruction_co
     
     if (owns_name) {
         // We own the value
-        if (ar_data__get_type(own_name) != DATA_STRING) {
+        if (ar_data__get_type(own_name) != AR_DATA_TYPE__STRING) {
             ar_data__destroy(own_name);
             return false;
         }
         method_name = ar_data__get_string(own_name);
     } else {
         // It's a reference - use the evaluation result directly
-        if (!ref_name_eval || ar_data__get_type(ref_name_eval) != DATA_STRING) {
+        if (!ref_name_eval || ar_data__get_type(ref_name_eval) != AR_DATA_TYPE__STRING) {
             return false;
         }
         method_name = ar_data__get_string(ref_name_eval);
@@ -1205,7 +1205,7 @@ static bool _execute_method(ar_interpreter_t *mut_interpreter, ar_instruction_co
     
     if (owns_instr) {
         // We own the value
-        if (ar_data__get_type(own_instr) != DATA_STRING) {
+        if (ar_data__get_type(own_instr) != AR_DATA_TYPE__STRING) {
             ar_data__destroy(own_instr);
             if (owns_name && own_name) {
                 ar_data__destroy(own_name);
@@ -1215,7 +1215,7 @@ static bool _execute_method(ar_interpreter_t *mut_interpreter, ar_instruction_co
         instructions = ar_data__get_string(own_instr);
     } else {
         // It's a reference - use the evaluation result directly
-        if (!ref_instr_eval || ar_data__get_type(ref_instr_eval) != DATA_STRING) {
+        if (!ref_instr_eval || ar_data__get_type(ref_instr_eval) != AR_DATA_TYPE__STRING) {
             if (owns_name && own_name) {
                 ar_data__destroy(own_name);
             }
@@ -1250,9 +1250,9 @@ static bool _execute_method(ar_interpreter_t *mut_interpreter, ar_instruction_co
     
     if (owns_version) {
         // We own the value
-        if (ar_data__get_type(own_version) == DATA_STRING) {
+        if (ar_data__get_type(own_version) == AR_DATA_TYPE__STRING) {
             version_str = ar_data__get_string(own_version);
-        } else if (ar_data__get_type(own_version) == DATA_INTEGER) {
+        } else if (ar_data__get_type(own_version) == AR_DATA_TYPE__INTEGER) {
             // If version is provided as a number, convert it to a string "X.0.0"
             static char version_buffer[16]; // Buffer for conversion
             snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar_data__get_integer(own_version));
@@ -1261,9 +1261,9 @@ static bool _execute_method(ar_interpreter_t *mut_interpreter, ar_instruction_co
     } else {
         // It's a reference - use the evaluation result directly
         if (ref_version_eval) {
-            if (ar_data__get_type(ref_version_eval) == DATA_STRING) {
+            if (ar_data__get_type(ref_version_eval) == AR_DATA_TYPE__STRING) {
                 version_str = ar_data__get_string(ref_version_eval);
-            } else if (ar_data__get_type(ref_version_eval) == DATA_INTEGER) {
+            } else if (ar_data__get_type(ref_version_eval) == AR_DATA_TYPE__INTEGER) {
                 // If version is provided as a number, convert it to a string "X.0.0"
                 static char version_buffer[16]; // Buffer for conversion
                 snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar_data__get_integer(ref_version_eval));
@@ -1344,14 +1344,14 @@ static bool _execute_agent(ar_interpreter_t *mut_interpreter, ar_instruction_con
     
     if (owns_method_name) {
         // We own the value
-        if (ar_data__get_type(own_method_name) != DATA_STRING) {
+        if (ar_data__get_type(own_method_name) != AR_DATA_TYPE__STRING) {
             ar_data__destroy(own_method_name);
             return false;
         }
         method_name = ar_data__get_string(own_method_name);
     } else {
         // It's a reference - use the evaluation result directly
-        if (!ref_method_eval || ar_data__get_type(ref_method_eval) != DATA_STRING) {
+        if (!ref_method_eval || ar_data__get_type(ref_method_eval) != AR_DATA_TYPE__STRING) {
             return false;
         }
         method_name = ar_data__get_string(ref_method_eval);
@@ -1380,9 +1380,9 @@ static bool _execute_agent(ar_interpreter_t *mut_interpreter, ar_instruction_con
     
     if (owns_version) {
         // We own the value
-        if (ar_data__get_type(own_version) == DATA_STRING) {
+        if (ar_data__get_type(own_version) == AR_DATA_TYPE__STRING) {
             version_str = ar_data__get_string(own_version);
-        } else if (ar_data__get_type(own_version) == DATA_INTEGER) {
+        } else if (ar_data__get_type(own_version) == AR_DATA_TYPE__INTEGER) {
             // If version is provided as a number, convert it to a string "X.0.0"
             static char version_buffer[16]; // Buffer for conversion
             snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar_data__get_integer(own_version));
@@ -1391,9 +1391,9 @@ static bool _execute_agent(ar_interpreter_t *mut_interpreter, ar_instruction_con
     } else {
         // It's a reference - use the evaluation result directly
         if (ref_version_eval) {
-            if (ar_data__get_type(ref_version_eval) == DATA_STRING) {
+            if (ar_data__get_type(ref_version_eval) == AR_DATA_TYPE__STRING) {
                 version_str = ar_data__get_string(ref_version_eval);
-            } else if (ar_data__get_type(ref_version_eval) == DATA_INTEGER) {
+            } else if (ar_data__get_type(ref_version_eval) == AR_DATA_TYPE__INTEGER) {
                 // If version is provided as a number, convert it to a string "X.0.0"
                 static char version_buffer[16]; // Buffer for conversion
                 snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar_data__get_integer(ref_version_eval));
@@ -1512,7 +1512,7 @@ static bool _execute_destroy(ar_interpreter_t *mut_interpreter, ar_instruction_c
     if (arg_count == 2) {
         // destroy(method_name, version)
         // First argument must be a string (method name)
-        if (ar_data__get_type(arg1_to_use) != DATA_STRING) {
+        if (ar_data__get_type(arg1_to_use) != AR_DATA_TYPE__STRING) {
             if (own_arg1) {
                 ar_data__destroy(own_arg1);
             }
@@ -1543,9 +1543,9 @@ static bool _execute_destroy(ar_interpreter_t *mut_interpreter, ar_instruction_c
         
         if (owns_version) {
             // We own the value
-            if (ar_data__get_type(own_version) == DATA_STRING) {
+            if (ar_data__get_type(own_version) == AR_DATA_TYPE__STRING) {
                 version_str = ar_data__get_string(own_version);
-            } else if (ar_data__get_type(own_version) == DATA_INTEGER) {
+            } else if (ar_data__get_type(own_version) == AR_DATA_TYPE__INTEGER) {
                 // If version is provided as a number, convert it to a string "X.0.0"
                 static char version_buffer[16]; // Buffer for conversion
                 snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar_data__get_integer(own_version));
@@ -1554,9 +1554,9 @@ static bool _execute_destroy(ar_interpreter_t *mut_interpreter, ar_instruction_c
         } else {
             // It's a reference - use the evaluation result directly
             if (ref_version_eval) {
-                if (ar_data__get_type(ref_version_eval) == DATA_STRING) {
+                if (ar_data__get_type(ref_version_eval) == AR_DATA_TYPE__STRING) {
                     version_str = ar_data__get_string(ref_version_eval);
-                } else if (ar_data__get_type(ref_version_eval) == DATA_INTEGER) {
+                } else if (ar_data__get_type(ref_version_eval) == AR_DATA_TYPE__INTEGER) {
                     // If version is provided as a number, convert it to a string "X.0.0"
                     static char version_buffer[16]; // Buffer for conversion
                     snprintf(version_buffer, sizeof(version_buffer), "%d.0.0", ar_data__get_integer(ref_version_eval));
@@ -1575,7 +1575,7 @@ static bool _execute_destroy(ar_interpreter_t *mut_interpreter, ar_instruction_c
     } else {
         // destroy(agent_id)
         // Argument must be an integer (agent ID)
-        if (ar_data__get_type(arg1_to_use) != DATA_INTEGER) {
+        if (ar_data__get_type(arg1_to_use) != AR_DATA_TYPE__INTEGER) {
             if (own_arg1) {
                 ar_data__destroy(own_arg1);
             }

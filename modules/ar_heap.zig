@@ -165,7 +165,7 @@ export fn ar_heap__memory_report() void {
     // Open report file using ar_io for consistent error handling
     var report: [*c]c.FILE = undefined;
     const open_result = c.ar_io__open_file(report_path, "w", &report);
-    if (open_result != c.FILE_SUCCESS) {
+    if (open_result != c.AR_FILE_RESULT__SUCCESS) {
         c.ar_io__error("Failed to create memory report file at %s", report_path);
         return;
     }

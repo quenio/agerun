@@ -164,7 +164,7 @@ ar_instruction_ast_t *ast = ar_instruction_parser__parse_assignment(parser, inst
 
 if (ast) {
     // Use the AST
-    assert(ar_instruction_ast__get_type(ast) == AR_INST__ASSIGNMENT);
+    assert(ar_instruction_ast__get_type(ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
     
     // Clean up
     ar_instruction_ast__destroy(ast);

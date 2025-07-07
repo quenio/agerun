@@ -169,7 +169,7 @@ static bool _store_write_function(FILE *fp, void *context) {
         // Get agent memory
         ar_data_t *ref_memory = ar_agency__get_agent_mutable_memory(agent_id);
         
-        if (!ref_memory || ar_data__get_type(ref_memory) != DATA_MAP) {
+        if (!ref_memory || ar_data__get_type(ref_memory) != AR_DATA_TYPE__MAP) {
             // No memory or not a map - write 0 items
             if (fputs("0\n", fp) == EOF) {
                 ar_io__error("Failed to write memory count to %s", ctx->filename);
@@ -227,7 +227,7 @@ static bool _store_write_function(FILE *fp, void *context) {
             // Write based on the value type
             ar_data_type_t value_type = ar_data__get_type(ref_value);
             switch (value_type) {
-                case DATA_INTEGER: {
+                case AR_DATA_TYPE__INTEGER: {
                     // Write key and type
                     written = snprintf(buffer, sizeof(buffer), "%s int\n", key);
                     if (written < 0 || written >= (int)sizeof(buffer)) {
@@ -250,7 +250,7 @@ static bool _store_write_function(FILE *fp, void *context) {
                     written = snprintf(buffer, sizeof(buffer), "%d\n", value);
                     break;
                 }
-                case DATA_DOUBLE: {
+                case AR_DATA_TYPE__DOUBLE: {
                     // Write key and type
                     written = snprintf(buffer, sizeof(buffer), "%s double\n", key);
                     if (written < 0 || written >= (int)sizeof(buffer)) {
@@ -273,7 +273,7 @@ static bool _store_write_function(FILE *fp, void *context) {
                     written = snprintf(buffer, sizeof(buffer), "%.6f\n", value);
                     break;
                 }
-                case DATA_STRING: {
+                case AR_DATA_TYPE__STRING: {
                     // Write key and type
                     written = snprintf(buffer, sizeof(buffer), "%s string\n", key);
                     if (written < 0 || written >= (int)sizeof(buffer)) {
@@ -347,10 +347,10 @@ static bool _validate_store_file(const char *filename, char *error_message, size
     FILE *fp;
     ar_file_result_t result = ar_io__open_file(filename, "r", &fp);
     
-    if (result == FILE_ERROR_NOT_FOUND) {
+    if (result == AR_FILE_RESULT__ERROR_NOT_FOUND) {
         snprintf(error_message, error_size, "Agent store file %s not found", filename);
         return false;
-    } else if (result != FILE_SUCCESS) {
+    } else if (result != AR_FILE_RESULT__SUCCESS) {
         snprintf(error_message, error_size, "Failed to open agent store file: %s",
                 ar_io__error_message(result));
         return false;
@@ -490,7 +490,7 @@ bool ar_agent_store__save(void) {
     struct stat st;
     if (stat(AGENT_STORE_FILE_NAME, &st) == 0) {
         ar_file_result_t backup_result = ar_io__create_backup(AGENT_STORE_FILE_NAME);
-        if (backup_result != FILE_SUCCESS) {
+        if (backup_result != AR_FILE_RESULT__SUCCESS) {
             ar_io__warning("Failed to create backup of agent store file: %s",
                          ar_io__error_message(backup_result));
             // Continue despite backup failure
@@ -501,13 +501,13 @@ bool ar_agent_store__save(void) {
     
     // Use the safe file writing utility
     ar_file_result_t result = ar_io__write_file(AGENT_STORE_FILE_NAME, _store_write_function, &context);
-    if (result != FILE_SUCCESS) {
+    if (result != AR_FILE_RESULT__SUCCESS) {
         ar_io__error("Failed to save agent store file: %s", ar_io__error_message(result));
         
         // Try to restore backup if available
         if (stat(AGENT_STORE_FILE_NAME ".bak", &st) == 0) {
             ar_io__warning("Attempting to restore backup file after save failure");
-            if (ar_io__restore_backup(AGENT_STORE_FILE_NAME) != FILE_SUCCESS) {
+            if (ar_io__restore_backup(AGENT_STORE_FILE_NAME) != AR_FILE_RESULT__SUCCESS) {
                 ar_io__error("Failed to restore backup file");
             } else {
                 ar_io__info("Successfully restored backup file after save failure");
@@ -519,7 +519,7 @@ bool ar_agent_store__save(void) {
     
     // Set secure permissions on the file
     result = ar_io__set_secure_permissions(AGENT_STORE_FILE_NAME);
-    if (result != FILE_SUCCESS) {
+    if (result != AR_FILE_RESULT__SUCCESS) {
         ar_io__warning("Failed to set secure permissions on agent store file: %s",
                      ar_io__error_message(result));
         // Continue despite permission issues
@@ -554,7 +554,7 @@ bool ar_agent_store__load(void) {
     FILE *fp;
     ar_file_result_t result = ar_io__open_file(AGENT_STORE_FILE_NAME, "r", &fp);
     
-    if (result != FILE_SUCCESS) {
+    if (result != AR_FILE_RESULT__SUCCESS) {
         ar_io__error("Failed to open agent store file: %s", ar_io__error_message(result));
         return false;
     }
@@ -907,7 +907,7 @@ bool ar_agent_store__delete(void) {
     
     // Create backup before deletion
     ar_file_result_t backup_result = ar_io__create_backup(AGENT_STORE_FILE_NAME);
-    if (backup_result != FILE_SUCCESS) {
+    if (backup_result != AR_FILE_RESULT__SUCCESS) {
         ar_io__warning("Failed to create backup before deletion: %s",
                      ar_io__error_message(backup_result));
     }

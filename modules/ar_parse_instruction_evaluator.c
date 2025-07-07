@@ -149,7 +149,7 @@ bool ar_parse_instruction_evaluator__evaluate(
     _log_error(mut_evaluator, NULL);
     
     // Verify this is a parse AST node
-    if (ar_instruction_ast__get_type(ref_ast) != AR_INST__PARSE) {
+    if (ar_instruction_ast__get_type(ref_ast) != AR_INSTRUCTION_AST_TYPE__PARSE) {
         return false;
     }
     
@@ -180,7 +180,7 @@ bool ar_parse_instruction_evaluator__evaluate(
     
     // Evaluate template expression AST
     ar_data_t *template_result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_template_ast);
-    if (!template_result || ar_data__get_type(template_result) != DATA_STRING) {
+    if (!template_result || ar_data__get_type(template_result) != AR_DATA_TYPE__STRING) {
         if (template_result && ar_data__hold_ownership(template_result, mut_evaluator)) {
             ar_data__transfer_ownership(template_result, mut_evaluator);
             ar_data__destroy(template_result);
@@ -207,7 +207,7 @@ bool ar_parse_instruction_evaluator__evaluate(
     
     // Evaluate input expression AST
     ar_data_t *input_result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_input_ast);
-    if (!input_result || ar_data__get_type(input_result) != DATA_STRING) {
+    if (!input_result || ar_data__get_type(input_result) != AR_DATA_TYPE__STRING) {
         if (input_result && ar_data__hold_ownership(input_result, mut_evaluator)) {
             ar_data__transfer_ownership(input_result, mut_evaluator);
             ar_data__destroy(input_result);

@@ -174,14 +174,14 @@ void ar_instruction__destroy_parsed(ar_parsed_instruction_t *own_parsed) {
 // Gets the type of a parsed instruction
 ar_instruction_type_t ar_instruction__get_type(const ar_parsed_instruction_t *ref_parsed) {
     if (!ref_parsed) {
-        return INST_ASSIGNMENT; // Default, though caller should check for NULL
+        return AR_INSTRUCTION_TYPE__ASSIGNMENT; // Default, though caller should check for NULL
     }
     return ref_parsed->type;
 }
 
 // Gets the memory path for an assignment instruction
 const char* ar_instruction__get_assignment_path(const ar_parsed_instruction_t *ref_parsed) {
-    if (!ref_parsed || ref_parsed->type != INST_ASSIGNMENT) {
+    if (!ref_parsed || ref_parsed->type != AR_INSTRUCTION_TYPE__ASSIGNMENT) {
         return NULL;
     }
     return ref_parsed->own_assignment_path;
@@ -189,7 +189,7 @@ const char* ar_instruction__get_assignment_path(const ar_parsed_instruction_t *r
 
 // Gets the expression for an assignment instruction
 const char* ar_instruction__get_assignment_expression(const ar_parsed_instruction_t *ref_parsed) {
-    if (!ref_parsed || ref_parsed->type != INST_ASSIGNMENT) {
+    if (!ref_parsed || ref_parsed->type != AR_INSTRUCTION_TYPE__ASSIGNMENT) {
         return NULL;
     }
     return ref_parsed->own_assignment_expression;
@@ -202,7 +202,7 @@ bool ar_instruction__get_function_call(const ar_parsed_instruction_t *ref_parsed
                                         int *out_arg_count,
                                         const char **out_result_path) {
     if (!ref_parsed || 
-        (ref_parsed->type == INST_ASSIGNMENT)) {
+        (ref_parsed->type == AR_INSTRUCTION_TYPE__ASSIGNMENT)) {
         return false;
     }
     
@@ -317,7 +317,7 @@ static ar_parsed_instruction_t* _parse_assignment(ar_instruction_context_t *mut_
         return NULL;
     }
     
-    own_result->type = INST_ASSIGNMENT;
+    own_result->type = AR_INSTRUCTION_TYPE__ASSIGNMENT;
     own_result->own_assignment_path = own_path; // Transfer ownership
     
     // Copy the expression
@@ -481,7 +481,7 @@ static ar_parsed_instruction_t* _parse_function_call(ar_instruction_context_t *m
     
     // Handle different function types
     if (strcmp(function_name, "send") == 0) {
-        own_result->type = INST_SEND;
+        own_result->type = AR_INSTRUCTION_TYPE__SEND;
         // send(agent_id, message) - requires exactly 2 arguments
         
         // Allocate args array for 2 arguments
@@ -581,7 +581,7 @@ static ar_parsed_instruction_t* _parse_function_call(ar_instruction_context_t *m
         return own_result;
     }
     else if (strcmp(function_name, "if") == 0) {
-        own_result->type = INST_IF;
+        own_result->type = AR_INSTRUCTION_TYPE__IF;
         // if(condition, true_value, false_value) - requires exactly 3 arguments
         
         // Allocate args array for 3 arguments
@@ -660,7 +660,7 @@ static ar_parsed_instruction_t* _parse_function_call(ar_instruction_context_t *m
         return own_result;
     }
     else if (strcmp(function_name, "parse") == 0) {
-        own_result->type = INST_PARSE;
+        own_result->type = AR_INSTRUCTION_TYPE__PARSE;
         // parse(template, input) - requires exactly 2 arguments
         // Parses input string using template into a map of key-value pairs
         
@@ -880,7 +880,7 @@ static ar_parsed_instruction_t* _parse_function_call(ar_instruction_context_t *m
         return own_result;
     }
     else if (strcmp(function_name, "method") == 0) {
-        own_result->type = INST_METHOD;
+        own_result->type = AR_INSTRUCTION_TYPE__METHOD;
         // method(name, instructions, version) - requires exactly 3 arguments
         
         // Allocate args array for 3 arguments
@@ -960,7 +960,7 @@ static ar_parsed_instruction_t* _parse_function_call(ar_instruction_context_t *m
         return own_result;
     }
     else if (strcmp(function_name, "agent") == 0) {
-        own_result->type = INST_AGENT;
+        own_result->type = AR_INSTRUCTION_TYPE__AGENT;
         // agent(method_name, version, context) - requires exactly 3 arguments
         
         // Allocate args array for 3 arguments
@@ -1041,7 +1041,7 @@ static ar_parsed_instruction_t* _parse_function_call(ar_instruction_context_t *m
     }
     else if (strcmp(function_name, "destroy") == 0) {
         // Set instruction type
-        own_result->type = INST_DESTROY;
+        own_result->type = AR_INSTRUCTION_TYPE__DESTROY;
         
         // Allocate args array - destroy can have 1 or 2 arguments
         own_result->own_args = AR__HEAP__MALLOC(sizeof(char*) * 2, "Destroy arguments");

@@ -102,7 +102,7 @@ static void test_string_literal(void) {
     
     // Then the result should be a string with the correct value
     assert(result != NULL);
-    assert(ar_data__get_type(result) == DATA_STRING);
+    assert(ar_data__get_type(result) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(result), "Hello, World!") == 0);
     
     // And the offset should be updated correctly
@@ -130,7 +130,7 @@ static void test_number_literal(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 42);
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -150,7 +150,7 @@ static void test_number_literal(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == -123);
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -170,7 +170,7 @@ static void test_number_literal(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_DOUBLE);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__DOUBLE);
         // Use very small epsilon for floating-point comparison
         double epsilon = 0.00001;
         assert(ar_data__get_double(result) - 3.14159 < epsilon && 
@@ -193,7 +193,7 @@ static void test_number_literal(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_DOUBLE);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__DOUBLE);
         // Use very small epsilon for floating-point comparison
         double epsilon = 0.00001;
         assert(ar_data__get_double(result) - (-2.718) < epsilon && 
@@ -267,7 +267,7 @@ static void test_memory_access(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_STRING);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__STRING);
         assert(strcmp(ar_data__get_string(result), "Alice") == 0);
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -286,7 +286,7 @@ static void test_memory_access(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_STRING);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__STRING);
         assert(strcmp(ar_data__get_string(result), "dark") == 0);
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -305,7 +305,7 @@ static void test_memory_access(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_STRING);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__STRING);
         assert(strcmp(ar_data__get_string(result), "production") == 0);
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -324,7 +324,7 @@ static void test_memory_access(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 60);
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -343,7 +343,7 @@ static void test_memory_access(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_STRING);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__STRING);
         assert(strcmp(ar_data__get_string(result), "command") == 0);
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -362,7 +362,7 @@ static void test_memory_access(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_STRING);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__STRING);
         assert(strcmp(ar_data__get_string(result), "status") == 0);
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -430,7 +430,7 @@ static void test_arithmetic_expression(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 5);
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -456,7 +456,7 @@ static void test_arithmetic_expression(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 6);
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -482,7 +482,7 @@ static void test_arithmetic_expression(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 15);
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -508,7 +508,7 @@ static void test_arithmetic_expression(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 5);
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -534,7 +534,7 @@ static void test_arithmetic_expression(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 5);
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -560,7 +560,7 @@ static void test_arithmetic_expression(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_DOUBLE);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__DOUBLE);
         
         double epsilon = 0.00001;
         assert(ar_data__get_double(result) - 6.0 < epsilon && 
@@ -589,7 +589,7 @@ static void test_arithmetic_expression(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_DOUBLE);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__DOUBLE);
         
         double epsilon = 0.00001;
         assert(ar_data__get_double(result) - 12.5 < epsilon && 
@@ -618,7 +618,7 @@ static void test_arithmetic_expression(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_STRING);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__STRING);
         assert(strcmp(ar_data__get_string(result), "Hello, World!") == 0);
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -653,7 +653,7 @@ static void test_arithmetic_expression(void) {
             printf("Result type: %d\n", ar_data__get_type(result));
             fflush(stdout);
             
-            if (ar_data__get_type(result) == DATA_STRING) {
+            if (ar_data__get_type(result) == AR_DATA_TYPE__STRING) {
                 const char* str_result = ar_data__get_string(result);
                 printf("String result: '%s'\n", str_result ? str_result : "NULL");
                 fflush(stdout);
@@ -670,7 +670,7 @@ static void test_arithmetic_expression(void) {
         fflush(stdout);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_STRING);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__STRING);
         const char* str_result = ar_data__get_string(result);
         printf("Got: '%s'\n", str_result);
         assert(strcmp(str_result, "Price: $42.99") == 0);
@@ -705,7 +705,7 @@ static void test_arithmetic_expression(void) {
         
         if (result) {
             printf("Result type: %d\n", ar_data__get_type(result));
-            if (ar_data__get_type(result) == DATA_INTEGER) {
+            if (ar_data__get_type(result) == AR_DATA_TYPE__INTEGER) {
                 printf("Integer result: %d (expected 15)\n", ar_data__get_integer(result));
             }
             fflush(stdout);
@@ -715,7 +715,7 @@ static void test_arithmetic_expression(void) {
         fflush(stdout);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 15); // 10 + 5 = 15
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -749,22 +749,22 @@ static void test_arithmetic_expression(void) {
             
             // Print detailed type information
             printf("Type info - Is NULL: %s\n", result ? "no" : "yes");
-            printf("Type info - Is INTEGER: %s\n", type == DATA_INTEGER ? "yes" : "no");
-            printf("Type info - Is DOUBLE: %s\n", type == DATA_DOUBLE ? "yes" : "no");
-            printf("Type info - Is STRING: %s\n", type == DATA_STRING ? "yes" : "no");
-            printf("Type info - Is LIST: %s\n", type == DATA_LIST ? "yes" : "no");
-            printf("Type info - Is MAP: %s\n", type == DATA_MAP ? "yes" : "no");
+            printf("Type info - Is INTEGER: %s\n", type == AR_DATA_TYPE__INTEGER ? "yes" : "no");
+            printf("Type info - Is DOUBLE: %s\n", type == AR_DATA_TYPE__DOUBLE ? "yes" : "no");
+            printf("Type info - Is STRING: %s\n", type == AR_DATA_TYPE__STRING ? "yes" : "no");
+            printf("Type info - Is LIST: %s\n", type == AR_DATA_TYPE__LIST ? "yes" : "no");
+            printf("Type info - Is MAP: %s\n", type == AR_DATA_TYPE__MAP ? "yes" : "no");
             
-            if (type == DATA_INTEGER) {
+            if (type == AR_DATA_TYPE__INTEGER) {
                 printf("Integer result: %d (expected 20)\n", ar_data__get_integer(result));
-            } else if (type == DATA_DOUBLE) {
+            } else if (type == AR_DATA_TYPE__DOUBLE) {
                 printf("Double result: %f (expected 20.0)\n", ar_data__get_double(result));
             }
             fflush(stdout);
         }
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 20); // 10 * 2 = 20
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -795,14 +795,14 @@ static void test_arithmetic_expression(void) {
         
         if (result) {
             printf("Result type: %d\n", ar_data__get_type(result));
-            if (ar_data__get_type(result) == DATA_INTEGER) {
+            if (ar_data__get_type(result) == AR_DATA_TYPE__INTEGER) {
                 printf("Integer result: %d (expected 84)\n", ar_data__get_integer(result));
             }
             fflush(stdout);
         }
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 84); // 42 * 2 = 84
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -886,7 +886,7 @@ static void test_comparison_expression(void) {
         }
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 1); // true
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -920,7 +920,7 @@ static void test_comparison_expression(void) {
         fflush(stdout);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 1); // true
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -945,7 +945,7 @@ static void test_comparison_expression(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 1); // true
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -970,7 +970,7 @@ static void test_comparison_expression(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 1); // true
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -995,7 +995,7 @@ static void test_comparison_expression(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 1); // true
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -1020,7 +1020,7 @@ static void test_comparison_expression(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 1); // true
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -1045,7 +1045,7 @@ static void test_comparison_expression(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 1); // true
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -1070,7 +1070,7 @@ static void test_comparison_expression(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 0); // false
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -1095,7 +1095,7 @@ static void test_comparison_expression(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 1); // true (10 > 5)
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -1120,7 +1120,7 @@ static void test_comparison_expression(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 1); // true
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -1145,7 +1145,7 @@ static void test_comparison_expression(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 1); // true (10 > 5)
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -1170,7 +1170,7 @@ static void test_comparison_expression(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 1); // true (3 <= 5)
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         
@@ -1195,7 +1195,7 @@ static void test_comparison_expression(void) {
         const ar_data_t *result = ar_expression__evaluate(ctx);
         
         assert(result != NULL);
-        assert(ar_data__get_type(result) == DATA_INTEGER);
+        assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(result) == 0); // false (10 + 5 = 15, 5 * 3 = 15, 15 > 15 is false)
         assert(ar_expression__offset(ctx) == (int)strlen(expr));
         

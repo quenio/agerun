@@ -266,49 +266,49 @@ bool ar_instruction_evaluator__evaluate(
     ar_instruction_ast_type_t type = ar_instruction_ast__get_type(ref_ast);
     
     switch (type) {
-        case AR_INST__ASSIGNMENT:
+        case AR_INSTRUCTION_AST_TYPE__ASSIGNMENT:
             // Delegate to the assignment instruction evaluator instance
             return ar_assignment_instruction_evaluator__evaluate(
                 mut_evaluator->own_assignment_evaluator,
                 ref_ast
             );
             
-        case AR_INST__SEND:
+        case AR_INSTRUCTION_AST_TYPE__SEND:
             // Delegate to the send instruction evaluator instance
             return ar_send_instruction_evaluator__evaluate(
                 mut_evaluator->own_send_evaluator,
                 ref_ast
             );
             
-        case AR_INST__IF:
+        case AR_INSTRUCTION_AST_TYPE__IF:
             // Delegate to the condition instruction evaluator instance
             return ar_condition_instruction_evaluator__evaluate(
                 mut_evaluator->own_condition_evaluator,
                 ref_ast
             );
             
-        case AR_INST__PARSE:
+        case AR_INSTRUCTION_AST_TYPE__PARSE:
             // Delegate to the parse instruction evaluator instance
             return ar_parse_instruction_evaluator__evaluate(
                 mut_evaluator->own_parse_evaluator,
                 ref_ast
             );
             
-        case AR_INST__BUILD:
+        case AR_INSTRUCTION_AST_TYPE__BUILD:
             // Delegate to the build instruction evaluator instance
             return ar_build_instruction_evaluator__evaluate(
                 mut_evaluator->own_build_evaluator,
                 ref_ast
             );
             
-        case AR_INST__METHOD:
+        case AR_INSTRUCTION_AST_TYPE__METHOD:
             // Delegate to the method instruction evaluator instance
             return ar_method_instruction_evaluator__evaluate(
                 mut_evaluator->own_method_evaluator,
                 ref_ast
             );
             
-        case AR_INST__AGENT:
+        case AR_INSTRUCTION_AST_TYPE__AGENT:
             // Delegate to the agent instruction evaluator instance
             return ar_agent_instruction_evaluator__evaluate(
                 mut_evaluator->own_agent_evaluator,
@@ -316,14 +316,14 @@ bool ar_instruction_evaluator__evaluate(
                 ref_ast
             );
             
-        case AR_INST__DESTROY_AGENT:
+        case AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT:
             // Delegate directly to destroy agent evaluator
             return ar_destroy_agent_instruction_evaluator__evaluate(
                 mut_evaluator->own_destroy_agent_evaluator,
                 ref_ast
             );
             
-        case AR_INST__DESTROY_METHOD:
+        case AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD:
             // Delegate directly to destroy method evaluator
             return ar_destroy_method_instruction_evaluator__evaluate(
                 mut_evaluator->own_destroy_method_evaluator,

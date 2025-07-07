@@ -41,7 +41,7 @@ static void test_parse_integer_literal(void) {
     
     // Then it should parse successfully as an integer literal
     assert(own_ast != NULL);
-    assert(ar_expression_ast__get_type(own_ast) == AR_EXPR__LITERAL_INT);
+    assert(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__LITERAL_INT);
     assert(ar_expression_ast__get_int_value(own_ast) == 42);
     assert(ar_log__get_last_error_message(log) == NULL);
     
@@ -64,7 +64,7 @@ static void test_parse_negative_integer(void) {
     
     // Then it should parse successfully
     assert(own_ast != NULL);
-    assert(ar_expression_ast__get_type(own_ast) == AR_EXPR__LITERAL_INT);
+    assert(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__LITERAL_INT);
     assert(ar_expression_ast__get_int_value(own_ast) == -123);
     
     ar_expression_ast__destroy(own_ast);
@@ -86,7 +86,7 @@ static void test_parse_double_literal(void) {
     
     // Then it should parse successfully as a double literal
     assert(own_ast != NULL);
-    assert(ar_expression_ast__get_type(own_ast) == AR_EXPR__LITERAL_DOUBLE);
+    assert(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__LITERAL_DOUBLE);
     assert(fabs(ar_expression_ast__get_double_value(own_ast) - 3.14159) < 0.00001);
     
     ar_expression_ast__destroy(own_ast);
@@ -108,7 +108,7 @@ static void test_parse_string_literal(void) {
     
     // Then it should parse successfully as a string literal
     assert(own_ast != NULL);
-    assert(ar_expression_ast__get_type(own_ast) == AR_EXPR__LITERAL_STRING);
+    assert(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__LITERAL_STRING);
     assert(strcmp(ar_expression_ast__get_string_value(own_ast), "hello world") == 0);
     
     ar_expression_ast__destroy(own_ast);
@@ -130,7 +130,7 @@ static void test_parse_empty_string(void) {
     
     // Then it should parse successfully
     assert(own_ast != NULL);
-    assert(ar_expression_ast__get_type(own_ast) == AR_EXPR__LITERAL_STRING);
+    assert(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__LITERAL_STRING);
     assert(strcmp(ar_expression_ast__get_string_value(own_ast), "") == 0);
     
     ar_expression_ast__destroy(own_ast);
@@ -174,7 +174,7 @@ static void test_parse_simple_memory_access(void) {
     
     // Then it should parse successfully
     assert(own_ast != NULL);
-    assert(ar_expression_ast__get_type(own_ast) == AR_EXPR__MEMORY_ACCESS);
+    assert(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS);
     assert(strcmp(ar_expression_ast__get_memory_base(own_ast), "memory") == 0);
     
     size_t path_count = 0;
@@ -201,7 +201,7 @@ static void test_parse_memory_access_with_path(void) {
     
     // Then it should parse successfully with the correct path
     assert(own_ast != NULL);
-    assert(ar_expression_ast__get_type(own_ast) == AR_EXPR__MEMORY_ACCESS);
+    assert(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS);
     assert(strcmp(ar_expression_ast__get_memory_base(own_ast), "message") == 0);
     
     size_t path_count = 0;
@@ -231,7 +231,7 @@ static void test_parse_context_access(void) {
     
     // Then it should parse successfully
     assert(own_ast != NULL);
-    assert(ar_expression_ast__get_type(own_ast) == AR_EXPR__MEMORY_ACCESS);
+    assert(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS);
     assert(strcmp(ar_expression_ast__get_memory_base(own_ast), "context") == 0);
     
     size_t path_count = 0;
@@ -259,8 +259,8 @@ static void test_parse_simple_addition(void) {
     
     // Then it should parse successfully
     assert(own_ast != NULL);
-    assert(ar_expression_ast__get_type(own_ast) == AR_EXPR__BINARY_OP);
-    assert(ar_expression_ast__get_operator(own_ast) == AR_OP__ADD);
+    assert(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__BINARY_OP);
+    assert(ar_expression_ast__get_operator(own_ast) == AR_BINARY_OPERATOR__ADD);
     
     const ar_expression_ast_t *ref_left = ar_expression_ast__get_left(own_ast);
     const ar_expression_ast_t *ref_right = ar_expression_ast__get_right(own_ast);
@@ -286,15 +286,15 @@ static void test_parse_arithmetic_precedence(void) {
     
     // Then multiplication should have higher precedence
     assert(own_ast != NULL);
-    assert(ar_expression_ast__get_type(own_ast) == AR_EXPR__BINARY_OP);
-    assert(ar_expression_ast__get_operator(own_ast) == AR_OP__ADD);
+    assert(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__BINARY_OP);
+    assert(ar_expression_ast__get_operator(own_ast) == AR_BINARY_OPERATOR__ADD);
     
     const ar_expression_ast_t *ref_left = ar_expression_ast__get_left(own_ast);
     assert(ar_expression_ast__get_int_value(ref_left) == 2);
     
     const ar_expression_ast_t *ref_right = ar_expression_ast__get_right(own_ast);
-    assert(ar_expression_ast__get_type(ref_right) == AR_EXPR__BINARY_OP);
-    assert(ar_expression_ast__get_operator(ref_right) == AR_OP__MULTIPLY);
+    assert(ar_expression_ast__get_type(ref_right) == AR_EXPRESSION_AST_TYPE__BINARY_OP);
+    assert(ar_expression_ast__get_operator(ref_right) == AR_BINARY_OPERATOR__MULTIPLY);
     
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
@@ -323,12 +323,12 @@ static void test_parse_parenthesized_expression(void) {
     }
     
     // Then parentheses should override precedence
-    assert(ar_expression_ast__get_type(own_ast) == AR_EXPR__BINARY_OP);
-    assert(ar_expression_ast__get_operator(own_ast) == AR_OP__MULTIPLY);
+    assert(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__BINARY_OP);
+    assert(ar_expression_ast__get_operator(own_ast) == AR_BINARY_OPERATOR__MULTIPLY);
     
     const ar_expression_ast_t *ref_left = ar_expression_ast__get_left(own_ast);
-    assert(ar_expression_ast__get_type(ref_left) == AR_EXPR__BINARY_OP);
-    assert(ar_expression_ast__get_operator(ref_left) == AR_OP__ADD);
+    assert(ar_expression_ast__get_type(ref_left) == AR_EXPRESSION_AST_TYPE__BINARY_OP);
+    assert(ar_expression_ast__get_operator(ref_left) == AR_BINARY_OPERATOR__ADD);
     
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
@@ -345,12 +345,12 @@ static void test_parse_comparison_operators(void) {
         const char *expression;
         ar_binary_operator_t expected_op;
     } test_cases[] = {
-        {"5 > 3", AR_OP__GREATER},
-        {"5 >= 3", AR_OP__GREATER_EQ},
-        {"5 < 3", AR_OP__LESS},
-        {"5 <= 3", AR_OP__LESS_EQ},
-        {"5 = 3", AR_OP__EQUAL},
-        {"5 <> 3", AR_OP__NOT_EQUAL}
+        {"5 > 3", AR_BINARY_OPERATOR__GREATER},
+        {"5 >= 3", AR_BINARY_OPERATOR__GREATER_EQ},
+        {"5 < 3", AR_BINARY_OPERATOR__LESS},
+        {"5 <= 3", AR_BINARY_OPERATOR__LESS_EQ},
+        {"5 = 3", AR_BINARY_OPERATOR__EQUAL},
+        {"5 <> 3", AR_BINARY_OPERATOR__NOT_EQUAL}
     };
     
     for (int i = 0; i < 6; i++) {
@@ -358,7 +358,7 @@ static void test_parse_comparison_operators(void) {
         ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
         
         assert(own_ast != NULL);
-        assert(ar_expression_ast__get_type(own_ast) == AR_EXPR__BINARY_OP);
+        assert(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__BINARY_OP);
         assert(ar_expression_ast__get_operator(own_ast) == test_cases[i].expected_op);
         
         ar_expression_ast__destroy(own_ast);
@@ -381,11 +381,11 @@ static void test_parse_memory_in_arithmetic(void) {
     
     // Then it should parse correctly
     assert(own_ast != NULL);
-    assert(ar_expression_ast__get_type(own_ast) == AR_EXPR__BINARY_OP);
-    assert(ar_expression_ast__get_operator(own_ast) == AR_OP__ADD);
+    assert(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__BINARY_OP);
+    assert(ar_expression_ast__get_operator(own_ast) == AR_BINARY_OPERATOR__ADD);
     
     const ar_expression_ast_t *ref_left = ar_expression_ast__get_left(own_ast);
-    assert(ar_expression_ast__get_type(ref_left) == AR_EXPR__MEMORY_ACCESS);
+    assert(ar_expression_ast__get_type(ref_left) == AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS);
     assert(strcmp(ar_expression_ast__get_memory_base(ref_left), "memory") == 0);
     
     ar_expression_ast__destroy(own_ast);
@@ -407,8 +407,8 @@ static void test_parse_complex_expression(void) {
     
     // Then it should parse the entire structure correctly
     assert(own_ast != NULL);
-    assert(ar_expression_ast__get_type(own_ast) == AR_EXPR__BINARY_OP);
-    assert(ar_expression_ast__get_operator(own_ast) == AR_OP__GREATER);
+    assert(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__BINARY_OP);
+    assert(ar_expression_ast__get_operator(own_ast) == AR_BINARY_OPERATOR__GREATER);
     
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
@@ -429,8 +429,8 @@ static void test_parse_whitespace_handling(void) {
     
     // Then it should parse correctly ignoring whitespace
     assert(own_ast != NULL);
-    assert(ar_expression_ast__get_type(own_ast) == AR_EXPR__BINARY_OP);
-    assert(ar_expression_ast__get_operator(own_ast) == AR_OP__ADD);
+    assert(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__BINARY_OP);
+    assert(ar_expression_ast__get_operator(own_ast) == AR_BINARY_OPERATOR__ADD);
     
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);

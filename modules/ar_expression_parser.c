@@ -489,9 +489,9 @@ static ar_expression_ast_t* _parse_term(ar_expression_parser_t *mut_parser) {
         
         ar_binary_operator_t op;
         if (_peek_char(mut_parser, '*')) {
-            op = AR_OP__MULTIPLY;
+            op = AR_BINARY_OPERATOR__MULTIPLY;
         } else if (_peek_char(mut_parser, '/')) {
-            op = AR_OP__DIVIDE;
+            op = AR_BINARY_OPERATOR__DIVIDE;
         } else {
             break;
         }
@@ -535,9 +535,9 @@ static ar_expression_ast_t* _parse_additive(ar_expression_parser_t *mut_parser) 
         
         ar_binary_operator_t op;
         if (_peek_char(mut_parser, '+')) {
-            op = AR_OP__ADD;
+            op = AR_BINARY_OPERATOR__ADD;
         } else if (_peek_char(mut_parser, '-')) {
-            op = AR_OP__SUBTRACT;
+            op = AR_BINARY_OPERATOR__SUBTRACT;
         } else {
             break;
         }
@@ -583,19 +583,19 @@ static ar_expression_ast_t* _parse_relational(ar_expression_parser_t *mut_parser
         if (_peek_char(mut_parser, '<')) {
             _advance(mut_parser);
             if (_consume_char(mut_parser, '=')) {
-                op = AR_OP__LESS_EQ;
+                op = AR_BINARY_OPERATOR__LESS_EQ;
             } else if (_consume_char(mut_parser, '>')) {
                 // <> for not equal
-                op = AR_OP__NOT_EQUAL;
+                op = AR_BINARY_OPERATOR__NOT_EQUAL;
             } else {
-                op = AR_OP__LESS;
+                op = AR_BINARY_OPERATOR__LESS;
             }
         } else if (_peek_char(mut_parser, '>')) {
             _advance(mut_parser);
             if (_consume_char(mut_parser, '=')) {
-                op = AR_OP__GREATER_EQ;
+                op = AR_BINARY_OPERATOR__GREATER_EQ;
             } else {
-                op = AR_OP__GREATER;
+                op = AR_BINARY_OPERATOR__GREATER;
             }
         } else {
             break;
@@ -639,7 +639,7 @@ static ar_expression_ast_t* _parse_equality(ar_expression_parser_t *mut_parser) 
         ar_binary_operator_t op;
         if (_peek_char(mut_parser, '=')) {
             _advance(mut_parser);
-            op = AR_OP__EQUAL;
+            op = AR_BINARY_OPERATOR__EQUAL;
         } else {
             break;
         }

@@ -83,7 +83,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_instance(vo
     // Create destroy AST with method name and version
     const char *args[] = {"\"test_destroyer\"", "\"1.0.0\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__DESTROY_METHOD, "destroy", args, 2, NULL
+        AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD, "destroy", args, 2, NULL
     );
     assert(ast != NULL);
     
@@ -160,7 +160,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_legacy(void) {
     // Create destroy AST with method name and version
     const char *args[] = {"\"test_destroyer\"", "\"1.0.0\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__DESTROY_METHOD, "destroy", args, 2, NULL
+        AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD, "destroy", args, 2, NULL
     );
     assert(ast != NULL);
     
@@ -244,7 +244,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void
     // Create destroy AST with method name and version
     const char *args[] = {"\"test_destroyer\"", "\"1.0.0\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__DESTROY_METHOD, "destroy", args, 2, "memory.result"
+        AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD, "destroy", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -272,7 +272,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void
     // And the result should be true (1)
     ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
-    assert(ar_data__get_type(result_value) == DATA_INTEGER);
+    assert(ar_data__get_type(result_value) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(result_value) == 1);
     
     // The agents should already be destroyed
@@ -328,7 +328,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void
     // Create destroy AST with non-existent method
     const char *args[] = {"\"nonexistent\"", "\"1.0.0\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__DESTROY_METHOD, "destroy", args, 2, "memory.result"
+        AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD, "destroy", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -356,7 +356,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void
     // But the result should be false (0) since method doesn't exist
     ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
-    assert(ar_data__get_type(result_value) == DATA_INTEGER);
+    assert(ar_data__get_type(result_value) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(result_value) == 0);
     
     // Cleanup
@@ -396,7 +396,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_invalid_name_typ
     // Create destroy AST with non-string method name (integer)
     const char *args[] = {"123", "\"1.0.0\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__DESTROY_METHOD, "destroy", args, 2, NULL
+        AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD, "destroy", args, 2, NULL
     );
     assert(ast != NULL);
     
@@ -449,7 +449,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_wrong_arg_count(
     // Create destroy AST with 1 arg (should be 2 for method)
     const char *args[] = {"\"method_name\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INST__DESTROY_METHOD, "destroy", args, 1, NULL
+        AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD, "destroy", args, 1, NULL
     );
     assert(ast != NULL);
     
