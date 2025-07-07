@@ -32,12 +32,12 @@ pub const ar_file_result_t = enum(c_int) {
 };
 
 // Helper to get errno value
-fn getErrno() c_int {
+fn _get_errno() c_int {
     return c.__error().*;
 }
 
 // Helper to set errno value
-fn setErrno(value: c_int) void {
+fn _set_errno(value: c_int) void {
     c.__error().* = value;
 }
 
@@ -254,7 +254,7 @@ export fn ar_io__open_file(filename: [*c]const u8, mode: [*c]const u8, file_ptr:
     file_ptr.* = c.fopen(filename, mode);
     if (file_ptr.* == null) {
         // Determine specific error
-        const err = getErrno();
+        const err = _get_errno();
         if (err == c.EACCES or err == c.EPERM) {
             ar_io__error(@as([*c]const u8, "Permission denied opening %s: %s"), filename, c.strerror(err));
             return @intFromEnum(ar_file_result_t.FILE_ERROR_PERMISSIONS);
@@ -281,12 +281,12 @@ export fn ar_io__close_file(fp: [*c]c.FILE, filename: [*c]const u8) c_int {
     
     // Flush buffered data
     if (c.fflush(fp) != 0) {
-        ar_io__error(@as([*c]const u8, "Failed to flush data to %s: %s"), filename, c.strerror(getErrno()));
+        ar_io__error(@as([*c]const u8, "Failed to flush data to %s: %s"), filename, c.strerror(_get_errno()));
     }
     
     // Close file
     if (c.fclose(fp) != 0) {
-        ar_io__error(@as([*c]const u8, "Failed to close %s: %s"), filename, c.strerror(getErrno()));
+        ar_io__error(@as([*c]const u8, "Failed to close %s: %s"), filename, c.strerror(_get_errno()));
         return @intFromEnum(ar_file_result_t.FILE_ERROR_UNKNOWN);
     }
     
@@ -303,10 +303,10 @@ export fn ar_io__create_backup(filename: [*c]const u8) c_int {
     // Check if source exists
     var st: c.struct_stat = undefined;
     if (c.stat(filename, &st) != 0) {
-        if (getErrno() == c.ENOENT) {
+        if (_get_errno() == c.ENOENT) {
             return @intFromEnum(ar_file_result_t.FILE_SUCCESS);
         }
-        ar_io__error(@as([*c]const u8, "Failed to stat %s: %s"), filename, c.strerror(getErrno()));
+        ar_io__error(@as([*c]const u8, "Failed to stat %s: %s"), filename, c.strerror(_get_errno()));
         return @intFromEnum(ar_file_result_t.FILE_ERROR_UNKNOWN);
     }
     
@@ -383,24 +383,24 @@ export fn ar_io__restore_backup(filename: [*c]const u8) c_int {
     // Check if backup exists
     var st: c.struct_stat = undefined;
     if (c.stat(backup_filename, &st) != 0) {
-        if (getErrno() == c.ENOENT) {
+        if (_get_errno() == c.ENOENT) {
             ar_io__error(@as([*c]const u8, "Backup file %s does not exist"), backup_filename);
             return @intFromEnum(ar_file_result_t.FILE_ERROR_NOT_FOUND);
         }
-        ar_io__error(@as([*c]const u8, "Failed to stat backup file %s: %s"), backup_filename, c.strerror(getErrno()));
+        ar_io__error(@as([*c]const u8, "Failed to stat backup file %s: %s"), backup_filename, c.strerror(_get_errno()));
         return @intFromEnum(ar_file_result_t.FILE_ERROR_UNKNOWN);
     }
     
     // Remove target if exists
-    if (c.remove(filename) != 0 and getErrno() != c.ENOENT) {
-        ar_io__error(@as([*c]const u8, "Failed to remove target file %s: %s"), filename, c.strerror(getErrno()));
+    if (c.remove(filename) != 0 and _get_errno() != c.ENOENT) {
+        ar_io__error(@as([*c]const u8, "Failed to remove target file %s: %s"), filename, c.strerror(_get_errno()));
         return @intFromEnum(ar_file_result_t.FILE_ERROR_UNKNOWN);
     }
     
     // Rename backup to original
     if (c.rename(backup_filename, filename) != 0) {
         ar_io__error(@as([*c]const u8, "Failed to restore backup %s to %s: %s"), 
-                     backup_filename, filename, c.strerror(getErrno()));
+                     backup_filename, filename, c.strerror(_get_errno()));
         return @intFromEnum(ar_file_result_t.FILE_ERROR_UNKNOWN);
     }
     
@@ -421,14 +421,14 @@ export fn ar_io__set_secure_permissions(filename: [*c]const u8) c_int {
             const S_IREAD = 0o400;
             const S_IWRITE = 0o200;
             if (c._chmod(filename, S_IREAD | S_IWRITE) != 0) {
-                ar_io__error(@as([*c]const u8, "Failed to set secure permissions on %s: %s"), filename, c.strerror(getErrno()));
+                ar_io__error(@as([*c]const u8, "Failed to set secure permissions on %s: %s"), filename, c.strerror(_get_errno()));
                 return @intFromEnum(ar_file_result_t.FILE_ERROR_PERMISSIONS);
             }
         }
     } else {
         // Unix-like systems
         if (c.chmod(filename, c.S_IRUSR | c.S_IWUSR) != 0) {
-            ar_io__error(@as([*c]const u8, "Failed to set secure permissions on %s: %s"), filename, c.strerror(getErrno()));
+            ar_io__error(@as([*c]const u8, "Failed to set secure permissions on %s: %s"), filename, c.strerror(_get_errno()));
             return @intFromEnum(ar_file_result_t.FILE_ERROR_PERMISSIONS);
         }
     }
@@ -499,7 +499,7 @@ export fn ar_io__write_file(
     // Rename to target
     if (c.rename(temp_filename, filename) != 0) {
         ar_io__error(@as([*c]const u8, "Failed to rename temporary file %s to %s: %s"),
-                     temp_filename, filename, c.strerror(getErrno()));
+                     temp_filename, filename, c.strerror(_get_errno()));
         _ = c.remove(temp_filename);
         
         ar_io__warning(@as([*c]const u8, "Attempting to restore from backup..."));
@@ -610,7 +610,7 @@ export fn ar_io__report_allocation_failure(
     }
     
     // Report system error
-    const err = getErrno();
+    const err = _get_errno();
     if (err == c.ENOMEM) {
         ar_io__error(@as([*c]const u8, "System reported insufficient memory (errno: ENOMEM)"));
     } else if (err != 0) {

@@ -34,7 +34,7 @@ var g_initialized: bool = false;
 // No mutex - matching C implementation which is not thread-safe
 
 // Initialize the memory tracking system (internal use only)
-fn memory_init() void {
+fn _memory_init() void {
     if (g_initialized) return;
     
     // Double-check without lock (matching C implementation)
@@ -55,10 +55,10 @@ fn memory_init() void {
 }
 
 // Add a memory allocation record (internal use only)
-fn memory_add(ptr: *anyopaque, file: [*:0]const u8, line: c_int, size: usize, description: ?[*:0]const u8) void {
+fn _memory_add(ptr: *anyopaque, file: [*:0]const u8, line: c_int, size: usize, description: ?[*:0]const u8) void {
     if (!tracking_enabled) return;
     
-    if (!g_initialized) memory_init();
+    if (!g_initialized) _memory_init();
     
     // Create a new record
     const record_ptr = c.malloc(@sizeOf(MemoryRecord));
@@ -116,7 +116,7 @@ fn memory_add(ptr: *anyopaque, file: [*:0]const u8, line: c_int, size: usize, de
 }
 
 // Remove a memory allocation record (internal use only)
-fn memory_remove(ptr: *anyopaque) c_int {
+fn _memory_remove(ptr: *anyopaque) c_int {
     if (!tracking_enabled or !g_initialized) return 0;
     
     // Remove from list (not thread-safe, matching C implementation)
@@ -347,7 +347,7 @@ export fn ar_heap__malloc(size: usize, file: [*:0]const u8, line: c_int, descrip
                 c.ar_io__warning("Memory allocation retry succeeded for %s (%zu bytes) at %s:%d",
                                  description orelse "unknown", size, file, line);
                 if (tracking_enabled) {
-                    memory_add(@ptrCast(retry_ptr), file, line, size, description);
+                    _memory_add(@ptrCast(retry_ptr), file, line, size, description);
                 }
                 return @ptrCast(retry_ptr);
             }
@@ -362,7 +362,7 @@ export fn ar_heap__malloc(size: usize, file: [*:0]const u8, line: c_int, descrip
     
     // Track the successful allocation
     if (tracking_enabled) {
-        memory_add(@ptrCast(ptr), file, line, size, description);
+        _memory_add(@ptrCast(ptr), file, line, size, description);
     }
     return @ptrCast(ptr);
 }
@@ -388,7 +388,7 @@ export fn ar_heap__calloc(count: usize, size: usize, file: [*:0]const u8, line: 
                 c.ar_io__warning("Memory allocation retry succeeded for %s (%zu elements of %zu bytes) at %s:%d",
                                  description orelse "unknown", count, size, file, line);
                 if (tracking_enabled) {
-                    memory_add(@ptrCast(retry_ptr), file, line, total_size, description);
+                    _memory_add(@ptrCast(retry_ptr), file, line, total_size, description);
                 }
                 return @ptrCast(retry_ptr);
             }
@@ -403,7 +403,7 @@ export fn ar_heap__calloc(count: usize, size: usize, file: [*:0]const u8, line: 
     
     // Track the successful allocation
     if (tracking_enabled) {
-        memory_add(@ptrCast(ptr), file, line, total_size, description);
+        _memory_add(@ptrCast(ptr), file, line, total_size, description);
     }
     return @ptrCast(ptr);
 }
@@ -423,7 +423,7 @@ export fn ar_heap__realloc(ptr: ?*anyopaque, size: usize, file: [*:0]const u8, l
     
     // Remove the old pointer tracking
     if (tracking_enabled) {
-        _ = memory_remove(ptr.?);
+        _ = _memory_remove(ptr.?);
     }
     
     // Attempt reallocation
@@ -446,7 +446,7 @@ export fn ar_heap__realloc(ptr: ?*anyopaque, size: usize, file: [*:0]const u8, l
                 c.ar_io__warning("Reallocation retry succeeded for %s (%zu bytes) at %s:%d",
                                  description orelse "unknown", size, file, line);
                 if (tracking_enabled) {
-                    memory_add(@ptrCast(retry_ptr), file, line, size, description);
+                    _memory_add(@ptrCast(retry_ptr), file, line, size, description);
                 }
                 return @ptrCast(retry_ptr);
             }
@@ -461,7 +461,7 @@ export fn ar_heap__realloc(ptr: ?*anyopaque, size: usize, file: [*:0]const u8, l
     
     // Track the successful reallocation
     if (tracking_enabled) {
-        memory_add(@ptrCast(new_ptr), file, line, size, description);
+        _memory_add(@ptrCast(new_ptr), file, line, size, description);
     }
     return @ptrCast(new_ptr);
 }
@@ -493,7 +493,7 @@ export fn ar_heap__strdup(str: ?[*:0]const u8, file: [*:0]const u8, line: c_int,
                 c.ar_io__warning("String duplication retry succeeded for %s (%zu bytes) at %s:%d",
                                  description orelse "unknown", len, file, line);
                 if (tracking_enabled) {
-                    memory_add(@ptrCast(retry_ptr), file, line, len, description);
+                    _memory_add(@ptrCast(retry_ptr), file, line, len, description);
                 }
                 return @ptrCast(retry_ptr);
             }
@@ -508,7 +508,7 @@ export fn ar_heap__strdup(str: ?[*:0]const u8, file: [*:0]const u8, line: c_int,
     
     // Track the successful allocation
     if (tracking_enabled) {
-        memory_add(@ptrCast(ptr), file, line, len, description);
+        _memory_add(@ptrCast(ptr), file, line, len, description);
     }
     return @ptrCast(ptr);
 }
@@ -517,7 +517,7 @@ export fn ar_heap__strdup(str: ?[*:0]const u8, file: [*:0]const u8, line: c_int,
 export fn ar_heap__free(ptr: ?*anyopaque) void {
     if (ptr) |p| {
         if (tracking_enabled) {
-            _ = memory_remove(p);
+            _ = _memory_remove(p);
         }
         c.free(p);
     }

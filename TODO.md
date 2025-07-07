@@ -315,14 +315,14 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ### CRITICAL - Fix Naming Convention Violations (Found by check-naming)
 
-#### Static Functions Not Following _<function> Convention
-- [ ] Fix ar_io.zig static functions:
-  - [ ] Rename `getErrno()` to `_getErrno()`
-  - [ ] Rename `setErrno()` to `_setErrno()`
-- [ ] Fix ar_heap.zig static functions:
-  - [ ] Rename `memory_init()` to `_memory_init()`
-  - [ ] Rename `memory_add()` to `_memory_add()`
-  - [ ] Rename `memory_remove()` to `_memory_remove()`
+#### Static Functions Not Following _<function> Convention (Completed 2025-07-07)
+- [x] Fix ar_io.zig static functions:
+  - [x] Rename `getErrno()` to `_get_errno()`
+  - [x] Rename `setErrno()` to `_set_errno()`
+- [x] Fix ar_heap.zig static functions:
+  - [x] Rename `memory_init()` to `_memory_init()`
+  - [x] Rename `memory_add()` to `_memory_add()`
+  - [x] Rename `memory_remove()` to `_memory_remove()`
 
 #### Enum Values Not Following AR_<ENUM_TYPE>__<VALUE> Convention
 - [ ] Fix ar_data.h enum values (ar_data_type_t):
