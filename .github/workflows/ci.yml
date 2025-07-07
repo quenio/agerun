@@ -18,7 +18,7 @@ jobs:
         run: |
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
           sudo apt update
-          sudo apt install -y gcc-13 g++-13 libc6-dev
+          sudo apt install -y gcc-13 g++-13 libc6-dev build-essential
 
       - name: Install Zig 0.14.1
         uses: goto-bus-stop/setup-zig@v2
