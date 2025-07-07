@@ -19,6 +19,15 @@ jobs:
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
           sudo apt update
           sudo apt install -y gcc-13 g++-13 libc6-dev build-essential
+          # Ensure gcc-13 can find system headers
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100
+          # Print diagnostic information
+          echo "GCC version:"
+          gcc-13 --version
+          echo "Include paths:"
+          gcc-13 -E -Wp,-v -xc /dev/null 2>&1 | grep "^ /"
+          echo "Checking for stdio.h:"
+          find /usr/include -name stdio.h 2>/dev/null | head -5
 
       - name: Install Zig 0.14.1
         uses: goto-bus-stop/setup-zig@v2

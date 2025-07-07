@@ -42,7 +42,6 @@ CC = gcc-13
 
 # Zig compiler
 ZIG = zig
-ZIG_LIBC = ./bin/zig-libc.txt
 
 # Sanitizer compiler selection based on OS
 ifeq ($(UNAME_S),Darwin)
@@ -55,6 +54,11 @@ CFLAGS = -Wall -Wextra -Werror -Wpedantic -Wconversion -Wshadow -Wcast-qual \
          -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wstrict-aliasing=2 \
          -Wnull-dereference -Wformat=2 -Wuninitialized -Wpointer-arith \
          -Wunused -Wunused-parameter -Wwrite-strings -std=c11 -I./modules -D_GNU_SOURCE
+
+# On Ubuntu, gcc-13 might need explicit include paths
+ifeq ($(shell test -d /usr/include/x86_64-linux-gnu && echo yes),yes)
+    CFLAGS += -I/usr/include/x86_64-linux-gnu
+endif
 
 # Define Clang-specific flags (will be added when using clang)
 CLANG_FLAGS = -Wno-newline-eof
@@ -218,7 +222,7 @@ bin/obj/%.o: modules/%.c | bin
 
 # Compile Zig source files
 bin/obj/%.o: modules/%.zig | bin
-	$(ZIG) libc > $(ZIG_LIBC) && $(ZIG) build-obj -O ReleaseSafe --libc $(ZIG_LIBC) -target native -mcpu=native -I./modules $< -femit-bin=$@
+	$(ZIG) build-obj -O ReleaseSafe -target native -mcpu=native -I./modules $< -femit-bin=$@
 
 # Clean target
 clean:
