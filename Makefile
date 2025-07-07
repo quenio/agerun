@@ -59,6 +59,10 @@ CFLAGS = -Wall -Wextra -Werror -Wpedantic -Wconversion -Wshadow -Wcast-qual \
 ifeq ($(shell test -d /usr/include/x86_64-linux-gnu && echo yes),yes)
     CFLAGS += -I/usr/include/x86_64-linux-gnu
 endif
+# Also check for aarch64 (ARM64) Ubuntu systems
+ifeq ($(shell test -d /usr/include/aarch64-linux-gnu && echo yes),yes)
+    CFLAGS += -I/usr/include/aarch64-linux-gnu
+endif
 
 # Define Clang-specific flags (will be added when using clang)
 CLANG_FLAGS = -Wno-newline-eof

@@ -38,6 +38,15 @@ jobs:
         run: |
           echo "CC=gcc-13" >> $GITHUB_ENV
           echo "CXX=g++-13" >> $GITHUB_ENV
+          
+      - name: Verify Makefile version
+        run: |
+          echo "Checking Zig build command in Makefile:"
+          grep -n "ZIG.*build-obj" Makefile | head -5
 
       - name: Full build…
-        run: make full-build CC=gcc-13 CXX=g++-13
+        run: |
+          # Export C include paths for gcc-13
+          export C_INCLUDE_PATH=/usr/include:/usr/include/x86_64-linux-gnu
+          export CPLUS_INCLUDE_PATH=/usr/include:/usr/include/x86_64-linux-gnu
+          make full-build CC=gcc-13 CXX=g++-13
