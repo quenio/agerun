@@ -21,6 +21,8 @@ static void test_methodology__register_method_with_instance(void);
 static void test_methodology__create_method_with_instance(void);
 static void test_methodology__save_load_with_instance(void);
 static void test_methodology__ar_log_propagation(void);
+static void test_methodology__ar_log_propagation_on_load(void);
+static void test_methodology__ar_log_propagation_on_load_with_instance(void);
 
 static void test_methodology__create_destroy(void) {
     printf("Testing ar_methodology__create() and ar_methodology__destroy()...\n");
@@ -449,6 +451,103 @@ static void test_methodology__ar_log_propagation(void) {
     printf("test_methodology__ar_log_propagation passed\n");
 }
 
+static void test_methodology__ar_log_propagation_on_load(void) {
+    printf("Testing ar_log propagation during ar_methodology__load_methods()...\n");
+    
+    // Given a clean state
+    ar_methodology__cleanup();
+    remove("methodology.agerun");
+    
+    // Given a methodology file with a method that has invalid syntax
+    bool result = ar_methodology__create_method("load_test", "invalid @#$ syntax!", "1.0.0");
+    assert(result == true);
+    result = ar_methodology__save_methods();
+    assert(result == true);
+    ar_methodology__cleanup();
+    
+    // When we load methods using the global function
+    result = ar_methodology__load_methods();
+    assert(result == true);
+    
+    // Then the method should be loaded
+    ar_method_t *method = ar_methodology__get_method("load_test", "1.0.0");
+    assert(method != NULL);
+    
+    // Then the method should have NULL AST due to parse errors
+    const ar_method_ast_t *ast = ar_method__get_ast(method);
+    assert(ast == NULL);
+    
+    // NOTE: We cannot test ar_log propagation here because the global instance
+    // is created with NULL ar_log. This will be addressed when we update
+    // line 915 to use ar_method__create_with_log with mut_instance->ref_log
+    
+    // Clean up
+    ar_methodology__cleanup();
+    remove("methodology.agerun");
+    
+    printf("test_methodology__ar_log_propagation_on_load passed\n");
+}
+
+static void test_methodology__ar_log_propagation_on_load_with_instance(void) {
+    printf("Testing ar_log propagation during ar_methodology__load_methods_with_instance()...\n");
+    
+    // Given an ar_log instance
+    ar_log_t *own_log = ar_log__create();
+    assert(own_log != NULL);
+    
+    // And a methodology instance with that ar_log
+    ar_methodology_t *own_methodology1 = ar_methodology__create(own_log);
+    assert(own_methodology1 != NULL);
+    
+    // When we create a method with invalid syntax
+    bool result = ar_methodology__create_method_with_instance(own_methodology1,
+                                                             "instance_load_test",
+                                                             "bad syntax %^&*",
+                                                             "2.0.0");
+    assert(result == true);
+    
+    // And save to a custom file
+    const char *test_file = "test_methodology_instance.agerun";
+    result = ar_methodology__save_methods_with_instance(own_methodology1, test_file);
+    assert(result == true);
+    
+    // Destroy the first instance and create a new one with a fresh log
+    ar_methodology__destroy(own_methodology1);
+    ar_log__destroy(own_log);
+    
+    // Create fresh log for loading test
+    own_log = ar_log__create();
+    assert(own_log != NULL);
+    
+    // And create a new methodology instance with the fresh log
+    ar_methodology_t *own_methodology2 = ar_methodology__create(own_log);
+    assert(own_methodology2 != NULL);
+    
+    // When we load methods from the custom file
+    result = ar_methodology__load_methods_with_instance(own_methodology2, test_file);
+    assert(result == true);
+    
+    // Then the parse error should be logged to our ar_log instance
+    ar_event_t *ref_event = ar_log__get_last_error(own_log);
+    
+    // RED PHASE: This assertion will FAIL because ar_log is not propagated yet
+    // We expect parse errors to be logged, but they won't be until we fix the code
+    assert(ref_event != NULL);
+    
+    // Verify the error message contains something about parse error
+    const char *ref_message = ar_event__get_message(ref_event);
+    assert(ref_message != NULL);
+    assert(strstr(ref_message, "parse") != NULL || strstr(ref_message, "Parse") != NULL ||
+           strstr(ref_message, "syntax") != NULL || strstr(ref_message, "Syntax") != NULL);
+    
+    // Clean up
+    ar_methodology__destroy(own_methodology2);
+    ar_log__destroy(own_log);
+    remove(test_file);
+    
+    printf("test_methodology__ar_log_propagation_on_load_with_instance passed\n");
+}
+
 int main(void) {
     printf("Starting Methodology Module Tests...\n");
     
@@ -493,8 +592,10 @@ int main(void) {
     test_methodology__create_method_with_instance();
     test_methodology__save_load_with_instance();
     test_methodology__ar_log_propagation();
+    test_methodology__ar_log_propagation_on_load();
+    test_methodology__ar_log_propagation_on_load_with_instance();
     
     // And report success
-    printf("All 15 tests passed!\n");
+    printf("All 17 tests passed!\n");
     return 0;
 }

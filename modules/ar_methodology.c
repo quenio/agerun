@@ -912,7 +912,7 @@ bool ar_methodology__load_methods(void) {
             }
             
             // Create a new method with data from the file
-            ar_method_t *own_method = ar_method__create(name, instructions, version);
+            ar_method_t *own_method = ar_method__create_with_log(name, instructions, version, mut_instance->ref_log);
             
             if (own_method) {
                 // Store the method in the instance
@@ -1277,7 +1277,7 @@ bool ar_methodology__load_methods_with_instance(ar_methodology_t *mut_methodolog
             }
             
             // Create and register the method
-            ar_method_t *method = ar_method__create(method_name, instructions, version);
+            ar_method_t *method = ar_method__create_with_log(method_name, instructions, version, mut_methodology->ref_log);
             AR__HEAP__FREE(version);
             AR__HEAP__FREE(instructions);
             

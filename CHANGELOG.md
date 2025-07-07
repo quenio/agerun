@@ -31,6 +31,14 @@ This document tracks completed milestones and major achievements for the AgeRun 
 - Verified Zig struct types already follow ar_<type>_t convention
 - Updated TODO.md to reflect completion of all naming convention tasks
 
+### ✅ COMPLETED: ar_log Propagation in Methodology Module
+- Updated methodology module to use ar_method__create_with_log consistently
+- Modified ar_methodology__load_methods to propagate ar_log during file loading (line 915)
+- Modified ar_methodology__load_methods_with_instance to propagate ar_log (line 1280)
+- Added tests for ar_log propagation during method loading
+- Ensures complete log propagation hierarchy from methodology → method → parser
+- All tests pass with zero memory leaks
+
 ## 2025-07-06
 
 ### ✅ COMPLETED: Reorganized Scripts and Enhanced Build System

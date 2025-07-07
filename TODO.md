@@ -49,13 +49,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
 #### 1. Extract Common Error Handling Module
 - [x] Created ar_event module for event representation with timestamps and position tracking (Completed 2025-06-29)
 - [x] Created ar_log module with buffering, auto-flush, and integration with all evaluators/parsers (Completed 2025-07-01)
-  - [ ] UNBLOCKED: Update method module to accept ar_log parameter and propagate to method parser
+  - [x] COMPLETED: Update method module to accept ar_log parameter and propagate to method parser (Completed 2025-07-07)
     - [x] Methodology module refactored to instantiable (Completed 2025-07-06)
-    - [ ] Add ar_log parameter to ar_method__create() function
-    - [ ] Pass ar_log from method creation to method parser
-    - [ ] Update all method creation call sites to pass ar_log instance
-    - [ ] Update methodology module to pass its ar_log to ar_method__create()
-    - [ ] This ensures complete log propagation from top-level through entire parsing hierarchy
+    - [x] Add ar_log parameter to ar_method__create() function (already had ar_method__create_with_log)
+    - [x] Pass ar_log from method creation to method parser (implemented in ar_method__create_with_log)
+    - [x] Update all method creation call sites to pass ar_log instance
+    - [x] Update methodology module to pass its ar_log to ar_method__create()
+    - [x] This ensures complete log propagation from top-level through entire parsing hierarchy
 - [x] Removed legacy error handling from all parsers (Completed 2025-07-02)
 
 #### 2. Extract Memory Path Utilities Module  
