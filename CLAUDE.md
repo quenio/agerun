@@ -456,18 +456,14 @@ Never compile directly with gcc.
 - **Validate changes**: After adding validation, test with intentional errors to ensure no false negatives
 - **Incremental commits**: Commit logical chunks even with remaining issues - note them for future work
 
-**Bulk Renaming with sed**:
+**Bulk Renaming Pattern**:
 ```bash
-# Pattern: sed 's/old/new/g' file > file.tmp && mv file.tmp file
-# Example for static functions (exclude test files):
-for file in modules/*.c; do
-  [[ ! "$file" == *"_tests.c" ]] && \
-  sed -E 's/^static ([a-zA-Z][a-zA-Z0-9_]*)\(/static _\1(/g' "$file" > "$file.tmp" && \
-  mv "$file.tmp" "$file"
-done
-# Always compile after bulk changes. Never use -i.bak (creates backups)
-# Include methods/*_tests.c when updating module APIs
-# For enum renaming: enhance rename_types.py instead of manual edits
+# PREFERRED: Use rename_types.py for safe whole-word renaming
+python3 scripts/rename_types.py --group <group-name> --live
+
+# AVOID sed for bulk renames - error-prone with partial matches
+# If rename_types.py doesn't support your case, enhance it first
+# Only use sed for one-off changes with careful verification
 ```
 
 **Code Movement Verification**:
