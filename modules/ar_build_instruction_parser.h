@@ -1,5 +1,5 @@
 /**
- * @file agerun_build_instruction_parser.h
+ * @file ar_build_instruction_parser.h
  * @brief Parser for build() function instructions in the AgeRun language
  *
  * This module handles parsing of build() function calls, which combine template

@@ -9,7 +9,7 @@
 #include <string.h>
 
 /**
- * @file agerun_instruction_fixture.c
+ * @file ar_instruction_fixture.c
  * @brief Implementation of instruction fixture for AgeRun instruction module testing
  */
 

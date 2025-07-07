@@ -9,7 +9,7 @@ typedef struct ar_data_s ar_data_t;
 typedef struct ar_agent_registry_s ar_agent_registry_t;
 
 /**
- * @file agerun_agent_registry.h
+ * @file ar_agent_registry.h
  * @brief Agent registry module for managing agent IDs and runtime registry
  * 
  * This module handles agent ID allocation, tracking active agents,

@@ -1,5 +1,5 @@
 /**
- * @file agerun_agent_update.c
+ * @file ar_agent_update.c
  * @brief Implementation of the agent update module
  */
 

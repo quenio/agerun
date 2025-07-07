@@ -9,7 +9,7 @@
 #include "ar_system.h"
 
 /**
- * @file agerun_instruction_fixture.h
+ * @file ar_instruction_fixture.h
  * @brief Test fixture for AgeRun instruction module tests
  * 
  * This module provides test infrastructure specifically for the instruction module's

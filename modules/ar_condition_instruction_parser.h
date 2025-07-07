@@ -6,7 +6,7 @@
 #include "ar_log.h"
 
 /**
- * @file agerun_condition_instruction_parser.h
+ * @file ar_condition_instruction_parser.h
  * @brief Parser for condition (if) instructions in AgeRun
  *
  * This module is responsible for parsing if() function calls in the AgeRun language.

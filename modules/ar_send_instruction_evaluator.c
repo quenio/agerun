@@ -1,5 +1,5 @@
 /**
- * @file agerun_send_instruction_evaluator.c
+ * @file ar_send_instruction_evaluator.c
  * @brief Implementation of the send instruction evaluator module
  */
 

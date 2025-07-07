@@ -1,5 +1,5 @@
 /**
- * @file agerun_agent_store.c
+ * @file ar_agent_store.c
  * @brief Implementation of the agent store module
  */
 

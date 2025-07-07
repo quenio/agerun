@@ -1,5 +1,5 @@
 /**
- * @file agerun_expression_evaluator.h
+ * @file ar_expression_evaluator.h
  * @brief Expression evaluator module for AgeRun
  * 
  * This module provides functionality to evaluate expression AST nodes

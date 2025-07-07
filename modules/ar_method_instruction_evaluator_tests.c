@@ -492,7 +492,7 @@ int main(void) {
         if (len < 4 || strcmp(cwd + len - 4, "/bin") != 0) {
             fprintf(stderr, "ERROR: Tests must be run from the bin directory!\n");
             fprintf(stderr, "Current directory: %s\n", cwd);
-            fprintf(stderr, "Please run: cd bin && ./agerun_ar_method_instruction_evaluator_tests\n");
+            fprintf(stderr, "Please run: cd bin && ./ar_ar_method_instruction_evaluator_tests\n");
             return 1;
         }
     }

@@ -1,5 +1,5 @@
 /**
- * @file agerun_assignment_instruction_evaluator.h
+ * @file ar_assignment_instruction_evaluator.h
  * @brief Assignment instruction evaluator module for AgeRun
  * 
  * This module provides functionality to evaluate assignment instruction AST nodes.

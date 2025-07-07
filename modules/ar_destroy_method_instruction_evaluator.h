@@ -1,5 +1,5 @@
 /**
- * @file agerun_destroy_method_instruction_evaluator.h
+ * @file ar_destroy_method_instruction_evaluator.h
  * @brief Public interface for the destroy method instruction evaluator module
  */
 

@@ -1,5 +1,5 @@
 /**
- * @file agerun_agent_registry_tests.c
+ * @file ar_agent_registry_tests.c
  * @brief Tests for the agent registry module
  */
 

@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 /**
- * Tests for the assertion utilities in agerun_assert.h
+ * Tests for the assertion utilities in ar_assert.h
  * 
  * These tests verify the behavior of the assertion macros
  * in the assertion module. Since assertions terminate the program
@@ -86,7 +86,7 @@ static void test_ar_assert_not_used_after_free(void) {
  * Main function that runs all the tests
  */
 int main(void) {
-    printf("Running agerun_assert tests...\n");
+    printf("Running ar_assert tests...\n");
     
     test_ar_assert_true();
     test_ar_assert_ownership();

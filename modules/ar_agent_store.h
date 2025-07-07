@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 /**
- * @file agerun_agent_store.h
+ * @file ar_agent_store.h
  * @brief Agent store module for persisting and loading agent state
  * 
  * This module handles saving and loading agent state to/from persistent storage.

@@ -5,7 +5,7 @@
 #include "ar_method.h"
 
 /**
- * @file agerun_system_fixture.h
+ * @file ar_system_fixture.h
  * @brief System fixture for AgeRun system module testing infrastructure
  * 
  * This module provides a proper abstraction for system module test setup and teardown

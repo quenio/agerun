@@ -5,7 +5,7 @@
 #include "ar_log.h"
 
 /**
- * @file agerun_agent_instruction_parser.h
+ * @file ar_agent_instruction_parser.h
  * @brief Parser for agent() function instructions in AgeRun language
  * 
  * This module provides specialized parsing for agent() function calls,

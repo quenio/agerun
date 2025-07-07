@@ -1,5 +1,5 @@
 /**
- * @file agerun_agent_update_tests.c
+ * @file ar_agent_update_tests.c
  * @brief Tests for the agent update module
  */
 

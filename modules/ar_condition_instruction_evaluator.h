@@ -1,5 +1,5 @@
 /**
- * @file agerun_condition_instruction_evaluator.h
+ * @file ar_condition_instruction_evaluator.h
  * @brief Evaluator for if/condition instructions in AgeRun
  *
  * This module provides functionality to evaluate conditional (if) instructions

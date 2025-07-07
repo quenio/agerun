@@ -9,7 +9,7 @@
 typedef struct ar_method_s ar_method_t;
 
 /**
- * @file agerun_agent_update.h
+ * @file ar_agent_update.h
  * @brief Agent update module for managing method version updates
  * 
  * This module handles updating agents from one method version to another,

@@ -10,7 +10,7 @@
 #include <unistd.h>
 
 /**
- * @file agerun_method_fixture.c
+ * @file ar_method_fixture.c
  * @brief Implementation of method fixture module for AgeRun method testing
  */
 

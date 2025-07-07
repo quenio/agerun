@@ -19,21 +19,21 @@
 #include <inttypes.h>
 
 /* Constants are now defined in their respective module header files:
- * - MAX_METHODS, MAX_VERSIONS_PER_METHOD, MAX_METHOD_NAME_LENGTH, MAX_INSTRUCTIONS_LENGTH in agerun_methodology.h
+ * - MAX_METHODS, MAX_VERSIONS_PER_METHOD, MAX_METHOD_NAME_LENGTH, MAX_INSTRUCTIONS_LENGTH in ar_methodology.h
  * - Lists used for message queues provide dynamic sizing
- * - MAX_AGENTS, MAX_METHOD_NAME_LENGTH in agerun_agent.h
+ * - MAX_AGENTS, MAX_METHOD_NAME_LENGTH in ar_agent.h
  */
 
 /* Static variables for commonly used messages */
 static char g_wake_message[] = "__wake__";
 
-/* Memory Map structure is now defined in agerun_map.h */
+/* Memory Map structure is now defined in ar_map.h */
 
 /* Message Queue functionality is now provided by the list module */
 
-/* Method Definition is now in agerun_method.h/c */
+/* Method Definition is now in ar_method.h/c */
 
-/* Agent Definition is now in agerun_agent.h */
+/* Agent Definition is now in ar_agent.h */
 
 /* Global State */
 static bool is_initialized = false;

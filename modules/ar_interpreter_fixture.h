@@ -9,7 +9,7 @@
 #include "ar_method.h"
 
 /**
- * @file agerun_interpreter_fixture.h
+ * @file ar_interpreter_fixture.h
  * @brief Test fixture for AgeRun interpreter module tests
  * 
  * This module provides test infrastructure specifically for the interpreter module's

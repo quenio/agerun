@@ -1,5 +1,5 @@
 /**
- * @file agerun_agent_registry.c
+ * @file ar_agent_registry.c
  * @brief Implementation of the agent registry module
  */
 

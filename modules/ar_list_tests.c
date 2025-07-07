@@ -509,7 +509,7 @@ static void test_remove(void) {
  * Main test runner
  */
 int main(void) {
-    printf("Running agerun_list tests...\n");
+    printf("Running ar_list tests...\n");
     
     test_create_destroy();
     test_add_last();
@@ -522,6 +522,6 @@ int main(void) {
     test_null_parameters();
     test_remove();
     
-    printf("All agerun_list tests passed!\n");
+    printf("All ar_list tests passed!\n");
     return 0;
 }

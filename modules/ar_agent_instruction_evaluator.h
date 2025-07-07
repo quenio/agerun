@@ -1,5 +1,5 @@
 /**
- * @file agerun_agent_instruction_evaluator.h
+ * @file ar_agent_instruction_evaluator.h
  * @brief Public interface for the agent instruction evaluator module
  *
  * This module is responsible for evaluating agent instructions (agent()).

@@ -1,5 +1,5 @@
 /**
- * @file agerun_destroy_agent_instruction_evaluator.c
+ * @file ar_destroy_agent_instruction_evaluator.c
  * @brief Implementation of the destroy agent instruction evaluator module
  */
 

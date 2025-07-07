@@ -1,5 +1,5 @@
 /**
- * @file agerun_parse_instruction_parser.h
+ * @file ar_parse_instruction_parser.h
  * @brief Parser for parse() function instructions in the AgeRun language
  *
  * This module handles parsing of parse() function calls, which extract values

@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 /**
- * @file agerun_method_fixture.h
+ * @file ar_method_fixture.h
  * @brief Method fixture module for AgeRun method testing infrastructure
  * 
  * This module provides a proper abstraction for test setup and teardown operations,

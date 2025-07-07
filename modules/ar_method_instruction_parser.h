@@ -5,7 +5,7 @@
 #include "ar_log.h"
 
 /**
- * @file agerun_method_instruction_parser.h
+ * @file ar_method_instruction_parser.h
  * @brief Parser for method() function instructions in AgeRun language
  * 
  * This module provides specialized parsing for method() function calls,

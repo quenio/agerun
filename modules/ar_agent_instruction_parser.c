@@ -11,7 +11,7 @@
 #include <stdbool.h>
 
 /**
- * @file agerun_agent_instruction_parser.c
+ * @file ar_agent_instruction_parser.c
  * @brief Implementation of the agent instruction parser module
  */
 

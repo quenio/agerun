@@ -119,10 +119,10 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [ ] Fix ar_heap.zig struct type:
   - [ ] `const ar_memory_record_t = struct` → Follow ar_<type>_t convention
 
-#### Old Naming Prefix Cleanup (Lower Priority)
-- [ ] Update 64 instances of old 'agerun_' prefix to 'ar_' prefix
-  - [ ] This appears mainly in comments and documentation
-  - [ ] Examples found in multiple test files and module headers
+#### Old Naming Prefix Cleanup (Lower Priority) (Completed 2025-07-07)
+- [x] Update 64 instances of old 'agerun_' prefix to 'ar_' prefix
+  - [x] This appears mainly in comments and documentation
+  - [x] Examples found in multiple test files and module headers
 
 ### HIGHEST PRIORITY - Frame-Based Execution Implementation (Revised Plan)
 

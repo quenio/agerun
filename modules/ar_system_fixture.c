@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 /**
- * @file agerun_system_fixture.c
+ * @file ar_system_fixture.c
  * @brief Implementation of system fixture for AgeRun system module testing
  */
 

@@ -416,7 +416,7 @@ static void test_parse_expression_assignment(void) {
     ar_instruction_parser__destroy(own_parser);
 }
 
-// Send tests moved to agerun_send_instruction_parser_tests.c
+// Send tests moved to ar_send_instruction_parser_tests.c
 
 static void test_parse_if_function(void) {
     printf("Testing if function parsing...\n");
@@ -641,7 +641,7 @@ static void test_parse_error_handling(void) {
         ar_log__destroy(log);
     }
     
-    // Test 3: Send error tests moved to agerun_send_instruction_parser_tests.c
+    // Test 3: Send error tests moved to ar_send_instruction_parser_tests.c
 }
 
 static void test_parse_empty_instruction(void) {
@@ -717,7 +717,7 @@ int main(void) {
     test_parse_expression_assignment();
     
     // Function call tests
-    // Send tests moved to agerun_send_instruction_parser_tests.c
+    // Send tests moved to ar_send_instruction_parser_tests.c
     test_parse_if_function();
     test_parse_method_function();
     test_parse_agent_function();
