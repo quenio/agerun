@@ -14,6 +14,12 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Install GCC 13 and matching libc
+        run: |
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+          sudo apt update
+          sudo apt install -y gcc-13 g++-13 libc6-dev
+
       - name: Install Zig 0.14.1
         uses: goto-bus-stop/setup-zig@v2
         with:
