@@ -9,6 +9,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ### Type Naming Convention Update (Completed 2025-07-06)
 - [x] Renamed all types to follow ar_ prefix convention: enums (4 types, 129 occurrences), typedefs (17 types, 2573 occurrences), struct tags (11 types, 41 occurrences)
 
+### Fix Naming Convention Violations (Completed 2025-07-07)
+- [x] Fixed static functions in ar_io.zig and ar_heap.zig to use _<name>() pattern
+- [x] Fixed all enum values to follow AR_<ENUM_TYPE>__<VALUE> convention
+- [x] Verified struct definitions already follow convention
+- [x] Verified Zig struct types already follow convention
+- [x] Updated 64 instances of old 'agerun_' prefix to 'ar_' prefix
+
 ### Static Analysis Reporting in Makefile (Completed 2025-06-13)
 - [x] Fixed static analysis in full_build.sh with per-file analysis, proper bug detection, and clean build achieved
 
@@ -102,27 +109,6 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Separated parsing and execution phases, fixed invalid syntax handling, all tests passing
 
 ## Immediate Priorities (Next Steps)
-
-### CRITICAL - Fix Naming Convention Violations (Found by check-naming)
-
-#### Static Functions Not Following _<function> Convention (Completed 2025-07-07)
-- [x] Fixed ar_io.zig and ar_heap.zig static functions to use _<name>() pattern
-
-#### Enum Values Not Following AR_<ENUM_TYPE>__<VALUE> Convention (Completed 2025-07-07)
-- [x] Fixed all enum values in ar_data.h, ar_event.h, ar_expression_ast.h, ar_instruction.h, ar_instruction_ast.h, ar_io.h
-
-#### Struct Definitions Not Following Convention
-- [ ] Fix ar_list.c struct definition:
-  - [ ] `struct ar_list_node_s` → `struct ar_list_node_s`
-
-#### Zig Struct Types Not Following Convention
-- [ ] Fix ar_heap.zig struct type:
-  - [ ] `const ar_memory_record_t = struct` → Follow ar_<type>_t convention
-
-#### Old Naming Prefix Cleanup (Lower Priority) (Completed 2025-07-07)
-- [x] Update 64 instances of old 'agerun_' prefix to 'ar_' prefix
-  - [x] This appears mainly in comments and documentation
-  - [x] Examples found in multiple test files and module headers
 
 ### HIGHEST PRIORITY - Frame-Based Execution Implementation (Revised Plan)
 
