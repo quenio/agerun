@@ -362,6 +362,11 @@ static void test_message_send_instructions(void) {
     ref_sent = ar_data__get_map_data(sender_memory, "noop");
     assert(ar_data__get_integer(ref_sent) == 1);
     
+    // Process any remaining messages before cleanup
+    while (ar_system__process_next_message()) {
+        // Keep processing until no more messages
+    }
+    
     // Clean up
     ar_interpreter_fixture__destroy(own_fixture);
     
