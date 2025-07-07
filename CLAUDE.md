@@ -433,6 +433,7 @@ Never compile directly with gcc.
    - **Exception**: Skip tests if just run successfully (avoid redundant execution)
 2. **Update module .md files if interfaces changed** - CRITICAL: Interface changes MUST include docs in same commit
 3. `grep -l "function_name" modules/*.md` - Check docs for any API changes
+   - **Hybrid modules**: Update both ar_io.md AND README.md to note Zig/C split approach
 4. Update TODO.md - Mark completed, add new tasks
 5. Update CHANGELOG.md (NON-NEGOTIABLE)
 6. `git diff` - Verify all changes intentional
@@ -569,6 +570,9 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - Circular dependencies: Use stack allocation to break heap→io→heap cycles
 - Platform differences: Handle stderr/stdout as functions on macOS with c.stderr()
 - errno access: Create helper functions like getErrno() for cross-platform compatibility
+- **Variadic functions**: Implement in C, not Zig (platform va_list incompatibility) - use hybrid approach
+- **Build flags**: Add `-lc -fno-stack-check` to Zig build-obj for C interop compatibility
+- **Ubuntu strictness**: Test on Linux CI first - catches header paths, linking, runtime issues early
 
 **Example Integration Pattern**:
 ```zig
