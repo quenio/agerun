@@ -293,7 +293,7 @@ while (*p) {
 }
 ```
 
-**Naming Patterns** (verify with grep before large changes):
+**Naming Patterns** (verify with grep before large changes; fix errors before warnings):
 | Type | Pattern | Example |
 |------|---------|---------|
 | Module functions | `ar_<module>__<function>` | `ar_data__create_map()` (C & Zig) |
@@ -429,6 +429,7 @@ Never compile directly with gcc.
 1. `make full-build` - Fix ALL issues before proceeding (includes doc validation)
    - **Exception**: Type renames only need `make check-naming && make test`
    - **Exception**: Doc-only changes only need `make check-docs`
+   - **Exception**: Comment-only changes only need `make check-naming`
    - **Exception**: Skip tests if just run successfully (avoid redundant execution)
 2. **Update module .md files if interfaces changed** - CRITICAL: Interface changes MUST include docs in same commit
 3. `grep -l "function_name" modules/*.md` - Check docs for any API changes
