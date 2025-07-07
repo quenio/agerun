@@ -37,7 +37,9 @@
       "Bash(rm:/tmp/*)",
       "Bash(rm:./bin/*)",
       "Bash(python3:*)",
-      "Bash(./check_naming_conventions.sh:*)"
+      "Bash(./check_naming_conventions.sh:*)",
+      "Bash(python scripts/rename_symbols.py:*)",
+      "Bash(test:*)"
     ],
     "deny": []
   },
