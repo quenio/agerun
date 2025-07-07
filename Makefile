@@ -42,6 +42,7 @@ CC = gcc-13
 
 # Zig compiler
 ZIG = zig
+ZIG_LIBC = ./bin/zig-libc.txt
 
 # Sanitizer compiler selection based on OS
 ifeq ($(UNAME_S),Darwin)
@@ -217,7 +218,7 @@ bin/obj/%.o: modules/%.c | bin
 
 # Compile Zig source files
 bin/obj/%.o: modules/%.zig | bin
-	$(ZIG) build-obj -O ReleaseSafe --libc -mcpu=native -I./modules $< -femit-bin=$@
+	$(ZIG) libc > $(ZIG_LIBC) && $(ZIG) build-obj -O ReleaseSafe --libc $(ZIG_LIBC) -target native -mcpu=native -I./modules $< -femit-bin=$@
 
 # Clean target
 clean:
