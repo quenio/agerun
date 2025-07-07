@@ -153,7 +153,8 @@ ar_data__destroy(own_args);  // Add cleanup
 For each new behavior/feature:
 1. **Red Phase**: Write failing test FIRST
    - Write test for ONE specific behavior (or modify existing test to fail)
-   - Run test to confirm it fails
+   - Run test to confirm it ACTUALLY FAILS (comments don't count as failure!)
+   - If you can't create a failing test, document as "consistency fix" not TDD
    - Do NOT commit
    
 2. **Green Phase**: Write MINIMUM code to pass
@@ -213,6 +214,7 @@ For each new behavior/feature:
 - Test files: `<module>_tests.c`
 - Follow the 4-step directory check process (see Section 7) before running tests
 - To run tests, use `make bin/test_name` which automatically builds and runs
+- **ALWAYS rebuild after code changes**: `make bin/test_name` (not just `./test_name`)
 - If you need to run tests manually from bin/ directory:
   - `cd bin && ./ar_string_tests`
   - `AGERUN_MEMORY_REPORT=bin/test.memory_report.log ./bin/ar_string_tests`
@@ -426,6 +428,7 @@ Never compile directly with gcc.
 - **Session todos (TodoWrite/TodoRead)**: Current TDD cycles, implementations, bug fixes
 - **TODO.md file**: Long-term architecture, future features (check [ ] vs [x] for completion)
 - **User feedback**: May reveal design issues, not just implementation bugs. Listen for concerns about output/behavior.
+- **Todo list integrity**: Mark items complete, never remove them - preserves task history
 
 **Pre-Commit Checklist** (MANDATORY):
 1. `make full-build` - Fix ALL issues before proceeding (includes doc validation)
