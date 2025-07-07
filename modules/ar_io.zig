@@ -33,12 +33,53 @@ pub const ar_file_result_t = enum(c_int) {
 
 // Helper to get errno value
 fn _get_errno() c_int {
-    return c.__error().*;
+    if (builtin.os.tag == .macos) {
+        return c.__error().*;
+    } else {
+        // On Linux, errno is a thread-local variable
+        const errno_ptr = c.__errno_location();
+        return errno_ptr.*;
+    }
 }
 
 // Helper to set errno value
 fn _set_errno(value: c_int) void {
-    c.__error().* = value;
+    if (builtin.os.tag == .macos) {
+        c.__error().* = value;
+    } else {
+        // On Linux, errno is a thread-local variable
+        const errno_ptr = c.__errno_location();
+        errno_ptr.* = value;
+    }
+}
+
+// Helper to get stderr FILE*
+fn _get_stderr() [*c]c.FILE {
+    if (builtin.os.tag == .macos) {
+        return c.stderr();
+    } else {
+        return c.stderr;
+    }
+}
+
+// Helper to get stdout FILE*
+fn _get_stdout() [*c]c.FILE {
+    if (builtin.os.tag == .macos) {
+        return c.stdout();
+    } else {
+        return c.stdout;
+    }
+}
+
+// Helper to convert VaList for vsnprintf
+fn _va_list_for_vsnprintf(args: anytype) c.va_list {
+    if (builtin.os.tag == .linux and builtin.cpu.arch == .x86_64) {
+        // On Linux x86_64, va_list is already the right type
+        return args;
+    } else {
+        // On other platforms, we need to cast
+        return @ptrCast(args);
+    }
 }
 
 /// Prints an error message to stderr
@@ -58,7 +99,7 @@ export fn ar_io__error(format: [*c]const u8, ...) void {
         @ptrCast(&buffer[prefix.len]),
         buffer.len - prefix.len - 2, // Leave room for newline and null
         format,
-        @ptrCast(args)
+        _va_list_for_vsnprintf(args)
     );
     
     if (msg_len < 0 or prefix.len + @as(usize, @intCast(msg_len)) >= buffer.len - 2) {
@@ -73,7 +114,7 @@ export fn ar_io__error(format: [*c]const u8, ...) void {
     }
     
     // Write to stderr
-    _ = c.fputs(@ptrCast(&buffer), c.stderr());
+    _ = c.fputs(@ptrCast(&buffer), _get_stderr());
 }
 
 /// Prints a warning message to stderr
@@ -93,7 +134,7 @@ export fn ar_io__warning(format: [*c]const u8, ...) void {
         @ptrCast(&buffer[prefix.len]),
         buffer.len - prefix.len - 2,
         format,
-        @ptrCast(args)
+        _va_list_for_vsnprintf(args)
     );
     
     if (msg_len < 0 or prefix.len + @as(usize, @intCast(msg_len)) >= buffer.len - 2) {
@@ -105,7 +146,7 @@ export fn ar_io__warning(format: [*c]const u8, ...) void {
         buffer[total_len + 1] = 0;
     }
     
-    _ = c.fputs(@ptrCast(&buffer), c.stderr());
+    _ = c.fputs(@ptrCast(&buffer), _get_stderr());
 }
 
 /// Prints an informational message to stdout
@@ -121,7 +162,7 @@ export fn ar_io__info(format: [*c]const u8, ...) void {
         @ptrCast(&buffer),
         buffer.len - 2,
         format,
-        @ptrCast(args)
+        _va_list_for_vsnprintf(args)
     );
     
     if (msg_len < 0 or @as(usize, @intCast(msg_len)) >= buffer.len - 2) {
@@ -132,7 +173,7 @@ export fn ar_io__info(format: [*c]const u8, ...) void {
         buffer[@as(usize, @intCast(msg_len)) + 1] = 0;
     }
     
-    _ = c.fputs(@ptrCast(&buffer), c.stdout());
+    _ = c.fputs(@ptrCast(&buffer), _get_stdout());
 }
 
 /// Safely prints to the specified stream with error checking
@@ -140,7 +181,7 @@ export fn ar_io__info(format: [*c]const u8, ...) void {
 /// @param format Printf-style format string
 export fn ar_io__fprintf(stream: [*c]c.FILE, format: [*c]const u8, ...) void {
     if (stream == null or format == null) {
-        _ = c.fputs(@as([*c]const u8, "Error: Invalid parameters for ar_io__fprintf\n"), c.stderr());
+        _ = c.fputs(@as([*c]const u8, "Error: Invalid parameters for ar_io__fprintf\n"), _get_stderr());
         return;
     }
     
@@ -154,7 +195,7 @@ export fn ar_io__fprintf(stream: [*c]c.FILE, format: [*c]const u8, ...) void {
         @ptrCast(&buffer),
         buffer.len,
         format,
-        @ptrCast(args)
+        _va_list_for_vsnprintf(args)
     );
     
     if (msg_len < 0 or @as(usize, @intCast(msg_len)) >= buffer.len) {
