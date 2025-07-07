@@ -226,7 +226,7 @@ bin/obj/%.o: modules/%.c | bin
 
 # Compile Zig source files
 bin/obj/%.o: modules/%.zig | bin
-	$(ZIG) build-obj -O ReleaseSafe -target native -mcpu=native -I./modules $< -femit-bin=$@
+	$(ZIG) build-obj -O ReleaseSafe -target native -mcpu=native -lc -I./modules $< -femit-bin=$@
 
 # Clean target
 clean:
