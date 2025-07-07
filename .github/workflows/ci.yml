@@ -25,5 +25,10 @@ jobs:
         with:
           version: 0.14.1
 
+      - name: Set CC and CXX
+        run: |
+          echo "CC=gcc-13" >> $GITHUB_ENV
+          echo "CXX=g++-13" >> $GITHUB_ENV
+
       - name: Full build…
         run: make full-build
