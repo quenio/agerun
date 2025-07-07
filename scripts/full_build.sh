@@ -171,8 +171,36 @@ else
     if $all_clean; then
         echo "Memory: No leaks detected ✓"
     else
-        echo "Memory: LEAKS DETECTED in:$leaky_tests"
-        echo "Check memory_report_*.log files in bin/"
+        echo "Memory: LEAKS DETECTED in:$leaky_tests ✗"
+        echo
+        echo "Memory Leak Reports:"
+        echo "===================="
+        for report in $memory_reports; do
+            if [ -f "$report" ]; then
+                # Check if there are actual memory leaks
+                actual_leaks=$(grep -E "^Actual memory leaks: ([0-9]+)" "$report" 2>/dev/null | awk '{print $4}')
+                
+                # Skip reports with no actual leaks
+                if [ -n "$actual_leaks" ] && [ "$actual_leaks" -eq 0 ]; then
+                    continue
+                fi
+                
+                # If we can't find the "Actual memory leaks" line, check old format
+                if [ -z "$actual_leaks" ]; then
+                    if grep -q "No memory leaks detected" "$report" 2>/dev/null; then
+                        continue
+                    fi
+                fi
+                
+                # Print the report for tests with leaks
+                test_name=$(basename "$report" .log | sed 's/memory_report_//')
+                echo
+                echo "=== Memory leaks in $test_name ==="
+                cat "$report"
+                echo "==================================="
+            fi
+        done
+        echo
         exit 1
     fi
 fi
@@ -197,12 +225,20 @@ if [ $exec_exit_code -eq 0 ]; then
                 echo "Executable memory: No leaks detected ✓"
             else
                 echo "Executable memory: LEAKS DETECTED ✗"
-                echo "Check bin/memory_report_agerun.log for details"
+                echo
+                echo "=== Executable Memory Leak Report ==="
+                cat "bin/memory_report_agerun.log"
+                echo "====================================="
+                echo
             fi
         # If we found it and it's greater than 0, we have real leaks
         elif [ "$actual_leaks" -gt 0 ]; then
             echo "Executable memory: LEAKS DETECTED ($actual_leaks leaks) ✗"
-            echo "Check bin/memory_report_agerun.log for details"
+            echo
+            echo "=== Executable Memory Leak Report ==="
+            cat "bin/memory_report_agerun.log"
+            echo "====================================="
+            echo
         else
             echo "Executable memory: No leaks detected ✓"
         fi
