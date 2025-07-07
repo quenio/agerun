@@ -45,7 +45,7 @@
   },
   "enableAllProjectMcpServers": false,
   "env": {
-    "BASH_DEFAULT_TIMEOUT_MS": "240000",
-    "BASH_MAX_TIMEOUT_MS": "300000"
+    "BASH_DEFAULT_TIMEOUT_MS": "600000",
+    "BASH_MAX_TIMEOUT_MS": "900000"
   }
 }
