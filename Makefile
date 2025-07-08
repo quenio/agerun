@@ -169,10 +169,6 @@ TSAN_TESTS_METHOD_TEST_OBJ = $(patsubst methods/%.c,$(TSAN_TESTS_DIR)/obj/%.o,$(
 TSAN_TESTS_METHOD_TEST_BIN = $(patsubst methods/%_tests.c,$(TSAN_TESTS_DIR)/%_tests,$(METHOD_TEST_SRC))
 
 
-# Create bin and bin/obj directories
-bin:
-	mkdir -p $@/obj
-
 # Create directory-specific directories
 $(ANALYZE_EXEC_DIR):
 	mkdir -p $@/obj $@/scan-build-results
@@ -200,11 +196,9 @@ $(TSAN_EXEC_DIR):
 
 
 # Directory-specific library targets
-run_tests_lib: CFLAGS += $(DEBUG_CFLAGS)
 run_tests_lib: $(RUN_TESTS_DIR) $(RUN_TESTS_OBJ) $(RUN_TESTS_TEST_OBJ) $(RUN_TESTS_METHOD_TEST_OBJ)
 	ar rcs $(RUN_TESTS_DIR)/libagerun.a $(RUN_TESTS_OBJ)
 
-run_exec_lib: CFLAGS += $(DEBUG_CFLAGS)
 run_exec_lib: $(RUN_EXEC_DIR) $(RUN_EXEC_OBJ)
 	ar rcs $(RUN_EXEC_DIR)/libagerun.a $(RUN_EXEC_OBJ)
 
@@ -302,21 +296,8 @@ $(SANITIZE_TESTS_DIR)/%_tests: $(SANITIZE_TESTS_DIR)/obj/%_tests.o sanitize_test
 $(TSAN_TESTS_DIR)/%_tests: $(TSAN_TESTS_DIR)/obj/%_tests.o tsan_tests_lib
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS) -o $@ $< $(TSAN_TESTS_DIR)/libagerun.a $(LDFLAGS) $(TSAN_FLAGS)
 
-# Compile source files (always with debug for test files)
-bin/obj/%_tests.o: modules/%_tests.c | bin
-	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
-
-# Compile method test files (always with debug)
-bin/obj/%_tests.o: methods/%_tests.c | bin
-	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
-
-# Compile regular source files
-bin/obj/%.o: modules/%.c | bin
-	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
-
-# Compile Zig source files
-bin/obj/%.o: modules/%.zig | bin
-	$(ZIG) build-obj -O ReleaseSafe -target native -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
+# Note: Individual test builds use bin/run-tests/ directory via the bin/%_tests target above
+# No generic bin/ compilation rules needed for tests
 
 # Directory-specific compilation rules
 # Run tests directory
