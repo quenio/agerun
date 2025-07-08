@@ -375,6 +375,7 @@ cd bin  # Wrong - avoid relative paths
 - Create corresponding make target for user-facing scripts
 - Scripts should fail with helpful error messages suggesting the make target
 - Document the make target in the Makefile help section
+- NEVER use Makefile variables $(VAR) in bash scripts - causes command substitution errors
 
 **Debug Tools**:
 - **Memory**: `make sanitize-tests` → Check `bin/memory_report_<test_name>.log`
@@ -411,6 +412,8 @@ make bin/test_name  # Build individual test
 ```
 Never compile directly with gcc.
 
+**Parallel Build System**: Targets use isolated directories (bin/run-tests/, bin/sanitize-tests/) to enable parallel execution without conflicts.
+
 **Important Makefile Features**:
 - When building individual tests, the test is automatically executed after building
 - Module changes are automatically rebuilt (no need to rebuild the library separately)
@@ -429,21 +432,22 @@ Never compile directly with gcc.
 - **User feedback**: May reveal design issues, not just implementation bugs. Listen for concerns about output/behavior.
 - **Todo list integrity**: Mark items complete, never remove them - preserves task history
 
-**Pre-Commit Checklist** (MANDATORY):
+**Pre-Commit Checklist** (MANDATORY - NO EXCEPTIONS):
 1. `make full-build` - Fix ALL issues before proceeding (includes doc validation)
    - **Exception**: Type renames only need `make check-naming && make run-tests`
    - **Exception**: Doc-only changes only need `make check-docs`
    - **Exception**: Comment-only changes only need `make check-naming`
    - **Exception**: Skip tests if just run successfully (avoid redundant execution)
 2. **Update module .md files if interfaces changed** - CRITICAL: Interface changes MUST include docs in same commit
-3. `grep -l "function_name" modules/*.md` - Check docs for any API changes
+3. **Review ALL documentation for outdated references** - Refactoring often leaves stale docs
+4. `grep -l "function_name" modules/*.md` - Check docs for any API changes
    - **Hybrid modules**: Update both ar_io.md AND README.md to note Zig/C split approach
-4. Update TODO.md - Mark completed, add new tasks
-5. Update CHANGELOG.md (NON-NEGOTIABLE)
-6. `git diff` - Verify all changes intentional
-7. Check for backup files outside ./bin (*.backup, *.bak, *.tmp)
-8. Remove any log files: `find . -name "*.log" -type f | grep -v bin/ | xargs rm -f`
-9. Only then: `git commit`
+5. Update TODO.md - Mark completed, add new tasks
+6. Update CHANGELOG.md (NON-NEGOTIABLE)
+7. `git diff` - Verify all changes intentional
+8. Check for backup files outside ./bin (*.backup, *.bak, *.tmp)
+9. Remove any log files: `find . -name "*.log" -type f | grep -v bin/ | xargs rm -f`
+10. Only then: `git commit`
 
 **Remember**: Complete ALL TDD Cycles → Docs → TODO → CHANGELOG → Commit
 
