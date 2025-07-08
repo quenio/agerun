@@ -371,12 +371,17 @@ analyze-exec: install-scan-build $(ANALYZE_EXEC_DIR)
 		echo "Running scan-build on source files with $(CC)..."; \
 		total_bugs=0; \
 		rm -f $(ANALYZE_EXEC_DIR)/scan-build-analyze.log; \
+		rm -f $(ANALYZE_EXEC_DIR)/scan-build-warnings.log; \
 		for file in $(C_SRC); do \
 			echo "Analyzing $$file..."; \
 			$(SCAN_BUILD) -o $(ANALYZE_EXEC_DIR)/scan-build-results --status-bugs --use-cc=$(CC) $(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c -I./modules $$file -o $(ANALYZE_EXEC_DIR)/obj/$$(basename $$file .c).o 2>&1 | tee $(ANALYZE_EXEC_DIR)/scan-build-temp.log; \
 			if grep -q "scan-build: [0-9]* bug" $(ANALYZE_EXEC_DIR)/scan-build-temp.log && ! grep -q "scan-build: 0 bugs found" $(ANALYZE_EXEC_DIR)/scan-build-temp.log; then \
 				file_bugs=$$(grep "scan-build: [0-9]* bug" $(ANALYZE_EXEC_DIR)/scan-build-temp.log | tail -1 | sed 's/.*scan-build: \([0-9]*\) bug.*/\1/'); \
 				echo "  ✗ $$file_bugs bugs found in $$file"; \
+				echo "=== Warnings in $$file ===" >> $(ANALYZE_EXEC_DIR)/scan-build-warnings.log; \
+				grep -E "(warning:|error:|note:)" $(ANALYZE_EXEC_DIR)/scan-build-temp.log >> $(ANALYZE_EXEC_DIR)/scan-build-warnings.log 2>/dev/null || true; \
+				grep -B2 -A2 "warning:" $(ANALYZE_EXEC_DIR)/scan-build-temp.log | grep -v "^--$$" >> $(ANALYZE_EXEC_DIR)/scan-build-warnings.log 2>/dev/null || true; \
+				echo >> $(ANALYZE_EXEC_DIR)/scan-build-warnings.log; \
 				total_bugs=$$((total_bugs + file_bugs)); \
 			fi; \
 			cat $(ANALYZE_EXEC_DIR)/scan-build-temp.log >> $(ANALYZE_EXEC_DIR)/scan-build-analyze.log; \
@@ -384,6 +389,13 @@ analyze-exec: install-scan-build $(ANALYZE_EXEC_DIR)
 		if [ $$total_bugs -gt 0 ]; then \
 			echo "Static analysis FAILED: $$total_bugs total bugs found"; \
 			echo "View detailed reports in: $(ANALYZE_EXEC_DIR)/scan-build-results/"; \
+			if [ -f $(ANALYZE_EXEC_DIR)/scan-build-warnings.log ]; then \
+				echo "=== Static Analysis Warnings ==="; \
+				cat $(ANALYZE_EXEC_DIR)/scan-build-warnings.log | head -50; \
+				if [ $$(wc -l < $(ANALYZE_EXEC_DIR)/scan-build-warnings.log) -gt 50 ]; then \
+					echo "... (truncated, see full output in $(ANALYZE_EXEC_DIR)/scan-build-warnings.log)"; \
+				fi; \
+			fi; \
 			exit 1; \
 		else \
 			echo "Static analysis passed: no bugs found"; \
@@ -403,12 +415,17 @@ analyze-tests: install-scan-build $(ANALYZE_TESTS_DIR)
 		echo "Running scan-build on test files with $(CC)..."; \
 		total_bugs=0; \
 		rm -f $(ANALYZE_TESTS_DIR)/scan-build-analyze-tests.log; \
+		rm -f $(ANALYZE_TESTS_DIR)/scan-build-warnings.log; \
 		for file in $(C_SRC) $(TEST_SRC) $(METHOD_TEST_SRC); do \
 			echo "Analyzing $$file..."; \
 			$(SCAN_BUILD) -o $(ANALYZE_TESTS_DIR)/scan-build-results --status-bugs --use-cc=$(CC) $(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c -I./modules $$file -o $(ANALYZE_TESTS_DIR)/obj/$$(basename $$file .c).o 2>&1 | tee $(ANALYZE_TESTS_DIR)/scan-build-temp-tests.log; \
 			if grep -q "scan-build: [0-9]* bug" $(ANALYZE_TESTS_DIR)/scan-build-temp-tests.log && ! grep -q "scan-build: 0 bugs found" $(ANALYZE_TESTS_DIR)/scan-build-temp-tests.log; then \
 				file_bugs=$$(grep "scan-build: [0-9]* bug" $(ANALYZE_TESTS_DIR)/scan-build-temp-tests.log | tail -1 | sed 's/.*scan-build: \([0-9]*\) bug.*/\1/'); \
 				echo "  ✗ $$file_bugs bugs found in $$file"; \
+				echo "=== Warnings in $$file ===" >> $(ANALYZE_TESTS_DIR)/scan-build-warnings.log; \
+				grep -E "(warning:|error:|note:)" $(ANALYZE_TESTS_DIR)/scan-build-temp-tests.log >> $(ANALYZE_TESTS_DIR)/scan-build-warnings.log 2>/dev/null || true; \
+				grep -B2 -A2 "warning:" $(ANALYZE_TESTS_DIR)/scan-build-temp-tests.log | grep -v "^--$$" >> $(ANALYZE_TESTS_DIR)/scan-build-warnings.log 2>/dev/null || true; \
+				echo >> $(ANALYZE_TESTS_DIR)/scan-build-warnings.log; \
 				total_bugs=$$((total_bugs + file_bugs)); \
 			fi; \
 			cat $(ANALYZE_TESTS_DIR)/scan-build-temp-tests.log >> $(ANALYZE_TESTS_DIR)/scan-build-analyze-tests.log; \
@@ -416,6 +433,13 @@ analyze-tests: install-scan-build $(ANALYZE_TESTS_DIR)
 		if [ $$total_bugs -gt 0 ]; then \
 			echo "Static analysis FAILED: $$total_bugs total bugs found in tests"; \
 			echo "View detailed reports in: $(ANALYZE_TESTS_DIR)/scan-build-results/"; \
+			if [ -f $(ANALYZE_TESTS_DIR)/scan-build-warnings.log ]; then \
+				echo "=== Static Analysis Warnings ==="; \
+				cat $(ANALYZE_TESTS_DIR)/scan-build-warnings.log | head -50; \
+				if [ $$(wc -l < $(ANALYZE_TESTS_DIR)/scan-build-warnings.log) -gt 50 ]; then \
+					echo "... (truncated, see full output in $(ANALYZE_TESTS_DIR)/scan-build-warnings.log)"; \
+				fi; \
+			fi; \
 			exit 1; \
 		else \
 			echo "Static analysis passed: no bugs found in tests"; \

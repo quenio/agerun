@@ -127,9 +127,15 @@ show_results() {
                         ;;
                     "analyze-exec"|"analyze-tests")
                         grep "bugs found in" "$log" 2>/dev/null | head -5 | sed 's/^/    /'
-                        # Also show the actual warnings
+                        # Show the actual warnings from the log
                         echo "    Static analysis warnings:"
-                        grep -B1 "warning:" "$log" 2>/dev/null | grep -E "(\.c:|\.h:|warning:)" | head -10 | sed 's/^/      /'
+                        if grep -q "=== Static Analysis Warnings ===" "$log" 2>/dev/null; then
+                            # New format with dedicated warnings section
+                            sed -n '/=== Static Analysis Warnings ===/,/^$/p' "$log" 2>/dev/null | grep -v "=== Static Analysis Warnings ===" | head -20 | sed 's/^/      /'
+                        else
+                            # Fallback to old format
+                            grep -B1 "warning:" "$log" 2>/dev/null | grep -E "(\.c:|\.h:|warning:)" | head -10 | sed 's/^/      /'
+                        fi
                         ;;
                     "check-naming")
                         grep -E "(ERROR:|Warning:)" "$log" 2>/dev/null | head -5 | sed 's/^/    /'
