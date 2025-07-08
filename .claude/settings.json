@@ -40,7 +40,6 @@
       "Bash(./check_naming_conventions.sh:*)",
       "Bash(python scripts/rename_symbols.py:*)",
       "Bash(test:*)",
-      "Bash(./ar_methodology_tests)",
       "Bash(gh run list:*)",
       "Bash(gh run watch:*)",
       "Bash(true)"
