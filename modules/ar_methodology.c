@@ -405,6 +405,11 @@ static void _set_method_storage_in_instance(ar_methodology_t *mut_methodology, i
     AR_ASSERT(method_idx >= 0 && method_idx < mut_methodology->method_name_count, "Method index out of bounds");
     AR_ASSERT(version_idx >= 0, "Version index out of bounds");
     
+    // Check if methods array is initialized
+    if (!mut_methodology->own_methods) {
+        return;
+    }
+    
     // Allocate versions array if needed
     if (!mut_methodology->own_methods[method_idx]) {
         mut_methodology->own_methods[method_idx] = AR__HEAP__MALLOC(
@@ -1037,6 +1042,8 @@ void ar_methodology__register_method_with_instance(ar_methodology_t *mut_methodo
         }
         
         method_idx = mut_methodology->method_name_count++;
+        // Initialize the method count for the new entry
+        mut_methodology->own_method_counts[method_idx] = 0;
     }
     
     // Check if we've reached max versions for this method

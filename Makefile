@@ -234,7 +234,7 @@ tsan_exec_lib: $(TSAN_EXEC_DIR) $(TSAN_EXEC_OBJ)
 
 # Build and run the executable (always in debug mode)
 run-exec: run_exec_lib
-	$(CC) $(CFLAGS) -o $(RUN_EXEC_DIR)/agerun modules/ar_executable.c $(RUN_EXEC_DIR)/libagerun.a $(LDFLAGS)
+	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -o $(RUN_EXEC_DIR)/agerun modules/ar_executable.c $(RUN_EXEC_DIR)/libagerun.a $(LDFLAGS)
 	cd $(RUN_EXEC_DIR) && AGERUN_MEMORY_REPORT="memory_report_agerun.log" ./agerun
 
 # Build and run the executable with Address + Undefined Behavior Sanitizers
@@ -307,7 +307,7 @@ bin/obj/%_tests.o: methods/%_tests.c | bin
 
 # Compile regular source files
 bin/obj/%.o: modules/%.c | bin
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
 
 # Compile Zig source files
 bin/obj/%.o: modules/%.zig | bin
@@ -316,7 +316,7 @@ bin/obj/%.o: modules/%.zig | bin
 # Directory-specific compilation rules
 # Run tests directory
 $(RUN_TESTS_DIR)/obj/%.o: modules/%.c | $(RUN_TESTS_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
 
 $(RUN_TESTS_DIR)/obj/%.o: modules/%.zig | $(RUN_TESTS_DIR)
 	$(ZIG) build-obj -O ReleaseSafe -target native -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
@@ -329,7 +329,7 @@ $(RUN_TESTS_DIR)/obj/%_tests.o: methods/%_tests.c | $(RUN_TESTS_DIR)
 
 # Run exec directory
 $(RUN_EXEC_DIR)/obj/%.o: modules/%.c | $(RUN_EXEC_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
 
 $(RUN_EXEC_DIR)/obj/%.o: modules/%.zig | $(RUN_EXEC_DIR)
 	$(ZIG) build-obj -O ReleaseSafe -target native -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
@@ -387,7 +387,7 @@ analyze-exec: install-scan-build $(ANALYZE_EXEC_DIR)
 		rm -f $(ANALYZE_EXEC_DIR)/scan-build-analyze.log; \
 		for file in $(C_SRC); do \
 			echo "Analyzing $$file..."; \
-			$(SCAN_BUILD) -o $(ANALYZE_EXEC_DIR)/scan-build-results --status-bugs --use-cc=$(CC) $(CC) -c -I./modules $$file -o $(ANALYZE_EXEC_DIR)/obj/$$(basename $$file .c).o 2>&1 | tee $(ANALYZE_EXEC_DIR)/scan-build-temp.log; \
+			$(SCAN_BUILD) -o $(ANALYZE_EXEC_DIR)/scan-build-results --status-bugs --use-cc=$(CC) $(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c -I./modules $$file -o $(ANALYZE_EXEC_DIR)/obj/$$(basename $$file .c).o 2>&1 | tee $(ANALYZE_EXEC_DIR)/scan-build-temp.log; \
 			if grep -q "scan-build: [0-9]* bug" $(ANALYZE_EXEC_DIR)/scan-build-temp.log && ! grep -q "scan-build: 0 bugs found" $(ANALYZE_EXEC_DIR)/scan-build-temp.log; then \
 				file_bugs=$$(grep "scan-build: [0-9]* bug" $(ANALYZE_EXEC_DIR)/scan-build-temp.log | tail -1 | sed 's/.*scan-build: \([0-9]*\) bug.*/\1/'); \
 				echo "  ✗ $$file_bugs bugs found in $$file"; \
@@ -419,7 +419,7 @@ analyze-tests: install-scan-build $(ANALYZE_TESTS_DIR)
 		rm -f $(ANALYZE_TESTS_DIR)/scan-build-analyze-tests.log; \
 		for file in $(C_SRC) $(TEST_SRC) $(METHOD_TEST_SRC); do \
 			echo "Analyzing $$file..."; \
-			$(SCAN_BUILD) -o $(ANALYZE_TESTS_DIR)/scan-build-results --status-bugs --use-cc=$(CC) $(CC) -c -I./modules $$file -o $(ANALYZE_TESTS_DIR)/obj/$$(basename $$file .c).o 2>&1 | tee $(ANALYZE_TESTS_DIR)/scan-build-temp-tests.log; \
+			$(SCAN_BUILD) -o $(ANALYZE_TESTS_DIR)/scan-build-results --status-bugs --use-cc=$(CC) $(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c -I./modules $$file -o $(ANALYZE_TESTS_DIR)/obj/$$(basename $$file .c).o 2>&1 | tee $(ANALYZE_TESTS_DIR)/scan-build-temp-tests.log; \
 			if grep -q "scan-build: [0-9]* bug" $(ANALYZE_TESTS_DIR)/scan-build-temp-tests.log && ! grep -q "scan-build: 0 bugs found" $(ANALYZE_TESTS_DIR)/scan-build-temp-tests.log; then \
 				file_bugs=$$(grep "scan-build: [0-9]* bug" $(ANALYZE_TESTS_DIR)/scan-build-temp-tests.log | tail -1 | sed 's/.*scan-build: \([0-9]*\) bug.*/\1/'); \
 				echo "  ✗ $$file_bugs bugs found in $$file"; \
