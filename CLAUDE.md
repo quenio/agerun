@@ -376,6 +376,7 @@ cd bin  # Wrong - avoid relative paths
 - Scripts should fail with helpful error messages suggesting the make target
 - Document the make target in the Makefile help section
 - NEVER use Makefile variables $(VAR) in bash scripts - causes command substitution errors
+- Build output: quiet success, verbose failure (hide output when working, show full errors)
 
 **Debug Tools**:
 - **Memory**: `make sanitize-tests` → Check `bin/memory_report_<test_name>.log`
