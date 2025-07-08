@@ -40,7 +40,15 @@ run_job() {
 }
 
 # Clean once at the beginning
-make clean
+echo -n "Building clean..."
+if make clean >/dev/null 2>&1; then
+    echo " done"
+else
+    echo " FAILED"
+    echo "Error: Failed to clean build directory. Running make clean again to show output:"
+    make clean
+    exit 1
+fi
 
 # Create output directory for logs only
 mkdir -p logs
