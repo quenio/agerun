@@ -45,10 +45,6 @@ make clean
 # Create output directory for logs only
 mkdir -p logs
 
-# First, create all directories sequentially to avoid race conditions
-echo "Creating build directories..."
-make -C . $(ANALYZE_EXEC_DIR) $(ANALYZE_TESTS_DIR) $(RUN_EXEC_DIR) $(RUN_TESTS_DIR) $(SANITIZE_EXEC_DIR) $(SANITIZE_TESTS_DIR) $(TSAN_EXEC_DIR) $(TSAN_TESTS_DIR) >/dev/null 2>&1 || true
-
 # Launch all jobs in parallel
 echo "Launching parallel builds..."
 run_job "check-naming" "make check-naming" "logs/check-naming.log"

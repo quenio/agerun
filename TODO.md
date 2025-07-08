@@ -6,6 +6,12 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### Build System Parallelization (Completed 2025-07-07)
+- [x] Refactored Makefile to support parallel execution with isolated output directories
+- [x] Renamed targets to match directory names for consistency
+- [x] Fixed race conditions by removing clean dependencies from test targets
+- [x] Enhanced full_build.sh with parallel job execution and static analysis warning extraction
+
 ### Type Naming Convention Update (Completed 2025-07-06)
 - [x] Renamed all types to follow ar_ prefix convention: enums (4 types, 129 occurrences), typedefs (17 types, 2573 occurrences), struct tags (11 types, 41 occurrences)
 
