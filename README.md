@@ -49,17 +49,12 @@ AgeRun includes built-in support for comprehensive memory error detection:
 
 Note: On macOS, the build system automatically uses clang for sanitizer builds due to better AddressSanitizer support. On Linux, gcc-13 is used for sanitizer builds.
 
-1. Build with Address Sanitizer enabled:
-   ```
-   make sanitize
-   ```
-
-2. Run tests with memory error detection:
+1. Run tests with memory error detection:
    ```
    make sanitize-tests
    ```
 
-3. Run the executable with memory error detection:
+2. Run the executable with memory error detection:
    ```
    make sanitize-exec
    ```

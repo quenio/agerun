@@ -15,8 +15,7 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 **Individual Commands** (when needed):
 ```bash
 make                  # Shows help with all available targets
-make debug            # Build the library (debug mode)
-make clean && make debug  # Clean and rebuild
+make clean            # Clean all build artifacts
 make analyze-exec     # Static analysis on executable code
 make analyze-tests    # Static analysis on tests
 make run-tests        # Run tests (auto-rebuilds) 
@@ -31,7 +30,7 @@ make add-newline FILE=<file>  # Add missing newline to file
 
 **Makefile Usage Note**: Running `make` without any target shows a helpful list of all available targets. Use this as a guide to discover available commands.
 
-**Note**: Always run from repo root. Makefile handles directory changes automatically (runs `make clean debug` before tests). Doc-only changes don't require testing. Always pause before build commands to check for custom scripts.
+**Note**: Always run from repo root. Makefile handles directory changes automatically. Doc-only changes don't require testing. Always pause before build commands to check for custom scripts.
 
 **Scripts Directory**: All build and utility scripts are located in `/scripts/`. Never run these scripts directly - always use the corresponding make targets. Scripts will fail with an error message if run outside the repository root.
 
