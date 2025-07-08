@@ -21,7 +21,7 @@ make analyze-tests    # Static analysis on tests
 make run-tests        # Run tests (auto-rebuilds) 
 make sanitize-tests   # Run with ASan
 make run-exec         # Build and run executable
-make bin/test_name    # Build/run specific test
+make test_name        # Build/run specific test
 make check-naming     # Check naming conventions
 make check-docs       # Check documentation validity
 make check-all        # Run all code quality checks
@@ -94,11 +94,11 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
   - **IMPORTANT**: No longer uses generic `heap_memory_report.log`
   - Each test generates its own report file automatically
   - Example: `bin/memory_report_ar_string_tests.log`
-  - Workflow: `make bin/test_name` → Check test-specific memory report
+  - Workflow: `make test_name` → Check test-specific memory report
 - **Complete verification**: `grep "Actual memory leaks:" bin/memory_report_*.log | grep -v "0 (0 bytes)"` checks ALL reports
 - **CI visibility**: full_build.sh prints leak reports to stdout for immediate CI debugging
 - Enhanced per-test reporting: The build system generates unique memory reports for each test
-  - `make bin/test_name` automatically creates test-specific report files
+  - `make test_name` automatically creates test-specific report files
   - Manual runs can use `AGERUN_MEMORY_REPORT` environment variable
   - Example: `AGERUN_MEMORY_REPORT=my_test.log ./bin/ar_string_tests`
 - Always run `make sanitize-tests` before committing
@@ -212,8 +212,8 @@ For each new behavior/feature:
 - Process all messages before cleanup: `while (ar_system__process_next_message());`
 - Test files: `<module>_tests.c`
 - Follow the 4-step directory check process (see Section 7) before running tests
-- To run tests, use `make bin/test_name` which automatically builds and runs
-- **ALWAYS rebuild after code changes**: `make bin/test_name` (not just `./test_name`)
+- To run tests, use `make test_name` which automatically builds and runs
+- **ALWAYS rebuild after code changes**: `make test_name` (not just `./test_name`)
 - If you need to run tests manually from bin/ directory:
   - `cd bin && ./ar_string_tests`
   - `AGERUN_MEMORY_REPORT=bin/test.memory_report.log ./bin/ar_string_tests`
@@ -409,7 +409,7 @@ cd bin  # Wrong - avoid relative paths
 
 Always use make to build tests:
 ```bash
-make bin/test_name  # Build individual test
+make test_name  # Build individual test
 ```
 Never compile directly with gcc.
 
@@ -420,7 +420,7 @@ Never compile directly with gcc.
 - Module changes are automatically rebuilt (no need to rebuild the library separately)
 - The Makefile handles all dependencies and runs the test from the correct directory
 - Pattern rules compile object files - update these directly for consistent flags (not target-specific vars)
-- Example: `make bin/ar_string_tests` will:
+- Example: `make ar_string_tests` will:
   1. Rebuild any changed modules
   2. Rebuild the test
   3. Run the test automatically from the bin directory

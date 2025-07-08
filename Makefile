@@ -13,7 +13,7 @@ help:
 	@echo "  make run-tests    - Run all tests"
 	@echo "  make sanitize-tests - Run tests with AddressSanitizer + UBSan"
 	@echo "  make tsan-tests   - Run tests with ThreadSanitizer"
-	@echo "  make bin/<test_name> - Build and run a single test (e.g. make bin/ar_data_tests)"
+	@echo "  make <test_name>  - Build and run a single test (e.g. make ar_data_tests)"
 	@echo ""
 	@echo "Analysis targets:"
 	@echo "  make analyze-exec - Run static analysis on executable code"
@@ -282,6 +282,11 @@ tsan-tests:
 	done
 
 # Individual test binaries (build in run-tests directory for consistency)
+# Individual test target (without bin/ prefix for convenience)
+%_tests: bin/%_tests
+	@# Target completed by dependency
+
+# Build and run individual test with bin/ prefix
 bin/%_tests: $(RUN_TESTS_DIR)/obj/%_tests.o run_tests_lib
 	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -o $(RUN_TESTS_DIR)/$*_tests $< $(RUN_TESTS_DIR)/libagerun.a $(LDFLAGS)
 	@echo "Running test: $*_tests"
