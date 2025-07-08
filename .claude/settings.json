@@ -29,6 +29,7 @@
       "Bash(./rename_modules.sh)",
       "Bash(./update_docs.sh)",
       "WebFetch(domain:ziglang.org)",
+      "WebFetch(domain:docs.anthropic.com)",
       "Bash(zig build-obj:*)",
       "Bash(./ar_*_tests)",
       "Bash(./migrate_remaining_evaluators.sh:*)",
