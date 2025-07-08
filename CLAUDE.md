@@ -380,6 +380,7 @@ cd bin  # Wrong - avoid relative paths
 **Debug Tools**:
 - **Memory**: `make sanitize-tests` → Check `bin/memory_report_<test_name>.log`
 - **Static Analysis**: `make analyze-exec` (requires scan-build: `brew install llvm` or `apt install clang-tools`)
+- **Build verification**: `strings bin/*/agerun | grep DEBUG` confirms debug builds
 - **Test Failures**: Often just wrong directory - 4-step check: pwd → cd /path → pwd → run
 - **Pattern Testing**: Test regex/sed/awk patterns before using in scripts
 - **Doc Validation**: `make full-build` validates file refs, function names, types
@@ -418,6 +419,7 @@ Never compile directly with gcc.
 - When building individual tests, the test is automatically executed after building
 - Module changes are automatically rebuilt (no need to rebuild the library separately)
 - The Makefile handles all dependencies and runs the test from the correct directory
+- Pattern rules compile object files - update these directly for consistent flags (not target-specific vars)
 - Example: `make bin/ar_string_tests` will:
   1. Rebuild any changed modules
   2. Rebuild the test
