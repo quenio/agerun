@@ -17,11 +17,11 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 make                  # Shows help with all available targets
 make debug            # Build the library (debug mode)
 make clean && make debug  # Clean and rebuild
-make analyze          # Static analysis on library
+make analyze-exec     # Static analysis on executable code
 make analyze-tests    # Static analysis on tests
-make test             # Run tests (auto-rebuilds) 
-make test-sanitize    # Run with ASan
-make run              # Run executable
+make run-tests        # Run tests (auto-rebuilds) 
+make sanitize-tests   # Run with ASan
+make run-exec         # Build and run executable
 make bin/test_name    # Build/run specific test
 make check-naming     # Check naming conventions
 make check-docs       # Check documentation validity
@@ -102,7 +102,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
   - `make bin/test_name` automatically creates test-specific report files
   - Manual runs can use `AGERUN_MEMORY_REPORT` environment variable
   - Example: `AGERUN_MEMORY_REPORT=my_test.log ./bin/ar_string_tests`
-- Always run `make test-sanitize` before committing
+- Always run `make sanitize-tests` before committing
 - Environment variables for debugging:
   - `ASAN_OPTIONS=halt_on_error=0` to continue after first error
   - `ASAN_OPTIONS=detect_leaks=1:leak_check_at_exit=1` for complex leaks
@@ -378,8 +378,8 @@ cd bin  # Wrong - avoid relative paths
 - Document the make target in the Makefile help section
 
 **Debug Tools**:
-- **Memory**: `make test-sanitize` → Check `bin/memory_report_<test_name>.log`
-- **Static Analysis**: `make analyze` (requires scan-build: `brew install llvm` or `apt install clang-tools`)
+- **Memory**: `make sanitize-tests` → Check `bin/memory_report_<test_name>.log`
+- **Static Analysis**: `make analyze-exec` (requires scan-build: `brew install llvm` or `apt install clang-tools`)
 - **Test Failures**: Often just wrong directory - 4-step check: pwd → cd /path → pwd → run
 - **Pattern Testing**: Test regex/sed/awk patterns before using in scripts
 - **Doc Validation**: `make full-build` validates file refs, function names, types
@@ -432,7 +432,7 @@ Never compile directly with gcc.
 
 **Pre-Commit Checklist** (MANDATORY):
 1. `make full-build` - Fix ALL issues before proceeding (includes doc validation)
-   - **Exception**: Type renames only need `make check-naming && make test`
+   - **Exception**: Type renames only need `make check-naming && make run-tests`
    - **Exception**: Doc-only changes only need `make check-docs`
    - **Exception**: Comment-only changes only need `make check-naming`
    - **Exception**: Skip tests if just run successfully (avoid redundant execution)

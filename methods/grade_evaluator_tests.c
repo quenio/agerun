@@ -21,7 +21,7 @@ static void test_grade_evaluator_grades(void) {
     assert(ar_method_fixture__verify_directory(own_fixture));
     
     // Load and register grade-evaluator method
-    assert(ar_method_fixture__load_method(own_fixture, "grade-evaluator", "../methods/grade-evaluator-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture__load_method(own_fixture, "grade-evaluator", "../../methods/grade-evaluator-1.0.0.method", "1.0.0"));
     
     // Create grade-evaluator agent
     int64_t evaluator_agent = ar_agency__create_agent("grade-evaluator", "1.0.0", NULL);
@@ -164,7 +164,7 @@ static void test_grade_evaluator_status(void) {
     assert(ar_method_fixture__verify_directory(own_fixture));
     
     // Load and register grade-evaluator method
-    assert(ar_method_fixture__load_method(own_fixture, "grade-evaluator", "../methods/grade-evaluator-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture__load_method(own_fixture, "grade-evaluator", "../../methods/grade-evaluator-1.0.0.method", "1.0.0"));
     
     // Create grade-evaluator agent
     int64_t evaluator_agent = ar_agency__create_agent("grade-evaluator", "1.0.0", NULL);

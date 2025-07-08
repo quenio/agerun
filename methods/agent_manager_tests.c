@@ -21,8 +21,8 @@ static void test_agent_manager_create_destroy(void) {
     assert(ar_method_fixture__verify_directory(own_fixture));
     
     // Load required methods
-    assert(ar_method_fixture__load_method(own_fixture, "echo", "../methods/echo-1.0.0.method", "1.0.0"));
-    assert(ar_method_fixture__load_method(own_fixture, "agent-manager", "../methods/agent-manager-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture__load_method(own_fixture, "echo", "../../methods/echo-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture__load_method(own_fixture, "agent-manager", "../../methods/agent-manager-1.0.0.method", "1.0.0"));
     
     // Create agent-manager agent
     int64_t manager_agent = ar_agency__create_agent("agent-manager", "1.0.0", NULL);
@@ -140,7 +140,7 @@ static void test_agent_manager_invalid_action(void) {
     assert(ar_method_fixture__verify_directory(own_fixture));
     
     // Load agent-manager method
-    assert(ar_method_fixture__load_method(own_fixture, "agent-manager", "../methods/agent-manager-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture__load_method(own_fixture, "agent-manager", "../../methods/agent-manager-1.0.0.method", "1.0.0"));
     
     // Create agent-manager agent
     int64_t manager_agent = ar_agency__create_agent("agent-manager", "1.0.0", NULL);

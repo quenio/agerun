@@ -21,7 +21,7 @@ static void test_method_creator_create_simple(void) {
     assert(ar_method_fixture__verify_directory(own_fixture));
     
     // Load method-creator method
-    assert(ar_method_fixture__load_method(own_fixture, "method-creator", "../methods/method-creator-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture__load_method(own_fixture, "method-creator", "../../methods/method-creator-1.0.0.method", "1.0.0"));
     
     // Create method-creator agent
     int64_t creator_agent = ar_agency__create_agent("method-creator", "1.0.0", NULL);
@@ -99,7 +99,7 @@ static void test_method_creator_invalid_syntax(void) {
     assert(ar_method_fixture__verify_directory(own_fixture));
     
     // Load method-creator method
-    assert(ar_method_fixture__load_method(own_fixture, "method-creator", "../methods/method-creator-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture__load_method(own_fixture, "method-creator", "../../methods/method-creator-1.0.0.method", "1.0.0"));
     
     // Create method-creator agent
     int64_t creator_agent = ar_agency__create_agent("method-creator", "1.0.0", NULL);

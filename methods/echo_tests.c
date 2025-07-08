@@ -21,7 +21,7 @@ static void test_echo_simple_message(void) {
     assert(ar_method_fixture__verify_directory(own_fixture));
     
     // Load and register echo method
-    assert(ar_method_fixture__load_method(own_fixture, "echo", "../methods/echo-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture__load_method(own_fixture, "echo", "../../methods/echo-1.0.0.method", "1.0.0"));
     
     // Create echo agent
     int64_t echo_agent = ar_agency__create_agent("echo", "1.0.0", NULL);
@@ -92,7 +92,7 @@ static void test_echo_map_message(void) {
     assert(ar_method_fixture__verify_directory(own_fixture));
     
     // Load and register echo method
-    assert(ar_method_fixture__load_method(own_fixture, "echo", "../methods/echo-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture__load_method(own_fixture, "echo", "../../methods/echo-1.0.0.method", "1.0.0"));
     
     // Create echo agent
     int64_t echo_agent = ar_agency__create_agent("echo", "1.0.0", NULL);

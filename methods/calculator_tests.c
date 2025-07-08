@@ -21,7 +21,7 @@ static void test_calculator_add(void) {
     assert(ar_method_fixture__verify_directory(own_fixture));
     
     // Load and register calculator method
-    assert(ar_method_fixture__load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture__load_method(own_fixture, "calculator", "../../methods/calculator-1.0.0.method", "1.0.0"));
     
     // Create calculator agent
     int64_t calc_agent = ar_agency__create_agent("calculator", "1.0.0", NULL);
@@ -87,7 +87,7 @@ static void test_calculator_multiply(void) {
     assert(ar_method_fixture__verify_directory(own_fixture));
     
     // Load and register calculator method
-    assert(ar_method_fixture__load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture__load_method(own_fixture, "calculator", "../../methods/calculator-1.0.0.method", "1.0.0"));
     
     // Create calculator agent
     int64_t calc_agent = ar_agency__create_agent("calculator", "1.0.0", NULL);
@@ -152,7 +152,7 @@ static void test_calculator_subtract(void) {
     assert(ar_method_fixture__verify_directory(own_fixture));
     
     // Load and register calculator method
-    assert(ar_method_fixture__load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture__load_method(own_fixture, "calculator", "../../methods/calculator-1.0.0.method", "1.0.0"));
     
     // Create calculator agent
     int64_t calc_agent = ar_agency__create_agent("calculator", "1.0.0", NULL);
@@ -218,7 +218,7 @@ static void test_calculator_divide(void) {
     assert(ar_method_fixture__verify_directory(own_fixture));
     
     // Load and register calculator method
-    assert(ar_method_fixture__load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture__load_method(own_fixture, "calculator", "../../methods/calculator-1.0.0.method", "1.0.0"));
     
     // Create calculator agent
     int64_t calc_agent = ar_agency__create_agent("calculator", "1.0.0", NULL);
@@ -286,7 +286,7 @@ static void test_calculator_unknown_operation(void) {
     assert(ar_method_fixture__verify_directory(own_fixture));
     
     // Load and register calculator method
-    assert(ar_method_fixture__load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture__load_method(own_fixture, "calculator", "../../methods/calculator-1.0.0.method", "1.0.0"));
     
     // Create calculator agent
     int64_t calc_agent = ar_agency__create_agent("calculator", "1.0.0", NULL);

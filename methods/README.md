@@ -144,10 +144,10 @@ Method tests are integrated into the main test suite and can be run using:
 
 ```bash
 # Run all tests including method tests
-make test
+make run-tests
 
 # Run tests with memory sanitization
-make test-sanitize
+make sanitize-tests
 
 # Run static analysis on test code
 make analyze-tests
@@ -251,4 +251,4 @@ int main(void) {
 
 ### Zero Memory Leaks
 
-All method tests must maintain the project's zero memory leaks standard. Use the heap tracking macros (`AR_HEAP_MALLOC`, `AR_HEAP_FREE`) and verify with `make test-sanitize`.
+All method tests must maintain the project's zero memory leaks standard. Use the heap tracking macros (`AR_HEAP_MALLOC`, `AR_HEAP_FREE`) and verify with `make sanitize-tests`.

@@ -64,4 +64,5 @@ bin/
 
 # Log files
 *.log
+logs/
 **/.claude/settings.local.json

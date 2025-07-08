@@ -33,12 +33,12 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 
 3. Run tests:
    ```
-   make test
+   make run-tests
    ```
 
 4. Run the executable:
    ```
-   make run
+   make run-exec
    ```
 
 ### Memory Safety Testing
@@ -56,19 +56,19 @@ Note: On macOS, the build system automatically uses clang for sanitizer builds d
 
 2. Run tests with memory error detection:
    ```
-   make test-sanitize
+   make sanitize-tests
    ```
 
 3. Run the executable with memory error detection:
    ```
-   make run-sanitize
+   make sanitize-exec
    ```
 
 #### Static Analysis with Clang Static Analyzer
 
-1. Run static analysis on library code:
+1. Run static analysis on executable code:
    ```
-   make analyze
+   make analyze-exec
    ```
 
 2. Run static analysis on tests too:

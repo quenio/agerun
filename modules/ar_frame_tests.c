@@ -14,8 +14,7 @@ int main(void) {
     // Directory check
     char cwd[1024];
     if (getcwd(cwd, sizeof(cwd)) != NULL) {
-        size_t len = strlen(cwd);
-        if (len < 4 || strcmp(cwd + len - 4, "/bin") != 0) {
+        if (!strstr(cwd, "/bin/") && !strstr(cwd, "/bin")) {
             fprintf(stderr, "ERROR: Tests must be run from the bin directory!\n");
             fprintf(stderr, "Current directory: %s\n", cwd);
             fprintf(stderr, "Please run: cd /Users/quenio/Repos/agerun/bin && ./ar_frame_tests\n");

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Full Build Script for AgeRun
-# Performs complete build with all tests, checks, and validations
+# Performs complete build with all tests, checks, and validations in parallel
 
 # Check if running from repo root
 if [ ! -f "Makefile" ] || [ ! -d "modules" ] || [ ! -d "methods" ]; then
@@ -14,418 +14,246 @@ echo "=== AgeRun Full Build ==="
 echo "Starting at $(date)"
 echo
 
-# Function to run command and report status
-run_step() {
-    local step_name="$1"
+# Function to run a job and report completion
+run_job() {
+    local name="$1"
     local cmd="$2"
+    local logfile="$3"
     
-    printf "%-30s" "$step_name..."
-    
-    # Run command and capture output
-    if output=$($cmd 2>&1); then
-        echo "✓"
-        return 0
-    else
-        echo "✗"
-        echo "Error output:"
-        echo "$output" | tail -20
-        return 1
-    fi
+    # Run command in background, capturing output
+    (
+        # Ensure log directory exists
+        mkdir -p "$(dirname "$logfile")"
+        # Run command and capture output
+        if $cmd > "$logfile" 2>&1; then
+            exitcode=0
+        else
+            exitcode=$?
+        fi
+        echo $exitcode > "${logfile}.exitcode"
+        if [ "$exitcode" -eq 0 ]; then
+            echo "✓ $name completed successfully"
+        else
+            echo "✗ $name FAILED (exit code: $exitcode)"
+        fi
+    ) &
 }
 
-# Step 1: Clean and build
-echo -n "Clean and build...            "
-if make clean >/dev/null 2>&1 && make debug >/dev/null 2>&1; then
-    echo "✓"
-else
-    echo "✗"
-    make clean 2>&1 | tail -5
-    make debug 2>&1 | tail -5
-fi
+# Clean once at the beginning
+make clean
 
-# Step 2: Static analysis
-echo -n "Static analysis (lib)...      "
-output=$(make clean analyze 2>&1)
-exit_code=$?
-if [ $exit_code -eq 0 ]; then
-    echo "✓"
-else
-    echo "✗"
-    # Check if it's due to static analysis findings
-    if echo "$output" | grep -q "Static analysis FAILED:"; then
-        echo "Static analysis found issues:"
-        # Extract file-specific errors (e.g., "✗ 1 bugs found in modules/ar_interpreter.c")
-        echo "$output" | grep "✗.*bugs found in" | sed 's/^/  /'
-        # Extract warnings with file:line:column format
-        echo "$output" | grep -E "^modules/[a-zA-Z0-9_/.-]+\.[ch]:[0-9]+:[0-9]+: warning:" | head -10 | sed 's/^/  /'
-        # Show total summary
-        echo "$output" | grep "Static analysis FAILED:" | sed 's/^/  /'
-    else
-        echo "Build/analysis error:"
-        echo "$output" | tail -20
-    fi
-fi
+# Create output directory for logs only
+mkdir -p logs
 
-echo -n "Static analysis (tests)...    "
-output=$(make clean analyze-tests 2>&1)
-exit_code=$?
-if [ $exit_code -eq 0 ]; then
-    echo "✓"
-else
-    echo "✗"
-    # Check if it's due to static analysis findings
-    if echo "$output" | grep -q "Static analysis FAILED:"; then
-        echo "Static analysis found issues:"
-        # Extract file-specific errors (e.g., "✗ 2 bugs found in methods/message_router_tests.c")
-        echo "$output" | grep "✗.*bugs found in" | sed 's/^/  /'
-        # Extract warnings with file:line:column format
-        echo "$output" | grep -E "^(modules|methods)/[a-zA-Z0-9_/.-]+\.[ch]:[0-9]+:[0-9]+: warning:" | head -10 | sed 's/^/  /'
-        # Show total summary
-        echo "$output" | grep "Static analysis FAILED:" | sed 's/^/  /'
-    else
-        echo "Build/analysis error:"
-        echo "$output" | tail -20
-    fi
-fi
+# First, create all directories sequentially to avoid race conditions
+echo "Creating build directories..."
+make -C . $(ANALYZE_EXEC_DIR) $(ANALYZE_TESTS_DIR) $(RUN_EXEC_DIR) $(RUN_TESTS_DIR) $(SANITIZE_EXEC_DIR) $(SANITIZE_TESTS_DIR) $(TSAN_EXEC_DIR) $(TSAN_TESTS_DIR) >/dev/null 2>&1 || true
 
-# Step 3: Build executable
-run_step "Build executable" "make clean executable"
+# Launch all jobs in parallel
+echo "Launching parallel builds..."
+run_job "check-naming" "make check-naming" "logs/check-naming.log"
+run_job "check-docs" "make check-docs" "logs/check-docs.log"
+run_job "analyze-exec" "make analyze-exec" "logs/analyze-exec.log"
+run_job "analyze-tests" "make analyze-tests" "logs/analyze-tests.log"
+run_job "run-tests" "make run-tests" "logs/run-tests.log"
+run_job "run-exec" "make run-exec" "logs/run-exec.log"
+run_job "sanitize-tests" "make sanitize-tests" "logs/sanitize-tests.log"
+run_job "sanitize-exec" "make sanitize-exec" "logs/sanitize-exec.log"
+run_job "tsan-tests" "make tsan-tests" "logs/tsan-tests.log"
+run_job "tsan-exec" "make tsan-exec" "logs/tsan-exec.log"
 
-# Step 4: Run tests
+# Wait for all jobs to complete
+wait
+
 echo
-echo "Running tests..."
-output=$(make clean test 2>&1)
-test_exit_code=$?
+echo "=== Build Results Summary ==="
 
-# Check if tests failed to compile
-if [ $test_exit_code -ne 0 ]; then
-    # Check for compilation errors
-    compile_errors=$(echo "$output" | grep -c "error:")
-    if [ $compile_errors -gt 0 ]; then
-        echo "Tests: COMPILATION FAILED ✗"
-        echo
-        echo "Compilation errors:"
-        echo "$output" | grep -E "error:|^modules/.*_tests\.c:" | head -20
-        exit 1
-    fi
-fi
-
-# Count passed and failed tests by counting test executables that ran
-total_tests=$(echo "$output" | grep -c "^Running test: bin/")
-passed=$(echo "$output" | grep -c "All .* tests passed")
-errors=$(echo "$output" | grep -c "ERROR: Test .* failed")
-aborts=$(echo "$output" | grep -c "Abort trap")
-failed=$((errors + aborts))
-
-# If no tests ran but make succeeded, something is wrong
-if [ $test_exit_code -eq 0 ] && [ $total_tests -eq 0 ]; then
-    echo "Tests: WARNING - No tests were run ⚠️"
-    echo "Check if test executables are being built properly"
-elif [ $failed -eq 0 ] && [ $test_exit_code -eq 0 ]; then
-    echo "Tests: $total_tests run, all passed ✓"
-else
-    echo "Tests: $total_tests run, $passed passed, $failed FAILED ✗"
-    echo
-    echo "Failed tests:"
-    echo "$output" | grep "ERROR: Test .* failed" | sed 's/ERROR: Test /  - /' | sed 's/ failed.*//'
-    echo "$output" | grep -B1 "Abort trap" | grep "^Running test:" | sed 's/Running test: bin\//  - /' | sed 's/ (aborted)$//' | sort -u
-    echo
-    echo "Error details (last 10):"
-    echo "$output" | grep -B2 "ERROR: Test .* failed" | grep -E "(Assertion failed|Abort trap)" | head -5
-    echo "$output" | grep -E "(FAIL:|failed)" | grep -v "EXPECTED FAIL" | tail -10
-    exit 1
-fi
-
-# Check for memory leaks in all memory report logs
-echo
-echo "Checking for memory leaks..."
-memory_reports=$(find bin -name "memory_report*.log" 2>/dev/null | sort)
-
-if [ -z "$memory_reports" ]; then
-    echo "Memory: No memory reports found"
-else
-    all_clean=true
-    leaky_tests=""
+# Function to display results for a category
+show_results() {
+    local category="$1"
+    shift
+    local logs=("$@")
     
-    for report in $memory_reports; do
-        if [ -f "$report" ]; then
-            # Check if there are actual memory leaks (not just intentional test leaks)
-            actual_leaks=$(grep -E "^Actual memory leaks: ([0-9]+)" "$report" 2>/dev/null | awk '{print $4}')
-            
-            # If we can't find the "Actual memory leaks" line, fall back to old behavior
-            if [ -z "$actual_leaks" ]; then
-                if ! grep -q "No memory leaks detected" "$report" 2>/dev/null; then
-                    all_clean=false
-                    test_name=$(basename "$report" .log | sed 's/memory_report_//')
-                    leaky_tests="$leaky_tests $test_name"
-                fi
-            # If we found it and it's greater than 0, we have real leaks
-            elif [ "$actual_leaks" -gt 0 ]; then
-                all_clean=false
-                test_name=$(basename "$report" .log | sed 's/memory_report_//')
-                leaky_tests="$leaky_tests $test_name"
+    echo
+    echo "--- $category ---"
+    for log in "${logs[@]}"; do
+        if [ -f "$log" ]; then
+            name=$(basename "$log" .log)
+            exitcode=$(cat "${log}.exitcode" 2>/dev/null || echo "999")
+            if [ "$exitcode" = "0" ]; then
+                echo "✓ $name: PASSED"
+                # Show summary info for specific types
+                case "$name" in
+                    "run-tests"|"sanitize-tests"|"tsan-tests")
+                        # Extract test counts
+                        total_tests=$(grep -c "^Running test:" "$log" 2>/dev/null || echo "0")
+                        passed_tests=$(grep -c "All .* tests passed" "$log" 2>/dev/null || echo "0")
+                        if [ $total_tests -gt 0 ]; then
+                            echo "  $total_tests tests run"
+                        fi
+                        ;;
+                    "analyze-exec"|"analyze-tests")
+                        # Check for analysis results
+                        if grep -q "no bugs found" "$log" 2>/dev/null; then
+                            echo "  No bugs found"
+                        else
+                            # Show scan-build warnings
+                            grep -B2 "warning:" "$log" 2>/dev/null | grep -E "(warning:|\.c:|\.h:)" | head -10 | sed 's/^/    /'
+                        fi
+                        ;;
+                    "check-naming")
+                        if grep -q "All naming conventions followed" "$log" 2>/dev/null; then
+                            echo "  All conventions followed"
+                        fi
+                        ;;
+                    "check-docs")
+                        if grep -q "All documentation checks passed" "$log" 2>/dev/null; then
+                            echo "  All checks passed"
+                        fi
+                        ;;
+                esac
+            else
+                echo "✗ $name: FAILED"
+                # Show error summary
+                echo "  Error details:"
+                # Different error patterns for different tools
+                case "$name" in
+                    "run-tests"|"sanitize-tests"|"tsan-tests")
+                        grep "ERROR: Test .* failed" "$log" 2>/dev/null | head -5 | sed 's/^/    /'
+                        ;;
+                    "analyze-exec"|"analyze-tests")
+                        grep "bugs found in" "$log" 2>/dev/null | head -5 | sed 's/^/    /'
+                        # Also show the actual warnings
+                        echo "    Static analysis warnings:"
+                        grep -B1 "warning:" "$log" 2>/dev/null | grep -E "(\.c:|\.h:|warning:)" | head -10 | sed 's/^/      /'
+                        ;;
+                    "check-naming")
+                        grep -E "(ERROR:|Warning:)" "$log" 2>/dev/null | head -5 | sed 's/^/    /'
+                        ;;
+                    "check-docs")
+                        grep -E "(ERROR:|Invalid)" "$log" 2>/dev/null | head -5 | sed 's/^/    /'
+                        ;;
+                    *)
+                        grep -E "(ERROR:|FAILED:|error:|failed)" "$log" 2>/dev/null | head -5 | sed 's/^/    /'
+                        ;;
+                esac
             fi
         fi
     done
-    
-    if $all_clean; then
-        echo "Memory: No leaks detected ✓"
-    else
-        echo "Memory: LEAKS DETECTED in:$leaky_tests ✗"
-        echo
-        echo "Memory Leak Reports:"
-        echo "===================="
+}
+
+# Display results in order: checks → analysis → runs → sanitizers → tsan
+show_results "Code Quality Checks" "logs/check-naming.log" "logs/check-docs.log"
+show_results "Static Analysis" "logs/analyze-exec.log" "logs/analyze-tests.log"
+show_results "Build and Run" "logs/run-tests.log" "logs/run-exec.log"
+show_results "Sanitizers (ASan + UBSan)" "logs/sanitize-tests.log" "logs/sanitize-exec.log"
+show_results "Thread Sanitizer" "logs/tsan-tests.log" "logs/tsan-exec.log"
+
+# Check for memory leaks across all directories
+echo
+echo "--- Memory Leak Check ---"
+leak_found=false
+leak_dirs=()
+
+# Check each output directory for memory reports
+for dir in bin/run-tests bin/run-exec bin/sanitize-tests bin/sanitize-exec bin/tsan-tests bin/tsan-exec; do
+    if [ -d "$dir" ]; then
+        memory_reports=$(find "$dir" -name "memory_report*.log" 2>/dev/null | sort)
         for report in $memory_reports; do
             if [ -f "$report" ]; then
                 # Check if there are actual memory leaks
                 actual_leaks=$(grep -E "^Actual memory leaks: ([0-9]+)" "$report" 2>/dev/null | awk '{print $4}')
                 
-                # Skip reports with no actual leaks
-                if [ -n "$actual_leaks" ] && [ "$actual_leaks" -eq 0 ]; then
-                    continue
+                if [ -n "$actual_leaks" ] && [ "$actual_leaks" -gt 0 ]; then
+                    leak_found=true
+                    leak_dirs+=("$dir")
+                    break
+                elif [ -z "$actual_leaks" ] && ! grep -q "No memory leaks detected" "$report" 2>/dev/null; then
+                    # Old format check
+                    leak_found=true
+                    leak_dirs+=("$dir")
+                    break
                 fi
-                
-                # If we can't find the "Actual memory leaks" line, check old format
-                if [ -z "$actual_leaks" ]; then
-                    if grep -q "No memory leaks detected" "$report" 2>/dev/null; then
-                        continue
-                    fi
-                fi
-                
-                # Print the report for tests with leaks
-                test_name=$(basename "$report" .log | sed 's/memory_report_//')
-                echo
-                echo "=== Memory leaks in $test_name ==="
-                cat "$report"
-                echo "==================================="
             fi
         done
-        echo
-        exit 1
     fi
+done
+
+if $leak_found; then
+    echo "✗ Memory leaks detected in:"
+    printf '%s\n' "${leak_dirs[@]}" | sort -u | sed 's/^/  /'
+else
+    echo "✓ No memory leaks detected"
 fi
 
-# Step 5: Run executable
+# Check for sanitizer-specific issues
 echo
-echo "Running executable..."
-output=$(make clean run 2>&1)
-exec_exit_code=$?
-if [ $exec_exit_code -eq 0 ]; then
-    echo "Executable: ✓"
-    # Wait a moment for report to be written
-    sleep 1
-    # Check if executable memory report was created and check for leaks
-    if [ -f "bin/memory_report_agerun.log" ]; then
-        # Check for memory leaks in executable
-        actual_leaks=$(grep -E "^Actual memory leaks: ([0-9]+)" "bin/memory_report_agerun.log" 2>/dev/null | awk '{print $4}')
-        
-        # If we can't find the "Actual memory leaks" line, fall back to old behavior
-        if [ -z "$actual_leaks" ]; then
-            if grep -q "No memory leaks detected" "bin/memory_report_agerun.log" 2>/dev/null; then
-                echo "Executable memory: No leaks detected ✓"
-            else
-                echo "Executable memory: LEAKS DETECTED ✗"
-                echo
-                echo "=== Executable Memory Leak Report ==="
-                cat "bin/memory_report_agerun.log"
-                echo "====================================="
-                echo
-            fi
-        # If we found it and it's greater than 0, we have real leaks
-        elif [ "$actual_leaks" -gt 0 ]; then
-            echo "Executable memory: LEAKS DETECTED ($actual_leaks leaks) ✗"
-            echo
-            echo "=== Executable Memory Leak Report ==="
-            cat "bin/memory_report_agerun.log"
-            echo "====================================="
-            echo
-        else
-            echo "Executable memory: No leaks detected ✓"
+echo "--- Sanitizer Summary ---"
+
+# AddressSanitizer results
+if [ -f "bin/sanitize-test.log" ] || [ -f "bin/sanitize-run.log" ]; then
+    asan_errors=0
+    for log in bin/sanitize-test.log bin/sanitize-run.log; do
+        if [ -f "$log" ]; then
+            errors=$(grep -c "ERROR: AddressSanitizer:" "$log" 2>/dev/null || echo "0")
+            asan_errors=$((asan_errors + errors))
         fi
+    done
+    
+    if [ $asan_errors -gt 0 ]; then
+        echo "✗ AddressSanitizer: $asan_errors errors detected"
     else
-        echo "Warning: Executable memory report not found"
-    fi
-    # Clean up persistence files created by executable
-    rm -f bin/*.agerun
-else
-    echo "Executable: ✗"
-    echo "Error output:"
-    echo "$output" | tail -10
-fi
-
-# Step 6: Sanitize tests (ASan + UBSan)
-echo
-echo "Running sanitizer tests (ASan + UBSan)..."
-output=$(make clean test-sanitize 2>&1)
-sanitize_exit_code=$?
-
-# Count sanitizer test runs
-sanitize_total=$(echo "$output" | grep -c "^Running test: bin/")
-sanitize_passed=$(echo "$output" | grep -c "All .* tests passed")
-
-# Check if sanitizer tests failed to build
-build_failed=$(echo "$output" | grep -c "Undefined symbols for architecture\|ld: symbol.* not found")
-
-# Check for AddressSanitizer errors
-asan_errors=$(echo "$output" | grep -c "ERROR: AddressSanitizer:")
-heap_use_after_free=$(echo "$output" | grep -c "heap-use-after-free")
-stack_buffer_overflow=$(echo "$output" | grep -c "stack-buffer-overflow")
-heap_buffer_overflow=$(echo "$output" | grep -c "heap-buffer-overflow")
-memory_leaks=$(echo "$output" | grep -c "ERROR: LeakSanitizer:")
-
-# Check for UndefinedBehaviorSanitizer errors
-ubsan_errors=$(echo "$output" | grep -c "runtime error:")
-integer_overflow=$(echo "$output" | grep -c "signed integer overflow")
-array_bounds=$(echo "$output" | grep -c "index.*out of bounds")
-null_pointer=$(echo "$output" | grep -c "null pointer")
-
-if [ $build_failed -gt 0 ]; then
-    echo "Sanitizer: Build failed (missing sanitizer runtime) ⚠️"
-    echo "Note: This is a known issue on some macOS systems"
-elif [ $sanitize_exit_code -eq 0 ] && [ $asan_errors -eq 0 ] && [ $ubsan_errors -eq 0 ]; then
-    echo "Sanitizer: $sanitize_total tests run, all passed ✓"
-else
-    echo "Sanitizer: $sanitize_total tests run, ERRORS DETECTED ✗"
-    echo
-    echo "Sanitizer Report:"
-    
-    if [ $asan_errors -gt 0 ]; then
-        echo "  - AddressSanitizer errors: $asan_errors"
-        if [ $heap_use_after_free -gt 0 ]; then
-            echo "    • Heap use-after-free: $heap_use_after_free"
-        fi
-        if [ $stack_buffer_overflow -gt 0 ]; then
-            echo "    • Stack buffer overflow: $stack_buffer_overflow"
-        fi
-        if [ $heap_buffer_overflow -gt 0 ]; then
-            echo "    • Heap buffer overflow: $heap_buffer_overflow"
-        fi
-        if [ $memory_leaks -gt 0 ]; then
-            echo "    • Memory leaks detected: $memory_leaks"
-        fi
-    fi
-    
-    if [ $ubsan_errors -gt 0 ]; then
-        echo "  - UndefinedBehavior errors: $ubsan_errors"
-        if [ $integer_overflow -gt 0 ]; then
-            echo "    • Integer overflow: $integer_overflow"
-        fi
-        if [ $array_bounds -gt 0 ]; then
-            echo "    • Array bounds violation: $array_bounds"
-        fi
-        if [ $null_pointer -gt 0 ]; then
-            echo "    • Null pointer dereference: $null_pointer"
-        fi
-    fi
-    
-    # Show first error details
-    echo
-    if [ $asan_errors -gt 0 ]; then
-        echo "First AddressSanitizer error:"
-        echo "$output" | grep -A10 "ERROR: AddressSanitizer:" | head -15
-    elif [ $ubsan_errors -gt 0 ]; then
-        echo "First UndefinedBehavior error:"
-        echo "$output" | grep -A2 "runtime error:" | head -5
+        echo "✓ AddressSanitizer: No errors detected"
     fi
 fi
 
-# Step 7: Run executable with ASan + UBSan
-echo
-echo "Running executable with sanitizers (ASan + UBSan)..."
-output=$(make clean run-sanitize 2>&1)
-exec_san_exit_code=$?
-
-# Check for sanitizer errors in executable
-exec_asan_errors=$(echo "$output" | grep -c "ERROR: AddressSanitizer:")
-exec_ubsan_errors=$(echo "$output" | grep -c "runtime error:")
-
-if [ $exec_san_exit_code -eq 0 ] && [ $exec_asan_errors -eq 0 ] && [ $exec_ubsan_errors -eq 0 ]; then
-    echo "Sanitized Executable: ✓"
-else
-    echo "Sanitized Executable: ERRORS DETECTED ✗"
-    if [ $exec_asan_errors -gt 0 ]; then
-        echo "  - AddressSanitizer errors: $exec_asan_errors"
-    fi
-    if [ $exec_ubsan_errors -gt 0 ]; then
-        echo "  - UndefinedBehavior errors: $exec_ubsan_errors"
-    fi
-    echo
-    echo "First error:"
-    echo "$output" | grep -E "(ERROR: AddressSanitizer:|runtime error:)" -A5 | head -10
-fi
-
-# Step 8: ThreadSanitizer tests
-echo
-echo "Running ThreadSanitizer tests..."
-output=$(make clean test-tsan 2>&1)
-tsan_exit_code=$?
-
-# Count TSan test runs
-tsan_total=$(echo "$output" | grep -c "^Running test: bin/")
-tsan_passed=$(echo "$output" | grep -c "All .* tests passed")
-
-# Check for ThreadSanitizer errors
-tsan_errors=$(echo "$output" | grep -c "WARNING: ThreadSanitizer:")
-data_races=$(echo "$output" | grep -c "data race")
-
-if [ $tsan_exit_code -eq 0 ] && [ $tsan_errors -eq 0 ]; then
-    echo "ThreadSanitizer: $tsan_total tests run, all passed ✓"
-else
-    echo "ThreadSanitizer: $tsan_total tests run, ERRORS DETECTED ✗"
-    echo
-    echo "ThreadSanitizer Report:"
-    echo "  - Data races detected: $data_races"
+# ThreadSanitizer results
+if [ -f "bin/tsan-test.log" ] || [ -f "bin/tsan-run.log" ]; then
+    tsan_errors=0
+    for log in bin/tsan-test.log bin/tsan-run.log; do
+        if [ -f "$log" ]; then
+            errors=$(grep -c "WARNING: ThreadSanitizer:" "$log" 2>/dev/null || echo "0")
+            tsan_errors=$((tsan_errors + errors))
+        fi
+    done
     
-    # Show first race details
     if [ $tsan_errors -gt 0 ]; then
-        echo
-        echo "First data race:"
-        echo "$output" | grep -A15 "WARNING: ThreadSanitizer:" | head -20
+        echo "✗ ThreadSanitizer: $tsan_errors data races detected"
+    else
+        echo "✓ ThreadSanitizer: No data races detected"
     fi
-fi
-
-# Step 9: ThreadSanitizer executable
-echo
-echo "Running executable with ThreadSanitizer..."
-output=$(make clean run-tsan 2>&1)
-exec_tsan_exit_code=$?
-
-# Check for TSan errors in executable
-exec_tsan_errors=$(echo "$output" | grep -c "WARNING: ThreadSanitizer:")
-exec_data_races=$(echo "$output" | grep -c "data race")
-
-if [ $exec_tsan_exit_code -eq 0 ] && [ $exec_tsan_errors -eq 0 ]; then
-    echo "TSan Executable: ✓"
-else
-    echo "TSan Executable: ERRORS DETECTED ✗"
-    echo "  - Data races detected: $exec_data_races"
-    if [ $exec_tsan_errors -gt 0 ]; then
-        echo
-        echo "First data race:"
-        echo "$output" | grep -A10 "WARNING: ThreadSanitizer:" | head -15
-    fi
-fi
-
-# Step 10: Check naming conventions
-echo
-echo "Checking naming conventions..."
-if make check-naming >/dev/null 2>&1; then
-    echo "Naming conventions: All conventions followed ✓"
-else
-    echo "Naming conventions: VIOLATIONS FOUND ✗"
-    echo "Run 'make check-naming' for details"
-fi
-
-# Step 11: Check documentation
-echo
-echo "Checking documentation..."
-if make check-docs >/dev/null 2>&1; then
-    echo "Documentation: All checks passed ✓"
-else
-    echo "Documentation: ISSUES FOUND ✗"
-    echo "Run 'make check-docs' for details"
 fi
 
 echo
 echo "=== Build Summary ==="
 echo "Completed at $(date)"
+
+# Determine overall exit status
+exit_status=0
+for exitfile in logs/*.log.exitcode; do
+    if [ -f "$exitfile" ]; then
+        code=$(cat "$exitfile")
+        if [ "$code" -ne 0 ]; then
+            exit_status=1
+        fi
+    fi
+done
+
+if [ $exit_status -eq 0 ]; then
+    echo "Overall status: ✓ SUCCESS"
+else
+    echo "Overall status: ✗ FAILURE"
+    echo
+    echo "Failed jobs:"
+    for exitfile in logs/*.log.exitcode; do
+        if [ -f "$exitfile" ]; then
+            code=$(cat "$exitfile")
+            if [ "$code" -ne 0 ]; then
+                job=$(basename "$exitfile" .log.exitcode)
+                echo "  - $job"
+            fi
+        fi
+    done
+fi
+
+exit $exit_status

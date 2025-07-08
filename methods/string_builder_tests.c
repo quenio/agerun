@@ -21,7 +21,7 @@ static void test_string_builder_parse_build(void) {
     assert(ar_method_fixture__verify_directory(own_fixture));
     
     // Load string-builder method
-    assert(ar_method_fixture__load_method(own_fixture, "string-builder", "../methods/string-builder-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture__load_method(own_fixture, "string-builder", "../../methods/string-builder-1.0.0.method", "1.0.0"));
     
     // Create string-builder agent
     int64_t builder_agent = ar_agency__create_agent("string-builder", "1.0.0", NULL);
@@ -147,7 +147,7 @@ __attribute__((unused)) static void test_string_builder_parse_failure(void) {
     assert(ar_method_fixture__verify_directory(own_fixture));
     
     // Load string-builder method
-    assert(ar_method_fixture__load_method(own_fixture, "string-builder", "../methods/string-builder-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture__load_method(own_fixture, "string-builder", "../../methods/string-builder-1.0.0.method", "1.0.0"));
     
     // Create string-builder agent
     int64_t builder_agent = ar_agency__create_agent("string-builder", "1.0.0", NULL);

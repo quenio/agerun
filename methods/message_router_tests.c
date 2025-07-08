@@ -21,9 +21,9 @@ static void test_message_router_routing(void) {
     assert(ar_method_fixture__verify_directory(own_fixture));
     
     // Load required methods
-    assert(ar_method_fixture__load_method(own_fixture, "echo", "../methods/echo-1.0.0.method", "1.0.0"));
-    assert(ar_method_fixture__load_method(own_fixture, "calculator", "../methods/calculator-1.0.0.method", "1.0.0"));
-    assert(ar_method_fixture__load_method(own_fixture, "message-router", "../methods/message-router-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture__load_method(own_fixture, "echo", "../../methods/echo-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture__load_method(own_fixture, "calculator", "../../methods/calculator-1.0.0.method", "1.0.0"));
+    assert(ar_method_fixture__load_method(own_fixture, "message-router", "../../methods/message-router-1.0.0.method", "1.0.0"));
     
     // Create router agent
     int64_t router_agent = ar_agency__create_agent("message-router", "1.0.0", NULL);

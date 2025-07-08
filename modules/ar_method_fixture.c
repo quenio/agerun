@@ -142,8 +142,7 @@ bool ar_method_fixture__verify_directory(const ar_method_fixture_t *ref_fixture)
         return false;
     }
     
-    size_t len = strlen(cwd);
-    if (len < 4 || strcmp(cwd + len - 4, "/bin") != 0) {
+    if (!strstr(cwd, "/bin/") && !strstr(cwd, "/bin")) {
         fprintf(stderr, "ERROR: Tests must be run from the bin directory!\n");
         fprintf(stderr, "Current directory: %s\n", cwd);
         return false;
