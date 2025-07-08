@@ -365,7 +365,7 @@ clean:
 	rm -rf bin
 
 # Static analysis target
-analyze-exec: install-scan-build $(ANALYZE_EXEC_DIR)
+analyze-exec: $(ANALYZE_EXEC_DIR)
 	@if command -v /opt/homebrew/opt/llvm/bin/scan-build >/dev/null 2>&1 || command -v scan-build >/dev/null 2>&1; then \
 		rm -rf $(ANALYZE_EXEC_DIR)/scan-build-results/*; \
 		echo "Running scan-build on source files with $(CC)..."; \
@@ -409,7 +409,7 @@ analyze-exec: install-scan-build $(ANALYZE_EXEC_DIR)
 	fi
 
 # Static analysis for tests
-analyze-tests: install-scan-build $(ANALYZE_TESTS_DIR)
+analyze-tests: $(ANALYZE_TESTS_DIR)
 	@if command -v /opt/homebrew/opt/llvm/bin/scan-build >/dev/null 2>&1 || command -v scan-build >/dev/null 2>&1; then \
 		rm -rf $(ANALYZE_TESTS_DIR)/scan-build-results/*; \
 		echo "Running scan-build on test files with $(CC)..."; \
@@ -478,7 +478,7 @@ check-all: check-naming check-docs
 	@echo "All code quality checks completed!"
 
 # Run full build script (clean build, static analysis, all tests, sanitizers, doc validation)
-full-build:
+full-build: install-scan-build
 	@if [ -x ./scripts/full_build.sh ]; then \
 		./scripts/full_build.sh; \
 	else \
