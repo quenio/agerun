@@ -4,7 +4,7 @@
 
 In the AgeRun system, a module is a self-contained unit of functionality that consists of an implementation file (`.c` or `.zig`) and a header file (`.h`). Each module encapsulates a specific set of related functions and data structures that work together to provide a particular capability to the system. Modules are designed to have clear interfaces and dependencies, making the system more maintainable and easier to understand.
 
-**Zig Integration**: Some modules are now implemented in Zig (`.zig` files) while maintaining full C ABI compatibility. Currently implemented in Zig: `ar_assert`, `ar_heap`, `ar_memory_accessor`, `ar_semver`, and `ar_string`. The `ar_io` module uses a hybrid approach with most functions in Zig (`ar_io.zig`) and variadic functions in C (`ar_io_variadic.c`) due to platform-specific requirements.
+**Zig Integration**: Some modules are now implemented in Zig (`.zig` files) while maintaining full C ABI compatibility. Currently implemented in Zig: `ar_assert`, `ar_heap`, `ar_memory_accessor`, `ar_method_evaluator`, `ar_semver`, and `ar_string`. The `ar_io` module uses a hybrid approach with most functions in Zig (`ar_io.zig`) and variadic functions in C (`ar_io_variadic.c`) due to platform-specific requirements.
 
 Each module typically follows a consistent naming convention with an `ar_` prefix (e.g., `ar_data`, `ar_string`), and has its own test file (`ar_*_tests.c`) that verifies its functionality. Note: File names are being transitioned from `ar_` to `ar_` prefix gradually as files are modified for other reasons.
 
@@ -259,6 +259,13 @@ ar_expression_evaluator
 
 ar_frame
 └──h──> ar_data
+
+ar_method_evaluator (Zig)
+├──h──> ar_log
+├──h──> ar_instruction_evaluator
+├──h──> ar_method_ast
+├──h──> ar_frame
+└──c──> ar_heap (Zig)
 
 ar_instruction_evaluator
 ├──h──> ar_expression_evaluator
@@ -552,6 +559,18 @@ ar_instruction_ast_tests
 
 ar_method_ast_tests
 ├──c──> ar_method_ast (module under test)
+├──c──> ar_instruction_ast
+└──c──> ar_heap (Zig)
+
+ar_method_evaluator_tests
+├──c──> ar_method_evaluator (module under test)
+├──c──> ar_log
+├──c──> ar_instruction_evaluator
+├──c──> ar_expression_evaluator
+├──c──> ar_data
+├──c──> ar_frame
+├──c──> ar_method_ast
+├──c──> ar_expression_ast
 ├──c──> ar_instruction_ast
 └──c──> ar_heap (Zig)
 
