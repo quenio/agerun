@@ -220,6 +220,184 @@ static void test_method_evaluator__evaluate_multiple_instructions(void) {
     printf("  ✓ Multiple instruction method evaluated successfully\n");
 }
 
+static void test_method_evaluator__evaluate_null_parameters(void) {
+    printf("Testing method evaluator with NULL parameters...\n");
+    
+    // Given a method evaluator
+    ar_log_t *own_log = ar_log__create();
+    ar_data_t *own_memory = ar_data__create_map();
+    ar_data_t *own_context = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_string("test message");
+    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log, own_memory, own_context);
+    ar_instruction_evaluator_t *own_instr_eval = ar_instruction_evaluator__create(
+        own_log, own_expr_eval, own_memory, own_context, own_message
+    );
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, own_instr_eval);
+    
+    // Create valid frame and AST for testing
+    ar_frame_t *own_frame = ar_frame__create(own_memory, own_context, own_message);
+    ar_method_ast_t *own_ast = ar_method_ast__create();
+    
+    // When evaluating with NULL evaluator
+    bool result1 = ar_method_evaluator__evaluate(NULL, own_frame, own_ast);
+    
+    // Then it should fail
+    assert(result1 == false);
+    
+    // When evaluating with NULL frame
+    bool result2 = ar_method_evaluator__evaluate(own_evaluator, NULL, own_ast);
+    
+    // Then it should fail
+    assert(result2 == false);
+    
+    // When evaluating with NULL AST
+    bool result3 = ar_method_evaluator__evaluate(own_evaluator, own_frame, NULL);
+    
+    // Then it should fail
+    assert(result3 == false);
+    
+    // Cleanup
+    ar_method_ast__destroy(own_ast);
+    ar_frame__destroy(own_frame);
+    ar_method_evaluator__destroy(own_evaluator);
+    ar_instruction_evaluator__destroy(own_instr_eval);
+    ar_expression_evaluator__destroy(own_expr_eval);
+    ar_data__destroy(own_message);
+    ar_data__destroy(own_context);
+    ar_data__destroy(own_memory);
+    ar_log__destroy(own_log);
+    
+    printf("  ✓ NULL parameter handling verified\n");
+}
+
+static void test_method_evaluator__evaluate_with_failing_instruction(void) {
+    printf("Testing method evaluator with failing instruction...\n");
+    
+    // Given a method evaluator
+    ar_log_t *own_log = ar_log__create();
+    ar_data_t *own_memory = ar_data__create_map();
+    ar_data_t *own_context = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_string("test message");
+    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log, own_memory, own_context);
+    ar_instruction_evaluator_t *own_instr_eval = ar_instruction_evaluator__create(
+        own_log, own_expr_eval, own_memory, own_context, own_message
+    );
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, own_instr_eval);
+    
+    // Create a frame
+    ar_frame_t *own_frame = ar_frame__create(own_memory, own_context, own_message);
+    
+    // Create a method AST with a failing instruction
+    ar_method_ast_t *own_ast = ar_method_ast__create();
+    
+    // Add a valid instruction first
+    ar_instruction_ast_t *own_instr1 = ar_instruction_ast__create_assignment("memory.x", "10");
+    ar_expression_ast_t *own_expr1 = ar_expression_ast__create_literal_int(10);
+    ar_instruction_ast__set_assignment_expression_ast(own_instr1, own_expr1);
+    ar_method_ast__add_instruction(own_ast, own_instr1);
+    
+    // Add an invalid instruction (assignment to non-memory target)
+    ar_instruction_ast_t *own_instr2 = ar_instruction_ast__create_assignment("invalid.target", "20");
+    ar_expression_ast_t *own_expr2 = ar_expression_ast__create_literal_int(20);
+    ar_instruction_ast__set_assignment_expression_ast(own_instr2, own_expr2);
+    ar_method_ast__add_instruction(own_ast, own_instr2);
+    
+    // When evaluating the method with a failing instruction
+    bool result = ar_method_evaluator__evaluate(own_evaluator, own_frame, own_ast);
+    
+    // Then it should fail
+    assert(result == false);
+    
+    // And the first instruction should have succeeded
+    assert(ar_data__get_map_integer(own_memory, "x") == 10);
+    
+    // And an error should be logged by the assignment evaluator
+    ar_event_t *ref_error = ar_log__get_last_error(own_log);
+    assert(ref_error != NULL);
+    const char *ref_message = ar_event__get_message(ref_error);
+    assert(ref_message != NULL);
+    
+    // The error message should mention that it failed at line 2
+    // (This will fail until we add error logging to method evaluator)
+    assert(strstr(ref_message, "line 2") != NULL);
+    
+    // Cleanup
+    ar_method_ast__destroy(own_ast);
+    ar_frame__destroy(own_frame);
+    ar_method_evaluator__destroy(own_evaluator);
+    ar_instruction_evaluator__destroy(own_instr_eval);
+    ar_expression_evaluator__destroy(own_expr_eval);
+    ar_data__destroy(own_message);
+    ar_data__destroy(own_context);
+    ar_data__destroy(own_memory);
+    ar_log__destroy(own_log);
+    
+    printf("  ✓ Failing instruction handling verified\n");
+}
+
+static void test_method_evaluator__memory_stress_test(void) {
+    printf("Testing method evaluator memory handling with many instructions...\n");
+    
+    // Given a method evaluator
+    ar_log_t *own_log = ar_log__create();
+    ar_data_t *own_memory = ar_data__create_map();
+    ar_data_t *own_context = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_string("test message");
+    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log, own_memory, own_context);
+    ar_instruction_evaluator_t *own_instr_eval = ar_instruction_evaluator__create(
+        own_log, own_expr_eval, own_memory, own_context, own_message
+    );
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, own_instr_eval);
+    
+    // Create a frame
+    ar_frame_t *own_frame = ar_frame__create(own_memory, own_context, own_message);
+    
+    // Create a method AST with many instructions
+    ar_method_ast_t *own_ast = ar_method_ast__create();
+    
+    // Add 50 instructions to stress test memory handling
+    for (int i = 0; i < 50; i++) {
+        char path[32];
+        char value[32];
+        snprintf(path, sizeof(path), "memory.var%d", i);
+        snprintf(value, sizeof(value), "%d", i);
+        
+        ar_instruction_ast_t *own_instr = ar_instruction_ast__create_assignment(path, value);
+        ar_expression_ast_t *own_expr = ar_expression_ast__create_literal_int(i);
+        ar_instruction_ast__set_assignment_expression_ast(own_instr, own_expr);
+        ar_method_ast__add_instruction(own_ast, own_instr);
+    }
+    
+    // Verify the method has 50 instructions
+    assert(ar_method_ast__get_instruction_count(own_ast) == 50);
+    
+    // When evaluating the method with many instructions
+    bool result = ar_method_evaluator__evaluate(own_evaluator, own_frame, own_ast);
+    
+    // Then it should succeed
+    assert(result == true);
+    
+    // And all values should be stored in memory
+    for (int i = 0; i < 50; i++) {
+        char key[32];
+        snprintf(key, sizeof(key), "var%d", i);
+        assert(ar_data__get_map_integer(own_memory, key) == i);
+    }
+    
+    // Cleanup
+    ar_method_ast__destroy(own_ast);
+    ar_frame__destroy(own_frame);
+    ar_method_evaluator__destroy(own_evaluator);
+    ar_instruction_evaluator__destroy(own_instr_eval);
+    ar_expression_evaluator__destroy(own_expr_eval);
+    ar_data__destroy(own_message);
+    ar_data__destroy(own_context);
+    ar_data__destroy(own_memory);
+    ar_log__destroy(own_log);
+    
+    printf("  ✓ Memory handling verified with 50 instructions\n");
+}
+
 int main(void) {
     // Directory check - must be run from bin/*-tests/
     char cwd[1024];
@@ -239,10 +417,13 @@ int main(void) {
     test_method_evaluator__evaluate_empty_method();
     test_method_evaluator__evaluate_single_instruction_method();
     test_method_evaluator__evaluate_multiple_instructions();
+    test_method_evaluator__evaluate_null_parameters();
+    test_method_evaluator__evaluate_with_failing_instruction();
+    test_method_evaluator__memory_stress_test();
     
     // Check for memory leaks
     ar_heap__memory_report();
     
-    printf("All 4 tests passed!\n");
+    printf("All 7 tests passed!\n");
     return 0;
 }

@@ -62,8 +62,17 @@ The method evaluator:
 3. For empty methods, returns true immediately
 4. Iterates through instructions using 1-based indexing
 5. Evaluates each instruction via the instruction evaluator
-6. Returns false if any instruction fails
-7. Returns true only if all instructions succeed
+6. Logs errors with line numbers when instructions fail
+7. Returns false if any instruction fails or cannot be retrieved
+8. Returns true only if all instructions succeed
+
+## Error Handling
+
+The method evaluator provides detailed error reporting:
+- Logs error when instruction retrieval fails (with line number)
+- Logs error when instruction evaluation fails (with line number)
+- Error messages include the specific line where the failure occurred
+- Uses the ar_log module for centralized error collection
 
 ## Usage Example
 

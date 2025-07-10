@@ -46,6 +46,19 @@ export fn ar_method_evaluator__destroy(own_evaluator: ?*ar_method_evaluator_s) v
     }
 }
 
+/// Helper function to log error with line number
+fn _log_error(evaluator: *ar_method_evaluator_s, message: [*c]const u8, line_no: usize) void {
+    // Format the error message with line number
+    var buffer: [256]u8 = undefined;
+    const formatted = std.fmt.bufPrintZ(&buffer, "{s}{d}", .{ message, line_no }) catch {
+        // If formatting fails, just log the base message
+        c.ar_log__error(evaluator.ref_log, message);
+        return;
+    };
+    
+    c.ar_log__error(evaluator.ref_log, formatted);
+}
+
 /// Evaluates a method AST using the provided frame
 export fn ar_method_evaluator__evaluate(
     mut_evaluator: ?*ar_method_evaluator_s,
@@ -73,6 +86,7 @@ export fn ar_method_evaluator__evaluate(
         // Get the instruction
         const ref_instruction = c.ar_method_ast__get_instruction(ref_ast, line_no);
         if (ref_instruction == null) {
+            _log_error(evaluator, "Failed to retrieve instruction at line ", line_no);
             return false;
         }
         
@@ -81,6 +95,8 @@ export fn ar_method_evaluator__evaluate(
         // but it was created with the memory from the frame, so it should work
         const success = c.ar_instruction_evaluator__evaluate(evaluator.ref_instruction_evaluator, ref_instruction);
         if (!success) {
+            // Log error with line number
+            _log_error(evaluator, "Method evaluation failed at line ", line_no);
             return false;
         }
     }
