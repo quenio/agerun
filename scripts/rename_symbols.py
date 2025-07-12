@@ -46,6 +46,9 @@ TYPE_RENAMES = {
     'interpreter_fixture_t': 'ar_interpreter_fixture_t',
     'method_fixture_t': 'ar_method_fixture_t',
     'system_fixture_t': 'ar_system_fixture_t',
+    
+    # Rename instruction_evaluator_fixture to evaluator_fixture
+    'instruction_evaluator_fixture_t': 'ar_evaluator_fixture_t',
 }
 
 # Define struct tag renames (typedef struct foo_s bar_t; -> typedef struct ar_foo_s bar_t;)
@@ -82,6 +85,9 @@ STRUCT_TAG_RENAMES = {
     'interpreter_fixture_s': 'ar_interpreter_fixture_s',
     'method_fixture_s': 'ar_method_fixture_s',
     'system_fixture_s': 'ar_system_fixture_s',
+    
+    # Rename instruction_evaluator_fixture to evaluator_fixture
+    'instruction_evaluator_fixture_s': 'ar_evaluator_fixture_s',
 }
 
 # Define enum value renames
@@ -154,6 +160,12 @@ ZIG_STRUCT_RENAMES = {
     'MemoryRecord': 'ar_memory_record_t',
 }
 
+# Module renames (handles module name prefix in functions, types, etc.)
+MODULE_RENAMES = {
+    # Rename instruction_evaluator_fixture module to evaluator_fixture
+    'ar_instruction_evaluator_fixture': 'ar_evaluator_fixture',
+}
+
 # File patterns to process
 FILE_PATTERNS = ['*.c', '*.h', '*.md', '*.method', '*.zig']
 
@@ -196,6 +208,15 @@ class TypeRenamer:
         count = self.count_occurrences(content, pattern)
         return new_content, count
     
+    def rename_module_in_content(self, content: str, old_module: str, new_module: str) -> Tuple[str, int]:
+        """Rename all occurrences of a module name (includes functions, types, etc.)."""
+        # For modules, we want to replace the prefix anywhere it appears
+        # This will catch ar_instruction_evaluator_fixture_t, ar_instruction_evaluator_fixture__create, etc.
+        pattern = re.compile(re.escape(old_module))
+        new_content = pattern.sub(new_module, content)
+        count = len(pattern.findall(content))
+        return new_content, count
+    
     def should_process_file(self, file_path: Path) -> bool:
         """Check if a file should be processed."""
         # Skip excluded files and directories
@@ -206,10 +227,13 @@ class TypeRenamer:
         # Check if file matches our patterns
         return any(file_path.match(pattern) for pattern in FILE_PATTERNS)
     
-    def process_file(self, file_path: Path, type_mapping: Dict[str, str]) -> bool:
-        """Process a single file for type renames."""
+    def process_file(self, file_path: Path, type_mapping: Dict[str, str], module_mapping: Dict[str, str] = None) -> bool:
+        """Process a single file for type and module renames."""
         if not self.should_process_file(file_path):
             return False
+        
+        if module_mapping is None:
+            module_mapping = {}
         
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
@@ -222,7 +246,20 @@ class TypeRenamer:
         file_stats = {}
         total_changes = 0
         
-        # Apply each rename
+        # Apply module renames first (they are more specific)
+        for old_module, new_module in module_mapping.items():
+            new_content, count = self.rename_module_in_content(content, old_module, new_module)
+            if count > 0:
+                content = new_content
+                file_stats[old_module] = count
+                total_changes += count
+                
+                # Update global stats
+                if old_module not in self.stats:
+                    self.stats[old_module] = 0
+                self.stats[old_module] += count
+        
+        # Apply type renames
         for old_type, new_type in type_mapping.items():
             new_content, count = self.rename_in_content(content, old_type, new_type)
             if count > 0:
@@ -271,7 +308,8 @@ class TypeRenamer:
         files = sorted(set(files))
         return files
     
-    def run(self, type_mapping: Dict[str, str] = None, struct_tag_mapping: Dict[str, str] = None, enum_value_mapping: Dict[str, str] = None):
+    def run(self, type_mapping: Dict[str, str] = None, struct_tag_mapping: Dict[str, str] = None, 
+            enum_value_mapping: Dict[str, str] = None, module_mapping: Dict[str, str] = None):
         """Run the renaming process."""
         if type_mapping is None:
             type_mapping = {}
@@ -279,12 +317,15 @@ class TypeRenamer:
             struct_tag_mapping = {}
         if enum_value_mapping is None:
             enum_value_mapping = {}
+        if module_mapping is None:
+            module_mapping = {}
         
         # Combine all mappings
-        all_mappings = {**type_mapping, **struct_tag_mapping, **enum_value_mapping}
+        all_mappings = {**type_mapping, **struct_tag_mapping, **enum_value_mapping, **module_mapping}
         
         print(f"Type Renaming {'(DRY RUN)' if self.dry_run else '(LIVE RUN)'}")
-        print(f"Processing {len(type_mapping)} type renames + {len(struct_tag_mapping)} struct tag renames + {len(enum_value_mapping)} enum value renames")
+        print(f"Processing {len(type_mapping)} type renames + {len(struct_tag_mapping)} struct tag renames + " +
+              f"{len(enum_value_mapping)} enum value renames + {len(module_mapping)} module renames")
         print("-" * 60)
         
         files = self.find_files()
@@ -292,7 +333,9 @@ class TypeRenamer:
         
         modified_count = 0
         for file_path in files:
-            if self.process_file(file_path, all_mappings):
+            # Pass type/struct/enum mappings and module mappings separately
+            type_and_other_mappings = {**type_mapping, **struct_tag_mapping, **enum_value_mapping}
+            if self.process_file(file_path, type_and_other_mappings, module_mapping):
                 modified_count += 1
         
         # Print summary
@@ -322,7 +365,7 @@ def main():
                        help='Specific types to rename (e.g., data_t list_t)')
     parser.add_argument('--group', choices=['enums', 'core', 'domain', 'context', 'parser', 'system', 'struct-tags', 
                                            'enum-values', 'data-enums', 'event-enums', 'expr-enums', 'op-enums', 
-                                           'inst-enums', 'inst-ast-enums', 'file-enums', 'zig-structs', 'all'],
+                                           'inst-enums', 'inst-ast-enums', 'file-enums', 'zig-structs', 'modules', 'all'],
                        default='all', help='Group of types to rename')
     parser.add_argument('--include-struct-tags', action='store_true',
                        help='Include struct tag renames (enabled by default for --group=all)')
@@ -386,6 +429,9 @@ def main():
     elif args.group == 'zig-structs':
         # Only rename Zig struct types
         type_mapping = ZIG_STRUCT_RENAMES
+    elif args.group == 'modules':
+        # Handle module renames - pass to run method separately
+        pass  # Will be handled specially in run method
     elif args.group != 'all':
         # Rename a specific group
         groups = {
@@ -420,7 +466,15 @@ def main():
     
     # Create renamer and run
     renamer = TypeRenamer(dry_run=not args.live, verbose=args.verbose)
-    renamer.run(type_mapping, struct_tag_mapping, enum_value_mapping)
+    
+    # Handle module renames specially
+    module_mapping = {}
+    if args.group == 'modules':
+        module_mapping = MODULE_RENAMES
+    elif args.group == 'all':
+        module_mapping = MODULE_RENAMES
+    
+    renamer.run(type_mapping, struct_tag_mapping, enum_value_mapping, module_mapping)
     
     if not args.live:
         print("\nThis was a dry run. Use --live to actually modify files.")

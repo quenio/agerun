@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
-#include "ar_instruction_evaluator_fixture.h"
+#include "ar_evaluator_fixture.h"
 #include "ar_assignment_instruction_evaluator.h"
 #include "ar_data.h"
 #include "ar_event.h"
@@ -11,14 +11,14 @@
 
 static void test_assignment_instruction_evaluator__create_destroy(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *fixture = 
-        ar_instruction_evaluator_fixture__create("test_create_destroy");
+    ar_evaluator_fixture_t *fixture = 
+        ar_evaluator_fixture__create("test_create_destroy");
     assert(fixture != NULL);
     
     // When getting the evaluator from the fixture
     // Create and set evaluator
-    ar_log_t *log = ar_instruction_evaluator_fixture__get_log(fixture);
-    ar_expression_evaluator_t *expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     ar_assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(log, expr_eval);
     // Evaluator is managed by the test, not the fixture
     
@@ -27,19 +27,19 @@ static void test_assignment_instruction_evaluator__create_destroy(void) {
     
     // Cleanup
     ar_assignment_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(fixture);
+    ar_evaluator_fixture__destroy(fixture);
 }
 
 static void test_assignment_instruction_evaluator__create_without_memory(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *fixture = 
-        ar_instruction_evaluator_fixture__create("test_create_without_memory");
+    ar_evaluator_fixture_t *fixture = 
+        ar_evaluator_fixture__create("test_create_without_memory");
     assert(fixture != NULL);
     
     // When getting the evaluator (which was created without memory parameter)
     // Create and set evaluator
-    ar_log_t *log = ar_instruction_evaluator_fixture__get_log(fixture);
-    ar_expression_evaluator_t *expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     ar_assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(log, expr_eval);
     // Evaluator is managed by the test, not the fixture
     
@@ -48,27 +48,27 @@ static void test_assignment_instruction_evaluator__create_without_memory(void) {
     
     // Cleanup
     ar_assignment_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(fixture);
+    ar_evaluator_fixture__destroy(fixture);
 }
 
 static void test_assignment_instruction_evaluator__evaluate_with_frame(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *fixture = 
-        ar_instruction_evaluator_fixture__create("test_evaluate_with_frame");
+    ar_evaluator_fixture_t *fixture = 
+        ar_evaluator_fixture__create("test_evaluate_with_frame");
     assert(fixture != NULL);
     
     // When evaluating an assignment instruction with frame: memory.count := 42
-    ar_instruction_ast_t *ast = ar_instruction_evaluator_fixture__create_assignment_int(
+    ar_instruction_ast_t *ast = ar_evaluator_fixture__create_assignment_int(
         fixture, "memory.count", 42
     );
     assert(ast != NULL);
     
-    ar_frame_t *frame = ar_instruction_evaluator_fixture__create_frame(fixture);
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
     assert(frame != NULL);
     
     // Create and set evaluator
-    ar_log_t *log = ar_instruction_evaluator_fixture__get_log(fixture);
-    ar_expression_evaluator_t *expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     ar_assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(log, expr_eval);
     // Evaluator is managed by the test, not the fixture
     
@@ -79,33 +79,33 @@ static void test_assignment_instruction_evaluator__evaluate_with_frame(void) {
     assert(result == true);
     
     // And the value should be stored in memory
-    ar_data_t *memory = ar_instruction_evaluator_fixture__get_memory(fixture);
+    ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
     int count = ar_data__get_map_integer(memory, "count");
     assert(count == 42);
     
     // Cleanup
     ar_assignment_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(fixture);
+    ar_evaluator_fixture__destroy(fixture);
 }
 
 static void test_assignment_instruction_evaluator__evaluate_with_instance(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *fixture = 
-        ar_instruction_evaluator_fixture__create("test_evaluate_with_instance");
+    ar_evaluator_fixture_t *fixture = 
+        ar_evaluator_fixture__create("test_evaluate_with_instance");
     assert(fixture != NULL);
     
     // When evaluating an assignment instruction: memory.count := 42
-    ar_instruction_ast_t *ast = ar_instruction_evaluator_fixture__create_assignment_int(
+    ar_instruction_ast_t *ast = ar_evaluator_fixture__create_assignment_int(
         fixture, "memory.count", 42
     );
     assert(ast != NULL);
     
-    ar_frame_t *frame = ar_instruction_evaluator_fixture__create_frame(fixture);
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
     assert(frame != NULL);
     
     // Create and set evaluator
-    ar_log_t *log = ar_instruction_evaluator_fixture__get_log(fixture);
-    ar_expression_evaluator_t *expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     ar_assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(log, expr_eval);
     // Evaluator is managed by the test, not the fixture
     
@@ -115,33 +115,33 @@ static void test_assignment_instruction_evaluator__evaluate_with_instance(void) 
     assert(result == true);
     
     // And the value should be stored in memory
-    ar_data_t *memory = ar_instruction_evaluator_fixture__get_memory(fixture);
+    ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
     int count = ar_data__get_map_integer(memory, "count");
     assert(count == 42);
     
     // Cleanup
     ar_assignment_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(fixture);
+    ar_evaluator_fixture__destroy(fixture);
 }
 
 static void test_assignment_instruction_evaluator__evaluate_integer(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *fixture = 
-        ar_instruction_evaluator_fixture__create("test_evaluate_integer");
+    ar_evaluator_fixture_t *fixture = 
+        ar_evaluator_fixture__create("test_evaluate_integer");
     assert(fixture != NULL);
     
     // When evaluating an assignment instruction: memory.count := 42
-    ar_instruction_ast_t *ast = ar_instruction_evaluator_fixture__create_assignment_int(
+    ar_instruction_ast_t *ast = ar_evaluator_fixture__create_assignment_int(
         fixture, "memory.count", 42
     );
     assert(ast != NULL);
     
-    ar_frame_t *frame = ar_instruction_evaluator_fixture__create_frame(fixture);
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
     assert(frame != NULL);
     
     // Create and set evaluator
-    ar_log_t *log = ar_instruction_evaluator_fixture__get_log(fixture);
-    ar_expression_evaluator_t *expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     ar_assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(log, expr_eval);
     // Evaluator is managed by the test, not the fixture
     
@@ -151,33 +151,33 @@ static void test_assignment_instruction_evaluator__evaluate_integer(void) {
     assert(result == true);
     
     // And the value should be stored in memory
-    ar_data_t *memory = ar_instruction_evaluator_fixture__get_memory(fixture);
+    ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
     int count = ar_data__get_map_integer(memory, "count");
     assert(count == 42);
     
     // Cleanup
     ar_assignment_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(fixture);
+    ar_evaluator_fixture__destroy(fixture);
 }
 
 static void test_assignment_instruction_evaluator__evaluate_string(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *fixture = 
-        ar_instruction_evaluator_fixture__create("test_evaluate_string");
+    ar_evaluator_fixture_t *fixture = 
+        ar_evaluator_fixture__create("test_evaluate_string");
     assert(fixture != NULL);
     
     // When evaluating an assignment instruction: memory.name := "Alice"
-    ar_instruction_ast_t *ast = ar_instruction_evaluator_fixture__create_assignment_string(
+    ar_instruction_ast_t *ast = ar_evaluator_fixture__create_assignment_string(
         fixture, "memory.name", "Alice"
     );
     assert(ast != NULL);
     
-    ar_frame_t *frame = ar_instruction_evaluator_fixture__create_frame(fixture);
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
     assert(frame != NULL);
     
     // Create and set evaluator
-    ar_log_t *log = ar_instruction_evaluator_fixture__get_log(fixture);
-    ar_expression_evaluator_t *expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     ar_assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(log, expr_eval);
     // Evaluator is managed by the test, not the fixture
     
@@ -187,39 +187,39 @@ static void test_assignment_instruction_evaluator__evaluate_string(void) {
     assert(result == true);
     
     // And the value should be stored in memory
-    ar_data_t *memory = ar_instruction_evaluator_fixture__get_memory(fixture);
+    ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
     const char *name = ar_data__get_map_string(memory, "name");
     assert(name != NULL);
     assert(strcmp(name, "Alice") == 0);
     
     // Cleanup
     ar_assignment_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(fixture);
+    ar_evaluator_fixture__destroy(fixture);
 }
 
 static void test_assignment_instruction_evaluator__evaluate_nested_path(void) {
     // Given a test fixture with memory containing a nested map
-    ar_instruction_evaluator_fixture_t *fixture = 
-        ar_instruction_evaluator_fixture__create("test_evaluate_nested_path");
+    ar_evaluator_fixture_t *fixture = 
+        ar_evaluator_fixture__create("test_evaluate_nested_path");
     assert(fixture != NULL);
     
-    ar_data_t *memory = ar_instruction_evaluator_fixture__get_memory(fixture);
+    ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
     ar_data_t *user = ar_data__create_map();
     assert(user != NULL);
     ar_data__set_map_data(memory, "user", user);
     
     // When evaluating an assignment to a nested path: memory.user.age := 25
-    ar_instruction_ast_t *ast = ar_instruction_evaluator_fixture__create_assignment_int(
+    ar_instruction_ast_t *ast = ar_evaluator_fixture__create_assignment_int(
         fixture, "memory.user.age", 25
     );
     assert(ast != NULL);
     
-    ar_frame_t *frame = ar_instruction_evaluator_fixture__create_frame(fixture);
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
     assert(frame != NULL);
     
     // Create and set evaluator
-    ar_log_t *log = ar_instruction_evaluator_fixture__get_log(fixture);
-    ar_expression_evaluator_t *expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     ar_assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(log, expr_eval);
     // Evaluator is managed by the test, not the fixture
     
@@ -236,16 +236,16 @@ static void test_assignment_instruction_evaluator__evaluate_nested_path(void) {
     
     // Cleanup
     ar_assignment_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(fixture);
+    ar_evaluator_fixture__destroy(fixture);
 }
 
 static void test_assignment_instruction_evaluator__evaluate_expression(void) {
     // Given a test fixture with memory containing initial values
-    ar_instruction_evaluator_fixture_t *fixture = 
-        ar_instruction_evaluator_fixture__create("test_evaluate_expression");
+    ar_evaluator_fixture_t *fixture = 
+        ar_evaluator_fixture__create("test_evaluate_expression");
     assert(fixture != NULL);
     
-    ar_data_t *memory = ar_instruction_evaluator_fixture__get_memory(fixture);
+    ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
     ar_data__set_map_integer(memory, "x", 10);
     ar_data__set_map_integer(memory, "y", 5);
     
@@ -262,17 +262,17 @@ static void test_assignment_instruction_evaluator__evaluate_expression(void) {
     ar_expression_ast_t *expr_ast = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__ADD, left_ast, right_ast);
     assert(expr_ast != NULL);
     
-    ar_instruction_ast_t *ast = ar_instruction_evaluator_fixture__create_assignment_expr(
+    ar_instruction_ast_t *ast = ar_evaluator_fixture__create_assignment_expr(
         fixture, "memory.sum", expr_ast
     );
     assert(ast != NULL);
     
-    ar_frame_t *frame = ar_instruction_evaluator_fixture__create_frame(fixture);
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
     assert(frame != NULL);
     
     // Create and set evaluator
-    ar_log_t *log = ar_instruction_evaluator_fixture__get_log(fixture);
-    ar_expression_evaluator_t *expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     ar_assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(log, expr_eval);
     // Evaluator is managed by the test, not the fixture
     
@@ -287,27 +287,27 @@ static void test_assignment_instruction_evaluator__evaluate_expression(void) {
     
     // Cleanup
     ar_assignment_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(fixture);
+    ar_evaluator_fixture__destroy(fixture);
 }
 
 static void test_assignment_instruction_evaluator__evaluate_invalid_path(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *fixture = 
-        ar_instruction_evaluator_fixture__create("test_evaluate_invalid_path");
+    ar_evaluator_fixture_t *fixture = 
+        ar_evaluator_fixture__create("test_evaluate_invalid_path");
     assert(fixture != NULL);
     
     // When evaluating an assignment with invalid path: invalid.path := 42
-    ar_instruction_ast_t *ast = ar_instruction_evaluator_fixture__create_assignment_int(
+    ar_instruction_ast_t *ast = ar_evaluator_fixture__create_assignment_int(
         fixture, "invalid.path", 42
     );
     assert(ast != NULL);
     
-    ar_frame_t *frame = ar_instruction_evaluator_fixture__create_frame(fixture);
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
     assert(frame != NULL);
     
     // Create and set evaluator
-    ar_log_t *log = ar_instruction_evaluator_fixture__get_log(fixture);
-    ar_expression_evaluator_t *expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     ar_assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(log, expr_eval);
     // Evaluator is managed by the test, not the fixture
     
@@ -325,7 +325,7 @@ static void test_assignment_instruction_evaluator__evaluate_invalid_path(void) {
     
     // Cleanup
     ar_assignment_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(fixture);
+    ar_evaluator_fixture__destroy(fixture);
 }
 
 

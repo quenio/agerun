@@ -15,29 +15,26 @@
  */
 struct ar_expression_evaluator_s {
     ar_log_t *ref_log;     /**< Log instance for error reporting (borrowed) */
-    ar_data_t *ref_memory;    /**< Memory map with variables (borrowed) */
-    ar_data_t *ref_context;   /**< Optional context map (borrowed, may be NULL) */
 };
 
+/* Forward declarations */
+static ar_data_t* _evaluate_binary_op(
+    ar_log_t *ref_log,
+    const ar_frame_t *ref_frame,
+    const ar_expression_ast_t *ref_node);
+
 /* Helper function to log error messages */
-static void _log_error(ar_expression_evaluator_t *mut_evaluator, const char *message) {
-    if (message && mut_evaluator && mut_evaluator->ref_log) {
-        ar_log__error(mut_evaluator->ref_log, message);
+static void _log_error(ar_log_t *ref_log, const char *message) {
+    if (message && ref_log) {
+        ar_log__error(ref_log, message);
     }
 }
 
 ar_expression_evaluator_t* ar_expression_evaluator__create(
-    ar_log_t *ref_log,
-    ar_data_t *ref_memory,
-    ar_data_t *ref_context)
+    ar_log_t *ref_log)
 {
     if (!ref_log) {
         ar_io__error("ar_expression_evaluator__create: NULL log");
-        return NULL;
-    }
-    
-    if (!ref_memory) {
-        ar_log__error(ref_log, "ar_expression_evaluator__create: NULL memory");
         return NULL;
     }
 
@@ -48,8 +45,6 @@ ar_expression_evaluator_t* ar_expression_evaluator__create(
     }
 
     evaluator->ref_log = ref_log;
-    evaluator->ref_memory = ref_memory;
-    evaluator->ref_context = ref_context;
 
     return evaluator;
 }
@@ -61,12 +56,12 @@ void ar_expression_evaluator__destroy(ar_expression_evaluator_t *own_evaluator)
     }
 }
 
-ar_data_t* ar_expression_evaluator__evaluate_literal_int(
-    ar_expression_evaluator_t *mut_evaluator,
+static ar_data_t* _evaluate_literal_int(
+    ar_log_t *ref_log,
     const ar_expression_ast_t *ref_node)
 {
-    if (!mut_evaluator || !ref_node) {
-        _log_error(mut_evaluator, "evaluate_literal_int: NULL evaluator or node");
+    if (!ref_node) {
+        _log_error(ref_log, "evaluate_literal_int: NULL node");
         return NULL;
     }
     
@@ -81,12 +76,12 @@ ar_data_t* ar_expression_evaluator__evaluate_literal_int(
     return ar_data__create_integer(value);
 }
 
-ar_data_t* ar_expression_evaluator__evaluate_literal_double(
-    ar_expression_evaluator_t *mut_evaluator,
+static ar_data_t* _evaluate_literal_double(
+    ar_log_t *ref_log,
     const ar_expression_ast_t *ref_node)
 {
-    if (!mut_evaluator || !ref_node) {
-        _log_error(mut_evaluator, "evaluate_literal_double: NULL evaluator or node");
+    if (!ref_node) {
+        _log_error(ref_log, "evaluate_literal_double: NULL node");
         return NULL;
     }
     
@@ -101,12 +96,12 @@ ar_data_t* ar_expression_evaluator__evaluate_literal_double(
     return ar_data__create_double(value);
 }
 
-ar_data_t* ar_expression_evaluator__evaluate_literal_string(
-    ar_expression_evaluator_t *mut_evaluator,
+static ar_data_t* _evaluate_literal_string(
+    ar_log_t *ref_log,
     const ar_expression_ast_t *ref_node)
 {
-    if (!mut_evaluator || !ref_node) {
-        _log_error(mut_evaluator, "evaluate_literal_string: NULL evaluator or node");
+    if (!ref_node) {
+        _log_error(ref_log, "evaluate_literal_string: NULL node");
         return NULL;
     }
     
@@ -121,12 +116,13 @@ ar_data_t* ar_expression_evaluator__evaluate_literal_string(
     return ar_data__create_string(value);
 }
 
-ar_data_t* ar_expression_evaluator__evaluate_memory_access(
-    ar_expression_evaluator_t *mut_evaluator,
+static ar_data_t* _evaluate_memory_access(
+    ar_log_t *ref_log,
+    const ar_frame_t *ref_frame,
     const ar_expression_ast_t *ref_node)
 {
-    if (!mut_evaluator || !ref_node) {
-        _log_error(mut_evaluator, "evaluate_memory_access: NULL evaluator or node");
+    if (!ref_node) {
+        _log_error(ref_log, "evaluate_memory_access: NULL node");
         return NULL;
     }
     
@@ -139,7 +135,7 @@ ar_data_t* ar_expression_evaluator__evaluate_memory_access(
     // Get the base accessor (should be "memory" or "context")
     const char *base = ar_expression_ast__get_memory_base(ref_node);
     if (!base) {
-        _log_error(mut_evaluator, "evaluate_memory_access: No base accessor");
+        _log_error(ref_log, "evaluate_memory_access: No base accessor");
         return NULL;
     }
     
@@ -150,13 +146,16 @@ ar_data_t* ar_expression_evaluator__evaluate_memory_access(
     // Determine which map to use based on the base
     ar_data_t *map = NULL;
     if (strcmp(base, "memory") == 0) {
-        map = mut_evaluator->ref_memory;
+        map = ar_frame__get_memory(ref_frame);
     } else if (strcmp(base, "context") == 0) {
-        map = mut_evaluator->ref_context;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
+        map = (ar_data_t *)ar_frame__get_context(ref_frame);
+#pragma GCC diagnostic pop
     } else {
         char error_msg[256];
-        snprintf(error_msg, sizeof(error_msg), "ar_expression_evaluator__evaluate_memory_access: Invalid base accessor '%s'", base);
-        _log_error(mut_evaluator, error_msg);
+        snprintf(error_msg, sizeof(error_msg), "evaluate_memory_access: Invalid base accessor '%s'", base);
+        _log_error(ref_log, error_msg);
         if (path) AR__HEAP__FREE(path);
         return NULL;
     }
@@ -191,12 +190,13 @@ ar_data_t* ar_expression_evaluator__evaluate_memory_access(
     return current;
 }
 
-ar_data_t* ar_expression_evaluator__evaluate(
-    ar_expression_evaluator_t *mut_evaluator,
+static ar_data_t* _evaluate(
+    ar_log_t *ref_log,
+    const ar_frame_t *ref_frame,
     const ar_expression_ast_t *ref_ast)
 {
-    if (!mut_evaluator || !ref_ast) {
-        _log_error(mut_evaluator, "evaluate: NULL evaluator or AST");
+    if (!ref_log || !ref_ast) {
+        _log_error(ref_log, "evaluate: NULL log or AST");
         return NULL;
     }
     
@@ -204,51 +204,34 @@ ar_data_t* ar_expression_evaluator__evaluate(
     
     switch (type) {
         case AR_EXPRESSION_AST_TYPE__LITERAL_INT:
-            return ar_expression_evaluator__evaluate_literal_int(mut_evaluator, ref_ast);
+            return _evaluate_literal_int(ref_log, ref_ast);
         case AR_EXPRESSION_AST_TYPE__LITERAL_DOUBLE:
-            return ar_expression_evaluator__evaluate_literal_double(mut_evaluator, ref_ast);
+            return _evaluate_literal_double(ref_log, ref_ast);
         case AR_EXPRESSION_AST_TYPE__LITERAL_STRING:
-            return ar_expression_evaluator__evaluate_literal_string(mut_evaluator, ref_ast);
+            return _evaluate_literal_string(ref_log, ref_ast);
         case AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS:
             // Memory access returns a reference owned by the memory/context map
-            return ar_expression_evaluator__evaluate_memory_access(mut_evaluator, ref_ast);
+            return _evaluate_memory_access(ref_log, ref_frame, ref_ast);
         case AR_EXPRESSION_AST_TYPE__BINARY_OP:
-            return ar_expression_evaluator__evaluate_binary_op(mut_evaluator, ref_ast);
+            return _evaluate_binary_op(ref_log, ref_frame, ref_ast);
         default:
-            _log_error(mut_evaluator, "evaluate: Unknown expression type");
+            _log_error(ref_log, "evaluate: Unknown expression type");
             return NULL;
     }
 }
 
-ar_data_t* ar_expression_evaluator__evaluate_with_frame(
+ar_data_t* ar_expression_evaluator__evaluate(
     ar_expression_evaluator_t *mut_evaluator,
     const ar_frame_t *ref_frame,
     const ar_expression_ast_t *ref_ast)
 {
     if (!mut_evaluator || !ref_frame || !ref_ast) {
-        _log_error(mut_evaluator, "evaluate_with_frame: NULL evaluator, frame, or AST");
+        _log_error(mut_evaluator ? mut_evaluator->ref_log : NULL, "evaluate: NULL evaluator, frame, or AST");
         return NULL;
     }
     
-    // Temporarily store the old memory and context
-    ar_data_t *old_memory = mut_evaluator->ref_memory;
-    ar_data_t *old_context = mut_evaluator->ref_context;
-    
-    // Set the evaluator to use the frame's memory and context
-    mut_evaluator->ref_memory = ar_frame__get_memory(ref_frame);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-qual"
-    mut_evaluator->ref_context = (ar_data_t *)ar_frame__get_context(ref_frame);
-#pragma GCC diagnostic pop
-    
-    // Call the existing evaluate method
-    ar_data_t *result = ar_expression_evaluator__evaluate(mut_evaluator, ref_ast);
-    
-    // Restore the original memory and context
-    mut_evaluator->ref_memory = old_memory;
-    mut_evaluator->ref_context = old_context;
-    
-    return result;
+    // Call the internal evaluate method with the frame
+    return _evaluate(mut_evaluator->ref_log, ref_frame, ref_ast);
 }
 
 /**
@@ -256,7 +239,8 @@ ar_data_t* ar_expression_evaluator__evaluate_with_frame(
  * This is used internally by binary operations to evaluate operands
  */
 static ar_data_t* _evaluate_expression(
-    ar_expression_evaluator_t *mut_evaluator,
+    ar_log_t *ref_log,
+    const ar_frame_t *ref_frame,
     const ar_expression_ast_t *ref_node)
 {
     if (!ref_node) return NULL;
@@ -265,15 +249,15 @@ static ar_data_t* _evaluate_expression(
     
     switch (type) {
         case AR_EXPRESSION_AST_TYPE__LITERAL_INT:
-            return ar_expression_evaluator__evaluate_literal_int(mut_evaluator, ref_node);
+            return _evaluate_literal_int(ref_log, ref_node);
         case AR_EXPRESSION_AST_TYPE__LITERAL_DOUBLE:
-            return ar_expression_evaluator__evaluate_literal_double(mut_evaluator, ref_node);
+            return _evaluate_literal_double(ref_log, ref_node);
         case AR_EXPRESSION_AST_TYPE__LITERAL_STRING:
-            return ar_expression_evaluator__evaluate_literal_string(mut_evaluator, ref_node);
+            return _evaluate_literal_string(ref_log, ref_node);
         case AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS:
             // Memory access returns a reference, we need to make a copy for binary ops
             {
-                ar_data_t *ref_value = ar_expression_evaluator__evaluate_memory_access(mut_evaluator, ref_node);
+                ar_data_t *ref_value = _evaluate_memory_access(ref_log, ref_frame, ref_node);
                 if (!ref_value) return NULL;
                 
                 // Create a copy based on type
@@ -285,24 +269,25 @@ static ar_data_t* _evaluate_expression(
                     case AR_DATA_TYPE__STRING:
                         return ar_data__create_string(ar_data__get_string(ref_value));
                     default:
-                        _log_error(mut_evaluator, "_evaluate_expression: Unsupported data type for copy");
+                        _log_error(ref_log, "_evaluate_expression: Unsupported data type for copy");
                         return NULL;
                 }
             }
         case AR_EXPRESSION_AST_TYPE__BINARY_OP:
-            return ar_expression_evaluator__evaluate_binary_op(mut_evaluator, ref_node);
+            return _evaluate_binary_op(ref_log, ref_frame, ref_node);
         default:
-            _log_error(mut_evaluator, "_evaluate_expression: Unknown expression type");
+            _log_error(ref_log, "_evaluate_expression: Unknown expression type");
             return NULL;
     }
 }
 
-ar_data_t* ar_expression_evaluator__evaluate_binary_op(
-    ar_expression_evaluator_t *mut_evaluator,
+static ar_data_t* _evaluate_binary_op(
+    ar_log_t *ref_log,
+    const ar_frame_t *ref_frame,
     const ar_expression_ast_t *ref_node)
 {
-    if (!mut_evaluator || !ref_node) {
-        _log_error(mut_evaluator, "evaluate_binary_op: NULL evaluator or node");
+    if (!ref_node) {
+        _log_error(ref_log, "evaluate_binary_op: NULL node");
         return NULL;
     }
     
@@ -318,21 +303,21 @@ ar_data_t* ar_expression_evaluator__evaluate_binary_op(
     const ar_expression_ast_t *right_node = ar_expression_ast__get_right(ref_node);
     
     if (!left_node || !right_node) {
-        _log_error(mut_evaluator, "evaluate_binary_op: Missing operands");
+        _log_error(ref_log, "evaluate_binary_op: Missing operands");
         return NULL;
     }
     
     // Recursively evaluate both operands
-    ar_data_t *left = _evaluate_expression(mut_evaluator, left_node);
+    ar_data_t *left = _evaluate_expression(ref_log, ref_frame, left_node);
     if (!left) {
-        _log_error(mut_evaluator, "evaluate_binary_op: Failed to evaluate left operand");
+        _log_error(ref_log, "evaluate_binary_op: Failed to evaluate left operand");
         return NULL;
     }
     
-    ar_data_t *right = _evaluate_expression(mut_evaluator, right_node);
+    ar_data_t *right = _evaluate_expression(ref_log, ref_frame, right_node);
     if (!right) {
         ar_data__destroy(left);
-        _log_error(mut_evaluator, "evaluate_binary_op: Failed to evaluate right operand");
+        _log_error(ref_log, "evaluate_binary_op: Failed to evaluate right operand");
         return NULL;
     }
     
@@ -360,7 +345,7 @@ ar_data_t* ar_expression_evaluator__evaluate_binary_op(
                 break;
             case AR_BINARY_OPERATOR__DIVIDE:
                 if (right_val == 0) {
-                    _log_error(mut_evaluator, "evaluate_binary_op: Division by zero");
+                    _log_error(ref_log, "evaluate_binary_op: Division by zero");
                 } else {
                     result = ar_data__create_integer(left_val / right_val);
                 }
@@ -384,7 +369,7 @@ ar_data_t* ar_expression_evaluator__evaluate_binary_op(
                 result = ar_data__create_integer(left_val >= right_val ? 1 : 0);
                 break;
             default:
-                _log_error(mut_evaluator, "evaluate_binary_op: Unknown operator for integers");
+                _log_error(ref_log, "evaluate_binary_op: Unknown operator for integers");
                 break;
         }
     } else if (left_type == AR_DATA_TYPE__DOUBLE || right_type == AR_DATA_TYPE__DOUBLE) {
@@ -406,7 +391,7 @@ ar_data_t* ar_expression_evaluator__evaluate_binary_op(
                 break;
             case AR_BINARY_OPERATOR__DIVIDE:
                 if (right_val == 0.0) {
-                    _log_error(mut_evaluator, "evaluate_binary_op: Division by zero");
+                    _log_error(ref_log, "evaluate_binary_op: Division by zero");
                 } else {
                     result = ar_data__create_double(left_val / right_val);
                 }
@@ -430,7 +415,7 @@ ar_data_t* ar_expression_evaluator__evaluate_binary_op(
                 result = ar_data__create_integer(left_val >= right_val ? 1 : 0);
                 break;
             default:
-                _log_error(mut_evaluator, "evaluate_binary_op: Unknown operator for doubles");
+                _log_error(ref_log, "evaluate_binary_op: Unknown operator for doubles");
                 break;
         }
     } else if (left_type == AR_DATA_TYPE__STRING && right_type == AR_DATA_TYPE__STRING) {
@@ -459,11 +444,11 @@ ar_data_t* ar_expression_evaluator__evaluate_binary_op(
                 result = ar_data__create_integer(strcmp(left_str, right_str) != 0 ? 1 : 0);
                 break;
             default:
-                _log_error(mut_evaluator, "evaluate_binary_op: Unsupported operator for strings");
+                _log_error(ref_log, "evaluate_binary_op: Unsupported operator for strings");
                 break;
         }
     } else {
-        _log_error(mut_evaluator, "evaluate_binary_op: Type mismatch in binary operation");
+        _log_error(ref_log, "evaluate_binary_op: Type mismatch in binary operation");
     }
     
     // Clean up operand values

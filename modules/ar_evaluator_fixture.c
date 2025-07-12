@@ -1,9 +1,9 @@
 /**
- * @file ar_instruction_evaluator_fixture.c
+ * @file ar_evaluator_fixture.c
  * @brief Implementation of the generic instruction evaluator test fixture
  */
 
-#include "ar_instruction_evaluator_fixture.h"
+#include "ar_evaluator_fixture.h"
 #include "ar_heap.h"
 #include "ar_list.h"
 #include "ar_expression_ast.h"
@@ -12,7 +12,7 @@
 #include <assert.h>
 
 /* Internal structure for the fixture */
-struct ar_instruction_evaluator_fixture_s {
+struct ar_evaluator_fixture_s {
     char *own_test_name;                                       /* Test name for identification */
     ar_log_t *own_log;                                        /* Log instance */
     ar_data_t *own_memory;                                    /* Memory map */
@@ -24,7 +24,7 @@ struct ar_instruction_evaluator_fixture_s {
     int initial_allocations;                                  /* Allocation count at start */
 };
 
-ar_instruction_evaluator_fixture_t* ar_instruction_evaluator_fixture__create(
+ar_evaluator_fixture_t* ar_evaluator_fixture__create(
     const char *ref_test_name
 ) {
     if (!ref_test_name) {
@@ -35,14 +35,14 @@ ar_instruction_evaluator_fixture_t* ar_instruction_evaluator_fixture__create(
     int initial_allocations = 0; // TODO: Add heap tracking if needed
     
     // Allocate fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = 
-        AR__HEAP__MALLOC(sizeof(ar_instruction_evaluator_fixture_t), "instruction_evaluator_fixture");
+    ar_evaluator_fixture_t *own_fixture = 
+        AR__HEAP__MALLOC(sizeof(ar_evaluator_fixture_t), "instruction_evaluator_fixture");
     if (!own_fixture) {
         return NULL;
     }
     
     // Initialize all fields to NULL for safe cleanup
-    memset(own_fixture, 0, sizeof(ar_instruction_evaluator_fixture_t));
+    memset(own_fixture, 0, sizeof(ar_evaluator_fixture_t));
     own_fixture->initial_allocations = initial_allocations;
     
     // Copy test name
@@ -60,7 +60,7 @@ ar_instruction_evaluator_fixture_t* ar_instruction_evaluator_fixture__create(
     if (!own_fixture->own_tracked_frames || 
         !own_fixture->own_tracked_asts || 
         !own_fixture->own_tracked_data) {
-        ar_instruction_evaluator_fixture__destroy(own_fixture);
+        ar_evaluator_fixture__destroy(own_fixture);
         return NULL;
     }
     
@@ -69,18 +69,16 @@ ar_instruction_evaluator_fixture_t* ar_instruction_evaluator_fixture__create(
     own_fixture->own_memory = ar_data__create_map();
     
     if (!own_fixture->own_log || !own_fixture->own_memory) {
-        ar_instruction_evaluator_fixture__destroy(own_fixture);
+        ar_evaluator_fixture__destroy(own_fixture);
         return NULL;
     }
     
     own_fixture->own_expr_evaluator = ar_expression_evaluator__create(
-        own_fixture->own_log, 
-        own_fixture->own_memory, 
-        NULL
+        own_fixture->own_log
     );
     
     if (!own_fixture->own_expr_evaluator) {
-        ar_instruction_evaluator_fixture__destroy(own_fixture);
+        ar_evaluator_fixture__destroy(own_fixture);
         return NULL;
     }
     
@@ -90,8 +88,8 @@ ar_instruction_evaluator_fixture_t* ar_instruction_evaluator_fixture__create(
     return own_fixture;
 }
 
-void ar_instruction_evaluator_fixture__destroy(
-    ar_instruction_evaluator_fixture_t *own_fixture
+void ar_evaluator_fixture__destroy(
+    ar_evaluator_fixture_t *own_fixture
 ) {
     if (!own_fixture) {
         return;
@@ -164,26 +162,26 @@ void ar_instruction_evaluator_fixture__destroy(
 
 /* Evaluators are managed by tests, not the fixture */
 
-ar_expression_evaluator_t* ar_instruction_evaluator_fixture__get_expression_evaluator(
-    const ar_instruction_evaluator_fixture_t *ref_fixture
+ar_expression_evaluator_t* ar_evaluator_fixture__get_expression_evaluator(
+    const ar_evaluator_fixture_t *ref_fixture
 ) {
     return ref_fixture ? ref_fixture->own_expr_evaluator : NULL;
 }
 
-ar_data_t* ar_instruction_evaluator_fixture__get_memory(
-    const ar_instruction_evaluator_fixture_t *ref_fixture
+ar_data_t* ar_evaluator_fixture__get_memory(
+    const ar_evaluator_fixture_t *ref_fixture
 ) {
     return ref_fixture ? ref_fixture->own_memory : NULL;
 }
 
-ar_log_t* ar_instruction_evaluator_fixture__get_log(
-    const ar_instruction_evaluator_fixture_t *ref_fixture
+ar_log_t* ar_evaluator_fixture__get_log(
+    const ar_evaluator_fixture_t *ref_fixture
 ) {
     return ref_fixture ? ref_fixture->own_log : NULL;
 }
 
-ar_frame_t* ar_instruction_evaluator_fixture__create_frame(
-    ar_instruction_evaluator_fixture_t *mut_fixture
+ar_frame_t* ar_evaluator_fixture__create_frame(
+    ar_evaluator_fixture_t *mut_fixture
 ) {
     if (!mut_fixture) {
         return NULL;
@@ -214,8 +212,8 @@ ar_frame_t* ar_instruction_evaluator_fixture__create_frame(
     return own_frame;
 }
 
-ar_instruction_ast_t* ar_instruction_evaluator_fixture__create_assignment_int(
-    ar_instruction_evaluator_fixture_t *mut_fixture,
+ar_instruction_ast_t* ar_evaluator_fixture__create_assignment_int(
+    ar_evaluator_fixture_t *mut_fixture,
     const char *ref_path,
     int value
 ) {
@@ -251,8 +249,8 @@ ar_instruction_ast_t* ar_instruction_evaluator_fixture__create_assignment_int(
     return own_ast;
 }
 
-ar_instruction_ast_t* ar_instruction_evaluator_fixture__create_assignment_string(
-    ar_instruction_evaluator_fixture_t *mut_fixture,
+ar_instruction_ast_t* ar_evaluator_fixture__create_assignment_string(
+    ar_evaluator_fixture_t *mut_fixture,
     const char *ref_path,
     const char *ref_value
 ) {
@@ -295,8 +293,8 @@ ar_instruction_ast_t* ar_instruction_evaluator_fixture__create_assignment_string
     return own_ast;
 }
 
-ar_instruction_ast_t* ar_instruction_evaluator_fixture__create_assignment_expr(
-    ar_instruction_evaluator_fixture_t *mut_fixture,
+ar_instruction_ast_t* ar_evaluator_fixture__create_assignment_expr(
+    ar_evaluator_fixture_t *mut_fixture,
     const char *ref_path,
     ar_expression_ast_t *own_expr_ast
 ) {
@@ -324,8 +322,8 @@ ar_instruction_ast_t* ar_instruction_evaluator_fixture__create_assignment_expr(
     return own_ast;
 }
 
-void ar_instruction_evaluator_fixture__track_ast(
-    ar_instruction_evaluator_fixture_t *mut_fixture,
+void ar_evaluator_fixture__track_ast(
+    ar_evaluator_fixture_t *mut_fixture,
     ar_instruction_ast_t *own_ast
 ) {
     if (mut_fixture && own_ast) {
@@ -333,8 +331,8 @@ void ar_instruction_evaluator_fixture__track_ast(
     }
 }
 
-bool ar_instruction_evaluator_fixture__check_memory(
-    const ar_instruction_evaluator_fixture_t *ref_fixture
+bool ar_evaluator_fixture__check_memory(
+    const ar_evaluator_fixture_t *ref_fixture
 ) {
     if (!ref_fixture) {
         return false;

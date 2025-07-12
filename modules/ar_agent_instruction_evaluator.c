@@ -145,9 +145,9 @@ bool ar_agent_instruction_evaluator__evaluate(
     }
     
     // Evaluate expression ASTs using public method
-    ar_data_t *method_result = ar_expression_evaluator__evaluate_with_frame(mut_expr_evaluator, ref_frame, ref_method_ast);
-    ar_data_t *version_result = ar_expression_evaluator__evaluate_with_frame(mut_expr_evaluator, ref_frame, ref_version_ast);
-    ar_data_t *context_result = ar_expression_evaluator__evaluate_with_frame(mut_expr_evaluator, ref_frame, ref_context_ast);
+    ar_data_t *method_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_frame, ref_method_ast);
+    ar_data_t *version_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_frame, ref_version_ast);
+    ar_data_t *context_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_frame, ref_context_ast);
     
     // Handle ownership for method name
     ar_data_t *own_method_name = NULL;

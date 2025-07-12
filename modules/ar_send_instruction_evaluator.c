@@ -115,7 +115,7 @@ bool ar_send_instruction_evaluator__evaluate(
     }
     
     // Evaluate agent ID expression
-    ar_data_t *agent_id_result = ar_expression_evaluator__evaluate_with_frame(mut_evaluator->ref_expr_evaluator, ref_frame, ref_agent_id_ast);
+    ar_data_t *agent_id_result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_frame, ref_agent_id_ast);
     if (!agent_id_result) {
         AR__HEAP__FREE(items);
         return false;
@@ -135,7 +135,7 @@ bool ar_send_instruction_evaluator__evaluate(
     }
     
     // Evaluate message expression
-    ar_data_t *message_result = ar_expression_evaluator__evaluate_with_frame(mut_evaluator->ref_expr_evaluator, ref_frame, ref_message_ast);
+    ar_data_t *message_result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_frame, ref_message_ast);
     
     // Clean up the items array as we're done with it
     AR__HEAP__FREE(items);

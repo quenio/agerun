@@ -123,7 +123,7 @@ bool ar_condition_instruction_evaluator__evaluate(
     }
     
     // Evaluate condition expression
-    ar_data_t *condition_result = ar_expression_evaluator__evaluate_with_frame(mut_evaluator->ref_expr_evaluator, ref_frame, ref_condition_ast);
+    ar_data_t *condition_result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_frame, ref_condition_ast);
     if (!condition_result) {
         AR__HEAP__FREE(items);
         return false;
@@ -145,7 +145,7 @@ bool ar_condition_instruction_evaluator__evaluate(
     const ar_expression_ast_t *ref_ast_to_eval = condition_is_true ? ref_true_ast : ref_false_ast;
     
     // Evaluate the selected expression AST
-    ar_data_t *result = ar_expression_evaluator__evaluate_with_frame(mut_evaluator->ref_expr_evaluator, ref_frame, ref_ast_to_eval);
+    ar_data_t *result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_frame, ref_ast_to_eval);
     
     // Clean up the items array as we're done with it
     AR__HEAP__FREE(items);

@@ -15,16 +15,16 @@
 #include "ar_system.h"
 #include "ar_log.h"
 #include "ar_event.h"
-#include "ar_instruction_evaluator_fixture.h"
+#include "ar_evaluator_fixture.h"
 #include "ar_frame.h"
 
 static void test_method_instruction_evaluator__create_destroy(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_method_instruction_evaluator__create_destroy");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_method_instruction_evaluator__create_destroy");
     assert(own_fixture != NULL);
     
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
     
     // When creating a method instruction evaluator
     ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
@@ -38,17 +38,17 @@ static void test_method_instruction_evaluator__create_destroy(void) {
     ar_method_instruction_evaluator__destroy(evaluator);
     
     // Then cleanup fixture
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_method_instruction_evaluator__evaluate_with_instance(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_method_instruction_evaluator__evaluate_with_instance");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_method_instruction_evaluator__evaluate_with_instance");
     assert(own_fixture != NULL);
     
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     // When creating a method instruction evaluator instance
     ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
@@ -91,7 +91,7 @@ static void test_method_instruction_evaluator__evaluate_with_instance(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_method_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
     
     // Clean up the method we registered
     ar_methodology__cleanup();
@@ -99,13 +99,13 @@ static void test_method_instruction_evaluator__evaluate_with_instance(void) {
 
 static void test_method_instruction_evaluator__evaluate_legacy(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_method_instruction_evaluator__evaluate_legacy");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_method_instruction_evaluator__evaluate_legacy");
     assert(own_fixture != NULL);
     
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     // Create an evaluator instance
     ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
@@ -152,7 +152,7 @@ static void test_method_instruction_evaluator__evaluate_legacy(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_method_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
     
     // Clean up the method we registered
     ar_methodology__cleanup();
@@ -160,12 +160,12 @@ static void test_method_instruction_evaluator__evaluate_legacy(void) {
 
 static void test_instruction_evaluator__evaluate_method_simple(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_instruction_evaluator__evaluate_method_simple");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_instruction_evaluator__evaluate_method_simple");
     assert(own_fixture != NULL);
     
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
         ref_log, ref_expr_eval
@@ -206,7 +206,7 @@ static void test_instruction_evaluator__evaluate_method_simple(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_method_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
     
     // Clean up the method we registered
     ar_methodology__cleanup();
@@ -214,13 +214,13 @@ static void test_instruction_evaluator__evaluate_method_simple(void) {
 
 static void test_instruction_evaluator__evaluate_method_with_result(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_instruction_evaluator__evaluate_method_with_result");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_instruction_evaluator__evaluate_method_with_result");
     assert(own_fixture != NULL);
     
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
         ref_log, ref_expr_eval
@@ -265,7 +265,7 @@ static void test_instruction_evaluator__evaluate_method_with_result(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_method_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
     
     // Clean up the method we registered
     ar_methodology__cleanup();
@@ -273,12 +273,12 @@ static void test_instruction_evaluator__evaluate_method_with_result(void) {
 
 static void test_instruction_evaluator__evaluate_method_invalid_instructions(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_instruction_evaluator__evaluate_method_invalid_instructions");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_instruction_evaluator__evaluate_method_invalid_instructions");
     assert(own_fixture != NULL);
     
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
         ref_log, ref_expr_eval
@@ -320,7 +320,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_instructions(voi
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_method_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
     
     // Clean up the method we registered
     ar_methodology__cleanup();
@@ -328,12 +328,12 @@ static void test_instruction_evaluator__evaluate_method_invalid_instructions(voi
 
 static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_instruction_evaluator__evaluate_method_invalid_args");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_instruction_evaluator__evaluate_method_invalid_args");
     assert(own_fixture != NULL);
     
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
         ref_log, ref_expr_eval
@@ -451,7 +451,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     
     // Cleanup
     ar_method_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
     
     // Clean up any methods that might have been registered
     ar_methodology__cleanup();

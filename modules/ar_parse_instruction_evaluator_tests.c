@@ -10,19 +10,19 @@
 #include "ar_parse_instruction_evaluator.h"
 #include "ar_log.h"
 #include "ar_event.h"
-#include "ar_instruction_evaluator_fixture.h"
+#include "ar_evaluator_fixture.h"
 #include "ar_frame.h"
 
 static void test_parse_instruction_evaluator__create_destroy(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create(
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create(
         "test_parse_instruction_evaluator__create_destroy"
     );
     assert(own_fixture != NULL);
     
     // Get references from fixture
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
     
     // When creating a parse instruction evaluator
     ar_parse_instruction_evaluator_t *own_evaluator = ar_parse_instruction_evaluator__create(
@@ -36,21 +36,21 @@ static void test_parse_instruction_evaluator__create_destroy(void) {
     ar_parse_instruction_evaluator__destroy(own_evaluator);
     
     // Cleanup
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_parse_instruction_evaluator__evaluate_with_instance(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create(
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create(
         "test_parse_instruction_evaluator__evaluate_with_instance"
     );
     assert(own_fixture != NULL);
     
     // Get references from fixture
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     ar_parse_instruction_evaluator_t *own_evaluator = ar_parse_instruction_evaluator__create(
         ref_log, ref_expr_eval
@@ -96,21 +96,21 @@ static void test_parse_instruction_evaluator__evaluate_with_instance(void) {
     // Cleanup
     ar_instruction_ast__destroy(own_ast);
     ar_parse_instruction_evaluator__destroy(own_evaluator);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_parse_instruction_evaluator__evaluate_without_legacy(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create(
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create(
         "test_parse_instruction_evaluator__evaluate_without_legacy"
     );
     assert(own_fixture != NULL);
     
     // Get references from fixture
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     // When creating a parse instruction evaluator instance
     ar_parse_instruction_evaluator_t *own_evaluator = ar_parse_instruction_evaluator__create(
@@ -162,21 +162,21 @@ static void test_parse_instruction_evaluator__evaluate_without_legacy(void) {
     // Cleanup
     ar_instruction_ast__destroy(own_ast);
     ar_parse_instruction_evaluator__destroy(own_evaluator);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_instruction_evaluator__evaluate_parse_simple(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create(
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create(
         "test_instruction_evaluator__evaluate_parse_simple"
     );
     assert(own_fixture != NULL);
     
     // Get references from fixture
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     ar_parse_instruction_evaluator_t *evaluator = ar_parse_instruction_evaluator__create(
         ref_log, ref_expr_eval
@@ -223,21 +223,21 @@ static void test_instruction_evaluator__evaluate_parse_simple(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_parse_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_instruction_evaluator__evaluate_parse_multiple_variables(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create(
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create(
         "test_instruction_evaluator__evaluate_parse_multiple_variables"
     );
     assert(own_fixture != NULL);
     
     // Get references from fixture
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     ar_parse_instruction_evaluator_t *evaluator = ar_parse_instruction_evaluator__create(
         ref_log, ref_expr_eval
@@ -289,21 +289,21 @@ static void test_instruction_evaluator__evaluate_parse_multiple_variables(void) 
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_parse_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_instruction_evaluator__evaluate_parse_with_types(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create(
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create(
         "test_instruction_evaluator__evaluate_parse_with_types"
     );
     assert(own_fixture != NULL);
     
     // Get references from fixture
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     ar_parse_instruction_evaluator_t *evaluator = ar_parse_instruction_evaluator__create(
         ref_log, ref_expr_eval
@@ -360,21 +360,21 @@ static void test_instruction_evaluator__evaluate_parse_with_types(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_parse_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_instruction_evaluator__evaluate_parse_no_match(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create(
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create(
         "test_instruction_evaluator__evaluate_parse_no_match"
     );
     assert(own_fixture != NULL);
     
     // Get references from fixture
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     ar_parse_instruction_evaluator_t *evaluator = ar_parse_instruction_evaluator__create(
         ref_log, ref_expr_eval
@@ -420,20 +420,20 @@ static void test_instruction_evaluator__evaluate_parse_no_match(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_parse_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create(
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create(
         "test_instruction_evaluator__evaluate_parse_invalid_args"
     );
     assert(own_fixture != NULL);
     
     // Get references from fixture
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     ar_parse_instruction_evaluator_t *evaluator = ar_parse_instruction_evaluator__create(
         ref_log, ref_expr_eval
@@ -514,7 +514,7 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     
     // Cleanup
     ar_parse_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
 }
 
 int main(void) {

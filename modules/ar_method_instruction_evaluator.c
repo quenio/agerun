@@ -148,9 +148,9 @@ static bool _evaluate_three_string_args(
     }
     
     // Evaluate expression ASTs using public method
-    ar_data_t *result1 = ar_expression_evaluator__evaluate_with_frame(mut_expr_evaluator, ref_frame, ref_ast1);
-    ar_data_t *result2 = ar_expression_evaluator__evaluate_with_frame(mut_expr_evaluator, ref_frame, ref_ast2);
-    ar_data_t *result3 = ar_expression_evaluator__evaluate_with_frame(mut_expr_evaluator, ref_frame, ref_ast3);
+    ar_data_t *result1 = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_frame, ref_ast1);
+    ar_data_t *result2 = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_frame, ref_ast2);
+    ar_data_t *result3 = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_frame, ref_ast3);
     
     AR__HEAP__FREE(items);
     

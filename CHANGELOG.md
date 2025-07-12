@@ -4,7 +4,28 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-07-12
 
-### ✅ COMPLETED: Expression Evaluator Frame-Based Support (TDD Cycle 17)
+### ✅ COMPLETED: Expression Evaluator Full Frame-Based Migration
+- Completed full migration of expression evaluator to frame-based execution pattern
+  - Removed stored memory/context from evaluator struct (now stateless)
+  - Made all type-specific evaluate functions static internal implementation details
+  - Renamed evaluate_with_frame to evaluate as the single public API
+  - Updated create function to only take log parameter
+  - Simplified interface from 8 public functions to just 3 (create, destroy, evaluate)
+- Updated all expression evaluator tests
+  - Converted "wrong_type" tests to positive tests demonstrating unified evaluate function
+  - Renamed test functions to reflect their actual behavior
+  - All tests use the new frame-based API
+  - Zero memory leaks maintained
+- Fixed all client code
+  - Updated ar_instruction_evaluator_tests.c to use new API
+  - Verified all instruction evaluators using frame-based calls
+  - All tests pass across the entire codebase
+- Updated documentation
+  - Revised ar_expression_evaluator.md to reflect frame-based architecture
+  - Updated usage examples with frame creation and usage
+  - Documented the simplified public interface
+
+### ✅ COMPLETED: Expression Evaluator Frame-Based Support (TDD Cycle 17 - Initial)
 - Added evaluate_with_frame method to expression evaluator
   - New method accepts frame parameter and uses frame's memory/context
   - Maintains backward compatibility with existing evaluate method
@@ -136,7 +157,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - Removed memory parameter from create function
   - Updated evaluate to accept frame parameter
   - Memory now comes from frame during evaluation
-- Created generic ar_instruction_evaluator_fixture module
+- Created generic ar_evaluator_fixture module
   - Provides reusable test infrastructure for instruction evaluators
   - Manages test resources with automatic cleanup
   - Includes helper functions for creating test ASTs and frames

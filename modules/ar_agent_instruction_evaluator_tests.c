@@ -4,7 +4,7 @@
 #include <string.h>
 #include <inttypes.h>
 #include <unistd.h>
-#include "ar_instruction_evaluator_fixture.h"
+#include "ar_evaluator_fixture.h"
 #include "ar_agent_instruction_evaluator.h"
 #include "ar_expression_evaluator.h"
 #include "ar_instruction_ast.h"
@@ -23,20 +23,20 @@ static void test_agent_instruction_evaluator__evaluate_with_context(void) {
     ar_system__init(NULL, NULL);
     
     // Given a test fixture and frame-based agent evaluator
-    ar_instruction_evaluator_fixture_t *fixture = 
-        ar_instruction_evaluator_fixture__create("test_evaluate_with_context");
+    ar_evaluator_fixture_t *fixture = 
+        ar_evaluator_fixture__create("test_evaluate_with_context");
     assert(fixture != NULL);
     
     // Set up config in memory (since memory becomes the agent's context)
-    ar_data_t *memory = ar_instruction_evaluator_fixture__get_memory(fixture);
+    ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
     ar_data__set_map_string(memory, "config", "production");
     
     // Create frame using fixture
-    ar_frame_t *frame = ar_instruction_evaluator_fixture__create_frame(fixture);
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
     assert(frame != NULL);
     
-    ar_log_t *log = ar_instruction_evaluator_fixture__get_log(fixture);
-    ar_expression_evaluator_t *expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
     ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
         log, expr_eval
@@ -85,7 +85,7 @@ static void test_agent_instruction_evaluator__evaluate_with_context(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_agent_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(fixture);
+    ar_evaluator_fixture__destroy(fixture);
     
     // Clean up agency before shutting down
     ar_agency__reset();
@@ -102,15 +102,15 @@ static void test_agent_instruction_evaluator__evaluate_with_result(void) {
     ar_system__init(NULL, NULL);
     
     // Given a test fixture and frame-based agent evaluator
-    ar_instruction_evaluator_fixture_t *fixture = 
-        ar_instruction_evaluator_fixture__create("test_evaluate_with_result");
+    ar_evaluator_fixture_t *fixture = 
+        ar_evaluator_fixture__create("test_evaluate_with_result");
     assert(fixture != NULL);
     
-    ar_frame_t *frame = ar_instruction_evaluator_fixture__create_frame(fixture);
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
     assert(frame != NULL);
     
-    ar_log_t *log = ar_instruction_evaluator_fixture__get_log(fixture);
-    ar_expression_evaluator_t *expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
     ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
         log, expr_eval
@@ -154,7 +154,7 @@ static void test_agent_instruction_evaluator__evaluate_with_result(void) {
     assert(result == true);
     
     // And the agent ID should be stored in memory
-    ar_data_t *memory = ar_instruction_evaluator_fixture__get_memory(fixture);
+    ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
     int agent_id = ar_data__get_map_integer(memory, "agent_id");
     assert(agent_id > 0);  // Agent IDs start from 1
     
@@ -164,7 +164,7 @@ static void test_agent_instruction_evaluator__evaluate_with_result(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_agent_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(fixture);
+    ar_evaluator_fixture__destroy(fixture);
     
     // Clean up agency before shutting down
     ar_agency__reset();
@@ -181,15 +181,15 @@ static void test_agent_instruction_evaluator__evaluate_invalid_method(void) {
     ar_system__init(NULL, NULL);
     
     // Given a test fixture and frame-based agent evaluator (no methods registered)
-    ar_instruction_evaluator_fixture_t *fixture = 
-        ar_instruction_evaluator_fixture__create("test_evaluate_invalid_method");
+    ar_evaluator_fixture_t *fixture = 
+        ar_evaluator_fixture__create("test_evaluate_invalid_method");
     assert(fixture != NULL);
     
-    ar_frame_t *frame = ar_instruction_evaluator_fixture__create_frame(fixture);
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
     assert(frame != NULL);
     
-    ar_log_t *log = ar_instruction_evaluator_fixture__get_log(fixture);
-    ar_expression_evaluator_t *expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
     ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
         log, expr_eval
@@ -211,7 +211,7 @@ static void test_agent_instruction_evaluator__evaluate_invalid_method(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_agent_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(fixture);
+    ar_evaluator_fixture__destroy(fixture);
     
     // Clean up agency before shutting down
     ar_agency__reset();
@@ -228,15 +228,15 @@ static void test_agent_instruction_evaluator__evaluate_invalid_args(void) {
     ar_system__init(NULL, NULL);
     
     // Given a test fixture and frame-based agent evaluator
-    ar_instruction_evaluator_fixture_t *fixture = 
-        ar_instruction_evaluator_fixture__create("test_evaluate_invalid_args");
+    ar_evaluator_fixture_t *fixture = 
+        ar_evaluator_fixture__create("test_evaluate_invalid_args");
     assert(fixture != NULL);
     
-    ar_frame_t *frame = ar_instruction_evaluator_fixture__create_frame(fixture);
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
     assert(frame != NULL);
     
-    ar_log_t *log = ar_instruction_evaluator_fixture__get_log(fixture);
-    ar_expression_evaluator_t *expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
     ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
         log, expr_eval
@@ -293,7 +293,7 @@ static void test_agent_instruction_evaluator__evaluate_invalid_args(void) {
     
     // Cleanup
     ar_agent_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(fixture);
+    ar_evaluator_fixture__destroy(fixture);
     
     // Shutdown system
     ar_system__shutdown();
@@ -301,12 +301,12 @@ static void test_agent_instruction_evaluator__evaluate_invalid_args(void) {
 
 static void test_agent_instruction_evaluator__create_destroy(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *fixture = 
-        ar_instruction_evaluator_fixture__create("test_create_destroy");
+    ar_evaluator_fixture_t *fixture = 
+        ar_evaluator_fixture__create("test_create_destroy");
     assert(fixture != NULL);
     
-    ar_log_t *log = ar_instruction_evaluator_fixture__get_log(fixture);
-    ar_expression_evaluator_t *expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
     // When creating an agent instruction evaluator instance
     ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(log, expr_eval);
@@ -320,7 +320,7 @@ static void test_agent_instruction_evaluator__create_destroy(void) {
     // Then it should not crash (no assertion needed)
     
     // Cleanup dependencies
-    ar_instruction_evaluator_fixture__destroy(fixture);
+    ar_evaluator_fixture__destroy(fixture);
 }
 
 static void test_agent_instruction_evaluator__evaluate_with_instance(void) {
@@ -328,19 +328,19 @@ static void test_agent_instruction_evaluator__evaluate_with_instance(void) {
     ar_system__init(NULL, NULL);
     
     // Given a test fixture and frame-based agent evaluator with config data
-    ar_instruction_evaluator_fixture_t *fixture = 
-        ar_instruction_evaluator_fixture__create("test_evaluate_with_instance");
+    ar_evaluator_fixture_t *fixture = 
+        ar_evaluator_fixture__create("test_evaluate_with_instance");
     assert(fixture != NULL);
     
     // Set up config in memory (since memory becomes the agent's context)
-    ar_data_t *memory = ar_instruction_evaluator_fixture__get_memory(fixture);
+    ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
     ar_data__set_map_string(memory, "config", "test");
     
-    ar_frame_t *frame = ar_instruction_evaluator_fixture__create_frame(fixture);
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
     assert(frame != NULL);
     
-    ar_log_t *log = ar_instruction_evaluator_fixture__get_log(fixture);
-    ar_expression_evaluator_t *expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
     ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(log, expr_eval);
     assert(evaluator != NULL);
@@ -387,7 +387,7 @@ static void test_agent_instruction_evaluator__evaluate_with_instance(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_agent_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(fixture);
+    ar_evaluator_fixture__destroy(fixture);
     
     // Clean up agency before shutting down
     ar_agency__reset();
@@ -404,19 +404,19 @@ static void test_agent_instruction_evaluator__legacy_evaluate_function(void) {
     ar_system__init(NULL, NULL);
     
     // Given a test fixture and frame-based agent evaluator with status data
-    ar_instruction_evaluator_fixture_t *fixture = 
-        ar_instruction_evaluator_fixture__create("test_legacy_evaluate_function");
+    ar_evaluator_fixture_t *fixture = 
+        ar_evaluator_fixture__create("test_legacy_evaluate_function");
     assert(fixture != NULL);
     
     // Set up status in memory (since memory becomes the agent's context)
-    ar_data_t *memory = ar_instruction_evaluator_fixture__get_memory(fixture);
+    ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
     ar_data__set_map_string(memory, "status", "legacy");
     
-    ar_frame_t *frame = ar_instruction_evaluator_fixture__create_frame(fixture);
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
     assert(frame != NULL);
     
-    ar_log_t *log = ar_instruction_evaluator_fixture__get_log(fixture);
-    ar_expression_evaluator_t *expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
     // Create an evaluator instance
     ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
@@ -466,7 +466,7 @@ static void test_agent_instruction_evaluator__legacy_evaluate_function(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_agent_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(fixture);
+    ar_evaluator_fixture__destroy(fixture);
     
     // Clean up agency before shutting down
     ar_agency__reset();

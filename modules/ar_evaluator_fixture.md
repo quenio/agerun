@@ -1,6 +1,6 @@
 # Instruction Evaluator Fixture Module
 
-The instruction evaluator fixture module (`ar_instruction_evaluator_fixture`) provides reusable test infrastructure for testing instruction evaluators. It manages common test resources and provides helper functions to simplify test creation.
+The instruction evaluator fixture module (`ar_evaluator_fixture`) provides reusable test infrastructure for testing instruction evaluators. It manages common test resources and provides helper functions to simplify test creation.
 
 ## Purpose
 
@@ -34,17 +34,17 @@ Provides convenience functions for:
 ### Types
 
 ```c
-typedef struct ar_instruction_evaluator_fixture_s ar_instruction_evaluator_fixture_t;
+typedef struct ar_evaluator_fixture_s ar_evaluator_fixture_t;
 ```
 
 An opaque type representing the test fixture instance.
 
 ### Lifecycle Functions
 
-#### ar_instruction_evaluator_fixture__create
+#### ar_evaluator_fixture__create
 
 ```c
-ar_instruction_evaluator_fixture_t* ar_instruction_evaluator_fixture__create(
+ar_evaluator_fixture_t* ar_evaluator_fixture__create(
     const char *ref_test_name
 );
 ```
@@ -58,11 +58,11 @@ Creates a new test fixture instance with all necessary resources.
 
 **Ownership:** Caller owns the returned fixture and must destroy it
 
-#### ar_instruction_evaluator_fixture__destroy
+#### ar_evaluator_fixture__destroy
 
 ```c
-void ar_instruction_evaluator_fixture__destroy(
-    ar_instruction_evaluator_fixture_t *own_fixture
+void ar_evaluator_fixture__destroy(
+    ar_evaluator_fixture_t *own_fixture
 );
 ```
 
@@ -73,31 +73,31 @@ Destroys the fixture and all tracked resources.
 
 ### Resource Access Functions
 
-#### ar_instruction_evaluator_fixture__get_log
+#### ar_evaluator_fixture__get_log
 
 ```c
-ar_log_t* ar_instruction_evaluator_fixture__get_log(
-    const ar_instruction_evaluator_fixture_t *ref_fixture
+ar_log_t* ar_evaluator_fixture__get_log(
+    const ar_evaluator_fixture_t *ref_fixture
 );
 ```
 
 Returns the log instance for error checking.
 
-#### ar_instruction_evaluator_fixture__get_memory
+#### ar_evaluator_fixture__get_memory
 
 ```c
-ar_data_t* ar_instruction_evaluator_fixture__get_memory(
-    const ar_instruction_evaluator_fixture_t *ref_fixture
+ar_data_t* ar_evaluator_fixture__get_memory(
+    const ar_evaluator_fixture_t *ref_fixture
 );
 ```
 
 Returns the memory map for test data storage.
 
-#### ar_instruction_evaluator_fixture__get_expression_evaluator
+#### ar_evaluator_fixture__get_expression_evaluator
 
 ```c
-ar_expression_evaluator_t* ar_instruction_evaluator_fixture__get_expression_evaluator(
-    const ar_instruction_evaluator_fixture_t *ref_fixture
+ar_expression_evaluator_t* ar_evaluator_fixture__get_expression_evaluator(
+    const ar_evaluator_fixture_t *ref_fixture
 );
 ```
 
@@ -105,11 +105,11 @@ Returns the expression evaluator for test use.
 
 ### Helper Functions
 
-#### ar_instruction_evaluator_fixture__create_frame
+#### ar_evaluator_fixture__create_frame
 
 ```c
-ar_frame_t* ar_instruction_evaluator_fixture__create_frame(
-    ar_instruction_evaluator_fixture_t *mut_fixture
+ar_frame_t* ar_evaluator_fixture__create_frame(
+    ar_evaluator_fixture_t *mut_fixture
 );
 ```
 
@@ -119,11 +119,11 @@ Creates a new frame with default context and message.
 
 **Note:** The frame is automatically cleaned up when the fixture is destroyed
 
-#### ar_instruction_evaluator_fixture__create_assignment_int
+#### ar_evaluator_fixture__create_assignment_int
 
 ```c
-ar_instruction_ast_t* ar_instruction_evaluator_fixture__create_assignment_int(
-    ar_instruction_evaluator_fixture_t *mut_fixture,
+ar_instruction_ast_t* ar_evaluator_fixture__create_assignment_int(
+    ar_evaluator_fixture_t *mut_fixture,
     const char *ref_path,
     int value
 );
@@ -137,11 +137,11 @@ Creates an assignment AST with an integer literal expression.
 
 **Returns:** New assignment AST (tracked by fixture)
 
-#### ar_instruction_evaluator_fixture__create_assignment_string
+#### ar_evaluator_fixture__create_assignment_string
 
 ```c
-ar_instruction_ast_t* ar_instruction_evaluator_fixture__create_assignment_string(
-    ar_instruction_evaluator_fixture_t *mut_fixture,
+ar_instruction_ast_t* ar_evaluator_fixture__create_assignment_string(
+    ar_evaluator_fixture_t *mut_fixture,
     const char *ref_path,
     const char *ref_value
 );
@@ -155,11 +155,11 @@ Creates an assignment AST with a string literal expression.
 
 **Returns:** New assignment AST (tracked by fixture)
 
-#### ar_instruction_evaluator_fixture__create_assignment_expr
+#### ar_evaluator_fixture__create_assignment_expr
 
 ```c
-ar_instruction_ast_t* ar_instruction_evaluator_fixture__create_assignment_expr(
-    ar_instruction_evaluator_fixture_t *mut_fixture,
+ar_instruction_ast_t* ar_evaluator_fixture__create_assignment_expr(
+    ar_evaluator_fixture_t *mut_fixture,
     const char *ref_path,
     ar_expression_ast_t *own_expr
 );
@@ -180,24 +180,24 @@ Creates an assignment AST with a custom expression.
 ```c
 static void test_assignment_evaluator__evaluate_integer(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *fixture = 
-        ar_instruction_evaluator_fixture__create("test_evaluate_integer");
+    ar_evaluator_fixture_t *fixture = 
+        ar_evaluator_fixture__create("test_evaluate_integer");
     assert(fixture != NULL);
     
     // When creating an assignment: memory.count := 42
-    ar_instruction_ast_t *ast = ar_instruction_evaluator_fixture__create_assignment_int(
+    ar_instruction_ast_t *ast = ar_evaluator_fixture__create_assignment_int(
         fixture, "memory.count", 42
     );
     assert(ast != NULL);
     
     // Create a frame for evaluation
-    ar_frame_t *frame = ar_instruction_evaluator_fixture__create_frame(fixture);
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
     assert(frame != NULL);
     
     // Get resources for evaluator creation
-    ar_log_t *log = ar_instruction_evaluator_fixture__get_log(fixture);
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = 
-        ar_instruction_evaluator_fixture__get_expression_evaluator(fixture);
+        ar_evaluator_fixture__get_expression_evaluator(fixture);
     
     // Create and test evaluator
     ar_assignment_instruction_evaluator_t *evaluator = 
@@ -207,12 +207,12 @@ static void test_assignment_evaluator__evaluate_integer(void) {
     assert(result == true);
     
     // Verify result
-    ar_data_t *memory = ar_instruction_evaluator_fixture__get_memory(fixture);
+    ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
     assert(ar_data__get_map_integer(memory, "count") == 42);
     
     // Cleanup (fixture handles AST and frame cleanup)
     ar_assignment_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(fixture);
+    ar_evaluator_fixture__destroy(fixture);
 }
 ```
 
@@ -227,7 +227,7 @@ ar_expression_ast_t *expr = ar_expression_ast__create_binary_op(
 );
 
 // Create assignment with expression
-ar_instruction_ast_t *ast = ar_instruction_evaluator_fixture__create_assignment_expr(
+ar_instruction_ast_t *ast = ar_evaluator_fixture__create_assignment_expr(
     fixture, "memory.sum", expr
 );
 ```
@@ -251,7 +251,7 @@ This ensures no memory leaks in tests even if assertions fail.
 
 ## Testing
 
-The fixture itself has tests in `ar_instruction_evaluator_fixture_tests.c` that verify:
+The fixture itself has tests in `ar_evaluator_fixture_tests.c` that verify:
 - Resource creation and cleanup
 - Helper function correctness
 - Memory leak detection

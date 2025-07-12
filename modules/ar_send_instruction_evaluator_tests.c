@@ -10,16 +10,16 @@
 #include "ar_list.h"
 #include "ar_log.h"
 #include "ar_event.h"
-#include "ar_instruction_evaluator_fixture.h"
+#include "ar_evaluator_fixture.h"
 #include "ar_frame.h"
 
 static void test_send_instruction_evaluator__create_destroy(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_send_create_destroy");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_send_create_destroy");
     assert(own_fixture != NULL);
     
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
     
     // When creating a send instruction evaluator (without memory parameter)
     ar_send_instruction_evaluator_t *own_evaluator = ar_send_instruction_evaluator__create(
@@ -31,17 +31,17 @@ static void test_send_instruction_evaluator__create_destroy(void) {
     
     // Cleanup
     ar_send_instruction_evaluator__destroy(own_evaluator);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_send_instruction_evaluator__evaluate_with_instance(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_send_evaluate_instance");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_send_evaluate_instance");
     assert(own_fixture != NULL);
     
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     // When creating a send instruction evaluator
     ar_send_instruction_evaluator_t *own_evaluator = ar_send_instruction_evaluator__create(
@@ -80,17 +80,17 @@ static void test_send_instruction_evaluator__evaluate_with_instance(void) {
     // Cleanup
     ar_instruction_ast__destroy(own_ast);
     ar_send_instruction_evaluator__destroy(own_evaluator);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_instruction_evaluator__evaluate_send_integer_message(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *fixture = ar_instruction_evaluator_fixture__create("test_send_integer_message");
+    ar_evaluator_fixture_t *fixture = ar_evaluator_fixture__create("test_send_integer_message");
     assert(fixture != NULL);
     
-    ar_log_t *log = ar_instruction_evaluator_fixture__get_log(fixture);
-    ar_expression_evaluator_t *expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(fixture);
-    ar_frame_t *frame = ar_instruction_evaluator_fixture__create_frame(fixture);
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
     
     ar_send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
         log, expr_eval
@@ -128,17 +128,17 @@ static void test_instruction_evaluator__evaluate_send_integer_message(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_send_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(fixture);
+    ar_evaluator_fixture__destroy(fixture);
 }
 
 static void test_instruction_evaluator__evaluate_send_string_message(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *fixture = ar_instruction_evaluator_fixture__create("test_send_string_message");
+    ar_evaluator_fixture_t *fixture = ar_evaluator_fixture__create("test_send_string_message");
     assert(fixture != NULL);
     
-    ar_log_t *log = ar_instruction_evaluator_fixture__get_log(fixture);
-    ar_expression_evaluator_t *expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(fixture);
-    ar_frame_t *frame = ar_instruction_evaluator_fixture__create_frame(fixture);
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
     
     ar_send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
         log, expr_eval
@@ -176,18 +176,18 @@ static void test_instruction_evaluator__evaluate_send_string_message(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_send_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(fixture);
+    ar_evaluator_fixture__destroy(fixture);
 }
 
 static void test_instruction_evaluator__evaluate_send_with_result(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *fixture = ar_instruction_evaluator_fixture__create("test_send_with_result");
+    ar_evaluator_fixture_t *fixture = ar_evaluator_fixture__create("test_send_with_result");
     assert(fixture != NULL);
     
-    ar_log_t *log = ar_instruction_evaluator_fixture__get_log(fixture);
-    ar_expression_evaluator_t *expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(fixture);
-    ar_frame_t *frame = ar_instruction_evaluator_fixture__create_frame(fixture);
-    ar_data_t *memory = ar_instruction_evaluator_fixture__get_memory(fixture);
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
+    ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
     
     ar_send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
         log, expr_eval
@@ -231,18 +231,18 @@ static void test_instruction_evaluator__evaluate_send_with_result(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_send_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(fixture);
+    ar_evaluator_fixture__destroy(fixture);
 }
 
 static void test_instruction_evaluator__evaluate_send_memory_reference(void) {
     // Given a test fixture with memory containing a message
-    ar_instruction_evaluator_fixture_t *fixture = ar_instruction_evaluator_fixture__create("test_send_memory_reference");
+    ar_evaluator_fixture_t *fixture = ar_evaluator_fixture__create("test_send_memory_reference");
     assert(fixture != NULL);
     
-    ar_log_t *log = ar_instruction_evaluator_fixture__get_log(fixture);
-    ar_expression_evaluator_t *expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(fixture);
-    ar_frame_t *frame = ar_instruction_evaluator_fixture__create_frame(fixture);
-    ar_data_t *memory = ar_instruction_evaluator_fixture__get_memory(fixture);
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
+    ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
     
     ar_data_t *msg_value = ar_data__create_string("Hello from memory");
     ar_data__set_map_data(memory, "msg", msg_value);
@@ -284,17 +284,17 @@ static void test_instruction_evaluator__evaluate_send_memory_reference(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_send_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(fixture);
+    ar_evaluator_fixture__destroy(fixture);
 }
 
 static void test_instruction_evaluator__evaluate_send_invalid_args(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *fixture = ar_instruction_evaluator_fixture__create("test_send_invalid_args");
+    ar_evaluator_fixture_t *fixture = ar_evaluator_fixture__create("test_send_invalid_args");
     assert(fixture != NULL);
     
-    ar_log_t *log = ar_instruction_evaluator_fixture__get_log(fixture);
-    ar_expression_evaluator_t *expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(fixture);
-    ar_frame_t *frame = ar_instruction_evaluator_fixture__create_frame(fixture);
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
     
     ar_send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
         log, expr_eval
@@ -328,7 +328,7 @@ static void test_instruction_evaluator__evaluate_send_invalid_args(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_send_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(fixture);
+    ar_evaluator_fixture__destroy(fixture);
 }
 
 int main(void) {

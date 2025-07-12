@@ -30,7 +30,7 @@ static void test_instruction_evaluator__create_destroy(void) {
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, context);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log);
     assert(expr_eval != NULL);
     
     // When creating an instruction evaluator
@@ -60,7 +60,7 @@ static void test_instruction_evaluator__create_with_null_context(void) {
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log);
     assert(expr_eval != NULL);
     
     // When creating an instruction evaluator with NULL context and message
@@ -114,7 +114,7 @@ static void test_instruction_evaluator__create_with_null_memory(void) {
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, dummy_memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log);
     assert(expr_eval != NULL);
     
     // When creating an instruction evaluator (memory comes from frame now)
@@ -140,7 +140,7 @@ static void test_instruction_evaluator__stores_evaluator_instances_internally(vo
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log);
     assert(expr_eval != NULL);
     
     // When creating an instruction evaluator
@@ -198,7 +198,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, context);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log);
     assert(expr_eval != NULL);
     
     ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
@@ -551,7 +551,7 @@ static void test_instruction_evaluator__only_unified_interface_exposed(void) {
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log);
     assert(expr_eval != NULL);
     
     ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
@@ -628,7 +628,7 @@ static void test_instruction_evaluator__unified_evaluate_assignment(void) {
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
+    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log);
     assert(expr_eval != NULL);
     
     ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(

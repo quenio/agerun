@@ -10,16 +10,16 @@
 #include "ar_condition_instruction_evaluator.h"
 #include "ar_log.h"
 #include "ar_event.h"
-#include "ar_instruction_evaluator_fixture.h"
+#include "ar_evaluator_fixture.h"
 #include "ar_frame.h"
 
 static void test_condition_instruction_evaluator__create_destroy(void) {
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_create_destroy");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_create_destroy");
     assert(own_fixture != NULL);
     
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
     
     // When creating a condition instruction evaluator
     ar_condition_instruction_evaluator_t *own_evaluator = ar_condition_instruction_evaluator__create(
@@ -33,17 +33,17 @@ static void test_condition_instruction_evaluator__create_destroy(void) {
     ar_condition_instruction_evaluator__destroy(own_evaluator);
     
     // Cleanup
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_condition_instruction_evaluator__evaluate_with_instance(void) {
     // Given a test fixture with memory containing a condition value
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_evaluate_with_instance");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_evaluate_with_instance");
     assert(own_fixture != NULL);
     
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
     assert(ar_data__set_map_data(mut_memory, "x", ar_data__create_integer(10)));
     
     ar_condition_instruction_evaluator_t *own_evaluator = ar_condition_instruction_evaluator__create(
@@ -81,7 +81,7 @@ static void test_condition_instruction_evaluator__evaluate_with_instance(void) {
     assert(ast_set == true);
     
     // Create a frame for evaluation
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     // When evaluating using the instance with frame
     bool result = ar_condition_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
@@ -96,17 +96,17 @@ static void test_condition_instruction_evaluator__evaluate_with_instance(void) {
     // Cleanup
     ar_instruction_ast__destroy(own_ast);
     ar_condition_instruction_evaluator__destroy(own_evaluator);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_condition_instruction_evaluator__evaluate_without_legacy(void) {
     // Given a test fixture with memory containing a flag value
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_evaluate_without_legacy");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_evaluate_without_legacy");
     assert(own_fixture != NULL);
     
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
     assert(ar_data__set_map_data(mut_memory, "flag", ar_data__create_integer(0)));
     
     // When creating a condition instruction evaluator instance
@@ -143,7 +143,7 @@ static void test_condition_instruction_evaluator__evaluate_without_legacy(void) 
     assert(ast_set == true);
     
     // Create a frame for evaluation
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     // When evaluating using the instance-based interface with frame
     bool result = ar_condition_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
@@ -158,17 +158,17 @@ static void test_condition_instruction_evaluator__evaluate_without_legacy(void) 
     // Cleanup
     ar_instruction_ast__destroy(own_ast);
     ar_condition_instruction_evaluator__destroy(own_evaluator);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_instruction_evaluator__evaluate_if_true_condition(void) {
     // Given a test fixture with memory containing a condition
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_if_true_condition");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_if_true_condition");
     assert(own_fixture != NULL);
     
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
     assert(ar_data__set_map_data(mut_memory, "x", ar_data__create_integer(10)));
     
     ar_condition_instruction_evaluator_t *evaluator = ar_condition_instruction_evaluator__create(
@@ -206,7 +206,7 @@ static void test_instruction_evaluator__evaluate_if_true_condition(void) {
     assert(ast_set == true);
     
     // Create a frame for evaluation
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     // When evaluating the if instruction with frame
     bool result = ar_condition_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
@@ -221,17 +221,17 @@ static void test_instruction_evaluator__evaluate_if_true_condition(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_condition_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_instruction_evaluator__evaluate_if_false_condition(void) {
     // Given a test fixture with memory containing a condition
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_if_false_condition");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_if_false_condition");
     assert(own_fixture != NULL);
     
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
     assert(ar_data__set_map_data(mut_memory, "x", ar_data__create_integer(3)));
     
     ar_condition_instruction_evaluator_t *evaluator = ar_condition_instruction_evaluator__create(
@@ -269,7 +269,7 @@ static void test_instruction_evaluator__evaluate_if_false_condition(void) {
     assert(ast_set == true);
     
     // Create a frame for evaluation
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     // When evaluating the if instruction with frame
     bool result = ar_condition_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
@@ -284,17 +284,17 @@ static void test_instruction_evaluator__evaluate_if_false_condition(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_condition_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_instruction_evaluator__evaluate_if_with_expressions(void) {
     // Given a test fixture with memory containing values
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_if_with_expressions");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_if_with_expressions");
     assert(own_fixture != NULL);
     
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
     assert(ar_data__set_map_data(mut_memory, "a", ar_data__create_integer(10)));
     assert(ar_data__set_map_data(mut_memory, "b", ar_data__create_integer(20)));
     assert(ar_data__set_map_data(mut_memory, "flag", ar_data__create_integer(1)));
@@ -340,7 +340,7 @@ static void test_instruction_evaluator__evaluate_if_with_expressions(void) {
     assert(ast_set == true);
     
     // Create a frame for evaluation
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     // When evaluating the if instruction with frame
     bool result = ar_condition_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
@@ -355,17 +355,17 @@ static void test_instruction_evaluator__evaluate_if_with_expressions(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_condition_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_instruction_evaluator__evaluate_if_nested(void) {
     // Given a test fixture with memory
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_if_nested");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_if_nested");
     assert(own_fixture != NULL);
     
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
     assert(ar_data__set_map_data(mut_memory, "x", ar_data__create_integer(15)));
     
     ar_condition_instruction_evaluator_t *evaluator = ar_condition_instruction_evaluator__create(
@@ -405,7 +405,7 @@ static void test_instruction_evaluator__evaluate_if_nested(void) {
     assert(ast_set == true);
     
     // Create a frame for evaluation
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     // When evaluating the if instruction with frame
     bool result = ar_condition_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
@@ -420,16 +420,16 @@ static void test_instruction_evaluator__evaluate_if_nested(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_condition_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_instruction_evaluator__evaluate_if_invalid_args(void) {
     // Given a test fixture with memory
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_if_invalid_args");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_if_invalid_args");
     assert(own_fixture != NULL);
     
-    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
-    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
     
     ar_condition_instruction_evaluator_t *evaluator = ar_condition_instruction_evaluator__create(
         ref_log, ref_expr_eval
@@ -458,7 +458,7 @@ static void test_instruction_evaluator__evaluate_if_invalid_args(void) {
     assert(ast_set1 == true);
     
     // Create a frame for evaluation
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     bool result1 = ar_condition_instruction_evaluator__evaluate(evaluator, ref_frame, ast1);
     assert(result1 == false);
@@ -481,7 +481,7 @@ static void test_instruction_evaluator__evaluate_if_invalid_args(void) {
     
     // Cleanup
     ar_condition_instruction_evaluator__destroy(evaluator);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
 }
 
 int main(void) {

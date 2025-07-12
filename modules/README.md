@@ -1490,9 +1490,9 @@ The [interpreter fixture module](ar_interpreter_fixture.md) provides a proper ab
 - **Based on Interpreter API**: Uses interpreter module functions rather than duplicating instruction fixture logic
 - **Designed for Interpreter Tests**: Specifically tailored for testing interpreter execution behavior
 
-### Instruction Evaluator Fixture Module (`ar_instruction_evaluator_fixture`)
+### Instruction Evaluator Fixture Module (`ar_evaluator_fixture`)
 
-The [instruction evaluator fixture module](ar_instruction_evaluator_fixture.md) provides reusable test infrastructure for instruction evaluator tests:
+The [instruction evaluator fixture module](ar_evaluator_fixture.md) provides reusable test infrastructure for instruction evaluator tests:
 
 - **Resource Management**: Manages test resources (memory, log, expression evaluator, frames) with automatic cleanup
 - **Helper Functions**: Provides convenience functions for creating assignment ASTs with various expression types

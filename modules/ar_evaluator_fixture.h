@@ -10,7 +10,7 @@
 #include "ar_instruction_ast.h"
 
 /**
- * @file ar_instruction_evaluator_fixture.h
+ * @file ar_evaluator_fixture.h
  * @brief Generic test fixture for instruction evaluator tests
  * 
  * This module provides test infrastructure for instruction evaluator test suites.
@@ -20,7 +20,7 @@
  */
 
 /* Opaque fixture type */
-typedef struct ar_instruction_evaluator_fixture_s ar_instruction_evaluator_fixture_t;
+typedef struct ar_evaluator_fixture_s ar_evaluator_fixture_t;
 
 /**
  * Creates a new test fixture for assignment instruction evaluator tests
@@ -28,7 +28,7 @@ typedef struct ar_instruction_evaluator_fixture_s ar_instruction_evaluator_fixtu
  * @return A newly created test fixture
  * @note Ownership: Returns an owned fixture that caller must destroy
  */
-ar_instruction_evaluator_fixture_t* ar_instruction_evaluator_fixture__create(
+ar_evaluator_fixture_t* ar_evaluator_fixture__create(
     const char *ref_test_name
 );
 
@@ -37,8 +37,8 @@ ar_instruction_evaluator_fixture_t* ar_instruction_evaluator_fixture__create(
  * @param own_fixture The fixture to destroy
  * @note Ownership: Takes ownership and destroys the fixture and all tracked resources
  */
-void ar_instruction_evaluator_fixture__destroy(
-    ar_instruction_evaluator_fixture_t *own_fixture
+void ar_evaluator_fixture__destroy(
+    ar_evaluator_fixture_t *own_fixture
 );
 
 /* Note: The fixture does not manage evaluators - tests create and manage them independently */
@@ -49,8 +49,8 @@ void ar_instruction_evaluator_fixture__destroy(
  * @return The expression evaluator (borrowed reference)
  * @note Ownership: Returns a borrowed reference; do not destroy
  */
-ar_expression_evaluator_t* ar_instruction_evaluator_fixture__get_expression_evaluator(
-    const ar_instruction_evaluator_fixture_t *ref_fixture
+ar_expression_evaluator_t* ar_evaluator_fixture__get_expression_evaluator(
+    const ar_evaluator_fixture_t *ref_fixture
 );
 
 /**
@@ -59,8 +59,8 @@ ar_expression_evaluator_t* ar_instruction_evaluator_fixture__get_expression_eval
  * @return The memory map (borrowed reference)
  * @note Ownership: Returns a borrowed reference; do not destroy
  */
-ar_data_t* ar_instruction_evaluator_fixture__get_memory(
-    const ar_instruction_evaluator_fixture_t *ref_fixture
+ar_data_t* ar_evaluator_fixture__get_memory(
+    const ar_evaluator_fixture_t *ref_fixture
 );
 
 /**
@@ -69,8 +69,8 @@ ar_data_t* ar_instruction_evaluator_fixture__get_memory(
  * @return The log (borrowed reference)
  * @note Ownership: Returns a borrowed reference; do not destroy
  */
-ar_log_t* ar_instruction_evaluator_fixture__get_log(
-    const ar_instruction_evaluator_fixture_t *ref_fixture
+ar_log_t* ar_evaluator_fixture__get_log(
+    const ar_evaluator_fixture_t *ref_fixture
 );
 
 /**
@@ -80,8 +80,8 @@ ar_log_t* ar_instruction_evaluator_fixture__get_log(
  * @note Ownership: Returns a borrowed reference; fixture owns and will destroy it
  * @note The frame is created with empty context and message maps
  */
-ar_frame_t* ar_instruction_evaluator_fixture__create_frame(
-    ar_instruction_evaluator_fixture_t *mut_fixture
+ar_frame_t* ar_evaluator_fixture__create_frame(
+    ar_evaluator_fixture_t *mut_fixture
 );
 
 /**
@@ -92,8 +92,8 @@ ar_frame_t* ar_instruction_evaluator_fixture__create_frame(
  * @return A newly created assignment AST with expression
  * @note Ownership: Returns a borrowed reference; fixture owns and will destroy it
  */
-ar_instruction_ast_t* ar_instruction_evaluator_fixture__create_assignment_int(
-    ar_instruction_evaluator_fixture_t *mut_fixture,
+ar_instruction_ast_t* ar_evaluator_fixture__create_assignment_int(
+    ar_evaluator_fixture_t *mut_fixture,
     const char *ref_path,
     int value
 );
@@ -106,8 +106,8 @@ ar_instruction_ast_t* ar_instruction_evaluator_fixture__create_assignment_int(
  * @return A newly created assignment AST with expression
  * @note Ownership: Returns a borrowed reference; fixture owns and will destroy it
  */
-ar_instruction_ast_t* ar_instruction_evaluator_fixture__create_assignment_string(
-    ar_instruction_evaluator_fixture_t *mut_fixture,
+ar_instruction_ast_t* ar_evaluator_fixture__create_assignment_string(
+    ar_evaluator_fixture_t *mut_fixture,
     const char *ref_path,
     const char *ref_value
 );
@@ -120,8 +120,8 @@ ar_instruction_ast_t* ar_instruction_evaluator_fixture__create_assignment_string
  * @return A newly created assignment AST
  * @note Ownership: Takes ownership of expr_ast. Returns borrowed reference.
  */
-ar_instruction_ast_t* ar_instruction_evaluator_fixture__create_assignment_expr(
-    ar_instruction_evaluator_fixture_t *mut_fixture,
+ar_instruction_ast_t* ar_evaluator_fixture__create_assignment_expr(
+    ar_evaluator_fixture_t *mut_fixture,
     const char *ref_path,
     ar_expression_ast_t *own_expr_ast
 );
@@ -132,8 +132,8 @@ ar_instruction_ast_t* ar_instruction_evaluator_fixture__create_assignment_expr(
  * @param own_ast The AST to track
  * @note Ownership: Takes ownership of the AST
  */
-void ar_instruction_evaluator_fixture__track_ast(
-    ar_instruction_evaluator_fixture_t *mut_fixture,
+void ar_evaluator_fixture__track_ast(
+    ar_evaluator_fixture_t *mut_fixture,
     ar_instruction_ast_t *own_ast
 );
 
@@ -142,8 +142,8 @@ void ar_instruction_evaluator_fixture__track_ast(
  * @param ref_fixture The fixture to check
  * @return true if no memory leaks, false if leaks detected
  */
-bool ar_instruction_evaluator_fixture__check_memory(
-    const ar_instruction_evaluator_fixture_t *ref_fixture
+bool ar_evaluator_fixture__check_memory(
+    const ar_evaluator_fixture_t *ref_fixture
 );
 
 #endif /* AGERUN_INSTRUCTION_EVALUATOR_FIXTURE_H */

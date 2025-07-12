@@ -178,6 +178,12 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Add evaluate_with_frame method to expression evaluator
   - [x] Update all instruction evaluators to use frame-based expression evaluation
   - [x] Maintain backward compatibility during transition
+  - [x] Complete expression evaluator frame migration (Completed 2025-07-12)
+    - [x] Remove stored memory/context from evaluator struct
+    - [x] Make all type-specific evaluate functions static
+    - [x] Rename evaluate_with_frame to evaluate (single public API)
+    - [x] Update all tests to use new API
+    - [x] Update documentation to reflect frame-based pattern
 
 #### Phase 5: Integrate into Interpreter
 - [ ] TDD Cycle 18: Update interpreter

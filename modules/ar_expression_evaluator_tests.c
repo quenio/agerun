@@ -12,7 +12,7 @@
 #include "ar_heap.h"
 #include "ar_log.h"
 #include "ar_event.h"
-#include "ar_instruction_evaluator_fixture.h"
+#include "ar_evaluator_fixture.h"
 #include "ar_frame.h"
 
 /**
@@ -21,25 +21,18 @@
 static void test_create_destroy_with_log(void) {
     printf("Testing expression evaluator create/destroy with ar_log...\n");
     
-    // Given an ar_log instance and a memory map
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    // Given a test fixture
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_create_destroy_with_log");
+    assert(own_fixture != NULL);
     
-    ar_data_t *memory = ar_data__create_map();
-    assert(memory != NULL);
+    // When getting the expression evaluator from the fixture
+    ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
     
-    // When creating an evaluator with ar_log, memory, and no context
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
+    // Then the evaluator should exist
+    assert(ref_evaluator != NULL);
     
-    // Then the evaluator should be created successfully
-    assert(evaluator != NULL);
-    
-    // When destroying the evaluator
-    ar_expression_evaluator__destroy(evaluator);
-    
-    // Clean up
-    ar_data__destroy(memory);
-    ar_log__destroy(log);
+    // Clean up (fixture handles all cleanup)
+    ar_evaluator_fixture__destroy(own_fixture);
     
     printf("  ✓ Create and destroy evaluator with ar_log\n");
 }
@@ -47,64 +40,25 @@ static void test_create_destroy_with_log(void) {
 /**
  * Test creating evaluator with context
  */
-static void test_create_with_context(void) {
-    printf("Testing expression evaluator create with context...\n");
+static void test_create_with_log_only(void) {
+    printf("Testing expression evaluator create with log only...\n");
     
-    // Given a log, memory map and context map
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    // Given a test fixture
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_create_with_log_only");
+    assert(own_fixture != NULL);
     
-    ar_data_t *memory = ar_data__create_map();
-    ar_data_t *context = ar_data__create_map();
-    assert(memory != NULL);
-    assert(context != NULL);
+    // When getting the expression evaluator from the fixture
+    ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
     
-    // Add some data to context
-    ar_data__set_map_string(context, "user", "test_user");
+    // Then the evaluator should exist
+    assert(ref_evaluator != NULL);
     
-    // When creating an evaluator with log, memory and context
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, context);
+    // Clean up (fixture handles all cleanup)
+    ar_evaluator_fixture__destroy(own_fixture);
     
-    // Then the evaluator should be created successfully
-    assert(evaluator != NULL);
-    
-    // Clean up
-    ar_expression_evaluator__destroy(evaluator);
-    ar_data__destroy(memory);
-    ar_data__destroy(context);
-    ar_log__destroy(log);
-    
-    printf("  ✓ Create evaluator with context\n");
+    printf("  ✓ Create evaluator with log only\n");
 }
 
-/**
- * Test NULL memory handling
- */
-static void test_create_null_memory(void) {
-    printf("Testing expression evaluator with NULL memory...\n");
-    
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
-    
-    // When creating an evaluator with NULL memory
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, NULL, NULL);
-    
-    // Then creation should fail
-    assert(evaluator == NULL);
-    
-    // And an error should be logged
-    ar_event_t *error_event = ar_log__get_last_error(log);
-    assert(error_event != NULL);
-    const char *error_msg = ar_event__get_message(error_event);
-    assert(error_msg != NULL);
-    assert(strstr(error_msg, "NULL memory") != NULL);
-    
-    // Clean up
-    ar_log__destroy(log);
-    
-    printf("  ✓ Handle NULL memory correctly\n");
-}
 
 /**
  * Test evaluating integer literal
@@ -113,18 +67,18 @@ static void test_evaluate_literal_int(void) {
     printf("Testing expression evaluator literal int...\n");
     
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_evaluate_literal_int");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_evaluate_literal_int");
     assert(own_fixture != NULL);
     
-    ar_expression_evaluator_t *ref_evaluator = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     // Given an integer literal AST node
     ar_expression_ast_t *own_ast = ar_expression_ast__create_literal_int(42);
     assert(own_ast != NULL);
     
-    // When evaluating the integer literal using evaluate_with_frame
-    ar_data_t *own_result = ar_expression_evaluator__evaluate_with_frame(ref_evaluator, ref_frame, own_ast);
+    // When evaluating the integer literal using evaluate
+    ar_data_t *own_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
     
     // Then it should return the integer value
     assert(own_result != NULL);
@@ -142,44 +96,42 @@ static void test_evaluate_literal_int(void) {
     // Clean up
     ar_data__destroy(own_result);
     ar_expression_ast__destroy(own_ast);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
     
     printf("  ✓ Evaluate integer literal\n");
 }
 
 /**
- * Test evaluating non-integer node returns NULL
+ * Test evaluate function handles string literal correctly
  */
-static void test_evaluate_literal_int_wrong_type(void) {
-    printf("Testing expression evaluator literal int with wrong type...\n");
+static void test_evaluate_handles_string_literal(void) {
+    printf("Testing expression evaluator with string when expecting int...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    // Given a test fixture
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_evaluate_handles_string_literal");
+    assert(own_fixture != NULL);
     
-    // Given a memory map and evaluator
-    ar_data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
-    assert(evaluator != NULL);
+    ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
-    // Given a string literal AST node (wrong type)
-    ar_expression_ast_t *ast = ar_expression_ast__create_literal_string("hello");
-    assert(ast != NULL);
+    // Given a string literal AST node (not an integer)
+    ar_expression_ast_t *own_ast = ar_expression_ast__create_literal_string("hello");
+    assert(own_ast != NULL);
     
-    // When evaluating with integer evaluator
-    ar_data_t *result = ar_expression_evaluator__evaluate_literal_int(evaluator, ast);
+    // When evaluating with the general evaluate function
+    ar_data_t *own_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
     
-    // Then it should return NULL
-    assert(result == NULL);
+    // Then it should return a string value (not NULL)
+    assert(own_result != NULL);
+    assert(ar_data__get_type(own_result) == AR_DATA_TYPE__STRING);
+    assert(strcmp(ar_data__get_string(own_result), "hello") == 0);
     
     // Clean up
-    ar_expression_ast__destroy(ast);
-    ar_expression_evaluator__destroy(evaluator);
-    ar_data__destroy(memory);
+    ar_data__destroy(own_result);
+    ar_expression_ast__destroy(own_ast);
+    ar_evaluator_fixture__destroy(own_fixture);
     
-    ar_log__destroy(log);
-    
-    printf("  ✓ Return NULL for non-integer node\n");
+    printf("  ✓ Evaluate returns correct type for any expression\n");
 }
 
 /**
@@ -188,71 +140,64 @@ static void test_evaluate_literal_int_wrong_type(void) {
 static void test_evaluate_literal_double(void) {
     printf("Testing expression evaluator literal double...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    // Given a test fixture
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_evaluate_literal_double");
+    assert(own_fixture != NULL);
     
-    // Given a memory map and evaluator
-    ar_data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
-    assert(evaluator != NULL);
+    ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     // Given a double literal AST node
-    ar_expression_ast_t *ast = ar_expression_ast__create_literal_double(3.14);
-    assert(ast != NULL);
+    ar_expression_ast_t *own_ast = ar_expression_ast__create_literal_double(3.14);
+    assert(own_ast != NULL);
     
-    // When evaluating the double literal
-    ar_data_t *result = ar_expression_evaluator__evaluate_literal_double(evaluator, ast);
+    // When evaluating the double literal with frame
+    ar_data_t *own_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
     
     // Then it should return the double value
-    assert(result != NULL);
-    assert(ar_data__get_type(result) == AR_DATA_TYPE__DOUBLE);
-    assert(ar_data__get_double(result) == 3.14);
+    assert(own_result != NULL);
+    assert(ar_data__get_type(own_result) == AR_DATA_TYPE__DOUBLE);
+    assert(ar_data__get_double(own_result) == 3.14);
     
     // Clean up
-    ar_data__destroy(result);
-    ar_expression_ast__destroy(ast);
-    ar_expression_evaluator__destroy(evaluator);
-    ar_data__destroy(memory);
-    
-    ar_log__destroy(log);
+    ar_data__destroy(own_result);
+    ar_expression_ast__destroy(own_ast);
+    ar_evaluator_fixture__destroy(own_fixture);
     
     printf("  ✓ Evaluate double literal\n");
 }
 
 /**
- * Test evaluating non-double node returns NULL
+ * Test evaluate function handles integer literal when expecting double
  */
-static void test_evaluate_literal_double_wrong_type(void) {
-    printf("Testing expression evaluator literal double with wrong type...\n");
+static void test_evaluate_handles_int_as_double(void) {
+    printf("Testing expression evaluator with integer when expecting double...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    // Given a test fixture
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_evaluate_handles_int_as_double");
+    assert(own_fixture != NULL);
     
-    // Given a memory map and evaluator
-    ar_data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
-    assert(evaluator != NULL);
+    ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
-    // Given an integer literal AST node (wrong type)
-    ar_expression_ast_t *ast = ar_expression_ast__create_literal_int(42);
-    assert(ast != NULL);
+    // Given an integer literal AST node (not a double)
+    ar_expression_ast_t *own_ast = ar_expression_ast__create_literal_int(42);
+    assert(own_ast != NULL);
     
-    // When evaluating with double evaluator
-    ar_data_t *result = ar_expression_evaluator__evaluate_literal_double(evaluator, ast);
+    // When evaluating with the general evaluate function
+    ar_data_t *own_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
     
-    // Then it should return NULL
-    assert(result == NULL);
+    // Then it should return an integer value (not NULL)
+    assert(own_result != NULL);
+    assert(ar_data__get_type(own_result) == AR_DATA_TYPE__INTEGER);
+    assert(ar_data__get_integer(own_result) == 42);
     
     // Clean up
-    ar_expression_ast__destroy(ast);
-    ar_expression_evaluator__destroy(evaluator);
-    ar_data__destroy(memory);
+    ar_data__destroy(own_result);
+    ar_expression_ast__destroy(own_ast);
+    ar_evaluator_fixture__destroy(own_fixture);
     
-    ar_log__destroy(log);
-    
-    printf("  ✓ Return NULL for non-double node\n");
+    printf("  ✓ Evaluate returns correct type for any expression\n");
 }
 
 /**
@@ -262,18 +207,18 @@ static void test_evaluate_literal_string(void) {
     printf("Testing expression evaluator literal string...\n");
     
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_evaluate_literal_string");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_evaluate_literal_string");
     assert(own_fixture != NULL);
     
-    ar_expression_evaluator_t *ref_evaluator = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     // Given a string literal AST node
     ar_expression_ast_t *own_ast = ar_expression_ast__create_literal_string("hello world");
     assert(own_ast != NULL);
     
-    // When evaluating the string literal using evaluate_with_frame
-    ar_data_t *own_result = ar_expression_evaluator__evaluate_with_frame(ref_evaluator, ref_frame, own_ast);
+    // When evaluating the string literal using evaluate
+    ar_data_t *own_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
     
     // Then it should return the string value
     assert(own_result != NULL);
@@ -291,80 +236,73 @@ static void test_evaluate_literal_string(void) {
     // Clean up
     ar_data__destroy(own_result);
     ar_expression_ast__destroy(own_ast);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
     
     printf("  ✓ Evaluate string literal\n");
 }
 
 /**
- * Test evaluating non-string node returns NULL
+ * Test evaluate function handles integer literal when expecting string
  */
-static void test_evaluate_literal_string_wrong_type(void) {
-    printf("Testing expression evaluator literal string with wrong type...\n");
+static void test_evaluate_handles_int_as_string(void) {
+    printf("Testing expression evaluator with integer when expecting string...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    // Given a test fixture
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_evaluate_handles_int_as_string");
+    assert(own_fixture != NULL);
     
-    // Given a memory map and evaluator
-    ar_data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
-    assert(evaluator != NULL);
+    ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
-    // Given an integer literal AST node (wrong type)
-    ar_expression_ast_t *ast = ar_expression_ast__create_literal_int(42);
-    assert(ast != NULL);
+    // Given an integer literal AST node (not a string)
+    ar_expression_ast_t *own_ast = ar_expression_ast__create_literal_int(42);
+    assert(own_ast != NULL);
     
-    // When evaluating with string evaluator
-    ar_data_t *result = ar_expression_evaluator__evaluate_literal_string(evaluator, ast);
+    // When evaluating with the general evaluate function
+    ar_data_t *own_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
     
-    // Then it should return NULL
-    assert(result == NULL);
+    // Then it should return an integer value (not NULL)
+    assert(own_result != NULL);
+    assert(ar_data__get_type(own_result) == AR_DATA_TYPE__INTEGER);
+    assert(ar_data__get_integer(own_result) == 42);
     
     // Clean up
-    ar_expression_ast__destroy(ast);
-    ar_expression_evaluator__destroy(evaluator);
-    ar_data__destroy(memory);
+    ar_data__destroy(own_result);
+    ar_expression_ast__destroy(own_ast);
+    ar_evaluator_fixture__destroy(own_fixture);
     
-    ar_log__destroy(log);
-    
-    printf("  ✓ Return NULL for non-string node\n");
+    printf("  ✓ Evaluate returns correct type for any expression\n");
 }
 
 /**
  * Test evaluating empty string literal
  */
 static void test_evaluate_literal_string_empty(void) {
-    printf("Testing expression evaluator literal empty string...\n");
+    printf("Testing expression ref_evaluator literal empty string...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    // Given a test fixture
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_evaluate_literal_string_empty");
+    assert(own_fixture != NULL);
     
-    // Given a memory map and evaluator
-    ar_data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
-    assert(evaluator != NULL);
+    ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     // Given an empty string literal AST node
-    ar_expression_ast_t *ast = ar_expression_ast__create_literal_string("");
-    assert(ast != NULL);
+    ar_expression_ast_t *own_ast = ar_expression_ast__create_literal_string("");
+    assert(own_ast != NULL);
     
-    // When evaluating the empty string literal
-    ar_data_t *result = ar_expression_evaluator__evaluate_literal_string(evaluator, ast);
+    // When evaluating the empty string literal using evaluate
+    ar_data_t *own_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
     
     // Then it should return an empty string value
-    assert(result != NULL);
-    assert(ar_data__get_type(result) == AR_DATA_TYPE__STRING);
-    assert(strcmp(ar_data__get_string(result), "") == 0);
+    assert(own_result != NULL);
+    assert(ar_data__get_type(own_result) == AR_DATA_TYPE__STRING);
+    assert(strcmp(ar_data__get_string(own_result), "") == 0);
     
     // Clean up
-    ar_data__destroy(result);
-    ar_expression_ast__destroy(ast);
-    ar_expression_evaluator__destroy(evaluator);
-    ar_data__destroy(memory);
-    
-    ar_log__destroy(log);
+    ar_data__destroy(own_result);
+    ar_expression_ast__destroy(own_ast);
+    ar_evaluator_fixture__destroy(own_fixture);
     
     printf("  ✓ Evaluate empty string literal\n");
 }
@@ -376,12 +314,12 @@ static void test_evaluate_memory_access(void) {
     printf("Testing expression evaluator memory access...\n");
     
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_evaluate_memory_access");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_evaluate_memory_access");
     assert(own_fixture != NULL);
     
-    ar_expression_evaluator_t *ref_evaluator = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
-    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
+    ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
     
     // Add some values to memory
     ar_data__set_map_integer(mut_memory, "x", 42);
@@ -392,8 +330,8 @@ static void test_evaluate_memory_access(void) {
     ar_expression_ast_t *own_ast = ar_expression_ast__create_memory_access("memory", path, 1);
     assert(own_ast != NULL);
     
-    // When evaluating the memory access using evaluate_with_frame
-    ar_data_t *ref_result = ar_expression_evaluator__evaluate_with_frame(ref_evaluator, ref_frame, own_ast);
+    // When evaluating the memory access using evaluate
+    ar_data_t *ref_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
     
     // Then it should return the value from memory (a reference, not owned)
     assert(ref_result != NULL);
@@ -407,44 +345,42 @@ static void test_evaluate_memory_access(void) {
     
     // Clean up (do NOT destroy result - it's a reference)
     ar_expression_ast__destroy(own_ast);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
     
     printf("  ✓ Evaluate memory access\n");
 }
 
 /**
- * Test evaluating non-memory-access node returns NULL
+ * Test evaluate function handles integer literal when expecting memory access
  */
-static void test_evaluate_memory_access_wrong_type(void) {
-    printf("Testing expression evaluator memory access with wrong type...\n");
+static void test_evaluate_handles_int_as_memory_access(void) {
+    printf("Testing expression evaluator with integer when expecting memory access...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    // Given a test fixture
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_evaluate_handles_int_as_memory_access");
+    assert(own_fixture != NULL);
     
-    // Given a memory map and evaluator
-    ar_data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
-    assert(evaluator != NULL);
+    ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
-    // Given an integer literal AST node (wrong type)
-    ar_expression_ast_t *ast = ar_expression_ast__create_literal_int(42);
-    assert(ast != NULL);
+    // Given an integer literal AST node (not a memory access)
+    ar_expression_ast_t *own_ast = ar_expression_ast__create_literal_int(42);
+    assert(own_ast != NULL);
     
-    // When evaluating with memory access evaluator
-    ar_data_t *result = ar_expression_evaluator__evaluate_memory_access(evaluator, ast);
+    // When evaluating with the general evaluate function
+    ar_data_t *own_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
     
-    // Then it should return NULL
-    assert(result == NULL);
+    // Then it should return an integer value (not NULL)
+    assert(own_result != NULL);
+    assert(ar_data__get_type(own_result) == AR_DATA_TYPE__INTEGER);
+    assert(ar_data__get_integer(own_result) == 42);
     
     // Clean up
-    ar_expression_ast__destroy(ast);
-    ar_expression_evaluator__destroy(evaluator);
-    ar_data__destroy(memory);
+    ar_data__destroy(own_result);
+    ar_expression_ast__destroy(own_ast);
+    ar_evaluator_fixture__destroy(own_fixture);
     
-    ar_log__destroy(log);
-    
-    printf("  ✓ Return NULL for non-memory-access node\n");
+    printf("  ✓ Evaluate returns correct type for any expression\n");
 }
 
 /**
@@ -453,39 +389,36 @@ static void test_evaluate_memory_access_wrong_type(void) {
 static void test_evaluate_memory_access_nested(void) {
     printf("Testing expression evaluator nested memory access...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    // Given a test fixture
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_evaluate_memory_access_nested");
+    assert(own_fixture != NULL);
     
-    // Given a memory map with nested structure
-    ar_data_t *memory = ar_data__create_map();
+    // Get memory from fixture
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
     ar_data_t *user = ar_data__create_map();
     ar_data__set_map_string(user, "name", "Bob");
     ar_data__set_map_integer(user, "age", 30);
-    ar_data__set_map_data(memory, "user", user);
+    ar_data__set_map_data(mut_memory, "user", user);
     
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
-    assert(evaluator != NULL);
+    ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     // Given a memory access AST node for "memory.user.name"
     const char *path[] = {"user", "name"};
-    ar_expression_ast_t *ast = ar_expression_ast__create_memory_access("memory", path, 2);
-    assert(ast != NULL);
+    ar_expression_ast_t *own_ast = ar_expression_ast__create_memory_access("memory", path, 2);
+    assert(own_ast != NULL);
     
     // When evaluating the nested memory access
-    ar_data_t *result = ar_expression_evaluator__evaluate_memory_access(evaluator, ast);
+    ar_data_t *ref_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
     
     // Then it should return the nested value (a reference, not owned)
-    assert(result != NULL);
-    assert(ar_data__get_type(result) == AR_DATA_TYPE__STRING);
-    assert(strcmp(ar_data__get_string(result), "Bob") == 0);
+    assert(ref_result != NULL);
+    assert(ar_data__get_type(ref_result) == AR_DATA_TYPE__STRING);
+    assert(strcmp(ar_data__get_string(ref_result), "Bob") == 0);
     
     // Clean up (do NOT destroy result - it's a reference)
-    ar_expression_ast__destroy(ast);
-    ar_expression_evaluator__destroy(evaluator);
-    ar_data__destroy(memory);
-    
-    ar_log__destroy(log);
+    ar_expression_ast__destroy(own_ast);
+    ar_evaluator_fixture__destroy(own_fixture);
     
     printf("  ✓ Evaluate nested memory access\n");
 }
@@ -494,34 +427,29 @@ static void test_evaluate_memory_access_nested(void) {
  * Test evaluating memory access for missing key
  */
 static void test_evaluate_memory_access_missing(void) {
-    printf("Testing expression evaluator memory access for missing key...\n");
+    printf("Testing expression ref_evaluator mut_memory access for missing key...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    // Given a test fixture
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_evaluate_memory_access_missing");
+    assert(own_fixture != NULL);
     
-    // Given an empty memory map and evaluator
-    ar_data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
-    assert(evaluator != NULL);
+    ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     // Given a memory access AST node for "memory.missing"
     const char *path[] = {"missing"};
-    ar_expression_ast_t *ast = ar_expression_ast__create_memory_access("memory", path, 1);
-    assert(ast != NULL);
+    ar_expression_ast_t *own_ast = ar_expression_ast__create_memory_access("memory", path, 1);
+    assert(own_ast != NULL);
     
     // When evaluating the memory access for a missing key
-    ar_data_t *result = ar_expression_evaluator__evaluate_memory_access(evaluator, ast);
+    ar_data_t *ref_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
     
     // Then it should return NULL
-    assert(result == NULL);
+    assert(ref_result == NULL);
     
     // Clean up
-    ar_expression_ast__destroy(ast);
-    ar_expression_evaluator__destroy(evaluator);
-    ar_data__destroy(memory);
-    
-    ar_log__destroy(log);
+    ar_expression_ast__destroy(own_ast);
+    ar_evaluator_fixture__destroy(own_fixture);
     
     printf("  ✓ Return NULL for missing memory key\n");
 }
@@ -533,11 +461,11 @@ static void test_evaluate_binary_op_add_integers(void) {
     printf("Testing expression evaluator binary op add integers...\n");
     
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_evaluate_binary_op_add_integers");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_evaluate_binary_op_add_integers");
     assert(own_fixture != NULL);
     
-    ar_expression_evaluator_t *ref_evaluator = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     // Given a binary addition AST node for "5 + 3"
     ar_expression_ast_t *own_left = ar_expression_ast__create_literal_int(5);
@@ -545,8 +473,8 @@ static void test_evaluate_binary_op_add_integers(void) {
     ar_expression_ast_t *own_ast = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__ADD, own_left, own_right);
     assert(own_ast != NULL);
     
-    // When evaluating the binary operation using evaluate_with_frame
-    ar_data_t *own_result = ar_expression_evaluator__evaluate_with_frame(ref_evaluator, ref_frame, own_ast);
+    // When evaluating the binary operation using evaluate
+    ar_data_t *own_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
     
     // Then it should return the sum (a new owned value)
     assert(own_result != NULL);
@@ -564,7 +492,7 @@ static void test_evaluate_binary_op_add_integers(void) {
     // Clean up (MUST destroy result - it's owned)
     ar_data__destroy(own_result);
     ar_expression_ast__destroy(own_ast);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
     
     printf("  ✓ Evaluate binary addition of integers\n");
 }
@@ -573,38 +501,33 @@ static void test_evaluate_binary_op_add_integers(void) {
  * Test evaluating binary multiplication of doubles
  */
 static void test_evaluate_binary_op_multiply_doubles(void) {
-    printf("Testing expression evaluator binary op multiply doubles...\n");
+    printf("Testing expression ref_evaluator binary op multiply doubles...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    // Given a test fixture
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_evaluate_binary_op_multiply_doubles");
+    assert(own_fixture != NULL);
     
-    // Given a memory map and evaluator
-    ar_data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
-    assert(evaluator != NULL);
+    ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     // Given a binary multiplication AST node for "2.5 * 4.0"
     ar_expression_ast_t *left = ar_expression_ast__create_literal_double(2.5);
     ar_expression_ast_t *right = ar_expression_ast__create_literal_double(4.0);
-    ar_expression_ast_t *ast = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__MULTIPLY, left, right);
-    assert(ast != NULL);
+    ar_expression_ast_t *own_ast = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__MULTIPLY, left, right);
+    assert(own_ast != NULL);
     
     // When evaluating the binary operation
-    ar_data_t *result = ar_expression_evaluator__evaluate_binary_op(evaluator, ast);
+    ar_data_t *own_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
     
     // Then it should return the product (a new owned value)
-    assert(result != NULL);
-    assert(ar_data__get_type(result) == AR_DATA_TYPE__DOUBLE);
-    assert(ar_data__get_double(result) == 10.0);
+    assert(own_result != NULL);
+    assert(ar_data__get_type(own_result) == AR_DATA_TYPE__DOUBLE);
+    assert(ar_data__get_double(own_result) == 10.0);
     
-    // Clean up (MUST destroy result - it's owned)
-    ar_data__destroy(result);
-    ar_expression_ast__destroy(ast);
-    ar_expression_evaluator__destroy(evaluator);
-    ar_data__destroy(memory);
-    
-    ar_log__destroy(log);
+    // Clean up (MUST destroy own_result - it's owned)
+    ar_data__destroy(own_result);
+    ar_expression_ast__destroy(own_ast);
+    ar_evaluator_fixture__destroy(own_fixture);
     
     printf("  ✓ Evaluate binary multiplication of doubles\n");
 }
@@ -613,75 +536,68 @@ static void test_evaluate_binary_op_multiply_doubles(void) {
  * Test evaluating binary string concatenation
  */
 static void test_evaluate_binary_op_concatenate_strings(void) {
-    printf("Testing expression evaluator binary op concatenate strings...\n");
+    printf("Testing expression ref_evaluator binary op concatenate strings...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    // Given a test fixture
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_evaluate_binary_op_concatenate_strings");
+    assert(own_fixture != NULL);
     
-    // Given a memory map and evaluator
-    ar_data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
-    assert(evaluator != NULL);
+    ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     // Given a binary addition AST node for "Hello" + " World"
     ar_expression_ast_t *left = ar_expression_ast__create_literal_string("Hello");
     ar_expression_ast_t *right = ar_expression_ast__create_literal_string(" World");
-    ar_expression_ast_t *ast = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__ADD, left, right);
-    assert(ast != NULL);
+    ar_expression_ast_t *own_ast = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__ADD, left, right);
+    assert(own_ast != NULL);
     
     // When evaluating the binary operation
-    ar_data_t *result = ar_expression_evaluator__evaluate_binary_op(evaluator, ast);
+    ar_data_t *own_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
     
     // Then it should return the concatenated string (a new owned value)
-    assert(result != NULL);
-    assert(ar_data__get_type(result) == AR_DATA_TYPE__STRING);
-    assert(strcmp(ar_data__get_string(result), "Hello World") == 0);
+    assert(own_result != NULL);
+    assert(ar_data__get_type(own_result) == AR_DATA_TYPE__STRING);
+    assert(strcmp(ar_data__get_string(own_result), "Hello World") == 0);
     
-    // Clean up (MUST destroy result - it's owned)
-    ar_data__destroy(result);
-    ar_expression_ast__destroy(ast);
-    ar_expression_evaluator__destroy(evaluator);
-    ar_data__destroy(memory);
-    
-    ar_log__destroy(log);
+    // Clean up (MUST destroy own_result - it's owned)
+    ar_data__destroy(own_result);
+    ar_expression_ast__destroy(own_ast);
+    ar_evaluator_fixture__destroy(own_fixture);
     
     printf("  ✓ Evaluate binary string concatenation\n");
 }
 
 /**
- * Test evaluating non-binary-op node returns NULL
+ * Test evaluate function handles integer literal when expecting binary op
  */
-static void test_evaluate_binary_op_wrong_type(void) {
-    printf("Testing expression evaluator binary op with wrong type...\n");
+static void test_evaluate_handles_int_as_binary_op(void) {
+    printf("Testing expression evaluator with integer when expecting binary op...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    // Given a test fixture
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_evaluate_handles_int_as_binary_op");
+    assert(own_fixture != NULL);
     
-    // Given a memory map and evaluator
-    ar_data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
-    assert(evaluator != NULL);
+    ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
-    // Given an integer literal AST node (wrong type)
-    ar_expression_ast_t *ast = ar_expression_ast__create_literal_int(42);
-    assert(ast != NULL);
+    // Given an integer literal AST node (not a binary op)
+    ar_expression_ast_t *own_ast = ar_expression_ast__create_literal_int(42);
+    assert(own_ast != NULL);
     
-    // When evaluating with binary op evaluator
-    ar_data_t *result = ar_expression_evaluator__evaluate_binary_op(evaluator, ast);
+    // When evaluating with the general evaluate function
+    ar_data_t *own_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
     
-    // Then it should return NULL
-    assert(result == NULL);
+    // Then it should return an integer value (not NULL)
+    assert(own_result != NULL);
+    assert(ar_data__get_type(own_result) == AR_DATA_TYPE__INTEGER);
+    assert(ar_data__get_integer(own_result) == 42);
     
     // Clean up
-    ar_expression_ast__destroy(ast);
-    ar_expression_evaluator__destroy(evaluator);
-    ar_data__destroy(memory);
+    ar_data__destroy(own_result);
+    ar_expression_ast__destroy(own_ast);
+    ar_evaluator_fixture__destroy(own_fixture);
     
-    ar_log__destroy(log);
-    
-    printf("  ✓ Return NULL for non-binary-op node\n");
+    printf("  ✓ Evaluate returns correct type for any expression\n");
 }
 
 /**
@@ -691,12 +607,12 @@ static void test_evaluate_binary_op_nested(void) {
     printf("Testing expression evaluator nested binary operations...\n");
     
     // Given a test fixture
-    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_evaluate_binary_op_nested");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_evaluate_binary_op_nested");
     assert(own_fixture != NULL);
     
-    ar_expression_evaluator_t *ref_evaluator = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
-    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
-    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
+    ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
     
     // Add some values to memory
     ar_data__set_map_integer(mut_memory, "x", 10);
@@ -719,8 +635,8 @@ static void test_evaluate_binary_op_nested(void) {
     ar_expression_ast_t *own_ast = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__MULTIPLY, own_add, own_mem_y);
     assert(own_ast != NULL);
     
-    // When evaluating the nested binary operation using evaluate_with_frame
-    ar_data_t *own_result = ar_expression_evaluator__evaluate_with_frame(ref_evaluator, ref_frame, own_ast);
+    // When evaluating the nested binary operation using evaluate
+    ar_data_t *own_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
     
     // Then it should return (10 + 2) * 5 = 60 (a new owned value)
     assert(own_result != NULL);
@@ -738,7 +654,7 @@ static void test_evaluate_binary_op_nested(void) {
     // Clean up (MUST destroy result - it's owned)
     ar_data__destroy(own_result);
     ar_expression_ast__destroy(own_ast);
-    ar_instruction_evaluator_fixture__destroy(own_fixture);
+    ar_evaluator_fixture__destroy(own_fixture);
     
     printf("  ✓ Evaluate nested binary operations\n");
 }
@@ -747,23 +663,22 @@ int main(void) {
     printf("\n=== Expression Evaluator Tests ===\n\n");
     
     test_create_destroy_with_log();
-    test_create_with_context();
-    test_create_null_memory();
+    test_create_with_log_only();
     test_evaluate_literal_int();
-    test_evaluate_literal_int_wrong_type();
+    test_evaluate_handles_string_literal();
     test_evaluate_literal_double();
-    test_evaluate_literal_double_wrong_type();
+    test_evaluate_handles_int_as_double();
     test_evaluate_literal_string();
-    test_evaluate_literal_string_wrong_type();
+    test_evaluate_handles_int_as_string();
     test_evaluate_literal_string_empty();
     test_evaluate_memory_access();
-    test_evaluate_memory_access_wrong_type();
+    test_evaluate_handles_int_as_memory_access();
     test_evaluate_memory_access_nested();
     test_evaluate_memory_access_missing();
     test_evaluate_binary_op_add_integers();
     test_evaluate_binary_op_multiply_doubles();
     test_evaluate_binary_op_concatenate_strings();
-    test_evaluate_binary_op_wrong_type();
+    test_evaluate_handles_int_as_binary_op();
     test_evaluate_binary_op_nested();
     
     printf("\nAll expression_evaluator tests passed!\n");
