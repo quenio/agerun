@@ -208,6 +208,7 @@ For each new behavior/feature:
   ```
 - One test per behavior
 - Tests must be isolated and fast
+- **Test names must reflect actual behavior** - update names when refactoring changes behavior
 - Zero memory leaks in tests
 - **Global state cleanup**: Tests registering methods/agents MUST call `ar_methodology__cleanup()` and `ar_agency__reset()`
 - Process all messages before cleanup: `while (ar_system__process_next_message());`
@@ -475,6 +476,7 @@ Never compile directly with gcc.
 - **Validate changes**: After adding validation, test with intentional errors to ensure no false negatives
 - **Incremental commits**: Commit logical chunks even with remaining issues - note them for future work
 - **Frame migration**: Convert evaluators incrementally; facade manages both patterns during transition
+- **Complete API verification**: `grep -r "old_api_pattern" .` after interface changes - check ALL clients
 
 **Bulk Renaming Pattern**:
 ```bash
@@ -483,6 +485,7 @@ python3 scripts/rename_symbols.py --group <group-name> --live
 
 # AVOID sed for bulk renames - error-prone with partial matches
 # If rename_symbols.py doesn't support your case, enhance it first
+# Script supports both type renaming (TYPE_RENAMES) and module renaming (MODULE_RENAMES)
 # Only use sed for one-off changes with careful verification
 ```
 
