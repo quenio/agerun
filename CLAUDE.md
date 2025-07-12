@@ -195,7 +195,7 @@ For each new behavior/feature:
 
 **Test Requirements**:
 - Every module MUST have tests
-- Use Given/When/Then structure:
+- **MANDATORY BDD structure**: Use Given/When/Then comments:
   ```c
   // Given a description of the test setup
   /* Setup code here */
@@ -206,9 +206,10 @@ For each new behavior/feature:
   // Then describing the expected result
   /* Assertion code here */
   ```
-- One test per behavior
+- One test per behavior; enhance existing comprehensive tests rather than adding separate functions
 - Tests must be isolated and fast
 - Zero memory leaks in tests
+- **Global state cleanup**: Tests registering methods/agents MUST call `ar_methodology__cleanup()` and `ar_agency__reset()`
 - Process all messages before cleanup: `while (ar_system__process_next_message());`
 - Test files: `<module>_tests.c`
 - **Use test fixtures**: Check for `ar_*_fixture.h` before writing boilerplate setup; NEVER manually destroy fixture-tracked resources (causes double-free)
