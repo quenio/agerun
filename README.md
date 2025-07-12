@@ -190,7 +190,15 @@ Agents use a simple expression and instruction language for their methods:
 
 ## Code Organization
 
-The AgeRun codebase is organized into modular components, each responsible for a specific aspect of the system:
+The AgeRun codebase is organized into modular components, each responsible for a specific aspect of the system.
+
+### Directory Structure
+
+- **kb/**: Knowledge base articles with development patterns and principles
+- **reports/**: Analysis reports and technical comparisons
+- **scripts/**: Build and utility scripts (accessed via make targets)
+
+### Core Modules
 
 - **Map Module**: A foundational key-value store with no dependencies
 - **List Module**: Doubly-linked list implementation that provides stack and queue operations with an opaque type
