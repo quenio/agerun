@@ -15,16 +15,16 @@ This module extracts the agent instruction evaluation logic from the main instru
 The module follows an instantiable design pattern with lifecycle management:
 
 ```c
-// Create evaluator instance with dependencies
+// Create evaluator instance with dependencies (frame-based pattern)
 ar_agent_instruction_evaluator_t* ar_agent_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *mut_expr_evaluator,
-    ar_data_t *mut_memory
+    ar_expression_evaluator_t *ref_expr_evaluator
 );
 
-// Evaluate using stored dependencies
+// Evaluate using frame-based execution
 bool ar_agent_instruction_evaluator__evaluate(
     ar_agent_instruction_evaluator_t *mut_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
 
@@ -44,18 +44,20 @@ The module evaluates agent instructions of the form:
 - `memory.agent_id := agent(method_name, version, context)`
 
 Key features:
-1. **Agent Creation**: Creates agents with specified method and context
-2. **Method Validation**: Ensures the method exists before creating agent
-3. **Context Handling**: Supports both memory and context references
-4. **Wake Messages**: New agents receive `__wake__` message automatically
-5. **Result Assignment**: Stores agent ID when assignment specified
+1. **Frame-Based Execution**: Uses ar_frame_t for memory, context, and message bundling
+2. **Agent Creation**: Creates agents with specified method and context
+3. **Method Validation**: Ensures the method exists before creating agent
+4. **Context Handling**: Gets memory and context from execution frame
+5. **Wake Messages**: New agents receive `__wake__` message automatically
+6. **Result Assignment**: Stores agent ID when assignment specified
 
-### Context Optimization
+### Frame-Based Architecture
 
-The module includes an optimization for context handling:
-- Direct memory/context references are passed without copying
-- Complex expressions are evaluated and passed by value
-- This avoids unnecessary data copying for common cases
+The module follows the frame-based execution pattern:
+- Memory, context, and message are bundled in an ar_frame_t
+- Memory is retrieved from frame during evaluation
+- Supports the unified frame-based evaluator architecture
+- Consistent with other instruction evaluators (assignment, send, condition, etc.)
 
 ### Memory Management
 

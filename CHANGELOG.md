@@ -4,6 +4,20 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-07-12
 
+### ✅ COMPLETED: Frame-Based Execution for Agent Instruction Evaluator + Facade Integration
+- Updated agent instruction evaluator to use frame-based execution pattern
+  - Removed memory parameter from create function
+  - Updated evaluate to accept frame parameter
+  - Memory accessed from frame during evaluation
+  - All tests updated to use instruction evaluator fixture
+- Fixed instruction evaluator facade for agent evaluator integration
+  - Agent evaluator now created upfront during facade initialization
+  - Consistent pattern with other frame-based evaluators (assignment, send, condition, parse, build, method)
+  - Removed lazy creation logic for agent evaluator
+  - Frame passed directly to agent evaluator evaluate function
+- Updated agent instruction evaluator documentation to reflect frame-based architecture
+- Zero memory leaks, all tests pass, TDD Cycle 13 complete
+
 ### ✅ COMPLETED: Frame-Based Execution for Method Instruction Evaluator + Enhanced Test Coverage
 - Updated method instruction evaluator to use frame-based execution pattern
   - Removed memory parameter from create function
