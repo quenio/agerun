@@ -312,10 +312,10 @@ ar_data_t* ar_execution_engine__run(ar_data_t* validated);  // Execution strateg
 
 ## Related Principles
 
-- **Information Hiding**: Mechanism for hiding change-prone decisions
-- **Single Responsibility**: Each module handles one category of change
-- **Opaque Types**: Hide data structure changes behind interfaces
-- **Program Families**: Systematic approach to handling variation
+- **Information Hiding**: Mechanism for hiding change-prone decisions ([details](information-hiding-principle.md))
+- **Single Responsibility**: Each module handles one category of change ([details](single-responsibility-principle.md))
+- **Opaque Types**: Hide data structure changes behind interfaces ([details](opaque-types-principle.md))
+- **Program Families**: Systematic approach to handling variation ([details](program-families-principle.md))
 
 ## Examples
 

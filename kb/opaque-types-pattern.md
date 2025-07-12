@@ -34,8 +34,8 @@ Hide implementation details behind stable interfaces to enable independent evolu
 - Required for complex data structures
 
 ## Related Patterns
-- Information hiding principle
-- Parnas design principles
+- Information hiding principle ([details](information-hiding-principle.md))
+- Parnas design principles - see [Opaque Types Principle](opaque-types-principle.md) for comprehensive coverage
 - Interface stability
 - Module independence
 - API evolution support

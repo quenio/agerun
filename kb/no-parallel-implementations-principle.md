@@ -285,9 +285,9 @@ ar_data_t* ar_expression__evaluate_old(ar_expression_ast_t* ast, ar_data_t* cont
 
 ## Related Principles
 
-- **Single Responsibility**: Each module has one way to do each thing
-- **Minimal Interfaces**: Fewer functions to maintain and choose between
-- **Information Hiding**: Implementation details remain hidden during evolution
+- **Single Responsibility**: Each module has one way to do each thing ([details](single-responsibility-principle.md))
+- **Minimal Interfaces**: Fewer functions to maintain and choose between ([details](minimal-interfaces-principle.md))
+- **Information Hiding**: Implementation details remain hidden during evolution ([details](information-hiding-principle.md))
 
 ## Examples
 

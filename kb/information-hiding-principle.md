@@ -147,9 +147,9 @@ static const size_t GROWTH_FACTOR = 2;
 
 ## Related Principles
 
-- **Opaque Types**: Primary mechanism for information hiding
-- **Minimal Interfaces**: Reduces what needs to be hidden
-- **Single Responsibility**: Clarifies what should be hidden
+- **Opaque Types**: Primary mechanism for information hiding ([details](opaque-types-principle.md))
+- **Minimal Interfaces**: Reduces what needs to be hidden ([details](minimal-interfaces-principle.md))
+- **Single Responsibility**: Clarifies what should be hidden ([details](single-responsibility-principle.md))
 
 ## Examples
 

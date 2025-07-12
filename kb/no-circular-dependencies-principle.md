@@ -247,9 +247,9 @@ void ar_module__function(ar_complex_type_t* param);
 
 ## Related Principles
 
-- **Single Responsibility**: Clear responsibilities help determine proper dependencies
-- **Information Hiding**: Reduces need for cross-dependencies
-- **Minimal Interfaces**: Fewer dependencies reduce chance of cycles
+- **Single Responsibility**: Clear responsibilities help determine proper dependencies ([details](single-responsibility-principle.md))
+- **Information Hiding**: Reduces need for cross-dependencies ([details](information-hiding-principle.md))
+- **Minimal Interfaces**: Fewer dependencies reduce chance of cycles ([details](minimal-interfaces-principle.md))
 
 ## Examples
 

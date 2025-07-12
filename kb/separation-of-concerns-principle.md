@@ -356,10 +356,10 @@ if (instruction_ast) {
 
 ## Related Principles
 
-- **Single Responsibility**: Each module has one responsibility (concern)
-- **Information Hiding**: Hide concern implementation details behind interfaces
-- **Minimal Interfaces**: Expose only necessary concern-specific functionality
-- **Design for Change**: Separate concerns that might change independently
+- **Single Responsibility**: Each module has one responsibility (concern) ([details](single-responsibility-principle.md))
+- **Information Hiding**: Hide concern implementation details behind interfaces ([details](information-hiding-principle.md))
+- **Minimal Interfaces**: Expose only necessary concern-specific functionality ([details](minimal-interfaces-principle.md))
+- **Design for Change**: Separate concerns that might change independently ([details](design-for-change-principle.md))
 
 ## Examples
 

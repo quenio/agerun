@@ -276,9 +276,9 @@ ar_data_t* ar_data__create_string(const char* text) __attribute__((deprecated));
 
 ## Related Principles
 
-- **Information Hiding**: Determines what should not be in interface
-- **Single Responsibility**: Helps identify essential functions
-- **Opaque Types**: Reduces need for property getters
+- **Information Hiding**: Determines what should not be in interface ([details](information-hiding-principle.md))
+- **Single Responsibility**: Helps identify essential functions ([details](single-responsibility-principle.md))
+- **Opaque Types**: Reduces need for property getters ([details](opaque-types-principle.md))
 
 ## Examples
 

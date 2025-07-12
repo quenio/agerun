@@ -280,9 +280,9 @@ struct ar_data_s {
 
 ## Related Principles
 
-- **Information Hiding**: Primary mechanism for hiding implementation
-- **Minimal Interfaces**: Reduces surface area that needs to be opaque
-- **Single Responsibility**: Clarifies what should be hidden in each type
+- **Information Hiding**: Primary mechanism for hiding implementation ([details](information-hiding-principle.md))
+- **Minimal Interfaces**: Reduces surface area that needs to be opaque ([details](minimal-interfaces-principle.md))
+- **Single Responsibility**: Clarifies what should be hidden in each type ([details](single-responsibility-principle.md))
 
 ## Examples
 

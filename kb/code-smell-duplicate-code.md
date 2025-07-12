@@ -467,8 +467,8 @@ typedef struct {
 ```
 
 ## Related Code Smells
-- **Long Method**: Often contains duplicated logic
-- **Large Class**: May have duplicated responsibilities
+- **Long Method**: Often contains duplicated logic ([details](code-smell-long-method.md))
+- **Large Class**: May have duplicated responsibilities ([details](code-smell-large-class.md))
 - **Shotgun Surgery**: Result of not eliminating duplication
 - **Comments**: Often used to explain duplicated but slightly different code
 

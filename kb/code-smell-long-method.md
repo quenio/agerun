@@ -328,9 +328,9 @@ bool ar_agent__process_message(ar_agent_t* agent, ar_data_t* message) {
 - Check if method name accurately describes all its responsibilities
 
 ## Related Code Smells
-- **Large Class**: Often contains multiple long methods
-- **Long Parameter List**: Often accompanies long methods
-- **Duplicate Code**: Long methods often contain repeated logic
+- **Large Class**: Often contains multiple long methods ([details](code-smell-large-class.md))
+- **Long Parameter List**: Often accompanies long methods ([details](code-smell-long-parameter-list.md))
+- **Duplicate Code**: Long methods often contain repeated logic ([details](code-smell-duplicate-code.md))
 - **Comments**: Excessive comments often indicate overly complex methods
 
 ## Quick Detection Script

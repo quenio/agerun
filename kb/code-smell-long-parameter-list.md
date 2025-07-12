@@ -373,8 +373,8 @@ sort | uniq -c | sort -nr
 ```
 
 ## Related Code Smells
-- **Data Clumps**: Same parameters appearing together frequently
-- **Long Method**: Often accompanied by long parameter lists
+- **Data Clumps**: Same parameters appearing together frequently ([details](code-smell-data-clumps.md))
+- **Long Method**: Often accompanied by long parameter lists ([details](code-smell-long-method.md))
 - **Primitive Obsession**: Using primitives instead of meaningful objects
 - **Feature Envy**: Functions needing lots of data from other objects
 

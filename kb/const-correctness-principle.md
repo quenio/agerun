@@ -299,9 +299,9 @@ grep -r "get_.*(" modules/*.h | grep -v "const"  # Query functions should be con
 
 ## Related Principles
 
-- **Information Hiding**: Const helps enforce immutability contracts
-- **Minimal Interfaces**: Reduces need for const casting
-- **Complete Documentation**: Const makes interfaces self-documenting
+- **Information Hiding**: Const helps enforce immutability contracts ([details](information-hiding-principle.md))
+- **Minimal Interfaces**: Reduces need for const casting ([details](minimal-interfaces-principle.md))
+- **Complete Documentation**: Const makes interfaces self-documenting ([details](complete-documentation-principle.md))
 
 ## Examples
 

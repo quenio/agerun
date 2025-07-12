@@ -278,9 +278,9 @@ full-build: check-docs run-tests
 
 ## Related Principles
 
-- **Information Hiding**: Documents what is hidden and why
-- **Minimal Interfaces**: Reduces documentation burden
-- **Single Responsibility**: Clarifies module purpose
+- **Information Hiding**: Documents what is hidden and why ([details](information-hiding-principle.md))
+- **Minimal Interfaces**: Reduces documentation burden ([details](minimal-interfaces-principle.md))
+- **Single Responsibility**: Clarifies module purpose ([details](single-responsibility-principle.md))
 
 ## Examples
 

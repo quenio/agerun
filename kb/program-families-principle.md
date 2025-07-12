@@ -351,10 +351,10 @@ methods/file-processor-1.0.0.method
 
 ## Related Principles
 
-- **Information Hiding**: Hides family variation mechanisms from clients
-- **Single Responsibility**: Each family member has focused purpose
-- **Minimal Interfaces**: Family interface only exposes necessary variation
-- **Design for Change**: Family structure accommodates anticipated changes
+- **Information Hiding**: Hides family variation mechanisms from clients ([details](information-hiding-principle.md))
+- **Single Responsibility**: Each family member has focused purpose ([details](single-responsibility-principle.md))
+- **Minimal Interfaces**: Family interface only exposes necessary variation ([details](minimal-interfaces-principle.md))
+- **Design for Change**: Family structure accommodates anticipated changes ([details](design-for-change-principle.md))
 
 ## Examples
 

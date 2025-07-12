@@ -308,9 +308,9 @@ xargs grep -l "send\|receive"
 ```
 
 ## Related Code Smells
-- **Long Method**: Large classes often contain long methods
-- **Long Parameter List**: Often seen in large class constructors
-- **Data Clumps**: Large classes often have related data spread around
+- **Long Method**: Large classes often contain long methods ([details](code-smell-long-method.md))
+- **Long Parameter List**: Often seen in large class constructors ([details](code-smell-long-parameter-list.md))
+- **Data Clumps**: Large classes often have related data spread around ([details](code-smell-data-clumps.md))
 - **Feature Envy**: Methods in large classes often envy other classes
 
 ## Verification Checklist

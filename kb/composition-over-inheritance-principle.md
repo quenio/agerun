@@ -282,10 +282,10 @@ struct ar_agent_s {
 
 ## Related Principles
 
-- **Single Responsibility**: Each component has one responsibility
-- **Information Hiding**: Component internals are hidden from composition
-- **Minimal Interfaces**: Components expose only necessary functionality
-- **No Circular Dependencies**: Composition creates clear dependency hierarchy
+- **Single Responsibility**: Each component has one responsibility ([details](single-responsibility-principle.md))
+- **Information Hiding**: Component internals are hidden from composition ([details](information-hiding-principle.md))
+- **Minimal Interfaces**: Components expose only necessary functionality ([details](minimal-interfaces-principle.md))
+- **No Circular Dependencies**: Composition creates clear dependency hierarchy ([details](no-circular-dependencies-principle.md))
 
 ## Examples
 

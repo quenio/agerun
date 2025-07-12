@@ -196,9 +196,9 @@ static void* _safe_malloc(size_t size);
 
 ## Related Principles
 
-- **Information Hiding**: Helps define what belongs in each module
-- **Minimal Interfaces**: Natural result of focused responsibilities
-- **No Circular Dependencies**: Easier to achieve with clear responsibilities
+- **Information Hiding**: Helps define what belongs in each module ([details](information-hiding-principle.md))
+- **Minimal Interfaces**: Natural result of focused responsibilities ([details](minimal-interfaces-principle.md))
+- **No Circular Dependencies**: Easier to achieve with clear responsibilities ([details](no-circular-dependencies-principle.md))
 
 ## Examples
 
