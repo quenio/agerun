@@ -150,7 +150,7 @@ bool ar_destroy_agent_instruction_evaluator__evaluate(
     }
     
     // Evaluate the agent ID expression AST using public method
-    ar_data_t *agent_id_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_agent_id_ast);
+    ar_data_t *agent_id_result = ar_expression_evaluator__evaluate_with_frame(mut_expr_evaluator, ref_frame, ref_agent_id_ast);
     
     // Check if we need to make a copy (if result is owned by memory/context)
     ar_data_t *own_agent_id = NULL;

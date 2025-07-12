@@ -4,6 +4,21 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-07-12
 
+### ✅ COMPLETED: Expression Evaluator Frame-Based Support (TDD Cycle 17)
+- Added evaluate_with_frame method to expression evaluator
+  - New method accepts frame parameter and uses frame's memory/context
+  - Maintains backward compatibility with existing evaluate method
+  - Temporary implementation delegates to old evaluate with context switching
+- Updated all instruction evaluators to use frame-based expression evaluation
+  - Assignment, send, build, parse, agent, method, destroy agent, destroy method, condition
+  - All evaluators now pass frame parameter to expression evaluator
+  - Helper functions updated to accept frame parameter where needed
+- Updated expression evaluator tests to use instruction evaluator fixture
+  - Converted all tests to use evaluate_with_frame
+  - Tests verify frame-based evaluation works correctly
+  - Zero memory leaks maintained
+- Documentation updated to reflect new evaluate_with_frame method
+
 ### ✅ COMPLETED: Frame-Based Execution for Destroy Method Instruction Evaluator + Facade Integration
 - Updated destroy method instruction evaluator to use frame-based execution pattern
   - Removed memory parameter from create function

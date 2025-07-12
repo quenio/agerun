@@ -13,6 +13,7 @@
 #include "ar_expression_ast.h"
 #include "ar_data.h"
 #include "ar_log.h"
+#include "ar_frame.h"
 
 /**
  * Opaque type for expression evaluator
@@ -117,6 +118,23 @@ ar_data_t* ar_expression_evaluator__evaluate_binary_op(
  */
 ar_data_t* ar_expression_evaluator__evaluate(
     ar_expression_evaluator_t *mut_evaluator,
+    const ar_expression_ast_t *ref_ast
+);
+
+/**
+ * Evaluates any expression AST node using frame context
+ * @param mut_evaluator The evaluator instance (mutable reference)
+ * @param ref_frame The frame containing memory/context/message (borrowed reference)
+ * @param ref_ast The expression AST to evaluate (borrowed reference)
+ * @return The evaluated result
+ * @note Ownership: 
+ *       - Memory access: Returns borrowed reference (owned by frame's memory/context map)
+ *       - Literals: Returns owned value that caller must destroy
+ *       - Operations: Returns owned value that caller must destroy
+ */
+ar_data_t* ar_expression_evaluator__evaluate_with_frame(
+    ar_expression_evaluator_t *mut_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_expression_ast_t *ref_ast
 );
 

@@ -12,6 +12,8 @@
 #include "ar_heap.h"
 #include "ar_log.h"
 #include "ar_event.h"
+#include "ar_instruction_evaluator_fixture.h"
+#include "ar_frame.h"
 
 /**
  * Test creating and destroying an evaluator with ar_log
@@ -110,41 +112,37 @@ static void test_create_null_memory(void) {
 static void test_evaluate_literal_int(void) {
     printf("Testing expression evaluator literal int...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    // Given a test fixture
+    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_evaluate_literal_int");
+    assert(own_fixture != NULL);
     
-    // Given a memory map and evaluator
-    ar_data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
-    assert(evaluator != NULL);
+    ar_expression_evaluator_t *ref_evaluator = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
     
     // Given an integer literal AST node
-    ar_expression_ast_t *ast = ar_expression_ast__create_literal_int(42);
-    assert(ast != NULL);
+    ar_expression_ast_t *own_ast = ar_expression_ast__create_literal_int(42);
+    assert(own_ast != NULL);
     
-    // When evaluating the integer literal using the public evaluate method
-    ar_data_t *result = ar_expression_evaluator__evaluate(evaluator, ast);
+    // When evaluating the integer literal using evaluate_with_frame
+    ar_data_t *own_result = ar_expression_evaluator__evaluate_with_frame(ref_evaluator, ref_frame, own_ast);
     
     // Then it should return the integer value
-    assert(result != NULL);
-    assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
-    assert(ar_data__get_integer(result) == 42);
+    assert(own_result != NULL);
+    assert(ar_data__get_type(own_result) == AR_DATA_TYPE__INTEGER);
+    assert(ar_data__get_integer(own_result) == 42);
     
     // Verify ownership: result should be unowned (we can claim it)
-    bool held = ar_data__hold_ownership(result, evaluator);
+    bool held = ar_data__hold_ownership(own_result, ref_evaluator);
     assert(held == true);  // Should succeed because nobody owns it
     
     // Transfer ownership to NULL so we can destroy it
-    bool transferred = ar_data__transfer_ownership(result, evaluator);
+    bool transferred = ar_data__transfer_ownership(own_result, ref_evaluator);
     assert(transferred == true);
     
     // Clean up
-    ar_data__destroy(result);
-    ar_expression_ast__destroy(ast);
-    ar_expression_evaluator__destroy(evaluator);
-    ar_data__destroy(memory);
-    ar_log__destroy(log);
+    ar_data__destroy(own_result);
+    ar_expression_ast__destroy(own_ast);
+    ar_instruction_evaluator_fixture__destroy(own_fixture);
     
     printf("  ✓ Evaluate integer literal\n");
 }
@@ -263,42 +261,37 @@ static void test_evaluate_literal_double_wrong_type(void) {
 static void test_evaluate_literal_string(void) {
     printf("Testing expression evaluator literal string...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    // Given a test fixture
+    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_evaluate_literal_string");
+    assert(own_fixture != NULL);
     
-    // Given a memory map and evaluator
-    ar_data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
-    assert(evaluator != NULL);
+    ar_expression_evaluator_t *ref_evaluator = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
     
     // Given a string literal AST node
-    ar_expression_ast_t *ast = ar_expression_ast__create_literal_string("hello world");
-    assert(ast != NULL);
+    ar_expression_ast_t *own_ast = ar_expression_ast__create_literal_string("hello world");
+    assert(own_ast != NULL);
     
-    // When evaluating the string literal using the public evaluate method
-    ar_data_t *result = ar_expression_evaluator__evaluate(evaluator, ast);
+    // When evaluating the string literal using evaluate_with_frame
+    ar_data_t *own_result = ar_expression_evaluator__evaluate_with_frame(ref_evaluator, ref_frame, own_ast);
     
     // Then it should return the string value
-    assert(result != NULL);
-    assert(ar_data__get_type(result) == AR_DATA_TYPE__STRING);
-    assert(strcmp(ar_data__get_string(result), "hello world") == 0);
+    assert(own_result != NULL);
+    assert(ar_data__get_type(own_result) == AR_DATA_TYPE__STRING);
+    assert(strcmp(ar_data__get_string(own_result), "hello world") == 0);
     
     // Verify ownership: result should be unowned (we can claim it)
-    bool held = ar_data__hold_ownership(result, evaluator);
+    bool held = ar_data__hold_ownership(own_result, ref_evaluator);
     assert(held == true);  // Should succeed because nobody owns it
     
     // Transfer ownership to NULL so we can destroy it
-    bool transferred = ar_data__transfer_ownership(result, evaluator);
+    bool transferred = ar_data__transfer_ownership(own_result, ref_evaluator);
     assert(transferred == true);
     
     // Clean up
-    ar_data__destroy(result);
-    ar_expression_ast__destroy(ast);
-    ar_expression_evaluator__destroy(evaluator);
-    ar_data__destroy(memory);
-    
-    ar_log__destroy(log);
+    ar_data__destroy(own_result);
+    ar_expression_ast__destroy(own_ast);
+    ar_instruction_evaluator_fixture__destroy(own_fixture);
     
     printf("  ✓ Evaluate string literal\n");
 }
@@ -382,41 +375,39 @@ static void test_evaluate_literal_string_empty(void) {
 static void test_evaluate_memory_access(void) {
     printf("Testing expression evaluator memory access...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    // Given a test fixture
+    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_evaluate_memory_access");
+    assert(own_fixture != NULL);
     
-    // Given a memory map with some values and an evaluator
-    ar_data_t *memory = ar_data__create_map();
-    ar_data__set_map_integer(memory, "x", 42);
-    ar_data__set_map_string(memory, "name", "Alice");
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
-    assert(evaluator != NULL);
+    ar_expression_evaluator_t *ref_evaluator = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
+    
+    // Add some values to memory
+    ar_data__set_map_integer(mut_memory, "x", 42);
+    ar_data__set_map_string(mut_memory, "name", "Alice");
     
     // Given a memory access AST node for "memory.x"
     const char *path[] = {"x"};
-    ar_expression_ast_t *ast = ar_expression_ast__create_memory_access("memory", path, 1);
-    assert(ast != NULL);
+    ar_expression_ast_t *own_ast = ar_expression_ast__create_memory_access("memory", path, 1);
+    assert(own_ast != NULL);
     
-    // When evaluating the memory access using the public evaluate method
-    ar_data_t *result = ar_expression_evaluator__evaluate(evaluator, ast);
+    // When evaluating the memory access using evaluate_with_frame
+    ar_data_t *ref_result = ar_expression_evaluator__evaluate_with_frame(ref_evaluator, ref_frame, own_ast);
     
     // Then it should return the value from memory (a reference, not owned)
-    assert(result != NULL);
-    assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
-    assert(ar_data__get_integer(result) == 42);
+    assert(ref_result != NULL);
+    assert(ar_data__get_type(ref_result) == AR_DATA_TYPE__INTEGER);
+    assert(ar_data__get_integer(ref_result) == 42);
     
     // Verify ownership: result should be owned by the memory map
     // Try to hold ownership with a different owner - should fail
-    bool held = ar_data__hold_ownership(result, evaluator);
+    bool held = ar_data__hold_ownership(ref_result, ref_evaluator);
     assert(held == false);  // Should fail because memory map owns it
     
     // Clean up (do NOT destroy result - it's a reference)
-    ar_expression_ast__destroy(ast);
-    ar_expression_evaluator__destroy(evaluator);
-    ar_data__destroy(memory);
-    
-    ar_log__destroy(log);
+    ar_expression_ast__destroy(own_ast);
+    ar_instruction_evaluator_fixture__destroy(own_fixture);
     
     printf("  ✓ Evaluate memory access\n");
 }
@@ -541,44 +532,39 @@ static void test_evaluate_memory_access_missing(void) {
 static void test_evaluate_binary_op_add_integers(void) {
     printf("Testing expression evaluator binary op add integers...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    // Given a test fixture
+    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_evaluate_binary_op_add_integers");
+    assert(own_fixture != NULL);
     
-    // Given a memory map and evaluator
-    ar_data_t *memory = ar_data__create_map();
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
-    assert(evaluator != NULL);
+    ar_expression_evaluator_t *ref_evaluator = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
     
     // Given a binary addition AST node for "5 + 3"
-    ar_expression_ast_t *left = ar_expression_ast__create_literal_int(5);
-    ar_expression_ast_t *right = ar_expression_ast__create_literal_int(3);
-    ar_expression_ast_t *ast = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__ADD, left, right);
-    assert(ast != NULL);
+    ar_expression_ast_t *own_left = ar_expression_ast__create_literal_int(5);
+    ar_expression_ast_t *own_right = ar_expression_ast__create_literal_int(3);
+    ar_expression_ast_t *own_ast = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__ADD, own_left, own_right);
+    assert(own_ast != NULL);
     
-    // When evaluating the binary operation using the public evaluate method
-    ar_data_t *result = ar_expression_evaluator__evaluate(evaluator, ast);
+    // When evaluating the binary operation using evaluate_with_frame
+    ar_data_t *own_result = ar_expression_evaluator__evaluate_with_frame(ref_evaluator, ref_frame, own_ast);
     
     // Then it should return the sum (a new owned value)
-    assert(result != NULL);
-    assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
-    assert(ar_data__get_integer(result) == 8);
+    assert(own_result != NULL);
+    assert(ar_data__get_type(own_result) == AR_DATA_TYPE__INTEGER);
+    assert(ar_data__get_integer(own_result) == 8);
     
     // Verify ownership: result should be unowned (we can claim it)
-    bool held = ar_data__hold_ownership(result, evaluator);
+    bool held = ar_data__hold_ownership(own_result, ref_evaluator);
     assert(held == true);  // Should succeed because nobody owns it
     
     // Transfer ownership to NULL so we can destroy it
-    bool transferred = ar_data__transfer_ownership(result, evaluator);
+    bool transferred = ar_data__transfer_ownership(own_result, ref_evaluator);
     assert(transferred == true);
     
     // Clean up (MUST destroy result - it's owned)
-    ar_data__destroy(result);
-    ar_expression_ast__destroy(ast);
-    ar_expression_evaluator__destroy(evaluator);
-    ar_data__destroy(memory);
-    
-    ar_log__destroy(log);
+    ar_data__destroy(own_result);
+    ar_expression_ast__destroy(own_ast);
+    ar_instruction_evaluator_fixture__destroy(own_fixture);
     
     printf("  ✓ Evaluate binary addition of integers\n");
 }
@@ -704,57 +690,55 @@ static void test_evaluate_binary_op_wrong_type(void) {
 static void test_evaluate_binary_op_nested(void) {
     printf("Testing expression evaluator nested binary operations...\n");
     
-    // Given a log instance
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    // Given a test fixture
+    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_evaluate_binary_op_nested");
+    assert(own_fixture != NULL);
     
-    // Given a memory map with some values
-    ar_data_t *memory = ar_data__create_map();
-    ar_data__set_map_integer(memory, "x", 10);
-    ar_data__set_map_integer(memory, "y", 5);
-    ar_expression_evaluator_t *evaluator = ar_expression_evaluator__create(log, memory, NULL);
-    assert(evaluator != NULL);
+    ar_expression_evaluator_t *ref_evaluator = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
+    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
+    
+    // Add some values to memory
+    ar_data__set_map_integer(mut_memory, "x", 10);
+    ar_data__set_map_integer(mut_memory, "y", 5);
     
     // Given a nested binary operation AST node for "(memory.x + 2) * memory.y"
     // First create memory.x
     const char *path_x[] = {"x"};
-    ar_expression_ast_t *mem_x = ar_expression_ast__create_memory_access("memory", path_x, 1);
+    ar_expression_ast_t *own_mem_x = ar_expression_ast__create_memory_access("memory", path_x, 1);
     
     // Create memory.x + 2
-    ar_expression_ast_t *two = ar_expression_ast__create_literal_int(2);
-    ar_expression_ast_t *add = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__ADD, mem_x, two);
+    ar_expression_ast_t *own_two = ar_expression_ast__create_literal_int(2);
+    ar_expression_ast_t *own_add = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__ADD, own_mem_x, own_two);
     
     // Create memory.y
     const char *path_y[] = {"y"};
-    ar_expression_ast_t *mem_y = ar_expression_ast__create_memory_access("memory", path_y, 1);
+    ar_expression_ast_t *own_mem_y = ar_expression_ast__create_memory_access("memory", path_y, 1);
     
     // Create (memory.x + 2) * memory.y
-    ar_expression_ast_t *ast = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__MULTIPLY, add, mem_y);
-    assert(ast != NULL);
+    ar_expression_ast_t *own_ast = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__MULTIPLY, own_add, own_mem_y);
+    assert(own_ast != NULL);
     
-    // When evaluating the nested binary operation using the public evaluate method
-    ar_data_t *result = ar_expression_evaluator__evaluate(evaluator, ast);
+    // When evaluating the nested binary operation using evaluate_with_frame
+    ar_data_t *own_result = ar_expression_evaluator__evaluate_with_frame(ref_evaluator, ref_frame, own_ast);
     
     // Then it should return (10 + 2) * 5 = 60 (a new owned value)
-    assert(result != NULL);
-    assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
-    assert(ar_data__get_integer(result) == 60);
+    assert(own_result != NULL);
+    assert(ar_data__get_type(own_result) == AR_DATA_TYPE__INTEGER);
+    assert(ar_data__get_integer(own_result) == 60);
     
     // Verify ownership: result should be unowned (we can claim it)
-    bool held = ar_data__hold_ownership(result, evaluator);
+    bool held = ar_data__hold_ownership(own_result, ref_evaluator);
     assert(held == true);  // Should succeed because nobody owns it
     
     // Transfer ownership to NULL so we can destroy it
-    bool transferred = ar_data__transfer_ownership(result, evaluator);
+    bool transferred = ar_data__transfer_ownership(own_result, ref_evaluator);
     assert(transferred == true);
     
     // Clean up (MUST destroy result - it's owned)
-    ar_data__destroy(result);
-    ar_expression_ast__destroy(ast);
-    ar_expression_evaluator__destroy(evaluator);
-    ar_data__destroy(memory);
-    
-    ar_log__destroy(log);
+    ar_data__destroy(own_result);
+    ar_expression_ast__destroy(own_ast);
+    ar_instruction_evaluator_fixture__destroy(own_fixture);
     
     printf("  ✓ Evaluate nested binary operations\n");
 }

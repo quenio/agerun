@@ -174,9 +174,10 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Update all tests to use new interface
   - [x] Update method evaluator to pass frame parameter
   - [x] Fix agent evaluator to accept const context
-- [ ] TDD Cycle 17: Update expression evaluator usage
-  - [ ] Ensure instruction evaluators use frame-based expression evaluation
-  - [ ] Remove any remaining parameter passing
+- [x] TDD Cycle 17: Update expression evaluator usage (Completed 2025-07-12)
+  - [x] Add evaluate_with_frame method to expression evaluator
+  - [x] Update all instruction evaluators to use frame-based expression evaluation
+  - [x] Maintain backward compatibility during transition
 
 #### Phase 5: Integrate into Interpreter
 - [ ] TDD Cycle 18: Update interpreter

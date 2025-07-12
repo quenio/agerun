@@ -114,6 +114,7 @@ static bool _store_result_if_assigned(
 static bool _evaluate_three_string_args(
     ar_method_instruction_evaluator_t *mut_evaluator,
     ar_expression_evaluator_t *mut_expr_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast,
     size_t expected_arg_count,
     ar_data_t **out_arg1,
@@ -147,9 +148,9 @@ static bool _evaluate_three_string_args(
     }
     
     // Evaluate expression ASTs using public method
-    ar_data_t *result1 = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_ast1);
-    ar_data_t *result2 = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_ast2);
-    ar_data_t *result3 = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_ast3);
+    ar_data_t *result1 = ar_expression_evaluator__evaluate_with_frame(mut_expr_evaluator, ref_frame, ref_ast1);
+    ar_data_t *result2 = ar_expression_evaluator__evaluate_with_frame(mut_expr_evaluator, ref_frame, ref_ast2);
+    ar_data_t *result3 = ar_expression_evaluator__evaluate_with_frame(mut_expr_evaluator, ref_frame, ref_ast3);
     
     AR__HEAP__FREE(items);
     
@@ -264,7 +265,7 @@ bool ar_method_instruction_evaluator__evaluate(
     ar_data_t *own_version = NULL;
     
     bool args_valid = _evaluate_three_string_args(
-        mut_evaluator, mut_expr_evaluator, ref_ast, 3,
+        mut_evaluator, mut_expr_evaluator, ref_frame, ref_ast, 3,
         &own_method_name, &own_instructions, &own_version
     );
     

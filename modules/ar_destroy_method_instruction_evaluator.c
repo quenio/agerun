@@ -155,8 +155,8 @@ bool ar_destroy_method_instruction_evaluator__evaluate(
     }
     
     // Evaluate expression ASTs using public method
-    ar_data_t *name_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_name_ast);
-    ar_data_t *version_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_version_ast);
+    ar_data_t *name_result = ar_expression_evaluator__evaluate_with_frame(mut_expr_evaluator, ref_frame, ref_name_ast);
+    ar_data_t *version_result = ar_expression_evaluator__evaluate_with_frame(mut_expr_evaluator, ref_frame, ref_version_ast);
     
     // Handle ownership for name
     ar_data_t *own_name = NULL;

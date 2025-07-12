@@ -99,7 +99,7 @@ bool ar_assignment_instruction_evaluator__evaluate(
     }
     
     // Evaluate the expression AST
-    ar_data_t *result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_expr_ast);
+    ar_data_t *result = ar_expression_evaluator__evaluate_with_frame(mut_evaluator->ref_expr_evaluator, ref_frame, ref_expr_ast);
     
     if (!result) {
         return false;

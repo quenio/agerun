@@ -37,6 +37,8 @@ The module is designed with clean separation of concerns:
 - `ar_expression_evaluator__evaluate_literal_string()` - Evaluates string literal nodes
 - `ar_expression_evaluator__evaluate_memory_access()` - Evaluates memory/context access paths
 - `ar_expression_evaluator__evaluate_binary_op()` - Evaluates binary operations recursively
+- `ar_expression_evaluator__evaluate()` - Main evaluation function that dispatches to specific evaluators
+- `ar_expression_evaluator__evaluate_with_frame()` - Frame-based evaluation that uses frame's memory/context
 
 ## Ownership Model
 

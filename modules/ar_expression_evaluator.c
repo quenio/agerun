@@ -220,6 +220,37 @@ ar_data_t* ar_expression_evaluator__evaluate(
     }
 }
 
+ar_data_t* ar_expression_evaluator__evaluate_with_frame(
+    ar_expression_evaluator_t *mut_evaluator,
+    const ar_frame_t *ref_frame,
+    const ar_expression_ast_t *ref_ast)
+{
+    if (!mut_evaluator || !ref_frame || !ref_ast) {
+        _log_error(mut_evaluator, "evaluate_with_frame: NULL evaluator, frame, or AST");
+        return NULL;
+    }
+    
+    // Temporarily store the old memory and context
+    ar_data_t *old_memory = mut_evaluator->ref_memory;
+    ar_data_t *old_context = mut_evaluator->ref_context;
+    
+    // Set the evaluator to use the frame's memory and context
+    mut_evaluator->ref_memory = ar_frame__get_memory(ref_frame);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
+    mut_evaluator->ref_context = (ar_data_t *)ar_frame__get_context(ref_frame);
+#pragma GCC diagnostic pop
+    
+    // Call the existing evaluate method
+    ar_data_t *result = ar_expression_evaluator__evaluate(mut_evaluator, ref_ast);
+    
+    // Restore the original memory and context
+    mut_evaluator->ref_memory = old_memory;
+    mut_evaluator->ref_context = old_context;
+    
+    return result;
+}
+
 /**
  * Helper function to evaluate any expression AST node
  * This is used internally by binary operations to evaluate operands

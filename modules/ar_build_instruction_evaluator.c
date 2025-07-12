@@ -297,7 +297,7 @@ bool ar_build_instruction_evaluator__evaluate(
     }
     
     // Evaluate template expression AST
-    ar_data_t *template_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_template_ast);
+    ar_data_t *template_result = ar_expression_evaluator__evaluate_with_frame(mut_expr_evaluator, ref_frame, ref_template_ast);
     if (!template_result || ar_data__get_type(template_result) != AR_DATA_TYPE__STRING) {
         if (template_result && ar_data__hold_ownership(template_result, mut_evaluator)) {
             ar_data__transfer_ownership(template_result, mut_evaluator);
@@ -324,7 +324,7 @@ bool ar_build_instruction_evaluator__evaluate(
     }
     
     // Evaluate values expression AST to check for map
-    ar_data_t *values_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_values_ast);
+    ar_data_t *values_result = ar_expression_evaluator__evaluate_with_frame(mut_expr_evaluator, ref_frame, ref_values_ast);
     const ar_data_t *ref_values_data = values_result;
     ar_data_t *own_values_data = NULL;
     
