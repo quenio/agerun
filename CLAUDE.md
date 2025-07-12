@@ -429,7 +429,7 @@ cd bin  # Wrong - avoid relative paths
 - Document the make target in the Makefile help section
 - NEVER use Makefile variables $(VAR) in bash scripts - causes command substitution errors
 - Build output: quiet success, verbose failure (hide output when working, show full errors)
-- **Parallel builds**: Shared .PHONY deps → hoist to parent target (e.g., install-scan-build → full-build)
+- **Parallel builds**: Shared .PHONY deps → hoist to parent target (e.g., install-scan-build → build)
 
 **Debug Tools**:
 - **Memory**: `make sanitize-tests` → Check `bin/memory_report_<test_name>.log`
@@ -438,8 +438,8 @@ cd bin  # Wrong - avoid relative paths
 - **Build verification**: `strings bin/*/agerun | grep DEBUG` confirms debug builds
 - **Test Failures**: Often just wrong directory - 4-step check: pwd → cd /path → pwd → run
 - **Pattern Testing**: Test regex/sed/awk patterns before using in scripts
-- **Doc Validation**: `make full-build` validates file refs, function names, types
-- **CI Debugging**: Add log capture + display on failure (see full_build.sh analyze-exec handling)
+- **Doc Validation**: `make build` validates file refs, function names, types
+- **CI Debugging**: Add log capture + display on failure (see build.sh analyze-exec handling)
 
 **Expression Ownership** (CRITICAL):
 - References (`memory.x`): Don't destroy - borrowed from memory/context

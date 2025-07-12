@@ -267,7 +267,7 @@ check-docs:
     @echo "Validating module documentation..."
     @scripts/check_docs.sh
     
-full-build: check-docs run-tests
+build: check-docs run-tests
     @echo "Build complete with documentation validation"
 ```
 

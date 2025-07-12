@@ -240,7 +240,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ### ✅ COMPLETED: Reorganized Scripts and Enhanced Build System
 - Moved all shell scripts to /scripts/ directory with directory checks
-- Enhanced Makefile with make full-build, add-newline targets; all scripts run via make
+- Enhanced Makefile with make build, add-newline targets; all scripts run via make
 - Updated all documentation references; cleaner repository root; consistent interface
 
 ### ✅ COMPLETED: Renamed Types to Follow ar_ Convention
