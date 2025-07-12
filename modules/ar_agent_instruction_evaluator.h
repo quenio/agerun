@@ -49,7 +49,7 @@ void ar_agent_instruction_evaluator__destroy(ar_agent_instruction_evaluator_t *o
  */
 bool ar_agent_instruction_evaluator__evaluate(
     ar_agent_instruction_evaluator_t *mut_evaluator,
-    ar_data_t *ref_context,
+    const ar_data_t *ref_context,
     const ar_instruction_ast_t *ref_ast
 );
 

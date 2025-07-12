@@ -9,7 +9,8 @@ The instruction evaluator acts as a facade that coordinates specialized instruct
 - Manages instances of all specialized instruction evaluators
 - Delegates evaluation requests to the appropriate specialized evaluator
 - Provides a single entry point for instruction evaluation
-- Maintains shared dependencies (expression evaluator, memory, context, log)
+- Maintains shared dependencies (expression evaluator, log)
+- Creates sub-evaluators on-demand with memory from execution frame
 - Ensures consistent error reporting through centralized logging
 
 ## Architecture
@@ -62,30 +63,25 @@ An opaque type representing an instruction evaluator instance.
 ```c
 ar_instruction_evaluator_t* ar_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator,
-    ar_data_t *mut_memory,
-    ar_data_t *ref_context,
-    ar_data_t *ref_message
+    ar_expression_evaluator_t *ref_expr_evaluator
 );
 ```
 
-Creates a new instruction evaluator instance and initializes all specialized evaluators.
+Creates a new instruction evaluator instance.
 
 **Parameters:**
 - `ref_log`: Log instance for error reporting (required, borrowed reference)
 - `ref_expr_evaluator`: Expression evaluator to use (required, borrowed reference)
-- `mut_memory`: Memory map for storing values (required, mutable reference)
-- `ref_context`: Optional context map (can be NULL, borrowed reference)
-- `ref_message`: Optional message data (can be NULL, borrowed reference)
 
 **Returns:** New evaluator instance or NULL on failure
 
 **Ownership:** Caller owns the returned evaluator and must destroy it
 
 **Behavior:**
-- Creates instances of all 9 specialized instruction evaluators
-- Passes shared dependencies (including log) to each specialized evaluator
-- Returns NULL if any specialized evaluator creation fails
+- Creates the assignment evaluator immediately (uses frame-based pattern)
+- Other specialized evaluators are created on-demand when first needed
+- Sub-evaluators are created using memory from the execution frame
+- Returns NULL if log or expression evaluator is NULL
 
 #### ar_instruction_evaluator__destroy
 
@@ -103,81 +99,47 @@ Destroys an instruction evaluator instance and all its specialized evaluators.
 - Frees the main evaluator structure
 - Safe to call with NULL pointer
 
-### Delegation Functions
+### Evaluation Function
 
-Each delegation function follows the same pattern:
-- Takes the evaluator and an instruction AST node
-- Delegates to the appropriate specialized evaluator
-- Returns `true` on successful evaluation, `false` on failure
-- All memory management and error handling is done by the specialized evaluator
-
-#### ar_instruction_evaluator__evaluate_assignment
+#### ar_instruction_evaluator__evaluate
 
 ```c
-bool ar_instruction_evaluator__evaluate_assignment(
+bool ar_instruction_evaluator__evaluate(
     ar_instruction_evaluator_t *mut_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
 ```
 
-Delegates assignment instruction evaluation to the assignment_instruction_evaluator.
+Evaluates any instruction AST node by dispatching to the appropriate specialized evaluator.
+
+**Parameters:**
+- `mut_evaluator`: The evaluator instance (mutable reference)
+- `ref_frame`: The execution frame containing memory, context, and message (borrowed reference)
+- `ref_ast`: The instruction AST node to evaluate (borrowed reference)
+
+**Returns:** `true` on successful evaluation, `false` on failure
 
 **Behavior:**
-- Calls `ar_assignment_instruction_evaluator__evaluate()` with the stored instance
-- The specialized evaluator handles all assignment logic including path validation and value storage
+- Determines the instruction type from the AST node
+- Creates the appropriate specialized evaluator on-demand if not already created
+- Passes the frame to specialized evaluators (for assignment) or extracts memory/context as needed
+- Delegates evaluation to the appropriate specialized evaluator
+- Returns the result from the specialized evaluator
 
-The instruction evaluator provides delegation functions for each instruction type. Each function simply delegates to its corresponding specialized evaluator:
-
-#### All Delegation Functions
-
-```c
-// Delegates to assignment_instruction_evaluator
-bool ar_instruction_evaluator__evaluate_assignment(
-    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
-
-// Delegates to send_instruction_evaluator
-bool ar_instruction_evaluator__evaluate_send(
-    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
-
-// Delegates to condition_instruction_evaluator
-bool ar_instruction_evaluator__evaluate_if(
-    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
-
-// Delegates to parse_instruction_evaluator
-bool ar_instruction_evaluator__evaluate_parse(
-    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
-
-// Delegates to build_instruction_evaluator
-bool ar_instruction_evaluator__evaluate_build(
-    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
-
-// Delegates to method_instruction_evaluator
-bool ar_instruction_evaluator__evaluate_method(
-    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
-
-// Delegates to agent_instruction_evaluator
-bool ar_instruction_evaluator__evaluate_agent(
-    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
-
-// Dispatches to destroy_agent_instruction_evaluator or destroy_method_instruction_evaluator
-bool ar_instruction_evaluator__evaluate_destroy(
-    ar_instruction_evaluator_t *mut_evaluator, const ar_instruction_ast_t *ref_ast);
-```
-
-**Common Behavior:**
-- All functions delegate to their corresponding specialized evaluator instance
-- Return `true` on successful evaluation, `false` on failure
-- The specialized evaluators handle all logic, memory management, and error handling
-- For detailed behavior of each instruction type, see the individual specialized evaluator documentation
+**Frame-Based Evaluation:**
+- The assignment evaluator receives the frame directly (frame-based pattern)
+- Other evaluators still receive memory/context extracted from the frame (legacy pattern)
+- Sub-evaluators are created lazily using memory from the frame
 
 ## Usage Examples
 
 ### Basic Assignment
 
 ```c
-// Create evaluator with dependencies
+// Create evaluator
 ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-    log, expr_eval, memory, NULL, NULL
+    log, expr_eval
 );
 
 // Create assignment AST: memory.count := 10
@@ -185,10 +147,14 @@ ar_instruction_ast_t *ast = ar_instruction_ast__create_assignment(
     "memory.count", "10"
 );
 
-// Evaluate (delegates to assignment_instruction_evaluator)
-bool success = ar_instruction_evaluator__evaluate_assignment(evaluator, ast);
+// Create frame with memory, context, and message
+ar_frame_t *frame = ar_frame__create(memory, context, message);
+
+// Evaluate using unified interface
+bool success = ar_instruction_evaluator__evaluate(evaluator, frame, ast);
 
 // Clean up
+ar_frame__destroy(frame);
 ar_instruction_ast__destroy(ast);
 ar_instruction_evaluator__destroy(evaluator);
 ```
@@ -202,8 +168,14 @@ ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
     AR_INSTRUCTION_AST_TYPE__SEND, "send", args, 2, NULL
 );
 
-// Evaluate (delegates to send_instruction_evaluator)
-bool success = ar_instruction_evaluator__evaluate_send(evaluator, ast);
+// Create frame
+ar_frame_t *frame = ar_frame__create(memory, context, message);
+
+// Evaluate using unified interface
+bool success = ar_instruction_evaluator__evaluate(evaluator, frame, ast);
+
+// Clean up
+ar_frame__destroy(frame);
 ```
 
 ### Coordination Pattern
@@ -211,18 +183,22 @@ bool success = ar_instruction_evaluator__evaluate_send(evaluator, ast);
 The instruction evaluator demonstrates the **facade pattern** by providing a unified interface that coordinates multiple specialized evaluators:
 
 ```c
-// Single evaluator manages all specialized evaluators
+// Create evaluator
 ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-    log, expr_eval, memory, context, message
+    log, expr_eval
 );
 
-// Each instruction type is handled by its specialized evaluator
-ar_instruction_evaluator__evaluate_assignment(evaluator, assignment_ast);
-ar_instruction_evaluator__evaluate_send(evaluator, send_ast);
-ar_instruction_evaluator__evaluate_if(evaluator, condition_ast);
+// Create frame for evaluation
+ar_frame_t *frame = ar_frame__create(memory, context, message);
+
+// Unified interface handles all instruction types
+ar_instruction_evaluator__evaluate(evaluator, frame, assignment_ast);
+ar_instruction_evaluator__evaluate(evaluator, frame, send_ast);
+ar_instruction_evaluator__evaluate(evaluator, frame, condition_ast);
 // ... etc for all instruction types
 
-// Single destroy call cleans up all specialized evaluators
+// Clean up
+ar_frame__destroy(frame);
 ar_instruction_evaluator__destroy(evaluator);
 ```
 
@@ -230,10 +206,10 @@ ar_instruction_evaluator__destroy(evaluator);
 
 ### Ownership Rules
 
-1. **Evaluator Composition**: The instruction evaluator owns all specialized evaluator instances
-2. **Dependency Management**: Shared dependencies (expression evaluator, memory, context) are passed to all specialized evaluators
+1. **Lazy Initialization**: Specialized evaluators are created on-demand when first needed
+2. **Frame-Based Resources**: Memory, context, and message come from the execution frame
 3. **Delegation Pattern**: All memory management is handled by the specialized evaluators
-4. **Clean Destruction**: Destroying the instruction evaluator properly destroys all specialized evaluators
+4. **Clean Destruction**: Destroying the instruction evaluator properly destroys all created specialized evaluators
 
 ### Architecture Benefits
 
@@ -254,9 +230,9 @@ Error handling uses the centralized logging system:
 
 ## Performance Considerations
 
-- **Initialization Cost**: Creating an instruction evaluator creates 9 specialized evaluator instances
-- **Runtime Efficiency**: Delegation calls have minimal overhead
-- **Memory Locality**: All evaluators are created together and can benefit from cache locality
+- **Lazy Initialization**: Specialized evaluators are created only when needed, reducing startup cost
+- **Runtime Efficiency**: First use of each instruction type has creation overhead, subsequent uses are fast
+- **Memory Usage**: Only creates evaluators for instruction types actually used
 - **Reusability**: Single instruction evaluator can handle all instruction types efficiently
 
 ## Testing
@@ -273,10 +249,10 @@ The module has a focused test suite that verifies the coordination pattern:
 
 The instruction evaluator tests focus on:
 
-1. **Composition**: Verifying all specialized evaluators are created
-2. **Delegation**: Ensuring calls are properly forwarded to specialized evaluators  
-3. **Lifecycle**: Testing create/destroy coordination
-4. **Integration**: Confirming the facade pattern works correctly
+1. **Lazy Creation**: Verifying specialized evaluators are created on-demand
+2. **Unified Interface**: Ensuring the single evaluate method dispatches correctly
+3. **Frame Integration**: Testing that memory is extracted from frames properly
+4. **Lifecycle**: Testing create/destroy coordination with lazy initialization
 
 Detailed functionality testing is handled by each specialized evaluator's test suite, following the single responsibility principle.
 

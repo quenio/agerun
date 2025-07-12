@@ -8,6 +8,7 @@
 #include "ar_expression_ast.h"
 #include "ar_log.h"
 #include "ar_memory_accessor.h"
+#include "ar_frame.h"
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
@@ -17,16 +18,14 @@
 struct ar_assignment_instruction_evaluator_s {
     ar_log_t *ref_log;                           /* Borrowed reference to log instance */
     ar_expression_evaluator_t *ref_expr_evaluator;  /* Borrowed reference to expression evaluator */
-    ar_data_t *mut_memory;                          /* Mutable reference to memory map */
 };
 
 
 ar_assignment_instruction_evaluator_t* ar_assignment_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator,
-    ar_data_t *mut_memory
+    ar_expression_evaluator_t *ref_expr_evaluator
 ) {
-    if (!ref_log || !ref_expr_evaluator || !mut_memory) {
+    if (!ref_log || !ref_expr_evaluator) {
         return NULL;
     }
     
@@ -37,7 +36,6 @@ ar_assignment_instruction_evaluator_t* ar_assignment_instruction_evaluator__crea
     
     own_evaluator->ref_log = ref_log;
     own_evaluator->ref_expr_evaluator = ref_expr_evaluator;
-    own_evaluator->mut_memory = mut_memory;
     
     // Ownership transferred to caller
     return own_evaluator;
@@ -50,7 +48,7 @@ void ar_assignment_instruction_evaluator__destroy(
         return;
     }
     
-    // Just free the struct, we don't own the log, expression evaluator or memory
+    // Just free the struct, we don't own the log or expression evaluator
     AR__HEAP__FREE(own_evaluator);
 }
 
@@ -69,9 +67,10 @@ static void _log_error(ar_assignment_instruction_evaluator_t *mut_evaluator, con
  */
 bool ar_assignment_instruction_evaluator__evaluate(
     ar_assignment_instruction_evaluator_t *mut_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 ) {
-    if (!mut_evaluator || !ref_ast) {
+    if (!mut_evaluator || !ref_frame || !ref_ast) {
         return false;
     }
     
@@ -106,6 +105,14 @@ bool ar_assignment_instruction_evaluator__evaluate(
         return false;
     }
     
+    // Get memory from frame
+    ar_data_t *mut_memory = ar_frame__get_memory(ref_frame);
+    if (!mut_memory) {
+        ar_data__destroy(result);
+        _log_error(mut_evaluator, "Frame has no memory");
+        return false;
+    }
+    
     // Check if we need to make a copy (if result is owned by memory/context)
     ar_data_t *own_value;
     if (ar_data__hold_ownership(result, mut_evaluator)) {
@@ -122,7 +129,7 @@ bool ar_assignment_instruction_evaluator__evaluate(
     }
     
     // Store the value in memory (transfers ownership)
-    bool success = ar_data__set_map_data(mut_evaluator->mut_memory, key_path, own_value);
+    bool success = ar_data__set_map_data(mut_memory, key_path, own_value);
     if (!success) {
         ar_data__destroy(own_value);
     }

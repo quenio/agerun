@@ -90,10 +90,8 @@ export fn ar_method_evaluator__evaluate(
             return false;
         }
         
-        // Evaluate the instruction
-        // Note: The instruction evaluator hasn't been updated to use frames yet,
-        // but it was created with the memory from the frame, so it should work
-        const success = c.ar_instruction_evaluator__evaluate(evaluator.ref_instruction_evaluator, ref_instruction);
+        // Evaluate the instruction with the frame
+        const success = c.ar_instruction_evaluator__evaluate(evaluator.ref_instruction_evaluator, ref_frame, ref_instruction);
         if (!success) {
             // Log error with line number
             _log_error(evaluator, "Method evaluation failed at line ", line_no);

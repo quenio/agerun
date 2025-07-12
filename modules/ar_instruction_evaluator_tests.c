@@ -14,6 +14,7 @@
 #include "ar_system.h"
 #include "ar_log.h"
 #include "ar_event.h"
+#include "ar_frame.h"
 
 static void test_instruction_evaluator__create_destroy(void) {
     // Given an expression evaluator and memory/context/message data
@@ -34,7 +35,7 @@ static void test_instruction_evaluator__create_destroy(void) {
     
     // When creating an instruction evaluator
     ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        log, expr_eval, memory, context, message
+        log, expr_eval
     );
     
     // Then it should be created successfully
@@ -64,7 +65,7 @@ static void test_instruction_evaluator__create_with_null_context(void) {
     
     // When creating an instruction evaluator with NULL context and message
     ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        log, expr_eval, memory, NULL, NULL
+        log, expr_eval
     );
     
     // Then it should be created successfully (context and message are optional)
@@ -95,7 +96,7 @@ static void test_instruction_evaluator__create_with_null_expr_evaluator(void) {
     
     // When creating an instruction evaluator with NULL expression evaluator
     ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        log, NULL, memory, NULL, NULL
+        log, NULL
     );
     
     // Then it should fail and return NULL
@@ -116,15 +117,16 @@ static void test_instruction_evaluator__create_with_null_memory(void) {
     ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, dummy_memory, NULL);
     assert(expr_eval != NULL);
     
-    // When creating an instruction evaluator with NULL memory
+    // When creating an instruction evaluator (memory comes from frame now)
     ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        log, expr_eval, NULL, NULL, NULL
+        log, expr_eval
     );
     
-    // Then it should fail and return NULL (memory is required)
-    assert(evaluator == NULL);
+    // Then it should succeed (memory is no longer required at creation)
+    assert(evaluator != NULL);
     
     // Cleanup
+    ar_instruction_evaluator__destroy(evaluator);
     ar_expression_evaluator__destroy(expr_eval);
     ar_data__destroy(dummy_memory);
     ar_log__destroy(log);
@@ -143,7 +145,7 @@ static void test_instruction_evaluator__stores_evaluator_instances_internally(vo
     
     // When creating an instruction evaluator
     ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        log, expr_eval, memory, NULL, NULL
+        log, expr_eval
     );
     assert(evaluator != NULL);
     
@@ -155,11 +157,22 @@ static void test_instruction_evaluator__stores_evaluator_instances_internally(vo
     ar_expression_ast_t *expr_ast = ar_expression_ast__create_literal_int(42);
     ar_instruction_ast__set_assignment_expression_ast(assignment_ast, expr_ast);
     
-    bool result = ar_instruction_evaluator__evaluate(evaluator, assignment_ast);
+    // Create a frame for evaluation
+    ar_data_t *context = ar_data__create_map();
+    ar_data_t *message = ar_data__create_string("");
+    ar_frame_t *frame = ar_frame__create(memory, context, message);
+    assert(frame != NULL);
+    
+    bool result = ar_instruction_evaluator__evaluate(evaluator, frame, assignment_ast);
     assert(result == true);
     assert(ar_data__get_map_integer(memory, "x") == 42);
     
     ar_instruction_ast__destroy(assignment_ast);
+    
+    // Cleanup frame
+    ar_frame__destroy(frame);
+    ar_data__destroy(context);
+    ar_data__destroy(message);
     
     // Cleanup
     ar_instruction_evaluator__destroy(evaluator);
@@ -189,7 +202,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
     assert(expr_eval != NULL);
     
     ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        log, expr_eval, memory, context, message
+        log, expr_eval
     );
     assert(evaluator != NULL);
     
@@ -209,7 +222,17 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         ar_list__add_last(arg_asts, msg_ast);
         ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
         
-        bool result = ar_instruction_evaluator__evaluate(evaluator, ast);
+        // Create a frame for evaluation
+        ar_data_t *ctx = ar_data__create_map();
+        ar_data_t *msg = ar_data__create_string("");
+        ar_frame_t *fr = ar_frame__create(memory, ctx, msg);
+        
+        bool result = ar_instruction_evaluator__evaluate(evaluator, fr, ast);
+        
+        // Clean up frame
+        ar_frame__destroy(fr);
+        ar_data__destroy(ctx);
+        ar_data__destroy(msg);
         assert(result == true);
         
         ar_instruction_ast__destroy(ast);
@@ -233,7 +256,17 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         ar_list__add_last(arg_asts, false_ast);
         ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
         
-        bool result = ar_instruction_evaluator__evaluate(evaluator, ast);
+        // Create a frame for evaluation
+        ar_data_t *ctx = ar_data__create_map();
+        ar_data_t *msg = ar_data__create_string("");
+        ar_frame_t *fr = ar_frame__create(memory, ctx, msg);
+        
+        bool result = ar_instruction_evaluator__evaluate(evaluator, fr, ast);
+        
+        // Clean up frame
+        ar_frame__destroy(fr);
+        ar_data__destroy(ctx);
+        ar_data__destroy(msg);
         assert(result == true);
         
         // Verify result was stored
@@ -261,7 +294,17 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         ar_list__add_last(arg_asts, input_ast);
         ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
         
-        bool result = ar_instruction_evaluator__evaluate(evaluator, ast);
+        // Create a frame for evaluation
+        ar_data_t *ctx = ar_data__create_map();
+        ar_data_t *msg = ar_data__create_string("");
+        ar_frame_t *fr = ar_frame__create(memory, ctx, msg);
+        
+        bool result = ar_instruction_evaluator__evaluate(evaluator, fr, ast);
+        
+        // Clean up frame
+        ar_frame__destroy(fr);
+        ar_data__destroy(ctx);
+        ar_data__destroy(msg);
         assert(result == true);
         
         // Verify result was stored as a map
@@ -302,7 +345,17 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         ar_list__add_last(arg_asts, values_ast);
         ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
         
-        bool result = ar_instruction_evaluator__evaluate(evaluator, ast);
+        // Create a frame for evaluation
+        ar_data_t *ctx = ar_data__create_map();
+        ar_data_t *msg = ar_data__create_string("");
+        ar_frame_t *fr = ar_frame__create(memory, ctx, msg);
+        
+        bool result = ar_instruction_evaluator__evaluate(evaluator, fr, ast);
+        
+        // Clean up frame
+        ar_frame__destroy(fr);
+        ar_data__destroy(ctx);
+        ar_data__destroy(msg);
         assert(result == true);
         
         // Verify result was stored
@@ -338,7 +391,7 @@ static void test_instruction_evaluator__only_unified_interface_exposed(void) {
     assert(expr_eval != NULL);
     
     ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        log, expr_eval, memory, NULL, NULL
+        log, expr_eval
     );
     assert(evaluator != NULL);
     
@@ -366,10 +419,28 @@ static void test_instruction_evaluator__only_unified_interface_exposed(void) {
     
     // Then we should only be able to evaluate them through the unified interface
     // The following should compile and work:
-    bool result1 = ar_instruction_evaluator__evaluate(evaluator, assignment_ast);
+    
+    // Create frames for evaluation
+    ar_data_t *ctx1 = ar_data__create_map();
+    ar_data_t *msg1 = ar_data__create_string("");
+    ar_frame_t *frame1 = ar_frame__create(memory, ctx1, msg1);
+    
+    bool result1 = ar_instruction_evaluator__evaluate(evaluator, frame1, assignment_ast);
     assert(result1 == true);
     
-    bool result2 = ar_instruction_evaluator__evaluate(evaluator, send_ast);
+    ar_frame__destroy(frame1);
+    ar_data__destroy(ctx1);
+    ar_data__destroy(msg1);
+    
+    ar_data_t *ctx2 = ar_data__create_map();
+    ar_data_t *msg2 = ar_data__create_string("");
+    ar_frame_t *frame2 = ar_frame__create(memory, ctx2, msg2);
+    
+    bool result2 = ar_instruction_evaluator__evaluate(evaluator, frame2, send_ast);
+    
+    ar_frame__destroy(frame2);
+    ar_data__destroy(ctx2);
+    ar_data__destroy(msg2);
     assert(result2 == true);
     
     // And the individual evaluate functions should not be available
@@ -397,7 +468,7 @@ static void test_instruction_evaluator__unified_evaluate_assignment(void) {
     assert(expr_eval != NULL);
     
     ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-        log, expr_eval, memory, NULL, NULL
+        log, expr_eval
     );
     assert(evaluator != NULL);
     
@@ -415,7 +486,15 @@ static void test_instruction_evaluator__unified_evaluate_assignment(void) {
     assert(stored_ast != NULL);
     
     // When evaluating using the unified evaluate method
-    bool result = ar_instruction_evaluator__evaluate(evaluator, ast);
+    ar_data_t *ctx = ar_data__create_map();
+    ar_data_t *msg = ar_data__create_string("");
+    ar_frame_t *fr = ar_frame__create(memory, ctx, msg);
+    
+    bool result = ar_instruction_evaluator__evaluate(evaluator, fr, ast);
+    
+    ar_frame__destroy(fr);
+    ar_data__destroy(ctx);
+    ar_data__destroy(msg);
     
     // Then evaluation should succeed
     assert(result == true);

@@ -99,7 +99,7 @@ static bool _store_result_if_assigned(
 
 bool ar_agent_instruction_evaluator__evaluate(
     ar_agent_instruction_evaluator_t *mut_evaluator,
-    ar_data_t *ref_context __attribute__((unused)),
+    const ar_data_t *ref_context __attribute__((unused)),
     const ar_instruction_ast_t *ref_ast
 ) {
     if (!mut_evaluator || !ref_ast) {

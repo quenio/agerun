@@ -1489,3 +1489,17 @@ The [interpreter fixture module](ar_interpreter_fixture.md) provides a proper ab
 - **Opaque Type**: Interpreter test fixture structure is opaque, following Parnas principles
 - **Based on Interpreter API**: Uses interpreter module functions rather than duplicating instruction fixture logic
 - **Designed for Interpreter Tests**: Specifically tailored for testing interpreter execution behavior
+
+### Instruction Evaluator Fixture Module (`ar_instruction_evaluator_fixture`)
+
+The [instruction evaluator fixture module](ar_instruction_evaluator_fixture.md) provides reusable test infrastructure for instruction evaluator tests:
+
+- **Resource Management**: Manages test resources (memory, log, expression evaluator, frames) with automatic cleanup
+- **Helper Functions**: Provides convenience functions for creating assignment ASTs with various expression types
+- **Frame Creation**: Simplifies frame creation with default context and message
+- **Resource Tracking**: Tracks all created frames, ASTs, and data objects for proper cleanup
+- **Memory Leak Prevention**: Ensures no memory leaks even if test assertions fail
+- **Test Simplification**: Reduces boilerplate code in instruction evaluator tests
+- **Generic Design**: Can be used by any instruction evaluator test module
+- **Opaque Type**: Fixture structure is opaque, following Parnas principles
+- **Designed for Instruction Evaluators**: Specifically tailored for testing instruction evaluator modules

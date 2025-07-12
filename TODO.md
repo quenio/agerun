@@ -147,12 +147,12 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Created ar_data__shallow_copy() eliminating _copy_data_value duplication across evaluators
 
 #### Phase 3: Update Instruction Evaluators (One by One)
-- [ ] TDD Cycle 7: Assignment evaluator
-  - [ ] Modify create to take no parameters
-  - [ ] Add set_frame method
-  - [ ] Update evaluate to use frame
-  - [ ] Test thoroughly
-  - [ ] Remove old code
+- [x] TDD Cycle 7: Assignment evaluator (Completed 2025-07-12)
+  - [x] Modify create to remove memory parameter
+  - [x] Update evaluate to take frame parameter
+  - [x] Test thoroughly
+  - [x] Create generic instruction evaluator fixture
+  - [x] Update assignment evaluator tests to use fixture
 - [ ] TDD Cycle 8: Send evaluator
   - [ ] Same pattern as assignment
   - [ ] Ensure send actually performs sends (not just returns true)
@@ -165,10 +165,14 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [ ] TDD Cycle 15: Destroy method evaluator
 
 #### Phase 4: Update Facades
-- [ ] TDD Cycle 16: Update instruction evaluator facade
-  - [ ] Modify to create evaluators without parameters
-  - [ ] Set frame before each evaluate call
-  - [ ] Test all instruction types
+- [x] TDD Cycle 16: Update instruction evaluator facade (Completed 2025-07-12)
+  - [x] Modify create to take only log and expression evaluator
+  - [x] Implement lazy initialization of sub-evaluators
+  - [x] Update evaluate to accept frame parameter
+  - [x] Create sub-evaluators on-demand using memory from frame
+  - [x] Update all tests to use new interface
+  - [x] Update method evaluator to pass frame parameter
+  - [x] Fix agent evaluator to accept const context
 - [ ] TDD Cycle 17: Update expression evaluator usage
   - [ ] Ensure instruction evaluators use frame-based expression evaluation
   - [ ] Remove any remaining parameter passing

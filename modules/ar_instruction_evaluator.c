@@ -15,6 +15,7 @@
 #include "ar_destroy_agent_instruction_evaluator.h"
 #include "ar_destroy_method_instruction_evaluator.h"
 #include "ar_list.h"
+#include "ar_frame.h"
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
@@ -28,9 +29,6 @@
 struct ar_instruction_evaluator_s {
     ar_log_t *ref_log;                           /* Log instance (borrowed reference) */
     ar_expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
-    ar_data_t *mut_memory;                          /* Memory map (mutable reference) */
-    ar_data_t *ref_context;                         /* Context map (borrowed reference, can be NULL) */
-    ar_data_t *ref_message;                         /* Message data (borrowed reference, can be NULL) */
     ar_assignment_instruction_evaluator_t *own_assignment_evaluator;  /* Assignment evaluator instance (owned) */
     ar_send_instruction_evaluator_t *own_send_evaluator;  /* Send evaluator instance (owned) */
     ar_condition_instruction_evaluator_t *own_condition_evaluator;  /* Condition evaluator instance (owned) */
@@ -47,13 +45,10 @@ struct ar_instruction_evaluator_s {
  */
 ar_instruction_evaluator_t* ar_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator,
-    ar_data_t *mut_memory,
-    ar_data_t *ref_context,
-    ar_data_t *ref_message
+    ar_expression_evaluator_t *ref_expr_evaluator
 ) {
     // Validate required parameters
-    if (ref_log == NULL || ref_expr_evaluator == NULL || mut_memory == NULL) {
+    if (ref_log == NULL || ref_expr_evaluator == NULL) {
         return NULL;
     }
     
@@ -66,144 +61,26 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
     // Initialize fields
     evaluator->ref_log = ref_log;
     evaluator->ref_expr_evaluator = ref_expr_evaluator;
-    evaluator->mut_memory = mut_memory;
-    evaluator->ref_context = ref_context;
-    evaluator->ref_message = ref_message;
     
-    // Create assignment evaluator instance
+    // Create assignment evaluator instance (now uses frame-based pattern)
     evaluator->own_assignment_evaluator = ar_assignment_instruction_evaluator__create(
         ref_log,
-        ref_expr_evaluator,
-        mut_memory
+        ref_expr_evaluator
     );
     if (evaluator->own_assignment_evaluator == NULL) {
         AR__HEAP__FREE(evaluator);
         return NULL;
     }
     
-    // Create send evaluator instance
-    evaluator->own_send_evaluator = ar_send_instruction_evaluator__create(
-        ref_log,
-        ref_expr_evaluator,
-        mut_memory
-    );
-    if (evaluator->own_send_evaluator == NULL) {
-        ar_assignment_instruction_evaluator__destroy(evaluator->own_assignment_evaluator);
-        AR__HEAP__FREE(evaluator);
-        return NULL;
-    }
-    
-    // Create condition evaluator instance
-    evaluator->own_condition_evaluator = ar_condition_instruction_evaluator__create(
-        ref_log,
-        ref_expr_evaluator,
-        mut_memory
-    );
-    if (evaluator->own_condition_evaluator == NULL) {
-        ar_assignment_instruction_evaluator__destroy(evaluator->own_assignment_evaluator);
-        ar_send_instruction_evaluator__destroy(evaluator->own_send_evaluator);
-        AR__HEAP__FREE(evaluator);
-        return NULL;
-    }
-    
-    // Create parse evaluator instance
-    evaluator->own_parse_evaluator = ar_parse_instruction_evaluator__create(
-        ref_log,
-        ref_expr_evaluator,
-        mut_memory
-    );
-    if (evaluator->own_parse_evaluator == NULL) {
-        ar_assignment_instruction_evaluator__destroy(evaluator->own_assignment_evaluator);
-        ar_send_instruction_evaluator__destroy(evaluator->own_send_evaluator);
-        ar_condition_instruction_evaluator__destroy(evaluator->own_condition_evaluator);
-        AR__HEAP__FREE(evaluator);
-        return NULL;
-    }
-    
-    // Create build evaluator instance
-    evaluator->own_build_evaluator = ar_build_instruction_evaluator__create(
-        ref_log,
-        ref_expr_evaluator,
-        mut_memory
-    );
-    if (evaluator->own_build_evaluator == NULL) {
-        ar_assignment_instruction_evaluator__destroy(evaluator->own_assignment_evaluator);
-        ar_send_instruction_evaluator__destroy(evaluator->own_send_evaluator);
-        ar_condition_instruction_evaluator__destroy(evaluator->own_condition_evaluator);
-        ar_parse_instruction_evaluator__destroy(evaluator->own_parse_evaluator);
-        AR__HEAP__FREE(evaluator);
-        return NULL;
-    }
-    
-    // Create method evaluator instance
-    evaluator->own_method_evaluator = ar_method_instruction_evaluator__create(
-        ref_log,
-        ref_expr_evaluator,
-        mut_memory
-    );
-    if (evaluator->own_method_evaluator == NULL) {
-        ar_assignment_instruction_evaluator__destroy(evaluator->own_assignment_evaluator);
-        ar_send_instruction_evaluator__destroy(evaluator->own_send_evaluator);
-        ar_condition_instruction_evaluator__destroy(evaluator->own_condition_evaluator);
-        ar_parse_instruction_evaluator__destroy(evaluator->own_parse_evaluator);
-        ar_build_instruction_evaluator__destroy(evaluator->own_build_evaluator);
-        AR__HEAP__FREE(evaluator);
-        return NULL;
-    }
-    
-    // Create agent evaluator instance
-    evaluator->own_agent_evaluator = ar_agent_instruction_evaluator__create(
-        ref_log,
-        ref_expr_evaluator,
-        mut_memory
-    );
-    if (evaluator->own_agent_evaluator == NULL) {
-        ar_assignment_instruction_evaluator__destroy(evaluator->own_assignment_evaluator);
-        ar_send_instruction_evaluator__destroy(evaluator->own_send_evaluator);
-        ar_condition_instruction_evaluator__destroy(evaluator->own_condition_evaluator);
-        ar_parse_instruction_evaluator__destroy(evaluator->own_parse_evaluator);
-        ar_build_instruction_evaluator__destroy(evaluator->own_build_evaluator);
-        ar_method_instruction_evaluator__destroy(evaluator->own_method_evaluator);
-        AR__HEAP__FREE(evaluator);
-        return NULL;
-    }
-    
-    // Create destroy agent evaluator instance
-    evaluator->own_destroy_agent_evaluator = ar_destroy_agent_instruction_evaluator__create(
-        ref_log,
-        ref_expr_evaluator,
-        mut_memory
-    );
-    if (evaluator->own_destroy_agent_evaluator == NULL) {
-        ar_assignment_instruction_evaluator__destroy(evaluator->own_assignment_evaluator);
-        ar_send_instruction_evaluator__destroy(evaluator->own_send_evaluator);
-        ar_condition_instruction_evaluator__destroy(evaluator->own_condition_evaluator);
-        ar_parse_instruction_evaluator__destroy(evaluator->own_parse_evaluator);
-        ar_build_instruction_evaluator__destroy(evaluator->own_build_evaluator);
-        ar_method_instruction_evaluator__destroy(evaluator->own_method_evaluator);
-        ar_agent_instruction_evaluator__destroy(evaluator->own_agent_evaluator);
-        AR__HEAP__FREE(evaluator);
-        return NULL;
-    }
-    
-    // Create destroy method evaluator instance
-    evaluator->own_destroy_method_evaluator = ar_destroy_method_instruction_evaluator__create(
-        ref_log,
-        ref_expr_evaluator,
-        mut_memory
-    );
-    if (evaluator->own_destroy_method_evaluator == NULL) {
-        ar_assignment_instruction_evaluator__destroy(evaluator->own_assignment_evaluator);
-        ar_send_instruction_evaluator__destroy(evaluator->own_send_evaluator);
-        ar_condition_instruction_evaluator__destroy(evaluator->own_condition_evaluator);
-        ar_parse_instruction_evaluator__destroy(evaluator->own_parse_evaluator);
-        ar_build_instruction_evaluator__destroy(evaluator->own_build_evaluator);
-        ar_method_instruction_evaluator__destroy(evaluator->own_method_evaluator);
-        ar_agent_instruction_evaluator__destroy(evaluator->own_agent_evaluator);
-        ar_destroy_agent_instruction_evaluator__destroy(evaluator->own_destroy_agent_evaluator);
-        AR__HEAP__FREE(evaluator);
-        return NULL;
-    }
+    // Initialize other evaluators to NULL - they will be created on-demand
+    evaluator->own_send_evaluator = NULL;
+    evaluator->own_condition_evaluator = NULL;
+    evaluator->own_parse_evaluator = NULL;
+    evaluator->own_build_evaluator = NULL;
+    evaluator->own_method_evaluator = NULL;
+    evaluator->own_agent_evaluator = NULL;
+    evaluator->own_destroy_agent_evaluator = NULL;
+    evaluator->own_destroy_method_evaluator = NULL;
     
     return evaluator;
 }
@@ -256,9 +133,10 @@ void ar_instruction_evaluator__destroy(ar_instruction_evaluator_t *own_evaluator
  */
 bool ar_instruction_evaluator__evaluate(
     ar_instruction_evaluator_t *mut_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 ) {
-    if (!mut_evaluator || !ref_ast) {
+    if (!mut_evaluator || !ref_frame || !ref_ast) {
         return false;
     }
     
@@ -267,13 +145,26 @@ bool ar_instruction_evaluator__evaluate(
     
     switch (type) {
         case AR_INSTRUCTION_AST_TYPE__ASSIGNMENT:
-            // Delegate to the assignment instruction evaluator instance
+            // Delegate to the assignment instruction evaluator instance (with frame)
             return ar_assignment_instruction_evaluator__evaluate(
                 mut_evaluator->own_assignment_evaluator,
+                ref_frame,
                 ref_ast
             );
             
         case AR_INSTRUCTION_AST_TYPE__SEND:
+            // Create send evaluator on-demand if needed
+            if (mut_evaluator->own_send_evaluator == NULL) {
+                ar_data_t *memory = ar_frame__get_memory(ref_frame);
+                mut_evaluator->own_send_evaluator = ar_send_instruction_evaluator__create(
+                    mut_evaluator->ref_log,
+                    mut_evaluator->ref_expr_evaluator,
+                    memory
+                );
+                if (mut_evaluator->own_send_evaluator == NULL) {
+                    return false;
+                }
+            }
             // Delegate to the send instruction evaluator instance
             return ar_send_instruction_evaluator__evaluate(
                 mut_evaluator->own_send_evaluator,
@@ -281,6 +172,18 @@ bool ar_instruction_evaluator__evaluate(
             );
             
         case AR_INSTRUCTION_AST_TYPE__IF:
+            // Create condition evaluator on-demand if needed
+            if (mut_evaluator->own_condition_evaluator == NULL) {
+                ar_data_t *memory = ar_frame__get_memory(ref_frame);
+                mut_evaluator->own_condition_evaluator = ar_condition_instruction_evaluator__create(
+                    mut_evaluator->ref_log,
+                    mut_evaluator->ref_expr_evaluator,
+                    memory
+                );
+                if (mut_evaluator->own_condition_evaluator == NULL) {
+                    return false;
+                }
+            }
             // Delegate to the condition instruction evaluator instance
             return ar_condition_instruction_evaluator__evaluate(
                 mut_evaluator->own_condition_evaluator,
@@ -288,6 +191,18 @@ bool ar_instruction_evaluator__evaluate(
             );
             
         case AR_INSTRUCTION_AST_TYPE__PARSE:
+            // Create parse evaluator on-demand if needed
+            if (mut_evaluator->own_parse_evaluator == NULL) {
+                ar_data_t *memory = ar_frame__get_memory(ref_frame);
+                mut_evaluator->own_parse_evaluator = ar_parse_instruction_evaluator__create(
+                    mut_evaluator->ref_log,
+                    mut_evaluator->ref_expr_evaluator,
+                    memory
+                );
+                if (mut_evaluator->own_parse_evaluator == NULL) {
+                    return false;
+                }
+            }
             // Delegate to the parse instruction evaluator instance
             return ar_parse_instruction_evaluator__evaluate(
                 mut_evaluator->own_parse_evaluator,
@@ -295,6 +210,18 @@ bool ar_instruction_evaluator__evaluate(
             );
             
         case AR_INSTRUCTION_AST_TYPE__BUILD:
+            // Create build evaluator on-demand if needed
+            if (mut_evaluator->own_build_evaluator == NULL) {
+                ar_data_t *memory = ar_frame__get_memory(ref_frame);
+                mut_evaluator->own_build_evaluator = ar_build_instruction_evaluator__create(
+                    mut_evaluator->ref_log,
+                    mut_evaluator->ref_expr_evaluator,
+                    memory
+                );
+                if (mut_evaluator->own_build_evaluator == NULL) {
+                    return false;
+                }
+            }
             // Delegate to the build instruction evaluator instance
             return ar_build_instruction_evaluator__evaluate(
                 mut_evaluator->own_build_evaluator,
@@ -302,6 +229,18 @@ bool ar_instruction_evaluator__evaluate(
             );
             
         case AR_INSTRUCTION_AST_TYPE__METHOD:
+            // Create method evaluator on-demand if needed
+            if (mut_evaluator->own_method_evaluator == NULL) {
+                ar_data_t *memory = ar_frame__get_memory(ref_frame);
+                mut_evaluator->own_method_evaluator = ar_method_instruction_evaluator__create(
+                    mut_evaluator->ref_log,
+                    mut_evaluator->ref_expr_evaluator,
+                    memory
+                );
+                if (mut_evaluator->own_method_evaluator == NULL) {
+                    return false;
+                }
+            }
             // Delegate to the method instruction evaluator instance
             return ar_method_instruction_evaluator__evaluate(
                 mut_evaluator->own_method_evaluator,
@@ -309,14 +248,39 @@ bool ar_instruction_evaluator__evaluate(
             );
             
         case AR_INSTRUCTION_AST_TYPE__AGENT:
+            // Create agent evaluator on-demand if needed
+            if (mut_evaluator->own_agent_evaluator == NULL) {
+                ar_data_t *memory = ar_frame__get_memory(ref_frame);
+                mut_evaluator->own_agent_evaluator = ar_agent_instruction_evaluator__create(
+                    mut_evaluator->ref_log,
+                    mut_evaluator->ref_expr_evaluator,
+                    memory
+                );
+                if (mut_evaluator->own_agent_evaluator == NULL) {
+                    return false;
+                }
+            }
             // Delegate to the agent instruction evaluator instance
+            const ar_data_t *context = ar_frame__get_context(ref_frame);
             return ar_agent_instruction_evaluator__evaluate(
                 mut_evaluator->own_agent_evaluator,
-                mut_evaluator->ref_context,
+                context,
                 ref_ast
             );
             
         case AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT:
+            // Create destroy agent evaluator on-demand if needed
+            if (mut_evaluator->own_destroy_agent_evaluator == NULL) {
+                ar_data_t *memory = ar_frame__get_memory(ref_frame);
+                mut_evaluator->own_destroy_agent_evaluator = ar_destroy_agent_instruction_evaluator__create(
+                    mut_evaluator->ref_log,
+                    mut_evaluator->ref_expr_evaluator,
+                    memory
+                );
+                if (mut_evaluator->own_destroy_agent_evaluator == NULL) {
+                    return false;
+                }
+            }
             // Delegate directly to destroy agent evaluator
             return ar_destroy_agent_instruction_evaluator__evaluate(
                 mut_evaluator->own_destroy_agent_evaluator,
@@ -324,6 +288,18 @@ bool ar_instruction_evaluator__evaluate(
             );
             
         case AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD:
+            // Create destroy method evaluator on-demand if needed
+            if (mut_evaluator->own_destroy_method_evaluator == NULL) {
+                ar_data_t *memory = ar_frame__get_memory(ref_frame);
+                mut_evaluator->own_destroy_method_evaluator = ar_destroy_method_instruction_evaluator__create(
+                    mut_evaluator->ref_log,
+                    mut_evaluator->ref_expr_evaluator,
+                    memory
+                );
+                if (mut_evaluator->own_destroy_method_evaluator == NULL) {
+                    return false;
+                }
+            }
             // Delegate directly to destroy method evaluator
             return ar_destroy_method_instruction_evaluator__evaluate(
                 mut_evaluator->own_destroy_method_evaluator,

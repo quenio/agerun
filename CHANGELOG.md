@@ -2,6 +2,28 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-07-12
+
+### ✅ COMPLETED: Frame-Based Execution for Assignment and Instruction Evaluator Facade
+- Updated assignment instruction evaluator to use frame-based execution pattern
+  - Removed memory parameter from create function
+  - Updated evaluate to accept frame parameter
+  - Memory now comes from frame during evaluation
+- Created generic ar_instruction_evaluator_fixture module
+  - Provides reusable test infrastructure for instruction evaluators
+  - Manages test resources with automatic cleanup
+  - Includes helper functions for creating test ASTs and frames
+- Refactored instruction evaluator facade to support frame-based pattern
+  - Create function now takes only log and expression evaluator
+  - Implemented lazy initialization of sub-evaluators
+  - Sub-evaluators created on-demand using memory from frame
+  - Updated evaluate method to accept frame parameter
+- Updated method evaluator to pass frame to instruction evaluator
+- Fixed agent instruction evaluator to accept const context parameter
+- Updated all clients to use new interface (tests and method evaluator)
+- Created comprehensive documentation for new fixture module
+- All tests pass with zero memory leaks
+
 ## 2025-07-10
 
 ### ✅ COMPLETED: Method Evaluator Module with Frame-Based Execution

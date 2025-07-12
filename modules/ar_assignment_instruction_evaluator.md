@@ -25,11 +25,18 @@ An opaque type representing an assignment instruction evaluator instance.
 ```c
 ar_assignment_instruction_evaluator_t* ar_assignment_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator,
-    ar_data_t *mut_memory
+    ar_expression_evaluator_t *ref_expr_evaluator
 );
 ```
-Creates a new assignment instruction evaluator that stores its dependencies including the log for error reporting.
+Creates a new assignment instruction evaluator.
+
+**Parameters:**
+- `ref_log`: Log instance for error reporting (borrowed reference)
+- `ref_expr_evaluator`: Expression evaluator to use (borrowed reference)
+
+**Returns:** New evaluator instance or NULL on failure
+
+**Note:** Memory is no longer passed at creation time. It comes from the frame during evaluation.
 
 ```c
 void ar_assignment_instruction_evaluator__destroy(
@@ -41,10 +48,18 @@ Destroys an assignment instruction evaluator and frees all resources.
 ```c
 bool ar_assignment_instruction_evaluator__evaluate(
     ar_assignment_instruction_evaluator_t *mut_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
 ```
-Evaluates an assignment instruction using the stored dependencies.
+Evaluates an assignment instruction using the frame's memory.
+
+**Parameters:**
+- `mut_evaluator`: The evaluator instance (mutable reference)
+- `ref_frame`: The execution frame containing memory, context, and message (borrowed reference)
+- `ref_ast`: The assignment instruction AST to evaluate (borrowed reference)
+
+**Returns:** true on success, false on failure
 
 
 ### Functionality
@@ -63,7 +78,8 @@ Key features:
 
 The module follows strict memory ownership rules:
 - The evaluator instance owns its internal structure but not the dependencies
-- Expression evaluator, memory, and log are borrowed references stored in the instance
+- Expression evaluator and log are borrowed references stored in the instance
+- Memory is obtained from the frame during evaluation (not stored)
 - Expression evaluation results are owned and must be stored or destroyed
 - Intermediate maps are created as needed for nested paths
 - All allocated memory is properly managed with no leaks
@@ -91,27 +107,37 @@ The module includes helper functions for:
 ## Usage Example
 
 ```c
-// Create memory and expression evaluator
+// Create evaluator dependencies
+ar_log_t *log = ar_log__create();
 ar_data_t *memory = ar_data__create_map();
-ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
+ar_data_t *context = ar_data__create_map();
+ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, context);
 
 // Create assignment instruction evaluator
 ar_assignment_instruction_evaluator_t *assign_eval = ar_assignment_instruction_evaluator__create(
-    log, expr_eval, memory
+    log, expr_eval
 );
 
 // Parse assignment instruction: memory.result := 42
 ar_instruction_ast_t *ast = ar_instruction_parser__parse_assignment(parser);
 
+// Create a frame for evaluation
+ar_data_t *message = ar_data__create_string("test");
+ar_frame_t *frame = ar_frame__create(memory, context, message);
+
 // Evaluate the assignment
-bool success = ar_assignment_instruction_evaluator__evaluate(assign_eval, ast);
+bool success = ar_assignment_instruction_evaluator__evaluate(assign_eval, frame, ast);
 
 // The value 42 is now stored at memory["result"]
 
 // Cleanup
+ar_frame__destroy(frame);
+ar_data__destroy(message);
 ar_assignment_instruction_evaluator__destroy(assign_eval);
 ar_expression_evaluator__destroy(expr_eval);
+ar_data__destroy(context);
 ar_data__destroy(memory);
+ar_log__destroy(log);
 ```
 
 ## Testing

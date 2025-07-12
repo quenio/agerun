@@ -19,6 +19,7 @@
 #include "ar_data.h"
 #include "ar_expression_evaluator.h"
 #include "ar_log.h"
+#include "ar_frame.h"
 
 /**
  * Opaque type for instruction evaluator
@@ -29,19 +30,13 @@ typedef struct ar_instruction_evaluator_s ar_instruction_evaluator_t;
  * Creates a new instruction evaluator
  * @param ref_log The log instance to use for error reporting (borrowed reference)
  * @param ref_expr_evaluator The expression evaluator to use for evaluating expressions (borrowed reference)
- * @param mut_memory The memory map containing variables (mutable reference)
- * @param ref_context Optional context map with additional data (borrowed reference, can be NULL)
- * @param ref_message Optional message being processed (borrowed reference, can be NULL)
  * @return A new evaluator instance
  * @note Ownership: Returns an owned value that caller must destroy.
  *       The function does not take ownership of any parameters.
  */
 ar_instruction_evaluator_t* ar_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator,
-    ar_data_t *mut_memory,
-    ar_data_t *ref_context,
-    ar_data_t *ref_message
+    ar_expression_evaluator_t *ref_expr_evaluator
 );
 
 /**
@@ -54,6 +49,7 @@ void ar_instruction_evaluator__destroy(ar_instruction_evaluator_t *own_evaluator
 /**
  * Evaluates any instruction AST node
  * @param mut_evaluator The evaluator instance (mutable reference)
+ * @param ref_frame The execution frame containing memory, context, and message (borrowed reference)
  * @param ref_ast The AST node to evaluate (borrowed reference)
  * @return true if evaluation succeeded, false otherwise
  * @note This is a facade method that dispatches to the appropriate specialized evaluator
@@ -62,6 +58,7 @@ void ar_instruction_evaluator__destroy(ar_instruction_evaluator_t *own_evaluator
  */
 bool ar_instruction_evaluator__evaluate(
     ar_instruction_evaluator_t *mut_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
 
