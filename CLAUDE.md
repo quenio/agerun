@@ -504,6 +504,8 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - **Deprecation pattern**: `(void)param; return NULL/0;` with DEPRECATED docs/comments
 - **Facade redundancy**: If specialized modules log errors, facades shouldn't duplicate
 - **Migration verification**: Use TDD cycles even for mechanical refactoring (test→break→fix→verify)
+- **Frame migration**: Include facade update as separate TDD cycle in same plan; create evaluators upfront
+- **Agent context**: Agent instructions use separate context objects, not memory as context
 
 ### 13. Plan Verification and Review
 
