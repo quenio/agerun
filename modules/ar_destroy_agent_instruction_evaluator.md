@@ -15,16 +15,16 @@ This module extracts the agent destruction logic from the main destroy instructi
 The module follows an instantiable design pattern with lifecycle management:
 
 ```c
-// Create evaluator instance with dependencies
+// Create evaluator instance with dependencies (frame-based pattern)
 ar_destroy_agent_instruction_evaluator_t* ar_destroy_agent_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *mut_expr_evaluator,
-    ar_data_t *mut_memory
+    ar_expression_evaluator_t *ref_expr_evaluator
 );
 
-// Evaluate using stored dependencies
+// Evaluate using frame-based execution
 bool ar_destroy_agent_instruction_evaluator__evaluate(
     ar_destroy_agent_instruction_evaluator_t *mut_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
 
@@ -32,10 +32,9 @@ bool ar_destroy_agent_instruction_evaluator__evaluate(
 void ar_destroy_agent_instruction_evaluator__destroy(ar_destroy_agent_instruction_evaluator_t *own_evaluator);
 ```
 
-### Legacy Interface (Backward Compatibility)
+### Legacy Interface
 
-```c
-```
+The module previously had a legacy parameter-based interface, but it has been fully migrated to the frame-based pattern. The legacy interface has been removed as part of the architectural modernization.
 
 ### Functionality
 
@@ -44,10 +43,12 @@ The module evaluates destroy agent instructions of the form:
 - `memory.result := destroy(agent_id)`
 
 Key features:
-1. **Agent ID Evaluation**: Evaluates the agent ID expression to an integer
-2. **Agent Destruction**: Destroys the agent if it exists
-3. **Result Assignment**: Stores true (1) if agent was destroyed, false (0) otherwise
-4. **Error Handling**: Returns false for invalid argument types
+1. **Frame-Based Execution**: Uses ar_frame_t for memory, context, and message bundling
+2. **Agent ID Evaluation**: Evaluates the agent ID expression to an integer
+3. **Agent Destruction**: Destroys the agent if it exists
+4. **Result Assignment**: Stores true (1) if agent was destroyed, false (0) otherwise
+5. **Error Handling**: Returns false for invalid argument types
+6. **Memory Access**: Gets memory from frame during evaluation
 
 ### Memory Management
 
@@ -91,7 +92,7 @@ ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, N
 
 // Create destroy agent evaluator instance
 ar_destroy_agent_instruction_evaluator_t *evaluator = ar_destroy_agent_instruction_evaluator__create(
-    log, expr_eval, memory
+    log, expr_eval
 );
 
 // Parse destroy instruction: memory.result := destroy(42)
@@ -99,18 +100,17 @@ ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
     AR_INST__DESTROY, "destroy", args, 1, "memory.result"
 );
 
+// Create frame for evaluation
+ar_frame_t *frame = ar_frame__create(memory, context, message);
+
 // Evaluate using instance
-bool success = ar_destroy_agent_instruction_evaluator__evaluate(evaluator, ast);
+bool success = ar_destroy_agent_instruction_evaluator__evaluate(evaluator, frame, ast);
 
 // Clean up
 ar_destroy_agent_instruction_evaluator__destroy(evaluator);
 // Result stored in memory["result"]: 1 if destroyed, 0 if not found
 ```
 
-### Legacy Approach (Backward Compatibility)
-
-```c
-```
 
 ## Testing
 
