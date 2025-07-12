@@ -127,7 +127,7 @@ void ar_list__sort_default(ar_list_t* list) {
 **Problem**: Keeping old implementation while building new one
 ```c
 // BAD: Temporary parallel implementations during refactoring
-ar_data_t* ar_expression__evaluate_old(ar_expression_ast_t* ast, ar_data_t* context);
+ar_data_t* ar_expression__evaluate(ar_expression_ast_t* ast, ar_data_t* context);
 ar_data_t* ar_expression__evaluate_new(ar_expression_ast_t* ast, ar_data_t* context);
 
 // Which one should callers use?
@@ -264,7 +264,7 @@ void test_expression__evaluate_with_various_inputs() {
 ### Step 1: Mark as Deprecated
 ```c
 // Add deprecation warning
-ar_data_t* ar_expression__evaluate_old(ar_expression_ast_t* ast, ar_data_t* context)
+ar_data_t* ar_expression__evaluate(ar_expression_ast_t* ast, ar_data_t* context)
     __attribute__((deprecated("Use ar_expression__evaluate instead")));
 ```
 
@@ -273,14 +273,14 @@ ar_data_t* ar_expression__evaluate_old(ar_expression_ast_t* ast, ar_data_t* cont
 # ar_expression Module
 
 ## Deprecated Functions
-- `ar_expression__evaluate_old()` - Use `ar_expression__evaluate()` instead
+- `deprecated_function()` - Use `new_function()` instead
 - Migration guide: Replace calls with new function, no parameter changes needed
 ```
 
 ### Step 3: Remove After Grace Period
 ```c
 // After sufficient migration time, remove deprecated function entirely
-// ar_data_t* ar_expression__evaluate_old(...) - REMOVED
+// ar_data_t* deprecated_function(...) - REMOVED
 ```
 
 ## Related Principles

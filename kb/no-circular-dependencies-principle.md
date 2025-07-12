@@ -112,13 +112,13 @@ ar_agent_t* ar_agency__create_agent(const char* method_name);
 
 **Problem**: Low-level module depending on high-level utilities
 ```c
-// ar_heap.c (foundation layer)
+// ar_heap.zig (foundation layer)
 #include "ar_log.h"  // BAD: Heap depending on logging module
 ```
 
 **Solution**: Use only foundation dependencies or extract interface
 ```c
-// ar_heap.c - Use only ar_io for output
+// ar_heap.zig - Use only ar_io for output
 #include "ar_io.h"
 void ar_heap__report_leaks() {
     ar_io__printf("Memory leaks detected\n");  // Direct I/O instead of logging
@@ -229,7 +229,7 @@ grep -r "module_b" modules/module_a.*  # Check A→B dependency
 ### Step 3: Extract Common Interface
 ```c
 // Extract shared types to separate module
-// ar_shared_types.h - No dependencies
+// ar_data.h - No dependencies
 typedef struct ar_agent_s ar_agent_t;
 typedef struct ar_agency_s ar_agency_t;
 

@@ -66,7 +66,7 @@ ar_agent_t* ar_agent__create_configured(
 ```c
 // GOOD: Grouped related configuration data
 
-// ar_config.h
+// ar_system.h
 typedef struct {
     const char* log_file_path;
     int log_level;
@@ -133,15 +133,15 @@ bool ar_agent__change_method(
     const char* method_version
 );
 
-// In ar_method_cache.c
-bool ar_method_cache__is_cached(
-    ar_method_cache_t* cache,
+// In ar_methodology.c
+bool ar_methodology__has_method(
+    ar_methodology_t* methodology,
     const char* method_name,
     const char* method_version
 );
 
-ar_method_t* ar_method_cache__get(
-    ar_method_cache_t* cache,
+ar_method_t* ar_methodology__find_method(
+    ar_methodology_t* methodology,
     const char* method_name,
     const char* method_version
 );
@@ -152,7 +152,7 @@ ar_method_t* ar_method_cache__get(
 ```c
 // GOOD: Method identification as a single object
 
-// ar_method_id.h
+// ar_method.h
 typedef struct {
     const char* name;
     const char* version;
@@ -178,7 +178,7 @@ ar_method_t* ar_methodology__get_method(
 );
 
 ar_agent_t* ar_agent__create(const ar_method_id_t* method_id);
-bool ar_method_cache__is_cached(ar_method_cache_t* cache, const ar_method_id_t* method_id);
+bool ar_methodology__has_method_by_id(ar_methodology_t* methodology, const ar_method_id_t* method_id);
 ```
 
 ### Bad Example - Coordinate Data Clumps

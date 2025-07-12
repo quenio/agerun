@@ -103,7 +103,13 @@ If updates are needed to CLAUDE.md:
    - Error prevention strategies
    - Documentation requirements
 
-## Step 5: Commit Updates
+## Step 5: Verify Documentation and Commit Updates
+
+**MANDATORY: Run documentation check before committing**:
+```bash
+make check-docs
+```
+Fix any broken references found before proceeding with commits.
 
 **Commit knowledge base files first**:
 ```bash

@@ -60,8 +60,8 @@ ar_agent_t* ar_agent__create(const char* method_name, const char* method_version
     return agent;
 }
 
-// In ar_method_cache.c  
-ar_method_t* ar_method_cache__get(ar_method_cache_t* cache, const char* name, const char* version) {
+// In ar_methodology.c  
+ar_method_t* ar_methodology__get(ar_methodology_t* methodology, const char* name, const char* version) {
     // Yet again, same validation and construction
     if (name == NULL || version == NULL) {
         return NULL;
@@ -79,7 +79,7 @@ ar_method_t* ar_method_cache__get(ar_method_cache_t* cache, const char* name, co
 ```c
 // GOOD: Proper domain object for method identification
 
-// ar_method_id.h
+// ar_method.h
 typedef struct ar_method_id_s ar_method_id_t;
 
 // Constructor with validation
@@ -100,7 +100,7 @@ uint32_t ar_method_id__hash(const ar_method_id_t* id);
 bool ar_method_id__is_valid_name(const char* name);
 bool ar_method_id__is_valid_version(const char* version);
 
-// ar_method_id.c
+// ar_method.c (hypothetical implementation)
 struct ar_method_id_s {
     char* name;
     char* version;
@@ -200,7 +200,7 @@ const char* ar_agent__get_status_string(ar_agent_t* agent) {
 ```c
 // GOOD: Proper status type with encapsulated behavior
 
-// ar_agent_status.h
+// ar_agent.h
 typedef enum {
     AR_AGENT_STATUS_INACTIVE,
     AR_AGENT_STATUS_ACTIVE,
@@ -216,7 +216,7 @@ bool ar_agent_status__can_execute_methods(ar_agent_status_t status);
 const char* ar_agent_status__to_string(ar_agent_status_t status);
 ar_agent_status_t ar_agent_status__from_string(const char* status_string);
 
-// ar_agent_status.c
+// ar_agent.c (hypothetical implementation)
 bool ar_agent_status__can_transition_to(ar_agent_status_t from, ar_agent_status_t to) {
     // Centralized transition logic
     switch (from) {

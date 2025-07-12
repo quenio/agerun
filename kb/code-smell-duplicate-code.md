@@ -89,7 +89,7 @@ ar_method_t* ar_method__create(const char* name, const char* version, const char
 ```c
 // GOOD: Centralized validation logic
 
-// ar_validation.h
+// ar_semver.h
 typedef enum {
     AR_VALIDATION_SUCCESS = 0,
     AR_VALIDATION_NULL_PARAMETER,
@@ -101,7 +101,7 @@ ar_validation_result_t ar_validation__check_method_name(const char* name);
 ar_validation_result_t ar_validation__check_version_string(const char* version);
 const char* ar_validation__get_error_message(ar_validation_result_t result);
 
-// ar_validation.c
+// ar_semver.zig (hypothetical implementation)
 ar_validation_result_t ar_validation__check_method_name(const char* name) {
     if (name == NULL) {
         return AR_VALIDATION_NULL_PARAMETER;
@@ -184,8 +184,8 @@ ar_agent_t* ar_agent_registry__remove_agent(ar_agent_registry_t* registry, uint6
     return NULL;
 }
 
-// In ar_method_registry.c - nearly identical code!
-void ar_method_registry__add_method(ar_method_registry_t* registry, ar_method_t* method) {
+// In ar_methodology.c - nearly identical code!
+void ar_methodology__add_method(ar_methodology_t* methodology, ar_method_t* method) {
     if (registry->methods == NULL) {
         registry->methods = ar_data__create_list();
     }
@@ -194,7 +194,7 @@ void ar_method_registry__add_method(ar_method_registry_t* registry, ar_method_t*
     registry->method_count++;
 }
 
-ar_method_t* ar_method_registry__remove_method(ar_method_registry_t* registry, const char* name, const char* version) {
+ar_method_t* ar_methodology__remove_method(ar_methodology_t* methodology, const char* name, const char* version) {
     if (registry->methods == NULL) return NULL;
     
     size_t count = ar_data__list_get_count(registry->methods);
@@ -218,7 +218,7 @@ ar_method_t* ar_method_registry__remove_method(ar_method_registry_t* registry, c
 ```c
 // GOOD: Generic registry implementation
 
-// ar_registry.h - Generic registry interface
+// ar_data.h - Generic registry interface
 typedef struct ar_registry_s ar_registry_t;
 typedef bool (*ar_registry_match_fn_t)(const void* item, const void* criteria);
 
@@ -230,7 +230,7 @@ void* ar_registry__remove_item(ar_registry_t* registry, const void* criteria, ar
 void* ar_registry__find_item(ar_registry_t* registry, const void* criteria, ar_registry_match_fn_t match_fn);
 size_t ar_registry__get_count(ar_registry_t* registry);
 
-// ar_registry.c - Single implementation
+// ar_data.c - Single implementation
 struct ar_registry_s {
     ar_data_t* items;
     size_t count;
@@ -335,8 +335,8 @@ bool handle_validation_error(const char* operation_name) {
 ### Pull Up Method
 ```c
 // Before: Similar methods in different modules
-// ar_agent_manager.c: log_agent_operation()
-// ar_method_manager.c: log_method_operation()
+// ar_agency.c: log_agent_operation()
+// ar_methodology.c: log_method_operation()
 
 // After: Common logging utility
 // ar_log.c: ar_log__operation(const char* type, const char* operation, const char* details)

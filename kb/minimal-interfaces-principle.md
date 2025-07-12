@@ -143,7 +143,7 @@ void ar_map__validate_hash_distribution(ar_map_t* map);
 static void _print_allocation_report() { ... }
 
 // Or separate debug header (optional)
-// ar_heap_debug.h - Only included when debugging
+// ar_assert.h - Only included when debugging
 ```
 
 ### Convenience Overloads

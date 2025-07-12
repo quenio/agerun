@@ -10,7 +10,7 @@ Enables application of well-established software engineering principles to C cod
 Code smells successfully adapted from OO to C:
 - **Feature Envy**: C functions accessing other modules' data structures excessively
 - **Large Class** → **Large Module**: Modules with too many functions/responsibilities
-- **Primitive Obsession**: Using raw strings/ints instead of domain types like `ar_method_id_t`
+- **Primitive Obsession**: Using raw strings/ints instead of domain types like `ar_method_t`
 - **Data Clumps**: Parameters that always appear together → parameter objects
 
 ## Generalization
@@ -40,14 +40,14 @@ class SystemManager {
 bool ar_system__manage_agents(...);
 bool ar_system__manage_messages(...);
 bool ar_system__manage_config(...);
-// Solution: Split into ar_agency.c, ar_messaging.c, ar_config.c
+// Solution: Split into ar_agency.c, ar_event.c, ar_data.c
 
 // OO concept: Primitive Obsession
 void createAgent(String methodName, String version);
 
 // C adaptation: Same smell, C-specific solution
 ar_agent_t* ar_agent__create(const char* name, const char* version);  // Bad
-ar_agent_t* ar_agent__create(ar_method_id_t* method_id);              // Good
+ar_agent_t* ar_agent__create(ar_method_t* method);              // Good
 ```
 
 ## Related Patterns

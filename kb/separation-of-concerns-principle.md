@@ -55,7 +55,7 @@ ar_data_t* ar_expression_processor__parse_and_evaluate(
 ar_method_t* ar_methodology__get_method(const char* name, const char* version);
 bool ar_methodology__register_method(const char* name, const char* version, const char* content);
 
-// ar_method_storage.h - Persistence concern (if needed as separate module)
+// ar_io.h - Persistence concern (if needed as separate module)
 bool ar_method_storage__save_to_file(ar_method_t* method, const char* filename);
 ar_method_t* ar_method_storage__load_from_file(const char* filename);
 ```
@@ -89,7 +89,7 @@ ar_agent_t* ar_agent_registry__create_agent(const char* method_name, const char*
 void ar_agent_registry__destroy_agent(uint64_t agent_id);
 ar_agent_t* ar_agent_registry__get_agent(uint64_t agent_id);
 
-// ar_agent_messaging.h - Communication concern
+// ar_event.h - Communication concern
 void ar_agent_messaging__send(uint64_t from_id, uint64_t to_id, ar_data_t* message);
 bool ar_agent_messaging__has_pending(uint64_t agent_id);
 ar_data_t* ar_agent_messaging__receive_next(uint64_t agent_id);
@@ -313,7 +313,7 @@ bool ar_method__parse_validate_and_register(
 ar_method_ast_t* ast = ar_method_parser__parse(content);                  // Parsing
 bool valid = ar_method_validator__check(ast);                            // Validation
 bool registered = ar_methodology__register_method(name, version, ast);   // Registration
-bool saved = ar_method_storage__save(ast, storage_path);                 // Storage
+bool saved = ar_io__save_file(ast, storage_path);                 // Storage
 ```
 
 ## Design Guidelines

@@ -101,7 +101,7 @@ ar_agent_t* ar_agency__create_agent(ar_agency_t* agency, const char* method_name
 void ar_agency__destroy_agent(ar_agency_t* agency, uint64_t agent_id);
 ar_agent_t* ar_agency__get_agent(ar_agency_t* agency, uint64_t agent_id);
 
-// ar_messaging.h - Message processing
+// ar_event.h - Message processing
 typedef struct ar_messaging_s ar_messaging_t;
 
 ar_messaging_t* ar_messaging__create();
@@ -117,7 +117,7 @@ ar_interpreter_t* ar_interpreter__create();
 void ar_interpreter__destroy(ar_interpreter_t* interpreter);
 bool ar_interpreter__execute_instruction(ar_interpreter_t* interpreter, const char* instruction);
 
-// ar_config.h - Configuration management
+// ar_data.h - Configuration management
 typedef struct ar_config_s ar_config_t;
 
 ar_config_t* ar_config__create();
@@ -147,13 +147,13 @@ bool ar_config__save_to_file(ar_config_t* config, const char* filename);
 **Most Common Solution**:
 ```c
 // Before: Single large module
-// ar_data_manager.c (1500 lines)
+// ar_data.c (800 lines)
 
 // After: Multiple focused modules
 // ar_data.c (300 lines) - Core data operations
-// ar_data_persistence.c (200 lines) - Save/load operations  
-// ar_data_validation.c (150 lines) - Data validation
-// ar_data_conversion.c (200 lines) - Type conversions
+// ar_io.zig (200 lines) - Save/load operations  
+// ar_string.zig (150 lines) - String operations
+// ar_path.c (200 lines) - Path operations
 ```
 
 ### Extract Subclass/Specialized Module
@@ -170,9 +170,9 @@ typedef struct {
 
 // After: Specialized modules
 // ar_agent.c - Common agent interface
-// ar_calculator_agent.c - Calculator-specific behavior
-// ar_router_agent.c - Router-specific behavior
-// ar_evaluator_agent.c - Evaluator-specific behavior
+// ar_agent.c - Core agent behavior
+// ar_method_evaluator.zig - Method evaluation behavior
+// ar_expression_evaluator.c - Expression evaluation behavior
 ```
 
 ### Move Method/Function
@@ -195,7 +195,7 @@ void ar_log__error(const char* message);
 // ar_system.h (system coordination - 5 functions)
 // ar_methodology.h (method management - 8 functions)
 // ar_agency.h (agent management - 7 functions)
-// ar_messaging.h (message processing - 6 functions)
+// ar_event.h (message processing - 6 functions)
 ```
 
 ## Benefits of Decomposition
@@ -253,7 +253,7 @@ modules/
 │   └── ar_agent_registry.c
 └── system/         # System-level modules
     ├── ar_system.c
-    ├── ar_config.c
+    ├── ar_data.c
     └── ar_log.c
 ```
 
