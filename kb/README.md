@@ -18,10 +18,34 @@ Each learning file contains:
 - **Related Patterns**: Connected concepts
 
 ## Current Learnings
+
+### Development Workflow
 - [API Migration Completion Verification](api-migration-completion-verification.md)
-- [Module Renaming Script Enhancement](module-renaming-script-enhancement.md)
-- [Test Function Naming Accuracy](test-function-naming-accuracy.md)
 - [Build Verification Before Commit](build-verification-before-commit.md)
+- [Git Push Verification](git-push-verification.md)
+- [Red Green Refactor Cycle](red-green-refactor-cycle.md)
+
+### Memory Management
+- [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
+- [Ownership Naming Conventions](ownership-naming-conventions.md)
+
+### Code Quality & Testing
+- [BDD Test Structure](bdd-test-structure.md)
+- [Test Function Naming Accuracy](test-function-naming-accuracy.md)
+- [Code Movement Verification](code-movement-verification.md)
+
+### Architecture & Design
+- [Opaque Types Pattern](opaque-types-pattern.md)
+- [Facade Pattern Coordination](facade-pattern-coordination.md)
+- [Error Propagation Pattern](error-propagation-pattern.md)
+
+### Tools & Automation
+- [Module Renaming Script Enhancement](module-renaming-script-enhancement.md)
+- [Script Enhancement Over One Off](script-enhancement-over-one-off.md)
+- [String Parsing Quote Tracking](string-parsing-quote-tracking.md)
+
+### Development Practices
+- [Absolute Path Navigation](absolute-path-navigation.md)
 
 ## Usage
 Search for relevant patterns when facing similar challenges:
