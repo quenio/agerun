@@ -1,7 +1,7 @@
 # Build Verification Before Commit
 
 ## Learning
-Full build must pass before committing, even after "successful" refactoring
+Clean build must pass before committing, even after "successful" refactoring
 
 ## Importance
 Prevents broken builds in main branch
@@ -15,10 +15,13 @@ Never assume completion without full verification
 ## Implementation
 ```bash
 # MANDATORY before every commit
-make full-build
+make clean build
 
-# If full build fails, fix ALL issues before committing
+# If clean build fails, fix ALL issues before committing
 # No exceptions - broken builds block other developers
+
+# For faster development iteration (not pre-commit):
+make build  # builds from current state, no clean
 ```
 
 ## Related Patterns

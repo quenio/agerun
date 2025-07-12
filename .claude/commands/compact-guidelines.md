@@ -103,7 +103,7 @@ For each section being compacted:
 
 Work through CLAUDE.md systematically:
 
-1. **Quick Start**: Move detailed explanations to kb/make-full-build.md
+1. **Quick Start**: Move detailed explanations to kb/build-verification-before-commit.md
 2. **Memory Management**: Extract debugging examples to existing kb/ articles
 3. **TDD**: Move large refactoring patterns to kb/advanced-tdd-patterns.md
 4. **Parnas Principles**: Extract clarifications to kb/parnas-compliance.md
