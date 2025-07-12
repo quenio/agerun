@@ -206,7 +206,7 @@ For each new behavior/feature:
   // Then describing the expected result
   /* Assertion code here */
   ```
-- One test per behavior; enhance existing comprehensive tests rather than adding separate functions
+- One test per behavior
 - Tests must be isolated and fast
 - Zero memory leaks in tests
 - **Global state cleanup**: Tests registering methods/agents MUST call `ar_methodology__cleanup()` and `ar_agency__reset()`
