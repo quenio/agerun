@@ -10,6 +10,7 @@
 #define AGERUN_PARSE_INSTRUCTION_EVALUATOR_H
 
 #include <stdbool.h>
+#include "ar_frame.h"
 
 /* Forward declarations */
 typedef struct ar_expression_evaluator_s ar_expression_evaluator_t;
@@ -25,7 +26,6 @@ typedef struct ar_parse_instruction_evaluator_s ar_parse_instruction_evaluator_t
  *
  * @param ref_log The log instance to use for error reporting (borrowed reference)
  * @param ref_expr_evaluator Expression evaluator to use (borrowed reference)
- * @param mut_memory Memory map to use (mutable reference)
  * @return A new parse instruction evaluator or NULL on failure
  *
  * @note Ownership: Returns an owned value that caller must destroy
@@ -33,8 +33,7 @@ typedef struct ar_parse_instruction_evaluator_s ar_parse_instruction_evaluator_t
  */
 ar_parse_instruction_evaluator_t* ar_parse_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator,
-    ar_data_t *mut_memory
+    ar_expression_evaluator_t *ref_expr_evaluator
 );
 
 /**
@@ -50,7 +49,7 @@ void ar_parse_instruction_evaluator__destroy(
 );
 
 /**
- * Evaluates a parse instruction using the stored dependencies
+ * Evaluates a parse instruction using frame-based execution
  *
  * Parse instructions extract values from input strings based on template patterns:
  * - Template: "Hello {name}, you are {age} years old"
@@ -58,6 +57,7 @@ void ar_parse_instruction_evaluator__destroy(
  * - Result: {"name": "Alice", "age": 30}
  *
  * @param mut_evaluator The evaluator instance (mutable reference)
+ * @param ref_frame The frame providing memory and context (borrowed reference)
  * @param ref_ast The parse instruction AST node (borrowed reference)
  * @return true if parse was successful, false otherwise
  *
@@ -70,6 +70,7 @@ void ar_parse_instruction_evaluator__destroy(
  */
 bool ar_parse_instruction_evaluator__evaluate(
     ar_parse_instruction_evaluator_t *mut_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
 

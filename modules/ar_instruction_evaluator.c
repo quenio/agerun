@@ -94,7 +94,19 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
         AR__HEAP__FREE(evaluator);
         return NULL;
     }
-    evaluator->own_parse_evaluator = NULL;
+    
+    // Create parse evaluator instance (now uses frame-based pattern)
+    evaluator->own_parse_evaluator = ar_parse_instruction_evaluator__create(
+        ref_log,
+        ref_expr_evaluator
+    );
+    if (evaluator->own_parse_evaluator == NULL) {
+        ar_condition_instruction_evaluator__destroy(evaluator->own_condition_evaluator);
+        ar_send_instruction_evaluator__destroy(evaluator->own_send_evaluator);
+        ar_assignment_instruction_evaluator__destroy(evaluator->own_assignment_evaluator);
+        AR__HEAP__FREE(evaluator);
+        return NULL;
+    }
     evaluator->own_build_evaluator = NULL;
     evaluator->own_method_evaluator = NULL;
     evaluator->own_agent_evaluator = NULL;
@@ -188,21 +200,10 @@ bool ar_instruction_evaluator__evaluate(
             );
             
         case AR_INSTRUCTION_AST_TYPE__PARSE:
-            // Create parse evaluator on-demand if needed
-            if (mut_evaluator->own_parse_evaluator == NULL) {
-                ar_data_t *memory = ar_frame__get_memory(ref_frame);
-                mut_evaluator->own_parse_evaluator = ar_parse_instruction_evaluator__create(
-                    mut_evaluator->ref_log,
-                    mut_evaluator->ref_expr_evaluator,
-                    memory
-                );
-                if (mut_evaluator->own_parse_evaluator == NULL) {
-                    return false;
-                }
-            }
             // Delegate to the parse instruction evaluator instance
             return ar_parse_instruction_evaluator__evaluate(
                 mut_evaluator->own_parse_evaluator,
+                ref_frame,
                 ref_ast
             );
             

@@ -12,15 +12,14 @@
 #include "ar_expression_evaluator.h"
 #include "ar_log.h"
 #include "ar_memory_accessor.h"
+#include "ar_frame.h"
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 /* Struct definition for parse instruction evaluator */
 struct ar_parse_instruction_evaluator_s {
     ar_log_t *ref_log;                           /* Borrowed reference to log instance */
     ar_expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
-    ar_data_t *mut_memory;                          /* Memory map (mutable reference) */
 };
 
 
@@ -98,10 +97,9 @@ static ar_data_t* _parse_value_string(const char *value_str) {
  */
 ar_parse_instruction_evaluator_t* ar_parse_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator,
-    ar_data_t *mut_memory
+    ar_expression_evaluator_t *ref_expr_evaluator
 ) {
-    if (!ref_log || !ref_expr_evaluator || !mut_memory) {
+    if (!ref_log || !ref_expr_evaluator) {
         return NULL;
     }
     
@@ -115,7 +113,6 @@ ar_parse_instruction_evaluator_t* ar_parse_instruction_evaluator__create(
     
     own_evaluator->ref_log = ref_log;
     own_evaluator->ref_expr_evaluator = ref_expr_evaluator;
-    own_evaluator->mut_memory = mut_memory;
     
     // Ownership transferred to caller
     return own_evaluator;
@@ -135,13 +132,20 @@ void ar_parse_instruction_evaluator__destroy(
 }
 
 /**
- * Evaluates a parse instruction using the stored dependencies
+ * Evaluates a parse instruction using frame-based execution
  */
 bool ar_parse_instruction_evaluator__evaluate(
     ar_parse_instruction_evaluator_t *mut_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 ) {
-    if (!mut_evaluator || !ref_ast) {
+    if (!mut_evaluator || !ref_frame || !ref_ast) {
+        return false;
+    }
+    
+    // Get memory from frame
+    ar_data_t *mut_memory = ar_frame__get_memory(ref_frame);
+    if (!mut_memory) {
         return false;
     }
     
@@ -381,6 +385,6 @@ bool ar_parse_instruction_evaluator__evaluate(
     ar_data__destroy(own_template_data);
     
     // Store result if assigned, otherwise just destroy it
-    return _store_result_if_assigned(mut_evaluator->mut_memory, ref_ast, own_result);
+    return _store_result_if_assigned(mut_memory, ref_ast, own_result);
 }
 

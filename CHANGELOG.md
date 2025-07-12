@@ -4,6 +4,19 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-07-12
 
+### ✅ COMPLETED: Frame-Based Execution for Parse Instruction Evaluator
+- Updated parse instruction evaluator to use frame-based execution pattern
+  - Removed memory parameter from create function
+  - Updated evaluate to accept frame parameter
+  - Memory accessed from frame during evaluation
+  - All tests updated to use instruction evaluator fixture
+- Fixed instruction evaluator facade to create parse evaluator upfront
+  - Parse evaluator now created during facade initialization
+  - Removed on-demand creation logic for parse evaluator
+  - Consistent pattern with assignment, send, and condition evaluators
+- Removed unused stdio.h include
+- Zero memory leaks, all tests pass
+
 ### ✅ COMPLETED: Frame-Based Execution for Condition (if) Instruction Evaluator
 - Updated condition instruction evaluator to use frame-based execution pattern
   - Removed memory parameter from create function
