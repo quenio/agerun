@@ -42,7 +42,7 @@ make add-newline FILE=<file>  # Add missing newline to file
    - Working tree remains clean
    - No uncommitted changes remain
 
-This is a MANDATORY verification step. Never assume a push succeeded without checking.
+This is a MANDATORY verification step. Never assume a push succeeded without checking. ([details](kb/git-push-verification.md))
 
 ## Project Structure
 
@@ -64,7 +64,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Mandatory Practices**:
 - Use heap tracking macros: `AR__HEAP__MALLOC`, `AR__HEAP__FREE`, `AR__HEAP__STRDUP`
 - Include `#include "ar_heap.h"` in all .c files that allocate memory
-- Follow ownership naming conventions:
+- Follow ownership naming conventions ([details](kb/ownership-naming-conventions.md)):
   - `own_`: Owned values that must be destroyed
   - `mut_`: Mutable references (read-write access)
   - `ref_`: Borrowed references (read-only access)
@@ -90,7 +90,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 **Memory Leak Detection**:
 - Full test suite: Check console for "WARNING: X memory leaks detected"
-- **Individual test memory reports**: Located at `bin/memory_report_<test_name>.log`
+- **Individual test memory reports**: Located at `bin/memory_report_<test_name>.log` ([details](kb/memory-leak-detection-workflow.md))
   - **IMPORTANT**: No longer uses generic `heap_memory_report.log`
   - Each test generates its own report file automatically
   - Example: `bin/memory_report_ar_string_tests.log`
@@ -145,7 +145,7 @@ ar_data__destroy(own_args);  // Add cleanup
 
 **Pre-modification Rule**: Run module tests BEFORE changing any module
 
-**Red-Green-Refactor Cycle (ALL THREE PHASES REQUIRED)**:
+**Red-Green-Refactor Cycle (ALL THREE PHASES REQUIRED)** ([details](kb/red-green-refactor-cycle.md)):
 
 **CRITICAL**: This is a CYCLE that repeats for each new behavior/feature. NO commits during the cycle!
 
@@ -195,7 +195,7 @@ For each new behavior/feature:
 
 **Test Requirements**:
 - Every module MUST have tests
-- **MANDATORY BDD structure**: Use Given/When/Then comments:
+- **MANDATORY BDD structure**: Use Given/When/Then comments ([details](kb/bdd-test-structure.md)):
   ```c
   // Given a description of the test setup
   /* Setup code here */
@@ -266,7 +266,7 @@ grep -n "#include.*ar_" module.h module.c
 **Architectural Patterns** (in order of preference):
 1. **Interface Segregation**: Split large modules (agency → registry/store/update)
 2. **Registry Pattern**: Central ownership of lifecycle (registry owns all agents)
-3. **Facade Pattern**: ONLY coordinate, never implement business logic; update creation when interfaces change; run facade tests after sub-component changes; frame-based evaluators→create upfront, not lazily
+3. **Facade Pattern**: ONLY coordinate, never implement business logic; update creation when interfaces change; run facade tests after sub-component changes; frame-based evaluators→create upfront, not lazily ([details](kb/facade-pattern-coordination.md))
 4. **Parser/Executor Split**: Separate concerns for clarity
 5. **Callbacks/DI**: Last resort - adds complexity
 
@@ -290,7 +290,7 @@ grep -r "function_name\|concept" modules/
 
 ### 4. Coding Standards
 
-**String Parsing**: Track quote state when scanning for operators (`:=`, `(`, `)`, `,`)
+**String Parsing**: Track quote state when scanning for operators (`:=`, `(`, `)`, `,`) ([details](kb/string-parsing-quote-tracking.md))
 ```c
 bool in_quotes = false;
 while (*p) {
@@ -321,7 +321,7 @@ while (*p) {
 
 **Core Architecture**:
 - **Parsing vs Evaluation**: Data owner parses (methodology→methods), consumer evaluates (interpreter→ASTs)
-- **Opaque Types**: `typedef struct ar_type_name_s ar_type_name_t;` in header, definition in .c only
+- **Opaque Types**: `typedef struct ar_type_name_s ar_type_name_t;` in header, definition in .c only ([details](kb/opaque-types-pattern.md))
 - **Module Size**: Split at ~850 lines into focused modules (e.g., agency→4 modules)
 
 **Key Patterns**:
@@ -363,7 +363,7 @@ while (*p) {
 
 ### 7. Development Practices
 
-**Directory Navigation**: Always use absolute paths
+**Directory Navigation**: Always use absolute paths ([details](kb/absolute-path-navigation.md))
 ```bash
 cd /Users/quenio/Repos/agerun/bin  # Correct
 cd bin  # Wrong - avoid relative paths
@@ -402,7 +402,7 @@ cd bin  # Wrong - avoid relative paths
 
 ### 8. Error Propagation Pattern
 
-**Implementation**: Set errors at source → Store in struct → Propagate via get_error() → Print once at top level
+**Implementation**: Set errors at source → Store in struct → Propagate via get_error() → Print once at top level ([details](kb/error-propagation-pattern.md))
 **Key Rule**: Evaluators set errors, interpreter prints them. Never print errors where they occur.
 
 ### 9. Agent Lifecycle
@@ -484,14 +484,14 @@ Never compile directly with gcc.
 python3 scripts/rename_symbols.py --group <group-name> --live
 
 # AVOID sed for bulk renames - error-prone with partial matches
-# If rename_symbols.py doesn't support your case, enhance it first
+# If rename_symbols.py doesn't support your case, enhance it first ([details](kb/script-enhancement-over-one-off.md))
 # Script supports both type renaming (TYPE_RENAMES) and module renaming (MODULE_RENAMES) - see kb/module-renaming-script-enhancement.md
 # Only use sed for one-off changes with careful verification
 ```
 
 **Code Movement Verification**:
 ```bash
-# MANDATORY: Verify code is moved, not rewritten
+# MANDATORY: Verify code is moved, not rewritten ([details](kb/code-movement-verification.md))
 diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 ```
 
