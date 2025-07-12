@@ -39,6 +39,20 @@ Each learning file contains:
 - [Facade Pattern Coordination](facade-pattern-coordination.md)
 - [Error Propagation Pattern](error-propagation-pattern.md)
 
+### Parnas Design Principles
+- [Information Hiding Principle](information-hiding-principle.md)
+- [Single Responsibility Principle](single-responsibility-principle.md)
+- [Separation of Concerns Principle](separation-of-concerns-principle.md)
+- [No Circular Dependencies Principle](no-circular-dependencies-principle.md)
+- [Opaque Types Principle](opaque-types-principle.md)
+- [Minimal Interfaces Principle](minimal-interfaces-principle.md)
+- [Complete Documentation Principle](complete-documentation-principle.md)
+- [Const Correctness Principle](const-correctness-principle.md)
+- [No Parallel Implementations Principle](no-parallel-implementations-principle.md)
+- [Composition Over Inheritance Principle](composition-over-inheritance-principle.md)
+- [Design for Change Principle](design-for-change-principle.md)
+- [Program Families Principle](program-families-principle.md)
+
 ### Tools & Automation
 - [Module Renaming Script Enhancement](module-renaming-script-enhancement.md)
 - [Script Enhancement Over One Off](script-enhancement-over-one-off.md)
