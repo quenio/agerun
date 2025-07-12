@@ -25,11 +25,10 @@ An opaque type representing a send instruction evaluator instance.
 ```c
 ar_send_instruction_evaluator_t* ar_send_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator,
-    ar_data_t *mut_memory
+    ar_expression_evaluator_t *ref_expr_evaluator
 );
 ```
-Creates a new send instruction evaluator that stores its dependencies including the log for error reporting.
+Creates a new send instruction evaluator with the provided log and expression evaluator. The evaluator follows the frame-based execution pattern and does not store memory references.
 
 ```c
 void ar_send_instruction_evaluator__destroy(
@@ -41,10 +40,11 @@ Destroys a send instruction evaluator and frees all resources.
 ```c
 bool ar_send_instruction_evaluator__evaluate(
     ar_send_instruction_evaluator_t *mut_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
 ```
-Evaluates a send instruction using the stored dependencies.
+Evaluates a send instruction using frame-based execution. The frame provides access to memory and other execution context.
 
 
 ### Functionality

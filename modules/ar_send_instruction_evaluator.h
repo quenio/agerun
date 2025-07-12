@@ -14,6 +14,7 @@
 #include "ar_data.h"
 #include "ar_expression_evaluator.h"
 #include "ar_log.h"
+#include "ar_frame.h"
 
 /**
  * Opaque type for send instruction evaluator
@@ -24,14 +25,12 @@ typedef struct ar_send_instruction_evaluator_s ar_send_instruction_evaluator_t;
  * Creates a new send instruction evaluator
  * @param ref_log The log instance to use for error reporting (borrowed reference)
  * @param ref_expr_evaluator The expression evaluator to use (borrowed reference)
- * @param mut_memory The memory map to use (mutable reference)
  * @return A new send instruction evaluator, or NULL on error
  * @note Ownership: Returns an owned value that caller must destroy
  */
 ar_send_instruction_evaluator_t* ar_send_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator,
-    ar_data_t *mut_memory
+    ar_expression_evaluator_t *ref_expr_evaluator
 );
 
 /**
@@ -43,8 +42,9 @@ void ar_send_instruction_evaluator__destroy(
 );
 
 /**
- * Evaluates a send instruction AST node using stored dependencies
+ * Evaluates a send instruction AST node using frame-based execution
  * @param mut_evaluator The send instruction evaluator to use (mutable reference)
+ * @param ref_frame The execution frame containing memory and context (borrowed reference)
  * @param ref_ast The AST node to evaluate (borrowed reference)
  * @return true if evaluation succeeded, false otherwise
  * @note The send instruction transfers ownership of the message to the target agent.
@@ -52,6 +52,7 @@ void ar_send_instruction_evaluator__destroy(
  */
 bool ar_send_instruction_evaluator__evaluate(
     ar_send_instruction_evaluator_t *mut_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
 

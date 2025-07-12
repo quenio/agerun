@@ -72,8 +72,18 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
         return NULL;
     }
     
+    // Create send evaluator instance (now uses frame-based pattern)
+    evaluator->own_send_evaluator = ar_send_instruction_evaluator__create(
+        ref_log,
+        ref_expr_evaluator
+    );
+    if (evaluator->own_send_evaluator == NULL) {
+        ar_assignment_instruction_evaluator__destroy(evaluator->own_assignment_evaluator);
+        AR__HEAP__FREE(evaluator);
+        return NULL;
+    }
+    
     // Initialize other evaluators to NULL - they will be created on-demand
-    evaluator->own_send_evaluator = NULL;
     evaluator->own_condition_evaluator = NULL;
     evaluator->own_parse_evaluator = NULL;
     evaluator->own_build_evaluator = NULL;
@@ -153,21 +163,10 @@ bool ar_instruction_evaluator__evaluate(
             );
             
         case AR_INSTRUCTION_AST_TYPE__SEND:
-            // Create send evaluator on-demand if needed
-            if (mut_evaluator->own_send_evaluator == NULL) {
-                ar_data_t *memory = ar_frame__get_memory(ref_frame);
-                mut_evaluator->own_send_evaluator = ar_send_instruction_evaluator__create(
-                    mut_evaluator->ref_log,
-                    mut_evaluator->ref_expr_evaluator,
-                    memory
-                );
-                if (mut_evaluator->own_send_evaluator == NULL) {
-                    return false;
-                }
-            }
             // Delegate to the send instruction evaluator instance
             return ar_send_instruction_evaluator__evaluate(
                 mut_evaluator->own_send_evaluator,
+                ref_frame,
                 ref_ast
             );
             

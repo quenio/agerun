@@ -4,6 +4,20 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-07-12
 
+### ✅ COMPLETED: Frame-Based Execution for Send Instruction Evaluator
+- Updated send instruction evaluator to use frame-based execution pattern
+  - Removed memory parameter from create function
+  - Updated evaluate to accept frame parameter
+  - Memory accessed from frame during evaluation
+  - All tests updated to use instruction evaluator fixture
+- Fixed instruction evaluator facade to create evaluators upfront
+  - Send evaluator now created during facade initialization
+  - Removed on-demand creation logic for send evaluator
+  - Consistent pattern with assignment evaluator
+- Zero memory leaks, all tests pass
+
+## 2025-07-12
+
 ### ✅ COMPLETED: Frame-Based Execution for Assignment and Instruction Evaluator Facade
 - Updated assignment instruction evaluator to use frame-based execution pattern
   - Removed memory parameter from create function

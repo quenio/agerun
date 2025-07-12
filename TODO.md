@@ -153,9 +153,10 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Test thoroughly
   - [x] Create generic instruction evaluator fixture
   - [x] Update assignment evaluator tests to use fixture
-- [ ] TDD Cycle 8: Send evaluator
-  - [ ] Same pattern as assignment
-  - [ ] Ensure send actually performs sends (not just returns true)
+- [x] TDD Cycle 8: Send evaluator (Completed 2025-07-12)
+  - [x] Same pattern as assignment
+  - [x] Ensure send actually performs sends (not just returns true)
+  - [x] Update instruction evaluator facade to create send evaluator upfront
 - [ ] TDD Cycle 9: Condition (if) evaluator
 - [ ] TDD Cycle 10: Parse evaluator
 - [ ] TDD Cycle 11: Build evaluator
