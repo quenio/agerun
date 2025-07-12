@@ -116,6 +116,11 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Immediate Priorities (Next Steps)
 
+### Language Enhancement Tasks (NEW)
+- [ ] Rename the `method` instruction to `compile`
+- [ ] Rename the `destroy` method instruction to `deprecate`  
+- [ ] Rename the destroy agent parser/evaluator to simply `destroy`
+
 ### HIGHEST PRIORITY - Frame-Based Execution Implementation (Revised Plan)
 
 **Status**: Method evaluator created as the first frame-based evaluator, establishing the top-down pattern.
