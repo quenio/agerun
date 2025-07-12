@@ -311,7 +311,7 @@ xargs grep -l "send\|receive"
 - **Long Method**: Large classes often contain long methods ([details](code-smell-long-method.md))
 - **Long Parameter List**: Often seen in large class constructors ([details](code-smell-long-parameter-list.md))
 - **Data Clumps**: Large classes often have related data spread around ([details](code-smell-data-clumps.md))
-- **Feature Envy**: Methods in large classes often envy other classes
+- **Feature Envy**: Methods in large classes often envy other classes ([details](code-smell-feature-envy.md))
 
 ## Verification Checklist
 - [ ] No module exceeds 800 lines of code

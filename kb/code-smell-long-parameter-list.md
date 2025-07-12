@@ -375,8 +375,8 @@ sort | uniq -c | sort -nr
 ## Related Code Smells
 - **Data Clumps**: Same parameters appearing together frequently ([details](code-smell-data-clumps.md))
 - **Long Method**: Often accompanied by long parameter lists ([details](code-smell-long-method.md))
-- **Primitive Obsession**: Using primitives instead of meaningful objects
-- **Feature Envy**: Functions needing lots of data from other objects
+- **Primitive Obsession**: Using primitives instead of meaningful objects ([details](code-smell-primitive-obsession.md))
+- **Feature Envy**: Functions needing lots of data from other objects ([details](code-smell-feature-envy.md))
 
 ## Verification Checklist
 - [ ] No function has more than 5 parameters

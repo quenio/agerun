@@ -473,9 +473,9 @@ sort | uniq -c | sort -nr | head -20
 
 ## Related Code Smells
 - **Long Parameter List**: Often caused by data clumps ([details](code-smell-long-parameter-list.md))
-- **Primitive Obsession**: Using primitives instead of meaningful objects
+- **Primitive Obsession**: Using primitives instead of meaningful objects ([details](code-smell-primitive-obsession.md))
 - **Large Class**: May contain multiple data clumps that should be separate objects ([details](code-smell-large-class.md))
-- **Feature Envy**: Methods that manipulate data clumps from other classes
+- **Feature Envy**: Methods that manipulate data clumps from other classes ([details](code-smell-feature-envy.md))
 
 ## Verification Checklist
 - [ ] No repeated groups of 3+ parameters across multiple functions

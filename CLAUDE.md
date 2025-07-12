@@ -304,7 +304,7 @@ grep -r "function_name\|concept" modules/
 - **Large Class**: Modules > 800 lines or > 12 functions need decomposition ([details](kb/code-smell-large-class.md))
 - **Long Parameter List**: Functions with > 4 parameters need parameter objects ([details](kb/code-smell-long-parameter-list.md))
 - **Data Clumps**: Related parameters appearing together frequently ([details](kb/code-smell-data-clumps.md))
-- **Primitive Obsession**: Using primitives instead of domain objects
+- **Primitive Obsession**: Using primitives instead of domain objects ([details](kb/code-smell-primitive-obsession.md))
 
 **Duplication** (most critical smell):
 - **Duplicate Code**: Identical logic in multiple places - extract common functions ([details](kb/code-smell-duplicate-code.md))
@@ -314,7 +314,7 @@ grep -r "function_name\|concept" modules/
 - **Shotgun Surgery**: One change requiring edits across many modules
 
 **Couplers** (excessive coupling between modules):
-- **Feature Envy**: Method using more data from another module than its own
+- **Feature Envy**: Method using more data from another module than its own ([details](kb/code-smell-feature-envy.md))
 - **Message Chains**: Long chains of method calls across modules
 
 **Quick Detection**:

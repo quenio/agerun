@@ -469,6 +469,7 @@ typedef struct {
 ## Related Code Smells
 - **Long Method**: Often contains duplicated logic ([details](code-smell-long-method.md))
 - **Large Class**: May have duplicated responsibilities ([details](code-smell-large-class.md))
+- **Primitive Obsession**: Leads to repeated validation/conversion logic ([details](code-smell-primitive-obsession.md))
 - **Shotgun Surgery**: Result of not eliminating duplication
 - **Comments**: Often used to explain duplicated but slightly different code
 
