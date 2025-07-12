@@ -263,7 +263,7 @@ grep -n "#include.*ar_" module.h module.c
 **Architectural Patterns** (in order of preference):
 1. **Interface Segregation**: Split large modules (agency → registry/store/update)
 2. **Registry Pattern**: Central ownership of lifecycle (registry owns all agents)
-3. **Facade Pattern**: ONLY coordinate, never implement business logic; update creation when interfaces change; run facade tests after sub-component changes
+3. **Facade Pattern**: ONLY coordinate, never implement business logic; update creation when interfaces change; run facade tests after sub-component changes; frame-based evaluators→create upfront, not lazily
 4. **Parser/Executor Split**: Separate concerns for clarity
 5. **Callbacks/DI**: Last resort - adds complexity
 
@@ -435,7 +435,7 @@ Never compile directly with gcc.
 **Task Management**:
 - **Session todos (TodoWrite/TodoRead)**: Current TDD cycles, implementations, bug fixes
 - **TODO.md file**: Long-term architecture, future features (check [ ] vs [x] for completion)
-- **User feedback**: May reveal design issues, not just implementation bugs. Listen for concerns about output/behavior.
+- **User feedback**: May reveal design issues, not just implementation bugs. Listen for concerns about output/behavior/consistency.
 - **Todo list integrity**: Mark items complete, never remove them - preserves task history
 
 **Pre-Commit Checklist** (MANDATORY - NO EXCEPTIONS):
