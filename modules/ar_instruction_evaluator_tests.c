@@ -473,6 +473,64 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         ar_methodology__cleanup();
     }
     
+    // Test 7: Destroy method instruction 
+    {
+        // Initialize system for method operations
+        ar_system__init(NULL, NULL);
+        
+        // Create a test method first
+        ar_methodology__create_method("destroy_method_test", "memory.x := 1", "1.0.0");
+        
+        // Verify method exists
+        ar_method_t *method = ar_methodology__get_method("destroy_method_test", "1.0.0");
+        assert(method != NULL);
+        
+        // Create destroy method instruction AST
+        const char *args[] = {"\"destroy_method_test\"", "\"1.0.0\""};
+        ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+            AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD, "destroy", args, 2, "memory.destroy_method_result"
+        );
+        assert(ast != NULL);
+        
+        // Create argument ASTs: destroy("destroy_method_test", "1.0.0")
+        ar_list_t *arg_asts = ar_list__create();
+        ar_expression_ast_t *name_ast = ar_expression_ast__create_literal_string("destroy_method_test");
+        ar_expression_ast_t *version_ast = ar_expression_ast__create_literal_string("1.0.0");
+        ar_list__add_last(arg_asts, name_ast);
+        ar_list__add_last(arg_asts, version_ast);
+        ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
+        
+        // Create a frame for evaluation
+        ar_data_t *ctx = ar_data__create_map();
+        ar_data_t *msg = ar_data__create_string("");
+        ar_frame_t *fr = ar_frame__create(memory, ctx, msg);
+        
+        // When evaluating through the facade
+        bool result = ar_instruction_evaluator__evaluate(evaluator, fr, ast);
+        
+        // Then it should succeed
+        ar_frame__destroy(fr);
+        ar_data__destroy(ctx);
+        ar_data__destroy(msg);
+        assert(result == true);
+        
+        // And the result should be true (1) indicating successful destruction
+        ar_data_t *value = ar_data__get_map_data(memory, "destroy_method_result");
+        assert(value != NULL);
+        assert(ar_data__get_type(value) == AR_DATA_TYPE__INTEGER);
+        assert(ar_data__get_integer(value) == 1);
+        
+        // And the method should be destroyed
+        ar_method_t *destroyed_method = ar_methodology__get_method("destroy_method_test", "1.0.0");
+        assert(destroyed_method == NULL);
+        
+        ar_instruction_ast__destroy(ast);
+        
+        // Clean up system state
+        ar_system__shutdown();
+        ar_methodology__cleanup();
+    }
+    
     // Cleanup
     ar_instruction_evaluator__destroy(evaluator);
     ar_expression_evaluator__destroy(expr_eval);

@@ -169,7 +169,23 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
         return NULL;
     }
     
-    evaluator->own_destroy_method_evaluator = NULL;
+    // Create destroy method evaluator instance (now uses frame-based pattern)
+    evaluator->own_destroy_method_evaluator = ar_destroy_method_instruction_evaluator__create(
+        ref_log,
+        ref_expr_evaluator
+    );
+    if (evaluator->own_destroy_method_evaluator == NULL) {
+        ar_destroy_agent_instruction_evaluator__destroy(evaluator->own_destroy_agent_evaluator);
+        ar_agent_instruction_evaluator__destroy(evaluator->own_agent_evaluator);
+        ar_method_instruction_evaluator__destroy(evaluator->own_method_evaluator);
+        ar_build_instruction_evaluator__destroy(evaluator->own_build_evaluator);
+        ar_parse_instruction_evaluator__destroy(evaluator->own_parse_evaluator);
+        ar_condition_instruction_evaluator__destroy(evaluator->own_condition_evaluator);
+        ar_send_instruction_evaluator__destroy(evaluator->own_send_evaluator);
+        ar_assignment_instruction_evaluator__destroy(evaluator->own_assignment_evaluator);
+        AR__HEAP__FREE(evaluator);
+        return NULL;
+    }
     
     return evaluator;
 }
@@ -298,21 +314,10 @@ bool ar_instruction_evaluator__evaluate(
             );
             
         case AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD:
-            // Create destroy method evaluator on-demand if needed
-            if (mut_evaluator->own_destroy_method_evaluator == NULL) {
-                ar_data_t *memory = ar_frame__get_memory(ref_frame);
-                mut_evaluator->own_destroy_method_evaluator = ar_destroy_method_instruction_evaluator__create(
-                    mut_evaluator->ref_log,
-                    mut_evaluator->ref_expr_evaluator,
-                    memory
-                );
-                if (mut_evaluator->own_destroy_method_evaluator == NULL) {
-                    return false;
-                }
-            }
-            // Delegate directly to destroy method evaluator
+            // Delegate directly to destroy method evaluator (frame-based pattern)
             return ar_destroy_method_instruction_evaluator__evaluate(
                 mut_evaluator->own_destroy_method_evaluator,
+                ref_frame,
                 ref_ast
             );
             

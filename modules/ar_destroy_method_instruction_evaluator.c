@@ -5,6 +5,7 @@
 
 #include "ar_destroy_method_instruction_evaluator.h"
 #include "ar_heap.h"
+#include "ar_frame.h"
 #include "ar_expression_ast.h"
 #include "ar_expression_evaluator.h"
 #include "ar_agency.h"
@@ -22,8 +23,7 @@
 /* Opaque struct definition */
 struct ar_destroy_method_instruction_evaluator_s {
     ar_log_t *ref_log;                           /* Borrowed reference to log instance */
-    ar_expression_evaluator_t *mut_expr_evaluator;
-    ar_data_t *mut_memory;
+    ar_expression_evaluator_t *ref_expr_evaluator; /* Borrowed reference to expression evaluator */
 };
 
 /* Helper function to log error message */
@@ -72,10 +72,9 @@ static bool _store_result_if_assigned(
  */
 ar_destroy_method_instruction_evaluator_t* ar_destroy_method_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *mut_expr_evaluator,
-    ar_data_t *mut_memory
+    ar_expression_evaluator_t *ref_expr_evaluator
 ) {
-    if (!ref_log || !mut_expr_evaluator || !mut_memory) {
+    if (!ref_log || !ref_expr_evaluator) {
         return NULL;
     }
     
@@ -88,8 +87,7 @@ ar_destroy_method_instruction_evaluator_t* ar_destroy_method_instruction_evaluat
     }
     
     own_evaluator->ref_log = ref_log;
-    own_evaluator->mut_expr_evaluator = mut_expr_evaluator;
-    own_evaluator->mut_memory = mut_memory;
+    own_evaluator->ref_expr_evaluator = ref_expr_evaluator;
     
     return own_evaluator;
 }
@@ -106,21 +104,25 @@ void ar_destroy_method_instruction_evaluator__destroy(ar_destroy_method_instruct
 }
 
 /**
- * Evaluates a destroy method instruction using stored dependencies
+ * Evaluates a destroy method instruction using frame-based execution
  */
 bool ar_destroy_method_instruction_evaluator__evaluate(
     ar_destroy_method_instruction_evaluator_t *mut_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 ) {
-    if (!mut_evaluator || !ref_ast) {
+    if (!mut_evaluator || !ref_frame || !ref_ast) {
         return false;
     }
     
     // Clear any previous error
     _log_error(mut_evaluator, NULL);
     
-    ar_expression_evaluator_t *mut_expr_evaluator = mut_evaluator->mut_expr_evaluator;
-    ar_data_t *mut_memory = mut_evaluator->mut_memory;
+    ar_expression_evaluator_t *mut_expr_evaluator = mut_evaluator->ref_expr_evaluator;
+    ar_data_t *mut_memory = ar_frame__get_memory(ref_frame);
+    if (!mut_memory) {
+        return false;
+    }
     
     // Validate AST type
     if (ar_instruction_ast__get_type(ref_ast) != AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD) {

@@ -163,7 +163,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] TDD Cycle 12: Method evaluator (Completed 2025-07-12)
 - [x] TDD Cycle 13: Agent evaluator (Completed 2025-07-12)
 - [x] TDD Cycle 14: Destroy agent evaluator (Completed 2025-07-12)
-- [ ] TDD Cycle 15: Destroy method evaluator
+- [x] TDD Cycle 15: Destroy method evaluator (Completed 2025-07-12)
 
 #### Phase 4: Update Facades
 - [x] TDD Cycle 16: Update instruction evaluator facade (Completed 2025-07-12)

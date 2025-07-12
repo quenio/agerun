@@ -32,10 +32,9 @@ bool ar_destroy_method_instruction_evaluator__evaluate(
 void ar_destroy_method_instruction_evaluator__destroy(ar_destroy_method_instruction_evaluator_t *own_evaluator);
 ```
 
-### Legacy Interface (Backward Compatibility)
+### Frame-Based Execution
 
-```c
-```
+The module has been fully migrated to the frame-based execution pattern, which bundles memory, context, and message into a single frame parameter. This eliminates the need to store memory references in the evaluator instance and provides a clean, stateless evaluation pattern consistent with other instruction evaluators.
 
 ### Functionality
 
@@ -44,11 +43,13 @@ The module evaluates destroy method instructions of the form:
 - `memory.result := destroy("method_name", "version")`
 
 Key features:
-1. **Method Name/Version Evaluation**: Evaluates both arguments to strings
-2. **Agent Lifecycle Management**: Sends `__sleep__` messages to agents before destruction
-3. **Agent Destruction**: Destroys all agents using the method
-4. **Method Unregistration**: Removes the method from methodology
-5. **Result Assignment**: Stores true (1) if method was destroyed, false (0) otherwise
+1. **Frame-Based Execution**: Uses ar_frame_t for memory, context, and message bundling
+2. **Method Name/Version Evaluation**: Evaluates both arguments to strings
+3. **Agent Lifecycle Management**: Sends `__sleep__` messages to agents before destruction
+4. **Agent Destruction**: Destroys all agents using the method
+5. **Method Unregistration**: Removes the method from methodology
+6. **Result Assignment**: Stores true (1) if method was destroyed, false (0) otherwise
+7. **Memory Access**: Gets memory from frame during evaluation
 
 ### Agent Lifecycle Handling
 
@@ -64,8 +65,9 @@ This ensures proper cleanup and lifecycle event handling.
 
 The module follows strict memory ownership rules:
 - The evaluator instance owns its internal structure but not the dependencies
-- Expression evaluator, memory, and log are borrowed references stored in the instance
-- Method name and version evaluations create temporary data
+- Expression evaluator and log are borrowed references stored in the instance
+- Memory is accessed from frame during evaluation, not stored in evaluator
+- Method name and version evaluations create temporary data that is properly cleaned up
 - Sleep messages are created and ownership transferred via send
 - Result value is created and transferred to memory when assignment specified
 - All temporary values properly destroyed
@@ -75,6 +77,7 @@ The module follows strict memory ownership rules:
 ## Dependencies
 
 - `ar_log`: For centralized error reporting
+- `ar_frame`: For frame-based execution context
 - `ar_expression_evaluator`: For evaluating expressions
 - `ar_expression_parser`: For parsing expression strings
 - `ar_expression_ast`: For expression AST nodes
@@ -100,45 +103,49 @@ The module:
 
 ## Usage Examples
 
-### Modern Instance-Based Approach (Recommended)
+### Frame-Based Approach (Recommended)
 
 ```c
 // Create dependencies
 ar_data_t *memory = ar_data__create_map();
-ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
+ar_log_t *log = ar_log__create();
+ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
 
-// Create destroy method evaluator instance
+// Create destroy method evaluator instance (frame-based pattern)
 ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
-    log, expr_eval, memory
+    log, expr_eval
 );
 
 // Parse destroy instruction: memory.result := destroy("calculator", "1.0.0")
 const char *args[] = {"\"calculator\"", "\"1.0.0\""};
 ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-    AR_INST__DESTROY, "destroy", args, 2, "memory.result"
+    AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD, "destroy", args, 2, "memory.result"
 );
 
-// Evaluate using instance
-bool success = ar_destroy_method_instruction_evaluator__evaluate(evaluator, ast);
+// Create frame for evaluation
+ar_data_t *context = ar_data__create_map();
+ar_data_t *message = ar_data__create_string("");
+ar_frame_t *frame = ar_frame__create(memory, context, message);
+
+// Evaluate using frame-based pattern
+bool success = ar_destroy_method_instruction_evaluator__evaluate(evaluator, frame, ast);
 
 // Clean up
+ar_frame__destroy(frame);
+ar_data__destroy(context);
+ar_data__destroy(message);
 ar_destroy_method_instruction_evaluator__destroy(evaluator);
 // Result stored in memory["result"]: 1 if destroyed, 0 if not found
-```
-
-### Legacy Approach (Backward Compatibility)
-
-```c
 ```
 
 ## Testing
 
 The module includes comprehensive tests covering:
 
-### Instance-Based Interface Tests
+### Frame-Based Interface Tests
 - Create/destroy lifecycle functions
-- Instance-based evaluation using stored dependencies
-- Legacy function backward compatibility
+- Frame-based evaluation using instruction evaluator fixture
+- Upfront creation pattern verification
 
 ### Functional Tests
 - Destroy existing method
