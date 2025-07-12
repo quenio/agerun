@@ -295,7 +295,45 @@ grep -r "function_name\|concept" modules/
 - **No Parallel Implementations**: Modify existing code, don't create _v2 versions ([details](kb/no-parallel-implementations-principle.md))
 - **Composition Over Inheritance**: Prefer composition patterns to create flexible, maintainable architectures ([details](kb/composition-over-inheritance-principle.md))
 
-### 4. Coding Standards
+### 4. Code Smells Detection and Prevention
+
+**Code smells** are surface indicators of deeper problems in code design. Based on Martin Fowler's Refactoring catalog, watch for these common issues:
+
+**Bloaters** (code that has grown too large):
+- **Long Method**: Methods > 20 lines should be broken down ([details](kb/code-smell-long-method.md))
+- **Large Class**: Modules > 800 lines or > 12 functions need decomposition ([details](kb/code-smell-large-class.md))
+- **Long Parameter List**: Functions with > 4 parameters need parameter objects ([details](kb/code-smell-long-parameter-list.md))
+- **Data Clumps**: Related parameters appearing together frequently ([details](kb/code-smell-data-clumps.md))
+- **Primitive Obsession**: Using primitives instead of domain objects
+
+**Duplication** (most critical smell):
+- **Duplicate Code**: Identical logic in multiple places - extract common functions ([details](kb/code-smell-duplicate-code.md))
+
+**Change Preventers** (code that resists modification):
+- **Divergent Change**: One module changing for multiple reasons
+- **Shotgun Surgery**: One change requiring edits across many modules
+
+**Couplers** (excessive coupling between modules):
+- **Feature Envy**: Method using more data from another module than its own
+- **Message Chains**: Long chains of method calls across modules
+
+**Quick Detection**:
+```bash
+# Find long methods
+grep -n "^[a-zA-Z_][a-zA-Z0-9_]*(" modules/*.c | while read line; do
+  file=$(echo $line | cut -d: -f1); line_num=$(echo $line | cut -d: -f2)
+  lines=$(awk -v start=$line_num 'NR >= start && /^}/ && --brace_count <= 0 {print NR-start; exit} /{/ {brace_count++} /}/ {brace_count--}' $file)
+  [ "$lines" -gt 20 ] && echo "$file:$line_num - $lines lines"
+done
+
+# Find parameter list issues
+grep -n "([^)]*,[^)]*,[^)]*,[^)]*," modules/*.h
+
+# Find duplicate error messages
+grep -r "ar_log__error" modules/ | cut -d'"' -f2 | sort | uniq -c | sort -nr | awk '$1 > 1'
+```
+
+### 5. Coding Standards
 
 **String Parsing**: Track quote state when scanning for operators (`:=`, `(`, `)`, `,`) ([details](kb/string-parsing-quote-tracking.md))
 ```c
@@ -324,7 +362,7 @@ while (*p) {
 - Use IO module (`ar_io__open_file` not `fopen`, etc) - check all return codes
 - Use `PRId64`/`PRIu64` for portability, never `%lld`
 
-### 5. Module Development
+### 6. Module Development
 
 **Core Architecture**:
 - **Parsing vs Evaluation**: Data owner parses (methodology→methods), consumer evaluates (interpreter→ASTs)
@@ -352,7 +390,7 @@ while (*p) {
 ✓ Think twice before adding global state  
 ✓ Update modules/README.md for new modules
 
-### 6. Method Development
+### 7. Method Development
 
 **Requirements**:
 - Store in `methods/` as `<name>-<version>.method`
@@ -368,7 +406,7 @@ while (*p) {
 - `if()` cannot be nested
 - `send(0, message)` is a no-op returning true
 
-### 7. Development Practices
+### 8. Development Practices
 
 **Directory Navigation**: Always use absolute paths ([details](kb/absolute-path-navigation.md))
 ```bash
@@ -407,12 +445,12 @@ cd bin  # Wrong - avoid relative paths
 - Context lifetime: NEVER destroy context or its elements in evaluators
 - Debug ownership: Use `ar_data__hold_ownership()` to verify status
 
-### 8. Error Propagation Pattern
+### 9. Error Propagation Pattern
 
 **Implementation**: Set errors at source → Store in struct → Propagate via get_error() → Print once at top level ([details](kb/error-propagation-pattern.md))
 **Key Rule**: Evaluators set errors, interpreter prints them. Never print errors where they occur.
 
-### 9. Agent Lifecycle
+### 10. Agent Lifecycle
 
 **Critical Points**:
 - Agents receive `__wake__` on creation
@@ -420,7 +458,7 @@ cd bin  # Wrong - avoid relative paths
 - ALWAYS process messages after sending to prevent leaks
 - Call `ar_system__process_next_message()` after `ar_agent__send()`
 
-### 10. Building Individual Tests
+### 11. Building Individual Tests
 
 Always use make to build tests:
 ```bash
@@ -441,7 +479,7 @@ Never compile directly with gcc.
   3. Run the test automatically from the bin directory
   4. Generate a memory report specific to that test
 
-### 11. Session & Commit Management
+### 12. Session & Commit Management
 
 **Task Management**:
 - **Session todos (TodoWrite/TodoRead)**: Current TDD cycles, implementations, bug fixes
@@ -474,7 +512,7 @@ Never compile directly with gcc.
 - Include brief summary of what was accomplished
 - Update CLAUDE.md with any new patterns or learnings from the session
 
-### 12. Refactoring Patterns
+### 13. Refactoring Patterns
 
 **Core Principles**:
 - **Preserve behavior**: Tests define expected behavior - fix implementation, not tests
@@ -518,7 +556,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - **Frame migration**: Include facade update as separate TDD cycle in same plan; create evaluators upfront
 - **Agent context**: Agent instructions use separate context objects, not memory as context
 
-### 13. Plan Verification and Review
+### 14. Plan Verification and Review
 
 **When Creating Development Plans**:
 - **Single task focus**: Create plans for one todo item at a time, not multi-task plans
@@ -551,7 +589,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
   - Better long-term maintainability
 - **Always propose generic alternative**: When user suggests specific module, explain generic benefits
 
-### 14. Task Tool Guidelines
+### 15. Task Tool Guidelines
 
 **Core Rule**: Read before write - examine Task output before modifying
 
@@ -561,7 +599,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 3. Use Edit (not Write) for improvements
 4. Be specific: "analyze only" vs "create files"
 
-### 15. Leveraging Zig for AgeRun Development
+### 16. Leveraging Zig for AgeRun Development
 
 **Zig Documentation Reference**: https://ziglang.org/documentation/0.14.1/
 **C Interop Guide**: https://ziglang.org/documentation/0.14.1/#C - Follow for full C compatibility
