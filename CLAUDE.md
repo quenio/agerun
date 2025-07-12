@@ -211,6 +211,7 @@ For each new behavior/feature:
 - Zero memory leaks in tests
 - Process all messages before cleanup: `while (ar_system__process_next_message());`
 - Test files: `<module>_tests.c`
+- **Use test fixtures**: Check for `ar_*_fixture.h` before writing boilerplate setup
 - Follow the 4-step directory check process (see Section 7) before running tests
 - To run tests, use `make test_name` which automatically builds and runs
 - **ALWAYS rebuild after code changes**: `make test_name` (not just `./test_name`)
@@ -262,7 +263,7 @@ grep -n "#include.*ar_" module.h module.c
 **Architectural Patterns** (in order of preference):
 1. **Interface Segregation**: Split large modules (agency → registry/store/update)
 2. **Registry Pattern**: Central ownership of lifecycle (registry owns all agents)
-3. **Facade Pattern**: ONLY coordinate, never implement business logic
+3. **Facade Pattern**: ONLY coordinate, never implement business logic; update creation when interfaces change
 4. **Parser/Executor Split**: Separate concerns for clarity
 5. **Callbacks/DI**: Last resort - adds complexity
 
@@ -470,6 +471,7 @@ Never compile directly with gcc.
 - **Clean state recovery**: If refactoring fails, revert completely rather than debug
 - **Validate changes**: After adding validation, test with intentional errors to ensure no false negatives
 - **Incremental commits**: Commit logical chunks even with remaining issues - note them for future work
+- **Frame migration**: Convert evaluators incrementally; facade manages both patterns during transition
 
 **Bulk Renaming Pattern**:
 ```bash
