@@ -26,19 +26,23 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
    cd agerun
    ```
 
-2. Build the library and executable:
+2. Build with comprehensive verification (recommended):
    ```
-   make
+   make build
    ```
+   This runs static analysis, all tests, sanitizers, and build verification.
 
-3. Run tests:
+3. Clean build (when needed):
    ```
-   make run-tests
+   make clean build
    ```
+   This removes all build artifacts first, then performs the full build.
 
-4. Run the executable:
+4. Individual commands (optional):
    ```
-   make run-exec
+   make run-tests    # Run tests only
+   make run-exec     # Build and run executable
+   make              # Show all available targets
    ```
 
 ### Memory Safety Testing
