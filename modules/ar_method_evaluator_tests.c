@@ -29,7 +29,7 @@ static void test_method_evaluator__create_destroy(void) {
     // Create expression evaluator first (needed by instruction evaluator)
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log, own_memory, own_context);
+    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log);
     assert(own_expr_eval != NULL);
     
     // Create instruction evaluator
@@ -62,7 +62,7 @@ static void test_method_evaluator__evaluate_empty_method(void) {
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log, own_memory, own_context);
+    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log);
     ar_instruction_evaluator_t *own_instr_eval = ar_instruction_evaluator__create(
         own_log, own_expr_eval
     );
@@ -107,7 +107,7 @@ static void test_method_evaluator__evaluate_single_instruction_method(void) {
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log, own_memory, own_context);
+    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log);
     ar_instruction_evaluator_t *own_instr_eval = ar_instruction_evaluator__create(
         own_log, own_expr_eval
     );
@@ -159,7 +159,7 @@ static void test_method_evaluator__evaluate_multiple_instructions(void) {
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log, own_memory, own_context);
+    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log);
     ar_instruction_evaluator_t *own_instr_eval = ar_instruction_evaluator__create(
         own_log, own_expr_eval
     );
@@ -225,7 +225,7 @@ static void test_method_evaluator__evaluate_null_parameters(void) {
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log, own_memory, own_context);
+    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log);
     ar_instruction_evaluator_t *own_instr_eval = ar_instruction_evaluator__create(
         own_log, own_expr_eval
     );
@@ -275,7 +275,7 @@ static void test_method_evaluator__evaluate_with_failing_instruction(void) {
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log, own_memory, own_context);
+    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log);
     ar_instruction_evaluator_t *own_instr_eval = ar_instruction_evaluator__create(
         own_log, own_expr_eval
     );
@@ -340,7 +340,7 @@ static void test_method_evaluator__memory_stress_test(void) {
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log, own_memory, own_context);
+    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log);
     ar_instruction_evaluator_t *own_instr_eval = ar_instruction_evaluator__create(
         own_log, own_expr_eval
     );
