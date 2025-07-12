@@ -14,6 +14,7 @@
 #include "ar_expression_evaluator.h"
 #include "ar_data.h"
 #include "ar_log.h"
+#include "ar_frame.h"
 
 /* Opaque type for condition instruction evaluator */
 typedef struct ar_condition_instruction_evaluator_s ar_condition_instruction_evaluator_t;
@@ -23,15 +24,13 @@ typedef struct ar_condition_instruction_evaluator_s ar_condition_instruction_eva
  *
  * @param ref_log The log instance to use for error reporting (borrowed reference)
  * @param ref_expr_evaluator The expression evaluator to use (borrowed reference)
- * @param mut_memory The memory context (mutable reference)
  * @return A new condition instruction evaluator, or NULL on failure
  *
  * @note Ownership: Returns an owned value that caller must destroy
  */
 ar_condition_instruction_evaluator_t* ar_condition_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator,
-    ar_data_t *mut_memory
+    ar_expression_evaluator_t *ref_expr_evaluator
 );
 
 /**
@@ -46,14 +45,16 @@ void ar_condition_instruction_evaluator__destroy(
 );
 
 /**
- * Evaluates a condition (if) instruction using stored dependencies
+ * Evaluates a condition (if) instruction using frame-based execution
  *
  * @param mut_evaluator The evaluator instance (mutable reference)
+ * @param ref_frame The frame containing memory and context (borrowed reference)
  * @param ref_ast The if instruction AST node to evaluate (borrowed reference)
  * @return true if the instruction was successfully evaluated, false on error
  */
 bool ar_condition_instruction_evaluator__evaluate(
     ar_condition_instruction_evaluator_t *mut_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
 

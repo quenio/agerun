@@ -157,7 +157,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Same pattern as assignment
   - [x] Ensure send actually performs sends (not just returns true)
   - [x] Update instruction evaluator facade to create send evaluator upfront
-- [ ] TDD Cycle 9: Condition (if) evaluator
+- [x] TDD Cycle 9: Condition (if) evaluator (Completed 2025-07-12)
 - [ ] TDD Cycle 10: Parse evaluator
 - [ ] TDD Cycle 11: Build evaluator
 - [ ] TDD Cycle 12: Method evaluator

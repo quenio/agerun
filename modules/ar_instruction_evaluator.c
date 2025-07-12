@@ -83,8 +83,17 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
         return NULL;
     }
     
-    // Initialize other evaluators to NULL - they will be created on-demand
-    evaluator->own_condition_evaluator = NULL;
+    // Create condition evaluator instance (now uses frame-based pattern)
+    evaluator->own_condition_evaluator = ar_condition_instruction_evaluator__create(
+        ref_log,
+        ref_expr_evaluator
+    );
+    if (evaluator->own_condition_evaluator == NULL) {
+        ar_send_instruction_evaluator__destroy(evaluator->own_send_evaluator);
+        ar_assignment_instruction_evaluator__destroy(evaluator->own_assignment_evaluator);
+        AR__HEAP__FREE(evaluator);
+        return NULL;
+    }
     evaluator->own_parse_evaluator = NULL;
     evaluator->own_build_evaluator = NULL;
     evaluator->own_method_evaluator = NULL;
@@ -171,21 +180,10 @@ bool ar_instruction_evaluator__evaluate(
             );
             
         case AR_INSTRUCTION_AST_TYPE__IF:
-            // Create condition evaluator on-demand if needed
-            if (mut_evaluator->own_condition_evaluator == NULL) {
-                ar_data_t *memory = ar_frame__get_memory(ref_frame);
-                mut_evaluator->own_condition_evaluator = ar_condition_instruction_evaluator__create(
-                    mut_evaluator->ref_log,
-                    mut_evaluator->ref_expr_evaluator,
-                    memory
-                );
-                if (mut_evaluator->own_condition_evaluator == NULL) {
-                    return false;
-                }
-            }
-            // Delegate to the condition instruction evaluator instance
+            // Delegate to the condition instruction evaluator instance (with frame)
             return ar_condition_instruction_evaluator__evaluate(
                 mut_evaluator->own_condition_evaluator,
+                ref_frame,
                 ref_ast
             );
             

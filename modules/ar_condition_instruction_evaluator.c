@@ -9,10 +9,7 @@
 #include "ar_list.h"
 #include "ar_log.h"
 #include "ar_memory_accessor.h"
-#include <assert.h>
-#include <string.h>
-#include <stdio.h>
-
+#include "ar_frame.h"
 
 /**
  * Internal structure for condition instruction evaluator
@@ -20,9 +17,7 @@
 struct ar_condition_instruction_evaluator_s {
     ar_log_t *ref_log;                           /* Borrowed reference to log instance */
     ar_expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
-    ar_data_t *mut_memory;                          /* Memory map (mutable reference) */
 };
-
 
 /* Helper function to log error message */
 static void _log_error(ar_condition_instruction_evaluator_t *mut_evaluator, const char *message) {
@@ -40,10 +35,9 @@ static void _log_error(ar_condition_instruction_evaluator_t *mut_evaluator, cons
  */
 ar_condition_instruction_evaluator_t* ar_condition_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator,
-    ar_data_t *mut_memory
+    ar_expression_evaluator_t *ref_expr_evaluator
 ) {
-    if (!ref_log || !ref_expr_evaluator || !mut_memory) {
+    if (!ref_log || !ref_expr_evaluator) {
         return NULL;
     }
     
@@ -57,7 +51,6 @@ ar_condition_instruction_evaluator_t* ar_condition_instruction_evaluator__create
     
     own_evaluator->ref_log = ref_log;
     own_evaluator->ref_expr_evaluator = ref_expr_evaluator;
-    own_evaluator->mut_memory = mut_memory;
     
     // Ownership transferred to caller
     return own_evaluator;
@@ -78,13 +71,20 @@ void ar_condition_instruction_evaluator__destroy(
 }
 
 /**
- * Evaluates a condition (if) instruction using stored dependencies
+ * Evaluates a condition (if) instruction using frame-based execution
  */
 bool ar_condition_instruction_evaluator__evaluate(
     ar_condition_instruction_evaluator_t *mut_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 ) {
-    if (!mut_evaluator || !ref_ast) {
+    if (!mut_evaluator || !ref_frame || !ref_ast) {
+        return false;
+    }
+    
+    // Get memory from frame
+    ar_data_t *mut_memory = ar_frame__get_memory(ref_frame);
+    if (!mut_memory) {
         return false;
     }
     
@@ -184,7 +184,7 @@ bool ar_condition_instruction_evaluator__evaluate(
         }
         
         // Store the result value (transfers ownership)
-        bool store_success = ar_data__set_map_data(mut_evaluator->mut_memory, key_path, own_result);
+        bool store_success = ar_data__set_map_data(mut_memory, key_path, own_result);
         if (!store_success) {
             ar_data__destroy(own_result);
         }

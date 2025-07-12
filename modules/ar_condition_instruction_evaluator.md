@@ -25,11 +25,10 @@ An opaque type representing a condition instruction evaluator instance.
 ```c
 ar_condition_instruction_evaluator_t* ar_condition_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator,
-    ar_data_t *mut_memory
+    ar_expression_evaluator_t *ref_expr_evaluator
 );
 ```
-Creates a new condition instruction evaluator that stores its dependencies including the log for error reporting.
+Creates a new condition instruction evaluator with the provided log and expression evaluator. The evaluator follows the frame-based execution pattern and does not store memory references.
 
 ```c
 void ar_condition_instruction_evaluator__destroy(
@@ -41,10 +40,11 @@ Destroys a condition instruction evaluator and frees all resources.
 ```c
 bool ar_condition_instruction_evaluator__evaluate(
     ar_condition_instruction_evaluator_t *mut_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
 ```
-Evaluates a condition instruction using the stored dependencies.
+Evaluates a condition instruction using frame-based execution. The frame provides access to memory and other execution context.
 
 ### Functionality
 
@@ -63,7 +63,8 @@ Key features:
 
 The module follows strict memory ownership rules:
 - The evaluator instance owns its internal structure but not the dependencies
-- Expression evaluator, memory, and log are borrowed references stored in the instance
+- Expression evaluator and log are borrowed references stored in the instance
+- Memory is obtained from the frame during evaluation, not stored
 - Condition evaluation results are owned and must be destroyed
 - Branch evaluation results are owned by the caller when assigned
 - The create function returns ownership to the caller
@@ -76,6 +77,7 @@ The module follows strict memory ownership rules:
 - `ar_expression_parser`: For parsing expression strings
 - `ar_expression_ast`: For expression AST nodes
 - `ar_instruction_ast`: For accessing instruction AST structure
+- `ar_frame`: For frame-based execution context
 - `ar_data`: For data manipulation
 - `ar_string`: For string operations
 - `ar_heap`: For memory tracking
@@ -94,22 +96,26 @@ The module evaluates all three arguments:
 ```c
 // Create memory and expression evaluator
 ar_data_t *memory = ar_data__create_map();
-ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
+ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
 
 // Create condition instruction evaluator
 ar_condition_instruction_evaluator_t *cond_eval = ar_condition_instruction_evaluator__create(
-    log, expr_eval, memory
+    log, expr_eval
 );
 
 // Parse if instruction: result := if(x > 5, 100, 200)
 ar_instruction_ast_t *ast = ar_instruction_parser__parse_if(parser);
 
+// Create a frame for evaluation
+ar_frame_t *frame = ar_frame__create(memory, context, message);
+
 // Evaluate the condition
-bool success = ar_condition_instruction_evaluator__evaluate(cond_eval, ast);
+bool success = ar_condition_instruction_evaluator__evaluate(cond_eval, frame, ast);
 
 // The appropriate value (100 or 200) has been stored in memory.result
 
 // Cleanup
+ar_frame__destroy(frame);
 ar_condition_instruction_evaluator__destroy(cond_eval);
 ar_expression_evaluator__destroy(expr_eval);
 ar_data__destroy(memory);
