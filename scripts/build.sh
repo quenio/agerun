@@ -1,16 +1,16 @@
 #!/bin/bash
 
-# Full Build Script for AgeRun
+# Build Script for AgeRun
 # Performs complete build with all tests, checks, and validations in parallel
 
 # Check if running from repo root
 if [ ! -f "Makefile" ] || [ ! -d "modules" ] || [ ! -d "methods" ]; then
     echo "ERROR: This script must be run from the AgeRun repository root directory."
-    echo "Please run 'make full-build' from the repository root instead."
+    echo "Please run 'make build' from the repository root instead."
     exit 1
 fi
 
-echo "=== AgeRun Full Build ==="
+echo "=== AgeRun Build ==="
 echo "Starting at $(date)"
 echo
 
@@ -39,16 +39,7 @@ run_job() {
     ) &
 }
 
-# Clean once at the beginning
-echo -n "Building clean..."
-if make clean >/dev/null 2>&1; then
-    echo " done"
-else
-    echo " FAILED"
-    echo "Error: Failed to clean build directory. Running make clean again to show output:"
-    make clean
-    exit 1
-fi
+# Build from current state (no automatic clean)
 
 # Create output directory for logs only
 mkdir -p logs

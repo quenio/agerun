@@ -21,7 +21,7 @@ help:
 	@echo "  make check-naming - Check naming conventions"
 	@echo "  make check-docs   - Check documentation validity"
 	@echo "  make check-all    - Run all code quality checks"
-	@echo "  make full-build   - Run complete build with all checks and tests"
+	@echo "  make build        - Run complete build with all checks and tests"
 	@echo ""
 	@echo "Run targets:"
 	@echo "  make run-exec     - Build and run the executable"
@@ -477,12 +477,12 @@ check-all: check-naming check-docs
 	@echo ""
 	@echo "All code quality checks completed!"
 
-# Run full build script (clean build, static analysis, all tests, sanitizers, doc validation)
-full-build: install-scan-build
-	@if [ -x ./scripts/full_build.sh ]; then \
-		./scripts/full_build.sh; \
+# Run build script (static analysis, all tests, sanitizers, doc validation)
+build: install-scan-build
+	@if [ -x ./scripts/build.sh ]; then \
+		./scripts/build.sh; \
 	else \
-		echo "ERROR: scripts/full_build.sh not found or not executable"; \
+		echo "ERROR: scripts/build.sh not found or not executable"; \
 		echo "Make sure the script exists and has execute permissions"; \
 		exit 1; \
 	fi
@@ -502,7 +502,7 @@ add-newline:
 		exit 1; \
 	fi
 
-.PHONY: help clean full-build add-newline check-naming check-docs check-all analyze-exec analyze-tests run-exec run-tests sanitize-exec sanitize-tests tsan-exec tsan-tests install-scan-build print-src print-obj
+.PHONY: help clean build add-newline check-naming check-docs check-all analyze-exec analyze-tests run-exec run-tests sanitize-exec sanitize-tests tsan-exec tsan-tests install-scan-build print-src print-obj
 
 # Debug targets
 print-src:

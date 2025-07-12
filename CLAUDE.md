@@ -8,9 +8,9 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 
 ## Quick Start
 
-**Primary Build Tool**: `make full-build` - runs everything with minimal output (~20 lines)
+**Primary Build Tool**: `make build` - runs everything with minimal output (~20 lines)
 - Use before commits and for quick verification
-- Includes: clean, build, static analysis, all tests, sanitizers, leak check, doc validation
+- Includes: build, static analysis, all tests, sanitizers, leak check, doc validation
 
 **Individual Commands** (when needed):
 ```bash
@@ -31,6 +31,8 @@ make add-newline FILE=<file>  # Add missing newline to file
 **Makefile Usage Note**: Running `make` without any target shows a helpful list of all available targets. Use this as a guide to discover available commands.
 
 **Note**: Always run from repo root. Makefile handles directory changes automatically. Doc-only changes don't require testing. Always pause before build commands to check for custom scripts.
+
+**Build behavior**: `make build` builds from current state (no clean). To build clean, run: `make clean build`
 
 **Scripts Directory**: All build and utility scripts are located in `/scripts/`. Never run these scripts directly - always use the corresponding make targets. Scripts will fail with an error message if run outside the repository root.
 
@@ -489,7 +491,7 @@ Never compile directly with gcc.
 - **Todo list integrity**: Mark items complete, never remove them - preserves task history
 
 **Pre-Commit Checklist** (MANDATORY - NO EXCEPTIONS):
-1. `make full-build` - Fix ALL issues before proceeding (includes doc validation) ([details](kb/build-verification-before-commit.md))
+1. `make clean build` - Fix ALL issues before proceeding (includes doc validation) ([details](kb/build-verification-before-commit.md))
    - **Exception**: Type renames only need `make check-naming && make run-tests`
    - **Exception**: Doc-only changes only need `make check-docs`
    - **Exception**: Comment-only changes only need `make check-naming`
