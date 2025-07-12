@@ -208,7 +208,7 @@ For each new behavior/feature:
   ```
 - One test per behavior
 - Tests must be isolated and fast
-- **Test names must reflect actual behavior** - update names when refactoring changes behavior
+- **Test names must reflect actual behavior** - update names when refactoring changes behavior ([details](kb/test-function-naming-accuracy.md))
 - Zero memory leaks in tests
 - **Global state cleanup**: Tests registering methods/agents MUST call `ar_methodology__cleanup()` and `ar_agency__reset()`
 - Process all messages before cleanup: `while (ar_system__process_next_message());`
@@ -443,7 +443,7 @@ Never compile directly with gcc.
 - **Todo list integrity**: Mark items complete, never remove them - preserves task history
 
 **Pre-Commit Checklist** (MANDATORY - NO EXCEPTIONS):
-1. `make full-build` - Fix ALL issues before proceeding (includes doc validation)
+1. `make full-build` - Fix ALL issues before proceeding (includes doc validation) ([details](kb/build-verification-before-commit.md))
    - **Exception**: Type renames only need `make check-naming && make run-tests`
    - **Exception**: Doc-only changes only need `make check-docs`
    - **Exception**: Comment-only changes only need `make check-naming`
@@ -476,7 +476,7 @@ Never compile directly with gcc.
 - **Validate changes**: After adding validation, test with intentional errors to ensure no false negatives
 - **Incremental commits**: Commit logical chunks even with remaining issues - note them for future work
 - **Frame migration**: Convert evaluators incrementally; facade manages both patterns during transition
-- **Complete API verification**: `grep -r "old_api_pattern" .` after interface changes - check ALL clients
+- **Complete API verification**: `grep -r "old_api_pattern" .` after interface changes - check ALL clients ([details](kb/api-migration-completion-verification.md))
 
 **Bulk Renaming Pattern**:
 ```bash
@@ -485,7 +485,7 @@ python3 scripts/rename_symbols.py --group <group-name> --live
 
 # AVOID sed for bulk renames - error-prone with partial matches
 # If rename_symbols.py doesn't support your case, enhance it first
-# Script supports both type renaming (TYPE_RENAMES) and module renaming (MODULE_RENAMES)
+# Script supports both type renaming (TYPE_RENAMES) and module renaming (MODULE_RENAMES) - see kb/module-renaming-script-enhancement.md
 # Only use sed for one-off changes with careful verification
 ```
 
