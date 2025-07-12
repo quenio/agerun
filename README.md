@@ -195,6 +195,8 @@ The AgeRun codebase is organized into modular components, each responsible for a
 ### Directory Structure
 
 - **kb/**: Knowledge base articles with development patterns and principles
+- **methods/**: Method definitions (.method files with docs and tests)
+- **modules/**: Core implementation (.c/.h files and tests)
 - **reports/**: Analysis reports and technical comparisons
 - **scripts/**: Build and utility scripts (accessed via make targets)
 
