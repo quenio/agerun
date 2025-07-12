@@ -263,7 +263,7 @@ grep -n "#include.*ar_" module.h module.c
 **Architectural Patterns** (in order of preference):
 1. **Interface Segregation**: Split large modules (agency → registry/store/update)
 2. **Registry Pattern**: Central ownership of lifecycle (registry owns all agents)
-3. **Facade Pattern**: ONLY coordinate, never implement business logic; update creation when interfaces change
+3. **Facade Pattern**: ONLY coordinate, never implement business logic; update creation when interfaces change; run facade tests after sub-component changes
 4. **Parser/Executor Split**: Separate concerns for clarity
 5. **Callbacks/DI**: Last resort - adds complexity
 
