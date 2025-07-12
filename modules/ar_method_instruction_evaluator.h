@@ -14,6 +14,7 @@
 #include "ar_data.h"
 #include "ar_instruction_ast.h"
 #include "ar_log.h"
+#include "ar_frame.h"
 
 /**
  * Opaque type for method instruction evaluator
@@ -25,14 +26,12 @@ typedef struct ar_method_instruction_evaluator_s ar_method_instruction_evaluator
  *
  * @param ref_log The log instance to use for error reporting (borrowed reference)
  * @param ref_expr_evaluator The expression evaluator to use (borrowed reference)
- * @param mut_memory The memory map to access/modify (mutable reference)
  * @return A new method instruction evaluator instance, or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy
  */
 ar_method_instruction_evaluator_t* ar_method_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator,
-    ar_data_t *mut_memory
+    ar_expression_evaluator_t *ref_expr_evaluator
 );
 
 /**
@@ -45,7 +44,7 @@ void ar_method_instruction_evaluator__destroy(
 );
 
 /**
- * Evaluates a method instruction using the stored dependencies
+ * Evaluates a method instruction using frame-based execution
  *
  * The method() instruction takes three string arguments:
  * - method_name: The name of the method to create
@@ -55,11 +54,13 @@ void ar_method_instruction_evaluator__destroy(
  * Returns 1 on success, 0 on failure when assigned to a variable.
  *
  * @param mut_evaluator The evaluator instance to use
+ * @param ref_frame The execution frame containing memory, context, and message (borrowed reference)
  * @param ref_ast The instruction AST node
  * @return true if evaluation succeeded, false otherwise
  */
 bool ar_method_instruction_evaluator__evaluate(
     ar_method_instruction_evaluator_t *mut_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
 

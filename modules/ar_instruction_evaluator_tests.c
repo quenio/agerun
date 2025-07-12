@@ -367,6 +367,53 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         ar_instruction_ast__destroy(ast);
     }
     
+    // Test 5: Method instruction
+    {
+        // Given a method instruction AST with three string arguments and result assignment
+        const char *args[] = {"\"test_method\"", "\"memory.result := 42\"", "\"1.0.0\""};
+        ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+            AR_INSTRUCTION_AST_TYPE__METHOD, "method", args, 3, "memory.method_created"
+        );
+        assert(ast != NULL);
+        
+        ar_list_t *arg_asts = ar_list__create();
+        ar_expression_ast_t *name_ast = ar_expression_ast__create_literal_string("test_method");
+        ar_expression_ast_t *code_ast = ar_expression_ast__create_literal_string("memory.result := 42");
+        ar_expression_ast_t *version_ast = ar_expression_ast__create_literal_string("1.0.0");
+        ar_list__add_last(arg_asts, name_ast);
+        ar_list__add_last(arg_asts, code_ast);
+        ar_list__add_last(arg_asts, version_ast);
+        ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
+        
+        ar_data_t *ctx = ar_data__create_map();
+        ar_data_t *msg = ar_data__create_string("");
+        ar_frame_t *fr = ar_frame__create(memory, ctx, msg);
+        
+        // When evaluating the method instruction
+        bool result = ar_instruction_evaluator__evaluate(evaluator, fr, ast);
+        
+        // Then evaluation should succeed
+        ar_frame__destroy(fr);
+        ar_data__destroy(ctx);
+        ar_data__destroy(msg);
+        assert(result == true);
+        
+        // And the result should be stored (1 for success)
+        ar_data_t *value = ar_data__get_map_data(memory, "method_created");
+        assert(value != NULL);
+        assert(ar_data__get_type(value) == AR_DATA_TYPE__INTEGER);
+        assert(ar_data__get_integer(value) == 1);
+        
+        // And the method should be registered in methodology
+        ar_method_t *method = ar_methodology__get_method("test_method", "1.0.0");
+        assert(method != NULL);
+        assert(strcmp(ar_method__get_name(method), "test_method") == 0);
+        assert(strcmp(ar_method__get_version(method), "1.0.0") == 0);
+        
+        ar_instruction_ast__destroy(ast);
+        ar_methodology__cleanup();
+    }
+    
     // Cleanup
     ar_instruction_evaluator__destroy(evaluator);
     ar_expression_evaluator__destroy(expr_eval);

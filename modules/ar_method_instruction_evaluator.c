@@ -10,15 +10,9 @@
 #include "ar_methodology.h"
 #include "ar_log.h"
 #include "ar_memory_accessor.h"
+#include "ar_frame.h"
 #include <string.h>
 #include <stdio.h>
-
-/* Forward declaration of legacy function */
-bool ar_method_instruction_evaluator__evaluate_legacy(
-    ar_expression_evaluator_t *mut_expr_evaluator,
-    ar_data_t *mut_memory,
-    const ar_instruction_ast_t *ref_ast
-);
 
 /**
  * Internal structure for method instruction evaluator
@@ -29,7 +23,6 @@ bool ar_method_instruction_evaluator__evaluate_legacy(
 struct ar_method_instruction_evaluator_s {
     ar_log_t *ref_log;                           /* Borrowed reference to log instance */
     ar_expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
-    ar_data_t *mut_memory;                          /* Memory map (mutable reference) */
 };
 
 /**
@@ -37,11 +30,10 @@ struct ar_method_instruction_evaluator_s {
  */
 ar_method_instruction_evaluator_t* ar_method_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator,
-    ar_data_t *mut_memory
+    ar_expression_evaluator_t *ref_expr_evaluator
 ) {
     // Validate required parameters
-    if (ref_log == NULL || ref_expr_evaluator == NULL || mut_memory == NULL) {
+    if (ref_log == NULL || ref_expr_evaluator == NULL) {
         return NULL;
     }
     
@@ -57,7 +49,6 @@ ar_method_instruction_evaluator_t* ar_method_instruction_evaluator__create(
     // Initialize fields
     evaluator->ref_log = ref_log;
     evaluator->ref_expr_evaluator = ref_expr_evaluator;
-    evaluator->mut_memory = mut_memory;
     
     return evaluator;
 }
@@ -244,18 +235,19 @@ static bool _evaluate_three_string_args(
 
 bool ar_method_instruction_evaluator__evaluate(
     ar_method_instruction_evaluator_t *mut_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 ) {
-    if (!mut_evaluator || !ref_ast) {
+    if (!mut_evaluator || !ref_frame || !ref_ast) {
         return false;
     }
     
     // Clear any previous error
     _log_error(mut_evaluator, NULL);
     
-    // Extract dependencies from the evaluator instance
+    // Extract dependencies from the evaluator instance and frame
     ar_expression_evaluator_t *mut_expr_evaluator = mut_evaluator->ref_expr_evaluator;
-    ar_data_t *mut_memory = mut_evaluator->mut_memory;
+    ar_data_t *mut_memory = ar_frame__get_memory(ref_frame);
     
     if (!mut_expr_evaluator || !mut_memory) {
         return false;

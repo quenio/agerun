@@ -4,6 +4,23 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-07-12
 
+### ✅ COMPLETED: Frame-Based Execution for Method Instruction Evaluator + Enhanced Test Coverage
+- Updated method instruction evaluator to use frame-based execution pattern
+  - Removed memory parameter from create function
+  - Updated evaluate to accept frame parameter
+  - Memory accessed from frame during evaluation
+  - All tests updated to use instruction evaluator fixture
+- Fixed instruction evaluator facade to create method evaluator upfront
+  - Method evaluator now created during facade initialization
+  - Removed on-demand creation logic for method evaluator
+  - Consistent pattern with other frame-based evaluators
+- Added comprehensive method instruction test to instruction evaluator test suite
+  - Tests method creation with result assignment
+  - Verifies method registration in methodology system
+  - Uses proper BDD (Given/When/Then) structure
+  - Zero memory leaks with proper cleanup
+- Zero memory leaks, all tests pass, TDD Cycle 12 complete
+
 ### ✅ COMPLETED: Frame-Based Execution for Build Instruction Evaluator
 - Updated build instruction evaluator to use frame-based execution pattern
   - Removed memory parameter from create function
