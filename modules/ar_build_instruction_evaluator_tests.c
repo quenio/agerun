@@ -10,21 +10,20 @@
 #include "ar_list.h"
 #include "ar_log.h"
 #include "ar_event.h"
+#include "ar_instruction_evaluator_fixture.h"
+#include "ar_frame.h"
 
 static void test_build_instruction_evaluator__create_destroy(void) {
-    // Given memory, expression evaluator, and log
-    ar_data_t *memory = ar_data__create_map();
-    assert(memory != NULL);
+    // Given a test fixture
+    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_build_instruction_evaluator__create_destroy");
+    assert(own_fixture != NULL);
     
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
-    
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
-    assert(expr_eval != NULL);
+    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
     
     // When creating a build instruction evaluator
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
-        log, expr_eval, memory
+        ref_log, ref_expr_eval
     );
     
     // Then it should be created successfully
@@ -33,31 +32,28 @@ static void test_build_instruction_evaluator__create_destroy(void) {
     // When destroying the evaluator
     ar_build_instruction_evaluator__destroy(evaluator);
     
-    // Then cleanup dependencies
-    ar_expression_evaluator__destroy(expr_eval);
-    ar_data__destroy(memory);
-    ar_log__destroy(log);
+    // Then cleanup fixture
+    ar_instruction_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_build_instruction_evaluator__evaluate_with_instance(void) {
-    // Given memory with a map of values and log
-    ar_data_t *memory = ar_data__create_map();
-    assert(memory != NULL);
+    // Given a test fixture with values
+    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_build_instruction_evaluator__evaluate_with_instance");
+    assert(own_fixture != NULL);
     
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
     
     ar_data_t *values = ar_data__create_map();
     assert(values != NULL);
     assert(ar_data__set_map_data(values, "name", ar_data__create_string("Alice")));
-    assert(ar_data__set_map_data(memory, "data", values));
-    
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
-    assert(expr_eval != NULL);
+    assert(ar_data__set_map_data(mut_memory, "data", values));
     
     // When creating a build instruction evaluator instance
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
-        log, expr_eval, memory
+        ref_log, ref_expr_eval
     );
     assert(evaluator != NULL);
     
@@ -85,11 +81,11 @@ static void test_build_instruction_evaluator__evaluate_with_instance(void) {
     assert(ast_set == true);
     
     // When evaluating using the instance
-    bool result = ar_build_instruction_evaluator__evaluate(evaluator, ast);
+    bool result = ar_build_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
     
     // Then it should succeed and build the string
     assert(result == true);
-    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
+    ar_data_t *result_value = ar_data__get_map_data(mut_memory, "result");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(result_value), "Hello Alice!") == 0);
@@ -97,30 +93,27 @@ static void test_build_instruction_evaluator__evaluate_with_instance(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_build_instruction_evaluator__destroy(evaluator);
-    ar_expression_evaluator__destroy(expr_eval);
-    ar_data__destroy(memory);
-    ar_log__destroy(log);
+    ar_instruction_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_build_instruction_evaluator__evaluate_legacy(void) {
-    // Given memory with a map of values and log
-    ar_data_t *memory = ar_data__create_map();
-    assert(memory != NULL);
+    // Given a test fixture with values
+    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_build_instruction_evaluator__evaluate_legacy");
+    assert(own_fixture != NULL);
     
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
     
     ar_data_t *values = ar_data__create_map();
     assert(values != NULL);
     assert(ar_data__set_map_data(values, "greeting", ar_data__create_string("Hi")));
-    assert(ar_data__set_map_data(memory, "vars", values));
-    
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
-    assert(expr_eval != NULL);
+    assert(ar_data__set_map_data(mut_memory, "vars", values));
     
     // Create an evaluator instance
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
-        log, expr_eval, memory
+        ref_log, ref_expr_eval
     );
     assert(evaluator != NULL);
     
@@ -148,11 +141,11 @@ static void test_build_instruction_evaluator__evaluate_legacy(void) {
     assert(ast_set == true);
     
     // When evaluating using the instance-based interface
-    bool result = ar_build_instruction_evaluator__evaluate(evaluator, ast);
+    bool result = ar_build_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
     
     // Then it should succeed and build the string
     assert(result == true);
-    ar_data_t *result_value = ar_data__get_map_data(memory, "message");
+    ar_data_t *result_value = ar_data__get_map_data(mut_memory, "message");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(result_value), "Hi there!") == 0);
@@ -160,30 +153,27 @@ static void test_build_instruction_evaluator__evaluate_legacy(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_build_instruction_evaluator__destroy(evaluator);
-    ar_expression_evaluator__destroy(expr_eval);
-    ar_data__destroy(memory);
-    ar_log__destroy(log);
+    ar_instruction_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_build_instruction_evaluator__evaluate_simple(void) {
-    // Given an evaluator with memory containing a map
-    ar_data_t *memory = ar_data__create_map();
-    assert(memory != NULL);
+    // Given a test fixture with memory containing a map
+    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_build_instruction_evaluator__evaluate_simple");
+    assert(own_fixture != NULL);
     
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
     
     // Create a map with values to use in building
     ar_data_t *values = ar_data__create_map();
     assert(values != NULL);
     assert(ar_data__set_map_data(values, "name", ar_data__create_string("Alice")));
-    assert(ar_data__set_map_data(memory, "data", values));
-    
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
-    assert(expr_eval != NULL);
+    assert(ar_data__set_map_data(mut_memory, "data", values));
     
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
-        log, expr_eval, memory
+        ref_log, ref_expr_eval
     );
     assert(evaluator != NULL);
     
@@ -211,11 +201,11 @@ static void test_build_instruction_evaluator__evaluate_simple(void) {
     assert(ast_set == true);
     
     // When evaluating the build instruction
-    bool result = ar_build_instruction_evaluator__evaluate(evaluator, ast);
+    bool result = ar_build_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
     
     // Then it should succeed and build the string
     assert(result == true);
-    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
+    ar_data_t *result_value = ar_data__get_map_data(mut_memory, "result");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(result_value), "Hello Alice!") == 0);
@@ -223,18 +213,17 @@ static void test_build_instruction_evaluator__evaluate_simple(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_build_instruction_evaluator__destroy(evaluator);
-    ar_expression_evaluator__destroy(expr_eval);
-    
-    ar_data__destroy(memory);
-    ar_log__destroy(log);
+    ar_instruction_evaluator_fixture__destroy(own_fixture);
 }
 static void test_build_instruction_evaluator__evaluate_multiple_variables(void) {
-    // Given an evaluator with memory containing a map
-    ar_data_t *memory = ar_data__create_map();
-    assert(memory != NULL);
+    // Given a test fixture with memory containing a map
+    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_build_instruction_evaluator__evaluate_multiple_variables");
+    assert(own_fixture != NULL);
     
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
     
     // Create a map with multiple values
     ar_data_t *values = ar_data__create_map();
@@ -242,13 +231,10 @@ static void test_build_instruction_evaluator__evaluate_multiple_variables(void) 
     assert(ar_data__set_map_data(values, "firstName", ar_data__create_string("Bob")));
     assert(ar_data__set_map_data(values, "lastName", ar_data__create_string("Smith")));
     assert(ar_data__set_map_data(values, "role", ar_data__create_string("Admin")));
-    assert(ar_data__set_map_data(memory, "user", values));
-    
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
-    assert(expr_eval != NULL);
+    assert(ar_data__set_map_data(mut_memory, "user", values));
     
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
-        log, expr_eval, memory
+        ref_log, ref_expr_eval
     );
     assert(evaluator != NULL);
     
@@ -276,11 +262,11 @@ static void test_build_instruction_evaluator__evaluate_multiple_variables(void) 
     assert(ast_set == true);
     
     // When evaluating the build instruction
-    bool result = ar_build_instruction_evaluator__evaluate(evaluator, ast);
+    bool result = ar_build_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
     
     // Then it should succeed and build the string with all values
     assert(result == true);
-    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
+    ar_data_t *result_value = ar_data__get_map_data(mut_memory, "result");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(result_value), "User: Bob Smith, Role: Admin") == 0);
@@ -288,18 +274,18 @@ static void test_build_instruction_evaluator__evaluate_multiple_variables(void) 
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_build_instruction_evaluator__destroy(evaluator);
-    ar_expression_evaluator__destroy(expr_eval);
-    ar_data__destroy(memory);
-    ar_log__destroy(log);
+    ar_instruction_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_build_instruction_evaluator__evaluate_with_types(void) {
-    // Given an evaluator with memory containing a map with different types
-    ar_data_t *memory = ar_data__create_map();
-    assert(memory != NULL);
+    // Given a test fixture with memory containing a map with different types
+    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_build_instruction_evaluator__evaluate_with_types");
+    assert(own_fixture != NULL);
     
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
     
     // Create a map with values of different types
     ar_data_t *values = ar_data__create_map();
@@ -307,13 +293,10 @@ static void test_build_instruction_evaluator__evaluate_with_types(void) {
     assert(ar_data__set_map_data(values, "name", ar_data__create_string("Charlie")));
     assert(ar_data__set_map_data(values, "age", ar_data__create_integer(30)));
     assert(ar_data__set_map_data(values, "score", ar_data__create_double(95.5)));
-    assert(ar_data__set_map_data(memory, "stats", values));
-    
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
-    assert(expr_eval != NULL);
+    assert(ar_data__set_map_data(mut_memory, "stats", values));
     
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
-        log, expr_eval, memory
+        ref_log, ref_expr_eval
     );
     assert(evaluator != NULL);
     
@@ -341,11 +324,11 @@ static void test_build_instruction_evaluator__evaluate_with_types(void) {
     assert(ast_set == true);
     
     // When evaluating the build instruction
-    bool result = ar_build_instruction_evaluator__evaluate(evaluator, ast);
+    bool result = ar_build_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
     
     // Then it should succeed and convert all types to strings
     assert(result == true);
-    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
+    ar_data_t *result_value = ar_data__get_map_data(mut_memory, "result");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(result_value), "Name: Charlie, Age: 30, Score: 95.5") == 0);
@@ -353,31 +336,28 @@ static void test_build_instruction_evaluator__evaluate_with_types(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_build_instruction_evaluator__destroy(evaluator);
-    ar_expression_evaluator__destroy(expr_eval);
-    ar_data__destroy(memory);
-    ar_log__destroy(log);
+    ar_instruction_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_build_instruction_evaluator__evaluate_missing_values(void) {
-    // Given an evaluator with memory containing a map with some missing values
-    ar_data_t *memory = ar_data__create_map();
-    assert(memory != NULL);
+    // Given a test fixture with memory containing a map with some missing values
+    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_build_instruction_evaluator__evaluate_missing_values");
+    assert(own_fixture != NULL);
     
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
     
     // Create a map with only some values
     ar_data_t *values = ar_data__create_map();
     assert(values != NULL);
     assert(ar_data__set_map_data(values, "firstName", ar_data__create_string("David")));
     // Note: lastName is missing
-    assert(ar_data__set_map_data(memory, "person", values));
-    
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
-    assert(expr_eval != NULL);
+    assert(ar_data__set_map_data(mut_memory, "person", values));
     
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
-        log, expr_eval, memory
+        ref_log, ref_expr_eval
     );
     assert(evaluator != NULL);
     
@@ -405,11 +385,11 @@ static void test_build_instruction_evaluator__evaluate_missing_values(void) {
     assert(ast_set == true);
     
     // When evaluating the build instruction
-    bool result = ar_build_instruction_evaluator__evaluate(evaluator, ast);
+    bool result = ar_build_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
     
     // Then it should succeed but preserve the placeholder for missing value
     assert(result == true);
-    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
+    ar_data_t *result_value = ar_data__get_map_data(mut_memory, "result");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(result_value), "Name: David {lastName}") == 0);
@@ -417,24 +397,21 @@ static void test_build_instruction_evaluator__evaluate_missing_values(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_build_instruction_evaluator__destroy(evaluator);
-    ar_expression_evaluator__destroy(expr_eval);
-    ar_data__destroy(memory);
-    ar_log__destroy(log);
+    ar_instruction_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_build_instruction_evaluator__evaluate_invalid_args(void) {
-    // Given an evaluator with memory
-    ar_data_t *memory = ar_data__create_map();
-    assert(memory != NULL);
+    // Given a test fixture with memory
+    ar_instruction_evaluator_fixture_t *own_fixture = ar_instruction_evaluator_fixture__create("test_build_instruction_evaluator__evaluate_invalid_args");
+    assert(own_fixture != NULL);
     
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
-    
-    ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
-    assert(expr_eval != NULL);
+    ar_log_t *ref_log = ar_instruction_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_instruction_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_instruction_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_instruction_evaluator_fixture__create_frame(own_fixture);
     
     ar_build_instruction_evaluator_t *evaluator = ar_build_instruction_evaluator__create(
-        log, expr_eval, memory
+        ref_log, ref_expr_eval
     );
     assert(evaluator != NULL);
     
@@ -455,14 +432,14 @@ static void test_build_instruction_evaluator__evaluate_invalid_args(void) {
     bool ast_set1 = ar_instruction_ast__set_function_arg_asts(ast1, arg_asts1);
     assert(ast_set1 == true);
     
-    bool result1 = ar_build_instruction_evaluator__evaluate(evaluator, ast1);
+    bool result1 = ar_build_instruction_evaluator__evaluate(evaluator, ref_frame, ast1);
     assert(result1 == false);
     
     ar_instruction_ast__destroy(ast1);
     
     // Test case 2: Non-string template argument
     ar_data_t *dummy_map = ar_data__create_map();
-    assert(ar_data__set_map_data(memory, "dummy", dummy_map));
+    assert(ar_data__set_map_data(mut_memory, "dummy", dummy_map));
     
     const char *args2[] = {"123", "memory.dummy"};
     ar_instruction_ast_t *ast2 = ar_instruction_ast__create_function_call(
@@ -484,7 +461,7 @@ static void test_build_instruction_evaluator__evaluate_invalid_args(void) {
     bool ast_set2 = ar_instruction_ast__set_function_arg_asts(ast2, arg_asts2);
     assert(ast_set2 == true);
     
-    bool result2 = ar_build_instruction_evaluator__evaluate(evaluator, ast2);
+    bool result2 = ar_build_instruction_evaluator__evaluate(evaluator, ref_frame, ast2);
     assert(result2 == false);
     
     ar_instruction_ast__destroy(ast2);
@@ -509,16 +486,14 @@ static void test_build_instruction_evaluator__evaluate_invalid_args(void) {
     bool ast_set3 = ar_instruction_ast__set_function_arg_asts(ast3, arg_asts3);
     assert(ast_set3 == true);
     
-    bool result3 = ar_build_instruction_evaluator__evaluate(evaluator, ast3);
+    bool result3 = ar_build_instruction_evaluator__evaluate(evaluator, ref_frame, ast3);
     assert(result3 == false);
     
     ar_instruction_ast__destroy(ast3);
     
     // Cleanup
     ar_build_instruction_evaluator__destroy(evaluator);
-    ar_expression_evaluator__destroy(expr_eval);
-    ar_data__destroy(memory);
-    ar_log__destroy(log);
+    ar_instruction_evaluator_fixture__destroy(own_fixture);
 }
 
 int main(void) {

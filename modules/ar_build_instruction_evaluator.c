@@ -7,7 +7,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <stddef.h>
 
 #include "ar_instruction_ast.h"
 #include "ar_expression_ast.h"
@@ -17,6 +16,7 @@
 #include "ar_heap.h"
 #include "ar_log.h"
 #include "ar_memory_accessor.h"
+#include "ar_frame.h"
 
 
 
@@ -24,7 +24,6 @@
 struct ar_build_instruction_evaluator_s {
     ar_log_t *ref_log;                           /* Borrowed reference to log instance */
     ar_expression_evaluator_t *ref_expr_evaluator;
-    ar_data_t *mut_memory;
 };
 
 /**
@@ -32,10 +31,9 @@ struct ar_build_instruction_evaluator_s {
  */
 ar_build_instruction_evaluator_t* ar_build_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator,
-    ar_data_t *mut_memory
+    ar_expression_evaluator_t *ref_expr_evaluator
 ) {
-    if (!ref_log || !ref_expr_evaluator || !mut_memory) {
+    if (!ref_log || !ref_expr_evaluator) {
         return NULL;
     }
     
@@ -46,7 +44,6 @@ ar_build_instruction_evaluator_t* ar_build_instruction_evaluator__create(
     
     own_evaluator->ref_log = ref_log;
     own_evaluator->ref_expr_evaluator = ref_expr_evaluator;
-    own_evaluator->mut_memory = mut_memory;
     
     return own_evaluator;  // Ownership transferred to caller
 }
@@ -253,9 +250,10 @@ static bool _store_result_if_assigned(
  */
 bool ar_build_instruction_evaluator__evaluate(
     ar_build_instruction_evaluator_t *mut_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 ) {
-    if (!mut_evaluator || !ref_ast) {
+    if (!mut_evaluator || !ref_frame || !ref_ast) {
         return false;
     }
     
@@ -263,7 +261,10 @@ bool ar_build_instruction_evaluator__evaluate(
     _log_error(mut_evaluator, NULL);
     
     ar_expression_evaluator_t *mut_expr_evaluator = mut_evaluator->ref_expr_evaluator;
-    ar_data_t *mut_memory = mut_evaluator->mut_memory;
+    ar_data_t *mut_memory = ar_frame__get_memory(ref_frame);
+    if (!mut_memory) {
+        return false;
+    }
     
     // Verify this is a build AST node
     if (ar_instruction_ast__get_type(ref_ast) != AR_INSTRUCTION_AST_TYPE__BUILD) {
@@ -298,7 +299,6 @@ bool ar_build_instruction_evaluator__evaluate(
     // Evaluate template expression AST
     ar_data_t *template_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_template_ast);
     if (!template_result || ar_data__get_type(template_result) != AR_DATA_TYPE__STRING) {
-        fprintf(stderr, "DEBUG: build evaluator - template evaluation failed or not string\n");
         if (template_result && ar_data__hold_ownership(template_result, mut_evaluator)) {
             ar_data__transfer_ownership(template_result, mut_evaluator);
             ar_data__destroy(template_result);

@@ -25,11 +25,10 @@ An opaque type representing a build instruction evaluator instance.
 ```c
 ar_build_instruction_evaluator_t* ar_build_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator,
-    ar_data_t *mut_memory
+    ar_expression_evaluator_t *ref_expr_evaluator
 );
 ```
-Creates a new build instruction evaluator that stores its dependencies including the log for error reporting.
+Creates a new build instruction evaluator that stores its dependencies including the log for error reporting. Uses frame-based execution pattern.
 
 ```c
 void ar_build_instruction_evaluator__destroy(
@@ -41,10 +40,11 @@ Destroys a build instruction evaluator and frees all resources.
 ```c
 bool ar_build_instruction_evaluator__evaluate(
     ar_build_instruction_evaluator_t *mut_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
 ```
-Evaluates a build instruction using the stored dependencies.
+Evaluates a build instruction using the stored dependencies. Takes a frame containing memory and context for frame-based execution.
 
 
 ### Functionality
@@ -69,7 +69,8 @@ Templates use curly braces for placeholders:
 
 The module follows strict memory ownership rules:
 - The evaluator instance owns its internal structure but not the dependencies
-- Expression evaluator, memory, and log are borrowed references stored in the instance
+- Expression evaluator and log are borrowed references stored in the instance
+- Memory is obtained from the frame parameter during evaluation
 - Template and values map evaluations are temporary
 - Values are accessed as references from the map
 - Result string is created with proper ownership
@@ -81,11 +82,10 @@ The module follows strict memory ownership rules:
 
 - `ar_log`: For centralized error reporting
 - `ar_expression_evaluator`: For evaluating expressions
-- `ar_expression_parser`: For parsing expression strings
 - `ar_expression_ast`: For expression AST nodes
 - `ar_instruction_ast`: For accessing instruction AST structure
+- `ar_frame`: For frame-based execution context
 - `ar_data`: For data manipulation
-- `ar_string`: For string operations
 - `ar_heap`: For memory tracking
 
 ## Implementation Details
@@ -105,9 +105,9 @@ The module:
 ar_data_t *memory = ar_data__create_map();
 ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
 
-// Create build instruction evaluator
+// Create build instruction evaluator (frame-based pattern)
 ar_build_instruction_evaluator_t *build_eval = ar_build_instruction_evaluator__create(
-    log, expr_eval, memory
+    log, expr_eval
 );
 
 // Set up values in memory
@@ -116,17 +116,21 @@ ar_data__set_map_data(values, "name", ar_data__create_string("World"));
 ar_data__set_map_data(values, "count", ar_data__create_integer(42));
 ar_data__set_map_data(memory, "values", values);
 
+// Create frame for execution
+ar_frame_t *frame = ar_frame__create(memory, NULL);
+
 // Parse build instruction: memory.msg := build("Hello {name}! Count: {count}", memory.values)
 ar_instruction_ast_t *ast = ar_instruction_parser__parse_build(parser);
 
-// Evaluate the build
-bool success = ar_build_instruction_evaluator__evaluate(build_eval, ast);
+// Evaluate the build with frame
+bool success = ar_build_instruction_evaluator__evaluate(build_eval, frame, ast);
 
 // memory["msg"] now contains "Hello World! Count: 42"
 
 // Cleanup
 ar_build_instruction_evaluator__destroy(build_eval);
 ar_expression_evaluator__destroy(expr_eval);
+ar_frame__destroy(frame);
 ar_data__destroy(memory);
 ```
 

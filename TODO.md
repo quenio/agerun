@@ -159,7 +159,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Update instruction evaluator facade to create send evaluator upfront
 - [x] TDD Cycle 9: Condition (if) evaluator (Completed 2025-07-12)
 - [x] TDD Cycle 10: Parse evaluator (Completed 2025-07-12)
-- [ ] TDD Cycle 11: Build evaluator
+- [x] TDD Cycle 11: Build evaluator (Completed 2025-07-12)
 - [ ] TDD Cycle 12: Method evaluator
 - [ ] TDD Cycle 13: Agent evaluator
 - [ ] TDD Cycle 14: Destroy agent evaluator
