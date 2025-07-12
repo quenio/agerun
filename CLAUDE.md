@@ -670,7 +670,7 @@ ar_system__init(NULL, NULL);
 - Remove final newlines
 - Use raw file operations
 - Create files unless necessary
-- Assume error causes without verification
+- Assume error causes - always verify with evidence
 
 **Always**:
 - Use heap tracking macros
