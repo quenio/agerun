@@ -46,6 +46,20 @@ Each learning file contains:
 
 ### Development Practices
 - [Absolute Path Navigation](absolute-path-navigation.md)
+- [Systematic Guideline Enhancement](systematic-guideline-enhancement.md)
+- [Cross-Referencing Knowledge Base](cross-referencing-knowledge-base.md)
+- [Research-Driven Development](research-driven-development.md)
+- [User Feedback as QA](user-feedback-as-qa.md)
+- [OO to C Adaptation](oo-to-c-adaptation.md)
+
+### Code Quality & Smells
+- [Code Smell: Long Method](code-smell-long-method.md)
+- [Code Smell: Large Class](code-smell-large-class.md)
+- [Code Smell: Long Parameter List](code-smell-long-parameter-list.md)
+- [Code Smell: Data Clumps](code-smell-data-clumps.md)
+- [Code Smell: Duplicate Code](code-smell-duplicate-code.md)
+- [Code Smell: Feature Envy](code-smell-feature-envy.md)
+- [Code Smell: Primitive Obsession](code-smell-primitive-obsession.md)
 
 ## Usage
 Search for relevant patterns when facing similar challenges:
