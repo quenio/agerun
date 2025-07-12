@@ -211,7 +211,7 @@ For each new behavior/feature:
 - Zero memory leaks in tests
 - Process all messages before cleanup: `while (ar_system__process_next_message());`
 - Test files: `<module>_tests.c`
-- **Use test fixtures**: Check for `ar_*_fixture.h` before writing boilerplate setup
+- **Use test fixtures**: Check for `ar_*_fixture.h` before writing boilerplate setup; NEVER manually destroy fixture-tracked resources (causes double-free)
 - Follow the 4-step directory check process (see Section 7) before running tests
 - To run tests, use `make test_name` which automatically builds and runs
 - **ALWAYS rebuild after code changes**: `make test_name` (not just `./test_name`)
@@ -383,6 +383,7 @@ cd bin  # Wrong - avoid relative paths
 **Debug Tools**:
 - **Memory**: `make sanitize-tests` → Check `bin/memory_report_<test_name>.log`
 - **Static Analysis**: `make analyze-exec` (requires scan-build: `brew install llvm` or `apt install clang-tools`)
+- **Abort traps**: `lldb -o "run" -o "bt" -o "quit" ./test_binary` for crash backtraces
 - **Build verification**: `strings bin/*/agerun | grep DEBUG` confirms debug builds
 - **Test Failures**: Often just wrong directory - 4-step check: pwd → cd /path → pwd → run
 - **Pattern Testing**: Test regex/sed/awk patterns before using in scripts
@@ -435,7 +436,7 @@ Never compile directly with gcc.
 **Task Management**:
 - **Session todos (TodoWrite/TodoRead)**: Current TDD cycles, implementations, bug fixes
 - **TODO.md file**: Long-term architecture, future features (check [ ] vs [x] for completion)
-- **User feedback**: May reveal design issues, not just implementation bugs. Listen for concerns about output/behavior/consistency.
+- **User feedback**: May reveal design issues, not just implementation bugs. Listen for concerns about output/behavior/consistency. Verify assumptions before acting.
 - **Todo list integrity**: Mark items complete, never remove them - preserves task history
 
 **Pre-Commit Checklist** (MANDATORY - NO EXCEPTIONS):
