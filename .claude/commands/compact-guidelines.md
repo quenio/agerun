@@ -75,7 +75,9 @@ For each section being compacted:
 - Version-specific information
 - Platform-specific notes
 
-### 5. Link Strategy
+### 5. Link Strategy (MANDATORY)
+
+**CRITICAL**: Every compressed guideline MUST include a link to the knowledge base article containing the extracted details.
 
 **Link placement patterns:**
 ```markdown
@@ -84,11 +86,18 @@ For each section being compacted:
 - Rule with link at end ([see kb/article.md for examples])
 ```
 
-**When to link:**
+**When to link (ALWAYS when details are moved):**
 - When >3 lines of detail are moved to kb/
 - When examples are moved to illustrate concept
 - When implementation details are extracted
 - When background context is relocated
+- When complex explanations are simplified
+
+**Link validation checklist:**
+- [ ] Every compressed section has appropriate links
+- [ ] Links point to articles with extracted content
+- [ ] Link text clearly indicates what details are available
+- [ ] No orphaned details (content moved but not linked)
 
 ### 6. Section-by-Section Approach
 
@@ -109,6 +118,8 @@ After compacting each section:
 - **Completeness**: Are all essential rules preserved?
 - **Actionability**: Do guidelines specify concrete actions?
 - **Links**: Do all links point to relevant, complete articles?
+- **Link coverage**: Every compression has corresponding knowledge base link
+- **No orphaned content**: All moved details are accessible via links
 
 ### 8. Commit Strategy
 
@@ -135,17 +146,20 @@ git commit -m "docs: compact guidelines with knowledge base links
 
 Before finalizing:
 - Read compacted guidelines end-to-end for flow
-- Verify all links work and point to relevant content
+- **Verify all links work and point to relevant content** (MANDATORY)
 - Check that essential information is still discoverable
 - Ensure new developers can follow guidelines effectively
+- **Confirm no details are lost** - every moved piece has a link
+- Test link accessibility from compressed guidelines
 
 ## Expected Outcomes
 
-- **CLAUDE.md**: Concise, scannable, action-oriented guidelines
+- **CLAUDE.md**: Concise, scannable, action-oriented guidelines **with links to detailed articles**
 - **Knowledge base**: Comprehensive details with examples
-- **Improved usability**: Quick reference + deep dive when needed
-- **Maintained completeness**: No loss of essential information
+- **Improved usability**: Quick reference + deep dive when needed via links
+- **Maintained completeness**: No loss of essential information (all accessible via links)
 - **Better maintenance**: Details in focused articles vs sprawling guidelines
+- **Two-tier system**: Brief guidelines linked to comprehensive knowledge base
 
 ## Usage Notes
 
