@@ -237,15 +237,15 @@ For each new behavior/feature:
 **Status**: Full compliance achieved as of 2025-06-08. All interface violations have been fixed. Zero circular dependencies (except heap ↔ io).
 
 **Core Principles**:
-- **Information Hiding**: Hide design decisions behind interfaces
-- **Single Responsibility**: One module, one concern
-- **No Circular Dependencies**: Uses hierarchy must be strict
-- **Opaque Types**: Required for complex data structures
-- **Minimal Interfaces**: Expose only what's necessary
-- **Complete Documentation**: Every module must be fully documented
-- **Const-Correctness**: NEVER cast away const - fix interfaces instead
-- **No Parallel Implementations**: Modify existing code, don't create _v2 versions
-- **Composition Over Inheritance**: Prefer composition patterns to create flexible, maintainable architectures
+- **Information Hiding**: Hide design decisions behind interfaces ([details](kb/information-hiding-principle.md))
+- **Single Responsibility**: One module, one concern ([details](kb/single-responsibility-principle.md))
+- **No Circular Dependencies**: Uses hierarchy must be strict ([details](kb/no-circular-dependencies-principle.md))
+- **Opaque Types**: Required for complex data structures ([details](kb/opaque-types-principle.md))
+- **Minimal Interfaces**: Expose only what's necessary ([details](kb/minimal-interfaces-principle.md))
+- **Complete Documentation**: Every module must be fully documented ([details](kb/complete-documentation-principle.md))
+- **Program Families**: Design for anticipated variations and multiple versions ([details](kb/program-families-principle.md))
+- **Design for Change**: Decompose based on what's likely to change, not workflow ([details](kb/design-for-change-principle.md))
+- **Separation of Concerns**: Each module addresses a distinct concern ([details](kb/separation-of-concerns-principle.md))
 
 **Important Clarifications**:
 - **Enums in Public APIs**: Some enums (like `ar_data_type_t`) are part of the abstract model, not implementation details. These are acceptable when they represent abstract concepts needed by clients.
@@ -287,6 +287,13 @@ grep -r "function_name\|concept" modules/
 **Red Flags**: Module A→B→C→A cycles, repeated validation logic, similar function names (_for_int, _for_string), parsing+execution together
 
 **Exception**: heap ↔ io circular dependency is accepted and documented.
+
+### Additional Design Principles
+
+**Core Standards**:
+- **Const-Correctness**: NEVER cast away const - fix interfaces instead ([details](kb/const-correctness-principle.md))
+- **No Parallel Implementations**: Modify existing code, don't create _v2 versions ([details](kb/no-parallel-implementations-principle.md))
+- **Composition Over Inheritance**: Prefer composition patterns to create flexible, maintainable architectures ([details](kb/composition-over-inheritance-principle.md))
 
 ### 4. Coding Standards
 
