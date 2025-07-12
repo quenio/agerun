@@ -510,7 +510,7 @@ Never compile directly with gcc.
 - Document completion date in TODO.md (e.g., "Completed 2025-06-11")
 - Move tasks from "In Progress" to "Completed Tasks" section
 - Include brief summary of what was accomplished
-- Update CLAUDE.md with any new patterns or learnings from the session
+- Update CLAUDE.md with any new patterns or learnings from the session ([details](kb/systematic-guideline-enhancement.md))
 
 ### 13. Refactoring Patterns
 
@@ -561,7 +561,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 **When Creating Development Plans**:
 - **Single task focus**: Create plans for one todo item at a time, not multi-task plans
 - **Always include critical verification steps**: Plans must include diff verification, test running, memory checking
-- **User feedback is valuable**: If user points out missing steps, update the plan immediately
+- **User feedback is valuable**: If user points out missing steps, update the plan immediately ([details](kb/user-feedback-as-qa.md))
 - **Example**: "We're missing the comparison of previous and new implementation" - this feedback prevents bugs
 - **Documentation oversight**: User catching missing docs is common - verify docs are part of plan
 - **Plan completeness checklist**:
@@ -587,7 +587,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
   - Provides reusable functionality
   - Supports multiple use cases (variable paths, file paths)
   - Better long-term maintainability
-- **Always propose generic alternative**: When user suggests specific module, explain generic benefits
+- **Always propose generic alternative**: When user suggests specific module, explain generic benefits ([details](kb/oo-to-c-adaptation.md))
 
 ### 15. Task Tool Guidelines
 
