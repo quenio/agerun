@@ -229,6 +229,7 @@ For each new behavior/feature:
 - **Accept partial improvements**: Better implementation with some duplication > wrong abstraction
 - **Verify integration points**: Check that related cycles properly connect (e.g., log propagation through hierarchies)
 - **All cycles before commit**: Complete ALL planned cycles before documentation and commit
+- **MANDATORY facade updates**: Always include facade/integration updates as separate TDD cycles in same plan
 
 ### 3. Parnas Design Principles (STRICT ENFORCEMENT) ✅
 
@@ -669,6 +670,7 @@ ar_system__init(NULL, NULL);
 - Remove final newlines
 - Use raw file operations
 - Create files unless necessary
+- Assume error causes without verification
 
 **Always**:
 - Use heap tracking macros
@@ -679,3 +681,5 @@ ar_system__init(NULL, NULL);
 - Use make for builds
 - Process messages after sending
 - Read README.md for project overview and user documentation
+- Verify working directory before commands
+- Listen to user feedback as quality assurance
