@@ -20,6 +20,29 @@ For each learning, provide:
 - Specific examples from this session (if applicable)
 - How it can be generalized for future use
 
+**Format for Knowledge Base Files**: Each learning should be saved as an individual .md file in `./kb/` directory with this structure:
+```markdown
+# Learning Title
+
+## Learning
+[What was discovered]
+
+## Importance
+[Why it matters]
+
+## Example
+[Specific instance from this session]
+
+## Generalization
+[How to apply broadly]
+
+## Implementation
+[Code/commands when applicable]
+
+## Related Patterns
+[Connected concepts]
+```
+
 ## Step 2: Review Existing Guidelines
 
 Check CLAUDE.md to see if these learnings are already documented. If they are:
@@ -27,7 +50,18 @@ Check CLAUDE.md to see if these learnings are already documented. If they are:
 - Identify if updates or clarifications are needed
 - Note any gaps in the current documentation
 
-## Step 3: Update Guidelines
+## Step 3: Create Knowledge Base Files
+
+For each significant learning:
+
+1. **Create individual .md files** in `./kb/` directory using the format above
+2. **Use kebab-case filenames** (e.g., `api-migration-completion-verification.md`)
+3. **Link from CLAUDE.md** when guidelines reference these learnings:
+   ```markdown
+   - Guideline text ([details](kb/filename.md))
+   ```
+
+## Step 4: Update Guidelines
 
 If updates are needed to CLAUDE.md:
 
@@ -69,18 +103,22 @@ If updates are needed to CLAUDE.md:
    - Error prevention strategies
    - Documentation requirements
 
-## Step 4: Commit Guidelines Updates
+## Step 5: Commit Updates
 
-If CLAUDE.md was updated:
+**Commit knowledge base files first**:
+```bash
+git add kb/
+git commit -m "feat: add knowledge base with [topic] learnings"
+```
 
-1. Review changes with `git diff CLAUDE.md`
-2. Commit with a descriptive message:
-   ```
-   docs: enhance guidelines with session learnings on [topic]
-   
-   - [Summary of key updates]
-   - [Additional important changes]
-   ```
+**Then commit guidelines updates** (if CLAUDE.md was updated):
+```bash
+git add CLAUDE.md
+git commit -m "docs: enhance guidelines with session learnings on [topic]
+
+- [Summary of key updates]  
+- [Links to detailed kb/ articles]"
+```
 
 ## Example Learnings Categories
 
@@ -103,5 +141,13 @@ If CLAUDE.md was updated:
 - Common pitfalls to avoid
 - Verification steps to add
 - User feedback incorporation
+
+## Knowledge Base Benefits
+
+The two-tier documentation system provides:
+- **CLAUDE.md**: Concise, actionable guidelines for quick reference
+- **./kb/ files**: Detailed context, examples, and implementation details
+- **Searchable**: `grep -r "keyword" ./kb/` finds relevant patterns
+- **Linked**: Guidelines link to detailed articles when more context needed
 
 Remember: The goal is to continuously improve the development guidelines based on real experiences, making future sessions more efficient and error-free.
