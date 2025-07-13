@@ -74,6 +74,7 @@ Each learning file contains:
 - [Research-Driven Development](research-driven-development.md)
 - [User Feedback as QA](user-feedback-as-qa.md)
 - [OO to C Adaptation](oo-to-c-adaptation.md)
+- [C to Zig Module Migration](c-to-zig-module-migration.md)
 
 ### Code Quality & Smells
 - [Code Smell: Long Method](code-smell-long-method.md)

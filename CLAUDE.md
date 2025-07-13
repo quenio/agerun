@@ -651,6 +651,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - Exit-time safety: Check `!g_initialized` early, never call init during cleanup
 - Avoid C macros returning void/anyopaque (e.g., AR_ASSERT_*)
 - Audit dependencies before conversion - remove unused includes
+- **Migration process**: Follow systematic C-to-Zig migration guide ([details](kb/c-to-zig-module-migration.md))
 - Delete C file when creating Zig replacement + update all .md refs (no Makefile changes needed)
 - Zig funcs use same `ar_<module>__<function>` naming as C, static funcs use `_<name>` with snake_case
 - Clean imports (inline functions only): `const ar_assert = @import("ar_assert.zig"); const ar_assert__func = ar_assert.ar_assert__func;`
