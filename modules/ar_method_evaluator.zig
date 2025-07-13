@@ -1,6 +1,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const c = @cImport({
+    @cInclude("ar_method_evaluator.h");
     @cInclude("ar_log.h");
     @cInclude("ar_instruction_evaluator.h");
     @cInclude("ar_method_ast.h");
@@ -9,7 +10,7 @@ const c = @cImport({
 });
 
 /// Internal structure for the method evaluator
-const ar_method_evaluator_s = struct {
+const ar_method_evaluator_t = struct {
     ref_log: *c.ar_log_t,
     ref_instruction_evaluator: *c.ar_instruction_evaluator_t,
 };
@@ -18,36 +19,39 @@ const ar_method_evaluator_s = struct {
 export fn ar_method_evaluator__create(
     ref_log: ?*c.ar_log_t,
     ref_instruction_evaluator: ?*c.ar_instruction_evaluator_t
-) ?*ar_method_evaluator_s {
+) ?*c.ar_method_evaluator_t {
     // Validate inputs
     if (ref_log == null or ref_instruction_evaluator == null) {
         return null;
     }
     
     // Allocate evaluator
-    const own_evaluator = c.AR__HEAP__MALLOC(@sizeOf(ar_method_evaluator_s), "method_evaluator");
+    const own_evaluator = @as(?*ar_method_evaluator_t, @ptrCast(@alignCast(
+        c.AR__HEAP__MALLOC(@sizeOf(ar_method_evaluator_t), @as([*c]const u8, "method_evaluator"))
+    )));
     if (own_evaluator == null) {
         return null;
     }
     
-    // Cast and initialize
-    const evaluator: *ar_method_evaluator_s = @ptrCast(@alignCast(own_evaluator));
-    evaluator.ref_log = ref_log.?;
-    evaluator.ref_instruction_evaluator = ref_instruction_evaluator.?;
+    // Initialize fields
+    own_evaluator.?.ref_log = ref_log.?;
+    own_evaluator.?.ref_instruction_evaluator = ref_instruction_evaluator.?;
     
-    return evaluator;
+    return @as(?*c.ar_method_evaluator_t, @ptrCast(@alignCast(own_evaluator))); // Ownership transferred to caller
 }
 
 /// Destroys a method evaluator
-export fn ar_method_evaluator__destroy(own_evaluator: ?*ar_method_evaluator_s) void {
-    // Minimal - just free if not null
-    if (own_evaluator != null) {
-        c.AR__HEAP__FREE(own_evaluator);
+export fn ar_method_evaluator__destroy(own_evaluator: ?*c.ar_method_evaluator_t) void {
+    if (own_evaluator == null) {
+        return;
     }
+    
+    // Just free the evaluator (no owned fields to clean up)
+    c.AR__HEAP__FREE(own_evaluator);
 }
 
 /// Helper function to log error with line number
-fn _log_error(evaluator: *ar_method_evaluator_s, message: [*c]const u8, line_no: usize) void {
+fn _log_error(evaluator: *ar_method_evaluator_t, message: [*c]const u8, line_no: usize) void {
     // Format the error message with line number
     var buffer: [256]u8 = undefined;
     const formatted = std.fmt.bufPrintZ(&buffer, "{s}{d}", .{ message, line_no }) catch {
@@ -61,7 +65,7 @@ fn _log_error(evaluator: *ar_method_evaluator_s, message: [*c]const u8, line_no:
 
 /// Evaluates a method AST using the provided frame
 export fn ar_method_evaluator__evaluate(
-    mut_evaluator: ?*ar_method_evaluator_s,
+    mut_evaluator: ?*c.ar_method_evaluator_t,
     ref_frame: ?*const c.ar_frame_t,
     ref_ast: ?*const c.ar_method_ast_t
 ) bool {
@@ -70,7 +74,7 @@ export fn ar_method_evaluator__evaluate(
         return false;
     }
     
-    const evaluator = mut_evaluator.?;
+    const evaluator = @as(*ar_method_evaluator_t, @ptrCast(@alignCast(mut_evaluator)));
     
     // Get instruction count
     const instruction_count = c.ar_method_ast__get_instruction_count(ref_ast);
