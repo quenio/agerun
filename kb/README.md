@@ -54,11 +54,15 @@ Each learning file contains:
 - [Program Families Principle](program-families-principle.md)
 
 ### Tools & Automation
+- [Automated Batch Documentation Fixes](automated-batch-documentation-fixes.md)
+- [Progressive Tool Enhancement](progressive-tool-enhancement.md)
 - [Module Renaming Script Enhancement](module-renaming-script-enhancement.md)
 - [Script Enhancement Over One Off](script-enhancement-over-one-off.md)
 - [String Parsing Quote Tracking](string-parsing-quote-tracking.md)
 
 ### Development Practices
+- [Documentation Standards Integration](documentation-standards-integration.md)
+- [Validated Documentation Examples](validated-documentation-examples.md)
 - [Absolute Path Navigation](absolute-path-navigation.md)
 - [Systematic Guideline Enhancement](systematic-guideline-enhancement.md)
 - [Cross-Referencing Knowledge Base](cross-referencing-knowledge-base.md)
