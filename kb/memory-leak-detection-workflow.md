@@ -25,7 +25,7 @@ Generate specific diagnostic outputs per test/component rather than aggregated r
 - Individual test memory reports: `bin/memory_report_<test_name>.log`
 - Full test suite: Check console for "WARNING: X memory leaks detected"
 - Complete verification: `grep "Actual memory leaks:" bin/memory_report_*.log | grep -v "0 (0 bytes)"`
-- CI visibility: full_build.sh prints leak reports to stdout
+- CI visibility: build.sh prints leak reports to stdout
 - Use `AGERUN_MEMORY_REPORT` environment variable for custom report paths
 
 ## Related Patterns

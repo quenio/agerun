@@ -132,7 +132,20 @@ show_results() {
                         grep -E "(ERROR:|Warning:)" "$log" 2>/dev/null | head -5 | sed 's/^/    /'
                         ;;
                     "check-docs")
-                        grep -E "(ERROR:|Invalid)" "$log" 2>/dev/null | head -5 | sed 's/^/    /'
+                        # Check for the specific patterns check_docs.sh uses
+                        if grep -q "BROKEN REFERENCES FOUND" "$log" 2>/dev/null; then
+                            echo "    Documentation has broken file references:"
+                            grep -A 20 "BROKEN REFERENCES FOUND" "$log" 2>/dev/null | grep "^\s*-" | head -10 | sed 's/^/    /'
+                        elif grep -q "MODULE NAME INCONSISTENCIES FOUND" "$log" 2>/dev/null; then
+                            echo "    Documentation has module name inconsistencies:"
+                            grep -A 20 "MODULE NAME INCONSISTENCIES FOUND" "$log" 2>/dev/null | grep "^\s*-" | head -10 | sed 's/^/    /'
+                        elif grep -q "INVALID REFERENCES FOUND" "$log" 2>/dev/null; then
+                            echo "    Documentation has invalid function/type references:"
+                            grep -A 20 "INVALID REFERENCES FOUND" "$log" 2>/dev/null | grep "^\s*-" | head -10 | sed 's/^/    /'
+                        else
+                            # Fallback to show any error-like output
+                            grep -E "(ERROR:|Invalid|FAILED)" "$log" 2>/dev/null | head -5 | sed 's/^/    /'
+                        fi
                         ;;
                     *)
                         grep -E "(ERROR:|FAILED:|error:|failed)" "$log" 2>/dev/null | head -5 | sed 's/^/    /'
