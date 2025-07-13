@@ -10,6 +10,9 @@ if [ ! -f "Makefile" ] || [ ! -d "modules" ] || [ ! -d "methods" ]; then
     exit 1
 fi
 
+# Store start time
+start_time=$(date +%s)
+
 echo "=== AgeRun Build ==="
 echo "Starting at $(date)"
 echo
@@ -240,7 +243,18 @@ fi
 
 echo
 echo "=== Build Summary ==="
-echo "Completed at $(date)"
+
+# Calculate and display execution time
+end_time=$(date +%s)
+duration=$((end_time - start_time))
+minutes=$((duration / 60))
+seconds=$((duration % 60))
+
+if [ $minutes -gt 0 ]; then
+    echo "Completed at $(date) (took ${minutes}m ${seconds}s)"
+else
+    echo "Completed at $(date) (took ${seconds}s)"
+fi
 
 # Determine overall exit status
 exit_status=0
