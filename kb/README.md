@@ -23,6 +23,7 @@ Each learning file contains:
 - [API Migration Completion Verification](api-migration-completion-verification.md)
 - [Build Verification Before Commit](build-verification-before-commit.md)
 - [Build Time Reporting](build-time-reporting.md)
+- [Documentation Language Migration Updates](documentation-language-migration-updates.md)
 - [Git Push Verification](git-push-verification.md)
 - [Language Instruction Renaming Pattern](language-instruction-renaming-pattern.md)
 - [Red Green Refactor Cycle](red-green-refactor-cycle.md)

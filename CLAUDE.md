@@ -509,7 +509,7 @@ Never compile directly with gcc.
    - **Exception**: Doc-only changes only need `make check-docs`
    - **Exception**: Comment-only changes only need `make check-naming`
    - **Exception**: Skip tests if just run successfully (avoid redundant execution)
-2. **Update module .md files if interfaces changed** - CRITICAL: Interface changes MUST include docs in same commit
+2. **Update module .md files if interfaces changed** - CRITICAL: Interface changes MUST include docs in same commit; language migrations need dependency tree updates ([details](kb/documentation-language-migration-updates.md))
 3. **Review ALL documentation for outdated references** - Refactoring often leaves stale docs
 4. `grep -l "function_name" modules/*.md` - Check docs for any API changes
    - **Hybrid modules**: Update both ar_io.md AND README.md to note Zig/C split approach
