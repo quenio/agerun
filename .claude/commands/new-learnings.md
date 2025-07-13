@@ -22,7 +22,7 @@ For each learning, provide:
 
 ## Step 2: Knowledge Base Article Creation
 
-**CRITICAL: All code examples MUST use real AgeRun types and functions**
+**CRITICAL: All code examples MUST use real AgeRun types and functions** ([details](kb/validated-documentation-examples.md))
 
 ### Format for Knowledge Base Files
 Each learning should be saved as an individual .md file in `./kb/` directory with this structure:

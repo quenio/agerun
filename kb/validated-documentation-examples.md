@@ -78,5 +78,6 @@ When hypothetical examples are necessary for teaching:
 
 ## Related Patterns
 - [Complete Documentation Principle](complete-documentation-principle.md)
+- [New Learnings Command](../.claude/commands/new-learnings.md)
 - [Automated Documentation Validation](../scripts/check_docs.py)
 - [Type Replacement Guide](../scripts/batch_fix_docs.py)
