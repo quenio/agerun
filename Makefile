@@ -467,8 +467,8 @@ check-docs:
 	@if command -v python3 >/dev/null 2>&1; then \
 		python3 ./scripts/check_docs.py; \
 	else \
-		echo "ERROR: scripts/check_docs.sh not found or not executable"; \
-		echo "Make sure the script exists and has execute permissions"; \
+		echo "ERROR: python3 not found - required for documentation validation"; \
+		echo "Install python3 to run check_docs.py"; \
 		exit 1; \
 	fi
 

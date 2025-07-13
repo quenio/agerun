@@ -132,7 +132,7 @@ show_results() {
                         grep -E "(ERROR:|Warning:)" "$log" 2>/dev/null | head -5 | sed 's/^/    /'
                         ;;
                     "check-docs")
-                        # Check for the specific patterns check_docs.sh uses
+                        # Check for the specific patterns check_docs.py uses
                         if grep -q "BROKEN REFERENCES FOUND" "$log" 2>/dev/null; then
                             echo "    Documentation has broken file references:"
                             grep -A 20 "BROKEN REFERENCES FOUND" "$log" 2>/dev/null | grep "^\s*-" | head -10 | sed 's/^/    /'

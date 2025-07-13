@@ -221,7 +221,7 @@ ar_data_t* ar_data__list_get_at(ar_data_t* list, size_t index);  // EXAMPLE: Hyp
 
 **Document Validation Script**:
 ```bash
-# scripts/check_docs.sh verifies:
+# scripts/check_docs.py verifies:
 # - All public functions have documentation
 # - All parameters documented with @param
 # - All return values documented with @return
@@ -265,7 +265,7 @@ ar_data_t* ar_data__list_get_at(ar_data_t* list, size_t index);  // EXAMPLE: Hyp
 ```makefile
 check-docs:
     @echo "Validating module documentation..."
-    @scripts/check_docs.sh
+    @python3 scripts/check_docs.py
     
 build: check-docs run-tests
     @echo "Build complete with documentation validation"
