@@ -175,9 +175,9 @@ If updates are needed to CLAUDE.md:
    - Include new kb articles in relevant sections (e.g., Script Development, Documentation Protocol)
    - Maintain two-tier system: brief guidelines with links to comprehensive details
 
-## Step 7: Commit Process
+## Step 7: Automatic Commit and Push
 
-**MANDATORY SEQUENCE:**
+**EXECUTE THE FOLLOWING SEQUENCE AUTOMATICALLY:**
 
 1. **Validate first**:
    ```bash
@@ -185,25 +185,38 @@ If updates are needed to CLAUDE.md:
    ```
    Fix any errors before proceeding.
 
-2. **Commit knowledge base files and index**:
+2. **Stage all knowledge base work**:
    ```bash
-   git add kb/
-   git commit -m "feat: add knowledge base with [topic] learnings
-
-   - [Brief description of main learning]
-   - Added articles to kb/README.md index
-   - All code examples use real AgeRun types and functions
-   - Validated with make check-docs"
+   git add kb/ CLAUDE.md TODO.md CHANGELOG.md
    ```
 
-3. **Commit guidelines updates** (if CLAUDE.md was updated):
+3. **Commit with comprehensive message**:
    ```bash
-   git add CLAUDE.md
-   git commit -m "docs: integrate kb articles into guidelines
+   git commit -m "$(cat <<'EOF'
+   docs: integrate knowledge base articles from session learnings
+   
+   - Created comprehensive knowledge base articles documenting new patterns
+   - Updated CLAUDE.md with references to new articles in appropriate sections
+   - Enhanced kb/README.md index with new Development Workflow articles
+   - Updated TODO.md and CHANGELOG.md to document completion
+   - All code examples use real AgeRun types and functions
+   - All documentation validated with make check-docs
+   
+   🤖 Generated with [Claude Code](https://claude.ai/code)
+   
+   Co-Authored-By: Claude <noreply@anthropic.com>
+   EOF
+   )"
+   ```
 
-   - Added kb/ references to relevant sections  
-   - [Summary of key integration points]
-   - Maintains two-tier documentation system"
+4. **Push to remote**:
+   ```bash
+   git push
+   ```
+
+5. **Verify push completed successfully**:
+   ```bash
+   git status
    ```
 
 ## Documentation Validation Details
