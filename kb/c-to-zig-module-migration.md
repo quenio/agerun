@@ -634,6 +634,91 @@ Based on the ar_expression_ast migration experience:
 5. **Compare Implementations**: Always compare with C implementation when debugging, especially for memory management
 6. **Test-Driven Verification**: Run tests after each change to catch regressions immediately
 
+## Compliance Verification for Existing Zig Modules
+
+**Critical**: Existing Zig modules may not follow migration guidelines if implemented before standards were established.
+
+### Audit Process
+
+Use this checklist to verify existing Zig modules comply with C API compatibility requirements:
+
+```bash
+# 1. Check for C API compatibility violations
+grep -n "export fn" modules/ar_method_evaluator.zig  # EXAMPLE: Using real module
+
+# Look for these red flags:
+# - Return types using internal Zig types instead of c.ar_method_evaluator_t
+# - Parameters using internal Zig types  
+# - Missing ar_method_evaluator.h in cImport block
+```
+
+### Common Violations Found in ar_method_evaluator.zig
+
+**Violation 1: Wrong Return Type**
+```zig
+// WRONG - returns internal Zig type
+export fn ar_method_evaluator__create(...) ?*ar_method_evaluator_s {
+
+// CORRECT - returns C opaque type
+export fn ar_method_evaluator__create(...) ?*c.ar_method_evaluator_t {
+```
+
+**Violation 2: Wrong Parameter Types**
+```zig
+// WRONG - uses internal Zig type
+export fn ar_method_evaluator__destroy(own_evaluator: ?*ar_method_evaluator_s) void {
+
+// CORRECT - uses C opaque type
+export fn ar_method_evaluator__destroy(own_evaluator: ?*c.ar_method_evaluator_t) void {
+```
+
+**Violation 3: Missing Header Import**
+```zig
+// WRONG - missing own header
+const c = @cImport({
+    @cInclude("ar_log.h");
+    // Missing ar_method_evaluator.h!
+});
+
+// CORRECT - includes own header for opaque type
+const c = @cImport({
+    @cInclude("ar_method_evaluator.h");  // Must be first for type definitions
+    @cInclude("ar_log.h");
+});
+```
+
+**Violation 4: Missing Alignment Casts**
+```zig
+// WRONG - direct cast without alignment
+const evaluator: *ar_method_evaluator_t = @ptrCast(mut_evaluator);
+
+// CORRECT - proper alignment cast for opaque types
+const evaluator = @as(*ar_method_evaluator_t, @ptrCast(@alignCast(mut_evaluator)));
+```
+
+### Fixing Violations
+
+1. **Add header import** first to get C type definitions
+2. **Update return types** to use C opaque types (`c.ar_method_evaluator_t`)  // EXAMPLE: Using real type
+3. **Update parameter types** to use C opaque types
+4. **Add alignment casts** for all pointer conversions
+5. **Test thoroughly** to ensure binary compatibility maintained
+
+### Verification Commands
+
+```bash
+# After fixes, verify with full test suite
+make clean build
+
+# Check specific module tests pass
+make ar_method_evaluator_tests  // EXAMPLE: Using real module test
+
+# Verify no memory leaks
+grep "Actual memory leaks:" bin/run-tests/memory_report_*.log | grep -v "0 (0 bytes)"
+```
+
+**Result**: Module becomes true drop-in replacement for C implementation, maintaining binary compatibility while leveraging Zig's compile-time safety.
+
 ## Debugging Memory Leaks in Zig Modules
 
 When you encounter memory leaks after migration:
