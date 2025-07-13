@@ -7,8 +7,8 @@
 #include "ar_agency.h"
 #include "ar_data.h"
 
-static void test_agent_manager_create_destroy(void) {
-    printf("Testing agent-manager method with create and destroy...\n");
+static void test_agent_manager_spawn_exit(void) {
+    printf("Testing agent-manager method with spawn and exit...\n");
     
     // Create test fixture
     ar_method_fixture_t *own_fixture = ar_method_fixture__create("agent_manager_create_destroy");
@@ -31,11 +31,11 @@ static void test_agent_manager_create_destroy(void) {
     // Process wake message
     ar_system__process_next_message();
     
-    // When we send a message to create an echo agent
+    // When we send a message to spawn an echo agent
     ar_data_t *own_message = ar_data__create_map();
     assert(own_message != NULL);
     
-    ar_data__set_map_string(own_message, "action", "create");
+    ar_data__set_map_string(own_message, "action", "spawn");
     ar_data__set_map_string(own_message, "method_name", "echo");
     ar_data__set_map_string(own_message, "version", "1.0.0");
     ar_data_t *own_context = ar_data__create_map();
@@ -59,23 +59,23 @@ static void test_agent_manager_create_destroy(void) {
     if (result != NULL) {
         assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         int64_t created_agent = (int64_t)ar_data__get_integer(result);
-        printf("SUCCESS: agent() instruction executed\n");
+        printf("SUCCESS: spawn() instruction executed\n");
         printf("  - Created agent ID: %lld\n", (long long)created_agent);
     } else {
-        printf("FAIL: memory.result not found - agent() instruction failed to execute\n");
+        printf("FAIL: memory.result not found - spawn() instruction failed to execute\n");
         printf("NOTE: This is expected until agent() function is implemented in instruction module\n");
     }
     
     // Test checks for memory fields that don't exist yet (implementation incomplete)
-    const ar_data_t *is_create = ar_data__get_map_data(agent_memory, "is_create");
-    if (!is_create) {
-        printf("EXPECTED FAIL: memory.is_create not found - if() comparison failed\n");
+    const ar_data_t *is_spawn = ar_data__get_map_data(agent_memory, "is_spawn");
+    if (!is_spawn) {
+        printf("EXPECTED FAIL: memory.is_spawn not found - if() comparison failed\n");
         printf("NOTE: String comparison in if() is not yet implemented\n");
     }
     
-    const ar_data_t *is_destroy = ar_data__get_map_data(agent_memory, "is_destroy");
-    if (!is_destroy) {
-        printf("EXPECTED FAIL: memory.is_destroy not found - if() comparison failed\n");
+    const ar_data_t *is_exit = ar_data__get_map_data(agent_memory, "is_exit");
+    if (!is_exit) {
+        printf("EXPECTED FAIL: memory.is_exit not found - if() comparison failed\n");
         printf("NOTE: String comparison in if() is not yet implemented\n");
     }
     
@@ -88,7 +88,7 @@ static void test_agent_manager_create_destroy(void) {
     ar_data_t *own_destroy_message = ar_data__create_map();
     assert(own_destroy_message != NULL);
     
-    ar_data__set_map_string(own_destroy_message, "action", "destroy");
+    ar_data__set_map_string(own_destroy_message, "action", "exit");
     ar_data__set_map_integer(own_destroy_message, "agent_id", 2); // Assuming agent 2 was created
     
     sent = ar_agency__send_to_agent(manager_agent, own_destroy_message);
@@ -100,20 +100,20 @@ static void test_agent_manager_create_destroy(void) {
     assert(processed);
     
     // Check if destroy worked
-    const ar_data_t *destroy_result = ar_data__get_map_data(agent_memory, "destroy_result");
-    if (!destroy_result) {
-        printf("EXPECTED FAIL: memory.destroy_result not found - destroy() instruction failed to execute\n");
+    const ar_data_t *exit_result = ar_data__get_map_data(agent_memory, "exit_result");
+    if (!exit_result) {
+        printf("EXPECTED FAIL: memory.exit_result not found - exit() instruction failed to execute\n");
         printf("NOTE: This is expected until destroy() function is implemented in instruction module\n");
     }
     
     // Check for the missing fields again
-    if (!is_create) {
-        printf("EXPECTED FAIL: memory.is_create not found - if() comparison failed\n");
+    if (!is_spawn) {
+        printf("EXPECTED FAIL: memory.is_spawn not found - if() comparison failed\n");
         printf("NOTE: String comparison in if() is not yet implemented\n");
     }
     
-    if (!is_destroy) {
-        printf("EXPECTED FAIL: memory.is_destroy not found - if() comparison failed\n");
+    if (!is_exit) {
+        printf("EXPECTED FAIL: memory.is_exit not found - if() comparison failed\n");
         printf("NOTE: String comparison in if() is not yet implemented\n");
     }
     
@@ -123,7 +123,7 @@ static void test_agent_manager_create_destroy(void) {
     // Destroy fixture (handles all cleanup)
     ar_method_fixture__destroy(own_fixture);
     
-    printf("✓ Agent manager create and destroy test passed\n");
+    printf("✓ Agent manager spawn and exit test passed\n");
 }
 
 static void test_agent_manager_invalid_action(void) {
@@ -167,15 +167,15 @@ static void test_agent_manager_invalid_action(void) {
     assert(agent_memory != NULL);
     
     // For invalid actions, the method should fail gracefully
-    const ar_data_t *is_create = ar_data__get_map_data(agent_memory, "is_create");
-    if (!is_create) {
-        printf("EXPECTED FAIL: memory.is_create not found - if() comparison failed\n");
+    const ar_data_t *is_spawn = ar_data__get_map_data(agent_memory, "is_spawn");
+    if (!is_spawn) {
+        printf("EXPECTED FAIL: memory.is_spawn not found - if() comparison failed\n");
         printf("NOTE: String comparison in if() is not yet implemented\n");
     }
     
-    const ar_data_t *is_destroy = ar_data__get_map_data(agent_memory, "is_destroy");
-    if (!is_destroy) {
-        printf("EXPECTED FAIL: memory.is_destroy not found - if() comparison failed\n");
+    const ar_data_t *is_exit = ar_data__get_map_data(agent_memory, "is_exit");
+    if (!is_exit) {
+        printf("EXPECTED FAIL: memory.is_exit not found - if() comparison failed\n");
         printf("NOTE: String comparison in if() is not yet implemented\n");
     }
     
@@ -197,7 +197,7 @@ static void test_agent_manager_invalid_action(void) {
 int main(void) {
     printf("Running agent-manager method tests...\n\n");
     
-    test_agent_manager_create_destroy();
+    test_agent_manager_spawn_exit();
     test_agent_manager_invalid_action();
     
     printf("\nAll agent-manager method tests passed!\n");

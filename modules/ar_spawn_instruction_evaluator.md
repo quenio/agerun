@@ -1,8 +1,8 @@
-# Create Instruction Evaluator Module
+# Spawn Instruction Evaluator Module
 
 ## Overview
 
-The create instruction evaluator module is responsible for evaluating create instructions in the AgeRun language. It handles creating new agents with specified methods and initial context.
+The spawn instruction evaluator module is responsible for evaluating spawn instructions in the AgeRun language. It handles creating new agents with specified methods and initial context.
 
 ## Purpose
 
@@ -15,21 +15,21 @@ This module extracts the agent instruction evaluation logic from the main instru
 The module follows an instantiable design pattern with lifecycle management:
 
 ```c
-// Create evaluator instance with dependencies (frame-based pattern)
-ar_create_instruction_evaluator_t* ar_create_instruction_evaluator__create(
+// Spawn evaluator instance with dependencies (frame-based pattern)
+ar_spawn_instruction_evaluator_t* ar_spawn_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator
 );
 
 // Evaluate using frame-based execution
-bool ar_create_instruction_evaluator__evaluate(
-    ar_create_instruction_evaluator_t *mut_evaluator,
+bool ar_spawn_instruction_evaluator__evaluate(
+    ar_spawn_instruction_evaluator_t *mut_evaluator,
     const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
 
 // Clean up instance
-void ar_create_instruction_evaluator__destroy(ar_create_instruction_evaluator_t *own_evaluator);
+void ar_spawn_instruction_evaluator__destroy(ar_spawn_instruction_evaluator_t *own_evaluator);
 ```
 
 ### Legacy Interface (Backward Compatibility)
@@ -39,13 +39,13 @@ void ar_create_instruction_evaluator__destroy(ar_create_instruction_evaluator_t 
 
 ### Functionality
 
-The module evaluates create instructions of the form:
-- `create(method_name, version, context)`
-- `memory.agent_id := create(method_name, version, context)`
+The module evaluates spawn instructions of the form:
+- `spawn(method_name, version, context)`
+- `memory.agent_id := spawn(method_name, version, context)`
 
 Key features:
 1. **Frame-Based Execution**: Uses ar_frame_t for memory, context, and message bundling
-2. **Agent Creation**: Creates agents with specified method and context
+2. **Agent Creation**: Spawns agents with specified method and context
 3. **Method Validation**: Ensures the method exists before creating agent
 4. **Context Handling**: Gets memory and context from execution frame
 5. **Wake Messages**: New agents receive `__wake__` message automatically
@@ -66,9 +66,9 @@ The module follows strict memory ownership rules:
 - Expression evaluator, memory, and log are borrowed references stored in the instance
 - Method name and version evaluations are temporary
 - Context is passed as reference (not owned by agent)
-- Agent ID result is created when assignment specified
+- Agent ID result is spawnd when assignment specified
 - All temporary values properly cleaned up
-- The create function returns ownership to the caller
+- The spawn function returns ownership to the caller
 - The destroy function takes ownership and frees all resources
 
 ## Dependencies
@@ -91,7 +91,7 @@ The module:
 1. Evaluates method name and version to strings
 2. Handles context evaluation with optimization for direct references
 3. Validates method exists in methodology
-4. Creates agent via agency
+4. Spawns agent via agency
 5. Stores agent ID if assignment specified
 
 ## Usage Examples
@@ -99,24 +99,24 @@ The module:
 ### Modern Instance-Based Approach (Recommended)
 
 ```c
-// Create dependencies
+// Spawn dependencies
 ar_data_t *memory = ar_data__create_map();
 ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
 
-// Create agent evaluator instance
-ar_create_instruction_evaluator_t *evaluator = ar_create_instruction_evaluator__create(
+// Spawn agent evaluator instance
+ar_spawn_instruction_evaluator_t *evaluator = ar_spawn_instruction_evaluator__create(
     log, expr_eval, memory
 );
 
-// Parse create instruction: memory.worker := create("processor", "1.0.0", context)
+// Parse spawn instruction: memory.worker := spawn("processor", "1.0.0", context)
 ar_instruction_ast_t *ast = ar_instruction_parser__parse_agent(parser);
 
 // Evaluate using instance
-bool success = ar_create_instruction_evaluator__evaluate(evaluator, ast);
+bool success = ar_spawn_instruction_evaluator__evaluate(evaluator, ast);
 
 // Clean up
-ar_create_instruction_evaluator__destroy(evaluator);
-// New agent created with ID stored in memory["worker"]
+ar_spawn_instruction_evaluator__destroy(evaluator);
+// New agent spawnd with ID stored in memory["worker"]
 ```
 
 ### Legacy Approach (Backward Compatibility)
@@ -129,7 +129,7 @@ ar_create_instruction_evaluator__destroy(evaluator);
 The module includes comprehensive tests covering:
 
 ### Instance-Based Interface Tests
-- Create/destroy lifecycle functions
+- Spawn/destroy lifecycle functions
 - Instance-based evaluation using stored dependencies
 - Legacy function backward compatibility
 

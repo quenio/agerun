@@ -11,8 +11,8 @@
 #include "ar_parse_instruction_evaluator.h"
 #include "ar_build_instruction_evaluator.h"
 #include "ar_compile_instruction_evaluator.h"
-#include "ar_create_instruction_evaluator.h"
-#include "ar_destroy_instruction_evaluator.h"
+#include "ar_spawn_instruction_evaluator.h"
+#include "ar_exit_instruction_evaluator.h"
 #include "ar_deprecate_instruction_evaluator.h"
 #include "ar_list.h"
 #include "ar_frame.h"
@@ -35,8 +35,8 @@ struct ar_instruction_evaluator_s {
     ar_parse_instruction_evaluator_t *own_parse_evaluator;  /* Parse evaluator instance (owned) */
     ar_build_instruction_evaluator_t *own_build_evaluator;  /* Build evaluator instance (owned) */
     ar_compile_instruction_evaluator_t *own_method_evaluator;  /* Compile evaluator instance (owned) */
-    ar_create_instruction_evaluator_t *own_create_evaluator;  /* Create evaluator instance (owned) */
-    ar_destroy_instruction_evaluator_t *own_destroy_evaluator;  /* Destroy evaluator instance (owned) */
+    ar_spawn_instruction_evaluator_t *own_spawn_evaluator;  /* Spawn evaluator instance (owned) */
+    ar_exit_instruction_evaluator_t *own_exit_evaluator;  /* Exit evaluator instance (owned) */
     ar_deprecate_instruction_evaluator_t *own_deprecate_evaluator;  /* Deprecate evaluator instance (owned) */
 };
 
@@ -137,12 +137,12 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
         return NULL;
     }
 
-    // Create agent evaluator instance (now uses frame-based pattern)
-    evaluator->own_create_evaluator = ar_create_instruction_evaluator__create(
+    // Create spawn evaluator instance (now uses frame-based pattern)
+    evaluator->own_spawn_evaluator = ar_spawn_instruction_evaluator__create(
         ref_log,
         ref_expr_evaluator
     );
-    if (evaluator->own_create_evaluator == NULL) {
+    if (evaluator->own_spawn_evaluator == NULL) {
         ar_compile_instruction_evaluator__destroy(evaluator->own_method_evaluator);
         ar_build_instruction_evaluator__destroy(evaluator->own_build_evaluator);
         ar_parse_instruction_evaluator__destroy(evaluator->own_parse_evaluator);
@@ -152,13 +152,13 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
         AR__HEAP__FREE(evaluator);
         return NULL;
     }
-    // Create destroy agent evaluator instance (now uses frame-based pattern)
-    evaluator->own_destroy_evaluator = ar_destroy_instruction_evaluator__create(
+    // Create exit agent evaluator instance (now uses frame-based pattern)
+    evaluator->own_exit_evaluator = ar_exit_instruction_evaluator__create(
         ref_log,
         ref_expr_evaluator
     );
-    if (evaluator->own_destroy_evaluator == NULL) {
-        ar_create_instruction_evaluator__destroy(evaluator->own_create_evaluator);
+    if (evaluator->own_exit_evaluator == NULL) {
+        ar_spawn_instruction_evaluator__destroy(evaluator->own_spawn_evaluator);
         ar_compile_instruction_evaluator__destroy(evaluator->own_method_evaluator);
         ar_build_instruction_evaluator__destroy(evaluator->own_build_evaluator);
         ar_parse_instruction_evaluator__destroy(evaluator->own_parse_evaluator);
@@ -175,8 +175,8 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
         ref_expr_evaluator
     );
     if (evaluator->own_deprecate_evaluator == NULL) {
-        ar_destroy_instruction_evaluator__destroy(evaluator->own_destroy_evaluator);
-        ar_create_instruction_evaluator__destroy(evaluator->own_create_evaluator);
+        ar_exit_instruction_evaluator__destroy(evaluator->own_exit_evaluator);
+        ar_spawn_instruction_evaluator__destroy(evaluator->own_spawn_evaluator);
         ar_compile_instruction_evaluator__destroy(evaluator->own_method_evaluator);
         ar_build_instruction_evaluator__destroy(evaluator->own_build_evaluator);
         ar_parse_instruction_evaluator__destroy(evaluator->own_parse_evaluator);
@@ -217,11 +217,11 @@ void ar_instruction_evaluator__destroy(ar_instruction_evaluator_t *own_evaluator
     if (own_evaluator->own_method_evaluator != NULL) {
         ar_compile_instruction_evaluator__destroy(own_evaluator->own_method_evaluator);
     }
-    if (own_evaluator->own_create_evaluator != NULL) {
-        ar_create_instruction_evaluator__destroy(own_evaluator->own_create_evaluator);
+    if (own_evaluator->own_spawn_evaluator != NULL) {
+        ar_spawn_instruction_evaluator__destroy(own_evaluator->own_spawn_evaluator);
     }
-    if (own_evaluator->own_destroy_evaluator != NULL) {
-        ar_destroy_instruction_evaluator__destroy(own_evaluator->own_destroy_evaluator);
+    if (own_evaluator->own_exit_evaluator != NULL) {
+        ar_exit_instruction_evaluator__destroy(own_evaluator->own_exit_evaluator);
     }
     if (own_evaluator->own_deprecate_evaluator != NULL) {
         ar_deprecate_instruction_evaluator__destroy(own_evaluator->own_deprecate_evaluator);
@@ -297,18 +297,18 @@ bool ar_instruction_evaluator__evaluate(
                 ref_ast
             );
             
-        case AR_INSTRUCTION_AST_TYPE__CREATE:
-            // Delegate to the create instruction evaluator instance (with frame)
-            return ar_create_instruction_evaluator__evaluate(
-                mut_evaluator->own_create_evaluator,
+        case AR_INSTRUCTION_AST_TYPE__SPAWN:
+            // Delegate to the spawn instruction evaluator instance (with frame)
+            return ar_spawn_instruction_evaluator__evaluate(
+                mut_evaluator->own_spawn_evaluator,
                 ref_frame,
                 ref_ast
             );
             
-        case AR_INSTRUCTION_AST_TYPE__DESTROY:
-            // Delegate directly to destroy agent evaluator using frame-based interface
-            return ar_destroy_instruction_evaluator__evaluate(
-                mut_evaluator->own_destroy_evaluator,
+        case AR_INSTRUCTION_AST_TYPE__EXIT:
+            // Delegate directly to exit agent evaluator using frame-based interface
+            return ar_exit_instruction_evaluator__evaluate(
+                mut_evaluator->own_exit_evaluator,
                 ref_frame,
                 ref_ast
             );

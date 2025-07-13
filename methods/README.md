@@ -88,8 +88,8 @@ Methods can use the following system functions:
 - **parse(template, input)**: Extract values from strings based on templates
 - **build(template, values)**: Construct strings by replacing placeholders
 - **method(name, instructions, version)**: Define a new method
-- **agent(method_name, version, context)**: Create a new agent instance
-- **destroy(agent_id)**: Destroy an agent
+- **spawn(method_name, version, context)**: Spawn a new agent instance
+- **exit(agent_id)**: Exit an agent
 - **deprecate(method_name, version)**: Deprecate a method version
 - **if(condition, true_value, false_value)**: Conditional evaluation
 

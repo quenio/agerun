@@ -432,7 +432,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         snprintf(agent_id_str, sizeof(agent_id_str), "%" PRId64, agent_id);
         const char *args[] = {agent_id_str};
         ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-            AR_INSTRUCTION_AST_TYPE__DESTROY, "destroy", args, 1, "memory.destroy_result"
+            AR_INSTRUCTION_AST_TYPE__EXIT, "exit", args, 1, "memory.exit_result"
         );
         assert(ast != NULL);
         
@@ -457,7 +457,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         assert(result == true);
         
         // And the result should be true (1) indicating successful destruction
-        ar_data_t *value = ar_data__get_map_data(memory, "destroy_result");
+        ar_data_t *value = ar_data__get_map_data(memory, "exit_result");
         assert(value != NULL);
         assert(ar_data__get_type(value) == AR_DATA_TYPE__INTEGER);
         assert(ar_data__get_integer(value) == 1);

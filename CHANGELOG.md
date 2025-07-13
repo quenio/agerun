@@ -4,6 +4,29 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-07-13
 
+### ✅ COMPLETED: Renamed instructions for Erlang terminology alignment
+- **Phase 1: create() → spawn()** - Renamed create instruction to spawn throughout the codebase
+  - Updated enum AR_INSTRUCTION_AST_TYPE__CREATE to AR_INSTRUCTION_AST_TYPE__SPAWN  
+  - Renamed all parser/evaluator modules: ar_create_instruction_* → ar_spawn_instruction_*
+  - Updated parser string matching from "create" (6 chars) to "spawn" (5 chars)
+  - Updated all function names, types, includes, and documentation
+  - Updated facade integration and all test files
+- **Phase 2: destroy() → exit()** - Renamed destroy instruction to exit throughout the codebase
+  - Updated enum AR_INSTRUCTION_AST_TYPE__DESTROY to AR_INSTRUCTION_AST_TYPE__EXIT
+  - Renamed all parser/evaluator modules: ar_destroy_instruction_* → ar_exit_instruction_*  
+  - Updated parser string matching from "destroy" (7 chars) to "exit" (4 chars)
+  - Updated all function names, types, includes, and documentation
+  - Updated facade integration and all test files
+- **Method files updated**
+  - Updated agent-manager-1.0.0.method with new instruction names (spawn/exit)
+  - Updated agent_manager_tests.c with new action names and expected behavior
+- **Documentation fully validated**
+  - Fixed all broken file references and type references revealed by make check-docs
+  - Updated modules/README.md with new file names
+  - Updated all .md files to use correct spawn/exit terminology
+- **Rationale**: Aligns with Erlang terminology and avoids confusion with AgeRun module lifecycle functions (ar_*__create/destroy)
+- All tests pass with zero memory leaks and clean build completed successfully
+
 ### ✅ COMPLETED: Renamed destroy agent instruction to simply 'destroy'
 - Systematic refactoring to rename the destroy agent instruction to simply `destroy` throughout the codebase
   - Updated enum AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT to AR_INSTRUCTION_AST_TYPE__DESTROY

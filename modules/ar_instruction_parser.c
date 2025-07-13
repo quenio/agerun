@@ -14,8 +14,8 @@
 #include "ar_parse_instruction_parser.h"
 #include "ar_build_instruction_parser.h"
 #include "ar_compile_instruction_parser.h"
-#include "ar_create_instruction_parser.h"
-#include "ar_destroy_instruction_parser.h"
+#include "ar_spawn_instruction_parser.h"
+#include "ar_exit_instruction_parser.h"
 #include "ar_deprecate_instruction_parser.h"
 
 /**
@@ -31,8 +31,8 @@ struct ar_instruction_parser_s {
     ar_parse_instruction_parser_t *own_parse_parser;
     ar_build_instruction_parser_t *own_build_parser;
     ar_compile_instruction_parser_t *own_method_parser;
-    ar_create_instruction_parser_t *own_create_parser;
-    ar_destroy_instruction_parser_t *own_destroy_parser;
+    ar_spawn_instruction_parser_t *own_spawn_parser;
+    ar_exit_instruction_parser_t *own_exit_parser;
     ar_deprecate_instruction_parser_t *own_deprecate_parser;
 };
 
@@ -62,11 +62,11 @@ static void _destroy_specialized_parsers(ar_instruction_parser_t *mut_parser) {
     if (mut_parser->own_method_parser) {
         ar_compile_instruction_parser__destroy(mut_parser->own_method_parser);
     }
-    if (mut_parser->own_create_parser) {
-        ar_create_instruction_parser__destroy(mut_parser->own_create_parser);
+    if (mut_parser->own_spawn_parser) {
+        ar_spawn_instruction_parser__destroy(mut_parser->own_spawn_parser);
     }
-    if (mut_parser->own_destroy_parser) {
-        ar_destroy_instruction_parser__destroy(mut_parser->own_destroy_parser);
+    if (mut_parser->own_exit_parser) {
+        ar_exit_instruction_parser__destroy(mut_parser->own_exit_parser);
     }
     if (mut_parser->own_deprecate_parser) {
         ar_deprecate_instruction_parser__destroy(mut_parser->own_deprecate_parser);
@@ -124,15 +124,15 @@ ar_instruction_parser_t* ar_instruction_parser__create(ar_log_t *ref_log) {
         goto error;
     }
     
-    // Create agent parser
-    own_parser->own_create_parser = ar_create_instruction_parser__create(ref_log);
-    if (!own_parser->own_create_parser) {
+    // Create spawn parser
+    own_parser->own_spawn_parser = ar_spawn_instruction_parser__create(ref_log);
+    if (!own_parser->own_spawn_parser) {
         goto error;
     }
     
-    // Create destroy parser
-    own_parser->own_destroy_parser = ar_destroy_instruction_parser__create(ref_log);
-    if (!own_parser->own_destroy_parser) {
+    // Create exit parser
+    own_parser->own_exit_parser = ar_exit_instruction_parser__create(ref_log);
+    if (!own_parser->own_exit_parser) {
         goto error;
     }
     
@@ -277,15 +277,15 @@ static ar_instruction_ast_t* _dispatch_function(ar_instruction_parser_t *mut_par
         return own_ast;
     }
     
-    // Check for create
-    if (func_len == 6 && strncmp(func_name, "create", 6) == 0) {
-        ar_instruction_ast_t *own_ast = ar_create_instruction_parser__parse(
-            mut_parser->own_create_parser,
+    // Check for spawn
+    if (func_len == 5 && strncmp(func_name, "spawn", 5) == 0) {
+        ar_instruction_ast_t *own_ast = ar_spawn_instruction_parser__parse(
+            mut_parser->own_spawn_parser,
             ref_instruction,
             own_result_path
         );
         
-        /* Error already logged by agent parser to shared log if parsing failed */
+        /* Error already logged by spawn parser to shared log if parsing failed */
         return own_ast;
     }
     
@@ -301,15 +301,15 @@ static ar_instruction_ast_t* _dispatch_function(ar_instruction_parser_t *mut_par
         return own_ast;
     }
     
-    // Check for destroy (only destroy agent now)
-    if (func_len == 7 && strncmp(func_name, "destroy", 7) == 0) {
-        ar_instruction_ast_t *own_ast = ar_destroy_instruction_parser__parse(
-            mut_parser->own_destroy_parser,
+    // Check for exit (only exit agent now)
+    if (func_len == 4 && strncmp(func_name, "exit", 4) == 0) {
+        ar_instruction_ast_t *own_ast = ar_exit_instruction_parser__parse(
+            mut_parser->own_exit_parser,
             ref_instruction,
             own_result_path
         );
         
-        /* Error already logged by destroy parser to shared log if parsing failed */
+        /* Error already logged by exit parser to shared log if parsing failed */
         return own_ast;
     }
     

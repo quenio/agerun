@@ -1,4 +1,4 @@
-#include "ar_destroy_instruction_parser.h"
+#include "ar_exit_instruction_parser.h"
 #include "ar_instruction_ast.h"
 #include "ar_heap.h"
 #include "ar_expression_parser.h"
@@ -12,17 +12,17 @@
 /**
  * Internal parser structure.
  */
-struct ar_destroy_instruction_parser_s {
+struct ar_exit_instruction_parser_s {
     ar_log_t *ref_log;         /* Log instance for error reporting (borrowed) */
 };
 
 /**
- * Creates a new destroy agent instruction parser.
+ * Creates a new exit agent instruction parser.
  */
-ar_destroy_instruction_parser_t* ar_destroy_instruction_parser__create(ar_log_t *ref_log) {
-    ar_destroy_instruction_parser_t *own_parser = AR__HEAP__MALLOC(
-        sizeof(ar_destroy_instruction_parser_t),
-        "destroy agent instruction parser"
+ar_exit_instruction_parser_t* ar_exit_instruction_parser__create(ar_log_t *ref_log) {
+    ar_exit_instruction_parser_t *own_parser = AR__HEAP__MALLOC(
+        sizeof(ar_exit_instruction_parser_t),
+        "exit agent instruction parser"
     );
     
     if (own_parser == NULL) {
@@ -35,9 +35,9 @@ ar_destroy_instruction_parser_t* ar_destroy_instruction_parser__create(ar_log_t 
 }
 
 /**
- * Destroys a destroy agent instruction parser.
+ * Destroys a exit agent instruction parser.
  */
-void ar_destroy_instruction_parser__destroy(ar_destroy_instruction_parser_t *own_parser) {
+void ar_exit_instruction_parser__destroy(ar_exit_instruction_parser_t *own_parser) {
     if (own_parser == NULL) {
         return;
     }
@@ -48,7 +48,7 @@ void ar_destroy_instruction_parser__destroy(ar_destroy_instruction_parser_t *own
 /**
  * Internal: Log error message with position.
  */
-static void _log_error(ar_destroy_instruction_parser_t *mut_parser, const char *error, size_t position) {
+static void _log_error(ar_exit_instruction_parser_t *mut_parser, const char *error, size_t position) {
     if (!mut_parser) {
         return;
     }
@@ -149,7 +149,7 @@ static void _cleanup_arg_asts(ar_list_t *arg_asts) {
 /**
  * Internal: Parse argument string into expression AST and return as a list.
  */
-static ar_list_t* _parse_argument_to_ast(ar_destroy_instruction_parser_t *mut_parser, 
+static ar_list_t* _parse_argument_to_ast(ar_exit_instruction_parser_t *mut_parser, 
                                       const char *ref_arg,
                                       size_t error_offset) {
     ar_list_t *own_arg_asts = ar_list__create();
@@ -194,10 +194,10 @@ static ar_list_t* _parse_argument_to_ast(ar_destroy_instruction_parser_t *mut_pa
 }
 
 /**
- * Parses a destroy agent instruction.
+ * Parses a exit agent instruction.
  */
-ar_instruction_ast_t* ar_destroy_instruction_parser__parse(
-    ar_destroy_instruction_parser_t *mut_parser,
+ar_instruction_ast_t* ar_exit_instruction_parser__parse(
+    ar_exit_instruction_parser_t *mut_parser,
     const char *ref_instruction,
     const char *ref_result_path
 ) {
@@ -221,19 +221,19 @@ ar_instruction_ast_t* ar_destroy_instruction_parser__parse(
         }
     }
     
-    /* Check for "destroy" */
-    if (strncmp(ref_instruction + pos, "destroy", 7) != 0) {
-        _log_error(mut_parser, "Expected 'destroy' function", pos);
+    /* Check for "exit" */
+    if (strncmp(ref_instruction + pos, "exit", 4) != 0) {
+        _log_error(mut_parser, "Expected 'exit' function", pos);
         return NULL;
     }
-    pos += 7;
+    pos += 4;
     
     /* Skip whitespace */
     pos = _skip_whitespace(ref_instruction, pos);
     
     /* Expect opening parenthesis */
     if (ref_instruction[pos] != '(') {
-        _log_error(mut_parser, "Expected '(' after 'destroy'", pos);
+        _log_error(mut_parser, "Expected '(' after 'exit'", pos);
         return NULL;
     }
     pos++;
@@ -244,7 +244,7 @@ ar_instruction_ast_t* ar_destroy_instruction_parser__parse(
     if (arg && ref_instruction[pos] == ',') {
         /* Found a comma - multiple arguments provided */
         AR__HEAP__FREE(arg);
-        _log_error(mut_parser, "destroy() expects exactly one argument", saved_pos);
+        _log_error(mut_parser, "exit() expects exactly one argument", saved_pos);
         return NULL;
     }
     
@@ -256,7 +256,7 @@ ar_instruction_ast_t* ar_destroy_instruction_parser__parse(
     }
     arg = _extract_argument(ref_instruction, &pos, ')');
     if (!arg) {
-        _log_error(mut_parser, "Failed to parse destroy argument", pos);
+        _log_error(mut_parser, "Failed to parse exit argument", pos);
         return NULL;
     }
     
@@ -266,7 +266,7 @@ ar_instruction_ast_t* ar_destroy_instruction_parser__parse(
     /* Create AST node */
     const char *const_args[] = { arg };
     ar_instruction_ast_t *own_ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__DESTROY, "destroy", const_args, 1, ref_result_path
+        AR_INSTRUCTION_AST_TYPE__EXIT, "exit", const_args, 1, ref_result_path
     );
     
     if (!own_ast) {
@@ -300,8 +300,8 @@ ar_instruction_ast_t* ar_destroy_instruction_parser__parse(
  * Gets the last error message from the parser.
  * DEPRECATED: This function always returns NULL. Use ar_log for error reporting.
  */
-const char* ar_destroy_instruction_parser__get_error(
-    const ar_destroy_instruction_parser_t *ref_parser
+const char* ar_exit_instruction_parser__get_error(
+    const ar_exit_instruction_parser_t *ref_parser
 ) {
     (void)ref_parser; // Suppress unused parameter warning
     return NULL;
@@ -311,8 +311,8 @@ const char* ar_destroy_instruction_parser__get_error(
  * Gets the position of the last error.
  * DEPRECATED: This function always returns 0. Use ar_log for error reporting.
  */
-size_t ar_destroy_instruction_parser__get_error_position(
-    const ar_destroy_instruction_parser_t *ref_parser
+size_t ar_exit_instruction_parser__get_error_position(
+    const ar_exit_instruction_parser_t *ref_parser
 ) {
     (void)ref_parser; // Suppress unused parameter warning
     return 0;

@@ -5,7 +5,7 @@
 #include <inttypes.h>
 #include <unistd.h>
 #include "ar_evaluator_fixture.h"
-#include "ar_create_instruction_evaluator.h"
+#include "ar_spawn_instruction_evaluator.h"
 #include "ar_expression_evaluator.h"
 #include "ar_instruction_ast.h"
 #include "ar_expression_ast.h"
@@ -18,7 +18,7 @@
 #include "ar_event.h"
 #include "ar_frame.h"
 
-static void test_create_instruction_evaluator__evaluate_with_context(void) {
+static void test_spawn_instruction_evaluator__evaluate_with_context(void) {
     // Initialize system for agent creation
     ar_system__init(NULL, NULL);
     
@@ -38,7 +38,7 @@ static void test_create_instruction_evaluator__evaluate_with_context(void) {
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
-    ar_create_instruction_evaluator_t *evaluator = ar_create_instruction_evaluator__create(
+    ar_spawn_instruction_evaluator_t *evaluator = ar_spawn_instruction_evaluator__create(
         log, expr_eval
     );
     assert(evaluator != NULL);
@@ -48,10 +48,10 @@ static void test_create_instruction_evaluator__evaluate_with_context(void) {
     assert(method != NULL);
     ar_methodology__register_method(method);
     
-    // When evaluating a create instruction with context: create("worker", "2.0.0", memory)
+    // When evaluating a create instruction with context: spawn("worker", "2.0.0", memory)
     const char *args[] = {"\"worker\"", "\"2.0.0\"", "memory"};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__CREATE, "create", args, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__SPAWN, "spawn", args, 3, NULL
     );
     assert(ast != NULL);
     
@@ -74,7 +74,7 @@ static void test_create_instruction_evaluator__evaluate_with_context(void) {
     bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
     
-    bool result = ar_create_instruction_evaluator__evaluate(evaluator, frame, ast);
+    bool result = ar_spawn_instruction_evaluator__evaluate(evaluator, frame, ast);
     
     // Then it should return true
     assert(result == true);
@@ -84,7 +84,7 @@ static void test_create_instruction_evaluator__evaluate_with_context(void) {
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
-    ar_create_instruction_evaluator__destroy(evaluator);
+    ar_spawn_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
     // Clean up agency before shutting down
@@ -97,7 +97,7 @@ static void test_create_instruction_evaluator__evaluate_with_context(void) {
     ar_methodology__cleanup();
 }
 
-static void test_create_instruction_evaluator__evaluate_with_result(void) {
+static void test_spawn_instruction_evaluator__evaluate_with_result(void) {
     // Initialize system for agent creation
     ar_system__init(NULL, NULL);
     
@@ -112,7 +112,7 @@ static void test_create_instruction_evaluator__evaluate_with_result(void) {
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
-    ar_create_instruction_evaluator_t *evaluator = ar_create_instruction_evaluator__create(
+    ar_spawn_instruction_evaluator_t *evaluator = ar_spawn_instruction_evaluator__create(
         log, expr_eval
     );
     assert(evaluator != NULL);
@@ -122,10 +122,10 @@ static void test_create_instruction_evaluator__evaluate_with_result(void) {
     assert(method != NULL);
     ar_methodology__register_method(method);
     
-    // When evaluating a create instruction with result assignment: memory.agent_id := create("counter", "1.0.0", memory)
+    // When evaluating a create instruction with result assignment: memory.agent_id := spawn("counter", "1.0.0", memory)
     const char *args[] = {"\"counter\"", "\"1.0.0\"", "memory"};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__CREATE, "create", args, 3, "memory.agent_id"
+        AR_INSTRUCTION_AST_TYPE__SPAWN, "spawn", args, 3, "memory.agent_id"
     );
     assert(ast != NULL);
     
@@ -148,7 +148,7 @@ static void test_create_instruction_evaluator__evaluate_with_result(void) {
     bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
     
-    bool result = ar_create_instruction_evaluator__evaluate(evaluator, frame, ast);
+    bool result = ar_spawn_instruction_evaluator__evaluate(evaluator, frame, ast);
     
     // Then it should return true
     assert(result == true);
@@ -163,7 +163,7 @@ static void test_create_instruction_evaluator__evaluate_with_result(void) {
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
-    ar_create_instruction_evaluator__destroy(evaluator);
+    ar_spawn_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
     // Clean up agency before shutting down
@@ -176,7 +176,7 @@ static void test_create_instruction_evaluator__evaluate_with_result(void) {
     ar_methodology__cleanup();
 }
 
-static void test_create_instruction_evaluator__evaluate_invalid_method(void) {
+static void test_spawn_instruction_evaluator__evaluate_invalid_method(void) {
     // Initialize system for agent creation
     ar_system__init(NULL, NULL);
     
@@ -191,26 +191,26 @@ static void test_create_instruction_evaluator__evaluate_invalid_method(void) {
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
-    ar_create_instruction_evaluator_t *evaluator = ar_create_instruction_evaluator__create(
+    ar_spawn_instruction_evaluator_t *evaluator = ar_spawn_instruction_evaluator__create(
         log, expr_eval
     );
     assert(evaluator != NULL);
     
-    // When evaluating a create instruction with non-existent method: create("missing", "1.0.0", memory)
+    // When evaluating a create instruction with non-existent method: spawn("missing", "1.0.0", memory)
     const char *args[] = {"\"missing\"", "\"1.0.0\"", "memory"};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__CREATE, "create", args, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__SPAWN, "spawn", args, 3, NULL
     );
     assert(ast != NULL);
     
-    bool result = ar_create_instruction_evaluator__evaluate(evaluator, frame, ast);
+    bool result = ar_spawn_instruction_evaluator__evaluate(evaluator, frame, ast);
     
     // Then it should return false (method not found)
     assert(result == false);
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
-    ar_create_instruction_evaluator__destroy(evaluator);
+    ar_spawn_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
     // Clean up agency before shutting down
@@ -223,7 +223,7 @@ static void test_create_instruction_evaluator__evaluate_invalid_method(void) {
     ar_methodology__cleanup();
 }
 
-static void test_create_instruction_evaluator__evaluate_invalid_args(void) {
+static void test_spawn_instruction_evaluator__evaluate_invalid_args(void) {
     // Initialize system for agent creation
     ar_system__init(NULL, NULL);
     
@@ -238,7 +238,7 @@ static void test_create_instruction_evaluator__evaluate_invalid_args(void) {
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
-    ar_create_instruction_evaluator_t *evaluator = ar_create_instruction_evaluator__create(
+    ar_spawn_instruction_evaluator_t *evaluator = ar_spawn_instruction_evaluator__create(
         log, expr_eval
     );
     assert(evaluator != NULL);
@@ -246,11 +246,11 @@ static void test_create_instruction_evaluator__evaluate_invalid_args(void) {
     // Test case 1: Wrong number of arguments
     const char *args1[] = {"\"test\"", "\"1.0.0\""};  // Missing context
     ar_instruction_ast_t *ast1 = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__CREATE, "create", args1, 2, NULL
+        AR_INSTRUCTION_AST_TYPE__SPAWN, "spawn", args1, 2, NULL
     );
     assert(ast1 != NULL);
     
-    bool result1 = ar_create_instruction_evaluator__evaluate(evaluator, frame, ast1);
+    bool result1 = ar_spawn_instruction_evaluator__evaluate(evaluator, frame, ast1);
     assert(result1 == false);
     
     ar_instruction_ast__destroy(ast1);
@@ -258,11 +258,11 @@ static void test_create_instruction_evaluator__evaluate_invalid_args(void) {
     // Test case 2: Non-string method name
     const char *args2[] = {"42", "\"1.0.0\"", "memory"};
     ar_instruction_ast_t *ast2 = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__CREATE, "create", args2, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__SPAWN, "spawn", args2, 3, NULL
     );
     assert(ast2 != NULL);
     
-    bool result2 = ar_create_instruction_evaluator__evaluate(evaluator, frame, ast2);
+    bool result2 = ar_spawn_instruction_evaluator__evaluate(evaluator, frame, ast2);
     assert(result2 == false);
     
     ar_instruction_ast__destroy(ast2);
@@ -270,11 +270,11 @@ static void test_create_instruction_evaluator__evaluate_invalid_args(void) {
     // Test case 3: Non-string version
     const char *args3[] = {"\"test\"", "1.0", "memory"};
     ar_instruction_ast_t *ast3 = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__CREATE, "create", args3, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__SPAWN, "spawn", args3, 3, NULL
     );
     assert(ast3 != NULL);
     
-    bool result3 = ar_create_instruction_evaluator__evaluate(evaluator, frame, ast3);
+    bool result3 = ar_spawn_instruction_evaluator__evaluate(evaluator, frame, ast3);
     assert(result3 == false);
     
     ar_instruction_ast__destroy(ast3);
@@ -282,40 +282,40 @@ static void test_create_instruction_evaluator__evaluate_invalid_args(void) {
     // Test case 4: Invalid context type (not map)
     const char *args4[] = {"\"test\"", "\"1.0.0\"", "42"};
     ar_instruction_ast_t *ast4 = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__CREATE, "create", args4, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__SPAWN, "spawn", args4, 3, NULL
     );
     assert(ast4 != NULL);
     
-    bool result4 = ar_create_instruction_evaluator__evaluate(evaluator, frame, ast4);
+    bool result4 = ar_spawn_instruction_evaluator__evaluate(evaluator, frame, ast4);
     assert(result4 == false);
     
     ar_instruction_ast__destroy(ast4);
     
     // Cleanup
-    ar_create_instruction_evaluator__destroy(evaluator);
+    ar_spawn_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
     // Shutdown system
     ar_system__shutdown();
 }
 
-static void test_create_instruction_evaluator__create_destroy(void) {
+static void test_spawn_instruction_evaluator__create_destroy(void) {
     // Given a test fixture
     ar_evaluator_fixture_t *fixture = 
-        ar_evaluator_fixture__create("test_create_destroy");
+        ar_evaluator_fixture__create("test_spawn_destroy");
     assert(fixture != NULL);
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
     // When creating a create instruction evaluator instance
-    ar_create_instruction_evaluator_t *evaluator = ar_create_instruction_evaluator__create(log, expr_eval);
+    ar_spawn_instruction_evaluator_t *evaluator = ar_spawn_instruction_evaluator__create(log, expr_eval);
     
     // Then it should be created successfully
     assert(evaluator != NULL);
     
     // When destroying the evaluator
-    ar_create_instruction_evaluator__destroy(evaluator);
+    ar_spawn_instruction_evaluator__destroy(evaluator);
     
     // Then it should not crash (no assertion needed)
     
@@ -323,7 +323,7 @@ static void test_create_instruction_evaluator__create_destroy(void) {
     ar_evaluator_fixture__destroy(fixture);
 }
 
-static void test_create_instruction_evaluator__evaluate_with_instance(void) {
+static void test_spawn_instruction_evaluator__evaluate_with_instance(void) {
     // Initialize system for agent creation
     ar_system__init(NULL, NULL);
     
@@ -342,7 +342,7 @@ static void test_create_instruction_evaluator__evaluate_with_instance(void) {
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
-    ar_create_instruction_evaluator_t *evaluator = ar_create_instruction_evaluator__create(log, expr_eval);
+    ar_spawn_instruction_evaluator_t *evaluator = ar_spawn_instruction_evaluator__create(log, expr_eval);
     assert(evaluator != NULL);
     
     // Register a method to create agents with
@@ -353,7 +353,7 @@ static void test_create_instruction_evaluator__evaluate_with_instance(void) {
     // When evaluating an agent instruction with the instance: agent("tester", "1.0.0", memory)
     const char *args[] = {"\"tester\"", "\"1.0.0\"", "memory"};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__CREATE, "create", args, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__SPAWN, "spawn", args, 3, NULL
     );
     assert(ast != NULL);
     
@@ -376,7 +376,7 @@ static void test_create_instruction_evaluator__evaluate_with_instance(void) {
     bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
     
-    bool result = ar_create_instruction_evaluator__evaluate(evaluator, frame, ast);
+    bool result = ar_spawn_instruction_evaluator__evaluate(evaluator, frame, ast);
     
     // Then it should return true
     assert(result == true);
@@ -386,7 +386,7 @@ static void test_create_instruction_evaluator__evaluate_with_instance(void) {
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
-    ar_create_instruction_evaluator__destroy(evaluator);
+    ar_spawn_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
     // Clean up agency before shutting down
@@ -399,7 +399,7 @@ static void test_create_instruction_evaluator__evaluate_with_instance(void) {
     ar_methodology__cleanup();
 }
 
-static void test_create_instruction_evaluator__legacy_evaluate_function(void) {
+static void test_spawn_instruction_evaluator__legacy_evaluate_function(void) {
     // Initialize system for agent creation
     ar_system__init(NULL, NULL);
     
@@ -419,7 +419,7 @@ static void test_create_instruction_evaluator__legacy_evaluate_function(void) {
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
     // Create an evaluator instance
-    ar_create_instruction_evaluator_t *evaluator = ar_create_instruction_evaluator__create(
+    ar_spawn_instruction_evaluator_t *evaluator = ar_spawn_instruction_evaluator__create(
         log, expr_eval
     );
     assert(evaluator != NULL);
@@ -432,7 +432,7 @@ static void test_create_instruction_evaluator__legacy_evaluate_function(void) {
     // When calling the instance-based evaluate function: agent("legacy_worker", "1.0.0", memory)
     const char *args[] = {"\"legacy_worker\"", "\"1.0.0\"", "memory"};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__CREATE, "create", args, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__SPAWN, "spawn", args, 3, NULL
     );
     assert(ast != NULL);
     
@@ -455,7 +455,7 @@ static void test_create_instruction_evaluator__legacy_evaluate_function(void) {
     bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
     
-    bool result = ar_create_instruction_evaluator__evaluate(evaluator, frame, ast);
+    bool result = ar_spawn_instruction_evaluator__evaluate(evaluator, frame, ast);
     
     // Then it should return true
     assert(result == true);
@@ -465,7 +465,7 @@ static void test_create_instruction_evaluator__legacy_evaluate_function(void) {
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
-    ar_create_instruction_evaluator__destroy(evaluator);
+    ar_spawn_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
     // Clean up agency before shutting down
@@ -499,26 +499,26 @@ int main(void) {
     remove("methodology.agerun");
     remove("agency.agerun");
     
-    test_create_instruction_evaluator__evaluate_with_context();
-    printf("test_create_instruction_evaluator__evaluate_with_context passed!\n");
+    test_spawn_instruction_evaluator__evaluate_with_context();
+    printf("test_spawn_instruction_evaluator__evaluate_with_context passed!\n");
     
-    test_create_instruction_evaluator__evaluate_with_result();
-    printf("test_create_instruction_evaluator__evaluate_with_result passed!\n");
+    test_spawn_instruction_evaluator__evaluate_with_result();
+    printf("test_spawn_instruction_evaluator__evaluate_with_result passed!\n");
     
-    test_create_instruction_evaluator__evaluate_invalid_method();
-    printf("test_create_instruction_evaluator__evaluate_invalid_method passed!\n");
+    test_spawn_instruction_evaluator__evaluate_invalid_method();
+    printf("test_spawn_instruction_evaluator__evaluate_invalid_method passed!\n");
     
-    test_create_instruction_evaluator__evaluate_invalid_args();
-    printf("test_create_instruction_evaluator__evaluate_invalid_args passed!\n");
+    test_spawn_instruction_evaluator__evaluate_invalid_args();
+    printf("test_spawn_instruction_evaluator__evaluate_invalid_args passed!\n");
     
-    test_create_instruction_evaluator__create_destroy();
-    printf("test_create_instruction_evaluator__create_destroy passed!\n");
+    test_spawn_instruction_evaluator__create_destroy();
+    printf("test_spawn_instruction_evaluator__create_destroy passed!\n");
     
-    test_create_instruction_evaluator__evaluate_with_instance();
-    printf("test_create_instruction_evaluator__evaluate_with_instance passed!\n");
+    test_spawn_instruction_evaluator__evaluate_with_instance();
+    printf("test_spawn_instruction_evaluator__evaluate_with_instance passed!\n");
     
-    test_create_instruction_evaluator__legacy_evaluate_function();
-    printf("test_create_instruction_evaluator__legacy_evaluate_function passed!\n");
+    test_spawn_instruction_evaluator__legacy_evaluate_function();
+    printf("test_spawn_instruction_evaluator__legacy_evaluate_function passed!\n");
     
     printf("All create instruction evaluator tests passed!\n");
     

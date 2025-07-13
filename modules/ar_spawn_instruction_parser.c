@@ -1,4 +1,4 @@
-#include "ar_create_instruction_parser.h"
+#include "ar_spawn_instruction_parser.h"
 #include "ar_instruction_ast.h"
 #include "ar_heap.h"
 #include "ar_expression_parser.h"
@@ -11,17 +11,17 @@
 #include <stdbool.h>
 
 /**
- * @file ar_create_instruction_parser.c
- * @brief Implementation of the create instruction parser module
+ * @file ar_spawn_instruction_parser.c
+ * @brief Implementation of the spawn instruction parser module
  */
 
 /* Parser state structure */
-struct ar_create_instruction_parser_s {
+struct ar_spawn_instruction_parser_s {
     ar_log_t *ref_log;          /* Log instance for error reporting (borrowed) */
 };
 
 /* Helper functions */
-static void _log_error(ar_create_instruction_parser_t *mut_parser, const char *error, size_t position) {
+static void _log_error(ar_spawn_instruction_parser_t *mut_parser, const char *error, size_t position) {
     if (!mut_parser || !error) {
         return;
     }
@@ -185,7 +185,7 @@ static void _cleanup_arg_asts(ar_list_t *arg_asts) {
 /**
  * Internal: Parse argument strings into expression ASTs and return as a list.
  */
-static ar_list_t* _parse_arguments_to_asts(ar_create_instruction_parser_t *mut_parser, 
+static ar_list_t* _parse_arguments_to_asts(ar_spawn_instruction_parser_t *mut_parser, 
                                         char **ref_args, 
                                         size_t arg_count,
                                         size_t error_offset) {
@@ -229,10 +229,10 @@ static ar_list_t* _parse_arguments_to_asts(ar_create_instruction_parser_t *mut_p
 }
 
 /**
- * Create a new create instruction parser instance
+ * Create a new spawn instruction parser instance
  */
-ar_create_instruction_parser_t* ar_create_instruction_parser__create(ar_log_t *ref_log) {
-    ar_create_instruction_parser_t *own_parser = AR__HEAP__MALLOC(sizeof(ar_create_instruction_parser_t), "create parser");
+ar_spawn_instruction_parser_t* ar_spawn_instruction_parser__create(ar_log_t *ref_log) {
+    ar_spawn_instruction_parser_t *own_parser = AR__HEAP__MALLOC(sizeof(ar_spawn_instruction_parser_t), "spawn parser");
     if (!own_parser) {
         return NULL;
     }
@@ -243,9 +243,9 @@ ar_create_instruction_parser_t* ar_create_instruction_parser__create(ar_log_t *r
 }
 
 /**
- * Destroy a create instruction parser instance
+ * Destroy a spawn instruction parser instance
  */
-void ar_create_instruction_parser__destroy(ar_create_instruction_parser_t *own_parser) {
+void ar_spawn_instruction_parser__destroy(ar_spawn_instruction_parser_t *own_parser) {
     if (!own_parser) {
         return;
     }
@@ -254,10 +254,10 @@ void ar_create_instruction_parser__destroy(ar_create_instruction_parser_t *own_p
 }
 
 /**
- * Parse a create instruction
+ * Parse a spawn instruction
  */
-ar_instruction_ast_t* ar_create_instruction_parser__parse(
-    ar_create_instruction_parser_t *mut_parser,
+ar_instruction_ast_t* ar_spawn_instruction_parser__parse(
+    ar_spawn_instruction_parser_t *mut_parser,
     const char *ref_instruction,
     const char *ref_result_path
 ) {
@@ -281,12 +281,12 @@ ar_instruction_ast_t* ar_create_instruction_parser__parse(
         }
     }
     
-    /* Check for "create" */
-    if (strncmp(ref_instruction + pos, "create", 6) != 0) {
-        _log_error(mut_parser, "Expected 'create' function", pos);
+    /* Check for "spawn" */
+    if (strncmp(ref_instruction + pos, "spawn", 5) != 0) {
+        _log_error(mut_parser, "Expected 'spawn' function", pos);
         return NULL;
     }
-    pos += 6;
+    pos += 5;
     
     /* Skip whitespace */
     pos = _skip_whitespace(ref_instruction, pos);
@@ -333,7 +333,7 @@ ar_instruction_ast_t* ar_create_instruction_parser__parse(
     }
     
     ar_instruction_ast_t *own_ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__CREATE, "create", const_args, final_arg_count, ref_result_path
+        AR_INSTRUCTION_AST_TYPE__SPAWN, "spawn", const_args, final_arg_count, ref_result_path
     );
     
     AR__HEAP__FREE(const_args);
@@ -395,7 +395,7 @@ ar_instruction_ast_t* ar_create_instruction_parser__parse(
  * Get the last error message from the parser
  * DEPRECATED: This function always returns NULL. Use ar_log for error reporting.
  */
-const char* ar_create_instruction_parser__get_error(const ar_create_instruction_parser_t *ref_parser) {
+const char* ar_spawn_instruction_parser__get_error(const ar_spawn_instruction_parser_t *ref_parser) {
     (void)ref_parser; // Suppress unused parameter warning
     return NULL;
 }
@@ -404,7 +404,7 @@ const char* ar_create_instruction_parser__get_error(const ar_create_instruction_
  * Get the position where the last error occurred
  * DEPRECATED: This function always returns 0. Use ar_log for error reporting.
  */
-size_t ar_create_instruction_parser__get_error_position(const ar_create_instruction_parser_t *ref_parser) {
+size_t ar_spawn_instruction_parser__get_error_position(const ar_spawn_instruction_parser_t *ref_parser) {
     (void)ref_parser; // Suppress unused parameter warning
     return 0;
 }

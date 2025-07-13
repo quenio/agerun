@@ -1,12 +1,12 @@
-# Destroy Instruction Evaluator Module
+# Exit Instruction Evaluator Module
 
 ## Overview
 
-The destroy instruction evaluator module is responsible for evaluating agent destruction instructions in the AgeRun language. It handles the `destroy(agent_id)` instruction form, which destroys a specific agent by its ID.
+The exit instruction evaluator module is responsible for evaluating agent destruction instructions in the AgeRun language. It handles the `exit(agent_id)` instruction form, which terminates a specific agent by its ID.
 
 ## Purpose
 
-This module extracts the agent destruction logic from the main destroy instruction evaluator, following the single responsibility principle. It provides specialized handling for agent destruction with proper result storage.
+This module extracts the agent destruction logic from the main exit instruction evaluator, following the single responsibility principle. It provides specialized handling for agent destruction with proper result storage.
 
 ## Key Components
 
@@ -16,20 +16,20 @@ The module follows an instantiable design pattern with lifecycle management:
 
 ```c
 // Create evaluator instance with dependencies (frame-based pattern)
-ar_destroy_instruction_evaluator_t* ar_destroy_instruction_evaluator__create(
+ar_exit_instruction_evaluator_t* ar_exit_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator
 );
 
 // Evaluate using frame-based execution
-bool ar_destroy_instruction_evaluator__evaluate(
-    ar_destroy_instruction_evaluator_t *mut_evaluator,
+bool ar_exit_instruction_evaluator__evaluate(
+    ar_exit_instruction_evaluator_t *mut_evaluator,
     const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
 
 // Clean up instance
-void ar_destroy_instruction_evaluator__destroy(ar_destroy_instruction_evaluator_t *own_evaluator);
+void ar_exit_instruction_evaluator__create(ar_exit_instruction_evaluator_t *own_evaluator);
 ```
 
 ### Legacy Interface
@@ -38,15 +38,15 @@ The module previously had a legacy parameter-based interface, but it has been fu
 
 ### Functionality
 
-The module evaluates destroy agent instructions of the form:
-- `destroy(agent_id)`
-- `memory.result := destroy(agent_id)`
+The module evaluates exit agent instructions of the form:
+- `exit(agent_id)`
+- `memory.result := exit(agent_id)`
 
 Key features:
 1. **Frame-Based Execution**: Uses ar_frame_t for memory, context, and message bundling
 2. **Agent ID Evaluation**: Evaluates the agent ID expression to an integer
-3. **Agent Destruction**: Destroys the agent if it exists
-4. **Result Assignment**: Stores true (1) if agent was destroyed, false (0) otherwise
+3. **Agent Destruction**: Exits the agent if it exists
+4. **Result Assignment**: Stores true (1) if agent was terminated, false (0) otherwise
 5. **Error Handling**: Returns false for invalid argument types
 6. **Memory Access**: Gets memory from frame during evaluation
 
@@ -57,9 +57,9 @@ The module follows strict memory ownership rules:
 - Expression evaluator, memory, and log are borrowed references stored in the instance
 - Agent ID evaluation creates temporary data that is properly cleaned up
 - Result value is created and transferred to memory when assignment specified
-- All temporary values properly destroyed
+- All temporary values properly exited
 - The create function returns ownership to the caller
-- The destroy function takes ownership and frees all resources
+- The exit function takes ownership and frees all resources
 
 ## Dependencies
 
@@ -78,7 +78,7 @@ The module:
 1. Validates argument count (must be exactly 1)
 2. Evaluates the agent ID expression
 3. Validates the result is an integer
-4. Calls agency to destroy the agent
+4. Calls agency to exit the agent
 5. Stores result if assignment specified
 
 ## Usage Examples
@@ -90,25 +90,25 @@ The module:
 ar_data_t *memory = ar_data__create_map();
 ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
 
-// Create destroy agent evaluator instance
-ar_destroy_instruction_evaluator_t *evaluator = ar_destroy_instruction_evaluator__create(
+// Create exit agent evaluator instance
+ar_exit_instruction_evaluator_t *evaluator = ar_exit_instruction_evaluator__create(
     log, expr_eval
 );
 
-// Parse destroy instruction: memory.result := destroy(42)
+// Parse exit instruction: memory.result := exit(42)
 ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-    AR_INST__DESTROY, "destroy", args, 1, "memory.result"
+    AR_INST__DESTROY, "exit", args, 1, "memory.result"
 );
 
 // Create frame for evaluation
 ar_frame_t *frame = ar_frame__create(memory, context, message);
 
 // Evaluate using instance
-bool success = ar_destroy_instruction_evaluator__evaluate(evaluator, frame, ast);
+bool success = ar_exit_instruction_evaluator__evaluate(evaluator, frame, ast);
 
 // Clean up
-ar_destroy_instruction_evaluator__destroy(evaluator);
-// Result stored in memory["result"]: 1 if destroyed, 0 if not found
+ar_exit_instruction_evaluator__create(evaluator);
+// Result stored in memory["result"]: 1 if exited, 0 if not found
 ```
 
 
@@ -117,14 +117,14 @@ ar_destroy_instruction_evaluator__destroy(evaluator);
 The module includes comprehensive tests covering:
 
 ### Instance-Based Interface Tests
-- Create/destroy lifecycle functions
+- Create/exit lifecycle functions
 - Instance-based evaluation using stored dependencies
 - Legacy function backward compatibility
 
 ### Functional Tests
-- Destroy existing agent
-- Destroy with result assignment
-- Destroy nonexistent agent
+- Exit existing agent
+- Exit with result assignment
+- Exit nonexistent agent
 - Invalid agent ID type
 - Wrong number of arguments
 - Memory leak verification
