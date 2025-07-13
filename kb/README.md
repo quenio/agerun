@@ -22,7 +22,9 @@ Each learning file contains:
 ### Development Workflow
 - [API Migration Completion Verification](api-migration-completion-verification.md)
 - [Build Verification Before Commit](build-verification-before-commit.md)
+- [Build Time Reporting](build-time-reporting.md)
 - [Git Push Verification](git-push-verification.md)
+- [Language Instruction Renaming Pattern](language-instruction-renaming-pattern.md)
 - [Red Green Refactor Cycle](red-green-refactor-cycle.md)
 
 ### Memory Management
@@ -58,6 +60,7 @@ Each learning file contains:
 - [Progressive Tool Enhancement](progressive-tool-enhancement.md)
 - [Module Renaming Script Enhancement](module-renaming-script-enhancement.md)
 - [Script Enhancement Over One Off](script-enhancement-over-one-off.md)
+- [Settings File Merging Pattern](settings-file-merging-pattern.md)
 - [String Parsing Quote Tracking](string-parsing-quote-tracking.md)
 
 ### Development Practices
