@@ -48,7 +48,14 @@
       "Bash(gh run view:*)",
       "Bash(gh workflow view:*)",
       "Bash(gh api:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(git mv:*)",
+      "Bash(for test in *_tests)",
+      "Bash(do echo \"Running $test...\")",
+      "Bash(./$test)",
+      "Bash(/dev/null)",
+      "Bash(done)",
+      "Bash(touch:*)"
     ],
     "deny": []
   },
