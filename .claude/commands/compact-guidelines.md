@@ -8,6 +8,8 @@ description: Make CLAUDE.md guidelines more concise by moving details to knowled
 
 Make CLAUDE.md guidelines more concise and actionable by moving detailed explanations, examples, and implementation details to the knowledge base (./kb directory).
 
+**IMPORTANT**: Before extracting kb articles from CLAUDE.md, read `.claude/commands/new-learnings.md` to understand the proper format and validation requirements for creating kb articles. This ensures extracted content follows established standards.
+
 ## Guidelines for Compacting
 
 ### 1. Identify Verbose Sections
