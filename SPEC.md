@@ -131,17 +131,18 @@ The following BNF grammar defines the syntax of individual instructions allowed 
                  | <parse-function>
                  | <build-function>
                  | <method-function>
-                 | <agent-function>
-                 | <destroy-function>
+                 | <spawn-function>
+                 | <exit-function>
+                 | <deprecate-function>
                  | <if-function>
 
 <send-function> ::= 'send' '(' <expression> ',' <expression> ')'
 <parse-function> ::= 'parse' '(' <expression> ',' <expression> ')'
 <build-function> ::= 'build' '(' <expression> ',' <expression> ')'
 <method-function> ::= 'method' '(' <expression> ',' <expression> ',' <expression> ')'
-<agent-function> ::= 'agent' '(' <expression> ',' <expression> [',' <expression>] ')'
-<destroy-function> ::= 'destroy' '(' <expression> ')'
-                     | 'destroy' '(' <expression> ',' <expression> ')'
+<spawn-function> ::= 'spawn' '(' <expression> ',' <expression> [',' <expression>] ')'
+<exit-function> ::= 'exit' '(' <expression> ')'
+<deprecate-function> ::= 'deprecate' '(' <expression> ',' <expression> ')'
 <if-function> ::= 'if' '(' <comparison-expression> ',' <expression> ',' <expression> ')'
 ```
 
@@ -152,15 +153,16 @@ Instructions in an agent method can be of two types:
   - `parse` - Extract values from a string using a template
   - `build` - Construct a string using a template and values
   - `method` - Define a new agent method
-  - `agent` - Create a new agent instance
-  - `destroy` - Destroy an existing agent or method
+  - `spawn` - Spawn a new agent instance
+  - `exit` - Exit an existing agent
+  - `deprecate` - Deprecate an existing method
   - `if` - Evaluates a condition and returns one of two values based on the result
 
 Function call instructions can optionally assign their result to a variable. For example:
 - `send(agent_id, message)` - Call the function without storing the result
 - `success := send(agent_id, message)` - Store the result in a memory variable
-- `destroy(agent_id)` - Destroy an agent without storing the result
-- `success := destroy(agent_id)` - Destroy an agent and store the result
+- `exit(agent_id)` - Exit an agent without storing the result
+- `success := exit(agent_id)` - Exit an agent and store the result
 - `deprecate(method_name, method_version)` - Deprecate a method without storing the result
 - `success := deprecate(method_name, method_version)` - Deprecate a method and store the result
 - `if(condition, true_value, false_value)` - Evaluate without storing the result
@@ -250,8 +252,8 @@ The expression evaluator follows these rules:
 ### 6. Agent Management
 
 - `compile(method_name: string, instructions: string, version: string) → boolean`: Defines a new method with the specified name, instruction code, and version string. The version string must follow semantic versioning (e.g., "1.0.0"). Compatibility between versions is determined based on semantic versioning rules: agents using version 1.x.x will automatically use the latest 1.x.x version. Returns true if the method was successfully defined, or false if the instructions cannot be parsed or compiled.
-- `create(method_name: string, version: string, context: map = null) → agent_id`: Creates a new agent instance based on the specified method name and version string. The version parameter is required. If a partial version is specified (e.g., "1"), the latest matching version (e.g., latest "1.x.x") will be used. An optional context may be provided. Returns a unique agent ID.
-- `destroy(agent_id: integer) → boolean`: Attempts to destroy the specified agent. Before destruction, the agent receives the `__sleep__` message. The agent is only destroyed after it is in a sleeping state. Returns true if successful, or false if the agent does not exist or is already destroyed.
+- `spawn(method_name: string, version: string, context: map = null) → agent_id`: Spawns a new agent instance based on the specified method name and version string. The version parameter is required. If a partial version is specified (e.g., "1"), the latest matching version (e.g., latest "1.x.x") will be used. An optional context may be provided. Returns a unique agent ID.
+- `exit(agent_id: integer) → boolean`: Attempts to exit the specified agent. Before exit, the agent receives the `__sleep__` message. The agent is only destroyed after it is in a sleeping state. Returns true if successful, or false if the agent does not exist or is already destroyed.
 - `deprecate(method_name: string, method_version: string) → boolean`: Attempts to deprecate the specified method version. If any agents are using this method, they will all be sent the `__sleep__` message first, then destroyed once they are sleeping, before the method is removed. Returns true if successful, or false if the method does not exist.
 
 ## Message Handling
@@ -273,7 +275,7 @@ Messages can be any of the supported data types:
 
 ## Agent Creation
 
-- **Dynamic Instantiation**: Agents can be dynamically created at runtime by existing agents.
+- **Dynamic Instantiation**: Agents can be dynamically spawned at runtime by existing agents.
 - **Context Sharing**: Parent agents can provide their memory map as a read-only context to child agents.
 
 ## Scalability
@@ -283,4 +285,4 @@ Messages can be any of the supported data types:
 
 ## System Startup
 
-The system is started by providing a method name and version string, which is used to create the first agent—similar to the `agent` instruction. Immediately after creation, the system sends the special message `__wake__` to this initial agent.
+The system is started by providing a method name and version string, which is used to spawn the first agent—similar to the `spawn` instruction. Immediately after spawning, the system sends the special message `__wake__` to this initial agent.
