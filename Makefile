@@ -464,8 +464,8 @@ check-naming:
 
 # Check documentation validity (file references, module names, function/type refs)
 check-docs:
-	@if [ -x ./scripts/check_docs.sh ]; then \
-		./scripts/check_docs.sh; \
+	@if command -v python3 >/dev/null 2>&1; then \
+		python3 ./scripts/check_docs.py; \
 	else \
 		echo "ERROR: scripts/check_docs.sh not found or not executable"; \
 		echo "Make sure the script exists and has execute permissions"; \
