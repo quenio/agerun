@@ -61,6 +61,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] All tests pass with zero memory leaks (736 allocations, all freed)
 - [x] Module now follows C-to-Zig migration guidelines completely
 - [x] Enhanced migration guide with compliance verification section and common violations
+- [x] Added ar_instruction_ast migration learnings with TDD patterns and implementation discrepancies
 
 ## Critical Compliance Tasks
 

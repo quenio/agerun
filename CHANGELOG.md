@@ -40,6 +40,8 @@ This document tracks completed milestones and major achievements for the AgeRun 
 - **Verified binary compatibility** - All 64 tests pass with zero memory leaks (736 allocations, all freed)
 - **Established compliance** with C-to-Zig migration guidelines ensuring drop-in replacement capability
 - **Enhanced migration guide** with compliance verification section documenting audit process and common violations
+- **Added ar_instruction_ast migration learnings** documenting TDD-based migration process and 10 implementation discrepancies
+- **Captured real-world patterns** including NULL handling, cleanup optimization, and user feedback integration
 - **Demonstrates importance** of systematic migration guidelines for maintaining API compatibility
 
 ## 2025-07-13

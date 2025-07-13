@@ -634,6 +634,90 @@ Based on the ar_expression_ast migration experience:
 5. **Compare Implementations**: Always compare with C implementation when debugging, especially for memory management
 6. **Test-Driven Verification**: Run tests after each change to catch regressions immediately
 
+## Real-World Validation: ar_instruction_ast Migration
+
+The ar_instruction_ast migration (2025-07-13) provided validation of migration guidelines and revealed additional patterns:
+
+### TDD-Based Migration Process
+
+**Systematic 6-Cycle Implementation**:
+1. **Red Phase**: Write failing test first (e.g., test create/destroy for assignment)
+2. **Green Phase**: Implement minimum code to pass test
+3. **Refactor Phase**: Improve implementation while keeping tests green
+4. **Repeat**: For each behavior (accessors, function calls, AST integration, edge cases)
+
+**Key Success**: All cycles completed before final commit, ensuring comprehensive implementation.
+
+### Common Implementation Discrepancies
+
+During ar_instruction_ast migration, 10 specific discrepancies were identified and fixed:
+
+**1. NULL Argument Handling**
+```zig
+// C implementation: No explicit NULL checks in create_function_call
+// Zig improvement: Added explicit validation
+if (ref_function_name == null) {
+    return null;
+}
+```
+
+**2. Allocation Error Cleanup**
+```zig
+// C pattern: Manual cleanup on failure
+if (!own_node->own_function_name) {
+    AR__HEAP__FREE(own_node);
+    return NULL;
+}
+
+// Zig improvement: Use destroy for consistent cleanup
+if (own_node.?.own_function_name == null) {
+    ar_instruction_ast__destroy(@as(?*c.ar_instruction_ast_t, @ptrCast(@alignCast(own_node))));
+    return null;
+}
+```
+
+**3. List Destruction Optimization**
+```zig
+// C implementation: Uses ar_list__items() then manual cleanup
+void **items = ar_list__items(list);
+for (size_t i = 0; i < count; i++) { /* cleanup */ }
+AR__HEAP__FREE(items);
+
+// Zig optimization: More efficient with ar_list__remove_first()
+while (c.ar_list__count(node.own_arg_asts) > 0) {
+    const own_ast = c.ar_list__remove_first(node.own_arg_asts);
+    if (own_ast != null) {
+        c.ar_expression_ast__destroy(@as(?*c.ar_expression_ast_t, @ptrCast(@alignCast(own_ast))));
+    }
+}
+```
+
+**4. Empty Arguments Handling**
+```zig
+// Consistent handling: Return NULL for empty args in get_function_args
+if (node.arg_count == 0) {
+    return null;
+}
+```
+
+### User Feedback Patterns
+
+**Documentation Oversight Detection**: User feedback caught that both ar_expression_ast AND ar_instruction_ast documentation needed language migration updates, revealing systematic documentation update requirements.
+
+**Quality Assurance Value**: User perspective identified missing steps that developer familiarity with codebase might overlook.
+
+### Memory Management Lessons
+
+**Zero Leak Achievement**: 48 allocations, all freed - demonstrates that systematic TDD approach with careful ownership tracking prevents leaks.
+
+**Ownership Transfer Clarity**: Using `own_`, `mut_`, `ref_` prefixes consistently helped track ownership throughout complex operations.
+
+### Performance Insights
+
+**List Operations**: ar_list__remove_first() vs ar_list__items() choice can significantly impact performance in destruction scenarios.
+
+**Memory Allocation Patterns**: Consistent use of AR__HEAP__ macros with descriptive labels aids debugging.
+
 ## Compliance Verification for Existing Zig Modules
 
 **Critical**: Existing Zig modules may not follow migration guidelines if implemented before standards were established.
