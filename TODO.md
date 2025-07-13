@@ -46,6 +46,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ### ar_semver Module Zig Conversion (Completed 2025-07-05)
 - [x] Converted ar_semver.c to ar_semver.zig standalone with enhanced safety, all tests pass
 
+### ar_instruction_ast Module Zig Conversion (Completed 2025-07-13)
+- [x] Migrated ar_instruction_ast.c to ar_instruction_ast.zig with full C API compatibility
+- [x] Enhanced null safety with argument checking in create_function_call
+- [x] Improved efficiency using ar_list__remove_first() for list destruction  
+- [x] All tests pass with zero memory leaks (48 allocations, all freed)
+- [x] Updated documentation to reflect Zig implementation
+
 ## Critical Compliance Tasks
 
 ### CRITICAL - Evaluator Code Duplication Refactoring (HIGHEST PRIORITY)

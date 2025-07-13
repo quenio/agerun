@@ -4,7 +4,7 @@
 
 In the AgeRun system, a module is a self-contained unit of functionality that consists of an implementation file (`.c` or `.zig`) and a header file (`.h`). Each module encapsulates a specific set of related functions and data structures that work together to provide a particular capability to the system. Modules are designed to have clear interfaces and dependencies, making the system more maintainable and easier to understand.
 
-**Zig Integration**: Some modules are now implemented in Zig (`.zig` files) while maintaining full C ABI compatibility. Currently implemented in Zig: `ar_assert`, `ar_heap`, `ar_memory_accessor`, `ar_method_evaluator`, `ar_semver`, and `ar_string`. The `ar_io` module uses a hybrid approach with most functions in Zig (`ar_io.zig`) and variadic functions in C (`ar_io_variadic.c`) due to platform-specific requirements.
+**Zig Integration**: Some modules are now implemented in Zig (`.zig` files) while maintaining full C ABI compatibility. Currently implemented in Zig: `ar_assert`, `ar_expression_ast`, `ar_heap`, `ar_instruction_ast`, `ar_memory_accessor`, `ar_method_evaluator`, `ar_semver`, and `ar_string`. The `ar_io` module uses a hybrid approach with most functions in Zig (`ar_io.zig`) and variadic functions in C (`ar_io_variadic.c`) due to platform-specific requirements.
 
 Each module typically follows a consistent naming convention with an `ar_` prefix (e.g., `ar_data`, `ar_string`), and has its own test file (`ar_*_tests.c`) that verifies its functionality. Note: File names are being transitioned from `ar_` to `ar_` prefix gradually as files are modified for other reasons.
 
@@ -183,11 +183,11 @@ ar_instruction_ast
 
 ar_method_ast
 ├──c──> ar_list
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 └──c──> ar_heap (Zig)
 
 ar_instruction_parser
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 │       ├──c──> ar_list
 │       └──c──> ar_heap (Zig)
 ├──c──> ar_list
@@ -195,55 +195,55 @@ ar_instruction_parser
 └──c──> ar_heap (Zig)
 
 ar_assignment_instruction_parser
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 │       ├──c──> ar_list
 │       └──c──> ar_heap (Zig)
 └──c──> ar_heap (Zig)
 
 ar_send_instruction_parser
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 │       ├──c──> ar_list
 │       └──c──> ar_heap (Zig)
 ├──c──> ar_string (Zig)
 └──c──> ar_heap (Zig)
 
 ar_condition_instruction_parser
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 │       ├──c──> ar_list
 │       └──c──> ar_heap (Zig)
 ├──c──> ar_string (Zig)
 └──c──> ar_heap (Zig)
 
 ar_parse_instruction_parser
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 │       ├──c──> ar_list
 │       └──c──> ar_heap (Zig)
 ├──c──> ar_string (Zig)
 └──c──> ar_heap (Zig)
 
 ar_build_instruction_parser
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 │       ├──c──> ar_list
 │       └──c──> ar_heap (Zig)
 ├──c──> ar_string (Zig)
 └──c──> ar_heap (Zig)
 
 ar_compile_instruction_parser
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 │       ├──c──> ar_list
 │       └──c──> ar_heap (Zig)
 ├──c──> ar_string (Zig)
 └──c──> ar_heap (Zig)
 
 ar_agent_instruction_parser
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 │       ├──c──> ar_list
 │       └──c──> ar_heap (Zig)
 ├──c──> ar_string (Zig)
 └──c──> ar_heap (Zig)
 
 ar_expression_parser
-├──c──> ar_expression_ast
+├──c──> ar_expression_ast (Zig)
 │       ├──c──> ar_list
 │       └──c──> ar_heap (Zig)
 ├──c──> ar_list
@@ -277,7 +277,7 @@ ar_instruction_evaluator
 │       ├──h──> ar_data
 │       ├──c──> ar_memory_accessor (Zig)
 │       ├──c──> ar_expression_parser
-│       ├──c──> ar_expression_ast
+│       ├──c──> ar_expression_ast (Zig)
 │       ├──c──> ar_string (Zig)
 │       └──c──> ar_heap (Zig)
 ├──c──> ar_send_instruction_evaluator
@@ -286,7 +286,7 @@ ar_instruction_evaluator
 │       ├──h──> ar_data
 │       ├──c──> ar_memory_accessor (Zig)
 │       ├──c──> ar_expression_parser
-│       ├──c──> ar_expression_ast
+│       ├──c──> ar_expression_ast (Zig)
 │       ├──c──> ar_agency
 │       ├──c──> ar_string (Zig)
 │       └──c──> ar_heap (Zig)
@@ -296,7 +296,7 @@ ar_instruction_evaluator
 │       ├──h──> ar_data
 │       ├──c──> ar_memory_accessor (Zig)
 │       ├──c──> ar_expression_parser
-│       ├──c──> ar_expression_ast
+│       ├──c──> ar_expression_ast (Zig)
 │       ├──c──> ar_string (Zig)
 │       └──c──> ar_heap (Zig)
 ├──c──> ar_parse_instruction_evaluator
@@ -305,7 +305,7 @@ ar_instruction_evaluator
 │       ├──h──> ar_data
 │       ├──c──> ar_memory_accessor (Zig)
 │       ├──c──> ar_expression_parser
-│       ├──c──> ar_expression_ast
+│       ├──c──> ar_expression_ast (Zig)
 │       ├──c──> ar_instruction
 │       ├──c──> ar_string (Zig)
 │       └──c──> ar_heap (Zig)
@@ -315,7 +315,7 @@ ar_instruction_evaluator
 │       ├──h──> ar_data
 │       ├──c──> ar_memory_accessor (Zig)
 │       ├──c──> ar_expression_parser
-│       ├──c──> ar_expression_ast
+│       ├──c──> ar_expression_ast (Zig)
 │       ├──c──> ar_string (Zig)
 │       └──c──> ar_heap (Zig)
 ├──c──> ar_compile_instruction_evaluator
@@ -324,7 +324,7 @@ ar_instruction_evaluator
 │       ├──h──> ar_data
 │       ├──c──> ar_memory_accessor (Zig)
 │       ├──c──> ar_expression_parser
-│       ├──c──> ar_expression_ast
+│       ├──c──> ar_expression_ast (Zig)
 │       ├──c──> ar_methodology
 │       ├──c──> ar_method
 │       ├──c──> ar_string (Zig)
@@ -335,7 +335,7 @@ ar_instruction_evaluator
 │       ├──h──> ar_data
 │       ├──c──> ar_memory_accessor (Zig)
 │       ├──c──> ar_expression_parser
-│       ├──c──> ar_expression_ast
+│       ├──c──> ar_expression_ast (Zig)
 │       ├──c──> ar_agency
 │       ├──c──> ar_method
 │       ├──c──> ar_methodology
@@ -347,7 +347,7 @@ ar_instruction_evaluator
 │       ├──h──> ar_data
 │       ├──c──> ar_memory_accessor (Zig)
 │       ├──c──> ar_expression_parser
-│       ├──c──> ar_expression_ast
+│       ├──c──> ar_expression_ast (Zig)
 │       ├──c──> ar_agency
 │       └──c──> ar_heap (Zig)
 ├──c──> ar_deprecate_instruction_evaluator
@@ -356,7 +356,7 @@ ar_instruction_evaluator
 │       ├──h──> ar_data
 │       ├──c──> ar_memory_accessor (Zig)
 │       ├──c──> ar_expression_parser
-│       ├──c──> ar_expression_ast
+│       ├──c──> ar_expression_ast (Zig)
 │       ├──c──> ar_agency
 │       ├──c──> ar_method
 │       ├──c──> ar_methodology
@@ -453,19 +453,19 @@ ar_expression_tests
 └──c──> ar_heap (Zig)
 
 ar_expression_ast_tests
-├──c──> ar_expression_ast (module under test)
+├──c──> ar_expression_ast (Zig) (module under test)
 ├──c──> ar_list
 └──c──> ar_heap (Zig)
 
 ar_expression_parser_tests
 ├──c──> ar_expression_parser (module under test)
-├──c──> ar_expression_ast
+├──c──> ar_expression_ast (Zig)
 ├──c──> ar_list
 └──c──> ar_heap (Zig)
 
 ar_expression_evaluator_tests
 ├──c──> ar_expression_evaluator (module under test)
-├──c──> ar_expression_ast
+├──c──> ar_expression_ast (Zig)
 ├──c──> ar_data
 └──c──> ar_heap (Zig)
 
@@ -478,7 +478,7 @@ ar_assignment_instruction_evaluator_tests
 ├──c──> ar_assignment_instruction_evaluator (module under test)
 ├──c──> ar_instruction_evaluator
 ├──c──> ar_expression_evaluator
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 ├──c──> ar_data
 └──c──> ar_heap (Zig)
 
@@ -486,7 +486,7 @@ ar_send_instruction_evaluator_tests
 ├──c──> ar_send_instruction_evaluator (module under test)
 ├──c──> ar_instruction_evaluator
 ├──c──> ar_expression_evaluator
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 ├──c──> ar_agency
 ├──c──> ar_data
 └──c──> ar_heap (Zig)
@@ -495,7 +495,7 @@ ar_condition_instruction_evaluator_tests
 ├──c──> ar_condition_instruction_evaluator (module under test)
 ├──c──> ar_instruction_evaluator
 ├──c──> ar_expression_evaluator
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 ├──c──> ar_data
 └──c──> ar_heap (Zig)
 
@@ -503,7 +503,7 @@ ar_parse_instruction_evaluator_tests
 ├──c──> ar_parse_instruction_evaluator (module under test)
 ├──c──> ar_instruction_evaluator
 ├──c──> ar_expression_evaluator
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 ├──c──> ar_data
 └──c──> ar_heap (Zig)
 
@@ -511,7 +511,7 @@ ar_build_instruction_evaluator_tests
 ├──c──> ar_build_instruction_evaluator (module under test)
 ├──c──> ar_instruction_evaluator
 ├──c──> ar_expression_evaluator
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 ├──c──> ar_data
 └──c──> ar_heap (Zig)
 
@@ -519,7 +519,7 @@ ar_compile_instruction_evaluator_tests
 ├──c──> ar_compile_instruction_evaluator (module under test)
 ├──c──> ar_instruction_evaluator
 ├──c──> ar_expression_evaluator
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 ├──c──> ar_methodology
 ├──c──> ar_system
 ├──c──> ar_data
@@ -529,7 +529,7 @@ ar_agent_instruction_evaluator_tests
 ├──c──> ar_agent_instruction_evaluator (module under test)
 ├──c──> ar_instruction_evaluator
 ├──c──> ar_expression_evaluator
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 ├──c──> ar_agency
 ├──c──> ar_methodology
 ├──c──> ar_system
@@ -539,7 +539,7 @@ ar_agent_instruction_evaluator_tests
 ar_instruction_evaluator_tests
 ├──c──> ar_instruction_evaluator (module under test)
 ├──c──> ar_expression_evaluator
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 ├──c──> ar_agency
 ├──c──> ar_methodology
 ├──c──> ar_method
@@ -553,13 +553,13 @@ ar_instruction_tests
 └──c──> ar_heap (Zig)
 
 ar_instruction_ast_tests
-├──c──> ar_instruction_ast (module under test)
+├──c──> ar_instruction_ast (Zig) (Zig)
 ├──c──> ar_list
 └──c──> ar_heap (Zig)
 
 ar_method_ast_tests
 ├──c──> ar_method_ast (module under test)
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 └──c──> ar_heap (Zig)
 
 ar_method_evaluator_tests
@@ -570,8 +570,8 @@ ar_method_evaluator_tests
 ├──c──> ar_data
 ├──c──> ar_frame
 ├──c──> ar_method_ast
-├──c──> ar_expression_ast
-├──c──> ar_instruction_ast
+├──c──> ar_expression_ast (Zig)
+├──c──> ar_instruction_ast (Zig)
 └──c──> ar_heap (Zig)
 
 ar_method_parser_tests
@@ -580,48 +580,48 @@ ar_method_parser_tests
 
 ar_instruction_parser_tests
 ├──c──> ar_instruction_parser (module under test)
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 ├──c──> ar_list
 └──c──> ar_heap (Zig)
 
 ar_assignment_instruction_parser_tests
 ├──c──> ar_assignment_instruction_parser (module under test)
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 └──c──> ar_heap (Zig)
 
 ar_send_instruction_parser_tests
 ├──c──> ar_send_instruction_parser (module under test)
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 ├──c──> ar_list
 └──c──> ar_heap (Zig)
 
 ar_condition_instruction_parser_tests
 ├──c──> ar_condition_instruction_parser (module under test)
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 ├──c──> ar_list
 └──c──> ar_heap (Zig)
 
 ar_parse_instruction_parser_tests
 ├──c──> ar_parse_instruction_parser (module under test)
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 ├──c──> ar_list
 └──c──> ar_heap (Zig)
 
 ar_build_instruction_parser_tests
 ├──c──> ar_build_instruction_parser (module under test)
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 ├──c──> ar_list
 └──c──> ar_heap (Zig)
 
 ar_compile_instruction_parser_tests
 ├──c──> ar_compile_instruction_parser (module under test)
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 ├──c──> ar_list
 └──c──> ar_heap (Zig)
 
 ar_agent_instruction_parser_tests
 ├──c──> ar_agent_instruction_parser (module under test)
-├──c──> ar_instruction_ast
+├──c──> ar_instruction_ast (Zig)
 ├──c──> ar_list
 └──c──> ar_heap (Zig)
 
@@ -1014,6 +1014,7 @@ The [expression AST module](ar_expression_ast.md) provides Abstract Syntax Tree 
 - **Ownership Transfer**: Array accessor follows ar_list__items pattern, transferring ownership to caller
 - **Independent Design**: No dependencies on expression module, ensuring clean separation
 - **Opaque Types**: Uses opaque node structure to hide implementation details
+- **Zig Implementation**: Implemented in Zig for compile-time safety while maintaining C compatibility
 - **Depends on List**: Uses the list module for storing memory access path components
 
 ### Expression Parser Module (`ar_expression_parser`)
@@ -1174,6 +1175,7 @@ The [instruction AST module](ar_instruction_ast.md) provides Abstract Syntax Tre
 - **Function Arguments**: Returns lists for function arguments with ownership transferred to caller
 - **Memory Safety**: Implements proper destruction with recursive cleanup of child nodes
 - **Opaque Types**: Uses opaque types following Parnas principles for information hiding
+- **Zig Implementation**: Implemented in Zig for compile-time safety while maintaining C compatibility
 - **Depends on List**: Uses the list module for managing function arguments
 - **Depends on Heap**: Uses heap tracking for comprehensive memory management
 
