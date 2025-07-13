@@ -1,9 +1,9 @@
 /**
- * @file ar_agent_instruction_evaluator.c
- * @brief Implementation of the agent instruction evaluator module
+ * @file ar_create_instruction_evaluator.c
+ * @brief Implementation of the create instruction evaluator module
  */
 
-#include "ar_agent_instruction_evaluator.h"
+#include "ar_create_instruction_evaluator.h"
 #include "ar_heap.h"
 #include "ar_expression_ast.h"
 #include "ar_agency.h"
@@ -18,12 +18,12 @@
 
 
 /* Opaque struct definition */
-struct ar_agent_instruction_evaluator_s {
+struct ar_create_instruction_evaluator_s {
     ar_log_t *ref_log;                           /* Borrowed reference to log instance */
     ar_expression_evaluator_t *ref_expr_evaluator; /* Borrowed reference to expression evaluator */
 };
 
-ar_agent_instruction_evaluator_t* ar_agent_instruction_evaluator__create(
+ar_create_instruction_evaluator_t* ar_create_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator
 ) {
@@ -31,7 +31,7 @@ ar_agent_instruction_evaluator_t* ar_agent_instruction_evaluator__create(
         return NULL;
     }
     
-    ar_agent_instruction_evaluator_t *own_evaluator = AR__HEAP__MALLOC(sizeof(ar_agent_instruction_evaluator_t), "agent_instruction_evaluator");
+    ar_create_instruction_evaluator_t *own_evaluator = AR__HEAP__MALLOC(sizeof(ar_create_instruction_evaluator_t), "create_instruction_evaluator");
     if (!own_evaluator) {
         return NULL;
     }
@@ -42,7 +42,7 @@ ar_agent_instruction_evaluator_t* ar_agent_instruction_evaluator__create(
     return own_evaluator;
 }
 
-void ar_agent_instruction_evaluator__destroy(ar_agent_instruction_evaluator_t *own_evaluator) {
+void ar_create_instruction_evaluator__destroy(ar_create_instruction_evaluator_t *own_evaluator) {
     if (!own_evaluator) {
         return;
     }
@@ -52,7 +52,7 @@ void ar_agent_instruction_evaluator__destroy(ar_agent_instruction_evaluator_t *o
 
 
 /* Helper function to log error message */
-static void _log_error(ar_agent_instruction_evaluator_t *mut_evaluator, const char *message) {
+static void _log_error(ar_create_instruction_evaluator_t *mut_evaluator, const char *message) {
     if (message && mut_evaluator->ref_log) {
         ar_log__error(mut_evaluator->ref_log, message);
     }
@@ -94,8 +94,8 @@ static bool _store_result_if_assigned(
 }
 
 
-bool ar_agent_instruction_evaluator__evaluate(
-    ar_agent_instruction_evaluator_t *mut_evaluator,
+bool ar_create_instruction_evaluator__evaluate(
+    ar_create_instruction_evaluator_t *mut_evaluator,
     const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 ) {
@@ -114,7 +114,7 @@ bool ar_agent_instruction_evaluator__evaluate(
     }
     
     // Validate AST type
-    if (ar_instruction_ast__get_type(ref_ast) != AR_INSTRUCTION_AST_TYPE__AGENT) {
+    if (ar_instruction_ast__get_type(ref_ast) != AR_INSTRUCTION_AST_TYPE__CREATE) {
         return false;
     }
     

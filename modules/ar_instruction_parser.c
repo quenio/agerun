@@ -14,7 +14,7 @@
 #include "ar_parse_instruction_parser.h"
 #include "ar_build_instruction_parser.h"
 #include "ar_compile_instruction_parser.h"
-#include "ar_agent_instruction_parser.h"
+#include "ar_create_instruction_parser.h"
 #include "ar_destroy_agent_instruction_parser.h"
 #include "ar_destroy_method_instruction_parser.h"
 
@@ -31,7 +31,7 @@ struct ar_instruction_parser_s {
     ar_parse_instruction_parser_t *own_parse_parser;
     ar_build_instruction_parser_t *own_build_parser;
     ar_compile_instruction_parser_t *own_method_parser;
-    ar_agent_instruction_parser_t *own_agent_parser;
+    ar_create_instruction_parser_t *own_create_parser;
     ar_destroy_agent_instruction_parser_t *own_destroy_agent_parser;
     ar_destroy_method_instruction_parser_t *own_destroy_method_parser;
 };
@@ -62,8 +62,8 @@ static void _destroy_specialized_parsers(ar_instruction_parser_t *mut_parser) {
     if (mut_parser->own_method_parser) {
         ar_compile_instruction_parser__destroy(mut_parser->own_method_parser);
     }
-    if (mut_parser->own_agent_parser) {
-        ar_agent_instruction_parser__destroy(mut_parser->own_agent_parser);
+    if (mut_parser->own_create_parser) {
+        ar_create_instruction_parser__destroy(mut_parser->own_create_parser);
     }
     if (mut_parser->own_destroy_agent_parser) {
         ar_destroy_agent_instruction_parser__destroy(mut_parser->own_destroy_agent_parser);
@@ -125,8 +125,8 @@ ar_instruction_parser_t* ar_instruction_parser__create(ar_log_t *ref_log) {
     }
     
     // Create agent parser
-    own_parser->own_agent_parser = ar_agent_instruction_parser__create(ref_log);
-    if (!own_parser->own_agent_parser) {
+    own_parser->own_create_parser = ar_create_instruction_parser__create(ref_log);
+    if (!own_parser->own_create_parser) {
         goto error;
     }
     
@@ -277,10 +277,10 @@ static ar_instruction_ast_t* _dispatch_function(ar_instruction_parser_t *mut_par
         return own_ast;
     }
     
-    // Check for agent
-    if (func_len == 5 && strncmp(func_name, "agent", 5) == 0) {
-        ar_instruction_ast_t *own_ast = ar_agent_instruction_parser__parse(
-            mut_parser->own_agent_parser,
+    // Check for create
+    if (func_len == 6 && strncmp(func_name, "create", 6) == 0) {
+        ar_instruction_ast_t *own_ast = ar_create_instruction_parser__parse(
+            mut_parser->own_create_parser,
             ref_instruction,
             own_result_path
         );

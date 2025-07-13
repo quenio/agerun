@@ -20,8 +20,8 @@ The module supports the following instruction types:
 - **AR_INSTRUCTION_AST_TYPE__ASSIGNMENT**: Assignment instructions (e.g., `memory.x := 42`)
 - **AR_INSTRUCTION_AST_TYPE__SEND**: Send function calls (e.g., `send(0, "Hello")`)
 - **AR_INSTRUCTION_AST_TYPE__IF**: Conditional function calls (e.g., `if(x > 5, "High", "Low")`)
-- **AR_INSTRUCTION_AST_TYPE__METHOD**: Method creation calls (e.g., `method("greet", "...", "1.0.0")`)
-- **AR_INSTRUCTION_AST_TYPE__AGENT**: Agent creation calls (e.g., `agent("echo", "1.0.0", context)`)
+- **AR_INSTRUCTION_AST_TYPE__COMPILE**: Method creation calls (e.g., `compile("greet", "...", "1.0.0")`)
+- **AR_INSTRUCTION_AST_TYPE__CREATE**: Agent creation calls (e.g., `create("echo", "1.0.0", context)`)
 - **AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT**: Destroy agent calls (e.g., `destroy(agent_id)`)
 - **AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD**: Destroy method calls (e.g., `destroy("method_name", "1.0.0")`)
 - **AR_INSTRUCTION_AST_TYPE__PARSE**: Parse function calls (e.g., `parse("{name}", "name=John")`)
@@ -36,8 +36,8 @@ typedef enum {
     AR_INSTRUCTION_AST_TYPE__ASSIGNMENT,
     AR_INSTRUCTION_AST_TYPE__SEND,
     AR_INSTRUCTION_AST_TYPE__IF,
-    AR_INSTRUCTION_AST_TYPE__METHOD,
-    AR_INSTRUCTION_AST_TYPE__AGENT,
+    AR_INSTRUCTION_AST_TYPE__COMPILE,
+    AR_INSTRUCTION_AST_TYPE__CREATE,
     AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT,
     AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD,
     AR_INSTRUCTION_AST_TYPE__PARSE,

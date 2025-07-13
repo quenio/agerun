@@ -22,7 +22,7 @@ typedef enum {
     AR_INSTRUCTION_TYPE__SEND,           // send(target, message) or result := send(...)
     AR_INSTRUCTION_TYPE__IF,             // if(condition, true_val, false_val)
     AR_INSTRUCTION_TYPE__COMPILE,        // compile(name, instructions, version)
-    AR_INSTRUCTION_TYPE__AGENT,          // agent(method, version, context)
+    AR_INSTRUCTION_TYPE__CREATE,         // create(method, version, context)
     AR_INSTRUCTION_TYPE__DESTROY,        // destroy(type, arg1, arg2)
     AR_INSTRUCTION_TYPE__PARSE,          // parse(string)
     INST_BUILD           // build(template, map)

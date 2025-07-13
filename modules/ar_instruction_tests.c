@@ -235,11 +235,11 @@ static void test_parse_function_call_instructions(void) {
         ar_data__set_map_data(mut_memory, "ctx", own_context);
         
         // When parsing an agent function call
-        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("agent(\"echo\", \"1.0.0\", memory.ctx)", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("create(\"echo\", \"1.0.0\", memory.ctx)", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__AGENT);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__CREATE);
         
         const char *function_name = NULL;
         const char **args = NULL;
@@ -248,7 +248,7 @@ static void test_parse_function_call_instructions(void) {
         
         bool is_function = ar_instruction__get_function_call(own_parsed, &function_name, &args, &arg_count, &result_path);
         assert(is_function == true);
-        assert(strcmp(function_name, "agent") == 0);
+        assert(strcmp(function_name, "create") == 0);
         assert(arg_count == 3);
         assert(strcmp(args[0], "\"echo\"") == 0);
         assert(strcmp(args[1], "\"1.0.0\"") == 0);
@@ -458,11 +458,11 @@ static void test_parse_function_calls_with_assignment(void) {
         ar_data__set_map_data(mut_memory, "ctx", own_context);
         
         // When parsing an agent function call with assignment
-        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.agent_id := agent(\"echo\", \"1.0.0\", memory.ctx)", mut_ctx);
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.agent_id := create(\"echo\", \"1.0.0\", memory.ctx)", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__AGENT);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__CREATE);
         
         const char *function_name = NULL;
         const char **args = NULL;
@@ -471,7 +471,7 @@ static void test_parse_function_calls_with_assignment(void) {
         
         bool is_function = ar_instruction__get_function_call(own_parsed, &function_name, &args, &arg_count, &result_path);
         assert(is_function == true);
-        assert(strcmp(function_name, "agent") == 0);
+        assert(strcmp(function_name, "create") == 0);
         assert(arg_count == 3);
         assert(result_path != NULL);
         assert(strcmp(result_path, "agent_id") == 0);

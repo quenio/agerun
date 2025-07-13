@@ -1,8 +1,8 @@
-# Agent Instruction Evaluator Module
+# Create Instruction Evaluator Module
 
 ## Overview
 
-The agent instruction evaluator module is responsible for evaluating agent creation instructions in the AgeRun language. It handles creating new agents with specified methods and initial context.
+The create instruction evaluator module is responsible for evaluating create instructions in the AgeRun language. It handles creating new agents with specified methods and initial context.
 
 ## Purpose
 
@@ -16,20 +16,20 @@ The module follows an instantiable design pattern with lifecycle management:
 
 ```c
 // Create evaluator instance with dependencies (frame-based pattern)
-ar_agent_instruction_evaluator_t* ar_agent_instruction_evaluator__create(
+ar_create_instruction_evaluator_t* ar_create_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator
 );
 
 // Evaluate using frame-based execution
-bool ar_agent_instruction_evaluator__evaluate(
-    ar_agent_instruction_evaluator_t *mut_evaluator,
+bool ar_create_instruction_evaluator__evaluate(
+    ar_create_instruction_evaluator_t *mut_evaluator,
     const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
 
 // Clean up instance
-void ar_agent_instruction_evaluator__destroy(ar_agent_instruction_evaluator_t *own_evaluator);
+void ar_create_instruction_evaluator__destroy(ar_create_instruction_evaluator_t *own_evaluator);
 ```
 
 ### Legacy Interface (Backward Compatibility)
@@ -39,9 +39,9 @@ void ar_agent_instruction_evaluator__destroy(ar_agent_instruction_evaluator_t *o
 
 ### Functionality
 
-The module evaluates agent instructions of the form:
-- `agent(method_name, version, context)`
-- `memory.agent_id := agent(method_name, version, context)`
+The module evaluates create instructions of the form:
+- `create(method_name, version, context)`
+- `memory.agent_id := create(method_name, version, context)`
 
 Key features:
 1. **Frame-Based Execution**: Uses ar_frame_t for memory, context, and message bundling
@@ -104,18 +104,18 @@ ar_data_t *memory = ar_data__create_map();
 ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
 
 // Create agent evaluator instance
-ar_agent_instruction_evaluator_t *evaluator = ar_agent_instruction_evaluator__create(
+ar_create_instruction_evaluator_t *evaluator = ar_create_instruction_evaluator__create(
     log, expr_eval, memory
 );
 
-// Parse agent instruction: memory.worker := agent("processor", "1.0.0", context)
+// Parse create instruction: memory.worker := create("processor", "1.0.0", context)
 ar_instruction_ast_t *ast = ar_instruction_parser__parse_agent(parser);
 
 // Evaluate using instance
-bool success = ar_agent_instruction_evaluator__evaluate(evaluator, ast);
+bool success = ar_create_instruction_evaluator__evaluate(evaluator, ast);
 
 // Clean up
-ar_agent_instruction_evaluator__destroy(evaluator);
+ar_create_instruction_evaluator__destroy(evaluator);
 // New agent created with ID stored in memory["worker"]
 ```
 

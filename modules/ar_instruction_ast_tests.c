@@ -158,23 +158,23 @@ static void test_create_method_function(void) {
 }
 
 static void test_create_agent_function(void) {
-    printf("Testing agent function creation...\n");
+    printf("Testing create function creation...\n");
     
-    // Given agent function arguments
-    const char *function_name = "agent";
+    // Given create function arguments
+    const char *function_name = "create";
     const char *args[] = {"\"echo\"", "\"1.0.0\"", "memory.context"};
     size_t arg_count = 3;
     const char *result_path = "memory.agent_id";
     
-    // When creating an agent function call AST node
+    // When creating a create function call AST node
     ar_instruction_ast_t *own_node = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__AGENT, function_name, args, arg_count, result_path
+        AR_INSTRUCTION_AST_TYPE__CREATE, function_name, args, arg_count, result_path
     );
     
     // Then the node should be created correctly
     assert(own_node != NULL);
-    assert(ar_instruction_ast__get_type(own_node) == AR_INSTRUCTION_AST_TYPE__AGENT);
-    assert(strcmp(ar_instruction_ast__get_function_name(own_node), "agent") == 0);
+    assert(ar_instruction_ast__get_type(own_node) == AR_INSTRUCTION_AST_TYPE__CREATE);
+    assert(strcmp(ar_instruction_ast__get_function_name(own_node), "create") == 0);
     assert(strcmp(ar_instruction_ast__get_function_result_path(own_node), "memory.agent_id") == 0);
     
     ar_instruction_ast__destroy(own_node);

@@ -206,11 +206,11 @@ static void test_instruction_parser__parse_method(void) {
     ar_instruction_parser__destroy(own_parser);
 }
 
-static void test_instruction_parser__parse_agent(void) {
-    printf("Testing unified parse method for agent instruction...\n");
+static void test_instruction_parser__parse_create(void) {
+    printf("Testing unified parse method for create instruction...\n");
     
-    // Given an agent instruction
-    const char *instruction = "agent(\"echo\", \"1.0.0\")";
+    // Given a create instruction
+    const char *instruction = "create(\"echo\", \"1.0.0\")";
     
     // When creating a parser and parsing via unified method
     ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
@@ -220,7 +220,7 @@ static void test_instruction_parser__parse_agent(void) {
     
     // Then it should parse successfully
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__AGENT);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__CREATE);
     
     ar_instruction_ast__destroy(own_ast);
     ar_instruction_parser__destroy(own_parser);
@@ -470,11 +470,11 @@ static void test_parse_compile_function(void) {
     ar_instruction_parser__destroy(own_parser);
 }
 
-static void test_parse_agent_function(void) {
-    printf("Testing agent function parsing...\n");
+static void test_parse_create_function(void) {
+    printf("Testing create function parsing...\n");
     
-    // Given an agent function call
-    const char *instruction = "memory.agent_id := agent(\"echo\", \"1.0.0\", memory.context)";
+    // Given a create function call
+    const char *instruction = "memory.agent_id := create(\"echo\", \"1.0.0\", memory.context)";
     
     // When creating a parser and parsing the instruction
     ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
@@ -482,9 +482,9 @@ static void test_parse_agent_function(void) {
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
-    // Then it should parse as an agent function
+    // Then it should parse as a create function
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__AGENT);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__CREATE);
     assert(ar_instruction_ast__has_result_assignment(own_ast) == true);
     
     ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
@@ -703,7 +703,7 @@ int main(void) {
     test_instruction_parser__parse_parse();
     test_instruction_parser__parse_build();
     test_instruction_parser__parse_method();
-    test_instruction_parser__parse_agent();
+    test_instruction_parser__parse_create();
     test_instruction_parser__parse_destroy_agent();
     test_instruction_parser__parse_destroy_method();
     test_instruction_parser__parse_unknown();
@@ -720,7 +720,7 @@ int main(void) {
     // Send tests moved to ar_send_instruction_parser_tests.c
     test_parse_if_function();
     test_parse_compile_function();
-    test_parse_agent_function();
+    test_parse_create_function();
     test_parse_destroy_one_arg();
     test_parse_destroy_two_args();
     test_parse_parse_function();

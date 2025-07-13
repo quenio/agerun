@@ -1,4 +1,4 @@
-#include "ar_agent_instruction_parser.h"
+#include "ar_create_instruction_parser.h"
 #include "ar_instruction_ast.h"
 #include "ar_heap.h"
 #include "ar_expression_parser.h"
@@ -11,17 +11,17 @@
 #include <stdbool.h>
 
 /**
- * @file ar_agent_instruction_parser.c
- * @brief Implementation of the agent instruction parser module
+ * @file ar_create_instruction_parser.c
+ * @brief Implementation of the create instruction parser module
  */
 
 /* Parser state structure */
-struct ar_agent_instruction_parser_s {
+struct ar_create_instruction_parser_s {
     ar_log_t *ref_log;          /* Log instance for error reporting (borrowed) */
 };
 
 /* Helper functions */
-static void _log_error(ar_agent_instruction_parser_t *mut_parser, const char *error, size_t position) {
+static void _log_error(ar_create_instruction_parser_t *mut_parser, const char *error, size_t position) {
     if (!mut_parser || !error) {
         return;
     }
@@ -106,8 +106,8 @@ static void _cleanup_parsed_args(char ***args, size_t count) {
     }
 }
 
-static bool _parse_agent_arguments(const char *str, size_t *pos, char ***out_args, size_t *out_count) {
-    // For agent(), we support 2 or 3 arguments
+static bool _parse_create_arguments(const char *str, size_t *pos, char ***out_args, size_t *out_count) {
+    // For create(), we support 2 or 3 arguments
     const size_t max_args = 3;
     *out_args = AR__HEAP__MALLOC(max_args * sizeof(char*), "function arguments array");
     if (!*out_args) {
@@ -185,7 +185,7 @@ static void _cleanup_arg_asts(ar_list_t *arg_asts) {
 /**
  * Internal: Parse argument strings into expression ASTs and return as a list.
  */
-static ar_list_t* _parse_arguments_to_asts(ar_agent_instruction_parser_t *mut_parser, 
+static ar_list_t* _parse_arguments_to_asts(ar_create_instruction_parser_t *mut_parser, 
                                         char **ref_args, 
                                         size_t arg_count,
                                         size_t error_offset) {
@@ -229,10 +229,10 @@ static ar_list_t* _parse_arguments_to_asts(ar_agent_instruction_parser_t *mut_pa
 }
 
 /**
- * Create a new agent instruction parser instance
+ * Create a new create instruction parser instance
  */
-ar_agent_instruction_parser_t* ar_agent_instruction_parser__create(ar_log_t *ref_log) {
-    ar_agent_instruction_parser_t *own_parser = AR__HEAP__MALLOC(sizeof(ar_agent_instruction_parser_t), "agent parser");
+ar_create_instruction_parser_t* ar_create_instruction_parser__create(ar_log_t *ref_log) {
+    ar_create_instruction_parser_t *own_parser = AR__HEAP__MALLOC(sizeof(ar_create_instruction_parser_t), "create parser");
     if (!own_parser) {
         return NULL;
     }
@@ -243,9 +243,9 @@ ar_agent_instruction_parser_t* ar_agent_instruction_parser__create(ar_log_t *ref
 }
 
 /**
- * Destroy an agent instruction parser instance
+ * Destroy a create instruction parser instance
  */
-void ar_agent_instruction_parser__destroy(ar_agent_instruction_parser_t *own_parser) {
+void ar_create_instruction_parser__destroy(ar_create_instruction_parser_t *own_parser) {
     if (!own_parser) {
         return;
     }
@@ -254,10 +254,10 @@ void ar_agent_instruction_parser__destroy(ar_agent_instruction_parser_t *own_par
 }
 
 /**
- * Parse an agent instruction
+ * Parse a create instruction
  */
-ar_instruction_ast_t* ar_agent_instruction_parser__parse(
-    ar_agent_instruction_parser_t *mut_parser,
+ar_instruction_ast_t* ar_create_instruction_parser__parse(
+    ar_create_instruction_parser_t *mut_parser,
     const char *ref_instruction,
     const char *ref_result_path
 ) {
@@ -281,19 +281,19 @@ ar_instruction_ast_t* ar_agent_instruction_parser__parse(
         }
     }
     
-    /* Check for "agent" */
-    if (strncmp(ref_instruction + pos, "agent", 5) != 0) {
-        _log_error(mut_parser, "Expected 'agent' function", pos);
+    /* Check for "create" */
+    if (strncmp(ref_instruction + pos, "create", 6) != 0) {
+        _log_error(mut_parser, "Expected 'create' function", pos);
         return NULL;
     }
-    pos += 5;
+    pos += 6;
     
     /* Skip whitespace */
     pos = _skip_whitespace(ref_instruction, pos);
     
     /* Expect opening parenthesis */
     if (ref_instruction[pos] != '(') {
-        _log_error(mut_parser, "Expected '(' after 'agent'", pos);
+        _log_error(mut_parser, "Expected '(' after 'create'", pos);
         return NULL;
     }
     pos++;
@@ -301,15 +301,15 @@ ar_instruction_ast_t* ar_agent_instruction_parser__parse(
     /* Parse arguments */
     char **args = NULL;
     size_t arg_count = 0;
-    if (!_parse_agent_arguments(ref_instruction, &pos, &args, &arg_count)) {
-        _log_error(mut_parser, "Failed to parse agent arguments", pos);
+    if (!_parse_create_arguments(ref_instruction, &pos, &args, &arg_count)) {
+        _log_error(mut_parser, "Failed to parse create arguments", pos);
         return NULL;
     }
     
     /* Skip closing parenthesis */
     pos++;
     
-    /* For agent(), if only 2 args provided, add NULL context to make it 3 args for evaluator */
+    /* For create(), if only 2 args provided, add NULL context to make it 3 args for evaluator */
     size_t final_arg_count = (arg_count == 2) ? 3 : arg_count;
     
     /* Create AST node - need to copy args to const array to avoid cast-qual warning */
@@ -333,7 +333,7 @@ ar_instruction_ast_t* ar_agent_instruction_parser__parse(
     }
     
     ar_instruction_ast_t *own_ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__AGENT, "agent", const_args, final_arg_count, ref_result_path
+        AR_INSTRUCTION_AST_TYPE__CREATE, "create", const_args, final_arg_count, ref_result_path
     );
     
     AR__HEAP__FREE(const_args);
@@ -395,7 +395,7 @@ ar_instruction_ast_t* ar_agent_instruction_parser__parse(
  * Get the last error message from the parser
  * DEPRECATED: This function always returns NULL. Use ar_log for error reporting.
  */
-const char* ar_agent_instruction_parser__get_error(const ar_agent_instruction_parser_t *ref_parser) {
+const char* ar_create_instruction_parser__get_error(const ar_create_instruction_parser_t *ref_parser) {
     (void)ref_parser; // Suppress unused parameter warning
     return NULL;
 }
@@ -404,7 +404,7 @@ const char* ar_agent_instruction_parser__get_error(const ar_agent_instruction_pa
  * Get the position where the last error occurred
  * DEPRECATED: This function always returns 0. Use ar_log for error reporting.
  */
-size_t ar_agent_instruction_parser__get_error_position(const ar_agent_instruction_parser_t *ref_parser) {
+size_t ar_create_instruction_parser__get_error_position(const ar_create_instruction_parser_t *ref_parser) {
     (void)ref_parser; // Suppress unused parameter warning
     return 0;
 }

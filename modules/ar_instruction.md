@@ -252,7 +252,7 @@ parsed = ar_instruction__parse("memory.created := method(\"greet\", \"memory.mes
 // Create an agent
 // Note: Map literals {} are not supported in AgeRun expressions
 // The context map would need to be created programmatically
-parsed = ar_instruction__parse("memory.worker_id := agent(\"echo\", \"1.0.0\", memory.context)", ctx);
+parsed = ar_instruction__parse("memory.worker_id := create(\"echo\", \"1.0.0\", memory.context)", ctx);
 ```
 
 ## Parse Function
@@ -341,11 +341,11 @@ method("greet", "memory.greeting := \"Hello\"", 1)
 The agent function creates new agent instances at runtime:
 
 ```c
-// Syntax: agent(method_name, version, context)
+// Syntax: create(method_name, version, context)
 memory.context := {"name": "Echo Agent"}
-memory.agent_id := agent("echo", "1.0.0", memory.context)  // Returns agent ID
+memory.agent_id := create("echo", "1.0.0", memory.context)  // Returns agent ID
 memory.empty := {}
-memory.agent_id2 := agent("calculator", "2.0.1", memory.empty)  // With empty context
+memory.agent_id2 := create("calculator", "2.0.1", memory.empty)  // With empty context
 ```
 
 **Parameters:**
@@ -382,7 +382,7 @@ destroy(method_name, version)
 
 ```c
 // Create an agent
-memory.agent_id := agent("echo", "1.0.0", memory.context)
+memory.agent_id := create("echo", "1.0.0", memory.context)
 
 // Later, destroy the agent
 memory.success := destroy(memory.agent_id)  // Returns 1 on success, 0 on failure

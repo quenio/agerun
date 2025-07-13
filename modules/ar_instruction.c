@@ -959,12 +959,12 @@ static ar_parsed_instruction_t* _parse_function_call(ar_instruction_context_t *m
         
         return own_result;
     }
-    else if (strcmp(function_name, "agent") == 0) {
-        own_result->type = AR_INSTRUCTION_TYPE__AGENT;
-        // agent(method_name, version, context) - requires exactly 3 arguments
+    else if (strcmp(function_name, "create") == 0) {
+        own_result->type = AR_INSTRUCTION_TYPE__CREATE;
+        // create(method_name, version, context) - requires exactly 3 arguments
         
         // Allocate args array for 3 arguments
-        own_result->own_args = AR__HEAP__MALLOC(3 * sizeof(char*), "Agent arguments");
+        own_result->own_args = AR__HEAP__MALLOC(3 * sizeof(char*), "Create arguments");
         if (!own_result->own_args) {
             ar_instruction__destroy_parsed(own_result);
             return NULL;

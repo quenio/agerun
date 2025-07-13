@@ -4,6 +4,31 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-07-13
 
+### ✅ COMPLETED: Renamed 'agent' instruction to 'create'
+- Systematic refactoring to rename the `agent` instruction to `create` throughout the codebase
+  - Updated enum AR_INSTRUCTION_AST_TYPE__AGENT to AR_INSTRUCTION_AST_TYPE__CREATE
+  - Updated legacy enum AR_INSTRUCTION_TYPE__AGENT to AR_INSTRUCTION_TYPE__CREATE
+- Updated all parser modules
+  - Changed all "agent" string comparisons to "create" 
+  - Renamed ar_agent_instruction_parser to ar_create_instruction_parser
+  - Updated all function names, types, and includes
+  - Fixed parser to check for "create" (6 chars) instead of "agent" (5 chars)
+- Updated all evaluator modules
+  - Renamed ar_agent_instruction_evaluator to ar_create_instruction_evaluator
+  - Updated all function names, types, and includes
+  - Fixed all references in instruction evaluator facade
+- Updated test files
+  - Renamed test files from ar_agent_instruction_* to ar_create_instruction_*
+  - Updated all test content to use create() instead of agent()
+  - Fixed all enum references and function names in tests
+- Updated documentation
+  - Renamed .md files for parser and evaluator modules
+  - Updated README.md, SPEC.md, and modules/README.md
+  - Updated all instruction AST documentation
+  - Updated agent-manager method file to use create()
+- All tests pass with zero memory leaks
+- Clean build completed successfully (took 1m 5s)
+
 ### ✅ COMPLETED: Renamed 'method' instruction to 'compile'
 - Comprehensive refactoring to rename the `method` instruction to `compile` throughout the codebase
   - Updated enum AR_INSTRUCTION_AST_TYPE__METHOD to AR_INSTRUCTION_AST_TYPE__COMPILE

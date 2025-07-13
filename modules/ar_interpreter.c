@@ -104,7 +104,7 @@ bool ar_interpreter__execute_instruction(ar_interpreter_t *mut_interpreter,
         case AR_INSTRUCTION_TYPE__COMPILE:
             result = _execute_method(mut_interpreter, mut_context, own_parsed);
             break;
-        case AR_INSTRUCTION_TYPE__AGENT:
+        case AR_INSTRUCTION_TYPE__CREATE:
             result = _execute_agent(mut_interpreter, mut_context, own_parsed);
             break;
         case AR_INSTRUCTION_TYPE__DESTROY:

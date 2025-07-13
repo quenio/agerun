@@ -1128,9 +1128,9 @@ The [compile instruction evaluator module](ar_compile_instruction_evaluator.md) 
 - **Version Management**: Supports semantic versioning
 - **Instruction Body**: Associates instruction strings with methods
 
-#### Agent Instruction Evaluator Module (`ar_agent_instruction_evaluator`)
+#### Create Instruction Evaluator Module (`ar_create_instruction_evaluator`)
 
-The [agent instruction evaluator module](ar_agent_instruction_evaluator.md) handles agent creation:
+The [create instruction evaluator module](ar_create_instruction_evaluator.md) handles agent creation:
 - **Agent Creation**: Creates agents with specified method and context
 - **Context Handling**: Supports both memory and context references
 - **Wake Messages**: Agents receive `__wake__` message on creation
@@ -1252,15 +1252,15 @@ The [compile instruction parser module](ar_compile_instruction_parser.md) handle
 - **Optional Assignment**: Supports `memory.ref := method(...)` syntax
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
-#### Agent Instruction Parser Module (`ar_agent_instruction_parser`)
+#### Create Instruction Parser Module (`ar_create_instruction_parser`)
 
-The [agent instruction parser module](ar_agent_instruction_parser.md) handles parsing of agent function calls:
-- **Agent Function Syntax**: Parses both `agent(method, version)` and `agent(method, version, context)` formats
+The [create instruction parser module](ar_create_instruction_parser.md) handles parsing of create function calls:
+- **Create Function Syntax**: Parses both `create(method, version)` and `create(method, version, context)` formats
 - **Flexible Arguments**: Supports 2-parameter (automatic null context) and 3-parameter forms
-- **Agent Creation**: Creates AR_INSTRUCTION_AST_TYPE__AGENT nodes for agent instantiation
+- **Agent Creation**: Creates AR_INSTRUCTION_AST_TYPE__CREATE nodes for agent instantiation
 - **Context Parameter**: Third argument can be any map expression when provided
 - **Version Strings**: Accepts semantic version format (e.g., "1.0.0")
-- **Optional Assignment**: Supports `memory.agent_id := agent(...)` syntax
+- **Optional Assignment**: Supports `memory.agent_id := create(...)` syntax
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
 #### Condition Instruction Parser Module (`ar_condition_instruction_parser`)

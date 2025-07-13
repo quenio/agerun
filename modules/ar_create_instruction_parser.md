@@ -1,31 +1,31 @@
-# Agent Instruction Parser Module
+# Create Instruction Parser Module
 
 ## Overview
 
-The `ar_agent_instruction_parser` module provides specialized parsing for `agent()` function instructions in the AgeRun language. It follows the instantiable parser pattern with create/destroy lifecycle management and supports both 2-parameter and 3-parameter forms of agent creation.
+The `ar_create_instruction_parser` module provides specialized parsing for `create()` function instructions in the AgeRun language. It follows the instantiable parser pattern with create/destroy lifecycle management and supports both 2-parameter and 3-parameter forms of agent creation.
 
 ## Features
 
-- **Instantiable Design**: Create parser instances with `ar_agent_instruction_parser__create()` and destroy with `ar_agent_instruction_parser__destroy()`
-- **Flexible Arguments**: Supports both `agent(method, version)` and `agent(method, version, context)` forms
+- **Instantiable Design**: Create parser instances with `ar_create_instruction_parser__create()` and destroy with `ar_create_instruction_parser__destroy()`
+- **Flexible Arguments**: Supports both `create(method, version)` and `create(method, version, context)` forms
 - **Error Handling**: Comprehensive error reporting with specific error messages and position tracking
 - **Memory Safety**: Zero memory leaks with proper ownership management following MMM guidelines
-- **Assignment Support**: Handles both direct calls and assignment forms (e.g., `memory.id := agent(...)`)
+- **Assignment Support**: Handles both direct calls and assignment forms (e.g., `memory.id := create(...)`)
 
 ## Usage
 
 ### Basic Usage
 
 ```c
-#include "ar_agent_instruction_parser.h"
+#include "ar_create_instruction_parser.h"
 
 // Create parser instance (with optional ar_log for error reporting)
 ar_log_t *log = ar_log__create();  // Optional - can pass NULL
-ar_agent_instruction_parser_t *parser = ar_agent_instruction_parser__create(log);
+ar_create_instruction_parser_t *parser = ar_create_instruction_parser__create(log);
 
-// Parse agent instruction with 2 parameters
-const char *instruction = "agent(\"echo\", \"1.0.0\")";
-ar_instruction_ast_t *ast = ar_agent_instruction_parser__parse(parser, instruction, NULL);
+// Parse create instruction with 2 parameters
+const char *instruction = "create(\"echo\", \"1.0.0\")";
+ar_instruction_ast_t *ast = ar_create_instruction_parser__parse(parser, instruction, NULL);
 
 if (ast) {
     // Successfully parsed
@@ -38,15 +38,15 @@ if (ast) {
 }
 
 // Cleanup
-ar_agent_instruction_parser__destroy(parser);
+ar_create_instruction_parser__destroy(parser);
 ```
 
 ### Assignment Form
 
 ```c
-// Parse agent instruction with assignment
-const char *instruction = "memory.agent_id := agent(\"echo\", \"1.0.0\", memory.config)";
-ar_instruction_ast_t *ast = ar_agent_instruction_parser__parse(parser, instruction, "memory.agent_id");
+// Parse create instruction with assignment
+const char *instruction = "memory.agent_id := create(\"echo\", \"1.0.0\", memory.config)";
+ar_instruction_ast_t *ast = ar_create_instruction_parser__parse(parser, instruction, "memory.agent_id");
 
 if (ast) {
     assert(ar_instruction_ast__has_result_assignment(ast) == true);
@@ -58,40 +58,40 @@ if (ast) {
 
 ### Two Parameters (Method and Version)
 ```
-agent("method_name", "version")
+create("method_name", "version")
 ```
 For this form, the parser automatically adds a `null` context as the third argument to maintain compatibility with the instruction evaluator.
 
 ### Three Parameters (Method, Version, and Context)
 ```
-agent("method_name", "version", memory.context)
+create("method_name", "version", memory.context)
 ```
 The context parameter can be any valid AgeRun expression that evaluates to a map.
 
 ### Assignment Forms
 Both parameter forms support assignment:
 ```
-memory.agent_id := agent("echo", "1.0.0")
-memory.agent_id := agent("echo", "1.0.0", memory.config)
+memory.agent_id := create("echo", "1.0.0")
+memory.agent_id := create("echo", "1.0.0", memory.config)
 ```
 
 ## Error Handling
 
 The parser reports errors through the ar_log instance provided during creation. Common issues include:
 
-- **Missing parentheses**: `"Expected '(' after 'agent'"`
-- **Wrong function name**: `"Expected 'agent' function"`
-- **Invalid arguments**: `"Failed to parse agent arguments"`
+- **Missing parentheses**: `"Expected '(' after 'create'"`
+- **Wrong function name**: `"Expected 'create' function"`
+- **Invalid arguments**: `"Failed to parse create arguments"`
 - **Memory allocation failures**: `"Memory allocation failed"`
 
 Access error information using:
-- `ar_agent_instruction_parser__get_error()` - DEPRECATED: Always returns NULL. Use ar_log for error reporting
-- `ar_agent_instruction_parser__get_error_position()` - DEPRECATED: Always returns 0. Error positions are reported through ar_log
+- `ar_create_instruction_parser__get_error()` - DEPRECATED: Always returns NULL. Use ar_log for error reporting
+- `ar_create_instruction_parser__get_error_position()` - DEPRECATED: Always returns 0. Error positions are reported through ar_log
 
 ## Implementation Details
 
 ### Architecture
-- **Opaque Type**: `ar_agent_instruction_parser_t` hides implementation details
+- **Opaque Type**: `ar_create_instruction_parser_t` hides implementation details
 - **Error State**: Reports errors through ar_log (deprecated get_error functions return NULL/0)
 - **Instance-Based**: Each parser instance maintains its own state
 
@@ -101,7 +101,7 @@ Access error information using:
 - **Zero Leaks**: All allocations are properly tracked and freed
 
 ### Argument Processing
-For 2-parameter calls, the parser automatically adds `"null"` as the third argument to ensure compatibility with the instruction evaluator, which expects exactly 3 arguments for agent instructions.
+For 2-parameter calls, the parser automatically adds `"null"` as the third argument to ensure compatibility with the instruction evaluator, which expects exactly 3 arguments for create instructions.
 
 ## Dependencies
 
@@ -120,7 +120,7 @@ The module includes comprehensive tests covering:
 
 Run tests with:
 ```bash
-make bin/ar_agent_instruction_parser_tests
+make bin/ar_create_instruction_parser_tests
 ```
 
 ## Integration
