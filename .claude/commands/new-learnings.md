@@ -1,5 +1,5 @@
 ---
-description: Analyze session for new learnings and update guidelines
+description: Analyze session for new learnings and create properly validated kb articles
 ---
 
 # New Learnings Analysis and Guidelines Update
@@ -20,7 +20,13 @@ For each learning, provide:
 - Specific examples from this session (if applicable)
 - How it can be generalized for future use
 
-**Format for Knowledge Base Files**: Each learning should be saved as an individual .md file in `./kb/` directory with this structure:
+## Step 2: Knowledge Base Article Creation
+
+**CRITICAL: All code examples MUST use real AgeRun types and functions**
+
+### Format for Knowledge Base Files
+Each learning should be saved as an individual .md file in `./kb/` directory with this structure:
+
 ```markdown
 # Learning Title
 
@@ -31,37 +37,99 @@ For each learning, provide:
 [Why it matters]
 
 ## Example
-[Specific instance from this session]
+[Code example using REAL AgeRun types/functions - see guidelines below]
 
 ## Generalization
 [How to apply broadly]
 
 ## Implementation
-[Code/commands when applicable]
+[Commands/code when applicable - using REAL functions]
 
 ## Related Patterns
-[Connected concepts]
+[Connected concepts with links: [name](kb/filename.md)]
 ```
 
-## Step 2: Review Existing Guidelines
+### Code Example Guidelines (MANDATORY)
+
+**Use REAL AgeRun types and functions only:**
+
+**✅ PREFERRED Real Types:**
+- `ar_data_t*` (most common data structure)
+- `ar_agent_t*` (agents)
+- `ar_method_t*` (methods)
+- `ar_expression_ast_t*` (expressions)
+- `ar_instruction_ast_t*` (instructions)
+- `ar_list_t*` (lists)
+- `ar_map_t*` (maps)
+- `ar_agent_registry_t*` (agent management)
+
+**✅ PREFERRED Real Functions:**
+- `ar_data__create_*()`, `ar_data__get_*()`, `ar_data__destroy()`
+- `ar_agency__create_agent()`, `ar_agency__send_to_agent()`
+- `ar_agent__get_*()`, `ar_agent__set_*()`
+- `ar_methodology__*()` functions
+- `ar_heap__malloc()`, `ar_heap__free()` (memory management)
+- `ar_expression_evaluator__*()`, `ar_instruction_evaluator__*()`
+
+**✅ EXAMPLE Tag Usage:**
+When you need hypothetical examples for teaching:
+```c
+// Good: Real function with teaching context
+ar_data_t* data = ar_data__create_string("hello");  // EXAMPLE: Using real type for demonstration
+
+// Good: Hypothetical function marked appropriately
+ar_data_t* result = ar_example__process(data);  // EXAMPLE: Hypothetical function for teaching
+
+// Good: Bad practice example
+ar_data_t* leaked = ar_data__create_string("oops");  // BAD: Memory leak - not destroyed
+```
+
+**❌ NEVER use hypothetical types without EXAMPLE tags:**
+```c
+// Wrong: Don't create fake types
+custom_type_t* data;  // EXAMPLE: This will fail validation
+
+// Right: Use real types or mark appropriately  
+ar_data_t* data;  // Real type - preferred
+custom_type_t* data;  // EXAMPLE: Hypothetical type for teaching
+```
+
+### Type Replacement Guide
+
+If you're tempted to use hypothetical types, replace with real ones:
+- `string_t` → `ar_data_t*` (with string content)  // EXAMPLE: Hypothetical type mapping
+- `list_t` → `ar_list_t*` or `ar_data_t*` (with list content)  // EXAMPLE: Hypothetical type mapping  
+- `agent_t` → `ar_agent_t*`  // EXAMPLE: Hypothetical type mapping
+- `config_t` → `ar_data_t*` (with map content)  // EXAMPLE: Hypothetical type mapping
+- `processor_t` → `ar_expression_evaluator_t*` or `ar_instruction_evaluator_t*`  // EXAMPLE: Hypothetical type mapping
+- `context_t` → `ar_data_t*`  // EXAMPLE: Hypothetical type mapping
+
+## Step 3: Validation Before Saving
+
+**MANDATORY: Test articles before committing**
+
+1. **Create the .md file** with your content
+2. **Run validation**:
+   ```bash
+   make check-docs
+   ```
+3. **Fix any validation errors** - the script will tell you exactly what's wrong
+4. **Re-run validation** until it passes
+
+**Common validation fixes:**
+- Replace hypothetical types with real ones from the list above
+- Add `// EXAMPLE:` tags to hypothetical functions
+- Use `ar_data_t*` as the universal fallback type
+- Reference actual functions from `modules/*.h` files
+
+## Step 4: Review Existing Guidelines
 
 Check CLAUDE.md to see if these learnings are already documented. If they are:
 - Determine if the existing documentation is sufficient
 - Identify if updates or clarifications are needed
 - Note any gaps in the current documentation
 
-## Step 3: Create Knowledge Base Files
-
-For each significant learning:
-
-1. **Create individual .md files** in `./kb/` directory using the format above
-2. **Use kebab-case filenames** (e.g., `api-migration-completion-verification.md`)
-3. **Link from CLAUDE.md** when guidelines reference these learnings:
-   ```markdown
-   - Guideline text ([details](kb/filename.md))
-   ```
-
-## Step 4: Update Guidelines
+## Step 5: Update Guidelines
 
 If updates are needed to CLAUDE.md:
 
@@ -82,78 +150,62 @@ If updates are needed to CLAUDE.md:
    - PREFER: Add to existing bullet points rather than creating new sections
    - If new section needed, keep header concise
 
-4. **Write clear, concise updates**:
-   - Use imperative voice for instructions
-   - Include examples ONLY if essential (prefer inline mentions)
-   - Emphasize critical points with **bold** or MANDATORY labels
-   - Avoid verbose explanations - trust reader's understanding
-   - One concept per line maximum
+4. **Link to detailed articles**:
+   ```markdown
+   - Guideline text ([details](kb/filename.md))
+   ```
 
-5. **Before adding, always check**:
-   - Is this already covered elsewhere?
-   - Can this be merged with an existing point?
-   - Can this replace something less important?
-   - Is every word necessary?
+## Step 6: Commit Process
 
-6. **Categories to consider**:
-   - Memory management patterns
-   - Testing and verification procedures
-   - Development workflows
-   - Tool usage guidelines
-   - Error prevention strategies
-   - Documentation requirements
+**MANDATORY SEQUENCE:**
 
-## Step 5: Verify Documentation and Commit Updates
+1. **Validate first**:
+   ```bash
+   make check-docs
+   ```
+   Fix any errors before proceeding.
 
-**MANDATORY: Run documentation check before committing**:
-```bash
-make check-docs
-```
-Fix any broken references found before proceeding with commits.
+2. **Commit knowledge base files**:
+   ```bash
+   git add kb/
+   git commit -m "feat: add knowledge base with [topic] learnings
 
-**Commit knowledge base files first**:
-```bash
-git add kb/
-git commit -m "feat: add knowledge base with [topic] learnings"
-```
+   - [Brief description of main learning]
+   - All code examples use real AgeRun types and functions
+   - Validated with make check-docs"
+   ```
 
-**Then commit guidelines updates** (if CLAUDE.md was updated):
-```bash
-git add CLAUDE.md
-git commit -m "docs: enhance guidelines with session learnings on [topic]
+3. **Commit guidelines updates** (if CLAUDE.md was updated):
+   ```bash
+   git add CLAUDE.md
+   git commit -m "docs: enhance guidelines with session learnings on [topic]
 
-- [Summary of key updates]  
-- [Links to detailed kb/ articles]"
-```
+   - [Summary of key updates]  
+   - [Links to detailed kb/ articles]"
+   ```
 
-## Example Learnings Categories
+## Documentation Validation Details
 
-**Memory Management**:
-- Memory report locations
-- Leak detection patterns
-- Ownership tracking improvements
+The enhanced documentation system ensures:
+- **Real code**: All examples use actual AgeRun types and functions
+- **Validation**: Automated checking prevents hypothetical examples
+- **Consistency**: Same standards across all documentation
+- **Maintenance**: Changes to code automatically flag outdated docs
 
-**Development Process**:
-- Plan verification requirements
-- Diff verification for code migration
-- TDD cycle refinements
-
-**Tool Usage**:
-- Better ways to use existing tools
-- New tool capabilities discovered
-- Automation opportunities
-
-**Error Prevention**:
-- Common pitfalls to avoid
-- Verification steps to add
-- User feedback incorporation
+**Available for reference:**
+- Real types and functions: `python3 scripts/get_real_types.py --guide`
+- Complete type list: `python3 scripts/get_real_types.py --types`
+- Complete function list: `python3 scripts/get_real_types.py --functions`
+- Type mappings: See `scripts/batch_fix_docs.py` TYPE_REPLACEMENTS
 
 ## Knowledge Base Benefits
 
-The two-tier documentation system provides:
+The enhanced documentation system provides:
 - **CLAUDE.md**: Concise, actionable guidelines for quick reference
-- **./kb/ files**: Detailed context, examples, and implementation details
+- **./kb/ files**: Detailed context with VALIDATED examples
+- **Real code**: All examples work with actual AgeRun codebase
 - **Searchable**: `grep -r "keyword" ./kb/` finds relevant patterns
 - **Linked**: Guidelines link to detailed articles when more context needed
+- **Validated**: `make check-docs` ensures all references are correct
 
-Remember: The goal is to continuously improve the development guidelines based on real experiences, making future sessions more efficient and error-free.
+Remember: The goal is to create learnings with working code examples that developers can actually use, making future sessions more efficient and error-free.
