@@ -124,6 +124,11 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Rename `create()` instruction to `spawn()` for Erlang terminology alignment (Completed 2025-07-13)
 - [x] Rename `destroy()` instruction to `exit()` for Erlang terminology alignment (Completed 2025-07-13)
 
+### Knowledge Base Integration (Completed 2025-07-13)
+- [x] Created knowledge base articles documenting instruction renaming patterns and systematic approaches
+- [x] Added reference articles for specification consistency maintenance and search-replace precision  
+- [x] Updated CLAUDE.md to integrate references to new knowledge base articles for systematic guideline enhancement
+
 ### HIGHEST PRIORITY - Frame-Based Execution Implementation (Revised Plan)
 
 **Status**: Method evaluator created as the first frame-based evaluator, establishing the top-down pattern.

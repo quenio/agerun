@@ -1,68 +1,67 @@
 # Language Instruction Renaming Pattern
 
 ## Learning
-A systematic approach to renaming instructions in the AgeRun language requires updating multiple components in a specific order: enums, parsers, evaluators, module files, tests, documentation, and method files.
+Systematic approach for renaming AgeRun language instructions across the entire codebase, maintaining consistency between grammar definition, implementation, tests, and documentation.
 
 ## Importance
-Ensures consistency across the entire codebase and prevents compilation errors from missed references. A single instruction name appears in dozens of places across different file types.
+Language-level changes affect multiple layers of the system. Missing updates in any layer can cause compilation failures, test failures, or inconsistency between specification and implementation. A systematic approach ensures completeness.
 
 ## Example
 ```c
-// Step 1: Update AST enum
+// Phase 1: Update enum definition
 typedef enum {
-    AR_INSTRUCTION_AST_TYPE__COMPILE,  // Changed from AR_INSTRUCTION_AST_TYPE__METHOD
-    // ... other types
+    AR_INSTRUCTION_AST_TYPE__SPAWN,  // Changed from CREATE
+    AR_INSTRUCTION_AST_TYPE__EXIT,   // Changed from DESTROY
+    // ...
 } ar_instruction_ast_type_t;
 
-// Step 2: Update parser string comparison
-if (strncmp(ref_instruction + pos, "compile", 7) != 0) {  // Changed from "method", 6
-    _log_error(mut_parser, "Expected 'compile' function", pos);
+// Phase 2: Update parser string matching
+if (strncmp(ref_instruction + pos, "spawn", 5) != 0) {  // Changed from "create", 6
+    _log_error(mut_parser, "Expected 'spawn' function", pos);
     return NULL;
 }
+pos += 5;  // Changed from 6
 
-// Step 3: Update evaluator type check
-if (ar_instruction_ast__get_type(ref_ast) != AR_INSTRUCTION_AST_TYPE__COMPILE) {
-    return false;
+// Phase 3: Update facade dispatch
+if (func_len == 5 && strncmp(func_name, "spawn", 5) == 0) {  // Changed from "create", 6
+    ar_instruction_ast_t *own_ast = ar_spawn_instruction_parser__parse(
+        mut_parser->own_spawn_parser,  // Changed from create_parser
+        ref_instruction, ref_assignment
+    );
 }
-
-// Step 4: Update test assertions
-assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__COMPILE);
 ```
 
 ## Generalization
-This pattern applies to any instruction renaming:
-1. Update enum values (both AST and legacy if applicable)
-2. Update parser string comparisons and error messages
-3. Update evaluator type checks and comments
-4. Rename module files (parser and evaluator)
-5. Update all test files and test content
-6. Update documentation (.md files)
-7. Update method files (.method files)
-8. Run `make clean build` to verify
+For any instruction rename, update these components in order:
+
+1. **Enum definitions** - Update `ar_instruction_ast_type_t` values
+2. **Parser modules** - Update string matching and character counts
+3. **Evaluator modules** - Update function names and type references  
+4. **Facade dispatch** - Update main parser/evaluator routing logic
+5. **Test files** - Update enum references and expected values
+6. **Method files** - Update `.method` files using the instructions
+7. **BNF grammar** - Update SPEC.md formal grammar definitions
+8. **Documentation** - Update all .md files with new terminology
 
 ## Implementation
 ```bash
-# Example for renaming 'agent' to 'create'
-# 1. Update enums
-grep -r "AR_INSTRUCTION_AST_TYPE__AGENT" modules/
-grep -r "AR_INSTRUCTION_TYPE__AGENT" modules/
+# 1. Rename files (preserves git history)  
+git mv modules/ar_old_instruction_*.c modules/ar_new_instruction_*.c
 
-# 2. Find parser string comparisons
-grep -r '"agent"' modules/*parser*.c
+# 2. Update content systematically per component
+# Use careful search-and-replace with verification:
+grep -r "OLD_INSTRUCTION_TYPE" modules/  # EXAMPLE: Search pattern
+# Fix each occurrence individually to avoid unintended changes
 
-# 3. Find module files to rename
-ls modules/*agent_instruction*
+# 3. Test after each major component
+make run-tests  # Catch compilation errors early
 
-# 4. Find test references
-grep -r "agent(" modules/*test*.c
-
-# 5. Find documentation references
-grep -r "agent(" *.md modules/*.md
-
-# 6. Verify with build
-make clean build
+# 4. Final validation
+make clean build  # Comprehensive verification
+make check-docs   # Ensure documentation consistency
 ```
 
 ## Related Patterns
-- [Build Verification Before Commit](build-verification-before-commit.md)
+- [Systematic Guideline Enhancement](systematic-guideline-enhancement.md)
+- [Facade Pattern Coordination](facade-pattern-coordination.md)
 - [API Migration Completion Verification](api-migration-completion-verification.md)

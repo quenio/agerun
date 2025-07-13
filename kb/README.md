@@ -26,6 +26,8 @@ Each learning file contains:
 - [Git Push Verification](git-push-verification.md)
 - [Language Instruction Renaming Pattern](language-instruction-renaming-pattern.md)
 - [Red Green Refactor Cycle](red-green-refactor-cycle.md)
+- [Search Replace Precision](search-replace-precision.md)
+- [Specification Consistency Maintenance](specification-consistency-maintenance.md)
 
 ### Memory Management
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)

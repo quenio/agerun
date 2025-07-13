@@ -65,6 +65,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Documentation Standards (MANDATORY)** ([details](kb/documentation-standards-integration.md)):
 - **Real code only**: All examples must use actual AgeRun types/functions ([details](kb/validated-documentation-examples.md))
 - **Validation required**: Run `make check-docs` before committing any .md files
+- **Specification consistency**: Keep SPEC.md updated after language changes ([details](kb/specification-consistency-maintenance.md))
 - **Proper tagging**: Use `// EXAMPLE:`, `// BAD:`, `// ERROR:` for hypothetical code
 - **Preferred types**: `ar_data_t*`, `ar_agent_t*`, `ar_expression_ast_t*`, `ar_instruction_ast_t*`
 - **Helper reference**: `python3 scripts/get_real_types.py --guide` for available APIs
@@ -542,6 +543,7 @@ Never compile directly with gcc.
 - **Symbol renaming**: Use `rename_symbols.py` for safe whole-word renaming ([details](kb/script-enhancement-over-one-off.md))
 - **Documentation fixes**: Use `batch_fix_docs.py` for large-scale documentation error resolution ([details](kb/automated-batch-documentation-fixes.md))
 - **Instruction renaming**: Follow systematic pattern for language changes ([details](kb/language-instruction-renaming-pattern.md))
+- **Search-and-replace precision**: Avoid unintended changes with careful targeting ([details](kb/search-replace-precision.md))
 
 ```bash
 # PREFERRED: Use specialized scripts for bulk operations
