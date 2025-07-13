@@ -18,6 +18,12 @@ This document tracks completed milestones and major achievements for the AgeRun 
 - **Updated documentation checker** to handle EXAMPLE tags for file references
 - All tests pass with zero memory leaks
 
+### ✅ COMPLETED: Knowledge Base Enhancement from Session Learnings
+- **Created kb/zig-migration-memory-debugging.md** documenting ownership discovery pattern
+- **Updated kb/validated-documentation-examples.md** with EXAMPLE tag placement rules
+- **Enhanced CLAUDE.md** with reference to memory debugging pattern for Zig migrations
+- **Updated kb/README.md** index with new Development Practices article
+
 ## 2025-07-13
 
 ### ✅ COMPLETED: Renamed instructions for Erlang terminology alignment

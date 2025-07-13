@@ -76,6 +76,17 @@ When hypothetical examples are necessary for teaching:
 - `// BAD:` - Anti-pattern examples showing what NOT to do
 - `// ERROR:` - Code that intentionally shows compile-time errors
 
+**CRITICAL**: Tags must be on the SAME LINE as the reference:
+```c
+// CORRECT: Tag on same line
+ar_example__func();  // EXAMPLE: Hypothetical function
+ar_string.c  # EXAMPLE: File no longer exists
+
+// WRONG: Tag on different line
+ar_example__func();  // EXAMPLE: This needs to be on same line
+// EXAMPLE: This won't be recognized by the validator
+```
+
 ## Related Patterns
 - [Complete Documentation Principle](complete-documentation-principle.md)
 - [New Learnings Command](../.claude/commands/new-learnings.md)
