@@ -62,6 +62,13 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Always search CLAUDE.md first** when asked about procedures. Don't overthink - start with exact keywords.
 **When reading TODO.md**: Check [ ] = incomplete, [x] = complete. Read completion dates. Be explicit - list all components.
 
+**Documentation Standards (MANDATORY)**:
+- **Real code only**: All examples must use actual AgeRun types/functions ([details](kb/validated-documentation-examples.md))
+- **Validation required**: Run `make check-docs` before committing any .md files
+- **Proper tagging**: Use `// EXAMPLE:`, `// BAD:`, `// ERROR:` for hypothetical code
+- **Preferred types**: `ar_data_t*`, `ar_agent_t*`, `ar_expression_ast_t*`, `ar_instruction_ast_t*`
+- **Helper reference**: `python3 scripts/get_real_types.py --guide` for available APIs
+
 ### 1. Memory Management (ZERO TOLERANCE FOR LEAKS)
 
 **Mandatory Practices**:
@@ -364,6 +371,7 @@ while (*p) {
 - `/** */` docs with `@param`, `@return`, `@note` ownership
 - Use IO module (`ar_io__open_file` not `fopen`, etc) - check all return codes
 - Use `PRId64`/`PRIu64` for portability, never `%lld`
+- **Documentation**: Real AgeRun types/functions only, validate with `make check-docs`
 
 ### 6. Module Development
 
@@ -392,15 +400,18 @@ while (*p) {
 ✓ Address all warnings immediately
 ✓ Think twice before adding global state  
 ✓ Update modules/README.md for new modules
+✓ **Documentation with real code**: All .md files use actual AgeRun types/functions only
+✓ **Validate docs**: Run `make check-docs` before committing any .md changes
 
 ### 7. Method Development
 
 **Requirements**:
 - Store in `methods/` as `<name>-<version>.method`
-- Create corresponding `.md` documentation
+- Create corresponding `.md` documentation **with real AgeRun types/functions only**
 - Create `<name>_tests.c` test file
 - Tests must verify memory state after execution
 - Use relative path `../methods/` from bin directory
+- **Validate documentation**: Run `make check-docs` before committing
 
 **Method Language Rules**:
 - Expressions: literals, memory access, arithmetic
