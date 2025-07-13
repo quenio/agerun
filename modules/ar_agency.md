@@ -113,7 +113,7 @@ if (agent_id == 0) {
 
 // Create an agent with specific version and context
 ar_data_t *own_context = ar_data__create_map();
-ar_data__set_int(own_context, "max_retries", 3);
+ar_data__set_map_integer(own_context, "max_retries", 3);
 int64_t agent_id2 = ar_agency__create_agent("router", "1.2.0", own_context);
 ar_data__destroy(own_context);  // Agency doesn't take ownership
 ```
@@ -164,8 +164,8 @@ while (agent_id != 0) {
 
 ```c
 // Update all agents using old version to new version
-const ar_method_t *ref_old = ar_methodology__find_method("calc", "1.0.0");
-const ar_method_t *ref_new = ar_methodology__find_method("calc", "1.1.0");
+const ar_method_t *ref_old = ar_methodology__get_method("calc", "1.0.0");
+const ar_method_t *ref_new = ar_methodology__get_method("calc", "1.1.0");
 
 // Update with lifecycle events
 int count = ar_agency__update_agent_methods(ref_old, ref_new, true);

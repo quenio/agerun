@@ -26,8 +26,8 @@ This module follows Parnas design principles by hiding implementation details be
 ### Creating and Destroying Fixtures
 
 ```c
-ar_method_fixture_t* ar_method__fixture_create(const char *ref_test_name);
-void ar_method__fixture_destroy(ar_method_fixture_t *own_fixture);
+ar_method_fixture_t* ar_method_fixture__create(const char *ref_test_name);
+void ar_method_fixture__destroy(ar_method_fixture_t *own_fixture);
 ```
 
 Creates a new test fixture with the given name. The fixture must be destroyed when the test completes to ensure proper cleanup.
@@ -35,7 +35,7 @@ Creates a new test fixture with the given name. The fixture must be destroyed wh
 ### Initializing Test Environment
 
 ```c
-bool ar_method__fixture_initialize(ar_method_fixture_t *mut_fixture);
+bool ar_method_fixture__initialize(ar_method_fixture_t *mut_fixture);
 ```
 
 Initializes the test environment by:
@@ -47,7 +47,7 @@ Initializes the test environment by:
 ### Loading Method Files
 
 ```c
-bool ar_method__fixture_load_method(ar_method_fixture_t *mut_fixture,
+bool ar_method_fixture__load_method(ar_method_fixture_t *mut_fixture,
                                 const char *ref_method_name,
                                 const char *ref_method_file,
                                 const char *ref_version);
@@ -58,7 +58,7 @@ Loads a method file from disk and registers it with the methodology under the sp
 ### Directory Verification
 
 ```c
-bool ar_method__fixture_verify_directory(const ar_method_fixture_t *ref_fixture);
+bool ar_method_fixture__verify_directory(const ar_method_fixture_t *ref_fixture);
 ```
 
 Verifies that the test is running from the correct directory (typically `bin/`). This is important for method tests that need to access method files using relative paths.
@@ -66,7 +66,7 @@ Verifies that the test is running from the correct directory (typically `bin/`).
 ### Memory Leak Detection
 
 ```c
-bool ar_method__fixture_check_memory(const ar_method_fixture_t *ref_fixture);
+bool ar_method_fixture__check_memory(const ar_method_fixture_t *ref_fixture);
 ```
 
 Checks if any memory leaks occurred during the test by comparing allocation counts before and after test execution.
@@ -74,7 +74,7 @@ Checks if any memory leaks occurred during the test by comparing allocation coun
 ### Fixture Information
 
 ```c
-const char* ar_method__fixture_get_name(const ar_method_fixture_t *ref_fixture);
+const char* ar_method_fixture__get_name(const ar_method_fixture_t *ref_fixture);
 ```
 
 Returns the name of the test associated with the fixture.
@@ -84,17 +84,17 @@ Returns the name of the test associated with the fixture.
 ```c
 static void test_my_method(void) {
     // Create fixture for this test
-    ar_method_fixture_t *own_fixture = ar_method__fixture_create("test_my_method");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("test_my_method");
     assert(own_fixture != NULL);
     
     // Initialize test environment
-    assert(ar_method__fixture_initialize(own_fixture));
+    assert(ar_method_fixture__initialize(own_fixture));
     
     // Verify we're in the correct directory (for method tests)
-    assert(ar_method__fixture_verify_directory(own_fixture));
+    assert(ar_method_fixture__verify_directory(own_fixture));
     
     // Load and register method
-    assert(ar_method__fixture_load_method(own_fixture, 
+    assert(ar_method_fixture__load_method(own_fixture, 
                                               "mymethod", 
                                               "../methods/mymethod-1.0.0.method",
                                               "1.0.0"));
@@ -102,10 +102,10 @@ static void test_my_method(void) {
     // Run test logic here...
     
     // Check for memory leaks
-    assert(ar_method__fixture_check_memory(own_fixture));
+    assert(ar_method_fixture__check_memory(own_fixture));
     
     // Clean up
-    ar_method__fixture_destroy(own_fixture);
+    ar_method_fixture__destroy(own_fixture);
 }
 ```
 

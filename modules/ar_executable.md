@@ -64,20 +64,30 @@ The executable sends several demonstration messages:
 
 ```c
 // String builder demonstration
-ar_agent__send(/* to */ 2, /* from */ 0, 
-    ar_data__create_map_2("op", "concat", 
-                          "values", ar_data__create_list_2("Hello", "World")));
+// Create the message map
+ar_data_t *msg = ar_data__create_map();
+ar_data_t *values = ar_data__create_list();
+ar_data__list_add_last_string(values, "Hello");
+ar_data__list_add_last_string(values, "World");
+ar_data__set_map_string(msg, "op", "concat");
+ar_data__set_map_data(msg, "values", values);
+ar_agent__send(/* to */ 2, /* from */ 0, msg);
+ar_data__destroy(msg);
 
-// Message routing demonstration  
-ar_agent__send(/* to */ 3, /* from */ 0,
-    ar_data__create_map_2("type", "urgent",
-                          "content", "Alert!"));
+// Message routing demonstration
+ar_data_t *route_msg = ar_data__create_map();
+ar_data__set_map_string(route_msg, "type", "urgent");
+ar_data__set_map_string(route_msg, "content", "Alert!");
+ar_agent__send(/* to */ 3, /* from */ 0, route_msg);
+ar_data__destroy(route_msg);
 
 // Agent management demonstration
-ar_agent__send(/* to */ 4, /* from */ 0,
-    ar_data__create_map_3("action", "create",
-                          "method", "string-builder",
-                          "version", "1.0.0"));
+ar_data_t *mgmt_msg = ar_data__create_map();
+ar_data__set_map_string(mgmt_msg, "action", "create");
+ar_data__set_map_string(mgmt_msg, "method", "string-builder");
+ar_data__set_map_string(mgmt_msg, "version", "1.0.0");
+ar_agent__send(/* to */ 4, /* from */ 0, mgmt_msg);
+ar_data__destroy(mgmt_msg);
 ```
 
 ## Usage Example

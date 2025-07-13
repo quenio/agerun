@@ -65,44 +65,12 @@ void ar_system__shutdown(void);
 bool ar_system__process_next_message(void);
 
 /**
- * Processes a specific number of messages.
- * @param max_messages Maximum number of messages to process
- * @return Number of messages actually processed
- */
-int ar_system__process_messages(int max_messages);
-
-/**
  * Processes all pending messages until the queue is empty.
  * @return Total number of messages processed
  */
 int ar_system__process_all_messages(void);
 ```
 
-### Persistence Operations
-
-```c
-/**
- * Saves the current system state.
- * @note Saves both agents (via agency) and methods (via methodology)
- */
-void ar_system__save(void);
-
-/**
- * Loads system state from persistence files.
- * @note Loads both agents and methods if files exist
- */
-void ar_system__load(void);
-```
-
-### State Inspection
-
-```c
-/**
- * Checks if the system has been initialized.
- * @return true if initialized, false otherwise
- */
-bool ar_system__is_initialized(void);
-```
 
 ## Implementation Details
 
@@ -143,21 +111,24 @@ The system owns and manages a single interpreter instance that:
 // Initialize system with an echo agent
 ar_system__init("echo", "1.0.0");
 
-// Process some messages
-int processed = ar_system__process_messages(10);
+// Process all messages
+int processed = ar_system__process_all_messages();
 printf("Processed %d messages\n", processed);
 
-// Save state and shutdown
-ar_system__save();
+// Save state (handled by modules)
+ar_methodology__save_methods();
+ar_agency__save_agents();
 ar_system__shutdown();
 ```
 
 ### Continuous Processing
 
 ```c
-// Initialize and load saved state
+// Initialize system
 ar_system__init(NULL, NULL);
-ar_system__load();
+// Load saved state (handled by modules)
+ar_methodology__load_methods();
+ar_agency__load_agents();
 
 // Process until no more messages
 int total = ar_system__process_all_messages();
@@ -175,9 +146,12 @@ if (ar_system__process_next_message()) {
     printf("Processed one message\n");
 }
 
-// Batch processing with limit
+// Batch processing with control
 int batch_size = 100;
-int processed = ar_system__process_messages(batch_size);
+int processed = 0;
+for (int i = 0; i < batch_size && ar_system__process_next_message(); i++) {
+    processed++;
+}
 
 // Process all pending
 int all = ar_system__process_all_messages();

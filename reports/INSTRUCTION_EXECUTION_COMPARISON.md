@@ -59,7 +59,7 @@ static bool _execute_assignment(ar_interpreter_t *mut_interpreter, ar_instructio
         success = ar_data__set_map_data(mut_memory, ref_path, own_value);
     } else {
         // Make a copy if we don't own it
-        ar_data_t *own_copy = ar_data__copy(ref_result);
+        ar_data_t *own_copy = ar_data__shallow_copy(ref_result);
         if (own_copy) {
             success = ar_data__set_map_data(mut_memory, ref_path, own_copy);
         }
@@ -120,7 +120,7 @@ static bool _execute_send(ar_interpreter_t *mut_interpreter, ar_instruction_cont
     const ar_data_t *ref_msg_data = ar_expression__evaluate(own_expr_ctx);
     ar_data_t *own_msg = ar_expression__take_ownership(own_expr_ctx, ref_msg_data);
     if (!own_msg) {
-        own_msg = ar_data__copy(ref_msg_data);
+        own_msg = ar_data__shallow_copy(ref_msg_data);
     }
     
     // 3. Send message

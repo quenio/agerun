@@ -141,24 +141,6 @@ Gets the message from the instruction context.
 **Returns:**
 - Borrowed reference to the message (not owned by caller)
 
-### Message Sending
-
-```c
-bool ar_instruction__send_message(int64_t target_id, ar_data_t *own_message);
-```
-
-Sends a message to another agent.
-
-**Parameters:**
-- `target_id`: The ID of the agent to send to
-- `own_message`: The message to send (ownership transferred)
-
-**Returns:**
-- `true` if sending was successful, `false` otherwise
-
-**Ownership:**
-- Takes ownership of `own_message`
-- If sending fails, the function will destroy the message
 
 ### Error Reporting
 

@@ -326,13 +326,15 @@ For clarity and consistency, all ownership prefixes should be used throughout th
 1. **Header Files (.h)**:
    - Function parameters should use ownership prefixes:
    ```c
-   bool ar_module_function(module_t *own_object, const ar_data_t *ref_data);
+   // Example: replace 'module' with your actual module name
+   bool ar_module_function(ar_module_t *own_object, const ar_data_t *ref_data);
    ```
 
 2. **Implementation Files (.c)**:
    - Local variables should use ownership prefixes:
    ```c
-   bool ar_module_function(module_t *own_object, const ar_data_t *ref_data) {
+   // Example implementation
+   bool ar_module_function(ar_module_t *own_object, const ar_data_t *ref_data) {
        ar_data_t *own_result = ar_data_create_map();
        ar_data_t *ref_value = ar_data_get_map_value(ref_data, "key");
        // ...
@@ -343,7 +345,7 @@ For clarity and consistency, all ownership prefixes should be used throughout th
    - Test code should maintain the same conventions:
    ```c
    void test_module_function() {
-       own_module_t *own_object = ar_module_create();
+       ar_module_t *own_object = ar_module_create();  // Example
        ar_data_t *own_map = ar_data_create_map();
        // ...
    }
@@ -368,11 +370,12 @@ For clarity and consistency, all ownership prefixes should be used throughout th
 5. **Struct Field Names:**
    - Struct field names should follow the same ownership prefix conventions as local variables and parameters:
    ```c
+   // Example struct showing ownership prefixes for fields
    typedef struct example_s {
        int *own_resource;       // Struct owns this resource and must free it
        ar_data_t *mut_data;        // Field can be modified but struct doesn't own it
        const char *ref_name;    // Read-only reference to data owned elsewhere
-   } example_t;
+   } ar_example_t;
    ```
    - This makes ownership relationships clear at the struct definition level
    - Apply this convention to all struct fields consistently throughout the codebase
@@ -441,7 +444,7 @@ When debugging memory issues:
    ar_data_t *own_data = ar_data_create_integer(42);
    
    // For mutable references (LValues)
-   mut_data_t *mut_data = some_mutable_reference;
+   ar_data_t *mut_data = some_mutable_reference;
    
    // For borrowed references (BValues)
    const ar_data_t *ref_data = ar_data_get_map_value(map, "key");

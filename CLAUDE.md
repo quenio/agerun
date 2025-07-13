@@ -119,7 +119,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 //    Shows: "ar_data_t (list) allocated at instruction_ast.c:142"
 
 // 3. Examine the leaking function:
-ar_data_t* ar_instruction_ast__get_function_args(ast_t *ast) {
+ar_data_t* ar_instruction_ast__get_function_args(ar_instruction_ast_t *ast) {
     return ar_data__create_list();  // Creates NEW list (ownership transfer)
 }
 
@@ -369,7 +369,7 @@ while (*p) {
 
 **Core Architecture**:
 - **Parsing vs Evaluation**: Data owner parses (methodology→methods), consumer evaluates (interpreter→ASTs)
-- **Opaque Types**: `typedef struct ar_type_name_s ar_type_name_t;` in header, definition in .c only ([details](kb/opaque-types-pattern.md))
+- **Opaque Types**: `typedef struct ar_<module>_s ar_<module>_t;` in header, definition in .c only ([details](kb/opaque-types-pattern.md))
 - **Module Size**: Split at ~850 lines into focused modules (e.g., agency→4 modules)
 
 **Key Patterns**:
@@ -655,7 +655,7 @@ const c = @cImport({
 });
 
 // Export functions with C ABI
-export fn ar_zigmodule__create() ?*c.ar_data_t {
+export fn ar_zigmodule__create() ?*c.ar_data_t {  // Example: replace 'zigmodule' with your module name
     // Use AgeRun's heap tracking
     const data = c.ar_data__create_string("Zig integrated!");
     return data;

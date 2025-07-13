@@ -47,8 +47,8 @@ The module follows Parnas principles:
 
 ```c
 // Get references to old and new methods
-const ar_method_t *ref_old = ar_methodology__find_method("echo", "1.0.0");
-const ar_method_t *ref_new = ar_methodology__find_method("echo", "1.1.0");
+const ar_method_t *ref_old = ar_methodology__get_method("echo", "1.0.0");
+const ar_method_t *ref_new = ar_methodology__get_method("echo", "1.1.0");
 
 // Check compatibility
 if (ar_agent_update__are_compatible(ref_old, ref_new)) {

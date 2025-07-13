@@ -274,6 +274,7 @@ free(own_value);
 The map module's internal structures follow the AgeRun Memory Management Model (MMM) for field naming:
 
 ```c
+// Example internal structure (not part of public API)
 typedef struct entry_s {
     const char *ref_key;    // Borrowed reference to the key
     void *ref_value;        // Borrowed reference to the value

@@ -61,7 +61,7 @@ Validates that a pointer has been set to NULL after ownership transfer.
 
 **Usage Example:**
 ```c
-ar_data__set_map_value(mut_map, "key", own_value);
+ar_data__set_map_data(mut_map, "key", own_value);
 own_value = NULL; // Mark as transferred
 AR_ASSERT_TRANSFERRED(own_value); // Verify proper transfer marking
 ```
@@ -256,7 +256,7 @@ ar_data_t *own_value = ar_data__create_string("test");
 AR_ASSERT_OWNERSHIP(own_value);
 
 // Transfer ownership to map
-ar_data__set_map_value(mut_map, "key", own_value);
+ar_data__set_map_data(mut_map, "key", own_value);
 own_value = NULL; // Mark as transferred
 AR_ASSERT_TRANSFERRED(own_value);
 

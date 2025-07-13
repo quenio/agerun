@@ -496,17 +496,15 @@ ar_data_t *child_map = ar_data__create_map();
 ar_data_t *count_data = ar_data__create_integer(100);
 
 // Store the count in the child map
-ar_map__set((ar_map_t*)ar_data__get_map(child_map), "count", count_data);
+ar_data__set_map_data(child_map, "count", count_data);
 
 // Store the child map in the parent map
-ar_map__set((ar_map_t*)ar_data__get_map(parent_map), "child", child_map);
+ar_data__set_map_data(parent_map, "child", child_map);
 
 // Retrieve and use the nested data
-const ar_data_t *retrieved_child = (const ar_data_t*)ar_map__get(
-    (ar_map_t*)ar_data__get_map(parent_map), "child");
+const ar_data_t *retrieved_child = ar_data__get_map_data(parent_map, "child");
 if (retrieved_child && ar_data__get_type(retrieved_child) == AR_DATA_TYPE__MAP) {
-    const ar_map_t *child = ar_data__get_map(retrieved_child);
-    const ar_data_t *count = (const ar_data_t*)ar_map__get(child, "count");
+    const ar_data_t *count = ar_data__get_map_data(retrieved_child, "count");
     if (count && ar_data__get_type(count) == AR_DATA_TYPE__INTEGER) {
         printf("Count value: %d\n", ar_data__get_integer(count));
     }
@@ -521,35 +519,31 @@ if (retrieved_child && ar_data__get_type(retrieved_child) == AR_DATA_TYPE__MAP) 
 ```c
 // Create a map
 ar_data_t *map_data = ar_data__create_map();
-ar_map_t *map = ar_data__get_map(map_data);
 
-// Create and store values of different types using the traditional approach
+// Create and store values of different types
 ar_data_t *int_data = ar_data__create_integer(42);
 ar_data_t *double_data = ar_data__create_double(3.14159);
 ar_data_t *string_data = ar_data__create_string("Hello, World!");
 ar_data_t *nested_map_data = ar_data__create_map();
 
-// Store values in the map
-ar_map__set(map, "int_key", int_data);
-ar_map__set(map, "double_key", double_data);
-ar_map__set(map, "string_key", string_data);
-ar_map__set(map, "map_key", nested_map_data);
+// Store values in the map using ar_data__set_map_data
+ar_data__set_map_data(map_data, "int_key", int_data);
+ar_data__set_map_data(map_data, "double_key", double_data);
+ar_data__set_map_data(map_data, "string_key", string_data);
+ar_data__set_map_data(map_data, "map_key", nested_map_data);
 
 // Add data to the nested map
-ar_map_t *nested_map = ar_data__get_map(nested_map_data);
 ar_data_t *nested_int = ar_data__create_integer(100);
-ar_map__set(nested_map, "nested_int", nested_int);
+ar_data__set_map_data(nested_map_data, "nested_int", nested_int);
 
 // Access values directly with the map accessors
 int int_value = ar_data__get_map_integer(map_data, "int_key");
 double double_value = ar_data__get_map_double(map_data, "double_key");
 const char *string_value = ar_data__get_map_string(map_data, "string_key");
 
-// Access nested map through map function
-const ar_map_t *map = ar_data__get_map(map_data);
-const ar_data_t *map_value = (const ar_data_t*)ar_map__get(map, "map_key");
-const ar_map_t *sub_map = ar_data__get_map(map_value);
-const ar_data_t *nested_value = (const ar_data_t*)ar_map__get(sub_map, "nested_int");
+// Access nested map using ar_data__get_map_data
+const ar_data_t *map_value = ar_data__get_map_data(map_data, "map_key");
+const ar_data_t *nested_value = ar_data__get_map_data(map_value, "nested_int");
 int nested_int_value = ar_data__get_integer(nested_value);
 
 printf("Int value: %d\n", int_value);
@@ -577,8 +571,7 @@ ar_data_t *nested_map_data = ar_data__create_map();
 ar_data__set_map_integer(nested_map_data, "nested_int", 100);
 
 // Add the nested map to the main map
-ar_map_t *map = ar_data__get_map(map_data);
-ar_map__set(map, "map_key", nested_map_data);
+ar_data__set_map_data(map_data, "map_key", nested_map_data);
 
 // Access values using the map-data getter functions
 int int_value = ar_data__get_map_integer(map_data, "int_key");
@@ -682,7 +675,7 @@ ar_data_t *root_map = ar_data__create_map();
 // First, we need to create all intermediate maps manually
 // Create the user map
 ar_data_t *user_map = ar_data__create_map();
-ar_map__set(ar_data__get_map(root_map), "user", user_map);
+ar_data__set_map_data(root_map, "user", user_map);
 
 // Create the profile, contact, and address maps
 ar_data_t *profile_map = ar_data__create_map();
@@ -690,9 +683,9 @@ ar_data_t *contact_map = ar_data__create_map();
 ar_data_t *address_map = ar_data__create_map();
 
 // Add them to the user map
-ar_map__set(ar_data__get_map(user_map), "profile", profile_map);
-ar_map__set(ar_data__get_map(user_map), "contact", contact_map);
-ar_map__set(ar_data__get_map(user_map), "address", address_map);
+ar_data__set_map_data(user_map, "profile", profile_map);
+ar_data__set_map_data(user_map, "contact", contact_map);
+ar_data__set_map_data(user_map, "address", address_map);
 
 // Now we can set values using path-based setters
 // (intermediate maps must exist for this to succeed)
@@ -731,7 +724,7 @@ printf("Set on non-existent path succeeded: %s\n", success ? "yes" : "no"); // W
 
 // To add values at a new path, we must first create the intermediate maps
 ar_data_t *settings_map = ar_data__create_map();
-ar_map__set(ar_data__get_map(user_map), "settings", settings_map);
+ar_data__set_map_data(user_map, "settings", settings_map);
 
 // Now we can set values at this path
 success = ar_data__set_map_integer(root_map, "user.settings.enabled", 1);
@@ -752,12 +745,12 @@ ar_data_t *root_map = ar_data__create_map();
 
 // Create the needed intermediate maps manually
 ar_data_t *user_map = ar_data__create_map();
-ar_map__set(ar_data__get_map(root_map), "user", user_map);
+ar_data__set_map_data(root_map, "user", user_map);
 
 ar_data_t *profile_map = ar_data__create_map();
 ar_data_t *stats_map = ar_data__create_map();
-ar_map__set(ar_data__get_map(user_map), "profile", profile_map);
-ar_map__set(ar_data__get_map(user_map), "stats", stats_map);
+ar_data__set_map_data(user_map, "profile", profile_map);
+ar_data__set_map_data(user_map, "stats", stats_map);
 
 // Now set nested values using path-based setters
 ar_data__set_map_string(root_map, "user.profile.name", "John Doe");
@@ -772,8 +765,8 @@ ar_data__set_map_integer(scores_map, "science", 87);
 ar_data__set_map_double(scores_map, "average", 91.0);
 
 // Add the scores map to the user map
-ar_map_t *user_map_ptr = ar_data__get_map(ar_data__get_map_data(root_map, "user"));
-ar_map__set(user_map_ptr, "scores", scores_map);
+ar_data_t *user_data = ar_data__get_map_data(root_map, "user");
+ar_data__set_map_data(user_data, "scores", scores_map);
 
 // Access nested data directly with ar_data__get_map_data
 const ar_data_t *profile_data = ar_data__get_map_data(root_map, "user.profile");
@@ -808,9 +801,10 @@ if (scores_data && ar_data__get_type(scores_data) == AR_DATA_TYPE__MAP) {
         printf("Math score: %d\n", ar_data__get_integer(math_score_data));
     }
     
-    // You can also enumerate all scores by getting the map and iterating
-    ar_map_t *scores = ar_data__get_map(scores_data);
+    // You can also enumerate all scores by getting the keys
+    ar_data_t *keys_list = ar_data__get_map_keys(scores_data);
     // (iteration code would go here)
+    ar_data__destroy(keys_list);
 }
 
 // Handle non-existent paths gracefully
