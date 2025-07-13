@@ -62,7 +62,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Always search CLAUDE.md first** when asked about procedures. Don't overthink - start with exact keywords.
 **When reading TODO.md**: Check [ ] = incomplete, [x] = complete. Read completion dates. Be explicit - list all components.
 
-**Documentation Standards (MANDATORY)**:
+**Documentation Standards (MANDATORY)** ([details](kb/documentation-standards-integration.md)):
 - **Real code only**: All examples must use actual AgeRun types/functions ([details](kb/validated-documentation-examples.md))
 - **Validation required**: Run `make check-docs` before committing any .md files
 - **Proper tagging**: Use `// EXAMPLE:`, `// BAD:`, `// ERROR:` for hypothetical code
@@ -433,7 +433,7 @@ cd bin  # Wrong - avoid relative paths
 - `git diff > changes.patch` for patches
 - If created accidentally: `git reset HEAD <file>`
 
-**Script Development**: All new, reusable Python/Bash scripts should be added under the `./scripts` dir
+**Script Development**: All new, reusable Python/Bash scripts should be added under the `./scripts` dir ([details](kb/progressive-tool-enhancement.md))
 - Add directory check to ensure scripts run from repo root
 - Create corresponding make target for user-facing scripts
 - Scripts should fail with helpful error messages suggesting the make target
@@ -537,13 +537,17 @@ Never compile directly with gcc.
 - **Frame migration**: Convert evaluators incrementally; facade manages both patterns during transition
 - **Complete API verification**: `grep -r "old_api_pattern" .` after interface changes - check ALL clients ([details](kb/api-migration-completion-verification.md))
 
-**Bulk Renaming Pattern**:
+**Bulk Operations Patterns**:
+- **Symbol renaming**: Use `rename_symbols.py` for safe whole-word renaming ([details](kb/script-enhancement-over-one-off.md))
+- **Documentation fixes**: Use `batch_fix_docs.py` for large-scale documentation error resolution ([details](kb/automated-batch-documentation-fixes.md))
+
 ```bash
-# PREFERRED: Use rename_symbols.py for safe whole-word renaming
+# PREFERRED: Use specialized scripts for bulk operations
 python3 scripts/rename_symbols.py --group <group-name> --live
+python3 scripts/batch_fix_docs.py --dry-run  # Preview changes first
 
 # AVOID sed for bulk renames - error-prone with partial matches
-# If rename_symbols.py doesn't support your case, enhance it first ([details](kb/script-enhancement-over-one-off.md))
+# If existing scripts don't support your case, enhance them first
 # Script supports both type renaming (TYPE_RENAMES) and module renaming (MODULE_RENAMES) - see kb/module-renaming-script-enhancement.md
 # Only use sed for one-off changes with careful verification
 ```
