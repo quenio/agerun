@@ -43,7 +43,12 @@
       "Bash(test:*)",
       "Bash(gh run list:*)",
       "Bash(gh run watch:*)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(gh repo view:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh workflow view:*)",
+      "Bash(gh api:*)",
+      "Bash(mv:*)"
     ],
     "deny": []
   },
