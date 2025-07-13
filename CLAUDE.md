@@ -503,6 +503,7 @@ Never compile directly with gcc.
 
 **Pre-Commit Checklist** (MANDATORY - NO EXCEPTIONS):
 1. `make clean build` - Fix ALL issues before proceeding (includes doc validation) ([details](kb/build-verification-before-commit.md))
+   - **Report build time**: Include duration from output (e.g., "took 1m 3s") ([details](kb/build-time-reporting.md))
    - **Exception**: Type renames only need `make check-naming && make run-tests`
    - **Exception**: Doc-only changes only need `make check-docs`
    - **Exception**: Comment-only changes only need `make check-naming`
@@ -540,6 +541,7 @@ Never compile directly with gcc.
 **Bulk Operations Patterns**:
 - **Symbol renaming**: Use `rename_symbols.py` for safe whole-word renaming ([details](kb/script-enhancement-over-one-off.md))
 - **Documentation fixes**: Use `batch_fix_docs.py` for large-scale documentation error resolution ([details](kb/automated-batch-documentation-fixes.md))
+- **Instruction renaming**: Follow systematic pattern for language changes ([details](kb/language-instruction-renaming-pattern.md))
 
 ```bash
 # PREFERRED: Use specialized scripts for bulk operations

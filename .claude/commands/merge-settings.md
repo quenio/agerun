@@ -11,3 +11,5 @@ Follow these steps:
    - `git commit -m "chore: merge local settings"`
    - `git push`
 7. If local file doesn't exist, inform that no merge is needed
+
+See [Settings File Merging Pattern](../../kb/settings-file-merging-pattern.md) for details.
