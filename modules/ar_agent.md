@@ -57,17 +57,6 @@ Sends a message to an agent's message queue. Takes ownership of the message.
 
 **Note:** The function takes ownership of the message regardless of success.
 
-#### `ar_agent__exists`
-```c
-bool ar_agent__exists(int64_t agent_id)
-```
-Checks if an agent with the given ID exists and is active.
-
-**Parameters:**
-- `agent_id`: Agent ID to check
-
-**Returns:** true if agent exists and is active, false otherwise
-
 ### Accessor Functions
 
 #### `ar_agent__get_memory`

@@ -115,12 +115,6 @@ ar_path__destroy(own_path);
 - All functions returning path objects transfer ownership to the caller
 - The module uses heap tracking for memory leak detection
 
-## Migration from ar_string
+## Design Notes
 
-The `ar_path` module replaces the path-related functions in `ar_string`:
-
-- `ar_string__path_count` → `ar_path__get_segment_count`
-- `ar_string__path_segment` → `ar_path__get_segment` / `ar_path__get_segment_copy`
-- `ar_string__path_parent` → `ar_path__get_parent`
-
-The main difference is that `ar_path` functions operate on path objects rather than raw strings, providing better performance for repeated operations and clearer ownership semantics.
+The `ar_path` module provides path manipulation functionality that was previously part of `ar_string`. Functions operate on path objects rather than raw strings, providing better performance for repeated operations and clearer ownership semantics.

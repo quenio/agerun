@@ -217,15 +217,9 @@ def check_function_and_type_references(doc_files):
         with open(doc, 'r', encoding='utf-8') as f:
             content = f.read()
         
-        # For type/function checking, remove code blocks to avoid false matches
-        # Remove fenced code blocks (```...```)
-        content_no_blocks = re.sub(r'```[\s\S]*?```', '', content)
-        # Remove indented code blocks (4+ spaces at start of line)
-        content_no_blocks = re.sub(r'^[ ]{4,}.*$', '', content_no_blocks, flags=re.MULTILINE)
-        
-        # Check for incorrect double underscore patterns (in filtered content)
+        # Check for incorrect double underscore patterns
         double_underscore_pattern = re.compile(r'ar__[a-zA-Z0-9_]+__[a-zA-Z0-9_]+')
-        bad_refs = double_underscore_pattern.findall(content_no_blocks)
+        bad_refs = double_underscore_pattern.findall(content)
         for bad_ref in bad_refs:
             all_refs_valid = False
             broken_function_refs.append(
@@ -233,9 +227,16 @@ def check_function_and_type_references(doc_files):
                 "(should be ar_module__function)"
             )
         
-        # Look for function references in backticks (in filtered content)
+        # Look for function references in backticks
         func_ref_pattern = re.compile(r'`(ar_[a-zA-Z0-9]+__[a-zA-Z0-9_]+)(?:\(\))?`')
-        function_refs = set(func_ref_pattern.findall(content_no_blocks))
+        function_refs = set(func_ref_pattern.findall(content))
+        
+        # Also look for function references in code (without backticks)
+        # This catches functions in code blocks
+        # Only check code blocks in module documentation, not in kb articles
+        if not doc.startswith('./kb/'):
+            code_func_pattern = re.compile(r'\b(ar_[a-zA-Z0-9]+__[a-zA-Z0-9_]+)\s*\(')
+            function_refs.update(code_func_pattern.findall(content))
         
         for func_ref in function_refs:
             if func_ref not in all_functions:
@@ -244,11 +245,11 @@ def check_function_and_type_references(doc_files):
                     f"  - {doc} references non-existent function '{func_ref}'"
                 )
         
-        # Look for type references in backticks (in filtered content)
+        # Look for type references in backticks
         # Match pattern similar to shell script: `word_t` followed by non-letter or end
         # This pattern matches what grep -Eo would match
         type_ref_pattern = re.compile(r'`([a-zA-Z][a-zA-Z0-9_]*_t)(?:[^a-zA-Z]|$)')
-        matches = type_ref_pattern.findall(content_no_blocks)
+        matches = type_ref_pattern.findall(content)
         # Extract type names, mimicking sed behavior
         type_refs = set()
         for match in matches:
@@ -256,10 +257,19 @@ def check_function_and_type_references(doc_files):
             type_name = match.split('*')[0].strip()
             type_refs.add(type_name)
         
-        # Also look for capitalized types (in filtered content)
+        # Also look for capitalized types
         cap_type_pattern = re.compile(r'`([A-Z][a-zA-Z0-9_]*)`')
-        cap_types = set(cap_type_pattern.findall(content_no_blocks))
+        cap_types = set(cap_type_pattern.findall(content))
         type_refs.update(cap_types)
+        
+        # Also look for type references in code (without backticks)
+        # This catches types in code blocks, including with pointers
+        # Only check code blocks in module documentation, not in kb articles
+        if not doc.startswith('./kb/'):
+            code_type_pattern = re.compile(r'\b([a-zA-Z][a-zA-Z0-9_]*_t)\s*\*?\s*\b')
+            code_types = code_type_pattern.findall(content)
+            for ct in code_types:
+                type_refs.add(ct)
         
         for type_ref in type_refs:
             # Skip standard types and ownership prefixes

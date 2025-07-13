@@ -18,7 +18,7 @@ Each module typically follows a consistent naming convention with an `ar_` prefi
 
 Within modules, consistent naming conventions are used:
 
-- **Functions**: All public functions in a module use the `ar_` prefix followed by the module name and function purpose (e.g., `ar_string__trim`, `ar_data__copy`). This creates a namespace to prevent naming collisions.
+- **Functions**: All public functions in a module use the `ar_` prefix followed by the module name and function purpose (e.g., `ar_string__trim`, `ar_data__shallow_copy`). This creates a namespace to prevent naming collisions.
 
 - **Structs**: Data structures typically use lowercase with underscores and the `_t` suffix (e.g., `ar_data_t`, `ar_method_t`). These are often defined in the header files.
 
