@@ -341,7 +341,7 @@ ar_instruction_evaluator
 │       ├──c──> ar_methodology
 │       ├──c──> ar_string (Zig)
 │       └──c──> ar_heap (Zig)
-├──c──> ar_destroy_agent_instruction_evaluator
+├──c──> ar_destroy_instruction_evaluator
 │       ├──h──> ar_expression_evaluator
 │       ├──h──> ar_instruction_ast
 │       ├──h──> ar_data
@@ -1135,9 +1135,9 @@ The [create instruction evaluator module](ar_create_instruction_evaluator.md) ha
 - **Context Handling**: Supports both memory and context references
 - **Wake Messages**: Agents receive `__wake__` message on creation
 
-#### Destroy Agent Instruction Evaluator Module (`ar_destroy_agent_instruction_evaluator`)
+#### Destroy Instruction Evaluator Module (`ar_destroy_instruction_evaluator`)
 
-The [destroy agent instruction evaluator module](ar_destroy_agent_instruction_evaluator.md) handles agent destruction:
+The [destroy agent instruction evaluator module](ar_destroy_instruction_evaluator.md) handles agent destruction:
 - **Agent Destruction**: Destroys agents by ID
 - **Result Storage**: Stores success/failure result when assignment specified
 - **Instantiable Design**: Follows instantiable pattern with create/destroy lifecycle
@@ -1272,9 +1272,9 @@ The [condition instruction parser module](ar_condition_instruction_parser.md) ha
 - **Complex Conditions**: Parses boolean expressions with operators
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
-#### Destroy Agent Instruction Parser Module (`ar_destroy_agent_instruction_parser`)
+#### Destroy Instruction Parser Module (`ar_destroy_instruction_parser`)
 
-The [destroy agent instruction parser module](ar_destroy_agent_instruction_parser.md) handles parsing of agent destruction:
+The [destroy agent instruction parser module](ar_destroy_instruction_parser.md) handles parsing of agent destruction:
 - **Single Argument**: Parses `destroy(agent_id)` format for agent termination
 - **Agent ID Types**: Accepts integer literals or memory references (e.g., `memory.agent_id`)
 - **Optional Assignment**: Supports `memory.result := destroy(agent_id)` syntax

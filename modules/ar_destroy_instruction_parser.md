@@ -1,12 +1,12 @@
-# Destroy Agent Instruction Parser Module
+# Destroy Instruction Parser Module
 
 ## Overview
 
-The `ar_destroy_agent_instruction_parser` module provides specialized parsing for `destroy()` function instructions with a single argument in the AgeRun language. This parser handles destroy instructions that target agents by their ID.
+The `ar_destroy_instruction_parser` module provides specialized parsing for `destroy()` function instructions with a single argument in the AgeRun language. This parser handles destroy instructions that target agents by their ID.
 
 ## Features
 
-- **Instantiable Design**: Create parser instances with `ar_destroy_agent_instruction_parser__create(ar_log_t *ref_log)` and destroy with `ar_destroy_agent_instruction_parser__destroy()`
+- **Instantiable Design**: Create parser instances with `ar_destroy_instruction_parser__create(ar_log_t *ref_log)` and destroy with `ar_destroy_instruction_parser__destroy()`
 - **Single Argument Parsing**: Specifically handles `destroy(agent_id)` syntax
 - **Error Handling**: Comprehensive error reporting with specific error messages and position tracking
 - **Memory Safety**: Zero memory leaks with proper ownership management following MMM guidelines
@@ -17,19 +17,19 @@ The `ar_destroy_agent_instruction_parser` module provides specialized parsing fo
 ### Basic Usage
 
 ```c
-#include "ar_destroy_agent_instruction_parser.h"
+#include "ar_destroy_instruction_parser.h"
 
 // Create parser instance (with optional logging)
 ar_log_t *own_log = ar_log__create(); // Optional - can be NULL
-ar_destroy_agent_instruction_parser_t *parser = ar_destroy_agent_instruction_parser__create(own_log);
+ar_destroy_instruction_parser_t *parser = ar_destroy_instruction_parser__create(own_log);
 
 // Parse destroy agent instruction
 const char *instruction = "destroy(123)";
-ar_instruction_ast_t *ast = ar_destroy_agent_instruction_parser__parse(parser, instruction, NULL);
+ar_instruction_ast_t *ast = ar_destroy_instruction_parser__parse(parser, instruction, NULL);
 
 if (ast) {
     // Successfully parsed
-    assert(ar_instruction_ast__get_type(ast) == AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT);
+    assert(ar_instruction_ast__get_type(ast) == AR_INSTRUCTION_AST_TYPE__DESTROY);
     // ... use AST ...
     ar_instruction_ast__destroy(ast);
 } else {
@@ -39,7 +39,7 @@ if (ast) {
 }
 
 // Cleanup
-ar_destroy_agent_instruction_parser__destroy(parser);
+ar_destroy_instruction_parser__destroy(parser);
 ar_log__destroy(own_log); // Only if log was created
 ```
 
@@ -48,7 +48,7 @@ ar_log__destroy(own_log); // Only if log was created
 ```c
 // Parse destroy instruction with assignment
 const char *instruction = "memory.result := destroy(memory.agent_id)";
-ar_instruction_ast_t *ast = ar_destroy_agent_instruction_parser__parse(parser, instruction, "memory.result");
+ar_instruction_ast_t *ast = ar_destroy_instruction_parser__parse(parser, instruction, "memory.result");
 
 if (ast) {
     assert(ar_instruction_ast__has_result_assignment(ast) == true);
@@ -90,16 +90,16 @@ The parser reports errors through the ar_log instance provided during creation. 
 - **Memory allocation failures**: `"Memory allocation failed"`
 
 Access error information using:
-- `ar_destroy_agent_instruction_parser__get_error()` - DEPRECATED: Always returns NULL. Use ar_log for error reporting
-- `ar_destroy_agent_instruction_parser__get_error_position()` - DEPRECATED: Always returns 0. Error positions are reported through ar_log
+- `ar_destroy_instruction_parser__get_error()` - DEPRECATED: Always returns NULL. Use ar_log for error reporting
+- `ar_destroy_instruction_parser__get_error_position()` - DEPRECATED: Always returns 0. Error positions are reported through ar_log
 
 ## Implementation Details
 
 ### Architecture
-- **Opaque Type**: `ar_destroy_agent_instruction_parser_t` hides implementation details
+- **Opaque Type**: `ar_destroy_instruction_parser_t` hides implementation details
 - **Error State**: Reports errors through ar_log (deprecated get_error functions return NULL/0)
 - **Instance-Based**: Each parser instance maintains its own state
-- **AST Type**: Creates `AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT` nodes
+- **AST Type**: Creates `AR_INSTRUCTION_AST_TYPE__DESTROY` nodes
 
 ### Memory Management
 - **Heap Tracking**: Uses `AR__HEAP__MALLOC`, `AR__HEAP__FREE`, `AR__HEAP__STRDUP`
@@ -130,7 +130,7 @@ The module includes comprehensive tests covering:
 
 Run tests with:
 ```bash
-make bin/ar_destroy_agent_instruction_parser_tests
+make bin/ar_destroy_instruction_parser_tests
 ```
 
 ## Integration

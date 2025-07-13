@@ -12,7 +12,7 @@
 #include "ar_build_instruction_evaluator.h"
 #include "ar_compile_instruction_evaluator.h"
 #include "ar_create_instruction_evaluator.h"
-#include "ar_destroy_agent_instruction_evaluator.h"
+#include "ar_destroy_instruction_evaluator.h"
 #include "ar_deprecate_instruction_evaluator.h"
 #include "ar_list.h"
 #include "ar_frame.h"
@@ -36,7 +36,7 @@ struct ar_instruction_evaluator_s {
     ar_build_instruction_evaluator_t *own_build_evaluator;  /* Build evaluator instance (owned) */
     ar_compile_instruction_evaluator_t *own_method_evaluator;  /* Compile evaluator instance (owned) */
     ar_create_instruction_evaluator_t *own_create_evaluator;  /* Create evaluator instance (owned) */
-    ar_destroy_agent_instruction_evaluator_t *own_destroy_agent_evaluator;  /* Destroy agent evaluator instance (owned) */
+    ar_destroy_instruction_evaluator_t *own_destroy_evaluator;  /* Destroy evaluator instance (owned) */
     ar_deprecate_instruction_evaluator_t *own_deprecate_evaluator;  /* Deprecate evaluator instance (owned) */
 };
 
@@ -153,11 +153,11 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
         return NULL;
     }
     // Create destroy agent evaluator instance (now uses frame-based pattern)
-    evaluator->own_destroy_agent_evaluator = ar_destroy_agent_instruction_evaluator__create(
+    evaluator->own_destroy_evaluator = ar_destroy_instruction_evaluator__create(
         ref_log,
         ref_expr_evaluator
     );
-    if (evaluator->own_destroy_agent_evaluator == NULL) {
+    if (evaluator->own_destroy_evaluator == NULL) {
         ar_create_instruction_evaluator__destroy(evaluator->own_create_evaluator);
         ar_compile_instruction_evaluator__destroy(evaluator->own_method_evaluator);
         ar_build_instruction_evaluator__destroy(evaluator->own_build_evaluator);
@@ -175,7 +175,7 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
         ref_expr_evaluator
     );
     if (evaluator->own_deprecate_evaluator == NULL) {
-        ar_destroy_agent_instruction_evaluator__destroy(evaluator->own_destroy_agent_evaluator);
+        ar_destroy_instruction_evaluator__destroy(evaluator->own_destroy_evaluator);
         ar_create_instruction_evaluator__destroy(evaluator->own_create_evaluator);
         ar_compile_instruction_evaluator__destroy(evaluator->own_method_evaluator);
         ar_build_instruction_evaluator__destroy(evaluator->own_build_evaluator);
@@ -220,8 +220,8 @@ void ar_instruction_evaluator__destroy(ar_instruction_evaluator_t *own_evaluator
     if (own_evaluator->own_create_evaluator != NULL) {
         ar_create_instruction_evaluator__destroy(own_evaluator->own_create_evaluator);
     }
-    if (own_evaluator->own_destroy_agent_evaluator != NULL) {
-        ar_destroy_agent_instruction_evaluator__destroy(own_evaluator->own_destroy_agent_evaluator);
+    if (own_evaluator->own_destroy_evaluator != NULL) {
+        ar_destroy_instruction_evaluator__destroy(own_evaluator->own_destroy_evaluator);
     }
     if (own_evaluator->own_deprecate_evaluator != NULL) {
         ar_deprecate_instruction_evaluator__destroy(own_evaluator->own_deprecate_evaluator);
@@ -305,10 +305,10 @@ bool ar_instruction_evaluator__evaluate(
                 ref_ast
             );
             
-        case AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT:
+        case AR_INSTRUCTION_AST_TYPE__DESTROY:
             // Delegate directly to destroy agent evaluator using frame-based interface
-            return ar_destroy_agent_instruction_evaluator__evaluate(
-                mut_evaluator->own_destroy_agent_evaluator,
+            return ar_destroy_instruction_evaluator__evaluate(
+                mut_evaluator->own_destroy_evaluator,
                 ref_frame,
                 ref_ast
             );

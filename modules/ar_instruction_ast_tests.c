@@ -191,12 +191,12 @@ static void test_create_destroy_agent_function(void) {
     
     // When creating a destroy agent function call AST node
     ar_instruction_ast_t *own_node = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT, function_name, args, arg_count, result_path
+        AR_INSTRUCTION_AST_TYPE__DESTROY, function_name, args, arg_count, result_path
     );
     
     // Then the node should be created correctly
     assert(own_node != NULL);
-    assert(ar_instruction_ast__get_type(own_node) == AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT);
+    assert(ar_instruction_ast__get_type(own_node) == AR_INSTRUCTION_AST_TYPE__DESTROY);
     
     ar_list_t *own_args = ar_instruction_ast__get_function_args(own_node);
     assert(own_args != NULL);

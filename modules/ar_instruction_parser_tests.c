@@ -240,7 +240,7 @@ static void test_instruction_parser__parse_destroy_agent(void) {
     
     // Then it should parse successfully
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__DESTROY);
     
     ar_instruction_ast__destroy(own_ast);
     ar_instruction_parser__destroy(own_parser);
@@ -509,7 +509,7 @@ static void test_parse_destroy_one_arg(void) {
     
     // Then it should parse as a destroy agent function
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__DESTROY);
     
     ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(ar_list__count(own_args) == 1);

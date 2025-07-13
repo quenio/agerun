@@ -1,8 +1,8 @@
-# Destroy Agent Instruction Evaluator Module
+# Destroy Instruction Evaluator Module
 
 ## Overview
 
-The destroy agent instruction evaluator module is responsible for evaluating agent destruction instructions in the AgeRun language. It handles the `destroy(agent_id)` instruction form, which destroys a specific agent by its ID.
+The destroy instruction evaluator module is responsible for evaluating agent destruction instructions in the AgeRun language. It handles the `destroy(agent_id)` instruction form, which destroys a specific agent by its ID.
 
 ## Purpose
 
@@ -16,20 +16,20 @@ The module follows an instantiable design pattern with lifecycle management:
 
 ```c
 // Create evaluator instance with dependencies (frame-based pattern)
-ar_destroy_agent_instruction_evaluator_t* ar_destroy_agent_instruction_evaluator__create(
+ar_destroy_instruction_evaluator_t* ar_destroy_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator
 );
 
 // Evaluate using frame-based execution
-bool ar_destroy_agent_instruction_evaluator__evaluate(
-    ar_destroy_agent_instruction_evaluator_t *mut_evaluator,
+bool ar_destroy_instruction_evaluator__evaluate(
+    ar_destroy_instruction_evaluator_t *mut_evaluator,
     const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
 
 // Clean up instance
-void ar_destroy_agent_instruction_evaluator__destroy(ar_destroy_agent_instruction_evaluator_t *own_evaluator);
+void ar_destroy_instruction_evaluator__destroy(ar_destroy_instruction_evaluator_t *own_evaluator);
 ```
 
 ### Legacy Interface
@@ -91,7 +91,7 @@ ar_data_t *memory = ar_data__create_map();
 ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
 
 // Create destroy agent evaluator instance
-ar_destroy_agent_instruction_evaluator_t *evaluator = ar_destroy_agent_instruction_evaluator__create(
+ar_destroy_instruction_evaluator_t *evaluator = ar_destroy_instruction_evaluator__create(
     log, expr_eval
 );
 
@@ -104,10 +104,10 @@ ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
 ar_frame_t *frame = ar_frame__create(memory, context, message);
 
 // Evaluate using instance
-bool success = ar_destroy_agent_instruction_evaluator__evaluate(evaluator, frame, ast);
+bool success = ar_destroy_instruction_evaluator__evaluate(evaluator, frame, ast);
 
 // Clean up
-ar_destroy_agent_instruction_evaluator__destroy(evaluator);
+ar_destroy_instruction_evaluator__destroy(evaluator);
 // Result stored in memory["result"]: 1 if destroyed, 0 if not found
 ```
 

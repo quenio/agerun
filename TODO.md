@@ -120,7 +120,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Rename the `method` instruction to `compile` (Completed 2025-07-13)
 - [x] Rename the `agent` instruction to `create` (Completed 2025-07-13)
 - [x] Rename the `destroy` method instruction to `deprecate` (Completed 2025-07-13)  
-- [ ] Rename the destroy agent parser/evaluator to simply `destroy`
+- [x] Rename the destroy agent parser/evaluator to simply `destroy` (Completed 2025-07-13)
 
 ### HIGHEST PRIORITY - Frame-Based Execution Implementation (Revised Plan)
 

@@ -4,6 +4,29 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-07-13
 
+### ✅ COMPLETED: Renamed destroy agent instruction to simply 'destroy'
+- Systematic refactoring to rename the destroy agent instruction to simply `destroy` throughout the codebase
+  - Updated enum AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT to AR_INSTRUCTION_AST_TYPE__DESTROY
+  - Maintains separation between destroy (for agents) and deprecate (for methods)
+- Updated all parser modules
+  - Renamed ar_destroy_agent_instruction_parser to ar_destroy_instruction_parser
+  - Updated all function names, types, and includes
+  - Parser still checks for "destroy" (7 chars) but now maps to simplified destroy parser
+- Updated all evaluator modules  
+  - Renamed ar_destroy_agent_instruction_evaluator to ar_destroy_instruction_evaluator
+  - Updated all function names, types, and includes
+  - Fixed all references in instruction evaluator facade
+- Updated test files
+  - Renamed test files from ar_destroy_agent_instruction_* to ar_destroy_instruction_*
+  - Updated all test content to use new naming while preserving destroy functionality
+  - Fixed all enum references and function names in tests
+- Updated documentation
+  - Renamed .md files for parser and evaluator modules
+  - Updated README.md references from destroy_agent to destroy
+  - Updated all instruction AST documentation
+- All tests pass with zero memory leaks
+- Clean build completed successfully
+
 ### ✅ COMPLETED: Renamed 'agent' instruction to 'create'
 - Systematic refactoring to rename the `agent` instruction to `create` throughout the codebase
   - Updated enum AR_INSTRUCTION_AST_TYPE__AGENT to AR_INSTRUCTION_AST_TYPE__CREATE

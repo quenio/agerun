@@ -5,7 +5,7 @@
 #include <inttypes.h>
 #include <unistd.h>
 #include "ar_evaluator_fixture.h"
-#include "ar_destroy_agent_instruction_evaluator.h"
+#include "ar_destroy_instruction_evaluator.h"
 #include "ar_expression_evaluator.h"
 #include "ar_instruction_ast.h"
 #include "ar_expression_ast.h"
@@ -29,7 +29,7 @@ static void test_destroy_agent_instruction_evaluator__create_destroy(void) {
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
     // When creating a destroy agent evaluator with frame-based pattern (no memory parameter)
-    ar_destroy_agent_instruction_evaluator_t *evaluator = ar_destroy_agent_instruction_evaluator__create(
+    ar_destroy_instruction_evaluator_t *evaluator = ar_destroy_instruction_evaluator__create(
         log, expr_eval
     );
     
@@ -37,7 +37,7 @@ static void test_destroy_agent_instruction_evaluator__create_destroy(void) {
     assert(evaluator != NULL);
     
     // When destroying the evaluator
-    ar_destroy_agent_instruction_evaluator__destroy(evaluator);
+    ar_destroy_instruction_evaluator__destroy(evaluator);
     
     // Then no memory leaks should occur (verified by test framework)
     
@@ -69,7 +69,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_with_instance(voi
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
-    ar_destroy_agent_instruction_evaluator_t *evaluator = ar_destroy_agent_instruction_evaluator__create(
+    ar_destroy_instruction_evaluator_t *evaluator = ar_destroy_instruction_evaluator__create(
         log, expr_eval
     );
     assert(evaluator != NULL);
@@ -88,7 +88,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_with_instance(voi
     // Create destroy AST with agent ID
     const char *args[] = {"memory.agent_id"};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT, "destroy", args, 1, NULL
+        AR_INSTRUCTION_AST_TYPE__DESTROY, "destroy", args, 1, NULL
     );
     assert(ast != NULL);
     
@@ -105,7 +105,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_with_instance(voi
     assert(ast_set == true);
     
     // When evaluating the destroy call using frame-based pattern
-    bool result = ar_destroy_agent_instruction_evaluator__evaluate(evaluator, frame, ast);
+    bool result = ar_destroy_instruction_evaluator__evaluate(evaluator, frame, ast);
     
     // Then it should succeed
     assert(result == true);
@@ -115,7 +115,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_with_instance(voi
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
-    ar_destroy_agent_instruction_evaluator__destroy(evaluator);
+    ar_destroy_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
     // Clean up agency before shutting down
@@ -149,7 +149,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_literal_id(void) 
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
     // Create an evaluator instance
-    ar_destroy_agent_instruction_evaluator_t *evaluator = ar_destroy_agent_instruction_evaluator__create(
+    ar_destroy_instruction_evaluator_t *evaluator = ar_destroy_instruction_evaluator__create(
         log, expr_eval
     );
     assert(evaluator != NULL);
@@ -167,7 +167,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_literal_id(void) 
     snprintf(agent_id_str, sizeof(agent_id_str), "%" PRId64, agent_id);
     const char *args[] = {agent_id_str};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT, "destroy", args, 1, NULL
+        AR_INSTRUCTION_AST_TYPE__DESTROY, "destroy", args, 1, NULL
     );
     assert(ast != NULL);
     
@@ -183,7 +183,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_literal_id(void) 
     assert(ast_set == true);
     
     // When evaluating using frame-based interface
-    bool result = ar_destroy_agent_instruction_evaluator__evaluate(evaluator, frame, ast);
+    bool result = ar_destroy_instruction_evaluator__evaluate(evaluator, frame, ast);
     
     // Then it should succeed
     assert(result == true);
@@ -193,7 +193,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_literal_id(void) 
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
-    ar_destroy_agent_instruction_evaluator__destroy(evaluator);
+    ar_destroy_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
     // Clean up agency before shutting down
@@ -227,7 +227,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_with_result(void)
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
-    ar_destroy_agent_instruction_evaluator_t *evaluator = ar_destroy_agent_instruction_evaluator__create(
+    ar_destroy_instruction_evaluator_t *evaluator = ar_destroy_instruction_evaluator__create(
         log, expr_eval
     );
     assert(evaluator != NULL);
@@ -245,7 +245,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_with_result(void)
     snprintf(agent_id_str, sizeof(agent_id_str), "%" PRId64, agent_id);
     const char *args[] = {agent_id_str};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT, "destroy", args, 1, "memory.result"
+        AR_INSTRUCTION_AST_TYPE__DESTROY, "destroy", args, 1, "memory.result"
     );
     assert(ast != NULL);
     
@@ -261,7 +261,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_with_result(void)
     assert(ast_set == true);
     
     // When evaluating the destroy call using frame
-    bool result = ar_destroy_agent_instruction_evaluator__evaluate(evaluator, frame, ast);
+    bool result = ar_destroy_instruction_evaluator__evaluate(evaluator, frame, ast);
     
     // Then it should succeed
     assert(result == true);
@@ -277,7 +277,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_with_result(void)
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
-    ar_destroy_agent_instruction_evaluator__destroy(evaluator);
+    ar_destroy_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
     // Clean up agency before shutting down
@@ -311,7 +311,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_nonexistent(void)
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
-    ar_destroy_agent_instruction_evaluator_t *evaluator = ar_destroy_agent_instruction_evaluator__create(
+    ar_destroy_instruction_evaluator_t *evaluator = ar_destroy_instruction_evaluator__create(
         log, expr_eval
     );
     assert(evaluator != NULL);
@@ -319,7 +319,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_nonexistent(void)
     // Create destroy AST with non-existent agent ID
     const char *args[] = {"999"};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT, "destroy", args, 1, "memory.result"
+        AR_INSTRUCTION_AST_TYPE__DESTROY, "destroy", args, 1, "memory.result"
     );
     assert(ast != NULL);
     
@@ -335,7 +335,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_nonexistent(void)
     assert(ast_set == true);
     
     // When evaluating the destroy call using frame
-    bool result = ar_destroy_agent_instruction_evaluator__evaluate(evaluator, frame, ast);
+    bool result = ar_destroy_instruction_evaluator__evaluate(evaluator, frame, ast);
     
     // Then it should succeed (no error)
     assert(result == true);
@@ -348,7 +348,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_nonexistent(void)
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
-    ar_destroy_agent_instruction_evaluator__destroy(evaluator);
+    ar_destroy_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
     // Clean up agency before shutting down
@@ -374,7 +374,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_invalid_type(void
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
-    ar_destroy_agent_instruction_evaluator_t *evaluator = ar_destroy_agent_instruction_evaluator__create(
+    ar_destroy_instruction_evaluator_t *evaluator = ar_destroy_instruction_evaluator__create(
         log, expr_eval
     );
     assert(evaluator != NULL);
@@ -382,7 +382,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_invalid_type(void
     // Create destroy AST with non-integer agent ID (string)
     const char *args[] = {"\"not_a_number\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT, "destroy", args, 1, NULL
+        AR_INSTRUCTION_AST_TYPE__DESTROY, "destroy", args, 1, NULL
     );
     assert(ast != NULL);
     
@@ -398,14 +398,14 @@ static void test_destroy_agent_instruction_evaluator__evaluate_invalid_type(void
     assert(ast_set == true);
     
     // When evaluating the destroy call using frame
-    bool result = ar_destroy_agent_instruction_evaluator__evaluate(evaluator, frame, ast);
+    bool result = ar_destroy_instruction_evaluator__evaluate(evaluator, frame, ast);
     
     // Then it should fail due to invalid argument type
     assert(result == false);
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
-    ar_destroy_agent_instruction_evaluator__destroy(evaluator);
+    ar_destroy_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
 }
 
@@ -422,7 +422,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_wrong_arg_count(v
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
-    ar_destroy_agent_instruction_evaluator_t *evaluator = ar_destroy_agent_instruction_evaluator__create(
+    ar_destroy_instruction_evaluator_t *evaluator = ar_destroy_instruction_evaluator__create(
         log, expr_eval
     );
     assert(evaluator != NULL);
@@ -430,7 +430,7 @@ static void test_destroy_agent_instruction_evaluator__evaluate_wrong_arg_count(v
     // Create destroy AST with 2 args (should be 1 for agent)
     const char *args[] = {"1", "\"extra\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT, "destroy", args, 2, NULL
+        AR_INSTRUCTION_AST_TYPE__DESTROY, "destroy", args, 2, NULL
     );
     assert(ast != NULL);
     
@@ -450,14 +450,14 @@ static void test_destroy_agent_instruction_evaluator__evaluate_wrong_arg_count(v
     assert(ast_set == true);
     
     // When evaluating the destroy call using frame
-    bool result = ar_destroy_agent_instruction_evaluator__evaluate(evaluator, frame, ast);
+    bool result = ar_destroy_instruction_evaluator__evaluate(evaluator, frame, ast);
     
     // Then it should fail due to wrong argument count
     assert(result == false);
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
-    ar_destroy_agent_instruction_evaluator__destroy(evaluator);
+    ar_destroy_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
 }
 

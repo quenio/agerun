@@ -16,7 +16,7 @@ typedef enum {
     AR_INSTRUCTION_AST_TYPE__IF,             /* if(condition, true_val, false_val) */
     AR_INSTRUCTION_AST_TYPE__COMPILE,        /* compile(name, instructions, version) */
     AR_INSTRUCTION_AST_TYPE__CREATE,         /* create(method, version, context) */
-    AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT,  /* destroy(agent_id) - specialized parser */
+    AR_INSTRUCTION_AST_TYPE__DESTROY,        /* destroy(agent_id) - specialized parser */
     AR_INSTRUCTION_AST_TYPE__DEPRECATE,     /* deprecate(method, version) - specialized parser */
     AR_INSTRUCTION_AST_TYPE__PARSE,          /* parse(template, input) */
     AR_INSTRUCTION_AST_TYPE__BUILD           /* build(template, values) */

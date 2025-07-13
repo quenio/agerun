@@ -432,7 +432,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         snprintf(agent_id_str, sizeof(agent_id_str), "%" PRId64, agent_id);
         const char *args[] = {agent_id_str};
         ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-            AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT, "destroy", args, 1, "memory.destroy_result"
+            AR_INSTRUCTION_AST_TYPE__DESTROY, "destroy", args, 1, "memory.destroy_result"
         );
         assert(ast != NULL);
         

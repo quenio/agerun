@@ -1,9 +1,9 @@
 /**
- * @file ar_destroy_agent_instruction_evaluator.c
- * @brief Implementation of the destroy agent instruction evaluator module
+ * @file ar_destroy_instruction_evaluator.c
+ * @brief Implementation of the destroy instruction evaluator module
  */
 
-#include "ar_destroy_agent_instruction_evaluator.h"
+#include "ar_destroy_instruction_evaluator.h"
 #include "ar_heap.h"
 #include "ar_expression_ast.h"
 #include "ar_expression_evaluator.h"
@@ -18,13 +18,13 @@
 
 
 /* Opaque struct definition */
-struct ar_destroy_agent_instruction_evaluator_s {
+struct ar_destroy_instruction_evaluator_s {
     ar_log_t *ref_log;                           /* Borrowed reference to log instance */
     ar_expression_evaluator_t *ref_expr_evaluator; /* Borrowed reference to expression evaluator */
 };
 
 /* Helper function to log error message */
-static void _log_error(ar_destroy_agent_instruction_evaluator_t *mut_evaluator, const char *message) {
+static void _log_error(ar_destroy_instruction_evaluator_t *mut_evaluator, const char *message) {
     if (message && mut_evaluator->ref_log) {
         ar_log__error(mut_evaluator->ref_log, message);
     }
@@ -67,7 +67,7 @@ static bool _store_result_if_assigned(
 /**
  * Creates a new destroy agent instruction evaluator instance
  */
-ar_destroy_agent_instruction_evaluator_t* ar_destroy_agent_instruction_evaluator__create(
+ar_destroy_instruction_evaluator_t* ar_destroy_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator
 ) {
@@ -75,8 +75,8 @@ ar_destroy_agent_instruction_evaluator_t* ar_destroy_agent_instruction_evaluator
         return NULL;
     }
     
-    ar_destroy_agent_instruction_evaluator_t *own_evaluator = AR__HEAP__MALLOC(
-        sizeof(ar_destroy_agent_instruction_evaluator_t), 
+    ar_destroy_instruction_evaluator_t *own_evaluator = AR__HEAP__MALLOC(
+        sizeof(ar_destroy_instruction_evaluator_t), 
         "destroy_agent_instruction_evaluator"
     );
     if (!own_evaluator) {
@@ -92,7 +92,7 @@ ar_destroy_agent_instruction_evaluator_t* ar_destroy_agent_instruction_evaluator
 /**
  * Destroys a destroy agent instruction evaluator instance
  */
-void ar_destroy_agent_instruction_evaluator__destroy(ar_destroy_agent_instruction_evaluator_t *own_evaluator) {
+void ar_destroy_instruction_evaluator__destroy(ar_destroy_instruction_evaluator_t *own_evaluator) {
     if (!own_evaluator) {
         return;
     }
@@ -103,8 +103,8 @@ void ar_destroy_agent_instruction_evaluator__destroy(ar_destroy_agent_instructio
 /**
  * Evaluates a destroy agent instruction using frame-based execution
  */
-bool ar_destroy_agent_instruction_evaluator__evaluate(
-    ar_destroy_agent_instruction_evaluator_t *mut_evaluator,
+bool ar_destroy_instruction_evaluator__evaluate(
+    ar_destroy_instruction_evaluator_t *mut_evaluator,
     const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 ) {
@@ -122,7 +122,7 @@ bool ar_destroy_agent_instruction_evaluator__evaluate(
     }
     
     // Validate AST type
-    if (ar_instruction_ast__get_type(ref_ast) != AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT) {
+    if (ar_instruction_ast__get_type(ref_ast) != AR_INSTRUCTION_AST_TYPE__DESTROY) {
         return false;
     }
     
