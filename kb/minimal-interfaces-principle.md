@@ -16,36 +16,36 @@ The Minimal Interfaces principle requires that module interfaces expose only wha
 
 **Good Minimal Interface**:
 ```c
-// ar_string.h - Essential operations only
-typedef struct ar_string_s ar_string_t;
+// ar_data.h - Essential operations only
+typedef struct ar_data_s ar_data_t;
 
 // Lifecycle
-ar_string_t* ar_string__create(const char* text);
-void ar_string__destroy(ar_string_t* string);
+ar_data_t* ar_data__create_string(const char* text);
+void ar_data__destroy(ar_data_t* data);
 
 // Core operations
-const char* ar_string__get_text(ar_string_t* string);
-size_t ar_string__get_length(ar_string_t* string);
-ar_string_t* ar_string__concat(ar_string_t* a, ar_string_t* b);
-bool ar_string__equals(ar_string_t* a, ar_string_t* b);
+const char* ar_data__get_string(const ar_data_t* data);
+size_t ar_data__list_count(const ar_data_t* data);
+ar_data_t* ar_data__shallow_copy(const ar_data_t* data);
+int ar_data__get_type(const ar_data_t* data);
 ```
 
 **Poor Bloated Interface**:
 ```c
 // BAD: Too many convenience functions
-ar_string_t* ar_string__create(const char* text);
-ar_string_t* ar_string__create_empty();           // Convenience - not essential
-ar_string_t* ar_string__create_with_capacity(size_t cap);  // Internal concern
-ar_string_t* ar_string__create_from_buffer(const char* buf, size_t len);  // Rare use
-void ar_string__destroy(ar_string_t* string);
-const char* ar_string__get_text(ar_string_t* string);
-size_t ar_string__get_length(ar_string_t* string);
-size_t ar_string__get_capacity(ar_string_t* string);      // Internal detail
-bool ar_string__is_empty(ar_string_t* string);           // Can derive from length
-ar_string_t* ar_string__concat(ar_string_t* a, ar_string_t* b);
-ar_string_t* ar_string__concat_three(ar_string_t* a, ar_string_t* b, ar_string_t* c);  // Convenience
-void ar_string__debug_print(ar_string_t* string);        // Debug helper
-void ar_string__validate_internal(ar_string_t* string);  // Internal function
+ar_data_t* ar_data__create_string(const char* text);
+ar_data_t* ar_data__create_empty_string();           // EXAMPLE: Convenience - not essential
+ar_data_t* ar_data__create_string_with_capacity(size_t cap);  // EXAMPLE: Internal concern
+ar_data_t* ar_data__create_from_buffer(const char* buf, size_t len);  // EXAMPLE: Rare use
+void ar_data__destroy(ar_data_t* data);
+const char* ar_data__get_string(const ar_data_t* data);
+size_t ar_data__get_string_length(const ar_data_t* data);  // ERROR: Not in API
+size_t ar_data__get_capacity(const ar_data_t* data);      // ERROR: Internal detail
+bool ar_data__is_empty_string(const ar_data_t* data);     // ERROR: Can derive from data
+ar_data_t* ar_data__concat_strings(ar_data_t* a, ar_data_t* b);  // ERROR: Not in API
+ar_data_t* ar_data__concat_three(ar_data_t* a, ar_data_t* b, ar_data_t* c);  // ERROR: Convenience
+void ar_data__debug_print(ar_data_t* data);              // EXAMPLE: Debug helper
+void ar_data__validate_internal(ar_data_t* data);        // EXAMPLE: Internal function
 ```
 
 ### Essential vs. Convenience
@@ -53,20 +53,20 @@ void ar_string__validate_internal(ar_string_t* string);  // Internal function
 **Essential Functions**: Cannot be implemented efficiently by clients
 ```c
 // Essential - requires internal access
-const char* ar_data__get_string(ar_data_t* data);
-size_t ar_list__get_count(ar_list_t* list);
-ar_data_t* ar_map__get(ar_map_t* map, const char* key);
+const char* ar_data__get_string(const ar_data_t* data);
+size_t ar_list__get_count(ar_list_t* list);  // EXAMPLE: Hypothetical function
+ar_data_t* ar_data__get_map_data(const ar_data_t* data, const char* key);
 ```
 
 **Convenience Functions**: Can be implemented using essential functions
 ```c
 // Convenience - clients can implement this
-bool ar_list__is_empty(ar_list_t* list) {
-    return ar_list__get_count(list) == 0;  // Uses essential function
+bool ar_list__is_empty(ar_list_t* list) {  // EXAMPLE: Convenience function
+    return ar_list__get_count(list) == 0;  // EXAMPLE: Uses hypothetical function
 }
 
 // Better: Let clients implement when needed
-// if (ar_list__get_count(list) == 0) { ... }
+// if (ar_data__list_count(list) == 0) { ... }
 ```
 
 ## Interface Design Strategies
@@ -75,20 +75,20 @@ bool ar_list__is_empty(ar_list_t* list) {
 
 **Initial Minimal Interface**:
 ```c
-// ar_semver.h - Start with essentials
-typedef struct ar_semver_s ar_semver_t;
+// ar_method.h - Start with essentials  
+typedef struct ar_method_s ar_method_t;
 
-ar_semver_t* ar_semver__parse(const char* version_string);
-void ar_semver__destroy(ar_semver_t* version);
-int ar_semver__compare(ar_semver_t* a, ar_semver_t* b);
+ar_method_t* ar_method__create(const char* name, const char* version, const char* instructions);
+void ar_method__destroy(ar_method_t* method);
+const char* ar_method__get_name(const ar_method_t* method);
 ```
 
 **Add Only When Proven Necessary**:
 ```c
 // Add functions only when multiple clients need them
-uint32_t ar_semver__get_major(ar_semver_t* version);  // Added when needed
-uint32_t ar_semver__get_minor(ar_semver_t* version);  // Added when needed
-const char* ar_semver__to_string(ar_semver_t* version);  // Added when needed
+const char* ar_method__get_version(const ar_method_t* method);  // Added when needed
+const char* ar_method__get_instructions(const ar_method_t* method);  // Added when needed
+ar_method_ast_t* ar_method__get_ast(const ar_method_t* method);  // Core function
 ```
 
 ### Combine Related Operations
@@ -96,16 +96,16 @@ const char* ar_semver__to_string(ar_semver_t* version);  // Added when needed
 **Before**: Multiple small functions
 ```c
 // Too granular
-void ar_map__begin_iteration(ar_map_t* map);
-const char* ar_map__get_next_key(ar_map_t* map);
-bool ar_map__has_more_keys(ar_map_t* map);
-void ar_map__end_iteration(ar_map_t* map);
+void ar_map__begin_iteration(ar_map_t* map);  // EXAMPLE: Bad API design
+const char* ar_map__get_next_key(ar_map_t* map);  // EXAMPLE: Bad API design
+bool ar_map__has_more_keys(ar_map_t* map);  // EXAMPLE: Bad API design
+void ar_map__end_iteration(ar_map_t* map);  // EXAMPLE: Bad API design
 ```
 
 **After**: Single focused function
 ```c
 // Better: One function for complete operation
-ar_list_t* ar_map__get_keys(ar_map_t* map);  // Returns all keys as list
+ar_data_t* ar_data__get_map_keys(const ar_data_t* map);  // Returns all keys as list
 ```
 
 ### Avoid Implementation Leakage
@@ -113,16 +113,16 @@ ar_list_t* ar_map__get_keys(ar_map_t* map);  // Returns all keys as list
 **Problem**: Exposing internal mechanisms
 ```c
 // BAD: Internal buffer management exposed
-void ar_string__reserve_capacity(ar_string_t* string, size_t capacity);
-void ar_string__shrink_to_fit(ar_string_t* string);
-void ar_string__clear_but_keep_capacity(ar_string_t* string);
+void ar_data__reserve_capacity(ar_data_t* data, size_t capacity);  // EXAMPLE: Bad API design
+void ar_data__shrink_to_fit(ar_data_t* data);  // EXAMPLE: Bad API design  
+void ar_data__clear_but_keep_capacity(ar_data_t* data);  // EXAMPLE: Bad API design
 ```
 
 **Solution**: Hide implementation details
 ```c
 // GOOD: Only essential operations
-ar_string_t* ar_string__create(const char* text);  // Handles capacity internally
-ar_string_t* ar_string__concat(ar_string_t* a, ar_string_t* b);  // Manages memory internally
+ar_data_t* ar_data__create_string(const char* text);  // Handles capacity internally
+ar_data_t* ar_data__shallow_copy(const ar_data_t* data);  // Manages memory internally
 ```
 
 ## Common Interface Bloat
@@ -132,9 +132,9 @@ ar_string_t* ar_string__concat(ar_string_t* a, ar_string_t* b);  // Manages memo
 **Problem**: Debug utilities in public interface
 ```c
 // BAD: Debug functions exposed
-void ar_heap__print_allocation_report();
-void ar_data__debug_print_structure(ar_data_t* data);
-void ar_map__validate_hash_distribution(ar_map_t* map);
+void ar_heap__print_allocation_report();  // EXAMPLE: Debug function that shouldn't be public
+void ar_data__debug_print_structure(ar_data_t* data);  // EXAMPLE: Debug function that shouldn't be public
+void ar_map__validate_hash_distribution(ar_map_t* map);  // EXAMPLE: Debug function that shouldn't be public
 ```
 
 **Solution**: Keep debug functions internal or separate
@@ -152,10 +152,10 @@ static void _print_allocation_report() { ... }
 ```c
 // BAD: Many convenience overloads
 ar_data_t* ar_data__create_string(const char* text);
-ar_data_t* ar_data__create_string_with_length(const char* text, size_t len);
-ar_data_t* ar_data__create_string_copy(const char* text);
-ar_data_t* ar_data__create_string_owned(char* text);
-ar_data_t* ar_data__create_string_borrowed(const char* text);
+ar_data_t* ar_data__create_string_with_length(const char* text, size_t len);  // ERROR: Convenience overload
+ar_data_t* ar_data__create_string_copy(const char* text);  // ERROR: Same as first
+ar_data_t* ar_data__create_string_owned(char* text);  // ERROR: Different ownership
+ar_data_t* ar_data__create_string_borrowed(const char* text);  // ERROR: Dangerous
 ```
 
 **Solution**: One function with clear ownership semantics
@@ -169,17 +169,17 @@ ar_data_t* ar_data__create_string(const char* text);  // Always copies input
 **Problem**: Exposing all internal fields
 ```c
 // BAD: Every internal field has getter
-size_t ar_string__get_length(ar_string_t* string);      // Useful
-size_t ar_string__get_capacity(ar_string_t* string);    // Internal detail
-size_t ar_string__get_hash_code(ar_string_t* string);   // Implementation detail
-bool ar_string__is_interned(ar_string_t* string);       // Internal optimization
+size_t ar_data__get_string_length(ar_data_t* data);      // EXAMPLE: Potentially useful getter
+size_t ar_data__get_capacity(ar_data_t* data);           // ERROR: Internal detail
+size_t ar_data__get_hash_code(ar_data_t* data);          // ERROR: Implementation detail
+bool ar_data__is_interned(ar_data_t* data);              // ERROR: Internal optimization
 ```
 
 **Solution**: Only expose what clients need
 ```c
 // GOOD: Only essential getters
-size_t ar_string__get_length(ar_string_t* string);
-const char* ar_string__get_text(ar_string_t* string);
+const char* ar_data__get_string(const ar_data_t* data);
+int ar_data__get_type(const ar_data_t* data);
 ```
 
 ## Benefits
@@ -189,8 +189,8 @@ const char* ar_string__get_text(ar_string_t* string);
 **Fewer Dependencies**: Clients depend on less functionality
 ```c
 // Client only needs core operations
-ar_string_t* str = ar_string__create("hello");
-if (ar_string__equals(str, other_str)) {
+ar_data_t* str = ar_data__create_string("hello");
+if (ar_data__get_type(str) == AR_DATA_TYPE_STRING) {
     // No dependency on convenience functions
 }
 ```
@@ -230,11 +230,11 @@ void test_string__equality_comparison();
 **Safe Additions**: New functions don't break existing clients
 ```c
 // Original interface
-ar_semver_t* ar_semver__parse(const char* version_string);
-int ar_semver__compare(ar_semver_t* a, ar_semver_t* b);
+ar_semver_t* ar_semver__parse(const char* version_string);  // EXAMPLE: Hypothetical type
+int ar_semver__compare(ar_semver_t* a, ar_semver_t* b);  // EXAMPLE: Hypothetical type
 
 // Safe addition - existing clients unaffected
-const char* ar_semver__to_string(ar_semver_t* version);  // New function added
+const char* ar_semver__to_string(ar_semver_t* version);  // EXAMPLE: New function added
 ```
 
 ### Removing Functions
@@ -242,10 +242,10 @@ const char* ar_semver__to_string(ar_semver_t* version);  // New function added
 **Dangerous**: Breaks existing clients - avoid if possible
 ```c
 // Problematic removal
-// ar_string_t* ar_string__create_empty();  // REMOVED - breaks clients
+// ar_data_t* ar_data__create_empty();  // ERROR: REMOVED - breaks clients
 
 // Better: Deprecate first, remove later
-ar_string_t* ar_string__create_empty() __attribute__((deprecated));
+ar_data_t* ar_data__create_empty() __attribute__((deprecated));  // EXAMPLE: Deprecation approach
 ```
 
 ### Changing Signatures
@@ -259,7 +259,7 @@ ar_data_t* ar_data__create_string(const char* text);
 ar_data_t* ar_data__create_string(const char* text, bool copy_text);
 
 // Better: Add new function, deprecate old
-ar_data_t* ar_data__create_string_copy(const char* text);  // New
+ar_data_t* ar_data__create_string_copy(const char* text);  // EXAMPLE: New function
 ar_data_t* ar_data__create_string(const char* text) __attribute__((deprecated));  // Old
 ```
 
@@ -287,32 +287,33 @@ ar_data_t* ar_data__create_string(const char* text) __attribute__((deprecated));
 // ar_path.h - Clean, focused interface
 typedef struct ar_path_s ar_path_t;
 
-ar_path_t* ar_path__create(const char* path_string);
+ar_path_t* ar_path__create(const char* path_string, char separator);
 void ar_path__destroy(ar_path_t* path);
-ar_path_t* ar_path__join(ar_path_t* base, const char* component);
-const char* ar_path__to_string(ar_path_t* path);
+ar_path_t* ar_path__join(const ar_path_t* base, const char* suffix);
+const char* ar_path__get_string(const ar_path_t* path);
 ```
 
 **Poor Bloated Interface**:
 ```c
 // BAD: Too many functions, many unnecessary
-ar_path_t* ar_path__create(const char* path_string);
-ar_path_t* ar_path__create_empty();
-ar_path_t* ar_path__create_from_parts(const char** parts, size_t count);
-ar_path_t* ar_path__create_with_separator(const char* path, char sep);
+ar_path_t* ar_path__create(const char* path_string, char separator);
+ar_path_t* ar_path__create_empty();  // ERROR: Unnecessary convenience
+ar_path_t* ar_path__create_from_parts(const char** parts, size_t count);  // ERROR: Rare use
+ar_path_t* ar_path__create_variable(const char* path);  // Maybe needed
+ar_path_t* ar_path__create_file(const char* path);      // Maybe needed
 void ar_path__destroy(ar_path_t* path);
-ar_path_t* ar_path__join(ar_path_t* base, const char* component);
-ar_path_t* ar_path__join_multiple(ar_path_t* base, ...);
-const char* ar_path__to_string(ar_path_t* path);
-char* ar_path__to_string_with_separator(ar_path_t* path, char sep);
-size_t ar_path__get_component_count(ar_path_t* path);
-const char* ar_path__get_component_at(ar_path_t* path, size_t index);
-bool ar_path__is_absolute(ar_path_t* path);
-bool ar_path__is_relative(ar_path_t* path);
-bool ar_path__is_empty(ar_path_t* path);
-ar_path_t* ar_path__get_parent(ar_path_t* path);
-const char* ar_path__get_basename(ar_path_t* path);
-const char* ar_path__get_extension(ar_path_t* path);
-void ar_path__debug_print(ar_path_t* path);
-bool ar_path__validate_components(ar_path_t* path);
+ar_path_t* ar_path__join(const ar_path_t* base, const char* suffix);
+ar_path_t* ar_path__join_multiple(ar_path_t* base, ...);  // ERROR: Convenience
+const char* ar_path__get_string(const ar_path_t* path);
+char* ar_path__to_string_with_separator(ar_path_t* path, char sep);  // ERROR: Rarely needed
+size_t ar_path__get_segment_count(const ar_path_t* path);
+const char* ar_path__get_segment(const ar_path_t* path, size_t index);
+bool ar_path__is_absolute(ar_path_t* path);  // ERROR: Not in API
+bool ar_path__is_relative(ar_path_t* path);  // ERROR: Not in API  
+bool ar_path__is_empty(ar_path_t* path);     // ERROR: Can derive
+ar_path_t* ar_path__get_parent(const ar_path_t* path);
+const char* ar_path__get_basename(ar_path_t* path);  // ERROR: Not in API
+const char* ar_path__get_extension(ar_path_t* path); // ERROR: Not in API
+void ar_path__debug_print(ar_path_t* path);          // ERROR: Debug function
+bool ar_path__validate_components(ar_path_t* path);  // ERROR: Internal
 ```

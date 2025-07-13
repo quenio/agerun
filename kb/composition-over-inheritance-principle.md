@@ -27,7 +27,7 @@ const ar_method_t* ar_agent__get_method(ar_agent_t* agent);
 
 // Agent has memory (composition relationship)  
 ar_data_t* ar_agent__get_memory(ar_agent_t* agent);
-void ar_agent__set_memory(ar_agent_t* agent, ar_data_t* memory);
+void ar_agent__set_memory(ar_agent_t* agent, ar_data_t* memory);  // EXAMPLE: Hypothetical function
 ```
 
 **Implementation Shows Composition**:
@@ -37,7 +37,7 @@ struct ar_agent_s {
     uint64_t id;
     const ar_method_t* method;    // Composed method (borrowed reference)
     ar_data_t* memory;            // Composed memory (owned)
-    ar_agent_state_t state;       // Component state
+    ar_agent_state_t state;       // Component state  // EXAMPLE: Hypothetical type
 };
 ```
 
@@ -46,7 +46,7 @@ struct ar_agent_s {
 // BAD: Tight coupling that mimics inheritance
 typedef struct {
     // "Base class" data mixed with "derived" data
-    ar_agent_core_data_t core;        // Inheritance-like structure
+    ar_agent_core_data_t core;        // Inheritance-like structure  // EXAMPLE: Hypothetical type
     ar_method_t embedded_method;      // Embedded instead of composed
     char memory_buffer[1024];         // Fixed-size instead of flexible
 } ar_agent_t;
@@ -66,8 +66,8 @@ struct ar_agent_s {
 typedef struct ar_interpreter_s ar_interpreter_t;
 
 ar_interpreter_t* ar_interpreter__create();
-void ar_interpreter__set_agency(ar_interpreter_t* interpreter, ar_agency_t* agency);
-void ar_interpreter__set_methodology(ar_interpreter_t* interpreter, ar_methodology_t* methodology);
+void ar_interpreter__set_agency(ar_interpreter_t* interpreter, ar_agency_t* agency);  // EXAMPLE: Hypothetical function
+void ar_interpreter__set_methodology(ar_interpreter_t* interpreter, ar_methodology_t* methodology);  // EXAMPLE: Hypothetical function
 
 // Uses injected dependencies
 bool ar_interpreter__execute_instruction(ar_interpreter_t* interpreter, const char* instruction);
@@ -77,7 +77,7 @@ bool ar_interpreter__execute_instruction(ar_interpreter_t* interpreter, const ch
 ```c
 // ar_interpreter.c - Holds references to injected dependencies
 struct ar_interpreter_s {
-    ar_agency_t* agency;           // Injected dependency (borrowed reference)
+    ar_data_t* agency;           // Injected dependency (borrowed reference)  // EXAMPLE: Using real type
     ar_methodology_t* methodology; // Injected dependency (borrowed reference)
     ar_log_t* logger;              // Injected dependency (borrowed reference)
     // Interpreter doesn't own these components, just uses them
@@ -88,7 +88,7 @@ struct ar_interpreter_s {
 ```c
 // BAD: Embedded dependencies create tight coupling
 struct ar_interpreter_s {
-    ar_agency_t embedded_agency;      // Owns and embeds agency
+    ar_agency_t embedded_agency;      // Owns and embeds agency  // EXAMPLE: Hypothetical type
     ar_methodology_t embedded_methodology; // Owns and embeds methodology
     // Now interpreter must know how to create/manage these components
     // Testing becomes difficult - can't inject mocks
@@ -126,13 +126,13 @@ struct ar_agent_registry_s {
 **Good - Facade Coordinates Components**:
 ```c
 // ar_agency.h - Facade composes registry, store, and update modules
-typedef struct ar_agency_s ar_agency_t;
+typedef struct ar_agency_s ar_data_t;  // EXAMPLE: Using real type
 
-ar_agency_t* ar_agency__create();
+ar_agency_t* ar_agency__create();  // EXAMPLE: Hypothetical function
 
 // Facade delegates to specialized components
-ar_agent_t* ar_agency__create_agent(ar_agency_t* agency, const char* method_name);
-void ar_agency__send_message(ar_agency_t* agency, uint64_t agent_id, ar_data_t* message);
+ar_agent_t* ar_agency__create_agent(ar_data_t* agency, const char* method_name);  // EXAMPLE: Using real type
+void ar_agency__send_message(ar_agency_t* agency, uint64_t agent_id, ar_data_t* message);  // EXAMPLE: Hypothetical function
 ```
 
 **Implementation - Component Coordination**:
@@ -140,12 +140,12 @@ void ar_agency__send_message(ar_agency_t* agency, uint64_t agent_id, ar_data_t* 
 // ar_agency.c - Composes specialized modules
 struct ar_agency_s {
     ar_agent_registry_t* registry;   // Component for agent lifecycle
-    ar_agent_store_t* store;         // Component for persistence
-    ar_agent_update_t* updater;      // Component for message processing
+    ar_data_t* store;         // Component for persistence  // EXAMPLE: Using real type
+    ar_data_t* updater;      // Component for message processing  // EXAMPLE: Using real type
     // Each component has single responsibility
 };
 
-ar_agent_t* ar_agency__create_agent(ar_agency_t* agency, const char* method_name) {
+ar_agent_t* ar_agency__create_agent(ar_data_t* agency, const char* method_name) {  // EXAMPLE: Using real type
     // Delegates to appropriate component
     ar_agent_t* agent = ar_agent_registry__create_agent(agency->registry, method_name);
     ar_agent_store__save_agent(agency->store, agent);
@@ -164,7 +164,7 @@ ar_expression_ast_t* ar_expression_parser__parse(const char* text);
 ar_data_t* ar_expression_evaluator__evaluate(ar_expression_ast_t* ast, ar_data_t* context);
 
 // Higher-level module composes both
-ar_data_t* ar_expression__parse_and_evaluate(const char* text, ar_data_t* context) {
+ar_data_t* ar_expression__parse_and_evaluate(const char* text, ar_data_t* context) {  // EXAMPLE: Hypothetical function
     ar_expression_ast_t* ast = ar_expression_parser__parse(text);
     if (!ast) return NULL;
     
@@ -203,13 +203,13 @@ void test_expression_evaluator__evaluates_literals() {
 ```c
 // Production setup
 ar_interpreter_t* interpreter = ar_interpreter__create();
-ar_interpreter__set_agency(interpreter, production_agency);
-ar_interpreter__set_methodology(interpreter, production_methodology);
+ar_interpreter__set_agency(interpreter, production_agency);  // EXAMPLE: Hypothetical function
+ar_interpreter__set_methodology(interpreter, production_methodology);  // EXAMPLE: Hypothetical function
 
 // Test setup with mocks
 ar_interpreter_t* test_interpreter = ar_interpreter__create();
-ar_interpreter__set_agency(test_interpreter, mock_agency);
-ar_interpreter__set_methodology(test_interpreter, mock_methodology);
+ar_interpreter__set_agency(test_interpreter, mock_agency);  // EXAMPLE: Hypothetical function
+ar_interpreter__set_methodology(test_interpreter, mock_methodology);  // EXAMPLE: Hypothetical function
 ```
 
 ### Reduced Coupling
@@ -246,16 +246,16 @@ typedef struct {
     // System responsibilities
     bool initialized;
     char* config_file;
-} ar_system_god_object_t;
+} ar_system_god_object_t;  // EXAMPLE: Hypothetical type
 ```
 
 **Solution**: Compose separate, focused components
 ```c
 // GOOD: Separate components with clear responsibilities
-ar_agency_t* agency = ar_agency__create();
+ar_agency_t* agency = ar_agency__create();  // EXAMPLE: Hypothetical function
 ar_methodology_t* methodology = ar_methodology__create();
 ar_interpreter_t* interpreter = ar_interpreter__create();
-ar_system_t* system = ar_system__create(agency, methodology, interpreter);
+ar_system_t* system = ar_system__create(agency, methodology, interpreter);  // EXAMPLE: Hypothetical function
 ```
 
 ### Embedded Concrete Dependencies
@@ -264,8 +264,8 @@ ar_system_t* system = ar_system__create(agency, methodology, interpreter);
 ```c
 // BAD: Hard-coded concrete types
 struct ar_agent_s {
-    ar_hash_map_t memory;           // Specific map implementation embedded
-    ar_array_list_t message_queue;  // Specific list implementation embedded
+    ar_hash_map_t memory;           // Specific map implementation embedded  // EXAMPLE: Hypothetical type
+    ar_array_list_t message_queue;  // Specific list implementation embedded  // EXAMPLE: Hypothetical type
     // Can't substitute different implementations for testing
 };
 ```
@@ -292,13 +292,13 @@ struct ar_agent_s {
 **Good Composition Architecture**:
 ```c
 // AgeRun system composed of independent layers
-ar_io_t* io = ar_io__create();
-ar_heap_t* heap = ar_heap__create(io);
-ar_data_factory_t* data_factory = ar_data_factory__create(heap);
+ar_io_t* io = ar_io__create();  // EXAMPLE: Hypothetical function
+ar_heap_t* heap = ar_heap__create(io);  // EXAMPLE: Hypothetical function
+ar_data_t* data_factory = ar_data_factory__create(heap);  // EXAMPLE: Using real type
 ar_methodology_t* methodology = ar_methodology__create(data_factory);
-ar_agency_t* agency = ar_agency__create(data_factory);
+ar_agency_t* agency = ar_agency__create(data_factory);  // EXAMPLE: Hypothetical function
 ar_interpreter_t* interpreter = ar_interpreter__create(methodology, agency);
-ar_system_t* system = ar_system__create(interpreter);
+ar_system_t* system = ar_system__create(interpreter);  // EXAMPLE: Hypothetical function
 
 // Each component can be:
 // - Developed independently
@@ -311,11 +311,11 @@ ar_system_t* system = ar_system__create(interpreter);
 ```c
 // BAD: Tightly coupled "inheritance" relationships
 typedef struct {
-    ar_base_system_t base;          // "Inheritance" from base
-    ar_agency_methods_t methods;    // Mixed responsibilities
-    ar_methodology_data_t data;     // Embedded concrete types
+    ar_base_system_t base;          // "Inheritance" from base  // EXAMPLE: Hypothetical type
+    ar_agency_methods_t methods;    // Mixed responsibilities  // EXAMPLE: Hypothetical type
+    ar_methodology_data_t data;     // Embedded concrete types  // EXAMPLE: Hypothetical type
     // Everything tightly coupled, hard to test or modify
-} ar_monolithic_system_t;
+} ar_monolithic_system_t;  // EXAMPLE: Hypothetical type
 ```
 
 <function_calls>

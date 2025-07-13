@@ -17,17 +17,17 @@ The Single Responsibility Principle requires that each module has one, and only 
 **Good Single Responsibility**:
 ```c
 // ar_string.h - Single concern: string manipulation
-ar_string_t* ar_string__create(const char* text);
-ar_string_t* ar_string__concat(ar_string_t* a, ar_string_t* b);
-bool ar_string__equals(ar_string_t* a, ar_string_t* b);
+ar_string_t* ar_string__create(const char* text);  // EXAMPLE: Hypothetical function
+ar_string_t* ar_string__concat(ar_string_t* a, ar_string_t* b);  // EXAMPLE: Hypothetical function
+bool ar_string__equals(ar_string_t* a, ar_string_t* b);  // EXAMPLE: Hypothetical function
 ```
 
 **Poor Single Responsibility**:
 ```c
 // BAD: Multiple concerns mixed
-ar_string_t* ar_string__create(const char* text);
-void ar_string__save_to_file(ar_string_t* str, const char* filename);  // File I/O
-void ar_string__log_operation(const char* op);                         // Logging
+ar_string_t* ar_string__create(const char* text);  // EXAMPLE: Hypothetical function
+void ar_string__save_to_file(ar_string_t* str, const char* filename);  // File I/O  // EXAMPLE: Hypothetical function
+void ar_string__log_operation(const char* op);                         // Logging  // EXAMPLE: Hypothetical function
 ```
 
 ### Module Cohesion Examples
@@ -43,10 +43,10 @@ const char* ar_expression_evaluator__get_error(ar_expression_evaluator_t* evalua
 **Low Cohesion (Bad)**:
 ```c
 // BAD: Mixed parsing, evaluation, and persistence
-ar_expression_t* ar_expression__parse(const char* text);          // Parsing
-ar_data_t* ar_expression__evaluate(ar_expression_t* expr);        // Evaluation  
-void ar_expression__save_cache(ar_expression_t* expr);           // Persistence
-void ar_expression__log_performance(ar_expression_t* expr);      // Logging
+ar_expression_t* ar_expression__parse(const char* text);          // Parsing  // EXAMPLE: Hypothetical function
+ar_data_t* ar_expression__evaluate(ar_expression_ast_t* expr);        // Evaluation  // EXAMPLE: Using real type
+void ar_expression__save_cache(ar_expression_t* expr);           // Persistence  // EXAMPLE: Hypothetical function
+void ar_expression__log_performance(ar_expression_t* expr);      // Logging  // EXAMPLE: Hypothetical function
 ```
 
 ## Separation Strategies
@@ -61,7 +61,7 @@ typedef struct {
     ar_expression_ast_t* ast;   // Parsing result
     ar_data_t* result;          // Evaluation result
     char* error_message;        // Error handling
-} ar_expression_t;
+} ar_expression_t;  // EXAMPLE: Hypothetical type
 ```
 
 **Solution**: Separate modules for each responsibility
@@ -79,8 +79,8 @@ ar_data_t* ar_expression_evaluator__evaluate(ar_expression_ast_t* ast, ar_data_t
 ```c
 // BAD: Mixed agent creation and message routing
 ar_agent_t* ar_agency__create_agent(const char* method_name);
-void ar_agency__send_message(uint64_t agent_id, ar_data_t* message);
-void ar_agency__route_message(ar_event_t* event);
+void ar_agency__send_message(uint64_t agent_id, ar_data_t* message);  // EXAMPLE: Hypothetical function
+void ar_agency__route_message(ar_event_t* event);  // EXAMPLE: Hypothetical function
 ```
 
 **Solution**: Separate concerns into focused modules
@@ -102,19 +102,19 @@ void ar_agent_update__process_event(ar_event_t* event);
 ```c
 // BAD: ar_system doing everything
 void ar_system__init();
-void ar_system__parse_method(const char* text);
-void ar_system__create_agent(const char* method_name);
-void ar_system__send_message(uint64_t agent_id, ar_data_t* message);
-void ar_system__save_state(const char* filename);
-void ar_system__load_state(const char* filename);
-void ar_system__cleanup();
+void ar_system__parse_method(const char* text);  // EXAMPLE: Hypothetical function
+void ar_system__create_agent(const char* method_name);  // EXAMPLE: Hypothetical function
+void ar_system__send_message(uint64_t agent_id, ar_data_t* message);  // EXAMPLE: Hypothetical function
+void ar_system__save_state(const char* filename);  // EXAMPLE: Hypothetical function
+void ar_system__load_state(const char* filename);  // EXAMPLE: Hypothetical function
+void ar_system__cleanup();  // EXAMPLE: Hypothetical function
 ```
 
 **Solution**: Split into focused modules
 ```c
 // ar_system.h - System lifecycle only
 void ar_system__init();
-void ar_system__cleanup();
+void ar_system__cleanup();  // EXAMPLE: Hypothetical function
 
 // ar_methodology.h - Method management
 void ar_methodology__register_method(const char* name, const char* version, const char* content);
@@ -129,16 +129,16 @@ ar_agent_t* ar_agency__create_agent(const char* method_name, const char* version
 ```c
 // BAD: Mixed abstraction levels
 void ar_data__create_list();           // High-level operation
-void ar_data__resize_buffer();         // Low-level implementation detail
-void ar_data__add_to_list();          // High-level operation
-void ar_data__malloc_wrapper();       // Low-level utility
+void ar_data__resize_buffer();         // Low-level implementation detail  // EXAMPLE: Hypothetical function
+void ar_data__add_to_list();          // High-level operation  // EXAMPLE: Hypothetical function
+void ar_data__malloc_wrapper();       // Low-level utility  // EXAMPLE: Hypothetical function
 ```
 
 **Solution**: Separate by abstraction level
 ```c
 // ar_data.h - High-level data operations
 ar_data_t* ar_data__create_list();
-void ar_data__add_to_list(ar_data_t* list, ar_data_t* item);
+void ar_data__add_to_list(ar_data_t* list, ar_data_t* item);  // EXAMPLE: Hypothetical function
 
 // Internal helpers kept static in .c file
 static void _resize_buffer(ar_data_t* data, size_t new_size);
@@ -207,13 +207,13 @@ static void* _safe_malloc(size_t size);
 // ar_heap.h - Memory management only
 void* ar_heap__malloc(size_t size, const char* file, int line);
 void ar_heap__free(void* ptr, const char* file, int line);
-void ar_heap__report_leaks();
+void ar_heap__report_leaks();  // EXAMPLE: Hypothetical function
 ```
 
 **Poor Single Responsibility**:
 ```c
 // BAD: Mixed memory, logging, and configuration
 void* ar_heap__malloc(size_t size);
-void ar_heap__log_message(const char* msg);           // Different concern
-void ar_heap__set_config(const char* key, int value); // Different concern
+void ar_heap__log_message(const char* msg);           // Different concern  // EXAMPLE: Hypothetical function
+void ar_heap__set_config(const char* key, int value); // Different concern  // EXAMPLE: Hypothetical function
 ```

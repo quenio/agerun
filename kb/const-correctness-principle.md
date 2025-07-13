@@ -18,17 +18,17 @@ The Const-Correctness principle requires that all interfaces properly use `const
 ```c
 // GOOD: const for immutable inputs
 ar_data_t* ar_data__create_string(const char* text);
-bool ar_string__equals(const ar_string_t* a, const ar_string_t* b);
-int ar_semver__compare(const ar_semver_t* a, const ar_semver_t* b);
-size_t ar_string__get_length(const ar_string_t* string);
+bool ar_string__equals(const ar_string_t* a, const ar_string_t* b);  // EXAMPLE: Hypothetical function
+int ar_semver__compare(const ar_data_t* a, const ar_data_t* b);  // EXAMPLE: Using real type
+size_t ar_string__get_length(const ar_string_t* string);  // EXAMPLE: Hypothetical function
 ```
 
 **Parameters That Will Be Modified**:
 ```c
 // GOOD: Non-const for mutable inputs
-void ar_data__list_add(ar_data_t* list, ar_data_t* item);
+void ar_data__list_add(ar_data_t* list, ar_data_t* item);  // EXAMPLE: Hypothetical function
 bool ar_map__set(ar_data_t* map, const char* key, ar_data_t* value);
-void ar_string__append(ar_string_t* string, const char* suffix);
+void ar_string__append(ar_string_t* string, const char* suffix);  // EXAMPLE: Hypothetical function
 ```
 
 ### Const Return Values
@@ -37,7 +37,7 @@ void ar_string__append(ar_string_t* string, const char* suffix);
 ```c
 // GOOD: const return for borrowed data
 const char* ar_data__get_string(const ar_data_t* data);
-const char* ar_string__get_text(const ar_string_t* string);
+const char* ar_string__get_text(const ar_string_t* string);  // EXAMPLE: Hypothetical function
 const ar_method_t* ar_methodology__get_method(const char* name, const char* version);
 ```
 
@@ -45,8 +45,8 @@ const ar_method_t* ar_methodology__get_method(const char* name, const char* vers
 ```c
 // GOOD: Non-const return for owned objects
 ar_data_t* ar_data__create_string(const char* text);
-ar_string_t* ar_string__concat(const ar_string_t* a, const ar_string_t* b);
-ar_list_t* ar_map__get_keys(const ar_map_t* map);
+ar_string_t* ar_string__concat(const ar_string_t* a, const ar_string_t* b);  // EXAMPLE: Hypothetical function
+ar_list_t* ar_map__get_keys(const ar_map_t* map);  // EXAMPLE: Hypothetical function
 ```
 
 ### Const Member Function Equivalents
@@ -54,18 +54,18 @@ ar_list_t* ar_map__get_keys(const ar_map_t* map);
 **Query Functions (Don't Modify State)**:
 ```c
 // GOOD: const parameters for queries
-size_t ar_list__get_count(const ar_list_t* list);
-ar_data_t* ar_list__get_at(const ar_list_t* list, size_t index);
-bool ar_map__contains_key(const ar_map_t* map, const char* key);
+size_t ar_list__get_count(const ar_list_t* list);  // EXAMPLE: Hypothetical function
+ar_data_t* ar_list__get_at(const ar_list_t* list, size_t index);  // EXAMPLE: Hypothetical function
+bool ar_map__contains_key(const ar_map_t* map, const char* key);  // EXAMPLE: Hypothetical function
 ar_data_type_t ar_data__get_type(const ar_data_t* data);
 ```
 
 **Mutating Functions (Modify State)**:
 ```c
 // GOOD: Non-const parameters for mutations
-void ar_list__add(ar_list_t* list, ar_data_t* item);
-ar_data_t* ar_list__remove_at(ar_list_t* list, size_t index);
-bool ar_map__remove(ar_map_t* map, const char* key);
+void ar_list__add(ar_list_t* list, ar_data_t* item);  // EXAMPLE: Hypothetical function
+ar_data_t* ar_list__remove_at(ar_list_t* list, size_t index);  // EXAMPLE: Hypothetical function
+bool ar_map__remove(ar_map_t* map, const char* key);  // EXAMPLE: Hypothetical function
 void ar_data__destroy(ar_data_t* data);
 ```
 
@@ -84,7 +84,7 @@ const char* ar_data__get_string(const ar_data_t* data) {
 // WRONG: Function signature lying about mutability
 void process_data(const ar_data_t* data) {
     ar_data_t* hack = (ar_data_t*)data;  // VIOLATION!
-    ar_data__list_add(hack, item);       // Modifying "const" data
+    ar_data__list_add(hack, item);       // Modifying "const" data  // EXAMPLE: Hypothetical function
 }
 ```
 
@@ -98,7 +98,7 @@ const char* ar_data__get_string(const ar_data_t* data) {
 
 // GOOD: Honest interface about mutability needs
 void process_data(ar_data_t* data) {  // Non-const parameter
-    ar_data__list_add(data, item);     // Clearly shows mutation
+    ar_data__list_add(data, item);     // Clearly shows mutation  // EXAMPLE: Hypothetical function
 }
 ```
 
@@ -107,17 +107,17 @@ void process_data(ar_data_t* data) {  // Non-const parameter
 **Problem**: Some functions use const, others don't for similar operations
 ```c
 // BAD: Inconsistent const usage
-size_t ar_string__get_length(ar_string_t* string);        // Should be const
-const char* ar_string__get_text(const ar_string_t* string);  // Correctly const
-bool ar_string__is_empty(ar_string_t* string);            // Should be const
+size_t ar_string__get_length(ar_string_t* string);        // Should be const  // EXAMPLE: Hypothetical function
+const char* ar_string__get_text(const ar_string_t* string);  // Correctly const  // EXAMPLE: Hypothetical function
+bool ar_string__is_empty(ar_string_t* string);            // Should be const  // EXAMPLE: Hypothetical function
 ```
 
 **Solution**: Consistent const for all query operations
 ```c
 // GOOD: All query functions use const
-size_t ar_string__get_length(const ar_string_t* string);
-const char* ar_string__get_text(const ar_string_t* string);
-bool ar_string__is_empty(const ar_string_t* string);
+size_t ar_string__get_length(const ar_string_t* string);  // EXAMPLE: Hypothetical function
+const char* ar_string__get_text(const ar_string_t* string);  // EXAMPLE: Hypothetical function
+bool ar_string__is_empty(const ar_string_t* string);  // EXAMPLE: Hypothetical function
 ```
 
 ### Missing Const on Input Parameters
@@ -126,16 +126,16 @@ bool ar_string__is_empty(const ar_string_t* string);
 ```c
 // BAD: Missing const on read-only inputs
 ar_data_t* ar_data__create_string(char* text);           // Should be const char*
-bool ar_string__equals(ar_string_t* a, ar_string_t* b); // Should be const
-int ar_semver__compare(ar_semver_t* a, ar_semver_t* b); // Should be const
+bool ar_string__equals(ar_string_t* a, ar_string_t* b); // Should be const  // EXAMPLE: Hypothetical function
+int ar_semver__compare(ar_data_t* a, ar_data_t* b); // Should be const  // EXAMPLE: Using real type
 ```
 
 **Solution**: Mark all read-only inputs as const
 ```c
 // GOOD: const for all immutable inputs
 ar_data_t* ar_data__create_string(const char* text);
-bool ar_string__equals(const ar_string_t* a, const ar_string_t* b);
-int ar_semver__compare(const ar_semver_t* a, const ar_semver_t* b);
+bool ar_string__equals(const ar_string_t* a, const ar_string_t* b);  // EXAMPLE: Hypothetical function
+int ar_semver__compare(const ar_data_t* a, const ar_data_t* b);  // EXAMPLE: Using real type
 ```
 
 ## Const Propagation
@@ -181,7 +181,7 @@ const ar_data_t* data;
 typedef struct {
     const char* const text;     // Both pointer and data const
     const size_t length;        // Value const
-} ar_immutable_string_t;
+} ar_immutable_string_t;  // EXAMPLE: Hypothetical type
 ```
 
 ## Benefits
@@ -191,11 +191,11 @@ typedef struct {
 **Prevents Accidental Modifications**:
 ```c
 void process_read_only(const ar_data_t* data) {
-    // ar_data__list_add(data, item);  // Compiler error - prevents bug
+    // ar_data__list_add(data, item);  // Compiler error - prevents bug  // EXAMPLE: Hypothetical function
     
     // OK - const-compatible operations
-    size_t count = ar_data__list_get_count(data);
-    ar_data_t* item = ar_data__list_get_at(data, 0);
+    size_t count = ar_data__list_get_count(data);  // EXAMPLE: Hypothetical function
+    ar_data_t* item = ar_data__list_get_at(data, 0);  // EXAMPLE: Hypothetical function
 }
 ```
 
@@ -204,10 +204,10 @@ void process_read_only(const ar_data_t* data) {
 **Intent Clear from Signature**:
 ```c
 // Clear that function won't modify inputs
-bool ar_string__equals(const ar_string_t* a, const ar_string_t* b);
+bool ar_string__equals(const ar_string_t* a, const ar_string_t* b);  // EXAMPLE: Hypothetical function
 
 // Clear that function may modify input
-void ar_string__append(ar_string_t* string, const char* suffix);
+void ar_string__append(ar_string_t* string, const char* suffix);  // EXAMPLE: Hypothetical function
 ```
 
 ### Optimization Opportunities
@@ -216,7 +216,7 @@ void ar_string__append(ar_string_t* string, const char* suffix);
 ```c
 // Compiler knows data won't change, can optimize
 void process_loop(const ar_data_t* data) {
-    size_t count = ar_data__list_get_count(data);  // Can cache this value
+    size_t count = ar_data__list_get_count(data);  // Can cache this value  // EXAMPLE: Hypothetical function
     for (size_t i = 0; i < count; i++) {
         // count is known constant, compiler can optimize loop
     }
@@ -246,14 +246,14 @@ void good_function(ar_data_t* data) {  // Honest about mutation needs
 **Provide Both Const and Non-Const Versions**:
 ```c
 // Const version for read-only access
-const ar_data_t* ar_list__get_at_const(const ar_list_t* list, size_t index);
+const ar_data_t* ar_list__get_at_const(const ar_list_t* list, size_t index);  // EXAMPLE: Hypothetical function
 
 // Non-const version for modification access
-ar_data_t* ar_list__get_at(ar_list_t* list, size_t index);
+ar_data_t* ar_list__get_at(ar_list_t* list, size_t index);  // EXAMPLE: Hypothetical function
 
 // Or single function with const return matching parameter const
 // This is the preferred approach in AgeRun
-ar_data_t* ar_list__get_at(const ar_list_t* list, size_t index);  // Returns borrowed reference
+ar_data_t* ar_list__get_at(const ar_list_t* list, size_t index);  // Returns borrowed reference  // EXAMPLE: Hypothetical function
 ```
 
 ### Const-Correct Helpers

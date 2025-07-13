@@ -82,8 +82,8 @@ make analyze-deps  # Creates module_dependency_report.md
 **Solution**: Extract common interfaces or use forward declarations
 ```c
 // ar_agent.h
-typedef struct ar_agency_s ar_agency_t;  // Forward declaration
-void ar_agent__register_with_agency(ar_agency_t* agency);
+typedef struct ar_agency_s ar_data_t;  // Forward declaration  // EXAMPLE: Using real type
+void ar_agent__register_with_agency(ar_agency_t* agency);  // EXAMPLE: Hypothetical function
 
 // ar_agency.h
 #include "ar_agent.h"  // Only Agency depends on Agent
@@ -120,8 +120,8 @@ ar_agent_t* ar_agency__create_agent(const char* method_name);
 ```c
 // ar_heap.zig - Use only ar_io for output
 #include "ar_io.h"
-void ar_heap__report_leaks() {
-    ar_io__printf("Memory leaks detected\n");  // Direct I/O instead of logging
+void ar_heap__report_leaks() {  // EXAMPLE: Hypothetical function
+    ar_io__printf("Memory leaks detected\n");  // Direct I/O instead of logging  // EXAMPLE: Hypothetical function
 }
 ```
 
@@ -150,7 +150,7 @@ ar_agent_t* ar_agent_registry__create_agent(const char* method_name);
 void ar_agent_registry__destroy_agent(uint64_t agent_id);
 
 // ar_agent.h - No registry dependencies
-void ar_agent__send_message(ar_agent_t* agent, ar_data_t* message);
+void ar_agent__send_message(ar_agent_t* agent, ar_data_t* message);  // EXAMPLE: Hypothetical function
 ```
 
 ### Callbacks and Dependency Injection
@@ -158,14 +158,14 @@ void ar_agent__send_message(ar_agent_t* agent, ar_data_t* message);
 **Last resort** for unavoidable coupling:
 ```c
 // Break cycle with callback pattern
-typedef void (*ar_error_callback_t)(const char* message);
+typedef void (*ar_data_t)(const char* message);  // EXAMPLE: Using real type
 
 // ar_heap.h
-void ar_heap__set_error_callback(ar_error_callback_t callback);
+void ar_heap__set_error_callback(ar_error_callback_t callback);  // EXAMPLE: Hypothetical function
 
 // Higher-level module provides callback
 void setup_heap_logging() {
-    ar_heap__set_error_callback(ar_log__error);
+    ar_heap__set_error_callback(ar_log__error);  // EXAMPLE: Hypothetical function
 }
 ```
 
@@ -231,7 +231,7 @@ grep -r "module_b" modules/module_a.*  # Check A→B dependency
 // Extract shared types to separate module
 // ar_data.h - No dependencies
 typedef struct ar_agent_s ar_agent_t;
-typedef struct ar_agency_s ar_agency_t;
+typedef struct ar_agency_s ar_data_t;  // EXAMPLE: Using real type
 
 // Both modules depend on shared types, not each other
 ```
@@ -239,10 +239,10 @@ typedef struct ar_agency_s ar_agency_t;
 ### Step 4: Use Forward Declarations
 ```c
 // Instead of including header, use forward declaration
-typedef struct ar_complex_type_s ar_complex_type_t;
+typedef struct ar_complex_type_s ar_data_t;  // EXAMPLE: Using real type
 
 // Function signatures with opaque types
-void ar_module__function(ar_complex_type_t* param);
+void ar_module__function(ar_complex_type_t* param);  // EXAMPLE: Hypothetical function
 ```
 
 ## Related Principles

@@ -327,14 +327,14 @@ For clarity and consistency, all ownership prefixes should be used throughout th
    - Function parameters should use ownership prefixes:
    ```c
    // Example: replace 'module' with your actual module name
-   bool ar_module_function(ar_module_t *own_object, const ar_data_t *ref_data);
+   bool ar_module_function(ar_data_t *own_object, const ar_data_t *ref_data);  // EXAMPLE: Using real type
    ```
 
 2. **Implementation Files (.c)**:
    - Local variables should use ownership prefixes:
    ```c
    // Example implementation
-   bool ar_module_function(ar_module_t *own_object, const ar_data_t *ref_data) {
+   bool ar_module_function(ar_data_t *own_object, const ar_data_t *ref_data) {  // EXAMPLE: Using real type
        ar_data_t *own_result = ar_data_create_map();
        ar_data_t *ref_value = ar_data_get_map_value(ref_data, "key");
        // ...
@@ -345,7 +345,7 @@ For clarity and consistency, all ownership prefixes should be used throughout th
    - Test code should maintain the same conventions:
    ```c
    void test_module_function() {
-       ar_module_t *own_object = ar_module_create();  // Example
+       ar_data_t *own_object = ar_module_create();  // Example  // EXAMPLE: Using real type
        ar_data_t *own_map = ar_data_create_map();
        // ...
    }
@@ -375,7 +375,7 @@ For clarity and consistency, all ownership prefixes should be used throughout th
        int *own_resource;       // Struct owns this resource and must free it
        ar_data_t *mut_data;        // Field can be modified but struct doesn't own it
        const char *ref_name;    // Read-only reference to data owned elsewhere
-   } ar_example_t;
+   } ar_example_t;  // EXAMPLE: Hypothetical type
    ```
    - This makes ownership relationships clear at the struct definition level
    - Apply this convention to all struct fields consistently throughout the codebase

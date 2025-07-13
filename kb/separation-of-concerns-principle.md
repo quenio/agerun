@@ -32,16 +32,16 @@ bool ar_expression_evaluator__has_error(ar_expression_evaluator_t* evaluator);
 // BAD: Mixed parsing and evaluation concerns
 typedef struct {
     char* source_text;           // Parsing concern
-    ar_token_t* tokens;          // Parsing concern
+    ar_data_t* tokens;          // Parsing concern  // EXAMPLE: Using real type
     ar_expression_ast_t* ast;    // Parsing result
     ar_data_t* result;           // Evaluation result
     ar_data_t* context;          // Evaluation concern
     char* error_message;         // Both concerns
-} ar_expression_processor_t;
+} ar_expression_processor_t;  // EXAMPLE: Hypothetical type
 
 // Single module trying to handle both concerns
 ar_data_t* ar_expression_processor__parse_and_evaluate(
-    ar_expression_processor_t* processor,
+    ar_expression_evaluator_t* processor,  // EXAMPLE: Using real type
     const char* text,
     ar_data_t* context
 );
@@ -71,7 +71,7 @@ typedef struct {
 } ar_methodology_t;
 
 // Single function mixing concerns
-bool ar_methodology__register_and_save_method(
+bool ar_methodology__register_and_save_method(  // EXAMPLE: Hypothetical function
     ar_methodology_t* methodology,
     const char* name,
     const char* version, 
@@ -100,14 +100,14 @@ ar_data_t* ar_agent_messaging__receive_next(uint64_t agent_id);
 // BAD: Mixed lifecycle and communication concerns
 typedef struct {
     ar_map_t* agents;               // Lifecycle concern
-    ar_queue_t* global_msg_queue;   // Communication concern
-    ar_thread_pool_t* workers;      // Communication concern
+    ar_list_t* global_msg_queue;   // Communication concern  // EXAMPLE: Using real type
+    ar_data_t* workers;      // Communication concern  // EXAMPLE: Using real type
     uint64_t next_agent_id;         // Lifecycle concern
-} ar_agent_system_t;
+} ar_agent_system_t;  // EXAMPLE: Hypothetical type
 
 // Function mixing concerns
 ar_agent_t* ar_agent_system__create_agent_and_setup_messaging(
-    ar_agent_system_t* system,
+    ar_data_t* system,  // EXAMPLE: Using real type
     const char* method_name,
     bool enable_async_messaging    // Communication detail in lifecycle operation
 );
@@ -130,14 +130,14 @@ ar_data_type_t ar_data__get_type(ar_data_t* data);
 // ar_heap.h - Memory allocation and tracking
 void* ar_heap__malloc(size_t size, const char* file, int line);
 void ar_heap__free(void* ptr, const char* file, int line);
-void ar_heap__report_leaks();
+void ar_heap__report_leaks();  // EXAMPLE: Hypothetical function
 ```
 
 **I/O Operations**:
 ```c
 // ar_io.h - File and console operations
 FILE* ar_io__open_file(const char* path, const char* mode);
-void ar_io__printf(const char* format, ...);
+void ar_io__printf(const char* format, ...);  // EXAMPLE: Hypothetical function
 ```
 
 **Parsing**:
@@ -173,12 +173,12 @@ const char* ar_instruction_evaluator__get_error(ar_instruction_evaluator_t* eval
 **Logging** (when needed):
 ```c
 // ar_log.h - Centralized logging concern
-void ar_log__debug(const char* format, ...);
+void ar_log__debug(const char* format, ...);  // EXAMPLE: Hypothetical function
 void ar_log__error(const char* format, ...);
 
 // Modules use logging, don't implement it
-void ar_agent__process_message(ar_agent_t* agent, ar_data_t* message) {
-    ar_log__debug("Agent %lu processing message", agent->id);
+void ar_agent__process_message(ar_agent_t* agent, ar_data_t* message) {  // EXAMPLE: Hypothetical function
+    ar_log__debug("Agent %lu processing message", agent->id);  // EXAMPLE: Hypothetical function
     // ... processing logic
 }
 ```
@@ -250,7 +250,7 @@ void test_expression_evaluator__computes_addition() {
 typedef struct {
     // Parsing concern
     char* source_text;
-    ar_token_t* tokens;
+    ar_data_t* tokens;  // EXAMPLE: Using real type
     
     // Evaluation concern
     ar_data_t* context;
@@ -263,7 +263,7 @@ typedef struct {
     // UI concern
     bool verbose_output;
     char* error_display_format;
-} ar_expression_processor_t;
+} ar_expression_processor_t;  // EXAMPLE: Hypothetical type
 ```
 
 **Solution**: Separate modules for each concern
@@ -271,8 +271,8 @@ typedef struct {
 // GOOD: Separate concerns
 ar_expression_parser_t* parser = ar_expression_parser__create();         // Parsing
 ar_expression_evaluator_t* evaluator = ar_expression_evaluator__create(); // Evaluation
-ar_expression_cache_t* cache = ar_expression_cache__create();             // Storage
-ar_expression_ui_t* ui = ar_expression_ui__create();                      // UI
+ar_data_t* cache = ar_expression_cache__create();             // Storage  // EXAMPLE: Using real type
+ar_data_t* ui = ar_expression_ui__create();                      // UI  // EXAMPLE: Using real type
 ```
 
 ### Leaky Abstractions
@@ -280,8 +280,8 @@ ar_expression_ui_t* ui = ar_expression_ui__create();                      // UI
 **Problem**: Implementation details bleeding between concerns
 ```c
 // BAD: Parser exposing tokenization details to evaluator
-ar_data_t* ar_expression__evaluate_with_tokens(
-    ar_token_t* tokens,          // Parser implementation detail
+ar_data_t* ar_expression__evaluate_with_tokens(  // EXAMPLE: Hypothetical function
+    ar_data_t* tokens,          // Parser implementation detail  // EXAMPLE: Using real type
     size_t token_count,          // Parser implementation detail
     ar_data_t* context
 );
@@ -299,7 +299,7 @@ ar_data_t* result = ar_expression_evaluator__evaluate(ast, context);
 **Problem**: Functions handling multiple concerns
 ```c
 // BAD: Single function with mixed concerns
-bool ar_method__parse_validate_and_register(
+bool ar_method__parse_validate_and_register(  // EXAMPLE: Hypothetical function
     const char* content,         // Parsing concern
     const char* name,            // Registration concern
     const char* version,         // Registration concern
@@ -313,7 +313,7 @@ bool ar_method__parse_validate_and_register(
 ar_method_ast_t* ast = ar_method_parser__parse(content);                  // Parsing
 bool valid = ar_method_validator__check(ast);                            // Validation
 bool registered = ar_methodology__register_method(name, version, ast);   // Registration
-bool saved = ar_io__save_file(ast, storage_path);                 // Storage
+bool saved = ar_io__save_file(ast, storage_path);                 // Storage  // EXAMPLE: Hypothetical function
 ```
 
 ## Design Guidelines
@@ -371,9 +371,9 @@ if (instruction_ast) {
 ar_instruction_ast_t* ar_instruction_parser__parse(const char* source);
 
 // Type-specific evaluation concerns
-bool ar_assignment_instruction_evaluator__execute(ar_assignment_instruction_ast_t* ast, ar_data_t* context);
-bool ar_send_instruction_evaluator__execute(ar_send_instruction_ast_t* ast, ar_data_t* context);
-bool ar_method_instruction_evaluator__execute(ar_method_instruction_ast_t* ast, ar_data_t* context);
+bool ar_assignment_instruction_evaluator__execute(ar_instruction_ast_t* ast, ar_data_t* context);  // EXAMPLE: Using real type
+bool ar_send_instruction_evaluator__execute(ar_instruction_ast_t* ast, ar_data_t* context);  // EXAMPLE: Using real type
+bool ar_method_instruction_evaluator__execute(ar_instruction_ast_t* ast, ar_data_t* context);  // EXAMPLE: Using real type
 
 // Each concern can evolve independently
 ```
@@ -383,17 +383,17 @@ bool ar_method_instruction_evaluator__execute(ar_method_instruction_ast_t* ast, 
 // BAD: Everything mixed together
 typedef struct {
     char* source;                    // Parsing concern
-    ar_token_t* tokens;              // Parsing concern
+    ar_data_t* tokens;              // Parsing concern  // EXAMPLE: Using real type
     ar_instruction_type_t type;      // Classification concern
     ar_data_t* parameters;           // Evaluation concern
     ar_agent_t* target_agent;        // Execution concern
     char* error_message;             // Error handling concern
     bool should_log;                 // Logging concern
-} ar_instruction_processor_t;
+} ar_instruction_processor_t;  // EXAMPLE: Hypothetical type
 
 // One function trying to handle all concerns
 bool ar_instruction_processor__do_everything(
-    ar_instruction_processor_t* processor,
+    ar_instruction_evaluator_t* processor,  // EXAMPLE: Using real type
     const char* source,
     ar_data_t* context
 );

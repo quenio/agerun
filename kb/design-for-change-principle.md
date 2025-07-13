@@ -18,8 +18,8 @@ The Design for Change principle, fundamental to David Parnas's approach to softw
 ```c
 // File storage format - likely to change
 // HIDE: Internal persistence format behind interface
-ar_methodology_t* ar_methodology__load_from_file(const char* filename);
-void ar_methodology__save_to_file(ar_methodology_t* methodology, const char* filename);
+ar_methodology_t* ar_methodology__load_from_file(const char* filename);  // EXAMPLE: Hypothetical function
+void ar_methodology__save_to_file(ar_methodology_t* methodology, const char* filename);  // EXAMPLE: Hypothetical function
 
 // Parsing algorithms - likely to change  
 // HIDE: Specific parsing implementation behind interface
@@ -52,11 +52,11 @@ ar_data_type_t ar_data__get_type(ar_data_t* data);
 **BAD: Decomposition Based on Current Workflow**:
 ```c
 // Following the processing flow - brittle to change
-ar_step1_t* ar_system__read_input(const char* source);
-ar_step2_t* ar_system__parse_input(ar_step1_t* input);
-ar_step3_t* ar_system__validate_parsed(ar_step2_t* parsed);
-ar_step4_t* ar_system__execute_validated(ar_step3_t* validated);
-ar_step5_t* ar_system__format_output(ar_step4_t* result);
+ar_data_t* ar_system__read_input(const char* source);  // EXAMPLE: Hypothetical function using real type
+ar_data_t* ar_system__parse_input(ar_data_t* input);  // EXAMPLE: Hypothetical function using real type
+ar_data_t* ar_system__validate_parsed(ar_data_t* parsed);  // EXAMPLE: Hypothetical function using real type
+ar_data_t* ar_system__execute_validated(ar_data_t* validated);  // EXAMPLE: Hypothetical function using real type
+ar_data_t* ar_system__format_output(ar_data_t* result);  // EXAMPLE: Hypothetical function using real type
 
 // Problems:
 // - Adding validation step breaks ar_system__execute_validated interface
@@ -92,15 +92,15 @@ typedef struct {
     char* text_content;       // Exposes text format assumption
     size_t line_count;        // Exposes line-based assumption
     char** lines;             // Exposes array-based assumption
-} ar_method_storage_t;
+} ar_method_storage_t;  // EXAMPLE: Hypothetical type
 
 // CORRECT: Hide format behind interface
 typedef struct ar_method_s ar_method_t;  // Opaque type
 
 // Interface doesn't reveal storage format
-ar_method_t* ar_method__load(const char* name, const char* version);
-void ar_method__save(ar_method_t* method);
-const char* ar_method__get_content(ar_method_t* method);
+ar_method_t* ar_method__load(const char* name, const char* version);  // EXAMPLE: Hypothetical function
+void ar_method__save(ar_method_t* method);  // EXAMPLE: Hypothetical function
+const char* ar_method__get_content(ar_method_t* method);  // EXAMPLE: Hypothetical function
 ```
 
 ### Algorithm Changes
@@ -112,9 +112,9 @@ const char* ar_method__get_content(ar_method_t* method);
 
 // WRONG: Expose algorithm details
 typedef struct {
-    ar_token_t* tokens;           // Exposes tokenization approach
+    ar_data_t* tokens;           // EXAMPLE: Exposes tokenization approach
     int current_token_index;      // Exposes recursive descent state
-    ar_parse_stack_t* stack;      // Exposes parsing algorithm
+    ar_list_t* stack;      // EXAMPLE: Exposes parsing algorithm using real type
 } ar_expression_evaluator_t;
 
 // CORRECT: Hide algorithm behind interface
@@ -137,11 +137,11 @@ ar_data_t* ar_expression_evaluator__evaluate(
 // Future: Could change to message queues, network protocols, etc.
 
 // WRONG: Expose communication mechanism
-void ar_agent__call_directly(ar_agent_t* agent, ar_data_t* message);
-ar_message_queue_t* ar_agent__get_queue(ar_agent_t* agent);
+void ar_agent__call_directly(ar_agent_t* agent, ar_data_t* message);  // EXAMPLE: Hypothetical function
+ar_message_queue_t* ar_agent__get_queue(ar_agent_t* agent);  // EXAMPLE: Hypothetical function
 
 // CORRECT: Hide communication behind interface
-void ar_agent__send_message(uint64_t agent_id, ar_data_t* message);
+void ar_agent__send_message(uint64_t agent_id, ar_data_t* message);  // EXAMPLE: Hypothetical function
 bool ar_system__process_next_message();
 
 // Implementation can change without affecting clients
@@ -187,10 +187,10 @@ FILE* ar_io__open_file(const char* path, const char* mode);
 // Performance optimizations don't affect clients
 
 // Current: Simple linked list
-ar_data_t* ar_list__get_at(ar_list_t* list, size_t index);  // O(n)
+ar_data_t* ar_list__get_at(ar_list_t* list, size_t index);  // O(n)  // EXAMPLE: Hypothetical function
 
 // Future: Dynamic array for better performance  
-ar_data_t* ar_list__get_at(ar_list_t* list, size_t index);  // O(1)
+ar_data_t* ar_list__get_at(ar_list_t* list, size_t index);  // O(1)  // EXAMPLE: Hypothetical function
 
 // Same interface, better performance
 ```
@@ -205,7 +205,7 @@ ar_data_t* ar_list__get_at(ar_list_t* list, size_t index);  // O(1)
 // Before: text format "name version content"
 // After: JSON format {"name": "...", "version": "...", "content": "..."}
 
-// Only ar_methodology__load_from_file() and ar_methodology__save_to_file() change
+// Only ar_methodology__load_from_file() and ar_methodology__save_to_file() change  // EXAMPLE: Hypothetical function
 // All other modules unaffected
 ```
 
@@ -226,8 +226,8 @@ ar_data_t* ar_list__get_at(ar_list_t* list, size_t index);  // O(1)
 **Mock Implementation Substitution**:
 ```c
 // Test with mock file system
-ar_io_mock_t* mock = ar_io_mock__create();
-ar_methodology_t* methodology = ar_methodology__load_from_mock(mock);
+ar_data_t* mock = ar_io_mock__create();  // EXAMPLE: Using real type
+ar_methodology_t* methodology = ar_methodology__load_from_mock(mock);  // EXAMPLE: Hypothetical function
 
 // Test with different evaluation algorithm
 ar_expression_evaluator_t* test_evaluator = ar_test_evaluator__create();
@@ -242,9 +242,9 @@ ar_data_t* result = ar_expression_evaluator__evaluate(test_evaluator, ast, conte
 ```c
 // BAD: Exposing hash table implementation
 typedef struct {
-    ar_hash_bucket_t* buckets;    // Implementation detail
+    ar_list_t* buckets;    // EXAMPLE: Implementation detail using real type
     size_t bucket_count;          // Implementation detail
-    hash_function_t hash_func;    // Implementation detail
+    hash_function_t hash_func;    // Implementation detail  // EXAMPLE: Hypothetical type
 } ar_map_t;
 
 // What if we want to change from hash table to red-black tree?
@@ -267,9 +267,9 @@ ar_data_t* ar_map__get(ar_map_t* map, const char* key);
 **Problem**: Organizing around current process
 ```c
 // BAD: Modules follow current workflow
-ar_step1_result_t* ar_input_processor__step1(const char* input);
-ar_step2_result_t* ar_validation_processor__step2(ar_step1_result_t* data);
-ar_step3_result_t* ar_execution_processor__step3(ar_step2_result_t* data);
+ar_data_t* ar_input_processor__step1(const char* input);  // EXAMPLE: Hypothetical function
+ar_data_t* ar_validation_processor__step2(ar_data_t* data);  // EXAMPLE: Hypothetical function
+ar_data_t* ar_execution_processor__step3(ar_data_t* data);  // EXAMPLE: Hypothetical function
 
 // Adding a new step breaks the chain
 // Reordering steps requires interface changes
@@ -333,9 +333,9 @@ ar_data_t* ar_expression_evaluator__evaluate(ar_expression_ast_t* ast, ar_data_t
 **Poor Design for Change**:
 ```c
 // BAD: Workflow-based, brittle to change
-ar_tokens_t* ar_system__tokenize_input(const char* input);
-ar_ast_t* ar_system__parse_tokens(ar_tokens_t* tokens);
-ar_result_t* ar_system__evaluate_ast(ar_ast_t* ast);
+ar_tokens_t* ar_system__tokenize_input(const char* input);  // EXAMPLE: Hypothetical function
+ar_ast_t* ar_system__parse_tokens(ar_tokens_t* tokens);  // EXAMPLE: Hypothetical function
+ar_result_t* ar_system__evaluate_ast(ar_ast_t* ast);  // EXAMPLE: Hypothetical function
 
 // Changing tokenization affects parsing interface
 // Changing parsing affects evaluation interface

@@ -91,8 +91,8 @@ ar_data__destroy(text);
 ```c
 ar_data_t* list = ar_data__create_list();
 ar_data_t* item = ar_data__create_string("item1");
-ar_data__list_add(list, item);
-size_t count = ar_data__list_get_count(list);
+ar_data__list_add(list, item);  // EXAMPLE: Hypothetical function
+size_t count = ar_data__list_get_count(list);  // EXAMPLE: Hypothetical function
 ar_data__destroy(list);  // Also destroys contained items
 ```
 
@@ -143,7 +143,7 @@ ar_data_t* ar_data__list_remove_first(ar_data_t* list);
  * @note Returned reference is valid until list is modified or destroyed
  * @note Caller must NOT destroy the returned item
  */
-ar_data_t* ar_data__list_get_at(ar_data_t* list, size_t index);
+ar_data_t* ar_data__list_get_at(ar_data_t* list, size_t index);  // EXAMPLE: Hypothetical function
 ```
 
 ## Documentation Maintenance
@@ -190,14 +190,14 @@ const char* ar_data__get_string(ar_data_t* data);
 /**
  * @return The data item at index
  */
-ar_data_t* ar_data__list_get_at(ar_data_t* list, size_t index);
+ar_data_t* ar_data__list_get_at(ar_data_t* list, size_t index);  // EXAMPLE: Hypothetical function
 
 // GOOD: Complete error documentation
 /**
  * @return The data item at index, or NULL if index >= size or list is NULL
  * @note Returns NULL for invalid parameters without error messages
  */
-ar_data_t* ar_data__list_get_at(ar_data_t* list, size_t index);
+ar_data_t* ar_data__list_get_at(ar_data_t* list, size_t index);  // EXAMPLE: Hypothetical function
 ```
 
 **Outdated Examples**:
@@ -205,7 +205,7 @@ ar_data_t* ar_data__list_get_at(ar_data_t* list, size_t index);
 // BAD: Example uses old API
 /**
  * Example:
- * ar_data_t* data = ar_data__create_string_with_length("test", 4);  // OLD API
+ * ar_data_t* data = ar_data__create_string_with_length("test", 4);  // OLD API  // EXAMPLE: Hypothetical function
  */
 
 // GOOD: Current API usage
@@ -294,18 +294,18 @@ build: check-docs run-tests
  * 
  * @param version_string The version string to parse (e.g., "1.2.3-alpha+build")
  * @return New semver object, or NULL if parsing fails or allocation fails
- * @note Caller owns returned object and must call ar_semver__destroy()
+ * @note Caller owns returned object and must call ar_semver__destroy()  // EXAMPLE: Hypothetical function
  * @note Input string is not modified and can be freed after this call
  * @note Returns NULL for invalid format (missing components, non-numeric parts)
  * 
  * Example:
- * ar_semver_t* ver = ar_semver__parse("2.1.0");
+ * ar_data_t* ver = ar_semver__parse("2.1.0");  // EXAMPLE: Using real type
  * if (ver) {
  *     // Use version object
- *     ar_semver__destroy(ver);
+ *     ar_semver__destroy(ver);  // EXAMPLE: Hypothetical function
  * }
  */
-ar_semver_t* ar_semver__parse(const char* version_string);
+ar_data_t* ar_semver__parse(const char* version_string);  // EXAMPLE: Using real type
 ```
 
 **Poor Incomplete Documentation**:
@@ -314,5 +314,5 @@ ar_semver_t* ar_semver__parse(const char* version_string);
 /**
  * Parse version.
  */
-ar_semver_t* ar_semver__parse(const char* version_string);
+ar_data_t* ar_semver__parse(const char* version_string);  // EXAMPLE: Using real type
 ```

@@ -37,9 +37,9 @@ class SystemManager {
 
 // C adaptation: Module with too many responsibilities  
 // ar_system.h - Large Module smell
-bool ar_system__manage_agents(...);
-bool ar_system__manage_messages(...);
-bool ar_system__manage_config(...);
+bool ar_system__manage_agents(...);  // EXAMPLE: Hypothetical function
+bool ar_system__manage_messages(...);  // EXAMPLE: Hypothetical function
+bool ar_system__manage_config(...);  // EXAMPLE: Hypothetical function
 // Solution: Split into ar_agency.c, ar_event.c, ar_data.c
 
 // OO concept: Primitive Obsession

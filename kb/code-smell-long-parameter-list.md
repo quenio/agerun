@@ -19,8 +19,8 @@ A Long Parameter List occurs when a function has too many parameters, making it 
 
 ```c
 // BAD: Too many individual parameters
-bool ar_agent__create_with_options(
-    ar_agency_t* agency,
+bool ar_agent__create_with_options(  // EXAMPLE: Hypothetical function
+    ar_data_t* agency,  // EXAMPLE: Using real type
     const char* method_name,
     const char* method_version,
     const char* agent_name,
@@ -33,11 +33,11 @@ bool ar_agent__create_with_options(
     const char* state_file_path,
     int max_message_queue_size,
     bool enable_async_processing,
-    ar_agent_priority_t priority
+    ar_agent_priority_t priority  // EXAMPLE: Hypothetical type
 );
 
 // BAD: Function call is unreadable and error-prone
-ar_agent_t* agent = ar_agent__create_with_options(
+ar_agent_t* agent = ar_agent__create_with_options(  // EXAMPLE: Hypothetical function
     agency,
     "calculator",
     "1.0.0", 
@@ -64,39 +64,39 @@ typedef struct {
     const char* method_name;
     const char* method_version;
     const char* agent_name;
-} ar_agent_identity_t;
+} ar_agent_identity_t;  // EXAMPLE: Hypothetical type
 
 typedef struct {
     uint64_t max_memory_size;
     int max_message_queue_size;
-    ar_agent_priority_t priority;
-} ar_agent_limits_t;
+    ar_agent_priority_t priority;  // EXAMPLE: Hypothetical type
+} ar_agent_limits_t;  // EXAMPLE: Hypothetical type
 
 typedef struct {
     bool enable_logging;
     bool enable_profiling;
     int log_level;
     const char* log_file_path;
-} ar_agent_logging_config_t;
+} ar_agent_logging_config_t;  // EXAMPLE: Hypothetical type
 
 typedef struct {
     bool auto_save_state;
     const char* state_file_path;
     bool enable_async_processing;
-} ar_agent_behavior_config_t;
+} ar_agent_behavior_config_t;  // EXAMPLE: Hypothetical type
 
 typedef struct {
-    ar_agent_identity_t identity;
-    ar_agent_limits_t limits;
-    ar_agent_logging_config_t logging;
-    ar_agent_behavior_config_t behavior;
-} ar_agent_config_t;
+    ar_agent_identity_t identity;  // EXAMPLE: Hypothetical type
+    ar_agent_limits_t limits;  // EXAMPLE: Hypothetical type
+    ar_agent_logging_config_t logging;  // EXAMPLE: Hypothetical type
+    ar_agent_behavior_config_t behavior;  // EXAMPLE: Hypothetical type
+} ar_agent_config_t;  // EXAMPLE: Hypothetical type
 
 // GOOD: Clean function signature
-ar_agent_t* ar_agent__create_with_config(ar_agency_t* agency, ar_agent_config_t* config);
+ar_agent_t* ar_agent__create_with_config(ar_data_t* agency, ar_agent_config_t* config);  // EXAMPLE: Hypothetical function using real type
 
 // GOOD: Readable function call with clear structure
-ar_agent_config_t config = {
+ar_agent_config_t config = {  // EXAMPLE: Hypothetical type
     .identity = {
         .method_name = "calculator",
         .method_version = "1.0.0",
@@ -120,28 +120,28 @@ ar_agent_config_t config = {
     }
 };
 
-ar_agent_t* agent = ar_agent__create_with_config(agency, &config);
+ar_agent_t* agent = ar_agent__create_with_config(agency, &config);  // EXAMPLE: Hypothetical function
 ```
 
 ### Good Example - Method Chaining Alternative
 
 ```c
 // GOOD: Builder pattern for complex object creation
-typedef struct ar_agent_builder_s ar_agent_builder_t;
+typedef struct ar_agent_builder_s ar_agent_builder_t;  // EXAMPLE: Hypothetical type
 
-ar_agent_builder_t* ar_agent_builder__create();
-void ar_agent_builder__destroy(ar_agent_builder_t* builder);
+ar_agent_builder_t* ar_agent_builder__create();  // EXAMPLE: Hypothetical function
+void ar_agent_builder__destroy(ar_agent_builder_t* builder);  // EXAMPLE: Hypothetical function
 
-ar_agent_builder_t* ar_agent_builder__set_method(ar_agent_builder_t* builder, const char* name, const char* version);
-ar_agent_builder_t* ar_agent_builder__set_name(ar_agent_builder_t* builder, const char* name);
-ar_agent_builder_t* ar_agent_builder__set_memory_limit(ar_agent_builder_t* builder, uint64_t limit);
-ar_agent_builder_t* ar_agent_builder__enable_logging(ar_agent_builder_t* builder, int level, const char* file);
-ar_agent_builder_t* ar_agent_builder__enable_auto_save(ar_agent_builder_t* builder, const char* state_file);
+ar_agent_builder_t* ar_agent_builder__set_method(ar_agent_builder_t* builder, const char* name, const char* version);  // EXAMPLE: Hypothetical function
+ar_agent_builder_t* ar_agent_builder__set_name(ar_agent_builder_t* builder, const char* name);  // EXAMPLE: Hypothetical function
+ar_agent_builder_t* ar_agent_builder__set_memory_limit(ar_agent_builder_t* builder, uint64_t limit);  // EXAMPLE: Hypothetical function
+ar_agent_builder_t* ar_agent_builder__enable_logging(ar_agent_builder_t* builder, int level, const char* file);  // EXAMPLE: Hypothetical function
+ar_agent_builder_t* ar_agent_builder__enable_auto_save(ar_agent_builder_t* builder, const char* state_file);  // EXAMPLE: Hypothetical function
 
-ar_agent_t* ar_agent_builder__build(ar_agent_builder_t* builder, ar_agency_t* agency);
+ar_agent_t* ar_agent_builder__build(ar_agent_builder_t* builder, ar_data_t* agency);  // EXAMPLE: Hypothetical function using real type
 
 // Usage: Fluent interface
-ar_agent_builder_t* builder = ar_agent_builder__create();
+ar_agent_builder_t* builder = ar_agent_builder__create();  // EXAMPLE: Hypothetical function
 ar_agent_t* agent = ar_agent_builder__set_method(builder, "calculator", "1.0.0")
     ->ar_agent_builder__set_name(builder, "calc_agent_1")
     ->ar_agent_builder__set_memory_limit(builder, 1024 * 1024)
@@ -171,7 +171,7 @@ ar_agent_builder__destroy(builder);
 
 ```c
 // Before: Related parameters scattered
-bool ar_method__evaluate_with_options(
+bool ar_method__evaluate_with_options(  // EXAMPLE: Hypothetical function
     ar_method_t* method,
     ar_data_t* params,
     ar_data_t* memory,
@@ -187,13 +187,13 @@ typedef struct {
     bool strict_validation;
     int max_iterations;
     double timeout_seconds;
-} ar_evaluation_options_t;
+} ar_evaluation_options_t;  // EXAMPLE: Hypothetical type
 
-bool ar_method__evaluate_with_options(
+bool ar_method__evaluate_with_options(  // EXAMPLE: Hypothetical function
     ar_method_t* method,
     ar_data_t* params,
     ar_data_t* memory,
-    ar_evaluation_options_t* options
+    ar_evaluation_options_t* options  // EXAMPLE: Hypothetical type
 );
 ```
 
@@ -201,7 +201,7 @@ bool ar_method__evaluate_with_options(
 
 ```c
 // Before: Extracting individual fields
-bool ar_expression__evaluate_detailed(
+bool ar_expression__evaluate_detailed(  // EXAMPLE: Hypothetical function
     ar_expression_ast_t* ast,
     const char* variable_name,
     ar_data_type_t variable_type,
@@ -215,11 +215,11 @@ typedef struct {
     ar_data_type_t type;
     ar_data_t* value;
     bool is_constant;
-} ar_variable_t;
+} ar_variable_t;  // EXAMPLE: Hypothetical type
 
-bool ar_expression__evaluate_with_variable(
+bool ar_expression__evaluate_with_variable(  // EXAMPLE: Hypothetical function
     ar_expression_ast_t* ast,
-    ar_variable_t* variable
+    ar_variable_t* variable  // EXAMPLE: Hypothetical type
 );
 ```
 
@@ -227,21 +227,21 @@ bool ar_expression__evaluate_with_variable(
 
 ```c
 // Before: Passing computed values as parameters
-bool ar_agent__send_message_with_metadata(
+bool ar_agent__send_message_with_metadata(  // EXAMPLE: Hypothetical function
     ar_agent_t* agent,
     ar_data_t* message,
     uint64_t sender_id,
-    time_t timestamp,
-    ar_message_priority_t priority,
+    time_t timestamp,  // EXAMPLE: Hypothetical type
+    ar_message_priority_t priority,  // EXAMPLE: Hypothetical type
     size_t message_size
 );
 
 // After: Compute values internally
-bool ar_agent__send_message(ar_agent_t* agent, ar_data_t* message) {
+bool ar_agent__send_message(ar_agent_t* agent, ar_data_t* message) {  // EXAMPLE: Hypothetical function
     uint64_t sender_id = ar_agent__get_id(agent);
-    time_t timestamp = time(NULL);
-    ar_message_priority_t priority = ar_agent__get_default_priority(agent);
-    size_t message_size = ar_data__calculate_size(message);
+    time_t timestamp = time(NULL);  // EXAMPLE: Hypothetical type
+    ar_message_priority_t priority = ar_agent__get_default_priority(agent);  // EXAMPLE: Hypothetical type
+    size_t message_size = ar_data__calculate_size(message);  // EXAMPLE: Hypothetical function
     
     return _send_message_internal(agent, message, sender_id, timestamp, priority, message_size);
 }
@@ -251,8 +251,8 @@ bool ar_agent__send_message(ar_agent_t* agent, ar_data_t* message) {
 
 ```c
 // Before: One function with many parameters
-bool ar_system__initialize_complete(
-    ar_system_t* system,
+bool ar_system__initialize_complete(  // EXAMPLE: Hypothetical function
+    ar_data_t* system,  // EXAMPLE: Using real type
     const char* config_file,
     const char* method_directory,
     const char* agent_state_file,
@@ -263,11 +263,11 @@ bool ar_system__initialize_complete(
 );
 
 // After: Multiple focused functions
-bool ar_system__initialize(ar_system_t* system);
-bool ar_system__load_config(ar_system_t* system, const char* config_file);
-bool ar_system__set_method_directory(ar_system_t* system, const char* directory);
-bool ar_system__configure_logging(ar_system_t* system, const char* log_file, int level);
-bool ar_system__enable_features(ar_system_t* system, bool profiling, bool auto_save);
+bool ar_system__initialize(ar_data_t* system);  // EXAMPLE: Hypothetical function using real type
+bool ar_system__load_config(ar_data_t* system, const char* config_file);  // EXAMPLE: Hypothetical function using real type
+bool ar_system__set_method_directory(ar_data_t* system, const char* directory);  // EXAMPLE: Hypothetical function using real type
+bool ar_system__configure_logging(ar_data_t* system, const char* log_file, int level);  // EXAMPLE: Hypothetical function using real type
+bool ar_system__enable_features(ar_data_t* system, bool profiling, bool auto_save);  // EXAMPLE: Hypothetical function using real type
 ```
 
 ## Benefits of Fixing
@@ -312,11 +312,11 @@ typedef struct {
     size_t max_memory;      // Default: DEFAULT_MEMORY_LIMIT
     bool enable_logging;    // Default: false
     int log_level;          // Default: 0
-} ar_creation_params_t;
+} ar_creation_params_t;  // EXAMPLE: Hypothetical type
 
 // Helper function for defaults
-ar_creation_params_t ar_creation_params__default() {
-    return (ar_creation_params_t) {
+ar_creation_params_t ar_creation_params__default() {  // EXAMPLE: Hypothetical function
+    return (ar_creation_params_t) {  // EXAMPLE: Hypothetical type
         .max_memory = DEFAULT_MEMORY_LIMIT,
         .enable_logging = false,
         .log_level = 0
@@ -330,17 +330,17 @@ ar_creation_params_t ar_creation_params__default() {
 ```c
 // System-wide configuration
 typedef struct {
-    ar_io_config_t io;
-    ar_memory_config_t memory;
-    ar_logging_config_t logging;
-} ar_system_config_t;
+    ar_io_config_t io;  // EXAMPLE: Hypothetical type
+    ar_memory_config_t memory;  // EXAMPLE: Hypothetical type
+    ar_logging_config_t logging;  // EXAMPLE: Hypothetical type
+} ar_system_config_t;  // EXAMPLE: Hypothetical type
 
 // Module-specific configuration
 typedef struct {
     size_t initial_capacity;
     size_t growth_factor;
     bool enable_cache;
-} ar_data_config_t;
+} ar_data_config_t;  // EXAMPLE: Hypothetical type
 ```
 
 ### Context Objects
@@ -349,9 +349,9 @@ typedef struct {
 typedef struct {
     ar_data_t* memory;
     ar_data_t* parameters;
-    ar_evaluation_options_t* options;
-    ar_error_handler_t* error_handler;
-} ar_evaluation_context_t;
+    ar_evaluation_options_t* options;  // EXAMPLE: Hypothetical type
+    ar_data_t* error_handler;  // EXAMPLE: Using real type
+} ar_evaluation_context_t;  // EXAMPLE: Hypothetical type
 ```
 
 ## Detection Tools

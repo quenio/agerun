@@ -19,7 +19,7 @@ A Long Method is a method that contains too many lines of code, making it diffic
 
 ```c
 // BAD: Long method doing too many things
-bool ar_agent__process_message_complex(ar_agent_t* agent, ar_data_t* message) {
+bool ar_agent__process_message_complex(ar_agent_t* agent, ar_data_t* message) {  // EXAMPLE: Hypothetical function
     // Validate input
     if (agent == NULL || message == NULL) {
         ar_log__error("Invalid parameters for message processing");
@@ -28,7 +28,7 @@ bool ar_agent__process_message_complex(ar_agent_t* agent, ar_data_t* message) {
     
     // Check agent state
     if (agent->state != AR_AGENT_STATE_ACTIVE) {
-        ar_log__debug("Agent %lu not active, ignoring message", agent->id);
+        ar_log__debug("Agent %lu not active, ignoring message", agent->id);  // EXAMPLE: Hypothetical function
         return false;
     }
     
@@ -39,7 +39,7 @@ bool ar_agent__process_message_complex(ar_agent_t* agent, ar_data_t* message) {
         return false;
     }
     
-    ar_data_t* command = ar_data__map_get(message, "command");
+    ar_data_t* command = ar_data__map_get(message, "command");  // EXAMPLE: Hypothetical function
     if (command == NULL) {
         ar_log__error("Message missing required 'command' field");
         return false;
@@ -57,7 +57,7 @@ bool ar_agent__process_message_complex(ar_agent_t* agent, ar_data_t* message) {
     
     // Process different command types
     if (strcmp(cmd_str, "evaluate") == 0) {
-        ar_data_t* params = ar_data__map_get(message, "params");
+        ar_data_t* params = ar_data__map_get(message, "params");  // EXAMPLE: Hypothetical function
         if (params == NULL) {
             ar_log__error("Evaluate command missing parameters");
             return false;
@@ -70,24 +70,24 @@ bool ar_agent__process_message_complex(ar_agent_t* agent, ar_data_t* message) {
             return false;
         }
         
-        ar_data_t* result = ar_method__evaluate(method, params, agent->memory);
+        ar_data_t* result = ar_method__evaluate(method, params, agent->memory);  // EXAMPLE: Hypothetical function
         if (result == NULL) {
             ar_log__error("Method evaluation failed");
             return false;
         }
         
         // Store result in agent memory
-        ar_data__map_set(agent->memory, "last_result", result);
+        ar_data__map_set(agent->memory, "last_result", result);  // EXAMPLE: Hypothetical function
         
         // Log successful evaluation
-        ar_log__debug("Agent %lu successfully evaluated method", agent->id);
+        ar_log__debug("Agent %lu successfully evaluated method", agent->id);  // EXAMPLE: Hypothetical function
         
     } else if (strcmp(cmd_str, "reset") == 0) {
         // Clear agent memory
         ar_data__destroy(agent->memory);
         agent->memory = ar_data__create_map();
         agent->messages_processed = 0;
-        ar_log__debug("Agent %lu memory reset", agent->id);
+        ar_log__debug("Agent %lu memory reset", agent->id);  // EXAMPLE: Hypothetical function
         
     } else if (strcmp(cmd_str, "status") == 0) {
         // Return agent status information
@@ -96,12 +96,12 @@ bool ar_agent__process_message_complex(ar_agent_t* agent, ar_data_t* message) {
         ar_data_t* msg_count = ar_data__create_integer(agent->messages_processed);
         ar_data_t* last_time = ar_data__create_integer(agent->last_message_time);
         
-        ar_data__map_set(status, "state", state_data);
-        ar_data__map_set(status, "messages_processed", msg_count);
-        ar_data__map_set(status, "last_message_time", last_time);
+        ar_data__map_set(status, "state", state_data);  // EXAMPLE: Hypothetical function
+        ar_data__map_set(status, "messages_processed", msg_count);  // EXAMPLE: Hypothetical function
+        ar_data__map_set(status, "last_message_time", last_time);  // EXAMPLE: Hypothetical function
         
-        ar_data__map_set(agent->memory, "status_response", status);
-        ar_log__debug("Agent %lu status requested", agent->id);
+        ar_data__map_set(agent->memory, "status_response", status);  // EXAMPLE: Hypothetical function
+        ar_log__debug("Agent %lu status requested", agent->id);  // EXAMPLE: Hypothetical function
         
     } else {
         ar_log__error("Unknown command: %s", cmd_str);
@@ -124,7 +124,7 @@ static bool _validate_message_input(ar_agent_t* agent, ar_data_t* message) {
     }
     
     if (agent->state != AR_AGENT_STATE_ACTIVE) {
-        ar_log__debug("Agent %lu not active, ignoring message", agent->id);
+        ar_log__debug("Agent %lu not active, ignoring message", agent->id);  // EXAMPLE: Hypothetical function
         return false;
     }
     
@@ -138,7 +138,7 @@ static const char* _extract_command_from_message(ar_data_t* message) {
         return NULL;
     }
     
-    ar_data_t* command = ar_data__map_get(message, "command");
+    ar_data_t* command = ar_data__map_get(message, "command");  // EXAMPLE: Hypothetical function
     if (command == NULL) {
         ar_log__error("Message missing required 'command' field");
         return NULL;
@@ -159,7 +159,7 @@ static void _update_agent_statistics(ar_agent_t* agent) {
 }
 
 static bool _handle_evaluate_command(ar_agent_t* agent, ar_data_t* message) {
-    ar_data_t* params = ar_data__map_get(message, "params");
+    ar_data_t* params = ar_data__map_get(message, "params");  // EXAMPLE: Hypothetical function
     if (params == NULL) {
         ar_log__error("Evaluate command missing parameters");
         return false;
@@ -171,14 +171,14 @@ static bool _handle_evaluate_command(ar_agent_t* agent, ar_data_t* message) {
         return false;
     }
     
-    ar_data_t* result = ar_method__evaluate(method, params, agent->memory);
+    ar_data_t* result = ar_method__evaluate(method, params, agent->memory);  // EXAMPLE: Hypothetical function
     if (result == NULL) {
         ar_log__error("Method evaluation failed");
         return false;
     }
     
-    ar_data__map_set(agent->memory, "last_result", result);
-    ar_log__debug("Agent %lu successfully evaluated method", agent->id);
+    ar_data__map_set(agent->memory, "last_result", result);  // EXAMPLE: Hypothetical function
+    ar_log__debug("Agent %lu successfully evaluated method", agent->id);  // EXAMPLE: Hypothetical function
     return true;
 }
 
@@ -186,7 +186,7 @@ static bool _handle_reset_command(ar_agent_t* agent) {
     ar_data__destroy(agent->memory);
     agent->memory = ar_data__create_map();
     agent->messages_processed = 0;
-    ar_log__debug("Agent %lu memory reset", agent->id);
+    ar_log__debug("Agent %lu memory reset", agent->id);  // EXAMPLE: Hypothetical function
     return true;
 }
 
@@ -196,17 +196,17 @@ static bool _handle_status_command(ar_agent_t* agent) {
     ar_data_t* msg_count = ar_data__create_integer(agent->messages_processed);
     ar_data_t* last_time = ar_data__create_integer(agent->last_message_time);
     
-    ar_data__map_set(status, "state", state_data);
-    ar_data__map_set(status, "messages_processed", msg_count);
-    ar_data__map_set(status, "last_message_time", last_time);
+    ar_data__map_set(status, "state", state_data);  // EXAMPLE: Hypothetical function
+    ar_data__map_set(status, "messages_processed", msg_count);  // EXAMPLE: Hypothetical function
+    ar_data__map_set(status, "last_message_time", last_time);  // EXAMPLE: Hypothetical function
     
-    ar_data__map_set(agent->memory, "status_response", status);
-    ar_log__debug("Agent %lu status requested", agent->id);
+    ar_data__map_set(agent->memory, "status_response", status);  // EXAMPLE: Hypothetical function
+    ar_log__debug("Agent %lu status requested", agent->id);  // EXAMPLE: Hypothetical function
     return true;
 }
 
 // GOOD: Main method is now focused and readable
-bool ar_agent__process_message(ar_agent_t* agent, ar_data_t* message) {
+bool ar_agent__process_message(ar_agent_t* agent, ar_data_t* message) {  // EXAMPLE: Hypothetical function
     if (!_validate_message_input(agent, message)) {
         return false;
     }
@@ -251,12 +251,12 @@ bool ar_agent__process_message(ar_agent_t* agent, ar_data_t* message) {
 **Most Common Solution**:
 ```c
 // Before: Long method with embedded logic
-bool ar_expression__evaluate_complex(ar_expression_t* expr, ar_data_t* context) {
+bool ar_expression__evaluate_complex(ar_expression_t* expr, ar_data_t* context) {  // EXAMPLE: Hypothetical function
     // 50 lines of validation, parsing, and evaluation...
 }
 
 // After: Extracted into focused methods
-bool ar_expression__evaluate(ar_expression_t* expr, ar_data_t* context) {
+bool ar_expression__evaluate(ar_expression_ast_t* expr, ar_data_t* context) {  // EXAMPLE: Using real type
     if (!_validate_expression_input(expr, context)) return false;
     ar_expression_ast_t* ast = _parse_expression_safely(expr);
     if (!ast) return false;
@@ -267,8 +267,8 @@ bool ar_expression__evaluate(ar_expression_t* expr, ar_data_t* context) {
 ### Replace Temp with Query
 ```c
 // Before: Temporary variables making method longer
-bool ar_method__validate_content(ar_method_t* method) {
-    const char* content = ar_method__get_content(method);
+bool ar_method__validate_content(ar_method_t* method) {  // EXAMPLE: Hypothetical function
+    const char* content = ar_method__get_content(method);  // EXAMPLE: Hypothetical function
     size_t content_length = strlen(content);
     bool has_method_keyword = strstr(content, "method(") != NULL;
     bool has_valid_length = content_length > 10 && content_length < 10000;
@@ -277,7 +277,7 @@ bool ar_method__validate_content(ar_method_t* method) {
 }
 
 // After: Queries extracted to methods
-bool ar_method__validate_content(ar_method_t* method) {
+bool ar_method__validate_content(ar_method_t* method) {  // EXAMPLE: Hypothetical function
     return _has_method_keyword(method) && _has_valid_content_length(method);
 }
 ```
@@ -286,13 +286,13 @@ bool ar_method__validate_content(ar_method_t* method) {
 **When method belongs elsewhere**:
 ```c
 // Before: Agent doing message parsing (not its responsibility)
-bool ar_agent__process_complex_message(ar_agent_t* agent, const char* raw_message) {
+bool ar_agent__process_complex_message(ar_agent_t* agent, const char* raw_message) {  // EXAMPLE: Hypothetical function
     // 30 lines of message parsing logic...
     // 20 lines of agent processing logic...
 }
 
 // After: Message parsing extracted to dedicated class
-bool ar_agent__process_message(ar_agent_t* agent, ar_data_t* message) {
+bool ar_agent__process_message(ar_agent_t* agent, ar_data_t* message) {  // EXAMPLE: Hypothetical function
     // Only agent-specific logic, message already parsed
     return _execute_agent_behavior(agent, message);
 }

@@ -279,10 +279,10 @@ typedef struct entry_s {
     const char *ref_key;    // Borrowed reference to the key
     void *ref_value;        // Borrowed reference to the value
     bool is_used;           // No prefix for primitive types
-} entry_t;
+} entry_t;  // EXAMPLE: Internal implementation detail - not exposed in public API
 
 struct ar_map_s {
-    entry_t entries[MAP_SIZE];  // Fixed-size array, no prefix needed
+    entry_t entries[MAP_SIZE];  // EXAMPLE: Uses internal type - Fixed-size array, no prefix needed
     int count;                  // No prefix for primitive types
 };
 ```

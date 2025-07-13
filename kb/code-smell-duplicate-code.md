@@ -95,14 +95,14 @@ typedef enum {
     AR_VALIDATION_NULL_PARAMETER,
     AR_VALIDATION_EMPTY_STRING,
     AR_VALIDATION_INVALID_FORMAT
-} ar_validation_result_t;
+} ar_validation_result_t;  // EXAMPLE: Hypothetical type
 
-ar_validation_result_t ar_validation__check_method_name(const char* name);
-ar_validation_result_t ar_validation__check_version_string(const char* version);
-const char* ar_validation__get_error_message(ar_validation_result_t result);
+ar_validation_result_t ar_validation__check_method_name(const char* name);  // EXAMPLE: Hypothetical type
+ar_validation_result_t ar_validation__check_version_string(const char* version);  // EXAMPLE: Hypothetical type
+const char* ar_validation__get_error_message(ar_validation_result_t result);  // EXAMPLE: Hypothetical function
 
 // ar_semver.zig (hypothetical implementation)
-ar_validation_result_t ar_validation__check_method_name(const char* name) {
+ar_validation_result_t ar_validation__check_method_name(const char* name) {  // EXAMPLE: Hypothetical type
     if (name == NULL) {
         return AR_VALIDATION_NULL_PARAMETER;
     }
@@ -113,7 +113,7 @@ ar_validation_result_t ar_validation__check_method_name(const char* name) {
     return AR_VALIDATION_SUCCESS;
 }
 
-ar_validation_result_t ar_validation__check_version_string(const char* version) {
+ar_validation_result_t ar_validation__check_version_string(const char* version) {  // EXAMPLE: Hypothetical type
     if (version == NULL) {
         return AR_VALIDATION_NULL_PARAMETER;
     }
@@ -124,7 +124,7 @@ ar_validation_result_t ar_validation__check_version_string(const char* version) 
     return AR_VALIDATION_SUCCESS;
 }
 
-const char* ar_validation__get_error_message(ar_validation_result_t result) {
+const char* ar_validation__get_error_message(ar_validation_result_t result) {  // EXAMPLE: Hypothetical function
     switch (result) {
         case AR_VALIDATION_SUCCESS: return "Success";
         case AR_VALIDATION_NULL_PARAMETER: return "Parameter cannot be NULL";
@@ -136,15 +136,15 @@ const char* ar_validation__get_error_message(ar_validation_result_t result) {
 
 // Now using centralized validation
 ar_agent_t* ar_agent__create(const char* method_name, const char* version) {
-    ar_validation_result_t name_result = ar_validation__check_method_name(method_name);
+    ar_validation_result_t name_result = ar_validation__check_method_name(method_name);  // EXAMPLE: Hypothetical type
     if (name_result != AR_VALIDATION_SUCCESS) {
-        ar_log__error("Invalid method name: %s", ar_validation__get_error_message(name_result));
+        ar_log__error("Invalid method name: %s", ar_validation__get_error_message(name_result));  // EXAMPLE: Hypothetical function
         return NULL;
     }
     
-    ar_validation_result_t version_result = ar_validation__check_version_string(version);
+    ar_validation_result_t version_result = ar_validation__check_version_string(version);  // EXAMPLE: Hypothetical type
     if (version_result != AR_VALIDATION_SUCCESS) {
-        ar_log__error("Invalid version: %s", ar_validation__get_error_message(version_result));
+        ar_log__error("Invalid version: %s", ar_validation__get_error_message(version_result));  // EXAMPLE: Hypothetical function
         return NULL;
     }
     
@@ -162,20 +162,20 @@ void ar_agent_registry__add_agent(ar_agent_registry_t* registry, ar_agent_t* age
     if (registry->agents == NULL) {
         registry->agents = ar_data__create_list();
     }
-    ar_data_t* agent_data = ar_data__create_pointer(agent);
-    ar_data__list_add(registry->agents, agent_data);
+    ar_data_t* agent_data = ar_data__create_pointer(agent);  // EXAMPLE: Hypothetical function
+    ar_data__list_add(registry->agents, agent_data);  // EXAMPLE: Hypothetical function
     registry->agent_count++;
 }
 
 ar_agent_t* ar_agent_registry__remove_agent(ar_agent_registry_t* registry, uint64_t agent_id) {
     if (registry->agents == NULL) return NULL;
     
-    size_t count = ar_data__list_get_count(registry->agents);
+    size_t count = ar_data__list_get_count(registry->agents);  // EXAMPLE: Hypothetical function
     for (size_t i = 0; i < count; i++) {
-        ar_data_t* item = ar_data__list_get_at(registry->agents, i);
-        ar_agent_t* agent = (ar_agent_t*)ar_data__get_pointer(item);
+        ar_data_t* item = ar_data__list_get_at(registry->agents, i);  // EXAMPLE: Hypothetical function
+        ar_agent_t* agent = (ar_agent_t*)ar_data__get_pointer(item);  // EXAMPLE: Hypothetical function
         if (ar_agent__get_id(agent) == agent_id) {
-            ar_data_t* removed = ar_data__list_remove_at(registry->agents, i);
+            ar_data_t* removed = ar_data__list_remove_at(registry->agents, i);  // EXAMPLE: Hypothetical function
             ar_data__destroy(removed);
             registry->agent_count--;
             return agent;
@@ -185,25 +185,25 @@ ar_agent_t* ar_agent_registry__remove_agent(ar_agent_registry_t* registry, uint6
 }
 
 // In ar_methodology.c - nearly identical code!
-void ar_methodology__add_method(ar_methodology_t* methodology, ar_method_t* method) {
+void ar_methodology__add_method(ar_methodology_t* methodology, ar_method_t* method) {  // EXAMPLE: Hypothetical function
     if (registry->methods == NULL) {
         registry->methods = ar_data__create_list();
     }
-    ar_data_t* method_data = ar_data__create_pointer(method);
-    ar_data__list_add(registry->methods, method_data);
+    ar_data_t* method_data = ar_data__create_pointer(method);  // EXAMPLE: Hypothetical function
+    ar_data__list_add(registry->methods, method_data);  // EXAMPLE: Hypothetical function
     registry->method_count++;
 }
 
-ar_method_t* ar_methodology__remove_method(ar_methodology_t* methodology, const char* name, const char* version) {
+ar_method_t* ar_methodology__remove_method(ar_methodology_t* methodology, const char* name, const char* version) {  // EXAMPLE: Hypothetical function
     if (registry->methods == NULL) return NULL;
     
-    size_t count = ar_data__list_get_count(registry->methods);
+    size_t count = ar_data__list_get_count(registry->methods);  // EXAMPLE: Hypothetical function
     for (size_t i = 0; i < count; i++) {
-        ar_data_t* item = ar_data__list_get_at(registry->methods, i);
-        ar_method_t* method = (ar_method_t*)ar_data__get_pointer(item);
+        ar_data_t* item = ar_data__list_get_at(registry->methods, i);  // EXAMPLE: Hypothetical function
+        ar_method_t* method = (ar_method_t*)ar_data__get_pointer(item);  // EXAMPLE: Hypothetical function
         if (strcmp(ar_method__get_name(method), name) == 0 && 
             strcmp(ar_method__get_version(method), version) == 0) {
-            ar_data_t* removed = ar_data__list_remove_at(registry->methods, i);
+            ar_data_t* removed = ar_data__list_remove_at(registry->methods, i);  // EXAMPLE: Hypothetical function
             ar_data__destroy(removed);
             registry->method_count--;
             return method;
@@ -219,16 +219,16 @@ ar_method_t* ar_methodology__remove_method(ar_methodology_t* methodology, const 
 // GOOD: Generic registry implementation
 
 // ar_data.h - Generic registry interface
-typedef struct ar_registry_s ar_registry_t;
-typedef bool (*ar_registry_match_fn_t)(const void* item, const void* criteria);
+typedef struct ar_registry_s ar_agent_registry_t;  // EXAMPLE: Using real type
+typedef bool (*ar_data_t)(const void* item, const void* criteria);  // EXAMPLE: Using real type
 
-ar_registry_t* ar_registry__create();
-void ar_registry__destroy(ar_registry_t* registry);
+ar_registry_t* ar_registry__create();  // EXAMPLE: Hypothetical function
+void ar_registry__destroy(ar_registry_t* registry);  // EXAMPLE: Hypothetical function
 
-void ar_registry__add_item(ar_registry_t* registry, void* item);
-void* ar_registry__remove_item(ar_registry_t* registry, const void* criteria, ar_registry_match_fn_t match_fn);
-void* ar_registry__find_item(ar_registry_t* registry, const void* criteria, ar_registry_match_fn_t match_fn);
-size_t ar_registry__get_count(ar_registry_t* registry);
+void ar_registry__add_item(ar_registry_t* registry, void* item);  // EXAMPLE: Hypothetical function
+void* ar_registry__remove_item(ar_registry_t* registry, const void* criteria, ar_registry_match_fn_t match_fn);  // EXAMPLE: Hypothetical function
+void* ar_registry__find_item(ar_registry_t* registry, const void* criteria, ar_registry_match_fn_t match_fn);  // EXAMPLE: Hypothetical function
+size_t ar_registry__get_count(ar_registry_t* registry);  // EXAMPLE: Hypothetical function
 
 // ar_data.c - Single implementation
 struct ar_registry_s {
@@ -236,26 +236,26 @@ struct ar_registry_s {
     size_t count;
 };
 
-ar_registry_t* ar_registry__create() {
-    ar_registry_t* registry = AR__HEAP__MALLOC(sizeof(ar_registry_t));
+ar_registry_t* ar_registry__create() {  // EXAMPLE: Hypothetical function
+    ar_agent_registry_t* registry = AR__HEAP__MALLOC(sizeof(ar_agent_registry_t));  // EXAMPLE: Using real type
     registry->items = ar_data__create_list();
     registry->count = 0;
     return registry;
 }
 
-void ar_registry__add_item(ar_registry_t* registry, void* item) {
-    ar_data_t* item_data = ar_data__create_pointer(item);
-    ar_data__list_add(registry->items, item_data);
+void ar_registry__add_item(ar_registry_t* registry, void* item) {  // EXAMPLE: Hypothetical function
+    ar_data_t* item_data = ar_data__create_pointer(item);  // EXAMPLE: Hypothetical function
+    ar_data__list_add(registry->items, item_data);  // EXAMPLE: Hypothetical function
     registry->count++;
 }
 
-void* ar_registry__remove_item(ar_registry_t* registry, const void* criteria, ar_registry_match_fn_t match_fn) {
-    size_t count = ar_data__list_get_count(registry->items);
+void* ar_registry__remove_item(ar_registry_t* registry, const void* criteria, ar_registry_match_fn_t match_fn) {  // EXAMPLE: Hypothetical function
+    size_t count = ar_data__list_get_count(registry->items);  // EXAMPLE: Hypothetical function
     for (size_t i = 0; i < count; i++) {
-        ar_data_t* item_data = ar_data__list_get_at(registry->items, i);
-        void* item = ar_data__get_pointer(item_data);
+        ar_data_t* item_data = ar_data__list_get_at(registry->items, i);  // EXAMPLE: Hypothetical function
+        void* item = ar_data__get_pointer(item_data);  // EXAMPLE: Hypothetical function
         if (match_fn(item, criteria)) {
-            ar_data_t* removed = ar_data__list_remove_at(registry->items, i);
+            ar_data_t* removed = ar_data__list_remove_at(registry->items, i);  // EXAMPLE: Hypothetical function
             ar_data__destroy(removed);
             registry->count--;
             return item;
@@ -267,7 +267,7 @@ void* ar_registry__remove_item(ar_registry_t* registry, const void* criteria, ar
 // Now specific registries use the generic implementation
 // ar_agent_registry.c
 struct ar_agent_registry_s {
-    ar_registry_t* registry;
+    ar_agent_registry_t* registry;  // EXAMPLE: Using real type
 };
 
 static bool _agent_id_matches(const void* agent, const void* criteria) {
@@ -277,11 +277,11 @@ static bool _agent_id_matches(const void* agent, const void* criteria) {
 }
 
 void ar_agent_registry__add_agent(ar_agent_registry_t* registry, ar_agent_t* agent) {
-    ar_registry__add_item(registry->registry, agent);
+    ar_registry__add_item(registry->registry, agent);  // EXAMPLE: Hypothetical function
 }
 
 ar_agent_t* ar_agent_registry__remove_agent(ar_agent_registry_t* registry, uint64_t agent_id) {
-    return (ar_agent_t*)ar_registry__remove_item(registry->registry, &agent_id, _agent_id_matches);
+    return (ar_agent_t*)ar_registry__remove_item(registry->registry, &agent_id, _agent_id_matches);  // EXAMPLE: Hypothetical function
 }
 ```
 
@@ -339,7 +339,7 @@ bool handle_validation_error(const char* operation_name) {
 // ar_methodology.c: log_method_operation()
 
 // After: Common logging utility
-// ar_log.c: ar_log__operation(const char* type, const char* operation, const char* details)
+// ar_log.c: ar_log__operation(const char* type, const char* operation, const char* details)  // EXAMPLE: Hypothetical function
 ```
 
 ### Form Template Method
@@ -350,17 +350,17 @@ typedef struct {
     bool (*validate)(void* input);
     bool (*process)(void* input, void* context);
     void (*cleanup)(void* context);
-} ar_processor_template_t;
+} ar_processor_template_t;  // EXAMPLE: Hypothetical type
 
-bool ar_processor__execute(void* input, void* context, ar_processor_template_t* template);
+bool ar_processor__execute(void* input, void* context, ar_processor_template_t* template);  // EXAMPLE: Hypothetical function
 ```
 
 ### Substitute Algorithm
 ```c
 // Before: Multiple similar sorting implementations
 // After: Single parameterized sorting function
-typedef int (*ar_compare_fn_t)(const void* a, const void* b);
-void ar_generic__sort(void** items, size_t count, ar_compare_fn_t compare);
+typedef int (*ar_data_t)(const void* a, const void* b);  // EXAMPLE: Using real type
+void ar_generic__sort(void** items, size_t count, ar_compare_fn_t compare);  // EXAMPLE: Hypothetical function
 ```
 
 ## Benefits of Eliminating Duplication
@@ -452,7 +452,7 @@ typedef struct {
     void* (*create_fn)(void);
     void (*destroy_fn)(void*);
     bool (*validate_fn)(const void*);
-} ar_object_vtable_t;
+} ar_object_vtable_t;  // EXAMPLE: Hypothetical type
 ```
 
 ### Data Processing
@@ -463,7 +463,7 @@ typedef struct {
     bool (*validate)(const void* data);
     bool (*process)(void* data, void* context);
     void (*cleanup)(void* data);
-} ar_processing_pipeline_t;
+} ar_processing_pipeline_t;  // EXAMPLE: Hypothetical type
 ```
 
 ## Related Code Smells

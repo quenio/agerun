@@ -655,7 +655,7 @@ const c = @cImport({
 });
 
 // Export functions with C ABI
-export fn ar_zigmodule__create() ?*c.ar_data_t {  // Example: replace 'zigmodule' with your module name
+export fn ar_zigmodule__create() ?*c.ar_data_t {  // EXAMPLE: Replace 'zigmodule' with your module name
     // Use AgeRun's heap tracking
     const data = c.ar_data__create_string("Zig integrated!");
     return data;

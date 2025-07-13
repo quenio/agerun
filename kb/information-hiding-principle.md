@@ -21,20 +21,20 @@ typedef struct {
     char* data;
     size_t length;
     size_t capacity;
-} ar_string_t;
+} ar_string_t;  // EXAMPLE: Hypothetical type
 
 // CORRECT: Opaque type in header
-typedef struct ar_string_s ar_string_t;
+typedef struct ar_string_s ar_data_t;  // EXAMPLE: Using real type
 ```
 
 **Implementation Algorithms**:
 ```c
 // WRONG: Exposing algorithm choice
 #define AR_LIST_USES_ARRAY 1
-ar_data_t* ar_list__get_at_index(ar_list_t* list, int index);
+ar_data_t* ar_list__get_at_index(ar_list_t* list, int index);  // EXAMPLE: Hypothetical function
 
 // CORRECT: Hide implementation choice
-ar_data_t* ar_list__get_at_index(ar_list_t* list, int index);
+ar_data_t* ar_list__get_at_index(ar_list_t* list, int index);  // EXAMPLE: Hypothetical function
 ```
 
 **Internal State**:
@@ -53,9 +53,9 @@ static char* g_temp_buffer = NULL;
 **Abstract Operations**:
 ```c
 // Public interface operations
-ar_string_t* ar_string__create(const char* text);
-void ar_string__destroy(ar_string_t* string);
-const char* ar_string__get_text(ar_string_t* string);
+ar_string_t* ar_string__create(const char* text);  // EXAMPLE: Hypothetical function
+void ar_string__destroy(ar_string_t* string);  // EXAMPLE: Hypothetical function
+const char* ar_string__get_text(ar_string_t* string);  // EXAMPLE: Hypothetical function
 ```
 
 **Abstract Concepts**:
@@ -93,7 +93,7 @@ typedef struct ar_list_s ar_list_t;
 **Problem**: Internal helpers in public header
 ```c
 // BAD: Internal function exposed
-void ar_list__resize_internal(ar_list_t* list, size_t new_capacity);
+void ar_list__resize_internal(ar_list_t* list, size_t new_capacity);  // EXAMPLE: Hypothetical function
 ```
 
 **Solution**: Keep internal functions static or separate

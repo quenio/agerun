@@ -10,7 +10,7 @@ Prevents memory leaks and use-after-free bugs by making ownership clear at the c
 ```c
 // Clear ownership semantics
 ar_data_t *own_result = ar_data__create_string("hello");  // Must destroy
-ar_data_t *ref_item = ar_data__get_map_value(map, "key"); // Borrowed reference
+ar_data_t *ref_item = ar_data__get_map_value(map, "key"); // Borrowed reference  // EXAMPLE: Hypothetical function
 ar_data_t *mut_memory = context->memory;                  // Mutable access
 
 // Ownership transfer

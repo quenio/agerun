@@ -17,9 +17,9 @@ The No Parallel Implementations principle requires that when functionality needs
 **Wrong Approach - Parallel Versions**:
 ```c
 // BAD: Creating parallel implementations
-ar_data_t* ar_expression__evaluate_v1(ar_expression_t* expr, ar_data_t* context);
-ar_data_t* ar_expression__evaluate_v2(ar_expression_t* expr, ar_data_t* context, bool strict_mode);
-ar_data_t* ar_expression__evaluate_advanced(ar_expression_t* expr, ar_data_t* context, ar_options_t* opts);
+ar_data_t* ar_expression__evaluate_v1(ar_expression_ast_t* expr, ar_data_t* context);  // EXAMPLE: Hypothetical function using real type
+ar_data_t* ar_expression__evaluate_v2(ar_expression_ast_t* expr, ar_data_t* context, bool strict_mode);  // EXAMPLE: Hypothetical function using real type
+ar_data_t* ar_expression__evaluate_advanced(ar_expression_ast_t* expr, ar_data_t* context, ar_data_t* opts);  // EXAMPLE: Hypothetical function using real types
 
 // Now we have three ways to do the same thing!
 // Which one should new code use?
@@ -29,16 +29,16 @@ ar_data_t* ar_expression__evaluate_advanced(ar_expression_t* expr, ar_data_t* co
 **Correct Approach - Single Implementation**:
 ```c
 // GOOD: Single implementation that evolves
-ar_data_t* ar_expression__evaluate(ar_expression_t* expr, ar_data_t* context);
+ar_data_t* ar_expression__evaluate(ar_expression_ast_t* expr, ar_data_t* context);  // EXAMPLE: Hypothetical function using real type
 
 // If more parameters needed, extend the interface:
-ar_data_t* ar_expression__evaluate(ar_expression_t* expr, ar_data_t* context, ar_evaluation_options_t* options);
+ar_data_t* ar_expression__evaluate(ar_expression_ast_t* expr, ar_data_t* context, ar_data_t* options);  // EXAMPLE: Hypothetical function using real types
 
 // Or use a more flexible approach:
-ar_data_t* ar_expression__evaluate_with_options(ar_expression_t* expr, ar_data_t* context, ar_evaluation_options_t* options);
+ar_data_t* ar_expression__evaluate_with_options(ar_expression_ast_t* expr, ar_data_t* context, ar_data_t* options);  // EXAMPLE: Hypothetical function using real types
 // And keep simple version as wrapper:
-ar_data_t* ar_expression__evaluate(ar_expression_t* expr, ar_data_t* context) {
-    return ar_expression__evaluate_with_options(expr, context, NULL);  // Default options
+ar_data_t* ar_expression__evaluate(ar_expression_ast_t* expr, ar_data_t* context) {  // EXAMPLE: Hypothetical function using real type
+    return ar_expression__evaluate_with_options(expr, context, NULL);  // Default options  // EXAMPLE: Hypothetical function
 }
 ```
 
@@ -47,24 +47,24 @@ ar_data_t* ar_expression__evaluate(ar_expression_t* expr, ar_data_t* context) {
 **Interface Extension**:
 ```c
 // Before: Simple interface
-ar_string_t* ar_string__create(const char* text);
+ar_string_t* ar_string__create(const char* text);  // EXAMPLE: Hypothetical function
 
 // Evolution 1: Add optional parameters with defaults
-ar_string_t* ar_string__create_with_options(const char* text, ar_string_options_t* options);
+ar_string_t* ar_string__create_with_options(const char* text, ar_string_options_t* options);  // EXAMPLE: Hypothetical function
 
 // Keep old interface as convenience wrapper
-ar_string_t* ar_string__create(const char* text) {
-    return ar_string__create_with_options(text, NULL);  // Use defaults
+ar_string_t* ar_string__create(const char* text) {  // EXAMPLE: Hypothetical function
+    return ar_string__create_with_options(text, NULL);  // Use defaults  // EXAMPLE: Hypothetical function
 }
 ```
 
 **Graceful Replacement**:
 ```c
 // Before: Limited implementation
-bool ar_data__equals(ar_data_t* a, ar_data_t* b);
+bool ar_data__equals(ar_data_t* a, ar_data_t* b);  // EXAMPLE: Hypothetical function
 
 // After: Enhanced implementation that handles edge cases
-bool ar_data__equals(ar_data_t* a, ar_data_t* b) {
+bool ar_data__equals(ar_data_t* a, ar_data_t* b) {  // EXAMPLE: Hypothetical function
     // Enhanced logic that handles NULL, type mismatches, deep comparison
     if (a == NULL && b == NULL) return true;
     if (a == NULL || b == NULL) return false;
@@ -80,19 +80,19 @@ bool ar_data__equals(ar_data_t* a, ar_data_t* b) {
 **Problem**: Functions with version numbers
 ```c
 // BAD: Version proliferation
-void ar_agent__process_message_v1(ar_agent_t* agent, ar_data_t* message);
-void ar_agent__process_message_v2(ar_agent_t* agent, ar_data_t* message, bool async);
-void ar_agent__process_message_v3(ar_agent_t* agent, ar_data_t* message, ar_processing_options_t* opts);
+void ar_agent__process_message_v1(ar_agent_t* agent, ar_data_t* message);  // EXAMPLE: Hypothetical function
+void ar_agent__process_message_v2(ar_agent_t* agent, ar_data_t* message, bool async);  // EXAMPLE: Hypothetical function
+void ar_agent__process_message_v3(ar_agent_t* agent, ar_data_t* message, ar_data_t* opts);  // EXAMPLE: Hypothetical function using real types
 ```
 
 **Solution**: Single evolving interface
 ```c
 // GOOD: One interface that evolves
-void ar_agent__process_message(ar_agent_t* agent, ar_data_t* message, ar_processing_options_t* options);
+void ar_agent__process_message(ar_agent_t* agent, ar_data_t* message, ar_data_t* options);  // EXAMPLE: Hypothetical function using real types
 
 // Previous functionality available through options
-static ar_processing_options_t default_options = { .async = false, .timeout = 0 };
-static ar_processing_options_t async_options = { .async = true, .timeout = 0 };
+static ar_data_t* default_options;  // EXAMPLE: Using real type for options
+static ar_data_t* async_options;    // EXAMPLE: Using real type for options
 ```
 
 ### Algorithm Alternatives
@@ -100,9 +100,9 @@ static ar_processing_options_t async_options = { .async = true, .timeout = 0 };
 **Problem**: Multiple algorithm implementations
 ```c
 // BAD: Parallel sorting algorithms
-void ar_list__sort_simple(ar_list_t* list);
-void ar_list__sort_fast(ar_list_t* list);
-void ar_list__sort_stable(ar_list_t* list);
+void ar_list__sort_simple(ar_list_t* list);  // EXAMPLE: Hypothetical function
+void ar_list__sort_fast(ar_list_t* list);  // EXAMPLE: Hypothetical function
+void ar_list__sort_stable(ar_list_t* list);  // EXAMPLE: Hypothetical function
 ```
 
 **Solution**: Single interface with strategy parameter
@@ -112,13 +112,13 @@ typedef enum {
     AR_SORT_DEFAULT,    // Best general-purpose algorithm
     AR_SORT_STABLE,     // Preserve order of equal elements
     AR_SORT_MEMORY_OPT  // Minimize memory usage
-} ar_sort_algorithm_t;
+} ar_sort_algorithm_t;  // EXAMPLE: Hypothetical type
 
-void ar_list__sort(ar_list_t* list, ar_sort_algorithm_t algorithm);
+void ar_list__sort(ar_list_t* list, ar_sort_algorithm_t algorithm);  // EXAMPLE: Hypothetical function
 
 // Simple version uses default
-void ar_list__sort_default(ar_list_t* list) {
-    ar_list__sort(list, AR_SORT_DEFAULT);
+void ar_list__sort_default(ar_list_t* list) {  // EXAMPLE: Hypothetical function
+    ar_list__sort(list, AR_SORT_DEFAULT);  // EXAMPLE: Hypothetical function
 }
 ```
 
@@ -128,7 +128,7 @@ void ar_list__sort_default(ar_list_t* list) {
 ```c
 // BAD: Temporary parallel implementations during refactoring
 ar_data_t* ar_expression__evaluate(ar_expression_ast_t* ast, ar_data_t* context);
-ar_data_t* ar_expression__evaluate_new(ar_expression_ast_t* ast, ar_data_t* context);
+ar_data_t* ar_expression__evaluate_new(ar_expression_ast_t* ast, ar_data_t* context);  // EXAMPLE: Hypothetical function
 
 // Which one should callers use?
 // Both need to be tested and maintained during transition
@@ -159,20 +159,20 @@ ar_data_t* ar_expression__evaluate(ar_expression_ast_t* ast, ar_data_t* context)
 **Step 1**: Extend existing implementation
 ```c
 // Original
-bool ar_string__equals(ar_string_t* a, ar_string_t* b) {
-    return strcmp(ar_string__get_text(a), ar_string__get_text(b)) == 0;
+bool ar_string__equals(ar_string_t* a, ar_string_t* b) {  // EXAMPLE: Hypothetical function
+    return strcmp(ar_string__get_text(a), ar_string__get_text(b)) == 0;  // EXAMPLE: Hypothetical function
 }
 
 // Enhanced (same interface, better implementation)
-bool ar_string__equals(ar_string_t* a, ar_string_t* b) {
+bool ar_string__equals(ar_string_t* a, ar_string_t* b) {  // EXAMPLE: Hypothetical function
     if (a == b) return true;  // Same object optimization
     if (a == NULL || b == NULL) return false;  // NULL handling
     
-    size_t len_a = ar_string__get_length(a);
-    size_t len_b = ar_string__get_length(b);
+    size_t len_a = ar_string__get_length(a);  // EXAMPLE: Hypothetical function
+    size_t len_b = ar_string__get_length(b);  // EXAMPLE: Hypothetical function
     if (len_a != len_b) return false;  // Length optimization
     
-    return memcmp(ar_string__get_text(a), ar_string__get_text(b), len_a) == 0;
+    return memcmp(ar_string__get_text(a), ar_string__get_text(b), len_a) == 0;  // EXAMPLE: Hypothetical function
 }
 ```
 
@@ -181,9 +181,9 @@ bool ar_string__equals(ar_string_t* a, ar_string_t* b) {
 **Step 1**: Create new interface
 ```c
 // New comprehensive interface
-ar_data_t* ar_expression__evaluate_with_context(
+ar_data_t* ar_expression__evaluate_with_context(  // EXAMPLE: Hypothetical function
     ar_expression_ast_t* ast, 
-    ar_evaluation_context_t* context
+    ar_expression_context_t* context  // Using real type
 );
 ```
 
@@ -191,8 +191,8 @@ ar_data_t* ar_expression__evaluate_with_context(
 ```c
 // Old interface becomes wrapper
 ar_data_t* ar_expression__evaluate(ar_expression_ast_t* ast, ar_data_t* context) {
-    ar_evaluation_context_t* eval_context = ar_evaluation_context__create(context);
-    ar_data_t* result = ar_expression__evaluate_with_context(ast, eval_context);
+    ar_expression_context_t* eval_context = ar_expression_context__create(context);  // EXAMPLE: Using real type
+    ar_data_t* result = ar_expression__evaluate_with_context(ast, eval_context);  // EXAMPLE: Hypothetical function
     ar_evaluation_context__destroy(eval_context);
     return result;
 }
@@ -210,12 +210,12 @@ ar_data_t* ar_expression__evaluate(ar_expression_ast_t* ast, ar_data_t* context)
 **When Old Implementation is Fundamentally Flawed**:
 ```c
 // Before: Inefficient O(n²) implementation
-ar_data_t* ar_list__find_item(ar_list_t* list, ar_data_t* target) {
+ar_data_t* ar_list__find_item(ar_list_t* list, ar_data_t* target) {  // EXAMPLE: Hypothetical function
     // Old inefficient implementation
 }
 
 // After: Efficient O(n) implementation - same interface
-ar_data_t* ar_list__find_item(ar_list_t* list, ar_data_t* target) {
+ar_data_t* ar_list__find_item(ar_list_t* list, ar_data_t* target) {  // EXAMPLE: Hypothetical function
     // New efficient implementation
     // Same interface, completely different algorithm
 }
@@ -231,8 +231,8 @@ ar_data_t* ar_list__find_item(ar_list_t* list, ar_data_t* target) {
 ar_data_t* result = ar_expression__evaluate(ast, context);
 
 // vs. confusing parallel versions
-// ar_data_t* result = ar_expression__evaluate_v2(ast, context, true)?
-// ar_data_t* result = ar_expression__evaluate_advanced(ast, context, &opts)?
+// ar_data_t* result = ar_expression__evaluate_v2(ast, context, true)?  // EXAMPLE: Hypothetical function
+// ar_data_t* result = ar_expression__evaluate_advanced(ast, context, &opts)?  // EXAMPLE: Hypothetical function
 ```
 
 ### Unified Bug Fixes
@@ -294,7 +294,7 @@ ar_data_t* ar_expression__evaluate(ar_expression_ast_t* ast, ar_data_t* context)
 **Good Single Implementation Evolution**:
 ```c
 // ar_semver.h - Single interface that evolved over time
-ar_semver_t* ar_semver__parse(const char* version_string);
+ar_data_t* ar_semver__parse(const char* version_string);  // EXAMPLE: Hypothetical function using real type
 
 // Implementation has been enhanced multiple times:
 // Version 1: Basic parsing
@@ -307,10 +307,10 @@ ar_semver_t* ar_semver__parse(const char* version_string);
 **Poor Parallel Implementation**:
 ```c
 // BAD: Multiple ways to do the same thing
-ar_semver_t* ar_semver__parse_basic(const char* version_string);
-ar_semver_t* ar_semver__parse_with_prerelease(const char* version_string);
-ar_semver_t* ar_semver__parse_full(const char* version_string);
-ar_semver_t* ar_semver__parse_strict(const char* version_string);
+ar_data_t* ar_semver__parse_basic(const char* version_string);  // EXAMPLE: Hypothetical function using real type
+ar_data_t* ar_semver__parse_with_prerelease(const char* version_string);  // EXAMPLE: Hypothetical function using real type
+ar_data_t* ar_semver__parse_full(const char* version_string);  // EXAMPLE: Hypothetical function using real type
+ar_data_t* ar_semver__parse_strict(const char* version_string);  // EXAMPLE: Hypothetical function using real type
 
 // Which one should clients use?
 // All four need testing and maintenance

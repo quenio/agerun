@@ -61,7 +61,7 @@ ar_agent_t* ar_agent__create(const char* method_name, const char* method_version
 }
 
 // In ar_methodology.c  
-ar_method_t* ar_methodology__get(ar_methodology_t* methodology, const char* name, const char* version) {
+ar_method_t* ar_methodology__get(ar_methodology_t* methodology, const char* name, const char* version) {  // EXAMPLE: Hypothetical function
     // Yet again, same validation and construction
     if (name == NULL || version == NULL) {
         return NULL;
@@ -80,21 +80,21 @@ ar_method_t* ar_methodology__get(ar_methodology_t* methodology, const char* name
 // GOOD: Proper domain object for method identification
 
 // ar_method.h
-typedef struct ar_method_id_s ar_method_id_t;
+typedef struct ar_method_id_s ar_method_id_t;  // EXAMPLE: Hypothetical type
 
 // Constructor with validation
-ar_method_id_t* ar_method_id__create(const char* name, const char* version);
-void ar_method_id__destroy(ar_method_id_t* id);
+ar_method_id_t* ar_method_id__create(const char* name, const char* version);  // EXAMPLE: Hypothetical function
+void ar_method_id__destroy(ar_method_id_t* id);  // EXAMPLE: Hypothetical function
 
 // Accessors
-const char* ar_method_id__get_name(const ar_method_id_t* id);
-const char* ar_method_id__get_version(const ar_method_id_t* id);
+const char* ar_method_id__get_name(const ar_method_id_t* id);  // EXAMPLE: Hypothetical function
+const char* ar_method_id__get_version(const ar_method_id_t* id);  // EXAMPLE: Hypothetical function
 
 // Operations
-bool ar_method_id__equals(const ar_method_id_t* a, const ar_method_id_t* b);
-char* ar_method_id__to_string(const ar_method_id_t* id);  // "name@version"
-ar_method_id_t* ar_method_id__from_string(const char* id_string);
-uint32_t ar_method_id__hash(const ar_method_id_t* id);
+bool ar_method_id__equals(const ar_method_id_t* a, const ar_method_id_t* b);  // EXAMPLE: Hypothetical function
+char* ar_method_id__to_string(const ar_method_id_t* id);  // EXAMPLE: Hypothetical function
+ar_method_id_t* ar_method_id__from_string(const char* id_string);  // EXAMPLE: Hypothetical function
+uint32_t ar_method_id__hash(const ar_method_id_t* id);  // EXAMPLE: Hypothetical function
 
 // Validation
 bool ar_method_id__is_valid_name(const char* name);
@@ -108,34 +108,34 @@ struct ar_method_id_s {
     uint32_t hash_code;      // Cached hash
 };
 
-ar_method_id_t* ar_method_id__create(const char* name, const char* version) {
+ar_method_id_t* ar_method_id__create(const char* name, const char* version) {  // EXAMPLE: Hypothetical function
     // Centralized validation
     if (!ar_method_id__is_valid_name(name) || !ar_method_id__is_valid_version(version)) {
         return NULL;
     }
     
-    ar_method_id_t* id = AR__HEAP__MALLOC(sizeof(ar_method_id_t));
-    id->name = ar_string__duplicate(name);
-    id->version = ar_string__duplicate(version);
+    ar_method_id_t* id = AR__HEAP__MALLOC(sizeof(ar_method_id_t));  // EXAMPLE: Hypothetical type
+    id->name = ar_string__duplicate(name);  // EXAMPLE: Hypothetical function
+    id->version = ar_string__duplicate(version);  // EXAMPLE: Hypothetical function
     
     // Pre-compute canonical string and hash
     size_t total_len = strlen(name) + strlen(version) + 2;
     id->canonical_string = AR__HEAP__MALLOC(total_len);
     snprintf(id->canonical_string, total_len, "%s@%s", name, version);
-    id->hash_code = ar_hash__compute_string(id->canonical_string);
+    id->hash_code = ar_hash__compute_string(id->canonical_string);  // EXAMPLE: Hypothetical function
     
     return id;
 }
 
 // Now all modules use the proper type
-bool ar_methodology__register_method(ar_methodology_t* methodology, ar_method_id_t* method_id, const char* content) {
+bool ar_methodology__register_method(ar_methodology_t* methodology, ar_method_id_t* method_id, const char* content) {  // EXAMPLE: Hypothetical function
     // No validation needed - method_id is already validated
     const char* key = ar_method_id__to_string(method_id);
     ar_method_t* method = ar_method__create(method_id, content);
     return ar_map__set(methodology->methods, key, method);
 }
 
-ar_agent_t* ar_agent__create(ar_method_id_t* method_id) {
+ar_agent_t* ar_agent__create(ar_method_id_t* method_id) {  // EXAMPLE: Hypothetical function
     // Type safety - can't pass invalid method identification
     ar_agent_t* agent = AR__HEAP__MALLOC(sizeof(ar_agent_t));
     agent->method_id = method_id;  // Transfer ownership or copy as needed
@@ -162,7 +162,7 @@ typedef struct {
     ar_data_t* memory;
 } ar_agent_t;
 
-bool ar_agent__set_status(ar_agent_t* agent, int new_status) {
+bool ar_agent__set_status(ar_agent_t* agent, int new_status) {  // EXAMPLE: Hypothetical function
     // No type safety - can pass any integer
     if (new_status < 0 || new_status > 4) {  // Magic numbers
         return false;
@@ -177,12 +177,12 @@ bool ar_agent__set_status(ar_agent_t* agent, int new_status) {
     return true;
 }
 
-bool ar_agent__can_receive_messages(ar_agent_t* agent) {
+bool ar_agent__can_receive_messages(ar_agent_t* agent) {  // EXAMPLE: Hypothetical function
     // Repeated status checking logic
     return agent->status == AGENT_STATUS_ACTIVE || agent->status == AGENT_STATUS_PAUSED;
 }
 
-const char* ar_agent__get_status_string(ar_agent_t* agent) {
+const char* ar_agent__get_status_string(ar_agent_t* agent) {  // EXAMPLE: Hypothetical function
     // Manual mapping everywhere
     switch (agent->status) {
         case AGENT_STATUS_INACTIVE: return "inactive";
@@ -207,17 +207,17 @@ typedef enum {
     AR_AGENT_STATUS_PAUSED,
     AR_AGENT_STATUS_ERROR,
     AR_AGENT_STATUS_DESTROYED
-} ar_agent_status_t;
+} ar_agent_status_t;  // EXAMPLE: Hypothetical type
 
 // Status operations
-bool ar_agent_status__can_transition_to(ar_agent_status_t from, ar_agent_status_t to);
-bool ar_agent_status__can_receive_messages(ar_agent_status_t status);
-bool ar_agent_status__can_execute_methods(ar_agent_status_t status);
-const char* ar_agent_status__to_string(ar_agent_status_t status);
-ar_agent_status_t ar_agent_status__from_string(const char* status_string);
+bool ar_agent_status__can_transition_to(ar_agent_status_t from, ar_agent_status_t to);  // EXAMPLE: Hypothetical function
+bool ar_agent_status__can_receive_messages(ar_agent_status_t status);  // EXAMPLE: Hypothetical function
+bool ar_agent_status__can_execute_methods(ar_agent_status_t status);  // EXAMPLE: Hypothetical function
+const char* ar_agent_status__to_string(ar_agent_status_t status);  // EXAMPLE: Hypothetical function
+ar_agent_status_t ar_agent_status__from_string(const char* status_string);  // EXAMPLE: Hypothetical type
 
 // ar_agent.c (hypothetical implementation)
-bool ar_agent_status__can_transition_to(ar_agent_status_t from, ar_agent_status_t to) {
+bool ar_agent_status__can_transition_to(ar_agent_status_t from, ar_agent_status_t to) {  // EXAMPLE: Hypothetical function
     // Centralized transition logic
     switch (from) {
         case AR_AGENT_STATUS_INACTIVE:
@@ -235,19 +235,19 @@ bool ar_agent_status__can_transition_to(ar_agent_status_t from, ar_agent_status_
     }
 }
 
-bool ar_agent_status__can_receive_messages(ar_agent_status_t status) {
+bool ar_agent_status__can_receive_messages(ar_agent_status_t status) {  // EXAMPLE: Hypothetical function
     return status == AR_AGENT_STATUS_ACTIVE || status == AR_AGENT_STATUS_PAUSED;
 }
 
 // In ar_agent.c - simplified with type safety
 typedef struct {
     uint64_t id;
-    ar_agent_status_t status;  // Proper enum type
+    ar_agent_status_t status;  // Proper enum type  // EXAMPLE: Hypothetical type
     ar_method_t* method;
     ar_data_t* memory;
 } ar_agent_t;
 
-bool ar_agent__set_status(ar_agent_t* agent, ar_agent_status_t new_status) {
+bool ar_agent__set_status(ar_agent_t* agent, ar_agent_status_t new_status) {  // EXAMPLE: Hypothetical function
     // Type-safe transition checking
     if (!ar_agent_status__can_transition_to(agent->status, new_status)) {
         return false;
@@ -257,7 +257,7 @@ bool ar_agent__set_status(ar_agent_t* agent, ar_agent_status_t new_status) {
     return true;
 }
 
-bool ar_agent__can_receive_messages(ar_agent_t* agent) {
+bool ar_agent__can_receive_messages(ar_agent_t* agent) {  // EXAMPLE: Hypothetical function
     // Delegate to status type
     return ar_agent_status__can_receive_messages(agent->status);
 }
@@ -269,7 +269,7 @@ bool ar_agent__can_receive_messages(ar_agent_t* agent) {
 // BAD: String-based path manipulation everywhere
 
 // In ar_methodology.c
-bool ar_methodology__save_to_directory(ar_methodology_t* methodology, const char* directory) {
+bool ar_methodology__save_to_directory(ar_methodology_t* methodology, const char* directory) {  // EXAMPLE: Hypothetical function
     // Manual path construction with potential issues
     size_t dir_len = strlen(directory);
     size_t filename_len = strlen("methodology.agerun");
@@ -281,13 +281,13 @@ bool ar_methodology__save_to_directory(ar_methodology_t* methodology, const char
     }
     strcat(full_path, "methodology.agerun");
     
-    bool success = ar_methodology__save_to_file(methodology, full_path);
+    bool success = ar_methodology__save_to_file(methodology, full_path);  // EXAMPLE: Hypothetical function
     AR__HEAP__FREE(full_path);
     return success;
 }
 
 // In ar_agent_store.c
-bool ar_agent_store__save_agent(ar_agent_store_t* store, ar_agent_t* agent, const char* base_directory) {
+bool ar_agent_store__save_agent(ar_data_t* store, ar_agent_t* agent, const char* base_directory) {  // EXAMPLE: Hypothetical function using real type
     // Repeated path construction logic
     uint64_t agent_id = ar_agent__get_id(agent);
     char id_str[32];
@@ -306,7 +306,7 @@ bool ar_agent_store__save_agent(ar_agent_store_t* store, ar_agent_t* agent, cons
     strcat(agent_path, id_str);
     strcat(agent_path, ".agent");
     
-    bool success = ar_agent__save_to_file(agent, agent_path);
+    bool success = ar_agent__save_to_file(agent, agent_path);  // EXAMPLE: Hypothetical function
     AR__HEAP__FREE(agent_path);
     return success;
 }
@@ -322,20 +322,20 @@ typedef struct ar_path_s ar_path_t;
 
 // Construction
 ar_path_t* ar_path__create(const char* path_string);
-ar_path_t* ar_path__create_from_parts(const char** components, size_t count);
+ar_path_t* ar_path__create_from_parts(const char** components, size_t count);  // EXAMPLE: Hypothetical function
 void ar_path__destroy(ar_path_t* path);
 
 // Operations
 ar_path_t* ar_path__join(const ar_path_t* base, const char* component);
-ar_path_t* ar_path__join_multiple(const ar_path_t* base, ...);  // NULL-terminated
-const char* ar_path__to_string(const ar_path_t* path);
+ar_path_t* ar_path__join_multiple(const ar_path_t* base, ...);  // NULL-terminated  // EXAMPLE: Hypothetical function
+const char* ar_path__to_string(const ar_path_t* path);  // EXAMPLE: Hypothetical function
 
 // Query operations
-bool ar_path__is_absolute(const ar_path_t* path);
-bool ar_path__exists(const ar_path_t* path);
+bool ar_path__is_absolute(const ar_path_t* path);  // EXAMPLE: Hypothetical function
+bool ar_path__exists(const ar_path_t* path);  // EXAMPLE: Hypothetical function
 ar_path_t* ar_path__get_parent(const ar_path_t* path);
-const char* ar_path__get_filename(const ar_path_t* path);
-const char* ar_path__get_extension(const ar_path_t* path);
+const char* ar_path__get_filename(const ar_path_t* path);  // EXAMPLE: Hypothetical function
+const char* ar_path__get_extension(const ar_path_t* path);  // EXAMPLE: Hypothetical function
 
 // ar_path.c handles all the complexity
 struct ar_path_s {
@@ -346,22 +346,22 @@ struct ar_path_s {
 
 ar_path_t* ar_path__join(const ar_path_t* base, const char* component) {
     // Handles separator logic, normalization, etc.
-    ar_list_t* new_components = ar_list__copy(base->components);
+    ar_list_t* new_components = ar_list__copy(base->components);  // EXAMPLE: Hypothetical function
     ar_data_t* component_data = ar_data__create_string(component);
-    ar_list__add(new_components, component_data);
+    ar_list__add(new_components, component_data);  // EXAMPLE: Hypothetical function
     
     return _create_from_components(new_components, base->is_absolute);
 }
 
 // Now modules use proper path type
-bool ar_methodology__save_to_directory(ar_methodology_t* methodology, ar_path_t* directory) {
+bool ar_methodology__save_to_directory(ar_methodology_t* methodology, ar_path_t* directory) {  // EXAMPLE: Hypothetical function
     ar_path_t* methodology_path = ar_path__join(directory, "methodology.agerun");
-    bool success = ar_methodology__save_to_path(methodology, methodology_path);
+    bool success = ar_methodology__save_to_path(methodology, methodology_path);  // EXAMPLE: Hypothetical function
     ar_path__destroy(methodology_path);
     return success;
 }
 
-bool ar_agent_store__save_agent(ar_agent_store_t* store, ar_agent_t* agent, ar_path_t* base_directory) {
+bool ar_agent_store__save_agent(ar_data_t* store, ar_agent_t* agent, ar_path_t* base_directory) {  // EXAMPLE: Hypothetical function using real types
     uint64_t agent_id = ar_agent__get_id(agent);
     char id_str[32];
     snprintf(id_str, sizeof(id_str), "%" PRIu64 ".agent", agent_id);
@@ -369,7 +369,7 @@ bool ar_agent_store__save_agent(ar_agent_store_t* store, ar_agent_t* agent, ar_p
     ar_path_t* agents_dir = ar_path__join(base_directory, "agents");
     ar_path_t* agent_path = ar_path__join(agents_dir, id_str);
     
-    bool success = ar_agent__save_to_path(agent, agent_path);
+    bool success = ar_agent__save_to_path(agent, agent_path);  // EXAMPLE: Hypothetical function
     
     ar_path__destroy(agent_path);
     ar_path__destroy(agents_dir);
@@ -406,9 +406,9 @@ grep -r "strlen.*== 0\|== NULL" modules/ | wc -l
 void process_version(const char* version);
 
 // After: Version object
-typedef struct ar_version_s ar_version_t;
-ar_version_t* ar_version__parse(const char* version_string);
-void process_version(ar_version_t* version);
+typedef struct ar_version_s ar_version_t;  // EXAMPLE: Hypothetical type
+ar_version_t* ar_version__parse(const char* version_string);  // EXAMPLE: Hypothetical function
+void process_version(ar_version_t* version);  // EXAMPLE: Hypothetical function
 ```
 
 ### Replace Type Code with Class/Enum
@@ -423,7 +423,7 @@ typedef enum {
     AR_MESSAGE_TYPE_COMMAND,
     AR_MESSAGE_TYPE_QUERY,
     AR_MESSAGE_TYPE_EVENT
-} ar_message_type_t;
+} ar_message_type_t;  // EXAMPLE: Hypothetical type
 ```
 
 ### Replace Array with Object
@@ -432,10 +432,10 @@ typedef enum {
 void draw_rectangle(int coords[4]);  // x, y, width, height
 
 // After: Proper geometric objects
-typedef struct { int x, y; } ar_point_t;
-typedef struct { int width, height; } ar_size_t;
-typedef struct { ar_point_t position; ar_size_t size; } ar_rectangle_t;
-void draw_rectangle(ar_rectangle_t* rect);
+typedef struct { int x, y; } ar_point_t;  // EXAMPLE: Hypothetical type
+typedef struct { int width, height; } ar_size_t;  // EXAMPLE: Hypothetical type
+typedef struct { ar_data_t* position; ar_data_t* size; } ar_rectangle_t;  // EXAMPLE: Hypothetical type
+void draw_rectangle(ar_rectangle_t* rect);  // EXAMPLE: Hypothetical function
 ```
 
 ### Extract Class for Parameter Groups
@@ -449,9 +449,9 @@ typedef struct {
     int port;
     bool use_ssl;
     int timeout_ms;
-} ar_connection_config_t;
+} ar_connection_config_t;  // EXAMPLE: Hypothetical type
 
-void connect(ar_connection_config_t* config);
+void connect(ar_connection_config_t* config);  // EXAMPLE: Hypothetical function
 ```
 
 ## Benefits of Fixing Primitive Obsession
@@ -494,13 +494,13 @@ void connect(ar_connection_config_t* config);
 
 ### Method Identification
 ```c
-typedef struct ar_method_id_s ar_method_id_t;
+typedef struct ar_method_id_s ar_method_id_t;  // EXAMPLE: Hypothetical type
 // Instead of: const char* name, const char* version
 ```
 
 ### Agent Configuration
 ```c
-typedef struct ar_agent_config_s ar_agent_config_t;
+typedef struct ar_agent_config_s ar_agent_config_t;  // EXAMPLE: Hypothetical type
 // Instead of: multiple primitive configuration parameters
 ```
 
@@ -512,13 +512,13 @@ typedef struct ar_path_s ar_path_t;
 
 ### Version Numbers
 ```c
-typedef struct ar_semver_s ar_semver_t;
+typedef struct ar_semver_s ar_semver_t;  // EXAMPLE: Hypothetical type
 // Instead of: const char* version with string comparison
 ```
 
 ### Time Ranges
 ```c
-typedef struct ar_time_range_s ar_time_range_t;
+typedef struct ar_time_range_s ar_time_range_t;  // EXAMPLE: Hypothetical type
 // Instead of: start_time, end_time primitive pairs
 ```
 

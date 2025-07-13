@@ -21,50 +21,50 @@ A Large Class is a class (or in C, a module) that has grown too large and is try
 // BAD: ar_system.c - Trying to do everything (hypothetical bad design)
 
 // File: ar_system.h (overly large interface)
-typedef struct ar_system_s ar_system_t;
+typedef struct ar_system_s ar_system_t;  // BAD: Example of large module
 
 // System lifecycle
-ar_system_t* ar_system__create();
-void ar_system__destroy(ar_system_t* system);
-bool ar_system__initialize(ar_system_t* system);
-void ar_system__shutdown(ar_system_t* system);
+ar_system_t* ar_system__create();  // BAD: Part of overly large interface
+void ar_system__destroy(ar_system_t* system);  // BAD: Part of overly large interface
+bool ar_system__initialize(ar_system_t* system);  // BAD: Part of overly large interface
+void ar_system__shutdown(ar_system_t* system);  // BAD: Part of overly large interface
 
 // Method management
-bool ar_system__register_method(ar_system_t* system, const char* name, const char* version, const char* content);
-ar_method_t* ar_system__get_method(ar_system_t* system, const char* name, const char* version);
-bool ar_system__save_methods_to_file(ar_system_t* system, const char* filename);
-bool ar_system__load_methods_from_file(ar_system_t* system, const char* filename);
+bool ar_system__register_method(ar_system_t* system, const char* name, const char* version, const char* content);  // BAD: Mixed concern
+ar_method_t* ar_system__get_method(ar_system_t* system, const char* name, const char* version);  // BAD: Mixed concern
+bool ar_system__save_methods_to_file(ar_system_t* system, const char* filename);  // BAD: Mixed concern
+bool ar_system__load_methods_from_file(ar_system_t* system, const char* filename);  // BAD: Mixed concern
 
 // Agent management
-ar_agent_t* ar_system__create_agent(ar_system_t* system, const char* method_name, const char* version);
-void ar_system__destroy_agent(ar_system_t* system, uint64_t agent_id);
-ar_agent_t* ar_system__get_agent(ar_system_t* system, uint64_t agent_id);
-bool ar_system__save_agents_to_file(ar_system_t* system, const char* filename);
-bool ar_system__load_agents_from_file(ar_system_t* system, const char* filename);
+ar_agent_t* ar_system__create_agent(ar_system_t* system, const char* method_name, const char* version);  // BAD: Mixed concern
+void ar_system__destroy_agent(ar_system_t* system, uint64_t agent_id);  // BAD: Mixed concern
+ar_agent_t* ar_system__get_agent(ar_system_t* system, uint64_t agent_id);  // BAD: Mixed concern
+bool ar_system__save_agents_to_file(ar_system_t* system, const char* filename);  // BAD: Mixed concern
+bool ar_system__load_agents_from_file(ar_system_t* system, const char* filename);  // BAD: Mixed concern
 
 // Message processing
-void ar_system__send_message(ar_system_t* system, uint64_t from_id, uint64_t to_id, ar_data_t* message);
-bool ar_system__process_next_message(ar_system_t* system);
-size_t ar_system__get_pending_message_count(ar_system_t* system);
+void ar_system__send_message(ar_system_t* system, uint64_t from_id, uint64_t to_id, ar_data_t* message);  // BAD: Mixed concern
+bool ar_system__process_next_message(ar_system_t* system);  // BAD: Mixed concern
+size_t ar_system__get_pending_message_count(ar_system_t* system);  // BAD: Mixed concern
 
 // Instruction execution
-bool ar_system__execute_instruction(ar_system_t* system, const char* instruction);
-bool ar_system__execute_method_content(ar_system_t* system, const char* content, ar_data_t* params);
+bool ar_system__execute_instruction(ar_system_t* system, const char* instruction);  // BAD: Mixed concern
+bool ar_system__execute_method_content(ar_system_t* system, const char* content, ar_data_t* params);  // BAD: Mixed concern
 
 // Configuration
-void ar_system__set_config(ar_system_t* system, const char* key, const char* value);
-const char* ar_system__get_config(ar_system_t* system, const char* key);
-bool ar_system__save_config(ar_system_t* system, const char* filename);
+void ar_system__set_config(ar_system_t* system, const char* key, const char* value);  // BAD: Mixed concern
+const char* ar_system__get_config(ar_system_t* system, const char* key);  // BAD: Mixed concern
+bool ar_system__save_config(ar_system_t* system, const char* filename);  // BAD: Mixed concern
 
 // Logging and debugging
-void ar_system__set_log_level(ar_system_t* system, int level);
-void ar_system__log_message(ar_system_t* system, const char* level, const char* message);
-void ar_system__dump_state(ar_system_t* system, const char* filename);
+void ar_system__set_log_level(ar_system_t* system, int level);  // BAD: Mixed concern
+void ar_system__log_message(ar_system_t* system, const char* level, const char* message);  // BAD: Mixed concern
+void ar_system__dump_state(ar_system_t* system, const char* filename);  // BAD: Mixed concern
 
 // Performance monitoring
-void ar_system__start_profiling(ar_system_t* system);
-void ar_system__stop_profiling(ar_system_t* system);
-ar_data_t* ar_system__get_performance_stats(ar_system_t* system);
+void ar_system__start_profiling(ar_system_t* system);  // BAD: Mixed concern
+void ar_system__stop_profiling(ar_system_t* system);  // BAD: Mixed concern
+ar_data_t* ar_system__get_performance_stats(ar_system_t* system);  // BAD: Mixed concern
 
 // Implementation would be 2000+ lines mixing all concerns
 ```
@@ -75,40 +75,40 @@ ar_data_t* ar_system__get_performance_stats(ar_system_t* system);
 // GOOD: Properly decomposed into focused modules
 
 // ar_system.h - System coordination only
-typedef struct ar_system_s ar_system_t;
+typedef struct ar_system_s ar_system_t;  // EXAMPLE: Good focused module
 
-ar_system_t* ar_system__create();
-void ar_system__destroy(ar_system_t* system);
-bool ar_system__initialize(ar_system_t* system, ar_system_config_t* config);
-void ar_system__shutdown(ar_system_t* system);
+ar_system_t* ar_system__create();  // EXAMPLE: Core functionality only
+void ar_system__destroy(ar_system_t* system);  // EXAMPLE: Core functionality only
+bool ar_system__initialize(ar_system_t* system, ar_system_config_t* config);  // EXAMPLE: Good design (ar_system_config_t is hypothetical)
+void ar_system__shutdown(ar_system_t* system);  // EXAMPLE: Core functionality only
 
 // ar_methodology.h - Method management
-typedef struct ar_methodology_s ar_methodology_t;
+typedef struct ar_methodology_s ar_methodology_t;  // EXAMPLE: Focused module
 
-ar_methodology_t* ar_methodology__create();
-void ar_methodology__destroy(ar_methodology_t* methodology);
+ar_methodology_t* ar_methodology__create();  // EXAMPLE: Focused functionality
+void ar_methodology__destroy(ar_methodology_t* methodology);  // EXAMPLE: Focused functionality
 bool ar_methodology__register_method(ar_methodology_t* methodology, const char* name, const char* version, const char* content);
-ar_method_t* ar_methodology__get_method(ar_methodology_t* methodology, const char* name, const char* version);
-bool ar_methodology__save_to_file(ar_methodology_t* methodology, const char* filename);
-bool ar_methodology__load_from_file(ar_methodology_t* methodology, const char* filename);
+ar_method_t* ar_methodology__get_method(ar_methodology_t* methodology, const char* name, const char* version);  // EXAMPLE: Focused functionality
+bool ar_methodology__save_to_file(ar_methodology_t* methodology, const char* filename);  // EXAMPLE: Focused functionality
+bool ar_methodology__load_from_file(ar_methodology_t* methodology, const char* filename);  // EXAMPLE: Focused functionality
 
 // ar_agency.h - Agent management
-typedef struct ar_agency_s ar_agency_t;
+typedef struct ar_agency_s ar_agency_t;  // EXAMPLE: Focused module
 
-ar_agency_t* ar_agency__create();
-void ar_agency__destroy(ar_agency_t* agency);
-ar_agent_t* ar_agency__create_agent(ar_agency_t* agency, const char* method_name, const char* version);
-void ar_agency__destroy_agent(ar_agency_t* agency, uint64_t agent_id);
-ar_agent_t* ar_agency__get_agent(ar_agency_t* agency, uint64_t agent_id);
+ar_agency_t* ar_agency__create();  // EXAMPLE: Focused functionality
+void ar_agency__destroy(ar_agency_t* agency);  // EXAMPLE: Focused functionality
+ar_agent_t* ar_agency__create_agent(ar_agency_t* agency, const char* method_name, const char* version);  // EXAMPLE: Focused functionality
+void ar_agency__destroy_agent(ar_agency_t* agency, uint64_t agent_id);  // EXAMPLE: Focused functionality
+ar_agent_t* ar_agency__get_agent(ar_agency_t* agency, uint64_t agent_id);  // EXAMPLE: Focused functionality
 
 // ar_event.h - Message processing
-typedef struct ar_messaging_s ar_messaging_t;
+typedef struct ar_messaging_s ar_messaging_t;  // EXAMPLE: Focused module
 
-ar_messaging_t* ar_messaging__create();
-void ar_messaging__destroy(ar_messaging_t* messaging);
-void ar_messaging__send(ar_messaging_t* messaging, uint64_t from_id, uint64_t to_id, ar_data_t* message);
-bool ar_messaging__process_next(ar_messaging_t* messaging);
-size_t ar_messaging__get_pending_count(ar_messaging_t* messaging);
+ar_messaging_t* ar_messaging__create();  // EXAMPLE: Focused functionality
+void ar_messaging__destroy(ar_messaging_t* messaging);  // EXAMPLE: Focused functionality
+void ar_messaging__send(ar_messaging_t* messaging, uint64_t from_id, uint64_t to_id, ar_data_t* message);  // EXAMPLE: Focused functionality
+bool ar_messaging__process_next(ar_messaging_t* messaging);  // EXAMPLE: Focused functionality
+size_t ar_messaging__get_pending_count(ar_messaging_t* messaging);  // EXAMPLE: Focused functionality
 
 // ar_interpreter.h - Instruction execution
 typedef struct ar_interpreter_s ar_interpreter_t;
@@ -118,13 +118,13 @@ void ar_interpreter__destroy(ar_interpreter_t* interpreter);
 bool ar_interpreter__execute_instruction(ar_interpreter_t* interpreter, const char* instruction);
 
 // ar_data.h - Configuration management
-typedef struct ar_config_s ar_config_t;
+typedef struct ar_config_s ar_config_t;  // EXAMPLE: Focused module
 
-ar_config_t* ar_config__create();
-void ar_config__destroy(ar_config_t* config);
-void ar_config__set(ar_config_t* config, const char* key, const char* value);
-const char* ar_config__get(ar_config_t* config, const char* key);
-bool ar_config__save_to_file(ar_config_t* config, const char* filename);
+ar_config_t* ar_config__create();  // EXAMPLE: Focused functionality
+void ar_config__destroy(ar_config_t* config);  // EXAMPLE: Focused functionality
+void ar_config__set(ar_config_t* config, const char* key, const char* value);  // EXAMPLE: Focused functionality
+const char* ar_config__get(ar_config_t* config, const char* key);  // EXAMPLE: Focused functionality
+bool ar_config__save_to_file(ar_config_t* config, const char* filename);  // EXAMPLE: Focused functionality
 ```
 
 ## Detection Guidelines
@@ -160,11 +160,11 @@ bool ar_config__save_to_file(ar_config_t* config, const char* filename);
 ```c
 // Before: ar_agent.c handling all agent types
 typedef struct {
-    ar_agent_type_t type;
+    ar_agent_type_t type;  // EXAMPLE: Hypothetical type
     union {
-        ar_calculator_data_t calculator;
-        ar_router_data_t router;
-        ar_evaluator_data_t evaluator;
+        ar_calculator_data_t calculator;  // EXAMPLE: Hypothetical type
+        ar_router_data_t router;  // EXAMPLE: Hypothetical type
+        ar_evaluator_data_t evaluator;  // EXAMPLE: Hypothetical type
     } specialized_data;
 } ar_agent_t;
 
@@ -178,11 +178,11 @@ typedef struct {
 ### Move Method/Function
 ```c
 // Before: Logging functions mixed in ar_system.c
-void ar_system__log_debug(ar_system_t* system, const char* message);
-void ar_system__log_error(ar_system_t* system, const char* message);
+void ar_system__log_debug(ar_system_t* system, const char* message);  // BAD: Logging mixed in
+void ar_system__log_error(ar_system_t* system, const char* message);  // BAD: Logging mixed in
 
 // After: Moved to dedicated ar_log.c module
-void ar_log__debug(const char* message);
+void ar_log__debug(const char* message);  // EXAMPLE: Focused logging module
 void ar_log__error(const char* message);
 ```
 

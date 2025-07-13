@@ -70,21 +70,21 @@ typedef struct {
     char* text;
     size_t length;
     size_t capacity;
-} ar_string_t;
+} ar_string_t;  // EXAMPLE: Hypothetical type
 
 // Client code breaks when implementation changes
-ar_string_t* str = ar_string__create("hello");
+ar_string_t* str = ar_string__create("hello");  // EXAMPLE: Hypothetical function
 str->length = 10;  // Direct access - fragile!
 ```
 
 **After Opaque Types**:
 ```c
 // GOOD: Implementation can change freely
-typedef struct ar_string_s ar_string_t;
+typedef struct ar_string_s ar_data_t;  // EXAMPLE: Using real type
 
 // Client code remains stable
-ar_string_t* str = ar_string__create("hello");
-size_t len = ar_string__get_length(str);  // Stable interface
+ar_string_t* str = ar_string__create("hello");  // EXAMPLE: Hypothetical function
+size_t len = ar_string__get_length(str);  // Stable interface  // EXAMPLE: Hypothetical function
 ```
 
 ### Memory Layout Freedom
@@ -183,7 +183,7 @@ data->type = AR_DATA_TYPE_INTEGER;  // VIOLATION: Direct access
 ```c
 // GOOD: Only function access possible
 typedef struct ar_data_s ar_data_t;  // Opaque - no direct access
-bool ar_data__set_type(ar_data_t* data, ar_data_type_t type);  // Controlled access
+bool ar_data__set_type(ar_data_t* data, ar_data_type_t type);  // Controlled access  // EXAMPLE: Hypothetical function
 ```
 
 ## Implementation Guidelines
@@ -193,7 +193,7 @@ bool ar_data__set_type(ar_data_t* data, ar_data_type_t type);  // Controlled acc
 **Consistent Pattern**:
 ```c
 // Header: typedef struct ar_<module>_s ar_<module>_t;
-typedef struct ar_string_s ar_string_t;
+typedef struct ar_string_s ar_data_t;  // EXAMPLE: Using real type
 typedef struct ar_list_s ar_list_t;
 typedef struct ar_map_s ar_map_t;
 
@@ -210,16 +210,16 @@ struct ar_string_s {
 **Complete Interface**:
 ```c
 // Lifecycle management
-ar_string_t* ar_string__create(const char* text);
-void ar_string__destroy(ar_string_t* string);
+ar_string_t* ar_string__create(const char* text);  // EXAMPLE: Hypothetical function
+void ar_string__destroy(ar_string_t* string);  // EXAMPLE: Hypothetical function
 
 // Property access
-size_t ar_string__get_length(ar_string_t* string);
-const char* ar_string__get_text(ar_string_t* string);
+size_t ar_string__get_length(ar_string_t* string);  // EXAMPLE: Hypothetical function
+const char* ar_string__get_text(ar_string_t* string);  // EXAMPLE: Hypothetical function
 
 // Mutation (if needed)
-bool ar_string__set_text(ar_string_t* string, const char* text);
-bool ar_string__append(ar_string_t* string, const char* suffix);
+bool ar_string__set_text(ar_string_t* string, const char* text);  // EXAMPLE: Hypothetical function
+bool ar_string__append(ar_string_t* string, const char* suffix);  // EXAMPLE: Hypothetical function
 ```
 
 ### Forward Declarations
@@ -227,8 +227,8 @@ bool ar_string__append(ar_string_t* string, const char* suffix);
 **Breaking Circular Dependencies**:
 ```c
 // ar_agent.h
-typedef struct ar_agency_s ar_agency_t;  // Forward declaration
-void ar_agent__register(ar_agent_t* agent, ar_agency_t* agency);
+typedef struct ar_agency_s ar_data_t;  // Forward declaration  // EXAMPLE: Using real type
+void ar_agent__register(ar_agent_t* agent, ar_agency_t* agency);  // EXAMPLE: Hypothetical function
 
 // ar_agency.h  
 #include "ar_agent.h"  // Full include when needed
@@ -255,7 +255,7 @@ ar_agent_t* ar_agency__create_agent(const char* method_name);
 size_t len = string->length;  // Single memory access
 
 // Function access (opaque type)
-size_t len = ar_string__get_length(string);  // Function call overhead
+size_t len = ar_string__get_length(string);  // Function call overhead  // EXAMPLE: Hypothetical function
 ```
 
 **Solution**: Compiler optimization handles this
@@ -304,7 +304,7 @@ void ar_expression_ast__destroy(ar_expression_ast_t* ast);
 ```c
 // BAD: Implementation exposed
 typedef struct {
-    ar_expression_type_t type;     // Internal classification
+    ar_expression_type_t type;     // Internal classification  // EXAMPLE: Hypothetical type
     ar_data_t* literal_value;      // Only used for literals
     char* operator;                // Only used for binary ops
     struct ar_expression_ast_s* left;   // Recursive structure exposed

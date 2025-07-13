@@ -26,7 +26,7 @@ const char* ar_method__get_name(ar_method_t* method);
 const char* ar_method__get_version(ar_method_t* method);
 
 // Evaluation varies by method type (family variation point)
-ar_data_t* ar_method__evaluate(ar_method_t* method, ar_data_t* params, ar_data_t* memory);
+ar_data_t* ar_method__evaluate(ar_method_t* method, ar_data_t* params, ar_data_t* memory);  // EXAMPLE: Hypothetical function
 ```
 
 **Family Members Share Common Design**:
@@ -60,11 +60,11 @@ ar_agent_t* ar_agent__create(const char* method_name, const char* version);
 void ar_agent__destroy(ar_agent_t* agent);
 
 // Common communication protocol (same for all family members)
-void ar_agent__send_message(ar_agent_t* agent, ar_data_t* message);
-bool ar_agent__has_pending_messages(ar_agent_t* agent);
+void ar_agent__send_message(ar_agent_t* agent, ar_data_t* message);  // EXAMPLE: Hypothetical function
+bool ar_agent__has_pending_messages(ar_agent_t* agent);  // EXAMPLE: Hypothetical function
 
 // Behavior varies by method (family variation point)
-ar_data_t* ar_agent__process_message(ar_agent_t* agent, ar_data_t* message);
+ar_data_t* ar_agent__process_message(ar_agent_t* agent, ar_data_t* message);  // EXAMPLE: Hypothetical function
 ```
 
 **Family Variation Through Method Composition**:
@@ -82,32 +82,32 @@ ar_agent_t* evaluator_agent = ar_agent__create("grade-evaluator", "1.0.0");
 **Common Instruction Infrastructure**:
 ```c
 // Shared instruction interface
-typedef struct ar_instruction_s ar_instruction_t;
+typedef struct ar_instruction_ast_s ar_instruction_ast_t;  // Using real type
 
 // Common parsing framework (shared by family)
-ar_instruction_t* ar_instruction__parse(const char* source);
-void ar_instruction__destroy(ar_instruction_t* instruction);
+ar_instruction_ast_t* ar_instruction__parse(const char* source);  // EXAMPLE: Hypothetical function using real type
+void ar_instruction__destroy(ar_instruction_t* instruction);  // EXAMPLE: Hypothetical function
 
 // Common execution framework (shared by family)
-bool ar_instruction__execute(ar_instruction_t* instruction, ar_data_t* context);
+bool ar_instruction__execute(ar_instruction_t* instruction, ar_data_t* context);  // EXAMPLE: Hypothetical function
 ```
 
 **Family Members with Specialized Behavior**:
 ```c
 // Family member: Assignment instructions
 // var := value
-ar_assignment_instruction_t* ar_assignment_instruction__parse(const char* source);
-bool ar_assignment_instruction__execute(ar_assignment_instruction_t* inst, ar_data_t* context);
+ar_assignment_instruction_evaluator_t* ar_assignment_instruction__parse(const char* source);  // EXAMPLE: Using real type
+bool ar_assignment_instruction__execute(ar_assignment_instruction_evaluator_t* inst, ar_data_t* context);  // EXAMPLE: Using real type
 
 // Family member: Send instructions  
 // send(agent_id, message)
-ar_send_instruction_t* ar_send_instruction__parse(const char* source);
-bool ar_send_instruction__execute(ar_send_instruction_t* inst, ar_data_t* context);
+ar_send_instruction_evaluator_t* ar_send_instruction__parse(const char* source);  // EXAMPLE: Using real type
+bool ar_send_instruction__execute(ar_send_instruction_evaluator_t* inst, ar_data_t* context);  // EXAMPLE: Using real type
 
 // Family member: Method instructions
 // method("name", "version", content)
-ar_method_instruction_t* ar_method_instruction__parse(const char* source);
-bool ar_method_instruction__execute(ar_method_instruction_t* inst, ar_data_t* context);
+ar_method_instruction_evaluator_t* ar_method_instruction__parse(const char* source);  // EXAMPLE: Using real type
+bool ar_method_instruction__execute(ar_method_instruction_evaluator_t* inst, ar_data_t* context);  // EXAMPLE: Using real type
 ```
 
 ## Family Design Strategies
@@ -132,15 +132,15 @@ ar_data_type_t ar_data__get_type(ar_data_t* data);
 ```c
 // String family operations
 const char* ar_data__get_string(ar_data_t* data);
-ar_data_t* ar_data__string_concat(ar_data_t* a, ar_data_t* b);
+ar_data_t* ar_data__string_concat(ar_data_t* a, ar_data_t* b);  // EXAMPLE: Hypothetical function
 
 // List family operations  
-size_t ar_data__list_get_count(ar_data_t* list);
-void ar_data__list_add(ar_data_t* list, ar_data_t* item);
+size_t ar_data__list_get_count(ar_data_t* list);  // EXAMPLE: Hypothetical function
+void ar_data__list_add(ar_data_t* list, ar_data_t* item);  // EXAMPLE: Hypothetical function
 
 // Map family operations
-ar_data_t* ar_data__map_get(ar_data_t* map, const char* key);
-bool ar_data__map_set(ar_data_t* map, const char* key, ar_data_t* value);
+ar_data_t* ar_data__map_get(ar_data_t* map, const char* key);  // EXAMPLE: Hypothetical function
+bool ar_data__map_set(ar_data_t* map, const char* key, ar_data_t* value);  // EXAMPLE: Hypothetical function
 ```
 
 ### Versioning as Family Management
@@ -161,21 +161,21 @@ ar_method_t* ar_methodology__get_method(const char* name, const char* version);
 **Runtime Configuration as Family Variation**:
 ```c
 // Development family member
-ar_system_config_t dev_config = {
+ar_system_config_t dev_config = {  // EXAMPLE: Hypothetical type
     .debug_mode = true,
     .memory_tracking = true,
     .performance_logging = false
 };
 
 // Production family member  
-ar_system_config_t prod_config = {
+ar_system_config_t prod_config = {  // EXAMPLE: Hypothetical type
     .debug_mode = false,
     .memory_tracking = false,
     .performance_logging = true
 };
 
 // Same system code, different configuration family member
-ar_system_t* system = ar_system__create(&dev_config);
+ar_system_t* system = ar_system__create(&dev_config);  // EXAMPLE: Hypothetical function
 ```
 
 ## Benefits of Program Families
@@ -234,9 +234,9 @@ ar_data_t* ar_method_evaluator__evaluate(
 **Problem**: Creating variants without family design
 ```c
 // BAD: Ad-hoc variations
-ar_data_t* ar_calculator__add_integers(int a, int b);
-ar_data_t* ar_calculator__add_floats(float a, float b);
-ar_data_t* ar_calculator__add_strings(char* a, char* b);
+ar_data_t* ar_calculator__add_integers(int a, int b);  // EXAMPLE: Hypothetical function
+ar_data_t* ar_calculator__add_floats(float a, float b);  // EXAMPLE: Hypothetical function
+ar_data_t* ar_calculator__add_strings(char* a, char* b);  // EXAMPLE: Hypothetical function
 
 // Each variant implemented separately
 // No shared infrastructure
@@ -246,7 +246,7 @@ ar_data_t* ar_calculator__add_strings(char* a, char* b);
 **Solution**: Family-based design
 ```c
 // GOOD: Family approach with shared infrastructure
-ar_data_t* ar_calculator__add(ar_data_t* a, ar_data_t* b);
+ar_data_t* ar_calculator__add(ar_data_t* a, ar_data_t* b);  // EXAMPLE: Hypothetical function
 
 // Single implementation handles all family members
 // Type checking and conversion handled systematically
@@ -259,14 +259,14 @@ ar_data_t* ar_calculator__add(ar_data_t* a, ar_data_t* b);
 ```c
 // BAD: Pseudo-inheritance approach
 typedef struct {
-    ar_agent_base_t base;        // "Base class" data
-    calculator_specific_t calc;   // "Derived class" data
-} ar_calculator_agent_t;
+    ar_agent_base_t base;        // "Base class" data  // EXAMPLE: Hypothetical type
+    calculator_specific_t calc;   // "Derived class" data  // EXAMPLE: Hypothetical type
+} ar_calculator_agent_t;  // EXAMPLE: Hypothetical type
 
 typedef struct {
-    ar_agent_base_t base;        // Duplicated "base" data
-    router_specific_t router;     // "Derived class" data
-} ar_router_agent_t;
+    ar_agent_base_t base;        // Duplicated "base" data  // EXAMPLE: Hypothetical type
+    router_specific_t router;     // "Derived class" data  // EXAMPLE: Hypothetical type
+} ar_router_agent_t;  // EXAMPLE: Hypothetical type
 ```
 
 **Solution**: Composition-based family design
@@ -364,20 +364,20 @@ methods/file-processor-1.0.0.method
 // Common: Parsing, execution framework, error handling
 // Variable: Specific instruction semantics
 
-ar_instruction_t* assignment = ar_instruction__parse("var := 42");
-ar_instruction_t* method_call = ar_instruction__parse("method(\"calc\", \"1.0\", content)");
-ar_instruction_t* send_msg = ar_instruction__parse("send(123, message)");
+ar_instruction_ast_t* assignment = ar_instruction__parse("var := 42");  // EXAMPLE: Using real type
+ar_instruction_ast_t* method_call = ar_instruction__parse("method(\"calc\", \"1.0\", content)");  // EXAMPLE: Using real type
+ar_instruction_ast_t* send_msg = ar_instruction__parse("send(123, message)");  // EXAMPLE: Using real type
 
 // All use same execution interface
-bool success1 = ar_instruction__execute(assignment, context);
-bool success2 = ar_instruction__execute(method_call, context);
-bool success3 = ar_instruction__execute(send_msg, context);
+bool success1 = ar_instruction__execute(assignment, context);  // EXAMPLE: Hypothetical function
+bool success2 = ar_instruction__execute(method_call, context);  // EXAMPLE: Hypothetical function
+bool success3 = ar_instruction__execute(send_msg, context);  // EXAMPLE: Hypothetical function
 ```
 
 **Poor Ad-Hoc Variant Design**:
 ```c
 // BAD: No family design, ad-hoc variants
-bool ar_assignment__execute(char* source, ar_data_t* context);
+bool ar_assignment__execute(char* source, ar_data_t* context);  // EXAMPLE: Hypothetical function
 int ar_method_creator__run(char* name, char* version, char* content);
 void ar_message_sender__process(uint64_t id, ar_data_t* msg, ar_data_t* ctx);
 

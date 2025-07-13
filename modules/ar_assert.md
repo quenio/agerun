@@ -146,7 +146,7 @@ In release builds (`DEBUG` not defined), these macros expand to `((void)0)`, whi
 For Zig modules, equivalent functions are provided that follow the same naming convention and performance characteristics:
 
 ```zig
-pub inline fn ar_assert__assert(condition: bool, comptime message: []const u8) void {
+pub inline fn ar_assert__assert(condition: bool, comptime message: []const u8) void {  // EXAMPLE: Zig implementation
     if (builtin.mode == .Debug or builtin.mode == .ReleaseSafe) {
         if (!condition) {
             std.debug.panic("Assertion failed: {s}", .{message});

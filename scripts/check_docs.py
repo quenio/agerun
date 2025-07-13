@@ -1,7 +1,31 @@
 #!/usr/bin/env python3
 """
 Documentation validation script for AgeRun
-Checks file references, module names, and function/type consistency
+
+Requirements:
+1. ALL documentation must use real types and functions - no hypothetical examples
+2. ALL markdown files are checked (except TODO.md and CHANGELOG.md)
+3. NO exemptions for any directories - kb articles, module docs, etc. all follow same rules
+4. Code examples must reference actual functions and types that exist in the codebase
+5. When showing compile-time errors intentionally, mark with ERROR comment on same line
+6. When using hypothetical examples for teaching, mark with EXAMPLE comment on same line
+7. When showing bad design or anti-patterns, mark with BAD comment on same line
+
+What this script validates:
+- File references: Ensures referenced files (ar_*.c, ar_*.h) actually exist
+- Module names: Verifies that backticked module names correspond to real modules
+- Function references: Checks that all ar_*__* function calls exist in source files (.h and .c)
+- Type references: Validates that all *_t types exist in source files (including implementation types)
+- Both inline backticked references and code block contents are checked
+
+To mark intentional non-existent functions/types in documentation:
+    ar_fake_function();  // ERROR: This shows what happens with undefined functions
+    fake_type_t *ptr;    /* ERROR: Example of incorrect type usage */
+    ar_example_t *ex;    // EXAMPLE: Hypothetical type for demonstration
+    ar_demo__func();     /* EXAMPLE: Teaching example, not real function */
+    ar_bloated__api();   // BAD: Example of poor API design
+    ar_debug__print();   /* BAD: Debug function that shouldn't be public */
+Lines with ERROR, EXAMPLE, or BAD comments are excluded from validation.
 """
 
 import os
@@ -159,14 +183,16 @@ def check_function_and_type_references(doc_files):
     """Check function and type references in documentation"""
     print("\nChecking function and type references...", end='', flush=True)
     
-    # Extract all function names and types from headers
+    # Extract all function names and types from headers AND implementation files
     all_functions = set()
     all_types = set()
     
     header_files = list(Path("modules").glob("*.h"))
+    c_files = list(Path("modules").glob("*.c"))
+    all_source_files = header_files + c_files
     
-    if not header_files:
-        print("Function/type check: No header files found ⚠️")
+    if not all_source_files:
+        print("Function/type check: No source files found ⚠️")
         return 0
     
     # Patterns for extracting definitions
@@ -175,8 +201,8 @@ def check_function_and_type_references(doc_files):
     enum_type_pattern = re.compile(r'^\s*}\s*([a-zA-Z0-9_]+)\s*;', re.MULTILINE)
     simple_typedef_pattern = re.compile(r'^typedef\s+\w+\s+(\w+);', re.MULTILINE)
     
-    for header in header_files:
-        with open(header, 'r', encoding='utf-8') as f:
+    for source_file in all_source_files:
+        with open(source_file, 'r', encoding='utf-8') as f:
             content = f.read()
         
         # Extract functions
@@ -227,16 +253,26 @@ def check_function_and_type_references(doc_files):
                 "(should be ar_module__function)"
             )
         
-        # Look for function references in backticks
-        func_ref_pattern = re.compile(r'`(ar_[a-zA-Z0-9]+__[a-zA-Z0-9_]+)(?:\(\))?`')
-        function_refs = set(func_ref_pattern.findall(content))
+        # Split content into lines to check for error markers
+        lines = content.split('\n')
+        function_refs = set()
         
-        # Also look for function references in code (without backticks)
-        # This catches functions in code blocks
-        # Only check code blocks in module documentation, not in kb articles
-        if not doc.startswith('./kb/'):
-            code_func_pattern = re.compile(r'\b(ar_[a-zA-Z0-9]+__[a-zA-Z0-9_]+)\s*\(')
-            function_refs.update(code_func_pattern.findall(content))
+        # Look for function references both in backticks and code
+        for i, line in enumerate(lines):
+            # Skip lines marked as intentional errors, examples, or bad code
+            if ('// ERROR:' in line or '/* ERROR:' in line or 
+                '// EXAMPLE:' in line or '/* EXAMPLE:' in line or
+                '// BAD:' in line or '/* BAD:' in line):
+                continue
+            
+            # Find backticked function references
+            backtick_func_pattern = re.compile(r'`(ar_[a-zA-Z0-9]+__[a-zA-Z0-9_]+)(?:\(\))?`')
+            backtick_matches = backtick_func_pattern.findall(line)
+            function_refs.update(backtick_matches)
+            
+            # Find function references in code (without backticks)
+            code_func_matches = re.findall(r'\b(ar_[a-zA-Z0-9]+__[a-zA-Z0-9_]+)\s*\(', line)
+            function_refs.update(code_func_matches)
         
         for func_ref in function_refs:
             if func_ref not in all_functions:
@@ -245,30 +281,32 @@ def check_function_and_type_references(doc_files):
                     f"  - {doc} references non-existent function '{func_ref}'"
                 )
         
-        # Look for type references in backticks
-        # Match pattern similar to shell script: `word_t` followed by non-letter or end
-        # This pattern matches what grep -Eo would match
-        type_ref_pattern = re.compile(r'`([a-zA-Z][a-zA-Z0-9_]*_t)(?:[^a-zA-Z]|$)')
-        matches = type_ref_pattern.findall(content)
-        # Extract type names, mimicking sed behavior
+        # Look for type references - check line by line to respect error markers
         type_refs = set()
-        for match in matches:
-            # Remove backtick and anything after the type name
-            type_name = match.split('*')[0].strip()
-            type_refs.add(type_name)
         
-        # Also look for capitalized types
-        cap_type_pattern = re.compile(r'`([A-Z][a-zA-Z0-9_]*)`')
-        cap_types = set(cap_type_pattern.findall(content))
-        type_refs.update(cap_types)
-        
-        # Also look for type references in code (without backticks)
-        # This catches types in code blocks, including with pointers
-        # Only check code blocks in module documentation, not in kb articles
-        if not doc.startswith('./kb/'):
-            code_type_pattern = re.compile(r'\b([a-zA-Z][a-zA-Z0-9_]*_t)\s*\*?\s*\b')
-            code_types = code_type_pattern.findall(content)
-            for ct in code_types:
+        for i, line in enumerate(lines):
+            # Skip lines marked as intentional errors, examples, or bad code
+            if ('// ERROR:' in line or '/* ERROR:' in line or 
+                '// EXAMPLE:' in line or '/* EXAMPLE:' in line or
+                '// BAD:' in line or '/* BAD:' in line):
+                continue
+            
+            # Find backticked type references
+            type_ref_pattern = re.compile(r'`([a-zA-Z][a-zA-Z0-9_]*_t)(?:[^a-zA-Z]|$)')
+            backtick_type_matches = type_ref_pattern.findall(line)
+            for match in backtick_type_matches:
+                # Remove anything after the type name
+                type_name = match.split('*')[0].strip()
+                type_refs.add(type_name)
+            
+            # Find capitalized types in backticks
+            cap_type_pattern = re.compile(r'`([A-Z][a-zA-Z0-9_]*)`')
+            cap_types = cap_type_pattern.findall(line)
+            type_refs.update(cap_types)
+            
+            # Find type references in code (without backticks)
+            code_type_matches = re.findall(r'\b([a-zA-Z][a-zA-Z0-9_]*_t)\s*\*?\s*\b', line)
+            for ct in code_type_matches:
                 type_refs.add(ct)
         
         for type_ref in type_refs:
