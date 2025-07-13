@@ -1,4 +1,4 @@
-#include "ar_destroy_method_instruction_parser.h"
+#include "ar_deprecate_instruction_parser.h"
 #include "ar_instruction_ast.h"
 #include "ar_heap.h"
 #include "ar_expression_parser.h"
@@ -12,17 +12,17 @@
 /**
  * Internal parser structure.
  */
-struct ar_destroy_method_instruction_parser_s {
+struct ar_deprecate_instruction_parser_s {
     ar_log_t *ref_log;         /* Log instance for error reporting (borrowed) */
 };
 
 /**
- * Creates a new destroy method instruction parser.
+ * Creates a new deprecate instruction parser.
  */
-ar_destroy_method_instruction_parser_t* ar_destroy_method_instruction_parser__create(ar_log_t *ref_log) {
-    ar_destroy_method_instruction_parser_t *own_parser = AR__HEAP__MALLOC(
-        sizeof(ar_destroy_method_instruction_parser_t),
-        "destroy method instruction parser"
+ar_deprecate_instruction_parser_t* ar_deprecate_instruction_parser__create(ar_log_t *ref_log) {
+    ar_deprecate_instruction_parser_t *own_parser = AR__HEAP__MALLOC(
+        sizeof(ar_deprecate_instruction_parser_t),
+        "deprecate instruction parser"
     );
     
     if (own_parser == NULL) {
@@ -35,9 +35,9 @@ ar_destroy_method_instruction_parser_t* ar_destroy_method_instruction_parser__cr
 }
 
 /**
- * Destroys a destroy method instruction parser.
+ * Destroys a deprecate instruction parser.
  */
-void ar_destroy_method_instruction_parser__destroy(ar_destroy_method_instruction_parser_t *own_parser) {
+void ar_deprecate_instruction_parser__destroy(ar_deprecate_instruction_parser_t *own_parser) {
     if (own_parser == NULL) {
         return;
     }
@@ -48,7 +48,7 @@ void ar_destroy_method_instruction_parser__destroy(ar_destroy_method_instruction
 /**
  * Internal: Log error message with position.
  */
-static void _log_error(ar_destroy_method_instruction_parser_t *mut_parser, const char *error, size_t position) {
+static void _log_error(ar_deprecate_instruction_parser_t *mut_parser, const char *error, size_t position) {
     if (!mut_parser) {
         return;
     }
@@ -149,7 +149,7 @@ static void _cleanup_arg_asts(ar_list_t *arg_asts) {
 /**
  * Internal: Parse argument strings into expression ASTs and return as a list.
  */
-static ar_list_t* _parse_arguments_to_asts(ar_destroy_method_instruction_parser_t *mut_parser, 
+static ar_list_t* _parse_arguments_to_asts(ar_deprecate_instruction_parser_t *mut_parser, 
                                         char **ref_args, 
                                         size_t arg_count,
                                         size_t error_offset) {
@@ -192,10 +192,10 @@ static ar_list_t* _parse_arguments_to_asts(ar_destroy_method_instruction_parser_
 }
 
 /**
- * Parses a destroy method instruction.
+ * Parses a deprecate instruction.
  */
-ar_instruction_ast_t* ar_destroy_method_instruction_parser__parse(
-    ar_destroy_method_instruction_parser_t *mut_parser,
+ar_instruction_ast_t* ar_deprecate_instruction_parser__parse(
+    ar_deprecate_instruction_parser_t *mut_parser,
     const char *ref_instruction,
     const char *ref_result_path
 ) {
@@ -219,19 +219,19 @@ ar_instruction_ast_t* ar_destroy_method_instruction_parser__parse(
         }
     }
     
-    /* Check for "destroy" */
-    if (strncmp(ref_instruction + pos, "destroy", 7) != 0) {
-        _log_error(mut_parser, "Expected 'destroy' function", pos);
+    /* Check for "deprecate" */
+    if (strncmp(ref_instruction + pos, "deprecate", 9) != 0) {
+        _log_error(mut_parser, "Expected 'deprecate' function", pos);
         return NULL;
     }
-    pos += 7;
+    pos += 9;
     
     /* Skip whitespace */
     pos = _skip_whitespace(ref_instruction, pos);
     
     /* Expect opening parenthesis */
     if (ref_instruction[pos] != '(') {
-        _log_error(mut_parser, "Expected '(' after 'destroy'", pos);
+        _log_error(mut_parser, "Expected '(' after 'deprecate'", pos);
         return NULL;
     }
     pos++;
@@ -261,7 +261,7 @@ ar_instruction_ast_t* ar_destroy_method_instruction_parser__parse(
     /* Create AST node */
     const char *const_args[] = { arg1, arg2 };
     ar_instruction_ast_t *own_ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD, "destroy", const_args, 2, ref_result_path
+        AR_INSTRUCTION_AST_TYPE__DEPRECATE, "deprecate", const_args, 2, ref_result_path
     );
     
     if (!own_ast) {
@@ -298,8 +298,8 @@ ar_instruction_ast_t* ar_destroy_method_instruction_parser__parse(
  * Gets the last error message from the parser.
  * DEPRECATED: This function always returns NULL. Use ar_log for error reporting.
  */
-const char* ar_destroy_method_instruction_parser__get_error(
-    const ar_destroy_method_instruction_parser_t *ref_parser
+const char* ar_deprecate_instruction_parser__get_error(
+    const ar_deprecate_instruction_parser_t *ref_parser
 ) {
     (void)ref_parser; // Suppress unused parameter warning
     return NULL;
@@ -309,8 +309,8 @@ const char* ar_destroy_method_instruction_parser__get_error(
  * Gets the position of the last error.
  * DEPRECATED: This function always returns 0. Use ar_log for error reporting.
  */
-size_t ar_destroy_method_instruction_parser__get_error_position(
-    const ar_destroy_method_instruction_parser_t *ref_parser
+size_t ar_deprecate_instruction_parser__get_error_position(
+    const ar_deprecate_instruction_parser_t *ref_parser
 ) {
     (void)ref_parser; // Suppress unused parameter warning
     return 0;

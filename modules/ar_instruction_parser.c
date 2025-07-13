@@ -16,7 +16,7 @@
 #include "ar_compile_instruction_parser.h"
 #include "ar_create_instruction_parser.h"
 #include "ar_destroy_agent_instruction_parser.h"
-#include "ar_destroy_method_instruction_parser.h"
+#include "ar_deprecate_instruction_parser.h"
 
 /**
  * Opaque parser structure.
@@ -33,7 +33,7 @@ struct ar_instruction_parser_s {
     ar_compile_instruction_parser_t *own_method_parser;
     ar_create_instruction_parser_t *own_create_parser;
     ar_destroy_agent_instruction_parser_t *own_destroy_agent_parser;
-    ar_destroy_method_instruction_parser_t *own_destroy_method_parser;
+    ar_deprecate_instruction_parser_t *own_deprecate_parser;
 };
 
 /**
@@ -68,8 +68,8 @@ static void _destroy_specialized_parsers(ar_instruction_parser_t *mut_parser) {
     if (mut_parser->own_destroy_agent_parser) {
         ar_destroy_agent_instruction_parser__destroy(mut_parser->own_destroy_agent_parser);
     }
-    if (mut_parser->own_destroy_method_parser) {
-        ar_destroy_method_instruction_parser__destroy(mut_parser->own_destroy_method_parser);
+    if (mut_parser->own_deprecate_parser) {
+        ar_deprecate_instruction_parser__destroy(mut_parser->own_deprecate_parser);
     }
 }
 
@@ -137,8 +137,8 @@ ar_instruction_parser_t* ar_instruction_parser__create(ar_log_t *ref_log) {
     }
     
     // Create destroy method parser
-    own_parser->own_destroy_method_parser = ar_destroy_method_instruction_parser__create(ref_log);
-    if (!own_parser->own_destroy_method_parser) {
+    own_parser->own_deprecate_parser = ar_deprecate_instruction_parser__create(ref_log);
+    if (!own_parser->own_deprecate_parser) {
         goto error;
     }
     
@@ -289,21 +289,21 @@ static ar_instruction_ast_t* _dispatch_function(ar_instruction_parser_t *mut_par
         return own_ast;
     }
     
-    // Check for destroy
-    if (func_len == 7 && strncmp(func_name, "destroy", 7) == 0) {
-        // Try destroy method first
-        ar_instruction_ast_t *own_ast = ar_destroy_method_instruction_parser__parse(
-            mut_parser->own_destroy_method_parser,
+    // Check for deprecate
+    if (func_len == 9 && strncmp(func_name, "deprecate", 9) == 0) {
+        ar_instruction_ast_t *own_ast = ar_deprecate_instruction_parser__parse(
+            mut_parser->own_deprecate_parser,
             ref_instruction,
             own_result_path
         );
         
-        if (own_ast) {
-            return own_ast;
-        }
-        
-        // Clear error and try destroy agent
-            own_ast = ar_destroy_agent_instruction_parser__parse(
+        /* Error already logged by deprecate parser to shared log if parsing failed */
+        return own_ast;
+    }
+    
+    // Check for destroy (only destroy agent now)
+    if (func_len == 7 && strncmp(func_name, "destroy", 7) == 0) {
+        ar_instruction_ast_t *own_ast = ar_destroy_agent_instruction_parser__parse(
             mut_parser->own_destroy_agent_parser,
             ref_instruction,
             own_result_path

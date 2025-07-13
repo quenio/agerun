@@ -350,7 +350,7 @@ ar_instruction_evaluator
 │       ├──c──> ar_expression_ast
 │       ├──c──> ar_agency
 │       └──c──> ar_heap (Zig)
-├──c──> ar_destroy_method_instruction_evaluator
+├──c──> ar_deprecate_instruction_evaluator
 │       ├──h──> ar_expression_evaluator
 │       ├──h──> ar_instruction_ast
 │       ├──h──> ar_data
@@ -1142,9 +1142,9 @@ The [destroy agent instruction evaluator module](ar_destroy_agent_instruction_ev
 - **Result Storage**: Stores success/failure result when assignment specified
 - **Instantiable Design**: Follows instantiable pattern with create/destroy lifecycle
 
-#### Destroy Compile Instruction Evaluator Module (`ar_destroy_method_instruction_evaluator`)
+#### Deprecate Instruction Evaluator Module (`ar_deprecate_instruction_evaluator`)
 
-The [destroy compile instruction evaluator module](ar_destroy_method_instruction_evaluator.md) handles method destruction:
+The [deprecate instruction evaluator module](ar_deprecate_instruction_evaluator.md) handles method deprecation:
 - **Method Destruction**: Unregisters methods and destroys associated agents
 - **Agent Lifecycle**: Sends `__sleep__` messages to agents before destruction
 - **Result Storage**: Stores success/failure result when assignment specified
@@ -1281,10 +1281,10 @@ The [destroy agent instruction parser module](ar_destroy_agent_instruction_parse
 - **Return Value**: Destroy operations return 1 (true) on success, 0 (false) on failure
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
-#### Destroy Compile Instruction Parser Module (`ar_destroy_method_instruction_parser`)
+#### Deprecate Instruction Parser Module (`ar_deprecate_instruction_parser`)
 
-The [destroy compile instruction parser module](ar_destroy_method_instruction_parser.md) handles parsing of method destruction:
-- **Two Arguments**: Parses `destroy("method_name", "version")` format for method removal
+The [deprecate instruction parser module](ar_deprecate_instruction_parser.md) handles parsing of method deprecation:
+- **Two Arguments**: Parses `deprecate("method_name", "version")` format for method deprecation
 - **String Arguments**: Both arguments must be quoted strings in evaluator validation
 - **Version Format**: Accepts semantic version strings (e.g., "1.0.0")
 - **Optional Assignment**: Supports `memory.result := destroy(...)` syntax

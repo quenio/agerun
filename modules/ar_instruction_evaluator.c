@@ -13,7 +13,7 @@
 #include "ar_compile_instruction_evaluator.h"
 #include "ar_create_instruction_evaluator.h"
 #include "ar_destroy_agent_instruction_evaluator.h"
-#include "ar_destroy_method_instruction_evaluator.h"
+#include "ar_deprecate_instruction_evaluator.h"
 #include "ar_list.h"
 #include "ar_frame.h"
 #include <assert.h>
@@ -37,7 +37,7 @@ struct ar_instruction_evaluator_s {
     ar_compile_instruction_evaluator_t *own_method_evaluator;  /* Compile evaluator instance (owned) */
     ar_create_instruction_evaluator_t *own_create_evaluator;  /* Create evaluator instance (owned) */
     ar_destroy_agent_instruction_evaluator_t *own_destroy_agent_evaluator;  /* Destroy agent evaluator instance (owned) */
-    ar_destroy_method_instruction_evaluator_t *own_destroy_method_evaluator;  /* Destroy method evaluator instance (owned) */
+    ar_deprecate_instruction_evaluator_t *own_deprecate_evaluator;  /* Deprecate evaluator instance (owned) */
 };
 
 /**
@@ -170,11 +170,11 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
     }
     
     // Create destroy method evaluator instance (now uses frame-based pattern)
-    evaluator->own_destroy_method_evaluator = ar_destroy_method_instruction_evaluator__create(
+    evaluator->own_deprecate_evaluator = ar_deprecate_instruction_evaluator__create(
         ref_log,
         ref_expr_evaluator
     );
-    if (evaluator->own_destroy_method_evaluator == NULL) {
+    if (evaluator->own_deprecate_evaluator == NULL) {
         ar_destroy_agent_instruction_evaluator__destroy(evaluator->own_destroy_agent_evaluator);
         ar_create_instruction_evaluator__destroy(evaluator->own_create_evaluator);
         ar_compile_instruction_evaluator__destroy(evaluator->own_method_evaluator);
@@ -223,8 +223,8 @@ void ar_instruction_evaluator__destroy(ar_instruction_evaluator_t *own_evaluator
     if (own_evaluator->own_destroy_agent_evaluator != NULL) {
         ar_destroy_agent_instruction_evaluator__destroy(own_evaluator->own_destroy_agent_evaluator);
     }
-    if (own_evaluator->own_destroy_method_evaluator != NULL) {
-        ar_destroy_method_instruction_evaluator__destroy(own_evaluator->own_destroy_method_evaluator);
+    if (own_evaluator->own_deprecate_evaluator != NULL) {
+        ar_deprecate_instruction_evaluator__destroy(own_evaluator->own_deprecate_evaluator);
     }
     
     // Free the evaluator structure
@@ -313,10 +313,10 @@ bool ar_instruction_evaluator__evaluate(
                 ref_ast
             );
             
-        case AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD:
-            // Delegate directly to destroy method evaluator (frame-based pattern)
-            return ar_destroy_method_instruction_evaluator__evaluate(
-                mut_evaluator->own_destroy_method_evaluator,
+        case AR_INSTRUCTION_AST_TYPE__DEPRECATE:
+            // Delegate directly to deprecate evaluator (frame-based pattern)
+            return ar_deprecate_instruction_evaluator__evaluate(
+                mut_evaluator->own_deprecate_evaluator,
                 ref_frame,
                 ref_ast
             );

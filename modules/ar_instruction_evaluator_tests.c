@@ -488,7 +488,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         // Create destroy method instruction AST
         const char *args[] = {"\"destroy_method_test\"", "\"1.0.0\""};
         ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-            AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD, "destroy", args, 2, "memory.destroy_method_result"
+            AR_INSTRUCTION_AST_TYPE__DEPRECATE, "deprecate", args, 2, "memory.destroy_method_result"
         );
         assert(ast != NULL);
         

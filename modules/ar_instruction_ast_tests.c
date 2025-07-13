@@ -220,12 +220,12 @@ static void test_create_destroy_method_function(void) {
     
     // When creating a destroy method function call AST node without assignment
     ar_instruction_ast_t *own_node = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD, function_name, args, arg_count, NULL
+        AR_INSTRUCTION_AST_TYPE__DEPRECATE, function_name, args, arg_count, NULL
     );
     
     // Then the node should be created correctly
     assert(own_node != NULL);
-    assert(ar_instruction_ast__get_type(own_node) == AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD);
+    assert(ar_instruction_ast__get_type(own_node) == AR_INSTRUCTION_AST_TYPE__DEPRECATE);
     assert(ar_instruction_ast__has_result_assignment(own_node) == false);
     
     ar_list_t *own_args = ar_instruction_ast__get_function_args(own_node);

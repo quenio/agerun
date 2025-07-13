@@ -4,7 +4,7 @@
 #include <string.h>
 #include <inttypes.h>
 #include <unistd.h>
-#include "ar_destroy_method_instruction_evaluator.h"
+#include "ar_deprecate_instruction_evaluator.h"
 #include "ar_evaluator_fixture.h"
 #include "ar_frame.h"
 #include "ar_expression_evaluator.h"
@@ -21,10 +21,10 @@
 #include "ar_event.h"
 
 // Test create/destroy lifecycle
-static void test_destroy_method_instruction_evaluator__create_destroy(void) {
+static void test_deprecate_instruction_evaluator__create_destroy(void) {
     // Given a test fixture
     ar_evaluator_fixture_t *fixture = ar_evaluator_fixture__create(
-        "test_destroy_method_instruction_evaluator__create_destroy"
+        "test_deprecate_instruction_evaluator__create_destroy"
     );
     assert(fixture != NULL);
     
@@ -32,7 +32,7 @@ static void test_destroy_method_instruction_evaluator__create_destroy(void) {
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
     // When creating a destroy method evaluator (frame-based pattern)
-    ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
+    ar_deprecate_instruction_evaluator_t *evaluator = ar_deprecate_instruction_evaluator__create(
         log, expr_eval
     );
     
@@ -40,7 +40,7 @@ static void test_destroy_method_instruction_evaluator__create_destroy(void) {
     assert(evaluator != NULL);
     
     // When destroying the evaluator
-    ar_destroy_method_instruction_evaluator__destroy(evaluator);
+    ar_deprecate_instruction_evaluator__destroy(evaluator);
     
     // Then no memory leaks should occur (verified by test framework)
     
@@ -49,7 +49,7 @@ static void test_destroy_method_instruction_evaluator__create_destroy(void) {
 }
 
 // Test evaluate with instance
-static void test_destroy_method_instruction_evaluator__evaluate_with_instance(void) {
+static void test_deprecate_instruction_evaluator__evaluate_with_instance(void) {
     // Clean up any existing persistence files
     remove("methodology.agerun");
     remove("agency.agerun");
@@ -59,14 +59,14 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_instance(vo
     
     // Given a test fixture and evaluator instance
     ar_evaluator_fixture_t *fixture = ar_evaluator_fixture__create(
-        "test_destroy_method_instruction_evaluator__evaluate_with_instance"
+        "test_deprecate_instruction_evaluator__evaluate_with_instance"
     );
     assert(fixture != NULL);
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
-    ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
+    ar_deprecate_instruction_evaluator_t *evaluator = ar_deprecate_instruction_evaluator__create(
         log, expr_eval
     );
     assert(evaluator != NULL);
@@ -81,7 +81,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_instance(vo
     // Create destroy AST with method name and version
     const char *args[] = {"\"test_destroyer\"", "\"1.0.0\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD, "destroy", args, 2, NULL
+        AR_INSTRUCTION_AST_TYPE__DEPRECATE, "deprecate", args, 2, NULL
     );
     assert(ast != NULL);
     
@@ -105,7 +105,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_instance(vo
     assert(frame != NULL);
     
     // When evaluating the destroy call using frame-based pattern
-    bool result = ar_destroy_method_instruction_evaluator__evaluate(evaluator, frame, ast);
+    bool result = ar_deprecate_instruction_evaluator__evaluate(evaluator, frame, ast);
     
     // Then it should succeed
     assert(result == true);
@@ -116,7 +116,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_instance(vo
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
-    ar_destroy_method_instruction_evaluator__destroy(evaluator);
+    ar_deprecate_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
     // Clean up agency before shutting down
@@ -130,7 +130,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_instance(vo
 }
 
 // Test frame-based evaluation
-static void test_destroy_method_instruction_evaluator__evaluate_frame_based(void) {
+static void test_deprecate_instruction_evaluator__evaluate_frame_based(void) {
     // Clean up any existing persistence files
     remove("methodology.agerun");
     remove("agency.agerun");
@@ -140,7 +140,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_frame_based(void
     
     // Given a test fixture
     ar_evaluator_fixture_t *fixture = ar_evaluator_fixture__create(
-        "test_destroy_method_instruction_evaluator__evaluate_frame_based"
+        "test_deprecate_instruction_evaluator__evaluate_frame_based"
     );
     assert(fixture != NULL);
     
@@ -148,7 +148,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_frame_based(void
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
     // Create an evaluator instance
-    ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
+    ar_deprecate_instruction_evaluator_t *evaluator = ar_deprecate_instruction_evaluator__create(
         log, expr_eval
     );
     assert(evaluator != NULL);
@@ -159,7 +159,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_frame_based(void
     // Create destroy AST with method name and version
     const char *args[] = {"\"test_destroyer\"", "\"1.0.0\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD, "destroy", args, 2, NULL
+        AR_INSTRUCTION_AST_TYPE__DEPRECATE, "deprecate", args, 2, NULL
     );
     assert(ast != NULL);
     
@@ -183,7 +183,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_frame_based(void
     assert(frame != NULL);
     
     // When evaluating using frame-based interface
-    bool result = ar_destroy_method_instruction_evaluator__evaluate(evaluator, frame, ast);
+    bool result = ar_deprecate_instruction_evaluator__evaluate(evaluator, frame, ast);
     
     // Then it should succeed
     assert(result == true);
@@ -194,7 +194,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_frame_based(void
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
-    ar_destroy_method_instruction_evaluator__destroy(evaluator);
+    ar_deprecate_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
     // Clean up agency before shutting down
@@ -208,7 +208,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_frame_based(void
 }
 
 // Test destroy method with agents using it
-static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void) {
+static void test_deprecate_instruction_evaluator__evaluate_with_agents(void) {
     // Clean up any existing persistence files
     remove("methodology.agerun");
     remove("agency.agerun");
@@ -218,7 +218,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void
     
     // Given a test fixture and evaluator instance with a method and agents using it
     ar_evaluator_fixture_t *fixture = ar_evaluator_fixture__create(
-        "test_destroy_method_instruction_evaluator__evaluate_with_agents"
+        "test_deprecate_instruction_evaluator__evaluate_with_agents"
     );
     assert(fixture != NULL);
     
@@ -226,7 +226,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
-    ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
+    ar_deprecate_instruction_evaluator_t *evaluator = ar_deprecate_instruction_evaluator__create(
         log, expr_eval
     );
     assert(evaluator != NULL);
@@ -245,7 +245,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void
     // Create destroy AST with method name and version
     const char *args[] = {"\"test_destroyer\"", "\"1.0.0\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD, "destroy", args, 2, "memory.result"
+        AR_INSTRUCTION_AST_TYPE__DEPRECATE, "deprecate", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -269,7 +269,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void
     assert(frame != NULL);
     
     // When evaluating the destroy call
-    bool result = ar_destroy_method_instruction_evaluator__evaluate(evaluator, frame, ast);
+    bool result = ar_deprecate_instruction_evaluator__evaluate(evaluator, frame, ast);
     
     // Then it should succeed
     assert(result == true);
@@ -291,7 +291,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
-    ar_destroy_method_instruction_evaluator__destroy(evaluator);
+    ar_deprecate_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
     // Clean up agency before shutting down
@@ -305,7 +305,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_with_agents(void
 }
 
 // Test destroy nonexistent method
-static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void) {
+static void test_deprecate_instruction_evaluator__evaluate_nonexistent(void) {
     // Clean up any existing persistence files
     remove("methodology.agerun");
     remove("agency.agerun");
@@ -315,7 +315,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void
     
     // Given a test fixture and evaluator instance with no methods
     ar_evaluator_fixture_t *fixture = ar_evaluator_fixture__create(
-        "test_destroy_method_instruction_evaluator__evaluate_nonexistent"
+        "test_deprecate_instruction_evaluator__evaluate_nonexistent"
     );
     assert(fixture != NULL);
     
@@ -323,7 +323,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
-    ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
+    ar_deprecate_instruction_evaluator_t *evaluator = ar_deprecate_instruction_evaluator__create(
         log, expr_eval
     );
     assert(evaluator != NULL);
@@ -331,7 +331,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void
     // Create destroy AST with non-existent method
     const char *args[] = {"\"nonexistent\"", "\"1.0.0\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD, "destroy", args, 2, "memory.result"
+        AR_INSTRUCTION_AST_TYPE__DEPRECATE, "deprecate", args, 2, "memory.result"
     );
     assert(ast != NULL);
     
@@ -355,7 +355,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void
     assert(frame != NULL);
     
     // When evaluating the destroy call
-    bool result = ar_destroy_method_instruction_evaluator__evaluate(evaluator, frame, ast);
+    bool result = ar_deprecate_instruction_evaluator__evaluate(evaluator, frame, ast);
     
     // Then it should succeed (no error)
     assert(result == true);
@@ -368,7 +368,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
-    ar_destroy_method_instruction_evaluator__destroy(evaluator);
+    ar_deprecate_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
     // Clean up agency before shutting down
@@ -382,17 +382,17 @@ static void test_destroy_method_instruction_evaluator__evaluate_nonexistent(void
 }
 
 // Test destroy with invalid method name type
-static void test_destroy_method_instruction_evaluator__evaluate_invalid_name_type(void) {
+static void test_deprecate_instruction_evaluator__evaluate_invalid_name_type(void) {
     // Given a test fixture and evaluator instance
     ar_evaluator_fixture_t *fixture = ar_evaluator_fixture__create(
-        "test_destroy_method_instruction_evaluator__evaluate_invalid_name_type"
+        "test_deprecate_instruction_evaluator__evaluate_invalid_name_type"
     );
     assert(fixture != NULL);
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
-    ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
+    ar_deprecate_instruction_evaluator_t *evaluator = ar_deprecate_instruction_evaluator__create(
         log, expr_eval
     );
     assert(evaluator != NULL);
@@ -400,7 +400,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_invalid_name_typ
     // Create destroy AST with non-string method name (integer)
     const char *args[] = {"123", "\"1.0.0\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD, "destroy", args, 2, NULL
+        AR_INSTRUCTION_AST_TYPE__DEPRECATE, "deprecate", args, 2, NULL
     );
     assert(ast != NULL);
     
@@ -424,29 +424,29 @@ static void test_destroy_method_instruction_evaluator__evaluate_invalid_name_typ
     assert(frame != NULL);
     
     // When evaluating the destroy call
-    bool result = ar_destroy_method_instruction_evaluator__evaluate(evaluator, frame, ast);
+    bool result = ar_deprecate_instruction_evaluator__evaluate(evaluator, frame, ast);
     
     // Then it should fail due to invalid argument type
     assert(result == false);
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
-    ar_destroy_method_instruction_evaluator__destroy(evaluator);
+    ar_deprecate_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
 }
 
 // Test destroy with wrong number of arguments
-static void test_destroy_method_instruction_evaluator__evaluate_wrong_arg_count(void) {
+static void test_deprecate_instruction_evaluator__evaluate_wrong_arg_count(void) {
     // Given a test fixture and evaluator instance
     ar_evaluator_fixture_t *fixture = ar_evaluator_fixture__create(
-        "test_destroy_method_instruction_evaluator__evaluate_wrong_arg_count"
+        "test_deprecate_instruction_evaluator__evaluate_wrong_arg_count"
     );
     assert(fixture != NULL);
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     
-    ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
+    ar_deprecate_instruction_evaluator_t *evaluator = ar_deprecate_instruction_evaluator__create(
         log, expr_eval
     );
     assert(evaluator != NULL);
@@ -454,7 +454,7 @@ static void test_destroy_method_instruction_evaluator__evaluate_wrong_arg_count(
     // Create destroy AST with 1 arg (should be 2 for method)
     const char *args[] = {"\"method_name\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD, "destroy", args, 1, NULL
+        AR_INSTRUCTION_AST_TYPE__DEPRECATE, "deprecate", args, 1, NULL
     );
     assert(ast != NULL);
     
@@ -474,19 +474,19 @@ static void test_destroy_method_instruction_evaluator__evaluate_wrong_arg_count(
     assert(frame != NULL);
     
     // When evaluating the destroy call
-    bool result = ar_destroy_method_instruction_evaluator__evaluate(evaluator, frame, ast);
+    bool result = ar_deprecate_instruction_evaluator__evaluate(evaluator, frame, ast);
     
     // Then it should fail due to wrong argument count
     assert(result == false);
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
-    ar_destroy_method_instruction_evaluator__destroy(evaluator);
+    ar_deprecate_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
 }
 
 int main(void) {
-    printf("Starting destroy method instruction evaluator tests...\n");
+    printf("Starting deprecate instruction evaluator tests...\n");
     
     // Check if running from bin directory
     char cwd[1024];
@@ -506,28 +506,28 @@ int main(void) {
     remove("methodology.agerun");
     remove("agency.agerun");
     
-    test_destroy_method_instruction_evaluator__create_destroy();
-    printf("test_destroy_method_instruction_evaluator__create_destroy passed!\n");
+    test_deprecate_instruction_evaluator__create_destroy();
+    printf("test_deprecate_instruction_evaluator__create_destroy passed!\n");
     
-    test_destroy_method_instruction_evaluator__evaluate_with_instance();
-    printf("test_destroy_method_instruction_evaluator__evaluate_with_instance passed!\n");
+    test_deprecate_instruction_evaluator__evaluate_with_instance();
+    printf("test_deprecate_instruction_evaluator__evaluate_with_instance passed!\n");
     
-    test_destroy_method_instruction_evaluator__evaluate_frame_based();
-    printf("test_destroy_method_instruction_evaluator__evaluate_frame_based passed!\n");
+    test_deprecate_instruction_evaluator__evaluate_frame_based();
+    printf("test_deprecate_instruction_evaluator__evaluate_frame_based passed!\n");
     
-    test_destroy_method_instruction_evaluator__evaluate_with_agents();
-    printf("test_destroy_method_instruction_evaluator__evaluate_with_agents passed!\n");
+    test_deprecate_instruction_evaluator__evaluate_with_agents();
+    printf("test_deprecate_instruction_evaluator__evaluate_with_agents passed!\n");
     
-    test_destroy_method_instruction_evaluator__evaluate_nonexistent();
-    printf("test_destroy_method_instruction_evaluator__evaluate_nonexistent passed!\n");
+    test_deprecate_instruction_evaluator__evaluate_nonexistent();
+    printf("test_deprecate_instruction_evaluator__evaluate_nonexistent passed!\n");
     
-    test_destroy_method_instruction_evaluator__evaluate_invalid_name_type();
-    printf("test_destroy_method_instruction_evaluator__evaluate_invalid_name_type passed!\n");
+    test_deprecate_instruction_evaluator__evaluate_invalid_name_type();
+    printf("test_deprecate_instruction_evaluator__evaluate_invalid_name_type passed!\n");
     
-    test_destroy_method_instruction_evaluator__evaluate_wrong_arg_count();
-    printf("test_destroy_method_instruction_evaluator__evaluate_wrong_arg_count passed!\n");
+    test_deprecate_instruction_evaluator__evaluate_wrong_arg_count();
+    printf("test_deprecate_instruction_evaluator__evaluate_wrong_arg_count passed!\n");
     
-    printf("All destroy method instruction evaluator tests passed!\n");
+    printf("All deprecate instruction evaluator tests passed!\n");
     
     // Clean up after tests
     ar_methodology__cleanup();

@@ -1,9 +1,9 @@
 /**
- * @file ar_destroy_method_instruction_evaluator.c
- * @brief Implementation of the destroy method instruction evaluator module
+ * @file ar_deprecate_instruction_evaluator.c
+ * @brief Implementation of the deprecate instruction evaluator module
  */
 
-#include "ar_destroy_method_instruction_evaluator.h"
+#include "ar_deprecate_instruction_evaluator.h"
 #include "ar_heap.h"
 #include "ar_frame.h"
 #include "ar_expression_ast.h"
@@ -21,13 +21,13 @@
 
 
 /* Opaque struct definition */
-struct ar_destroy_method_instruction_evaluator_s {
+struct ar_deprecate_instruction_evaluator_s {
     ar_log_t *ref_log;                           /* Borrowed reference to log instance */
     ar_expression_evaluator_t *ref_expr_evaluator; /* Borrowed reference to expression evaluator */
 };
 
 /* Helper function to log error message */
-static void _log_error(ar_destroy_method_instruction_evaluator_t *mut_evaluator, const char *message) {
+static void _log_error(ar_deprecate_instruction_evaluator_t *mut_evaluator, const char *message) {
     if (message && mut_evaluator->ref_log) {
         ar_log__error(mut_evaluator->ref_log, message);
     }
@@ -68,9 +68,9 @@ static bool _store_result_if_assigned(
 }
 
 /**
- * Creates a new destroy method instruction evaluator instance
+ * Creates a new deprecate instruction evaluator instance
  */
-ar_destroy_method_instruction_evaluator_t* ar_destroy_method_instruction_evaluator__create(
+ar_deprecate_instruction_evaluator_t* ar_deprecate_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator
 ) {
@@ -78,9 +78,9 @@ ar_destroy_method_instruction_evaluator_t* ar_destroy_method_instruction_evaluat
         return NULL;
     }
     
-    ar_destroy_method_instruction_evaluator_t *own_evaluator = AR__HEAP__MALLOC(
-        sizeof(ar_destroy_method_instruction_evaluator_t), 
-        "destroy_method_instruction_evaluator"
+    ar_deprecate_instruction_evaluator_t *own_evaluator = AR__HEAP__MALLOC(
+        sizeof(ar_deprecate_instruction_evaluator_t), 
+        "deprecate_instruction_evaluator"
     );
     if (!own_evaluator) {
         return NULL;
@@ -93,9 +93,9 @@ ar_destroy_method_instruction_evaluator_t* ar_destroy_method_instruction_evaluat
 }
 
 /**
- * Destroys a destroy method instruction evaluator instance
+ * Destroys a deprecate instruction evaluator instance
  */
-void ar_destroy_method_instruction_evaluator__destroy(ar_destroy_method_instruction_evaluator_t *own_evaluator) {
+void ar_deprecate_instruction_evaluator__destroy(ar_deprecate_instruction_evaluator_t *own_evaluator) {
     if (!own_evaluator) {
         return;
     }
@@ -104,10 +104,10 @@ void ar_destroy_method_instruction_evaluator__destroy(ar_destroy_method_instruct
 }
 
 /**
- * Evaluates a destroy method instruction using frame-based execution
+ * Evaluates a deprecate instruction using frame-based execution
  */
-bool ar_destroy_method_instruction_evaluator__evaluate(
-    ar_destroy_method_instruction_evaluator_t *mut_evaluator,
+bool ar_deprecate_instruction_evaluator__evaluate(
+    ar_deprecate_instruction_evaluator_t *mut_evaluator,
     const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 ) {
@@ -125,7 +125,7 @@ bool ar_destroy_method_instruction_evaluator__evaluate(
     }
     
     // Validate AST type
-    if (ar_instruction_ast__get_type(ref_ast) != AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD) {
+    if (ar_instruction_ast__get_type(ref_ast) != AR_INSTRUCTION_AST_TYPE__DEPRECATE) {
         return false;
     }
     
@@ -169,7 +169,7 @@ bool ar_destroy_method_instruction_evaluator__evaluate(
             // It's owned by someone else - we need to make a copy
             own_name = ar_data__shallow_copy(name_result);
             if (!own_name) {
-                _log_error(mut_evaluator, "Cannot destroy method with nested containers in name (no deep copy support)");
+                _log_error(mut_evaluator, "Cannot deprecate method with nested containers in name (no deep copy support)");
                 AR__HEAP__FREE(items);
                 return false;
             }
@@ -187,7 +187,7 @@ bool ar_destroy_method_instruction_evaluator__evaluate(
             // It's owned by someone else - we need to make a copy
             own_version = ar_data__shallow_copy(version_result);
             if (!own_version) {
-                _log_error(mut_evaluator, "Cannot destroy method with nested containers in version (no deep copy support)");
+                _log_error(mut_evaluator, "Cannot deprecate method with nested containers in version (no deep copy support)");
                 if (own_name) ar_data__destroy(own_name);
                 AR__HEAP__FREE(items);
                 return false;

@@ -161,8 +161,8 @@ Function call instructions can optionally assign their result to a variable. For
 - `success := send(agent_id, message)` - Store the result in a memory variable
 - `destroy(agent_id)` - Destroy an agent without storing the result
 - `success := destroy(agent_id)` - Destroy an agent and store the result
-- `destroy(method_name, method_version)` - Destroy a method without storing the result
-- `success := destroy(method_name, method_version)` - Destroy a method and store the result
+- `deprecate(method_name, method_version)` - Deprecate a method without storing the result
+- `success := deprecate(method_name, method_version)` - Deprecate a method and store the result
 - `if(condition, true_value, false_value)` - Evaluate without storing the result
 - `result := if(condition, true_value, false_value)` - Store the result in a memory variable
 
@@ -252,7 +252,7 @@ The expression evaluator follows these rules:
 - `compile(method_name: string, instructions: string, version: string) → boolean`: Defines a new method with the specified name, instruction code, and version string. The version string must follow semantic versioning (e.g., "1.0.0"). Compatibility between versions is determined based on semantic versioning rules: agents using version 1.x.x will automatically use the latest 1.x.x version. Returns true if the method was successfully defined, or false if the instructions cannot be parsed or compiled.
 - `create(method_name: string, version: string, context: map = null) → agent_id`: Creates a new agent instance based on the specified method name and version string. The version parameter is required. If a partial version is specified (e.g., "1"), the latest matching version (e.g., latest "1.x.x") will be used. An optional context may be provided. Returns a unique agent ID.
 - `destroy(agent_id: integer) → boolean`: Attempts to destroy the specified agent. Before destruction, the agent receives the `__sleep__` message. The agent is only destroyed after it is in a sleeping state. Returns true if successful, or false if the agent does not exist or is already destroyed.
-- `destroy(method_name: string, method_version: string) → boolean`: Attempts to destroy the specified method version. If any agents are using this method, they will all be sent the `__sleep__` message first, then destroyed once they are sleeping, before the method is removed. Returns true if successful, or false if the method does not exist.
+- `deprecate(method_name: string, method_version: string) → boolean`: Attempts to deprecate the specified method version. If any agents are using this method, they will all be sent the `__sleep__` message first, then destroyed once they are sleeping, before the method is removed. Returns true if successful, or false if the method does not exist.
 
 ## Message Handling
 

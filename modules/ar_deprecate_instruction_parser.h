@@ -1,34 +1,34 @@
-#ifndef AGERUN_DESTROY_METHOD_INSTRUCTION_PARSER_H
-#define AGERUN_DESTROY_METHOD_INSTRUCTION_PARSER_H
+#ifndef AGERUN_DEPRECATE_INSTRUCTION_PARSER_H
+#define AGERUN_DEPRECATE_INSTRUCTION_PARSER_H
 
 #include <stddef.h>
 #include "ar_instruction_ast.h"
 #include "ar_log.h"
 
 /**
- * Opaque destroy method instruction parser structure.
+ * Opaque deprecate instruction parser structure.
  */
-typedef struct ar_destroy_method_instruction_parser_s ar_destroy_method_instruction_parser_t;
+typedef struct ar_deprecate_instruction_parser_s ar_deprecate_instruction_parser_t;
 
 /**
- * Creates a new destroy method instruction parser.
+ * Creates a new deprecate instruction parser.
  * 
  * @param ref_log Optional log instance for error reporting (borrowed reference, may be NULL)
  * @return A new parser instance (owned by caller), or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy.
  */
-ar_destroy_method_instruction_parser_t* ar_destroy_method_instruction_parser__create(ar_log_t *ref_log);
+ar_deprecate_instruction_parser_t* ar_deprecate_instruction_parser__create(ar_log_t *ref_log);
 
 /**
- * Destroys a destroy method instruction parser.
+ * Destroys a deprecate instruction parser.
  * 
  * @param own_parser The parser to destroy (owned reference)
  * @note Ownership: Takes ownership of the parser and destroys it.
  */
-void ar_destroy_method_instruction_parser__destroy(ar_destroy_method_instruction_parser_t *own_parser);
+void ar_deprecate_instruction_parser__destroy(ar_deprecate_instruction_parser_t *own_parser);
 
 /**
- * Parses a destroy method instruction.
+ * Parses a deprecate instruction.
  * 
  * @param mut_parser The parser instance (mutable reference)
  * @param ref_instruction The instruction string to parse (borrowed reference)
@@ -37,8 +37,8 @@ void ar_destroy_method_instruction_parser__destroy(ar_destroy_method_instruction
  * @note Ownership: Returns an owned value that caller must destroy.
  *       The function does not take ownership of any parameters.
  */
-ar_instruction_ast_t* ar_destroy_method_instruction_parser__parse(
-    ar_destroy_method_instruction_parser_t *mut_parser,
+ar_instruction_ast_t* ar_deprecate_instruction_parser__parse(
+    ar_deprecate_instruction_parser_t *mut_parser,
     const char *ref_instruction,
     const char *ref_result_path
 );
@@ -50,8 +50,8 @@ ar_instruction_ast_t* ar_destroy_method_instruction_parser__parse(
  * @param ref_parser The parser instance (borrowed reference)
  * @return Always returns NULL
  */
-const char* ar_destroy_method_instruction_parser__get_error(
-    const ar_destroy_method_instruction_parser_t *ref_parser
+const char* ar_deprecate_instruction_parser__get_error(
+    const ar_deprecate_instruction_parser_t *ref_parser
 );
 
 /**
@@ -61,8 +61,8 @@ const char* ar_destroy_method_instruction_parser__get_error(
  * @param ref_parser The parser instance (borrowed reference)
  * @return Always returns 0
  */
-size_t ar_destroy_method_instruction_parser__get_error_position(
-    const ar_destroy_method_instruction_parser_t *ref_parser
+size_t ar_deprecate_instruction_parser__get_error_position(
+    const ar_deprecate_instruction_parser_t *ref_parser
 );
 
-#endif /* AGERUN_DESTROY_METHOD_INSTRUCTION_PARSER_H */
+#endif /* AGERUN_DEPRECATE_INSTRUCTION_PARSER_H */

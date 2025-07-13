@@ -90,7 +90,7 @@ Methods can use the following system functions:
 - **method(name, instructions, version)**: Define a new method
 - **agent(method_name, version, context)**: Create a new agent instance
 - **destroy(agent_id)**: Destroy an agent
-- **destroy(method_name, version)**: Destroy a method version
+- **deprecate(method_name, version)**: Deprecate a method version
 - **if(condition, true_value, false_value)**: Conditional evaluation
 
 ### Expressions

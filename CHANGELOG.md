@@ -29,6 +29,30 @@ This document tracks completed milestones and major achievements for the AgeRun 
 - All tests pass with zero memory leaks
 - Clean build completed successfully (took 1m 5s)
 
+### ✅ COMPLETED: Renamed 'destroy' method instruction to 'deprecate'
+- Split destroy instruction into two distinct instructions: destroy (for agents) and deprecate (for methods)
+- Updated instruction AST enum
+  - Changed AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD to AR_INSTRUCTION_AST_TYPE__DEPRECATE
+  - Kept AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT unchanged
+- Updated parser modules
+  - Renamed ar_destroy_method_instruction_parser to ar_deprecate_instruction_parser
+  - Updated parser to check for "deprecate" (9 chars) instead of "destroy" (7 chars)
+  - Modified instruction parser facade to dispatch deprecate separately from destroy
+- Updated evaluator modules
+  - Renamed ar_destroy_method_instruction_evaluator to ar_deprecate_instruction_evaluator
+  - Updated all error messages to use "deprecate" terminology
+  - Modified instruction evaluator facade switch case
+- Updated test files
+  - Renamed test files from ar_destroy_method_instruction_* to ar_deprecate_instruction_*
+  - Updated all test content to use deprecate() instead of destroy() for methods
+- Updated documentation
+  - Updated SPEC.md to document deprecate(method_name, version) instruction
+  - Updated modules/README.md instruction list
+  - Updated methods/README.md function reference
+  - Fixed all parser/evaluator module documentation
+- All 59 tests pass with zero memory leaks
+- Documentation validation passes
+
 ### ✅ COMPLETED: Renamed 'method' instruction to 'compile'
 - Comprehensive refactoring to rename the `method` instruction to `compile` throughout the codebase
   - Updated enum AR_INSTRUCTION_AST_TYPE__METHOD to AR_INSTRUCTION_AST_TYPE__COMPILE

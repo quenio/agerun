@@ -260,7 +260,7 @@ static void test_instruction_parser__parse_destroy_method(void) {
     
     // Then it should parse successfully
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__DEPRECATE);
     
     ar_instruction_ast__destroy(own_ast);
     ar_instruction_parser__destroy(own_parser);
@@ -519,11 +519,11 @@ static void test_parse_destroy_one_arg(void) {
     ar_instruction_parser__destroy(own_parser);
 }
 
-static void test_parse_destroy_two_args(void) {
-    printf("Testing destroy with two arguments...\n");
+static void test_parse_deprecate(void) {
+    printf("Testing deprecate function parsing...\n");
     
-    // Given a destroy function call with two arguments
-    const char *instruction = "destroy(\"calculator\", \"1.0.0\")";
+    // Given a deprecate function call with two arguments
+    const char *instruction = "deprecate(\"calculator\", \"1.0.0\")";
     
     // When creating a parser and parsing the instruction
     ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
@@ -531,9 +531,9 @@ static void test_parse_destroy_two_args(void) {
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
-    // Then it should parse as a destroy method function
+    // Then it should parse as a deprecate function
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__DEPRECATE);
     
     ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(ar_list__count(own_args) == 2);
@@ -722,7 +722,7 @@ int main(void) {
     test_parse_compile_function();
     test_parse_create_function();
     test_parse_destroy_one_arg();
-    test_parse_destroy_two_args();
+    test_parse_deprecate();
     test_parse_parse_function();
     test_parse_build_function();
     

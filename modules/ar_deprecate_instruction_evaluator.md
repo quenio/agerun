@@ -1,12 +1,12 @@
-# Destroy Method Instruction Evaluator Module
+# Deprecate Instruction Evaluator Module
 
 ## Overview
 
-The destroy method instruction evaluator module is responsible for evaluating method destruction instructions in the AgeRun language. It handles the `destroy(method_name, version)` instruction form, which destroys a specific method and any agents using it.
+The deprecate instruction evaluator module is responsible for evaluating method deprecation instructions in the AgeRun language. It handles the `deprecate(method_name, version)` instruction form, which deprecates a specific method and destroys any agents using it.
 
 ## Purpose
 
-This module extracts the method destruction logic from the main destroy instruction evaluator, following the single responsibility principle. It provides specialized handling for method destruction with proper agent lifecycle management.
+This module extracts the method deprecation logic from the main destroy instruction evaluator, following the single responsibility principle. It provides specialized handling for method deprecation with proper agent lifecycle management.
 
 ## Key Components
 
@@ -16,20 +16,20 @@ The module follows an instantiable design pattern with lifecycle management:
 
 ```c
 // Create evaluator instance with dependencies
-ar_destroy_method_instruction_evaluator_t* ar_destroy_method_instruction_evaluator__create(
+ar_deprecate_instruction_evaluator_t* ar_deprecate_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *mut_expr_evaluator,
     ar_data_t *mut_memory
 );
 
 // Evaluate using stored dependencies
-bool ar_destroy_method_instruction_evaluator__evaluate(
-    ar_destroy_method_instruction_evaluator_t *mut_evaluator,
+bool ar_deprecate_instruction_evaluator__evaluate(
+    ar_deprecate_instruction_evaluator_t *mut_evaluator,
     const ar_instruction_ast_t *ref_ast
 );
 
 // Clean up instance
-void ar_destroy_method_instruction_evaluator__destroy(ar_destroy_method_instruction_evaluator_t *own_evaluator);
+void ar_deprecate_instruction_evaluator__destroy(ar_deprecate_instruction_evaluator_t *own_evaluator);
 ```
 
 ### Frame-Based Execution
@@ -38,9 +38,9 @@ The module has been fully migrated to the frame-based execution pattern, which b
 
 ### Functionality
 
-The module evaluates destroy method instructions of the form:
-- `destroy("method_name", "version")`
-- `memory.result := destroy("method_name", "version")`
+The module evaluates deprecate instructions of the form:
+- `deprecate("method_name", "version")`
+- `memory.result := deprecate("method_name", "version")`
 
 Key features:
 1. **Frame-Based Execution**: Uses ar_frame_t for memory, context, and message bundling
@@ -112,11 +112,11 @@ ar_log_t *log = ar_log__create();
 ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
 
 // Create destroy method evaluator instance (frame-based pattern)
-ar_destroy_method_instruction_evaluator_t *evaluator = ar_destroy_method_instruction_evaluator__create(
+ar_deprecate_instruction_evaluator_t *evaluator = ar_deprecate_instruction_evaluator__create(
     log, expr_eval
 );
 
-// Parse destroy instruction: memory.result := destroy("calculator", "1.0.0")
+// Parse destroy instruction: memory.result := deprecate("calculator", "1.0.0")
 const char *args[] = {"\"calculator\"", "\"1.0.0\""};
 ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
     AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD, "destroy", args, 2, "memory.result"
@@ -128,13 +128,13 @@ ar_data_t *message = ar_data__create_string("");
 ar_frame_t *frame = ar_frame__create(memory, context, message);
 
 // Evaluate using frame-based pattern
-bool success = ar_destroy_method_instruction_evaluator__evaluate(evaluator, frame, ast);
+bool success = ar_deprecate_instruction_evaluator__evaluate(evaluator, frame, ast);
 
 // Clean up
 ar_frame__destroy(frame);
 ar_data__destroy(context);
 ar_data__destroy(message);
-ar_destroy_method_instruction_evaluator__destroy(evaluator);
+ar_deprecate_instruction_evaluator__destroy(evaluator);
 // Result stored in memory["result"]: 1 if destroyed, 0 if not found
 ```
 

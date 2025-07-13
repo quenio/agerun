@@ -23,7 +23,7 @@ The module supports the following instruction types:
 - **AR_INSTRUCTION_AST_TYPE__COMPILE**: Method creation calls (e.g., `compile("greet", "...", "1.0.0")`)
 - **AR_INSTRUCTION_AST_TYPE__CREATE**: Agent creation calls (e.g., `create("echo", "1.0.0", context)`)
 - **AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT**: Destroy agent calls (e.g., `destroy(agent_id)`)
-- **AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD**: Destroy method calls (e.g., `destroy("method_name", "1.0.0")`)
+- **AR_INSTRUCTION_AST_TYPE__DEPRECATE**: Deprecate method calls (e.g., `deprecate("method_name", "1.0.0")`)
 - **AR_INSTRUCTION_AST_TYPE__PARSE**: Parse function calls (e.g., `parse("{name}", "name=John")`)
 - **AR_INSTRUCTION_AST_TYPE__BUILD**: Build function calls (e.g., `build("Hello {name}", map)`)
 
@@ -39,7 +39,7 @@ typedef enum {
     AR_INSTRUCTION_AST_TYPE__COMPILE,
     AR_INSTRUCTION_AST_TYPE__CREATE,
     AR_INSTRUCTION_AST_TYPE__DESTROY_AGENT,
-    AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD,
+    AR_INSTRUCTION_AST_TYPE__DEPRECATE,
     AR_INSTRUCTION_AST_TYPE__PARSE,
     AR_INSTRUCTION_AST_TYPE__BUILD
 } ar_instruction_ast_type_t;
