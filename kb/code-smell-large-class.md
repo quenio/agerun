@@ -273,7 +273,7 @@ ar_agent_update.c    // Agent state updates
 // Properly decomposed expression handling:
 ar_expression.c          // High-level expression interface
 ar_expression_parser.c   // Syntax analysis
-ar_expression_ast.c      // Abstract syntax tree
+ar_expression_ast.zig    // Abstract syntax tree
 ar_expression_evaluator.c // Expression computation
 ```
 

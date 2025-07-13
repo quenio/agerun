@@ -4,6 +4,22 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-07-13
 
+### ✅ COMPLETED: ar_expression_ast Module Zig Conversion with Enhanced Documentation
+- **Successfully migrated ar_expression_ast from C to Zig** maintaining full C API compatibility
+- **Fixed memory leaks** discovered during migration (4 leaks, 48 bytes)
+  - Root cause: Misunderstanding of ar_list__items() ownership transfer semantics
+  - Solution: Matched C implementation exactly for get_memory_path function
+- **Enhanced kb/c-to-zig-module-migration.md** with comprehensive learnings:
+  - Added real-world migration example with memory leak debugging
+  - Added C API compatibility requirements and common mistakes
+  - Added Zig-specific syntax issues and solutions (reserved keywords, nullable parameters)
+  - Added memory leak patterns specific to list management
+  - Added critical success factors based on migration experience
+- **Updated documentation checker** to handle EXAMPLE tags for file references
+- All tests pass with zero memory leaks
+
+## 2025-07-13
+
 ### ✅ COMPLETED: Renamed instructions for Erlang terminology alignment
 - **Phase 1: create() → spawn()** - Renamed create instruction to spawn throughout the codebase
   - Updated enum AR_INSTRUCTION_AST_TYPE__CREATE to AR_INSTRUCTION_AST_TYPE__SPAWN  

@@ -70,10 +70,24 @@ def check_file_references(doc_files):
         with open(doc, 'r', encoding='utf-8') as f:
             content = f.read()
         
-        # Find all file references
-        matches = file_ref_pattern.findall(content)
-        # Extract just the full match from tuple results
-        file_refs = set(match[0] if isinstance(match, tuple) else match for match in matches)
+        # Split content into lines to check for markers
+        lines = content.split('\n')
+        file_refs = set()
+        
+        # Look for file references line by line
+        for line in lines:
+            # Skip lines marked as intentional errors, examples, or bad code
+            if ('// ERROR:' in line or '/* ERROR:' in line or 
+                '// EXAMPLE:' in line or '/* EXAMPLE:' in line or
+                '// BAD:' in line or '/* BAD:' in line or
+                '# EXAMPLE:' in line):  # Also handle markdown comments
+                continue
+            
+            # Find file references in this line
+            matches = file_ref_pattern.findall(line)
+            # Extract just the full match from tuple results
+            for match in matches:
+                file_refs.add(match[0] if isinstance(match, tuple) else match)
         
         for ref in file_refs:
             # Skip URLs and anchor references
