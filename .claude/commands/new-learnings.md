@@ -122,14 +122,29 @@ If you're tempted to use hypothetical types, replace with real ones:
 - Use `ar_data_t*` as the universal fallback type
 - Reference actual functions from `modules/*.h` files
 
-## Step 4: Review Existing Guidelines
+## Step 4: Update Knowledge Base Index
 
-Check CLAUDE.md to see if these learnings are already documented. If they are:
-- Determine if the existing documentation is sufficient
-- Identify if updates or clarifications are needed
-- Note any gaps in the current documentation
+**MANDATORY: Add new articles to kb/README.md**
 
-## Step 5: Update Guidelines
+1. **Categorize appropriately** in kb/README.md:
+   - Tools & Automation: Scripts, build tools, automation workflows
+   - Development Practices: Documentation, workflows, methodologies  
+   - Architecture & Design: Patterns, principles, structures
+   - Code Quality & Testing: Validation, testing, best practices
+
+2. **Add to correct section** with proper link format:
+   ```markdown
+   - [Article Title](article-filename.md)
+   ```
+
+## Step 5: Review Existing Guidelines
+
+Check CLAUDE.md to see if these learnings should be referenced:
+- Determine if existing documentation needs links to new kb articles
+- Identify appropriate sections where kb articles should be referenced
+- Note any gaps that need new content with kb links
+
+## Step 6: Update Guidelines
 
 If updates are needed to CLAUDE.md:
 
@@ -155,7 +170,12 @@ If updates are needed to CLAUDE.md:
    - Guideline text ([details](kb/filename.md))
    ```
 
-## Step 6: Commit Process
+5. **Reference integration strategies**:
+   - Add `([details](kb/article.md))` to existing guidelines that relate to new articles
+   - Include new kb articles in relevant sections (e.g., Script Development, Documentation Protocol)
+   - Maintain two-tier system: brief guidelines with links to comprehensive details
+
+## Step 7: Commit Process
 
 **MANDATORY SEQUENCE:**
 
@@ -165,12 +185,13 @@ If updates are needed to CLAUDE.md:
    ```
    Fix any errors before proceeding.
 
-2. **Commit knowledge base files**:
+2. **Commit knowledge base files and index**:
    ```bash
    git add kb/
    git commit -m "feat: add knowledge base with [topic] learnings
 
    - [Brief description of main learning]
+   - Added articles to kb/README.md index
    - All code examples use real AgeRun types and functions
    - Validated with make check-docs"
    ```
@@ -178,10 +199,11 @@ If updates are needed to CLAUDE.md:
 3. **Commit guidelines updates** (if CLAUDE.md was updated):
    ```bash
    git add CLAUDE.md
-   git commit -m "docs: enhance guidelines with session learnings on [topic]
+   git commit -m "docs: integrate kb articles into guidelines
 
-   - [Summary of key updates]  
-   - [Links to detailed kb/ articles]"
+   - Added kb/ references to relevant sections  
+   - [Summary of key integration points]
+   - Maintains two-tier documentation system"
    ```
 
 ## Documentation Validation Details
