@@ -1,7 +1,9 @@
 # Migrate Module to Zig
 
 {{#if 1}}
-Migrate the implementation of the **{{1}}** module from C to Zig following the systematic approach documented in CLAUDE.md and the comprehensive migration guide at kb/c-to-zig-module-migration.md.
+First, check if `modules/{{1}}.zig` already exists. If it does, inform the user about the migration status instead of creating a new plan.
+
+If the module hasn't been migrated yet, migrate the implementation of the **{{1}}** module from C to Zig following the systematic approach documented in CLAUDE.md and the comprehensive migration guide at kb/c-to-zig-module-migration.md.
 {{else}}
 Before I can create a migration plan, I need to know which module you'd like to migrate to Zig.
 
@@ -25,10 +27,15 @@ Which module would you like to migrate to Zig?
 
 {{#if 1}}
 Before creating the plan, verify:
+- **Check if already migrated**: If `modules/{{1}}.zig` exists, inform the user that migration is already done or in progress
 - Module exists: `modules/{{1}}.c` and `modules/{{1}}.h`
 - Tests exist: `modules/{{1}}_tests.c`
 - Current test status: Run `make {{1}}_tests` and check memory report
 - Dependencies: Audit with `grep -n "#include.*ar_" modules/{{1}}.h modules/{{1}}.c`
+
+If `modules/{{1}}.zig` already exists:
+- If `modules/{{1}}.c` also exists: "The {{1}} module migration to Zig appears to be in progress. The Zig file already exists alongside the C implementation."
+- If `modules/{{1}}.c` doesn't exist: "The {{1}} module has already been migrated to Zig. The implementation is in `modules/{{1}}.zig`."
 {{/if}}
 
 ## Plan Structure
