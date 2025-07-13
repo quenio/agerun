@@ -2,6 +2,31 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-07-13
+
+### ✅ COMPLETED: Renamed 'method' instruction to 'compile'
+- Comprehensive refactoring to rename the `method` instruction to `compile` throughout the codebase
+  - Updated enum AR_INSTRUCTION_AST_TYPE__METHOD to AR_INSTRUCTION_AST_TYPE__COMPILE
+  - Updated legacy enum AR_INSTRUCTION_TYPE__METHOD to AR_INSTRUCTION_TYPE__COMPILE for consistency
+- Updated all parser modules
+  - Changed all "method" string comparisons to "compile"
+  - Renamed ar_method_instruction_parser to ar_compile_instruction_parser
+  - Updated all function names, types, and includes
+- Updated all evaluator modules
+  - Renamed ar_method_instruction_evaluator to ar_compile_instruction_evaluator
+  - Updated all function names, types, and includes
+  - Fixed all references in instruction evaluator facade
+- Updated test files
+  - Renamed test files from ar_method_instruction_* to ar_compile_instruction_*
+  - Updated all test content to use compile() instead of method()
+  - Fixed all enum references in tests
+- Updated documentation
+  - Renamed .md files for parser and evaluator modules
+  - Updated README.md, SPEC.md, and modules/README.md
+  - Updated method-creator method file and documentation
+- All tests pass with zero memory leaks
+- Build verification completed successfully
+
 ## 2025-07-12
 
 ### ✅ COMPLETED: Expression Evaluator Full Frame-Based Migration

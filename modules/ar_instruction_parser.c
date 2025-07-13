@@ -13,7 +13,7 @@
 #include "ar_condition_instruction_parser.h"
 #include "ar_parse_instruction_parser.h"
 #include "ar_build_instruction_parser.h"
-#include "ar_method_instruction_parser.h"
+#include "ar_compile_instruction_parser.h"
 #include "ar_agent_instruction_parser.h"
 #include "ar_destroy_agent_instruction_parser.h"
 #include "ar_destroy_method_instruction_parser.h"
@@ -30,7 +30,7 @@ struct ar_instruction_parser_s {
     ar_condition_instruction_parser_t *own_condition_parser;
     ar_parse_instruction_parser_t *own_parse_parser;
     ar_build_instruction_parser_t *own_build_parser;
-    ar_method_instruction_parser_t *own_method_parser;
+    ar_compile_instruction_parser_t *own_method_parser;
     ar_agent_instruction_parser_t *own_agent_parser;
     ar_destroy_agent_instruction_parser_t *own_destroy_agent_parser;
     ar_destroy_method_instruction_parser_t *own_destroy_method_parser;
@@ -60,7 +60,7 @@ static void _destroy_specialized_parsers(ar_instruction_parser_t *mut_parser) {
         ar_build_instruction_parser__destroy(mut_parser->own_build_parser);
     }
     if (mut_parser->own_method_parser) {
-        ar_method_instruction_parser__destroy(mut_parser->own_method_parser);
+        ar_compile_instruction_parser__destroy(mut_parser->own_method_parser);
     }
     if (mut_parser->own_agent_parser) {
         ar_agent_instruction_parser__destroy(mut_parser->own_agent_parser);
@@ -119,7 +119,7 @@ ar_instruction_parser_t* ar_instruction_parser__create(ar_log_t *ref_log) {
     }
     
     // Create method parser
-    own_parser->own_method_parser = ar_method_instruction_parser__create(ref_log);
+    own_parser->own_method_parser = ar_compile_instruction_parser__create(ref_log);
     if (!own_parser->own_method_parser) {
         goto error;
     }
@@ -265,9 +265,9 @@ static ar_instruction_ast_t* _dispatch_function(ar_instruction_parser_t *mut_par
         return own_ast;
     }
     
-    // Check for method
-    if (func_len == 6 && strncmp(func_name, "method", 6) == 0) {
-        ar_instruction_ast_t *own_ast = ar_method_instruction_parser__parse(
+    // Check for compile
+    if (func_len == 7 && strncmp(func_name, "compile", 7) == 0) {
+        ar_instruction_ast_t *own_ast = ar_compile_instruction_parser__parse(
             mut_parser->own_method_parser,
             ref_instruction,
             own_result_path

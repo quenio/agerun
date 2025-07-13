@@ -117,7 +117,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ## Immediate Priorities (Next Steps)
 
 ### Language Enhancement Tasks (NEW)
-- [ ] Rename the `method` instruction to `compile`
+- [x] Rename the `method` instruction to `compile` (Completed 2025-07-13)
+- [ ] Rename the `agent` instruction to `create`
 - [ ] Rename the `destroy` method instruction to `deprecate`  
 - [ ] Rename the destroy agent parser/evaluator to simply `destroy`
 

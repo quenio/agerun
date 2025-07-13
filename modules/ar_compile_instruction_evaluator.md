@@ -1,56 +1,56 @@
-# Method Instruction Evaluator Module
+# Compile Instruction Evaluator Module
 
 ## Overview
 
-The method instruction evaluator module is responsible for evaluating method creation instructions in the AgeRun language. It handles the registration of new methods with their associated instruction code.
+The compile instruction evaluator module is responsible for evaluating method creation instructions in the AgeRun language. It handles the registration of new methods with their associated instruction code.
 
 This module follows an instantiable design pattern where evaluators are created with their dependencies and can be reused for multiple evaluations.
 
 ## Purpose
 
-This module extracts the method instruction evaluation logic from the main instruction evaluator, following the single responsibility principle. It provides specialized handling for method creation and registration in the methodology.
+This module extracts the compile instruction evaluation logic from the main instruction evaluator, following the single responsibility principle. It provides specialized handling for method creation and registration in the methodology.
 
 ## Key Components
 
 ### Types
 
 ```c
-typedef struct ar_method_instruction_evaluator_s ar_method_instruction_evaluator_t;
+typedef struct ar_compile_instruction_evaluator_s ar_compile_instruction_evaluator_t;
 ```
 
-An opaque type representing a method instruction evaluator instance.
+An opaque type representing a compile instruction evaluator instance.
 
 ### Public Interface
 
 ```c
-ar_method_instruction_evaluator_t* ar_method_instruction_evaluator__create(
+ar_compile_instruction_evaluator_t* ar_compile_instruction_evaluator__create(
     ar_log_t *ref_log,
     ar_expression_evaluator_t *ref_expr_evaluator,
     ar_data_t *mut_memory
 );
 ```
-Creates a new method instruction evaluator that stores its dependencies including the log for error reporting.
+Creates a new compile instruction evaluator that stores its dependencies including the log for error reporting.
 
 ```c
-void ar_method_instruction_evaluator__destroy(
-    ar_method_instruction_evaluator_t *own_evaluator
+void ar_compile_instruction_evaluator__destroy(
+    ar_compile_instruction_evaluator_t *own_evaluator
 );
 ```
-Destroys a method instruction evaluator and frees all resources.
+Destroys a compile instruction evaluator and frees all resources.
 
 ```c
-bool ar_method_instruction_evaluator__evaluate(
-    ar_method_instruction_evaluator_t *mut_evaluator,
+bool ar_compile_instruction_evaluator__evaluate(
+    ar_compile_instruction_evaluator_t *mut_evaluator,
     const ar_instruction_ast_t *ref_ast
 );
 ```
-Evaluates a method instruction using the stored dependencies.
+Evaluates a compile instruction using the stored dependencies.
 
 
 ### Functionality
 
-The module evaluates method instructions of the form:
-- `method(name, instructions, version)`
+The module evaluates compile instructions of the form:
+- `compile(name, instructions, version)`
 
 Key features:
 1. **Method Creation**: Creates new method objects with name, code, and version
@@ -99,21 +99,21 @@ The module:
 ar_data_t *memory = ar_data__create_map();
 ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
 
-// Create method instruction evaluator
-ar_method_instruction_evaluator_t *method_eval = ar_method_instruction_evaluator__create(
+// Create compile instruction evaluator
+ar_compile_instruction_evaluator_t *method_eval = ar_compile_instruction_evaluator__create(
     log, expr_eval, memory
 );
 
-// Parse method instruction: method("echo", "send(0, message)", "1.0.0")
-ar_instruction_ast_t *ast = ar_instruction_parser__parse_method(parser);
+// Parse compile instruction: compile("echo", "send(0, message)", "1.0.0")
+ar_instruction_ast_t *ast = ar_instruction_parser__parse_compile(parser);
 
 // Evaluate the method creation
-bool success = ar_method_instruction_evaluator__evaluate(method_eval, ast);
+bool success = ar_compile_instruction_evaluator__evaluate(method_eval, ast);
 
 // Method "echo" version "1.0.0" is now registered
 
 // Cleanup
-ar_method_instruction_evaluator__destroy(method_eval);
+ar_compile_instruction_evaluator__destroy(method_eval);
 ar_expression_evaluator__destroy(expr_eval);
 ar_data__destroy(memory);
 ```

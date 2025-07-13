@@ -4,7 +4,7 @@ Version: 1.0.0
 
 ## Overview
 
-The method-creator method allows agents to dynamically create new methods at runtime using the `method()` function.
+The method-creator method allows agents to dynamically create new methods at runtime using the `compile()` function.
 
 ## Message Format
 
@@ -17,7 +17,7 @@ The method expects a message with the following fields:
 ## Behavior
 
 1. Extracts the method name, instructions, and version from the message
-2. Calls the `method()` function to create and register the new method
+2. Calls the `compile()` function to create and register the new method
 3. Returns 1 if successful, 0 if failed
 4. Sends the result back to the sender
 

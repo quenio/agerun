@@ -188,7 +188,7 @@ Agents use a simple expression and instruction language for their methods:
 
 ### Agent Management
 
-- `method(method_name, instructions, version)`: Define a new method with semantic versioning
+- `compile(method_name, instructions, version)`: Define a new method with semantic versioning
 - `agent(method_name, version, context)`: Create a new agent using a method with specific version
 - `destroy(agent_id)`: Destroy an agent
 

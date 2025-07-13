@@ -203,12 +203,12 @@ static void test_parse_function_call_instructions(void) {
     
     // Test 4: Method function call
     {
-        // When parsing a method function call
-        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("method(\"greet\", \"memory.msg := \\\"Hi\\\"\", \"1.0.0\")", mut_ctx);
+        // When parsing a compile function call
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("compile(\"greet\", \"memory.msg := \\\"Hi\\\"\", \"1.0.0\")", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__METHOD);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__COMPILE);
         
         const char *function_name = NULL;
         const char **args = NULL;
@@ -428,12 +428,12 @@ static void test_parse_function_calls_with_assignment(void) {
     
     // Test 4: Method with assignment
     {
-        // When parsing a method function call with assignment
-        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.created := method(\"greet\", \"memory.msg := \\\"Hi\\\"\", \"1.0.0\")", mut_ctx);
+        // When parsing a compile function call with assignment
+        ar_parsed_instruction_t *own_parsed = ar_instruction__parse("memory.created := compile(\"greet\", \"memory.msg := \\\"Hi\\\"\", \"1.0.0\")", mut_ctx);
         
         // Then it should parse successfully
         assert(own_parsed != NULL);
-        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__METHOD);
+        assert(ar_instruction__get_type(own_parsed) == AR_INSTRUCTION_TYPE__COMPILE);
         
         const char *function_name = NULL;
         const char **args = NULL;

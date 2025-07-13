@@ -144,14 +144,14 @@ static void test_create_method_function(void) {
     size_t arg_count = 3;
     const char *result_path = "memory.method_created";
     
-    // When creating a method function call AST node
+    // When creating a compile function call AST node
     ar_instruction_ast_t *own_node = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__METHOD, function_name, args, arg_count, result_path
+        AR_INSTRUCTION_AST_TYPE__COMPILE, function_name, args, arg_count, result_path
     );
     
     // Then the node should be created correctly
     assert(own_node != NULL);
-    assert(ar_instruction_ast__get_type(own_node) == AR_INSTRUCTION_AST_TYPE__METHOD);
+    assert(ar_instruction_ast__get_type(own_node) == AR_INSTRUCTION_AST_TYPE__COMPILE);
     assert(ar_instruction_ast__has_result_assignment(own_node) == true);
     
     ar_instruction_ast__destroy(own_node);

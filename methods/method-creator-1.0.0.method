@@ -1,2 +1,2 @@
-memory.result := method(message.method_name, message.instructions, message.version)
+memory.result := compile(message.method_name, message.instructions, message.version)
 send(message.sender, memory.result)

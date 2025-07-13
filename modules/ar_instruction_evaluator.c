@@ -10,7 +10,7 @@
 #include "ar_condition_instruction_evaluator.h"
 #include "ar_parse_instruction_evaluator.h"
 #include "ar_build_instruction_evaluator.h"
-#include "ar_method_instruction_evaluator.h"
+#include "ar_compile_instruction_evaluator.h"
 #include "ar_agent_instruction_evaluator.h"
 #include "ar_destroy_agent_instruction_evaluator.h"
 #include "ar_destroy_method_instruction_evaluator.h"
@@ -34,7 +34,7 @@ struct ar_instruction_evaluator_s {
     ar_condition_instruction_evaluator_t *own_condition_evaluator;  /* Condition evaluator instance (owned) */
     ar_parse_instruction_evaluator_t *own_parse_evaluator;  /* Parse evaluator instance (owned) */
     ar_build_instruction_evaluator_t *own_build_evaluator;  /* Build evaluator instance (owned) */
-    ar_method_instruction_evaluator_t *own_method_evaluator;  /* Method evaluator instance (owned) */
+    ar_compile_instruction_evaluator_t *own_method_evaluator;  /* Compile evaluator instance (owned) */
     ar_agent_instruction_evaluator_t *own_agent_evaluator;  /* Agent evaluator instance (owned) */
     ar_destroy_agent_instruction_evaluator_t *own_destroy_agent_evaluator;  /* Destroy agent evaluator instance (owned) */
     ar_destroy_method_instruction_evaluator_t *own_destroy_method_evaluator;  /* Destroy method evaluator instance (owned) */
@@ -123,7 +123,7 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
     }
     
     // Create method evaluator instance (now uses frame-based pattern)
-    evaluator->own_method_evaluator = ar_method_instruction_evaluator__create(
+    evaluator->own_method_evaluator = ar_compile_instruction_evaluator__create(
         ref_log,
         ref_expr_evaluator
     );
@@ -143,7 +143,7 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
         ref_expr_evaluator
     );
     if (evaluator->own_agent_evaluator == NULL) {
-        ar_method_instruction_evaluator__destroy(evaluator->own_method_evaluator);
+        ar_compile_instruction_evaluator__destroy(evaluator->own_method_evaluator);
         ar_build_instruction_evaluator__destroy(evaluator->own_build_evaluator);
         ar_parse_instruction_evaluator__destroy(evaluator->own_parse_evaluator);
         ar_condition_instruction_evaluator__destroy(evaluator->own_condition_evaluator);
@@ -159,7 +159,7 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
     );
     if (evaluator->own_destroy_agent_evaluator == NULL) {
         ar_agent_instruction_evaluator__destroy(evaluator->own_agent_evaluator);
-        ar_method_instruction_evaluator__destroy(evaluator->own_method_evaluator);
+        ar_compile_instruction_evaluator__destroy(evaluator->own_method_evaluator);
         ar_build_instruction_evaluator__destroy(evaluator->own_build_evaluator);
         ar_parse_instruction_evaluator__destroy(evaluator->own_parse_evaluator);
         ar_condition_instruction_evaluator__destroy(evaluator->own_condition_evaluator);
@@ -177,7 +177,7 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
     if (evaluator->own_destroy_method_evaluator == NULL) {
         ar_destroy_agent_instruction_evaluator__destroy(evaluator->own_destroy_agent_evaluator);
         ar_agent_instruction_evaluator__destroy(evaluator->own_agent_evaluator);
-        ar_method_instruction_evaluator__destroy(evaluator->own_method_evaluator);
+        ar_compile_instruction_evaluator__destroy(evaluator->own_method_evaluator);
         ar_build_instruction_evaluator__destroy(evaluator->own_build_evaluator);
         ar_parse_instruction_evaluator__destroy(evaluator->own_parse_evaluator);
         ar_condition_instruction_evaluator__destroy(evaluator->own_condition_evaluator);
@@ -215,7 +215,7 @@ void ar_instruction_evaluator__destroy(ar_instruction_evaluator_t *own_evaluator
         ar_build_instruction_evaluator__destroy(own_evaluator->own_build_evaluator);
     }
     if (own_evaluator->own_method_evaluator != NULL) {
-        ar_method_instruction_evaluator__destroy(own_evaluator->own_method_evaluator);
+        ar_compile_instruction_evaluator__destroy(own_evaluator->own_method_evaluator);
     }
     if (own_evaluator->own_agent_evaluator != NULL) {
         ar_agent_instruction_evaluator__destroy(own_evaluator->own_agent_evaluator);
@@ -289,9 +289,9 @@ bool ar_instruction_evaluator__evaluate(
                 ref_ast
             );
             
-        case AR_INSTRUCTION_AST_TYPE__METHOD:
-            // Delegate to the method instruction evaluator instance (with frame)
-            return ar_method_instruction_evaluator__evaluate(
+        case AR_INSTRUCTION_AST_TYPE__COMPILE:
+            // Delegate to the compile instruction evaluator instance (with frame)
+            return ar_compile_instruction_evaluator__evaluate(
                 mut_evaluator->own_method_evaluator,
                 ref_frame,
                 ref_ast

@@ -101,7 +101,7 @@ bool ar_interpreter__execute_instruction(ar_interpreter_t *mut_interpreter,
         case INST_BUILD:
             result = _execute_build(mut_interpreter, mut_context, own_parsed);
             break;
-        case AR_INSTRUCTION_TYPE__METHOD:
+        case AR_INSTRUCTION_TYPE__COMPILE:
             result = _execute_method(mut_interpreter, mut_context, own_parsed);
             break;
         case AR_INSTRUCTION_TYPE__AGENT:
@@ -1139,8 +1139,8 @@ static bool _execute_method(ar_interpreter_t *mut_interpreter, ar_instruction_co
         return false;
     }
     
-    // Verify this is a method function with 3 arguments
-    if (strcmp(ref_function_name, "method") != 0 || arg_count != 3) {
+    // Verify this is a compile function with 3 arguments
+    if (strcmp(ref_function_name, "compile") != 0 || arg_count != 3) {
         return false;
     }
     

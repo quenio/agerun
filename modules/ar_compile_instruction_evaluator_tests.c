@@ -4,7 +4,7 @@
 #include <string.h>
 #include <inttypes.h>
 #include <unistd.h>
-#include "ar_method_instruction_evaluator.h"
+#include "ar_compile_instruction_evaluator.h"
 #include "ar_expression_evaluator.h"
 #include "ar_instruction_ast.h"
 #include "ar_expression_ast.h"
@@ -18,16 +18,16 @@
 #include "ar_evaluator_fixture.h"
 #include "ar_frame.h"
 
-static void test_method_instruction_evaluator__create_destroy(void) {
+static void test_compile_instruction_evaluator__create_destroy(void) {
     // Given a test fixture
-    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_method_instruction_evaluator__create_destroy");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_compile_instruction_evaluator__create_destroy");
     assert(own_fixture != NULL);
     
     ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
     ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
     
-    // When creating a method instruction evaluator
-    ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
+    // When creating a compile instruction evaluator
+    ar_compile_instruction_evaluator_t *evaluator = ar_compile_instruction_evaluator__create(
         ref_log, ref_expr_eval
     );
     
@@ -35,23 +35,23 @@ static void test_method_instruction_evaluator__create_destroy(void) {
     assert(evaluator != NULL);
     
     // When destroying the evaluator
-    ar_method_instruction_evaluator__destroy(evaluator);
+    ar_compile_instruction_evaluator__destroy(evaluator);
     
     // Then cleanup fixture
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
-static void test_method_instruction_evaluator__evaluate_with_instance(void) {
+static void test_compile_instruction_evaluator__evaluate_with_instance(void) {
     // Given a test fixture
-    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_method_instruction_evaluator__evaluate_with_instance");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_compile_instruction_evaluator__evaluate_with_instance");
     assert(own_fixture != NULL);
     
     ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
     ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
-    // When creating a method instruction evaluator instance
-    ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
+    // When creating a compile instruction evaluator instance
+    ar_compile_instruction_evaluator_t *evaluator = ar_compile_instruction_evaluator__create(
         ref_log, ref_expr_eval
     );
     assert(evaluator != NULL);
@@ -59,7 +59,7 @@ static void test_method_instruction_evaluator__evaluate_with_instance(void) {
     // When creating a method AST node
     const char *args[] = {"\"test_method\"", "\"send(0, 42)\"", "\"1.0.0\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__METHOD, "method", args, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__COMPILE, "method", args, 3, NULL
     );
     assert(ast != NULL);
     
@@ -83,23 +83,23 @@ static void test_method_instruction_evaluator__evaluate_with_instance(void) {
     assert(ast_set == true);
     
     // When evaluating using the instance
-    bool result = ar_method_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
+    bool result = ar_compile_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
     
     // Then it should succeed
     assert(result == true);
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
-    ar_method_instruction_evaluator__destroy(evaluator);
+    ar_compile_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(own_fixture);
     
     // Clean up the method we registered
     ar_methodology__cleanup();
 }
 
-static void test_method_instruction_evaluator__evaluate_legacy(void) {
+static void test_compile_instruction_evaluator__evaluate_legacy(void) {
     // Given a test fixture
-    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_method_instruction_evaluator__evaluate_legacy");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_compile_instruction_evaluator__evaluate_legacy");
     assert(own_fixture != NULL);
     
     ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
@@ -108,7 +108,7 @@ static void test_method_instruction_evaluator__evaluate_legacy(void) {
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     // Create an evaluator instance
-    ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
+    ar_compile_instruction_evaluator_t *evaluator = ar_compile_instruction_evaluator__create(
         ref_log, ref_expr_eval
     );
     assert(evaluator != NULL);
@@ -116,7 +116,7 @@ static void test_method_instruction_evaluator__evaluate_legacy(void) {
     // When creating a method AST node with result assignment
     const char *args[] = {"\"legacy_test\"", "\"send(0, 99)\"", "\"2.0.0\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__METHOD, "method", args, 3, "memory.result"
+        AR_INSTRUCTION_AST_TYPE__COMPILE, "method", args, 3, "memory.result"
     );
     assert(ast != NULL);
     
@@ -140,7 +140,7 @@ static void test_method_instruction_evaluator__evaluate_legacy(void) {
     assert(ast_set == true);
     
     // When evaluating using the instance-based interface
-    bool result = ar_method_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
+    bool result = ar_compile_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
     
     // Then it should succeed
     assert(result == true);
@@ -151,7 +151,7 @@ static void test_method_instruction_evaluator__evaluate_legacy(void) {
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
-    ar_method_instruction_evaluator__destroy(evaluator);
+    ar_compile_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(own_fixture);
     
     // Clean up the method we registered
@@ -167,15 +167,15 @@ static void test_instruction_evaluator__evaluate_method_simple(void) {
     ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
-    ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
+    ar_compile_instruction_evaluator_t *evaluator = ar_compile_instruction_evaluator__create(
         ref_log, ref_expr_eval
     );
     assert(evaluator != NULL);
     
-    // When evaluating a method instruction: method("counter", "send(message.sender, memory.count + 1)", "1.0.0")
+    // When evaluating a compile instruction: compile("counter", "send(message.sender, memory.count + 1)", "1.0.0")
     const char *args[] = {"\"counter\"", "\"send(message.sender, memory.count + 1)\"", "\"1.0.0\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__METHOD, "method", args, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__COMPILE, "method", args, 3, NULL
     );
     assert(ast != NULL);
     
@@ -198,14 +198,14 @@ static void test_instruction_evaluator__evaluate_method_simple(void) {
     bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
     
-    bool result = ar_method_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
+    bool result = ar_compile_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
     
     // Then it should return true (method creation successful)
     assert(result == true);
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
-    ar_method_instruction_evaluator__destroy(evaluator);
+    ar_compile_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(own_fixture);
     
     // Clean up the method we registered
@@ -222,15 +222,15 @@ static void test_instruction_evaluator__evaluate_method_with_result(void) {
     ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
-    ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
+    ar_compile_instruction_evaluator_t *evaluator = ar_compile_instruction_evaluator__create(
         ref_log, ref_expr_eval
     );
     assert(evaluator != NULL);
     
-    // When evaluating a method instruction with result assignment: memory.created := method("echo", "send(message.sender, message.content)", "2.0.0")
+    // When evaluating a compile instruction with result assignment: memory.created := compile("echo", "send(message.sender, message.content)", "2.0.0")
     const char *args[] = {"\"echo\"", "\"send(message.sender, message.content)\"", "\"2.0.0\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__METHOD, "method", args, 3, "memory.created"
+        AR_INSTRUCTION_AST_TYPE__COMPILE, "method", args, 3, "memory.created"
     );
     assert(ast != NULL);
     
@@ -253,7 +253,7 @@ static void test_instruction_evaluator__evaluate_method_with_result(void) {
     bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
     
-    bool result = ar_method_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
+    bool result = ar_compile_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
     
     // Then it should return true
     assert(result == true);
@@ -264,7 +264,7 @@ static void test_instruction_evaluator__evaluate_method_with_result(void) {
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
-    ar_method_instruction_evaluator__destroy(evaluator);
+    ar_compile_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(own_fixture);
     
     // Clean up the method we registered
@@ -280,15 +280,15 @@ static void test_instruction_evaluator__evaluate_method_invalid_instructions(voi
     ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
-    ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
+    ar_compile_instruction_evaluator_t *evaluator = ar_compile_instruction_evaluator__create(
         ref_log, ref_expr_eval
     );
     assert(evaluator != NULL);
     
-    // When evaluating a method instruction with invalid instructions: method("bad", "invalid syntax here", "1.0.0")
+    // When evaluating a compile instruction with invalid instructions: compile("bad", "invalid syntax here", "1.0.0")
     const char *args[] = {"\"bad\"", "\"invalid syntax here\"", "\"1.0.0\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__METHOD, "method", args, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__COMPILE, "method", args, 3, NULL
     );
     assert(ast != NULL);
     
@@ -311,7 +311,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_instructions(voi
     bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
     
-    bool result = ar_method_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
+    bool result = ar_compile_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
     
     // Then it should return true (method creation succeeds even with invalid instructions)
     // The validation happens when the method is actually executed
@@ -319,7 +319,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_instructions(voi
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
-    ar_method_instruction_evaluator__destroy(evaluator);
+    ar_compile_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(own_fixture);
     
     // Clean up the method we registered
@@ -335,7 +335,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
-    ar_method_instruction_evaluator_t *evaluator = ar_method_instruction_evaluator__create(
+    ar_compile_instruction_evaluator_t *evaluator = ar_compile_instruction_evaluator__create(
         ref_log, ref_expr_eval
     );
     assert(evaluator != NULL);
@@ -343,7 +343,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     // Test case 1: Wrong number of arguments
     const char *args1[] = {"\"test\"", "\"send(0, 42)\""};  // Missing version
     ar_instruction_ast_t *ast1 = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__METHOD, "method", args1, 2, NULL
+        AR_INSTRUCTION_AST_TYPE__COMPILE, "method", args1, 2, NULL
     );
     assert(ast1 != NULL);
     
@@ -360,7 +360,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     bool ast_set1 = ar_instruction_ast__set_function_arg_asts(ast1, arg_asts1);
     assert(ast_set1 == true);
     
-    bool result1 = ar_method_instruction_evaluator__evaluate(evaluator, ref_frame, ast1);
+    bool result1 = ar_compile_instruction_evaluator__evaluate(evaluator, ref_frame, ast1);
     assert(result1 == false);
     
     ar_instruction_ast__destroy(ast1);
@@ -368,7 +368,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     // Test case 2: Non-string method name
     const char *args2[] = {"42", "\"send(0, 42)\"", "\"1.0.0\""};
     ar_instruction_ast_t *ast2 = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__METHOD, "method", args2, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__COMPILE, "method", args2, 3, NULL
     );
     assert(ast2 != NULL);
     
@@ -388,7 +388,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     bool ast_set2 = ar_instruction_ast__set_function_arg_asts(ast2, arg_asts2);
     assert(ast_set2 == true);
     
-    bool result2 = ar_method_instruction_evaluator__evaluate(evaluator, ref_frame, ast2);
+    bool result2 = ar_compile_instruction_evaluator__evaluate(evaluator, ref_frame, ast2);
     assert(result2 == false);
     
     ar_instruction_ast__destroy(ast2);
@@ -396,7 +396,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     // Test case 3: Non-string instructions
     const char *args3[] = {"\"test\"", "42", "\"1.0.0\""};
     ar_instruction_ast_t *ast3 = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__METHOD, "method", args3, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__COMPILE, "method", args3, 3, NULL
     );
     assert(ast3 != NULL);
     
@@ -416,7 +416,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     bool ast_set3 = ar_instruction_ast__set_function_arg_asts(ast3, arg_asts3);
     assert(ast_set3 == true);
     
-    bool result3 = ar_method_instruction_evaluator__evaluate(evaluator, ref_frame, ast3);
+    bool result3 = ar_compile_instruction_evaluator__evaluate(evaluator, ref_frame, ast3);
     assert(result3 == false);
     
     ar_instruction_ast__destroy(ast3);
@@ -424,7 +424,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     // Test case 4: Non-string version
     const char *args4[] = {"\"test\"", "\"send(0, 42)\"", "1.0"};
     ar_instruction_ast_t *ast4 = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__METHOD, "method", args4, 3, NULL
+        AR_INSTRUCTION_AST_TYPE__COMPILE, "method", args4, 3, NULL
     );
     assert(ast4 != NULL);
     
@@ -444,13 +444,13 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     bool ast_set4 = ar_instruction_ast__set_function_arg_asts(ast4, arg_asts4);
     assert(ast_set4 == true);
     
-    bool result4 = ar_method_instruction_evaluator__evaluate(evaluator, ref_frame, ast4);
+    bool result4 = ar_compile_instruction_evaluator__evaluate(evaluator, ref_frame, ast4);
     assert(result4 == false);
     
     ar_instruction_ast__destroy(ast4);
     
     // Cleanup
-    ar_method_instruction_evaluator__destroy(evaluator);
+    ar_compile_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(own_fixture);
     
     // Clean up any methods that might have been registered
@@ -458,7 +458,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
 }
 
 int main(void) {
-    printf("Starting method instruction evaluator tests...\n");
+    printf("Starting compile instruction evaluator tests...\n");
     
     // Check if running from bin directory
     char cwd[1024];
@@ -478,14 +478,14 @@ int main(void) {
     remove("methodology.agerun");
     remove("agency.agerun");
     
-    test_method_instruction_evaluator__create_destroy();
-    printf("test_method_instruction_evaluator__create_destroy passed!\n");
+    test_compile_instruction_evaluator__create_destroy();
+    printf("test_compile_instruction_evaluator__create_destroy passed!\n");
     
-    test_method_instruction_evaluator__evaluate_with_instance();
-    printf("test_method_instruction_evaluator__evaluate_with_instance passed!\n");
+    test_compile_instruction_evaluator__evaluate_with_instance();
+    printf("test_compile_instruction_evaluator__evaluate_with_instance passed!\n");
     
-    test_method_instruction_evaluator__evaluate_legacy();
-    printf("test_method_instruction_evaluator__evaluate_legacy passed!\n");
+    test_compile_instruction_evaluator__evaluate_legacy();
+    printf("test_compile_instruction_evaluator__evaluate_legacy passed!\n");
     
     test_instruction_evaluator__evaluate_method_simple();
     printf("test_instruction_evaluator__evaluate_method_simple passed!\n");
@@ -499,7 +499,7 @@ int main(void) {
     test_instruction_evaluator__evaluate_method_invalid_args();
     printf("test_instruction_evaluator__evaluate_method_invalid_args passed!\n");
     
-    printf("All method instruction evaluator tests passed!\n");
+    printf("All compile instruction evaluator tests passed!\n");
     
     // Clean up after tests
     ar_methodology__cleanup();

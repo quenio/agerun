@@ -187,10 +187,10 @@ static void test_instruction_parser__parse_build(void) {
 }
 
 static void test_instruction_parser__parse_method(void) {
-    printf("Testing unified parse method for method instruction...\n");
+    printf("Testing unified parse method for compile instruction...\n");
     
-    // Given a method instruction
-    const char *instruction = "method(\"test\", \"send(1, message)\", \"1.0.0\")";
+    // Given a compile instruction
+    const char *instruction = "compile(\"test\", \"send(1, message)\", \"1.0.0\")";
     
     // When creating a parser and parsing via unified method
     ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
@@ -200,7 +200,7 @@ static void test_instruction_parser__parse_method(void) {
     
     // Then it should parse successfully
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__METHOD);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__COMPILE);
     
     ar_instruction_ast__destroy(own_ast);
     ar_instruction_parser__destroy(own_parser);
@@ -450,11 +450,11 @@ static void test_parse_if_function(void) {
     ar_instruction_parser__destroy(own_parser);
 }
 
-static void test_parse_method_function(void) {
-    printf("Testing method function parsing...\n");
+static void test_parse_compile_function(void) {
+    printf("Testing compile function parsing...\n");
     
-    // Given a method function call (without escaped quotes that expression parser can't handle)
-    const char *instruction = "method(\"greet\", \"memory.msg := 42\", \"1.0.0\")";
+    // Given a compile function call (without escaped quotes that expression parser can't handle)
+    const char *instruction = "compile(\"greet\", \"memory.msg := 42\", \"1.0.0\")";
     
     // When creating a parser and parsing the instruction
     ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
@@ -464,7 +464,7 @@ static void test_parse_method_function(void) {
     
     // Then it should parse as a method function
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__METHOD);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__COMPILE);
     
     ar_instruction_ast__destroy(own_ast);
     ar_instruction_parser__destroy(own_parser);
@@ -719,7 +719,7 @@ int main(void) {
     // Function call tests
     // Send tests moved to ar_send_instruction_parser_tests.c
     test_parse_if_function();
-    test_parse_method_function();
+    test_parse_compile_function();
     test_parse_agent_function();
     test_parse_destroy_one_arg();
     test_parse_destroy_two_args();

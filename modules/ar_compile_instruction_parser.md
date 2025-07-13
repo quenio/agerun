@@ -1,43 +1,43 @@
-# Method Instruction Parser Module
+# Compile Instruction Parser Module
 
 ## Overview
 
-The method instruction parser module is responsible for parsing method() function instructions in the AgeRun language. It follows the specialized parser pattern, providing an instantiable parser with create/destroy lifecycle.
+The compile instruction parser module is responsible for parsing compile() function instructions in the AgeRun language. It follows the specialized parser pattern, providing an instantiable parser with create/destroy lifecycle.
 
 ## Purpose
 
-This module extracts the parsing logic for method() function calls from the general instruction parser, creating a focused, single-responsibility component that handles only method instructions.
+This module extracts the parsing logic for compile() function calls from the general instruction parser, creating a focused, single-responsibility component that handles only compile instructions.
 
 ## Interface
 
 ### Types
 
-- `ar_method_instruction_parser_t` - Opaque parser instance type
+- `ar_compile_instruction_parser_t` - Opaque parser instance type
 
 ### Functions
 
-- `ar_method_instruction_parser__create(ar_log_t *ref_log)` - Create a new parser instance
-- `ar_method_instruction_parser__destroy()` - Destroy a parser instance
-- `ar_method_instruction_parser__parse()` - Parse a method instruction
-- `ar_method_instruction_parser__get_error()` - DEPRECATED: Always returns NULL. Use ar_log for error reporting
-- `ar_method_instruction_parser__get_error_position()` - DEPRECATED: Always returns 0. Error positions are reported through ar_log
+- `ar_compile_instruction_parser__create(ar_log_t *ref_log)` - Create a new parser instance
+- `ar_compile_instruction_parser__destroy()` - Destroy a parser instance
+- `ar_compile_instruction_parser__parse()` - Parse a compile instruction
+- `ar_compile_instruction_parser__get_error()` - DEPRECATED: Always returns NULL. Use ar_log for error reporting
+- `ar_compile_instruction_parser__get_error_position()` - DEPRECATED: Always returns 0. Error positions are reported through ar_log
 
 ## Usage Example
 
 ```c
 // Create parser (with optional logging)
 ar_log_t *own_log = ar_log__create(); // Optional - can be NULL
-ar_method_instruction_parser_t *parser = ar_method_instruction_parser__create(own_log);
+ar_compile_instruction_parser_t *parser = ar_compile_instruction_parser__create(own_log);
 
 // Parse simple method function
-ar_instruction_ast_t *ast1 = ar_method_instruction_parser__parse(
+ar_instruction_ast_t *ast1 = ar_compile_instruction_parser__parse(
     parser, 
-    "method(\"greet\", \"memory.msg := \\\"Hello\\\"\", \"1.0.0\")", 
+    "compile(\"greet\", \"memory.msg := \\\"Hello\\\"\", \"1.0.0\")", 
     NULL
 );
 
 // Parse with assignment
-ar_instruction_ast_t *ast2 = ar_method_instruction_parser__parse(
+ar_instruction_ast_t *ast2 = ar_compile_instruction_parser__parse(
     parser,
     "memory.method_ref := method(\"calculate\", \"memory.result := 42\", \"2.0.0\")",
     "memory.method_ref"
@@ -53,13 +53,13 @@ if (!ast2) {
 // Clean up
 ar_instruction_ast__destroy(ast1);
 ar_instruction_ast__destroy(ast2);
-ar_method_instruction_parser__destroy(parser);
+ar_compile_instruction_parser__destroy(parser);
 ar_log__destroy(own_log); // Only if log was created
 ```
 
 ## Syntax Supported
 
-The parser handles the method() function with this syntax:
+The parser handles the compile() function with this syntax:
 - `method(name, code, version)` - Creates a new method with given parameters
 - All three arguments must be string literals
 - Can be used with assignment: `memory.path := method(...)`
@@ -98,11 +98,11 @@ The parser reports errors through the ar_log instance provided during creation:
 
 ## Integration
 
-This parser is designed to be used by the main instruction_parser module as part of the facade pattern for instruction parsing. It can also be used standalone for parsing only method() function instructions.
+This parser is designed to be used by the main instruction_parser module as part of the facade pattern for instruction parsing. It can also be used standalone for parsing only compile() function instructions.
 
 ## Method Function Behavior
 
-The method() function is used to create new methods in the system:
+The compile() function is used to create new methods in the system:
 - Name: The method identifier used for invocation
 - Code: AgeRun instructions that define the method's behavior
 - Version: Semantic version string for method versioning

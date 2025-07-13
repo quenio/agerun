@@ -369,10 +369,10 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
     
     // Test 5: Method instruction
     {
-        // Given a method instruction AST with three string arguments and result assignment
+        // Given a compile instruction AST with three string arguments and result assignment
         const char *args[] = {"\"test_method\"", "\"memory.result := 42\"", "\"1.0.0\""};
         ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-            AR_INSTRUCTION_AST_TYPE__METHOD, "method", args, 3, "memory.method_created"
+            AR_INSTRUCTION_AST_TYPE__COMPILE, "compile", args, 3, "memory.method_created"
         );
         assert(ast != NULL);
         

@@ -132,7 +132,7 @@ static void test_agent_parser__error_handling(void) {
     assert(ar_log__get_last_error_message(log) != NULL);
     
     // Test wrong function name
-    own_ast = ar_agent_instruction_parser__parse(own_parser, "method(\"test\", \"1.0.0\")", NULL);
+    own_ast = ar_agent_instruction_parser__parse(own_parser, "compile(\"test\", \"1.0.0\")", NULL);
     assert(own_ast == NULL);
     assert(ar_log__get_last_error_message(log) != NULL);
     

@@ -879,9 +879,9 @@ static ar_parsed_instruction_t* _parse_function_call(ar_instruction_context_t *m
         
         return own_result;
     }
-    else if (strcmp(function_name, "method") == 0) {
-        own_result->type = AR_INSTRUCTION_TYPE__METHOD;
-        // method(name, instructions, version) - requires exactly 3 arguments
+    else if (strcmp(function_name, "compile") == 0) {
+        own_result->type = AR_INSTRUCTION_TYPE__COMPILE;
+        // compile(name, instructions, version) - requires exactly 3 arguments
         
         // Allocate args array for 3 arguments
         own_result->own_args = AR__HEAP__MALLOC(3 * sizeof(char*), "Method arguments");

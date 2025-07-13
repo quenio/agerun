@@ -228,7 +228,7 @@ ar_build_instruction_parser
 ├──c──> ar_string (Zig)
 └──c──> ar_heap (Zig)
 
-ar_method_instruction_parser
+ar_compile_instruction_parser
 ├──c──> ar_instruction_ast
 │       ├──c──> ar_list
 │       └──c──> ar_heap (Zig)
@@ -318,7 +318,7 @@ ar_instruction_evaluator
 │       ├──c──> ar_expression_ast
 │       ├──c──> ar_string (Zig)
 │       └──c──> ar_heap (Zig)
-├──c──> ar_method_instruction_evaluator
+├──c──> ar_compile_instruction_evaluator
 │       ├──h──> ar_expression_evaluator
 │       ├──h──> ar_instruction_ast
 │       ├──h──> ar_data
@@ -515,8 +515,8 @@ ar_build_instruction_evaluator_tests
 ├──c──> ar_data
 └──c──> ar_heap (Zig)
 
-ar_method_instruction_evaluator_tests
-├──c──> ar_method_instruction_evaluator (module under test)
+ar_compile_instruction_evaluator_tests
+├──c──> ar_compile_instruction_evaluator (module under test)
 ├──c──> ar_instruction_evaluator
 ├──c──> ar_expression_evaluator
 ├──c──> ar_instruction_ast
@@ -613,8 +613,8 @@ ar_build_instruction_parser_tests
 ├──c──> ar_list
 └──c──> ar_heap (Zig)
 
-ar_method_instruction_parser_tests
-├──c──> ar_method_instruction_parser (module under test)
+ar_compile_instruction_parser_tests
+├──c──> ar_compile_instruction_parser (module under test)
 ├──c──> ar_instruction_ast
 ├──c──> ar_list
 └──c──> ar_heap (Zig)
@@ -946,7 +946,7 @@ The [method module](ar_method.md) provides functionality for creating, managing,
 
 - **Method Encapsulation**: Uses an opaque type to hide implementation details
 - **Semantic Versioning**: Supports creating and managing methods with semantic version strings (e.g., "1.0.0")
-- **Method Execution**: Provides a runtime for executing method instructions
+- **Method Execution**: Provides a runtime for executing compile instructions
 - **Accessor Functions**: Exposes method properties through a clean API
 - **Memory Ownership**: Clear documentation of ownership semantics for method creation and execution
 - **Independent Design**: Provides a clean API that the methodology module uses, not the other way around
@@ -1121,9 +1121,9 @@ The [build instruction evaluator module](ar_build_instruction_evaluator.md) hand
 - **Value Substitution**: Replaces `{key}` with values from provided map
 - **Type Conversion**: Converts all value types to strings
 
-#### Method Instruction Evaluator Module (`ar_method_instruction_evaluator`)
+#### Compile Instruction Evaluator Module (`ar_compile_instruction_evaluator`)
 
-The [method instruction evaluator module](ar_method_instruction_evaluator.md) handles method creation:
+The [compile instruction evaluator module](ar_compile_instruction_evaluator.md) handles method creation:
 - **Method Registration**: Creates and registers new methods
 - **Version Management**: Supports semantic versioning
 - **Instruction Body**: Associates instruction strings with methods
@@ -1142,9 +1142,9 @@ The [destroy agent instruction evaluator module](ar_destroy_agent_instruction_ev
 - **Result Storage**: Stores success/failure result when assignment specified
 - **Instantiable Design**: Follows instantiable pattern with create/destroy lifecycle
 
-#### Destroy Method Instruction Evaluator Module (`ar_destroy_method_instruction_evaluator`)
+#### Destroy Compile Instruction Evaluator Module (`ar_destroy_method_instruction_evaluator`)
 
-The [destroy method instruction evaluator module](ar_destroy_method_instruction_evaluator.md) handles method destruction:
+The [destroy compile instruction evaluator module](ar_destroy_method_instruction_evaluator.md) handles method destruction:
 - **Method Destruction**: Unregisters methods and destroys associated agents
 - **Agent Lifecycle**: Sends `__sleep__` messages to agents before destruction
 - **Result Storage**: Stores success/failure result when assignment specified
@@ -1241,9 +1241,9 @@ The [build instruction parser module](ar_build_instruction_parser.md) handles pa
 - **String Handling**: Manages quoted templates with escape sequences
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
-#### Method Instruction Parser Module (`ar_method_instruction_parser`)
+#### Compile Instruction Parser Module (`ar_compile_instruction_parser`)
 
-The [method instruction parser module](ar_method_instruction_parser.md) handles parsing of method function calls:
+The [compile instruction parser module](ar_compile_instruction_parser.md) handles parsing of compile function calls:
 - **Method Function Syntax**: Parses `method(name, code, version)` format
 - **Three String Arguments**: Validates all arguments are quoted strings
 - **Method Creation**: Creates AR_INSTRUCTION_AST_TYPE__METHOD nodes for method definitions
@@ -1281,9 +1281,9 @@ The [destroy agent instruction parser module](ar_destroy_agent_instruction_parse
 - **Return Value**: Destroy operations return 1 (true) on success, 0 (false) on failure
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
-#### Destroy Method Instruction Parser Module (`ar_destroy_method_instruction_parser`)
+#### Destroy Compile Instruction Parser Module (`ar_destroy_method_instruction_parser`)
 
-The [destroy method instruction parser module](ar_destroy_method_instruction_parser.md) handles parsing of method destruction:
+The [destroy compile instruction parser module](ar_destroy_method_instruction_parser.md) handles parsing of method destruction:
 - **Two Arguments**: Parses `destroy("method_name", "version")` format for method removal
 - **String Arguments**: Both arguments must be quoted strings in evaluator validation
 - **Version Format**: Accepts semantic version strings (e.g., "1.0.0")

@@ -1,4 +1,4 @@
-#include "ar_method_instruction_parser.h"
+#include "ar_compile_instruction_parser.h"
 #include "ar_instruction_ast.h"
 #include "ar_expression_parser.h"
 #include "ar_expression_ast.h"
@@ -9,14 +9,14 @@
 #include <string.h>
 #include <ctype.h>
 
-struct ar_method_instruction_parser_s {
+struct ar_compile_instruction_parser_s {
     ar_log_t *ref_log;       /* Log instance for error reporting (borrowed) */
 };
 
 /**
  * Internal: Log error message with position.
  */
-static void _log_error(ar_method_instruction_parser_t *mut_parser, const char *error, size_t position) {
+static void _log_error(ar_compile_instruction_parser_t *mut_parser, const char *error, size_t position) {
     if (!mut_parser) {
         return;
     }
@@ -215,7 +215,7 @@ static void _cleanup_arg_asts(ar_list_t *arg_asts) {
 /**
  * Internal: Parse argument strings into expression ASTs and return as a list.
  */
-static ar_list_t* _parse_arguments_to_asts(ar_method_instruction_parser_t *mut_parser, 
+static ar_list_t* _parse_arguments_to_asts(ar_compile_instruction_parser_t *mut_parser, 
                                         char **ref_args, 
                                         size_t arg_count,
                                         size_t error_offset) {
@@ -257,8 +257,8 @@ static ar_list_t* _parse_arguments_to_asts(ar_method_instruction_parser_t *mut_p
     return own_arg_asts;
 }
 
-ar_method_instruction_parser_t* ar_method_instruction_parser__create(ar_log_t *ref_log) {
-    ar_method_instruction_parser_t *own_parser = AR__HEAP__CALLOC(1, sizeof(ar_method_instruction_parser_t), "method parser");
+ar_compile_instruction_parser_t* ar_compile_instruction_parser__create(ar_log_t *ref_log) {
+    ar_compile_instruction_parser_t *own_parser = AR__HEAP__CALLOC(1, sizeof(ar_compile_instruction_parser_t), "method parser");
     if (!own_parser) {
         return NULL;
     }
@@ -268,7 +268,7 @@ ar_method_instruction_parser_t* ar_method_instruction_parser__create(ar_log_t *r
     return own_parser;
 }
 
-void ar_method_instruction_parser__destroy(ar_method_instruction_parser_t *own_parser) {
+void ar_compile_instruction_parser__destroy(ar_compile_instruction_parser_t *own_parser) {
     if (!own_parser) {
         return;
     }
@@ -276,8 +276,8 @@ void ar_method_instruction_parser__destroy(ar_method_instruction_parser_t *own_p
     AR__HEAP__FREE(own_parser);
 }
 
-ar_instruction_ast_t* ar_method_instruction_parser__parse(
-    ar_method_instruction_parser_t *mut_parser,
+ar_instruction_ast_t* ar_compile_instruction_parser__parse(
+    ar_compile_instruction_parser_t *mut_parser,
     const char *ref_instruction,
     const char *ref_result_path
 ) {
@@ -300,19 +300,19 @@ ar_instruction_ast_t* ar_method_instruction_parser__parse(
         }
     }
     
-    /* Check for "method" */
-    if (strncmp(ref_instruction + pos, "method", 6) != 0) {
-        _log_error(mut_parser, "Expected 'method' function", pos);
+    /* Check for "compile" */
+    if (strncmp(ref_instruction + pos, "compile", 7) != 0) {
+        _log_error(mut_parser, "Expected 'compile' function", pos);
         return NULL;
     }
-    pos += 6;
+    pos += 7;
     
     /* Skip whitespace */
     pos = _skip_whitespace(ref_instruction, pos);
     
     /* Expect opening parenthesis */
     if (ref_instruction[pos] != '(') {
-        _log_error(mut_parser, "Expected '(' after 'method'", pos);
+        _log_error(mut_parser, "Expected '(' after 'compile'", pos);
         return NULL;
     }
     pos++;
@@ -321,7 +321,7 @@ ar_instruction_ast_t* ar_method_instruction_parser__parse(
     char **args = NULL;
     size_t arg_count = 0;
     if (!_parse_arguments(ref_instruction, &pos, &args, &arg_count, 3)) {
-        _log_error(mut_parser, "Failed to parse method arguments", pos);
+        _log_error(mut_parser, "Failed to parse compile arguments", pos);
         return NULL;
     }
     
@@ -343,7 +343,7 @@ ar_instruction_ast_t* ar_method_instruction_parser__parse(
     }
     
     ar_instruction_ast_t *own_ast = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__METHOD, "method", const_args, arg_count, ref_result_path
+        AR_INSTRUCTION_AST_TYPE__COMPILE, "compile", const_args, arg_count, ref_result_path
     );
     
     AR__HEAP__FREE(const_args);
@@ -379,7 +379,7 @@ ar_instruction_ast_t* ar_method_instruction_parser__parse(
  * Gets the last error message from the parser.
  * DEPRECATED: This function always returns NULL. Use ar_log for error reporting.
  */
-const char* ar_method_instruction_parser__get_error(const ar_method_instruction_parser_t *ref_parser) {
+const char* ar_compile_instruction_parser__get_error(const ar_compile_instruction_parser_t *ref_parser) {
     (void)ref_parser; // Suppress unused parameter warning
     return NULL;
 }
@@ -388,7 +388,7 @@ const char* ar_method_instruction_parser__get_error(const ar_method_instruction_
  * Gets the position of the last error.
  * DEPRECATED: This function always returns 0. Use ar_log for error reporting.
  */
-size_t ar_method_instruction_parser__get_error_position(const ar_method_instruction_parser_t *ref_parser) {
+size_t ar_compile_instruction_parser__get_error_position(const ar_compile_instruction_parser_t *ref_parser) {
     (void)ref_parser; // Suppress unused parameter warning
     return 0;
 }
