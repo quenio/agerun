@@ -79,6 +79,7 @@ Each learning file contains:
 - [User Feedback as QA](user-feedback-as-qa.md)
 - [OO to C Adaptation](oo-to-c-adaptation.md)
 - [C to Zig Module Migration](c-to-zig-module-migration.md)
+- [Zig Memory Allocation with ar_allocator](zig-memory-allocation-with-ar-allocator.md)
 - [Zig Migration Memory Debugging](zig-migration-memory-debugging.md)
 - [Zig-C Memory Tracking Consistency](zig-c-memory-tracking-consistency.md)
 - [Zig Build Flag Configuration](zig-build-flag-configuration.md)
