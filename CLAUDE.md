@@ -64,9 +64,9 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 **Documentation Standards (MANDATORY)** ([details](kb/documentation-standards-integration.md)):
 - **Real code only**: All examples must use actual AgeRun types/functions ([details](kb/validated-documentation-examples.md))
-- **Validation required**: Run `make check-docs` before committing any .md files
+- **Validation required**: Run `make check-docs` before committing any .md files ([details](kb/documentation-validation-enhancement-patterns.md))
 - **Specification consistency**: Keep SPEC.md updated after language changes ([details](kb/specification-consistency-maintenance.md))
-- **Proper tagging**: Use `// EXAMPLE:`, `// BAD:`, `// ERROR:` for hypothetical code
+- **Proper tagging**: Use `// EXAMPLE:`, `// BAD:`, `// ERROR:` for hypothetical code ([details](kb/example-marker-granular-control.md))
 - **Preferred types**: `ar_data_t*`, `ar_agent_t*`, `ar_expression_ast_t*`, `ar_instruction_ast_t*`
 - **Helper reference**: `python3 scripts/get_real_types.py --guide` for available APIs
 
@@ -373,7 +373,7 @@ while (*p) {
 - Use IO module (`ar_io__open_file` not `fopen`, etc) - check all return codes
 - Use `PRId64`/`PRIu64` for portability, never `%lld`
 - **Documentation**: Real AgeRun types/functions only, validate with `make check-docs`
-- **Doc checker supports**: C functions/types, Zig pub functions/types, and `module.function` syntax
+- **Doc checker supports**: C functions/types, Zig pub functions/types, and `module.function` syntax ([details](kb/multi-language-documentation-validation.md))
 
 ### 6. Module Development
 

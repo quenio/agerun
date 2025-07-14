@@ -67,6 +67,9 @@ Each learning file contains:
 - [String Parsing Quote Tracking](string-parsing-quote-tracking.md)
 
 ### Development Practices
+- [Documentation Validation Enhancement Patterns](documentation-validation-enhancement-patterns.md)
+- [Example Marker Granular Control](example-marker-granular-control.md)
+- [Multi-Language Documentation Validation](multi-language-documentation-validation.md)
 - [Documentation Standards Integration](documentation-standards-integration.md)
 - [Validated Documentation Examples](validated-documentation-examples.md)
 - [Absolute Path Navigation](absolute-path-navigation.md)
