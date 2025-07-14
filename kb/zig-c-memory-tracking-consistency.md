@@ -1,7 +1,7 @@
 # Zig-C Memory Tracking Consistency
 
 ## Learning
-When Zig modules interact with C modules that allocate memory, both must use the same memory tracking mechanism. If C modules are compiled with `-DDEBUG` (enabling heap tracking), Zig modules must also be configured to use the same tracking functions.
+When Zig modules interact with C modules that allocate memory, both must use the same memory tracking mechanism. If C modules are compiled with `-DDEBUG` (enabling heap tracking), Zig modules must also be configured to use the same tracking functions. Modern Zig modules should use ar_allocator for type-safe memory management that automatically integrates with AgeRun's heap tracking.
 
 ## Importance
 Mismatched memory tracking causes false memory leak reports. Memory allocated with `ar_heap__malloc()` but freed with standard `free()` appears as a leak even though the memory is actually freed. This makes debugging real memory issues nearly impossible.
@@ -31,12 +31,26 @@ defer c.AR__HEAP__FREE(items);  // This becomes ar_heap__free() with DEBUG
 // Result: 0 memory leaks
 ```
 
+```zig
+// PREFERRED: Modern Zig module with ar_allocator
+const ar_allocator = @import("ar_allocator.zig");
+
+// For new allocations in Zig code
+const own_data = ar_allocator.create(ar_data_t, "my data");
+defer ar_allocator.free(own_data);
+
+// For C interop, still use proper heap macros
+const items = c.ar_list__items(list);
+defer c.AR__HEAP__FREE(items);  // C allocation requires C cleanup
+```
+
 ## Generalization
 When mixing Zig and C modules:
-1. Check how C modules are compiled (look for `-DDEBUG` in Makefile)
-2. Ensure Zig modules use matching flags
-3. Consider creating compatible macro definitions for Zig (like `__ZIG__`)
-4. Test memory behavior early with simple allocation/deallocation tests
+1. **Preferred**: Use ar_allocator for all new Zig allocations
+2. Check how C modules are compiled (look for `-DDEBUG` in Makefile)
+3. Ensure Zig modules use matching flags (-DDEBUG -D__ZIG__)
+4. For C interop: Use C heap macros to free C-allocated memory
+5. Test memory behavior early with simple allocation/deallocation tests
 
 ## Implementation
 Update Makefile pattern rules for all Zig targets:
@@ -60,5 +74,6 @@ Update headers to support Zig-compatible macros:
 ```
 
 ## Related Patterns
-- [Zig Migration Memory Debugging](kb/zig-migration-memory-debugging.md)
-- [C-to-Zig Module Migration](kb/c-to-zig-module-migration.md)
+- [Zig Memory Allocation with ar_allocator](zig-memory-allocation-with-ar-allocator.md)
+- [Zig Migration Memory Debugging](zig-migration-memory-debugging.md)
+- [C to Zig Module Migration](c-to-zig-module-migration.md)
