@@ -244,7 +244,8 @@ grep -n "#include.*ar_" module.h module.c
 1. **Update Makefile** (automatic detection):
    - Makefile will automatically detect .zig files
    - Build flags: `-lc -fno-stack-check` for C interop
-   - Pattern rule: `$(ZIG) build-obj -O ReleaseSafe -target native`
+   - Debug builds: `-O Debug -DDEBUG -D__ZIG__` for heap tracking
+   - Pattern rule: `$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target native`
 
 2. **Verify build**:
    ```bash
@@ -317,8 +318,60 @@ const memory_access_data_t = struct {  // EXAMPLE: Internal type for ar_expressi
 
 ### Memory Allocation Patterns
 
+**IMPORTANT**: All Zig modules should use the ar_allocator module for memory management instead of direct heap macros.
+
+#### Benefits of Using ar_allocator
+
+1. **Type Safety**: No manual casting required - functions return properly typed pointers
+2. **Cleaner Code**: Eliminates verbose `@ptrCast(@alignCast(...))` patterns
+3. **Ownership Clarity**: Returned pointers use `own_` prefix convention
+4. **Flexible Input**: `dupe` accepts various string pointer types automatically
+5. **Consistent Interface**: Follows Zig's standard allocator naming conventions
+6. **Heap Tracking Integration**: Automatically works with AgeRun's memory leak detection
+
+#### Using ar_allocator (PREFERRED)
+
 ```zig
-// Allocate with proper type and description
+// Import at the top of your module
+const ar_allocator = @import("ar_allocator.zig");
+
+// Allocate a single instance
+const own_node = ar_allocator.create(ar_expression_ast_t, "Expression AST node (int)");
+if (own_node == null) {
+    return null;
+}
+
+// Initialize directly - no casting needed
+own_node.?.node_type = c.AR_EXPRESSION_AST_TYPE__LITERAL_INT;
+own_node.?.data = node_data_t{ .literal_int = literal_int_data_t{ .value = value } };
+
+// Return with simple cast
+return @ptrCast(own_node);
+```
+
+#### ar_allocator Functions
+
+- `create`: Allocate a single instance of type T
+- `alloc`: Allocate an array of n items of type T (zeroed)
+- `dupe`: Duplicate a string
+- `free`: Free any pointer type
+- `realloc`: Reallocate memory for n items of type T
+
+#### Array Allocation Example
+
+```zig
+// Allocate array of string pointers
+own_node.?.own_args = ar_allocator.alloc(?[*:0]u8, arg_count, "function arguments array");
+if (own_node.?.own_args == null) {
+    ar_allocator.free(own_node);
+    return null;
+}
+```
+
+#### Legacy Pattern (AVOID - shown for reference only)
+
+```zig
+// Old way using direct heap macros - DO NOT USE
 const own_node: ?*anyopaque = c.AR__HEAP__MALLOC(@sizeOf(ar_expression_ast_s), "Expression AST node (int)");
 if (own_node == null) {
     return null;
@@ -334,8 +387,22 @@ return @ptrCast(own_node);
 
 ### String Duplication Pattern
 
+#### Using ar_allocator (PREFERRED)
+
 ```zig
-// Always check for null and provide description
+// ar_allocator.dupe handles various string pointer types automatically
+const own_string_copy = ar_allocator.dupe(ref_value, "String literal value");
+if (own_string_copy == null) {
+    // Clean up any partial allocations
+    ar_allocator.free(own_node);
+    return null;
+}
+```
+
+#### Legacy Pattern (AVOID)
+
+```zig
+// Old way - requires explicit casting
 const own_string_copy: ?[*:0]u8 = @ptrCast(c.AR__HEAP__STRDUP(
     @as([*c]const u8, @ptrCast(ref_value)), 
     "String literal value"
@@ -463,7 +530,7 @@ ar_list__destroy(own_node->data.memory_access.own_path);
 // Use ar_list__remove_first to avoid calling ar_list__items
 var item: ?*anyopaque = c.ar_list__remove_first(ref_ast_node.data.memory_access.own_path);
 while (item != null) : (item = c.ar_list__remove_first(ref_ast_node.data.memory_access.own_path)) {
-    c.AR__HEAP__FREE(item);
+    ar_allocator.free(item);  // Use ar_allocator for consistency
 }
 c.ar_list__destroy(ref_ast_node.data.memory_access.own_path);
 ```
@@ -479,16 +546,16 @@ if (allocation_fails) {
     ar_expression_ast__destroy(@ptrCast(own_node));  // Node type not set yet!
 }
 
-// CORRECT: Manual cleanup
+// CORRECT: Manual cleanup using ar_allocator
 if (allocation_fails) {
     // Free any path components we've already added
     var item: ?*anyopaque = c.ar_list__remove_first(own_path_list);
     while (item != null) : (item = c.ar_list__remove_first(own_path_list)) {
-        c.AR__HEAP__FREE(item);
+        ar_allocator.free(item);
     }
     c.ar_list__destroy(own_path_list);
-    c.AR__HEAP__FREE(own_base_copy);
-    c.AR__HEAP__FREE(own_node);
+    ar_allocator.free(own_base_copy);
+    ar_allocator.free(own_node);
     return null;
 }
 ```
@@ -669,7 +736,13 @@ if (!own_node->own_function_name) {
     return NULL;
 }
 
-// Zig improvement: Use destroy for consistent cleanup
+// Zig with ar_allocator: Clean and type-safe
+if (own_node.?.own_function_name == null) {
+    ar_allocator.free(own_node);  // Simple and direct
+    return null;
+}
+
+// Or use destroy for consistent cleanup when appropriate
 if (own_node.?.own_function_name == null) {
     ar_instruction_ast__destroy(@as(?*c.ar_instruction_ast_t, @ptrCast(@alignCast(own_node))));
     return null;

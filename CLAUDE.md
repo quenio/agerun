@@ -373,6 +373,7 @@ while (*p) {
 - Use IO module (`ar_io__open_file` not `fopen`, etc) - check all return codes
 - Use `PRId64`/`PRIu64` for portability, never `%lld`
 - **Documentation**: Real AgeRun types/functions only, validate with `make check-docs`
+- **Doc checker supports**: C functions/types, Zig pub functions/types, and `module.function` syntax
 
 ### 6. Module Development
 
@@ -645,7 +646,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 **Integration Guidelines**:
 - Maintain C API compatibility for Zig modules
 - Follow AgeRun's ownership conventions (own_, mut_, ref_)
-- Use Zig's allocator pattern with AgeRun's heap tracking
+- **Use ar_allocator module for all memory operations** - provides type-safe allocation ([details](kb/zig-memory-allocation-with-ar-allocator.md))
 - Compile-time validation for method language constraints
 - Zero-cost abstractions for performance-critical paths
 - Type mappings: `c_int`→`c_int`, `char*`→`?[*:0]u8`, `c_uchar`→`u8`, string literals→`@as([*c]const u8, "str")`
@@ -657,6 +658,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - **Memory debugging**: Line-by-line comparison pattern for ownership issues ([details](kb/zig-migration-memory-debugging.md))
 - Delete C file when creating Zig replacement + update all .md refs (no Makefile changes needed)
 - Zig funcs use same `ar_<module>__<function>` naming as C, static funcs use `_<name>` with snake_case
+- **Zig public functions**: Can use simple names (create, alloc, dupe) without module prefix for internal module functions
 - Clean imports (inline functions only): `const ar_assert = @import("ar_assert.zig"); const ar_assert__func = ar_assert.ar_assert__func;`
 - C header imports: Keep related headers in same @cImport block (macros need dependencies)
 - Zig modules with exports: Access via C headers to avoid duplicate symbols at link time
@@ -674,26 +676,53 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 ```zig
 // Zig module exposing C-compatible interface
 const std = @import("std");
+const ar_allocator = @import("ar_allocator.zig");
 const c = @cImport({
-    @cInclude("ar_heap.h");
     @cInclude("ar_data.h");
+    @cInclude("ar_zigmodule.h");  // EXAMPLE: Your module's header
 });
 
+// Internal structure
+const ar_zigmodule_t = struct { // EXAMPLE: Replace with your module type
+    own_name: ?[*:0]u8,
+    value: c_int,
+};
+
 // Export functions with C ABI
-export fn ar_zigmodule__create() ?*c.ar_data_t {  // EXAMPLE: Replace 'zigmodule' with your module name
-    // Use AgeRun's heap tracking
-    const data = c.ar_data__create_string("Zig integrated!");
-    return data;
+// EXAMPLE: export fn ar_zigmodule__create(ref_name: ?[*:0]const u8) ?*c.ar_zigmodule_t {
+    // Use ar_allocator for type-safe allocation
+    const own_module = ar_allocator.create(ar_zigmodule_t, "zigmodule instance"); // EXAMPLE: Replace with your type
+    if (own_module == null) {
+        return null;
+    }
+    
+    // Duplicate string with ar_allocator
+    own_module.?.own_name = ar_allocator.dupe(ref_name, "zigmodule name");
+    if (own_module.?.own_name == null) {
+        ar_allocator.free(own_module);
+        return null;
+    }
+    
+    own_module.?.value = 42;
+    return @ptrCast(own_module);
+}
+
+export fn ar_zigmodule__destroy(own_module: ?*c.ar_zigmodule_t) void { // EXAMPLE: Replace with your module
+    if (own_module == null) return;
+    
+    const module = @as(*ar_zigmodule_t, @ptrCast(@alignCast(own_module))); // EXAMPLE: Replace with your type
+    ar_allocator.free(module.own_name);
+    ar_allocator.free(module);
 }
 ```
 
 **Build Integration**:
-- Add Zig compiler detection to Makefile
-- Create hybrid build rules for C/Zig modules
-- Maintain consistent test infrastructure
-- Use Zig's built-in testing alongside AgeRun tests
+- Makefile automatically detects Zig modules (no manual configuration needed)
+- Debug builds use: `-O Debug -DDEBUG -D__ZIG__` for proper heap tracking
+- Pattern rule includes: `-lc -fno-stack-check` for C interop
+- All 6 Makefile targets updated consistently for Zig flags
 - Verify Zig builds: check strings in .o for "zig X.X.X"
-- Pattern rule: `$(ZIG) build-obj -O ReleaseSafe -target native`
+- Pattern rule: `$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target native -mcpu=native -fno-stack-check -lc`
 
 ## AgeRun Language Notes
 

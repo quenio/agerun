@@ -73,11 +73,21 @@ def check_file_references(doc_files):
         # Split content into lines to check for markers
         lines = content.split('\n')
         file_refs = set()
+        in_example_block = False
         
         # Look for file references line by line
         for line in lines:
+            # Track if we're in an example code block
+            if '```' in line and ('EXAMPLE:' in line or '# EXAMPLE:' in line):
+                in_example_block = True
+                continue
+            elif '```' in line and in_example_block:
+                in_example_block = False
+                continue
             # Skip lines marked as intentional errors, examples, or bad code
-            if ('// ERROR:' in line or '/* ERROR:' in line or 
+            # Also skip lines inside example code blocks
+            if (in_example_block or 
+                '// ERROR:' in line or '/* ERROR:' in line or 
                 '// EXAMPLE:' in line or '/* EXAMPLE:' in line or
                 '// BAD:' in line or '/* BAD:' in line or
                 '# EXAMPLE:' in line):  # Also handle markdown comments
@@ -92,6 +102,12 @@ def check_file_references(doc_files):
         for ref in file_refs:
             # Skip URLs and anchor references
             if "://" in ref or "#" in ref:
+                continue
+            
+            # Skip Zig module function calls (e.g., ar_allocator.create)
+            # These have format: module_name.function_name where function is a simple identifier
+            if re.match(r'^ar_[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+$', ref):
+                # This looks like a Zig module function call, not a file reference
                 continue
             
             # Check if this is an old agerun_ reference
@@ -203,7 +219,8 @@ def check_function_and_type_references(doc_files):
     
     header_files = list(Path("modules").glob("*.h"))
     c_files = list(Path("modules").glob("*.c"))
-    all_source_files = header_files + c_files
+    zig_files = list(Path("modules").glob("*.zig"))
+    all_source_files = header_files + c_files + zig_files
     
     if not all_source_files:
         print("Function/type check: No source files found ⚠️")
@@ -214,6 +231,12 @@ def check_function_and_type_references(doc_files):
     typedef_struct_pattern = re.compile(r'typedef\s+struct\s+\w+\s+(\w+);')
     enum_type_pattern = re.compile(r'^\s*}\s*([a-zA-Z0-9_]+)\s*;', re.MULTILINE)
     simple_typedef_pattern = re.compile(r'^typedef\s+\w+\s+(\w+);', re.MULTILINE)
+    # Zig public function pattern - matches 'pub fn' or 'pub inline fn'
+    zig_pub_fn_pattern = re.compile(r'pub\s+(?:inline\s+)?fn\s+([a-zA-Z0-9_]+)\s*\(')
+    # Zig type patterns
+    zig_const_struct_pattern = re.compile(r'(?:pub\s+)?const\s+([a-zA-Z0-9_]+)\s*=\s*struct\s*\{')
+    zig_const_enum_pattern = re.compile(r'(?:pub\s+)?const\s+([a-zA-Z0-9_]+)\s*=\s*enum\s*\{')
+    zig_const_union_pattern = re.compile(r'(?:pub\s+)?const\s+([a-zA-Z0-9_]+)\s*=\s*union')
     
     for source_file in all_source_files:
         with open(source_file, 'r', encoding='utf-8') as f:
@@ -222,6 +245,27 @@ def check_function_and_type_references(doc_files):
         # Extract functions
         functions = function_pattern.findall(content)
         all_functions.update(functions)
+        
+        # Extract Zig public functions and types
+        if source_file.suffix == '.zig':
+            module_name = source_file.stem
+            
+            # Extract Zig functions
+            zig_functions = zig_pub_fn_pattern.findall(content)
+            # Add both the plain function name and module.function format
+            for func in zig_functions:
+                all_functions.add(func)
+                all_functions.add(f"{module_name}.{func}")
+            
+            # Extract Zig types (structs, enums, unions)
+            zig_structs = zig_const_struct_pattern.findall(content)
+            all_types.update(zig_structs)
+            
+            zig_enums = zig_const_enum_pattern.findall(content)
+            all_types.update(zig_enums)
+            
+            zig_unions = zig_const_union_pattern.findall(content)
+            all_types.update(zig_unions)
         
         # Extract typedef structs
         typedef_structs = typedef_struct_pattern.findall(content)
@@ -270,13 +314,24 @@ def check_function_and_type_references(doc_files):
         # Split content into lines to check for error markers
         lines = content.split('\n')
         function_refs = set()
+        in_example_block = False
         
         # Look for function references both in backticks and code
         for i, line in enumerate(lines):
+            # Track if we're in an example code block
+            if '```' in line and ('EXAMPLE:' in line or '# EXAMPLE:' in line):
+                in_example_block = True
+                continue
+            elif '```' in line and in_example_block:
+                in_example_block = False
+                continue
             # Skip lines marked as intentional errors, examples, or bad code
-            if ('// ERROR:' in line or '/* ERROR:' in line or 
+            # Also skip lines inside example code blocks
+            if (in_example_block or 
+                '// ERROR:' in line or '/* ERROR:' in line or 
                 '// EXAMPLE:' in line or '/* EXAMPLE:' in line or
-                '// BAD:' in line or '/* BAD:' in line):
+                '// BAD:' in line or '/* BAD:' in line or
+                '# EXAMPLE:' in line):  # Also handle markdown comments
                 continue
             
             # Find backticked function references
@@ -297,12 +352,23 @@ def check_function_and_type_references(doc_files):
         
         # Look for type references - check line by line to respect error markers
         type_refs = set()
+        in_example_block = False
         
         for i, line in enumerate(lines):
+            # Track if we're in an example code block
+            if '```' in line and ('EXAMPLE:' in line or '# EXAMPLE:' in line):
+                in_example_block = True
+                continue
+            elif '```' in line and in_example_block:
+                in_example_block = False
+                continue
             # Skip lines marked as intentional errors, examples, or bad code
-            if ('// ERROR:' in line or '/* ERROR:' in line or 
+            # Also skip lines inside example code blocks
+            if (in_example_block or 
+                '// ERROR:' in line or '/* ERROR:' in line or 
                 '// EXAMPLE:' in line or '/* EXAMPLE:' in line or
-                '// BAD:' in line or '/* BAD:' in line):
+                '// BAD:' in line or '/* BAD:' in line or
+                '# EXAMPLE:' in line):  # Also handle markdown comments
                 continue
             
             # Find backticked type references
