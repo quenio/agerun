@@ -143,6 +143,14 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Immediate Priorities (Next Steps)
 
+### Documentation System Enhancement (NEW)
+- [ ] Enhance check_docs.py to validate relative path links in all markdown documents
+  - [ ] Detect broken relative links (e.g., `[text](../path/file.md)`, `[text](kb/article.md)`)
+  - [ ] Validate that referenced files exist at the specified relative paths
+  - [ ] Support common markdown link formats and anchor references
+  - [ ] Add to existing validation pipeline alongside file references and function/type checking
+  - [ ] Test with various relative path patterns used throughout knowledge base and documentation
+
 ### Language Enhancement Tasks (NEW)
 - [x] Rename the `method` instruction to `compile` (Completed 2025-07-13)
 - [x] Rename the `agent` instruction to `create` (Completed 2025-07-13)
