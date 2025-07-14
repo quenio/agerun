@@ -488,6 +488,7 @@ Never compile directly with gcc.
 - Module changes are automatically rebuilt (no need to rebuild the library separately)
 - The Makefile handles all dependencies and runs the test from the correct directory
 - Pattern rules compile object files - update these directly for consistent flags (not target-specific vars)
+- **Pattern rule updates**: Change all 6 targets when updating Zig flags ([details](kb/makefile-pattern-rule-management.md))
 - Example: `make ar_string_tests` will:
   1. Rebuild any changed modules
   2. Rebuild the test
@@ -586,6 +587,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - **User feedback is valuable**: If user points out missing steps, update the plan immediately ([details](kb/user-feedback-as-qa.md))
 - **Example**: "We're missing the comparison of previous and new implementation" - this feedback prevents bugs
 - **Documentation oversight**: User catching missing docs is common - verify docs are part of plan
+- **Debugging assumptions**: Challenge all hypotheses with evidence ([details](kb/user-feedback-debugging-pattern.md))
 - **Plan completeness checklist**:
   - [ ] Verification steps included (diff, tests, memory)
   - [ ] Documentation updates specified for interface changes
@@ -665,6 +667,8 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - **Variadic functions**: Implement in C, not Zig (platform va_list incompatibility) - use hybrid approach
 - **Build flags**: Add `-lc -fno-stack-check` to Zig build-obj for C interop compatibility
 - **Ubuntu strictness**: Test on Linux CI first - catches header paths, linking, runtime issues early
+- **Memory tracking**: Ensure Zig-C consistency with -DDEBUG -D__ZIG__ ([details](kb/zig-c-memory-tracking-consistency.md))
+- **Build configuration**: Use -O Debug + proper flags for Zig ([details](kb/zig-build-flag-configuration.md))
 
 **Example Integration Pattern**:
 ```zig

@@ -12,6 +12,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - Updated Makefile to compile Zig modules with -DDEBUG -D__ZIG__ flags
 - **Improved build consistency** by changing Zig optimization from -O ReleaseSafe to -O Debug
 - **Solved cross-module memory management** for ar_list__items() allocation/deallocation
+- **Created knowledge base articles** documenting Zig-C interop patterns and debugging techniques
 - All 12 tests pass with zero memory leaks (1046 allocations, all freed)
 - Updated module documentation to reflect Zig implementation
 

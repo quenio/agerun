@@ -77,6 +77,10 @@ Each learning file contains:
 - [OO to C Adaptation](oo-to-c-adaptation.md)
 - [C to Zig Module Migration](c-to-zig-module-migration.md)
 - [Zig Migration Memory Debugging](zig-migration-memory-debugging.md)
+- [Zig-C Memory Tracking Consistency](zig-c-memory-tracking-consistency.md)
+- [Zig Build Flag Configuration](zig-build-flag-configuration.md)
+- [User Feedback Debugging Pattern](user-feedback-debugging-pattern.md)
+- [Makefile Pattern Rule Management](makefile-pattern-rule-management.md)
 
 ### Code Quality & Smells
 - [Code Smell: Long Method](code-smell-long-method.md)
