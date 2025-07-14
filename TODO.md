@@ -63,6 +63,15 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Enhanced migration guide with compliance verification section and common violations
 - [x] Added ar_instruction_ast migration learnings with TDD patterns and implementation discrepancies
 
+### ar_method_ast Module Zig Conversion (Completed 2025-07-13)
+- [x] Migrated ar_method_ast.c to ar_method_ast.zig with full C API compatibility
+- [x] Fixed critical memory leak issue by updating ar_heap.h with Zig-compatible macros
+- [x] Updated Makefile to compile Zig modules with -DDEBUG and -D__ZIG__ flags
+- [x] Changed Zig optimization from -O ReleaseSafe to -O Debug for consistency
+- [x] All tests pass with zero memory leaks (1046 allocations, all freed)
+- [x] Solved cross-module memory allocation/deallocation issue (ar_list__items)
+- [x] Updated module documentation to reflect Zig implementation
+
 ## Critical Compliance Tasks
 
 ### CRITICAL - Evaluator Code Duplication Refactoring (HIGHEST PRIORITY)

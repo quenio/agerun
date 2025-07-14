@@ -4,6 +4,8 @@
 
 The Method AST module provides the Abstract Syntax Tree (AST) structure for parsed methods. It represents a method as a collection of parsed instruction ASTs, enabling separation between parsing (text to AST) and execution (AST evaluation).
 
+**Implementation Note**: This module is implemented in Zig for improved memory safety and performance while maintaining full C API compatibility.
+
 ## Key Concepts
 
 - **Method AST**: A container holding a list of instruction ASTs representing the parsed instructions of a method

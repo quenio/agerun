@@ -305,7 +305,7 @@ $(RUN_TESTS_DIR)/obj/%.o: modules/%.c | $(RUN_TESTS_DIR)
 	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
 
 $(RUN_TESTS_DIR)/obj/%.o: modules/%.zig | $(RUN_TESTS_DIR)
-	$(ZIG) build-obj -O ReleaseSafe -target native -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
+	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target native -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
 
 $(RUN_TESTS_DIR)/obj/%_tests.o: modules/%_tests.c | $(RUN_TESTS_DIR)
 	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
@@ -318,14 +318,14 @@ $(RUN_EXEC_DIR)/obj/%.o: modules/%.c | $(RUN_EXEC_DIR)
 	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
 
 $(RUN_EXEC_DIR)/obj/%.o: modules/%.zig | $(RUN_EXEC_DIR)
-	$(ZIG) build-obj -O ReleaseSafe -target native -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
+	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target native -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
 
 # Sanitize tests directory
 $(SANITIZE_TESTS_DIR)/obj/%.o: modules/%.c | $(SANITIZE_TESTS_DIR)
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS) -c $< -o $@
 
 $(SANITIZE_TESTS_DIR)/obj/%.o: modules/%.zig | $(SANITIZE_TESTS_DIR)
-	$(ZIG) build-obj -O ReleaseSafe -target native -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
+	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target native -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
 
 $(SANITIZE_TESTS_DIR)/obj/%_tests.o: modules/%_tests.c | $(SANITIZE_TESTS_DIR)
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS) -c $< -o $@
@@ -338,14 +338,14 @@ $(SANITIZE_EXEC_DIR)/obj/%.o: modules/%.c | $(SANITIZE_EXEC_DIR)
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS) -c $< -o $@
 
 $(SANITIZE_EXEC_DIR)/obj/%.o: modules/%.zig | $(SANITIZE_EXEC_DIR)
-	$(ZIG) build-obj -O ReleaseSafe -target native -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
+	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target native -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
 
 # TSan tests directory
 $(TSAN_TESTS_DIR)/obj/%.o: modules/%.c | $(TSAN_TESTS_DIR)
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS) -c $< -o $@
 
 $(TSAN_TESTS_DIR)/obj/%.o: modules/%.zig | $(TSAN_TESTS_DIR)
-	$(ZIG) build-obj -O ReleaseSafe -target native -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
+	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target native -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
 
 $(TSAN_TESTS_DIR)/obj/%_tests.o: modules/%_tests.c | $(TSAN_TESTS_DIR)
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS) -c $< -o $@
@@ -358,7 +358,7 @@ $(TSAN_EXEC_DIR)/obj/%.o: modules/%.c | $(TSAN_EXEC_DIR)
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS) -c $< -o $@
 
 $(TSAN_EXEC_DIR)/obj/%.o: modules/%.zig | $(TSAN_EXEC_DIR)
-	$(ZIG) build-obj -O ReleaseSafe -target native -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
+	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target native -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
 
 # Clean target
 clean:

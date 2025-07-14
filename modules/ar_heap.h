@@ -130,11 +130,21 @@ void ar_heap__free(void *ptr);
  *   AR__HEAP__FREE(own_buffer);
  *   own_buffer = NULL;  // IMPORTANT: Always set to NULL after freeing
  */
+#ifdef __ZIG__
+/* Zig-compatible versions that don't use __FILE__ and __LINE__ macros */
+#define AR__HEAP__MALLOC(size, desc) ar_heap__malloc((size), "zig", 0, (desc))
+#define AR__HEAP__CALLOC(count, size, desc) ar_heap__calloc((count), (size), "zig", 0, (desc))
+#define AR__HEAP__REALLOC(ptr, size, desc) ar_heap__realloc((ptr), (size), "zig", 0, (desc))
+#define AR__HEAP__STRDUP(str, desc) ar_heap__strdup((str), "zig", 0, (desc))
+#define AR__HEAP__FREE(ptr) ar_heap__free(ptr)
+#else
+/* C versions with full file/line tracking */
 #define AR__HEAP__MALLOC(size, desc) ar_heap__malloc((size), __FILE__, __LINE__, (desc))
 #define AR__HEAP__CALLOC(count, size, desc) ar_heap__calloc((count), (size), __FILE__, __LINE__, (desc))
 #define AR__HEAP__REALLOC(ptr, size, desc) ar_heap__realloc((ptr), (size), __FILE__, __LINE__, (desc))
 #define AR__HEAP__STRDUP(str, desc) ar_heap__strdup((str), __FILE__, __LINE__, (desc))
 #define AR__HEAP__FREE(ptr) ar_heap__free(ptr)
+#endif
 
 #else
 
