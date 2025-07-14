@@ -1,12 +1,12 @@
 const std = @import("std");
 const builtin = @import("builtin");
+const ar_allocator = @import("ar_allocator.zig");
 const c = @cImport({
     @cInclude("ar_method_evaluator.h");
     @cInclude("ar_log.h");
     @cInclude("ar_instruction_evaluator.h");
     @cInclude("ar_method_ast.h");
     @cInclude("ar_frame.h");
-    @cInclude("ar_heap.h");
 });
 
 /// Internal structure for the method evaluator
@@ -26,9 +26,7 @@ export fn ar_method_evaluator__create(
     }
     
     // Allocate evaluator
-    const own_evaluator = @as(?*ar_method_evaluator_t, @ptrCast(@alignCast(
-        c.AR__HEAP__MALLOC(@sizeOf(ar_method_evaluator_t), @as([*c]const u8, "method_evaluator"))
-    )));
+    const own_evaluator = ar_allocator.create(ar_method_evaluator_t, "method_evaluator");
     if (own_evaluator == null) {
         return null;
     }
@@ -47,7 +45,7 @@ export fn ar_method_evaluator__destroy(own_evaluator: ?*c.ar_method_evaluator_t)
     }
     
     // Just free the evaluator (no owned fields to clean up)
-    c.AR__HEAP__FREE(own_evaluator);
+    ar_allocator.free(own_evaluator);
 }
 
 /// Helper function to log error with line number

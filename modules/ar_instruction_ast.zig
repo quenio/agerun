@@ -1,6 +1,6 @@
 const std = @import("std");
+const ar_allocator = @import("ar_allocator.zig");
 const c = @cImport({
-    @cInclude("ar_heap.h");
     @cInclude("ar_list.h");
     @cInclude("ar_expression_ast.h");
     @cInclude("ar_instruction_ast.h");
@@ -44,9 +44,7 @@ export fn ar_instruction_ast__create_assignment(
     }
     
     // Allocate the node
-    const own_node = @as(?*ar_instruction_ast_t, @ptrCast(@alignCast(
-        c.AR__HEAP__MALLOC(@sizeOf(ar_instruction_ast_t), @as([*c]const u8, "instruction AST node"))
-    )));
+    const own_node = ar_allocator.create(ar_instruction_ast_t, "instruction AST node");
     if (own_node == null) {
         return null;
     }
@@ -65,14 +63,14 @@ export fn ar_instruction_ast__create_assignment(
     };
     
     // Copy memory path
-    own_node.?.own_memory_path = c.AR__HEAP__STRDUP(ref_memory_path, @as([*c]const u8, "assignment memory path"));
+    own_node.?.own_memory_path = ar_allocator.dupe(ref_memory_path, "assignment memory path");
     if (own_node.?.own_memory_path == null) {
         ar_instruction_ast__destroy(@as(?*c.ar_instruction_ast_t, @ptrCast(@alignCast(own_node))));
         return null;
     }
     
     // Copy expression
-    own_node.?.own_expression = c.AR__HEAP__STRDUP(ref_expression, @as([*c]const u8, "assignment expression"));
+    own_node.?.own_expression = ar_allocator.dupe(ref_expression, "assignment expression");
     if (own_node.?.own_expression == null) {
         ar_instruction_ast__destroy(@as(?*c.ar_instruction_ast_t, @ptrCast(@alignCast(own_node))));
         return null;
@@ -99,9 +97,7 @@ export fn ar_instruction_ast__create_function_call(
     }
     
     // Allocate the node
-    const own_node = @as(?*ar_instruction_ast_t, @ptrCast(@alignCast(
-        c.AR__HEAP__MALLOC(@sizeOf(ar_instruction_ast_t), @as([*c]const u8, "instruction AST node"))
-    )));
+    const own_node = ar_allocator.create(ar_instruction_ast_t, "instruction AST node");
     if (own_node == null) {
         return null;
     }
@@ -120,7 +116,7 @@ export fn ar_instruction_ast__create_function_call(
     };
     
     // Copy function name
-    own_node.?.own_function_name = c.AR__HEAP__STRDUP(ref_function_name, @as([*c]const u8, "function name"));
+    own_node.?.own_function_name = ar_allocator.dupe(ref_function_name, "function name");
     if (own_node.?.own_function_name == null) {
         ar_instruction_ast__destroy(@as(?*c.ar_instruction_ast_t, @ptrCast(@alignCast(own_node))));
         return null;
@@ -128,7 +124,7 @@ export fn ar_instruction_ast__create_function_call(
     
     // Copy result path if provided
     if (ref_result_path != null) {
-        own_node.?.own_result_path = c.AR__HEAP__STRDUP(ref_result_path, @as([*c]const u8, "function result path"));
+        own_node.?.own_result_path = ar_allocator.dupe(ref_result_path, "function result path");
         if (own_node.?.own_result_path == null) {
             ar_instruction_ast__destroy(@as(?*c.ar_instruction_ast_t, @ptrCast(@alignCast(own_node))));
             return null;
@@ -143,10 +139,7 @@ export fn ar_instruction_ast__create_function_call(
             return null;
         }
         // Allocate argument array
-        const args_size = arg_count * @sizeOf(?[*:0]u8);
-        own_node.?.own_args = @as(?[*]?[*:0]u8, @ptrCast(@alignCast(
-            c.AR__HEAP__MALLOC(args_size, @as([*c]const u8, "function arguments array"))
-        )));
+        own_node.?.own_args = ar_allocator.alloc(?[*:0]u8, arg_count, "function arguments array");
         if (own_node.?.own_args == null) {
             ar_instruction_ast__destroy(@as(?*c.ar_instruction_ast_t, @ptrCast(@alignCast(own_node))));
             return null;
@@ -156,7 +149,7 @@ export fn ar_instruction_ast__create_function_call(
         var i: usize = 0;
         while (i < arg_count) : (i += 1) {
             if (ref_args.?[i] != null) {
-                own_node.?.own_args.?[i] = c.AR__HEAP__STRDUP(ref_args.?[i], @as([*c]const u8, "function argument"));
+                own_node.?.own_args.?[i] = ar_allocator.dupe(ref_args.?[i], "function argument");
                 if (own_node.?.own_args.?[i] == null) {
                     // Clean up partial allocation - destroy will handle it
                     own_node.?.arg_count = i; // Set actual count for proper cleanup
@@ -185,10 +178,10 @@ export fn ar_instruction_ast__destroy(own_node: ?*c.ar_instruction_ast_t) void {
     
     // Free assignment fields
     if (node.own_memory_path != null) {
-        c.AR__HEAP__FREE(node.own_memory_path);
+        ar_allocator.free(node.own_memory_path);
     }
     if (node.own_expression != null) {
-        c.AR__HEAP__FREE(node.own_expression);
+        ar_allocator.free(node.own_expression);
     }
     if (node.own_expression_ast != null) {
         c.ar_expression_ast__destroy(node.own_expression_ast);
@@ -196,7 +189,7 @@ export fn ar_instruction_ast__destroy(own_node: ?*c.ar_instruction_ast_t) void {
     
     // Free function call fields
     if (node.own_function_name != null) {
-        c.AR__HEAP__FREE(node.own_function_name);
+        ar_allocator.free(node.own_function_name);
     }
     
     // Free argument array and strings
@@ -204,10 +197,10 @@ export fn ar_instruction_ast__destroy(own_node: ?*c.ar_instruction_ast_t) void {
         var i: usize = 0;
         while (i < node.arg_count) : (i += 1) {
             if (node.own_args.?[i] != null) {
-                c.AR__HEAP__FREE(node.own_args.?[i]);
+                ar_allocator.free(node.own_args.?[i]);
             }
         }
-        c.AR__HEAP__FREE(@as(?*anyopaque, @ptrCast(node.own_args)));
+        ar_allocator.free(node.own_args);
     }
     
     // Free argument AST list
@@ -223,11 +216,11 @@ export fn ar_instruction_ast__destroy(own_node: ?*c.ar_instruction_ast_t) void {
     }
     
     if (node.own_result_path != null) {
-        c.AR__HEAP__FREE(node.own_result_path);
+        ar_allocator.free(node.own_result_path);
     }
     
     // Free the node itself
-    c.AR__HEAP__FREE(own_node);
+    ar_allocator.free(own_node);
 }
 
 // Accessor functions for assignment nodes

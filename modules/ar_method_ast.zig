@@ -1,6 +1,6 @@
 const std = @import("std");
+const ar_allocator = @import("ar_allocator.zig");
 const c = @cImport({
-    @cInclude("ar_heap.h");
     @cInclude("ar_list.h");
     @cInclude("ar_instruction_ast.h");
     @cInclude("ar_method_ast.h");
@@ -18,9 +18,7 @@ const ar_method_ast_t = struct {
 /// Create a new method AST.
 export fn ar_method_ast__create() ?*c.ar_method_ast_t {
     // Allocate the method AST
-    const own_ast = @as(?*ar_method_ast_t, @ptrCast(@alignCast(
-        c.AR__HEAP__MALLOC(@sizeOf(ar_method_ast_t), @as([*c]const u8, "method_ast"))
-    )));
+    const own_ast = ar_allocator.create(ar_method_ast_t, "method_ast");
     if (own_ast == null) {
         return null;
     }
@@ -28,7 +26,7 @@ export fn ar_method_ast__create() ?*c.ar_method_ast_t {
     // Create the instructions list
     own_ast.?.instructions = c.ar_list__create();
     if (own_ast.?.instructions == null) {
-        c.AR__HEAP__FREE(own_ast);
+        ar_allocator.free(own_ast);
         return null;
     }
     
@@ -57,7 +55,7 @@ export fn ar_method_ast__destroy(own_ast: ?*c.ar_method_ast_t) void {
         c.ar_list__destroy(ast.instructions);
     }
     
-    c.AR__HEAP__FREE(ast);
+    ar_allocator.free(ast);
 }
 
 /// Add an instruction AST to the method AST.
@@ -121,8 +119,7 @@ export fn ar_method_ast__get_instruction(ref_ast: ?*const c.ar_method_ast_t, lin
     const instruction = @as(?*const c.ar_instruction_ast_t, @ptrCast(items[line_no - 1]));
     
     // Free the array (but not the items themselves)
-    // items is [*c]?*anyopaque (void**), need to cast to ?*anyopaque (void*)
-    c.AR__HEAP__FREE(@as(?*anyopaque, @ptrCast(items)));
+    ar_allocator.free(items);
     
     return instruction;
 }
