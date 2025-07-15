@@ -57,6 +57,18 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 ## Critical Development Rules
 
+### Knowledge Base Usage (MANDATORY)
+
+**When encountering `([details](kb/article.md))` links**:
+- **Don't read immediately** - links are for context when needed
+- **MUST read before executing** - when starting a task related to that guideline
+- **Search first**: When asked about a topic, check if there's a kb link before answering
+- **Task planning**: Include "Read kb/relevant-article.md" as first step in plans
+- **Example**: Before refactoring → read kb/refactoring-key-patterns.md
+- **Example**: Before debugging memory → read kb/memory-debugging-comprehensive-guide.md
+
+**Workflow**: See guideline → Note kb link → Read when executing → Apply detailed knowledge
+
 ### 0. Documentation Protocol
 
 **Always search CLAUDE.md first** when asked about procedures. Don't overthink - start with exact keywords.
@@ -90,67 +102,16 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
   - `AR_ASSERT_TRANSFERRED()` for complex ownership transfers
   - `AR_ASSERT_NOT_USED_AFTER_FREE()` for complex reuse patterns
   - See ar_assert.md for complete guidelines
-- Expression evaluation ownership rules:
-  - Memory access (`memory.x`): returns reference, do NOT destroy
-  - Arithmetic (`2 + 3`, `memory.x + 5`): returns new object, MUST destroy
-  - String operations (`"Hello" + " World"`): returns new object, MUST destroy
-  - Map iteration pattern:
-  - Use `ar_data__get_map_keys()` to get all keys as a list
-  - Remember to destroy both the list and its string elements after use
-  - Write persistence files with key/type on one line, value on the next
+- Expression ownership: memory.x=reference, arithmetic/strings=new object ([details](kb/expression-ownership-rules.md))
+- Map iteration: get keys, destroy list & elements; persist with key/type then value
 
 **Memory Leak Detection**:
 - Full test suite: Check console for "WARNING: X memory leaks detected"
-- **Individual test memory reports**: Located at `bin/memory_report_<test_name>.log` ([details](kb/memory-leak-detection-workflow.md))
-  - **IMPORTANT**: No longer uses generic `heap_memory_report.log`
-  - Each test generates its own report file automatically
-  - Example: `bin/memory_report_ar_string_tests.log`
-  - Workflow: `make test_name` → Check test-specific memory report
-- **Complete verification**: `grep "Actual memory leaks:" bin/memory_report_*.log | grep -v "0 (0 bytes)"` checks ALL reports
-- **CI visibility**: build.sh prints leak reports to stdout for immediate CI debugging
-- Enhanced per-test reporting: The build system generates unique memory reports for each test
-  - `make test_name` automatically creates test-specific report files
-  - Manual runs can use `AGERUN_MEMORY_REPORT` environment variable
-  - Example: `AGERUN_MEMORY_REPORT=my_test.log ./bin/ar_string_tests`
+- Individual test reports: `bin/memory_report_<test_name>.log` ([details](kb/memory-leak-detection-workflow.md))
+- Complete verification: `grep "Actual memory leaks:" bin/memory_report_*.log | grep -v "0 (0 bytes)"`
 - Always run `make sanitize-tests` before committing
-- Environment variables for debugging:
-  - `ASAN_OPTIONS=halt_on_error=0` to continue after first error
-  - `ASAN_OPTIONS=detect_leaks=1:leak_check_at_exit=1` for complex leaks
-
-**Comprehensive Memory Debugging Guide**:
-
-**Example: Debugging a Function Return Ownership Leak**
-```c
-// SYMPTOM: Memory leak detected in test_instruction_parser
-// 1. Isolate the specific test causing the leak
-// 2. Check memory report: bin/memory_report_instruction_parser_tests.log
-//    Shows: "ar_data_t (list) allocated at instruction_ast.c:142"
-
-// 3. Examine the leaking function:
-ar_data_t* ar_instruction_ast__get_function_args(ar_instruction_ast_t *ast) {
-    return ar_data__create_list();  // Creates NEW list (ownership transfer)
-}
-
-// 4. Find usage in tests - variable naming reveals the bug:
-ar_data_t *ref_args = ar_instruction_ast__get_function_args(ast);  // WRONG: ref_ implies borrowed
-// ... no ar_data__destroy(ref_args) call found
-
-// 5. Fix by updating variable name and adding cleanup:
-ar_data_t *own_args = ar_instruction_ast__get_function_args(ast);  // Correct prefix
-// ... use args ...
-ar_data__destroy(own_args);  // Add cleanup
-
-// 6. Common patterns that cause leaks:
-// - Removal functions: ar_data__list_remove_first() returns owned value
-// - Map iteration: ar_data__get_map_keys() creates new list
-// - String operations: "Hello" + " World" creates new string
-// - Buffer overflows: escape sequences need 2 bytes, not 1
-// - Don't trust function names - check ownership docs
-```
-
-**Debug Strategy**: When leak detected → Check memory report → Trace allocation source → Verify ownership semantics → Fix variable naming → Add proper cleanup
-
-**Use-After-Free Prevention**: Watch error paths + ownership transfer interactions. Run ASan always when both present.
+- Debug strategy: Check report → Trace source → Verify ownership → Fix naming → Add cleanup ([details](kb/memory-debugging-comprehensive-guide.md))
+- Environment variables: `ASAN_OPTIONS=halt_on_error=0` (continue on error), `detect_leaks=1` (complex leaks)
 
 ### 2. Test-Driven Development (MANDATORY)
 
@@ -198,50 +159,17 @@ For each new behavior/feature:
 - NO commits until ALL TDD cycles for the feature are done
 - One commit per feature, not per cycle
 
-**Example - Making a module instantiable**:
-- Cycle 1: Red (test create/destroy) → Green (implement) → Refactor (check for improvements)
-- Cycle 2: Red (test evaluate with instance) → Green (implement) → Refactor (check for improvements)
-- Cycle 3: Red (test legacy wrapper) → Green (implement) → Refactor (check for improvements)
-- Only NOW: Update docs → Update TODO.md → Update CHANGELOG.md → Commit once
+**Example**: Multiple cycles (create/destroy, evaluate, wrapper) → Only then docs/commit
 
 **Test Requirements**:
-- Every module MUST have tests
-- **MANDATORY BDD structure**: Use Given/When/Then comments ([details](kb/bdd-test-structure.md)):
-  ```c
-  // Given a description of the test setup
-  /* Setup code here */
-  
-  // When describing the action being tested
-  /* Action code here */
-  
-  // Then describing the expected result
-  /* Assertion code here */
-  ```
-- One test per behavior
-- Tests must be isolated and fast
-- **Test names must reflect actual behavior** - update names when refactoring changes behavior ([details](kb/test-function-naming-accuracy.md))
-- Zero memory leaks in tests
-- **Global state cleanup**: Tests registering methods/agents MUST call `ar_methodology__cleanup()` and `ar_agency__reset()`
-- Process all messages before cleanup: `while (ar_system__process_next_message());`
-- Test files: `<module>_tests.c`
-- **Use test fixtures**: Check for `ar_*_fixture.h` before writing boilerplate setup; NEVER manually destroy fixture-tracked resources (causes double-free)
-- Follow the 4-step directory check process (see Section 7) before running tests
-- To run tests, use `make test_name` which automatically builds and runs
-- **ALWAYS rebuild after code changes**: `make test_name` (not just `./test_name`)
-- If you need to run tests manually from bin/ directory:
-  - `cd bin && ./ar_string_tests`
-  - `AGERUN_MEMORY_REPORT=bin/test.memory_report.log ./bin/ar_string_tests`
+- Every module MUST have tests with BDD structure ([details](kb/bdd-test-structure.md))
+- One test per behavior, isolated & fast, zero leaks
+- Names reflect behavior ([details](kb/test-function-naming-accuracy.md))
+- Global cleanup: `ar_methodology__cleanup()` & `ar_agency__reset()`
+- Process messages: `while (ar_system__process_next_message());`
+- Use fixtures when available, run with `make test_name`
 
-**TDD for Large Refactoring (Advanced Pattern)**:
-- **Breaking down architectural changes**: Divide large refactoring into multiple sequential TDD cycles
-- **Each cycle addresses one behavior**: Don't try to implement multiple instruction types in one cycle
-- **Build on previous cycles**: Later cycles can assume earlier cycles work correctly
-- **Example pattern**: 9 cycles for facade refactoring (assignment, send, if, parse, build, method, agent, destroy, error handling)
-- **Refactor phase is critical**: Use refactor phase to eliminate duplication and extract common patterns
-- **Accept partial improvements**: Better implementation with some duplication > wrong abstraction
-- **Verify integration points**: Check that related cycles properly connect (e.g., log propagation through hierarchies)
-- **All cycles before commit**: Complete ALL planned cycles before documentation and commit
-- **MANDATORY facade updates**: Always include facade/integration updates as separate TDD cycles in same plan
+**TDD Advanced**: Break large refactoring into sequential cycles, one behavior each ([details](kb/tdd-advanced-large-refactoring.md))
 
 ### 3. Parnas Design Principles (STRICT ENFORCEMENT) ✅
 
@@ -274,12 +202,7 @@ grep -n "#include.*ar_" module.h module.c
 # Verify hierarchy: Foundation (io/list/map) → Data (heap/data) → Core (agent/method) → System (agency/interpreter)
 ```
 
-**Architectural Patterns** (in order of preference):
-1. **Interface Segregation**: Split large modules (agency → registry/store/update)
-2. **Registry Pattern**: Central ownership of lifecycle (registry owns all agents)
-3. **Facade Pattern**: ONLY coordinate, never implement business logic; update creation when interfaces change; run facade tests after sub-component changes; frame-based evaluators→create upfront, not lazily ([details](kb/facade-pattern-coordination.md))
-4. **Parser/Executor Split**: Separate concerns for clarity
-5. **Callbacks/DI**: Last resort - adds complexity
+**Architectural Patterns**: Interface segregation > Registry > Facade (coordinate only) > Parser/Executor > Callbacks ([details](kb/architectural-patterns-hierarchy.md))
 
 **Code Duplication Prevention (DRY - Don't Repeat Yourself)**:
 ```bash
@@ -287,13 +210,7 @@ grep -n "#include.*ar_" module.h module.c
 grep -r "function_name\|concept" modules/
 ```
 
-**DRY Strategies**:
-- If copying code, STOP and refactor instead
-- Extract common functions → new abstractions/modules
-- Use data tables instead of switch statements
-- Parameterize variations instead of copying
-- Template pattern with callbacks (use sparingly)
-- Move code with diff verification, don't rewrite
+**DRY**: Stop copying → extract common functions → use data tables → parameterize → verify moves with diff
 
 **Red Flags**: Module A→B→C→A cycles, repeated validation logic, similar function names (_for_int, _for_string), parsing+execution together
 
@@ -328,33 +245,11 @@ grep -r "function_name\|concept" modules/
 - **Feature Envy**: Method using more data from another module than its own ([details](kb/code-smell-feature-envy.md))
 - **Message Chains**: Long chains of method calls across modules
 
-**Quick Detection**:
-```bash
-# Find long methods
-grep -n "^[a-zA-Z_][a-zA-Z0-9_]*(" modules/*.c | while read line; do
-  file=$(echo $line | cut -d: -f1); line_num=$(echo $line | cut -d: -f2)
-  lines=$(awk -v start=$line_num 'NR >= start && /^}/ && --brace_count <= 0 {print NR-start; exit} /{/ {brace_count++} /}/ {brace_count--}' $file)
-  [ "$lines" -gt 20 ] && echo "$file:$line_num - $lines lines"
-done
-
-# Find parameter list issues
-grep -n "([^)]*,[^)]*,[^)]*,[^)]*," modules/*.h
-
-# Find duplicate error messages
-grep -r "ar_log__error" modules/ | cut -d'"' -f2 | sort | uniq -c | sort -nr | awk '$1 > 1'
-```
+**Quick Detection**: Use automated scripts to find long methods, parameter issues, duplicate errors ([details](kb/code-smell-quick-detection.md))
 
 ### 5. Coding Standards
 
-**String Parsing**: Track quote state when scanning for operators (`:=`, `(`, `)`, `,`) ([details](kb/string-parsing-quote-tracking.md))
-```c
-bool in_quotes = false;
-while (*p) {
-    if (*p == '"' && (p == start || *(p-1) != '\\')) in_quotes = !in_quotes;
-    else if (!in_quotes && /* check operator */) { /* process */ }
-    p++;
-}
-```
+**String Parsing**: Track quote state when scanning for operators ([details](kb/string-parsing-quote-tracking.md))
 
 **Naming Patterns** (verify with grep before large changes; fix errors before warnings):
 | Type | Pattern | Example |
@@ -390,20 +285,7 @@ while (*p) {
 - No platform-specific code (`#ifdef __linux__` forbidden)
 - Create public APIs to eliminate duplication across modules
 
-**Code Quality Checklist**:
-✓ Functions < 50 lines (single responsibility)
-✓ Parameters ≤ 5 (use structs for more)  
-✓ No speculative generality  
-✓ Self-documenting (comments = "why" not "what")  
-✓ Named constants > magic numbers (e.g., MEMORY_PREFIX_LEN = 7)
-✓ Incremental changes with frequent compilation
-✓ Verify each change with tests
-✓ Remove unused functions immediately
-✓ Address all warnings immediately
-✓ Think twice before adding global state  
-✓ Update modules/README.md for new modules
-✓ **Documentation with real code**: All .md files use actual AgeRun types/functions only
-✓ **Validate docs**: Run `make check-docs` before committing any .md changes
+**Code Quality**: Functions <50 lines, params ≤5, named constants, remove unused code, validate docs ([details](kb/module-quality-checklist.md))
 
 ### 7. Method Development
 
@@ -444,15 +326,7 @@ cd bin  # Wrong - avoid relative paths
 - Build output: quiet success, verbose failure (hide output when working, show full errors)
 - **Parallel builds**: Shared .PHONY deps → hoist to parent target (e.g., install-scan-build → build)
 
-**Debug Tools**:
-- **Memory**: `make sanitize-tests` → Check `bin/memory_report_<test_name>.log`
-- **Static Analysis**: `make analyze-exec` (requires scan-build: `brew install llvm` or `apt install clang-tools`)
-- **Abort traps**: `lldb -o "run" -o "bt" -o "quit" ./test_binary` for crash backtraces
-- **Build verification**: `strings bin/*/agerun | grep DEBUG` confirms debug builds
-- **Test Failures**: Often just wrong directory - 4-step check: pwd → cd /path → pwd → run
-- **Pattern Testing**: Test regex/sed/awk patterns before using in scripts
-- **Doc Validation**: `make build` validates file refs, function names, types
-- **CI Debugging**: Add log capture + display on failure (see build.sh analyze-exec handling)
+**Debug Tools**: Memory (`make sanitize-tests`), static analysis, crashes (lldb), patterns testing ([details](kb/development-debug-tools.md))
 
 **Expression Ownership** (CRITICAL):
 - References (`memory.x`): Don't destroy - borrowed from memory/context
@@ -564,21 +438,7 @@ python3 scripts/batch_fix_docs.py --dry-run  # Preview changes first
 diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 ```
 
-**Key Patterns**:
-- **Module cohesion**: Split large modules (e.g., 850-line agency → 4 focused modules)
-- **Merging functions**: Move helpers first, then merge implementation (don't re-implement)
-- **Instance migration**: Replace parameters with `self->field` references
-- **File verification**: Check `wc -l` if content seems truncated; beware "[... rest of ...]"
-- **Test preservation**: Tests define behavior - fix implementation, not tests
-- **Diff verification**: MANDATORY when moving code between modules
-- **Strategic analysis**: Check if modern solution exists before refactoring legacy code
-- **Complexity warning**: If "simple" change touches many modules → approach is wrong
-- **Complete implementations**: All cases or none - partial implementations create bugs
-- **Deprecation pattern**: `(void)param; return NULL/0;` with DEPRECATED docs/comments
-- **Facade redundancy**: If specialized modules log errors, facades shouldn't duplicate
-- **Migration verification**: Use TDD cycles even for mechanical refactoring (test→break→fix→verify)
-- **Frame migration**: Include facade update as separate TDD cycle in same plan; create evaluators upfront
-- **Agent context**: Agent instructions use separate context objects, not memory as context
+**Key Patterns**: Module cohesion, code movement verification, test preservation, complete implementations ([details](kb/refactoring-key-patterns.md))
 
 ### 14. Plan Verification and Review
 
@@ -643,86 +503,9 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - **No Hidden Control Flow**: Matches AgeRun's explicit design philosophy
 - **Error Handling**: Explicit error unions complement AgeRun's error propagation
 
-**Integration Guidelines**:
-- Maintain C API compatibility for Zig modules
-- Follow AgeRun's ownership conventions (own_, mut_, ref_)
-- **Use ar_allocator module for all memory operations** - provides type-safe allocation ([details](kb/zig-memory-allocation-with-ar-allocator.md))
-- Compile-time validation for method language constraints
-- Zero-cost abstractions for performance-critical paths
-- Type mappings: `c_int`→`c_int`, `char*`→`?[*:0]u8`, `c_uchar`→`u8`, string literals→`@as([*c]const u8, "str")`
-- Debug detection: `builtin.mode == .Debug or builtin.mode == .ReleaseSafe` (not `#ifdef DEBUG`)
-- Exit-time safety: Check `!g_initialized` early, never call init during cleanup
-- Avoid C macros returning void/anyopaque (e.g., AR_ASSERT_*)
-- Audit dependencies before conversion - remove unused includes
-- **Migration process**: Follow systematic C-to-Zig migration guide ([details](kb/c-to-zig-module-migration.md))
-- **Memory debugging**: Line-by-line comparison pattern for ownership issues ([details](kb/zig-migration-memory-debugging.md))
-- Delete C file when creating Zig replacement + update all .md refs (no Makefile changes needed)
-- Zig funcs use same `ar_<module>__<function>` naming as C, static funcs use `_<name>` with snake_case
-- **Zig public functions**: Can use simple names (create, alloc, dupe) without module prefix for internal module functions
-- Clean imports (inline functions only): `const ar_assert = @import("ar_assert.zig"); const ar_assert__func = ar_assert.ar_assert__func;`
-- C header imports: Keep related headers in same @cImport block (macros need dependencies)
-- Zig modules with exports: Access via C headers to avoid duplicate symbols at link time
-- Create ar_assert.zig for Zig modules (C modules keep using ar_assert.h macros)
-- Circular dependencies: Use stack allocation to break heap→io→heap cycles
-- Platform differences: Handle stderr/stdout as functions on macOS with c.stderr()
-- errno access: Create helper functions like getErrno() for cross-platform compatibility
-- **Variadic functions**: Implement in C, not Zig (platform va_list incompatibility) - use hybrid approach
-- **Build flags**: Add `-lc -fno-stack-check` to Zig build-obj for C interop compatibility
-- **Ubuntu strictness**: Test on Linux CI first - catches header paths, linking, runtime issues early
-- **Memory tracking**: Ensure Zig-C consistency with -DDEBUG -D__ZIG__ ([details](kb/zig-c-memory-tracking-consistency.md))
-- **Build configuration**: Use -O Debug + proper flags for Zig ([details](kb/zig-build-flag-configuration.md))
+**Integration Guidelines**: See comprehensive guide for all details ([details](kb/zig-integration-comprehensive.md))
 
-**Example Integration Pattern**:
-```zig
-// Zig module exposing C-compatible interface
-const std = @import("std");
-const ar_allocator = @import("ar_allocator.zig");
-const c = @cImport({
-    @cInclude("ar_data.h");
-    @cInclude("ar_zigmodule.h");  // EXAMPLE: Your module's header
-});
-
-// Internal structure
-const ar_zigmodule_t = struct { // EXAMPLE: Replace with your module type
-    own_name: ?[*:0]u8,
-    value: c_int,
-};
-
-// Export functions with C ABI
-// EXAMPLE: export fn ar_zigmodule__create(ref_name: ?[*:0]const u8) ?*c.ar_zigmodule_t {
-    // Use ar_allocator for type-safe allocation
-    const own_module = ar_allocator.create(ar_zigmodule_t, "zigmodule instance"); // EXAMPLE: Replace with your type
-    if (own_module == null) {
-        return null;
-    }
-    
-    // Duplicate string with ar_allocator
-    own_module.?.own_name = ar_allocator.dupe(ref_name, "zigmodule name");
-    if (own_module.?.own_name == null) {
-        ar_allocator.free(own_module);
-        return null;
-    }
-    
-    own_module.?.value = 42;
-    return @ptrCast(own_module);
-}
-
-export fn ar_zigmodule__destroy(own_module: ?*c.ar_zigmodule_t) void { // EXAMPLE: Replace with your module
-    if (own_module == null) return;
-    
-    const module = @as(*ar_zigmodule_t, @ptrCast(@alignCast(own_module))); // EXAMPLE: Replace with your type
-    ar_allocator.free(module.own_name);
-    ar_allocator.free(module);
-}
-```
-
-**Build Integration**:
-- Makefile automatically detects Zig modules (no manual configuration needed)
-- Debug builds use: `-O Debug -DDEBUG -D__ZIG__` for proper heap tracking
-- Pattern rule includes: `-lc -fno-stack-check` for C interop
-- All 6 Makefile targets updated consistently for Zig flags
-- Verify Zig builds: check strings in .o for "zig X.X.X"
-- Pattern rule: `$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target native -mcpu=native -fno-stack-check -lc`
+**Zig Integration**: Use ar_allocator, maintain C API, follow ownership conventions ([details](kb/zig-integration-comprehensive.md))
 
 ## AgeRun Language Notes
 
@@ -738,32 +521,7 @@ export fn ar_zigmodule__destroy(own_module: ?*c.ar_zigmodule_t) void { // EXAMPL
 
 ## Method Test Template
 
-```c
-#include <unistd.h>
-// ... other includes ...
-
-// Directory check
-char cwd[1024];
-if (getcwd(cwd, sizeof(cwd)) != NULL) {
-    size_t len = strlen(cwd);
-    if (len < 4 || strcmp(cwd + len - 4, "/bin") != 0) {
-        fprintf(stderr, "ERROR: Tests must be run from the bin directory!\n");
-        return 1;
-    }
-}
-
-// Clean state
-ar_system__shutdown();
-ar_methodology__cleanup();
-ar_agency__reset();
-remove("methodology.agerun");
-remove("agency.agerun");
-
-// ... test code ...
-
-// Initialize system after creating methods
-ar_system__init(NULL, NULL);
-```
+Directory check, clean state, test code, init system ([details](kb/method-test-template.md))
 
 ## Quick Reference
 
