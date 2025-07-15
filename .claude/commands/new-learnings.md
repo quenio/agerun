@@ -116,7 +116,7 @@ If you're tempted to use hypothetical types, replace with real ones:
 3. **Fix any validation errors** - the script will tell you exactly what's wrong
 4. **Re-run validation** until it passes
 
-**Common validation fixes:**
+**Common validation fixes:** ([details](kb/documentation-validation-error-patterns.md))
 - Replace hypothetical types with real ones from the list above
 - Add `// EXAMPLE:` tags to hypothetical functions
 - Use `ar_data_t*` as the universal fallback type

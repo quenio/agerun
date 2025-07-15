@@ -4,7 +4,7 @@ Create a git commit following the exact workflow specified in CLAUDE.md.
 
 Before starting the commit process, ensure you have completed ALL of these steps:
 
-1. **Run Tests**: Use `make clean build` for comprehensive build verification (~20 lines output) to ensure all changes work correctly and no memory leaks. **If clean build fails, STOP - do not proceed with commit until all issues are fixed.**
+1. **Run Tests**: Use `make clean build` for comprehensive build verification (~20 lines output) to ensure all changes work correctly and no memory leaks. **If clean build fails, STOP - do not proceed with commit until all issues are fixed.** ([details](kb/build-verification-before-commit.md))
 2. **Update Module Documentation**: If you changed a module's interface, update its .md file
 3. **Update TODO.md**: Mark completed tasks and add any new tasks identified
 4. **Update CHANGELOG.md**: Document completed milestones and achievements (NON-NEGOTIABLE)
@@ -16,6 +16,7 @@ Before starting the commit process, ensure you have completed ALL of these steps
 - Clean build MUST pass before committing - no exceptions
 - CHANGELOG update is MANDATORY for every commit that completes tasks
 - Never skip the checklist
+- Report build time from output (e.g., "took 1m 3s") ([details](kb/build-time-reporting.md))
 
 ## Commit Workflow
 
@@ -56,7 +57,7 @@ After completing the checklist above, follow these steps precisely:
 
 5. **Push and verify:**
    - Run `git push`
-   - **MANDATORY**: Run `git status` after push to verify it completed successfully
+   - **MANDATORY**: Run `git status` after push to verify it completed successfully ([details](kb/git-push-verification.md))
    - Confirm the working tree is clean and branch is up to date
 
 **Important:** Never skip the final `git status` verification - this is a critical step per CLAUDE.md.

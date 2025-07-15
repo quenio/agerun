@@ -3,7 +3,7 @@
 {{#if 1}}
 First, check if `modules/{{1}}.zig` already exists. If it does, inform the user about the migration status instead of creating a new plan.
 
-If the module hasn't been migrated yet, migrate the implementation of the **{{1}}** module from C to Zig following the systematic approach documented in CLAUDE.md and the comprehensive migration guide at kb/c-to-zig-module-migration.md.
+If the module hasn't been migrated yet, migrate the implementation of the **{{1}}** module from C to Zig following the systematic approach documented in CLAUDE.md and the comprehensive migration guide at kb/c-to-zig-module-migration.md. For complete integration details, see ([details](kb/zig-integration-comprehensive.md)).
 {{else}}
 Before I can create a migration plan, I need to know which module you'd like to migrate to Zig.
 
@@ -72,9 +72,12 @@ Create a detailed migration plan that includes:
 
 - **All parameters must be nullable** for C API compatibility
 - **Reserved keywords** like 'type' need renaming (e.g., 'node_type')
-- **Match C behavior exactly** for ownership transfer functions
+- **Match C behavior exactly** for ownership transfer functions ([details](kb/zig-migration-memory-debugging.md))
 - **Use C types directly** to minimize casting
 - **Compare implementations line-by-line** when debugging
+- **Memory allocation**: Use ar_allocator for type-safe operations ([details](kb/zig-memory-allocation-with-ar-allocator.md))
+- **Debug consistency**: Ensure -DDEBUG -D__ZIG__ flags ([details](kb/zig-c-memory-tracking-consistency.md))
+- **Build configuration**: Follow proper Zig build flags ([details](kb/zig-build-flag-configuration.md))
 
 ## User Approval
 
