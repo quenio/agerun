@@ -539,6 +539,27 @@ This order ensures clean separation of concerns across all modules.
 ### Low Priority - Agent Module Refactoring
 - [x] Evaluated split - current design maintains good cohesion (Completed)
 
+## Knowledge Base Enhancement (Lower Priority)
+
+### Missing Documentation Articles
+These articles were referenced in existing kb files but never created. They would enhance the knowledge base:
+
+#### High Value Articles
+- [ ] **Evidence-Based Debugging** (kb/evidence-based-debugging.md) - Document debugging with concrete evidence vs assumptions
+- [ ] **Domain-specific Type Creation** (kb/domain-specific-type-creation.md) - Explain creating domain types in C (vs OO languages)  
+- [ ] **Plan Verification and Review** (kb/plan-verification-and-review.md) - Cover reviewing development plans before execution
+
+#### Medium Value Articles  
+- [ ] **Systematic Problem Analysis** (kb/systematic-problem-analysis.md) - Document structured approaches to problem solving
+- [ ] **Build System Consistency** (kb/build-system-consistency.md) - Patterns for maintaining consistent build rules
+- [ ] **Implementation Gap Analysis** (kb/implementation-gap-analysis.md) - Identify missing implementation details
+
+#### Specialized Articles
+- [ ] **Incremental Documentation Updates** (kb/incremental-documentation-updates.md) - Gradual documentation improvement strategies
+- [ ] **Domain Expert Consultation** (kb/domain-expert-consultation.md) - Leveraging user expertise for quality
+- [ ] **Authoritative Source Validation** (kb/authoritative-source-validation.md) - Verifying information from authoritative sources
+- [ ] **Code Block Context Handling** (kb/code-block-context-handling.md) - Handling code examples in different contexts
+
 ## Notes
 
 - **Parnas Compliance**: ACHIEVED (as of 2025-06-08) - All interface violations have been fixed

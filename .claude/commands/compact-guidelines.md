@@ -8,6 +8,10 @@ description: Make CLAUDE.md guidelines more concise by moving details to knowled
 
 Make CLAUDE.md guidelines more concise and actionable by moving detailed explanations, examples, and implementation details to the knowledge base (./kb directory). For the complete compacting technique, see ([details](../../kb/documentation-compacting-pattern.md)).
 
+**CRITICAL PRINCIPLE**: Never create broken links. Every kb article you reference MUST either:
+1. Already exist (verify with `ls kb/article-name.md`), OR
+2. Be created by you BEFORE adding any links to it
+
 **IMPORTANT**: Before extracting kb articles from CLAUDE.md, read `.claude/commands/new-learnings.md` to understand the proper format and validation requirements for creating kb articles. This ensures extracted content follows established standards.
 
 ## Guidelines for Compacting
@@ -36,9 +40,11 @@ For each section being compacted:
 
 **When details exist in kb/ already:**
 - Move details to existing relevant articles
-- Add link: `([details](kb/existing-article.md))` // EXAMPLE: Link format
+- Add link with actual filename: `([details](kb/actual-existing-file.md))`
+- Verify the file exists before adding the link
 
 **When no relevant kb/ article exists:**
+- YOU MUST create the new article before adding any links to it
 - Create new article using standard format:
   ```markdown
   # Article Title
@@ -59,7 +65,9 @@ For each section being compacted:
   [Detailed commands/code when applicable]
   
   ## Related Patterns
-  [Connected concepts]
+  - Only list kb articles that actually exist
+  - Verify each link: ls kb/referenced-article.md
+  - If no related patterns exist, omit this section
   ```
 
 ### 4. Preserve Critical Information
@@ -105,13 +113,15 @@ For each section being compacted:
 
 Work through CLAUDE.md systematically:
 
-1. **Quick Start**: Move detailed explanations to kb/build-verification-before-commit.md
-2. **Memory Management**: Extract debugging examples to existing kb/ articles
-3. **TDD**: Move large refactoring patterns to kb/advanced-tdd-patterns.md
-4. **Parnas Principles**: Extract clarifications to kb/parnas-compliance.md
-5. **Module Development**: Move quality checklists to kb/module-quality.md
-6. **Development Practices**: Extract debug tools to kb/debugging-workflow.md
-7. **Refactoring Patterns**: Move key patterns to separate kb/ articles
+**CRITICAL**: Only reference kb articles that actually exist or that you create:
+
+1. **Quick Start**: Check if kb/build-verification-before-commit.md exists before referencing
+2. **Memory Management**: Use existing kb articles like kb/memory-debugging-comprehensive-guide.md
+3. **TDD**: Reference existing kb/red-green-refactor-cycle.md or create new articles as needed
+4. **Parnas Principles**: Use existing principle articles in kb/
+5. **Module Development**: Reference existing kb/module-quality-checklist.md if it exists
+6. **Development Practices**: Use existing debugging articles in kb/
+7. **Refactoring Patterns**: Reference existing kb/refactoring-key-patterns.md
 
 ### 7. Quality Checks
 
@@ -123,28 +133,50 @@ After compacting each section:
 - **Link coverage**: Every compression has corresponding knowledge base link
 - **No orphaned content**: All moved details are accessible via links
 
-### 8. Commit Strategy
+### 8. Create Required KB Articles First
+
+**MANDATORY**: Before adding any link to a kb article:
+
+1. **Check if the article exists**:
+   ```bash
+   ls kb/article-name.md
+   ```
+
+2. **If it doesn't exist, CREATE IT**:
+   - Extract the relevant content from CLAUDE.md
+   - Create the kb article with proper format
+   - Validate with `make check-docs`
+   - Only then add the link in CLAUDE.md
+
+3. **Never leave placeholder links**
+
+### 9. Commit Strategy
+
+**CRITICAL**: Commit kb articles BEFORE updating CLAUDE.md:
 
 ```bash
-# First commit: Create/update knowledge base articles
+# First commit: Create ALL required knowledge base articles
 git add kb/
-git commit -m "feat: extract detailed guidance to knowledge base
+git commit -m "feat: create knowledge base articles for guideline extraction
 
-- Created [list new articles]
+- Created [list all new articles]
 - Enhanced [list updated articles] 
-- Moved implementation details from CLAUDE.md guidelines"
+- Prepared detailed content for CLAUDE.md compaction"
 
-# Second commit: Compact CLAUDE.md with links
+# Run validation to ensure no broken links
+make check-docs
+
+# Second commit: Compact CLAUDE.md with verified links
 git add CLAUDE.md  
 git commit -m "docs: compact guidelines with knowledge base links
 
 - Reduced verbose sections by X%
 - Preserved all critical requirements
-- Added links to detailed kb/ articles
+- Added links to detailed kb/ articles (all verified to exist)
 - Improved scanability and actionability"
 ```
 
-### 9. Validation
+### 10. Validation
 
 Before finalizing:
 - Read compacted guidelines end-to-end for flow

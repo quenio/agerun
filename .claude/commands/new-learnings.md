@@ -46,7 +46,9 @@ Each learning should be saved as an individual .md file in `./kb/` directory wit
 [Commands/code when applicable - using REAL functions]
 
 ## Related Patterns
-[Connected concepts with links: [name](filename.md)]
+- List only existing kb articles that are genuinely related
+- Use actual filenames: [Pattern Name](actual-existing-file.md)
+- If no related patterns exist, omit this section entirely
 ```
 
 ### Code Example Guidelines (MANDATORY)
@@ -172,11 +174,27 @@ If updates are needed to CLAUDE.md:
    - Use relative paths only - see [Markdown Link Resolution Patterns](../../kb/markdown-link-resolution-patterns.md)
 
 5. **Reference integration strategies**:
-   - Add `([details](kb/article.md))` to existing guidelines that relate to new articles // EXAMPLE: Link format
+   - Add `([details](kb/actual-article-you-created.md))` links ONLY for articles you actually created in this session
+   - Never add placeholder links or references to non-existent articles
    - Include new kb articles in relevant sections (e.g., Script Development, Documentation Protocol)
    - Maintain two-tier system: brief guidelines with links to comprehensive details
 
-## Step 7: Automatic Commit and Push
+## Step 7: Validate No Broken Links
+
+**CRITICAL**: Before committing, verify all links work:
+
+1. **Check for broken links in kb articles**:
+   ```bash
+   grep -r "\[.*\](.*\.md)" kb/*.md | grep -v "EXAMPLE:" | while read line; do
+     file=$(echo "$line" | cut -d: -f1)
+     link=$(echo "$line" | grep -o '([^)]*\.md)' | tr -d '()')
+     # Verify each link exists
+   done
+   ```
+
+2. **Never reference non-existent articles in Related Patterns sections**
+
+## Step 8: Automatic Commit and Push
 
 **EXECUTE THE FOLLOWING SEQUENCE AUTOMATICALLY:**
 
