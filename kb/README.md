@@ -95,6 +95,9 @@ Each learning file contains:
 - [Makefile Pattern Rule Management](makefile-pattern-rule-management.md)
 - [Development Debug Tools](development-debug-tools.md)
 - [Zig Integration Comprehensive](zig-integration-comprehensive.md)
+- [Documentation Compacting Pattern](documentation-compacting-pattern.md)
+- [Just-In-Time KB Reading](just-in-time-kb-reading.md)
+- [Documentation Validation Error Patterns](documentation-validation-error-patterns.md)
 
 ### Code Quality & Smells
 - [Code Smell: Long Method](code-smell-long-method.md)
