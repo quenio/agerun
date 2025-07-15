@@ -10,14 +10,14 @@ Reduces cognitive load by connecting related concepts, makes guidelines more dis
 Code smell articles implemented comprehensive cross-referencing:
 - Feature Envy article links to Large Class, Long Parameter List, Data Clumps
 - Each related smell includes back-references
-- Main CLAUDE.md uses concise links: `([details](kb/article-name.md))`
+- Main CLAUDE.md uses concise links: `([details](kb/article-name.md))` // EXAMPLE: Link format
 - "Related Code Smells" sections in each article create discovery paths
 
 ## Generalization
 Apply cross-referencing pattern to any technical documentation:
 - Identify conceptual relationships between articles
 - Add "Related Patterns/Concepts" sections to each article
-- Use consistent linking format: `([details](kb/filename.md))` - see [Markdown Link Resolution Patterns](markdown-link-resolution-patterns.md)
+- Use consistent linking format: `([details](kb/filename.md))` - see [Markdown Link Resolution Patterns](markdown-link-resolution-patterns.md) // EXAMPLE: Link format
 - Create bidirectional references (A links to B, B links to A)
 - Group related concepts in main guidelines with shared context
 

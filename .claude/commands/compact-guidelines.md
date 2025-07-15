@@ -6,7 +6,7 @@ description: Make CLAUDE.md guidelines more concise by moving details to knowled
 
 ## Objective
 
-Make CLAUDE.md guidelines more concise and actionable by moving detailed explanations, examples, and implementation details to the knowledge base (./kb directory). For the complete compacting technique, see ([details](kb/documentation-compacting-pattern.md)).
+Make CLAUDE.md guidelines more concise and actionable by moving detailed explanations, examples, and implementation details to the knowledge base (./kb directory). For the complete compacting technique, see ([details](../../kb/documentation-compacting-pattern.md)).
 
 **IMPORTANT**: Before extracting kb articles from CLAUDE.md, read `.claude/commands/new-learnings.md` to understand the proper format and validation requirements for creating kb articles. This ensures extracted content follows established standards.
 
@@ -21,7 +21,7 @@ Look for sections in CLAUDE.md that contain:
 - Redundant information already covered elsewhere
 - Multi-paragraph explanations of concepts
 
-### 2. Space-Conscious Editing (CRITICAL) ([details](kb/documentation-standards-integration.md))
+### 2. Space-Conscious Editing (CRITICAL) ([details](../../kb/documentation-standards-integration.md))
 
 - **Target reduction**: Aim for 30-50% reduction in verbose sections
 - **Preserve essential information**: Keep all critical rules and requirements
@@ -30,13 +30,13 @@ Look for sections in CLAUDE.md that contain:
 - **Remove filler words**: "In order to", "It is important that", etc.
 - **Combine related points**: Merge similar guidelines into single lines
 
-### 3. Knowledge Base Article Creation ([details](kb/validated-documentation-examples.md))
+### 3. Knowledge Base Article Creation ([details](../../kb/validated-documentation-examples.md))
 
 For each section being compacted:
 
 **When details exist in kb/ already:**
 - Move details to existing relevant articles
-- Add link: `([details](kb/existing-article.md))`
+- Add link: `([details](kb/existing-article.md))` // EXAMPLE: Link format
 
 **When no relevant kb/ article exists:**
 - Create new article using standard format:
@@ -153,7 +153,7 @@ Before finalizing:
 - Ensure new developers can follow guidelines effectively
 - **Confirm no details are lost** - every moved piece has a link
 - Test link accessibility from compressed guidelines
-- Run `make check-docs` to validate all documentation ([details](kb/documentation-validation-enhancement-patterns.md))
+- Run `make check-docs` to validate all documentation ([details](../../kb/documentation-validation-enhancement-patterns.md))
 
 ## Expected Outcomes
 

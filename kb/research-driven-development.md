@@ -52,6 +52,5 @@ AgeRun adaptation: [C-specific description]
 ```
 
 ## Related Patterns
-- [Systematic Guideline Enhancement](kb/systematic-guideline-enhancement.md)
-- [OO to C Adaptation](kb/oo-to-c-adaptation.md)
-- [Authoritative Source Validation](kb/authoritative-source-validation.md)
+- [Systematic Guideline Enhancement](systematic-guideline-enhancement.md)
+- [OO to C Adaptation](oo-to-c-adaptation.md)

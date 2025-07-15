@@ -59,7 +59,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 ### Knowledge Base Usage (MANDATORY)
 
-**When encountering `([details](kb/article.md))` links**:
+**When encountering `([details](kb/article.md))` links**: // EXAMPLE: Generic link format
 - **Don't read immediately** - links are for context when needed
 - **MUST read before executing** - when starting a task related to that guideline
 - **Search first**: When asked about a topic, check if there's a kb link before answering

@@ -47,5 +47,3 @@ grep -n "Actual memory leaks:" memory_report.log
 ```
 
 ## Related Patterns
-- [Evidence-Based Debugging](kb/evidence-based-debugging.md)
-- [Systematic Problem Analysis](kb/systematic-problem-analysis.md)

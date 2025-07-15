@@ -42,5 +42,5 @@ $(RUN_TESTS_DIR)/obj/%.o: modules/%.zig | $(RUN_TESTS_DIR)
 ```
 
 ## Related Patterns
-- [Zig-C Memory Tracking Consistency](kb/zig-c-memory-tracking-consistency.md)
-- [Makefile Pattern Rule Management](kb/makefile-pattern-rule-management.md)
+- [Zig-C Memory Tracking Consistency](zig-c-memory-tracking-consistency.md)
+- [Makefile Pattern Rule Management](makefile-pattern-rule-management.md)

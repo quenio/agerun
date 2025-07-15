@@ -51,6 +51,5 @@ ar_agent_t* ar_agent__create(ar_method_t* method);              // Good
 ```
 
 ## Related Patterns
-- [Systematic Guideline Enhancement](kb/systematic-guideline-enhancement.md)
-- [Research-driven Development](kb/research-driven-development.md)
-- [Domain-specific Type Creation](kb/domain-specific-type-creation.md)
+- [Systematic Guideline Enhancement](systematic-guideline-enhancement.md)
+- [Research-driven Development](research-driven-development.md)

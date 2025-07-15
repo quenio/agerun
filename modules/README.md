@@ -63,7 +63,7 @@ AgeRun implements a comprehensive memory safety system with zero tolerance for m
   - Adding ownership documentation to all module functions
   - Using ownership assertions in debug builds
 
-For comprehensive guidelines on memory ownership across all modules, refer to the [Memory Management Model](/MMM.md) in the project root.
+For comprehensive guidelines on memory ownership across all modules, refer to the [Memory Management Model](../MMM.md) in the project root.
 
 Both the data module and map module serve as reference implementations of the MMM, with rigorous application of ownership semantics throughout their API and implementation. The data module demonstrates ownership semantics for a module that manages memory for contained values, while the map module shows MMM compliance for a module that doesn't manage value memory but still follows strict ownership conventions.
 

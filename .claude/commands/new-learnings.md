@@ -22,7 +22,7 @@ For each learning, provide:
 
 ## Step 2: Knowledge Base Article Creation
 
-**CRITICAL: All code examples MUST use real AgeRun types and functions** ([details](kb/validated-documentation-examples.md))
+**CRITICAL: All code examples MUST use real AgeRun types and functions** ([details](../../kb/validated-documentation-examples.md))
 
 ### Format for Knowledge Base Files
 Each learning should be saved as an individual .md file in `./kb/` directory with this structure:
@@ -116,7 +116,7 @@ If you're tempted to use hypothetical types, replace with real ones:
 3. **Fix any validation errors** - the script will tell you exactly what's wrong
 4. **Re-run validation** until it passes
 
-**Common validation fixes:** ([details](kb/documentation-validation-error-patterns.md))
+**Common validation fixes:** ([details](../../kb/documentation-validation-error-patterns.md))
 - Replace hypothetical types with real ones from the list above
 - Add `// EXAMPLE:` tags to hypothetical functions
 - Use `ar_data_t*` as the universal fallback type
@@ -172,7 +172,7 @@ If updates are needed to CLAUDE.md:
    - Use relative paths only - see [Markdown Link Resolution Patterns](../../kb/markdown-link-resolution-patterns.md)
 
 5. **Reference integration strategies**:
-   - Add `([details](kb/article.md))` to existing guidelines that relate to new articles
+   - Add `([details](kb/article.md))` to existing guidelines that relate to new articles // EXAMPLE: Link format
    - Include new kb articles in relevant sections (e.g., Script Development, Documentation Protocol)
    - Maintain two-tier system: brief guidelines with links to comprehensive details
 

@@ -66,5 +66,4 @@ git diff Makefile
 ```
 
 ## Related Patterns
-- [Build System Consistency](kb/build-system-consistency.md)
-- [Zig Build Flag Configuration](kb/zig-build-flag-configuration.md)
+- [Zig Build Flag Configuration](zig-build-flag-configuration.md)

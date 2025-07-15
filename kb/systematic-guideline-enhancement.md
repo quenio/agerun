@@ -43,6 +43,5 @@ Apply to any complex technical domain requiring systematic knowledge organizatio
 ```
 
 ## Related Patterns
-- [Cross-referencing Knowledge Base](kb/cross-referencing-knowledge-base.md)
-- [Research-driven Development](kb/research-driven-development.md)
-- [Incremental Documentation Updates](kb/incremental-documentation-updates.md)
+- [Cross-referencing Knowledge Base](cross-referencing-knowledge-base.md)
+- [Research-driven Development](research-driven-development.md)

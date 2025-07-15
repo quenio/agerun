@@ -40,7 +40,7 @@ Long, detailed documentation in main guidelines creates cognitive overload and m
 1. Identify core actionable rules (keep these)
 2. Extract examples, details, explanations to kb article
 3. Summarize verbose content in 1-2 lines
-4. Add `([details](kb/article.md))` link
+4. Add `([details](kb/article.md))` link // EXAMPLE: Link format
 5. Ensure critical commands/rules remain visible
 
 **What to preserve inline**:

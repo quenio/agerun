@@ -48,6 +48,3 @@ Integrate user-as-QA pattern into development workflow:
 ```
 
 ## Related Patterns
-- [Plan Verification and Review](kb/plan-verification-and-review.md)
-- [Domain Expert Consultation](kb/domain-expert-consultation.md)
-- [Implementation Gap Analysis](kb/implementation-gap-analysis.md)

@@ -46,4 +46,3 @@ make check-docs
 ## Related Patterns
 - [Documentation Validation Enhancement Patterns](documentation-validation-enhancement-patterns.md)
 - [Validated Documentation Examples](validated-documentation-examples.md)
-- [Code Block Context Handling](code-block-context-handling.md)
