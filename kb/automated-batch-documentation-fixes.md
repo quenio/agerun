@@ -88,5 +88,5 @@ make check-docs
 
 ## Related Patterns
 - [Progressive Tool Enhancement](progressive-tool-enhancement.md)
-- [Documentation Standards Integration](validated-documentation-examples.md)
-- [Type Mapping Strategies](../scripts/batch_fix_docs.py)
+- [Documentation Standards Integration](documentation-standards-integration.md)
+- [Markdown Link Resolution Patterns](markdown-link-resolution-patterns.md)

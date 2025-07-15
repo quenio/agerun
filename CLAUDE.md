@@ -69,6 +69,12 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 **Workflow**: See guideline → Note kb link → Read when executing → Apply detailed knowledge
 
+**Markdown Link Resolution** ([details](kb/markdown-link-resolution-patterns.md)):
+- **Always use relative paths** - Never use `/path` format which breaks on GitHub
+- **Resolve from file location** - `kb/article.md` from CLAUDE.md → `./kb/article.md`
+- **Navigate directories** - Use `../kb/article.md` from subdirectories
+- **Validation** - Links must work identically on GitHub, VS Code, and Claude Code
+
 ### 0. Documentation Protocol
 
 **Always search CLAUDE.md first** when asked about procedures. Don't overthink - start with exact keywords.
@@ -79,6 +85,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - **Validation required**: Run `make check-docs` before committing any .md files ([details](kb/documentation-validation-enhancement-patterns.md))
 - **Specification consistency**: Keep SPEC.md updated after language changes ([details](kb/specification-consistency-maintenance.md))
 - **Proper tagging**: Use `// EXAMPLE:`, `// BAD:`, `// ERROR:` for hypothetical code ([details](kb/example-marker-granular-control.md))
+- **Markdown links**: Use relative paths only - see link resolution rules ([details](kb/markdown-link-resolution-patterns.md))
 - **Preferred types**: `ar_data_t*`, `ar_agent_t*`, `ar_expression_ast_t*`, `ar_instruction_ast_t*`
 - **Helper reference**: `python3 scripts/get_real_types.py --guide` for available APIs
 

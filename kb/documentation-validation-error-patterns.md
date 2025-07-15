@@ -81,4 +81,4 @@ make check-docs
 ## Related Patterns
 - [Validated Documentation Examples](validated-documentation-examples.md)
 - [Documentation Standards Integration](documentation-standards-integration.md)
-- [Multi-Language Documentation Validation](multi-language-documentation-validation.md)
+- [Markdown Link Resolution Patterns](markdown-link-resolution-patterns.md)

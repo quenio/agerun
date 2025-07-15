@@ -73,6 +73,15 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Updated module documentation to reflect Zig implementation
 - [x] Created knowledge base articles documenting Zig-C interop patterns
 
+### Documentation System Enhancement (Completed 2025-07-14)
+- [x] Enhanced check_docs.py to validate relative path links in all markdown documents
+- [x] Detect broken relative links (e.g., `[text](../path/file.md)`, `[text](kb/article.md)`)
+- [x] Validate that referenced files exist at the specified relative paths
+- [x] Support common markdown link formats and anchor references
+- [x] Add to existing validation pipeline alongside file references and function/type checking
+- [x] Test with various relative path patterns used throughout knowledge base and documentation
+- [x] Found 19 genuine broken links in documentation that need to be fixed
+
 ## Critical Compliance Tasks
 
 ### CRITICAL - Evaluator Code Duplication Refactoring (HIGHEST PRIORITY)
@@ -142,14 +151,6 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Separated parsing and execution phases, fixed invalid syntax handling, all tests passing
 
 ## Immediate Priorities (Next Steps)
-
-### Documentation System Enhancement (NEW)
-- [ ] Enhance check_docs.py to validate relative path links in all markdown documents
-  - [ ] Detect broken relative links (e.g., `[text](../path/file.md)`, `[text](kb/article.md)`)
-  - [ ] Validate that referenced files exist at the specified relative paths
-  - [ ] Support common markdown link formats and anchor references
-  - [ ] Add to existing validation pipeline alongside file references and function/type checking
-  - [ ] Test with various relative path patterns used throughout knowledge base and documentation
 
 ### Language Enhancement Tasks (NEW)
 - [x] Rename the `method` instruction to `compile` (Completed 2025-07-13)

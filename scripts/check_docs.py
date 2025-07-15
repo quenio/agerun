@@ -16,6 +16,12 @@ What this script validates:
 - Module names: Verifies that backticked module names correspond to real modules
 - Function references: Checks that all ar_*__* function calls exist in source files (.h and .c)
 - Type references: Validates that all *_t types exist in source files (including implementation types)
+- Relative path links: Validates all markdown link types (standard, images, reference-style) per GitHub behavior
+  - Rejects absolute paths (starting with /)
+  - Validates paths don't escape repository
+  - Checks for backslashes and warns about spaces
+  - Resolves relative to document location
+  - See kb/markdown-link-resolution-patterns.md for link format specification
 - Both inline backticked references and code block contents are checked
 
 To mark intentional non-existent functions/types in documentation:
@@ -435,6 +441,154 @@ def check_function_and_type_references(doc_files):
     
     return 0
 
+def validate_link_path(doc, line_num, link_text, link_path, doc_dir, repo_root=Path.cwd()):
+    """Validate a single link path according to the specification"""
+    errors = []
+    warnings = []
+    
+    # Skip external URLs, email addresses, and pure anchors
+    if ('://' in link_path or 
+        'mailto:' in link_path or 
+        link_path.startswith('#')):
+        return errors, warnings
+    
+    # Extract path without anchor
+    path_without_anchor = link_path.split('#')[0]
+    if not path_without_anchor:
+        return errors, warnings
+    
+    # Skip if it's not a file link (no extension)
+    if '.' not in path_without_anchor.split('/')[-1]:
+        return errors, warnings
+    
+    # Check for backslashes (invalid path separator)
+    if '\\' in path_without_anchor:
+        errors.append(f"  - {doc}:{line_num} invalid path separator '\\' in '[{link_text}]({link_path})'")
+        return errors, warnings
+    
+    # Warn about spaces in path
+    if ' ' in path_without_anchor and '%20' not in path_without_anchor:
+        warnings.append(f"  - {doc}:{line_num} warning: spaces in path '[{link_text}]({link_path})'")
+    
+    # Check for absolute paths (these don't work on GitHub)
+    if path_without_anchor.startswith('/'):
+        errors.append(f"  - {doc}:{line_num} absolute path '[{link_text}]({link_path})' - use relative paths instead")
+        return errors, warnings
+    
+    # Resolve relative path from document directory
+    try:
+        target_path = (doc_dir / path_without_anchor).resolve()
+        
+        # Check if path escapes repository
+        if not target_path.is_relative_to(repo_root):
+            errors.append(f"  - {doc}:{line_num} path escapes repository '[{link_text}]({link_path})'")
+            return errors, warnings
+        
+        # Check if the target file exists
+        if not target_path.exists():
+            display_path = target_path.relative_to(repo_root)
+            errors.append(f"  - {doc}:{line_num} broken link '[{link_text}]({link_path})' -> {display_path}")
+    except (ValueError, OSError) as e:
+        errors.append(f"  - {doc}:{line_num} invalid path '[{link_text}]({link_path})' - {str(e)}")
+    
+    return errors, warnings
+
+def check_relative_links(doc_files):
+    """Check relative path links in markdown documents"""
+    print("\nChecking relative path links...")
+    
+    all_links_valid = True
+    broken_links = []
+    checked_files = 0
+    
+    # Patterns to match different types of links
+    # Standard markdown links: [text](path)
+    link_pattern = re.compile(r'\[([^\]]+)\]\(([^)]+)\)')
+    # Image references: ![alt](path)
+    image_pattern = re.compile(r'!\[([^\]]*)\]\(([^)]+)\)')
+    # Reference-style links: [text][ref] and [ref]: path
+    ref_link_pattern = re.compile(r'\[([^\]]+)\]\[([^\]]+)\]')
+    ref_def_pattern = re.compile(r'^\s*\[([^\]]+)\]:\s*(.+)$', re.MULTILINE)
+    
+    for doc in doc_files:
+        checked_files += 1
+        doc_path = Path(doc)
+        doc_dir = doc_path.parent
+        
+        with open(doc, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # First, collect all reference-style link definitions
+        ref_definitions = {}
+        for match in ref_def_pattern.finditer(content):
+            ref_name = match.group(1)
+            ref_path = match.group(2).strip()
+            ref_definitions[ref_name] = ref_path
+        
+        # Split content into lines for line number tracking
+        lines = content.split('\n')
+        in_code_block = False
+        
+        for line_num, line in enumerate(lines, 1):
+            # Track code blocks
+            if '```' in line:
+                in_code_block = not in_code_block
+                continue
+            
+            # Skip lines in code blocks or with special markers
+            if (in_code_block or
+                '// ERROR:' in line or '/* ERROR:' in line or 
+                '// EXAMPLE:' in line or '/* EXAMPLE:' in line or
+                '// BAD:' in line or '/* BAD:' in line or
+                '# EXAMPLE:' in line):
+                continue
+            
+            # Skip reference definitions (they're processed separately)
+            if ref_def_pattern.match(line):
+                continue
+            
+            # Process the line only once to avoid duplicate detection
+            # First check for images (they contain the link pattern too)
+            image_matches = image_pattern.findall(line)
+            if image_matches:
+                for alt_text, image_path in image_matches:
+                    errors, warnings = validate_link_path(doc, line_num, f"Image: {alt_text or 'unnamed'}", image_path, doc_dir)
+                    if errors:
+                        all_links_valid = False
+                        broken_links.extend(errors)
+                    broken_links.extend(warnings)
+            else:
+                # Only check standard links if this isn't an image line
+                for link_text, link_path in link_pattern.findall(line):
+                    errors, warnings = validate_link_path(doc, line_num, link_text, link_path, doc_dir)
+                    if errors:
+                        all_links_valid = False
+                        broken_links.extend(errors)
+                    broken_links.extend(warnings)
+            
+            # Find all reference-style links in this line
+            for link_text, ref_name in ref_link_pattern.findall(line):
+                if ref_name in ref_definitions:
+                    ref_path = ref_definitions[ref_name]
+                    errors, warnings = validate_link_path(doc, line_num, link_text, ref_path, doc_dir)
+                    if errors:
+                        all_links_valid = False
+                        broken_links.extend(errors)
+                    broken_links.extend(warnings)
+                else:
+                    all_links_valid = False
+                    broken_links.append(f"  - {doc}:{line_num} undefined reference '[{link_text}][{ref_name}]'")
+    
+    if all_links_valid:
+        print(f"Relative link check: {checked_files} files checked, all links valid ✓")
+    else:
+        print("Relative link check: BROKEN LINKS FOUND ✗")
+        for link in broken_links:
+            print(link)
+        return 1
+    
+    return 0
+
 def main():
     """Main function"""
     check_repo_root()
@@ -466,6 +620,11 @@ def main():
         
         # Step 3: Check function and type references
         status = check_function_and_type_references(doc_files)
+        if status != 0:
+            overall_status = status
+        
+        # Step 4: Check relative path links
+        status = check_relative_links(doc_files)
         if status != 0:
             overall_status = status
     

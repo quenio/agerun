@@ -62,3 +62,4 @@ Long, detailed documentation in main guidelines creates cognitive overload and m
 ## Related Patterns
 - [Just In Time Knowledge Base Reading](just-in-time-kb-reading.md)
 - [Cross-Referencing Knowledge Base](cross-referencing-knowledge-base.md)
+- [Markdown Link Resolution Patterns](markdown-link-resolution-patterns.md)

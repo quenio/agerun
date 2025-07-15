@@ -17,7 +17,7 @@ Code smell articles implemented comprehensive cross-referencing:
 Apply cross-referencing pattern to any technical documentation:
 - Identify conceptual relationships between articles
 - Add "Related Patterns/Concepts" sections to each article
-- Use consistent linking format: `([details](kb/filename.md))`
+- Use consistent linking format: `([details](kb/filename.md))` - see [Markdown Link Resolution Patterns](markdown-link-resolution-patterns.md)
 - Create bidirectional references (A links to B, B links to A)
 - Group related concepts in main guidelines with shared context
 
@@ -40,5 +40,5 @@ grep -r "\[details\]" ./kb/ | wc -l
 ```
 
 ## Related Patterns
-- [Systematic Guideline Enhancement](kb/systematic-guideline-enhancement.md)
-- [Layered Documentation Architecture](kb/layered-documentation-architecture.md)
+- [Markdown Link Resolution Patterns](markdown-link-resolution-patterns.md)
+- [Systematic Guideline Enhancement](systematic-guideline-enhancement.md)

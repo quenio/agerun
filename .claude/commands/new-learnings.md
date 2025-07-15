@@ -46,7 +46,7 @@ Each learning should be saved as an individual .md file in `./kb/` directory wit
 [Commands/code when applicable - using REAL functions]
 
 ## Related Patterns
-[Connected concepts with links: [name](kb/filename.md)]
+[Connected concepts with links: [name](filename.md)]
 ```
 
 ### Code Example Guidelines (MANDATORY)
@@ -169,6 +169,7 @@ If updates are needed to CLAUDE.md:
    ```markdown
    - Guideline text ([details](kb/filename.md))
    ```
+   - Use relative paths only - see [Markdown Link Resolution Patterns](../../kb/markdown-link-resolution-patterns.md)
 
 5. **Reference integration strategies**:
    - Add `([details](kb/article.md))` to existing guidelines that relate to new articles

@@ -46,5 +46,4 @@ make check-docs  # Ensure no false positives introduced
 
 ## Related Patterns
 - [Documentation Standards Integration](documentation-standards-integration.md)
-- [Multi-Language Code Validation](multi-language-code-validation.md)
-- [EXAMPLE Tag Usage Guidelines](example-tag-usage-guidelines.md)
+- [Markdown Link Resolution Patterns](markdown-link-resolution-patterns.md)
