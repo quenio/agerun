@@ -174,7 +174,7 @@ If updates are needed to CLAUDE.md:
    - Use relative paths only - see [Markdown Link Resolution Patterns](../../kb/markdown-link-resolution-patterns.md)
 
 5. **Reference integration strategies**:
-   - Add `([details](kb/actual-article-you-created.md))` links ONLY for articles you actually created in this session
+   - Add `([details](../../kb/actual-article-you-created.md))` links ONLY for articles you actually created in this session // EXAMPLE: Replace with real filename
    - Never add placeholder links or references to non-existent articles
    - Include new kb articles in relevant sections (e.g., Script Development, Documentation Protocol)
    - Maintain two-tier system: brief guidelines with links to comprehensive details

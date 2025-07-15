@@ -40,7 +40,7 @@ For each section being compacted:
 
 **When details exist in kb/ already:**
 - Move details to existing relevant articles
-- Add link with actual filename: `([details](kb/actual-existing-file.md))`
+- Add link with actual filename: `([details](../../kb/actual-existing-file.md))` // EXAMPLE: Replace with real filename
 - Verify the file exists before adding the link
 
 **When no relevant kb/ article exists:**

@@ -1,4 +1,4 @@
-Run documentation validation and fix any errors found using an iterative approach.
+Run documentation validation and fix any errors found using an iterative approach, then commit and push the fixes.
 
 ## Process:
 
@@ -14,6 +14,13 @@ Run documentation validation and fix any errors found using an iterative approac
    - Analyze why some errors weren't fixed
    - Run the batch fix script again (with dry-run first, then for real)
    - Continue until all errors are resolved or identify which errors need manual intervention
+
+4. **Commit and push the fixes**: Once all documentation errors are resolved:
+   - Check git status to see what files were modified
+   - Stage all documentation fixes with `git add`
+   - Commit with message: "docs: fix documentation validation errors"
+   - Push to the remote repository
+   - Verify push completed with `git status`
 
 ## What the batch fix script handles:
 - **Non-existent function/type references**: Adds EXAMPLE tags or replaces with real types
