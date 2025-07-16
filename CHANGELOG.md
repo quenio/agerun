@@ -2,6 +2,19 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-07-15
+
+### ✅ COMPLETED: Refactored Evaluator Dependency Injection Pattern
+- **Simplified instruction and method evaluator APIs** by removing unnecessary dependency injection
+- **Instruction evaluator now creates its own expression evaluator** internally instead of receiving it as parameter
+- **Method evaluator now creates its own instruction evaluator** internally instead of receiving it as parameter
+- **Rationale**: Both evaluators have 1:1 relationships with their sub-evaluators with no alternate implementations
+- **API simplification**: Both evaluators now only require a log parameter for creation
+- **Maintained zero memory leaks** throughout the refactoring (605 allocations for instruction, 961 for method)
+- **Updated all tests** to use the new simplified API
+- **Updated module documentation** to reflect the ownership changes and simplified interfaces
+- **Followed strict TDD approach** with proper Red-Green-Refactor cycles for all changes
+
 ## 2025-07-14
 
 ### ✅ COMPLETED: Enhanced Documentation Checker for Zig Module Support

@@ -28,7 +28,7 @@
  */
 struct ar_instruction_evaluator_s {
     ar_log_t *ref_log;                           /* Log instance (borrowed reference) */
-    ar_expression_evaluator_t *ref_expr_evaluator;  /* Expression evaluator (borrowed reference) */
+    ar_expression_evaluator_t *own_expr_evaluator;  /* Expression evaluator (owned) */
     ar_assignment_instruction_evaluator_t *own_assignment_evaluator;  /* Assignment evaluator instance (owned) */
     ar_send_instruction_evaluator_t *own_send_evaluator;  /* Send evaluator instance (owned) */
     ar_condition_instruction_evaluator_t *own_condition_evaluator;  /* Condition evaluator instance (owned) */
@@ -44,11 +44,10 @@ struct ar_instruction_evaluator_s {
  * Creates a new instruction evaluator
  */
 ar_instruction_evaluator_t* ar_instruction_evaluator__create(
-    ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator
+    ar_log_t *ref_log
 ) {
     // Validate required parameters
-    if (ref_log == NULL || ref_expr_evaluator == NULL) {
+    if (ref_log == NULL) {
         return NULL;
     }
     
@@ -60,14 +59,21 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
     
     // Initialize fields
     evaluator->ref_log = ref_log;
-    evaluator->ref_expr_evaluator = ref_expr_evaluator;
+    
+    // Create the expression evaluator internally
+    evaluator->own_expr_evaluator = ar_expression_evaluator__create(ref_log);
+    if (evaluator->own_expr_evaluator == NULL) {
+        AR__HEAP__FREE(evaluator);
+        return NULL;
+    }
     
     // Create assignment evaluator instance (now uses frame-based pattern)
     evaluator->own_assignment_evaluator = ar_assignment_instruction_evaluator__create(
         ref_log,
-        ref_expr_evaluator
+        evaluator->own_expr_evaluator
     );
     if (evaluator->own_assignment_evaluator == NULL) {
+        ar_expression_evaluator__destroy(evaluator->own_expr_evaluator);
         AR__HEAP__FREE(evaluator);
         return NULL;
     }
@@ -75,7 +81,7 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
     // Create send evaluator instance (now uses frame-based pattern)
     evaluator->own_send_evaluator = ar_send_instruction_evaluator__create(
         ref_log,
-        ref_expr_evaluator
+        evaluator->own_expr_evaluator
     );
     if (evaluator->own_send_evaluator == NULL) {
         ar_assignment_instruction_evaluator__destroy(evaluator->own_assignment_evaluator);
@@ -86,7 +92,7 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
     // Create condition evaluator instance (now uses frame-based pattern)
     evaluator->own_condition_evaluator = ar_condition_instruction_evaluator__create(
         ref_log,
-        ref_expr_evaluator
+        evaluator->own_expr_evaluator
     );
     if (evaluator->own_condition_evaluator == NULL) {
         ar_send_instruction_evaluator__destroy(evaluator->own_send_evaluator);
@@ -98,7 +104,7 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
     // Create parse evaluator instance (now uses frame-based pattern)
     evaluator->own_parse_evaluator = ar_parse_instruction_evaluator__create(
         ref_log,
-        ref_expr_evaluator
+        evaluator->own_expr_evaluator
     );
     if (evaluator->own_parse_evaluator == NULL) {
         ar_condition_instruction_evaluator__destroy(evaluator->own_condition_evaluator);
@@ -111,7 +117,7 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
     // Create build evaluator instance (now uses frame-based pattern)
     evaluator->own_build_evaluator = ar_build_instruction_evaluator__create(
         ref_log,
-        ref_expr_evaluator
+        evaluator->own_expr_evaluator
     );
     if (evaluator->own_build_evaluator == NULL) {
         ar_parse_instruction_evaluator__destroy(evaluator->own_parse_evaluator);
@@ -125,7 +131,7 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
     // Create method evaluator instance (now uses frame-based pattern)
     evaluator->own_method_evaluator = ar_compile_instruction_evaluator__create(
         ref_log,
-        ref_expr_evaluator
+        evaluator->own_expr_evaluator
     );
     if (evaluator->own_method_evaluator == NULL) {
         ar_build_instruction_evaluator__destroy(evaluator->own_build_evaluator);
@@ -140,7 +146,7 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
     // Create spawn evaluator instance (now uses frame-based pattern)
     evaluator->own_spawn_evaluator = ar_spawn_instruction_evaluator__create(
         ref_log,
-        ref_expr_evaluator
+        evaluator->own_expr_evaluator
     );
     if (evaluator->own_spawn_evaluator == NULL) {
         ar_compile_instruction_evaluator__destroy(evaluator->own_method_evaluator);
@@ -155,7 +161,7 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
     // Create exit agent evaluator instance (now uses frame-based pattern)
     evaluator->own_exit_evaluator = ar_exit_instruction_evaluator__create(
         ref_log,
-        ref_expr_evaluator
+        evaluator->own_expr_evaluator
     );
     if (evaluator->own_exit_evaluator == NULL) {
         ar_spawn_instruction_evaluator__destroy(evaluator->own_spawn_evaluator);
@@ -172,7 +178,7 @@ ar_instruction_evaluator_t* ar_instruction_evaluator__create(
     // Create destroy method evaluator instance (now uses frame-based pattern)
     evaluator->own_deprecate_evaluator = ar_deprecate_instruction_evaluator__create(
         ref_log,
-        ref_expr_evaluator
+        evaluator->own_expr_evaluator
     );
     if (evaluator->own_deprecate_evaluator == NULL) {
         ar_exit_instruction_evaluator__destroy(evaluator->own_exit_evaluator);
@@ -225,6 +231,11 @@ void ar_instruction_evaluator__destroy(ar_instruction_evaluator_t *own_evaluator
     }
     if (own_evaluator->own_deprecate_evaluator != NULL) {
         ar_deprecate_instruction_evaluator__destroy(own_evaluator->own_deprecate_evaluator);
+    }
+    
+    // Destroy the owned expression evaluator
+    if (own_evaluator->own_expr_evaluator != NULL) {
+        ar_expression_evaluator__destroy(own_evaluator->own_expr_evaluator);
     }
     
     // Free the evaluator structure

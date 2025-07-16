@@ -40,7 +40,7 @@ The module follows a **composition pattern** where it creates and manages instan
 ## Dependencies
 
 - All 9 specialized instruction evaluator modules
-- `ar_expression_evaluator`: For evaluating expressions within instructions
+- `ar_expression_evaluator`: Created and owned internally for evaluating expressions
 - `ar_instruction_ast`: For accessing parsed instruction structures
 - `ar_data`: For data manipulation and storage
 - `ar_heap`: For memory tracking
@@ -62,8 +62,7 @@ An opaque type representing an instruction evaluator instance.
 
 ```c
 ar_instruction_evaluator_t* ar_instruction_evaluator__create(
-    ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator
+    ar_log_t *ref_log
 );
 ```
 
@@ -71,16 +70,15 @@ Creates a new instruction evaluator instance.
 
 **Parameters:**
 - `ref_log`: Log instance for error reporting (required, borrowed reference)
-- `ref_expr_evaluator`: Expression evaluator to use (required, borrowed reference)
 
 **Returns:** New evaluator instance or NULL on failure
 
 **Ownership:** Caller owns the returned evaluator and must destroy it
 
 **Behavior:**
-- Creates the assignment evaluator immediately (uses frame-based pattern)
-- Other specialized evaluators are created on-demand when first needed
-- Sub-evaluators are created using memory from the execution frame
+- Creates and owns an expression evaluator internally
+- Creates all specialized instruction evaluators immediately
+- All sub-evaluators share the same log and expression evaluator
 - Returns NULL if log or expression evaluator is NULL
 
 #### ar_instruction_evaluator__destroy
@@ -137,10 +135,8 @@ Evaluates any instruction AST node by dispatching to the appropriate specialized
 ### Basic Assignment
 
 ```c
-// Create evaluator
-ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-    log, expr_eval
-);
+// Create evaluator with just a log
+ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log);
 
 // Create assignment AST: memory.count := 10
 ar_instruction_ast_t *ast = ar_instruction_ast__create_assignment(
@@ -183,10 +179,8 @@ ar_frame__destroy(frame);
 The instruction evaluator demonstrates the **facade pattern** by providing a unified interface that coordinates multiple specialized evaluators:
 
 ```c
-// Create evaluator
-ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(
-    log, expr_eval
-);
+// Create evaluator - it manages its own expression evaluator
+ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log);
 
 // Create frame for evaluation
 ar_frame_t *frame = ar_frame__create(memory, context, message);

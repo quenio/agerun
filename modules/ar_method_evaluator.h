@@ -25,13 +25,12 @@ typedef struct ar_method_evaluator_s ar_method_evaluator_t;
 /**
  * Creates a new method evaluator
  * @param ref_log The log instance for error reporting (borrowed reference)
- * @param ref_instruction_evaluator The instruction evaluator to use (borrowed reference)
  * @return A new method evaluator instance, or NULL on failure
- * @note Ownership: Returns an owned value that caller must destroy
+ * @note Ownership: Returns an owned value that caller must destroy.
+ *       The evaluator creates and owns its instruction evaluator internally.
  */
 ar_method_evaluator_t* ar_method_evaluator__create(
-    ar_log_t *ref_log,
-    ar_instruction_evaluator_t *ref_instruction_evaluator
+    ar_log_t *ref_log
 );
 
 /**

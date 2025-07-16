@@ -22,13 +22,13 @@ The method evaluator is responsible for:
 ### ar_method_evaluator__create
 ```c
 ar_method_evaluator_t* ar_method_evaluator__create(
-    ar_log_t *ref_log,
-    ar_instruction_evaluator_t *ref_instruction_evaluator
+    ar_log_t *ref_log
 );
 ```
-Creates a new method evaluator with the given log and instruction evaluator.
+Creates a new method evaluator with the given log.
 - **Ownership**: Returns owned value that caller must destroy
-- **Parameters**: Borrows references to log and instruction evaluator
+- **Parameters**: Borrows reference to log
+- **Behavior**: Creates and owns its instruction evaluator internally
 
 ### ar_method_evaluator__destroy
 ```c
@@ -77,10 +77,9 @@ The method evaluator provides detailed error reporting:
 ## Usage Example
 
 ```c
-// Create evaluators
+// Create method evaluator with just a log
 ar_log_t *log = ar_log__create();
-ar_instruction_evaluator_t *instr_eval = /* create instruction evaluator */;
-ar_method_evaluator_t *method_eval = ar_method_evaluator__create(log, instr_eval);
+ar_method_evaluator_t *method_eval = ar_method_evaluator__create(log);
 
 // Create frame with execution context
 ar_frame_t *frame = ar_frame__create(memory, context, message);
@@ -92,18 +91,20 @@ bool success = ar_method_evaluator__evaluate(method_eval, frame, method_ast);
 // Cleanup
 ar_method_evaluator__destroy(method_eval);
 ar_frame__destroy(frame);
+ar_log__destroy(log);
 ```
 
 ## Design Notes
 
 - This is the first evaluator to use frames, establishing the pattern for frame-based execution
-- The instruction evaluator hasn't been updated to use frames yet, but works because it was initialized with the same memory/context/message that are in the frame
-- Future work will update instruction and expression evaluators to accept frames directly
+- The method evaluator creates and owns its instruction evaluator internally
+- The instruction evaluator is stored in the struct and used for evaluating each instruction
+- Provides a simplified API that only requires a log instance
 
 ## Dependencies
 
 - ar_log: For error reporting
-- ar_instruction_evaluator: For evaluating individual instructions
+- ar_instruction_evaluator: Created and owned internally for evaluating instructions
 - ar_method_ast: For method representation
 - ar_frame: For execution context
 - ar_heap: For memory allocation (via Zig's C imports)

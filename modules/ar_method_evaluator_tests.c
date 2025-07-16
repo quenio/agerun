@@ -11,8 +11,6 @@
 #include "ar_method_evaluator.h"
 #include "ar_heap.h"
 #include "ar_log.h"
-#include "ar_instruction_evaluator.h"
-#include "ar_expression_evaluator.h"
 #include "ar_data.h"
 #include "ar_frame.h"
 #include "ar_method_ast.h"
@@ -22,34 +20,18 @@
 static void test_method_evaluator__create_destroy(void) {
     printf("Testing method evaluator create/destroy...\n");
     
-    // Given a log and instruction evaluator
+    // Given a log
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
     
-    // Create expression evaluator first (needed by instruction evaluator)
-    ar_data_t *own_memory = ar_data__create_map();
-    ar_data_t *own_context = ar_data__create_map();
-    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log);
-    assert(own_expr_eval != NULL);
-    
-    // Create instruction evaluator
-    ar_instruction_evaluator_t *own_instr_eval = ar_instruction_evaluator__create(
-        own_log, own_expr_eval
-    );
-    assert(own_instr_eval != NULL);
-    
-    // When creating a method evaluator
-    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, own_instr_eval);
+    // When creating a method evaluator with only a log
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log);
     
     // Then it should be created successfully
     assert(own_evaluator != NULL);
     
     // Cleanup
     ar_method_evaluator__destroy(own_evaluator);
-    ar_instruction_evaluator__destroy(own_instr_eval);
-    ar_expression_evaluator__destroy(own_expr_eval);
-    ar_data__destroy(own_context);
-    ar_data__destroy(own_memory);
     ar_log__destroy(own_log);
     
     printf("  ✓ Method evaluator created and destroyed successfully\n");
@@ -62,11 +44,7 @@ static void test_method_evaluator__evaluate_empty_method(void) {
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log);
-    ar_instruction_evaluator_t *own_instr_eval = ar_instruction_evaluator__create(
-        own_log, own_expr_eval
-    );
-    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, own_instr_eval);
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log);
     
     // Create a frame
     ar_data_t *own_message = ar_data__create_string("test message");
@@ -90,8 +68,6 @@ static void test_method_evaluator__evaluate_empty_method(void) {
     ar_method_ast__destroy(own_ast);
     ar_frame__destroy(own_frame);
     ar_method_evaluator__destroy(own_evaluator);
-    ar_instruction_evaluator__destroy(own_instr_eval);
-    ar_expression_evaluator__destroy(own_expr_eval);
     ar_data__destroy(own_message);
     ar_data__destroy(own_context);
     ar_data__destroy(own_memory);
@@ -107,11 +83,7 @@ static void test_method_evaluator__evaluate_single_instruction_method(void) {
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log);
-    ar_instruction_evaluator_t *own_instr_eval = ar_instruction_evaluator__create(
-        own_log, own_expr_eval
-    );
-    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, own_instr_eval);
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log);
     
     // Create a frame
     ar_data_t *own_message = ar_data__create_string("test message");
@@ -142,8 +114,6 @@ static void test_method_evaluator__evaluate_single_instruction_method(void) {
     ar_method_ast__destroy(own_ast);
     ar_frame__destroy(own_frame);
     ar_method_evaluator__destroy(own_evaluator);
-    ar_instruction_evaluator__destroy(own_instr_eval);
-    ar_expression_evaluator__destroy(own_expr_eval);
     ar_data__destroy(own_message);
     ar_data__destroy(own_context);
     ar_data__destroy(own_memory);
@@ -159,11 +129,7 @@ static void test_method_evaluator__evaluate_multiple_instructions(void) {
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log);
-    ar_instruction_evaluator_t *own_instr_eval = ar_instruction_evaluator__create(
-        own_log, own_expr_eval
-    );
-    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, own_instr_eval);
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log);
     
     // Create a frame
     ar_data_t *own_message = ar_data__create_string("test message");
@@ -208,8 +174,6 @@ static void test_method_evaluator__evaluate_multiple_instructions(void) {
     ar_method_ast__destroy(own_ast);
     ar_frame__destroy(own_frame);
     ar_method_evaluator__destroy(own_evaluator);
-    ar_instruction_evaluator__destroy(own_instr_eval);
-    ar_expression_evaluator__destroy(own_expr_eval);
     ar_data__destroy(own_message);
     ar_data__destroy(own_context);
     ar_data__destroy(own_memory);
@@ -225,11 +189,7 @@ static void test_method_evaluator__evaluate_null_parameters(void) {
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log);
-    ar_instruction_evaluator_t *own_instr_eval = ar_instruction_evaluator__create(
-        own_log, own_expr_eval
-    );
-    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, own_instr_eval);
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log);
     
     // Create valid frame and AST for testing
     ar_data_t *own_message = ar_data__create_string("test message");
@@ -258,8 +218,6 @@ static void test_method_evaluator__evaluate_null_parameters(void) {
     ar_method_ast__destroy(own_ast);
     ar_frame__destroy(own_frame);
     ar_method_evaluator__destroy(own_evaluator);
-    ar_instruction_evaluator__destroy(own_instr_eval);
-    ar_expression_evaluator__destroy(own_expr_eval);
     ar_data__destroy(own_message);
     ar_data__destroy(own_context);
     ar_data__destroy(own_memory);
@@ -275,11 +233,7 @@ static void test_method_evaluator__evaluate_with_failing_instruction(void) {
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log);
-    ar_instruction_evaluator_t *own_instr_eval = ar_instruction_evaluator__create(
-        own_log, own_expr_eval
-    );
-    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, own_instr_eval);
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log);
     
     // Create a frame
     ar_data_t *own_message = ar_data__create_string("test message");
@@ -323,8 +277,6 @@ static void test_method_evaluator__evaluate_with_failing_instruction(void) {
     ar_method_ast__destroy(own_ast);
     ar_frame__destroy(own_frame);
     ar_method_evaluator__destroy(own_evaluator);
-    ar_instruction_evaluator__destroy(own_instr_eval);
-    ar_expression_evaluator__destroy(own_expr_eval);
     ar_data__destroy(own_message);
     ar_data__destroy(own_context);
     ar_data__destroy(own_memory);
@@ -340,11 +292,7 @@ static void test_method_evaluator__memory_stress_test(void) {
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_expression_evaluator_t *own_expr_eval = ar_expression_evaluator__create(own_log);
-    ar_instruction_evaluator_t *own_instr_eval = ar_instruction_evaluator__create(
-        own_log, own_expr_eval
-    );
-    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, own_instr_eval);
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log);
     
     // Create a frame
     ar_data_t *own_message = ar_data__create_string("test message");
@@ -386,8 +334,6 @@ static void test_method_evaluator__memory_stress_test(void) {
     ar_method_ast__destroy(own_ast);
     ar_frame__destroy(own_frame);
     ar_method_evaluator__destroy(own_evaluator);
-    ar_instruction_evaluator__destroy(own_instr_eval);
-    ar_expression_evaluator__destroy(own_expr_eval);
     ar_data__destroy(own_message);
     ar_data__destroy(own_context);
     ar_data__destroy(own_memory);

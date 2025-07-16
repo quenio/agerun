@@ -12,16 +12,15 @@ const c = @cImport({
 /// Internal structure for the method evaluator
 const ar_method_evaluator_t = struct {
     ref_log: *c.ar_log_t,
-    ref_instruction_evaluator: *c.ar_instruction_evaluator_t,
+    own_instruction_evaluator: ?*c.ar_instruction_evaluator_t,
 };
 
 /// Creates a new method evaluator
 export fn ar_method_evaluator__create(
-    ref_log: ?*c.ar_log_t,
-    ref_instruction_evaluator: ?*c.ar_instruction_evaluator_t
+    ref_log: ?*c.ar_log_t
 ) ?*c.ar_method_evaluator_t {
     // Validate inputs
-    if (ref_log == null or ref_instruction_evaluator == null) {
+    if (ref_log == null) {
         return null;
     }
     
@@ -33,7 +32,13 @@ export fn ar_method_evaluator__create(
     
     // Initialize fields
     own_evaluator.?.ref_log = ref_log.?;
-    own_evaluator.?.ref_instruction_evaluator = ref_instruction_evaluator.?;
+    
+    // Create the instruction evaluator internally
+    own_evaluator.?.own_instruction_evaluator = c.ar_instruction_evaluator__create(ref_log);
+    if (own_evaluator.?.own_instruction_evaluator == null) {
+        ar_allocator.free(own_evaluator);
+        return null;
+    }
     
     return @as(?*c.ar_method_evaluator_t, @ptrCast(@alignCast(own_evaluator))); // Ownership transferred to caller
 }
@@ -44,7 +49,15 @@ export fn ar_method_evaluator__destroy(own_evaluator: ?*c.ar_method_evaluator_t)
         return;
     }
     
-    // Just free the evaluator (no owned fields to clean up)
+    // Cast back to our type
+    const evaluator = @as(*ar_method_evaluator_t, @ptrCast(@alignCast(own_evaluator)));
+    
+    // Destroy the owned instruction evaluator
+    if (evaluator.own_instruction_evaluator != null) {
+        c.ar_instruction_evaluator__destroy(evaluator.own_instruction_evaluator);
+    }
+    
+    // Free the evaluator
     ar_allocator.free(own_evaluator);
 }
 
@@ -93,7 +106,7 @@ export fn ar_method_evaluator__evaluate(
         }
         
         // Evaluate the instruction with the frame
-        const success = c.ar_instruction_evaluator__evaluate(evaluator.ref_instruction_evaluator, ref_frame, ref_instruction);
+        const success = c.ar_instruction_evaluator__evaluate(evaluator.own_instruction_evaluator, ref_frame, ref_instruction);
         if (!success) {
             // Log error with line number
             _log_error(evaluator, "Method evaluation failed at line ", line_no);
