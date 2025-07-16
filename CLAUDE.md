@@ -177,6 +177,7 @@ For each new behavior/feature:
 - Use fixtures when available, run with `make test_name`
 
 **TDD Advanced**: Break large refactoring into sequential cycles, one behavior each ([details](kb/tdd-advanced-large-refactoring.md))
+**API Simplification**: Use TDD for safe API changes ([details](kb/tdd-api-simplification.md))
 
 ### 3. Parnas Design Principles (STRICT ENFORCEMENT) ✅
 
@@ -421,6 +422,8 @@ Never compile directly with gcc.
 - **Incremental commits**: Commit logical chunks even with remaining issues - note them for future work
 - **Frame migration**: Convert evaluators incrementally; facade manages both patterns during transition
 - **Complete API verification**: `grep -r "old_api_pattern" .` after interface changes - check ALL clients ([details](kb/api-migration-completion-verification.md))
+- **Ownership transitions**: Update naming immediately when changing ref_→own_ ([details](kb/refactoring-ownership-transitions.md))
+- **Dependency injection**: Avoid when 1:1 relationships exist ([details](kb/dependency-injection-anti-pattern.md))
 
 **Bulk Operations Patterns**:
 - **Symbol renaming**: Use `rename_symbols.py` for safe whole-word renaming ([details](kb/script-enhancement-over-one-off.md))

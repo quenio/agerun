@@ -29,12 +29,14 @@ Each learning file contains:
 - [Red Green Refactor Cycle](red-green-refactor-cycle.md)
 - [Search Replace Precision](search-replace-precision.md)
 - [Specification Consistency Maintenance](specification-consistency-maintenance.md)
+- [TDD for API Simplification](tdd-api-simplification.md)
 
 ### Memory Management
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)
 - [Expression Ownership Rules](expression-ownership-rules.md)
+- [Refactoring Ownership Transitions](refactoring-ownership-transitions.md)
 
 ### Code Quality & Testing
 - [BDD Test Structure](bdd-test-structure.md)
@@ -51,6 +53,7 @@ Each learning file contains:
 - [Error Propagation Pattern](error-propagation-pattern.md)
 - [Refactoring Key Patterns](refactoring-key-patterns.md)
 - [Architectural Patterns Hierarchy](architectural-patterns-hierarchy.md)
+- [Dependency Injection Anti-pattern](dependency-injection-anti-pattern.md)
 
 ### Parnas Design Principles
 - [Information Hiding Principle](information-hiding-principle.md)
