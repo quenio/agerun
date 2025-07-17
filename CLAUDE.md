@@ -59,15 +59,15 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 ### Knowledge Base Usage (MANDATORY) ([details](kb/knowledge-base-consultation-protocol.md))
 
-**When encountering `([details](kb/article.md))` links**: // EXAMPLE: Generic link format
-- **Don't read immediately** - links are for context when needed
-- **MUST read before executing** - when starting a task related to that guideline
+**KB articles are mandatory prerequisites, NOT optional references**:
+- **Before ANY task**: Search for relevant KB articles using grep on CLAUDE.md
+- **MUST read BEFORE executing**: KB articles contain critical patterns to prevent errors
+- **Task planning**: First todo item must be "Read kb/relevant-article.md"
 - **Search first**: When asked about a topic, check if there's a kb link before answering
-- **Task planning**: Include "Read kb/relevant-article.md" as first step in plans
-- **Example**: Before refactoring → read kb/refactoring-key-patterns.md
-- **Example**: Before debugging memory → read kb/memory-debugging-comprehensive-guide.md
+- **Example**: Before refactoring → read kb/refactoring-key-patterns.md FIRST
+- **Example**: Before debugging → read kb/memory-debugging-comprehensive-guide.md FIRST
 
-**Workflow**: See guideline → Note kb link → Read when executing → Apply detailed knowledge
+**Workflow**: Task requested → Search KB → Read articles → THEN execute task
 
 **Markdown Link Resolution** ([details](kb/markdown-link-resolution-patterns.md)):
 - **Always use relative paths** - Never use `/path` format which breaks on GitHub
