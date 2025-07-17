@@ -3,6 +3,7 @@
 #include "ar_list.h"
 #include "ar_agency.h"
 #include "ar_methodology.h"
+#include "ar_method.h"
 #include "ar_system.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -194,34 +195,36 @@ bool ar_interpreter_fixture__execute_with_message(
         return false;
     }
     
-    // Get agent memory and context
-    ar_data_t *mut_memory = ar_agency__get_agent_mutable_memory(agent_id);
-    const ar_data_t *ref_context = ar_agency__get_agent_context(agent_id);
+    // Create a temporary method with the single instruction
+    ar_method_t *own_temp_method = ar_method__create(
+        "__temp_single_instruction__",
+        ref_instruction,
+        "1.0.0"
+    );
     
-    if (!mut_memory) {
-        return false;
-    }
-    
-    // Create instruction context
-    ar_instruction_context_t *own_ctx = ar_instruction__create_context(mut_memory, ref_context, ref_message);
-    if (!own_ctx) {
+    if (!own_temp_method) {
         return false;
     }
     
     // Debug: Check if message is set
     if (ref_message) {
-        fprintf(stderr, "DEBUG: Message is provided to context\n");
+        fprintf(stderr, "DEBUG: Message is provided to execute_method\n");
     } else {
         fprintf(stderr, "DEBUG: Message is NULL\n");
     }
     
-    // Execute instruction
-    fprintf(stderr, "DEBUG: Executing instruction: '%s'\n", ref_instruction);
-    bool result = ar_interpreter__execute_instruction(mut_fixture->own_interpreter, own_ctx, ref_instruction);
+    // Execute the temporary method
+    fprintf(stderr, "DEBUG: Executing instruction via method: '%s'\n", ref_instruction);
+    bool result = ar_interpreter__execute_method(
+        mut_fixture->own_interpreter, 
+        agent_id, 
+        ref_message, 
+        own_temp_method
+    );
     fprintf(stderr, "DEBUG: Instruction result: %s\n", result ? "true" : "false");
     
-    // Clean up
-    ar_instruction__destroy_context(own_ctx);
+    // Clean up the temporary method
+    ar_method__destroy(own_temp_method);
     
     return result;
 }

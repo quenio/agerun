@@ -117,7 +117,7 @@ ar_system
 │       ├──c──> ar_method
 │       │       ├──h──> ar_data
 │       │       ├──c──> ar_interpreter
-│       │       │       ├──h──> ar_instruction
+│       │       │       ├──c──> ar_instruction
 │       │       │       │       ├──h──> ar_data
 │       │       │       │       ├──c──> ar_expression
 │       │       │       │       │       ├──h──> ar_data
@@ -1413,6 +1413,22 @@ The [system module](ar_system.md) provides the high-level API and runtime enviro
 - **Depends on Multiple**: Integrates agent, method, methodology, agency, data, and list modules
 
 For detailed API documentation, see [ar_system.md](ar_system.md).
+
+### Interpreter Module (`ar_interpreter`)
+
+The interpreter module provides execution capabilities for methods in the AgeRun system:
+
+- **Method Execution**: Executes methods in the context of agents with proper frame management
+- **Instruction Execution**: Internal support for executing individual instructions within methods
+- **Clean API**: Minimal public interface with just three functions: create, destroy, and execute_method
+- **Frame-Based**: Internally manages execution frames for proper context handling
+- **Error Handling**: Fail-fast error handling with proper cleanup on failures
+- **Memory Safe**: Zero memory leaks with proper ownership management
+- **Stateless Design**: Currently stateless, allowing for thread-safe execution (with proper context isolation)
+- **AST-Based**: Works with parsed AST structures rather than raw strings for efficiency
+- **Depends on Multiple**: Uses instruction (internally), expression, agency, methodology, data, string, map, and heap modules
+
+For detailed API documentation, see [ar_interpreter.md](ar_interpreter.md).
 
 ### Executable Module (`ar_executable`)
 

@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "ar_data.h"
-#include "ar_instruction.h"
 #include "ar_method.h"
 
 /* Interpreter instance (opaque type) */
@@ -25,19 +24,6 @@ ar_interpreter_t* ar_interpreter__create(void);
  */
 void ar_interpreter__destroy(ar_interpreter_t *own_interpreter);
 
-/**
- * Executes a single instruction in the given context
- * @param mut_interpreter The interpreter instance (mutable reference)
- * @param mut_context The instruction context containing agent memory, context, and message (mutable reference)
- * @param ref_instruction The instruction string to execute (borrowed reference)
- * @return true if execution was successful, false otherwise
- * @note Ownership: Function does not take ownership of any parameters.
- *       The context may be modified during execution.
- *       This function will contain the core logic moved from ar_instruction__run.
- */
-bool ar_interpreter__execute_instruction(ar_interpreter_t *mut_interpreter, 
-                                         ar_instruction_context_t *mut_context, 
-                                         const char *ref_instruction);
 
 /**
  * Executes a method in the context of an agent

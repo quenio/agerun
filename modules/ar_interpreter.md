@@ -26,7 +26,7 @@ The interpreter uses an opaque type to hide implementation details. Currently, t
 ### Module Dependencies
 ```
 ar_interpreter
-    ├── uses → ar_instruction (for parsing and AST access)
+    ├── uses → ar_instruction (internal only, for instruction context)
     ├── uses → ar_expression (for expression evaluation)
     ├── uses → ar_agency (for agent operations)
     ├── uses → ar_methodology (for method operations)
@@ -105,6 +105,8 @@ Executes destruction operations:
 
 ## API Functions
 
+The interpreter module provides a minimal public interface with just three functions:
+
 ### Core Functions
 
 #### `ar_interpreter__create`
@@ -118,19 +120,6 @@ Destroys an interpreter instance.
 - **Ownership**: Takes ownership and destroys
 
 ### Execution Functions
-
-#### `ar_interpreter__execute_instruction`
-Executes a single instruction string.
-- **Parameters**:
-  - Interpreter instance
-  - Instruction context (memory, context, message)
-  - Instruction string
-- **Returns**: true on success, false on failure
-- **Process**:
-  1. Parses instruction to AST
-  2. Executes based on instruction type
-  3. Cleans up AST
-  4. Returns result
 
 #### `ar_interpreter__execute_method`
 Executes a complete method.
@@ -214,31 +203,30 @@ The interpreter ensures memory safety through:
 // Create interpreter
 ar_interpreter_t *interpreter = ar_interpreter__create();
 
-// Create instruction context
-ar_instruction_context_t *ctx = ar_instruction__create_context(
-    agent_memory,    // Mutable memory reference
-    agent_context,   // Context reference
-    message         // Message reference (can be NULL)
-);
-
-// Execute single instruction
-bool success = ar_interpreter__execute_instruction(
-    interpreter,
-    ctx,
-    "memory.result := 2 + 2"
-);
-
 // Execute method
 const ar_method_t *method = ar_methodology__get_method("calculator", "1.0.0");
-success = ar_interpreter__execute_method(
+bool success = ar_interpreter__execute_method(
     interpreter,
     agent_id,
     message,
     method
 );
 
+// For single instruction execution, create a temporary method
+ar_method_t *temp_method = ar_method__create(
+    "temp",
+    "memory.result := 2 + 2",
+    "1.0.0"
+);
+success = ar_interpreter__execute_method(
+    interpreter,
+    agent_id,
+    NULL,  // No message
+    temp_method
+);
+ar_method__destroy(temp_method);
+
 // Cleanup
-ar_instruction__destroy_context(ctx);
 ar_interpreter__destroy(interpreter);
 ```
 

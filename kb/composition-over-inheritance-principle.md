@@ -70,7 +70,8 @@ void ar_interpreter__set_agency(ar_interpreter_t* interpreter, ar_agency_t* agen
 void ar_interpreter__set_methodology(ar_interpreter_t* interpreter, ar_methodology_t* methodology);  // EXAMPLE: Hypothetical function
 
 // Uses injected dependencies
-bool ar_interpreter__execute_instruction(ar_interpreter_t* interpreter, const char* instruction);
+bool ar_interpreter__execute_method(ar_interpreter_t* interpreter, int64_t agent_id, 
+                                    const ar_data_t* message, const ar_method_t* method);
 ```
 
 **Implementation Uses Injected Components**:

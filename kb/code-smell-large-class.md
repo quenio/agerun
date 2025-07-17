@@ -115,7 +115,8 @@ typedef struct ar_interpreter_s ar_interpreter_t;
 
 ar_interpreter_t* ar_interpreter__create();
 void ar_interpreter__destroy(ar_interpreter_t* interpreter);
-bool ar_interpreter__execute_instruction(ar_interpreter_t* interpreter, const char* instruction);
+bool ar_interpreter__execute_method(ar_interpreter_t* interpreter, int64_t agent_id, 
+                                    const ar_data_t* message, const ar_method_t* method);
 
 // ar_data.h - Configuration management
 typedef struct ar_config_s ar_config_t;  // EXAMPLE: Focused module

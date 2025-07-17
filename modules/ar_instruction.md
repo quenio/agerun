@@ -101,7 +101,7 @@ Parses a single instruction without executing it.
 - Returns an owned value that caller must destroy with ar_instruction__destroy_parsed
 - Does not take ownership of any parameters
 
-**Note:** Execution of parsed instructions is handled by the Interpreter module using ar_interpreter__execute_instruction
+**Note:** Execution of parsed instructions is handled by the Interpreter module using ar_interpreter__execute_method
 
 ### Accessor Functions
 
@@ -199,7 +199,7 @@ if (!own_parsed) {
     }
 } else {
     // Use the parsed instruction (typically passed to interpreter)
-    // ar_interpreter__execute_instruction(interpreter, ctx, instruction_string);
+    // ar_interpreter__execute_method(interpreter, agent_id, message, method);
     
     // Clean up parsed instruction
     ar_instruction__destroy_parsed(own_parsed);

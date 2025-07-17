@@ -1,5 +1,6 @@
 #include "ar_interpreter.h"
 #include "ar_heap.h"
+#include "ar_instruction.h"
 #include "ar_agency.h"
 #include "ar_agent.h"
 #include "ar_string.h"
@@ -63,11 +64,11 @@ void ar_interpreter__destroy(ar_interpreter_t *own_interpreter) {
 }
 
 /**
- * Executes a single instruction in the given context
+ * Executes a single instruction in the given context (internal use only)
  */
-bool ar_interpreter__execute_instruction(ar_interpreter_t *mut_interpreter, 
-                                         ar_instruction_context_t *mut_context, 
-                                         const char *ref_instruction) {
+static bool _execute_instruction(ar_interpreter_t *mut_interpreter, 
+                                 ar_instruction_context_t *mut_context, 
+                                 const char *ref_instruction) {
     if (!mut_interpreter || !mut_context || !ref_instruction) {
         return false;
     }
@@ -180,7 +181,7 @@ bool ar_interpreter__execute_method(ar_interpreter_t *mut_interpreter,
         
         // Skip empty lines and comments
         if (strlen(mut_instruction) > 0 && mut_instruction[0] != '#') {
-            if (!ar_interpreter__execute_instruction(mut_interpreter, own_ctx, mut_instruction)) {
+            if (!_execute_instruction(mut_interpreter, own_ctx, mut_instruction)) {
                 result = false;
                 break;
             }
