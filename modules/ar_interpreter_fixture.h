@@ -64,31 +64,30 @@ int64_t ar_interpreter_fixture__create_agent(
 );
 
 /**
- * Executes an instruction in the context of an agent
+ * Executes an instruction in the context of a temporary test agent
  * @param mut_fixture The fixture managing the test
- * @param agent_id The agent whose context to use
  * @param ref_instruction The instruction to execute
- * @return true if execution succeeded, false otherwise
- * @note Uses the fixture's interpreter to execute the instruction
+ * @return The temporary agent ID if execution succeeded, 0 on failure
+ * @note Creates a temporary agent with the instruction as its method
+ * @note Caller must destroy the agent using ar_interpreter_fixture__destroy_temp_agent
  */
-bool ar_interpreter_fixture__execute_instruction(
+int64_t ar_interpreter_fixture__execute_instruction(
     ar_interpreter_fixture_t *mut_fixture,
-    int64_t agent_id,
     const char *ref_instruction
 );
 
 /**
  * Executes an instruction with a custom message
  * @param mut_fixture The fixture managing the test
- * @param agent_id The agent whose context to use
  * @param ref_instruction The instruction to execute
  * @param ref_message The message to provide as context (can be NULL)
- * @return true if execution succeeded, false otherwise
+ * @return The temporary agent ID if execution succeeded, 0 on failure
+ * @note Creates a temporary agent with the instruction as its method
  * @note The message is not destroyed by this function
+ * @note Caller must destroy the agent using ar_interpreter_fixture__destroy_temp_agent
  */
-bool ar_interpreter_fixture__execute_with_message(
+int64_t ar_interpreter_fixture__execute_with_message(
     ar_interpreter_fixture_t *mut_fixture,
-    int64_t agent_id,
     const char *ref_instruction,
     const ar_data_t *ref_message
 );
@@ -166,5 +165,16 @@ void ar_interpreter_fixture__track_data(
  * @return The test name (borrowed reference)
  */
 const char* ar_interpreter_fixture__get_name(const ar_interpreter_fixture_t *ref_fixture);
+
+/**
+ * Destroys a temporary agent created by execute functions
+ * @param mut_fixture The fixture managing the test
+ * @param temp_agent_id The ID of the temporary agent to destroy
+ * @note This also unregisters the agent's temporary method
+ */
+void ar_interpreter_fixture__destroy_temp_agent(
+    ar_interpreter_fixture_t *mut_fixture,
+    int64_t temp_agent_id
+);
 
 #endif /* AGERUN_INTERPRETER_FIXTURE_H */

@@ -136,34 +136,25 @@ bool ar_system__process_next_message(void) {
             ar_data_t *own_message = ar_agency__get_agent_message(agent_id);
             if (own_message) {
                 printf("DEBUG: Got message from agent %" PRId64 "\n", agent_id);
-                // Get the agent's method
-                const ar_method_t *ref_method = ar_agency__get_agent_method(agent_id);
-                if (ref_method) {
-                    printf("DEBUG: Agent has method\n");
-                    // Print message based on its type
-                    printf("Agent %" PRId64 " received message: ", agent_id);
-                    ar_data_type_t msg_type = ar_data__get_type(own_message);
-                    if (msg_type == AR_DATA_TYPE__STRING) {
-                        printf("%s\n", ar_data__get_string(own_message));
-                    } else if (msg_type == AR_DATA_TYPE__INTEGER) {
-                        printf("%d\n", ar_data__get_integer(own_message));
-                    } else if (msg_type == AR_DATA_TYPE__DOUBLE) {
-                        printf("%f\n", ar_data__get_double(own_message));
-                    } else if (msg_type == AR_DATA_TYPE__LIST || msg_type == AR_DATA_TYPE__MAP) {
-                        printf("[complex data]\n");
-                    }
-                    
-                    ar_interpreter__execute_method(g_interpreter, agent_id, own_message, ref_method);
-                    
-                    // Free the message as it's now been processed
-                    ar_data__destroy(own_message);
-                    own_message = NULL; // Mark as freed
-                    return true;
+                // Print message based on its type
+                printf("Agent %" PRId64 " received message: ", agent_id);
+                ar_data_type_t msg_type = ar_data__get_type(own_message);
+                if (msg_type == AR_DATA_TYPE__STRING) {
+                    printf("%s\n", ar_data__get_string(own_message));
+                } else if (msg_type == AR_DATA_TYPE__INTEGER) {
+                    printf("%d\n", ar_data__get_integer(own_message));
+                } else if (msg_type == AR_DATA_TYPE__DOUBLE) {
+                    printf("%f\n", ar_data__get_double(own_message));
+                } else if (msg_type == AR_DATA_TYPE__LIST || msg_type == AR_DATA_TYPE__MAP) {
+                    printf("[complex data]\n");
                 }
                 
-                // Free the message if we couldn't process it
+                ar_interpreter__execute_method(g_interpreter, agent_id, own_message);
+                
+                // Free the message as it's now been processed
                 ar_data__destroy(own_message);
                 own_message = NULL; // Mark as freed
+                return true;
             }
         }
         agent_id = ar_agency__get_next_agent(agent_id);

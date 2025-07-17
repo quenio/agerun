@@ -128,9 +128,15 @@ static bool _execute_instruction(ar_interpreter_t *mut_interpreter,
  */
 bool ar_interpreter__execute_method(ar_interpreter_t *mut_interpreter,
                                     int64_t agent_id, 
-                                    const ar_data_t *ref_message, 
-                                    const ar_method_t *ref_method) {
-    if (!mut_interpreter || !ref_method) {
+                                    const ar_data_t *ref_message) {
+    if (!mut_interpreter) {
+        return false;
+    }
+    
+    // Get agent method
+    const ar_method_t *ref_method = ar_agency__get_agent_method(agent_id);
+    if (!ref_method) {
+        fprintf(stderr, "DEBUG: Agent %" PRId64 " has no method\n", agent_id);
         return false;
     }
     
@@ -1140,8 +1146,8 @@ static bool _execute_method(ar_interpreter_t *mut_interpreter, ar_instruction_co
         return false;
     }
     
-    // Verify this is a compile function with 3 arguments
-    if (strcmp(ref_function_name, "compile") != 0 || arg_count != 3) {
+    // Verify this is a compile or method function with 3 arguments
+    if ((strcmp(ref_function_name, "compile") != 0 && strcmp(ref_function_name, "method") != 0) || arg_count != 3) {
         return false;
     }
     

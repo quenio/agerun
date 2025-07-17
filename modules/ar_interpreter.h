@@ -30,15 +30,13 @@ void ar_interpreter__destroy(ar_interpreter_t *own_interpreter);
  * @param mut_interpreter The interpreter instance (mutable reference)
  * @param agent_id The ID of the agent executing the method
  * @param ref_message The message being processed (borrowed reference)
- * @param ref_method The method to execute (borrowed reference)
  * @return true if execution was successful, false otherwise
  * @note Ownership: Function does not take ownership of any parameters.
- *       This function creates an instruction context, executes the method's
- *       instructions line by line, and cleans up the context.
+ *       This function retrieves the agent's method, creates an instruction context,
+ *       executes the method's instructions line by line, and cleans up the context.
  */
 bool ar_interpreter__execute_method(ar_interpreter_t *mut_interpreter,
                                     int64_t agent_id, 
-                                    const ar_data_t *ref_message, 
-                                    const ar_method_t *ref_method);
+                                    const ar_data_t *ref_message);
 
 #endif /* AGERUN_INTERPRETER_H */

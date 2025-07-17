@@ -122,21 +122,21 @@ static void test_fixture_execute_instruction(void) {
     assert(agent_id > 0);
     
     // When we execute an instruction
-    bool result = ar_interpreter_fixture__execute_instruction(
+    int64_t temp_agent_id = ar_interpreter_fixture__execute_instruction(
         own_fixture,
-        agent_id,
         "memory.value := 42"
     );
     
-    // Then it should succeed
-    assert(result == true);
+    // Then it should succeed (returns non-zero agent ID)
+    assert(temp_agent_id > 0);
     
     // And the memory should be updated
-    ar_data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, agent_id);
+    ar_data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, temp_agent_id);
     ar_data_t *ref_value = ar_data__get_map_data(mut_memory, "value");
     assert(ref_value != NULL);
     assert(ar_data__get_type(ref_value) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(ref_value) == 42);
+    ar_interpreter_fixture__destroy_temp_agent(own_fixture, temp_agent_id);
     
     // Test execution with message - we need to create new values through operations
     // Direct assignment of message or its fields fails because they're const references
@@ -145,32 +145,34 @@ static void test_fixture_execute_instruction(void) {
     ar_data__set_map_integer(own_message, "count", 42);
     
     // Test string concatenation with message field
-    result = ar_interpreter_fixture__execute_with_message(
+    temp_agent_id = ar_interpreter_fixture__execute_with_message(
         own_fixture,
-        agent_id,
         "memory.greeting := \"Message says: \" + message.text",
         own_message
     );
-    assert(result == true);
+    assert(temp_agent_id > 0);
+    mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, temp_agent_id);
     ar_data_t *ref_greeting = ar_data__get_map_data(mut_memory, "greeting");
     assert(ref_greeting != NULL);
     assert(ar_data__get_type(ref_greeting) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(ref_greeting), "Message says: Hello") == 0);
+    ar_interpreter_fixture__destroy_temp_agent(own_fixture, temp_agent_id);
     
     // Test arithmetic with message field
-    result = ar_interpreter_fixture__execute_with_message(
+    temp_agent_id = ar_interpreter_fixture__execute_with_message(
         own_fixture,
-        agent_id,
         "memory.doubled := message.count * 2",
         own_message
     );
     ar_data__destroy(own_message);
     
-    assert(result == true);
+    assert(temp_agent_id > 0);
+    mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, temp_agent_id);
     ar_data_t *ref_doubled = ar_data__get_map_data(mut_memory, "doubled");
     assert(ref_doubled != NULL);
     assert(ar_data__get_type(ref_doubled) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(ref_doubled) == 84);
+    ar_interpreter_fixture__destroy_temp_agent(own_fixture, temp_agent_id);
     
     // Clean up
     ar_interpreter_fixture__destroy(own_fixture);

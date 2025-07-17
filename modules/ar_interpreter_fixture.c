@@ -174,36 +174,54 @@ int64_t ar_interpreter_fixture__create_agent(
 /**
  * Executes an instruction in the context of an agent
  */
-bool ar_interpreter_fixture__execute_instruction(
+int64_t ar_interpreter_fixture__execute_instruction(
     ar_interpreter_fixture_t *mut_fixture,
-    int64_t agent_id,
     const char *ref_instruction) {
     
-    return ar_interpreter_fixture__execute_with_message(mut_fixture, agent_id, ref_instruction, NULL);
+    return ar_interpreter_fixture__execute_with_message(mut_fixture, ref_instruction, NULL);
 }
 
 /**
  * Executes an instruction with a custom message
+ * 
+ * This function creates a temporary agent with a method containing the given instruction,
+ * then executes it.
  */
-bool ar_interpreter_fixture__execute_with_message(
+int64_t ar_interpreter_fixture__execute_with_message(
     ar_interpreter_fixture_t *mut_fixture,
-    int64_t agent_id,
     const char *ref_instruction,
     const ar_data_t *ref_message) {
     
-    if (!mut_fixture || agent_id == 0 || !ref_instruction) {
-        return false;
+    if (!mut_fixture || !ref_instruction) {
+        return 0;
     }
     
-    // Create a temporary method with the single instruction
+    // Create a unique method name for this test instruction
+    static int test_counter = 0;
+    char method_name[256];
+    snprintf(method_name, sizeof(method_name), "__test_instruction_%d__", test_counter++);
+    
+    // Create and register a temporary method with the single instruction
     ar_method_t *own_temp_method = ar_method__create(
-        "__temp_single_instruction__",
+        method_name,
         ref_instruction,
         "1.0.0"
     );
     
     if (!own_temp_method) {
-        return false;
+        return 0;
+    }
+    
+    // Register the method
+    ar_methodology__register_method(own_temp_method);
+    // Ownership transferred to methodology
+    
+    // Create a temporary agent with this method
+    int64_t temp_agent_id = ar_agency__create_agent(method_name, "1.0.0", NULL);
+    if (temp_agent_id == 0) {
+        // Unregister the method since agent creation failed
+        ar_methodology__unregister_method(method_name, "1.0.0");
+        return 0;
     }
     
     // Debug: Check if message is set
@@ -213,20 +231,25 @@ bool ar_interpreter_fixture__execute_with_message(
         fprintf(stderr, "DEBUG: Message is NULL\n");
     }
     
-    // Execute the temporary method
-    fprintf(stderr, "DEBUG: Executing instruction via method: '%s'\n", ref_instruction);
+    // Execute the temporary agent's method
+    fprintf(stderr, "DEBUG: Executing instruction via temporary agent: '%s'\n", ref_instruction);
     bool result = ar_interpreter__execute_method(
         mut_fixture->own_interpreter, 
-        agent_id, 
-        ref_message, 
-        own_temp_method
+        temp_agent_id, 
+        ref_message
     );
     fprintf(stderr, "DEBUG: Instruction result: %s\n", result ? "true" : "false");
     
-    // Clean up the temporary method
-    ar_method__destroy(own_temp_method);
+    // If execution failed, clean up and return 0
+    if (!result) {
+        ar_agency__destroy_agent(temp_agent_id);
+        ar_methodology__unregister_method(method_name, "1.0.0");
+        return 0;
+    }
     
-    return result;
+    // Return the temporary agent ID for the caller to use
+    // Caller is responsible for calling ar_interpreter_fixture__destroy_temp_agent
+    return temp_agent_id;
 }
 
 /**
@@ -361,4 +384,29 @@ const char* ar_interpreter_fixture__get_name(const ar_interpreter_fixture_t *ref
         return NULL;
     }
     return ref_fixture->own_test_name;
+}
+
+/**
+ * Destroys a temporary agent created by execute functions
+ */
+void ar_interpreter_fixture__destroy_temp_agent(
+    ar_interpreter_fixture_t *mut_fixture,
+    int64_t temp_agent_id) {
+    
+    if (!mut_fixture || temp_agent_id == 0) {
+        return;
+    }
+    
+    // Get the agent's method info to unregister it
+    const char *method_name = NULL;
+    const char *method_version = NULL;
+    ar_agency__get_agent_method_info(temp_agent_id, &method_name, &method_version);
+    
+    // Destroy the agent
+    ar_agency__destroy_agent(temp_agent_id);
+    
+    // Unregister the temporary method
+    if (method_name && method_version) {
+        ar_methodology__unregister_method(method_name, method_version);
+    }
 }

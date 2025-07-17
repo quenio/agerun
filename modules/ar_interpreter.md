@@ -125,13 +125,13 @@ Destroys an interpreter instance.
 Executes a complete method.
 - **Parameters**:
   - Interpreter instance
-  - Agent ID (for memory/context access)
+  - Agent ID (for memory/context access and method retrieval)
   - Message being processed
-  - Method to execute
 - **Returns**: true on success, false on failure
 - **Process**:
-  1. Creates instruction context
-  2. Splits method instructions by newlines
+  1. Retrieves method from agent using ar_agency__get_agent_method()
+  2. Creates instruction context
+  3. Splits method instructions by newlines
   3. Executes each instruction sequentially
   4. Stops on first failure
   5. Cleans up resources
@@ -203,28 +203,16 @@ The interpreter ensures memory safety through:
 // Create interpreter
 ar_interpreter_t *interpreter = ar_interpreter__create();
 
-// Execute method
-const ar_method_t *method = ar_methodology__get_method("calculator", "1.0.0");
+// Execute method for an agent
+// The method is retrieved automatically from the agent
 bool success = ar_interpreter__execute_method(
     interpreter,
     agent_id,
-    message,
-    method
+    message
 );
 
-// For single instruction execution, create a temporary method
-ar_method_t *temp_method = ar_method__create(
-    "temp",
-    "memory.result := 2 + 2",
-    "1.0.0"
-);
-success = ar_interpreter__execute_method(
-    interpreter,
-    agent_id,
-    NULL,  // No message
-    temp_method
-);
-ar_method__destroy(temp_method);
+// Note: The interpreter now retrieves the method internally
+// using ar_agency__get_agent_method(agent_id)
 
 // Cleanup
 ar_interpreter__destroy(interpreter);
