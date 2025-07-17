@@ -282,119 +282,22 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 - [x] Made methodology instantiable with backward-compatible global instance pattern
 
-### HIGH PRIORITY - Complete Instruction and Expression Module Refactoring
+### ARCHIVED - Instruction and Expression Module Refactoring (Completed through AST/Evaluator implementation)
 
-**Status**: Phases 1-3 are COMPLETED. Phase 4 (Parser Integration into Interpreter) is the CURRENT PRIORITY.
+**Note**: This section previously contained plans for "Parser Integration into Interpreter" which is now obsolete. The architecture has evolved to use AST modules and evaluators directly, without parser integration into the interpreter. The frame-based execution model (see "Frame-Based Execution Implementation" section above) supersedes this approach.
 
-**Critical Order of Implementation**:
-1. Phase 1: Create Specialized Parser Modules ✅ (COMPLETED 2025-06-21)
-2. Phase 2: Expression AST Integration Prerequisites ✅ (COMPLETED 2025-06-22)
-3. Phase 3: Unified Instruction Evaluator Interface ✅ (COMPLETED 2025-06-23)
-4. Phase 4: Parser Integration into Interpreter 🔄 (CURRENT PRIORITY)
-5. Phase 5: Method Parsing Refactoring
-6. Phase 6: Legacy Code Removal
-7. Phase 7: Extract Common Helper Functions
-8. Phase 8: Module Responsibility Review
-
-**Key Principle**: The interpreter will ONLY use facade methods - never specialized parsers/evaluators directly.
-
-#### Phase 1: Create Specialized Parser Modules ✅ (COMPLETED 2025-06-21)
-- [x] Created 9 specialized parser modules and updated instruction_parser as pure lookahead facade
-
-#### Phase 2: Expression AST Integration Prerequisites (COMPLETED 2025-06-22)
-- [x] Integrated expression parser into all instruction parsers, updated ASTs to hold expressions
-
-#### Phase 3: Unified Instruction Evaluator Interface (Completed 2025-06-23)
-- [x] Created unified evaluate method, removed individual functions, made true facade pattern
-
-#### Phase 4: Parser Integration into Interpreter 🔄 (CURRENT PRIORITY)
-- [ ] **Detailed integration plan using FACADES ONLY**:
-  - [ ] TDD Cycle 1: Add parser/evaluator instances to interpreter struct
-    - [ ] Red: Test that interpreter has parser instances
-    - [ ] Green: Add fields: ar_instruction_parser_t*, expression_parser_t*, expression_evaluator_t*
-    - [ ] Refactor: Ensure proper ownership prefixes
-  - [ ] TDD Cycle 2: Update includes and create/destroy lifecycle
-    - [ ] Red: Test parser lifecycle
-    - [ ] Green: Create parsers in create(), destroy in destroy()
-    - [ ] Refactor: Add error handling for creation failures
-  - [ ] TDD Cycle 3: Replace execute_instruction to use facades only
-    - [ ] Red: Test new implementation pattern
-    - [ ] Green: Parse with ar_instruction_parser__parse(), evaluate with ar_instruction_evaluator__evaluate()
-    - [ ] Refactor: Extract common error handling
-  - [ ] TDD Cycle 4-10: Test each instruction type through facades
-    - [ ] Assignment: memory.x := 42
-    - [ ] Send: send(1, "hello") and memory.result := send(...)
-    - [ ] If: memory.x := if(cond, 1, 2)
-    - [ ] Parse/Build: parse("{x}", "x=42"), build("{x}", map)
-    - [ ] Method/Agent: method("test", "code", "1.0"), agent("echo", "1.0")
-    - [ ] Destroy: destroy(1), destroy("method", "1.0")
-  - [ ] TDD Cycle 11: Remove legacy execute functions
-    - [ ] Red: Remove all _execute_* functions
-    - [ ] Green: Ensure tests still pass
-    - [ ] Refactor: Remove legacy includes/structs
-  - [ ] TDD Cycle 12: Update method execution to use facades
-    - [ ] Red: Test multi-line method execution
-    - [ ] Green: Parse each line with facade, evaluate with facade
-    - [ ] Refactor: Consider performance optimizations
-  - [ ] CRITICAL: NEVER include specialized parser/evaluator headers in interpreter
-  - [ ] CRITICAL: ONLY use facade methods: ar_instruction_parser__parse() and ar_instruction_evaluator__evaluate()
-
-#### Phase 5: Method Parsing Refactoring (CRITICAL - DEPENDS ON PHASE 4)
-- [ ] **Move parsing responsibility from interpreter to methodology**:
-  - [ ] Create a method parser module that parses entire method definitions
-  - [ ] Method parser should use instruction_parser for parsing individual instructions
-  - [ ] Create method AST node to represent parsed method structure
-  - [ ] Update method storage to store AST instead of source code
-  - [ ] Interpreter should only evaluate, never parse
-  - [ ] This ensures clean separation: methodology handles parsing, interpreter handles evaluation
-
-#### Phase 6: Legacy Code Removal (HIGH)
-- [ ] **Remove legacy parsing code from instruction module**:
-  - [ ] Remove the 704-line `_parse_function_call` function entirely
-  - [ ] Remove `_parse_instruction`, `_parse_function_instruction`, and related legacy parsing functions
-  - [ ] Remove legacy `ar_parsed_instruction_t` structures and related types
-  - [ ] Keep only functions still needed by other modules (if any)
-  - [ ] Update or remove `ar__instruction__parse()` public function
-- [ ] **Remove legacy execution code from expression module**:
-  - [ ] Remove old parsing/evaluation code that duplicates expression_parser/expression_evaluator functionality  
-  - [ ] Remove legacy expression execution functions that are replaced by expression_evaluator
-  - [ ] Keep only functions still needed by other modules (if any)
-- [ ] **Update module dependencies**:
-  - [ ] Remove interpreter dependency on legacy instruction module
-  - [ ] Update any remaining callers to use modern parser/evaluator modules
-  - [ ] Update module dependency tree documentation
-
-#### Phase 7: Extract Common Helper Functions (MEDIUM)
-- [x] Eliminated _copy_data_value pattern with ar_data__shallow_copy (Completed 2025-06-29)
-- [ ] **Extract shared expression evaluation patterns**:
-  - [ ] `_evaluate_expression_ast` appears in multiple evaluators
-  - [ ] Consider expression evaluation orchestration module
-  - [ ] Identify proper abstractions for value ownership transformation
-
-#### Phase 8: Module Responsibility Review and Final Architecture (HIGH)
-- [ ] **Review instruction and expression module roles after integration**:
-  - [ ] Analyze if instruction module still has clear responsibility once interpreter uses instruction_parser directly
-  - [ ] Analyze if expression module still has clear responsibility once interpreter uses expression_parser and expression_evaluator directly
-  - [ ] Determine if these modules are needed as facades or can be eliminated:
-    - [ ] If instruction module becomes redundant: migrate any remaining functionality and deprecate
-    - [ ] If expression module becomes redundant: migrate any remaining functionality and deprecate
-    - [ ] If modules provide value as facades: document clear responsibilities and maintain
-  - [ ] Ensure no circular dependencies are introduced during integration
-  - [ ] Update module dependency tree to reflect final architecture
-  - [ ] Consider impact on existing callers and provide migration path if needed
-  - [ ] This review ensures clean final architecture with no redundant facade modules
-
-#### Completed Foundation Work:
+**What was completed**:
+- [x] Created 9 specialized parser modules (COMPLETED 2025-06-21)
+- [x] Integrated expression parser into all instruction parsers, updated ASTs to hold expressions (COMPLETED 2025-06-22)
+- [x] Created unified evaluate method, removed individual functions, made true facade pattern (COMPLETED 2025-06-23)
 - [x] Created 9 specialized evaluators, removed legacy wrappers, eliminated 2500+ line function, zero memory leaks
+- [x] Eliminated _copy_data_value pattern with ar_data__shallow_copy (Completed 2025-06-29)
 
-### THEN - Complete Expression Module Integration
-Once instruction refactoring is done, we can properly integrate everything:
-1. Update interpreter to use expression_evaluator for AST evaluation
-2. Update expression module to use parser and call interpreter
-3. Remove old parsing/evaluation code from expression module
-4. Update all tests to verify the new architecture works correctly
-
-This order ensures clean separation of concerns across all modules.
+**Current Architecture**: 
+- Parsers create AST structures
+- Evaluators work with AST structures and frames
+- Interpreter works with evaluators (not parsers)
+- Frame-based execution is the active implementation approach
 
 ### LOW - Remaining circular dependency (heap ↔ io)
 - [x] Accepted as necessary coupling - memory tracking needs error reporting (Completed analysis)
@@ -574,7 +477,7 @@ These articles were referenced in existing kb files but never created. They woul
 - **Module Naming Convention**: COMPLETED (as of 2025-06-08) - All modules use ar__<module>__<function> pattern
 - **Heap Macros**: COMPLETED (as of 2025-06-08) - All heap macros use AR__HEAP__* pattern
 - **Assert Macros**: Exception maintained - Continue using AR_ASSERT_* pattern
-- **Current Highest Priority**: Complete instruction and expression module refactoring (Phase 1: 704-line parse function)
+- **Current Highest Priority**: Complete Phase 5 of Frame-Based Execution Implementation (Integrate into Interpreter)
 - **Major Achievement**: Eliminated 2500+ line ar_instruction_run function and resolved all circular dependencies
 - The project has achieved zero memory leaks and passes all sanitizer tests (Completed 2025-06-13)
 - All core instruction functions are now implemented
