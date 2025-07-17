@@ -25,6 +25,7 @@ Each learning file contains:
 - [Build Time Reporting](build-time-reporting.md)
 - [Documentation Language Migration Updates](documentation-language-migration-updates.md)
 - [Git Push Verification](git-push-verification.md)
+- [Knowledge Base Consultation Protocol](knowledge-base-consultation-protocol.md)
 - [Language Instruction Renaming Pattern](language-instruction-renaming-pattern.md)
 - [Red Green Refactor Cycle](red-green-refactor-cycle.md)
 - [Search Replace Precision](search-replace-precision.md)
@@ -46,11 +47,13 @@ Each learning file contains:
 - [Code Smell Quick Detection](code-smell-quick-detection.md)
 - [Module Quality Checklist](module-quality-checklist.md)
 - [Method Test Template](method-test-template.md)
+- [Test Fixture API Adaptation](test-fixture-api-adaptation.md)
 
 ### Architecture & Design
 - [Opaque Types Pattern](opaque-types-pattern.md)
 - [Facade Pattern Coordination](facade-pattern-coordination.md)
 - [Error Propagation Pattern](error-propagation-pattern.md)
+- [Parser Function Alias Support](parser-function-alias-support.md)
 - [Refactoring Key Patterns](refactoring-key-patterns.md)
 - [Architectural Patterns Hierarchy](architectural-patterns-hierarchy.md)
 - [Dependency Injection Anti-pattern](dependency-injection-anti-pattern.md)

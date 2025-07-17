@@ -15,6 +15,14 @@ This document tracks completed milestones and major achievements for the AgeRun 
 - **All 64 tests pass with no memory leaks** confirming the refactoring is complete
 - **Build time**: 48 seconds for clean build verification
 
+### ✅ COMPLETED: Knowledge Base Enhancement
+- **Created kb/knowledge-base-consultation-protocol.md** documenting the mandatory KB consultation process
+- **Created kb/test-fixture-api-adaptation.md** documenting patterns for adapting test fixtures to API changes
+- **Created kb/parser-function-alias-support.md** documenting how to support multiple function name aliases
+- **Updated CLAUDE.md** with references to new KB articles in appropriate sections
+- **Enhanced kb/README.md index** with new articles in Development Workflow, Code Quality & Testing, and Architecture & Design sections
+- **All documentation validated** with make check-docs
+
 ## 2025-07-16
 
 ### ✅ COMPLETED: Simplified Interpreter Public Interface

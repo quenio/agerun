@@ -57,7 +57,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 ## Critical Development Rules
 
-### Knowledge Base Usage (MANDATORY)
+### Knowledge Base Usage (MANDATORY) ([details](kb/knowledge-base-consultation-protocol.md))
 
 **When encountering `([details](kb/article.md))` links**: // EXAMPLE: Generic link format
 - **Don't read immediately** - links are for context when needed
@@ -175,6 +175,7 @@ For each new behavior/feature:
 - Global cleanup: `ar_methodology__cleanup()` & `ar_agency__reset()`
 - Process messages: `while (ar_system__process_next_message());`
 - Use fixtures when available, run with `make test_name`
+- Adapt fixtures when APIs change ([details](kb/test-fixture-api-adaptation.md))
 
 **TDD Advanced**: Break large refactoring into sequential cycles, one behavior each ([details](kb/tdd-advanced-large-refactoring.md))
 **API Simplification**: Use TDD for safe API changes ([details](kb/tdd-api-simplification.md))
@@ -284,6 +285,7 @@ grep -r "function_name\|concept" modules/
 - **Parsing vs Evaluation**: Data owner parses (methodology→methods), consumer evaluates (interpreter→ASTs)
 - **Opaque Types**: `typedef struct ar_<module>_s ar_<module>_t;` in header, definition in .c only ([details](kb/opaque-types-pattern.md))
 - **Module Size**: Split at ~850 lines into focused modules (e.g., agency→4 modules)
+- **Parser aliases**: Support all function name variants ([details](kb/parser-function-alias-support.md))
 
 **Key Patterns**:
 - Parse once, evaluate many times (store ASTs, not source)
