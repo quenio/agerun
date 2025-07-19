@@ -436,6 +436,7 @@ Never compile directly with gcc.
 
 **Bulk Operations Patterns**:
 - **Symbol renaming**: Use `rename_symbols.py` for safe whole-word renaming ([details](kb/script-enhancement-over-one-off.md))
+- **Function renaming**: Follow systematic pattern for codebase-wide function renames ([details](kb/systematic-function-renaming-pattern.md))
 - **Documentation fixes**: Use `batch_fix_docs.py` for large-scale documentation error resolution ([details](kb/automated-batch-documentation-fixes.md))
 - **Instruction renaming**: Follow systematic pattern for language changes ([details](kb/language-instruction-renaming-pattern.md))
 - **Search-and-replace precision**: Avoid unintended changes with careful targeting ([details](kb/search-replace-precision.md))

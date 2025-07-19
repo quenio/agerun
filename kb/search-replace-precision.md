@@ -68,4 +68,5 @@ grep -r "spawn.*fixture\|create.*fixture" modules/
 ## Related Patterns
 - [Language Instruction Renaming Pattern](language-instruction-renaming-pattern.md)
 - [Script Enhancement Over One-Off](script-enhancement-over-one-off.md)
+- [Systematic Function Renaming Pattern](systematic-function-renaming-pattern.md)
 - [Code Movement Verification](code-movement-verification.md)

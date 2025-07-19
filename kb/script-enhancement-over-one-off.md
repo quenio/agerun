@@ -17,6 +17,15 @@ MODULE_RENAMES = {
 
 def rename_module_in_content(content, module_mapping):
     # Reusable module renaming logic
+
+# Enhanced script for function renaming capability
+FUNCTION_RENAMES = {
+    'ar_data__transfer_ownership': 'ar_data__drop_ownership',
+    'ar_data__hold_ownership': 'ar_data__take_ownership',
+}
+
+def rename_function_in_content(content, function_mapping):
+    # Systematic function renaming across codebase
 ```
 
 ## Generalization

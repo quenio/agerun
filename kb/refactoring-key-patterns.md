@@ -75,4 +75,5 @@ ar_data_t* ar_old_function(ar_data_t *param) {
 - [Code Movement Verification](code-movement-verification.md)
 - [API Migration Completion Verification](api-migration-completion-verification.md)
 - [Script Enhancement Over One-Off](script-enhancement-over-one-off.md)
+- [Systematic Function Renaming Pattern](systematic-function-renaming-pattern.md)
 - [Search Replace Precision](search-replace-precision.md)

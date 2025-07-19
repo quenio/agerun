@@ -31,6 +31,7 @@ Each learning file contains:
 - [Red Green Refactor Cycle](red-green-refactor-cycle.md)
 - [Search Replace Precision](search-replace-precision.md)
 - [Specification Consistency Maintenance](specification-consistency-maintenance.md)
+- [Systematic Function Renaming Pattern](systematic-function-renaming-pattern.md)
 - [TDD for API Simplification](tdd-api-simplification.md)
 
 ### Memory Management
