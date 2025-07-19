@@ -17,7 +17,11 @@ This separation provides several benefits:
 ## Architecture
 
 ### Interpreter Structure
-The interpreter uses an opaque type to hide implementation details. Currently, the structure is minimal as the interpreter is stateless, but the design allows for future enhancements such as:
+The interpreter uses an opaque type to hide implementation details. The interpreter structure includes:
+- Reference to a log instance for error reporting
+- Reference to a method evaluator for executing parsed methods
+
+The design allows for future enhancements such as:
 - Execution optimization flags
 - Debugging capabilities
 - Performance profiling
@@ -26,22 +30,19 @@ The interpreter uses an opaque type to hide implementation details. Currently, t
 ### Module Dependencies
 ```
 ar_interpreter
-    ├── uses → ar_instruction (internal only, for instruction context)
-    ├── uses → ar_expression (for expression evaluation)
-    ├── uses → ar_agency (for agent operations)
-    ├── uses → ar_methodology (for method operations)
-    ├── uses → ar_data (for data manipulation)
-    ├── uses → ar_string (for string operations)
-    ├── uses → ar_map (for map operations)
-    └── uses → ar_heap (for memory tracking)
+├──c──> ar_log
+├──c──> ar_method_evaluator (Zig)
+├──c──> ar_agency
+├──c──> ar_data
+└──c──> ar_heap (Zig)
 ```
 
 ### Execution Model
-The interpreter implements a tree-walking execution model:
-1. Receives parsed instruction AST from the instruction module
-2. Traverses the AST to determine instruction type
-3. Executes the appropriate operation
-4. Returns success/failure status
+The interpreter now delegates method execution to the method evaluator:
+1. Retrieves the agent's method from the agency
+2. Passes the method to the method evaluator
+3. The method evaluator handles instruction parsing and execution
+4. Returns success/failure status with error logging
 
 ## Supported Instructions
 
@@ -111,8 +112,9 @@ The interpreter module provides a minimal public interface with just three funct
 
 #### `ar_interpreter__create`
 Creates a new interpreter instance.
+- **Parameters**: Log instance for error reporting (borrowed reference)
 - **Returns**: New interpreter or NULL on failure
-- **Ownership**: Caller owns returned interpreter
+- **Ownership**: Caller owns returned interpreter, borrows log reference
 
 #### `ar_interpreter__destroy`
 Destroys an interpreter instance.
@@ -124,17 +126,16 @@ Destroys an interpreter instance.
 #### `ar_interpreter__execute_method`
 Executes a complete method.
 - **Parameters**:
-  - Interpreter instance
+  - Interpreter instance (mutable reference)
   - Agent ID (for memory/context access and method retrieval)
-  - Message being processed
+  - Message being processed (borrowed reference)
 - **Returns**: true on success, false on failure
 - **Process**:
   1. Retrieves method from agent using ar_agency__get_agent_method()
-  2. Creates instruction context
-  3. Splits method instructions by newlines
-  3. Executes each instruction sequentially
-  4. Stops on first failure
-  5. Cleans up resources
+  2. Delegates execution to the method evaluator
+  3. The method evaluator handles all parsing and execution
+  4. Errors are logged through the log instance
+  5. Returns the execution result
 
 ## Execution Semantics
 
@@ -169,26 +170,21 @@ The interpreter strictly follows ownership rules:
 
 ## Implementation Details
 
-### Instruction Dispatch
-The interpreter uses a switch statement for instruction dispatch:
-```c
-switch (instruction_type) {
-    case AR_INSTRUCTION_TYPE__ASSIGNMENT: return _execute_assignment(...);
-    case AR_INSTRUCTION_TYPE__SEND: return _execute_send(...);
-    // ... etc
-}
-```
+### Simplified Architecture
+The interpreter now has a much simpler implementation:
+- Retrieves the agent's method from the agency
+- Creates a method evaluator instance
+- Delegates all execution to the method evaluator
+- The method evaluator handles instruction parsing and execution
+- Errors are logged through the provided log instance
 
-### Helper Functions
-Each instruction type has a dedicated execution function:
-- `_execute_assignment`: Handles memory assignment
-- `_execute_send`: Handles message sending
-- `_execute_if`: Handles conditionals
-- `_execute_parse`: Handles template parsing
-- `_execute_build`: Handles string building
-- `_execute_method`: Handles method creation
-- `_execute_agent`: Handles agent creation
-- `_execute_destroy`: Handles destruction
+### Method Evaluator Integration
+The interpreter uses the Zig-based method evaluator which:
+- Parses method instructions into ASTs
+- Executes instructions sequentially
+- Manages frames for execution context
+- Handles all instruction types defined in the specification
+- Provides comprehensive error reporting
 
 ### Memory Safety
 The interpreter ensures memory safety through:
@@ -200,8 +196,11 @@ The interpreter ensures memory safety through:
 ## Usage Example
 
 ```c
-// Create interpreter
-ar_interpreter_t *interpreter = ar_interpreter__create();
+// Create a log instance for error reporting
+ar_log_t *log = ar_log__create();
+
+// Create interpreter with log
+ar_interpreter_t *interpreter = ar_interpreter__create(log);
 
 // Execute method for an agent
 // The method is retrieved automatically from the agent
@@ -211,11 +210,17 @@ bool success = ar_interpreter__execute_method(
     message
 );
 
-// Note: The interpreter now retrieves the method internally
-// using ar_agency__get_agent_method(agent_id)
+// Check for errors
+if (!success) {
+    ar_event_t *error = ar_log__get_last_error(log);
+    if (error) {
+        printf("Error: %s\n", ar_event__get_message(error));
+    }
+}
 
 // Cleanup
 ar_interpreter__destroy(interpreter);
+ar_log__destroy(log);
 ```
 
 ## Design Decisions
@@ -277,11 +282,12 @@ The interpreter follows the AgeRun Memory Management Model:
 
 ## Error Handling
 
-The interpreter provides basic error handling:
+The interpreter provides comprehensive error handling through the log instance:
 - Returns false on any execution error
-- Relies on instruction context for detailed error reporting
-- Does not provide its own error messages
+- Logs detailed error messages through the provided ar_log instance
+- The method evaluator provides specific error messages for each failure type
 - Fails fast on any error condition
+- Errors can be retrieved using ar_log__get_last_error()
 
 ## Thread Safety
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The deprecate instruction evaluator module is responsible for evaluating method deprecation instructions in the AgeRun language. It handles the `deprecate(method_name, version)` instruction form, which deprecates a specific method and destroys any agents using it.
+The deprecate instruction evaluator module is responsible for evaluating method deprecation instructions in the AgeRun language. It handles the `deprecate(method_name, version)` instruction form, which deprecates (unregisters) a specific method from the methodology.
 
 ## Purpose
 

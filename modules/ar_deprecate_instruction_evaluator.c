@@ -205,43 +205,10 @@ bool ar_deprecate_instruction_evaluator__evaluate(
         const char *method_name = ar_data__get_string(own_name);
         const char *method_version = ar_data__get_string(own_version);
         
-        // Get the method to check if agents are using it
+        // Get the method to check if it exists
         ar_method_t *ref_method = ar_methodology__get_method(method_name, method_version);
         if (ref_method) {
-            // Count agents using this method
-            int agent_count = ar_agency__count_agents_using_method(ref_method);
-            
-            if (agent_count > 0) {
-                // Send __sleep__ messages to all agents using this method
-                int64_t agent_id = ar_agency__get_first_agent();
-                while (agent_id > 0) {
-                    const ar_method_t *agent_method = ar_agency__get_agent_method(agent_id);
-                    if (agent_method == ref_method) {
-                        ar_data_t *sleep_msg = ar_data__create_string("__sleep__");
-                        if (sleep_msg) {
-                            bool sent = ar_agency__send_to_agent(agent_id, sleep_msg);
-                            if (!sent) {
-                                // If send fails, we need to destroy the message ourselves
-                                ar_data__destroy(sleep_msg);
-                            }
-                        }
-                    }
-                    agent_id = ar_agency__get_next_agent(agent_id);
-                }
-                
-                // Now destroy each agent
-                agent_id = ar_agency__get_first_agent();
-                while (agent_id > 0) {
-                    int64_t next_id = ar_agency__get_next_agent(agent_id);
-                    const ar_method_t *agent_method = ar_agency__get_agent_method(agent_id);
-                    if (agent_method == ref_method) {
-                        ar_agency__destroy_agent(agent_id);
-                    }
-                    agent_id = next_id;
-                }
-            }
-            
-            // Now unregister the method
+            // Unregister the method (deprecate only unregisters, doesn't destroy agents)
             destroy_result = ar_methodology__unregister_method(method_name, method_version);
             success = true;
         } else {

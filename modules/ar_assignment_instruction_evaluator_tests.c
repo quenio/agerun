@@ -8,6 +8,7 @@
 #include "ar_data.h"
 #include "ar_event.h"
 #include "ar_expression_ast.h"
+#include "ar_frame.h"
 
 static void test_assignment_instruction_evaluator__create_destroy(void) {
     // Given a test fixture
@@ -290,6 +291,56 @@ static void test_assignment_instruction_evaluator__evaluate_expression(void) {
     ar_evaluator_fixture__destroy(fixture);
 }
 
+static void test_assignment_instruction_evaluator__evaluate_message_expression(void) {
+    // Given a test fixture
+    ar_evaluator_fixture_t *fixture = 
+        ar_evaluator_fixture__create("test_evaluate_message");
+    assert(fixture != NULL);
+    
+    // Create memory, context and message manually
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(fixture);
+    ar_data_t *own_context = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_string("Hello from message");
+    
+    // Create frame with our message
+    ar_frame_t *frame = ar_frame__create(mut_memory, own_context, own_message);
+    assert(frame != NULL);
+    
+    // Create expression AST for "message" 
+    ar_expression_ast_t *message_expr = ar_expression_ast__create_memory_access("message", NULL, 0);
+    assert(message_expr != NULL);
+    
+    // When evaluating an assignment instruction: memory.result := message
+    ar_instruction_ast_t *ast = ar_evaluator_fixture__create_assignment_expr(
+        fixture, "memory.result", message_expr
+    );
+    assert(ast != NULL);
+    
+    // Create and set evaluator
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(log, expr_eval);
+    
+    bool result = ar_assignment_instruction_evaluator__evaluate(evaluator, frame, ast);
+    
+    // Then it should return true
+    assert(result == true);
+    
+    // And the message value should be stored in memory.result
+    const char *stored_result = ar_data__get_map_string(mut_memory, "result");
+    assert(stored_result != NULL);
+    assert(strcmp(stored_result, "Hello from message") == 0);
+    
+    // Cleanup
+    ar_frame__destroy(frame);
+    // Frame doesn't take ownership of context, so we must destroy it
+    ar_data__destroy(own_context);
+    // Don't destroy own_message - the assignment evaluator took ownership of it
+    // when evaluating "message" expression (it was unowned, so evaluator claimed it)
+    ar_assignment_instruction_evaluator__destroy(evaluator);
+    ar_evaluator_fixture__destroy(fixture);
+}
+
 static void test_assignment_instruction_evaluator__evaluate_invalid_path(void) {
     // Given a test fixture
     ar_evaluator_fixture_t *fixture = 
@@ -355,6 +406,9 @@ int main(void) {
     
     test_assignment_instruction_evaluator__evaluate_expression();
     printf("test_assignment_instruction_evaluator__evaluate_expression passed!\n");
+    
+    test_assignment_instruction_evaluator__evaluate_message_expression();
+    printf("test_assignment_instruction_evaluator__evaluate_message_expression passed!\n");
     
     test_assignment_instruction_evaluator__evaluate_invalid_path();
     printf("test_assignment_instruction_evaluator__evaluate_invalid_path passed!\n");

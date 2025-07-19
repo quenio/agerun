@@ -5,6 +5,7 @@
 #include "ar_methodology.h"
 #include "ar_method.h"
 #include "ar_system.h"
+#include "ar_log.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,6 +16,7 @@
  */
 struct ar_interpreter_fixture_s {
     char *own_test_name;              // Name of the test
+    ar_log_t *own_log;                // Log instance for the interpreter
     ar_interpreter_t *own_interpreter;   // The interpreter instance
     ar_list_t *own_tracked_data;         // List of data objects to destroy
     ar_list_t *own_agent_ids;            // List of agent IDs to destroy
@@ -40,9 +42,18 @@ ar_interpreter_fixture_t* ar_interpreter_fixture__create(const char *ref_test_na
         return NULL;
     }
     
+    // Create log
+    own_fixture->own_log = ar_log__create();
+    if (!own_fixture->own_log) {
+        AR__HEAP__FREE(own_fixture->own_test_name);
+        AR__HEAP__FREE(own_fixture);
+        return NULL;
+    }
+    
     // Create interpreter
-    own_fixture->own_interpreter = ar_interpreter__create();
+    own_fixture->own_interpreter = ar_interpreter__create(own_fixture->own_log);
     if (!own_fixture->own_interpreter) {
+        ar_log__destroy(own_fixture->own_log);
         AR__HEAP__FREE(own_fixture->own_test_name);
         AR__HEAP__FREE(own_fixture);
         return NULL;
@@ -52,6 +63,7 @@ ar_interpreter_fixture_t* ar_interpreter_fixture__create(const char *ref_test_na
     own_fixture->own_tracked_data = ar_list__create();
     if (!own_fixture->own_tracked_data) {
         ar_interpreter__destroy(own_fixture->own_interpreter);
+        ar_log__destroy(own_fixture->own_log);
         AR__HEAP__FREE(own_fixture->own_test_name);
         AR__HEAP__FREE(own_fixture);
         return NULL;
@@ -61,6 +73,7 @@ ar_interpreter_fixture_t* ar_interpreter_fixture__create(const char *ref_test_na
     if (!own_fixture->own_agent_ids) {
         ar_list__destroy(own_fixture->own_tracked_data);
         ar_interpreter__destroy(own_fixture->own_interpreter);
+        ar_log__destroy(own_fixture->own_log);
         AR__HEAP__FREE(own_fixture->own_test_name);
         AR__HEAP__FREE(own_fixture);
         return NULL;
@@ -114,6 +127,9 @@ void ar_interpreter_fixture__destroy(ar_interpreter_fixture_t *own_fixture) {
     // Destroy interpreter
     ar_interpreter__destroy(own_fixture->own_interpreter);
     
+    // Destroy log
+    ar_log__destroy(own_fixture->own_log);
+    
     // Free test name and fixture
     AR__HEAP__FREE(own_fixture->own_test_name);
     AR__HEAP__FREE(own_fixture);
@@ -153,11 +169,21 @@ int64_t ar_interpreter_fixture__create_agent(
     ar_methodology__register_method(own_method);
     // Ownership transferred to methodology
     
-    // Create agent
-    int64_t agent_id = ar_agency__create_agent(ref_method_name, version, NULL);
-    if (agent_id == 0) {
+    // Create empty context for agent
+    ar_data_t *own_context = ar_data__create_map();
+    if (!own_context) {
         return 0;
     }
+    
+    // Create agent with context (agency takes reference, not ownership)
+    int64_t agent_id = ar_agency__create_agent(ref_method_name, version, own_context);
+    if (agent_id == 0) {
+        ar_data__destroy(own_context);
+        return 0;
+    }
+    
+    // Track the context for cleanup
+    ar_list__add_last(mut_fixture->own_tracked_data, own_context);
     
     // Track agent ID
     ar_data_t *own_id_data = ar_data__create_integer((int)agent_id);
@@ -231,14 +257,27 @@ int64_t ar_interpreter_fixture__execute_with_message(
         fprintf(stderr, "DEBUG: Message is NULL\n");
     }
     
+    // Create a default message if none provided
+    ar_data_t *own_default_message = NULL;
+    const ar_data_t *message_to_use = ref_message;
+    if (!message_to_use) {
+        own_default_message = ar_data__create_map();
+        message_to_use = own_default_message;
+    }
+    
     // Execute the temporary agent's method
     fprintf(stderr, "DEBUG: Executing instruction via temporary agent: '%s'\n", ref_instruction);
     bool result = ar_interpreter__execute_method(
         mut_fixture->own_interpreter, 
         temp_agent_id, 
-        ref_message
+        message_to_use
     );
     fprintf(stderr, "DEBUG: Instruction result: %s\n", result ? "true" : "false");
+    
+    // Clean up default message if created
+    if (own_default_message) {
+        ar_data__destroy(own_default_message);
+    }
     
     // If execution failed, clean up and return 0
     if (!result) {

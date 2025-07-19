@@ -8,7 +8,6 @@
 #include <assert.h>
 
 /* Message strings */
-static const char *g_wake_message = "__wake__";
 static const char *g_test_message = "test_message";
 
 /* Test function prototypes */
@@ -83,6 +82,9 @@ static void test_agent_creation(void) {
     // And the agent should exist in the system
     assert(ar_agency__agent_exists(agent_id));
     
+    // Process the wake message that the agent sent to itself
+    ar_system__process_next_message();
+    
     // When we send a message to the agent
     ar_data_t *test_message = ar_data__create_string(g_test_message);
     assert(test_message != NULL);
@@ -91,8 +93,7 @@ static void test_agent_creation(void) {
     // Then the message should be sent successfully
     assert(send_result);
     
-    // When we process the next message in the system
-    // With opaque ar_map_t, we can't directly test the processing result
+    // When we process the test message
     ar_system__process_next_message();
     
     // When we destroy the agent
@@ -142,17 +143,9 @@ static void test_message_passing(void) {
     int64_t sender_id = ar_agency__create_agent("sender", sender_version, NULL);
     assert(sender_id > 0);
     
-    // When we send __wake__ messages to both agents
-    ar_data_t *wake_message1 = ar_data__create_string(g_wake_message);
-    ar_data_t *wake_message2 = ar_data__create_string(g_wake_message);
-    assert(wake_message1 != NULL);
-    assert(wake_message2 != NULL);
-    bool receiver_send = ar_agency__send_to_agent(receiver_id, wake_message1);
-    bool sender_send = ar_agency__send_to_agent(sender_id, wake_message2);
-    
-    // Then the messages should be sent successfully
-    assert(receiver_send);
-    assert(sender_send);
+    // Process the wake messages that the agents sent to themselves
+    ar_system__process_next_message(); // receiver's wake message
+    ar_system__process_next_message(); // sender's wake message
     
     // When we process all pending messages
     // With opaque ar_map_t, we can't rely on the exact count
@@ -208,26 +201,16 @@ int main(void) {
         return 1;
     }
     
-    // When we send a wake message to the initial agent
-    ar_data_t *wake_message3 = ar_data__create_string(g_wake_message);
-    assert(wake_message3 != NULL);
-    bool send_result = ar_agency__send_to_agent(initial_agent, wake_message3);
-    
-    // Then the message should be sent successfully
-    if (!send_result) {
-        printf("Error: Failed to send wake message\n");
-        ar_system__shutdown();
-        return 1;
-    }
-    
-    // When we process the message
-    // With opaque ar_map_t, we can't directly test the processing result
+    // Process the wake message that the agent sent to itself
     ar_system__process_next_message();
     
     // When we run all system tests
     test_method_creation();
     test_agent_creation();
     test_message_passing();
+    
+    // Clean up the initial agent
+    ar_agency__destroy_agent(initial_agent);
     
     // Then clean up the system
     ar_system__shutdown();

@@ -92,6 +92,7 @@ bool ar_assignment_instruction_evaluator__evaluate(
         return false;
     }
     
+    
     // Get the pre-parsed expression AST
     const ar_expression_ast_t *ref_expr_ast = ar_instruction_ast__get_assignment_expression_ast(ref_ast);
     if (!ref_expr_ast) {
@@ -102,8 +103,10 @@ bool ar_assignment_instruction_evaluator__evaluate(
     ar_data_t *result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_frame, ref_expr_ast);
     
     if (!result) {
+        _log_error(mut_evaluator, "Failed to evaluate expression");
         return false;
     }
+    
     
     // Get memory from frame
     ar_data_t *mut_memory = ar_frame__get_memory(ref_frame);
@@ -132,6 +135,7 @@ bool ar_assignment_instruction_evaluator__evaluate(
     bool success = ar_data__set_map_data(mut_memory, key_path, own_value);
     if (!success) {
         ar_data__destroy(own_value);
+        _log_error(mut_evaluator, "Failed to store value in memory");
     }
     
     return success;

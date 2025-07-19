@@ -173,6 +173,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Added reference articles for specification consistency maintenance and search-replace precision  
 - [x] Updated CLAUDE.md to integrate references to new knowledge base articles for systematic guideline enhancement
 
+### Simplify Deprecate Instruction Behavior (Completed 2025-07-19)
+- [x] Modified deprecate evaluator to only unregister methods without sending sleep messages or destroying agents
+- [x] Updated methodology module to allow unregistering methods even when agents are actively using them
+- [x] Fixed memory leaks in test files by processing wake messages after agent creation
+- [x] Updated documentation (ar_deprecate_instruction_evaluator.md, ar_methodology.md, ar_interpreter.md, SPEC.md)
+- [x] All tests pass with zero memory leaks
+
 ### HIGHEST PRIORITY - Frame-Based Execution Implementation (Revised Plan)
 
 **Status**: Method evaluator created as the first frame-based evaluator, establishing the top-down pattern.
@@ -242,16 +249,19 @@ This document tracks pending tasks and improvements for the AgeRun project.
     - [x] Update all tests to use new API
     - [x] Update documentation to reflect frame-based pattern
 
-#### Phase 5: Integrate into Interpreter
-- [ ] TDD Cycle 18: Update interpreter
-  - [ ] Create frame at start of instruction execution
-  - [ ] Pass frame to evaluators
-  - [ ] Remove context creation code
-  - [ ] Test all existing interpreter tests pass
-- [ ] TDD Cycle 19: Update method execution
-  - [ ] Create frame once per method
-  - [ ] Reuse frame for all instructions in method
-  - [ ] Test method execution with multiple instructions
+#### Phase 5: Integrate into Interpreter (Completed 2025-07-19)
+- [x] TDD Cycle 18: Update interpreter
+  - [x] Added log parameter to interpreter creation
+  - [x] Integrated method evaluator into interpreter
+  - [x] Delegated all method execution to method evaluator
+  - [x] Updated system module to pass log instance
+  - [x] All interpreter tests pass
+- [x] TDD Cycle 19: Fix integration issues
+  - [x] Fixed expression evaluator to support "message" accessor
+  - [x] Fixed interpreter fixture to create agents with context
+  - [x] Fixed ownership issues with wake/sleep messages
+  - [x] Fixed memory leaks across all test files
+  - [x] All tests pass with zero memory leaks
 
 **Success Criteria**:
 - Zero parallel code: No `_with_frame` variants
@@ -477,7 +487,7 @@ These articles were referenced in existing kb files but never created. They woul
 - **Module Naming Convention**: COMPLETED (as of 2025-06-08) - All modules use ar__<module>__<function> pattern
 - **Heap Macros**: COMPLETED (as of 2025-06-08) - All heap macros use AR__HEAP__* pattern
 - **Assert Macros**: Exception maintained - Continue using AR_ASSERT_* pattern
-- **Current Highest Priority**: Complete Phase 5 of Frame-Based Execution Implementation (Integrate into Interpreter)
+- **Current Highest Priority**: Method evaluator integration completed! All phases of Frame-Based Execution Implementation are done.
 - **Major Achievement**: Eliminated 2500+ line ar_instruction_run function and resolved all circular dependencies
 - The project has achieved zero memory leaks and passes all sanitizer tests (Completed 2025-06-13)
 - All core instruction functions are now implemented

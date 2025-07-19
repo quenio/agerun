@@ -7,6 +7,7 @@ const c = @cImport({
     @cInclude("ar_instruction_evaluator.h");
     @cInclude("ar_method_ast.h");
     @cInclude("ar_frame.h");
+    @cInclude("stdio.h");
 });
 
 /// Internal structure for the method evaluator
@@ -89,6 +90,8 @@ export fn ar_method_evaluator__evaluate(
     
     // Get instruction count
     const instruction_count = c.ar_method_ast__get_instruction_count(ref_ast);
+    
+    // std.debug.print("DEBUG: Method has {} instructions\n", .{instruction_count});
     
     // If no instructions, succeed
     if (instruction_count == 0) {

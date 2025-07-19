@@ -11,7 +11,6 @@
 #include "ar_heap.h"
 
 /* Message strings */
-static const char *ref_wake_message = "__wake__";
 static const char *ref_increment_message = "increment";
 static const char *ref_get_message = "get";
 
@@ -66,16 +65,9 @@ int ar_executable__main(void) {
         return 1;
     }
     
-    // Send wake message to initial agent
-    ar_data_t *own_wake_data = ar_data__create_string(ref_wake_message);
-    if (own_wake_data) {
-        ar_agency__send_to_agent(initial_agent, own_wake_data);
-        // Ownership transferred to agent
-        own_wake_data = NULL; // Mark as transferred
-    }
     printf("Initial agent created with ID: %" PRId64 "\n\n", initial_agent);
     
-    // Process the __wake__ message sent to the initial agent
+    // Process the __wake__ message that the agent sent to itself
     printf("Processing initial __wake__ message...\n");
     int processed = ar_system__process_all_messages();
     printf("Processed %d messages\n\n", processed);

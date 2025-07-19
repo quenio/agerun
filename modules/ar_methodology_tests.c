@@ -575,6 +575,9 @@ int main(void) {
     // When we initialize the system
     ar_system__init(init_method, init_version);
     
+    // Process the wake message from the initial agent
+    ar_system__process_next_message();
+    
     // And we run all methodology tests
     test_methodology_get_method();
     test_methodology_register_and_get();

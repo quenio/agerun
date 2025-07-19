@@ -84,7 +84,8 @@ void ar_methodology__register_method(ar_method_t *own_method);
  * @param ref_name Method name (borrowed reference)
  * @param ref_version Version string of the method to unregister
  * @return true if method was successfully unregistered, false otherwise
- * @note This will fail if there are active agents using this method
+ * @note This will succeed even if there are active agents using this method,
+ *       allowing deprecation of methods that are in use
  */
 bool ar_methodology__unregister_method(const char *ref_name, const char *ref_version);
 ```
@@ -177,8 +178,11 @@ The methodology module is NOT thread-safe. All access should be synchronized ext
 
 ## Dependencies
 
-- ar_method: For method object creation and management
-- ar_io: For file operations and persistence
-- ar_heap: For memory management
-- ar_semver: For version comparison and management
-- ar_log: For error reporting (optional)
+```
+ar_methodology
+├──c──> ar_method
+├──c──> ar_io (Zig/C)
+├──c──> ar_heap (Zig)
+├──c──> ar_semver (Zig)
+└──c──> ar_log (optional)
+```

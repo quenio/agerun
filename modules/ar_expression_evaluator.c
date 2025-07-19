@@ -152,6 +152,11 @@ static ar_data_t* _evaluate_memory_access(
 #pragma GCC diagnostic ignored "-Wcast-qual"
         map = (ar_data_t *)ar_frame__get_context(ref_frame);
 #pragma GCC diagnostic pop
+    } else if (strcmp(base, "message") == 0) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
+        map = (ar_data_t *)ar_frame__get_message(ref_frame);
+#pragma GCC diagnostic pop
     } else {
         char error_msg[256];
         snprintf(error_msg, sizeof(error_msg), "evaluate_memory_access: Invalid base accessor '%s'", base);

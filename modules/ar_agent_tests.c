@@ -37,6 +37,9 @@ static void test_agent_create_destroy(ar_system_fixture_t *mut_fixture) {
     // Then the agent should be created successfully
     assert(agent_id > 0);
     
+    // Process the wake message the agent sent to itself
+    ar_system__process_next_message();
+    
     // And the agent should exist in the system
     bool exists = ar_agency__agent_exists(agent_id);
     assert(exists);
@@ -69,6 +72,9 @@ static void test_agent_send(ar_system_fixture_t *mut_fixture) {
     int64_t agent_id = ar_agency__create_agent(method_name, version, NULL);
     assert(agent_id > 0);
     
+    // Process the wake message the agent sent to itself
+    ar_system__process_next_message();
+    
     // When we send a message to the agent
     ar_data_t *own_message_data = ar_data__create_string(g_hello_message);
     assert(own_message_data != NULL);
@@ -78,7 +84,7 @@ static void test_agent_send(ar_system_fixture_t *mut_fixture) {
     // Then the message should be sent successfully
     assert(send_result);
     
-    // Process the message to prevent memory leaks
+    // Process the test message
     ar_system__process_next_message();
     
     // Since we can't directly access the message queue in an opaque map,
@@ -105,6 +111,9 @@ static void test_agent_exists(ar_system_fixture_t *mut_fixture) {
     
     int64_t agent_id = ar_agency__create_agent(method_name, version, NULL);
     assert(agent_id > 0);
+    
+    // Process the wake message the agent sent to itself
+    ar_system__process_next_message();
     
     // When we check if the valid agent ID exists
     bool exists = ar_agency__agent_exists(agent_id);
@@ -157,6 +166,9 @@ static void test_agent_persistence(ar_system_fixture_t *mut_fixture) {
     // And an agent created with this persistent method - agent doesn't take ownership
     int64_t agent_id = ar_agency__create_agent(method_name, version, own_context);
     assert(agent_id > 0);
+    
+    // Process the wake message the agent sent to itself
+    ar_system__process_next_message();
     
     // When we save agents to disk
     bool save_result = ar_agency__save_agents();

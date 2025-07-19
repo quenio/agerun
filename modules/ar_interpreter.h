@@ -5,16 +5,19 @@
 #include <stdint.h>
 #include "ar_data.h"
 #include "ar_method.h"
+#include "ar_log.h"
 
 /* Interpreter instance (opaque type) */
 typedef struct ar_interpreter_s ar_interpreter_t;
 
 /**
  * Creates a new interpreter instance
+ * @param ref_log The log instance for error reporting (borrowed reference)
  * @return Newly created interpreter, or NULL on failure
  * @note Ownership: Returns an owned object that the caller must destroy with ar_interpreter__destroy.
+ *       The interpreter borrows the log reference.
  */
-ar_interpreter_t* ar_interpreter__create(void);
+ar_interpreter_t* ar_interpreter__create(ar_log_t *ref_log);
 
 /**
  * Destroys an interpreter instance and frees its resources

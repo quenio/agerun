@@ -101,7 +101,12 @@ int main(void) {
     own_method = NULL; // Mark as transferred
     
     // When we initialize the system with this method
-    ar_system__init(init_method, init_version);
+    int64_t initial_agent = ar_system__init(init_method, init_version);
+    
+    // Process the wake message if an agent was created
+    if (initial_agent > 0) {
+        ar_system__process_next_message();
+    }
     
     // And we run the executable test
     test_executable_run();

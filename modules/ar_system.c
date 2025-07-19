@@ -9,6 +9,7 @@
 #include "ar_map.h"
 #include "ar_heap.h"
 #include "ar_interpreter.h"
+#include "ar_log.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,6 +39,7 @@ static char g_wake_message[] = "__wake__";
 /* Global State */
 static bool is_initialized = false;
 static ar_interpreter_t *g_interpreter = NULL;
+static ar_log_t *g_log = NULL;
 
 /* Implementation */
 int64_t ar_system__init(const char *ref_method_name, const char *ref_version) {
@@ -49,10 +51,21 @@ int64_t ar_system__init(const char *ref_method_name, const char *ref_version) {
     is_initialized = true;
     ar_agency__set_initialized(true);
     
+    // Create the log
+    g_log = ar_log__create();
+    if (!g_log) {
+        printf("Error: Failed to create log\n");
+        is_initialized = false;
+        ar_agency__set_initialized(false);
+        return 0;
+    }
+    
     // Create the interpreter
-    g_interpreter = ar_interpreter__create();
+    g_interpreter = ar_interpreter__create(g_log);
     if (!g_interpreter) {
         printf("Error: Failed to create interpreter\n");
+        ar_log__destroy(g_log);
+        g_log = NULL;
         is_initialized = false;
         ar_agency__set_initialized(false);
         return 0;
@@ -115,6 +128,12 @@ void ar_system__shutdown(void) {
         g_interpreter = NULL;
     }
     
+    // Destroy the log
+    if (g_log) {
+        ar_log__destroy(g_log);
+        g_log = NULL;
+    }
+    
     // Now mark as uninitialized
     is_initialized = false;
     ar_agency__set_initialized(false);
@@ -122,20 +141,16 @@ void ar_system__shutdown(void) {
 
 bool ar_system__process_next_message(void) {
     if (!is_initialized) {
-        printf("DEBUG: System not initialized\n");
         return false;
     }
     
     // Find an agent with a non-empty message queue
     int64_t agent_id = ar_agency__get_first_agent();
-    printf("DEBUG: First agent ID: %" PRId64 "\n", agent_id);
     while (agent_id != 0) {
         if (ar_agency__agent_has_messages(agent_id)) {
-            printf("DEBUG: Agent %" PRId64 " has messages\n", agent_id);
             // Process one message
             ar_data_t *own_message = ar_agency__get_agent_message(agent_id);
             if (own_message) {
-                printf("DEBUG: Got message from agent %" PRId64 "\n", agent_id);
                 // Print message based on its type
                 printf("Agent %" PRId64 " received message: ", agent_id);
                 ar_data_type_t msg_type = ar_data__get_type(own_message);
@@ -152,7 +167,15 @@ bool ar_system__process_next_message(void) {
                 ar_interpreter__execute_method(g_interpreter, agent_id, own_message);
                 
                 // Free the message as it's now been processed
-                ar_data__destroy(own_message);
+                // Try to take ownership before destroying
+                if (ar_data__hold_ownership(own_message, &is_initialized)) {
+                    // We got ownership, now release it before destroying
+                    ar_data__transfer_ownership(own_message, &is_initialized);
+                    ar_data__destroy(own_message);
+                } else {
+                    // Someone else owns it, they will destroy it
+                    // This is expected for messages that get stored in memory by assignment evaluator
+                }
                 own_message = NULL; // Mark as freed
                 return true;
             }

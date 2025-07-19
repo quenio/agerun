@@ -2,6 +2,23 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-07-19
+
+### ✅ COMPLETED: Method Evaluator Integration into Interpreter
+- **Integrated method evaluator into interpreter module** replacing instruction-based execution
+- **Added log parameter to interpreter API** for comprehensive error reporting
+- **Delegated all method execution to method evaluator** which handles parsing and execution
+- **Fixed expression evaluator to support "message" accessor** for accessing message fields
+- **Fixed interpreter fixture to create agents with proper context** instead of NULL
+- **Resolved complex ownership issues** with wake/sleep messages in agent and system modules
+- **Fixed memory leaks across all test files** by processing wake messages after agent creation
+- **Simplified deprecate instruction behavior** to only unregister methods without destroying agents
+- **Updated methodology module** to allow unregistering methods even when agents are actively using them
+- **Updated all module documentation** to reflect architectural changes and new APIs
+- **Updated SPEC.md** to clarify deprecate instruction behavior
+- **Phase 5 of Frame-Based Execution Implementation completed** with all tests passing
+- **All 64 tests pass with zero memory leaks** confirming successful integration
+
 ## 2025-07-17
 
 ### ✅ COMPLETED: Simplified Interpreter Execute Method API

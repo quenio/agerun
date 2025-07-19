@@ -5,6 +5,7 @@
 #include "ar_list.h"
 #include "ar_heap.h"
 #include "ar_map.h"
+#include "ar_data.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,6 +68,8 @@ ar_agent_t* ar_agent__create(const char *ref_method_name, const char *ref_versio
     // Send wake message
     ar_data_t *own_wake_msg = ar_data__create_string(g_wake_message);
     if (own_wake_msg) {
+        // Mark agent as owner of the message
+        ar_data__hold_ownership(own_wake_msg, own_agent);
         ar_agent__send(own_agent, own_wake_msg);
         // Note: The wake message will be processed when the system runs
     }
@@ -82,9 +85,14 @@ void ar_agent__destroy(ar_agent_t *own_agent) {
     // Send sleep message before destruction
     ar_data_t *own_sleep_msg = ar_data__create_string(g_sleep_message);
     if (own_sleep_msg) {
+        // Mark agent as owner of the message
+        ar_data__hold_ownership(own_sleep_msg, own_agent);
         bool sent = ar_list__add_last(own_agent->own_message_queue, own_sleep_msg);
         if (!sent) {
-            ar_data__destroy(own_sleep_msg);
+            // Transfer ownership back before destroying
+            if (ar_data__transfer_ownership(own_sleep_msg, own_agent)) {
+                ar_data__destroy(own_sleep_msg);
+            }
         }
         // Note: The sleep message will be processed before the agent is destroyed
     }
@@ -103,7 +111,10 @@ void ar_agent__destroy(ar_agent_t *own_agent) {
         // First, destroy any remaining messages in the queue
         ar_data_t *own_msg = NULL;
         while ((own_msg = ar_list__remove_first(own_agent->own_message_queue)) != NULL) {
-            ar_data__destroy(own_msg);
+            // Transfer ownership back before destroying
+            if (ar_data__transfer_ownership(own_msg, own_agent)) {
+                ar_data__destroy(own_msg);
+            }
             own_msg = NULL; // Mark as destroyed
         }
         // Then destroy the queue itself
@@ -119,6 +130,7 @@ bool ar_agent__send(ar_agent_t *mut_agent, ar_data_t *own_message) {
     if (!mut_agent || !own_message) {
         // Destroy the message if we have one but no agent
         if (own_message) {
+            // We don't know who owns it, just try to destroy
             ar_data__destroy(own_message);
         }
         return false;
@@ -126,17 +138,24 @@ bool ar_agent__send(ar_agent_t *mut_agent, ar_data_t *own_message) {
     
     if (!mut_agent->own_message_queue) {
         // If agent has no message queue, destroy the message
-        ar_data__destroy(own_message);
+        // Transfer ownership back from agent before destroying
+        if (ar_data__transfer_ownership(own_message, mut_agent)) {
+            ar_data__destroy(own_message);
+        }
         own_message = NULL; // Mark as destroyed
         return false;
     }
     
-    // Agent module takes ownership of the message and adds to the queue
+    // Note: The caller should have already marked the agent as owner
+    // Agent module adds to the queue
     bool result = ar_list__add_last(mut_agent->own_message_queue, own_message);
     
     // If we couldn't add to the queue, destroy the message
     if (!result) {
-        ar_data__destroy(own_message);
+        // Transfer ownership back from agent before destroying
+        if (ar_data__transfer_ownership(own_message, mut_agent)) {
+            ar_data__destroy(own_message);
+        }
     }
     
     return result;
@@ -224,7 +243,12 @@ ar_data_t* ar_agent__get_message(ar_agent_t *mut_agent) {
         return NULL;
     }
     
-    return ar_list__remove_first(mut_agent->own_message_queue);
+    ar_data_t *own_message = ar_list__remove_first(mut_agent->own_message_queue);
+    if (own_message) {
+        // Transfer ownership from agent to NULL (making it unowned so system can destroy it)
+        ar_data__transfer_ownership(own_message, mut_agent);
+    }
+    return own_message;
 }
 
 bool ar_agent__update_method(ar_agent_t *mut_agent, const ar_method_t *ref_new_method, bool send_sleep_wake) {
@@ -236,7 +260,14 @@ bool ar_agent__update_method(ar_agent_t *mut_agent, const ar_method_t *ref_new_m
         // Send sleep message before update
         ar_data_t *own_sleep_msg = ar_data__create_string(g_sleep_message);
         if (own_sleep_msg) {
-            ar_list__add_last(mut_agent->own_message_queue, own_sleep_msg);
+            // Mark agent as owner of the message
+            ar_data__hold_ownership(own_sleep_msg, mut_agent);
+            if (!ar_list__add_last(mut_agent->own_message_queue, own_sleep_msg)) {
+                // Transfer ownership back before destroying
+                if (ar_data__transfer_ownership(own_sleep_msg, mut_agent)) {
+                    ar_data__destroy(own_sleep_msg);
+                }
+            }
         }
     }
     
@@ -247,7 +278,14 @@ bool ar_agent__update_method(ar_agent_t *mut_agent, const ar_method_t *ref_new_m
         // Send wake message after update
         ar_data_t *own_wake_msg = ar_data__create_string(g_wake_message);
         if (own_wake_msg) {
-            ar_list__add_last(mut_agent->own_message_queue, own_wake_msg);
+            // Mark agent as owner of the message
+            ar_data__hold_ownership(own_wake_msg, mut_agent);
+            if (!ar_list__add_last(mut_agent->own_message_queue, own_wake_msg)) {
+                // Transfer ownership back before destroying
+                if (ar_data__transfer_ownership(own_wake_msg, mut_agent)) {
+                    ar_data__destroy(own_wake_msg);
+                }
+            }
         }
     }
     

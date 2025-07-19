@@ -163,6 +163,8 @@ bool ar_send_instruction_evaluator__evaluate(
     bool send_result;
     if (agent_id == 0) {
         // Special case: agent_id 0 is a no-op that always returns true
+        // We need to transfer ownership to NULL before destroying
+        ar_data__transfer_ownership(own_message, mut_evaluator);
         ar_data__destroy(own_message);
         send_result = true;
     } else {

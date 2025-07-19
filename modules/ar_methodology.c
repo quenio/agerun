@@ -1329,17 +1329,7 @@ bool ar_methodology__unregister_method_with_instance(ar_methodology_t *mut_metho
         return false; // Version not found
     }
     
-    // Get the method to check if it's in use
-    ar_method_t *method_to_remove = mut_methodology->own_methods[method_idx][version_idx];
-    
-    // Check if method is in use by any agents
-    if (ar_agency__count_agents_using_method(method_to_remove) > 0) {
-        ar_io__error("Cannot unregister method %s version %s: agents are still using it", 
-                    ref_name, ref_version);
-        return false;
-    }
-    
-    // Destroy the method
+    // Destroy the method (no longer checking if agents are using it)
     ar_method__destroy(mut_methodology->own_methods[method_idx][version_idx]);
     
     // Shift remaining versions down

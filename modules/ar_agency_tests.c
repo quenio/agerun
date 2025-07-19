@@ -42,6 +42,8 @@ static void test_agency_count_agents(void) {
     for (int i = 0; i < num_agents_to_create; i++) {
         agent_ids[i] = ar_agency__create_agent(method_name, version, NULL);
         assert(agent_ids[i] > 0);
+        // Process the wake message
+        ar_system__process_next_message();
     }
     
     // Then the agent count should increase by the number of agents created
@@ -93,6 +95,9 @@ static void test_agency_persistence(void) {
     int64_t agent_id = ar_agency__create_agent(method_name, version, NULL);
     assert(agent_id > 0);
     
+    // Process the wake message
+    ar_system__process_next_message();
+    
     // When we save agents to disk
     bool save_result = ar_agency__save_agents();
     
@@ -101,7 +106,12 @@ static void test_agency_persistence(void) {
     
     // When we simulate a system restart
     ar_system__shutdown();
-    ar_system__init("agency_persistence_method", version);
+    int64_t new_agent_id = ar_system__init("agency_persistence_method", version);
+    
+    // Process the wake message if an agent was created
+    if (new_agent_id > 0) {
+        ar_system__process_next_message();
+    }
     
     // And load the methods and agents
     bool load_methods_result = ar_methodology__load_methods();
@@ -111,6 +121,11 @@ static void test_agency_persistence(void) {
     
     // Then the load operations should succeed
     assert(load_agents_result);
+    
+    // Process wake messages for any agents created during load
+    // Based on the output, 2 agents are created when loading
+    ar_system__process_next_message();
+    ar_system__process_next_message();
     
     // And our persistent agent should still exist
     bool exists = ar_agency__agent_exists(agent_id);
@@ -143,6 +158,9 @@ static void test_agency_reset(void) {
     // And an agent created with this method
     int64_t agent_id = ar_agency__create_agent(method_name, version, NULL);
     assert(agent_id > 0);
+    
+    // Process the wake message
+    ar_system__process_next_message();
     
     // And the agent exists in the system
     bool exists = ar_agency__agent_exists(agent_id);
@@ -182,6 +200,9 @@ int main(void) {
     
     int64_t init_agent_id = ar_system__init(method_name, version);
     assert(init_agent_id > 0);
+    
+    // Process the wake message
+    ar_system__process_next_message();
     
     // When we run all agency tests
     test_agency_count_agents();

@@ -98,6 +98,9 @@ static void test_method_run(void) {
     int64_t agent_id = ar_agency__create_agent(method_name, version, NULL);
     assert(agent_id > 0);
     
+    // Process the wake message
+    ar_system__process_next_message();
+    
     // With ar_map_t now opaque, we can't directly access the agent
     // We'll test indirectly by sending a message
     assert(ar_agency__agent_exists(agent_id));
@@ -294,6 +297,9 @@ int main(void) {
     
     // When we initialize the system
     ar_system__init(init_method, init_version);
+    
+    // Process the wake message from the initial agent
+    ar_system__process_next_message();
     
     // And we run all method tests
     test_method_create();

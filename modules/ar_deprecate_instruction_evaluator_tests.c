@@ -207,7 +207,7 @@ static void test_deprecate_instruction_evaluator__evaluate_frame_based(void) {
     ar_methodology__cleanup();
 }
 
-// Test destroy method with agents using it
+// Test deprecate method with agents using it (agents should remain active)
 static void test_deprecate_instruction_evaluator__evaluate_with_agents(void) {
     // Clean up any existing persistence files
     remove("methodology.agerun");
@@ -280,10 +280,9 @@ static void test_deprecate_instruction_evaluator__evaluate_with_agents(void) {
     assert(ar_data__get_type(result_value) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(result_value) == 1);
     
-    // The agents should already be destroyed
-    // (In the current implementation, destroy() handles agent destruction immediately)
-    assert(ar_agency__agent_exists(agent1) == false);
-    assert(ar_agency__agent_exists(agent2) == false);
+    // The agents should still exist (deprecate no longer destroys agents)
+    assert(ar_agency__agent_exists(agent1) == true);
+    assert(ar_agency__agent_exists(agent2) == true);
     
     // And the method should be destroyed
     ar_method_t *method = ar_methodology__get_method("test_destroyer", "1.0.0");

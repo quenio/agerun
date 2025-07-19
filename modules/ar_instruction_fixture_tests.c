@@ -1,6 +1,7 @@
 #include "ar_instruction_fixture.h"
 #include "ar_heap.h"
 #include "ar_list.h"
+#include "ar_system.h"
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
@@ -208,6 +209,11 @@ static void test_system_initialization(void) {
     // Then initialization should succeed
     assert(result == true);
     
+    // Process all wake messages from system initialization and any loaded agents
+    while (ar_system__process_next_message()) {
+        // Process all pending messages
+    }
+    
     // And we shouldn't be able to initialize again
     result = ar_instruction_fixture__init_system(
         own_fixture,
@@ -231,6 +237,11 @@ static void test_agent_creation(void) {
     
     assert(ar_instruction_fixture__init_system(own_fixture, "init_method", "memory.ready := 1"));
     
+    // Process any wake messages from loaded agents
+    while (ar_system__process_next_message()) {
+        // Process all pending messages
+    }
+    
     // When we create a test agent
     int64_t agent_id = ar_instruction_fixture__create_test_agent(
         own_fixture,
@@ -240,6 +251,9 @@ static void test_agent_creation(void) {
     
     // Then the agent should be created successfully
     assert(agent_id > 0);
+    
+    // Process the wake message
+    ar_system__process_next_message();
     
     // And we should be able to get the agent ID
     int64_t retrieved_id = ar_instruction_fixture__get_agent(own_fixture);
