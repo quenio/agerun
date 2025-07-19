@@ -11,6 +11,7 @@
 #include "ar_log.h"
 #include "ar_memory_accessor.h"
 #include "ar_frame.h"
+#include "ar_data.h"
 
 
 /**
@@ -129,10 +130,7 @@ bool ar_send_instruction_evaluator__evaluate(
     
     // We only need the value, not the data itself
     // Check if we can destroy it (unowned) or if it's a reference
-    if (ar_data__take_ownership(agent_id_result, mut_evaluator)) {
-        ar_data__drop_ownership(agent_id_result, mut_evaluator);
-        ar_data__destroy(agent_id_result);
-    }
+    ar_data__destroy_if_owned(agent_id_result, mut_evaluator);
     
     // Evaluate message expression
     ar_data_t *message_result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_frame, ref_message_ast);
@@ -145,27 +143,18 @@ bool ar_send_instruction_evaluator__evaluate(
     }
     
     // Get ownership of message for sending
-    ar_data_t *own_message;
-    if (ar_data__take_ownership(message_result, mut_evaluator)) {
-        // We can claim ownership - it's an unowned value
-        ar_data__drop_ownership(message_result, mut_evaluator);
-        own_message = message_result;
-    } else {
-        // It's owned by someone else - we need to make a copy
-        own_message = ar_data__shallow_copy(message_result);
-        if (!own_message) {
-            _log_error(mut_evaluator, "Cannot send message with nested containers (no deep copy support)");
-            return false;
-        }
+    ar_data_t *own_message = ar_data__claim_or_copy(message_result, mut_evaluator);
+    if (!own_message) {
+        _log_error(mut_evaluator, "Cannot send message with nested containers (no deep copy support)");
+        return false;
     }
     
     // Send the message
     bool send_result;
     if (agent_id == 0) {
         // Special case: agent_id 0 is a no-op that always returns true
-        // We need to transfer ownership to NULL before destroying
-        ar_data__drop_ownership(own_message, mut_evaluator);
-        ar_data__destroy(own_message);
+        // We need to destroy the message since it won't be sent
+        ar_data__destroy_if_owned(own_message, mut_evaluator);
         send_result = true;
     } else {
         // Send message (ownership transferred to ar_agency__send_to_agent)
