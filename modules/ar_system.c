@@ -167,15 +167,8 @@ bool ar_system__process_next_message(void) {
                 ar_interpreter__execute_method(g_interpreter, agent_id, own_message);
                 
                 // Free the message as it's now been processed
-                // Try to take ownership before destroying
-                if (ar_data__take_ownership(own_message, &is_initialized)) {
-                    // We got ownership, now release it before destroying
-                    ar_data__drop_ownership(own_message, &is_initialized);
-                    ar_data__destroy(own_message);
-                } else {
-                    // Someone else owns it, they will destroy it
-                    // This is expected for messages that get stored in memory by assignment evaluator
-                }
+                // This is expected for messages that get stored in memory by assignment evaluator
+                ar_data__destroy_if_owned(own_message, &is_initialized);
                 own_message = NULL; // Mark as freed
                 return true;
             }
