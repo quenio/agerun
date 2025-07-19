@@ -12,6 +12,7 @@
 #include "ar_list.h"
 #include "ar_log.h"
 #include "ar_memory_accessor.h"
+#include "ar_data.h"
 #include <string.h>
 #include <stdio.h>
 #include <inttypes.h>
@@ -152,33 +153,23 @@ bool ar_spawn_instruction_evaluator__evaluate(
     // Handle ownership for method name
     ar_data_t *own_method_name = NULL;
     if (method_result) {
-        if (ar_data__take_ownership(method_result, mut_expr_evaluator)) {
-            ar_data__drop_ownership(method_result, mut_expr_evaluator);
-            own_method_name = method_result;
-        } else {
-            own_method_name = ar_data__shallow_copy(method_result);
-            if (!own_method_name) {
-                _log_error(mut_evaluator, "Cannot create agent with nested containers in method name (no deep copy support)");
-                AR__HEAP__FREE(items);
-                return false;
-            }
+        own_method_name = ar_data__claim_or_copy(method_result, mut_evaluator);
+        if (!own_method_name) {
+            _log_error(mut_evaluator, "Cannot create agent with nested containers in method name (no deep copy support)");
+            AR__HEAP__FREE(items);
+            return false;
         }
     }
     
     // Handle ownership for version
     ar_data_t *own_version = NULL;
     if (version_result) {
-        if (ar_data__take_ownership(version_result, mut_expr_evaluator)) {
-            ar_data__drop_ownership(version_result, mut_expr_evaluator);
-            own_version = version_result;
-        } else {
-            own_version = ar_data__shallow_copy(version_result);
-            if (!own_version) {
-                _log_error(mut_evaluator, "Cannot create agent with nested containers in version (no deep copy support)");
-                if (own_method_name) ar_data__destroy(own_method_name);
-                AR__HEAP__FREE(items);
-                return false;
-            }
+        own_version = ar_data__claim_or_copy(version_result, mut_evaluator);
+        if (!own_version) {
+            _log_error(mut_evaluator, "Cannot create agent with nested containers in version (no deep copy support)");
+            if (own_method_name) ar_data__destroy(own_method_name);
+            AR__HEAP__FREE(items);
+            return false;
         }
     }
     
