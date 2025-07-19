@@ -10,6 +10,7 @@
 #include "ar_log.h"
 #include "ar_memory_accessor.h"
 #include "ar_frame.h"
+#include "ar_data.h"
 
 /**
  * Internal structure for condition instruction evaluator
@@ -136,10 +137,7 @@ bool ar_condition_instruction_evaluator__evaluate(
     }
     
     // We only need the value, not the data itself
-    if (ar_data__take_ownership(condition_result, mut_evaluator)) {
-        ar_data__drop_ownership(condition_result, mut_evaluator);
-        ar_data__destroy(condition_result);
-    }
+    ar_data__destroy_if_owned(condition_result, mut_evaluator);
     
     // Select which expression AST to evaluate based on condition
     const ar_expression_ast_t *ref_ast_to_eval = condition_is_true ? ref_true_ast : ref_false_ast;
@@ -161,26 +159,15 @@ bool ar_condition_instruction_evaluator__evaluate(
         const char *key_path = ar_memory_accessor__get_key(ref_result_path);
         if (!key_path) {
             // Clean up result if we can
-            if (ar_data__take_ownership(result, mut_evaluator)) {
-                ar_data__drop_ownership(result, mut_evaluator);
-                ar_data__destroy(result);
-            }
+            ar_data__destroy_if_owned(result, mut_evaluator);
             return false;
         }
         
         // Get ownership of result for storing
-        ar_data_t *own_result;
-        if (ar_data__take_ownership(result, mut_evaluator)) {
-            // We can claim ownership
-            ar_data__drop_ownership(result, mut_evaluator);
-            own_result = result;
-        } else {
-            // Need to make a copy
-            own_result = ar_data__shallow_copy(result);
-            if (!own_result) {
-                _log_error(mut_evaluator, "Cannot assign value with nested containers (no deep copy support)");
-                return false;
-            }
+        ar_data_t *own_result = ar_data__claim_or_copy(result, mut_evaluator);
+        if (!own_result) {
+            _log_error(mut_evaluator, "Cannot assign value with nested containers (no deep copy support)");
+            return false;
         }
         
         // Store the result value (transfers ownership)
@@ -193,10 +180,7 @@ bool ar_condition_instruction_evaluator__evaluate(
         return true;
     } else {
         // No assignment, just return success (expression was evaluated for side effects)
-        if (ar_data__take_ownership(result, mut_evaluator)) {
-            ar_data__drop_ownership(result, mut_evaluator);
-            ar_data__destroy(result);
-        }
+        ar_data__destroy_if_owned(result, mut_evaluator);
         return true;
     }
 }
