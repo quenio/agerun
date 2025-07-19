@@ -180,6 +180,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Updated documentation (ar_deprecate_instruction_evaluator.md, ar_methodology.md, ar_interpreter.md, SPEC.md)
 - [x] All tests pass with zero memory leaks
 
+### Knowledge Base Enhancement from Session Learnings (Completed 2025-07-19)
+- [x] Created 5 new KB articles documenting patterns from method evaluator integration
+- [x] Updated 10 existing KB articles with new sections and cross-references
+- [x] Enhanced CLAUDE.md with references to new KB articles
+- [x] Updated kb/README.md index with proper categorization
+- [x] All documentation validated with make check-docs
+
 ### HIGHEST PRIORITY - Frame-Based Execution Implementation (Revised Plan)
 
 **Status**: Method evaluator created as the first frame-based evaluator, establishing the top-down pattern.

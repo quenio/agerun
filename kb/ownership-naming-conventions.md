@@ -28,8 +28,23 @@ Make ownership and lifetime explicit in variable names rather than relying on co
 - Apply consistently across .h, .c, and _tests.c files
 - Use immediately when receiving ownership from functions
 
+## Wake/Sleep Message Ownership
+When agents create wake or sleep messages, they must explicitly mark themselves as owners:
+```c
+// From ar_agent.c
+ar_data_t *own_wake_msg = ar_data__create_string("__wake__");
+if (own_wake_msg) {
+    ar_data__hold_ownership(own_wake_msg, own_agent);  // Agent claims ownership
+    ar_agent__send(own_agent, own_wake_msg);
+}
+```
+
+This ownership must be properly transferred when the system processes messages to avoid "Cannot destroy owned data" errors.
+
 ## Related Patterns
 - Memory Management Model (MMM)
 - Zero memory leak tolerance
 - Explicit resource management
 - Debug assertions for ownership validation
+- [Ownership Transfer in Message Passing](ownership-transfer-message-passing.md)
+- [Agent Wake Message Processing](agent-wake-message-processing.md)

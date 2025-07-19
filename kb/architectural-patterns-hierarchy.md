@@ -67,3 +67,4 @@ Always prefer simpler patterns first. Move to complex patterns only when simpler
 - [Facade Pattern Coordination](facade-pattern-coordination.md)
 - [No Circular Dependencies Principle](no-circular-dependencies-principle.md)
 - [Single Responsibility Principle](single-responsibility-principle.md)
+- [Module Delegation Error Propagation](module-delegation-error-propagation.md)

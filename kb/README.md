@@ -20,6 +20,7 @@ Each learning file contains:
 ## Current Learnings
 
 ### Development Workflow
+- [Agent Wake Message Processing](agent-wake-message-processing.md)
 - [API Migration Completion Verification](api-migration-completion-verification.md)
 - [Build Verification Before Commit](build-verification-before-commit.md)
 - [Build Time Reporting](build-time-reporting.md)
@@ -37,6 +38,7 @@ Each learning file contains:
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)
 - [Expression Ownership Rules](expression-ownership-rules.md)
+- [Ownership Transfer in Message Passing](ownership-transfer-message-passing.md)
 - [Refactoring Ownership Transitions](refactoring-ownership-transitions.md)
 
 ### Code Quality & Testing
@@ -53,6 +55,9 @@ Each learning file contains:
 - [Opaque Types Pattern](opaque-types-pattern.md)
 - [Facade Pattern Coordination](facade-pattern-coordination.md)
 - [Error Propagation Pattern](error-propagation-pattern.md)
+- [Expression Evaluator Accessor Extension](expression-evaluator-accessor-extension.md)
+- [Instruction Behavior Simplification](instruction-behavior-simplification.md)
+- [Module Delegation with Error Propagation](module-delegation-error-propagation.md)
 - [Parser Function Alias Support](parser-function-alias-support.md)
 - [Refactoring Key Patterns](refactoring-key-patterns.md)
 - [Architectural Patterns Hierarchy](architectural-patterns-hierarchy.md)

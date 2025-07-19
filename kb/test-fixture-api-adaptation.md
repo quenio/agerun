@@ -83,6 +83,24 @@ assert(ar_data__get_integer(result) == expected_value);
 fixture_cleanup_operation(fixture, handle);
 ```
 
+## Agent Context Creation Fix
+When creating agents in fixtures, always provide a proper context instead of NULL:
+```c
+// WRONG: NULL context can cause expression evaluation failures
+int64_t agent_id = ar_agency__create_agent(method_name, version, NULL);
+
+// CORRECT: Create empty map for context
+ar_data_t *own_context = ar_data__create_map();
+if (!own_context) {
+    return 0;
+}
+int64_t agent_id = ar_agency__create_agent(method_name, version, own_context);
+// Agency takes ownership of context
+```
+
+This fix was critical for expression evaluation to work properly with context access.
+
 ## Related Patterns
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
+- [Agent Wake Message Processing](agent-wake-message-processing.md)

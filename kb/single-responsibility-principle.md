@@ -199,6 +199,7 @@ static void* _safe_malloc(size_t size);
 - **Information Hiding**: Helps define what belongs in each module ([details](information-hiding-principle.md))
 - **Minimal Interfaces**: Natural result of focused responsibilities ([details](minimal-interfaces-principle.md))
 - **No Circular Dependencies**: Easier to achieve with clear responsibilities ([details](no-circular-dependencies-principle.md))
+- **Instruction Behavior Simplification**: Applying SRP to instruction design ([details](instruction-behavior-simplification.md))
 
 ## Examples
 

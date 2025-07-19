@@ -111,6 +111,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
   - See ar_assert.md for complete guidelines
 - Expression ownership: memory.x=reference, arithmetic/strings=new object ([details](kb/expression-ownership-rules.md))
 - Map iteration: get keys, destroy list & elements; persist with key/type then value
+- Wake/sleep messages: Agents mark ownership, system transfers before destroy ([details](kb/ownership-transfer-message-passing.md))
 
 **Memory Leak Detection**:
 - Full test suite: Check console for "WARNING: X memory leaks detected"
@@ -119,6 +120,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - Always run `make sanitize-tests` before committing
 - Debug strategy: Check report → Trace source → Verify ownership → Fix naming → Add cleanup ([details](kb/memory-debugging-comprehensive-guide.md))
 - Environment variables: `ASAN_OPTIONS=halt_on_error=0` (continue on error), `detect_leaks=1` (complex leaks)
+- Wake messages: Process with `ar_system__process_next_message()` after agent creation ([details](kb/agent-wake-message-processing.md))
 
 ### 2. Test-Driven Development (MANDATORY)
 
@@ -174,6 +176,7 @@ For each new behavior/feature:
 - Names reflect behavior ([details](kb/test-function-naming-accuracy.md))
 - Global cleanup: `ar_methodology__cleanup()` & `ar_agency__reset()`
 - Process messages: `while (ar_system__process_next_message());`
+- Process wake messages after agent creation to prevent leaks ([details](kb/agent-wake-message-processing.md))
 - Use fixtures when available, run with `make test_name`
 - Adapt fixtures when APIs change ([details](kb/test-fixture-api-adaptation.md))
 
@@ -294,6 +297,8 @@ grep -r "function_name\|concept" modules/
 - Read interface first instead of guessing function names
 - No platform-specific code (`#ifdef __linux__` forbidden)
 - Create public APIs to eliminate duplication across modules
+- Delegation: Pass log through layers for error propagation ([details](kb/module-delegation-error-propagation.md))
+- Simplify instructions to single responsibility ([details](kb/instruction-behavior-simplification.md))
 
 **Code Quality**: Functions <50 lines, params ≤5, named constants, remove unused code, validate docs ([details](kb/module-quality-checklist.md))
 
@@ -357,6 +362,8 @@ cd bin  # Wrong - avoid relative paths
 - Agents receive `__sleep__` before destruction
 - ALWAYS process messages after sending to prevent leaks
 - Call `ar_system__process_next_message()` after `ar_agent__send()`
+- Agents mark themselves as owners of wake/sleep messages ([details](kb/ownership-transfer-message-passing.md))
+- Tests must process wake messages to prevent leaks ([details](kb/agent-wake-message-processing.md))
 
 ### 11. Building Individual Tests
 
@@ -530,6 +537,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - Always process messages after sending to prevent memory leaks
 - **Function calls are NOT expressions** - per BNF grammar specification
 - **Send with memory references not supported** - send() needs ownership of message
+- **Message accessor** - `message.field` returns references like memory/context ([details](kb/expression-evaluator-accessor-extension.md))
 
 ## Method Test Template
 

@@ -19,6 +19,18 @@ This document tracks completed milestones and major achievements for the AgeRun 
 - **Phase 5 of Frame-Based Execution Implementation completed** with all tests passing
 - **All 64 tests pass with zero memory leaks** confirming successful integration
 
+### ✅ COMPLETED: Knowledge Base Enhancement from Session Learnings
+- **Created 5 new KB articles** documenting patterns discovered during method evaluator integration:
+  - Agent Wake Message Processing - pattern for preventing memory leaks in tests
+  - Ownership Transfer in Message Passing - complex ownership semantics for agent messages
+  - Module Delegation with Error Propagation - interpreter to method evaluator pattern
+  - Instruction Behavior Simplification - deprecate instruction simplification
+  - Expression Evaluator Accessor Extension - adding message accessor support
+- **Updated 10 existing KB articles** with new sections and cross-references
+- **Enhanced CLAUDE.md** with references to new KB articles in appropriate sections
+- **Updated kb/README.md index** with all new articles properly categorized
+- **All documentation validated** with make check-docs - all references valid
+
 ## 2025-07-17
 
 ### ✅ COMPLETED: Simplified Interpreter Execute Method API

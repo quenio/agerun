@@ -40,6 +40,8 @@ ar_data__destroy(own_keys);  // Destroys the list structure
 
 ## Generalization
 - **Memory access** (`memory.x`, `memory.y.z`): Returns reference from memory/context
+- **Message access** (`message`, `message.field`): Returns reference from message (same as memory/context)
+- **Context access** (`context.x`): Returns reference from context
 - **Arithmetic** (`2 + 3`, `memory.x + 5`): Creates new object that must be destroyed
 - **String operations** (`"a" + "b"`, string functions): Create new objects
 - **Map keys**: `ar_data__get_map_keys()` creates new list with owned string elements
@@ -59,3 +61,5 @@ ar_data__destroy(own_keys);  // Destroys the list structure
 ## Related Patterns
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)
+- [Expression Evaluator Accessor Extension](expression-evaluator-accessor-extension.md)
+- [Ownership Transfer in Message Passing](ownership-transfer-message-passing.md)

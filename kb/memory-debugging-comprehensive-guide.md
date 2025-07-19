@@ -48,6 +48,21 @@ When leak detected → Check memory report → Trace allocation source → Verif
 
 **Use-After-Free Prevention**: Watch error paths + ownership transfer interactions. Run ASan always when both present.
 
+## Wake Message Memory Leaks
+A common pattern discovered: agents automatically send themselves wake messages on creation, which must be processed to avoid leaks:
+```c
+// Common leak pattern in tests
+int64_t agent_id = ar_agency__create_agent("method", "1.0.0", NULL);
+// Wake message sits in queue - MEMORY LEAK!
+
+// Fix: Process the wake message
+int64_t agent_id = ar_agency__create_agent("method", "1.0.0", NULL);
+ar_system__process_next_message();  // Processes and frees wake message
+```
+
+This pattern caused identical leaks (2 allocations, ~41-45 bytes) across 8+ test files.
+
 ## Related Patterns
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
+- [Agent Wake Message Processing](agent-wake-message-processing.md)
