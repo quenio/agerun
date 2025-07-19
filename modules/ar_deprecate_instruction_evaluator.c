@@ -14,6 +14,7 @@
 #include "ar_list.h"
 #include "ar_log.h"
 #include "ar_memory_accessor.h"
+#include "ar_data.h"
 #include <string.h>
 #include <stdio.h>
 #include <inttypes.h>
@@ -161,37 +162,23 @@ bool ar_deprecate_instruction_evaluator__evaluate(
     // Handle ownership for name
     ar_data_t *own_name = NULL;
     if (name_result) {
-        if (ar_data__take_ownership(name_result, mut_expr_evaluator)) {
-            // We can claim ownership - it's an unowned value
-            ar_data__drop_ownership(name_result, mut_expr_evaluator);
-            own_name = name_result;
-        } else {
-            // It's owned by someone else - we need to make a copy
-            own_name = ar_data__shallow_copy(name_result);
-            if (!own_name) {
-                _log_error(mut_evaluator, "Cannot deprecate method with nested containers in name (no deep copy support)");
-                AR__HEAP__FREE(items);
-                return false;
-            }
+        own_name = ar_data__claim_or_copy(name_result, mut_evaluator);
+        if (!own_name) {
+            _log_error(mut_evaluator, "Cannot deprecate method with nested containers in name (no deep copy support)");
+            AR__HEAP__FREE(items);
+            return false;
         }
     }
     
     // Handle ownership for version
     ar_data_t *own_version = NULL;
     if (version_result) {
-        if (ar_data__take_ownership(version_result, mut_expr_evaluator)) {
-            // We can claim ownership - it's an unowned value
-            ar_data__drop_ownership(version_result, mut_expr_evaluator);
-            own_version = version_result;
-        } else {
-            // It's owned by someone else - we need to make a copy
-            own_version = ar_data__shallow_copy(version_result);
-            if (!own_version) {
-                _log_error(mut_evaluator, "Cannot deprecate method with nested containers in version (no deep copy support)");
-                if (own_name) ar_data__destroy(own_name);
-                AR__HEAP__FREE(items);
-                return false;
-            }
+        own_version = ar_data__claim_or_copy(version_result, mut_evaluator);
+        if (!own_version) {
+            _log_error(mut_evaluator, "Cannot deprecate method with nested containers in version (no deep copy support)");
+            if (own_name) ar_data__destroy(own_name);
+            AR__HEAP__FREE(items);
+            return false;
         }
     }
     
