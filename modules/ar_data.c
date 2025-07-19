@@ -393,6 +393,22 @@ ar_data_t* ar_data__shallow_copy(const ar_data_t *ref_value) {
     }
 }
 
+ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner) {
+    if (!ref_data || !owner) {
+        return NULL;
+    }
+    
+    // Try to claim ownership first
+    if (ar_data__take_ownership(ref_data, owner)) {
+        // Successfully claimed ownership, drop it back to NULL so caller owns it
+        ar_data__drop_ownership(ref_data, owner);
+        return ref_data;
+    } else {
+        // Can't claim ownership, make a shallow copy
+        return ar_data__shallow_copy(ref_data);
+    }
+}
+
 /**
  * Get the type of a data structure
  * @param ref_data Pointer to the data to check

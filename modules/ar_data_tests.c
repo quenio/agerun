@@ -32,6 +32,7 @@ static void test_data_shallow_copy(void);
 static void test_data_is_primitive_type(void);
 static void test_data_map_contains_only_primitives(void);
 static void test_data_list_contains_only_primitives(void);
+static void test_data_claim_or_copy(void);
 
 static void test_data_creation(void) {
     printf("Testing data creation for different types...\n");
@@ -1823,6 +1824,53 @@ static void test_data_list_contains_only_primitives(void) {
     printf("list_contains_only_primitives tests passed!\n");
 }
 
+static void test_data_claim_or_copy(void) {
+    printf("Testing data claim or copy...\n");
+    
+    // Test 1: Can claim unowned data
+    ar_data_t *own_data = ar_data__create_integer(42);
+    void *owner = (void*)0x1234;
+    
+    // When we call claim_or_copy on unowned data
+    ar_data_t *own_result = ar_data__claim_or_copy(own_data, owner);
+    
+    // Then we should get the same pointer back (claimed original)
+    assert(own_result == own_data);
+    assert(ar_data__get_integer(own_result) == 42);
+    ar_data__destroy(own_result);
+    
+    // Test 2: Copy when data is owned by someone else
+    ar_data_t *own_owned_data = ar_data__create_string("test");
+    void *other_owner = (void*)0x5678;
+    ar_data__take_ownership(own_owned_data, other_owner);
+    
+    // When we call claim_or_copy on owned data
+    ar_data_t *own_copy = ar_data__claim_or_copy(own_owned_data, owner);
+    
+    // Then we should get a copy
+    assert(own_copy != own_owned_data);
+    assert(strcmp(ar_data__get_string(own_copy), "test") == 0);
+    ar_data__destroy(own_copy);
+    ar_data__drop_ownership(own_owned_data, other_owner);
+    ar_data__destroy(own_owned_data);
+    
+    // Test 3: Return NULL when copy fails (nested container)
+    ar_data_t *own_map = ar_data__create_map();
+    ar_data_t *own_nested_map = ar_data__create_map();
+    ar_data__set_map_data(own_map, "nested", own_nested_map);
+    ar_data__take_ownership(own_map, other_owner);
+    
+    // When we call claim_or_copy on nested container
+    ar_data_t *own_failed_copy = ar_data__claim_or_copy(own_map, owner);
+    
+    // Then we should get NULL (shallow copy fails on nested containers)
+    assert(own_failed_copy == NULL);
+    ar_data__drop_ownership(own_map, other_owner);
+    ar_data__destroy(own_map);
+    
+    printf("claim_or_copy tests passed!\n");
+}
+
 int main(void) {
     printf("Starting Data Module Tests...\n");
     
@@ -1874,8 +1922,11 @@ int main(void) {
     // Run list contains only primitives tests
     test_data_list_contains_only_primitives();
     
+    // Run claim or copy tests
+    test_data_claim_or_copy();
+    
     // Then all tests should pass
-    printf("All 23 tests passed!\n");
+    printf("All 24 tests passed!\n");
     
     return 0;
 }

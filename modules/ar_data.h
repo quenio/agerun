@@ -95,6 +95,18 @@ bool ar_data__drop_ownership(ar_data_t *mut_data, void *owner);
 ar_data_t* ar_data__shallow_copy(const ar_data_t *ref_value);
 
 /**
+ * Claim ownership of data or create a shallow copy if already owned
+ * @param ref_data The data to claim or copy (borrowed reference)
+ * @param owner The potential owner trying to claim the data
+ * @return Owned data (either claimed original or new copy), or NULL if copy failed
+ * @note If data is unowned, claims it and returns the same pointer
+ * @note If data is owned by someone else, returns a shallow copy
+ * @note Returns NULL only if shallow copy fails (nested containers)
+ * @note Ownership: Returns owned value that caller must destroy
+ */
+ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner);
+
+/**
  * Get the type of a data structure
  * @param ref_data Pointer to the data to check
  * @return The data type or AR_DATA_TYPE__INTEGER if data is NULL
