@@ -116,26 +116,41 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ### Zig Module Conversion Experiment (Completed 2025-07-05)
 - [x] Converted ar_string module to Zig with full C compatibility, established patterns for future conversions
 
-#### 3. Extract Ownership Handling Utilities
-- [ ] Create ownership handling utilities in appropriate module
-  - [ ] Move ownership checking pattern (duplicated in 5+ evaluators)
-  - [ ] Standardize ownership transfer logic
-  - [ ] Handle shallow copy vs reference semantics
-  - [ ] Reduce code duplication in ownership decisions
+#### 3. Extract Ownership Handling Functions
+- [ ] Extract ownership checking pattern into ar_data module (duplicated in 9+ evaluators, ~120+ lines)
+  - [ ] Add `ar_data__claim_or_copy()` function to ar_data module
+    - Complex logic for determining if value needs copy vs. can be claimed
+    - Pattern: `ar_data__take_ownership()` → `ar_data__drop_ownership()` vs `ar_data__shallow_copy()`
+  - [ ] Extract ownership transfer logic with proper cleanup on failure
+  - [ ] Standardize shallow copy vs reference semantics decision-making
 
-#### 4. Extract Result Storage Utilities
-- [ ] Create result storage utilities module
-  - [ ] Move `_store_result_if_assigned` pattern (duplicated in 4+ evaluators)
-  - [ ] Standardize result path validation
-  - [ ] Handle ownership transfer on storage
-  - [ ] Ensure consistent cleanup on errors
+#### 4. Extract Result Storage Functions  
+- [ ] Extract `_store_result_if_assigned()` into appropriate existing module (duplicated in 6 evaluators, ~150 lines)
+  - [ ] Add common function to handle result storage pattern
+    - Identical 25-line function in: spawn, build, parse, compile, exit, deprecate evaluators
+    - Handles result path extraction, memory key path validation, ownership transfer
+  - [ ] Determine best existing module (ar_memory_accessor or ar_instruction_ast)
+  - [ ] Standardize ownership transfer on storage with consistent cleanup
 
-#### 5. Create Base Evaluator Structure
+#### 5. Extract Additional Common Functions (Discovered in Analysis)
+- [ ] Extract error logging pattern into existing modules (duplicated in 10 evaluators, ~50 lines)
+  - [ ] Determine if ar_log module should have evaluator-specific helper
+- [ ] Extract error cleanup patterns into common functions (duplicated across all evaluators, ~100+ lines)  
+  - [ ] Standardize: validation failure → cleanup owned data → `AR__HEAP__FREE(items)` → return false
+  - [ ] Add cleanup helper to appropriate existing module
+- [ ] Extract expression evaluation patterns into common functions (duplicated across evaluators, ~80+ lines)
+  - [ ] Common: evaluate → type check → ownership handling → cleanup on failure
+  - [ ] Add to ar_expression_evaluator or create helper in appropriate module
+
+#### 6. Create Base Evaluator Structure
 - [x] Designed base evaluator pattern using ar_log composition (Completed 2025-06-30)
 
-#### 6. Refactor All Evaluators to Use Shared Components
+#### 7. Refactor All Evaluators to Use Shared Components
 - [x] Updated all 9 evaluators to use ar_log (Partially completed 2025-06-30)
-  - [ ] Replace remaining duplicated code (memory path, ownership, result storage)
+- [ ] Replace remaining duplicated code with utility modules (estimated 500+ lines of duplication)
+  - [ ] Update all evaluators to use ar_ownership_utils
+  - [ ] Update all evaluators to use ar_result_storage  
+  - [ ] Update all evaluators to use ar_evaluator_utils for common patterns
 
 ### Parnas Principles - Interface Violations (HIGH PRIORITY)
 
