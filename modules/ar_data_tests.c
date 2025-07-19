@@ -33,6 +33,7 @@ static void test_data_is_primitive_type(void);
 static void test_data_map_contains_only_primitives(void);
 static void test_data_list_contains_only_primitives(void);
 static void test_data_claim_or_copy(void);
+static void test_data_destroy_if_owned(void);
 
 static void test_data_creation(void) {
     printf("Testing data creation for different types...\n");
@@ -1871,6 +1872,46 @@ static void test_data_claim_or_copy(void) {
     printf("claim_or_copy tests passed!\n");
 }
 
+static void test_data_destroy_if_owned(void) {
+    printf("Testing data destroy if owned...\n");
+    
+    // Test 1: Destroy unowned data (should succeed)
+    ar_data_t *own_data = ar_data__create_integer(42);
+    void *owner = (void*)0x1234;
+    
+    // When we call destroy_if_owned on unowned data
+    ar_data__destroy_if_owned(own_data, owner);
+    
+    // Then it should be destroyed (no way to test this directly, but it should not crash)
+    
+    // Test 2: Try to destroy data owned by someone else (should be safe no-op)
+    ar_data_t *own_owned_data = ar_data__create_string("test");
+    void *other_owner = (void*)0x5678;
+    ar_data__take_ownership(own_owned_data, other_owner);
+    
+    // When we call destroy_if_owned on data owned by someone else
+    ar_data__destroy_if_owned(own_owned_data, owner);
+    
+    // Then it should still be accessible (not destroyed)
+    assert(strcmp(ar_data__get_string(own_owned_data), "test") == 0);
+    
+    // Clean up properly
+    ar_data__drop_ownership(own_owned_data, other_owner);
+    ar_data__destroy(own_owned_data);
+    
+    // Test 3: Handle NULL data safely
+    ar_data__destroy_if_owned(NULL, owner);
+    
+    // Test 4: Handle NULL owner safely  
+    ar_data_t *own_safe_data = ar_data__create_integer(123);
+    ar_data__destroy_if_owned(own_safe_data, NULL);
+    // Should still be accessible since NULL owner is invalid
+    assert(ar_data__get_integer(own_safe_data) == 123);
+    ar_data__destroy(own_safe_data);
+    
+    printf("destroy_if_owned tests passed!\n");
+}
+
 int main(void) {
     printf("Starting Data Module Tests...\n");
     
@@ -1925,8 +1966,11 @@ int main(void) {
     // Run claim or copy tests
     test_data_claim_or_copy();
     
+    // Run destroy if owned tests
+    test_data_destroy_if_owned();
+    
     // Then all tests should pass
-    printf("All 24 tests passed!\n");
+    printf("All 25 tests passed!\n");
     
     return 0;
 }

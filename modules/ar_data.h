@@ -107,6 +107,16 @@ ar_data_t* ar_data__shallow_copy(const ar_data_t *ref_value);
 ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner);
 
 /**
+ * Safely discard data if we can take ownership of it
+ * @param ref_data The data to potentially discard (borrowed reference)
+ * @param owner The potential owner trying to discard the data
+ * @note If data is unowned, takes ownership and destroys it
+ * @note If data is owned by someone else, does nothing (safe)
+ * @note Ownership: Does not transfer ownership to caller
+ */
+void ar_data__destroy_if_owned(ar_data_t *ref_data, void *owner);
+
+/**
  * Get the type of a data structure
  * @param ref_data Pointer to the data to check
  * @return The data type or AR_DATA_TYPE__INTEGER if data is NULL

@@ -409,6 +409,20 @@ ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner) {
     }
 }
 
+void ar_data__destroy_if_owned(ar_data_t *ref_data, void *owner) {
+    if (!ref_data || !owner) {
+        return;
+    }
+    
+    // Try to take ownership
+    if (ar_data__take_ownership(ref_data, owner)) {
+        // Successfully took ownership, drop it and destroy
+        ar_data__drop_ownership(ref_data, owner);
+        ar_data__destroy(ref_data);
+    }
+    // If we can't take ownership, do nothing (safe)
+}
+
 /**
  * Get the type of a data structure
  * @param ref_data Pointer to the data to check
