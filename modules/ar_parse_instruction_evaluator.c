@@ -185,57 +185,35 @@ bool ar_parse_instruction_evaluator__evaluate(
     // Evaluate template expression AST
     ar_data_t *template_result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_frame, ref_template_ast);
     if (!template_result || ar_data__get_type(template_result) != AR_DATA_TYPE__STRING) {
-        if (template_result && ar_data__take_ownership(template_result, mut_evaluator)) {
-            ar_data__drop_ownership(template_result, mut_evaluator);
-            ar_data__destroy(template_result);
-        }
+        ar_data__destroy_if_owned(template_result, mut_evaluator);
         AR__HEAP__FREE(items);
         return false;
     }
     
     // Get ownership of template data
-    ar_data_t *own_template_data;
-    if (ar_data__take_ownership(template_result, mut_evaluator)) {
-        // We can claim ownership - it's an unowned value
-        ar_data__drop_ownership(template_result, mut_evaluator);
-        own_template_data = template_result;
-    } else {
-        // It's owned by someone else - we need to make a copy
-        own_template_data = ar_data__shallow_copy(template_result);
-        if (!own_template_data) {
-            _log_error(mut_evaluator, "Cannot parse with nested containers in template (no deep copy support)");
-            AR__HEAP__FREE(items);
-            return false;
-        }
+    ar_data_t *own_template_data = ar_data__claim_or_copy(template_result, mut_evaluator);
+    if (!own_template_data) {
+        _log_error(mut_evaluator, "Cannot parse with nested containers in template (no deep copy support)");
+        AR__HEAP__FREE(items);
+        return false;
     }
     
     // Evaluate input expression AST
     ar_data_t *input_result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_frame, ref_input_ast);
     if (!input_result || ar_data__get_type(input_result) != AR_DATA_TYPE__STRING) {
-        if (input_result && ar_data__take_ownership(input_result, mut_evaluator)) {
-            ar_data__drop_ownership(input_result, mut_evaluator);
-            ar_data__destroy(input_result);
-        }
+        ar_data__destroy_if_owned(input_result, mut_evaluator);
         ar_data__destroy(own_template_data);
         AR__HEAP__FREE(items);
         return false;
     }
     
     // Get ownership of input data
-    ar_data_t *own_input_data;
-    if (ar_data__take_ownership(input_result, mut_evaluator)) {
-        // We can claim ownership - it's an unowned value
-        ar_data__drop_ownership(input_result, mut_evaluator);
-        own_input_data = input_result;
-    } else {
-        // It's owned by someone else - we need to make a copy
-        own_input_data = ar_data__shallow_copy(input_result);
-        if (!own_input_data) {
-            _log_error(mut_evaluator, "Cannot parse with nested containers in input (no deep copy support)");
-            ar_data__destroy(own_template_data);
-            AR__HEAP__FREE(items);
-            return false;
-        }
+    ar_data_t *own_input_data = ar_data__claim_or_copy(input_result, mut_evaluator);
+    if (!own_input_data) {
+        _log_error(mut_evaluator, "Cannot parse with nested containers in input (no deep copy support)");
+        ar_data__destroy(own_template_data);
+        AR__HEAP__FREE(items);
+        return false;
     }
     
     const char *template_str = ar_data__get_string(own_template_data);
