@@ -329,8 +329,8 @@ bool ar_build_instruction_evaluator__evaluate(
     
     // Validate it's a map
     if (!ref_values_data || ar_data__get_type(ref_values_data) != AR_DATA_TYPE__MAP) {
-        if (own_values_data) ar_data__destroy(own_values_data);
-        ar_data__destroy(own_template_data);
+        if (own_values_data) ar_data__destroy_if_owned(own_values_data, mut_evaluator);
+        ar_data__destroy_if_owned(own_template_data, mut_evaluator);
         AR__HEAP__FREE(items);
         return false;
     }
@@ -344,8 +344,8 @@ bool ar_build_instruction_evaluator__evaluate(
     size_t result_size = strlen(template_str) * 2 + 256;
     char *own_result_str = AR__HEAP__MALLOC(result_size, "Build result");
     if (!own_result_str) {
-        if (own_values_data) ar_data__destroy(own_values_data);
-        ar_data__destroy(own_template_data);
+        if (own_values_data) ar_data__destroy_if_owned(own_values_data, mut_evaluator);
+        ar_data__destroy_if_owned(own_template_data, mut_evaluator);
         return false;
     }
     
@@ -391,14 +391,14 @@ bool ar_build_instruction_evaluator__evaluate(
     AR__HEAP__FREE(own_result_str);
     
     if (!own_result) {
-        if (own_values_data) ar_data__destroy(own_values_data);
-        ar_data__destroy(own_template_data);
+        if (own_values_data) ar_data__destroy_if_owned(own_values_data, mut_evaluator);
+        ar_data__destroy_if_owned(own_template_data, mut_evaluator);
         return false;
     }
     
     // Clean up
-    if (own_values_data) ar_data__destroy(own_values_data);
-    ar_data__destroy(own_template_data);
+    if (own_values_data) ar_data__destroy_if_owned(own_values_data, mut_evaluator);
+    ar_data__destroy_if_owned(own_template_data, mut_evaluator);
     
     // Store result if assigned, otherwise just destroy it
     return _store_result_if_assigned(mut_memory, ref_ast, own_result);

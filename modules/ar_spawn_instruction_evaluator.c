@@ -167,7 +167,7 @@ bool ar_spawn_instruction_evaluator__evaluate(
         own_version = ar_data__claim_or_copy(version_result, mut_evaluator);
         if (!own_version) {
             _log_error(mut_evaluator, "Cannot create agent with nested containers in version (no deep copy support)");
-            if (own_method_name) ar_data__destroy(own_method_name);
+            if (own_method_name) ar_data__destroy_if_owned(own_method_name, mut_evaluator);
             AR__HEAP__FREE(items);
             return false;
         }
@@ -209,8 +209,8 @@ bool ar_spawn_instruction_evaluator__evaluate(
     }
     
     // Clean up evaluated arguments
-    if (own_method_name) ar_data__destroy(own_method_name);
-    if (own_version) ar_data__destroy(own_version);
+    if (own_method_name) ar_data__destroy_if_owned(own_method_name, mut_evaluator);
+    if (own_version) ar_data__destroy_if_owned(own_version, mut_evaluator);
     // Never destroy context - the agent needs it to remain valid
     
     // Store result if assigned

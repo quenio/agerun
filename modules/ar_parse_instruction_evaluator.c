@@ -202,7 +202,7 @@ bool ar_parse_instruction_evaluator__evaluate(
     ar_data_t *input_result = ar_expression_evaluator__evaluate(mut_evaluator->ref_expr_evaluator, ref_frame, ref_input_ast);
     if (!input_result || ar_data__get_type(input_result) != AR_DATA_TYPE__STRING) {
         ar_data__destroy_if_owned(input_result, mut_evaluator);
-        ar_data__destroy(own_template_data);
+        ar_data__destroy_if_owned(own_template_data, mut_evaluator);
         AR__HEAP__FREE(items);
         return false;
     }
@@ -211,7 +211,7 @@ bool ar_parse_instruction_evaluator__evaluate(
     ar_data_t *own_input_data = ar_data__claim_or_copy(input_result, mut_evaluator);
     if (!own_input_data) {
         _log_error(mut_evaluator, "Cannot parse with nested containers in input (no deep copy support)");
-        ar_data__destroy(own_template_data);
+        ar_data__destroy_if_owned(own_template_data, mut_evaluator);
         AR__HEAP__FREE(items);
         return false;
     }
@@ -225,8 +225,8 @@ bool ar_parse_instruction_evaluator__evaluate(
     // Create result map
     ar_data_t *own_result = ar_data__create_map();
     if (!own_result) {
-        ar_data__destroy(own_input_data);
-        ar_data__destroy(own_template_data);
+        ar_data__destroy_if_owned(own_input_data, mut_evaluator);
+        ar_data__destroy_if_owned(own_template_data, mut_evaluator);
         return false;
     }
     
@@ -257,9 +257,9 @@ bool ar_parse_instruction_evaluator__evaluate(
         size_t var_len = (size_t)(var_end - var_start - 1);
         char *var_name = AR__HEAP__MALLOC(var_len + 1, "Parse variable name");
         if (!var_name) {
-            ar_data__destroy(own_result);
-            ar_data__destroy(own_input_data);
-            ar_data__destroy(own_template_data);
+            ar_data__destroy_if_owned(own_result, mut_evaluator);
+            ar_data__destroy_if_owned(own_input_data, mut_evaluator);
+            ar_data__destroy_if_owned(own_template_data, mut_evaluator);
             return false;
         }
         memcpy(var_name, var_start + 1, var_len);
@@ -329,9 +329,9 @@ bool ar_parse_instruction_evaluator__evaluate(
         char *value_str = AR__HEAP__MALLOC(value_len + 1, "Parse value");
         if (!value_str) {
             AR__HEAP__FREE(var_name);
-            ar_data__destroy(own_result);
-            ar_data__destroy(own_input_data);
-            ar_data__destroy(own_template_data);
+            ar_data__destroy_if_owned(own_result, mut_evaluator);
+            ar_data__destroy_if_owned(own_input_data, mut_evaluator);
+            ar_data__destroy_if_owned(own_template_data, mut_evaluator);
             return false;
         }
         memcpy(value_str, input_ptr, value_len);
@@ -359,8 +359,8 @@ bool ar_parse_instruction_evaluator__evaluate(
     }
     
     // Clean up
-    ar_data__destroy(own_input_data);
-    ar_data__destroy(own_template_data);
+    ar_data__destroy_if_owned(own_input_data, mut_evaluator);
+    ar_data__destroy_if_owned(own_template_data, mut_evaluator);
     
     // Store result if assigned, otherwise just destroy it
     return _store_result_if_assigned(mut_memory, ref_ast, own_result);
