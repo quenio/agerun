@@ -156,6 +156,28 @@ bool ar_data__take_ownership(ar_data_t *mut_data, void *owner);
 bool ar_data__drop_ownership(ar_data_t *mut_data, void *owner);
 
 /**
+ * Claim ownership of data or create a shallow copy
+ * @param ref_data The data to claim or copy
+ * @param owner The object that wants to own the data
+ * @return The same data if ownership was claimed, a shallow copy if already owned, or NULL if cannot copy
+ * @note If data is unowned, takes ownership and returns the same pointer
+ * @note If data is owned by another, creates a shallow copy if possible
+ * @note Returns NULL for nested containers (no deep copy support)
+ * @note Caller is responsible for destroying the returned data
+ */
+ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner);
+
+/**
+ * Destroy data only if ownership can be taken
+ * @param ref_data The data to potentially destroy
+ * @param owner The object that wants to destroy the data
+ * @note Safely destroys data only if ownership can be taken
+ * @note If data is owned by another or is NULL, does nothing
+ * @note Useful for defensive cleanup where ownership is uncertain
+ */
+void ar_data__destroy_if_owned(ar_data_t *ref_data, void *owner);
+
+/**
  * Get the integer value from a data structure
  * @param ref_data Pointer to the data to retrieve from
  * @return The integer value or 0 if data is NULL or not an integer type
@@ -987,6 +1009,26 @@ bool ar_data__list_contains_only_primitives(const ar_data_t *ref_list);
   - Returns NULL if the value contains nested containers (no deep copy support)
   - Caller owns the returned copy and must destroy it
 - `ar_data__is_primitive_type` checks if a data value is a primitive type (integer, double, or string)
+
+### Ownership Management Helper Functions
+
+The data module provides helper functions to simplify common ownership patterns:
+
+```c
+ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner);
+void ar_data__destroy_if_owned(ar_data_t *ref_data, void *owner);
+```
+
+- `ar_data__claim_or_copy` simplifies the pattern of taking ownership or creating a copy
+  - If data is unowned, takes ownership and returns the same pointer
+  - If data is owned by another, creates a shallow copy if possible
+  - Returns NULL for nested containers (no deep copy support)
+  - Commonly used in evaluators to handle results from expressions
+- `ar_data__destroy_if_owned` provides defensive cleanup
+  - Safely destroys data only if ownership can be taken
+  - If data is owned by another or is NULL, does nothing
+  - Eliminates boilerplate code for checking ownership before destruction
+  - Useful for cleanup paths where ownership is uncertain
 - `ar_data__map_contains_only_primitives` validates that a map contains only primitive values
 - `ar_data__list_contains_only_primitives` validates that a list contains only primitive values
 - These functions enable safe copying in evaluators while preventing deep copy issues

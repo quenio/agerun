@@ -116,13 +116,17 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ### Zig Module Conversion Experiment (Completed 2025-07-05)
 - [x] Converted ar_string module to Zig with full C compatibility, established patterns for future conversions
 
-#### 3. Extract Ownership Handling Functions
-- [ ] Extract ownership checking pattern into ar_data module (duplicated in 9+ evaluators, ~120+ lines)
-  - [ ] Add `ar_data__claim_or_copy()` function to ar_data module
+#### 3. Extract Ownership Handling Functions (Completed 2025-07-19)
+- [x] Extract ownership checking pattern into ar_data module (duplicated in 9+ evaluators, ~120+ lines)
+  - [x] Add `ar_data__claim_or_copy()` function to ar_data module
     - Complex logic for determining if value needs copy vs. can be claimed
     - Pattern: `ar_data__take_ownership()` → `ar_data__drop_ownership()` vs `ar_data__shallow_copy()`
-  - [ ] Extract ownership transfer logic with proper cleanup on failure
-  - [ ] Standardize shallow copy vs reference semantics decision-making
+  - [x] Extract ownership transfer logic with proper cleanup on failure
+  - [x] Standardize shallow copy vs reference semantics decision-making
+- [x] Added `ar_data__destroy_if_owned()` for defensive cleanup patterns
+- [x] Replaced all ownership patterns across 11 files (compile, condition, parse, spawn, build, deprecate, agent, send, assignment, exit evaluators, and system)
+- [x] Maintained zero memory leaks throughout refactoring
+- [x] Updated ar_data module documentation with new functions
 
 #### 4. Extract Result Storage Functions  
 - [ ] Extract `_store_result_if_assigned()` into appropriate existing module (duplicated in 6 evaluators, ~150 lines)
