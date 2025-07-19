@@ -62,4 +62,4 @@ ar_data__destroy(own_keys);  // Destroys the list structure
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)
 - [Expression Evaluator Accessor Extension](expression-evaluator-accessor-extension.md)
-- [Ownership Transfer in Message Passing](ownership-transfer-message-passing.md)
+- [Ownership Transfer in Message Passing](ownership-drop-message-passing.md)

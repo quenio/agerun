@@ -120,7 +120,7 @@ bool ar_assignment_instruction_evaluator__evaluate(
     ar_data_t *own_value;
     if (ar_data__hold_ownership(result, mut_evaluator)) {
         // We can claim ownership - it's an unowned value (literal or operation result)
-        ar_data__transfer_ownership(result, mut_evaluator);  // Transfer to NULL
+        ar_data__drop_ownership(result, mut_evaluator);  // Transfer to NULL
         own_value = result;
     } else {
         // It's owned by someone else (memory access) - we need to make a copy

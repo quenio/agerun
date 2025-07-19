@@ -300,7 +300,7 @@ bool ar_build_instruction_evaluator__evaluate(
     ar_data_t *template_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_frame, ref_template_ast);
     if (!template_result || ar_data__get_type(template_result) != AR_DATA_TYPE__STRING) {
         if (template_result && ar_data__hold_ownership(template_result, mut_evaluator)) {
-            ar_data__transfer_ownership(template_result, mut_evaluator);
+            ar_data__drop_ownership(template_result, mut_evaluator);
             ar_data__destroy(template_result);
         }
         AR__HEAP__FREE(items);
@@ -311,7 +311,7 @@ bool ar_build_instruction_evaluator__evaluate(
     ar_data_t *own_template_data;
     if (ar_data__hold_ownership(template_result, mut_evaluator)) {
         // We can claim ownership - it's an unowned value
-        ar_data__transfer_ownership(template_result, mut_evaluator);
+        ar_data__drop_ownership(template_result, mut_evaluator);
         own_template_data = template_result;
     } else {
         // It's owned by someone else - we need to make a copy
@@ -334,7 +334,7 @@ bool ar_build_instruction_evaluator__evaluate(
         own_values_data = NULL;
     } else if (values_result && ar_data__hold_ownership(values_result, mut_evaluator)) {
         // We can claim ownership - it's an unowned value
-        ar_data__transfer_ownership(values_result, mut_evaluator);
+        ar_data__drop_ownership(values_result, mut_evaluator);
         own_values_data = values_result;
     }
     

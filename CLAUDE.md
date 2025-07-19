@@ -111,7 +111,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
   - See ar_assert.md for complete guidelines
 - Expression ownership: memory.x=reference, arithmetic/strings=new object ([details](kb/expression-ownership-rules.md))
 - Map iteration: get keys, destroy list & elements; persist with key/type then value
-- Wake/sleep messages: Agents mark ownership, system transfers before destroy ([details](kb/ownership-transfer-message-passing.md))
+- Wake/sleep messages: Agents mark ownership, system drops before destroy ([details](kb/ownership-drop-message-passing.md))
 
 **Memory Leak Detection**:
 - Full test suite: Check console for "WARNING: X memory leaks detected"
@@ -362,7 +362,7 @@ cd bin  # Wrong - avoid relative paths
 - Agents receive `__sleep__` before destruction
 - ALWAYS process messages after sending to prevent leaks
 - Call `ar_system__process_next_message()` after `ar_agent__send()`
-- Agents mark themselves as owners of wake/sleep messages ([details](kb/ownership-transfer-message-passing.md))
+- Agents mark themselves as owners of wake/sleep messages ([details](kb/ownership-drop-message-passing.md))
 - Tests must process wake messages to prevent leaks ([details](kb/agent-wake-message-processing.md))
 
 ### 11. Building Individual Tests

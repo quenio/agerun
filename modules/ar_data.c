@@ -177,7 +177,7 @@ void ar_data__destroy(ar_data_t *own_data) {
                 if (item) {
                     // Only transfer ownership if we actually own it
                     if (item->owner == own_data) {
-                        ar_data__transfer_ownership(item, own_data);
+                        ar_data__drop_ownership(item, own_data);
                     }
                     ar_data__destroy(item); // Ownership transferred to ar_data__destroy
                 }
@@ -226,7 +226,7 @@ void ar_data__destroy(ar_data_t *own_data) {
                 if (item) {
                     // Only transfer ownership if we actually own it
                     if (item->owner == own_data) {
-                        ar_data__transfer_ownership(item, own_data);
+                        ar_data__drop_ownership(item, own_data);
                     }
                     ar_data__destroy(item); // Ownership transferred to ar_data__destroy
                 }
@@ -257,13 +257,13 @@ bool ar_data__hold_ownership(ar_data_t *mut_data, void *owner) {
 }
 
 /**
- * Transfer ownership of data
- * @param mut_data The data to transfer (mutable reference)
- * @param owner The current owner transferring the data
+ * Drop ownership of data
+ * @param mut_data The data whose ownership to drop (mutable reference)
+ * @param owner The current owner dropping the data
  * @return true if successful, false if not the owner
- * @note To release ownership for destruction, transfer with your owner pointer
+ * @note To release ownership for destruction, drop with your owner pointer
  */
-bool ar_data__transfer_ownership(ar_data_t *mut_data, void *owner) {
+bool ar_data__drop_ownership(ar_data_t *mut_data, void *owner) {
     if (!mut_data || !owner) return false;
     
     if (mut_data->owner == owner) {
@@ -845,7 +845,7 @@ bool ar_data__set_map_data(ar_data_t *mut_data, const char *ref_key, ar_data_t *
         // Set the new value
         if (!ar_map__set(map, key_copy, own_value)) {
             // Failed to set, release ownership
-            ar_data__transfer_ownership(own_value, mut_data);
+            ar_data__drop_ownership(own_value, mut_data);
             AR__HEAP__FREE(key_copy);
             return false;
         }
@@ -854,15 +854,15 @@ bool ar_data__set_map_data(ar_data_t *mut_data, const char *ref_key, ar_data_t *
         if (!ar_list__add_last(mut_data->own_keys, key_copy)) {
             // Unlikely, but handle failure
             ar_map__set(map, ref_key, prev_data); // Try to restore previous state
-            ar_data__transfer_ownership(own_value, mut_data);
+            ar_data__drop_ownership(own_value, mut_data);
             AR__HEAP__FREE(key_copy);
             return false;
         }
         
         // Free the old data after successful update
         if (prev_data) {
-            // Transfer ownership back from map to NULL before destroying
-            ar_data__transfer_ownership(prev_data, mut_data);
+            // Drop ownership from map before destroying
+            ar_data__drop_ownership(prev_data, mut_data);
             ar_data__destroy(prev_data);
         }
         
@@ -1082,7 +1082,7 @@ bool ar_data__list_add_first_data(ar_data_t *mut_data, ar_data_t *own_value) {
     // Add the data to the beginning of the list
     if (!ar_list__add_first(ref_list, own_value)) {
         // Failed to add, release ownership
-        ar_data__transfer_ownership(own_value, mut_data);
+        ar_data__drop_ownership(own_value, mut_data);
         return false;
     }
     
@@ -1224,7 +1224,7 @@ bool ar_data__list_add_last_data(ar_data_t *mut_data, ar_data_t *own_value) {
     // Add the data to the end of the list
     if (!ar_list__add_last(ref_list, own_value)) {
         // Failed to add, release ownership
-        ar_data__transfer_ownership(own_value, mut_data);
+        ar_data__drop_ownership(own_value, mut_data);
         return false;
     }
     
@@ -1235,14 +1235,14 @@ bool ar_data__list_add_last_data(ar_data_t *mut_data, ar_data_t *own_value) {
 }
 
 /**
- * Helper to transfer ownership when removing data from a collection
+ * Helper to drop ownership when removing data from a collection
  * @param removed The data that was removed
  * @param collection The collection that owned the data
  */
-static void _transfer_ownership_on_remove(ar_data_t *removed, ar_data_t *collection) {
+static void _drop_ownership_on_remove(ar_data_t *removed, ar_data_t *collection) {
     if (removed && removed->owner == collection) {
-        // Transfer ownership from collection to NULL (making it unowned)
-        ar_data__transfer_ownership(removed, collection);
+        // Drop ownership from collection (making it unowned)
+        ar_data__drop_ownership(removed, collection);
     }
 }
 
@@ -1265,7 +1265,7 @@ ar_data_t *ar_data__list_remove_first(ar_data_t *mut_data) {
     
     // Remove the first item from the list
     ar_data_t *removed = (ar_data_t *)ar_list__remove_first(ref_list);
-    _transfer_ownership_on_remove(removed, mut_data);
+    _drop_ownership_on_remove(removed, mut_data);
     return removed; // Ownership transferred to caller
 }
 
@@ -1288,7 +1288,7 @@ ar_data_t *ar_data__list_remove_last(ar_data_t *mut_data) {
     
     // Remove the last item from the list
     ar_data_t *removed = (ar_data_t *)ar_list__remove_last(ref_list);
-    _transfer_ownership_on_remove(removed, mut_data);
+    _drop_ownership_on_remove(removed, mut_data);
     return removed; // Ownership transferred to caller
 }
 

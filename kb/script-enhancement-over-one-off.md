@@ -12,7 +12,7 @@ Creates reusable tools that benefit future development and reduces maintenance b
 # Enhanced rename_symbols.py with MODULE_RENAMES capability
 
 MODULE_RENAMES = {
-    'ar_instruction_evaluator_fixture': 'ar_evaluator_fixture',
+    'ar_evaluator_fixture': 'ar_evaluator_fixture',
 }
 
 def rename_module_in_content(content, module_mapping):

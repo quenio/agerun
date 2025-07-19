@@ -137,7 +137,7 @@ bool ar_condition_instruction_evaluator__evaluate(
     
     // We only need the value, not the data itself
     if (ar_data__hold_ownership(condition_result, mut_evaluator)) {
-        ar_data__transfer_ownership(condition_result, mut_evaluator);
+        ar_data__drop_ownership(condition_result, mut_evaluator);
         ar_data__destroy(condition_result);
     }
     
@@ -162,7 +162,7 @@ bool ar_condition_instruction_evaluator__evaluate(
         if (!key_path) {
             // Clean up result if we can
             if (ar_data__hold_ownership(result, mut_evaluator)) {
-                ar_data__transfer_ownership(result, mut_evaluator);
+                ar_data__drop_ownership(result, mut_evaluator);
                 ar_data__destroy(result);
             }
             return false;
@@ -172,7 +172,7 @@ bool ar_condition_instruction_evaluator__evaluate(
         ar_data_t *own_result;
         if (ar_data__hold_ownership(result, mut_evaluator)) {
             // We can claim ownership
-            ar_data__transfer_ownership(result, mut_evaluator);
+            ar_data__drop_ownership(result, mut_evaluator);
             own_result = result;
         } else {
             // Need to make a copy
@@ -194,7 +194,7 @@ bool ar_condition_instruction_evaluator__evaluate(
     } else {
         // No assignment, just return success (expression was evaluated for side effects)
         if (ar_data__hold_ownership(result, mut_evaluator)) {
-            ar_data__transfer_ownership(result, mut_evaluator);
+            ar_data__drop_ownership(result, mut_evaluator);
             ar_data__destroy(result);
         }
         return true;

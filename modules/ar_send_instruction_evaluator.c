@@ -130,7 +130,7 @@ bool ar_send_instruction_evaluator__evaluate(
     // We only need the value, not the data itself
     // Check if we can destroy it (unowned) or if it's a reference
     if (ar_data__hold_ownership(agent_id_result, mut_evaluator)) {
-        ar_data__transfer_ownership(agent_id_result, mut_evaluator);
+        ar_data__drop_ownership(agent_id_result, mut_evaluator);
         ar_data__destroy(agent_id_result);
     }
     
@@ -148,7 +148,7 @@ bool ar_send_instruction_evaluator__evaluate(
     ar_data_t *own_message;
     if (ar_data__hold_ownership(message_result, mut_evaluator)) {
         // We can claim ownership - it's an unowned value
-        ar_data__transfer_ownership(message_result, mut_evaluator);
+        ar_data__drop_ownership(message_result, mut_evaluator);
         own_message = message_result;
     } else {
         // It's owned by someone else - we need to make a copy
@@ -164,7 +164,7 @@ bool ar_send_instruction_evaluator__evaluate(
     if (agent_id == 0) {
         // Special case: agent_id 0 is a no-op that always returns true
         // We need to transfer ownership to NULL before destroying
-        ar_data__transfer_ownership(own_message, mut_evaluator);
+        ar_data__drop_ownership(own_message, mut_evaluator);
         ar_data__destroy(own_message);
         send_result = true;
     } else {

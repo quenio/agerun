@@ -1290,15 +1290,15 @@ static void test_data_ownership(void) {
     assert(ar_data__hold_ownership(data, owner2) == false);
     
     // Test 5: Only owner can transfer
-    assert(ar_data__transfer_ownership(data, owner2) == false);
-    assert(ar_data__transfer_ownership(data, owner1) == true);
+    assert(ar_data__drop_ownership(data, owner2) == false);
+    assert(ar_data__drop_ownership(data, owner1) == true);
     
     // Test 6: After transfer, new owner can claim
     assert(ar_data__hold_ownership(data, owner2) == true);
     
     // Test 7: Must transfer to NULL before destroy
     // ar_data__destroy(data);  // Would fail - still owned
-    assert(ar_data__transfer_ownership(data, owner2) == true);
+    assert(ar_data__drop_ownership(data, owner2) == true);
     ar_data__destroy(data);  // Now succeeds - unowned
     
     printf("Data ownership tests passed!\n");
@@ -1326,7 +1326,7 @@ static void test_list_ownership(void) {
     assert(ar_data__list_add_last_data(list, data3) == false);   // Should fail
     
     // Clean up data3 since it wasn't added
-    assert(ar_data__transfer_ownership(data3, other_owner) == true);
+    assert(ar_data__drop_ownership(data3, other_owner) == true);
     ar_data__destroy(data3);
     
     // Test 4: Test that convenience functions work (they don't use ownership tracking)
@@ -1401,7 +1401,7 @@ static void test_list_remove_ownership(void) {
     ar_data__destroy(removed4);
     
     // Clean up data5
-    assert(ar_data__transfer_ownership(data5, other_owner) == true);
+    assert(ar_data__drop_ownership(data5, other_owner) == true);
     ar_data__destroy(data5);
     
     // Clean up list
@@ -1427,7 +1427,7 @@ static void test_map_ownership(void) {
     assert(ar_data__set_map_data(map, "key2", data2) == false);  // Should fail
     
     // Clean up data2 since it wasn't added
-    assert(ar_data__transfer_ownership(data2, other_owner) == true);
+    assert(ar_data__drop_ownership(data2, other_owner) == true);
     ar_data__destroy(data2);
     
     // Test 3: Replacing a value should transfer ownership of old value

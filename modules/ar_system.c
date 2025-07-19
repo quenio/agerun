@@ -170,7 +170,7 @@ bool ar_system__process_next_message(void) {
                 // Try to take ownership before destroying
                 if (ar_data__hold_ownership(own_message, &is_initialized)) {
                     // We got ownership, now release it before destroying
-                    ar_data__transfer_ownership(own_message, &is_initialized);
+                    ar_data__drop_ownership(own_message, &is_initialized);
                     ar_data__destroy(own_message);
                 } else {
                     // Someone else owns it, they will destroy it

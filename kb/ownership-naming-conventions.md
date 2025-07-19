@@ -46,5 +46,5 @@ This ownership must be properly transferred when the system processes messages t
 - Zero memory leak tolerance
 - Explicit resource management
 - Debug assertions for ownership validation
-- [Ownership Transfer in Message Passing](ownership-transfer-message-passing.md)
+- [Ownership Transfer in Message Passing](ownership-drop-message-passing.md)
 - [Agent Wake Message Processing](agent-wake-message-processing.md)

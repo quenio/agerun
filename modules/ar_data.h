@@ -76,13 +76,13 @@ void ar_data__destroy(ar_data_t *own_data);
 bool ar_data__hold_ownership(ar_data_t *mut_data, void *owner);
 
 /**
- * Transfer ownership of data
- * @param mut_data The data to transfer (mutable reference)
- * @param owner The current owner transferring the data
+ * Drop ownership of data
+ * @param mut_data The data whose ownership to drop (mutable reference)
+ * @param owner The current owner dropping the data
  * @return true if successful, false if not the owner
- * @note To release ownership for destruction, transfer with your owner pointer
+ * @note To release ownership for destruction, drop with your owner pointer
  */
-bool ar_data__transfer_ownership(ar_data_t *mut_data, void *owner);
+bool ar_data__drop_ownership(ar_data_t *mut_data, void *owner);
 
 /**
  * Create a shallow copy of data values

@@ -90,7 +90,7 @@ static void test_evaluate_literal_int(void) {
     assert(held == true);  // Should succeed because nobody owns it
     
     // Transfer ownership to NULL so we can destroy it
-    bool transferred = ar_data__transfer_ownership(own_result, ref_evaluator);
+    bool transferred = ar_data__drop_ownership(own_result, ref_evaluator);
     assert(transferred == true);
     
     // Clean up
@@ -230,7 +230,7 @@ static void test_evaluate_literal_string(void) {
     assert(held == true);  // Should succeed because nobody owns it
     
     // Transfer ownership to NULL so we can destroy it
-    bool transferred = ar_data__transfer_ownership(own_result, ref_evaluator);
+    bool transferred = ar_data__drop_ownership(own_result, ref_evaluator);
     assert(transferred == true);
     
     // Clean up
@@ -486,7 +486,7 @@ static void test_evaluate_binary_op_add_integers(void) {
     assert(held == true);  // Should succeed because nobody owns it
     
     // Transfer ownership to NULL so we can destroy it
-    bool transferred = ar_data__transfer_ownership(own_result, ref_evaluator);
+    bool transferred = ar_data__drop_ownership(own_result, ref_evaluator);
     assert(transferred == true);
     
     // Clean up (MUST destroy result - it's owned)
@@ -648,7 +648,7 @@ static void test_evaluate_binary_op_nested(void) {
     assert(held == true);  // Should succeed because nobody owns it
     
     // Transfer ownership to NULL so we can destroy it
-    bool transferred = ar_data__transfer_ownership(own_result, ref_evaluator);
+    bool transferred = ar_data__drop_ownership(own_result, ref_evaluator);
     assert(transferred == true);
     
     // Clean up (MUST destroy result - it's owned)

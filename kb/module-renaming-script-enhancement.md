@@ -16,7 +16,7 @@ Scripts should be enhanced rather than creating one-off solutions
 ```python
 # Enhanced rename_symbols.py with MODULE_RENAMES dictionary
 MODULE_RENAMES = {
-    'ar_instruction_evaluator_fixture': 'ar_evaluator_fixture',
+    'ar_evaluator_fixture': 'ar_evaluator_fixture',
 }
 
 def rename_module_in_content(content, module_mapping):

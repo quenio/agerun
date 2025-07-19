@@ -146,14 +146,14 @@ ar_data_t* ar_data__shallow_copy(const ar_data_t *ref_value);
 bool ar_data__hold_ownership(ar_data_t *mut_data, void *owner);
 
 /**
- * Transfer ownership of a data object
- * @param mut_data Pointer to the data to transfer ownership of
- * @param owner Current owner requesting the transfer
- * @return true if ownership was successfully transferred, false if not owned by requester
+ * Drop ownership of a data object
+ * @param mut_data Pointer to the data to drop ownership of
+ * @param owner Current owner requesting to drop ownership
+ * @return true if ownership was successfully dropped, false if not owned by requester
  * @note Ownership: Does not take ownership of the data parameter.
- * @note After successful transfer, the data becomes unowned and can be destroyed
+ * @note After successful drop, the data becomes unowned and can be destroyed
  */
-bool ar_data__transfer_ownership(ar_data_t *mut_data, void *owner);
+bool ar_data__drop_ownership(ar_data_t *mut_data, void *owner);
 
 /**
  * Get the integer value from a data structure

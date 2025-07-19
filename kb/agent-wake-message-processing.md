@@ -60,4 +60,4 @@ for (int i = 0; i < num_agents; i++) {
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
 - [Test Fixture API Adaptation](test-fixture-api-adaptation.md)
-- [Ownership Transfer in Message Passing](ownership-transfer-message-passing.md)
+- [Ownership Transfer in Message Passing](ownership-drop-message-passing.md)

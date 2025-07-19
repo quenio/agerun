@@ -166,6 +166,12 @@ MODULE_RENAMES = {
     'ar_instruction_evaluator_fixture': 'ar_evaluator_fixture',
 }
 
+# Function renames (handles specific function name changes)
+FUNCTION_RENAMES = {
+    # Rename ownership functions for clarity
+    'ar_data__transfer_ownership': 'ar_data__drop_ownership',
+}
+
 # File patterns to process
 FILE_PATTERNS = ['*.c', '*.h', '*.md', '*.method', '*.zig']
 
@@ -217,6 +223,14 @@ class TypeRenamer:
         count = len(pattern.findall(content))
         return new_content, count
     
+    def rename_function_in_content(self, content: str, old_func: str, new_func: str) -> Tuple[str, int]:
+        """Rename all occurrences of a function name."""
+        # Use word boundary to ensure we only match the exact function name
+        pattern = self.create_word_boundary_pattern(old_func)
+        new_content = pattern.sub(new_func, content)
+        count = self.count_occurrences(content, pattern)
+        return new_content, count
+    
     def should_process_file(self, file_path: Path) -> bool:
         """Check if a file should be processed."""
         # Skip excluded files and directories
@@ -227,13 +241,15 @@ class TypeRenamer:
         # Check if file matches our patterns
         return any(file_path.match(pattern) for pattern in FILE_PATTERNS)
     
-    def process_file(self, file_path: Path, type_mapping: Dict[str, str], module_mapping: Dict[str, str] = None) -> bool:
-        """Process a single file for type and module renames."""
+    def process_file(self, file_path: Path, type_mapping: Dict[str, str], module_mapping: Dict[str, str] = None, function_mapping: Dict[str, str] = None) -> bool:
+        """Process a single file for type, module, and function renames."""
         if not self.should_process_file(file_path):
             return False
         
         if module_mapping is None:
             module_mapping = {}
+        if function_mapping is None:
+            function_mapping = {}
         
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
@@ -259,6 +275,19 @@ class TypeRenamer:
                     self.stats[old_module] = 0
                 self.stats[old_module] += count
         
+        # Apply function renames (more specific than type renames)
+        for old_func, new_func in function_mapping.items():
+            new_content, count = self.rename_function_in_content(content, old_func, new_func)
+            if count > 0:
+                content = new_content
+                file_stats[old_func] = count
+                total_changes += count
+                
+                # Update global stats
+                if old_func not in self.stats:
+                    self.stats[old_func] = 0
+                self.stats[old_func] += count
+        
         # Apply type renames
         for old_type, new_type in type_mapping.items():
             new_content, count = self.rename_in_content(content, old_type, new_type)
@@ -279,8 +308,17 @@ class TypeRenamer:
             if self.dry_run:
                 if self.verbose:
                     print(f"Would modify {file_path}: {total_changes} changes")
-                    for old_type, count in file_stats.items():
-                        print(f"  {old_type} -> {type_mapping[old_type]}: {count} occurrences")
+                    for old_name, count in file_stats.items():
+                        # Determine the new name based on which mapping contains it
+                        if old_name in type_mapping:
+                            new_name = type_mapping[old_name]
+                        elif old_name in module_mapping:
+                            new_name = module_mapping[old_name]
+                        elif old_name in function_mapping:
+                            new_name = function_mapping[old_name]
+                        else:
+                            new_name = "???"  # Should not happen
+                        print(f"  {old_name} -> {new_name}: {count} occurrences")
             else:
                 try:
                     with open(file_path, 'w', encoding='utf-8') as f:
@@ -309,7 +347,8 @@ class TypeRenamer:
         return files
     
     def run(self, type_mapping: Dict[str, str] = None, struct_tag_mapping: Dict[str, str] = None, 
-            enum_value_mapping: Dict[str, str] = None, module_mapping: Dict[str, str] = None):
+            enum_value_mapping: Dict[str, str] = None, module_mapping: Dict[str, str] = None,
+            function_mapping: Dict[str, str] = None):
         """Run the renaming process."""
         if type_mapping is None:
             type_mapping = {}
@@ -317,15 +356,18 @@ class TypeRenamer:
             struct_tag_mapping = {}
         if enum_value_mapping is None:
             enum_value_mapping = {}
+        if function_mapping is None:
+            function_mapping = {}
         if module_mapping is None:
             module_mapping = {}
         
         # Combine all mappings
-        all_mappings = {**type_mapping, **struct_tag_mapping, **enum_value_mapping, **module_mapping}
+        all_mappings = {**type_mapping, **struct_tag_mapping, **enum_value_mapping, **module_mapping, **function_mapping}
         
         print(f"Type Renaming {'(DRY RUN)' if self.dry_run else '(LIVE RUN)'}")
         print(f"Processing {len(type_mapping)} type renames + {len(struct_tag_mapping)} struct tag renames + " +
-              f"{len(enum_value_mapping)} enum value renames + {len(module_mapping)} module renames")
+              f"{len(enum_value_mapping)} enum value renames + {len(module_mapping)} module renames + " +
+              f"{len(function_mapping)} function renames")
         print("-" * 60)
         
         files = self.find_files()
@@ -335,7 +377,7 @@ class TypeRenamer:
         for file_path in files:
             # Pass type/struct/enum mappings and module mappings separately
             type_and_other_mappings = {**type_mapping, **struct_tag_mapping, **enum_value_mapping}
-            if self.process_file(file_path, type_and_other_mappings, module_mapping):
+            if self.process_file(file_path, type_and_other_mappings, module_mapping, function_mapping):
                 modified_count += 1
         
         # Print summary
@@ -369,6 +411,8 @@ def main():
                        default='all', help='Group of types to rename')
     parser.add_argument('--include-struct-tags', action='store_true',
                        help='Include struct tag renames (enabled by default for --group=all)')
+    parser.add_argument('--function', nargs='+', 
+                       help='Specific functions to rename (e.g., ar_data__transfer_ownership:ar_data__drop_ownership)')
     
     args = parser.parse_args()
     
@@ -474,7 +518,20 @@ def main():
     elif args.group == 'all':
         module_mapping = MODULE_RENAMES
     
-    renamer.run(type_mapping, struct_tag_mapping, enum_value_mapping, module_mapping)
+    # Handle function renames
+    function_mapping = {}
+    if args.function:
+        # Parse function rename arguments
+        for func_rename in args.function:
+            if ':' not in func_rename:
+                print(f"Error: Function rename must be in format 'old_name:new_name', got '{func_rename}'")
+                return 1
+            old_func, new_func = func_rename.split(':', 1)
+            function_mapping[old_func] = new_func
+    elif args.group == 'all':
+        function_mapping = FUNCTION_RENAMES
+    
+    renamer.run(type_mapping, struct_tag_mapping, enum_value_mapping, module_mapping, function_mapping)
     
     if not args.live:
         print("\nThis was a dry run. Use --live to actually modify files.")

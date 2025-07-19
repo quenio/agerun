@@ -122,7 +122,7 @@ grep -r "function_name" modules/*.h
 Common pitfalls:
 - `ar_data__set_map_value()` doesn't exist → use `ar_data__set_map_string()` etc.  // EXAMPLE: Hypothetical function
 - `ar_agency__get_agent()` doesn't exist → use `ar_agency__get_agent_memory()` etc.  // EXAMPLE: Hypothetical function
-- `ar_data__release_ownership()` doesn't exist → use `ar_data__transfer_ownership()`  // EXAMPLE: Hypothetical function
+- `ar_data__release_ownership()` doesn't exist → use `ar_data__drop_ownership()`  // EXAMPLE: Hypothetical function
 
 **✅ EXAMPLE Tag Usage:**
 When you need hypothetical examples for teaching:
@@ -151,8 +151,8 @@ custom_type_t* data;  // EXAMPLE: Hypothetical type for teaching
 
 If you're tempted to use hypothetical types, replace with real ones:
 - `string_t` → `ar_data_t*` (with string content)  // EXAMPLE: Hypothetical type mapping
-- `list_t` → `ar_list_t*` or `ar_data_t*` (with list content)  // EXAMPLE: Hypothetical type mapping  
-- `agent_t` → `ar_agent_t*`  // EXAMPLE: Hypothetical type mapping
+- `ar_list_t` → `ar_list_t*` or `ar_data_t*` (with list content)  // EXAMPLE: Hypothetical type mapping  
+- `ar_agent_t` → `ar_agent_t*`  // EXAMPLE: Hypothetical type mapping
 - `config_t` → `ar_data_t*` (with map content)  // EXAMPLE: Hypothetical type mapping
 - `processor_t` → `ar_expression_evaluator_t*` or `ar_instruction_evaluator_t*`  // EXAMPLE: Hypothetical type mapping
 - `context_t` → `ar_data_t*`  // EXAMPLE: Hypothetical type mapping

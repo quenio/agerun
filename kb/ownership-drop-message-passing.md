@@ -1,10 +1,10 @@
-# Ownership Transfer in Message Passing
+# Ownership Drop in Message Passing
 
 ## Learning
-When agents create messages (like wake/sleep messages), they must explicitly mark themselves as owners using `ar_data__hold_ownership()`. The system must then check ownership and transfer it before destroying messages to prevent "Cannot destroy owned data" errors.
+When agents create messages (like wake/sleep messages), they must explicitly mark themselves as owners using `ar_data__hold_ownership()`. The system must then check ownership and drop it before destroying messages to prevent "Cannot destroy owned data" errors.
 
 ## Importance
-This pattern prevents critical ownership violations that cause program crashes. Without proper ownership transfer, the system cannot destroy messages that agents have marked as owned, leading to either crashes or memory leaks.
+This pattern prevents critical ownership violations that cause program crashes. Without proper ownership drop, the system cannot destroy messages that agents have marked as owned, leading to either crashes or memory leaks.
 
 ## Example
 ```c
@@ -21,8 +21,8 @@ if (own_message) {
     // Check if message is owned by something
     static bool is_initialized = false;
     if (ar_data__hold_ownership(own_message, &is_initialized)) {
-        // Transfer ownership to system before destroying
-        ar_data__transfer_ownership(own_message, &is_initialized);
+        // Drop ownership before destroying
+        ar_data__drop_ownership(own_message, &is_initialized);
         ar_data__destroy(own_message);
     } else {
         // Not owned, can destroy directly
@@ -33,18 +33,18 @@ if (own_message) {
 // From ar_send_instruction_evaluator.c - Handle unowned messages
 if (agent_id == 0) {
     // For agent_id 0, message would be discarded
-    // Must transfer ownership from evaluator before destroying
-    ar_data__transfer_ownership(own_msg, evaluator);
+    // Must drop ownership from evaluator before destroying
+    ar_data__drop_ownership(own_msg, evaluator);
     ar_data__destroy(own_msg);
     success = true;
 }
 ```
 
 ## Generalization
-The ownership transfer pattern applies to any scenario where:
+The ownership drop pattern applies to any scenario where:
 1. One component creates data and marks itself as owner
 2. Another component needs to destroy that data
-3. Ownership must be explicitly transferred to allow destruction
+3. Ownership must be explicitly dropped to allow destruction
 
 Common scenarios:
 - Agent wake/sleep messages
@@ -58,16 +58,16 @@ Common scenarios:
 ar_data_t *own_data = ar_data__create_string("value");
 ar_data__hold_ownership(own_data, owner_ptr);  // Mark as owned
 
-// Pattern 2: Destroyer checks and transfers ownership from current owner
+// Pattern 2: Destroyer checks and drops ownership from current owner
 static bool dummy = false;
 if (ar_data__hold_ownership(own_data, &dummy)) {
-    ar_data__transfer_ownership(own_data, &dummy);  // Transfer from dummy owner
+    ar_data__drop_ownership(own_data, &dummy);  // Drop from dummy owner
 }
 ar_data__destroy(own_data);
 
-// Pattern 3: Release ownership by transferring from actual owner
+// Pattern 3: Release ownership by dropping from actual owner
 void *actual_owner = ar_agent_ptr;  // The actual owner
-ar_data__transfer_ownership(own_data, actual_owner);  // Transfer from owner releases
+ar_data__drop_ownership(own_data, actual_owner);  // Drop from owner releases
 ar_data__destroy(own_data);
 ```
 

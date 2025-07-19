@@ -163,7 +163,7 @@ bool ar_deprecate_instruction_evaluator__evaluate(
     if (name_result) {
         if (ar_data__hold_ownership(name_result, mut_expr_evaluator)) {
             // We can claim ownership - it's an unowned value
-            ar_data__transfer_ownership(name_result, mut_expr_evaluator);
+            ar_data__drop_ownership(name_result, mut_expr_evaluator);
             own_name = name_result;
         } else {
             // It's owned by someone else - we need to make a copy
@@ -181,7 +181,7 @@ bool ar_deprecate_instruction_evaluator__evaluate(
     if (version_result) {
         if (ar_data__hold_ownership(version_result, mut_expr_evaluator)) {
             // We can claim ownership - it's an unowned value
-            ar_data__transfer_ownership(version_result, mut_expr_evaluator);
+            ar_data__drop_ownership(version_result, mut_expr_evaluator);
             own_version = version_result;
         } else {
             // It's owned by someone else - we need to make a copy

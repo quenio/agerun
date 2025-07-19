@@ -38,7 +38,7 @@ Each learning file contains:
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)
 - [Expression Ownership Rules](expression-ownership-rules.md)
-- [Ownership Transfer in Message Passing](ownership-transfer-message-passing.md)
+- [Ownership Drop in Message Passing](ownership-drop-message-passing.md)
 - [Refactoring Ownership Transitions](refactoring-ownership-transitions.md)
 
 ### Code Quality & Testing
