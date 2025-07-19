@@ -1,7 +1,7 @@
 # Ownership Drop in Message Passing
 
 ## Learning
-When agents create messages (like wake/sleep messages), they must explicitly mark themselves as owners using `ar_data__hold_ownership()`. The system must then check ownership and drop it before destroying messages to prevent "Cannot destroy owned data" errors.
+When agents create messages (like wake/sleep messages), they must explicitly mark themselves as owners using `ar_data__take_ownership()`. The system must then check ownership and drop it before destroying messages to prevent "Cannot destroy owned data" errors.
 
 ## Importance
 This pattern prevents critical ownership violations that cause program crashes. Without proper ownership drop, the system cannot destroy messages that agents have marked as owned, leading to either crashes or memory leaks.
@@ -11,7 +11,7 @@ This pattern prevents critical ownership violations that cause program crashes. 
 // From ar_agent.c - Agent marks itself as owner of wake message
 ar_data_t *own_wake_msg = ar_data__create_string(g_wake_message);
 if (own_wake_msg) {
-    ar_data__hold_ownership(own_wake_msg, own_agent);  // Agent claims ownership
+    ar_data__take_ownership(own_wake_msg, own_agent);  // Agent claims ownership
     ar_agent__send(own_agent, own_wake_msg);
 }
 
@@ -20,7 +20,7 @@ ar_data_t *own_message = ar_agent__get_message(ref_agent);
 if (own_message) {
     // Check if message is owned by something
     static bool is_initialized = false;
-    if (ar_data__hold_ownership(own_message, &is_initialized)) {
+    if (ar_data__take_ownership(own_message, &is_initialized)) {
         // Drop ownership before destroying
         ar_data__drop_ownership(own_message, &is_initialized);
         ar_data__destroy(own_message);
@@ -56,11 +56,11 @@ Common scenarios:
 ```c
 // Pattern 1: Creator marks ownership
 ar_data_t *own_data = ar_data__create_string("value");
-ar_data__hold_ownership(own_data, owner_ptr);  // Mark as owned
+ar_data__take_ownership(own_data, owner_ptr);  // Mark as owned
 
 // Pattern 2: Destroyer checks and drops ownership from current owner
 static bool dummy = false;
-if (ar_data__hold_ownership(own_data, &dummy)) {
+if (ar_data__take_ownership(own_data, &dummy)) {
     ar_data__drop_ownership(own_data, &dummy);  // Drop from dummy owner
 }
 ar_data__destroy(own_data);

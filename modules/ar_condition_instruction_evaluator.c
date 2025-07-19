@@ -136,7 +136,7 @@ bool ar_condition_instruction_evaluator__evaluate(
     }
     
     // We only need the value, not the data itself
-    if (ar_data__hold_ownership(condition_result, mut_evaluator)) {
+    if (ar_data__take_ownership(condition_result, mut_evaluator)) {
         ar_data__drop_ownership(condition_result, mut_evaluator);
         ar_data__destroy(condition_result);
     }
@@ -161,7 +161,7 @@ bool ar_condition_instruction_evaluator__evaluate(
         const char *key_path = ar_memory_accessor__get_key(ref_result_path);
         if (!key_path) {
             // Clean up result if we can
-            if (ar_data__hold_ownership(result, mut_evaluator)) {
+            if (ar_data__take_ownership(result, mut_evaluator)) {
                 ar_data__drop_ownership(result, mut_evaluator);
                 ar_data__destroy(result);
             }
@@ -170,7 +170,7 @@ bool ar_condition_instruction_evaluator__evaluate(
         
         // Get ownership of result for storing
         ar_data_t *own_result;
-        if (ar_data__hold_ownership(result, mut_evaluator)) {
+        if (ar_data__take_ownership(result, mut_evaluator)) {
             // We can claim ownership
             ar_data__drop_ownership(result, mut_evaluator);
             own_result = result;
@@ -193,7 +193,7 @@ bool ar_condition_instruction_evaluator__evaluate(
         return true;
     } else {
         // No assignment, just return success (expression was evaluated for side effects)
-        if (ar_data__hold_ownership(result, mut_evaluator)) {
+        if (ar_data__take_ownership(result, mut_evaluator)) {
             ar_data__drop_ownership(result, mut_evaluator);
             ar_data__destroy(result);
         }

@@ -34,7 +34,7 @@ When agents create wake or sleep messages, they must explicitly mark themselves 
 // From ar_agent.c
 ar_data_t *own_wake_msg = ar_data__create_string("__wake__");
 if (own_wake_msg) {
-    ar_data__hold_ownership(own_wake_msg, own_agent);  // Agent claims ownership
+    ar_data__take_ownership(own_wake_msg, own_agent);  // Agent claims ownership
     ar_agent__send(own_agent, own_wake_msg);
 }
 ```

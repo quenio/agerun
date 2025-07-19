@@ -86,7 +86,7 @@ static void test_evaluate_literal_int(void) {
     assert(ar_data__get_integer(own_result) == 42);
     
     // Verify ownership: result should be unowned (we can claim it)
-    bool held = ar_data__hold_ownership(own_result, ref_evaluator);
+    bool held = ar_data__take_ownership(own_result, ref_evaluator);
     assert(held == true);  // Should succeed because nobody owns it
     
     // Transfer ownership to NULL so we can destroy it
@@ -226,7 +226,7 @@ static void test_evaluate_literal_string(void) {
     assert(strcmp(ar_data__get_string(own_result), "hello world") == 0);
     
     // Verify ownership: result should be unowned (we can claim it)
-    bool held = ar_data__hold_ownership(own_result, ref_evaluator);
+    bool held = ar_data__take_ownership(own_result, ref_evaluator);
     assert(held == true);  // Should succeed because nobody owns it
     
     // Transfer ownership to NULL so we can destroy it
@@ -340,7 +340,7 @@ static void test_evaluate_memory_access(void) {
     
     // Verify ownership: result should be owned by the memory map
     // Try to hold ownership with a different owner - should fail
-    bool held = ar_data__hold_ownership(ref_result, ref_evaluator);
+    bool held = ar_data__take_ownership(ref_result, ref_evaluator);
     assert(held == false);  // Should fail because memory map owns it
     
     // Clean up (do NOT destroy result - it's a reference)
@@ -482,7 +482,7 @@ static void test_evaluate_binary_op_add_integers(void) {
     assert(ar_data__get_integer(own_result) == 8);
     
     // Verify ownership: result should be unowned (we can claim it)
-    bool held = ar_data__hold_ownership(own_result, ref_evaluator);
+    bool held = ar_data__take_ownership(own_result, ref_evaluator);
     assert(held == true);  // Should succeed because nobody owns it
     
     // Transfer ownership to NULL so we can destroy it
@@ -644,7 +644,7 @@ static void test_evaluate_binary_op_nested(void) {
     assert(ar_data__get_integer(own_result) == 60);
     
     // Verify ownership: result should be unowned (we can claim it)
-    bool held = ar_data__hold_ownership(own_result, ref_evaluator);
+    bool held = ar_data__take_ownership(own_result, ref_evaluator);
     assert(held == true);  // Should succeed because nobody owns it
     
     // Transfer ownership to NULL so we can destroy it

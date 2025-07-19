@@ -155,7 +155,7 @@ bool ar_exit_instruction_evaluator__evaluate(
     // Check if we need to make a copy (if result is owned by memory/context)
     ar_data_t *own_agent_id = NULL;
     if (agent_id_result) {
-        if (ar_data__hold_ownership(agent_id_result, mut_expr_evaluator)) {
+        if (ar_data__take_ownership(agent_id_result, mut_expr_evaluator)) {
             // We can claim ownership - it's an unowned value (literal or operation result)
             ar_data__drop_ownership(agent_id_result, mut_expr_evaluator);
             own_agent_id = agent_id_result;

@@ -1280,21 +1280,21 @@ static void test_data_ownership(void) {
     // Test 2: Can claim unowned data
     ar_data_t *data = ar_data__create_integer(42);
     void *owner1 = (void*)0x1234;
-    assert(ar_data__hold_ownership(data, owner1) == true);
+    assert(ar_data__take_ownership(data, owner1) == true);
     
     // Test 3: Can reclaim data you own
-    assert(ar_data__hold_ownership(data, owner1) == true);
+    assert(ar_data__take_ownership(data, owner1) == true);
     
     // Test 4: Cannot claim data owned by another
     void *owner2 = (void*)0x5678;
-    assert(ar_data__hold_ownership(data, owner2) == false);
+    assert(ar_data__take_ownership(data, owner2) == false);
     
     // Test 5: Only owner can transfer
     assert(ar_data__drop_ownership(data, owner2) == false);
     assert(ar_data__drop_ownership(data, owner1) == true);
     
     // Test 6: After transfer, new owner can claim
-    assert(ar_data__hold_ownership(data, owner2) == true);
+    assert(ar_data__take_ownership(data, owner2) == true);
     
     // Test 7: Must transfer to NULL before destroy
     // ar_data__destroy(data);  // Would fail - still owned
@@ -1321,7 +1321,7 @@ static void test_list_ownership(void) {
     // Test 3: Cannot add data already owned by another
     ar_data_t *data3 = ar_data__create_integer(100);
     void *other_owner = (void*)0x9999;
-    assert(ar_data__hold_ownership(data3, other_owner) == true);
+    assert(ar_data__take_ownership(data3, other_owner) == true);
     assert(ar_data__list_add_first_data(list, data3) == false);  // Should fail
     assert(ar_data__list_add_last_data(list, data3) == false);   // Should fail
     
@@ -1388,7 +1388,7 @@ static void test_list_remove_ownership(void) {
     
     // Try to add data5 which is owned by another
     void *other_owner = (void*)0x9999;
-    assert(ar_data__hold_ownership(data5, other_owner) == true);
+    assert(ar_data__take_ownership(data5, other_owner) == true);
     assert(ar_data__list_add_last_data(list, data5) == false);  // Should fail
     
     // Remove data3 and data4
@@ -1423,7 +1423,7 @@ static void test_map_ownership(void) {
     // Test 2: Cannot add data already owned by another
     ar_data_t *data2 = ar_data__create_string("hello");
     void *other_owner = (void*)0x8888;
-    assert(ar_data__hold_ownership(data2, other_owner) == true);
+    assert(ar_data__take_ownership(data2, other_owner) == true);
     assert(ar_data__set_map_data(map, "key2", data2) == false);  // Should fail
     
     // Clean up data2 since it wasn't added

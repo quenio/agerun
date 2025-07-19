@@ -143,7 +143,7 @@ ar_data_t* ar_data__shallow_copy(const ar_data_t *ref_value);
  * @note Ownership: Does not take ownership of the data parameter.
  * @note This function allows tracking which object owns a data instance
  */
-bool ar_data__hold_ownership(ar_data_t *mut_data, void *owner);
+bool ar_data__take_ownership(ar_data_t *mut_data, void *owner);
 
 /**
  * Drop ownership of a data object

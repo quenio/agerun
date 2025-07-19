@@ -156,7 +156,7 @@ static bool _evaluate_three_string_args(
     
     // Handle ownership for arg1
     if (result1) {
-        if (ar_data__hold_ownership(result1, mut_evaluator)) {
+        if (ar_data__take_ownership(result1, mut_evaluator)) {
             ar_data__drop_ownership(result1, mut_evaluator);
             *out_arg1 = result1;
         } else {
@@ -164,13 +164,13 @@ static bool _evaluate_three_string_args(
             if (!*out_arg1) {
                 _log_error(mut_evaluator, "Cannot create method with nested containers in argument 1 (no deep copy support)");
                 if (result2) {
-                    if (ar_data__hold_ownership(result2, mut_evaluator)) {
+                    if (ar_data__take_ownership(result2, mut_evaluator)) {
                         ar_data__drop_ownership(result2, mut_evaluator);
                         ar_data__destroy(result2);
                     }
                 }
                 if (result3) {
-                    if (ar_data__hold_ownership(result3, mut_evaluator)) {
+                    if (ar_data__take_ownership(result3, mut_evaluator)) {
                         ar_data__drop_ownership(result3, mut_evaluator);
                         ar_data__destroy(result3);
                     }
@@ -184,7 +184,7 @@ static bool _evaluate_three_string_args(
     
     // Handle ownership for arg2
     if (result2) {
-        if (ar_data__hold_ownership(result2, mut_evaluator)) {
+        if (ar_data__take_ownership(result2, mut_evaluator)) {
             ar_data__drop_ownership(result2, mut_evaluator);
             *out_arg2 = result2;
         } else {
@@ -193,7 +193,7 @@ static bool _evaluate_three_string_args(
                 _log_error(mut_evaluator, "Cannot create method with nested containers in argument 2 (no deep copy support)");
                 ar_data__destroy(*out_arg1);
                 if (result3) {
-                    if (ar_data__hold_ownership(result3, mut_evaluator)) {
+                    if (ar_data__take_ownership(result3, mut_evaluator)) {
                         ar_data__drop_ownership(result3, mut_evaluator);
                         ar_data__destroy(result3);
                     }
@@ -207,7 +207,7 @@ static bool _evaluate_three_string_args(
     
     // Handle ownership for arg3
     if (result3) {
-        if (ar_data__hold_ownership(result3, mut_evaluator)) {
+        if (ar_data__take_ownership(result3, mut_evaluator)) {
             ar_data__drop_ownership(result3, mut_evaluator);
             *out_arg3 = result3;
         } else {

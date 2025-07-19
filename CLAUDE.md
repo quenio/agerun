@@ -348,7 +348,7 @@ cd bin  # Wrong - avoid relative paths
 - New objects (`2+3`, `"a"+"b"`): Must destroy - evaluator creates them
 - Self-ownership check: Never let `values_result == mut_memory`
 - Context lifetime: NEVER destroy context or its elements in evaluators
-- Debug ownership: Use `ar_data__hold_ownership()` to verify status
+- Debug ownership: Use `ar_data__take_ownership()` to verify status
 
 ### 9. Error Propagation Pattern
 

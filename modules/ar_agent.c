@@ -69,7 +69,7 @@ ar_agent_t* ar_agent__create(const char *ref_method_name, const char *ref_versio
     ar_data_t *own_wake_msg = ar_data__create_string(g_wake_message);
     if (own_wake_msg) {
         // Mark agent as owner of the message
-        ar_data__hold_ownership(own_wake_msg, own_agent);
+        ar_data__take_ownership(own_wake_msg, own_agent);
         ar_agent__send(own_agent, own_wake_msg);
         // Note: The wake message will be processed when the system runs
     }
@@ -86,7 +86,7 @@ void ar_agent__destroy(ar_agent_t *own_agent) {
     ar_data_t *own_sleep_msg = ar_data__create_string(g_sleep_message);
     if (own_sleep_msg) {
         // Mark agent as owner of the message
-        ar_data__hold_ownership(own_sleep_msg, own_agent);
+        ar_data__take_ownership(own_sleep_msg, own_agent);
         bool sent = ar_list__add_last(own_agent->own_message_queue, own_sleep_msg);
         if (!sent) {
             // Transfer ownership back before destroying
@@ -261,7 +261,7 @@ bool ar_agent__update_method(ar_agent_t *mut_agent, const ar_method_t *ref_new_m
         ar_data_t *own_sleep_msg = ar_data__create_string(g_sleep_message);
         if (own_sleep_msg) {
             // Mark agent as owner of the message
-            ar_data__hold_ownership(own_sleep_msg, mut_agent);
+            ar_data__take_ownership(own_sleep_msg, mut_agent);
             if (!ar_list__add_last(mut_agent->own_message_queue, own_sleep_msg)) {
                 // Transfer ownership back before destroying
                 if (ar_data__drop_ownership(own_sleep_msg, mut_agent)) {
@@ -279,7 +279,7 @@ bool ar_agent__update_method(ar_agent_t *mut_agent, const ar_method_t *ref_new_m
         ar_data_t *own_wake_msg = ar_data__create_string(g_wake_message);
         if (own_wake_msg) {
             // Mark agent as owner of the message
-            ar_data__hold_ownership(own_wake_msg, mut_agent);
+            ar_data__take_ownership(own_wake_msg, mut_agent);
             if (!ar_list__add_last(mut_agent->own_message_queue, own_wake_msg)) {
                 // Transfer ownership back before destroying
                 if (ar_data__drop_ownership(own_wake_msg, mut_agent)) {

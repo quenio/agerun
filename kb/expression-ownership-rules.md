@@ -53,7 +53,7 @@ ar_data__destroy(own_keys);  // Destroys the list structure
 2. Use proper variable prefix (own_ vs ref_) immediately
 3. Add cleanup for all owned values before function exit
 4. Never destroy borrowed references from memory/context
-5. Use `ar_data__hold_ownership()` to debug ownership status
+5. Use `ar_data__take_ownership()` to debug ownership status
 
 **Self-ownership check**: Never let `values_result == mut_memory` in evaluators
 **Context lifetime**: NEVER destroy context or its elements in evaluators

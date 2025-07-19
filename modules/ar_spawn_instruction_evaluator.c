@@ -152,7 +152,7 @@ bool ar_spawn_instruction_evaluator__evaluate(
     // Handle ownership for method name
     ar_data_t *own_method_name = NULL;
     if (method_result) {
-        if (ar_data__hold_ownership(method_result, mut_expr_evaluator)) {
+        if (ar_data__take_ownership(method_result, mut_expr_evaluator)) {
             ar_data__drop_ownership(method_result, mut_expr_evaluator);
             own_method_name = method_result;
         } else {
@@ -168,7 +168,7 @@ bool ar_spawn_instruction_evaluator__evaluate(
     // Handle ownership for version
     ar_data_t *own_version = NULL;
     if (version_result) {
-        if (ar_data__hold_ownership(version_result, mut_expr_evaluator)) {
+        if (ar_data__take_ownership(version_result, mut_expr_evaluator)) {
             ar_data__drop_ownership(version_result, mut_expr_evaluator);
             own_version = version_result;
         } else {

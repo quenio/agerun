@@ -68,12 +68,12 @@ ar_data_t* ar_data__create_map(void);
 void ar_data__destroy(ar_data_t *own_data);
 
 /**
- * Claim or accept ownership of data
- * @param mut_data The data to claim (mutable reference)
- * @param owner The owner claiming the data (typically 'this' pointer)
+ * Take ownership of data
+ * @param mut_data The data to take ownership of (mutable reference)
+ * @param owner The owner taking the data (typically 'this' pointer)
  * @return true if successful, false if already owned by another
  */
-bool ar_data__hold_ownership(ar_data_t *mut_data, void *owner);
+bool ar_data__take_ownership(ar_data_t *mut_data, void *owner);
 
 /**
  * Drop ownership of data

@@ -246,7 +246,7 @@ void ar_data__destroy(ar_data_t *own_data) {
  * @param owner The owner claiming the data (typically 'this' pointer)
  * @return true if successful, false if already owned by another
  */
-bool ar_data__hold_ownership(ar_data_t *mut_data, void *owner) {
+bool ar_data__take_ownership(ar_data_t *mut_data, void *owner) {
     if (!mut_data || !owner) return false;
     
     if (mut_data->owner == NULL || mut_data->owner == owner) {
@@ -836,7 +836,7 @@ bool ar_data__set_map_data(ar_data_t *mut_data, const char *ref_key, ar_data_t *
         }
         
         // Map should hold ownership of the data
-        if (!ar_data__hold_ownership(own_value, mut_data)) {
+        if (!ar_data__take_ownership(own_value, mut_data)) {
             // Data is already owned by someone else
             AR__HEAP__FREE(key_copy);
             return false;
@@ -1074,7 +1074,7 @@ bool ar_data__list_add_first_data(ar_data_t *mut_data, ar_data_t *own_value) {
     }
     
     // List should hold ownership of the data
-    if (!ar_data__hold_ownership(own_value, mut_data)) {
+    if (!ar_data__take_ownership(own_value, mut_data)) {
         // Data is already owned by someone else
         return false;
     }
@@ -1216,7 +1216,7 @@ bool ar_data__list_add_last_data(ar_data_t *mut_data, ar_data_t *own_value) {
     }
     
     // List should hold ownership of the data
-    if (!ar_data__hold_ownership(own_value, mut_data)) {
+    if (!ar_data__take_ownership(own_value, mut_data)) {
         // Data is already owned by someone else
         return false;
     }

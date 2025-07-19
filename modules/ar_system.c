@@ -168,7 +168,7 @@ bool ar_system__process_next_message(void) {
                 
                 // Free the message as it's now been processed
                 // Try to take ownership before destroying
-                if (ar_data__hold_ownership(own_message, &is_initialized)) {
+                if (ar_data__take_ownership(own_message, &is_initialized)) {
                     // We got ownership, now release it before destroying
                     ar_data__drop_ownership(own_message, &is_initialized);
                     ar_data__destroy(own_message);
