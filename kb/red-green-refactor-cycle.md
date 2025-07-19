@@ -29,7 +29,33 @@ Break complex features into small behavior cycles, completing each cycle fully b
 
 Critical: Refactor phase is NOT optional - always look for improvements
 
+### Example: Extracting Ownership Patterns
+```c
+// RED: Test for ownership utility function
+void test_data__claim_or_copy() {
+    ar_data_t *data = ar_data__create_integer(42);
+    ar_data_t *result = ar_data__claim_or_copy(data, owner);  // FAILS - function doesn't exist
+}
+
+// GREEN: Implement minimal function
+ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner) {
+    if (ar_data__take_ownership(ref_data, owner)) {
+        ar_data__drop_ownership(ref_data, owner);
+        return ref_data;
+    }
+    return ar_data__shallow_copy(ref_data);
+}
+
+// REFACTOR: Add null checks, handle edge cases
+ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner) {
+    if (!ref_data || !owner) return NULL;  // Added in refactor
+    // ... rest of implementation
+}
+```
+
 ## Related Patterns
+- [TDD Advanced Large Refactoring](tdd-advanced-large-refactoring.md)
+- [Ownership Pattern Extraction](ownership-pattern-extraction.md)
 - Test-driven development methodology
 - Incremental feature development
 - Code quality maintenance

@@ -48,3 +48,4 @@ This ownership must be properly transferred when the system processes messages t
 - Debug assertions for ownership validation
 - [Ownership Transfer in Message Passing](ownership-drop-message-passing.md)
 - [Agent Wake Message Processing](agent-wake-message-processing.md)
+- [Ownership Pattern Extraction](ownership-pattern-extraction.md)

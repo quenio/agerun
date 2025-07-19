@@ -63,6 +63,7 @@ Each learning file contains:
 - [Refactoring Key Patterns](refactoring-key-patterns.md)
 - [Architectural Patterns Hierarchy](architectural-patterns-hierarchy.md)
 - [Dependency Injection Anti-pattern](dependency-injection-anti-pattern.md)
+- [Ownership Pattern Extraction](ownership-pattern-extraction.md)
 
 ### Parnas Design Principles
 - [Information Hiding Principle](information-hiding-principle.md)
@@ -97,6 +98,7 @@ Each learning file contains:
 - [Cross-Referencing Knowledge Base](cross-referencing-knowledge-base.md)
 - [Research-Driven Development](research-driven-development.md)
 - [User Feedback as QA](user-feedback-as-qa.md)
+- [Defensive Programming Consistency](defensive-programming-consistency.md)
 - [OO to C Adaptation](oo-to-c-adaptation.md)
 - [C to Zig Module Migration](c-to-zig-module-migration.md)
 - [Zig Memory Allocation with ar_allocator](zig-memory-allocation-with-ar-allocator.md)

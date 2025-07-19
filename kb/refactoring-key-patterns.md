@@ -70,6 +70,14 @@ ar_data_t* ar_old_function(ar_data_t *param) {
    ```bash
    grep -r "old_api_pattern" .  # Check ALL clients
    ```
+8. **Systematic pattern replacement**:
+   ```bash
+   # Search for patterns across codebase
+   grep -r "take_ownership.*drop_ownership" modules/
+   # Replace file by file with testing
+   make specific_module_tests  # After each change
+   git commit  # After each successful test
+   ```
 
 ## Related Patterns
 - [Code Movement Verification](code-movement-verification.md)
@@ -77,3 +85,5 @@ ar_data_t* ar_old_function(ar_data_t *param) {
 - [Script Enhancement Over One-Off](script-enhancement-over-one-off.md)
 - [Systematic Function Renaming Pattern](systematic-function-renaming-pattern.md)
 - [Search Replace Precision](search-replace-precision.md)
+- [Ownership Pattern Extraction](ownership-pattern-extraction.md)
+- [Defensive Programming Consistency](defensive-programming-consistency.md)
