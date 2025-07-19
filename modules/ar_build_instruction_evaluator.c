@@ -299,28 +299,17 @@ bool ar_build_instruction_evaluator__evaluate(
     // Evaluate template expression AST
     ar_data_t *template_result = ar_expression_evaluator__evaluate(mut_expr_evaluator, ref_frame, ref_template_ast);
     if (!template_result || ar_data__get_type(template_result) != AR_DATA_TYPE__STRING) {
-        if (template_result && ar_data__take_ownership(template_result, mut_evaluator)) {
-            ar_data__drop_ownership(template_result, mut_evaluator);
-            ar_data__destroy(template_result);
-        }
+        ar_data__destroy_if_owned(template_result, mut_evaluator);
         AR__HEAP__FREE(items);
         return false;
     }
     
     // Get ownership of template data
-    ar_data_t *own_template_data;
-    if (ar_data__take_ownership(template_result, mut_evaluator)) {
-        // We can claim ownership - it's an unowned value
-        ar_data__drop_ownership(template_result, mut_evaluator);
-        own_template_data = template_result;
-    } else {
-        // It's owned by someone else - we need to make a copy
-        own_template_data = ar_data__shallow_copy(template_result);
-        if (!own_template_data) {
-            _log_error(mut_evaluator, "Cannot build with nested containers in template (no deep copy support)");
-            AR__HEAP__FREE(items);
-            return false;
-        }
+    ar_data_t *own_template_data = ar_data__claim_or_copy(template_result, mut_evaluator);
+    if (!own_template_data) {
+        _log_error(mut_evaluator, "Cannot build with nested containers in template (no deep copy support)");
+        AR__HEAP__FREE(items);
+        return false;
     }
     
     // Evaluate values expression AST to check for map
@@ -332,10 +321,10 @@ bool ar_build_instruction_evaluator__evaluate(
     // CRITICAL: Never try to take ownership of memory itself!
     if (values_result == mut_memory) {
         own_values_data = NULL;
-    } else if (values_result && ar_data__take_ownership(values_result, mut_evaluator)) {
-        // We can claim ownership - it's an unowned value
-        ar_data__drop_ownership(values_result, mut_evaluator);
-        own_values_data = values_result;
+    } else if (values_result) {
+        own_values_data = ar_data__claim_or_copy(values_result, mut_evaluator);
+        // Note: claim_or_copy may return NULL for nested containers, but that's okay
+        // since we only use it for cleanup - we use ref_values_data for actual processing
     }
     
     // Validate it's a map
