@@ -11,6 +11,7 @@
 #include "ar_list.h"
 #include "ar_log.h"
 #include "ar_memory_accessor.h"
+#include "ar_data.h"
 #include <string.h>
 #include <stdio.h>
 #include <inttypes.h>
@@ -155,18 +156,11 @@ bool ar_exit_instruction_evaluator__evaluate(
     // Check if we need to make a copy (if result is owned by memory/context)
     ar_data_t *own_agent_id = NULL;
     if (agent_id_result) {
-        if (ar_data__take_ownership(agent_id_result, mut_expr_evaluator)) {
-            // We can claim ownership - it's an unowned value (literal or operation result)
-            ar_data__drop_ownership(agent_id_result, mut_expr_evaluator);
-            own_agent_id = agent_id_result;
-        } else {
-            // It's owned by someone else (memory access) - we need to make a copy
-            own_agent_id = ar_data__shallow_copy(agent_id_result);
-            if (!own_agent_id) {
-                _log_error(mut_evaluator, "Cannot destroy agent with nested containers in agent ID (no deep copy support)");
-                AR__HEAP__FREE(items);
-                return false;
-            }
+        own_agent_id = ar_data__claim_or_copy(agent_id_result, mut_evaluator);
+        if (!own_agent_id) {
+            _log_error(mut_evaluator, "Cannot destroy agent with nested containers in agent ID (no deep copy support)");
+            AR__HEAP__FREE(items);
+            return false;
         }
     }
     
@@ -180,7 +174,7 @@ bool ar_exit_instruction_evaluator__evaluate(
     }
     
     if (own_agent_id) {
-        ar_data__destroy(own_agent_id);
+        ar_data__destroy_if_owned(own_agent_id, mut_evaluator);
     }
     
     // Free the items array
