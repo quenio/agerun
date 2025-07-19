@@ -120,9 +120,9 @@ Each learning should be saved as an individual .md file in `./kb/` directory wit
 grep -r "function_name" modules/*.h
 ```
 Common pitfalls:
-- `ar_data__set_map_value()` doesn't exist → use `ar_data__set_map_string()` etc.
-- `ar_agency__get_agent()` doesn't exist → use `ar_agency__get_agent_memory()` etc.
-- `ar_data__release_ownership()` doesn't exist → use `ar_data__transfer_ownership()`
+- `ar_data__set_map_value()` doesn't exist → use `ar_data__set_map_string()` etc.  // EXAMPLE: Hypothetical function
+- `ar_agency__get_agent()` doesn't exist → use `ar_agency__get_agent_memory()` etc.  // EXAMPLE: Hypothetical function
+- `ar_data__release_ownership()` doesn't exist → use `ar_data__transfer_ownership()`  // EXAMPLE: Hypothetical function
 
 **✅ EXAMPLE Tag Usage:**
 When you need hypothetical examples for teaching:
