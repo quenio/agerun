@@ -4,6 +4,20 @@ description: Analyze session for new learnings and create properly validated kb 
 
 # New Learnings Analysis and Guidelines Update
 
+## Overview of the Process
+
+This command guides you through a comprehensive process to:
+1. Identify new learnings from the session
+2. Determine whether to create new KB articles or update existing ones
+3. Create/update KB articles with real AgeRun code examples
+4. Validate all documentation
+5. Add proper cross-references between articles
+6. Update kb/README.md index
+7. Update CLAUDE.md with references
+8. Commit and push all changes
+
+**IMPORTANT**: Always consider updating existing KB articles before creating new ones, and ensure all articles are properly cross-referenced to create a web of knowledge.
+
 ## Step 1: Identify New Learnings
 
 Please analyze this session and identify any new learnings, patterns, or insights that emerged. Consider:
@@ -20,7 +34,35 @@ For each learning, provide:
 - Specific examples from this session (if applicable)
 - How it can be generalized for future use
 
-## Step 2: Knowledge Base Article Creation
+## Step 2: Determine KB Article Strategy
+
+### First Decision: New Articles vs Update Existing
+
+**IMPORTANT**: Before creating new articles, check if existing KB articles should be updated instead:
+
+1. **Search for related existing articles**:
+   ```bash
+   grep -r "relevant_keyword" kb/*.md
+   ```
+
+2. **Consider updating existing articles when**:
+   - The learning extends or clarifies an existing pattern
+   - The learning provides a new example of an existing concept
+   - The learning adds important context to existing documentation
+
+3. **Create new articles when**:
+   - The learning represents a genuinely new pattern
+   - The learning is substantial enough to warrant its own article
+   - The learning doesn't fit naturally into existing articles
+
+### Second Decision: Cross-References
+
+**CRITICAL**: Plan cross-references between articles:
+- New articles should reference related existing articles
+- Existing articles should be updated with references to new articles
+- Create a bidirectional web of knowledge
+
+## Step 3: Knowledge Base Article Creation
 
 **CRITICAL: All code examples MUST use real AgeRun types and functions** ([details](../../kb/validated-documentation-examples.md))
 
@@ -67,11 +109,20 @@ Each learning should be saved as an individual .md file in `./kb/` directory wit
 
 **✅ PREFERRED Real Functions:**
 - `ar_data__create_*()`, `ar_data__get_*()`, `ar_data__destroy()`
-- `ar_agency__create_agent()`, `ar_agency__send_to_agent()`
+- `ar_agency__create_agent()`, `ar_agency__get_agent_*()` functions
 - `ar_agent__get_*()`, `ar_agent__set_*()`
 - `ar_methodology__*()` functions
 - `ar_heap__malloc()`, `ar_heap__free()` (memory management)
 - `ar_expression_evaluator__*()`, `ar_instruction_evaluator__*()`
+
+**⚠️ VERIFY Function Names**: Always check actual function signatures:
+```bash
+grep -r "function_name" modules/*.h
+```
+Common pitfalls:
+- `ar_data__set_map_value()` doesn't exist → use `ar_data__set_map_string()` etc.
+- `ar_agency__get_agent()` doesn't exist → use `ar_agency__get_agent_memory()` etc.
+- `ar_data__release_ownership()` doesn't exist → use `ar_data__transfer_ownership()`
 
 **✅ EXAMPLE Tag Usage:**
 When you need hypothetical examples for teaching:
@@ -106,7 +157,7 @@ If you're tempted to use hypothetical types, replace with real ones:
 - `processor_t` → `ar_expression_evaluator_t*` or `ar_instruction_evaluator_t*`  // EXAMPLE: Hypothetical type mapping
 - `context_t` → `ar_data_t*`  // EXAMPLE: Hypothetical type mapping
 
-## Step 3: Validation Before Saving
+## Step 4: Validation Before Saving
 
 **MANDATORY: Test articles before committing**
 
@@ -124,7 +175,7 @@ If you're tempted to use hypothetical types, replace with real ones:
 - Use `ar_data_t*` as the universal fallback type
 - Reference actual functions from `modules/*.h` files
 
-## Step 4: Update Knowledge Base Index
+## Step 5: Update Knowledge Base Index
 
 **MANDATORY: Add new articles to kb/README.md**
 
@@ -139,14 +190,33 @@ If you're tempted to use hypothetical types, replace with real ones:
    - [Article Title](article-filename.md)
    ```
 
-## Step 5: Review Existing Guidelines
+## Step 6: Update Existing KB Articles with Cross-References
+
+**MANDATORY**: Add cross-references to create a web of knowledge:
+
+1. **For each new article created**:
+   - Find related existing articles
+   - Add reference to new article in their Related Patterns section
+   
+2. **For each updated article**:
+   - Add references to other updated articles if relevant
+   - Ensure bidirectional linking where appropriate
+
+3. **Cross-reference pattern**:
+   ```markdown
+   ## Related Patterns
+   - [Existing Pattern](existing-pattern.md)
+   - [New Pattern You Created](new-pattern.md)
+   ```
+
+## Step 7: Review Existing Guidelines
 
 Check CLAUDE.md to see if these learnings should be referenced:
 - Determine if existing documentation needs links to new kb articles
 - Identify appropriate sections where kb articles should be referenced
 - Note any gaps that need new content with kb links
 
-## Step 6: Update Guidelines
+## Step 8: Update Guidelines
 
 If updates are needed to CLAUDE.md:
 
@@ -179,7 +249,7 @@ If updates are needed to CLAUDE.md:
    - Include new kb articles in relevant sections (e.g., Script Development, Documentation Protocol)
    - Maintain two-tier system: brief guidelines with links to comprehensive details
 
-## Step 7: Validate No Broken Links
+## Step 9: Validate No Broken Links
 
 **CRITICAL**: Before committing, verify all links work:
 
@@ -194,7 +264,7 @@ If updates are needed to CLAUDE.md:
 
 2. **Never reference non-existent articles in Related Patterns sections**
 
-## Step 8: Automatic Commit and Push
+## Step 10: Automatic Commit and Push
 
 **EXECUTE THE FOLLOWING SEQUENCE AUTOMATICALLY:**
 
