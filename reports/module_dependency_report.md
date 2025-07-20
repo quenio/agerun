@@ -69,8 +69,6 @@ This report analyzes the dependencies between AgeRun modules by examining #inclu
 ### ar_map.h
 - **Includes**: None
 
-### ar_memory_accessor.h
-- **Includes**: None
 
 ### ar_method.h
 - **Includes**: ar_data.h
@@ -150,9 +148,6 @@ This report analyzes the dependencies between AgeRun modules by examining #inclu
 ### ar_map.c
 - **Direct includes**: ar_map.h, ar_heap.h
 
-### ar_memory_accessor.zig
-- **Direct includes**: ar_path.h (via @cImport)
-- **Implementation**: Zig implementation with C ABI compatibility
 
 ### ar_method.c
 - **Direct includes**: ar_method.h, ar_heap.h, ar_assert.h
