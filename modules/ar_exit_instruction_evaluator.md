@@ -4,6 +4,8 @@
 
 The exit instruction evaluator module is responsible for evaluating agent destruction instructions in the AgeRun language. It handles the `exit(agent_id)` instruction form, which terminates a specific agent by its ID.
 
+**Implementation Note**: This module has been migrated to Zig (ar_exit_instruction_evaluator.zig) to leverage Zig's `defer` mechanism for automatic cleanup, eliminating manual error handling cascades. The migration removed ~100+ lines of duplicated cleanup code by using `defer` statements that automatically execute when leaving scope, regardless of the return path.
+
 ## Purpose
 
 This module extracts the agent destruction logic from the main exit instruction evaluator, following the single responsibility principle. It provides specialized handling for agent destruction with proper result storage.
@@ -60,6 +62,25 @@ The module follows strict memory ownership rules:
 - All temporary values properly exited
 - The create function returns ownership to the caller
 - The exit function takes ownership and frees all resources
+
+### Zig Implementation Benefits
+
+The Zig implementation provides significant advantages over the original C code:
+
+1. **Automatic Cleanup with `defer`**: Resources are automatically freed when leaving scope, eliminating manual cleanup at each error return point
+2. **Linear Code Flow**: No cascading error handling - each resource acquisition is followed by its `defer` cleanup
+3. **Memory Safety**: Impossible to forget cleanup - the compiler ensures `defer` statements execute
+4. **Reduced Code**: Eliminated ~100+ lines of duplicated cleanup logic
+5. **Type Safety**: Uses `ar_allocator` module for type-safe memory operations
+6. **Maintainability**: Adding new resources doesn't complicate existing error paths
+
+Example of the pattern:
+```zig
+const own_items = c.ar_list__items(ref_arg_asts) orelse return false;
+defer ar_allocator.free(own_items);  // Automatically frees on any return
+
+// ... use own_items without worrying about cleanup ...
+```
 
 ## Dependencies
 

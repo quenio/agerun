@@ -6,13 +6,18 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### Evaluator Migration Strategy (Completed 2025-07-20)
+- [x] Analyzed error cleanup patterns across all evaluators - found ~100+ lines duplication each
+- [x] Determined Zig's `defer` naturally solves the cleanup cascade problem  
+- [x] Successfully migrated ar_exit_instruction_evaluator to Zig as proof of concept
+- [x] Created KB article documenting the defer pattern for error cleanup
+- [x] Updated TODO.md to reflect new Zig migration approach instead of C helper extraction
+
 ### Knowledge Base Enhancement (Completed 2025-07-20)
 - [x] Created module removal checklist KB article documenting systematic removal process
 - [x] Updated refactoring key patterns with post-refactoring cleanup step
 - [x] Enhanced documentation language migration article to include module removal
 - [x] Added cross-references between related KB articles
-
-## Completed Tasks
 
 ### Build System Parallelization (Completed 2025-07-07)
 - [x] Refactored Makefile to support parallel execution with isolated output directories
@@ -149,25 +154,37 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Maintained zero memory leaks throughout refactoring
 - [x] Updated ar_path.md and ar_data.md documentation
 
-#### 5. Extract Additional Common Functions (Discovered in Analysis)
-- [ ] Extract error logging pattern into existing modules (duplicated in 10 evaluators, ~50 lines)
-  - [ ] Determine if ar_log module should have evaluator-specific helper
-- [ ] Extract error cleanup patterns into common functions (duplicated across all evaluators, ~100+ lines)  
-  - [ ] Standardize: validation failure → cleanup owned data → `AR__HEAP__FREE(items)` → return false
-  - [ ] Add cleanup helper to appropriate existing module
-- [ ] Extract expression evaluation patterns into common functions (duplicated across evaluators, ~80+ lines)
-  - [ ] Common: evaluate → type check → ownership handling → cleanup on failure
-  - [ ] Add to ar_expression_evaluator or create helper in appropriate module
+#### 5. Migrate Evaluators to Zig for Error Cleanup Simplification (NEW APPROACH)
+
+**Rationale**: Instead of extracting C helper functions, migrate evaluators to Zig to leverage `defer` for automatic cleanup, eliminating ~100+ lines of duplicated cleanup code per evaluator ([details](kb/zig-defer-error-cleanup-pattern.md)).
+
+- [x] Migrated ar_exit_instruction_evaluator to Zig as proof of concept (Completed 2025-07-20)
+  - Demonstrated `defer` eliminates manual cleanup cascades
+  - All tests pass with zero memory leaks
+  - Uses ar_allocator for consistency
+
+- [ ] Migrate remaining evaluators to Zig (priority order by complexity):
+  - [ ] ar_send_instruction_evaluator (simple, 1 argument)
+  - [ ] ar_assignment_instruction_evaluator (simple, 2 parts)
+  - [ ] ar_deprecate_instruction_evaluator (moderate, 3 arguments)
+  - [ ] ar_spawn_instruction_evaluator (moderate, 3 arguments)
+  - [ ] ar_condition_instruction_evaluator (moderate, if logic)
+  - [ ] ar_build_instruction_evaluator (complex, string building)
+  - [ ] ar_parse_instruction_evaluator (complex, parsing)
+  - [ ] ar_compile_instruction_evaluator (complex, 3 string args)
+  - [ ] ar_expression_evaluator (complex, multiple types)
+  - [ ] ar_instruction_evaluator (facade, coordinate others)
 
 #### 6. Create Base Evaluator Structure
 - [x] Designed base evaluator pattern using ar_log composition (Completed 2025-06-30)
 
 #### 7. Refactor All Evaluators to Use Shared Components
 - [x] Updated all 9 evaluators to use ar_log (Partially completed 2025-06-30)
-- [ ] Replace remaining duplicated code with utility modules (estimated 500+ lines of duplication)
-  - [ ] Update all evaluators to use ar_ownership_utils
-  - [ ] Update all evaluators to use ar_result_storage  
-  - [ ] Update all evaluators to use ar_evaluator_utils for common patterns
+- [x] Extracted ownership patterns to ar_data module functions (Completed 2025-07-19)
+- [x] Extracted result storage patterns to ar_data/ar_path modules (Completed 2025-07-20)
+- [ ] Complete Zig migration for remaining evaluators (see section 5 above)
+  - Migration to Zig eliminates need for additional C utility modules
+  - Each Zig evaluator naturally removes ~100+ lines of cleanup duplication
 
 ### Parnas Principles - Interface Violations (HIGH PRIORITY)
 

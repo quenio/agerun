@@ -4,6 +4,16 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-07-20
 
+### ✅ COMPLETED: Migrate ar_exit_instruction_evaluator to Zig
+- **Migrated ar_exit_instruction_evaluator from C to Zig** as proof of concept for leveraging `defer` mechanism
+- **Eliminated ~100+ lines of manual error cleanup code** by using Zig's automatic defer statements
+- **Established pattern for evaluator migrations** demonstrating linear code flow without cascading cleanup
+- **Updated to use ar_allocator module** for consistency with other Zig modules
+- **Created KB article documenting Zig defer pattern** for error cleanup (kb/zig-defer-error-cleanup-pattern.md)
+- **Updated TODO.md with new Zig migration approach** replacing C helper extraction with Zig migration
+- **All 53 test suites pass with zero memory leaks** confirming full compatibility
+- **Updated module documentation** to explain benefits of Zig implementation
+
 ### ✅ COMPLETED: Extract Result Storage Functions  
 - **Implemented ar_path__get_suffix_after_root()** using TDD to extract path suffix after root segment
 - **Implemented ar_data__set_map_data_if_root_matched()** using TDD for conditional path-based storage

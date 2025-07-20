@@ -93,5 +93,6 @@ export fn ar_example__destroy(own_module: ?*c.ar_example_t) void {  // EXAMPLE: 
 - [C to Zig Module Migration](c-to-zig-module-migration.md)
 - [Zig Memory Allocation with ar_allocator](zig-memory-allocation-with-ar-allocator.md)
 - [Zig Migration Memory Debugging](zig-migration-memory-debugging.md)
-- [Zig Build Flag Configuration](zig-build-flag-configuration.md)
+- [Zig Build Flag Configuration](zig-build-flag-configuration.md)  
 - [Zig C Memory Tracking Consistency](zig-c-memory-tracking-consistency.md)
+- [Zig Defer for Error Cleanup](zig-defer-error-cleanup-pattern.md)

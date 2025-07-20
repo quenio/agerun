@@ -902,3 +902,10 @@ When you encounter memory leaks after migration:
    - Match C's ownership transfer exactly
    - Use ar_list__remove_first() instead of ar_list__items() in destructors
    - Ensure proper cleanup in error paths
+
+## Related Articles
+
+- [Zig Integration Comprehensive Guide](zig-integration-comprehensive.md)
+- [Zig Memory Debugging](zig-migration-memory-debugging.md)
+- [Zig C Memory Tracking](zig-c-memory-tracking-consistency.md)
+- [Zig Defer for Error Cleanup](zig-defer-error-cleanup-pattern.md) - Using defer to eliminate error cleanup duplication
