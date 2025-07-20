@@ -530,6 +530,8 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 
 **Integration Guidelines**: See comprehensive guide for all details ([details](kb/zig-integration-comprehensive.md))
 
+**Migration Process**: Rename .c→.bak before testing Zig implementation - C takes precedence ([details](kb/c-to-zig-module-migration.md))
+
 **Zig Integration**: Use ar_allocator, maintain C API, follow ownership conventions ([details](kb/zig-integration-comprehensive.md))
 
 ## AgeRun Language Notes

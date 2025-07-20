@@ -4,6 +4,13 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-07-20
 
+### Knowledge Base Enhancement - C/Zig Build Precedence
+- **Updated c-to-zig-module-migration.md** with critical discovery about build system precedence
+- **Added comprehensive testing phase** documenting .bak renaming strategy to ensure Zig implementation is tested
+- **Enhanced verification checklist** with steps to confirm Zig compilation using strings command
+- **Updated CLAUDE.md** with concise migration note about C file precedence
+- **Prevents testing confusion** where developers think they're testing Zig but actually using C implementation
+
 ### ✅ COMPLETED: Migrate ar_send_instruction_evaluator to Zig
 - **Successfully migrated ar_send_instruction_evaluator from C to Zig** as second evaluator migration
 - **Leveraged ar_allocator module** for type-safe memory management without verbose casting

@@ -239,21 +239,53 @@ grep -n "#include.*ar_" module.h module.c
    - Other modules continue to include the .h file
    - No source code changes needed in dependent modules
 
-### Phase 6: Build Integration
+### Phase 6: Testing and Verification
 
-1. **Update Makefile** (automatic detection):
+**CRITICAL**: C files take precedence over Zig files when both exist. You must rename the C file before testing.
+
+1. **Temporarily disable C implementation**:
+   ```bash
+   mv modules/ar_module_name.c modules/ar_module_name.c.bak  # EXAMPLE: Replace with your module
+   ```
+
+2. **Run tests with Zig implementation**:
+   ```bash
+   make clean  # Clear any cached object files
+   make ar_module_name_tests  # EXAMPLE: Replace with your module
+   ```
+
+3. **Verify Zig compilation**:
+   ```bash
+   # Check object file was built with Zig
+   strings bin/run-tests/obj/ar_module_name.o | grep -i zig  # EXAMPLE: Replace with your module
+   # Should show: "zig X.X.X" and other Zig-related strings
+   ```
+
+4. **Check memory reports**:
+   ```bash
+   grep "Actual memory leaks:" bin/run-tests/memory_report_ar_module_name_tests.log  # EXAMPLE: Replace with your module
+   # Should show: "Actual memory leaks: 0 (0 bytes)"
+   ```
+
+5. **After successful testing**:
+   ```bash
+   rm modules/ar_module_name.c.bak  # EXAMPLE: Delete backup after confirming tests pass
+   ```
+
+### Phase 7: Build Integration
+
+1. **Makefile behavior** (automatic detection):
    - Makefile will automatically detect .zig files
    - Build flags: `-lc -fno-stack-check` for C interop
    - Debug builds: `-O Debug -DDEBUG -D__ZIG__` for heap tracking
    - Pattern rule: `$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target native`
 
-2. **Verify build**:
+2. **Final build verification**:
    ```bash
    make clean build
-   strings bin/*.o | grep "zig X.X.X"  # Confirm Zig compilation
    ```
 
-### Phase 7: Cleanup and Documentation
+### Phase 8: Cleanup and Documentation
 
 1. **Delete the C file**:
    ```bash
@@ -439,6 +471,8 @@ if (!g_initialized) {
 
 ## Verification Checklist
 
+- [ ] C file renamed to .bak before testing Zig implementation
+- [ ] Verified Zig compilation with strings command on object file
 - [ ] All tests pass with identical behavior
 - [ ] Zero memory leaks in memory reports
 - [ ] Build succeeds with Zig flags
