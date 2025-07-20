@@ -434,6 +434,7 @@ Never compile directly with gcc.
 - **Complete API verification**: `grep -r "old_api_pattern" .` after interface changes - check ALL clients ([details](kb/api-migration-completion-verification.md))
 - **Ownership transitions**: Update naming immediately when changing ref_→own_ ([details](kb/refactoring-ownership-transitions.md))
 - **Dependency injection**: Avoid when 1:1 relationships exist ([details](kb/dependency-injection-anti-pattern.md))
+- **Post-refactoring cleanup**: Remove obsolete modules after major refactoring ([details](kb/module-removal-checklist.md))
 
 **Bulk Operations Patterns**:
 - **Symbol renaming**: Use `rename_symbols.py` for safe whole-word renaming ([details](kb/script-enhancement-over-one-off.md))

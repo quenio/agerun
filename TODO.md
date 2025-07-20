@@ -6,6 +6,14 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### Knowledge Base Enhancement (Completed 2025-07-20)
+- [x] Created module removal checklist KB article documenting systematic removal process
+- [x] Updated refactoring key patterns with post-refactoring cleanup step
+- [x] Enhanced documentation language migration article to include module removal
+- [x] Added cross-references between related KB articles
+
+## Completed Tasks
+
 ### Build System Parallelization (Completed 2025-07-07)
 - [x] Refactored Makefile to support parallel execution with isolated output directories
 - [x] Renamed targets to match directory names for consistency

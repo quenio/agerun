@@ -14,7 +14,7 @@ Users need clear visibility into which modules use which implementation language
 ```c
 // Documentation update pattern for ar_instruction_ast migration:
 // 1. Update module list in introduction
-ar_assert, ar_expression_ast, ar_heap, ar_instruction_ast, ar_memory_accessor  // EXAMPLE: Updated Zig module list
+ar_assert, ar_expression_ast, ar_heap, ar_instruction_ast  // EXAMPLE: Updated Zig module list
 
 // 2. Add implementation note to module description
 - **Zig Implementation**: Implemented in Zig for compile-time safety while maintaining C compatibility
@@ -24,13 +24,14 @@ ar_assert, ar_expression_ast, ar_heap, ar_instruction_ast, ar_memory_accessor  /
 ```
 
 ## Generalization
-Apply this pattern for any implementation language migration:
+Apply this pattern for any implementation language migration or module removal:
 
-1. **Update module registry**: Add to language-specific module lists in README
-2. **Update module description**: Add implementation language bullet point 
-3. **Update dependency trees**: Mark all references with language notation
+1. **Update module registry**: Add to language-specific module lists in README (or remove if obsolete)
+2. **Update module description**: Add implementation language bullet point (or remove section)
+3. **Update dependency trees**: Mark all references with language notation (or remove references)
 4. **Validate consistency**: Use search/replace to ensure all instances updated
 5. **Verify documentation**: Run `make check-docs` to validate all references
+6. **Module removal**: When removing obsolete modules, check CHANGELOG.md, TODO.md, kb/*.md
 
 ## Implementation
 ```bash
@@ -52,3 +53,4 @@ make check-docs  # Ensure all documentation remains valid
 - [C to Zig Module Migration](c-to-zig-module-migration.md) - Complete migration process
 - [Documentation Standards Integration](documentation-standards-integration.md) - Overall documentation requirements
 - [API Migration Completion Verification](api-migration-completion-verification.md) - Ensuring complete updates
+- [Module Removal Checklist](module-removal-checklist.md) - Systematic module removal process

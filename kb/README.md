@@ -33,6 +33,7 @@ Each learning file contains:
 - [Specification Consistency Maintenance](specification-consistency-maintenance.md)
 - [Systematic Function Renaming Pattern](systematic-function-renaming-pattern.md)
 - [TDD for API Simplification](tdd-api-simplification.md)
+- [Module Removal Checklist](module-removal-checklist.md)
 
 ### Memory Management
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)

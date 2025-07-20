@@ -78,6 +78,12 @@ ar_data_t* ar_old_function(ar_data_t *param) {
    make specific_module_tests  # After each change
    git commit  # After each successful test
    ```
+9. **Post-refactoring cleanup review**:
+   ```bash
+   # After major refactoring, check for obsolete modules
+   grep -r "#include.*temporary_module" modules/ | grep -v "_tests.c"
+   # Remove modules with no remaining usage
+   ```
 
 ## Related Patterns
 - [Code Movement Verification](code-movement-verification.md)
@@ -87,3 +93,4 @@ ar_data_t* ar_old_function(ar_data_t *param) {
 - [Search Replace Precision](search-replace-precision.md)
 - [Ownership Pattern Extraction](ownership-pattern-extraction.md)
 - [Defensive Programming Consistency](defensive-programming-consistency.md)
+- [Module Removal Checklist](module-removal-checklist.md)
