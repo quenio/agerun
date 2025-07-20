@@ -168,7 +168,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 - [ ] Migrate remaining evaluators to Zig (priority order by complexity):
   - [x] ar_send_instruction_evaluator (simple, 1 argument) - Completed 2025-07-20
-  - [ ] ar_assignment_instruction_evaluator (simple, 2 parts)
+  - [x] ar_assignment_instruction_evaluator (simple, 2 parts) - Completed 2025-07-20
   - [ ] ar_deprecate_instruction_evaluator (moderate, 3 arguments)
   - [ ] ar_spawn_instruction_evaluator (moderate, 3 arguments)
   - [ ] ar_condition_instruction_evaluator (moderate, if logic)
@@ -245,6 +245,23 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Enhanced CLAUDE.md with references to new KB articles
 - [x] Updated kb/README.md index with proper categorization
 - [x] All documentation validated with make check-docs
+
+### Zig Evaluator Pattern Improvements (Completed 2025-07-20)
+- [x] Migrated ar_assignment_instruction_evaluator to Zig leveraging defer for cleanup
+- [x] Discovered and documented new Zig patterns during code review:
+  - Use concrete Zig types for own module, C types for others
+  - Eliminate unnecessary helper functions (direct calls cleaner)
+  - Make evaluator parameters const when not mutated
+  - Update ar_data ownership APIs to accept const void* parameters
+- [x] Applied patterns to existing Zig evaluators:
+  - Updated ar_exit_instruction_evaluator.zig
+  - Updated ar_method_evaluator.zig  
+  - Updated ar_send_instruction_evaluator.zig
+- [x] Created kb/zig-type-usage-patterns.md documenting type usage discoveries
+- [x] Updated kb/c-to-zig-module-migration.md and kb/zig-defer-error-cleanup-pattern.md
+- [x] Added "Zig Best Practices" section to CLAUDE.md
+- [x] Updated module documentation to reflect const parameter changes
+- [x] All tests pass with zero memory leaks
 
 ### HIGHEST PRIORITY - Frame-Based Execution Implementation (Revised Plan)
 

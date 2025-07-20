@@ -6,6 +6,8 @@ The assignment instruction evaluator module is responsible for evaluating assign
 
 This module follows an instantiable design pattern where evaluators are created with their dependencies and can be reused for multiple evaluations.
 
+**Implementation Note:** This module is implemented in Zig (ar_assignment_instruction_evaluator.zig) for improved error handling through Zig's defer mechanism, eliminating manual cleanup code duplication.
+
 ## Purpose
 
 This module extracts the assignment instruction evaluation logic from the main instruction evaluator, following the single responsibility principle. It provides specialized handling for memory assignments with support for nested paths.
@@ -47,7 +49,7 @@ Destroys an assignment instruction evaluator and frees all resources.
 
 ```c
 bool ar_assignment_instruction_evaluator__evaluate(
-    ar_assignment_instruction_evaluator_t *mut_evaluator,
+    const ar_assignment_instruction_evaluator_t *ref_evaluator,
     const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
@@ -55,7 +57,7 @@ bool ar_assignment_instruction_evaluator__evaluate(
 Evaluates an assignment instruction using the frame's memory.
 
 **Parameters:**
-- `mut_evaluator`: The evaluator instance (mutable reference)
+- `ref_evaluator`: The evaluator instance (borrowed reference)
 - `ref_frame`: The execution frame containing memory, context, and message (borrowed reference)
 - `ref_ast`: The assignment instruction AST to evaluate (borrowed reference)
 

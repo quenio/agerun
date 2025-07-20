@@ -20,8 +20,8 @@ const ar_send_instruction_evaluator_t = struct {
 pub export fn ar_send_instruction_evaluator__create(
     ref_log: ?*c.ar_log_t,
     ref_expr_evaluator: ?*c.ar_expression_evaluator_t
-) ?*c.ar_send_instruction_evaluator_t {
-    if (ref_log == null or ref_expr_evaluator == null) {
+) ?*ar_send_instruction_evaluator_t {
+    if (ref_expr_evaluator == null) {
         return null;
     }
     
@@ -31,33 +31,30 @@ pub export fn ar_send_instruction_evaluator__create(
     own_evaluator.ref_expr_evaluator = ref_expr_evaluator;
     
     // Ownership transferred to caller
-    return @ptrCast(own_evaluator);
+    return own_evaluator;
 }
 
 /// Destroys a send instruction evaluator
 pub export fn ar_send_instruction_evaluator__destroy(
-    own_evaluator: ?*c.ar_send_instruction_evaluator_t
+    own_evaluator: ?*ar_send_instruction_evaluator_t
 ) void {
     if (own_evaluator == null) {
         return;
     }
     
-    const evaluator: *ar_send_instruction_evaluator_t = @ptrCast(@alignCast(own_evaluator));
     // Note: We don't destroy the dependencies as they are borrowed references
-    ar_allocator.free(evaluator);
+    ar_allocator.free(own_evaluator);
 }
 
 /// Evaluates a send instruction AST node using frame-based execution
 pub export fn ar_send_instruction_evaluator__evaluate(
-    mut_evaluator: ?*c.ar_send_instruction_evaluator_t,
+    ref_evaluator: ?*const ar_send_instruction_evaluator_t,
     ref_frame: ?*const c.ar_frame_t,
     ref_ast: ?*const c.ar_instruction_ast_t
 ) bool {
-    if (mut_evaluator == null or ref_frame == null or ref_ast == null) {
+    if (ref_evaluator == null or ref_frame == null or ref_ast == null) {
         return false;
     }
-    
-    const evaluator: *ar_send_instruction_evaluator_t = @ptrCast(@alignCast(mut_evaluator));
     
     // Verify this is a send AST node
     if (c.ar_instruction_ast__get_type(ref_ast) != c.AR_INSTRUCTION_AST_TYPE__SEND) {
@@ -87,7 +84,7 @@ pub export fn ar_send_instruction_evaluator__evaluate(
     }
     
     // Evaluate agent ID expression
-    const agent_id_result = c.ar_expression_evaluator__evaluate(evaluator.ref_expr_evaluator, ref_frame, ref_agent_id_ast);
+    const agent_id_result = c.ar_expression_evaluator__evaluate(ref_evaluator.?.ref_expr_evaluator, ref_frame, ref_agent_id_ast);
     if (agent_id_result == null) {
         return false;
     }
@@ -100,19 +97,17 @@ pub export fn ar_send_instruction_evaluator__evaluate(
     
     // We only need the value, not the data itself
     // Check if we can destroy it (unowned) or if it's a reference
-    c.ar_data__destroy_if_owned(agent_id_result, mut_evaluator);
+    c.ar_data__destroy_if_owned(agent_id_result, ref_evaluator);
     
     // Evaluate message expression
-    const message_result = c.ar_expression_evaluator__evaluate(evaluator.ref_expr_evaluator, ref_frame, ref_message_ast);
+    const message_result = c.ar_expression_evaluator__evaluate(ref_evaluator.?.ref_expr_evaluator, ref_frame, ref_message_ast);
     if (message_result == null) {
         return false;
     }
     
     // Get ownership of message for sending
-    const own_message = c.ar_data__claim_or_copy(message_result, mut_evaluator) orelse {
-        if (evaluator.ref_log) |log| {
-            c.ar_log__error(log, "Cannot send message with nested containers (no deep copy support)");
-        }
+    const own_message = c.ar_data__claim_or_copy(message_result, ref_evaluator) orelse {
+        c.ar_log__error(ref_evaluator.?.ref_log, "Cannot send message with nested containers (no deep copy support)");
         return false;
     };
     
@@ -121,7 +116,7 @@ pub export fn ar_send_instruction_evaluator__evaluate(
     if (agent_id == 0) {
         // Special case: agent_id 0 is a no-op that always returns true
         // We need to destroy the message since it won't be sent
-        c.ar_data__destroy_if_owned(own_message, mut_evaluator);
+        c.ar_data__destroy_if_owned(own_message, ref_evaluator);
         send_result = true;
     } else {
         // Send message (ownership transferred to ar_agency__send_to_agent)

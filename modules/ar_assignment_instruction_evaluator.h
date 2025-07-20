@@ -44,14 +44,14 @@ void ar_assignment_instruction_evaluator__destroy(
 
 /**
  * Evaluates an assignment instruction AST node
- * @param mut_evaluator The assignment instruction evaluator to use (mutable reference)
+ * @param ref_evaluator The assignment instruction evaluator to use (borrowed reference)
  * @param ref_frame The execution frame containing memory, context, and message (borrowed reference)
  * @param ref_ast The AST node to evaluate (borrowed reference)
  * @return true if evaluation succeeded, false otherwise
  * @note The assignment will modify the memory map in the frame by storing the evaluated expression result
  */
 bool ar_assignment_instruction_evaluator__evaluate(
-    ar_assignment_instruction_evaluator_t *mut_evaluator,
+    const ar_assignment_instruction_evaluator_t *ref_evaluator,
     const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );

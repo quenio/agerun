@@ -41,7 +41,7 @@ Destroys a send instruction evaluator and frees all resources.
 
 ```c
 bool ar_send_instruction_evaluator__evaluate(
-    ar_send_instruction_evaluator_t *mut_evaluator,
+    const ar_send_instruction_evaluator_t *ref_evaluator,
     const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
@@ -96,27 +96,37 @@ The module evaluates both arguments:
 ## Usage Example
 
 ```c
-// Create memory and expression evaluator
+// Create evaluator dependencies
+ar_log_t *log = ar_log__create();
 ar_data_t *memory = ar_data__create_map();
-ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
+ar_data_t *context = ar_data__create_map();
+ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, context);
 
 // Create send instruction evaluator
 ar_send_instruction_evaluator_t *send_eval = ar_send_instruction_evaluator__create(
-    log, expr_eval, memory
+    log, expr_eval
 );
 
 // Parse send instruction: send(1, "Hello")
 ar_instruction_ast_t *ast = ar_instruction_parser__parse_send(parser);
 
+// Create a frame for evaluation
+ar_data_t *message = ar_data__create_string("test");
+ar_frame_t *frame = ar_frame__create(memory, context, message);
+
 // Evaluate the send
-bool success = ar_send_instruction_evaluator__evaluate(send_eval, ast);
+bool success = ar_send_instruction_evaluator__evaluate(send_eval, frame, ast);
 
 // Message "Hello" has been sent to agent 1
 
 // Cleanup
+ar_frame__destroy(frame);
+ar_data__destroy(message);
 ar_send_instruction_evaluator__destroy(send_eval);
 ar_expression_evaluator__destroy(expr_eval);
+ar_data__destroy(context);
 ar_data__destroy(memory);
+ar_log__destroy(log);
 ```
 
 ## Testing

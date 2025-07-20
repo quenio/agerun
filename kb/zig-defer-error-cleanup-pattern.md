@@ -105,18 +105,34 @@ This eliminated ~100+ lines of duplicated cleanup code across the evaluator.
    defer ar_allocator.free(own_data);
    ```
 
-3. **Combine with Zig's error unions**:
+3. **Combine with Zig's error unions and inline error handling**:
    ```zig
-   const result = try_operation() orelse {
-       // Defers still execute before this return
+   // Real example from ar_assignment_instruction_evaluator
+   const own_path = c.ar_path__create_variable(ref_path) orelse {
+       c.ar_log__error(ref_evaluator.?.ref_log, "Invalid assignment path");
        return false;
    };
+   defer c.ar_path__destroy(own_path);
    ```
 
 4. **Order matters - defers execute in reverse order**:
    ```zig
    defer cleanup_second();  // Executes second
    defer cleanup_first();   // Executes first
+   ```
+
+5. **Limitations - Manual cleanup still needed when resource is used later**:
+   ```zig
+   // Can't use defer here - we need 'result' later
+   const result = c.ar_expression_evaluator__evaluate(...) orelse {
+       return false;
+   };
+   
+   // Must manually cleanup on this error path
+   const mut_memory = c.ar_frame__get_memory(ref_frame) orelse {
+       c.ar_data__destroy(result);  // Manual cleanup required
+       return false;
+   };
    ```
 
 ## Related Patterns

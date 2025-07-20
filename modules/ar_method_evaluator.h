@@ -44,14 +44,14 @@ void ar_method_evaluator__destroy(
 
 /**
  * Evaluates a method AST using the provided frame
- * @param mut_evaluator The method evaluator to use (mutable reference)
+ * @param ref_evaluator The method evaluator to use (borrowed reference)
  * @param ref_frame The execution frame containing memory, context, and message (borrowed reference)
  * @param ref_ast The method AST to evaluate (borrowed reference)
  * @return true if evaluation succeeded, false otherwise
  * @note The method will execute all instructions in sequence until completion or error
  */
 bool ar_method_evaluator__evaluate(
-    ar_method_evaluator_t *mut_evaluator,
+    const ar_method_evaluator_t *ref_evaluator,
     const ar_frame_t *ref_frame,
     const ar_method_ast_t *ref_ast
 );

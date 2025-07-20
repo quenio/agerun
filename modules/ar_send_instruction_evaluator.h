@@ -43,7 +43,7 @@ void ar_send_instruction_evaluator__destroy(
 
 /**
  * Evaluates a send instruction AST node using frame-based execution
- * @param mut_evaluator The send instruction evaluator to use (mutable reference)
+ * @param ref_evaluator The send instruction evaluator to use (borrowed reference)
  * @param ref_frame The execution frame containing memory and context (borrowed reference)
  * @param ref_ast The AST node to evaluate (borrowed reference)
  * @return true if evaluation succeeded, false otherwise
@@ -51,7 +51,7 @@ void ar_send_instruction_evaluator__destroy(
  *       If the send has a result assignment, it will modify the memory map.
  */
 bool ar_send_instruction_evaluator__evaluate(
-    ar_send_instruction_evaluator_t *mut_evaluator,
+    const ar_send_instruction_evaluator_t *ref_evaluator,
     const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );

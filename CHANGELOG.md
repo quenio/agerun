@@ -4,6 +4,29 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-07-20
 
+### ✅ COMPLETED: Zig Evaluator Pattern Improvements
+- **Discovered and documented new Zig best practices** during ar_assignment_instruction_evaluator code review
+- **Type usage patterns**: Use concrete Zig types for own module, C types for others - eliminates unnecessary @ptrCast
+- **Helper function elimination**: Direct function calls cleaner than C-style helpers due to Zig's null safety
+- **Const-correctness improvements**: Made evaluator parameters const, updated ar_data APIs to accept const void*
+- **Applied patterns to ALL existing Zig evaluators**: ar_exit, ar_method, ar_send instruction evaluators
+- **Created kb/zig-type-usage-patterns.md** documenting concrete vs opaque type usage guidelines
+- **Enhanced existing KB articles** with implementation insights and real examples
+- **Added "Zig Best Practices" section to CLAUDE.md** consolidating key learnings
+- **Updated all module documentation** to reflect const parameter changes
+- **All 63 tests pass with zero memory leaks** confirming improvements maintain compatibility
+
+## 2025-07-20
+
+### ✅ COMPLETED: Migrate ar_assignment_instruction_evaluator to Zig
+- **Successfully migrated ar_assignment_instruction_evaluator from C to Zig** as third evaluator migration
+- **Leveraged Zig's defer mechanism** for automatic cleanup of ar_path and ar_data objects
+- **Eliminated ~20-30 lines of duplicated cleanup code** at multiple error return points
+- **Simplified error handling** with Zig's orelse pattern for concise null checking
+- **Maintained full C API compatibility** with all tests passing and zero memory leaks
+- **Updated module documentation** to note Zig implementation
+- **All 57 test modules pass** confirming no regressions in the system
+
 ### Knowledge Base Enhancement - C/Zig Build Precedence
 - **Updated c-to-zig-module-migration.md** with critical discovery about build system precedence
 - **Added comprehensive testing phase** documenting .bak renaming strategy to ensure Zig implementation is tested

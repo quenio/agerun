@@ -532,6 +532,14 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 
 **Migration Process**: Rename .c→.bak before testing Zig implementation - C takes precedence ([details](kb/c-to-zig-module-migration.md))
 
+**Zig Best Practices** (NEW):
+- **Type Usage**: Use concrete Zig types for your module, C types for others ([details](kb/zig-type-usage-patterns.md))
+- **No unnecessary casts**: Return/accept concrete types to eliminate `@ptrCast`
+- **Direct field access**: Use `param.?.field` instead of creating temporary variables
+- **Const correctness**: Make parameters const if never mutated - update headers too
+- **Skip helper functions**: Direct calls often cleaner than C-style helpers
+- **Defer limitations**: Manual cleanup still needed when resource used later
+
 **Zig Integration**: Use ar_allocator, maintain C API, follow ownership conventions ([details](kb/zig-integration-comprehensive.md))
 
 ## AgeRun Language Notes

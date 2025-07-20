@@ -21,7 +21,7 @@ struct ar_data_s {
         ar_map_t *own_map;        // Owned map that ar_data_t owns and must free
     } data;
     ar_list_t *own_keys;  // List of keys that belong to this data's map (only used for AR_DATA_TYPE__MAP type)
-    void *owner;       // NULL = unowned, non-NULL = owned
+    const void *owner;       // NULL = unowned, non-NULL = owned
 };
 
 /**
@@ -246,7 +246,7 @@ void ar_data__destroy(ar_data_t *own_data) {
  * @param owner The owner claiming the data (typically 'this' pointer)
  * @return true if successful, false if already owned by another
  */
-bool ar_data__take_ownership(ar_data_t *mut_data, void *owner) {
+bool ar_data__take_ownership(ar_data_t *mut_data, const void *owner) {
     if (!mut_data || !owner) return false;
     
     if (mut_data->owner == NULL || mut_data->owner == owner) {
@@ -263,7 +263,7 @@ bool ar_data__take_ownership(ar_data_t *mut_data, void *owner) {
  * @return true if successful, false if not the owner
  * @note To release ownership for destruction, drop with your owner pointer
  */
-bool ar_data__drop_ownership(ar_data_t *mut_data, void *owner) {
+bool ar_data__drop_ownership(ar_data_t *mut_data, const void *owner) {
     if (!mut_data || !owner) return false;
     
     if (mut_data->owner == owner) {
@@ -393,7 +393,7 @@ ar_data_t* ar_data__shallow_copy(const ar_data_t *ref_value) {
     }
 }
 
-ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner) {
+ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, const void *owner) {
     if (!ref_data || !owner) {
         return NULL;
     }
@@ -409,7 +409,7 @@ ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner) {
     }
 }
 
-void ar_data__destroy_if_owned(ar_data_t *ref_data, void *owner) {
+void ar_data__destroy_if_owned(ar_data_t *ref_data, const void *owner) {
     if (!ref_data || !owner) {
         return;
     }

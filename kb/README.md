@@ -108,6 +108,7 @@ Each learning file contains:
 - [Zig-C Memory Tracking Consistency](zig-c-memory-tracking-consistency.md)
 - [Zig Build Flag Configuration](zig-build-flag-configuration.md)
 - [Zig Defer for Error Cleanup](zig-defer-error-cleanup-pattern.md)
+- [Zig Type Usage Patterns](zig-type-usage-patterns.md)
 - [User Feedback Debugging Pattern](user-feedback-debugging-pattern.md)
 - [Makefile Pattern Rule Management](makefile-pattern-rule-management.md)
 - [Development Debug Tools](development-debug-tools.md)

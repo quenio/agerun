@@ -42,7 +42,7 @@ Destroys a method evaluator and frees its resources.
 ### ar_method_evaluator__evaluate
 ```c
 bool ar_method_evaluator__evaluate(
-    ar_method_evaluator_t *mut_evaluator,
+    const ar_method_evaluator_t *ref_evaluator,
     const ar_frame_t *ref_frame,
     const ar_method_ast_t *ref_ast
 );

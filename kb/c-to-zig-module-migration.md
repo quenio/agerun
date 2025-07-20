@@ -91,9 +91,29 @@ grep -n "#include.*ar_" module.h module.c
 
 1. **Use consistent naming**:
    - Public functions: `ar_<module>__<function>` (same as C)
-   - Static functions: `_<name>` with snake_case
+   - Static functions: `_<name>` with snake_case (but often unnecessary in Zig)
    - Export all public functions with C ABI
    - **NULL as parameter convention**: Zig doesn't have NULL keyword, use `null`
+
+2. **Type Usage in Function Signatures**:
+   - **For your own module**: Use the concrete Zig type instead of opaque C type
+   - **For other modules**: Use C types if module not migrated to Zig yet
+   - **Example**:
+     ```zig
+     // Own type - use concrete Zig type
+     pub export fn ar_assignment_instruction_evaluator__create(
+         ref_log: ?*c.ar_log_t,  // C type - ar_log not migrated yet
+         ref_expr_evaluator: ?*c.ar_expression_evaluator_t  // C type
+     ) ?*ar_assignment_instruction_evaluator_t {  // Return concrete Zig type
+     
+     // No @ptrCast needed when returning
+     return own_evaluator;
+     ```
+
+3. **Eliminate Unnecessary Helper Functions**:
+   - Direct function calls are often cleaner than helper functions
+   - Example: Instead of `_log_error()` helper, use `c.ar_log__error()` directly
+   - Zig's null safety makes many C-style helpers unnecessary
 
 ### C API Compatibility Requirements
 
@@ -137,7 +157,22 @@ grep -n "#include.*ar_" module.h module.c
    export fn ar_expression_ast__get_string_value(ref_node: ?*const c.ar_expression_ast_t) ?[*:0]const u8 {
    ```
 
-6. **Array/Pointer Parameters**:
+6. **Improving APIs During Migration**:
+   - **Identify const opportunities**: If a parameter is never mutated, make it const
+   - **Update both header and implementation**: Changes must be consistent
+   - **Fix dependent APIs**: Functions like `ar_data__claim_or_copy` may need const updates
+   - **Example improvement**:
+     ```c
+     // Original C header:
+     bool ar_assignment_instruction_evaluator__evaluate(
+         ar_assignment_instruction_evaluator_t *mut_evaluator,  // Not actually mutated!
+         
+     // Improved header:
+     bool ar_assignment_instruction_evaluator__evaluate(
+         const ar_assignment_instruction_evaluator_t *ref_evaluator,  // Now const-correct
+     ```
+
+7. **Array/Pointer Parameters**:
    ```zig
    // For C: char** path, size_t path_count
    export fn ar_expression_ast__create_memory_access(

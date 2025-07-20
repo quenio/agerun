@@ -21,23 +21,13 @@ const ar_exit_instruction_evaluator_t = struct {
     ref_expr_evaluator: ?*c.ar_expression_evaluator_t, // Borrowed reference to expression evaluator
 };
 
-/// Helper function to log error message
-fn _log_error(mut_evaluator: ?*ar_exit_instruction_evaluator_t, message: ?[*:0]const u8) void {
-    if (mut_evaluator) |evaluator| {
-        if (message) |msg| {
-            if (evaluator.ref_log) |log| {
-                c.ar_log__error(log, msg);
-            }
-        }
-    }
-}
 
 /// Creates a new destroy agent instruction evaluator instance
 pub export fn ar_exit_instruction_evaluator__create(
     ref_log: ?*c.ar_log_t,
     ref_expr_evaluator: ?*c.ar_expression_evaluator_t
-) ?*c.ar_exit_instruction_evaluator_t {
-    if (ref_log == null or ref_expr_evaluator == null) {
+) ?*ar_exit_instruction_evaluator_t {
+    if (ref_expr_evaluator == null) {
         return null;
     }
     
@@ -45,11 +35,11 @@ pub export fn ar_exit_instruction_evaluator__create(
     own_evaluator.ref_log = ref_log;
     own_evaluator.ref_expr_evaluator = ref_expr_evaluator;
     
-    return @ptrCast(own_evaluator);
+    return own_evaluator;
 }
 
 /// Destroys a destroy agent instruction evaluator instance
-pub export fn ar_exit_instruction_evaluator__destroy(own_evaluator: ?*c.ar_exit_instruction_evaluator_t) void {
+pub export fn ar_exit_instruction_evaluator__destroy(own_evaluator: ?*ar_exit_instruction_evaluator_t) void {
     if (own_evaluator == null) {
         return;
     }
@@ -59,16 +49,15 @@ pub export fn ar_exit_instruction_evaluator__destroy(own_evaluator: ?*c.ar_exit_
 
 /// Evaluates a destroy agent instruction using frame-based execution
 pub export fn ar_exit_instruction_evaluator__evaluate(
-    mut_evaluator: ?*c.ar_exit_instruction_evaluator_t,
+    ref_evaluator: ?*const ar_exit_instruction_evaluator_t,
     ref_frame: ?*const c.ar_frame_t,
     ref_ast: ?*const c.ar_instruction_ast_t
 ) bool {
-    if (mut_evaluator == null or ref_frame == null or ref_ast == null) {
+    if (ref_evaluator == null or ref_frame == null or ref_ast == null) {
         return false;
     }
     
-    const ref_evaluator = @as(*ar_exit_instruction_evaluator_t, @ptrCast(@alignCast(mut_evaluator.?)));
-    const mut_expr_evaluator = ref_evaluator.ref_expr_evaluator orelse return false;
+    const mut_expr_evaluator = ref_evaluator.?.ref_expr_evaluator orelse return false;
     const mut_memory = c.ar_frame__get_memory(ref_frame) orelse return false;
     
     // Validate AST type
@@ -101,11 +90,11 @@ pub export fn ar_exit_instruction_evaluator__evaluate(
     
     // Check if we need to make a copy (if result is owned by memory/context)
     if (agent_id_result) |result| {
-        const own_agent_id = c.ar_data__claim_or_copy(result, mut_evaluator) orelse {
-            _log_error(ref_evaluator, "Cannot destroy agent with nested containers in agent ID (no deep copy support)");
+        const own_agent_id = c.ar_data__claim_or_copy(result, ref_evaluator) orelse {
+            c.ar_log__error(ref_evaluator.?.ref_log, "Cannot destroy agent with nested containers in agent ID (no deep copy support)");
             return false;
         };
-        defer c.ar_data__destroy_if_owned(own_agent_id, mut_evaluator);
+        defer c.ar_data__destroy_if_owned(own_agent_id, ref_evaluator);
         
         if (c.ar_data__get_type(own_agent_id) == c.AR_DATA_TYPE__INTEGER) {
             const agent_id: i64 = @intCast(c.ar_data__get_integer(own_agent_id));

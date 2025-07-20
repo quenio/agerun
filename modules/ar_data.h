@@ -73,7 +73,7 @@ void ar_data__destroy(ar_data_t *own_data);
  * @param owner The owner taking the data (typically 'this' pointer)
  * @return true if successful, false if already owned by another
  */
-bool ar_data__take_ownership(ar_data_t *mut_data, void *owner);
+bool ar_data__take_ownership(ar_data_t *mut_data, const void *owner);
 
 /**
  * Drop ownership of data
@@ -82,7 +82,7 @@ bool ar_data__take_ownership(ar_data_t *mut_data, void *owner);
  * @return true if successful, false if not the owner
  * @note To release ownership for destruction, drop with your owner pointer
  */
-bool ar_data__drop_ownership(ar_data_t *mut_data, void *owner);
+bool ar_data__drop_ownership(ar_data_t *mut_data, const void *owner);
 
 /**
  * Create a shallow copy of data values
@@ -104,7 +104,7 @@ ar_data_t* ar_data__shallow_copy(const ar_data_t *ref_value);
  * @note Returns NULL only if shallow copy fails (nested containers)
  * @note Ownership: Returns owned value that caller must destroy
  */
-ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner);
+ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, const void *owner);
 
 /**
  * Safely discard data if we can take ownership of it
@@ -114,7 +114,7 @@ ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner);
  * @note If data is owned by someone else, does nothing (safe)
  * @note Ownership: Does not transfer ownership to caller
  */
-void ar_data__destroy_if_owned(ar_data_t *ref_data, void *owner);
+void ar_data__destroy_if_owned(ar_data_t *ref_data, const void *owner);
 
 /**
  * Get the type of a data structure

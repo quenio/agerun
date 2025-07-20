@@ -25,13 +25,13 @@ ar_exit_instruction_evaluator_t* ar_exit_instruction_evaluator__create(
 
 // Evaluate using frame-based execution
 bool ar_exit_instruction_evaluator__evaluate(
-    ar_exit_instruction_evaluator_t *mut_evaluator,
+    const ar_exit_instruction_evaluator_t *ref_evaluator,
     const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
 
 // Clean up instance
-void ar_exit_instruction_evaluator__create(ar_exit_instruction_evaluator_t *own_evaluator);
+void ar_exit_instruction_evaluator__destroy(ar_exit_instruction_evaluator_t *own_evaluator);
 ```
 
 ### Legacy Interface
@@ -128,7 +128,7 @@ ar_frame_t *frame = ar_frame__create(memory, context, message);
 bool success = ar_exit_instruction_evaluator__evaluate(evaluator, frame, ast);
 
 // Clean up
-ar_exit_instruction_evaluator__create(evaluator);
+ar_exit_instruction_evaluator__destroy(evaluator);
 // Result stored in memory["result"]: 1 if exited, 0 if not found
 ```
 
