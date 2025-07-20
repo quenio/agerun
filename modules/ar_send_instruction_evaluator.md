@@ -6,6 +6,8 @@ The send instruction evaluator module is responsible for evaluating send instruc
 
 This module follows an instantiable design pattern where evaluators are created with their dependencies and can be reused for multiple evaluations.
 
+**Implementation**: This module is implemented in Zig (`ar_send_instruction_evaluator.zig`) for improved error handling and memory safety while maintaining full C API compatibility.
+
 ## Purpose
 
 This module extracts the send instruction evaluation logic from the main instruction evaluator, following the single responsibility principle. It provides specialized handling for agent messaging with proper memory management.

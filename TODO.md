@@ -167,7 +167,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - Uses ar_allocator for consistency
 
 - [ ] Migrate remaining evaluators to Zig (priority order by complexity):
-  - [ ] ar_send_instruction_evaluator (simple, 1 argument)
+  - [x] ar_send_instruction_evaluator (simple, 1 argument) - Completed 2025-07-20
   - [ ] ar_assignment_instruction_evaluator (simple, 2 parts)
   - [ ] ar_deprecate_instruction_evaluator (moderate, 3 arguments)
   - [ ] ar_spawn_instruction_evaluator (moderate, 3 arguments)
