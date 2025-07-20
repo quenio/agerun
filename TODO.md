@@ -18,6 +18,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Updated refactoring key patterns with post-refactoring cleanup step
 - [x] Enhanced documentation language migration article to include module removal
 - [x] Added cross-references between related KB articles
+- [x] Created evaluator migration priority strategy KB article
+- [x] Enhanced memory leak detection workflow with individual verification
+- [x] Updated C-to-Zig migration guide with evaluator-specific insights
 
 ### Build System Parallelization (Completed 2025-07-07)
 - [x] Refactored Makefile to support parallel execution with isolated output directories

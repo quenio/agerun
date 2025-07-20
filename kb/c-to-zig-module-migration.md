@@ -903,9 +903,39 @@ When you encounter memory leaks after migration:
    - Use ar_list__remove_first() instead of ar_list__items() in destructors
    - Ensure proper cleanup in error paths
 
+## Evaluator-Specific Migration Insights
+
+### Prioritization Strategy
+When migrating multiple evaluators, use complexity-based ordering:
+1. **Start simple**: ar_exit (1 arg) before ar_compile (3 string args)
+2. **Build confidence**: Each success informs the next migration
+3. **Refine patterns**: Discover edge cases on simple modules first
+
+### Leveraging Zig Features for Evaluators
+Evaluators benefit most from Zig's `defer` mechanism:
+```zig
+// C pattern: ~100+ lines of cleanup duplication
+if (!success1) { cleanup(); return false; }
+if (!success2) { cleanup1(); cleanup(); return false; }
+if (!success3) { cleanup2(); cleanup1(); cleanup(); return false; }
+
+// Zig pattern: Linear flow with automatic cleanup
+const own_resource1 = allocate1() orelse return false;
+defer ar_allocator.free(own_resource1);
+
+const own_resource2 = allocate2() orelse return false;
+defer ar_allocator.free(own_resource2);
+
+const own_resource3 = allocate3() orelse return false;
+defer ar_allocator.free(own_resource3);
+```
+
+This pattern eliminates the cascading error handling that dominates evaluator code.
+
 ## Related Articles
 
 - [Zig Integration Comprehensive Guide](zig-integration-comprehensive.md)
 - [Zig Memory Debugging](zig-migration-memory-debugging.md)
 - [Zig C Memory Tracking](zig-c-memory-tracking-consistency.md)
 - [Zig Defer for Error Cleanup](zig-defer-error-cleanup-pattern.md) - Using defer to eliminate error cleanup duplication
+- [Evaluator Migration Priority Strategy](evaluator-migration-priority-strategy.md) - Complexity-based migration ordering

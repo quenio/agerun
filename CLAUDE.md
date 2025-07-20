@@ -519,6 +519,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - Components requiring precise memory layout control
 - Pure computation modules (parsers, validators) - often need no heap
 - Modules with complex error cleanup patterns - use defer ([details](kb/zig-defer-error-cleanup-pattern.md))
+- Evaluator migrations: Start simple→complex for risk reduction ([details](kb/evaluator-migration-priority-strategy.md))
 
 **Key Zig Features for AgeRun**:
 - **Manual Memory Management**: Aligns with AgeRun's ownership model

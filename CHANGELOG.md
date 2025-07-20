@@ -14,6 +14,13 @@ This document tracks completed milestones and major achievements for the AgeRun 
 - **All 53 test suites pass with zero memory leaks** confirming full compatibility
 - **Updated module documentation** to explain benefits of Zig implementation
 
+### Knowledge Base Enhancement from Session Learnings
+- **Created evaluator migration priority strategy** KB article documenting complexity-based migration ordering
+- **Enhanced memory leak detection workflow** with individual report verification pattern
+- **Updated C-to-Zig migration guide** with evaluator-specific insights and defer benefits
+- **Added cross-references** between related KB articles for better knowledge navigation
+- **Updated CLAUDE.md** with reference to evaluator migration strategy
+
 ### ✅ COMPLETED: Extract Result Storage Functions  
 - **Implemented ar_path__get_suffix_after_root()** using TDD to extract path suffix after root segment
 - **Implemented ar_data__set_map_data_if_root_matched()** using TDD for conditional path-based storage

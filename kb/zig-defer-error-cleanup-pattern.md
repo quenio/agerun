@@ -124,6 +124,8 @@ This eliminated ~100+ lines of duplicated cleanup code across the evaluator.
 - [C to Zig Module Migration](c-to-zig-module-migration.md) - General migration guide
 - [Zig Integration Comprehensive](zig-integration-comprehensive.md) - Full integration details
 - [Zig Memory Allocation with ar_allocator](zig-memory-allocation-with-ar-allocator.md) - Memory patterns
+- [Evaluator Migration Priority Strategy](evaluator-migration-priority-strategy.md) - Complexity-based migration ordering
+- [Memory Leak Detection Workflow](memory-leak-detection-workflow.md) - Verifying zero leaks after migration
 
 ## Conclusion
 

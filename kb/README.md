@@ -34,6 +34,7 @@ Each learning file contains:
 - [Systematic Function Renaming Pattern](systematic-function-renaming-pattern.md)
 - [TDD for API Simplification](tdd-api-simplification.md)
 - [Module Removal Checklist](module-removal-checklist.md)
+- [Evaluator Migration Priority Strategy](evaluator-migration-priority-strategy.md)
 
 ### Memory Management
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
