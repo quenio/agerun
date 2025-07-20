@@ -2,6 +2,27 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-07-20
+
+### ✅ COMPLETED: Extract Result Storage Functions  
+- **Implemented ar_path__get_suffix_after_root()** using TDD to extract path suffix after root segment
+- **Implemented ar_data__set_map_data_if_root_matched()** using TDD for conditional path-based storage
+- **Replaced _store_result_if_assigned() pattern across ALL 9 evaluators** eliminating ~225 lines of duplicated code:
+  - ar_exit_instruction_evaluator.c (removed 25-line function)
+  - ar_spawn_instruction_evaluator.c (removed 25-line function)
+  - ar_send_instruction_evaluator.c (inline pattern replaced)
+  - ar_parse_instruction_evaluator.c (removed 25-line function)
+  - ar_compile_instruction_evaluator.c (removed 25-line function)
+  - ar_assignment_instruction_evaluator.c (inline pattern replaced)
+  - ar_build_instruction_evaluator.c (removed 25-line function)
+  - ar_condition_instruction_evaluator.c (inline pattern replaced)
+  - ar_deprecate_instruction_evaluator.c (removed 25-line function)
+- **Removed dependency on ar_memory_accessor** from ALL evaluators
+- **ar_memory_accessor module is now only used by its test file**
+- **Maintained zero memory leaks** throughout all refactoring
+- **Updated documentation** for ar_path and ar_data modules with new functions
+- **All 64 tests pass** with clean build in 49 seconds
+
 ## 2025-07-19
 
 ### ✅ COMPLETED: Extract Common Ownership Handling Functions

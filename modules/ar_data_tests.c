@@ -34,6 +34,7 @@ static void test_data_map_contains_only_primitives(void);
 static void test_data_list_contains_only_primitives(void);
 static void test_data_claim_or_copy(void);
 static void test_data_destroy_if_owned(void);
+static void test_data_set_map_data_if_root_matched(void);
 
 static void test_data_creation(void) {
     printf("Testing data creation for different types...\n");
@@ -1912,6 +1913,131 @@ static void test_data_destroy_if_owned(void) {
     printf("destroy_if_owned tests passed!\n");
 }
 
+static void test_data_set_map_data_if_root_matched(void) {
+    printf("Testing ar_data__set_map_data_if_root_matched...\n");
+    
+    // Test 1: Successful storage when root matches
+    {
+        // Given a map and a value to store
+        ar_data_t *own_map = ar_data__create_map();
+        assert(own_map != NULL);
+        ar_data_t *own_value = ar_data__create_integer(42);
+        assert(own_value != NULL);
+        
+        // When we set with matching root
+        bool result = ar_data__set_map_data_if_root_matched(own_map, "memory", "memory.x", own_value);
+        
+        // Then it should succeed and the value should be stored
+        assert(result == true);
+        assert(ar_data__get_map_integer(own_map, "x") == 42);
+        
+        // Cleanup
+        ar_data__destroy(own_map);
+    }
+    
+    // Test 2: Returns false when path is NULL
+    {
+        // Given a map and a value
+        ar_data_t *own_map = ar_data__create_map();
+        assert(own_map != NULL);
+        ar_data_t *own_value = ar_data__create_integer(42);
+        assert(own_value != NULL);
+        
+        // When we set with NULL path
+        bool result = ar_data__set_map_data_if_root_matched(own_map, "memory", NULL, own_value);
+        
+        // Then it should return false and we still own the value
+        assert(result == false);
+        
+        // Cleanup (we still own the value)
+        ar_data__destroy(own_value);
+        ar_data__destroy(own_map);
+    }
+    
+    // Test 3: Returns false when root doesn't match
+    {
+        // Given a map and a value
+        ar_data_t *own_map = ar_data__create_map();
+        assert(own_map != NULL);
+        ar_data_t *own_value = ar_data__create_integer(42);
+        assert(own_value != NULL);
+        
+        // When we set with non-matching root
+        bool result = ar_data__set_map_data_if_root_matched(own_map, "memory", "context.x", own_value);
+        
+        // Then it should return false and we still own the value
+        assert(result == false);
+        
+        // Cleanup (we still own the value)
+        ar_data__destroy(own_value);
+        ar_data__destroy(own_map);
+    }
+    
+    // Test 4: Different root with simple path
+    {
+        // Given a map and a value
+        ar_data_t *own_map = ar_data__create_map();
+        assert(own_map != NULL);
+        ar_data_t *own_value = ar_data__create_string("test value");
+        assert(own_value != NULL);
+        
+        // When we set with different root
+        bool result = ar_data__set_map_data_if_root_matched(own_map, "context", "context.value", own_value);
+        
+        // Then it should succeed
+        assert(result == true);
+        const char *value = ar_data__get_map_string(own_map, "value");
+        assert(value != NULL);
+        assert(strcmp(value, "test value") == 0);
+        
+        // Cleanup
+        ar_data__destroy(own_map);
+    }
+    
+    // Test 5: Nested path storage with pre-existing intermediate map
+    {
+        // Given a map with user map already created
+        ar_data_t *own_map = ar_data__create_map();
+        assert(own_map != NULL);
+        ar_data_t *own_user_map = ar_data__create_map();
+        assert(own_user_map != NULL);
+        ar_data__set_map_data(own_map, "user", own_user_map);
+        
+        // When we set with nested path
+        ar_data_t *own_value = ar_data__create_string("John");
+        assert(own_value != NULL);
+        bool result = ar_data__set_map_data_if_root_matched(own_map, "memory", "memory.user.name", own_value);
+        
+        // Then it should succeed
+        assert(result == true);
+        const char *name = ar_data__get_map_string(own_map, "user.name");
+        assert(name != NULL);
+        assert(strcmp(name, "John") == 0);
+        
+        // Cleanup
+        ar_data__destroy(own_map);
+    }
+    
+    // Test 6: Empty suffix returns false
+    {
+        // Given a map and a value
+        ar_data_t *own_map = ar_data__create_map();
+        assert(own_map != NULL);
+        ar_data_t *own_value = ar_data__create_integer(42);
+        assert(own_value != NULL);
+        
+        // When we set with empty suffix
+        bool result = ar_data__set_map_data_if_root_matched(own_map, "memory", "memory.", own_value);
+        
+        // Then it should return false
+        assert(result == false);
+        
+        // Cleanup (we still own the value)
+        ar_data__destroy(own_value);
+        ar_data__destroy(own_map);
+    }
+}
+
 int main(void) {
     printf("Starting Data Module Tests...\n");
     
@@ -1969,8 +2095,11 @@ int main(void) {
     // Run destroy if owned tests
     test_data_destroy_if_owned();
     
+    // Run set map data if root matched tests
+    test_data_set_map_data_if_root_matched();
+    
     // Then all tests should pass
-    printf("All 25 tests passed!\n");
+    printf("All 27 tests passed!\n");
     
     return 0;
 }

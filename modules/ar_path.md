@@ -56,6 +56,7 @@ bool ar_path__starts_with(const ar_path_t *ref_path, const char *ref_prefix);
 
 ```c
 const char* ar_path__get_variable_root(const ar_path_t *ref_path);
+const char* ar_path__get_suffix_after_root(const ar_path_t *ref_path);
 bool ar_path__is_memory_path(const ar_path_t *ref_path);
 bool ar_path__is_context_path(const ar_path_t *ref_path);
 bool ar_path__is_message_path(const ar_path_t *ref_path);
@@ -81,6 +82,9 @@ ar_path_t *own_parent = ar_path__get_parent(own_path);  // "memory.user.profile"
 
 // Check path type
 bool is_memory = ar_path__is_memory_path(own_path);  // true
+
+// Get suffix after root
+const char *suffix = ar_path__get_suffix_after_root(own_path);  // "user.profile.name"
 
 // Clean up
 ar_path__destroy(own_parent);

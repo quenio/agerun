@@ -128,13 +128,18 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Maintained zero memory leaks throughout refactoring
 - [x] Updated ar_data module documentation with new functions
 
-#### 4. Extract Result Storage Functions  
-- [ ] Extract `_store_result_if_assigned()` into appropriate existing module (duplicated in 6 evaluators, ~150 lines)
-  - [ ] Add common function to handle result storage pattern
+#### 4. Extract Result Storage Functions (Completed 2025-07-20)
+- [x] Extract `_store_result_if_assigned()` into appropriate existing module (duplicated in 6 evaluators, ~150 lines)
+  - [x] Add common function to handle result storage pattern
     - Identical 25-line function in: spawn, build, parse, compile, exit, deprecate evaluators
     - Handles result path extraction, memory key path validation, ownership transfer
-  - [ ] Determine best existing module (ar_memory_accessor or ar_instruction_ast)
-  - [ ] Standardize ownership transfer on storage with consistent cleanup
+  - [x] Determine best existing module (ar_memory_accessor or ar_instruction_ast)
+    - Created `ar_path__get_suffix_after_root()` in ar_path module
+    - Created `ar_data__set_map_data_if_root_matched()` in ar_data module
+  - [x] Standardize ownership transfer on storage with consistent cleanup
+- [x] Updated all 6 evaluators to use the new functions
+- [x] Maintained zero memory leaks throughout refactoring
+- [x] Updated ar_path.md and ar_data.md documentation
 
 #### 5. Extract Additional Common Functions (Discovered in Analysis)
 - [ ] Extract error logging pattern into existing modules (duplicated in 10 evaluators, ~50 lines)

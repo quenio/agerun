@@ -9,8 +9,8 @@
 #include "ar_method.h"
 #include "ar_methodology.h"
 #include "ar_log.h"
-#include "ar_memory_accessor.h"
 #include "ar_frame.h"
+#include "ar_data.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -80,35 +80,6 @@ static void _log_error(ar_compile_instruction_evaluator_t *mut_evaluator, const 
 
 
 
-/* Helper function to store result in memory if assignment path is provided */
-static bool _store_result_if_assigned(
-    ar_data_t *mut_memory,
-    const ar_instruction_ast_t *ref_ast,
-    ar_data_t *own_result
-) {
-    const char *ref_result_path = ar_instruction_ast__get_function_result_path(ref_ast);
-    if (!ref_result_path) {
-        // No assignment, just destroy the result
-        ar_data__destroy(own_result);
-        return true;
-    }
-    
-    // Get memory key path
-    const char *key_path = ar_memory_accessor__get_key(ref_result_path);
-    if (!key_path) {
-        ar_data__destroy(own_result);
-        return false;
-    }
-    
-    // Store the result (transfers ownership)
-    bool store_success = ar_data__set_map_data(mut_memory, key_path, own_result);
-    if (!store_success) {
-        ar_data__destroy(own_result);
-        return false;
-    }
-    
-    return true;
-}
 
 /* Helper function to evaluate three string arguments from a function call */
 static bool _evaluate_three_string_args(
@@ -271,7 +242,10 @@ bool ar_compile_instruction_evaluator__evaluate(
     if (ar_instruction_ast__has_result_assignment(ref_ast)) {
         ar_data_t *own_result = ar_data__create_integer(success ? 1 : 0);
         if (own_result) {
-            _store_result_if_assigned(mut_memory, ref_ast, own_result);
+            const char *ref_result_path = ar_instruction_ast__get_function_result_path(ref_ast);
+            if (!ar_data__set_map_data_if_root_matched(mut_memory, "memory", ref_result_path, own_result)) {
+                ar_data__destroy(own_result);
+            }
         }
     }
     

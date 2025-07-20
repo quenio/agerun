@@ -9,7 +9,6 @@
 #include "ar_agency.h"
 #include "ar_list.h"
 #include "ar_log.h"
-#include "ar_memory_accessor.h"
 #include "ar_frame.h"
 #include "ar_data.h"
 
@@ -164,12 +163,6 @@ bool ar_send_instruction_evaluator__evaluate(
     // Handle result assignment if present
     const char *ref_result_path = ar_instruction_ast__get_function_result_path(ref_ast);
     if (ref_result_path) {
-        // Get memory key path
-        const char *key_path = ar_memory_accessor__get_key(ref_result_path);
-        if (!key_path) {
-            return false;
-        }
-        
         // Get memory from frame
         ar_data_t *mut_memory = ar_frame__get_memory(ref_frame);
         if (!mut_memory) {
@@ -178,8 +171,7 @@ bool ar_send_instruction_evaluator__evaluate(
         
         // Create result value (true = 1, false = 0)
         ar_data_t *own_result = ar_data__create_integer(send_result ? 1 : 0);
-        bool store_success = ar_data__set_map_data(mut_memory, key_path, own_result);
-        if (!store_success) {
+        if (!ar_data__set_map_data_if_root_matched(mut_memory, "memory", ref_result_path, own_result)) {
             ar_data__destroy(own_result);
         }
         

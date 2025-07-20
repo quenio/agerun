@@ -154,4 +154,14 @@ ar_path_t* ar_path__join(const ar_path_t *ref_base, const char *ref_suffix);
  */
 ar_path_t* ar_path__normalize(const ar_path_t *ref_path);
 
+/**
+ * Gets the suffix after the root segment of a variable path.
+ * For "memory.user.name", returns "user.name".
+ * 
+ * @param ref_path The path object
+ * @return BORROW: The suffix after root, or NULL if path has fewer than 2 segments
+ * @note The returned pointer points into the original string and should not be freed
+ */
+const char* ar_path__get_suffix_after_root(const ar_path_t *ref_path);
+
 #endif /* AGERUN_PATH_H */

@@ -588,6 +588,89 @@ static void test_path__normalize_with_null(void) {
     assert(normalized == NULL);
 }
 
+static void test_path__get_suffix_after_root(void) {
+    printf("Testing ar_path get_suffix_after_root...\n");
+    
+    // Test 1: Simple case "memory.x" → "x"
+    {
+        ar_path_t *own_path = ar_path__create_variable("memory.x");
+        assert(own_path != NULL);
+        
+        const char *suffix = ar_path__get_suffix_after_root(own_path);
+        assert(suffix != NULL);
+        assert(strcmp(suffix, "x") == 0);
+        
+        ar_path__destroy(own_path);
+    }
+    
+    // Test 2: Nested case "memory.user.name" → "user.name"
+    {
+        ar_path_t *own_path = ar_path__create_variable("memory.user.name");
+        assert(own_path != NULL);
+        
+        const char *suffix = ar_path__get_suffix_after_root(own_path);
+        assert(suffix != NULL);
+        assert(strcmp(suffix, "user.name") == 0);
+        
+        ar_path__destroy(own_path);
+    }
+    
+    // Test 3: Different root "context.value" → "value"
+    {
+        ar_path_t *own_path = ar_path__create_variable("context.value");
+        assert(own_path != NULL);
+        
+        const char *suffix = ar_path__get_suffix_after_root(own_path);
+        assert(suffix != NULL);
+        assert(strcmp(suffix, "value") == 0);
+        
+        ar_path__destroy(own_path);
+    }
+}
+
+static void test_path__get_suffix_after_root_edge_cases(void) {
+    printf("Testing ar_path get_suffix_after_root edge cases...\n");
+    
+    // Test 1: Single segment "memory" → NULL
+    {
+        ar_path_t *own_path = ar_path__create_variable("memory");
+        assert(own_path != NULL);
+        
+        const char *suffix = ar_path__get_suffix_after_root(own_path);
+        assert(suffix == NULL);
+        
+        ar_path__destroy(own_path);
+    }
+    
+    // Test 2: Empty string → NULL
+    {
+        ar_path_t *own_path = ar_path__create_variable("");
+        assert(own_path != NULL);
+        
+        const char *suffix = ar_path__get_suffix_after_root(own_path);
+        assert(suffix == NULL);
+        
+        ar_path__destroy(own_path);
+    }
+    
+    // Test 3: NULL path → NULL
+    {
+        const char *suffix = ar_path__get_suffix_after_root(NULL);
+        assert(suffix == NULL);
+    }
+    
+    // Test 4: Path with trailing dot "memory." → NULL
+    {
+        ar_path_t *own_path = ar_path__create_variable("memory.");
+        assert(own_path != NULL);
+        
+        const char *suffix = ar_path__get_suffix_after_root(own_path);
+        assert(suffix == NULL);
+        
+        ar_path__destroy(own_path);
+    }
+}
+
 int main(void) {
     // Directory check
     char cwd[1024];
@@ -622,6 +705,8 @@ int main(void) {
     test_path__join_with_null();
     test_path__normalize();
     test_path__normalize_with_null();
+    test_path__get_suffix_after_root();
+    test_path__get_suffix_after_root_edge_cases();
     
     printf("All ar_path tests passed!\n");
     

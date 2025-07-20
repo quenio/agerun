@@ -7,9 +7,9 @@
 #include "ar_heap.h"
 #include "ar_expression_ast.h"
 #include "ar_log.h"
-#include "ar_memory_accessor.h"
 #include "ar_frame.h"
 #include "ar_data.h"
+#include "ar_path.h"
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
@@ -86,12 +86,19 @@ bool ar_assignment_instruction_evaluator__evaluate(
         return false;
     }
     
-    // Get memory key path
-    const char *key_path = ar_memory_accessor__get_key(ref_path);
-    if (!key_path) {
+    // Check if assignment path starts with "memory."
+    ar_path_t *own_path = ar_path__create_variable(ref_path);
+    if (!own_path) {
+        _log_error(mut_evaluator, "Invalid assignment path");
+        return false;
+    }
+    
+    if (!ar_path__is_memory_path(own_path)) {
+        ar_path__destroy(own_path);
         _log_error(mut_evaluator, "Assignment target must start with 'memory.'");
         return false;
     }
+    ar_path__destroy(own_path);
     
     
     // Get the pre-parsed expression AST
@@ -125,7 +132,7 @@ bool ar_assignment_instruction_evaluator__evaluate(
     }
     
     // Store the value in memory (transfers ownership)
-    bool success = ar_data__set_map_data(mut_memory, key_path, own_value);
+    bool success = ar_data__set_map_data_if_root_matched(mut_memory, "memory", ref_path, own_value);
     if (!success) {
         ar_data__destroy(own_value);
         _log_error(mut_evaluator, "Failed to store value in memory");

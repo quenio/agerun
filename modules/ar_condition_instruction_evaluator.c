@@ -8,7 +8,6 @@
 #include "ar_expression_ast.h"
 #include "ar_list.h"
 #include "ar_log.h"
-#include "ar_memory_accessor.h"
 #include "ar_frame.h"
 #include "ar_data.h"
 
@@ -155,14 +154,6 @@ bool ar_condition_instruction_evaluator__evaluate(
     // Handle result assignment if present
     const char *ref_result_path = ar_instruction_ast__get_function_result_path(ref_ast);
     if (ref_result_path) {
-        // Get memory key path
-        const char *key_path = ar_memory_accessor__get_key(ref_result_path);
-        if (!key_path) {
-            // Clean up result if we can
-            ar_data__destroy_if_owned(result, mut_evaluator);
-            return false;
-        }
-        
         // Get ownership of result for storing
         ar_data_t *own_result = ar_data__claim_or_copy(result, mut_evaluator);
         if (!own_result) {
@@ -171,8 +162,7 @@ bool ar_condition_instruction_evaluator__evaluate(
         }
         
         // Store the result value (transfers ownership)
-        bool store_success = ar_data__set_map_data(mut_memory, key_path, own_result);
-        if (!store_success) {
+        if (!ar_data__set_map_data_if_root_matched(mut_memory, "memory", ref_result_path, own_result)) {
             ar_data__destroy(own_result);
         }
         

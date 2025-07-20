@@ -438,4 +438,25 @@ size_t ar_data__list_count(const ar_data_t *ref_data);
  */
 ar_data_t* ar_data__get_map_keys(const ar_data_t *ref_data);
 
+/**
+ * Set a value in a map if the path's root segment matches the expected root.
+ * Only stores the value if the path starts with the expected root segment.
+ * 
+ * @param mut_map The map to update
+ * @param ref_expected_root The required root segment (e.g., "memory")
+ * @param ref_full_path The full path (e.g., "memory.x" or NULL)
+ * @param own_value The value to store (ownership transferred only on success)
+ * @return true if value was stored, false if path was invalid/NULL/wrong root
+ * @note Ownership: Takes ownership of own_value ONLY if returning true
+ * @example ar_data__set_map_data_if_root_matched(map, "memory", "memory.x", value) → stores at "x", returns true
+ * @example ar_data__set_map_data_if_root_matched(map, "memory", "context.x", value) → returns false
+ * @example ar_data__set_map_data_if_root_matched(map, "memory", NULL, value) → returns false
+ */
+bool ar_data__set_map_data_if_root_matched(
+    ar_data_t *mut_map,
+    const char *ref_expected_root,
+    const char *ref_full_path,
+    ar_data_t *own_value
+);
+
 #endif /* AGERUN_DATA_H */

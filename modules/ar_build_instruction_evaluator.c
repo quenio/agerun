@@ -15,7 +15,6 @@
 #include "ar_list.h"
 #include "ar_heap.h"
 #include "ar_log.h"
-#include "ar_memory_accessor.h"
 #include "ar_frame.h"
 
 
@@ -207,43 +206,6 @@ static bool _process_placeholder(
 
 
 
-/**
- * Stores result if instruction has assignment
- * 
- * @param mut_memory Memory map (mutable reference)
- * @param ref_ast The instruction AST (borrowed reference)
- * @param own_result The result to store (owned value)
- * @return true if successful, false otherwise
- * @note Ownership: Takes ownership of own_result
- */
-static bool _store_result_if_assigned(
-    ar_data_t *mut_memory,
-    const ar_instruction_ast_t *ref_ast,
-    ar_data_t *own_result
-) {
-    const char *ref_result_path = ar_instruction_ast__get_function_result_path(ref_ast);
-    if (!ref_result_path) {
-        // No assignment, just destroy the result
-        ar_data__destroy(own_result);
-        return true;
-    }
-    
-    // Get memory key path
-    const char *key_path = ar_memory_accessor__get_key(ref_result_path);
-    if (!key_path) {
-        ar_data__destroy(own_result);
-        return false;
-    }
-    
-    // Store the result (transfers ownership)
-    bool store_success = ar_data__set_map_data(mut_memory, key_path, own_result);
-    if (!store_success) {
-        ar_data__destroy(own_result);
-        return false;
-    }
-    
-    return true;
-}
 
 /**
  * Evaluates a build instruction using the stored dependencies
@@ -401,7 +363,11 @@ bool ar_build_instruction_evaluator__evaluate(
     ar_data__destroy_if_owned(own_template_data, mut_evaluator);
     
     // Store result if assigned, otherwise just destroy it
-    return _store_result_if_assigned(mut_memory, ref_ast, own_result);
+    const char *ref_result_path = ar_instruction_ast__get_function_result_path(ref_ast);
+    if (!ar_data__set_map_data_if_root_matched(mut_memory, "memory", ref_result_path, own_result)) {
+        ar_data__destroy(own_result);
+    }
+    return true;
 }
 
 

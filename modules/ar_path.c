@@ -355,3 +355,30 @@ ar_path_t* ar_path__normalize(const ar_path_t *ref_path) {
     // Ownership transferred to caller
     return own_path;
 }
+
+const char* ar_path__get_suffix_after_root(const ar_path_t *ref_path) {
+    if (!ref_path) {
+        return NULL;
+    }
+    
+    // Need at least 2 segments (root.suffix)
+    if (ref_path->segment_count < 2) {
+        return NULL;
+    }
+    
+    // Find the position after the first separator
+    const char *first_separator = strchr(ref_path->own_path_string, ref_path->separator);
+    if (!first_separator) {
+        return NULL;
+    }
+    
+    // Get the suffix after separator
+    const char *suffix = first_separator + 1;
+    
+    // Return NULL if suffix is empty (e.g., "memory." has no valid key)
+    if (*suffix == '\0') {
+        return NULL;
+    }
+    
+    return suffix;
+}

@@ -279,6 +279,27 @@ bool ar_data__set_map_string(ar_data_t *mut_data, const char *ref_key, const cha
 bool ar_data__set_map_data(ar_data_t *mut_data, const char *ref_key, ar_data_t *own_value);
 
 /**
+ * Set a value in a map if the path's root segment matches the expected root.
+ * Only stores the value if the path starts with the expected root segment.
+ * 
+ * @param mut_map The map to update
+ * @param ref_expected_root The required root segment (e.g., "memory")
+ * @param ref_full_path The full path (e.g., "memory.x" or NULL)
+ * @param own_value The value to store (ownership transferred only on success)
+ * @return true if value was stored, false if path was invalid/NULL/wrong root
+ * @note Ownership: Takes ownership of own_value ONLY if returning true
+ * @example ar_data__set_map_data_if_root_matched(map, "memory", "memory.x", value) → stores at "x", returns true
+ * @example ar_data__set_map_data_if_root_matched(map, "memory", "context.x", value) → returns false
+ * @example ar_data__set_map_data_if_root_matched(map, "memory", NULL, value) → returns false
+ */
+bool ar_data__set_map_data_if_root_matched(
+    ar_data_t *mut_map,
+    const char *ref_expected_root,
+    const char *ref_full_path,
+    ar_data_t *own_value
+);
+
+/**
  * Add an integer value to the beginning of a list data structure
  * @param mut_data Pointer to the list data to modify
  * @param value The integer value to add
@@ -1053,3 +1074,6 @@ void ar_data__destroy_if_owned(ar_data_t *ref_data, void *owner);
 - Path handling functions manage memory properly, freeing any temporary segments after use
 - The `ar_data__get_map_data()` function allows direct access to the data structure at a specified path, enabling type checking and accessing values of any type
 - The path-based functions rely on the `ar_data__get_map_data()` function to validate paths before attempting operations
+- The `ar_data__set_map_data_if_root_matched()` function provides conditional storage based on path root validation
+- This function is particularly useful for enforcing storage constraints (e.g., only accepting "memory." prefixed paths)
+- The conditional storage function takes ownership of the value only on success, allowing proper cleanup on failure

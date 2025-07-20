@@ -1695,3 +1695,51 @@ ar_data_t* ar_data__get_map_keys(const ar_data_t *ref_data) {
     
     return own_keys_list;
 }
+
+bool ar_data__set_map_data_if_root_matched(
+    ar_data_t *mut_map,
+    const char *ref_expected_root,
+    const char *ref_full_path,
+    ar_data_t *own_value
+) {
+    // Validate required parameters
+    if (!mut_map || !ref_expected_root || !own_value) {
+        return false;
+    }
+    
+    // NULL path means no assignment (e.g., no result path on instruction)
+    if (!ref_full_path) {
+        return false;
+    }
+    
+    // Ensure we're operating on a map
+    if (ar_data__get_type(mut_map) != AR_DATA_TYPE__MAP) {
+        return false;
+    }
+    
+    // Parse the path into segments
+    ar_path_t *own_path = ar_path__create_variable(ref_full_path);
+    if (!own_path) {
+        return false;
+    }
+    
+    // Verify the root segment matches what we expect
+    const char *root = ar_path__get_variable_root(own_path);
+    if (!root || strcmp(root, ref_expected_root) != 0) {
+        ar_path__destroy(own_path);
+        return false;
+    }
+    
+    // Extract the key portion after the root (e.g., "x" from "memory.x")
+    const char *key = ar_path__get_suffix_after_root(own_path);
+    if (!key) {
+        ar_path__destroy(own_path);
+        return false;
+    }
+    
+    // Store the value using the extracted key
+    // Note: ar_data__set_map_data transfers ownership only on success
+    bool success = ar_data__set_map_data(mut_map, key, own_value);
+    ar_path__destroy(own_path);
+    return success;
+}
