@@ -37,14 +37,14 @@ void ar_deprecate_instruction_evaluator__destroy(ar_deprecate_instruction_evalua
 
 /**
  * Evaluates a deprecate instruction using frame-based execution
- * @param mut_evaluator The evaluator instance (mutable reference)
+ * @param ref_evaluator The evaluator instance (borrowed reference)
  * @param ref_frame The execution frame containing memory, context, and message (borrowed reference)
  * @param ref_ast The instruction AST to evaluate (borrowed reference)
  * @return true if evaluation succeeded, false otherwise
  * @note Ownership: Borrows all parameters, does not take ownership
  */
 bool ar_deprecate_instruction_evaluator__evaluate(
-    ar_deprecate_instruction_evaluator_t *mut_evaluator,
+    const ar_deprecate_instruction_evaluator_t *ref_evaluator,
     const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );

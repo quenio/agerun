@@ -4,6 +4,18 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-07-20
 
+### ✅ COMPLETED: Migrate ar_deprecate_instruction_evaluator to Zig
+- **Successfully migrated ar_deprecate_instruction_evaluator from C to Zig** as fourth evaluator migration
+- **Eliminated ~100 lines of manual error cleanup code** using Zig's defer for automatic resource management
+- **Applied all established Zig patterns**: concrete types, const parameters, no helper functions
+- **Used defer for multiple cleanups**: items array, name/version data ownership
+- **Maintained full C API compatibility** with all 7 tests passing and zero memory leaks
+- **Updated module documentation** to reflect Zig implementation and simplified deprecation behavior
+- **Removed unnecessary ar_heap.h include** during code review for cleaner imports
+- **Build verification passed** in 49 seconds with all 63 tests passing
+
+## 2025-07-20
+
 ### ✅ COMPLETED: Zig Evaluator Pattern Improvements
 - **Discovered and documented new Zig best practices** during ar_assignment_instruction_evaluator code review
 - **Type usage patterns**: Use concrete Zig types for own module, C types for others - eliminates unnecessary @ptrCast

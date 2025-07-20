@@ -4,6 +4,8 @@
 
 The deprecate instruction evaluator module is responsible for evaluating method deprecation instructions in the AgeRun language. It handles the `deprecate(method_name, version)` instruction form, which deprecates (unregisters) a specific method from the methodology.
 
+**Implementation Note**: This module is implemented in Zig for improved memory safety and automatic cleanup using `defer` statements.
+
 ## Purpose
 
 This module extracts the method deprecation logic from the main destroy instruction evaluator, following the single responsibility principle. It provides specialized handling for method deprecation with proper agent lifecycle management.
@@ -18,13 +20,13 @@ The module follows an instantiable design pattern with lifecycle management:
 // Create evaluator instance with dependencies
 ar_deprecate_instruction_evaluator_t* ar_deprecate_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *mut_expr_evaluator,
-    ar_data_t *mut_memory
+    ar_expression_evaluator_t *ref_expr_evaluator
 );
 
-// Evaluate using stored dependencies
+// Evaluate using frame-based execution
 bool ar_deprecate_instruction_evaluator__evaluate(
-    ar_deprecate_instruction_evaluator_t *mut_evaluator,
+    const ar_deprecate_instruction_evaluator_t *ref_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
 
@@ -51,15 +53,14 @@ Key features:
 6. **Result Assignment**: Stores true (1) if method was destroyed, false (0) otherwise
 7. **Memory Access**: Gets memory from frame during evaluation
 
-### Agent Lifecycle Handling
+### Deprecation Behavior
 
-When destroying a method that has active agents:
-1. Count all agents using the method
-2. Send `__sleep__` message to each agent
-3. Destroy each agent
-4. Unregister the method
+The deprecate instruction only unregisters the method from the methodology. It does not:
+- Send `__sleep__` messages to agents
+- Destroy agents using the method
+- Affect running agents in any way
 
-This ensures proper cleanup and lifecycle event handling.
+Agents that are already using the deprecated method can continue to execute. The deprecation only prevents new agents from being created with that method.
 
 ### Memory Management
 
@@ -68,9 +69,8 @@ The module follows strict memory ownership rules:
 - Expression evaluator and log are borrowed references stored in the instance
 - Memory is accessed from frame during evaluation, not stored in evaluator
 - Method name and version evaluations create temporary data that is properly cleaned up
-- Sleep messages are created and ownership transferred via send
 - Result value is created and transferred to memory when assignment specified
-- All temporary values properly destroyed
+- All temporary values properly destroyed using Zig's `defer` mechanism
 - The create function returns ownership to the caller
 - The destroy function takes ownership and frees all resources
 
@@ -95,11 +95,8 @@ The module:
 2. Evaluates method name and version expressions
 3. Validates both results are strings
 4. Checks if method exists
-5. If agents are using the method:
-   - Sends `__sleep__` messages to all agents
-   - Destroys all agents using the method
-6. Unregisters the method from methodology
-7. Stores result if assignment specified
+5. Unregisters the method from methodology (if it exists)
+6. Stores result if assignment specified (1 if unregistered, 0 if not found)
 
 ## Usage Examples
 
@@ -116,10 +113,10 @@ ar_deprecate_instruction_evaluator_t *evaluator = ar_deprecate_instruction_evalu
     log, expr_eval
 );
 
-// Parse destroy instruction: memory.result := deprecate("calculator", "1.0.0")
+// Parse deprecate instruction: memory.result := deprecate("calculator", "1.0.0")
 const char *args[] = {"\"calculator\"", "\"1.0.0\""};
 ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-    AR_INSTRUCTION_AST_TYPE__DESTROY_METHOD, "destroy", args, 2, "memory.result"
+    AR_INSTRUCTION_AST_TYPE__DEPRECATE, "deprecate", args, 2, "memory.result"
 );
 
 // Create frame for evaluation
@@ -148,12 +145,11 @@ The module includes comprehensive tests covering:
 - Upfront creation pattern verification
 
 ### Functional Tests
-- Destroy existing method
-- Destroy method with agents using it
-- Destroy nonexistent method
+- Deprecate existing method
+- Deprecate method with agents using it (agents remain active)
+- Deprecate nonexistent method
 - Invalid method name type
 - Wrong number of arguments
-- Agent lifecycle event handling
 - Memory leak verification
 
 All tests pass with zero memory leaks. Errors are now reported through the centralized logging system rather than stored internally.
