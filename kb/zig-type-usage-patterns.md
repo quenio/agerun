@@ -90,6 +90,38 @@ if (!c.ar_path__is_memory_path(own_path)) {
 }
 ```
 
+### Additional Examples
+
+**Eliminate temporary result variables:**
+```zig
+// Before - unnecessary temporary variables
+const method_result = c.ar_expression_evaluator__evaluate(ref_expr_evaluator, ref_frame, ref_method_ast);
+const own_method_name = c.ar_data__claim_or_copy(method_result, @constCast(@ptrCast(ref_evaluator)));
+
+// After - direct evaluation
+const own_method_name = c.ar_data__claim_or_copy(
+    c.ar_expression_evaluator__evaluate(ref_expr_evaluator, ref_frame, ref_method_ast),
+    @constCast(@ptrCast(ref_evaluator))
+);
+```
+
+**Eliminate boolean flag variables:**
+```zig
+// Before - unnecessary boolean flag
+var context_valid = false;
+if (ref_context_data != null and c.ar_data__get_type(ref_context_data) == c.AR_DATA_TYPE__MAP) {
+    context_valid = true;
+}
+if (context_valid) {
+    // do work
+}
+
+// After - direct condition check
+if (ref_context_data != null and c.ar_data__get_type(ref_context_data) == c.AR_DATA_TYPE__MAP) {
+    // do work
+}
+```
+
 ## Pattern 5: Const Correctness
 
 When migrating, identify parameters that are never mutated and make them const:
@@ -116,6 +148,9 @@ This may require updating C headers and dependent functions to maintain consiste
 1. **Forgetting Nullability**: All C-compatible parameters should be optional (`?*T`)
 2. **Wrong Type Selection**: Using C types for your own module's types
 3. **Const Casting**: If you need `@constCast`, consider updating the API instead
+4. **Including Own Header**: Don't include the module's own header in @cImport
+5. **Unnecessary Helper Functions**: In Zig, you don't need to check arguments for functions like ar_log__error
+6. **Variable Ownership Naming**: Maintain ownership prefixes even for local variables (own_, ref_, mut_)
 
 ## Related Patterns
 

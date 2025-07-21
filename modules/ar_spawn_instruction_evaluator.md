@@ -4,6 +4,8 @@
 
 The spawn instruction evaluator module is responsible for evaluating spawn instructions in the AgeRun language. It handles creating new agents with specified methods and initial context.
 
+**Implementation Note**: This module is implemented in Zig for improved memory safety and performance while maintaining full C compatibility.
+
 ## Purpose
 
 This module extracts the agent instruction evaluation logic from the main instruction evaluator, following the single responsibility principle. It provides specialized handling for agent creation with proper context management.
@@ -23,7 +25,7 @@ ar_spawn_instruction_evaluator_t* ar_spawn_instruction_evaluator__create(
 
 // Evaluate using frame-based execution
 bool ar_spawn_instruction_evaluator__evaluate(
-    ar_spawn_instruction_evaluator_t *mut_evaluator,
+    const ar_spawn_instruction_evaluator_t *ref_evaluator,
     const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
@@ -83,7 +85,7 @@ The module follows strict memory ownership rules:
 - `ar_method`: For method references
 - `ar_data`: For data manipulation
 - `ar_string`: For string operations
-- `ar_heap`: For memory tracking
+- `ar_allocator`: For memory allocation (Zig implementation)
 
 ## Implementation Details
 

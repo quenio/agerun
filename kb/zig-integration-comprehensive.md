@@ -96,3 +96,4 @@ export fn ar_example__destroy(own_module: ?*c.ar_example_t) void {  // EXAMPLE: 
 - [Zig Build Flag Configuration](zig-build-flag-configuration.md)  
 - [Zig C Memory Tracking Consistency](zig-c-memory-tracking-consistency.md)
 - [Zig Defer for Error Cleanup](zig-defer-error-cleanup-pattern.md)
+- [Zig Ownership with claim_or_copy](zig-ownership-claim-or-copy-pattern.md)

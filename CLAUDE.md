@@ -541,6 +541,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - **Defer limitations**: Manual cleanup still needed when resource used later
 
 **Zig Integration**: Use ar_allocator, maintain C API, follow ownership conventions ([details](kb/zig-integration-comprehensive.md))
+**Ownership with claim_or_copy**: Essential pattern for evaluator migrations ([details](kb/zig-ownership-claim-or-copy-pattern.md))
 
 ## AgeRun Language Notes
 
