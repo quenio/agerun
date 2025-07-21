@@ -4,6 +4,8 @@
 
 The expression AST module (`ar_expression_ast`) provides Abstract Syntax Tree (AST) structures for representing parsed expressions in the AgeRun language. This module defines the data structures and operations for building, manipulating, and destroying expression ASTs without any dependency on the expression evaluation module.
 
+**Implementation Note**: This module is implemented in Zig for improved memory safety and performance while maintaining full C compatibility.
+
 ## Purpose
 
 The expression AST module serves as the foundation for separating expression parsing from evaluation. It provides:

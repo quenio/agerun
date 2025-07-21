@@ -34,11 +34,6 @@ bool ar_spawn_instruction_evaluator__evaluate(
 void ar_spawn_instruction_evaluator__destroy(ar_spawn_instruction_evaluator_t *own_evaluator);
 ```
 
-### Legacy Interface (Backward Compatibility)
-
-```c
-```
-
 ### Functionality
 
 The module evaluates spawn instructions of the form:
@@ -65,12 +60,13 @@ The module follows the frame-based execution pattern:
 
 The module follows strict memory ownership rules:
 - The evaluator instance owns its internal structure but not the dependencies
-- Expression evaluator, memory, and log are borrowed references stored in the instance
-- Method name and version evaluations are temporary
-- Context is passed as reference (not owned by agent)
-- Agent ID result is spawnd when assignment specified
-- All temporary values properly cleaned up
-- The spawn function returns ownership to the caller
+- Expression evaluator and log are borrowed references stored in the instance
+- Method name and version use `ar_data__claim_or_copy` to ensure ownership
+- Cleanup uses `ar_data__destroy_if_owned` for safe destruction
+- Context is passed as a borrowed reference (never owned by agent)
+- Agent ID result is created when assignment specified
+- All temporary values properly cleaned up using Zig's defer mechanism
+- The create function returns ownership to the caller
 - The destroy function takes ownership and frees all resources
 
 ## Dependencies
@@ -90,50 +86,53 @@ The module follows strict memory ownership rules:
 ## Implementation Details
 
 The module:
-1. Evaluates method name and version to strings
-2. Handles context evaluation with optimization for direct references
-3. Validates method exists in methodology
-4. Spawns agent via agency
-5. Stores agent ID if assignment specified
+1. Evaluates method name and version expressions directly into `ar_data__claim_or_copy`
+2. Uses `ar_data__destroy_if_owned` with defer for automatic cleanup
+3. Context evaluation returns a borrowed reference (no ownership taken)
+4. Validates method exists in methodology before agent creation
+5. Creates agent via agency with borrowed context reference
+6. Stores agent ID if assignment specified
+7. Eliminates temporary variables by combining operations
 
 ## Usage Examples
 
 ### Modern Instance-Based Approach (Recommended)
 
 ```c
-// Spawn dependencies
+// Create dependencies
+ar_log_t *log = ar_log__create();
 ar_data_t *memory = ar_data__create_map();
 ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
 
-// Spawn agent evaluator instance
+// Create spawn instruction evaluator instance
 ar_spawn_instruction_evaluator_t *evaluator = ar_spawn_instruction_evaluator__create(
-    log, expr_eval, memory
+    log, expr_eval
 );
 
-// Parse spawn instruction: memory.worker := spawn("processor", "1.0.0", context)
-ar_instruction_ast_t *ast = ar_instruction_parser__parse_agent(parser);
+// Create frame for execution
+ar_frame_t *frame = ar_frame__create(memory, NULL, NULL);
 
-// Evaluate using instance
-bool success = ar_spawn_instruction_evaluator__evaluate(evaluator, ast);
+// Parse spawn instruction: memory.worker := spawn("processor", "1.0.0", context)
+ar_instruction_ast_t *ast = ar_instruction_parser__parse_spawn(parser);
+
+// Evaluate using instance (note: evaluator is const)
+bool success = ar_spawn_instruction_evaluator__evaluate(evaluator, frame, ast);
 
 // Clean up
 ar_spawn_instruction_evaluator__destroy(evaluator);
-// New agent spawnd with ID stored in memory["worker"]
+ar_frame__destroy(frame);
+// New agent spawned with ID stored in memory["worker"]
 ```
 
-### Legacy Approach (Backward Compatibility)
-
-```c
-```
 
 ## Testing
 
 The module includes comprehensive tests covering:
 
-### Instance-Based Interface Tests
-- Spawn/destroy lifecycle functions
-- Instance-based evaluation using stored dependencies
-- Legacy function backward compatibility
+### Interface Tests
+- Create/destroy lifecycle functions
+- Evaluation with frame-based execution
+- Const evaluator parameter verification
 
 ### Functional Tests  
 - Agent creation with context

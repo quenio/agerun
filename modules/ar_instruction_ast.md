@@ -4,6 +4,8 @@
 
 The Instruction AST module provides Abstract Syntax Tree (AST) representations for AgeRun instructions. It defines node types for all instruction types in the language and provides functions to create, access, and destroy these nodes. This module is designed to work with the instruction parser to create a clean separation between parsing and execution phases.
 
+**Implementation Note**: This module is implemented in Zig for improved memory safety and performance while maintaining full C compatibility.
+
 ## Key Features
 
 - AST node types for all AgeRun instruction types
