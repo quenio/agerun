@@ -6,6 +6,8 @@ The build instruction evaluator module is responsible for evaluating build instr
 
 This module follows an instantiable design pattern where evaluators are created with their dependencies and can be reused for multiple evaluations.
 
+**Implementation Note**: This module is implemented in Zig for improved memory safety and cleaner error handling through defer statements.
+
 ## Purpose
 
 This module extracts the build instruction evaluation logic from the main instruction evaluator, following the single responsibility principle. It provides specialized handling for template-based string construction.
@@ -39,12 +41,12 @@ Destroys a build instruction evaluator and frees all resources.
 
 ```c
 bool ar_build_instruction_evaluator__evaluate(
-    ar_build_instruction_evaluator_t *mut_evaluator,
+    const ar_build_instruction_evaluator_t *ref_evaluator,
     const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
 ```
-Evaluates a build instruction using the stored dependencies. Takes a frame containing memory and context for frame-based execution.
+Evaluates a build instruction using the stored dependencies. Takes a frame containing memory and context for frame-based execution. The evaluator parameter is now const for improved API safety.
 
 
 ### Functionality

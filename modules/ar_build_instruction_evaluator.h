@@ -56,7 +56,7 @@ void ar_build_instruction_evaluator__destroy(
  * - Values: {"name": "Alice", "age": 30}
  * - Result: "Hello Alice, you are 30 years old"
  *
- * @param mut_evaluator The evaluator instance (mutable reference)
+ * @param ref_evaluator The evaluator instance (borrowed reference)
  * @param ref_frame The execution frame containing memory, context, and message (borrowed reference)
  * @param ref_ast The build instruction AST node (borrowed reference)
  * @return true if build was successful, false otherwise
@@ -69,7 +69,7 @@ void ar_build_instruction_evaluator__destroy(
  * @note Supports optional result assignment: result = build(template, values)
  */
 bool ar_build_instruction_evaluator__evaluate(
-    ar_build_instruction_evaluator_t *mut_evaluator,
+    const ar_build_instruction_evaluator_t *ref_evaluator,
     const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
