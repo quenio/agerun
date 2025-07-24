@@ -98,6 +98,7 @@ Each learning file contains:
 - [Absolute Path Navigation](absolute-path-navigation.md)
 - [Systematic Guideline Enhancement](systematic-guideline-enhancement.md)
 - [Cross-Referencing Knowledge Base](cross-referencing-knowledge-base.md)
+- [Frank Communication Principle](frank-communication-principle.md)
 - [Research-Driven Development](research-driven-development.md)
 - [User Feedback as QA](user-feedback-as-qa.md)
 - [Defensive Programming Consistency](defensive-programming-consistency.md)

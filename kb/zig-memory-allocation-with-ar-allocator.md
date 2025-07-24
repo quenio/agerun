@@ -152,26 +152,35 @@ The ar_allocator module automatically integrates with AgeRun's heap tracking sys
 ## Best Practices
 
 1. **Always use ar_allocator** for Zig module allocations
-2. **Remove ar_heap.h imports** from Zig modules using ar_allocator
-3. **Use descriptive allocation names** for better debugging
-4. **Follow ownership conventions** - prefix allocated resources with `own_`
-5. **Clean up on error paths** to prevent memory leaks
-6. **Prefer destroy functions** for complex object cleanup
+2. **NEVER use ar_heap__free** - always use ar_allocator.free() exclusively
+3. **Remove ar_heap.h imports** from Zig modules using ar_allocator
+4. **Use descriptive allocation names** for better debugging
+5. **Follow ownership conventions** - prefix allocated resources with `own_`
+6. **Clean up on error paths** to prevent memory leaks
+7. **Prefer destroy functions** for complex object cleanup
 
 ## Common Pitfalls
 
 ### Mixing Allocation Methods
 
-Never mix ar_allocator with direct heap macros in the same module:
+Never mix ar_allocator with direct heap macros or functions in the same module:
 
 ```zig
 // WRONG - Inconsistent allocation methods
 const own_ast = ar_allocator.create(ar_instruction_ast_t, "instruction AST");
 own_ast.?.own_args = @ptrCast(c.AR__HEAP__MALLOC(size, "args"));  // Don't mix!
 
+// WRONG - Using heap function for cleanup
+const own_items = c.ar_list__items(ref_list);
+defer c.ar_heap__free(own_items);  // BAD: Never use ar_heap__free
+
 // CORRECT - Use ar_allocator consistently
 const own_ast = ar_allocator.create(ar_instruction_ast_t, "instruction AST");
 own_ast.?.own_args = ar_allocator.alloc(?[*:0]u8, arg_count, "args");
+
+// CORRECT - Use ar_allocator for cleanup
+const own_items = c.ar_list__items(ref_list);
+defer ar_allocator.free(own_items);  // Always use ar_allocator
 ```
 
 ### Forgetting Ownership Transfer
@@ -191,3 +200,4 @@ const own_ast = ar_allocator.create(ar_method_ast_t, "method AST");
 - [C to Zig Module Migration Guide](c-to-zig-module-migration.md)
 - [Zig-C Memory Tracking Consistency](zig-c-memory-tracking-consistency.md)
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
+- [Frank Communication Principle](frank-communication-principle.md)

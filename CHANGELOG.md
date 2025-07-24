@@ -27,6 +27,13 @@ This document tracks completed milestones and major achievements for the AgeRun 
 - **Fixed documentation** with correct ar_expression_evaluator__create signature
 - **All 8 tests pass with zero memory leaks**
 
+### ✅ COMPLETED: Knowledge Base Enhancement - Frank Communication
+- **Created frank-communication-principle.md** documenting importance of direct technical communication
+- **Enhanced zig-memory-allocation-with-ar-allocator.md** with explicit emphasis on using ar_allocator.free
+- **Updated CLAUDE.md** with memory allocation reference for Zig modules
+- **Integrated new KB article** into kb/README.md under Development Practices
+- **All documentation validated** with make check-docs
+
 ## 2025-07-21
 
 ### ✅ COMPLETED: Complete Zig Module Documentation

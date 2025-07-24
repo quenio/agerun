@@ -246,6 +246,12 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Updated kb/README.md index with proper categorization
 - [x] All documentation validated with make check-docs
 
+### Knowledge Base Enhancement - Frank Communication (Completed 2025-07-23)
+- [x] Created frank-communication-principle.md documenting direct technical communication
+- [x] Enhanced zig-memory-allocation-with-ar-allocator.md with explicit ar_allocator.free emphasis
+- [x] Updated CLAUDE.md with memory allocation reference for Zig modules
+- [x] All documentation validated with make check-docs
+
 ### Zig Evaluator Pattern Improvements (Completed 2025-07-20)
 - [x] Migrated ar_assignment_instruction_evaluator to Zig leveraging defer for cleanup
 - [x] Discovered and documented new Zig patterns during code review:
