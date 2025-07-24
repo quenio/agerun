@@ -538,6 +538,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - **Direct field access**: Use `param.?.field` instead of creating temporary variables
 - **Const correctness**: Make parameters const if never mutated - update headers too
 - **Skip helper functions**: Direct calls often cleaner than C-style helpers
+- **Verify API behavior**: Read function docs/impl before use ([details](kb/api-behavior-verification.md))
 - **Defer limitations**: Manual cleanup still needed when resource used later
 
 **Zig Integration**: Use ar_allocator, maintain C API, follow ownership conventions ([details](kb/zig-integration-comprehensive.md))

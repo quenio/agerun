@@ -13,6 +13,14 @@ User feedback improved development quality throughout session:
 - **Documentation gaps**: User caught missing interface documentation updates
 - **Plan completeness**: User suggested generic solutions (ar_path) instead of specific modules (ar_memory_path)
 
+### Real-Time Implementation Feedback
+During ar_compile_instruction_evaluator Zig migration, user interrupted multiple times to correct patterns:
+- **Unnecessary includes**: "Is @cInclude("ar_compile_instruction_evaluator.h") really necessary?" → Removed
+- **Redundant variables**: "Is `const evaluator = ref_evaluator.?` really necessary?" → Direct usage
+- **API misunderstanding**: "If you had read the docs, you would know" → ar_data__claim_or_copy handles null
+- **Variable naming**: "Instead of: const method_name Should be: const ref_method_name" → Ownership clarity
+- **Direct instruction**: "I refuse to accept your code until you follow my instructions" → Simplified approach
+
 ## Generalization
 Integrate user-as-QA pattern into development workflow:
 1. **Present plans before implementation**: Share detailed implementation plans with domain experts

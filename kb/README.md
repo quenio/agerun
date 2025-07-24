@@ -102,6 +102,7 @@ Each learning file contains:
 - [User Feedback as QA](user-feedback-as-qa.md)
 - [Defensive Programming Consistency](defensive-programming-consistency.md)
 - [OO to C Adaptation](oo-to-c-adaptation.md)
+- [API Behavior Verification](api-behavior-verification.md)
 - [C to Zig Module Migration](c-to-zig-module-migration.md)
 - [Zig Memory Allocation with ar_allocator](zig-memory-allocation-with-ar-allocator.md)
 - [Zig Migration Memory Debugging](zig-migration-memory-debugging.md)

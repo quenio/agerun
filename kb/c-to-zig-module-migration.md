@@ -115,6 +115,12 @@ grep -n "#include.*ar_" module.h module.c
    - Example: Instead of `_log_error()` helper, use `c.ar_log__error()` directly
    - Zig's null safety makes many C-style helpers unnecessary
 
+4. **Direct Implementation Patterns**:
+   - **Skip intermediate variables**: Use `ref_evaluator.?` directly instead of `const evaluator = ref_evaluator.?`
+   - **Direct evaluation**: Assign result of evaluate directly to variable, then claim ownership
+   - **Simplify conditionals**: Functions like `ar_data__claim_or_copy` handle null - no need for if-else
+   - **Reuse variables**: Use `var` to allow reassignment instead of creating new constants
+
 ### C API Compatibility Requirements
 
 **CRITICAL**: The Zig implementation must be a drop-in replacement for the C implementation. This means:

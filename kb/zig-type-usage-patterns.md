@@ -98,11 +98,9 @@ if (!c.ar_path__is_memory_path(own_path)) {
 const method_result = c.ar_expression_evaluator__evaluate(ref_expr_evaluator, ref_frame, ref_method_ast);
 const own_method_name = c.ar_data__claim_or_copy(method_result, @constCast(@ptrCast(ref_evaluator)));
 
-// After - direct evaluation
-const own_method_name = c.ar_data__claim_or_copy(
-    c.ar_expression_evaluator__evaluate(ref_expr_evaluator, ref_frame, ref_method_ast),
-    @constCast(@ptrCast(ref_evaluator))
-);
+// After - direct evaluation and assignment
+var own_method_name = c.ar_expression_evaluator__evaluate(ref_expr_evaluator, ref_frame, ref_method_ast);
+own_method_name = c.ar_data__claim_or_copy(own_method_name, ref_evaluator);
 ```
 
 **Eliminate boolean flag variables:**
@@ -122,7 +120,28 @@ if (ref_context_data != null and c.ar_data__get_type(ref_context_data) == c.AR_D
 }
 ```
 
-## Pattern 5: Const Correctness
+## Pattern 5: Skip Unnecessary Null Checks
+
+When calling functions that handle null inputs gracefully, skip redundant checks:
+
+```zig
+// Before - unnecessary conditional
+if (own_method_name) |data| {
+    own_method_name = c.ar_data__claim_or_copy(data, ref_evaluator);
+} else {
+    own_method_name = null;
+}
+
+// After - direct call (ar_data__claim_or_copy handles null)
+own_method_name = c.ar_data__claim_or_copy(own_method_name, ref_evaluator);
+```
+
+**Key APIs that handle null inputs:**
+- `ar_data__claim_or_copy()` - returns null if input is null
+- `ar_data__destroy()` - no-op if input is null
+- `ar_data__drop_ownership()` - no-op if input is null
+
+## Pattern 6: Const Correctness
 
 When migrating, identify parameters that are never mutated and make them const:
 
@@ -157,3 +176,4 @@ This may require updating C headers and dependent functions to maintain consiste
 - [C to Zig Module Migration](c-to-zig-module-migration.md) - General migration guide
 - [Zig Defer for Error Cleanup](zig-defer-error-cleanup-pattern.md) - Resource management
 - [Const Correctness Principle](const-correctness-principle.md) - API improvements
+- [API Behavior Verification](api-behavior-verification.md) - Understanding API contracts

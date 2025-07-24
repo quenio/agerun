@@ -27,6 +27,8 @@ Make ownership and lifetime explicit in variable names rather than relying on co
 - `ref_`: Borrowed references (read-only access, not owned)
 - Apply consistently across .h, .c, and _tests.c files
 - Use immediately when receiving ownership from functions
+- **Zig modules**: Apply same prefixes to maintain consistency with C codebase
+- **Local variables**: Even temporaries should use prefixes (e.g., `ref_method_name` not `method_name`)
 
 ## Wake/Sleep Message Ownership
 When agents create wake or sleep messages, they must explicitly mark themselves as owners:
