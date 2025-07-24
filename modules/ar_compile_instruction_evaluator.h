@@ -53,13 +53,13 @@ void ar_compile_instruction_evaluator__destroy(
  *
  * Returns 1 on success, 0 on failure when assigned to a variable.
  *
- * @param mut_evaluator The evaluator instance to use
+ * @param ref_evaluator The evaluator instance to use (borrowed reference)
  * @param ref_frame The execution frame containing memory, context, and message (borrowed reference)
- * @param ref_ast The instruction AST node
+ * @param ref_ast The instruction AST node (borrowed reference)
  * @return true if evaluation succeeded, false otherwise
  */
 bool ar_compile_instruction_evaluator__evaluate(
-    ar_compile_instruction_evaluator_t *mut_evaluator,
+    const ar_compile_instruction_evaluator_t *ref_evaluator,
     const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );

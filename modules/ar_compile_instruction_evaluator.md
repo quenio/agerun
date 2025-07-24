@@ -6,6 +6,8 @@ The compile instruction evaluator module is responsible for evaluating method cr
 
 This module follows an instantiable design pattern where evaluators are created with their dependencies and can be reused for multiple evaluations.
 
+**Implementation Note**: This module is implemented in Zig for improved memory safety and cleaner error handling through defer statements.
+
 ## Purpose
 
 This module extracts the compile instruction evaluation logic from the main instruction evaluator, following the single responsibility principle. It provides specialized handling for method creation and registration in the methodology.
@@ -25,11 +27,10 @@ An opaque type representing a compile instruction evaluator instance.
 ```c
 ar_compile_instruction_evaluator_t* ar_compile_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator,
-    ar_data_t *mut_memory
+    ar_expression_evaluator_t *ref_expr_evaluator
 );
 ```
-Creates a new compile instruction evaluator that stores its dependencies including the log for error reporting.
+Creates a new compile instruction evaluator that stores its dependencies including the log for error reporting. Uses frame-based execution pattern.
 
 ```c
 void ar_compile_instruction_evaluator__destroy(
@@ -40,11 +41,12 @@ Destroys a compile instruction evaluator and frees all resources.
 
 ```c
 bool ar_compile_instruction_evaluator__evaluate(
-    ar_compile_instruction_evaluator_t *mut_evaluator,
+    const ar_compile_instruction_evaluator_t *ref_evaluator,
+    const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
 ```
-Evaluates a compile instruction using the stored dependencies.
+Evaluates a compile instruction using the stored dependencies. Takes a frame containing memory for frame-based execution. The evaluator parameter is now const for improved API safety.
 
 
 ### Functionality
@@ -99,22 +101,30 @@ The module:
 ar_data_t *memory = ar_data__create_map();
 ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
 
-// Create compile instruction evaluator
-ar_compile_instruction_evaluator_t *method_eval = ar_compile_instruction_evaluator__create(
-    log, expr_eval, memory
+// Create compile instruction evaluator (frame-based pattern)
+ar_compile_instruction_evaluator_t *compile_eval = ar_compile_instruction_evaluator__create(
+    log, expr_eval
 );
+
+// Create frame for execution
+ar_data_t *context = ar_data__create_map();
+ar_data_t *message = ar_data__create_string("");
+ar_frame_t *frame = ar_frame__create(memory, context, message);
 
 // Parse compile instruction: compile("echo", "send(0, message)", "1.0.0")
 ar_instruction_ast_t *ast = ar_instruction_parser__parse_compile(parser);
 
-// Evaluate the method creation
-bool success = ar_compile_instruction_evaluator__evaluate(method_eval, ast);
+// Evaluate the method creation with frame
+bool success = ar_compile_instruction_evaluator__evaluate(compile_eval, frame, ast);
 
 // Method "echo" version "1.0.0" is now registered
 
 // Cleanup
-ar_compile_instruction_evaluator__destroy(method_eval);
+ar_compile_instruction_evaluator__destroy(compile_eval);
 ar_expression_evaluator__destroy(expr_eval);
+ar_frame__destroy(frame);
+ar_data__destroy(context);
+ar_data__destroy(message);
 ar_data__destroy(memory);
 ```
 
