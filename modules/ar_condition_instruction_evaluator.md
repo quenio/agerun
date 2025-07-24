@@ -6,6 +6,8 @@ The condition instruction evaluator module is responsible for evaluating if/cond
 
 This module follows an instantiable design pattern where evaluators are created with their dependencies and can be reused for multiple evaluations.
 
+**Implementation Note**: This module is implemented in Zig for improved memory safety and cleaner error handling through defer statements.
+
 ## Purpose
 
 This module extracts the conditional instruction evaluation logic from the main instruction evaluator, following the single responsibility principle. It provides specialized handling for ternary conditional expressions (if(condition, true_value, false_value)).
@@ -94,9 +96,9 @@ The module evaluates all three arguments:
 ## Usage Example
 
 ```c
-// Create memory and expression evaluator
-ar_data_t *memory = ar_data__create_map();
-ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, NULL);
+// Create log and expression evaluator
+ar_log_t *log = ar_log__create();
+ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log);
 
 // Create condition instruction evaluator
 ar_condition_instruction_evaluator_t *cond_eval = ar_condition_instruction_evaluator__create(
@@ -106,7 +108,10 @@ ar_condition_instruction_evaluator_t *cond_eval = ar_condition_instruction_evalu
 // Parse if instruction: result := if(x > 5, 100, 200)
 ar_instruction_ast_t *ast = ar_instruction_parser__parse_if(parser);
 
-// Create a frame for evaluation
+// Create memory and frame for evaluation
+ar_data_t *memory = ar_data__create_map();
+ar_data_t *context = ar_data__create_map();
+ar_data_t *message = ar_data__create_string("");
 ar_frame_t *frame = ar_frame__create(memory, context, message);
 
 // Evaluate the condition
@@ -116,9 +121,12 @@ bool success = ar_condition_instruction_evaluator__evaluate(cond_eval, frame, as
 
 // Cleanup
 ar_frame__destroy(frame);
+ar_data__destroy(context);
+ar_data__destroy(message);
+ar_data__destroy(memory);
 ar_condition_instruction_evaluator__destroy(cond_eval);
 ar_expression_evaluator__destroy(expr_eval);
-ar_data__destroy(memory);
+ar_log__destroy(log);
 ```
 
 ## Testing
