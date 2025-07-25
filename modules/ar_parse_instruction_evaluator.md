@@ -6,6 +6,8 @@ The parse instruction evaluator module is responsible for evaluating parse instr
 
 This module follows an instantiable design pattern where evaluators are created with their dependencies and can be reused for multiple evaluations.
 
+**Implementation Note**: This module has been migrated to Zig for improved memory safety and cleaner error handling using defer statements.
+
 ## Purpose
 
 This module extracts the parse instruction evaluation logic from the main instruction evaluator, following the single responsibility principle. It provides specialized handling for template-based string parsing and value extraction.
@@ -39,12 +41,12 @@ Destroys a parse instruction evaluator and frees all resources.
 
 ```c
 bool ar_parse_instruction_evaluator__evaluate(
-    ar_parse_instruction_evaluator_t *mut_evaluator,
+    const ar_parse_instruction_evaluator_t *ref_evaluator,
     const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
 ```
-Evaluates a parse instruction using frame-based execution. The frame provides access to memory and other execution context.
+Evaluates a parse instruction using frame-based execution. The frame provides access to memory and other execution context. The evaluator parameter is now const for improved API safety.
 
 
 ### Functionality
@@ -94,33 +96,40 @@ The module follows strict memory ownership rules:
 The module:
 1. Evaluates template and input string expressions
 2. Validates both are strings
-3. Calls `ar_instruction__parse()` to perform extraction
-4. Stores resulting map in memory at specified path
-5. Handles all error cases with proper cleanup
+3. Performs pattern matching to extract values based on {variable} placeholders
+4. Automatically detects types (integer, double, string) for extracted values
+5. Stores resulting map in memory at specified path
+6. Handles all error cases with proper cleanup using Zig's defer
 
 ## Usage Example
 
 ```c
-// Create memory and expression evaluator
-ar_data_t *memory = ar_data__create_map();
-ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(memory, NULL);
+// Create log and expression evaluator
+ar_log_t *log = ar_log__create();
+ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log);
 
 // Create parse instruction evaluator
 ar_parse_instruction_evaluator_t *parse_eval = ar_parse_instruction_evaluator__create(
-    log, expr_eval, memory
+    log, expr_eval
 );
 
+// Create frame with memory
+ar_data_t *memory = ar_data__create_map();
+ar_frame_t *frame = ar_frame__create(memory, NULL, NULL);
+
 // Parse instruction: memory.data := parse("Hello {name}!", "Hello World!")
-ar_instruction_ast_t *ast = ar_instruction_parser__parse_parse(parser);
+// (Assuming ast is pre-parsed)
 
 // Evaluate the parse
-bool success = ar_parse_instruction_evaluator__evaluate(parse_eval, ast);
+bool success = ar_parse_instruction_evaluator__evaluate(parse_eval, frame, ast);
 
 // memory["data"]["name"] now contains "World"
 
 // Cleanup
+ar_frame__destroy(frame);
 ar_parse_instruction_evaluator__destroy(parse_eval);
 ar_expression_evaluator__destroy(expr_eval);
+ar_log__destroy(log);
 ar_data__destroy(memory);
 ```
 

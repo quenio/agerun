@@ -34,6 +34,14 @@ This document tracks completed milestones and major achievements for the AgeRun 
 - **Integrated new KB article** into kb/README.md under Development Practices
 - **All documentation validated** with make check-docs
 
+### ✅ COMPLETED: Migrate ar_parse_instruction_evaluator to Zig
+- **Successfully migrated ar_parse_instruction_evaluator from C to Zig** handling complex template parsing
+- **Simplified ~340 lines of C** with pattern matching and string extraction logic
+- **Leveraged defer for automatic cleanup** of multiple dynamic allocations
+- **Made evaluator parameter const** for improved API correctness
+- **Preserved type detection** for extracted values (integer, double, string)
+- **All 8 tests pass with zero memory leaks** (459 allocations, all freed)
+
 ## 2025-07-21
 
 ### ✅ COMPLETED: Complete Zig Module Documentation

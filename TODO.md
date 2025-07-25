@@ -173,7 +173,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] ar_spawn_instruction_evaluator (moderate, 3 arguments) - Completed 2025-07-21
   - [x] ar_condition_instruction_evaluator (moderate, if logic) - Completed 2025-07-23
   - [x] ar_build_instruction_evaluator (complex, string building) - Completed 2025-07-23
-  - [ ] ar_parse_instruction_evaluator (complex, parsing)
+  - [x] ar_parse_instruction_evaluator (complex, parsing) - Completed 2025-07-23
   - [x] ar_compile_instruction_evaluator (complex, 3 string args) - Completed 2025-07-23
   - [ ] ar_expression_evaluator (complex, multiple types)
   - [ ] ar_instruction_evaluator (facade, coordinate others)

@@ -56,7 +56,7 @@ void ar_parse_instruction_evaluator__destroy(
  * - Input: "Hello Alice, you are 30 years old"
  * - Result: {"name": "Alice", "age": 30}
  *
- * @param mut_evaluator The evaluator instance (mutable reference)
+ * @param ref_evaluator The evaluator instance (const reference)
  * @param ref_frame The frame providing memory and context (borrowed reference)
  * @param ref_ast The parse instruction AST node (borrowed reference)
  * @return true if parse was successful, false otherwise
@@ -69,7 +69,7 @@ void ar_parse_instruction_evaluator__destroy(
  * @note Supports optional result assignment: result = parse(template, input)
  */
 bool ar_parse_instruction_evaluator__evaluate(
-    ar_parse_instruction_evaluator_t *mut_evaluator,
+    const ar_parse_instruction_evaluator_t *ref_evaluator,
     const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
