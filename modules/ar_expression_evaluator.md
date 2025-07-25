@@ -1,5 +1,7 @@
 # Expression Evaluator Module
 
+**Note**: This module has been migrated to Zig for improved memory safety and cleaner error handling patterns.
+
 ## Overview
 
 The expression evaluator module provides functionality for evaluating expression AST nodes to produce data values. It serves as the execution engine for the expression system, taking parsed AST structures and evaluating them using frame context to produce results.
@@ -35,7 +37,7 @@ The module is designed with clean separation of concerns:
 ### Evaluation Function
 
 - `ar_expression_evaluator__evaluate()` - Evaluates any expression AST node using frame context
-  - Takes evaluator instance, frame reference, and AST reference
+  - Takes const evaluator instance, frame reference, and AST reference
   - Returns evaluated result with ownership semantics based on expression type
   - Internally dispatches to appropriate evaluation logic based on AST node type
 

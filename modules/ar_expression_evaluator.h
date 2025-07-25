@@ -39,7 +39,7 @@ void ar_expression_evaluator__destroy(ar_expression_evaluator_t *own_evaluator);
 
 /**
  * Evaluates any expression AST node using frame context
- * @param mut_evaluator The evaluator instance (mutable reference)
+ * @param ref_evaluator The evaluator instance (const reference)
  * @param ref_frame The frame containing memory/context/message (borrowed reference)
  * @param ref_ast The expression AST to evaluate (borrowed reference)
  * @return The evaluated result
@@ -49,7 +49,7 @@ void ar_expression_evaluator__destroy(ar_expression_evaluator_t *own_evaluator);
  *       - Operations: Returns owned value that caller must destroy
  */
 ar_data_t* ar_expression_evaluator__evaluate(
-    ar_expression_evaluator_t *mut_evaluator,
+    const ar_expression_evaluator_t *ref_evaluator,
     const ar_frame_t *ref_frame,
     const ar_expression_ast_t *ref_ast
 );

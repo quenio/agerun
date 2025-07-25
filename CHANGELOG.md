@@ -2,6 +2,17 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-07-25
+
+### ✅ COMPLETED: Migrate ar_expression_evaluator to Zig
+- **Successfully migrated ar_expression_evaluator from C to Zig** - the core expression evaluation engine
+- **Simplified complex evaluation logic** with Zig's switch expressions and defer patterns
+- **Eliminated ~30 lines of repeated cleanup code** for path arrays and operand cleanup
+- **Made evaluator parameter const** for improved API clarity and consistency
+- **Preserved exact evaluation semantics** for all expression types (literals, memory access, binary ops)
+- **All 19 tests pass with zero memory leaks** (495 allocations, all freed)
+- **9/10 evaluators now migrated to Zig** - only instruction evaluator facade remains
+
 ## 2025-07-23
 
 ### ✅ COMPLETED: Migrate ar_build_instruction_evaluator to Zig
