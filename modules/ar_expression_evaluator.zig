@@ -1,6 +1,5 @@
 const std = @import("std");
 const c = @cImport({
-    @cInclude("ar_expression_evaluator.h");
     @cInclude("ar_expression_ast.h");
     @cInclude("ar_data.h");
     @cInclude("ar_log.h");
@@ -37,12 +36,8 @@ export fn ar_expression_evaluator__create(
 
 /// Destroys an expression evaluator
 export fn ar_expression_evaluator__destroy(
-    own_evaluator: ?*c.ar_expression_evaluator_t
+    own_evaluator: ?*ar_expression_evaluator_t
 ) void {
-    if (own_evaluator == null) {
-        return;
-    }
-    
     ar_allocator.free(own_evaluator);
 }
 
@@ -63,8 +58,7 @@ fn _evaluate_literal_int(
     }
     
     // Get the integer value and create a ar_data_t
-    const value = c.ar_expression_ast__get_int_value(ref_node);
-    return c.ar_data__create_integer(value);
+    return c.ar_data__create_integer(c.ar_expression_ast__get_int_value(ref_node));
 }
 
 /// Evaluates a literal double node
@@ -84,8 +78,7 @@ fn _evaluate_literal_double(
     }
     
     // Get the double value and create a ar_data_t
-    const value = c.ar_expression_ast__get_double_value(ref_node);
-    return c.ar_data__create_double(value);
+    return c.ar_data__create_double(c.ar_expression_ast__get_double_value(ref_node));
 }
 
 /// Evaluates a literal string node
@@ -105,8 +98,7 @@ fn _evaluate_literal_string(
     }
     
     // Get the string value and create a ar_data_t
-    const value = c.ar_expression_ast__get_string_value(ref_node);
-    return c.ar_data__create_string(value);
+    return c.ar_data__create_string(c.ar_expression_ast__get_string_value(ref_node));
 }
 
 /// Evaluates a memory access node
@@ -158,24 +150,47 @@ fn _evaluate_memory_access(
         return null;
     }
     
-    // Navigate through the path
-    var current = map;
-    var i: usize = 0;
-    while (i < path_count) : (i += 1) {
-        if (c.ar_data__get_type(current) != c.AR_DATA_TYPE__MAP) {
-            // Can't navigate further if not a map
-            return null;
-        }
-        
-        current = c.ar_data__get_map_data(current, path.?[i]);
-        if (current == null) {
-            // Key not found
-            return null;
-        }
+    // Build the full path with dot notation
+    if (path_count == 0) {
+        // No path components, just return the map itself
+        return map;
     }
     
+    // Calculate total length needed for the path
+    var total_len: usize = 0;
+    for (0..path_count) |i| {
+        const component = path.?[i];
+        total_len += c.strlen(component);
+        if (i < path_count - 1) {
+            total_len += 1; // for the dot
+        }
+    }
+    total_len += 1; // for null terminator
+    
+    // Allocate buffer for the full path
+    const full_path = ar_allocator.alloc(u8, total_len, "Full memory path") orelse return null;
+    defer ar_allocator.free(full_path);
+    
+    // Build the path with dots
+    var pos: usize = 0;
+    for (0..path_count) |i| {
+        const component = path.?[i];
+        const component_len = c.strlen(component);
+        @memcpy(full_path[pos..pos + component_len], component[0..component_len]);
+        pos += component_len;
+        
+        if (i < path_count - 1) {
+            full_path[pos] = '.';
+            pos += 1;
+        }
+    }
+    full_path[pos] = 0;
+    
+    // Use ar_data__get_map_data with the full path
+    const result = c.ar_data__get_map_data(map, @ptrCast(full_path));
+    
     // Return the found value (it's a reference, not owned)
-    return current;
+    return result;
 }
 
 
@@ -275,9 +290,7 @@ export fn ar_expression_evaluator__evaluate(
     ref_ast: ?*const c.ar_expression_ast_t
 ) ?*c.ar_data_t {
     if (ref_evaluator == null or ref_frame == null or ref_ast == null) {
-        if (ref_evaluator != null) {
-            c.ar_log__error(ref_evaluator.?.ref_log, "evaluate: NULL evaluator, frame, or AST");
-        }
+        c.ar_log__error(ref_evaluator.?.ref_log, "evaluate: NULL evaluator, frame, or AST");
         return null;
     }
     
@@ -442,9 +455,10 @@ fn _evaluate_binary_op(
                 const concat = ar_allocator.alloc(u8, total_len, "string concatenation") orelse return null;
                 defer ar_allocator.free(concat);
                 
-                _ = c.strcpy(@ptrCast(concat), left_str);
-                _ = c.strcat(@ptrCast(concat), right_str);
-                result = c.ar_data__create_string(@ptrCast(concat));
+                const concat_str: [*:0]u8 = @ptrCast(concat);
+                _ = c.strcpy(concat_str, left_str);
+                _ = c.strcat(concat_str, right_str);
+                result = c.ar_data__create_string(concat_str);
             },
             c.AR_BINARY_OPERATOR__EQUAL => {
                 result = c.ar_data__create_integer(if (c.strcmp(left_str, right_str) == 0) 1 else 0);

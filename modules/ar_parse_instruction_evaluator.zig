@@ -1,6 +1,5 @@
 const std = @import("std");
 const c = @cImport({
-    @cInclude("ar_parse_instruction_evaluator.h");
     @cInclude("ar_data.h");
     @cInclude("ar_list.h");
     @cInclude("ar_instruction_ast.h");
@@ -65,7 +64,7 @@ export fn ar_parse_instruction_evaluator__create(
 
 /// Destroys a parse instruction evaluator
 export fn ar_parse_instruction_evaluator__destroy(
-    own_evaluator: ?*c.ar_parse_instruction_evaluator_t
+    own_evaluator: ?*ar_parse_instruction_evaluator_t
 ) void {
     if (own_evaluator == null) {
         return;
