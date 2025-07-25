@@ -43,6 +43,7 @@ Each learning file contains:
 - [Expression Ownership Rules](expression-ownership-rules.md)
 - [Ownership Drop in Message Passing](ownership-drop-message-passing.md)
 - [Refactoring Ownership Transitions](refactoring-ownership-transitions.md)
+- [API Ownership on Failure](api-ownership-on-failure.md)
 
 ### Code Quality & Testing
 - [BDD Test Structure](bdd-test-structure.md)
@@ -111,6 +112,7 @@ Each learning file contains:
 - [Zig Build Flag Configuration](zig-build-flag-configuration.md)
 - [Zig Defer for Error Cleanup](zig-defer-error-cleanup-pattern.md)
 - [Zig Type Usage Patterns](zig-type-usage-patterns.md)
+- [Zig Ownership with claim_or_copy Pattern](zig-ownership-claim-or-copy-pattern.md)
 - [User Feedback Debugging Pattern](user-feedback-debugging-pattern.md)
 - [Makefile Pattern Rule Management](makefile-pattern-rule-management.md)
 - [Development Debug Tools](development-debug-tools.md)

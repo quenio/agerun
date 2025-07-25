@@ -103,6 +103,15 @@ var own_method_name = c.ar_expression_evaluator__evaluate(ref_expr_evaluator, re
 own_method_name = c.ar_data__claim_or_copy(own_method_name, ref_evaluator);
 ```
 
+**Eliminate ALL casts when possible:**
+```zig
+// Before - unnecessary casts for ar_data__claim_or_copy
+const own_value = c.ar_data__claim_or_copy(result, @constCast(@ptrCast(ref_evaluator)));
+
+// After - Zig handles void* conversion automatically
+const own_value = c.ar_data__claim_or_copy(result, ref_evaluator);
+```
+
 **Eliminate boolean flag variables:**
 ```zig
 // Before - unnecessary boolean flag

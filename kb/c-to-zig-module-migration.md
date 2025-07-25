@@ -92,6 +92,8 @@ grep -n "#include.*ar_" module.h module.c
 1. **Use consistent naming**:
    - Public functions: `ar_<module>__<function>` (same as C)
    - Static functions: `_<name>` with snake_case (but often unnecessary in Zig)
+     - **Important**: If you do create static helper functions, they MUST follow the `_<name>` convention
+     - Example: `fn _parse_value_string(...)` not `fn parse_value_string(...)`
    - Export all public functions with C ABI
    - **NULL as parameter convention**: Zig doesn't have NULL keyword, use `null`
 
