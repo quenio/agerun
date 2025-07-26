@@ -79,6 +79,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 **Always search CLAUDE.md first** when asked about procedures. Don't overthink - start with exact keywords.
 **When reading TODO.md**: Check [ ] = incomplete, [x] = complete. Read completion dates. Be explicit - list all components.
+**KB articles need CLAUDE.md references** to be accessible in future sessions ([details](kb/claude-md-reference-requirement.md))
 
 **Documentation Standards (MANDATORY)** ([details](kb/documentation-standards-integration.md)):
 - **Real code only**: All examples must use actual AgeRun types/functions ([details](kb/validated-documentation-examples.md))

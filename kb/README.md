@@ -99,6 +99,7 @@ Each learning file contains:
 - [Validated Documentation Examples](validated-documentation-examples.md)
 - [Absolute Path Navigation](absolute-path-navigation.md)
 - [Systematic Guideline Enhancement](systematic-guideline-enhancement.md)
+- [CLAUDE.md Reference Requirement](claude-md-reference-requirement.md)
 - [Cross-Referencing Knowledge Base](cross-referencing-knowledge-base.md)
 - [Frank Communication Principle](frank-communication-principle.md)
 - [Research-Driven Development](research-driven-development.md)

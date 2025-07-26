@@ -246,6 +246,8 @@ Check CLAUDE.md to see if these learnings should be referenced:
 
 ## Step 9: Update Guidelines
 
+**CRITICAL**: CLAUDE.md updates are MANDATORY for new KB articles ([details](../../kb/claude-md-reference-requirement.md))
+
 If updates are needed to CLAUDE.md:
 
 1. **Space-conscious writing** (CRITICAL):
