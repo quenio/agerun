@@ -91,6 +91,36 @@ The migration of `ar_exit_instruction_evaluator` demonstrates the pattern:
 
 This eliminated ~100+ lines of duplicated cleanup code across the evaluator.
 
+## Testing Error Cleanup
+
+To verify that defer/errdefer cleanup works correctly, create dedicated error tests:
+
+```c
+// Example from ar_instruction_evaluator_error_tests.c
+// Override creation functions to simulate failures at specific points
+static int fail_at_evaluator = 3;  // Fail at 3rd sub-component
+
+// Track resource lifecycle
+static int created = 0;
+static int destroyed = 0;
+
+// Mock that can fail on demand
+SomeType* some_type__create() {
+    if (++current == fail_at_evaluator) return NULL;
+    created++;
+    return (SomeType*)0x1000;  // Fake pointer
+}
+
+// Verify cleanup is called
+void some_type__destroy(SomeType* obj) {
+    if (obj) destroyed++;
+}
+
+// After test: verify created == destroyed
+```
+
+This approach verifies that errdefer statements execute in the correct order and all resources are cleaned up.
+
 ## Best Practices
 
 1. **Place defer immediately after resource acquisition**:
@@ -137,6 +167,7 @@ This eliminated ~100+ lines of duplicated cleanup code across the evaluator.
 
 ## Related Patterns
 
+- [Zig errdefer Value Capture Pattern](zig-errdefer-value-capture-pattern.md) - Understanding how errdefer captures values
 - [C to Zig Module Migration](c-to-zig-module-migration.md) - General migration guide
 - [Zig Integration Comprehensive](zig-integration-comprehensive.md) - Full integration details
 - [Zig Memory Allocation with ar_allocator](zig-memory-allocation-with-ar-allocator.md) - Memory patterns

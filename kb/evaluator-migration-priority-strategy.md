@@ -85,3 +85,4 @@ This ordering ensures each migration builds on the previous one's success.
 - [C to Zig Module Migration](c-to-zig-module-migration.md)
 - [TDD Advanced Large Refactoring](tdd-advanced-large-refactoring.md)
 - [Zig Defer for Error Cleanup](zig-defer-error-cleanup-pattern.md)
+- [Zig errdefer Value Capture Pattern](zig-errdefer-value-capture-pattern.md)

@@ -113,6 +113,8 @@ Each learning file contains:
 - [Zig Defer for Error Cleanup](zig-defer-error-cleanup-pattern.md)
 - [Zig Type Usage Patterns](zig-type-usage-patterns.md)
 - [Zig Ownership with claim_or_copy Pattern](zig-ownership-claim-or-copy-pattern.md)
+- [Zig errdefer Value Capture Pattern](zig-errdefer-value-capture-pattern.md)
+- [Zig Error Path Testing Pattern](zig-error-path-testing-pattern.md)
 - [User Feedback Debugging Pattern](user-feedback-debugging-pattern.md)
 - [Makefile Pattern Rule Management](makefile-pattern-rule-management.md)
 - [Development Debug Tools](development-debug-tools.md)

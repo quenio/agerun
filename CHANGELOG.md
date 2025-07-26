@@ -2,6 +2,24 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-07-26
+
+### ✅ COMPLETED: Migrate ar_instruction_evaluator to Zig
+- **Successfully migrated ar_instruction_evaluator from C to Zig** - the final evaluator completing the migration
+- **Implemented facade pattern in Zig** coordinating 10 specialized instruction evaluators
+- **Discovered errdefer limitation**: doesn't trigger on `orelse return null` causing memory leaks
+- **Fixed with private _create() pattern** using error unions for proper cleanup propagation
+- **Created comprehensive error path testing** with function interception in ar_instruction_evaluator_error_tests.c
+- **All 10 evaluators now migrated to Zig** achieving consistent error handling and memory safety
+- **All tests pass with zero memory leaks** including new error path tests
+
+### ✅ COMPLETED: Enhanced Error Path Testing for Zig Modules
+- **Created zig-errdefer-value-capture-pattern.md** documenting how errdefer captures values not references
+- **Created zig-error-path-testing-pattern.md** with comprehensive testing approach for Zig error paths
+- **Updated multiple KB articles** to reference new error handling patterns
+- **Fixed build system issues** with macro detection in naming convention checker
+- **Fixed broken documentation link** in kb/README.md
+
 ## 2025-07-25
 
 ### ✅ COMPLETED: Improve Zig Evaluator Type Consistency

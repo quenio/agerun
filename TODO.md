@@ -166,7 +166,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - All tests pass with zero memory leaks
   - Uses ar_allocator for consistency
 
-- [ ] Migrate remaining evaluators to Zig (priority order by complexity):
+- [x] Migrate remaining evaluators to Zig (priority order by complexity) - All completed 2025-07-26:
   - [x] ar_send_instruction_evaluator (simple, 1 argument) - Completed 2025-07-20
   - [x] ar_assignment_instruction_evaluator (simple, 2 parts) - Completed 2025-07-20
   - [x] ar_deprecate_instruction_evaluator (moderate, 2 arguments) - Completed 2025-07-20
@@ -176,7 +176,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] ar_parse_instruction_evaluator (complex, parsing) - Completed 2025-07-23
   - [x] ar_compile_instruction_evaluator (complex, 3 string args) - Completed 2025-07-23
   - [x] ar_expression_evaluator (complex, multiple types) - Completed 2025-07-25
-  - [ ] ar_instruction_evaluator (facade, coordinate others)
+  - [x] ar_instruction_evaluator (facade, coordinate others) - Completed 2025-07-26
 
 #### 6. Create Base Evaluator Structure
 - [x] Designed base evaluator pattern using ar_log composition (Completed 2025-06-30)
@@ -185,7 +185,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Updated all 9 evaluators to use ar_log (Partially completed 2025-06-30)
 - [x] Extracted ownership patterns to ar_data module functions (Completed 2025-07-19)
 - [x] Extracted result storage patterns to ar_data/ar_path modules (Completed 2025-07-20)
-- [ ] Complete Zig migration for remaining evaluators (see section 5 above)
+- [x] Complete Zig migration for remaining evaluators (see section 5 above) - Completed 2025-07-26
   - Migration to Zig eliminates need for additional C utility modules
   - Each Zig evaluator naturally removes ~100+ lines of cleanup duplication
 
@@ -242,9 +242,15 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ### Knowledge Base Enhancement from Session Learnings (Completed 2025-07-19)
 - [x] Created 5 new KB articles documenting patterns from method evaluator integration
 - [x] Updated 10 existing KB articles with new sections and cross-references
-- [x] Enhanced CLAUDE.md with references to new KB articles
-- [x] Updated kb/README.md index with proper categorization
-- [x] All documentation validated with make check-docs
+
+### Complete Evaluator Migration to Zig (Completed 2025-07-26)
+- [x] Migrated ar_instruction_evaluator to Zig with errdefer cleanup pattern
+- [x] Fixed memory leak issue: discovered errdefer doesn't work with `orelse return null`
+- [x] Implemented private _create() function pattern returning error unions
+- [x] Created error path testing pattern using function interception
+- [x] Added ar_instruction_evaluator_error_tests.c to verify errdefer cleanup
+- [x] Updated KB articles with errdefer value capture and error testing patterns
+- [x] All 10 evaluators now migrated to Zig with comprehensive error handling
 
 ### Knowledge Base Enhancement - Frank Communication (Completed 2025-07-23)
 - [x] Created frank-communication-principle.md documenting direct technical communication

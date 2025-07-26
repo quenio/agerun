@@ -248,6 +248,12 @@ grep -n "#include.*ar_" module.h module.c
 2. **Add Zig's built-in testing** alongside AgeRun tests
 3. **Verify behavior matches** original C implementation exactly
 4. **Check memory reports** for zero leaks
+5. **Create error path tests** for modules with complex cleanup:
+   - Name them `*_error_tests.c` to distinguish from regular tests
+   - Use function interception to simulate failures
+   - Track allocations/deallocations to verify no leaks
+   - Test that errdefer cleanup happens in correct order
+   - Example: `ar_instruction_evaluator_error_tests.c`
 
 ### Maintaining C Header Compatibility
 
@@ -1015,4 +1021,5 @@ This pattern eliminates the cascading error handling that dominates evaluator co
 - [Zig Memory Debugging](zig-migration-memory-debugging.md)
 - [Zig C Memory Tracking](zig-c-memory-tracking-consistency.md)
 - [Zig Defer for Error Cleanup](zig-defer-error-cleanup-pattern.md) - Using defer to eliminate error cleanup duplication
+- [Zig errdefer Value Capture Pattern](zig-errdefer-value-capture-pattern.md) - Understanding how errdefer captures values for precise cleanup
 - [Evaluator Migration Priority Strategy](evaluator-migration-priority-strategy.md) - Complexity-based migration ordering

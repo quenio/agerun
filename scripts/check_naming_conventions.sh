@@ -92,6 +92,7 @@ bad_c_funcs=$(grep -h "^[a-zA-Z_].*(" modules/*.c 2>/dev/null | \
     grep -v "^\*" | \
     grep -v "^int main" | \
     grep -v "^void main" | \
+    grep -v "^[A-Z_]*(" | \
     grep -E "^[a-zA-Z_][a-zA-Z0-9_]*\s*\(" | \
     grep -v -E "^ar_[a-zA-Z0-9_]+__[a-zA-Z0-9_]+\s*\(" | \
     grep -v -E "^_[a-zA-Z0-9_]+\s*\(" | \
@@ -125,6 +126,7 @@ if [ $bad_public_funcs -gt 0 ]; then
         grep -v "^\*" | \
         grep -v "^int main" | \
         grep -v "^void main" | \
+        grep -v "^[A-Z_]*(" | \
         grep -E "^[a-zA-Z_][a-zA-Z0-9_]*\s*\(" | \
         grep -v -E "^ar_[a-zA-Z0-9_]+__[a-zA-Z0-9_]+\s*\(" | \
         grep -v -E "^_[a-zA-Z0-9_]+\s*\(" | \

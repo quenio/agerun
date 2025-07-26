@@ -2,6 +2,8 @@
 
 The instruction evaluator module (`ar_instruction_evaluator`) serves as the central coordinator for executing parsed instruction AST nodes within the AgeRun runtime environment. It manages a collection of specialized instruction evaluators, each responsible for a specific instruction type.
 
+**Implementation Note**: This module is implemented in Zig for improved memory safety and simplified error handling.
+
 ## Purpose
 
 The instruction evaluator acts as a facade that coordinates specialized instruction evaluators, providing a unified interface for instruction execution. It:
@@ -10,7 +12,7 @@ The instruction evaluator acts as a facade that coordinates specialized instruct
 - Delegates evaluation requests to the appropriate specialized evaluator
 - Provides a single entry point for instruction evaluation
 - Maintains shared dependencies (expression evaluator, log)
-- Creates sub-evaluators on-demand with memory from execution frame
+- Creates all sub-evaluators upfront during initialization
 - Ensures consistent error reporting through centralized logging
 
 ## Architecture
@@ -24,10 +26,10 @@ The module follows a **composition pattern** where it creates and manages instan
 - `condition_instruction_evaluator`: Handles conditional expressions
 - `parse_instruction_evaluator`: Handles template parsing
 - `build_instruction_evaluator`: Handles template building
-- `method_instruction_evaluator`: Handles method creation
-- `agent_instruction_evaluator`: Handles agent creation
-- `destroy_agent_instruction_evaluator`: Handles agent destruction
-- `destroy_method_instruction_evaluator`: Handles method destruction
+- `compile_instruction_evaluator`: Handles method compilation
+- `spawn_instruction_evaluator`: Handles agent spawning
+- `exit_instruction_evaluator`: Handles agent exits
+- `deprecate_instruction_evaluator`: Handles method deprecation
 
 ### Design Principles
 
@@ -39,7 +41,7 @@ The module follows a **composition pattern** where it creates and manages instan
 
 ## Dependencies
 
-- All 9 specialized instruction evaluator modules
+- All 9 specialized instruction evaluator modules (all implemented in Zig)
 - `ar_expression_evaluator`: Created and owned internally for evaluating expressions
 - `ar_instruction_ast`: For accessing parsed instruction structures
 - `ar_data`: For data manipulation and storage
@@ -103,7 +105,7 @@ Destroys an instruction evaluator instance and all its specialized evaluators.
 
 ```c
 bool ar_instruction_evaluator__evaluate(
-    ar_instruction_evaluator_t *mut_evaluator,
+    const ar_instruction_evaluator_t *ref_evaluator,
     const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );
@@ -112,7 +114,7 @@ bool ar_instruction_evaluator__evaluate(
 Evaluates any instruction AST node by dispatching to the appropriate specialized evaluator.
 
 **Parameters:**
-- `mut_evaluator`: The evaluator instance (mutable reference)
+- `ref_evaluator`: The evaluator instance (borrowed reference)
 - `ref_frame`: The execution frame containing memory, context, and message (borrowed reference)
 - `ref_ast`: The instruction AST node to evaluate (borrowed reference)
 
@@ -120,15 +122,13 @@ Evaluates any instruction AST node by dispatching to the appropriate specialized
 
 **Behavior:**
 - Determines the instruction type from the AST node
-- Creates the appropriate specialized evaluator on-demand if not already created
-- Passes the frame to specialized evaluators (for assignment) or extracts memory/context as needed
+- Passes the frame directly to all specialized evaluators (frame-based pattern)
 - Delegates evaluation to the appropriate specialized evaluator
 - Returns the result from the specialized evaluator
 
 **Frame-Based Evaluation:**
-- The assignment evaluator receives the frame directly (frame-based pattern)
-- Other evaluators still receive memory/context extracted from the frame (legacy pattern)
-- Sub-evaluators are created lazily using memory from the frame
+- All evaluators receive the frame directly (unified frame-based pattern)
+- Sub-evaluators are created upfront during initialization
 
 ## Usage Examples
 
@@ -200,7 +200,7 @@ ar_instruction_evaluator__destroy(evaluator);
 
 ### Ownership Rules
 
-1. **Lazy Initialization**: Specialized evaluators are created on-demand when first needed
+1. **Upfront Initialization**: All specialized evaluators are created during initialization
 2. **Frame-Based Resources**: Memory, context, and message come from the execution frame
 3. **Delegation Pattern**: All memory management is handled by the specialized evaluators
 4. **Clean Destruction**: Destroying the instruction evaluator properly destroys all created specialized evaluators
@@ -224,9 +224,9 @@ Error handling uses the centralized logging system:
 
 ## Performance Considerations
 
-- **Lazy Initialization**: Specialized evaluators are created only when needed, reducing startup cost
-- **Runtime Efficiency**: First use of each instruction type has creation overhead, subsequent uses are fast
-- **Memory Usage**: Only creates evaluators for instruction types actually used
+- **Simplified Creation**: Zig's defer eliminates complex error handling cascades
+- **Runtime Efficiency**: No creation overhead during evaluation, all evaluators ready
+- **Memory Usage**: All evaluators created upfront, but simplified memory management
 - **Reusability**: Single instruction evaluator can handle all instruction types efficiently
 
 ## Testing
@@ -243,7 +243,7 @@ The module has a focused test suite that verifies the coordination pattern:
 
 The instruction evaluator tests focus on:
 
-1. **Lazy Creation**: Verifying specialized evaluators are created on-demand
+1. **Upfront Creation**: Verifying all specialized evaluators are created during initialization
 2. **Unified Interface**: Ensuring the single evaluate method dispatches correctly
 3. **Frame Integration**: Testing that memory is extracted from frames properly
 4. **Lifecycle**: Testing create/destroy coordination with lazy initialization

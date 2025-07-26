@@ -47,7 +47,7 @@ void ar_instruction_evaluator__destroy(ar_instruction_evaluator_t *own_evaluator
 
 /**
  * Evaluates any instruction AST node
- * @param mut_evaluator The evaluator instance (mutable reference)
+ * @param ref_evaluator The evaluator instance (borrowed reference)
  * @param ref_frame The execution frame containing memory, context, and message (borrowed reference)
  * @param ref_ast The AST node to evaluate (borrowed reference)
  * @return true if evaluation succeeded, false otherwise
@@ -56,7 +56,7 @@ void ar_instruction_evaluator__destroy(ar_instruction_evaluator_t *own_evaluator
  *       assignments, function calls, and control flow.
  */
 bool ar_instruction_evaluator__evaluate(
-    ar_instruction_evaluator_t *mut_evaluator,
+    const ar_instruction_evaluator_t *ref_evaluator,
     const ar_frame_t *ref_frame,
     const ar_instruction_ast_t *ref_ast
 );

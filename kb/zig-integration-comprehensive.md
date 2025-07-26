@@ -89,6 +89,12 @@ export fn ar_example__destroy(own_module: ?*c.ar_example_t) void {  // EXAMPLE: 
 - **C header imports**: Keep related headers in same @cImport block
 - **Zig modules with exports**: Access via C headers to avoid duplicate symbols
 
+**Testing Error Paths**:
+- Create `*_error_tests.c` files to verify errdefer cleanup
+- Use function interception to simulate failures
+- Track allocations/deallocations to detect leaks
+- See [Zig Error Path Testing Pattern](zig-error-path-testing-pattern.md)
+
 ## Related Patterns
 - [C to Zig Module Migration](c-to-zig-module-migration.md)
 - [Zig Memory Allocation with ar_allocator](zig-memory-allocation-with-ar-allocator.md)
@@ -97,3 +103,5 @@ export fn ar_example__destroy(own_module: ?*c.ar_example_t) void {  // EXAMPLE: 
 - [Zig C Memory Tracking Consistency](zig-c-memory-tracking-consistency.md)
 - [Zig Defer for Error Cleanup](zig-defer-error-cleanup-pattern.md)
 - [Zig Ownership with claim_or_copy](zig-ownership-claim-or-copy-pattern.md)
+- [Zig errdefer Value Capture Pattern](zig-errdefer-value-capture-pattern.md)
+- [Zig Error Path Testing Pattern](zig-error-path-testing-pattern.md)
