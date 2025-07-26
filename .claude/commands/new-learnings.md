@@ -232,7 +232,7 @@ If you're tempted to use hypothetical types, replace with real ones:
    - `/debug` - If debugging approaches were enhanced
 
 4. **Update command files as needed**:
-   - Add references to new KB articles: `([details](../../kb/article-name.md))`
+   - Add references to new KB articles: `([details](../../kb/specific-pattern.md))` // EXAMPLE: Replace with actual KB filename
    - Update outdated patterns with new learnings
    - Add new steps or modify existing ones based on discoveries
    - Ensure consistency with updated CLAUDE.md guidelines

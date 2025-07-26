@@ -85,6 +85,7 @@ Each learning file contains:
 ### Tools & Automation
 - [Automated Batch Documentation Fixes](automated-batch-documentation-fixes.md)
 - [Progressive Tool Enhancement](progressive-tool-enhancement.md)
+- [Command Continuous Improvement Pattern](command-continuous-improvement-pattern.md)
 - [Module Renaming Script Enhancement](module-renaming-script-enhancement.md)
 - [Script Enhancement Over One Off](script-enhancement-over-one-off.md)
 - [Settings File Merging Pattern](settings-file-merging-pattern.md)

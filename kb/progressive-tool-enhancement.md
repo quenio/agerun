@@ -82,3 +82,4 @@ def check_with_tagging_support():
 - [Automated Batch Documentation Fixes](automated-batch-documentation-fixes.md)
 - [Validated Documentation Examples](validated-documentation-examples.md)
 - [Script Enhancement Over One-Off](script-enhancement-over-one-off.md)
+- [Command Continuous Improvement Pattern](command-continuous-improvement-pattern.md)

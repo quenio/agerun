@@ -45,3 +45,4 @@ Apply to any complex technical domain requiring systematic knowledge organizatio
 ## Related Patterns
 - [Cross-referencing Knowledge Base](cross-referencing-knowledge-base.md)
 - [Research-driven Development](research-driven-development.md)
+- [Command Continuous Improvement Pattern](command-continuous-improvement-pattern.md)
