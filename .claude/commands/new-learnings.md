@@ -13,8 +13,9 @@ This command guides you through a comprehensive process to:
 4. Validate all documentation
 5. Add proper cross-references between articles
 6. Update kb/README.md index
-7. Update CLAUDE.md with references
-8. Commit and push all changes
+7. Review and update existing Claude commands based on learnings
+8. Update CLAUDE.md with references
+9. Commit and push all changes
 
 **IMPORTANT**: Always consider updating existing KB articles before creating new ones, and ensure all articles are properly cross-referenced to create a web of knowledge.
 
@@ -209,14 +210,41 @@ If you're tempted to use hypothetical types, replace with real ones:
    - [New Pattern You Created](new-pattern.md)
    ```
 
-## Step 7: Review Existing Guidelines
+## Step 7: Review and Update Existing Commands
+
+**NEW: Check if any Claude commands should be updated based on learnings**:
+
+1. **Search for relevant commands**:
+   ```bash
+   grep -l "relevant_keyword" .claude/commands/*.md
+   ```
+
+2. **Review commands that might benefit from updates**:
+   - Commands that use patterns discovered/improved in this session
+   - Commands that could reference new KB articles
+   - Commands with outdated approaches that could be modernized
+   
+3. **Common commands to check**:
+   - `/build` - If build process improvements were discovered
+   - `/test` - If testing patterns were enhanced
+   - `/refactor` - If refactoring techniques were improved
+   - `/migrate` - If migration strategies were updated
+   - `/debug` - If debugging approaches were enhanced
+
+4. **Update command files as needed**:
+   - Add references to new KB articles: `([details](../../kb/article-name.md))`
+   - Update outdated patterns with new learnings
+   - Add new steps or modify existing ones based on discoveries
+   - Ensure consistency with updated CLAUDE.md guidelines
+
+## Step 8: Review Existing Guidelines
 
 Check CLAUDE.md to see if these learnings should be referenced:
 - Determine if existing documentation needs links to new kb articles
 - Identify appropriate sections where kb articles should be referenced
 - Note any gaps that need new content with kb links
 
-## Step 8: Update Guidelines
+## Step 9: Update Guidelines
 
 If updates are needed to CLAUDE.md:
 
@@ -249,7 +277,7 @@ If updates are needed to CLAUDE.md:
    - Include new kb articles in relevant sections (e.g., Script Development, Documentation Protocol)
    - Maintain two-tier system: brief guidelines with links to comprehensive details
 
-## Step 9: Validate No Broken Links
+## Step 10: Validate No Broken Links
 
 **CRITICAL**: Before committing, verify all links work:
 
@@ -264,7 +292,7 @@ If updates are needed to CLAUDE.md:
 
 2. **Never reference non-existent articles in Related Patterns sections**
 
-## Step 10: Automatic Commit and Push
+## Step 11: Automatic Commit and Push
 
 **EXECUTE THE FOLLOWING SEQUENCE AUTOMATICALLY:**
 
@@ -277,6 +305,8 @@ If updates are needed to CLAUDE.md:
 2. **Stage all knowledge base work**:
    ```bash
    git add kb/ CLAUDE.md TODO.md CHANGELOG.md
+   # If any commands were updated:
+   git add .claude/commands/
    ```
 
 3. **Commit with comprehensive message**:

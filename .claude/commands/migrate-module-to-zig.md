@@ -61,6 +61,7 @@ Create a detailed migration plan that includes:
 ### Phase 3: Testing Approach
 - How to verify behavior matches C implementation
 - Memory leak detection strategy
+- Error path testing for complex modules ([details](../../kb/zig-error-path-testing-pattern.md))
 - Documentation validation approach
 
 ### Phase 4: Cleanup Plan
@@ -78,6 +79,7 @@ Create a detailed migration plan that includes:
 - **Memory allocation**: Use ar_allocator for type-safe operations ([details](../../kb/zig-memory-allocation-with-ar-allocator.md))
 - **Debug consistency**: Ensure -DDEBUG -D__ZIG__ flags ([details](../../kb/zig-c-memory-tracking-consistency.md))
 - **Build configuration**: Follow proper Zig build flags ([details](../../kb/zig-build-flag-configuration.md))
+- **Error cleanup**: Use errdefer but beware it doesn't work with `orelse return null` ([details](../../kb/zig-errdefer-value-capture-pattern.md))
 
 ## User Approval
 
