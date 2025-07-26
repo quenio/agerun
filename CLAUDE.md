@@ -342,6 +342,7 @@ cd bin  # Wrong - avoid relative paths
 - NEVER use Makefile variables $(VAR) in bash scripts - causes command substitution errors
 - Build output: quiet success, verbose failure (hide output when working, show full errors)
 - **Parallel builds**: Shared .PHONY deps → hoist to parent target (e.g., install-scan-build → build)
+- **Command updates**: Update Claude commands when new patterns emerge ([details](kb/command-continuous-improvement-pattern.md))
 
 **Debug Tools**: Memory (`make sanitize-tests`), static analysis, crashes (lldb), patterns testing ([details](kb/development-debug-tools.md))
 
@@ -546,6 +547,8 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 **Zig Integration**: Use ar_allocator, maintain C API, follow ownership conventions ([details](kb/zig-integration-comprehensive.md))
 **Memory allocation**: Always use ar_allocator.free, NEVER ar_heap__free ([details](kb/zig-memory-allocation-with-ar-allocator.md))
 **Ownership with claim_or_copy**: Essential pattern for evaluator migrations ([details](kb/zig-ownership-claim-or-copy-pattern.md))
+**errdefer limitations**: Doesn't work with `orelse return null` - use error unions ([details](kb/zig-errdefer-value-capture-pattern.md))
+**Error path testing**: Create `*_error_tests.c` for complex modules ([details](kb/zig-error-path-testing-pattern.md))
 
 ## AgeRun Language Notes
 
