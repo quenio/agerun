@@ -1026,6 +1026,7 @@ This pattern eliminates the cascading error handling that dominates evaluator co
 - [Zig errdefer Value Capture Pattern](zig-errdefer-value-capture-pattern.md)
 - [Zig Struct Modules Pattern](zig-struct-modules-pattern.md)
 - [Zig Static Analysis Tools](zig-static-analysis-tools.md)
+- [Zig Struct Module C Dependency Limitation](zig-struct-module-c-dependency-limitation.md)
 
 - [Zig Integration Comprehensive Guide](zig-integration-comprehensive.md)
 - [Zig Memory Debugging](zig-migration-memory-debugging.md)

@@ -558,6 +558,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 **Zig Struct Modules** (NEW): TitleCase pure Zig modules for internal use ([details](kb/zig-struct-modules-pattern.md))
 - **Purpose**: Internal Zig-only components with idiomatic patterns, NOT for C interop
 - **Naming**: TitleCase (e.g., `DataStore.zig`) vs C-ABI modules (`ar_module.zig`)
+- **Limitation**: Cannot use if module depends on C-ABI ([details](kb/zig-struct-module-c-dependency-limitation.md))
 - **Documentation**: Required `.md` file (e.g., `DataStore.md`) with full API reference
 - **Testing**: `ModuleNameTests.zig` using Zig's `test` keyword infrastructure
 - **No headers**: Import directly with `@import("DataStore.zig")`

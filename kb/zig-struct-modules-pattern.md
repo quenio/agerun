@@ -275,3 +275,4 @@ Sanitizer support is also integrated:
 - [Zig Test Build Integration](zig-test-build-integration.md)
 - [C to Zig Module Migration](c-to-zig-module-migration.md)
 - [Zig Static Analysis Tools](zig-static-analysis-tools.md)
+- [Zig Struct Module C Dependency Limitation](zig-struct-module-c-dependency-limitation.md)

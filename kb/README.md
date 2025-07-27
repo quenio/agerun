@@ -125,6 +125,7 @@ Each learning file contains:
 - [Development Debug Tools](development-debug-tools.md)
 - [Zig Integration Comprehensive](zig-integration-comprehensive.md)
 - [Zig Struct Modules Pattern](zig-struct-modules-pattern.md)
+- [Zig Struct Module C Dependency Limitation](zig-struct-module-c-dependency-limitation.md)
 - [Documentation Compacting Pattern](documentation-compacting-pattern.md)
 - [Just-In-Time KB Reading](just-in-time-kb-reading.md)
 - [Documentation Validation Error Patterns](documentation-validation-error-patterns.md)
