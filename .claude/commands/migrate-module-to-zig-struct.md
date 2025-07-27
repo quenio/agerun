@@ -3,6 +3,15 @@
 {{#if 1}}
 Migrate the **ar_{{1}}** module from a C-ABI compatible Zig module to a pure Zig struct module following the pattern documented in kb/zig-struct-modules-pattern.md.
 
+## Read KB Article First
+
+I'll start by reading the knowledge base article to understand the proper patterns for implementing Zig struct modules.
+
+```bash
+# Read the KB article about Zig struct modules
+cat kb/zig-struct-modules-pattern.md
+```
+
 ## Pre-Migration Dependency Check
 
 First, I need to verify that ar_{{1}} is safe to migrate by checking:
