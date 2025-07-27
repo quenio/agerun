@@ -7,36 +7,19 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ## Completed Tasks
 
 ### Evaluator Migration Strategy (Completed 2025-07-20)
-- [x] Analyzed error cleanup patterns across all evaluators - found ~100+ lines duplication each
-- [x] Determined Zig's `defer` naturally solves the cleanup cascade problem  
-- [x] Successfully migrated ar_exit_instruction_evaluator to Zig as proof of concept
-- [x] Created KB article documenting the defer pattern for error cleanup
-- [x] Updated TODO.md to reflect new Zig migration approach instead of C helper extraction
+- [x] Analyzed error cleanup patterns; determined Zig's defer solves cleanup cascade; migrated ar_exit_instruction_evaluator as proof; created KB article; updated TODO.md for Zig migration approach
 
 ### Knowledge Base Enhancement (Completed 2025-07-20)
-- [x] Created module removal checklist KB article documenting systematic removal process
-- [x] Updated refactoring key patterns with post-refactoring cleanup step
-- [x] Enhanced documentation language migration article to include module removal
-- [x] Added cross-references between related KB articles
-- [x] Created evaluator migration priority strategy KB article
-- [x] Enhanced memory leak detection workflow with individual verification
-- [x] Updated C-to-Zig migration guide with evaluator-specific insights
+- [x] Created module removal checklist KB; updated refactoring patterns; enhanced documentation migration; added cross-references; created evaluator migration strategy; enhanced memory leak detection; updated C-to-Zig migration guide
 
 ### Build System Parallelization (Completed 2025-07-07)
-- [x] Refactored Makefile to support parallel execution with isolated output directories
-- [x] Renamed targets to match directory names for consistency
-- [x] Fixed race conditions by removing clean dependencies from test targets
-- [x] Enhanced full_build.sh with parallel job execution and static analysis warning extraction
+- [x] Refactored Makefile for parallel execution with isolated directories; renamed targets for consistency; fixed race conditions; enhanced full_build.sh with parallel jobs and static analysis
 
 ### Type Naming Convention Update (Completed 2025-07-06)
 - [x] Renamed all types to follow ar_ prefix convention: enums (4 types, 129 occurrences), typedefs (17 types, 2573 occurrences), struct tags (11 types, 41 occurrences)
 
 ### Fix Naming Convention Violations (Completed 2025-07-07)
-- [x] Fixed static functions in ar_io.zig and ar_heap.zig to use _<name>() pattern
-- [x] Fixed all enum values to follow AR_<ENUM_TYPE>__<VALUE> convention
-- [x] Verified struct definitions already follow convention
-- [x] Verified Zig struct types already follow convention
-- [x] Updated 64 instances of old 'agerun_' prefix to 'ar_' prefix
+- [x] Fixed static functions in ar_io.zig and ar_heap.zig; fixed enum values to AR_<ENUM_TYPE>__<VALUE>; verified struct definitions and Zig struct types; updated 64 instances of 'agerun_' to 'ar_'
 
 ### Static Analysis Reporting in Makefile (Completed 2025-06-13)
 - [x] Fixed static analysis in full_build.sh with per-file analysis, proper bug detection, and clean build achieved
@@ -63,48 +46,19 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Converted ar_semver.c to ar_semver.zig standalone with enhanced safety, all tests pass
 
 ### ar_instruction_ast Module Zig Conversion (Completed 2025-07-13)
-- [x] Migrated ar_instruction_ast.c to ar_instruction_ast.zig with full C API compatibility
-- [x] Enhanced null safety with argument checking in create_function_call
-- [x] Improved efficiency using ar_list__remove_first() for list destruction  
-- [x] All tests pass with zero memory leaks (48 allocations, all freed)
-- [x] Updated documentation to reflect Zig implementation
+- [x] Migrated to Zig with full C API compatibility; enhanced null safety; improved efficiency; zero memory leaks (48 allocations freed); updated documentation
 
 ### ar_method_evaluator.zig C API Compatibility Fix (Completed 2025-07-13)
-- [x] Fixed critical C API compatibility violations in ar_method_evaluator.zig
-- [x] Updated return types from internal Zig types to C opaque types
-- [x] Added proper alignment casts for opaque type handling
-- [x] Added ar_method_evaluator.h to cImport block for type definitions
-- [x] All tests pass with zero memory leaks (736 allocations, all freed)
-- [x] Module now follows C-to-Zig migration guidelines completely
-- [x] Enhanced migration guide with compliance verification section and common violations
-- [x] Added ar_instruction_ast migration learnings with TDD patterns and implementation discrepancies
+- [x] Fixed C API violations; updated return types to opaque; added alignment casts; added cImport block; zero memory leaks (736 allocations freed); enhanced migration guide
 
 ### ar_method_ast Module Zig Conversion (Completed 2025-07-13)
-- [x] Migrated ar_method_ast.c to ar_method_ast.zig with full C API compatibility
-- [x] Fixed critical memory leak issue by updating ar_heap.h with Zig-compatible macros
-- [x] Updated Makefile to compile Zig modules with -DDEBUG and -D__ZIG__ flags
-- [x] Changed Zig optimization from -O ReleaseSafe to -O Debug for consistency
-- [x] All tests pass with zero memory leaks (1046 allocations, all freed)
-- [x] Solved cross-module memory allocation/deallocation issue (ar_list__items)
-- [x] Updated module documentation to reflect Zig implementation
-- [x] Created knowledge base articles documenting Zig-C interop patterns
+- [x] Migrated to Zig; fixed memory leak with Zig-compatible macros; updated Makefile for -DDEBUG and -D__ZIG__; changed to -O Debug; zero memory leaks (1046 allocations freed); created KB articles
 
 ### Documentation System Enhancement (Completed 2025-07-14)
-- [x] Enhanced check_docs.py to validate relative path links in all markdown documents
-- [x] Detect broken relative links (e.g., `[text](../path/file.md)`, `[text](kb/article.md)`)
-- [x] Validate that referenced files exist at the specified relative paths
-- [x] Support common markdown link formats and anchor references
-- [x] Add to existing validation pipeline alongside file references and function/type checking
-- [x] Test with various relative path patterns used throughout knowledge base and documentation
-- [x] Found 19 genuine broken links in documentation that need to be fixed
+- [x] Enhanced check_docs.py for relative path validation; detect broken links; validate file existence; support markdown formats; integrated into pipeline; found 19 broken links
 
 ### Evaluator Dependency Injection Refactoring (Completed 2025-07-15)
-- [x] Refactored instruction evaluator to create expression evaluator internally
-- [x] Refactored method evaluator to create instruction evaluator internally
-- [x] Simplified both APIs to only require log parameter (removed unnecessary dependency injection)
-- [x] Updated all tests to use new simplified API
-- [x] Maintained zero memory leaks throughout refactoring
-- [x] Updated module documentation to reflect ownership changes
+- [x] Refactored instruction and method evaluators to create dependencies internally; simplified APIs to require only log parameter; maintained zero memory leaks; updated documentation
 
 ## Critical Compliance Tasks
 
@@ -114,15 +68,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 #### 1. Extract Common Error Handling Module
 - [x] Created ar_event module for event representation with timestamps and position tracking (Completed 2025-06-29)
-- [x] Created ar_log module with buffering, auto-flush, and integration with all evaluators/parsers (Completed 2025-07-01)
-  - [x] COMPLETED: Update method module to accept ar_log parameter and propagate to method parser (Completed 2025-07-07)
-    - [x] Methodology module refactored to instantiable (Completed 2025-07-06)
-    - [x] Add ar_log parameter to ar_method__create() function (already had ar_method__create_with_log)
-    - [x] Pass ar_log from method creation to method parser (implemented in ar_method__create_with_log)
-    - [x] Update all method creation call sites to pass ar_log instance
-    - [x] Update methodology module to pass its ar_log to ar_method__create()
-    - [x] This ensures complete log propagation from top-level through entire parsing hierarchy
-- [x] Removed legacy error handling from all parsers (Completed 2025-07-02)
+- [x] Created ar_log module with buffering, auto-flush, and integration with all evaluators/parsers; propagated through method hierarchy; removed legacy error handling (Completed 2025-07-02)
 
 #### 2. Extract Memory Path Utilities Module  
 - [x] Created ar_path module for generic path operations with segment caching (Completed 2025-07-03)
@@ -133,64 +79,26 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Converted ar_string module to Zig with full C compatibility, established patterns for future conversions
 
 #### 3. Extract Ownership Handling Functions (Completed 2025-07-19)
-- [x] Extract ownership checking pattern into ar_data module (duplicated in 9+ evaluators, ~120+ lines)
-  - [x] Add `ar_data__claim_or_copy()` function to ar_data module
-    - Complex logic for determining if value needs copy vs. can be claimed
-    - Pattern: `ar_data__take_ownership()` → `ar_data__drop_ownership()` vs `ar_data__shallow_copy()`
-  - [x] Extract ownership transfer logic with proper cleanup on failure
-  - [x] Standardize shallow copy vs reference semantics decision-making
-- [x] Added `ar_data__destroy_if_owned()` for defensive cleanup patterns
-- [x] Replaced all ownership patterns across 11 files (compile, condition, parse, spawn, build, deprecate, agent, send, assignment, exit evaluators, and system)
-- [x] Maintained zero memory leaks throughout refactoring
-- [x] Updated ar_data module documentation with new functions
+- [x] Added ar_data__claim_or_copy() and ar_data__destroy_if_owned() to ar_data module; replaced ownership patterns across 11 files; maintained zero memory leaks; updated documentation
 
 #### 4. Extract Result Storage Functions (Completed 2025-07-20)
-- [x] Extract `_store_result_if_assigned()` into appropriate existing module (duplicated in 6 evaluators, ~150 lines)
-  - [x] Add common function to handle result storage pattern
-    - Identical 25-line function in: spawn, build, parse, compile, exit, deprecate evaluators
-    - Handles result path extraction, memory key path validation, ownership transfer
-  - [x] Determine best existing module (ar_memory_accessor or ar_instruction_ast)
-    - Created `ar_path__get_suffix_after_root()` in ar_path module
-    - Created `ar_data__set_map_data_if_root_matched()` in ar_data module
-  - [x] Standardize ownership transfer on storage with consistent cleanup
-- [x] Updated all 6 evaluators to use the new functions
-- [x] Maintained zero memory leaks throughout refactoring
-- [x] Updated ar_path.md and ar_data.md documentation
+- [x] Created ar_path__get_suffix_after_root() and ar_data__set_map_data_if_root_matched(); updated 6 evaluators; maintained zero memory leaks; updated documentation
 
 #### 5. Migrate Evaluators to Zig for Error Cleanup Simplification (NEW APPROACH)
 
 **Rationale**: Instead of extracting C helper functions, migrate evaluators to Zig to leverage `defer` for automatic cleanup, eliminating ~100+ lines of duplicated cleanup code per evaluator ([details](kb/zig-defer-error-cleanup-pattern.md)).
 
-- [x] Migrated ar_exit_instruction_evaluator to Zig as proof of concept (Completed 2025-07-20)
-  - Demonstrated `defer` eliminates manual cleanup cascades
-  - All tests pass with zero memory leaks
-  - Uses ar_allocator for consistency
+- [x] Migrated ar_exit_instruction_evaluator to Zig as proof of concept; demonstrated defer eliminates cleanup cascades; zero memory leaks (Completed 2025-07-20)
 
-- [x] Migrate remaining evaluators to Zig (priority order by complexity) - All completed 2025-07-26:
-  - [x] ar_send_instruction_evaluator (simple, 1 argument) - Completed 2025-07-20
-  - [x] ar_assignment_instruction_evaluator (simple, 2 parts) - Completed 2025-07-20
-  - [x] ar_deprecate_instruction_evaluator (moderate, 2 arguments) - Completed 2025-07-20
-  - [x] ar_spawn_instruction_evaluator (moderate, 3 arguments) - Completed 2025-07-21
-  - [x] ar_condition_instruction_evaluator (moderate, if logic) - Completed 2025-07-23
-  - [x] ar_build_instruction_evaluator (complex, string building) - Completed 2025-07-23
-  - [x] ar_parse_instruction_evaluator (complex, parsing) - Completed 2025-07-23
-  - [x] ar_compile_instruction_evaluator (complex, 3 string args) - Completed 2025-07-23
-  - [x] ar_expression_evaluator (complex, multiple types) - Completed 2025-07-25
-  - [x] ar_instruction_evaluator (facade, coordinate others) - Completed 2025-07-26
+- [x] Migrated all remaining evaluators to Zig: send, assignment, deprecate (2025-07-20); spawn (2025-07-21); condition, build, parse, compile (2025-07-23); expression (2025-07-25); instruction (2025-07-26)
 
 #### 6. Create Base Evaluator Structure
 - [x] Designed base evaluator pattern using ar_log composition (Completed 2025-06-30)
 
 #### 7. Refactor All Evaluators to Use Shared Components
-- [x] Updated all 9 evaluators to use ar_log (Partially completed 2025-06-30)
-- [x] Extracted ownership patterns to ar_data module functions (Completed 2025-07-19)
-- [x] Extracted result storage patterns to ar_data/ar_path modules (Completed 2025-07-20)
-- [x] Complete Zig migration for remaining evaluators (see section 5 above) - Completed 2025-07-26
-  - Migration to Zig eliminates need for additional C utility modules
-  - Each Zig evaluator naturally removes ~100+ lines of cleanup duplication
+- [x] Updated all evaluators with ar_log, ownership patterns, result storage patterns; completed Zig migration eliminating ~100+ lines cleanup duplication per evaluator (Completed 2025-07-26)
 
 ### Parnas Principles - Interface Violations (HIGH PRIORITY)
-
 - [x] Fixed all interface violations: removed internal functions, made modules opaque, achieved zero circular dependencies (Completed 2025-06-08)
 
 ### Completed Parnas Tasks
@@ -256,70 +164,29 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Updated CLAUDE.md to integrate references to new knowledge base articles for systematic guideline enhancement
 
 ### Simplify Deprecate Instruction Behavior (Completed 2025-07-19)
-- [x] Modified deprecate evaluator to only unregister methods without sending sleep messages or destroying agents
-- [x] Updated methodology module to allow unregistering methods even when agents are actively using them
-- [x] Fixed memory leaks in test files by processing wake messages after agent creation
-- [x] Updated documentation (ar_deprecate_instruction_evaluator.md, ar_methodology.md, ar_interpreter.md, SPEC.md)
-- [x] All tests pass with zero memory leaks
+- [x] Modified deprecate evaluator to only unregister methods; updated methodology module; fixed memory leaks; updated documentation; zero memory leaks
 
 ### Knowledge Base Enhancement - C/Zig Build Precedence (Completed 2025-07-20)
-- [x] Updated c-to-zig-module-migration.md with critical build precedence handling
-- [x] Added Phase 6: Testing and Verification with .bak renaming strategy
-- [x] Enhanced verification checklist with Zig compilation confirmation steps
-- [x] Updated CLAUDE.md with migration process note about C file precedence
-- [x] All documentation validated with make check-docs
+- [x] Updated c-to-zig-module-migration.md with build precedence handling; added Phase 6 with .bak renaming; enhanced verification checklist; updated CLAUDE.md; validated docs
 
 ### Knowledge Base Enhancement from Session Learnings (Completed 2025-07-19)
 - [x] Created 5 new KB articles documenting patterns from method evaluator integration
 - [x] Updated 10 existing KB articles with new sections and cross-references
 
 ### Zig Struct Modules Implementation (Completed 2025-07-27)
-- [x] Created new module type "Zig struct modules" with TitleCase naming
-- [x] Updated validation scripts (check_docs.py and check_naming_conventions.sh)
-- [x] Created example implementation (DataStore.zig and DataStoreTests.zig)
-- [x] Integrated Zig tests into Makefile with automatic discovery and execution
-- [x] Fixed Makefile POSIX shell compatibility issues (replaced bash [[ ]] with case)
-- [x] Created KB articles documenting patterns and integration approaches
-- [x] Updated CLAUDE.md with references to new patterns
+- [x] Created TitleCase Zig struct modules; updated validation scripts; created DataStore example; integrated Zig tests into Makefile; fixed POSIX compatibility; created KB articles; updated CLAUDE.md
 
 ### Complete Evaluator Migration to Zig (Completed 2025-07-26)
-- [x] Migrated ar_instruction_evaluator to Zig with errdefer cleanup pattern
-- [x] Fixed memory leak issue: discovered errdefer doesn't work with `orelse return null`
-- [x] Implemented private _create() function pattern returning error unions
-- [x] Created error path testing pattern using function interception
-- [x] Added ar_instruction_evaluator_error_tests.c to verify errdefer cleanup
-- [x] Updated KB articles with errdefer value capture and error testing patterns
-- [x] All 10 evaluators now migrated to Zig with comprehensive error handling
+- [x] Migrated ar_instruction_evaluator with errdefer pattern; fixed errdefer with orelse return null; implemented private _create() pattern; created error path testing; updated KB articles; all 10 evaluators migrated
 
 ### Knowledge Base Enhancement - Frank Communication (Completed 2025-07-23)
-- [x] Created frank-communication-principle.md documenting direct technical communication
-- [x] Enhanced zig-memory-allocation-with-ar-allocator.md with explicit ar_allocator.free emphasis
-- [x] Updated CLAUDE.md with memory allocation reference for Zig modules
-- [x] All documentation validated with make check-docs
+- [x] Created frank-communication-principle.md; enhanced zig-memory-allocation-with-ar-allocator.md; updated CLAUDE.md; validated all documentation
 
 ### Knowledge Base Enhancement - High Value Articles (Completed 2025-07-27)
-- [x] Created evidence-based-debugging.md documenting systematic debugging methodology
-- [x] Created domain-specific-type-creation.md explaining C type creation patterns
-- [x] Created plan-verification-and-review.md covering development plan review process
-- [x] Updated CLAUDE.md with references to all three new KB articles
-- [x] Fixed all documentation validation errors with proper EXAMPLE markers
+- [x] Created evidence-based-debugging.md, domain-specific-type-creation.md, plan-verification-and-review.md; updated CLAUDE.md; fixed validation errors with EXAMPLE markers
 
 ### Zig Evaluator Pattern Improvements (Completed 2025-07-20)
-- [x] Migrated ar_assignment_instruction_evaluator to Zig leveraging defer for cleanup
-- [x] Discovered and documented new Zig patterns during code review:
-  - Use concrete Zig types for own module, C types for others
-  - Eliminate unnecessary helper functions (direct calls cleaner)
-  - Make evaluator parameters const when not mutated
-  - Update ar_data ownership APIs to accept const void* parameters
-- [x] Applied patterns to existing Zig evaluators:
-  - Updated ar_exit_instruction_evaluator.zig
-  - Updated ar_method_evaluator.zig  
-  - Updated ar_send_instruction_evaluator.zig
-- [x] Created kb/zig-type-usage-patterns.md documenting type usage discoveries
-- [x] Updated kb/c-to-zig-module-migration.md and kb/zig-defer-error-cleanup-pattern.md
-- [x] Added "Zig Best Practices" section to CLAUDE.md
-- [x] Updated module documentation to reflect const parameter changes
-- [x] All tests pass with zero memory leaks
+- [x] Migrated ar_assignment_instruction_evaluator; discovered new patterns (concrete types, eliminate helpers, const params); applied to existing evaluators; created KB articles; updated CLAUDE.md; zero memory leaks
 
 ### HIGHEST PRIORITY - Frame-Based Execution Implementation (Revised Plan)
 
@@ -328,12 +195,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 **Core Principle**: Modify in place - No parallel implementations. Each change replaces existing code.
 
 #### Phase 0: Create Method Evaluator (Completed 2025-07-10)
-- [x] Created ar_method_evaluator module in Zig with frame-based execution
-- [x] Implemented evaluation of empty methods, single instruction, and multiple instructions
-- [x] Established top-down pattern for frame usage
-- [x] Added comprehensive error handling with line number reporting
-- [x] Verified memory handling with stress tests (50 instructions)
-- [x] All tests pass with zero memory leaks
+- [x] Created ar_method_evaluator in Zig with frame-based execution; evaluated empty/single/multiple instructions; established top-down pattern; comprehensive error handling; stress tested; zero memory leaks
 
 #### Phase 1: Create Frame Abstraction (Completed 2025-06-28)
 - [x] Created ar_frame module with memory/context/message bundling and comprehensive documentation
@@ -352,57 +214,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Created ar_data__shallow_copy() eliminating _copy_data_value duplication across evaluators
 
 #### Phase 3: Update Instruction Evaluators (One by One)
-- [x] TDD Cycle 7: Assignment evaluator (Completed 2025-07-12)
-  - [x] Modify create to remove memory parameter
-  - [x] Update evaluate to take frame parameter
-  - [x] Test thoroughly
-  - [x] Create generic instruction evaluator fixture
-  - [x] Update assignment evaluator tests to use fixture
-- [x] TDD Cycle 8: Send evaluator (Completed 2025-07-12)
-  - [x] Same pattern as assignment
-  - [x] Ensure send actually performs sends (not just returns true)
-  - [x] Update instruction evaluator facade to create send evaluator upfront
-- [x] TDD Cycle 9: Condition (if) evaluator (Completed 2025-07-12)
-- [x] TDD Cycle 10: Parse evaluator (Completed 2025-07-12)
-- [x] TDD Cycle 11: Build evaluator (Completed 2025-07-12)
-- [x] TDD Cycle 12: Method evaluator (Completed 2025-07-12)
-- [x] TDD Cycle 13: Agent evaluator (Completed 2025-07-12)
-- [x] TDD Cycle 14: Destroy agent evaluator (Completed 2025-07-12)
-- [x] TDD Cycle 15: Destroy method evaluator (Completed 2025-07-12)
+- [x] Updated all 9 instruction evaluators to frame-based pattern with generic fixture (Completed 2025-07-12)
 
 #### Phase 4: Update Facades
-- [x] TDD Cycle 16: Update instruction evaluator facade (Completed 2025-07-12)
-  - [x] Modify create to take only log and expression evaluator
-  - [x] Implement lazy initialization of sub-evaluators
-  - [x] Update evaluate to accept frame parameter
-  - [x] Create sub-evaluators on-demand using memory from frame
-  - [x] Update all tests to use new interface
-  - [x] Update method evaluator to pass frame parameter
-  - [x] Fix agent evaluator to accept const context
-- [x] TDD Cycle 17: Update expression evaluator usage (Completed 2025-07-12)
-  - [x] Add evaluate_with_frame method to expression evaluator
-  - [x] Update all instruction evaluators to use frame-based expression evaluation
-  - [x] Maintain backward compatibility during transition
-  - [x] Complete expression evaluator frame migration (Completed 2025-07-12)
-    - [x] Remove stored memory/context from evaluator struct
-    - [x] Make all type-specific evaluate functions static
-    - [x] Rename evaluate_with_frame to evaluate (single public API)
-    - [x] Update all tests to use new API
-    - [x] Update documentation to reflect frame-based pattern
+- [x] Updated instruction evaluator facade with lazy initialization; updated expression evaluator to frame-based API; removed old parameter-based code (Completed 2025-07-12)
 
 #### Phase 5: Integrate into Interpreter (Completed 2025-07-19)
-- [x] TDD Cycle 18: Update interpreter
-  - [x] Added log parameter to interpreter creation
-  - [x] Integrated method evaluator into interpreter
-  - [x] Delegated all method execution to method evaluator
-  - [x] Updated system module to pass log instance
-  - [x] All interpreter tests pass
-- [x] TDD Cycle 19: Fix integration issues
-  - [x] Fixed expression evaluator to support "message" accessor
-  - [x] Fixed interpreter fixture to create agents with context
-  - [x] Fixed ownership issues with wake/sleep messages
-  - [x] Fixed memory leaks across all test files
-  - [x] All tests pass with zero memory leaks
+- [x] Updated interpreter with log parameter; integrated method evaluator; fixed expression evaluator message accessor; fixed ownership issues; all tests pass with zero memory leaks
 
 **Success Criteria**:
 - Zero parallel code: No `_with_frame` variants
@@ -423,12 +241,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 **Status**: Successfully implemented method_ast and method_parser modules with full integration into method module. Methods now store parsed ASTs instead of just source text.
 
 **Completed**:
-- [x] Created method_ast and method_parser modules with full functionality (Completed 2025-06-26)
-- [x] TDD Cycle 11: Error handling - Added test for invalid instructions (Completed 2025-07-27)
-- [x] TDD Cycle 12-13: Integrate with method module - Already integrated, added comprehensive test (Completed 2025-07-27)
+- [x] Created method_ast and method_parser modules with full functionality; added error handling tests; integrated with method module (Completed 2025-07-27)
 
 ### HIGH PRIORITY - Refactor Methodology Module to Instantiable (Completed 2025-07-06)
-
 - [x] Made methodology instantiable with backward-compatible global instance pattern
 
 ### ARCHIVED - Instruction and Expression Module Refactoring (Completed through AST/Evaluator implementation)
@@ -489,26 +304,15 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ## Pending Features
 
 ### Interpreter Function Implementations (Tests Temporarily Removed)
-
-- [x] Implemented destroy() function with agent/method destruction (Completed)
-- [x] Implemented ownership transfer for agent context (Completed)
-- [x] Improved error handling with proper validation and reporting (Completed)
-- [x] Implemented string comparison in if() function (Completed)
-- [x] Implemented agent persistence with state serialization and map iteration (Completed)
-- [x] Designed distributed agent communication architecture (Future work)
+- [x] Implemented destroy() with agent/method destruction; ownership transfer; error handling; string comparison in if(); agent persistence; designed distributed architecture (Completed)
 
 ## Documentation Tasks
-
 - [x] Created memory ownership diagrams and improved module documentation (Completed)
 
 ## Testing and Quality
-
-- [x] Improved memory leak detection with per-test reports and enhanced build system (Completed)
-- [x] Enhanced test coverage and created isolated test infrastructure (Completed)
-- [x] Implemented memory failure testing and standardization patterns (Completed)
+- [x] Improved memory leak detection with per-test reports; enhanced test coverage; implemented memory failure testing (Completed)
 
 ## Method Development
-
 - [x] Created 5 additional method files using TDD methodology (Completed)
 
 ## Test Infrastructure - System Test Fixture Strategy
@@ -605,9 +409,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 These articles were referenced in existing kb files but never created. They would enhance the knowledge base:
 
 #### High Value Articles (Completed 2025-07-27)
-- [x] **Evidence-Based Debugging** (kb/evidence-based-debugging.md) - Document debugging with concrete evidence vs assumptions
-- [x] **Domain-specific Type Creation** (kb/domain-specific-type-creation.md) - Explain creating domain types in C (vs OO languages)  
-- [x] **Plan Verification and Review** (kb/plan-verification-and-review.md) - Cover reviewing development plans before execution
+- [x] **Evidence-Based Debugging**, **Domain-specific Type Creation**, **Plan Verification and Review** - All created with proper documentation
 
 #### Medium Value Articles  
 - [ ] **Systematic Problem Analysis** (kb/systematic-problem-analysis.md) - Document structured approaches to problem solving
