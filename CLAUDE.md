@@ -80,6 +80,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Always search CLAUDE.md first** when asked about procedures. Don't overthink - start with exact keywords.
 **When reading TODO.md**: Check [ ] = incomplete, [x] = complete. Read completion dates. Be explicit - list all components.
 **KB articles need CLAUDE.md references** to be accessible in future sessions ([details](kb/claude-md-reference-requirement.md))
+**Evidence-based debugging**: Always verify with concrete evidence, not assumptions ([details](kb/evidence-based-debugging.md))
 
 **Documentation Standards (MANDATORY)** ([details](kb/documentation-standards-integration.md)):
 - **Real code only**: All examples must use actual AgeRun types/functions ([details](kb/validated-documentation-examples.md))
@@ -226,6 +227,7 @@ grep -r "function_name\|concept" modules/
 ```
 
 **DRY**: Stop copying → extract common functions → use data tables → parameterize → verify moves with diff
+**Domain types**: Create type-safe abstractions instead of primitive obsession ([details](kb/domain-specific-type-creation.md))
 
 **Red Flags**: Module A→B→C→A cycles, repeated validation logic, similar function names (_for_int, _for_string), parsing+execution together
 
@@ -471,7 +473,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 **Key Patterns**: Module cohesion, code movement verification, test preservation, complete implementations ([details](kb/refactoring-key-patterns.md))
 **Defensive consistency**: Always use defensive APIs even when ownership is "known" ([details](kb/defensive-programming-consistency.md))
 
-### 14. Plan Verification and Review
+### 14. Plan Verification and Review ([details](kb/plan-verification-and-review.md))
 
 **When Creating Development Plans**:
 - **Single task focus**: Create plans for one todo item at a time, not multi-task plans

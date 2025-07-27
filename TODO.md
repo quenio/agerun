@@ -267,6 +267,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Updated CLAUDE.md with memory allocation reference for Zig modules
 - [x] All documentation validated with make check-docs
 
+### Knowledge Base Enhancement - High Value Articles (Completed 2025-07-27)
+- [x] Created evidence-based-debugging.md documenting systematic debugging methodology
+- [x] Created domain-specific-type-creation.md explaining C type creation patterns
+- [x] Created plan-verification-and-review.md covering development plan review process
+- [x] Updated CLAUDE.md with references to all three new KB articles
+- [x] Fixed all documentation validation errors with proper EXAMPLE markers
+
 ### Zig Evaluator Pattern Improvements (Completed 2025-07-20)
 - [x] Migrated ar_assignment_instruction_evaluator to Zig leveraging defer for cleanup
 - [x] Discovered and documented new Zig patterns during code review:
@@ -569,10 +576,10 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ### Missing Documentation Articles
 These articles were referenced in existing kb files but never created. They would enhance the knowledge base:
 
-#### High Value Articles
-- [ ] **Evidence-Based Debugging** (kb/evidence-based-debugging.md) - Document debugging with concrete evidence vs assumptions
-- [ ] **Domain-specific Type Creation** (kb/domain-specific-type-creation.md) - Explain creating domain types in C (vs OO languages)  
-- [ ] **Plan Verification and Review** (kb/plan-verification-and-review.md) - Cover reviewing development plans before execution
+#### High Value Articles (Completed 2025-07-27)
+- [x] **Evidence-Based Debugging** (kb/evidence-based-debugging.md) - Document debugging with concrete evidence vs assumptions
+- [x] **Domain-specific Type Creation** (kb/domain-specific-type-creation.md) - Explain creating domain types in C (vs OO languages)  
+- [x] **Plan Verification and Review** (kb/plan-verification-and-review.md) - Cover reviewing development plans before execution
 
 #### Medium Value Articles  
 - [ ] **Systematic Problem Analysis** (kb/systematic-problem-analysis.md) - Document structured approaches to problem solving
@@ -587,7 +594,7 @@ These articles were referenced in existing kb files but never created. They woul
 
 ## Strategic Priorities
 
-### Complete C to Zig ABI-Compatible Migration (HIGH PRIORITY)
+### Complete C to Zig ABI-Compatible Migration (MEDIUM PRIORITY)
 
 **Current Status**: 21/58 modules migrated (36%)
 
