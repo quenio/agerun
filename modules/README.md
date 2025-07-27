@@ -2,9 +2,13 @@
 
 ## What is a Module?
 
-In the AgeRun system, a module is a self-contained unit of functionality that consists of an implementation file (`.c` or `.zig`) and a header file (`.h`). Each module encapsulates a specific set of related functions and data structures that work together to provide a particular capability to the system. Modules are designed to have clear interfaces and dependencies, making the system more maintainable and easier to understand.
+In the AgeRun system, a module is a self-contained unit of functionality that provides a specific capability to the system. Modules are designed to have clear interfaces and dependencies, making the system more maintainable and easier to understand.
 
-**Zig Integration**: Some modules are now implemented in Zig (`.zig` files) while maintaining full C ABI compatibility. Currently implemented in Zig: `ar_assert`, `ar_expression_ast`, `ar_heap`, `ar_instruction_ast`, `ar_method_ast`, `ar_method_evaluator`, `ar_semver`, and `ar_string`. The `ar_io` module uses a hybrid approach with most functions in Zig (`ar_io.zig`) and variadic functions in C (`ar_io_variadic.c`) due to platform-specific requirements.
+**Module Types**:
+
+1. **C Modules**: Traditional modules with an implementation file (`.c`) and header file (`.h`)
+2. **C-ABI Compatible Zig Modules**: Zig implementations (`.zig`) that maintain full C API compatibility with matching header files (`.h`). Currently implemented in Zig: `ar_assert`, `ar_expression_ast`, `ar_heap`, `ar_instruction_ast`, `ar_method_ast`, `ar_method_evaluator`, `ar_semver`, and `ar_string`. The `ar_io` module uses a hybrid approach with most functions in Zig (`ar_io.zig`) and variadic functions in C (`ar_io_variadic.c`) due to platform-specific requirements.
+3. **Zig Struct Modules**: Pure Zig modules using TitleCase naming (e.g., `DataStore.zig`) for internal components that don't require C interop. These modules use Zig's idiomatic patterns while maintaining AgeRun's ownership conventions.
 
 Each module typically follows a consistent naming convention with an `ar_` prefix (e.g., `ar_data`, `ar_string`), and has its own test file (`ar_*_tests.c`) that verifies its functionality. Note: File names are being transitioned from `ar_` to `ar_` prefix gradually as files are modified for other reasons.
 
@@ -1501,3 +1505,22 @@ The [instruction evaluator fixture module](ar_evaluator_fixture.md) provides reu
 - **Generic Design**: Can be used by any instruction evaluator test module
 - **Opaque Type**: Fixture structure is opaque, following Parnas principles
 - **Designed for Instruction Evaluators**: Specifically tailored for testing instruction evaluator modules
+
+## Zig Struct Modules
+
+Zig struct modules are a new category of modules that leverage Zig's native patterns for internal components. These modules are not part of the core runtime but provide utilities and tools for other Zig modules.
+
+### DataStore Module (`DataStore`)
+
+The [DataStore module](DataStore.md) provides a key-value storage implementation using idiomatic Zig patterns:
+
+- **TitleCase Naming**: Uses `DataStore.zig` following Zig conventions, not `ar_datastore.zig`
+- **Pure Zig API**: Uses slices (`[]u8`) instead of C pointers, error unions for error handling
+- **Ownership Semantics**: Maintains AgeRun's `own_`, `mut_`, `ref_` prefixes on all fields
+- **Init/Deinit Pattern**: Uses Zig's conventional lifecycle methods instead of create/destroy
+- **Last Accessed Tracking**: Tracks the most recently accessed entry for optimization
+- **No C Interop**: Designed for internal use by other Zig modules only
+- **Test Infrastructure**: Uses Zig's built-in test framework (`DataStoreTests.zig`)
+- **Build Integration**: Tests run automatically via `make run-tests` alongside C tests
+
+For more information about this module type, see the [Zig Struct Modules Pattern](../kb/zig-struct-modules-pattern.md) knowledge base article.
