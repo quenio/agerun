@@ -4,7 +4,7 @@ A simple key-value data store demonstrating Zig struct module patterns.
 
 ## Overview
 
-The DataStore module provides an in-memory key-value store with ownership tracking and integration with AgeRun's data types. It demonstrates the proper use of Zig struct modules while maintaining AgeRun's ownership conventions.
+The DataStore module provides an in-memory key-value store with ownership tracking. It demonstrates the proper use of Zig struct modules while maintaining AgeRun's ownership conventions.
 
 ## API Reference
 
@@ -23,7 +23,7 @@ Represents a key-value pair in the store.
 ```zig
 pub const Entry = struct {
     own_key: []u8,
-    own_value: *ar_data.ar_data_t,
+    own_value: []u8,
 };
 ```
 
@@ -56,7 +56,7 @@ pub fn deinit(self: *DataStore) void
 Store a key-value pair, taking ownership of both.
 
 ```zig
-pub fn put(self: *DataStore, own_key: []u8, own_value: *ar_data.ar_data_t) !void
+pub fn put(self: *DataStore, own_key: []u8, own_value: []u8) !void
 ```
 
 **Parameters:**
@@ -71,7 +71,7 @@ pub fn put(self: *DataStore, own_key: []u8, own_value: *ar_data.ar_data_t) !void
 Get a reference to a value by key.
 
 ```zig
-pub fn get(self: *DataStore, ref_key: []const u8) ?*ar_data.ar_data_t
+pub fn get(self: *DataStore, ref_key: []const u8) ?[]const u8
 ```
 
 **Parameters:**
@@ -138,7 +138,6 @@ pub fn getAllKeys(self: *const DataStore) ![][]u8
 ```zig
 const std = @import("std");
 const DataStore = @import("DataStore.zig");
-const ar_data = @import("ar_data.zig");
 
 // Initialize store
 var store = try DataStore.init(allocator);
@@ -146,13 +145,12 @@ defer store.deinit();
 
 // Store a value
 const own_key = try allocator.dupe(u8, "config");
-const own_value = ar_data.ar_data__create_string("debug mode");
+const own_value = try allocator.dupe(u8, "debug mode");
 try store.put(own_key, own_value);
 
 // Retrieve value
 if (store.get("config")) |value| {
-    const config = ar_data.ar_data__get_string(value);
-    std.debug.print("Config: {s}\n", .{config});
+    std.debug.print("Config: {s}\n", .{value});
 }
 
 // Remove value
@@ -167,7 +165,7 @@ _ = store.remove("config");
 
 3. **Ordered Storage**: Entries are stored in insertion order using `ArrayList`, making `getAllKeys` predictable.
 
-4. **Integration**: Designed to work seamlessly with `ar_data_t` values from the AgeRun data module.
+4. **Simplicity**: Uses simple string values to demonstrate the pattern without external dependencies.
 
 ## Testing
 

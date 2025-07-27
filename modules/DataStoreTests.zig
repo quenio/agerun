@@ -1,13 +1,9 @@
 const std = @import("std");
 const testing = std.testing;
 const DataStore = @import("DataStore.zig");
-const ar_data = @import("ar_data.zig");
-const ar_allocator = @import("ar_allocator.zig");
 
 test "DataStore init and deinit" {
-    const allocator = ar_allocator.get();
-    
-    var store = try DataStore.init(allocator);
+    var store = try DataStore.init(testing.allocator);
     defer store.deinit();
     
     try testing.expect(store.isEmpty());
@@ -15,14 +11,12 @@ test "DataStore init and deinit" {
 }
 
 test "DataStore put and get" {
-    const allocator = ar_allocator.get();
-    
-    var store = try DataStore.init(allocator);
+    var store = try DataStore.init(testing.allocator);
     defer store.deinit();
     
     // Create owned key and value
-    const own_key = try allocator.dupe(u8, "test_key");
-    const own_value = ar_data.ar_data__create_integer(42);
+    const own_key = try testing.allocator.dupe(u8, "test_key");
+    const own_value = try testing.allocator.dupe(u8, "test_value");
     
     // Store the pair
     try store.put(own_key, own_value);
@@ -34,23 +28,21 @@ test "DataStore put and get" {
     // Get the value
     const ref_value = store.get("test_key");
     try testing.expect(ref_value != null);
-    try testing.expectEqual(@as(i64, 42), ar_data.ar_data__get_integer(ref_value.?));
+    try testing.expectEqualStrings("test_value", ref_value.?);
 }
 
 test "DataStore put replaces existing value" {
-    const allocator = ar_allocator.get();
-    
-    var store = try DataStore.init(allocator);
+    var store = try DataStore.init(testing.allocator);
     defer store.deinit();
     
     // First value
-    const own_key1 = try allocator.dupe(u8, "key");
-    const own_value1 = ar_data.ar_data__create_integer(100);
+    const own_key1 = try testing.allocator.dupe(u8, "key");
+    const own_value1 = try testing.allocator.dupe(u8, "first_value");
     try store.put(own_key1, own_value1);
     
     // Replace with new value
-    const own_key2 = try allocator.dupe(u8, "key");
-    const own_value2 = ar_data.ar_data__create_integer(200);
+    const own_key2 = try testing.allocator.dupe(u8, "key");
+    const own_value2 = try testing.allocator.dupe(u8, "second_value");
     try store.put(own_key2, own_value2);
     
     // Should still have one entry
@@ -59,22 +51,20 @@ test "DataStore put replaces existing value" {
     // Should have new value
     const ref_value = store.get("key");
     try testing.expect(ref_value != null);
-    try testing.expectEqual(@as(i64, 200), ar_data.ar_data__get_integer(ref_value.?));
+    try testing.expectEqualStrings("second_value", ref_value.?);
 }
 
 test "DataStore remove" {
-    const allocator = ar_allocator.get();
-    
-    var store = try DataStore.init(allocator);
+    var store = try DataStore.init(testing.allocator);
     defer store.deinit();
     
     // Add some entries
-    const own_key1 = try allocator.dupe(u8, "key1");
-    const own_value1 = ar_data.ar_data__create_string("value1");
+    const own_key1 = try testing.allocator.dupe(u8, "key1");
+    const own_value1 = try testing.allocator.dupe(u8, "value1");
     try store.put(own_key1, own_value1);
     
-    const own_key2 = try allocator.dupe(u8, "key2");
-    const own_value2 = ar_data.ar_data__create_string("value2");
+    const own_key2 = try testing.allocator.dupe(u8, "key2");
+    const own_value2 = try testing.allocator.dupe(u8, "value2");
     try store.put(own_key2, own_value2);
     
     try testing.expectEqual(@as(usize, 2), store.count());
@@ -92,15 +82,13 @@ test "DataStore remove" {
 }
 
 test "DataStore clear" {
-    const allocator = ar_allocator.get();
-    
-    var store = try DataStore.init(allocator);
+    var store = try DataStore.init(testing.allocator);
     defer store.deinit();
     
     // Add multiple entries
     for (0..5) |i| {
-        const own_key = try std.fmt.allocPrint(allocator, "key{d}", .{i});
-        const own_value = ar_data.ar_data__create_integer(@intCast(i));
+        const own_key = try std.fmt.allocPrint(testing.allocator, "key{d}", .{i});
+        const own_value = try std.fmt.allocPrint(testing.allocator, "value{d}", .{i});
         try store.put(own_key, own_value);
     }
     
@@ -114,31 +102,29 @@ test "DataStore clear" {
 }
 
 test "DataStore getAllKeys" {
-    const allocator = ar_allocator.get();
-    
-    var store = try DataStore.init(allocator);
+    var store = try DataStore.init(testing.allocator);
     defer store.deinit();
     
     // Add entries
-    const own_key1 = try allocator.dupe(u8, "alpha");
-    const own_value1 = ar_data.ar_data__create_null();
+    const own_key1 = try testing.allocator.dupe(u8, "alpha");
+    const own_value1 = try testing.allocator.dupe(u8, "value_alpha");
     try store.put(own_key1, own_value1);
     
-    const own_key2 = try allocator.dupe(u8, "beta");
-    const own_value2 = ar_data.ar_data__create_null();
+    const own_key2 = try testing.allocator.dupe(u8, "beta");
+    const own_value2 = try testing.allocator.dupe(u8, "value_beta");
     try store.put(own_key2, own_value2);
     
-    const own_key3 = try allocator.dupe(u8, "gamma");
-    const own_value3 = ar_data.ar_data__create_null();
+    const own_key3 = try testing.allocator.dupe(u8, "gamma");
+    const own_value3 = try testing.allocator.dupe(u8, "value_gamma");
     try store.put(own_key3, own_value3);
     
     // Get all keys
     const own_keys = try store.getAllKeys();
     defer {
         for (own_keys) |key| {
-            allocator.free(key);
+            testing.allocator.free(key);
         }
-        allocator.free(own_keys);
+        testing.allocator.free(own_keys);
     }
     
     try testing.expectEqual(@as(usize, 3), own_keys.len);
@@ -150,17 +136,15 @@ test "DataStore getAllKeys" {
 }
 
 test "DataStore last accessed tracking" {
-    const allocator = ar_allocator.get();
-    
-    var store = try DataStore.init(allocator);
+    var store = try DataStore.init(testing.allocator);
     defer store.deinit();
     
     // Initially no last accessed
     try testing.expect(store.mut_last_accessed == null);
     
     // Add entry
-    const own_key1 = try allocator.dupe(u8, "key1");
-    const own_value1 = ar_data.ar_data__create_integer(1);
+    const own_key1 = try testing.allocator.dupe(u8, "key1");
+    const own_value1 = try testing.allocator.dupe(u8, "value1");
     try store.put(own_key1, own_value1);
     
     // Should track last accessed
@@ -168,8 +152,8 @@ test "DataStore last accessed tracking" {
     try testing.expectEqualStrings("key1", store.mut_last_accessed.?.own_key);
     
     // Add another
-    const own_key2 = try allocator.dupe(u8, "key2");
-    const own_value2 = ar_data.ar_data__create_integer(2);
+    const own_key2 = try testing.allocator.dupe(u8, "key2");
+    const own_value2 = try testing.allocator.dupe(u8, "value2");
     try store.put(own_key2, own_value2);
     try testing.expectEqualStrings("key2", store.mut_last_accessed.?.own_key);
     

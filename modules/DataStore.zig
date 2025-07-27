@@ -1,6 +1,4 @@
 const std = @import("std");
-const ar_allocator = @import("ar_allocator.zig");
-const ar_data = @import("ar_data.zig");
 
 /// A simple key-value data store demonstrating Zig struct module patterns
 pub const DataStore = @This();
@@ -8,7 +6,7 @@ pub const DataStore = @This();
 /// Represents a key-value pair in the store
 pub const Entry = struct {
     own_key: []u8,
-    own_value: *ar_data.ar_data_t,
+    own_value: []u8,
 };
 
 allocator: std.mem.Allocator,
@@ -28,18 +26,18 @@ pub fn init(allocator: std.mem.Allocator) !DataStore {
 pub fn deinit(self: *DataStore) void {
     for (self.own_entries.items) |*entry| {
         self.allocator.free(entry.own_key);
-        ar_data.ar_data__destroy(entry.own_value);
+        self.allocator.free(entry.own_value);
     }
     self.own_entries.deinit();
 }
 
 /// Store a key-value pair, taking ownership of both
-pub fn put(self: *DataStore, own_key: []u8, own_value: *ar_data.ar_data_t) !void {
+pub fn put(self: *DataStore, own_key: []u8, own_value: []u8) !void {
     // Check if key already exists
     for (self.own_entries.items) |*entry| {
         if (std.mem.eql(u8, entry.own_key, own_key)) {
             // Replace existing value
-            ar_data.ar_data__destroy(entry.own_value);
+            self.allocator.free(entry.own_value);
             entry.own_value = own_value;
             self.allocator.free(own_key);
             self.mut_last_accessed = entry;
@@ -56,7 +54,7 @@ pub fn put(self: *DataStore, own_key: []u8, own_value: *ar_data.ar_data_t) !void
 }
 
 /// Get a reference to a value by key
-pub fn get(self: *DataStore, ref_key: []const u8) ?*ar_data.ar_data_t {
+pub fn get(self: *DataStore, ref_key: []const u8) ?[]const u8 {
     for (self.own_entries.items) |*entry| {
         if (std.mem.eql(u8, entry.own_key, ref_key)) {
             self.mut_last_accessed = entry;
@@ -71,7 +69,7 @@ pub fn remove(self: *DataStore, ref_key: []const u8) bool {
     for (self.own_entries.items, 0..) |*entry, i| {
         if (std.mem.eql(u8, entry.own_key, ref_key)) {
             self.allocator.free(entry.own_key);
-            ar_data.ar_data__destroy(entry.own_value);
+            self.allocator.free(entry.own_value);
             _ = self.own_entries.orderedRemove(i);
             if (self.mut_last_accessed == entry) {
                 self.mut_last_accessed = null;
@@ -96,7 +94,7 @@ pub fn count(self: *const DataStore) usize {
 pub fn clear(self: *DataStore) void {
     for (self.own_entries.items) |*entry| {
         self.allocator.free(entry.own_key);
-        ar_data.ar_data__destroy(entry.own_value);
+        self.allocator.free(entry.own_value);
     }
     self.own_entries.clearRetainingCapacity();
     self.mut_last_accessed = null;
