@@ -118,9 +118,36 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ### Instruction Module Refactoring (Completed 2025-06-12)
 - [x] Separated parsing and execution phases, fixed invalid syntax handling, all tests passing
 
-## Immediate Priorities (Next Steps)
+## Immediate Priorities (Re-prioritized 2025-07-27)
 
-### HIGH PRIORITY - System-Wide Integration Testing and Verification
+### 1. HIGHEST PRIORITY - Methodology Module Refactoring
+
+**Rationale**: The methodology module has grown large and handles multiple responsibilities. Splitting it into focused components will improve maintainability and follow Parnas principles.
+
+**Tasks**:
+- [ ] Split methodology module into focused components:
+  - [ ] ar_method_registry - Method registration and lookup
+  - [ ] ar_method_resolver - Version resolution and method selection
+  - [ ] ar_method_persistence - Serialization and deserialization
+  - [ ] ar_methodology (facade) - Coordinate the sub-modules
+- [ ] Maintain backward compatibility during refactoring
+- [ ] Update all client code to use appropriate sub-modules
+- [ ] Verify zero memory leaks after refactoring
+- [ ] Update documentation for new module structure
+
+### 2. HIGH PRIORITY - System Module Refactoring
+
+**Rationale**: The system module coordinates many aspects of the runtime. Breaking it into focused modules will improve code organization and testability.
+
+**Tasks**:
+- [ ] Analyze current system module responsibilities
+- [ ] Design focused sub-modules (e.g., message queue, agent lifecycle, system state)
+- [ ] Extract sub-modules following TDD approach
+- [ ] Update all dependent modules
+- [ ] Ensure proper encapsulation and clean interfaces
+- [ ] Verify system behavior remains unchanged
+
+### 3. System-Wide Integration Testing and Verification
 
 **Rationale**: After completing all evaluator migrations to Zig and frame-based execution implementation, we need comprehensive integration testing to verify the full system works correctly.
 
@@ -149,6 +176,58 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [ ] Baseline performance metrics
   - [ ] Memory usage profiling
   - [ ] Comparison of C vs Zig evaluator performance
+
+### 4. Complete C to Zig ABI-Compatible Migration
+
+**Current Status**: 21/58 modules migrated (36%)
+
+**Rationale**: Completing the migration of all C modules to Zig ABI-compatible modules is the strategic foundation that enables future architectural improvements. Until core dependencies are in Zig, modules cannot be converted to Zig struct modules due to type incompatibility between different `@cImport` namespaces.
+
+**Priority Focus**: Start with foundation layer to unblock other migrations
+- [ ] ar_list - Basic data structure used throughout
+- [ ] ar_map - Key-value storage used by many modules  
+- [ ] ar_path - Path manipulation utilities
+- [ ] ar_data - Central data type system
+- [ ] ar_frame - Execution context for evaluators
+- [ ] ar_log - Error reporting and logging
+
+### 5. Build System Improvements
+
+**Rationale**: As more modules are migrated to Zig, we need proper static analysis and formatting checks integrated into the build system.
+
+**Tasks**:
+- [ ] Add Zig static analysis to build system
+  - [ ] Integrate `zig ast-check` for all Zig source files
+  - [ ] Add `zig fmt --check` for format validation
+  - [ ] Consider integrating third-party linters like zlint for more comprehensive analysis
+  - [ ] Update analyze-exec and analyze-tests targets to include Zig modules
+
+### 6. Knowledge Base Documentation
+
+**Rationale**: Missing documentation articles would enhance the knowledge base and help future development.
+
+**Medium Value Articles**:
+- [ ] **Systematic Problem Analysis** (kb/systematic-problem-analysis.md) - Document structured approaches to problem solving
+- [ ] **Build System Consistency** (kb/build-system-consistency.md) - Patterns for maintaining consistent build rules
+- [ ] **Implementation Gap Analysis** (kb/implementation-gap-analysis.md) - Identify missing implementation details
+
+**Specialized Articles**:
+- [ ] **Incremental Documentation Updates** (kb/incremental-documentation-updates.md) - Gradual documentation improvement strategies
+- [ ] **Domain Expert Consultation** (kb/domain-expert-consultation.md) - Leveraging user expertise for quality
+- [ ] **Authoritative Source Validation** (kb/authoritative-source-validation.md) - Verifying information from authoritative sources
+- [ ] **Code Block Context Handling** (kb/code-block-context-handling.md) - Handling code examples in different contexts
+
+### 7. String Module Refactoring
+
+**Rationale**: Path operations in the string module should be extracted to improve module cohesion.
+
+**Tasks**:
+- [ ] Analyze current string module for path-related functions
+- [ ] Design ar_string_path module interface
+- [ ] Extract path operations to new module
+- [ ] Update all dependent code
+- [ ] Verify backward compatibility
+- [ ] Update documentation
 
 ### Language Enhancement Tasks (NEW)
 - [x] Rename the `method` instruction to `compile` (Completed 2025-07-13)
@@ -391,114 +470,35 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ### Completed - Move Agent Functionality to New Modules
 - [x] Moved all registry and update functionality to dedicated modules (Completed)
 
-### High Priority - System Module Refactoring  
-- [x] Split system module into focused components (Future work planned)
-
-### Medium Priority - Methodology Module Refactoring
-- [x] Planned split into registry, resolver, persistence modules (Future work)
-
-### Medium Priority - String Module Refactoring
-- [x] Planned path operations extraction to dedicated module (Future work)
-
 ### Low Priority - Agent Module Refactoring
 - [x] Evaluated split - current design maintains good cohesion (Completed)
 
 ## Knowledge Base Enhancement (Lower Priority)
 
-### Missing Documentation Articles
-These articles were referenced in existing kb files but never created. They would enhance the knowledge base:
-
-#### High Value Articles (Completed 2025-07-27)
+### High Value Articles (Completed 2025-07-27)
 - [x] **Evidence-Based Debugging**, **Domain-specific Type Creation**, **Plan Verification and Review** - All created with proper documentation
 
-#### Medium Value Articles  
-- [ ] **Systematic Problem Analysis** (kb/systematic-problem-analysis.md) - Document structured approaches to problem solving
-- [ ] **Build System Consistency** (kb/build-system-consistency.md) - Patterns for maintaining consistent build rules
-- [ ] **Implementation Gap Analysis** (kb/implementation-gap-analysis.md) - Identify missing implementation details
+## Migration Details
 
-#### Specialized Articles
-- [ ] **Incremental Documentation Updates** (kb/incremental-documentation-updates.md) - Gradual documentation improvement strategies
-- [ ] **Domain Expert Consultation** (kb/domain-expert-consultation.md) - Leveraging user expertise for quality
-- [ ] **Authoritative Source Validation** (kb/authoritative-source-validation.md) - Verifying information from authoritative sources
-- [ ] **Code Block Context Handling** (kb/code-block-context-handling.md) - Handling code examples in different contexts
-
-## Strategic Priorities
-
-### Complete C to Zig ABI-Compatible Migration (LOW PRIORITY)
+### Complete C to Zig Migration Progress
 
 **Current Status**: 21/58 modules migrated (36%)
 
-**Rationale**: Completing the migration of all C modules to Zig ABI-compatible modules is the strategic foundation that enables future architectural improvements. Until core dependencies are in Zig, modules cannot be converted to Zig struct modules due to type incompatibility between different `@cImport` namespaces.
+#### Completed Zig Modules (21):
+- All evaluators (11): assignment, build, compile, condition, deprecate, exit, expression, instruction, method, parse, send, spawn
+- AST modules (3): expression_ast, instruction_ast, method_ast  
+- Core utilities (7): allocator, assert, heap, io, semver, string
 
-#### Migration Progress
-- **Completed Zig Modules** (21):
-  - All evaluators (11): assignment, build, compile, condition, deprecate, exit, expression, instruction, method, parse, send, spawn
-  - AST modules (3): expression_ast, instruction_ast, method_ast
-  - Core utilities (7): allocator, assert, heap, io, semver, string
-
-- **Remaining C Modules** (37):
-  - Foundation (3): list, map, path
-  - Core data (1): data
-  - Runtime (2): frame, log
-  - Agent system (5): agent, agency, agent_registry, agent_store, agent_update
-  - Method system (4): method, method_parser, methodology, method_fixture
-  - Expression/Instruction (6): expression, expression_parser, instruction, instruction_parser, instruction_fixture, evaluator_fixture
-  - System (4): system, system_fixture, event, executable
-  - Parsers (9): assignment_instruction_parser, build_instruction_parser, compile_instruction_parser, condition_instruction_parser, deprecate_instruction_parser, exit_instruction_parser, parse_instruction_parser, send_instruction_parser, spawn_instruction_parser
-  - Other (3): io_variadic, interpreter, interpreter_fixture
-
-#### Recommended Migration Order
-1. **Foundation Layer** (enables everything else):
-   - [ ] ar_list - Basic data structure used throughout
-   - [ ] ar_map - Key-value storage used by many modules
-   - [ ] ar_path - Path manipulation utilities
-
-2. **Core Data Layer** (widely used dependency):
-   - [ ] ar_data - Central data type system
-
-3. **Runtime Layer** (evaluator dependencies):
-   - [ ] ar_frame - Execution context for evaluators
-   - [ ] ar_log - Error reporting and logging
-
-4. **Agent System** (higher-level functionality):
-   - [ ] ar_agent - Core agent functionality
-   - [ ] ar_agency - Agent management
-   - [ ] ar_agent_registry - Agent registration
-   - [ ] ar_agent_store - Agent persistence
-   - [ ] ar_agent_update - Agent updates
-
-5. **Method System** (application layer):
-   - [ ] ar_method - Method management
-   - [ ] ar_method_parser - Method parsing
-   - [ ] ar_methodology - Method registry
-
-6. **Expression/Instruction** (language processing):
-   - [ ] ar_expression - Expression handling
-   - [ ] ar_expression_parser - Expression parsing
-   - [ ] ar_instruction - Instruction handling
-   - [ ] ar_instruction_parser - Instruction parsing
-
-7. **Parsers** (can be migrated independently):
-   - [ ] All 9 instruction-specific parsers
-
-8. **System/Other** (final integration):
-   - [ ] ar_system - System coordination
-   - [ ] ar_interpreter - Top-level interpreter
-   - [ ] Remaining modules
-
-#### Benefits of Completing Migration
-- **Unified codebase**: All modules in Zig simplifies maintenance
-- **Enhanced safety**: Zig's compile-time checks throughout
-- **Better debugging**: Consistent error handling patterns
-- **Performance**: Potential optimizations with Zig features
-- **Future flexibility**: Enables conversion to Zig struct modules where appropriate
-
-#### Migration Strategy
-- Follow established C-to-Zig migration patterns (kb/c-to-zig-module-migration.md)
-- Maintain full C ABI compatibility during migration
-- Use TDD approach for each module migration
-- Verify zero memory leaks after each migration
-- Update documentation alongside code changes
+#### Remaining C Modules (37):
+- Foundation (3): list, map, path
+- Core data (1): data
+- Runtime (2): frame, log
+- Agent system (5): agent, agency, agent_registry, agent_store, agent_update
+- Method system (4): method, method_parser, methodology, method_fixture
+- Expression/Instruction (6): expression, expression_parser, instruction, instruction_parser, instruction_fixture, evaluator_fixture
+- System (4): system, system_fixture, event, executable
+- Parsers (9): assignment_instruction_parser, build_instruction_parser, compile_instruction_parser, condition_instruction_parser, deprecate_instruction_parser, exit_instruction_parser, parse_instruction_parser, send_instruction_parser, spawn_instruction_parser
+- Other (3): io_variadic, interpreter, interpreter_fixture
 
 ## Future Enhancements
 
@@ -508,12 +508,6 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
 - Components that would benefit from Zig's advanced features
 - Modules that are not part of the public C API
 
-### Build System Improvements
-- [ ] Add Zig static analysis to build system
-  - Integrate `zig ast-check` for all Zig source files
-  - Add `zig fmt --check` for format validation
-  - Consider integrating third-party linters like zlint for more comprehensive analysis
-  - Update analyze-exec and analyze-tests targets to include Zig modules
 
 ## Notes
 
@@ -521,7 +515,7 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
 - **Module Naming Convention**: COMPLETED (as of 2025-06-08) - All modules use ar__<module>__<function> pattern
 - **Heap Macros**: COMPLETED (as of 2025-06-08) - All heap macros use AR__HEAP__* pattern
 - **Assert Macros**: Exception maintained - Continue using AR_ASSERT_* pattern
-- **Current Highest Priority**: Method evaluator integration completed! All phases of Frame-Based Execution Implementation are done.
+- **Current Highest Priority**: Methodology Module Refactoring - Split into focused components (registry, resolver, persistence)
 - **Major Achievement**: Eliminated 2500+ line ar_instruction_run function and resolved all circular dependencies
 - The project has achieved zero memory leaks and passes all sanitizer tests (Completed 2025-06-13)
 - All core instruction functions are now implemented
