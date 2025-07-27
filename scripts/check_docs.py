@@ -48,7 +48,7 @@ def check_repo_root():
         sys.exit(1)
 
 def find_documentation_files():
-    """Find all documentation files: markdown files and Zig source files (for comment validation)"""
+    """Find all documentation files: markdown files, Zig source files, and test files (for comment validation)"""
     doc_files = []
     for root, dirs, files in os.walk("."):
         # Skip bin directory
@@ -59,7 +59,10 @@ def find_documentation_files():
             if file.endswith(".md") and file not in ["TODO.md", "CHANGELOG.md"]:
                 doc_files.append(os.path.join(root, file))
             # Include Zig source files in modules directory for comment validation
-            elif file.endswith(".zig") and "modules" in root and not file.endswith("Tests.zig"):
+            elif file.endswith(".zig") and "modules" in root:
+                doc_files.append(os.path.join(root, file))
+            # Include C test files in modules directory
+            elif file.endswith("_tests.c") and "modules" in root:
                 doc_files.append(os.path.join(root, file))
     return sorted(doc_files)
 
@@ -544,8 +547,8 @@ def check_relative_links(doc_files):
         doc_path = Path(doc)
         doc_dir = doc_path.parent
         
-        # Skip link checking for Zig files - they can contain syntax like [*][*:0] that aren't links
-        if doc.endswith('.zig'):
+        # Skip link checking for source files - they can contain syntax that looks like links
+        if doc.endswith('.zig') or doc.endswith('.c'):
             continue
             
         with open(doc, 'r', encoding='utf-8') as f:
