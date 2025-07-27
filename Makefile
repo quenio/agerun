@@ -158,6 +158,10 @@ METHOD_TEST_SRC = $(wildcard methods/*_tests.c)
 METHOD_TEST_OBJ = $(patsubst methods/%.c,bin/obj/%.o,$(METHOD_TEST_SRC))
 METHOD_TEST_BIN = $(patsubst methods/%_tests.c,bin/%_tests,$(METHOD_TEST_SRC))
 
+# Zig struct module test source files
+ZIG_TEST_SRC = $(wildcard modules/*Tests.zig)
+ZIG_TEST_BIN = $(patsubst modules/%Tests.zig,bin/%Tests,$(ZIG_TEST_SRC))
+
 # Directory-specific method test paths
 RUN_TESTS_METHOD_TEST_OBJ = $(patsubst methods/%.c,$(RUN_TESTS_DIR)/obj/%.o,$(METHOD_TEST_SRC))
 RUN_TESTS_METHOD_TEST_BIN = $(patsubst methods/%_tests.c,$(RUN_TESTS_DIR)/%_tests,$(METHOD_TEST_SRC))
@@ -168,6 +172,10 @@ SANITIZE_TESTS_METHOD_TEST_BIN = $(patsubst methods/%_tests.c,$(SANITIZE_TESTS_D
 TSAN_TESTS_METHOD_TEST_OBJ = $(patsubst methods/%.c,$(TSAN_TESTS_DIR)/obj/%.o,$(METHOD_TEST_SRC))
 TSAN_TESTS_METHOD_TEST_BIN = $(patsubst methods/%_tests.c,$(TSAN_TESTS_DIR)/%_tests,$(METHOD_TEST_SRC))
 
+# Directory-specific Zig test paths
+RUN_TESTS_ZIG_TEST_BIN = $(patsubst modules/%Tests.zig,$(RUN_TESTS_DIR)/%Tests,$(ZIG_TEST_SRC))
+SANITIZE_TESTS_ZIG_TEST_BIN = $(patsubst modules/%Tests.zig,$(SANITIZE_TESTS_DIR)/%Tests,$(ZIG_TEST_SRC))
+TSAN_TESTS_ZIG_TEST_BIN = $(patsubst modules/%Tests.zig,$(TSAN_TESTS_DIR)/%Tests,$(ZIG_TEST_SRC))
 
 # Create directory-specific directories
 $(ANALYZE_EXEC_DIR):
@@ -244,35 +252,51 @@ tsan-exec: tsan_exec_lib
 # Define test executables without bin/ prefix for use in the bin directory
 TEST_BIN_NAMES = $(notdir $(TEST_BIN))
 METHOD_TEST_BIN_NAMES = $(notdir $(METHOD_TEST_BIN))
-ALL_TEST_BIN_NAMES = $(TEST_BIN_NAMES) $(METHOD_TEST_BIN_NAMES)
+ZIG_TEST_BIN_NAMES = $(notdir $(ZIG_TEST_BIN))
+ALL_TEST_BIN_NAMES = $(TEST_BIN_NAMES) $(METHOD_TEST_BIN_NAMES) $(ZIG_TEST_BIN_NAMES)
 
 # Build and run tests (always in debug mode)
 run-tests: run_tests_lib
 	$(MAKE) $(RUN_TESTS_TEST_BIN) $(RUN_TESTS_METHOD_TEST_BIN)
+	$(MAKE) $(RUN_TESTS_ZIG_TEST_BIN)
 	@cd $(RUN_TESTS_DIR) && for test in $(ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
 		echo "Running test: $$test"; \
-		AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+		if [[ "$$test" == *Tests ]]; then \
+			./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+		else \
+			AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+		fi; \
 	done
 
 # Build and run tests with Address + Undefined Behavior Sanitizers
 sanitize-tests:
 	$(MAKE) sanitize_tests_lib
 	$(MAKE) $(SANITIZE_TESTS_TEST_BIN) $(SANITIZE_TESTS_METHOD_TEST_BIN) CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS)" LDFLAGS="$(LDFLAGS) $(SANITIZER_FLAGS)"
+	$(MAKE) $(SANITIZE_TESTS_ZIG_TEST_BIN)
 	@cd $(SANITIZE_TESTS_DIR) && for test in $(ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
 		echo "Running test: $$test with Address + Undefined Behavior Sanitizers"; \
-		AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+		if [[ "$$test" == *Tests ]]; then \
+			./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+		else \
+			AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+		fi; \
 	done
 
 # Build and run tests with Thread Sanitizer (must run separately from ASan)
 tsan-tests:
 	$(MAKE) tsan_tests_lib
 	$(MAKE) $(TSAN_TESTS_TEST_BIN) $(TSAN_TESTS_METHOD_TEST_BIN) CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS)" LDFLAGS="$(LDFLAGS) $(TSAN_FLAGS)"
+	$(MAKE) $(TSAN_TESTS_ZIG_TEST_BIN)
 	@cd $(TSAN_TESTS_DIR) && for test in $(ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
 		echo "Running test: $$test with Thread Sanitizer"; \
-		AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+		if [[ "$$test" == *Tests ]]; then \
+			./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+		else \
+			AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+		fi; \
 	done
 
 # Individual test binaries (build in run-tests directory for consistency)
@@ -295,6 +319,26 @@ $(SANITIZE_TESTS_DIR)/%_tests: $(SANITIZE_TESTS_DIR)/obj/%_tests.o sanitize_test
 
 $(TSAN_TESTS_DIR)/%_tests: $(TSAN_TESTS_DIR)/obj/%_tests.o tsan_tests_lib
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS) -o $@ $< $(TSAN_TESTS_DIR)/libagerun.a $(LDFLAGS) $(TSAN_FLAGS)
+
+# Individual Zig test targets
+%Tests: bin/%Tests
+	@# Target completed by dependency
+
+# Build and run individual Zig test with bin/ prefix
+bin/%Tests: modules/%Tests.zig
+	@echo "Building and running Zig test: $*Tests"
+	@cd $(RUN_TESTS_DIR) && $(ZIG) test ../../modules/$*Tests.zig -femit-bin=$*Tests
+	@cd $(RUN_TESTS_DIR) && ./$*Tests
+
+# Directory-specific Zig test binaries
+$(RUN_TESTS_DIR)/%Tests: modules/%Tests.zig | $(RUN_TESTS_DIR)
+	$(ZIG) test $< -femit-bin=$@
+
+$(SANITIZE_TESTS_DIR)/%Tests: modules/%Tests.zig | $(SANITIZE_TESTS_DIR)
+	$(ZIG) test $< -femit-bin=$@ -fsanitize-c
+
+$(TSAN_TESTS_DIR)/%Tests: modules/%Tests.zig | $(TSAN_TESTS_DIR)
+	$(ZIG) test $< -femit-bin=$@ -fsanitize-thread
 
 # Note: Individual test builds use bin/run-tests/ directory via the bin/%_tests target above
 # No generic bin/ compilation rules needed for tests
