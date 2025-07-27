@@ -585,7 +585,91 @@ These articles were referenced in existing kb files but never created. They woul
 - [ ] **Authoritative Source Validation** (kb/authoritative-source-validation.md) - Verifying information from authoritative sources
 - [ ] **Code Block Context Handling** (kb/code-block-context-handling.md) - Handling code examples in different contexts
 
+## Strategic Priorities
+
+### Complete C to Zig ABI-Compatible Migration (HIGH PRIORITY)
+
+**Current Status**: 21/58 modules migrated (36%)
+
+**Rationale**: Completing the migration of all C modules to Zig ABI-compatible modules is the strategic foundation that enables future architectural improvements. Until core dependencies are in Zig, modules cannot be converted to Zig struct modules due to type incompatibility between different `@cImport` namespaces.
+
+#### Migration Progress
+- **Completed Zig Modules** (21):
+  - All evaluators (11): assignment, build, compile, condition, deprecate, exit, expression, instruction, method, parse, send, spawn
+  - AST modules (3): expression_ast, instruction_ast, method_ast
+  - Core utilities (7): allocator, assert, heap, io, semver, string
+
+- **Remaining C Modules** (37):
+  - Foundation (3): list, map, path
+  - Core data (1): data
+  - Runtime (2): frame, log
+  - Agent system (5): agent, agency, agent_registry, agent_store, agent_update
+  - Method system (4): method, method_parser, methodology, method_fixture
+  - Expression/Instruction (6): expression, expression_parser, instruction, instruction_parser, instruction_fixture, evaluator_fixture
+  - System (4): system, system_fixture, event, executable
+  - Parsers (9): assignment_instruction_parser, build_instruction_parser, compile_instruction_parser, condition_instruction_parser, deprecate_instruction_parser, exit_instruction_parser, parse_instruction_parser, send_instruction_parser, spawn_instruction_parser
+  - Other (3): io_variadic, interpreter, interpreter_fixture
+
+#### Recommended Migration Order
+1. **Foundation Layer** (enables everything else):
+   - [ ] ar_list - Basic data structure used throughout
+   - [ ] ar_map - Key-value storage used by many modules
+   - [ ] ar_path - Path manipulation utilities
+
+2. **Core Data Layer** (widely used dependency):
+   - [ ] ar_data - Central data type system
+
+3. **Runtime Layer** (evaluator dependencies):
+   - [ ] ar_frame - Execution context for evaluators
+   - [ ] ar_log - Error reporting and logging
+
+4. **Agent System** (higher-level functionality):
+   - [ ] ar_agent - Core agent functionality
+   - [ ] ar_agency - Agent management
+   - [ ] ar_agent_registry - Agent registration
+   - [ ] ar_agent_store - Agent persistence
+   - [ ] ar_agent_update - Agent updates
+
+5. **Method System** (application layer):
+   - [ ] ar_method - Method management
+   - [ ] ar_method_parser - Method parsing
+   - [ ] ar_methodology - Method registry
+
+6. **Expression/Instruction** (language processing):
+   - [ ] ar_expression - Expression handling
+   - [ ] ar_expression_parser - Expression parsing
+   - [ ] ar_instruction - Instruction handling
+   - [ ] ar_instruction_parser - Instruction parsing
+
+7. **Parsers** (can be migrated independently):
+   - [ ] All 9 instruction-specific parsers
+
+8. **System/Other** (final integration):
+   - [ ] ar_system - System coordination
+   - [ ] ar_interpreter - Top-level interpreter
+   - [ ] Remaining modules
+
+#### Benefits of Completing Migration
+- **Unified codebase**: All modules in Zig simplifies maintenance
+- **Enhanced safety**: Zig's compile-time checks throughout
+- **Better debugging**: Consistent error handling patterns
+- **Performance**: Potential optimizations with Zig features
+- **Future flexibility**: Enables conversion to Zig struct modules where appropriate
+
+#### Migration Strategy
+- Follow established C-to-Zig migration patterns (kb/c-to-zig-module-migration.md)
+- Maintain full C ABI compatibility during migration
+- Use TDD approach for each module migration
+- Verify zero memory leaks after each migration
+- Update documentation alongside code changes
+
 ## Future Enhancements
+
+### Zig Struct Module Conversions (After C Migration)
+Once all modules are migrated to Zig with C-ABI compatibility, identify internal components that would benefit from conversion to Zig struct modules:
+- Internal utilities with no C dependencies
+- Components that would benefit from Zig's advanced features
+- Modules that are not part of the public C API
 
 ### Build System Improvements
 - [ ] Add Zig static analysis to build system
