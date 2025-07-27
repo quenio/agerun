@@ -12,6 +12,9 @@ Make CLAUDE.md guidelines more concise and actionable by moving detailed explana
 1. Already exist (verify with `ls kb/article-name.md`), OR
 2. Be created by you BEFORE adding any links to it
 
+**CRITICAL**: PRESERVE ALL EXISTING KB REFERENCES
+When you see KB article links (formatted with parentheses and "details" text pointing to kb/ files) in CLAUDE.md, these links MUST be preserved. They are not redundant - they ARE the detailed documentation. The goal is to make CLAUDE.md more concise while keeping all KB links that provide the depth.
+
 **IMPORTANT**: Before extracting kb articles from CLAUDE.md, read `.claude/commands/new-learnings.md` to understand the proper format and validation requirements for creating kb articles. This ensures extracted content follows established standards.
 
 ## Guidelines for Compacting
@@ -34,14 +37,23 @@ Look for sections in CLAUDE.md that contain:
 - **Remove filler words**: "In order to", "It is important that", etc.
 - **Combine related points**: Merge similar guidelines into single lines
 
-### 3. Knowledge Base Article Creation ([details](../../kb/validated-documentation-examples.md))
+### 3. Knowledge Base Article References (CRITICAL)
+
+**PRESERVE ALL EXISTING KB REFERENCES**: When compacting CLAUDE.md, you MUST:
+- Keep all existing KB references intact (the parentheses-style links to kb/ files)
+- Never remove KB references - they are the detailed documentation
+- If moving content that already has KB links, keep those links with the content
+- Only add new KB links when creating new articles
+
+### 4. Knowledge Base Article Creation ([details](../../kb/validated-documentation-examples.md))
 
 For each section being compacted:
 
 **When details exist in kb/ already:**
 - Move details to existing relevant articles
-- Add link with actual filename: `([details](../../kb/actual-existing-file.md))` // EXAMPLE: Replace with real filename
-- Verify the file exists before adding the link
+- PRESERVE existing links in their exact format
+- Add link with actual filename if missing
+- Verify the file exists before adding any new links
 
 **When no relevant kb/ article exists:**
 - YOU MUST create the new article before adding any links to it
@@ -70,7 +82,7 @@ For each section being compacted:
   - If no related patterns exist, omit this section
   ```
 
-### 4. Preserve Critical Information
+### 5. Preserve Critical Information
 
 **Never remove:**
 - Mandatory requirements (MUST, MANDATORY, CRITICAL)
@@ -78,14 +90,16 @@ For each section being compacted:
 - Error prevention rules
 - Build/test requirements
 - Memory management rules
+- **Existing KB article references** - these ARE the detailed docs
 
 **Always keep:**
 - Action-oriented language ("Use X", "Run Y", "Check Z")
 - Specific file paths and naming patterns
 - Version-specific information
 - Platform-specific notes
+- All KB article links - they provide essential depth
 
-### 5. Link Strategy (MANDATORY)
+### 6. Link Strategy (MANDATORY)
 
 **CRITICAL**: Every compressed guideline MUST include a link to the knowledge base article containing the extracted details.
 
@@ -109,7 +123,7 @@ For each section being compacted:
 - [ ] Link text clearly indicates what details are available
 - [ ] No orphaned details (content moved but not linked)
 
-### 6. Section-by-Section Approach
+### 7. Section-by-Section Approach
 
 Work through CLAUDE.md systematically:
 
@@ -123,7 +137,7 @@ Work through CLAUDE.md systematically:
 6. **Development Practices**: Use existing debugging articles in kb/
 7. **Refactoring Patterns**: Reference existing kb/refactoring-key-patterns.md
 
-### 7. Quality Checks
+### 8. Quality Checks
 
 After compacting each section:
 - **Readability**: Can guidelines be followed without clicking links?
@@ -133,7 +147,7 @@ After compacting each section:
 - **Link coverage**: Every compression has corresponding knowledge base link
 - **No orphaned content**: All moved details are accessible via links
 
-### 8. Create Required KB Articles First
+### 9. Create Required KB Articles First
 
 **MANDATORY**: Before adding any link to a kb article:
 
@@ -150,7 +164,7 @@ After compacting each section:
 
 3. **Never leave placeholder links**
 
-### 9. Commit Strategy
+### 10. Commit Strategy
 
 **CRITICAL**: Commit kb articles BEFORE updating CLAUDE.md:
 
@@ -176,7 +190,7 @@ git commit -m "docs: compact guidelines with knowledge base links
 - Improved scanability and actionability"
 ```
 
-### 10. Validation
+### 11. Validation
 
 Before finalizing:
 - Read compacted guidelines end-to-end for flow
