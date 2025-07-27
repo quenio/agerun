@@ -244,3 +244,34 @@ test-zig-modules:
     zig test modules/DataStoreTests.zig
     zig test modules/MessageQueueTests.zig
 ```
+
+## Build System Integration
+
+The Makefile automatically discovers and builds Zig struct module tests:
+```makefile
+# Discovery
+ZIG_TEST_SRC = $(wildcard modules/*Tests.zig)
+
+# Build rules
+$(BIN_DIR)/%Tests: modules/%Tests.zig
+    $(ZIG) test $< -femit-bin=$@
+
+# Execution (differentiates from C tests)
+case "$$test" in
+    *Tests)
+        ./$$test || echo "ERROR: Test $$test failed";
+        ;;
+    *)
+        AGERUN_MEMORY_REPORT="report.log" ./$$test;
+        ;;
+esac
+```
+
+Sanitizer support is also integrated:
+- `-fsanitize-c` for undefined behavior detection
+- `-fsanitize-thread` for thread sanitizer
+
+## Related Patterns
+- [Zig Test Build Integration](zig-test-build-integration.md)
+- [C to Zig Module Migration](c-to-zig-module-migration.md)
+- [Zig Static Analysis Tools](zig-static-analysis-tools.md)

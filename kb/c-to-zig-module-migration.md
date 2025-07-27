@@ -1016,6 +1016,16 @@ defer ar_allocator.free(own_resource3);
 This pattern eliminates the cascading error handling that dominates evaluator code.
 
 ## Related Articles
+- [Zig Memory Allocation with ar_allocator](zig-memory-allocation-with-ar-allocator.md)
+- [Zig Migration Memory Debugging](zig-migration-memory-debugging.md)
+- [Zig-C Memory Tracking Consistency](zig-c-memory-tracking-consistency.md)
+- [Zig Build Flag Configuration](zig-build-flag-configuration.md)
+- [Zig Defer for Error Cleanup](zig-defer-error-cleanup-pattern.md)
+- [Zig Type Usage Patterns](zig-type-usage-patterns.md)
+- [Zig Ownership with claim_or_copy Pattern](zig-ownership-claim-or-copy-pattern.md)
+- [Zig errdefer Value Capture Pattern](zig-errdefer-value-capture-pattern.md)
+- [Zig Struct Modules Pattern](zig-struct-modules-pattern.md)
+- [Zig Static Analysis Tools](zig-static-analysis-tools.md)
 
 - [Zig Integration Comprehensive Guide](zig-integration-comprehensive.md)
 - [Zig Memory Debugging](zig-migration-memory-debugging.md)

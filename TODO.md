@@ -243,6 +243,15 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Created 5 new KB articles documenting patterns from method evaluator integration
 - [x] Updated 10 existing KB articles with new sections and cross-references
 
+### Zig Struct Modules Implementation (Completed 2025-07-27)
+- [x] Created new module type "Zig struct modules" with TitleCase naming
+- [x] Updated validation scripts (check_docs.py and check_naming_conventions.sh)
+- [x] Created example implementation (DataStore.zig and DataStoreTests.zig)
+- [x] Integrated Zig tests into Makefile with automatic discovery and execution
+- [x] Fixed Makefile POSIX shell compatibility issues (replaced bash [[ ]] with case)
+- [x] Created KB articles documenting patterns and integration approaches
+- [x] Updated CLAUDE.md with references to new patterns
+
 ### Complete Evaluator Migration to Zig (Completed 2025-07-26)
 - [x] Migrated ar_instruction_evaluator to Zig with errdefer cleanup pattern
 - [x] Fixed memory leak issue: discovered errdefer doesn't work with `orelse return null`

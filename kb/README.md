@@ -90,6 +90,9 @@ Each learning file contains:
 - [Script Enhancement Over One Off](script-enhancement-over-one-off.md)
 - [Settings File Merging Pattern](settings-file-merging-pattern.md)
 - [String Parsing Quote Tracking](string-parsing-quote-tracking.md)
+- [Makefile POSIX Shell Compatibility](makefile-posix-shell-compatibility.md)
+- [Zig Test Build Integration](zig-test-build-integration.md)
+- [Zig Static Analysis Tools](zig-static-analysis-tools.md)
 
 ### Development Practices
 - [Documentation Validation Enhancement Patterns](documentation-validation-enhancement-patterns.md)
@@ -121,6 +124,7 @@ Each learning file contains:
 - [Makefile Pattern Rule Management](makefile-pattern-rule-management.md)
 - [Development Debug Tools](development-debug-tools.md)
 - [Zig Integration Comprehensive](zig-integration-comprehensive.md)
+- [Zig Struct Modules Pattern](zig-struct-modules-pattern.md)
 - [Documentation Compacting Pattern](documentation-compacting-pattern.md)
 - [Just-In-Time KB Reading](just-in-time-kb-reading.md)
 - [Documentation Validation Error Patterns](documentation-validation-error-patterns.md)

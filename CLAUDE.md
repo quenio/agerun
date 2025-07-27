@@ -388,6 +388,7 @@ Never compile directly with gcc.
 - The Makefile handles all dependencies and runs the test from the correct directory
 - Pattern rules compile object files - update these directly for consistent flags (not target-specific vars)
 - **Pattern rule updates**: Change all 6 targets when updating Zig flags ([details](kb/makefile-pattern-rule-management.md))
+- **POSIX shell only**: Use `case` not `[[ ]]` - Make uses sh, not bash ([details](kb/makefile-posix-shell-compatibility.md))
 - Example: `make ar_string_tests` will:
   1. Rebuild any changed modules
   2. Rebuild the test
@@ -563,6 +564,8 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - **API style**: `init`/`deinit`, `camelCase` functions, allocator as first parameter
 - **Ownership**: Still use `own_`, `mut_`, `ref_` prefixes on ALL fields/variables
 - **Use cases**: Internal tools, Zig-specific features (comptime, error unions, slices)
+- **Build integration**: Tests run via `make run-tests` alongside C tests ([details](kb/zig-test-build-integration.md))
+- **Static analysis**: Limited to ast-check & fmt; consider zlint for more ([details](kb/zig-static-analysis-tools.md))
 
 ## AgeRun Language Notes
 
