@@ -157,6 +157,13 @@ def check_module_names(doc_files):
                 module_name = file.stem
                 valid_modules.add(module_name)
     
+    # Also add PascalCase Zig struct modules
+    for file in Path("modules").glob("*.zig"):
+        if not file.name.startswith("ar_") and "Tests" not in file.name:
+            module_name = file.stem
+            if re.match(r'^[A-Z][a-zA-Z0-9]*$', module_name):
+                valid_modules.add(module_name)
+    
     if not valid_modules:
         print("Module name check: No module files found ⚠️")
         return 0
@@ -272,6 +279,10 @@ def check_function_and_type_references(doc_files):
             
             zig_unions = zig_const_union_pattern.findall(content)
             all_types.update(zig_unions)
+            
+            # For PascalCase Zig struct modules, add the module name itself as a type
+            if re.match(r'^[A-Z][a-zA-Z0-9]*$', module_name):
+                all_types.add(module_name)
         
         # Extract typedef structs
         typedef_structs = typedef_struct_pattern.findall(content)
@@ -295,7 +306,9 @@ def check_function_and_type_references(doc_files):
         "int64_t", "uint64_t", "int32_t", "uint32_t", "int16_t", "uint16_t",
         "int8_t", "uint8_t", "size_t", "ssize_t", "ptrdiff_t", "uintptr_t",
         "intptr_t", "FILE", "bool", "char", "int", "long", "float", "double",
-        "void", "const", "unsigned", "signed", "NULL", "PRId64", "PRIu64"
+        "void", "const", "unsigned", "signed", "NULL", "PRId64", "PRIu64",
+        # Zig standard library types
+        "ArrayList", "HashMap", "Allocator", "Self"
     }
     
     # Ownership prefixes that might appear with _t
@@ -411,6 +424,17 @@ def check_function_and_type_references(doc_files):
             # Skip constants and macros (all uppercase)
             if re.match(r'^[A-Z][A-Z0-9_]*$', type_ref):
                 continue
+            
+            # Skip PascalCase types (Zig struct modules)
+            # These are valid naming patterns for Zig struct modules
+            if re.match(r'^[A-Z][a-zA-Z0-9]*$', type_ref) and not type_ref.endswith("_t"):
+                # Check if this is a known Zig struct module file
+                zig_module_file = f"modules/{type_ref}.zig"
+                if os.path.isfile(zig_module_file):
+                    continue
+                # Also allow common Zig struct module naming patterns
+                if type_ref in ["PascalCase", "TitleCase", "DataStore", "MessageQueue"]:
+                    continue
             
             # Skip simple types that might be part of longer identifiers
             if re.match(r'^[a-z]+_t$', type_ref):

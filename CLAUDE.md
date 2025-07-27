@@ -269,13 +269,16 @@ grep -r "function_name\|concept" modules/
 **Naming Patterns** (verify with grep before large changes; fix errors before warnings):
 | Type | Pattern | Example |
 |------|---------|---------|
-| Module functions | `ar_<module>__<function>` | `ar_data__create_map()` (C & Zig) |
+| C/C-ABI module functions | `ar_<module>__<function>` | `ar_data__create_map()` |
+| Zig struct modules | `TitleCase` | `DataStore.zig` |
+| Zig struct functions | `camelCase` | `getAllKeys()` |
 | Static functions | `_<function>` | `_validate_file()` |
-| Test functions | `test_<module>__<name>` | `test_string__trim()` |
+| Test functions (C) | `test_<module>__<name>` | `test_string__trim()` |
+| Test files (Zig) | `<Module>Tests.zig` | `DataStoreTests.zig` |
 | Heap macros | `AR__HEAP__<OP>` | `AR__HEAP__MALLOC` |
 | Assert macros | `AR_ASSERT_<TYPE>` | `AR_ASSERT_OWNERSHIP` |
 | Opaque types | `typedef struct ar_<module>_s ar_<module>_t;` | |
-| Files | `ar_<module>.{h,c}` | `ar_data.h` |
+| C-ABI files | `ar_<module>.{h,c,zig}` | `ar_data.h` |
 
 **Key Standards**:
 - 4-space indent, 100-char lines, newline at EOF
@@ -550,6 +553,16 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 **Ownership with claim_or_copy**: Essential pattern for evaluator migrations ([details](kb/zig-ownership-claim-or-copy-pattern.md))
 **errdefer limitations**: Doesn't work with `orelse return null` - use error unions ([details](kb/zig-errdefer-value-capture-pattern.md))
 **Error path testing**: Create `*_error_tests.c` for complex modules ([details](kb/zig-error-path-testing-pattern.md))
+
+**Zig Struct Modules** (NEW): TitleCase pure Zig modules for internal use ([details](kb/zig-struct-modules-pattern.md))
+- **Purpose**: Internal Zig-only components with idiomatic patterns, NOT for C interop
+- **Naming**: TitleCase (e.g., `DataStore.zig`) vs C-ABI modules (`ar_module.zig`)
+- **Documentation**: Required `.md` file (e.g., `DataStore.md`) with full API reference
+- **Testing**: `ModuleNameTests.zig` using Zig's `test` keyword infrastructure
+- **No headers**: Import directly with `@import("DataStore.zig")`
+- **API style**: `init`/`deinit`, `camelCase` functions, allocator as first parameter
+- **Ownership**: Still use `own_`, `mut_`, `ref_` prefixes on ALL fields/variables
+- **Use cases**: Internal tools, Zig-specific features (comptime, error unions, slices)
 
 ## AgeRun Language Notes
 
