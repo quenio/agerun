@@ -212,6 +212,36 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Immediate Priorities (Next Steps)
 
+### HIGH PRIORITY - System-Wide Integration Testing and Verification
+
+**Rationale**: After completing all evaluator migrations to Zig and frame-based execution implementation, we need comprehensive integration testing to verify the full system works correctly.
+
+**Context**: 
+- All 10 evaluators migrated to Zig (completed 2025-07-26)
+- Frame-based execution fully implemented (completed 2025-07-19)
+- Method evaluator integrated into interpreter (completed 2025-07-19)
+
+**Tasks**:
+- [ ] Create comprehensive integration tests
+  - [ ] Complex agent interactions (spawn, send, exit sequences)
+  - [ ] Multi-level method compilation and execution
+  - [ ] Error propagation through the entire stack
+  - [ ] Memory ownership across module boundaries
+- [ ] Develop stress tests
+  - [ ] Large numbers of agents (100+)
+  - [ ] Deep recursion in method calls
+  - [ ] Complex expression evaluation chains
+  - [ ] Concurrent message processing
+- [ ] Edge case verification
+  - [ ] Circular message sends
+  - [ ] Agent self-destruction patterns
+  - [ ] Method redefinition during execution
+  - [ ] Resource exhaustion scenarios
+- [ ] Performance benchmarking
+  - [ ] Baseline performance metrics
+  - [ ] Memory usage profiling
+  - [ ] Comparison of C vs Zig evaluator performance
+
 ### Language Enhancement Tasks (NEW)
 - [x] Rename the `method` instruction to `compile` (Completed 2025-07-13)
 - [x] Rename the `agent` instruction to `create` (Completed 2025-07-13)
