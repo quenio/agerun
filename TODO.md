@@ -135,19 +135,22 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 **Decomposition Plan**:
 
-#### Phase 1: Create ar_method_registry Module (In Progress)
+#### Phase 1: Create ar_method_registry Module (Completed 2025-07-27)
 **Purpose**: Handle method registration, storage, and basic lookup operations
-- [x] Design ar_method_registry interface (.h file) - Started with core functions
-  - [x] Registration functions: register_method (unregister_method pending)
-  - [ ] Basic lookup: get_method_by_exact_match
-  - [x] Enumeration: get_unique_name_count (more enumeration functions pending)
-  - [ ] Existence check: method_exists
-- [x] Implement ar_method_registry (.c file) - Core structure implemented
+- [x] Design ar_method_registry interface (.h file) - All functions implemented
+  - [x] Registration functions: register_method, unregister_method
+  - [x] Basic lookup: get_method_by_exact_match, find_method_index
+  - [x] Enumeration: get_unique_name_count, get_all_methods
+  - [x] Version management: get_latest_version using semantic versioning
+  - [x] Existence check: method_exists
+- [x] Implement ar_method_registry (.c file) - Full implementation complete
   - [x] Internal storage using dynamic 2D array (not ar_map as originally planned)
-  - [ ] Key generation for method storage
+  - [x] Multiple version support per method name
   - [x] Memory management for method lifecycle
-- [x] Create comprehensive tests (ar_method_registry_tests.c) - 3 tests implemented
-- [ ] Update ar_methodology to use ar_method_registry
+  - [x] Integration with ar_semver for version comparison
+  - [x] Dynamic storage growth (doubles capacity when full)
+- [x] Create comprehensive tests (ar_method_registry_tests.c) - 10 tests implemented
+- [ ] Update ar_methodology to use ar_method_registry (next session)
 
 #### Phase 2: Create ar_method_resolver Module  
 **Purpose**: Handle version resolution and method selection logic
