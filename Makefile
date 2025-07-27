@@ -262,11 +262,14 @@ run-tests: run_tests_lib
 	@cd $(RUN_TESTS_DIR) && for test in $(ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
 		echo "Running test: $$test"; \
-		if [[ "$$test" == *Tests ]]; then \
-			./$$test || echo "ERROR: Test $$test failed with status $$?"; \
-		else \
-			AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
-		fi; \
+		case "$$test" in \
+			*Tests) \
+				./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+				;; \
+			*) \
+				AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+				;; \
+		esac; \
 	done
 
 # Build and run tests with Address + Undefined Behavior Sanitizers
@@ -277,11 +280,14 @@ sanitize-tests:
 	@cd $(SANITIZE_TESTS_DIR) && for test in $(ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
 		echo "Running test: $$test with Address + Undefined Behavior Sanitizers"; \
-		if [[ "$$test" == *Tests ]]; then \
-			./$$test || echo "ERROR: Test $$test failed with status $$?"; \
-		else \
-			AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
-		fi; \
+		case "$$test" in \
+			*Tests) \
+				./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+				;; \
+			*) \
+				AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+				;; \
+		esac; \
 	done
 
 # Build and run tests with Thread Sanitizer (must run separately from ASan)
@@ -292,11 +298,14 @@ tsan-tests:
 	@cd $(TSAN_TESTS_DIR) && for test in $(ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
 		echo "Running test: $$test with Thread Sanitizer"; \
-		if [[ "$$test" == *Tests ]]; then \
-			./$$test || echo "ERROR: Test $$test failed with status $$?"; \
-		else \
-			AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
-		fi; \
+		case "$$test" in \
+			*Tests) \
+				./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+				;; \
+			*) \
+				AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+				;; \
+		esac; \
 	done
 
 # Individual test binaries (build in run-tests directory for consistency)
