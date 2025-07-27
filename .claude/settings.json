@@ -55,7 +55,12 @@
       "Bash(./$test)",
       "Bash(/dev/null)",
       "Bash(done)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "Bash(for f in bin/run-tests/memory_report_*.log)",
+      "Bash(do if grep -q \"Actual memory leaks: [1-9]\" \"$f\")",
+      "Bash(then echo \"$f\")",
+      "Bash(fi)",
+      "Bash(zig translate-c:*)"
     ],
     "deny": []
   },
