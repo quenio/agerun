@@ -124,16 +124,86 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 **Rationale**: The methodology module has grown large and handles multiple responsibilities. Splitting it into focused components will improve maintainability and follow Parnas principles.
 
-**Tasks**:
-- [ ] Split methodology module into focused components:
-  - [ ] ar_method_registry - Method registration and lookup
-  - [ ] ar_method_resolver - Version resolution and method selection
-  - [ ] ar_method_persistence - Serialization and deserialization
-  - [ ] ar_methodology (facade) - Coordinate the sub-modules
-- [ ] Maintain backward compatibility during refactoring
-- [ ] Update all client code to use appropriate sub-modules
-- [ ] Verify zero memory leaks after refactoring
-- [ ] Update documentation for new module structure
+**Current State Analysis**:
+- The ar_methodology module currently handles:
+  - Method storage and retrieval
+  - Version management and resolution
+  - Method registration and lookup
+  - Persistence (save/load operations)
+  - Method compilation and deprecation
+  - Internal caching and optimization
+
+**Decomposition Plan**:
+
+#### Phase 1: Create ar_method_registry Module (In Progress)
+**Purpose**: Handle method registration, storage, and basic lookup operations
+- [x] Design ar_method_registry interface (.h file) - Started with core functions
+  - [x] Registration functions: register_method (unregister_method pending)
+  - [ ] Basic lookup: get_method_by_exact_match
+  - [x] Enumeration: get_unique_name_count (more enumeration functions pending)
+  - [ ] Existence check: method_exists
+- [x] Implement ar_method_registry (.c file) - Core structure implemented
+  - [x] Internal storage using dynamic 2D array (not ar_map as originally planned)
+  - [ ] Key generation for method storage
+  - [x] Memory management for method lifecycle
+- [x] Create comprehensive tests (ar_method_registry_tests.c) - 3 tests implemented
+- [ ] Update ar_methodology to use ar_method_registry
+
+#### Phase 2: Create ar_method_resolver Module  
+**Purpose**: Handle version resolution and method selection logic
+- [ ] Design ar_method_resolver interface (.h file)
+  - [ ] Version resolution: resolve_method_version
+  - [ ] Method selection: find_best_match
+  - [ ] Version comparison utilities
+  - [ ] Fallback logic for version selection
+- [ ] Implement ar_method_resolver (.c file)
+  - [ ] Semver-based version matching
+  - [ ] Wildcard version support ("*", "1.*", etc.)
+  - [ ] Latest version selection logic
+- [ ] Create comprehensive tests (ar_method_resolver_tests.c)
+- [ ] Update ar_methodology to use ar_method_resolver
+
+#### Phase 3: Create ar_method_persistence Module
+**Purpose**: Handle serialization and deserialization of methods
+- [ ] Design ar_method_persistence interface (.h file)
+  - [ ] Save operations: save_method, save_all_methods
+  - [ ] Load operations: load_method, load_all_methods
+  - [ ] Format specification for persistence
+  - [ ] Error handling for I/O operations
+- [ ] Implement ar_method_persistence (.c file)
+  - [ ] File I/O using ar_io module
+  - [ ] Method serialization format
+  - [ ] Backwards compatibility handling
+- [ ] Create comprehensive tests (ar_method_persistence_tests.c)
+- [ ] Update ar_methodology to use ar_method_persistence
+
+#### Phase 4: Refactor ar_methodology as Facade
+**Purpose**: Coordinate the sub-modules and maintain backward compatibility
+- [ ] Refactor ar_methodology to delegate to sub-modules
+  - [ ] Keep existing public API unchanged
+  - [ ] Internal implementation uses registry, resolver, persistence
+  - [ ] Remove direct storage/resolution logic
+  - [ ] Maintain existing method caching if beneficial
+- [ ] Update existing tests to verify backward compatibility
+- [ ] Ensure zero changes needed in client code
+
+#### Phase 5: Integration and Verification
+- [ ] Run full test suite with sanitizers
+- [ ] Verify zero memory leaks
+- [ ] Check module size metrics (target: each module < 400 lines)
+- [ ] Update all documentation (.md files)
+- [ ] Update module dependency documentation
+- [ ] Performance comparison (before/after refactoring)
+
+**Success Criteria**:
+- Each new module follows single responsibility principle
+- No circular dependencies between modules
+- All existing tests pass without modification
+- Zero memory leaks
+- Improved code organization and maintainability
+- Each module is independently testable
+
+**Estimated Timeline**: 3-5 sessions depending on discoveries during implementation
 
 ### 2. HIGH PRIORITY - System Module Refactoring
 
