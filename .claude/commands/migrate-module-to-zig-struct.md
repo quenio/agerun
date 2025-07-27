@@ -19,6 +19,7 @@ First, I need to verify that ar_{{1}} is safe to migrate by checking:
 1. **Current Implementation**: Verify that `modules/ar_{{1}}.zig` exists (must be a Zig ABI module)
 2. **C Module Dependencies**: Search for any C modules (.c files) that include or depend on ar_{{1}}
 3. **Zig Module Dependencies**: Identify Zig modules that depend on ar_{{1}} (these can be updated)
+4. **Module's Own Dependencies**: Check if ar_{{1}} depends on C-ABI modules (would block migration)
 
 ### Dependency Analysis Steps:
 
@@ -35,9 +36,15 @@ grep -l "ar_{{1}}.h" modules/*.h
 # Check for Zig module dependencies (these can be updated)
 grep -l '@cImport.*ar_{{1}}.h' modules/*.zig
 grep -l 'ar_{{1}}__' modules/*.zig
+
+# Check what C headers ar_{{1}} itself imports (these would block migration)
+echo "Checking ar_{{1}}'s dependencies on C-ABI modules:"
+grep -n "@cInclude" modules/ar_{{1}}.zig | head -20
 ```
 
-If any C modules depend on ar_{{1}}, the migration cannot proceed because C code cannot import Zig struct modules.
+**Migration Blockers**:
+- If any C modules depend on ar_{{1}}, migration cannot proceed
+- If ar_{{1}} itself uses `@cImport` to depend on C-ABI modules, migration cannot proceed due to type incompatibility issues between different `@cImport` namespaces
 
 ## Migration Plan (if dependencies allow)
 
@@ -76,6 +83,7 @@ For each Zig module that depends on ar_{{1}}:
 
 Before proceeding:
 - [ ] No C modules depend on ar_{{1}}
+- [ ] ar_{{1}} does not use @cImport to depend on C-ABI modules
 - [ ] All Zig dependencies identified and migration plan created
 - [ ] Module is truly internal (not part of public API)
 - [ ] Tests exist to verify functionality during migration
@@ -99,9 +107,19 @@ Which module would you like to migrate?
 
 ## Important Constraints
 
-**CRITICAL**: C modules cannot import Zig struct modules. This migration can only proceed if:
-1. No C modules depend on the target module
-2. Only Zig modules depend on it (these can be updated)
-3. The module is not part of the public C API
+**CRITICAL**: Zig struct modules have strict limitations:
 
-If C modules need the functionality, the module must remain C-ABI compatible.
+1. **C modules cannot import Zig struct modules** - Any C dependency blocks migration
+2. **Type incompatibility with @cImport** - If the module uses @cImport to call C functions, it cannot be migrated due to type mismatches between different @cImport namespaces
+3. **Only pure Zig or Zig-struct dependencies allowed** - The module can only depend on:
+   - Other Zig struct modules
+   - Pure Zig code with no C dependencies
+   - The Zig standard library
+
+This migration can only proceed if:
+- No C modules depend on the target module
+- The target module does not depend on any C-ABI modules
+- Only Zig modules depend on it (these can be updated)
+- The module is not part of the public C API
+
+If the module needs to interact with C code in any way, it must remain C-ABI compatible.
