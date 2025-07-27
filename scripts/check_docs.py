@@ -47,17 +47,21 @@ def check_repo_root():
         print("Please run 'make check-docs' from the repository root instead.")
         sys.exit(1)
 
-def find_markdown_files():
-    """Find all markdown files except TODO.md and CHANGELOG.md"""
-    markdown_files = []
+def find_documentation_files():
+    """Find all documentation files: markdown files and Zig source files (for comment validation)"""
+    doc_files = []
     for root, dirs, files in os.walk("."):
         # Skip bin directory
         if "/bin/" in root or root.endswith("/bin"):
             continue
         for file in files:
+            # Include markdown files (except TODO.md and CHANGELOG.md)
             if file.endswith(".md") and file not in ["TODO.md", "CHANGELOG.md"]:
-                markdown_files.append(os.path.join(root, file))
-    return sorted(markdown_files)
+                doc_files.append(os.path.join(root, file))
+            # Include Zig source files in modules directory for comment validation
+            elif file.endswith(".zig") and "modules" in root and not file.endswith("Tests.zig"):
+                doc_files.append(os.path.join(root, file))
+    return sorted(doc_files)
 
 def check_file_references(doc_files):
     """Check documentation file references"""
@@ -307,6 +311,7 @@ def check_function_and_type_references(doc_files):
         "int8_t", "uint8_t", "size_t", "ssize_t", "ptrdiff_t", "uintptr_t",
         "intptr_t", "FILE", "bool", "char", "int", "long", "float", "double",
         "void", "const", "unsigned", "signed", "NULL", "PRId64", "PRIu64",
+        "time_t", "off_t", "mode_t", "pid_t", "uid_t", "gid_t",
         # Zig standard library types
         "ArrayList", "HashMap", "Allocator", "Self"
     }
@@ -539,6 +544,10 @@ def check_relative_links(doc_files):
         doc_path = Path(doc)
         doc_dir = doc_path.parent
         
+        # Skip link checking for Zig files - they can contain syntax like [*][*:0] that aren't links
+        if doc.endswith('.zig'):
+            continue
+            
         with open(doc, 'r', encoding='utf-8') as f:
             content = f.read()
         
@@ -626,11 +635,11 @@ def main():
     
     overall_status = 0
     
-    # Find all markdown files
-    doc_files = find_markdown_files()
+    # Find all documentation files (markdown and Zig source)
+    doc_files = find_documentation_files()
     
     if not doc_files:
-        print("Documentation check: No markdown files found ⚠️")
+        print("Documentation check: No documentation files found ⚠️")
     else:
         # Step 1: Check file references
         status = check_file_references(doc_files)
