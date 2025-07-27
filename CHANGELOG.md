@@ -4,6 +4,22 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-07-27
 
+### ✅ COMPLETED: Updated ar_methodology to use ar_method_registry
+- **Successfully refactored ar_methodology** to use the new ar_method_registry module:
+  - Replaced internal 2D array storage with ar_method_registry instance
+  - All public APIs remain unchanged - no breaking changes
+  - Delegated all storage operations to the registry
+  - Removed obsolete helper functions (_find_method_idx_in_instance, _find_latest_method_in_instance, etc.)
+  - Removed unused _validate_file function
+  - Simplified save/load functions to delegate to instance versions
+- **Test results**:
+  - All 17 ar_methodology tests passing
+  - Zero memory leaks (613 allocations, all freed)
+  - File format compatibility maintained
+- **Documentation updated** to reflect new implementation using ar_method_registry
+
+## 2025-07-27
+
 ### ✅ COMPLETED: Methodology Module Refactoring - Phase 1
 - **Fully implemented ar_method_registry module** with all planned functionality:
   - TDD Cycles 1-3: Core create/destroy, register, and count operations

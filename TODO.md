@@ -150,7 +150,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
   - [x] Integration with ar_semver for version comparison
   - [x] Dynamic storage growth (doubles capacity when full)
 - [x] Create comprehensive tests (ar_method_registry_tests.c) - 10 tests implemented
-- [ ] Update ar_methodology to use ar_method_registry (next session)
+- [x] Update ar_methodology to use ar_method_registry (Completed 2025-07-27)
 
 #### Phase 2: Create ar_method_resolver Module  
 **Purpose**: Handle version resolution and method selection logic

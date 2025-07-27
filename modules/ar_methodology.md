@@ -168,9 +168,9 @@ ar_methodology__cleanup();
 
 ## Implementation Details
 
-The methodology module uses a global instance internally to maintain backward compatibility while providing dynamic storage capabilities. Methods are stored in a two-dimensional dynamic array structure, with one dimension for method names and another for versions of each method.
+The methodology module uses a global instance internally to maintain backward compatibility while providing dynamic storage capabilities. Methods are stored using the ar_method_registry module, which provides efficient storage and retrieval of methods with multiple versions.
 
-The module automatically grows its storage capacity as needed when new methods are registered. The persistence format stores method count, followed by each method's name, version count, and version details.
+The registry automatically handles storage management as new methods are registered. The persistence format stores method count, followed by each method's name, version count, and version details.
 
 ## Thread Safety
 
@@ -180,9 +180,10 @@ The methodology module is NOT thread-safe. All access should be synchronized ext
 
 ```
 ar_methodology
+├──c──> ar_method_registry
 ├──c──> ar_method
 ├──c──> ar_io (Zig/C)
 ├──c──> ar_heap (Zig)
-├──c──> ar_semver (Zig)
+├──c──> ar_list
 └──c──> ar_log (optional)
 ```
