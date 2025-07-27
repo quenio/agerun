@@ -119,8 +119,8 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 **Memory Leak Detection**:
 - Full test suite: Check console for "WARNING: X memory leaks detected"
-- Individual test reports: `bin/memory_report_<test_name>.log` ([details](kb/memory-leak-detection-workflow.md))
-- Complete verification: `grep "Actual memory leaks:" bin/memory_report_*.log | grep -v "0 (0 bytes)"`
+- Individual test reports: `bin/run-tests/memory_report_<test_name>.log` ([details](kb/memory-leak-detection-workflow.md))
+- Complete verification: `grep "Actual memory leaks:" bin/run-tests/memory_report_*.log | grep -v "0 (0 bytes)"`
 - Always run `make sanitize-tests` before committing
 - Debug strategy: Check report → Trace source → Verify ownership → Fix naming → Add cleanup ([details](kb/memory-debugging-comprehensive-guide.md))
 - Environment variables: `ASAN_OPTIONS=halt_on_error=0` (continue on error), `detect_leaks=1` (complex leaks)

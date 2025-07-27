@@ -4,6 +4,15 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-07-27
 
+### ✅ COMPLETED: Documentation Fix - Memory Leak Report Paths
+- **Fixed incorrect memory report paths** in CLAUDE.md and memory-leak-detection-workflow.md
+- **Corrected paths** from `bin/memory_report_*.log` to `bin/run-tests/memory_report_*.log`
+- **Added clarification** about subdirectories based on build targets (run-tests, sanitize-tests)
+- **Verified KB article reference** already exists in CLAUDE.md guidelines
+- **Validated all documentation** with make check-docs - all references valid
+
+## 2025-07-27
+
 ### ✅ COMPLETED: Method Parser Integration 
 - **Finalized method parser integration** with comprehensive error handling
 - **Added test for method creation with invalid instructions** - Methods can be created even with parse errors for backward compatibility
