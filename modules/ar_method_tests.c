@@ -17,6 +17,7 @@ static void test_method_run(void);
 static void test_method_persistence(void);
 static void test_method_get_ast(void);
 static void test_method_parse_ast_on_create(void);
+static void test_method_create_with_invalid_instructions(void);
 
 static void test_method_create(void) {
     printf("Testing ar_method__create()...\n");
@@ -276,6 +277,43 @@ static void test_method_parse_ast_on_create(void) {
     printf("Method parse AST on create test passed!\n");
 }
 
+static void test_method_create_with_invalid_instructions(void) {
+    printf("Testing method creation with invalid instructions...\n");
+    
+    // Given invalid instructions and a log to capture errors
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
+    const char *name = "invalid_test_method";
+    const char *invalid_instructions = "this is not valid syntax";
+    
+    // When we create the method with invalid instructions
+    ar_method_t *own_method = ar_method__create_with_log(name, invalid_instructions, "1.0.0", log);
+    
+    // Then the method should still be created (backward compatibility)
+    assert(own_method != NULL);
+    
+    // But the AST should be NULL
+    const ar_method_ast_t *ref_ast = ar_method__get_ast(own_method);
+    assert(ref_ast == NULL);
+    
+    // And an error should have been logged
+    const char *ref_error = ar_log__get_last_error_message(log);
+    assert(ref_error != NULL);
+    assert(strlen(ref_error) > 0);
+    
+    // The method should still have its basic properties
+    assert(strcmp(ar_method__get_name(own_method), name) == 0);
+    assert(strcmp(ar_method__get_version(own_method), "1.0.0") == 0);
+    assert(strcmp(ar_method__get_instructions(own_method), invalid_instructions) == 0);
+    
+    // Clean up
+    ar_method__destroy(own_method);
+    ar_log__destroy(log);
+    
+    printf("Method create with invalid instructions test passed!\n");
+}
+
 
 int main(void) {
     printf("Starting Method Module Tests...\n");
@@ -307,6 +345,7 @@ int main(void) {
     test_method_run();
     test_method_get_ast();
     test_method_parse_ast_on_create();
+    test_method_create_with_invalid_instructions();
     
     // Shutdown the system to clean up resources
     ar_system__shutdown();
@@ -315,6 +354,6 @@ int main(void) {
     test_method_persistence();
     
     // And report success
-    printf("All 9 tests passed!\n");
+    printf("All 10 tests passed!\n");
     return 0;
 }

@@ -388,16 +388,14 @@ This document tracks pending tasks and improvements for the AgeRun project.
 4. No shortcuts - implement all cases
 5. Frame owns nothing - it's just a context bundle
 
-### HIGH PRIORITY - Method Parser and AST Implementation (NEW - In Progress)
+### HIGH PRIORITY - Method Parser and AST Implementation (Completed 2025-07-27)
 
-**Status**: Started implementing method_ast module as foundation for method_parser. This enables storing parsed methods instead of source text.
+**Status**: Successfully implemented method_ast and method_parser modules with full integration into method module. Methods now store parsed ASTs instead of just source text.
 
 **Completed**:
 - [x] Created method_ast and method_parser modules with full functionality (Completed 2025-06-26)
-
-**Remaining TDD Cycles**:
-- [ ] TDD Cycle 11: Error handling
-- [ ] TDD Cycle 12-13: Integrate with method module
+- [x] TDD Cycle 11: Error handling - Added test for invalid instructions (Completed 2025-07-27)
+- [x] TDD Cycle 12-13: Integrate with method module - Already integrated, added comprehensive test (Completed 2025-07-27)
 
 ### HIGH PRIORITY - Refactor Methodology Module to Instantiable (Completed 2025-07-06)
 
@@ -594,7 +592,7 @@ These articles were referenced in existing kb files but never created. They woul
 
 ## Strategic Priorities
 
-### Complete C to Zig ABI-Compatible Migration (MEDIUM PRIORITY)
+### Complete C to Zig ABI-Compatible Migration (LOW PRIORITY)
 
 **Current Status**: 21/58 modules migrated (36%)
 
