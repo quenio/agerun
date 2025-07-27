@@ -49,10 +49,22 @@ bad_module_files=0
 
 for file in $module_files; do
     basename=$(basename "$file")
-    # Module files should start with ar_ (not agerun_)
-    if [[ ! "$basename" =~ ^ar_ ]]; then
-        print_error "Module file '$file' doesn't follow ar_<module> naming convention"
-        ((bad_module_files++))
+    
+    # Check if this is a Zig file
+    if [[ "$basename" == *.zig ]]; then
+        # Zig files can follow either pattern:
+        # 1. C-ABI modules: ar_<module>.zig
+        # 2. Struct modules: TitleCase.zig (PascalCase)
+        if [[ ! "$basename" =~ ^ar_ ]] && [[ ! "$basename" =~ ^[A-Z][a-zA-Z0-9]*\.zig$ ]]; then
+            print_error "Zig module '$file' doesn't follow ar_<module> or TitleCase naming convention"
+            ((bad_module_files++))
+        fi
+    else
+        # C/H files should always start with ar_
+        if [[ ! "$basename" =~ ^ar_ ]]; then
+            print_error "Module file '$file' doesn't follow ar_<module> naming convention"
+            ((bad_module_files++))
+        fi
     fi
 done
 
@@ -63,10 +75,12 @@ fi
 # Step 2: Check test file naming conventions
 echo
 echo "Checking test file naming conventions..."
-test_files=$(find modules methods -name "*_tests.c" | sort)
+c_test_files=$(find modules methods -name "*_tests.c" | sort)
+zig_test_files=$(find modules -name "*Tests.zig" | sort)
 bad_test_files=0
 
-for file in $test_files; do
+# Check C test files
+for file in $c_test_files; do
     basename=$(basename "$file")
     # Test files should be <module>_tests.c
     if [[ ! "$basename" =~ ^[a-zA-Z0-9_]+_tests\.c$ ]]; then
@@ -75,8 +89,18 @@ for file in $test_files; do
     fi
 done
 
+# Check Zig test files
+for file in $zig_test_files; do
+    basename=$(basename "$file")
+    # Zig test files should be <ModuleName>Tests.zig (TitleCase)
+    if [[ ! "$basename" =~ ^[A-Z][a-zA-Z0-9]*Tests\.zig$ ]]; then
+        print_error "Test file '$file' doesn't follow <ModuleName>Tests.zig convention"
+        ((bad_test_files++))
+    fi
+done
+
 if [ $bad_test_files -eq 0 ]; then
-    print_success "All test files follow <module>_tests.c naming convention"
+    print_success "All test files follow naming conventions"
 fi
 
 # Step 3: Check function naming conventions
@@ -476,34 +500,95 @@ fi
 echo
 echo "Checking Zig-specific naming conventions..."
 
-# Check Zig struct types
-echo -n "  Zig struct types... "
-bad_zig_structs=0
-zig_struct_issues=""
+# First, categorize Zig files
+c_abi_zig_files=""
+struct_module_zig_files=""
 
 for file in modules/*.zig; do
     if [ -f "$file" ]; then
-        # Look for struct definitions that don't follow naming convention
-        # Pattern: const StructName = struct {
-        bad_structs=$(grep -E "^const [A-Z][a-zA-Z0-9_]* = struct" "$file" 2>/dev/null | \
-            grep -v -E "^const ar_[a-zA-Z0-9_]+_t = struct" | \
-            sed "s|^|$file: |")
-        
-        if [ ! -z "$bad_structs" ]; then
-            zig_struct_issues="$zig_struct_issues\n$bad_structs"
-            ((bad_zig_structs++))
+        basename=$(basename "$file")
+        if [[ "$basename" =~ ^ar_ ]]; then
+            c_abi_zig_files="$c_abi_zig_files $file"
+        elif [[ "$basename" =~ ^[A-Z][a-zA-Z0-9]*\.zig$ ]] && [[ ! "$basename" =~ Tests\.zig$ ]]; then
+            struct_module_zig_files="$struct_module_zig_files $file"
         fi
     fi
 done
 
-if [ $bad_zig_structs -eq 0 ]; then
-    print_success "All Zig struct types follow naming convention"
+# Check C-ABI Zig modules
+echo -n "  C-ABI Zig modules (ar_*.zig)... "
+bad_c_abi_issues=0
+c_abi_issues=""
+
+for file in $c_abi_zig_files; do
+    # Check export functions follow ar_module__function pattern
+    bad_exports=$(grep -E "^export fn" "$file" 2>/dev/null | \
+        grep -v -E "^export fn ar_[a-zA-Z0-9_]+__[a-zA-Z0-9_]+" | \
+        sed "s|^|$file: |")
+    
+    if [ ! -z "$bad_exports" ]; then
+        c_abi_issues="$c_abi_issues\n$bad_exports"
+        ((bad_c_abi_issues++))
+    fi
+    
+    # Check types follow ar_<type>_t convention
+    # Only check public types - private types can use any naming
+    bad_types=$(grep -E "^pub const [a-zA-Z][a-zA-Z0-9_]* = (struct|enum|union)" "$file" 2>/dev/null | \
+        grep -v -E "^pub const ar_[a-zA-Z0-9_]+_t = " | \
+        sed "s|^|$file: |")
+    
+    if [ ! -z "$bad_types" ]; then
+        c_abi_issues="$c_abi_issues\n$bad_types"
+        ((bad_c_abi_issues++))
+    fi
+done
+
+if [ $bad_c_abi_issues -eq 0 ]; then
+    print_success "All C-ABI Zig modules follow correct conventions"
 else
-    print_error "Found Zig struct types not following ar_<type>_t convention"
-    echo -e "    Issues:$zig_struct_issues" | head -10
+    print_error "Found C-ABI Zig modules not following conventions"
+    echo -e "    Issues:$c_abi_issues" | head -10
 fi
 
-# Check Zig global variables
+# Check TitleCase Zig struct modules
+echo -n "  TitleCase Zig struct modules... "
+bad_struct_module_issues=0
+struct_module_issues=""
+
+for file in $struct_module_zig_files; do
+    basename=$(basename "$file" .zig)
+    
+    # Check that main struct uses @This()
+    if ! grep -q "pub const $basename = @This();" "$file" 2>/dev/null; then
+        struct_module_issues="$struct_module_issues\n$file: Missing 'pub const $basename = @This();'"
+        ((bad_struct_module_issues++))
+    fi
+    
+    # Check public functions use camelCase (not snake_case or PascalCase)
+    bad_funcs=$(grep -E "^pub fn" "$file" 2>/dev/null | \
+        grep -v -E "^pub fn [a-z][a-zA-Z0-9]*\(" | \
+        sed "s|^|$file: |")
+    
+    if [ ! -z "$bad_funcs" ]; then
+        struct_module_issues="$struct_module_issues\n$bad_funcs"
+        ((bad_struct_module_issues++))
+    fi
+    
+    # Check that init/deinit are used instead of create/destroy
+    if grep -qE "^pub fn (create|destroy)\(" "$file" 2>/dev/null; then
+        struct_module_issues="$struct_module_issues\n$file: Use init/deinit instead of create/destroy"
+        ((bad_struct_module_issues++))
+    fi
+done
+
+if [ $bad_struct_module_issues -eq 0 ]; then
+    print_success "All TitleCase Zig struct modules follow correct conventions"
+else
+    print_error "Found TitleCase Zig struct modules not following conventions"
+    echo -e "    Issues:$struct_module_issues" | head -10
+fi
+
+# Check Zig global variables (applies to all Zig files)
 echo -n "  Zig global variables... "
 bad_zig_globals=0
 zig_global_issues=""
@@ -542,16 +627,23 @@ else
     echo -e "${RED}Found $total_issues naming convention issues that need attention.${NC}"
     echo
     echo "Naming Convention Guidelines:"
-    echo "  - Module files: ar_<module>.{c,h,zig}"
-    echo "  - Public functions: ar_<module>__<function>"
-    echo "  - Static/private functions: _<function>"
-    echo "  - Test functions: test_<module>__<test_name>"
-    echo "  - Types: ar_<type>_t"
-    echo "  - Structs: ar_<name>_s (C), ar_<name>_t (Zig)"
-    echo "  - Enum values: AR_<ENUM_TYPE>__<VALUE>"
-    echo "  - Global variables: g_<name>"
-    echo "  - Heap macros: AR__HEAP__<OPERATION>"
-    echo "  - Assert macros: AR_ASSERT_<TYPE>"
+    echo "  C-ABI Modules (C/H/Zig):"
+    echo "    - Module files: ar_<module>.{c,h,zig}"
+    echo "    - Public functions: ar_<module>__<function>"
+    echo "    - Static/private functions: _<function>"
+    echo "    - Types: ar_<type>_t"
+    echo "    - Structs: ar_<name>_s (C), ar_<name>_t (Zig)"
+    echo "  Zig Struct Modules:"
+    echo "    - Module files: TitleCase.zig"
+    echo "    - Main struct: pub const ModuleName = @This();"
+    echo "    - Public functions: camelCase (init/deinit not create/destroy)"
+    echo "    - Types: TitleCase"
+    echo "  Common to all:"
+    echo "    - Test functions: test_<module>__<test_name>"
+    echo "    - Enum values: AR_<ENUM_TYPE>__<VALUE>"
+    echo "    - Global variables: g_<name>"
+    echo "    - Heap macros: AR__HEAP__<OPERATION>"
+    echo "    - Assert macros: AR_ASSERT_<TYPE>"
 fi
 
 # Exit with appropriate status
