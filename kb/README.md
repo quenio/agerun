@@ -50,10 +50,12 @@ Each learning file contains:
 - [Test Function Naming Accuracy](test-function-naming-accuracy.md)
 - [Code Movement Verification](code-movement-verification.md)
 - [TDD Advanced Large Refactoring](tdd-advanced-large-refactoring.md)
+- [TDD Feature Completion Before Commit](tdd-feature-completion-before-commit.md)
 - [Code Smell Quick Detection](code-smell-quick-detection.md)
 - [Module Quality Checklist](module-quality-checklist.md)
 - [Method Test Template](method-test-template.md)
 - [Test Fixture API Adaptation](test-fixture-api-adaptation.md)
+- [Refactoring Systematic Cleanup](refactoring-systematic-cleanup.md)
 
 ### Architecture & Design
 - [Opaque Types Pattern](opaque-types-pattern.md)

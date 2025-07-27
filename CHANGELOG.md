@@ -4,6 +4,19 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-07-27
 
+### ✅ Knowledge Base Enhancement - TDD and Refactoring Patterns
+- **Created comprehensive TDD documentation**:
+  - New article on completing all TDD cycles before commits
+  - Enhanced red-green-refactor cycle documentation
+  - Added registry pattern example to refactoring patterns
+- **Created systematic cleanup guide** for post-refactoring:
+  - Documents process for removing ALL obsolete helper functions
+  - Provides search patterns and verification steps
+- **Enhanced cross-references** throughout knowledge base
+- **Updated CLAUDE.md** with links to new patterns
+
+## 2025-07-27
+
 ### ✅ COMPLETED: Updated ar_methodology to use ar_method_registry
 - **Successfully refactored ar_methodology** to use the new ar_method_registry module:
   - Replaced internal 2D array storage with ar_method_registry instance

@@ -31,7 +31,27 @@ ar_data_t* ar_expression_evaluator__evaluate(ar_expression_evaluator_t *self, ar
     // implementation using self->mut_memory
 }
 
-// Pattern 4: Deprecation for Safety
+// Pattern 4: Registry Pattern Extraction
+// Extract storage responsibility to focused module while preserving API
+// Before: ar_methodology with internal 2D arrays
+struct ar_methodology_s {
+    ar_method_t ***own_methods;       // 2D array
+    int *own_method_counts;           // Version counts
+    int method_name_count;            // Total methods
+};
+
+// After: Delegate to registry
+struct ar_methodology_s {
+    ar_log_t *ref_log;
+    ar_method_registry_t *own_registry;  // All storage delegated
+};
+
+// Public API unchanged:
+ar_method_t* ar_methodology__get_method(const char *name, const char *version) {
+    // Now delegates to registry internally
+}
+
+// Pattern 5: Deprecation for Safety
 ar_data_t* ar_old_function(ar_data_t *param) {
     (void)param;  // Suppress warning
     return NULL;  // Safe default
@@ -41,6 +61,7 @@ ar_data_t* ar_old_function(ar_data_t *param) {
 
 ## Generalization
 - **Module cohesion**: Split large modules (e.g., 850-line agency → 4 focused modules)
+- **Registry pattern extraction**: Move storage to focused registry while preserving public APIs
 - **Merging functions**: Move helpers first, then merge implementation (don't re-implement)
 - **Instance migration**: Replace parameters with `self->field` references
 - **File verification**: Check `wc -l` if content seems truncated; beware "[... rest of ...]"

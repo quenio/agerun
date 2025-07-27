@@ -1,10 +1,10 @@
 # Red-Green-Refactor Cycle
 
 ## Learning
-TDD requires completing ALL three phases (Red-Green-Refactor) for each behavior before moving to the next, with no commits during the cycle
+TDD requires completing ALL three phases (Red-Green-Refactor) for each behavior before moving to the next, with no commits during the cycle. When implementing a feature with multiple behaviors, complete ALL cycles for the entire feature before committing.
 
 ## Importance
-Ensures code quality through systematic improvement and prevents accumulation of technical debt
+Ensures code quality through systematic improvement and prevents accumulation of technical debt. Prevents incomplete features in commits and maintains clean git history.
 
 ## Example
 ```

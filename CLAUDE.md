@@ -424,7 +424,7 @@ Never compile directly with gcc.
 9. Remove any log files: `find . -name "*.log" -type f | grep -v bin/ | xargs rm -f`
 10. Only then: `git commit`
 
-**Remember**: Complete ALL TDD Cycles → Docs → TODO → CHANGELOG → Commit
+**Remember**: Complete ALL TDD Cycles → Docs → TODO → CHANGELOG → Commit ([details](kb/tdd-feature-completion-before-commit.md))
 
 **After Completing Major Tasks**:
 - Document completion date in TODO.md (e.g., "Completed 2025-06-11")
@@ -445,6 +445,7 @@ Never compile directly with gcc.
 - **Ownership transitions**: Update naming immediately when changing ref_→own_ ([details](kb/refactoring-ownership-transitions.md))
 - **Dependency injection**: Avoid when 1:1 relationships exist ([details](kb/dependency-injection-anti-pattern.md))
 - **Post-refactoring cleanup**: Remove obsolete modules after major refactoring ([details](kb/module-removal-checklist.md))
+- **Systematic cleanup**: Remove ALL obsolete helpers after refactoring ([details](kb/refactoring-systematic-cleanup.md))
 
 **Bulk Operations Patterns**:
 - **Symbol renaming**: Use `rename_symbols.py` for safe whole-word renaming ([details](kb/script-enhancement-over-one-off.md))

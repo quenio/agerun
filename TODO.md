@@ -6,6 +6,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### Knowledge Base Enhancement - TDD and Refactoring (Completed 2025-07-27)
+- [x] Created TDD feature completion pattern; updated refactoring patterns with registry example; created systematic cleanup guide; enhanced red-green-refactor documentation; added cross-references throughout KB
+
 ### Evaluator Migration Strategy (Completed 2025-07-20)
 - [x] Analyzed error cleanup patterns; determined Zig's defer solves cleanup cascade; migrated ar_exit_instruction_evaluator as proof; created KB article; updated TODO.md for Zig migration approach
 

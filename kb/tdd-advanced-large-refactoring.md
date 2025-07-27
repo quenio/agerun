@@ -66,3 +66,4 @@ Example pattern: 9 cycles for facade refactoring (assignment, send, if, parse, b
 - [Red-Green-Refactor Cycle](red-green-refactor-cycle.md)
 - [Facade Pattern Coordination](facade-pattern-coordination.md)
 - [Ownership Pattern Extraction](ownership-pattern-extraction.md)
+- [TDD Feature Completion Before Commit](tdd-feature-completion-before-commit.md)
