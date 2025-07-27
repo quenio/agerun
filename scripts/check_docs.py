@@ -272,10 +272,19 @@ def check_function_and_type_references(doc_files):
             
             # Extract Zig functions
             zig_functions = zig_pub_fn_pattern.findall(content)
-            # Add both the plain function name and module.function format
-            for func in zig_functions:
-                all_functions.add(func)
-                all_functions.add(f"{module_name}.{func}")
+            
+            # For C-ABI modules (ar_*), only add the function if it follows ar_module__function pattern
+            if module_name.startswith('ar_'):
+                for func in zig_functions:
+                    if re.match(r'^ar_[a-zA-Z0-9_]+__[a-zA-Z0-9_]+$', func):
+                        all_functions.add(func)
+            # For TitleCase struct modules, add camelCase functions
+            elif re.match(r'^[A-Z][a-zA-Z0-9]*$', module_name):
+                for func in zig_functions:
+                    # Only add if it's camelCase (starts with lowercase)
+                    if re.match(r'^[a-z][a-zA-Z0-9]*$', func):
+                        all_functions.add(func)
+                        all_functions.add(f"{module_name}.{func}")
             
             # Extract Zig types (structs, enums, unions)
             zig_structs = zig_const_struct_pattern.findall(content)
@@ -362,15 +371,62 @@ def check_function_and_type_references(doc_files):
                 continue
             
             # Find backticked function references
+            # Pattern 1: ar_module__function for C-ABI
             backtick_func_pattern = re.compile(r'`(ar_[a-zA-Z0-9]+__[a-zA-Z0-9_]+)(?:\(\))?`')
             backtick_matches = backtick_func_pattern.findall(line)
             function_refs.update(backtick_matches)
             
+            # Pattern 2: Module.function for qualified Zig calls (e.g., DataStore.init)
+            # Make sure it's followed by () to avoid matching file names
+            backtick_qualified_pattern = re.compile(r'`([A-Z][a-zA-Z0-9]*\.[a-z][a-zA-Z0-9]*)\(\)`')
+            backtick_qualified_matches = backtick_qualified_pattern.findall(line)
+            function_refs.update(backtick_qualified_matches)
+            
+            # Pattern 3: Standalone camelCase functions in backticks (e.g., `init()`)
+            # Only from files we're checking, and must have ()
+            backtick_camel_pattern = re.compile(r'`([a-z][a-zA-Z0-9]*)\(\)`')
+            backtick_camel_matches = backtick_camel_pattern.findall(line)
+            # Only add these if we're in a Zig struct module doc
+            if doc.endswith('.zig') or '/modules/' in doc:
+                function_refs.update(backtick_camel_matches)
+            
             # Find function references in code (without backticks)
-            code_func_matches = re.findall(r'\b(ar_[a-zA-Z0-9]+__[a-zA-Z0-9_]+)\s*\(', line)
-            function_refs.update(code_func_matches)
+            # Make sure we're not matching file extensions
+            if not re.search(r'\.(md|txt|c|h|zig|json|yaml|yml|xml|html)\s*\(', line):
+                code_func_matches = re.findall(r'\b(ar_[a-zA-Z0-9]+__[a-zA-Z0-9_]+)\s*\(', line)
+                function_refs.update(code_func_matches)
+                
+                # Also find qualified calls like DataStore.init()
+                code_qualified_matches = re.findall(r'\b([A-Z][a-zA-Z0-9]+\.[a-z][a-zA-Z0-9]+)\s*\(', line)
+                function_refs.update(code_qualified_matches)
+        
+        # Common C/system functions to skip
+        system_functions = {
+            "main", "free", "malloc", "calloc", "realloc", "exit", "abort",
+            "printf", "sprintf", "fprintf", "scanf", "fopen", "fclose",
+            "read", "write", "open", "close", "fork", "exec", "wait",
+            "signal", "kill", "sleep", "time", "rand", "srand",
+            "memcpy", "memset", "memcmp", "memmove", "strcpy", "strncpy",
+            "strcmp", "strncmp", "strlen", "strcat", "strncat", "strchr",
+            "strrchr", "strstr", "strtok", "atoi", "atof", "atol"
+        }
         
         for func_ref in function_refs:
+            # Skip system functions
+            if func_ref in system_functions:
+                continue
+                
+            # Skip single-word camelCase that might be common or language keywords
+            if re.match(r'^[a-z][a-zA-Z]*$', func_ref) and '.' not in func_ref:
+                # AgeRun language keywords/instructions
+                language_keywords = {"spawn", "deprecate", "send", "build", "eval"}
+                if func_ref in language_keywords:
+                    continue
+                # Only validate these if they're from Zig struct module docs
+                if not (doc.endswith('.zig') or (doc.endswith('.md') and 
+                        re.search(r'/[A-Z][a-zA-Z0-9]*\.md$', doc))):
+                    continue
+                    
             if func_ref not in all_functions:
                 all_refs_valid = False
                 broken_function_refs.append(
