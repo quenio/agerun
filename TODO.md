@@ -576,6 +576,15 @@ These articles were referenced in existing kb files but never created. They woul
 - [ ] **Authoritative Source Validation** (kb/authoritative-source-validation.md) - Verifying information from authoritative sources
 - [ ] **Code Block Context Handling** (kb/code-block-context-handling.md) - Handling code examples in different contexts
 
+## Future Enhancements
+
+### Build System Improvements
+- [ ] Add Zig static analysis to build system
+  - Integrate `zig ast-check` for all Zig source files
+  - Add `zig fmt --check` for format validation
+  - Consider integrating third-party linters like zlint for more comprehensive analysis
+  - Update analyze-exec and analyze-tests targets to include Zig modules
+
 ## Notes
 
 - **Parnas Compliance**: ACHIEVED (as of 2025-06-08) - All interface violations have been fixed
