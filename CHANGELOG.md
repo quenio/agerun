@@ -4,6 +4,17 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-07-28
 
+### ✅ Knowledge Base Enhancement - Session Learnings
+- **Created new KB article**: internal-vs-external-module-pattern.md
+  - Documents distinction between internal registries and external stores
+  - Uses methodology refactoring as concrete example
+- **Updated existing KB articles**:
+  - user-feedback-as-qa.md: Added examples from ar_method_resolver implementation
+  - specification-consistency-maintenance.md: Added pattern to check specs before implementation
+  - separation-of-concerns-principle.md: Added registry/resolver example
+- **Enhanced cross-references** between related articles
+- **Updated CLAUDE.md** with references to new patterns
+
 ### ✅ COMPLETED: Phase 2 - Create ar_method_resolver Module
 - **Created ar_method_resolver module** for version resolution logic:
   - Separates version resolution from storage (ar_method_registry)

@@ -51,13 +51,18 @@ ar_data_t* ar_expression_processor__parse_and_evaluate(
 
 **Good Separation**:
 ```c
-// ar_methodology.h - Method management logic
+// ar_methodology.h - Method management logic (public facade)
 ar_method_t* ar_methodology__get_method(const char* name, const char* version);
-bool ar_methodology__register_method(const char* name, const char* version, const char* content);
+bool ar_methodology__create_method(const char* name, const char* instructions, const char* version);
 
-// ar_io.h - Persistence concern (if needed as separate module)
-bool ar_method_storage__save_to_file(ar_method_t* method, const char* filename);
-ar_method_t* ar_method_storage__load_from_file(const char* filename);
+// Internal modules with separated concerns:
+// ar_method_registry.c - Storage concern (internal)
+ar_method_registry_t* registry;  // Handles method storage/retrieval
+ar_method_registry__register_method(registry, method);
+
+// ar_method_resolver.c - Resolution logic (internal)  
+ar_method_resolver_t* resolver;  // Handles version resolution
+ar_method_resolver__resolve_method(resolver, name, version);
 ```
 
 **Poor Mixing**:
@@ -360,6 +365,7 @@ if (instruction_ast) {
 - **Information Hiding**: Hide concern implementation details behind interfaces ([details](information-hiding-principle.md))
 - **Minimal Interfaces**: Expose only necessary concern-specific functionality ([details](minimal-interfaces-principle.md))
 - **Design for Change**: Separate concerns that might change independently ([details](design-for-change-principle.md))
+- **Internal vs External Modules**: Distinguish implementation modules from public interfaces ([details](internal-vs-external-module-pattern.md))
 
 ## Examples
 

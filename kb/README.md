@@ -69,6 +69,7 @@ Each learning file contains:
 - [Architectural Patterns Hierarchy](architectural-patterns-hierarchy.md)
 - [Dependency Injection Anti-pattern](dependency-injection-anti-pattern.md)
 - [Ownership Pattern Extraction](ownership-pattern-extraction.md)
+- [Internal vs External Module Pattern](internal-vs-external-module-pattern.md)
 
 ### Parnas Design Principles
 - [Information Hiding Principle](information-hiding-principle.md)

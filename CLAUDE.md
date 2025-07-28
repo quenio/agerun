@@ -78,6 +78,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 ### 0. Documentation Protocol
 
 **Always search CLAUDE.md first** when asked about procedures. Don't overthink - start with exact keywords.
+**Check SPEC.md before implementing** features to avoid unnecessary work ([details](kb/specification-consistency-maintenance.md))
 **When reading TODO.md**: Check [ ] = incomplete, [x] = complete. Read completion dates. Be explicit - list all components.
 **KB articles need CLAUDE.md references** to be accessible in future sessions ([details](kb/claude-md-reference-requirement.md))
 **Evidence-based debugging**: Always verify with concrete evidence, not assumptions ([details](kb/evidence-based-debugging.md))
@@ -296,6 +297,7 @@ grep -r "function_name\|concept" modules/
 - **Parsing vs Evaluation**: Data owner parses (methodology→methods), consumer evaluates (interpreter→ASTs)
 - **Opaque Types**: `typedef struct ar_<module>_s ar_<module>_t;` in header, definition in .c only ([details](kb/opaque-types-pattern.md))
 - **Module Size**: Split at ~850 lines into focused modules (e.g., agency→4 modules)
+- **Internal vs External**: Registries/resolvers=internal, stores=external ([details](kb/internal-vs-external-module-pattern.md))
 - **Parser aliases**: Support all function name variants ([details](kb/parser-function-alias-support.md))
 
 **Key Patterns**:
@@ -402,7 +404,7 @@ Never compile directly with gcc.
 **Task Management**:
 - **Session todos (TodoWrite/TodoRead)**: Current TDD cycles, implementations, bug fixes
 - **TODO.md file**: Long-term architecture, future features (check [ ] vs [x] for completion)
-- **User feedback**: May reveal design issues, not just implementation bugs. Listen for concerns about output/behavior/consistency. Verify assumptions before acting.
+- **User feedback**: May reveal design issues, not just implementation bugs. Listen for concerns about output/behavior/consistency. Verify assumptions before acting. ([details](kb/user-feedback-as-qa.md))
 - **Be frank, not polite**: Only confirm correctness when certain - honest disagreement > polite agreement
 - **Todo list integrity**: Mark items complete, never remove them - preserves task history
 

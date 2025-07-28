@@ -21,6 +21,11 @@ During ar_compile_instruction_evaluator Zig migration, user interrupted multiple
 - **Variable naming**: "Instead of: const method_name Should be: const ref_method_name" → Ownership clarity
 - **Direct instruction**: "I refuse to accept your code until you follow my instructions" → Simplified approach
 
+During ar_method_resolver implementation:
+- **Unclear integration**: "Not clear which functions of method_registry and semver will be used" → Detailed plan
+- **Missing test**: "You did not do the following: Now let me add a test specifically for partial version resolution" → Added test
+- **Spec compliance**: "Does the spec say anything about wildcard support in version numbers?" → Check SPEC.md first
+
 ## Generalization
 Integrate user-as-QA pattern into development workflow:
 1. **Present plans before implementation**: Share detailed implementation plans with domain experts
@@ -56,3 +61,6 @@ Integrate user-as-QA pattern into development workflow:
 ```
 
 ## Related Patterns
+- [Plan Verification and Review](plan-verification-and-review.md)
+- [User Feedback Debugging Pattern](user-feedback-debugging-pattern.md)
+- [Specification Consistency Maintenance](specification-consistency-maintenance.md)

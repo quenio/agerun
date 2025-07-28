@@ -36,7 +36,16 @@ The specification defines the language contract and is used by developers to und
 ```
 
 ## Generalization
-After major language changes, systematically review SPEC.md for:
+Check specifications BEFORE implementation to avoid unnecessary features, and after major changes to maintain consistency:
+
+### Before Implementation
+1. **Feature Verification** - Check if feature is actually specified
+2. **Syntax Confirmation** - Verify exact syntax requirements  
+3. **Behavior Clarification** - Understand specified behavior vs assumptions
+
+Example: Version resolution - SPEC.md specifies partial versions ("1", "1.2") but NOT wildcards ("*", "1.*")
+
+### After Language Changes
 
 1. **BNF Grammar Updates** - Function names, production rules, terminals
 2. **Function Descriptions** - Parameter lists, return values, behavior
@@ -74,3 +83,4 @@ git commit -m "docs: update SPEC.md to reflect terminology changes"
 - [Language Instruction Renaming Pattern](language-instruction-renaming-pattern.md)
 - [Documentation Standards Integration](documentation-standards-integration.md)
 - [Validated Documentation Examples](validated-documentation-examples.md)
+- [User Feedback as QA](user-feedback-as-qa.md)

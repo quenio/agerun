@@ -63,6 +63,14 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ### Evaluator Dependency Injection Refactoring (Completed 2025-07-15)
 - [x] Refactored instruction and method evaluators to create dependencies internally; simplified APIs to require only log parameter; maintained zero memory leaks; updated documentation
 
+### Knowledge Base Enhancement (Completed 2025-07-28)
+- [x] Created internal-vs-external-module-pattern.md documenting module role distinctions
+- [x] Updated user-feedback-as-qa.md with examples from ar_method_resolver implementation
+- [x] Enhanced specification-consistency-maintenance.md to check specs before implementation
+- [x] Updated separation-of-concerns-principle.md with registry/resolver example
+- [x] Added cross-references between related KB articles
+- [x] Updated CLAUDE.md with new KB references
+
 ## Critical Compliance Tasks
 
 ### CRITICAL - Evaluator Code Duplication Refactoring (HIGHEST PRIORITY)
