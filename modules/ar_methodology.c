@@ -2,6 +2,7 @@
 #include "ar_method.h"
 #include "ar_method_registry.h"
 #include "ar_method_resolver.h"
+#include "ar_method_store.h"
 #include "ar_string.h"
 #include "ar_heap.h"
 #include "ar_semver.h"
@@ -45,6 +46,7 @@ struct ar_methodology_s {
     ar_log_t *ref_log;                    /* Borrowed reference to log instance */
     ar_method_registry_t *own_registry;   /* Owned method registry for storage */
     ar_method_resolver_t *own_resolver;   /* Owned method resolver for version resolution */
+    ar_method_store_t *own_default_store; /* Owned method store for default persistence */
 };
 
 /* Global default instance for backward compatibility */
@@ -185,6 +187,15 @@ ar_methodology_t* ar_methodology__create(ar_log_t *ref_log) {
         return NULL;
     }
     
+    // Create the default method store
+    own_methodology->own_default_store = ar_method_store__create(ref_log, own_methodology->own_registry, METHODOLOGY_FILE_NAME);
+    if (!own_methodology->own_default_store) {
+        ar_method_resolver__destroy(own_methodology->own_resolver);
+        ar_method_registry__destroy(own_methodology->own_registry);
+        AR__HEAP__FREE(own_methodology);
+        return NULL;
+    }
+    
     return own_methodology;
 }
 
@@ -195,6 +206,11 @@ ar_methodology_t* ar_methodology__create(ar_log_t *ref_log) {
  */
 void ar_methodology__destroy(ar_methodology_t *own_methodology) {
     if (own_methodology) {
+        // Destroy the default store
+        if (own_methodology->own_default_store) {
+            ar_method_store__destroy(own_methodology->own_default_store);
+        }
+        
         // Destroy the resolver
         if (own_methodology->own_resolver) {
             ar_method_resolver__destroy(own_methodology->own_resolver);
@@ -273,173 +289,25 @@ bool ar_methodology__save_methods_with_instance(ar_methodology_t *ref_methodolog
         return false;
     }
     
-    FILE *fp;
-    ar_file_result_t result = ar_io__open_file(ref_filename, "w", &fp);
-    if (result != AR_FILE_RESULT__SUCCESS) {
-        ar_io__error("Failed to open file %s for writing: %s", ref_filename, 
-                    ar_io__error_message(result));
-        return false;
-    }
-    
-    // Buffer for formatted output
-    char buffer[BUFFER_SIZE];
-    
-    // Get all methods from registry
-    ar_list_t *own_all_methods = ar_method_registry__get_all_methods(ref_methodology->own_registry);
-    if (!own_all_methods) {
-        ar_io__close_file(fp, ref_filename);
-        return false;
-    }
-    
-    // Build a map of method names to count versions
-    typedef struct {
-        const char *name;
-        int count;
-        ar_method_t **methods;
-    } method_group_t;
-    
-    method_group_t *groups = NULL;
-    int group_count = 0;
-    int group_capacity = 10;
-    
-    groups = AR__HEAP__MALLOC(sizeof(method_group_t) * (size_t)group_capacity, "method groups");
-    if (!groups) {
-        ar_list__destroy(own_all_methods);
-        ar_io__close_file(fp, ref_filename);
-        return false;
-    }
-    
-    // Group methods by name
-    void **own_items = ar_list__items(own_all_methods);
-    size_t method_count = ar_list__count(own_all_methods);
-    
-    for (size_t i = 0; i < method_count; i++) {
-        ar_method_t *method = (ar_method_t*)own_items[i];
-        const char *name = ar_method__get_name(method);
-        
-        // Find or create group
-        int group_idx = -1;
-        for (int j = 0; j < group_count; j++) {
-            if (strcmp(groups[j].name, name) == 0) {
-                group_idx = j;
-                break;
-            }
-        }
-        
-        if (group_idx < 0) {
-            // New group
-            if (group_count >= group_capacity) {
-                // Grow groups array
-                group_capacity *= 2;
-                method_group_t *new_groups = AR__HEAP__REALLOC(groups, 
-                    sizeof(method_group_t) * (size_t)group_capacity, "method groups");
-                if (!new_groups) {
-                    AR__HEAP__FREE(own_items);
-                    ar_list__destroy(own_all_methods);
-                    AR__HEAP__FREE(groups);
-                    ar_io__close_file(fp, ref_filename);
-                    return false;
-                }
-                groups = new_groups;
-            }
-            
-            group_idx = group_count++;
-            groups[group_idx].name = name;
-            groups[group_idx].count = 0;
-            groups[group_idx].methods = AR__HEAP__MALLOC(
-                sizeof(ar_method_t*) * MAX_VERSIONS_PER_METHOD, "method versions");
-            if (!groups[group_idx].methods) {
-                AR__HEAP__FREE(own_items);
-                ar_list__destroy(own_all_methods);
-                for (int k = 0; k < group_count - 1; k++) {
-                    AR__HEAP__FREE(groups[k].methods);
-                }
-                AR__HEAP__FREE(groups);
-                ar_io__close_file(fp, ref_filename);
-                return false;
-            }
-        }
-        
-        // Add method to group
-        groups[group_idx].methods[groups[group_idx].count++] = method;
-    }
-    
-    // Write method count (unique names)
-    int written = snprintf(buffer, BUFFER_SIZE, "%d\n", group_count);
-    if (written < 0 || written >= (int)BUFFER_SIZE || fputs(buffer, fp) == EOF) {
-        ar_io__error("Failed to write method count to %s", ref_filename);
-        AR__HEAP__FREE(own_items);
-        ar_list__destroy(own_all_methods);
-        for (int i = 0; i < group_count; i++) {
-            AR__HEAP__FREE(groups[i].methods);
-        }
-        AR__HEAP__FREE(groups);
-        ar_io__close_file(fp, ref_filename);
-        return false;
-    }
-    
-    // Write each method group
-    for (int i = 0; i < group_count; i++) {
-        // Write method name and version count
-        written = snprintf(buffer, BUFFER_SIZE, "%s %d\n", groups[i].name, groups[i].count);
-        if (written < 0 || written >= (int)BUFFER_SIZE || fputs(buffer, fp) == EOF) {
-            ar_io__error("Failed to write method header to %s", ref_filename);
-            AR__HEAP__FREE(own_items);
-            ar_list__destroy(own_all_methods);
-            for (int j = 0; j < group_count; j++) {
-                AR__HEAP__FREE(groups[j].methods);
-            }
-            AR__HEAP__FREE(groups);
-            ar_io__close_file(fp, ref_filename);
+    // Check if we should use the default store or create a temporary one
+    if (strcmp(ref_filename, METHODOLOGY_FILE_NAME) == 0) {
+        // Use the default store
+        return ar_method_store__save(ref_methodology->own_default_store);
+    } else {
+        // Create a temporary store for the custom filename
+        ar_method_store_t *own_temp_store = ar_method_store__create(ref_methodology->ref_log, ref_methodology->own_registry, ref_filename);
+        if (!own_temp_store) {
             return false;
         }
         
-        // Write each version
-        for (int j = 0; j < groups[i].count; j++) {
-            ar_method_t *method = groups[i].methods[j];
-            const char *version = ar_method__get_version(method);
-            const char *instructions = ar_method__get_instructions(method);
-            
-            // Write version
-            written = snprintf(buffer, BUFFER_SIZE, "%s\n", version);
-            if (written < 0 || written >= (int)BUFFER_SIZE || fputs(buffer, fp) == EOF) {
-                ar_io__error("Failed to write version to %s", ref_filename);
-                AR__HEAP__FREE(own_items);
-                ar_list__destroy(own_all_methods);
-                for (int k = 0; k < group_count; k++) {
-                    AR__HEAP__FREE(groups[k].methods);
-                }
-                AR__HEAP__FREE(groups);
-                ar_io__close_file(fp, ref_filename);
-                return false;
-            }
-            
-            // Write instructions
-            written = snprintf(buffer, BUFFER_SIZE, "%s\n", instructions ? instructions : "");
-            if (written < 0 || written >= (int)BUFFER_SIZE || fputs(buffer, fp) == EOF) {
-                ar_io__error("Failed to write instructions to %s", ref_filename);
-                AR__HEAP__FREE(own_items);
-                ar_list__destroy(own_all_methods);
-                for (int k = 0; k < group_count; k++) {
-                    AR__HEAP__FREE(groups[k].methods);
-                }
-                AR__HEAP__FREE(groups);
-                ar_io__close_file(fp, ref_filename);
-                return false;
-            }
-        }
+        // Save using the temporary store
+        bool result = ar_method_store__save(own_temp_store);
+        
+        // Clean up the temporary store
+        ar_method_store__destroy(own_temp_store);
+        
+        return result;
     }
-    
-    // Clean up
-    AR__HEAP__FREE(own_items);
-    ar_list__destroy(own_all_methods);
-    for (int i = 0; i < group_count; i++) {
-        AR__HEAP__FREE(groups[i].methods);
-    }
-    AR__HEAP__FREE(groups);
-    
-    ar_io__close_file(fp, ref_filename);
-    return true;
 }
 
 bool ar_methodology__load_methods_with_instance(ar_methodology_t *mut_methodology, 
@@ -448,93 +316,25 @@ bool ar_methodology__load_methods_with_instance(ar_methodology_t *mut_methodolog
         return false;
     }
     
-    FILE *fp;
-    ar_file_result_t result = ar_io__open_file(ref_filename, "r", &fp);
-    if (result != AR_FILE_RESULT__SUCCESS) {
-        if (result != AR_FILE_RESULT__ERROR_NOT_FOUND) {
-            ar_io__error("Failed to open file %s for reading: %s", ref_filename,
-                        ar_io__error_message(result));
-        }
-        return false;
-    }
-    
-    char line[LINE_SIZE] = {0};
-    char *end_ptr = NULL;
-    
-    // Read method count
-    if (!ar_io__read_line(fp, line, (int)sizeof(line), ref_filename)) {
-        ar_io__close_file(fp, ref_filename);
-        return false;
-    }
-    
-    errno = 0;
-    long method_count = strtol(line, &end_ptr, 10);
-    if (errno != 0 || end_ptr == line || method_count < 0 || method_count > MAX_METHODS) {
-        ar_io__error("Invalid method count in %s: %s", ref_filename, line);
-        ar_io__close_file(fp, ref_filename);
-        return false;
-    }
-    
-    // Load each method
-    for (int i = 0; i < method_count; i++) {
-        // Read method name and version count
-        if (!ar_io__read_line(fp, line, (int)sizeof(line), ref_filename)) {
-            ar_io__error("Failed to read method entry %d from %s", i+1, ref_filename);
-            ar_io__close_file(fp, ref_filename);
+    // Check if we should use the default store or create a temporary one
+    if (strcmp(ref_filename, METHODOLOGY_FILE_NAME) == 0) {
+        // Use the default store
+        return ar_method_store__load(mut_methodology->own_default_store);
+    } else {
+        // Create a temporary store for the custom filename
+        ar_method_store_t *own_temp_store = ar_method_store__create(mut_methodology->ref_log, mut_methodology->own_registry, ref_filename);
+        if (!own_temp_store) {
             return false;
         }
         
-        char method_name[MAX_METHOD_NAME_LENGTH] = {0};
-        int version_count = 0;
-        if (sscanf(line, "%255s %d", method_name, &version_count) != 2) {
-            ar_io__error("Malformed method entry in %s: %s", ref_filename, line);
-            ar_io__close_file(fp, ref_filename);
-            return false;
-        }
+        // Load using the temporary store
+        bool result = ar_method_store__load(own_temp_store);
         
-        // Load each version
-        for (int v = 0; v < version_count; v++) {
-            // Read version
-            if (!ar_io__read_line(fp, line, (int)sizeof(line), ref_filename)) {
-                ar_io__error("Failed to read version for method %s", method_name);
-                ar_io__close_file(fp, ref_filename);
-                return false;
-            }
-            char *version = AR__HEAP__STRDUP(ar_string__trim(line), "method version");
-            if (!version) {
-                ar_io__close_file(fp, ref_filename);
-                return false;
-            }
-            
-            // Read instructions
-            if (!ar_io__read_line(fp, line, (int)sizeof(line), ref_filename)) {
-                AR__HEAP__FREE(version);
-                ar_io__close_file(fp, ref_filename);
-                return false;
-            }
-            
-            // Instructions can be empty, so we don't check for that
-            // Trim to remove newline
-            char *instructions = AR__HEAP__STRDUP(ar_string__trim(line), "method instructions");
-            if (!instructions) {
-                AR__HEAP__FREE(version);
-                ar_io__close_file(fp, ref_filename);
-                return false;
-            }
-            
-            // Create and register the method
-            ar_method_t *method = ar_method__create_with_log(method_name, instructions, version, mut_methodology->ref_log);
-            AR__HEAP__FREE(version);
-            AR__HEAP__FREE(instructions);
-            
-            if (method) {
-                ar_methodology__register_method_with_instance(mut_methodology, method);
-            }
-        }
+        // Clean up the temporary store
+        ar_method_store__destroy(own_temp_store);
+        
+        return result;
     }
-    
-    ar_io__close_file(fp, ref_filename);
-    return true;
 }
 
 bool ar_methodology__unregister_method_with_instance(ar_methodology_t *mut_methodology,

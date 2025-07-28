@@ -177,29 +177,31 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Create comprehensive tests (ar_method_resolver_tests.c) - 6 tests
 - [x] Update ar_methodology to use ar_method_resolver
 
-#### Phase 3: Create ar_method_persistence Module
-**Purpose**: Handle serialization and deserialization of methods
-- [ ] Design ar_method_persistence interface (.h file)
-  - [ ] Save operations: save_method, save_all_methods
-  - [ ] Load operations: load_method, load_all_methods
-  - [ ] Format specification for persistence
-  - [ ] Error handling for I/O operations
-- [ ] Implement ar_method_persistence (.c file)
-  - [ ] File I/O using ar_io module
-  - [ ] Method serialization format
-  - [ ] Backwards compatibility handling
-- [ ] Create comprehensive tests (ar_method_persistence_tests.c)
-- [ ] Update ar_methodology to use ar_method_persistence
+#### Phase 3: Create ar_method_store Module (Completed 2025-07-28)
+**Purpose**: Instantiable persistence for method registry
+**Note**: Replacing ar_method_persistence with ar_method_store for better naming and instantiable design
+- [x] Design ar_method_store interface (.h file) - Complete
+  - [x] Instantiable design: create/destroy with registry and file path
+  - [x] Save/load operations for entire registry
+  - [x] File existence checking
+  - [x] Delete operations
+- [x] Implement ar_method_store (.c file) - Complete
+  - [x] TDD Cycles 1-11: All basic operations, save/load functionality, error handling
+  - [x] TDD Cycle 12: Update ar_methodology integration
+  - [x] Log support for error reporting during method loading
+  - [ ] Convert to use ar_io module instead of direct file operations
+- [x] Create comprehensive tests (ar_method_store_tests.c) - Complete (11 tests)
+- [x] Update ar_methodology to use ar_method_store
 
-#### Phase 4: Refactor ar_methodology as Facade
+#### Phase 4: Refactor ar_methodology as Facade (Completed 2025-07-28)
 **Purpose**: Coordinate the sub-modules and maintain backward compatibility
-- [ ] Refactor ar_methodology to delegate to sub-modules
-  - [ ] Keep existing public API unchanged
-  - [ ] Internal implementation uses registry, resolver, persistence
-  - [ ] Remove direct storage/resolution logic
-  - [ ] Maintain existing method caching if beneficial
-- [ ] Update existing tests to verify backward compatibility
-- [ ] Ensure zero changes needed in client code
+- [x] Refactor ar_methodology to delegate to sub-modules
+  - [x] Keep existing public API unchanged
+  - [x] Internal implementation uses registry, resolver, method store
+  - [x] Remove direct storage/resolution logic
+  - [x] Maintain existing method caching if beneficial
+- [x] Update existing tests to verify backward compatibility
+- [x] Ensure zero changes needed in client code
 
 #### Phase 5: Integration and Verification
 - [ ] Run full test suite with sanitizers
