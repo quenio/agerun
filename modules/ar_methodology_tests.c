@@ -23,6 +23,7 @@ static void test_methodology__save_load_with_instance(void);
 static void test_methodology__ar_log_propagation(void);
 static void test_methodology__ar_log_propagation_on_load(void);
 static void test_methodology__ar_log_propagation_on_load_with_instance(void);
+static void test_methodology__partial_version_resolution(void);
 
 static void test_methodology__create_destroy(void) {
     printf("Testing ar_methodology__create() and ar_methodology__destroy()...\n");
@@ -548,6 +549,85 @@ static void test_methodology__ar_log_propagation_on_load_with_instance(void) {
     printf("test_methodology__ar_log_propagation_on_load_with_instance passed\n");
 }
 
+static void test_methodology__partial_version_resolution(void) {
+    printf("Testing partial version resolution in methodology...\n");
+    
+    // Given a methodology instance
+    ar_methodology_t *own_methodology = ar_methodology__create(NULL);
+    assert(own_methodology != NULL);
+    
+    // Register multiple versions of the same method
+    bool result = ar_methodology__create_method_with_instance(own_methodology,
+                                                             "version_test",
+                                                             "memory.result = \"v1.0.0\"",
+                                                             "1.0.0");
+    assert(result == true);
+    
+    result = ar_methodology__create_method_with_instance(own_methodology,
+                                                        "version_test",
+                                                        "memory.result = \"v1.2.0\"",
+                                                        "1.2.0");
+    assert(result == true);
+    
+    result = ar_methodology__create_method_with_instance(own_methodology,
+                                                        "version_test",
+                                                        "memory.result = \"v1.2.3\"",
+                                                        "1.2.3");
+    assert(result == true);
+    
+    result = ar_methodology__create_method_with_instance(own_methodology,
+                                                        "version_test",
+                                                        "memory.result = \"v2.0.0\"",
+                                                        "2.0.0");
+    assert(result == true);
+    
+    result = ar_methodology__create_method_with_instance(own_methodology,
+                                                        "version_test",
+                                                        "memory.result = \"v2.1.0\"",
+                                                        "2.1.0");
+    assert(result == true);
+    
+    // Test NULL version returns latest
+    ar_method_t *ref_method = ar_methodology__get_method_with_instance(own_methodology,
+                                                                       "version_test",
+                                                                       NULL);
+    assert(ref_method != NULL);
+    assert(strcmp(ar_method__get_version(ref_method), "2.1.0") == 0);
+    
+    // Test single digit partial version "1" returns latest 1.x.x
+    ref_method = ar_methodology__get_method_with_instance(own_methodology,
+                                                          "version_test",
+                                                          "1");
+    assert(ref_method != NULL);
+    assert(strcmp(ar_method__get_version(ref_method), "1.2.3") == 0);
+    
+    // Test two digit partial version "1.2" returns latest 1.2.x
+    ref_method = ar_methodology__get_method_with_instance(own_methodology,
+                                                          "version_test",
+                                                          "1.2");
+    assert(ref_method != NULL);
+    assert(strcmp(ar_method__get_version(ref_method), "1.2.3") == 0);
+    
+    // Test single digit partial version "2" returns latest 2.x.x
+    ref_method = ar_methodology__get_method_with_instance(own_methodology,
+                                                          "version_test",
+                                                          "2");
+    assert(ref_method != NULL);
+    assert(strcmp(ar_method__get_version(ref_method), "2.1.0") == 0);
+    
+    // Test exact version match
+    ref_method = ar_methodology__get_method_with_instance(own_methodology,
+                                                          "version_test",
+                                                          "1.2.0");
+    assert(ref_method != NULL);
+    assert(strcmp(ar_method__get_version(ref_method), "1.2.0") == 0);
+    
+    // Clean up
+    ar_methodology__destroy(own_methodology);
+    
+    printf("test_methodology__partial_version_resolution passed\n");
+}
+
 int main(void) {
     printf("Starting Methodology Module Tests...\n");
     
@@ -597,8 +677,9 @@ int main(void) {
     test_methodology__ar_log_propagation();
     test_methodology__ar_log_propagation_on_load();
     test_methodology__ar_log_propagation_on_load_with_instance();
+    test_methodology__partial_version_resolution();
     
     // And report success
-    printf("All 17 tests passed!\n");
+    printf("All 18 tests passed!\n");
     return 0;
 }

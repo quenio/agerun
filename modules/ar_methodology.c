@@ -1,6 +1,7 @@
 #include "ar_methodology.h"
 #include "ar_method.h"
 #include "ar_method_registry.h"
+#include "ar_method_resolver.h"
 #include "ar_string.h"
 #include "ar_heap.h"
 #include "ar_semver.h"
@@ -43,6 +44,7 @@
 struct ar_methodology_s {
     ar_log_t *ref_log;                    /* Borrowed reference to log instance */
     ar_method_registry_t *own_registry;   /* Owned method registry for storage */
+    ar_method_resolver_t *own_resolver;   /* Owned method resolver for version resolution */
 };
 
 /* Global default instance for backward compatibility */
@@ -175,6 +177,14 @@ ar_methodology_t* ar_methodology__create(ar_log_t *ref_log) {
         return NULL;
     }
     
+    // Create the method resolver
+    own_methodology->own_resolver = ar_method_resolver__create(own_methodology->own_registry);
+    if (!own_methodology->own_resolver) {
+        ar_method_registry__destroy(own_methodology->own_registry);
+        AR__HEAP__FREE(own_methodology);
+        return NULL;
+    }
+    
     return own_methodology;
 }
 
@@ -185,6 +195,11 @@ ar_methodology_t* ar_methodology__create(ar_log_t *ref_log) {
  */
 void ar_methodology__destroy(ar_methodology_t *own_methodology) {
     if (own_methodology) {
+        // Destroy the resolver
+        if (own_methodology->own_resolver) {
+            ar_method_resolver__destroy(own_methodology->own_resolver);
+        }
+        
         // Destroy the registry (it will handle all methods)
         if (own_methodology->own_registry) {
             ar_method_registry__destroy(own_methodology->own_registry);
@@ -204,13 +219,8 @@ ar_method_t* ar_methodology__get_method_with_instance(ar_methodology_t *ref_meth
         return NULL;
     }
     
-    if (ref_version) {
-        // Get specific version
-        return ar_method_registry__get_method_by_exact_match(ref_methodology->own_registry, ref_name, ref_version);
-    } else {
-        // Get latest version
-        return ar_method_registry__get_latest_version(ref_methodology->own_registry, ref_name);
-    }
+    // Use the resolver for all version resolution
+    return ar_method_resolver__resolve_method(ref_methodology->own_resolver, ref_name, ref_version);
 }
 
 void ar_methodology__register_method_with_instance(ar_methodology_t *mut_methodology, 

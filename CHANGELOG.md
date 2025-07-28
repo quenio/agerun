@@ -2,6 +2,26 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-07-28
+
+### ✅ COMPLETED: Phase 2 - Create ar_method_resolver Module
+- **Created ar_method_resolver module** for version resolution logic:
+  - Separates version resolution from storage (ar_method_registry)
+  - Implements SPEC.md compliant version resolution:
+    - NULL/empty version → latest version
+    - Full semver (e.g., "1.2.3") → exact match only
+    - Partial version (e.g., "1" or "1.2") → latest matching version
+  - No wildcard support per SPEC.md (no "*" or "1.*")
+- **Integrated resolver into ar_methodology**:
+  - Methodology now uses resolver for all version resolution
+  - Registry remains for internal storage operations only
+  - Both modules are internal implementation details of methodology
+- **Created comprehensive tests**:
+  - 6 tests for ar_method_resolver covering all resolution patterns
+  - Added partial version resolution test to ar_methodology_tests
+  - All 18 methodology tests passing
+  - Zero memory leaks verified
+
 ## 2025-07-27
 
 ### ✅ Knowledge Base Enhancement - TDD and Refactoring Patterns

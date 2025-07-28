@@ -155,19 +155,19 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Create comprehensive tests (ar_method_registry_tests.c) - 10 tests implemented
 - [x] Update ar_methodology to use ar_method_registry (Completed 2025-07-27)
 
-#### Phase 2: Create ar_method_resolver Module  
+#### Phase 2: Create ar_method_resolver Module (Completed 2025-07-28)
 **Purpose**: Handle version resolution and method selection logic
-- [ ] Design ar_method_resolver interface (.h file)
-  - [ ] Version resolution: resolve_method_version
-  - [ ] Method selection: find_best_match
-  - [ ] Version comparison utilities
-  - [ ] Fallback logic for version selection
-- [ ] Implement ar_method_resolver (.c file)
-  - [ ] Semver-based version matching
-  - [ ] Wildcard version support ("*", "1.*", etc.)
-  - [ ] Latest version selection logic
-- [ ] Create comprehensive tests (ar_method_resolver_tests.c)
-- [ ] Update ar_methodology to use ar_method_resolver
+- [x] Design ar_method_resolver interface (.h file)
+  - [x] Version resolution: resolve_method
+  - [x] Method selection: integrated into resolve_method
+  - [x] Version detection utilities (full vs partial)
+  - [x] Fallback logic for version selection
+- [x] Implement ar_method_resolver (.c file)
+  - [x] Semver-based version matching
+  - [x] Partial version support ("1", "1.2") per SPEC.md
+  - [x] Latest version selection logic (NULL version)
+- [x] Create comprehensive tests (ar_method_resolver_tests.c) - 6 tests
+- [x] Update ar_methodology to use ar_method_resolver
 
 #### Phase 3: Create ar_method_persistence Module
 **Purpose**: Handle serialization and deserialization of methods
