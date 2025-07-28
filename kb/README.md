@@ -35,6 +35,7 @@ Each learning file contains:
 - [TDD for API Simplification](tdd-api-simplification.md)
 - [Module Removal Checklist](module-removal-checklist.md)
 - [Evaluator Migration Priority Strategy](evaluator-migration-priority-strategy.md)
+- [Refactoring Phase Completion Checklist](refactoring-phase-completion-checklist.md)
 
 ### Memory Management
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)

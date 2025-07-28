@@ -67,3 +67,4 @@ Key indicators you're ready to commit:
 - [Red Green Refactor Cycle](red-green-refactor-cycle.md)
 - [Build Verification Before Commit](build-verification-before-commit.md)
 - [TDD Advanced Large Refactoring](tdd-advanced-large-refactoring.md)
+- [Refactoring Phase Completion Checklist](refactoring-phase-completion-checklist.md)
