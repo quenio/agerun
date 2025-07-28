@@ -148,11 +148,29 @@ ar_system
 ├──c──> ar_method
 ├──c──> ar_methodology
 │       ├──h──> ar_method
+│       ├──c──> ar_method_registry
+│       │       ├──h──> ar_method
+│       │       ├──c──> ar_semver
+│       │       ├──c──> ar_list
+│       │       ├──c──> ar_string (Zig)
+│       │       └──c──> ar_heap (Zig)
+│       ├──c──> ar_method_resolver
+│       │       ├──h──> ar_method_registry
+│       │       ├──c──> ar_semver
+│       │       ├──c──> ar_string (Zig)
+│       │       └──c──> ar_heap (Zig)
+│       ├──c──> ar_method_store
+│       │       ├──h──> ar_method_registry
+│       │       ├──h──> ar_log
+│       │       ├──c──> ar_method
+│       │       ├──c──> ar_list
+│       │       ├──c──> ar_string (Zig)
+│       │       └──c──> ar_heap (Zig)
 │       ├──c──> ar_semver
 │       ├──c──> ar_agency
 │       ├──c──> ar_io (Zig/C)
 │       ├──c──> ar_string (Zig)
-│       └──c──> ar_assert (Zig)
+│       └──c──> ar_heap (Zig)
 ├──c──> ar_agency
 │       ├──h──> ar_data
 │       ├──h──> ar_agent_registry
@@ -952,22 +970,72 @@ The [method module](ar_method.md) provides functionality for creating, managing,
 
 ### Methodology Module (`ar_methodology`)
 
-The [methodology module](ar_methodology.md) provides a registry for methods, including storage, retrieval, and versioning:
+The [methodology module](ar_methodology.md) acts as a facade coordinating three focused sub-modules for method management:
 
-- **Method Registry**: Stores and manages method objects created by the method module
-- **Semantic Version Management**: Tracks multiple versions of the same method using semantic versioning
-- **Method Lookup**: Provides efficient lookup of methods by name and version string
-- **Version Resolution**: Handles finding methods when NULL is passed to get the latest version
-- **Partial Version Support**: Resolves partial version strings (e.g., "1" or "1.2") to the latest matching version
-- **Automatic Version Updates**: Updates running agents to newer compatible versions of methods
-- **Persistence**: Saves and loads methods to/from disk for system restarts
+- **Facade Pattern**: Coordinates ar_method_registry, ar_method_resolver, and ar_method_store sub-modules
+- **Public API Preservation**: Maintains complete backward compatibility with no client code changes
+- **Method Operations**: Provides unified interface for method creation, lookup, registration, and persistence
+- **Version Resolution**: Delegates version resolution logic to ar_method_resolver
+- **Method Storage**: Delegates method storage and retrieval to ar_method_registry
+- **File Persistence**: Delegates save/load operations to ar_method_store with smart file handling
+- **Log Integration**: Propagates logging through sub-modules for error reporting
+- **Smart File Handling**: Uses default store for standard files, temporary stores for custom files
+- **Sub-Module Architecture**:
+  - **ar_method_registry**: Method storage and basic retrieval operations
+  - **ar_method_resolver**: Version resolution logic and semantic versioning
+  - **ar_method_store**: Instantiable file persistence operations
+- **Reduced Complexity**: Refactored from 555 lines to 355 lines (-36%) while adding functionality
+- **Better Separation**: Each sub-module has single, focused responsibility following Parnas principles
+- **Depends on Sub-Modules**: Uses method_registry, method_resolver, and method_store
 - **Depends on Method**: Uses the method module's opaque type and functions
-- **Depends on Semver**: Uses the semver module for version comparisons and pattern matching
 - **Depends on Agency**: Uses the agency module to update agent method references
-- **Depends on String**: Uses string utilities for method name handling
-- **Proper Encapsulation**: Accesses methods only through their public API
-- **Memory Management**: Properly handles ownership of method objects
-- **Clean Interface**: Provides a clear API for interacting with methods
+
+#### Method Registry Module (`ar_method_registry`)
+
+The [method registry module](ar_method_registry.md) provides the core storage and lookup functionality for methods:
+
+- **Method Storage**: Uses dynamic 2D array structure to store multiple versions of methods by name
+- **Version Management**: Supports multiple versions of the same method name with semantic versioning
+- **Method Lookup**: Provides efficient lookup by exact name/version match and latest version selection
+- **Enumeration**: Supports getting all methods and unique name counts for persistence operations
+- **Registration**: Handles method registration with ownership transfer and conflict detection
+- **Unregistration**: Supports removing specific method versions with automatic cleanup
+- **Dynamic Growth**: Storage capacity doubles when full, no artificial limits on method count
+- **Memory Safety**: Takes ownership of registered methods and ensures proper cleanup
+- **Depends on Method**: Uses method module for type definitions and operations
+- **Depends on Semver**: Uses semantic versioning for version comparisons
+- **Depends on List**: Uses list module for enumeration operations
+
+#### Method Resolver Module (`ar_method_resolver`)
+
+The [method resolver module](ar_method_resolver.md) handles version resolution logic and method selection:
+
+- **Version Resolution**: Resolves method requests to specific method instances
+- **Partial Version Support**: Handles partial versions ("1", "1.2") resolving to latest matching
+- **Null Version Handling**: Resolves NULL version to latest available version
+- **Exact Match Mode**: Full semantic versions (e.g., "1.2.3") require exact matches
+- **SPEC.md Compliance**: Implements version resolution rules per specification
+- **Fallback Logic**: Systematic fallback from specific to general version patterns
+- **No Wildcard Support**: Does not support "*" or "1.*" patterns per specification
+- **Registry Integration**: Works with method registry to access stored methods
+- **Depends on Registry**: Uses method registry for method access
+- **Depends on Semver**: Uses semantic versioning for version pattern matching
+
+#### Method Store Module (`ar_method_store`)
+
+The [method store module](ar_method_store.md) provides instantiable file persistence for method registries:
+
+- **Instantiable Design**: Each store instance bound to specific file path and registry
+- **File Persistence**: Save/load operations maintaining exact format compatibility with original ar_methodology
+- **Log Integration**: Optional log parameter for error reporting during method loading
+- **Format Compatibility**: Maintains exact file format compatibility for seamless migration
+- **File Operations**: Supports save, load, delete, exists, and get_path operations
+- **Smart Error Handling**: Uses log integration to report parsing errors during method loading
+- **Memory Safety**: Zero memory leaks with comprehensive cleanup of temporary structures
+- **Flexible Usage**: Can be used with default methodology file or custom file paths
+- **Depends on Registry**: Uses method registry for method enumeration and registration
+- **Depends on Method**: Uses method creation functions with optional log integration
+- **Depends on Log**: Optional log integration for error reporting during loads
 
 ### Data Module (`ar_data`)
 
