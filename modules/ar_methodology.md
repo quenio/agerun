@@ -1,16 +1,25 @@
 # AgeRun Methodology Module
 
-The Methodology module provides functionality for storing, managing, and retrieving method definitions within the AgeRun system. It acts as a registry for methods, working in tandem with the Method module to provide version control and persistence for agent methods.
+The Methodology module acts as a facade that coordinates three focused sub-modules to provide comprehensive method management functionality within the AgeRun system. Following a major refactoring (completed 2025-07-28), it now delegates its core responsibilities to specialized components while maintaining complete backward compatibility.
+
+## Architecture
+
+The module follows the facade pattern, delegating responsibilities to three specialized sub-modules:
+
+- **ar_method_registry**: Handles method registration, storage, and basic lookup operations
+- **ar_method_resolver**: Manages version resolution and method selection logic
+- **ar_method_store**: Provides instantiable persistence for method registries
 
 ## Key Features
 
 - Method storage and retrieval with dynamic allocation
-- Method versioning support
+- Method versioning support with semantic versioning
 - Persistence of methods to/from disk
-- Method search capabilities
+- Method search capabilities with partial version matching
 - Clean interface working with the opaque ar_method_t type
 - Instance-based architecture with global instance for backward compatibility
 - Support for ar_log propagation for error reporting
+- Zero changes required in client code after refactoring
 
 ## API Reference
 
