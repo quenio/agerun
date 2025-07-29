@@ -270,16 +270,6 @@ static void test_instruction_evaluator__cleanup_on_late_failure(void) {
 
 // Main test runner
 int main(void) {
-    // Skip test when running under sanitizers due to dlsym interception conflicts
-    // This test works locally but fails in CI environments where sanitizers
-    // conflict with malloc/free function interception via dlsym
-    const char* skip_dlsym_tests = getenv("AGERUN_SKIP_DLSYM_TESTS");
-    printf("DEBUG: AGERUN_SKIP_DLSYM_TESTS = '%s'\n", skip_dlsym_tests ? skip_dlsym_tests : "(null)");
-    fflush(stdout);
-    if (skip_dlsym_tests && strcmp(skip_dlsym_tests, "1") == 0) {
-        printf("Skipping ar_instruction_evaluator error handling tests (AGERUN_SKIP_DLSYM_TESTS=1)\n");
-        return 0;
-    }
 
     printf("Starting ar_instruction_evaluator error handling tests...\n");
     printf("=======================================================\n");

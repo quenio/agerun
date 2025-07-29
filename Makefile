@@ -155,11 +155,11 @@ TEST_BIN = $(patsubst modules/%_tests.c,bin/%_tests,$(TEST_SRC))
 RUN_TESTS_TEST_OBJ = $(patsubst modules/%.c,$(RUN_TESTS_DIR)/obj/%.o,$(TEST_SRC))
 RUN_TESTS_TEST_BIN = $(patsubst modules/%_tests.c,$(RUN_TESTS_DIR)/%_tests,$(TEST_SRC))
 
-SANITIZE_TESTS_TEST_OBJ = $(patsubst modules/%.c,$(SANITIZE_TESTS_DIR)/obj/%.o,$(TEST_SRC))
-SANITIZE_TESTS_TEST_BIN = $(patsubst modules/%_tests.c,$(SANITIZE_TESTS_DIR)/%_tests,$(TEST_SRC))
+SANITIZE_TESTS_TEST_OBJ = $(patsubst modules/%.c,$(SANITIZE_TESTS_DIR)/obj/%.o,$(SANITIZER_TEST_SRC))
+SANITIZE_TESTS_TEST_BIN = $(patsubst modules/%_tests.c,$(SANITIZE_TESTS_DIR)/%_tests,$(SANITIZER_TEST_SRC))
 
-TSAN_TESTS_TEST_OBJ = $(patsubst modules/%.c,$(TSAN_TESTS_DIR)/obj/%.o,$(TEST_SRC))
-TSAN_TESTS_TEST_BIN = $(patsubst modules/%_tests.c,$(TSAN_TESTS_DIR)/%_tests,$(TEST_SRC))
+TSAN_TESTS_TEST_OBJ = $(patsubst modules/%.c,$(TSAN_TESTS_DIR)/obj/%.o,$(SANITIZER_TEST_SRC))
+TSAN_TESTS_TEST_BIN = $(patsubst modules/%_tests.c,$(TSAN_TESTS_DIR)/%_tests,$(SANITIZER_TEST_SRC))
 
 # Method test source files
 METHOD_TEST_SRC = $(wildcard methods/*_tests.c)
@@ -174,11 +174,11 @@ ZIG_TEST_BIN = $(patsubst modules/%Tests.zig,bin/%Tests,$(ZIG_TEST_SRC))
 RUN_TESTS_METHOD_TEST_OBJ = $(patsubst methods/%.c,$(RUN_TESTS_DIR)/obj/%.o,$(METHOD_TEST_SRC))
 RUN_TESTS_METHOD_TEST_BIN = $(patsubst methods/%_tests.c,$(RUN_TESTS_DIR)/%_tests,$(METHOD_TEST_SRC))
 
-SANITIZE_TESTS_METHOD_TEST_OBJ = $(patsubst methods/%.c,$(SANITIZE_TESTS_DIR)/obj/%.o,$(METHOD_TEST_SRC))
-SANITIZE_TESTS_METHOD_TEST_BIN = $(patsubst methods/%_tests.c,$(SANITIZE_TESTS_DIR)/%_tests,$(METHOD_TEST_SRC))
+SANITIZE_TESTS_METHOD_TEST_OBJ = $(patsubst methods/%.c,$(SANITIZE_TESTS_DIR)/obj/%.o,$(SANITIZER_METHOD_TEST_SRC))
+SANITIZE_TESTS_METHOD_TEST_BIN = $(patsubst methods/%_tests.c,$(SANITIZE_TESTS_DIR)/%_tests,$(SANITIZER_METHOD_TEST_SRC))
 
-TSAN_TESTS_METHOD_TEST_OBJ = $(patsubst methods/%.c,$(TSAN_TESTS_DIR)/obj/%.o,$(METHOD_TEST_SRC))
-TSAN_TESTS_METHOD_TEST_BIN = $(patsubst methods/%_tests.c,$(TSAN_TESTS_DIR)/%_tests,$(METHOD_TEST_SRC))
+TSAN_TESTS_METHOD_TEST_OBJ = $(patsubst methods/%.c,$(TSAN_TESTS_DIR)/obj/%.o,$(SANITIZER_METHOD_TEST_SRC))
+TSAN_TESTS_METHOD_TEST_BIN = $(patsubst methods/%_tests.c,$(TSAN_TESTS_DIR)/%_tests,$(SANITIZER_METHOD_TEST_SRC))
 
 # Directory-specific Zig test paths
 RUN_TESTS_ZIG_TEST_BIN = $(patsubst modules/%Tests.zig,$(RUN_TESTS_DIR)/%Tests,$(ZIG_TEST_SRC))
@@ -263,6 +263,15 @@ METHOD_TEST_BIN_NAMES = $(notdir $(METHOD_TEST_BIN))
 ZIG_TEST_BIN_NAMES = $(notdir $(ZIG_TEST_BIN))
 ALL_TEST_BIN_NAMES = $(TEST_BIN_NAMES) $(METHOD_TEST_BIN_NAMES) $(ZIG_TEST_BIN_NAMES)
 
+# Filtered test sources for sanitizers (exclude *_error_tests.c)
+SANITIZER_TEST_SRC = $(filter-out %_error_tests.c,$(TEST_SRC))
+SANITIZER_METHOD_TEST_SRC = $(filter-out %_error_tests.c,$(METHOD_TEST_SRC))
+
+# Filtered test binaries for sanitizers
+SANITIZER_TEST_BIN_NAMES = $(patsubst modules/%_tests.c,%_tests,$(SANITIZER_TEST_SRC))
+SANITIZER_METHOD_TEST_BIN_NAMES = $(patsubst methods/%_tests.c,%_tests,$(SANITIZER_METHOD_TEST_SRC))
+SANITIZER_ALL_TEST_BIN_NAMES = $(SANITIZER_TEST_BIN_NAMES) $(SANITIZER_METHOD_TEST_BIN_NAMES) $(ZIG_TEST_BIN_NAMES)
+
 # Build and run tests (always in debug mode)
 run-tests: run_tests_lib
 	$(MAKE) $(RUN_TESTS_TEST_BIN) $(RUN_TESTS_METHOD_TEST_BIN)
@@ -295,12 +304,12 @@ sanitize-tests:
 	$(MAKE) sanitize_tests_lib
 	$(MAKE) $(SANITIZE_TESTS_TEST_BIN) $(SANITIZE_TESTS_METHOD_TEST_BIN) CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS)" LDFLAGS="$(LDFLAGS) $(SANITIZER_FLAGS)"
 	$(MAKE) $(SANITIZE_TESTS_ZIG_TEST_BIN)
-	@cd $(SANITIZE_TESTS_DIR) && failed=0 && for test in $(ALL_TEST_BIN_NAMES); do \
+	@cd $(SANITIZE_TESTS_DIR) && failed=0 && for test in $(SANITIZER_ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
 		echo "Running test: $$test with Address + Undefined Behavior Sanitizers"; \
 		case "$$test" in \
 			*Tests) \
-				AGERUN_SKIP_DLSYM_TESTS=1 ./$$test; \
+				./$$test; \
 				exitcode=$$?; \
 				if [ $$exitcode -ne 0 ]; then \
 					echo "ERROR: Test $$test failed with status $$exitcode"; \
@@ -308,7 +317,7 @@ sanitize-tests:
 				fi; \
 				;; \
 			*) \
-				AGERUN_SKIP_DLSYM_TESTS=1 AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; \
+				AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; \
 				exitcode=$$?; \
 				if [ $$exitcode -ne 0 ]; then \
 					echo "ERROR: Test $$test failed with status $$exitcode"; \
@@ -327,12 +336,12 @@ tsan-tests:
 	$(MAKE) tsan_tests_lib
 	$(MAKE) $(TSAN_TESTS_TEST_BIN) $(TSAN_TESTS_METHOD_TEST_BIN) CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS)" LDFLAGS="$(LDFLAGS) $(TSAN_FLAGS)"
 	$(MAKE) $(TSAN_TESTS_ZIG_TEST_BIN)
-	@cd $(TSAN_TESTS_DIR) && failed=0 && for test in $(ALL_TEST_BIN_NAMES); do \
+	@cd $(TSAN_TESTS_DIR) && failed=0 && for test in $(SANITIZER_ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
 		echo "Running test: $$test with Thread Sanitizer"; \
 		case "$$test" in \
 			*Tests) \
-				AGERUN_SKIP_DLSYM_TESTS=1 ./$$test; \
+				./$$test; \
 				exitcode=$$?; \
 				if [ $$exitcode -ne 0 ]; then \
 					echo "ERROR: Test $$test failed with status $$exitcode"; \
@@ -340,7 +349,7 @@ tsan-tests:
 				fi; \
 				;; \
 			*) \
-				AGERUN_SKIP_DLSYM_TESTS=1 AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; \
+				AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; \
 				exitcode=$$?; \
 				if [ $$exitcode -ne 0 ]; then \
 					echo "ERROR: Test $$test failed with status $$exitcode"; \
