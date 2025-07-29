@@ -293,13 +293,13 @@ sanitize-tests:
 		echo "Running test: $$test with Address + Undefined Behavior Sanitizers"; \
 		case "$$test" in \
 			*Tests) \
-				if ! ./$$test; then \
+				if ! AGERUN_SKIP_DLSYM_TESTS=1 ./$$test; then \
 					echo "ERROR: Test $$test failed with status $$?"; \
 					failed=1; \
 				fi; \
 				;; \
 			*) \
-				if ! AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; then \
+				if ! AGERUN_MEMORY_REPORT="memory_report_$$test.log" AGERUN_SKIP_DLSYM_TESTS=1 ./$$test; then \
 					echo "ERROR: Test $$test failed with status $$?"; \
 					failed=1; \
 				fi; \
@@ -321,13 +321,13 @@ tsan-tests:
 		echo "Running test: $$test with Thread Sanitizer"; \
 		case "$$test" in \
 			*Tests) \
-				if ! ./$$test; then \
+				if ! AGERUN_SKIP_DLSYM_TESTS=1 ./$$test; then \
 					echo "ERROR: Test $$test failed with status $$?"; \
 					failed=1; \
 				fi; \
 				;; \
 			*) \
-				if ! AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; then \
+				if ! AGERUN_MEMORY_REPORT="memory_report_$$test.log" AGERUN_SKIP_DLSYM_TESTS=1 ./$$test; then \
 					echo "ERROR: Test $$test failed with status $$?"; \
 					failed=1; \
 				fi; \

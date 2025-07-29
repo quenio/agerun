@@ -12,6 +12,7 @@
 #include <stdbool.h>
 #include <dlfcn.h>
 #include <assert.h>
+#include <string.h>
 
 // Include headers for prototypes
 #include "ar_instruction_evaluator.h"
@@ -272,16 +273,11 @@ int main(void) {
     // Skip test when running under sanitizers due to dlsym interception conflicts
     // This test works locally but fails in CI environments where sanitizers
     // conflict with malloc/free function interception via dlsym
-#if defined(__has_feature)
-    #if __has_feature(address_sanitizer) || __has_feature(thread_sanitizer)
-        printf("Skipping ar_instruction_evaluator error handling tests (sanitizer detected)\n");
+    const char* skip_dlsym_tests = getenv("AGERUN_SKIP_DLSYM_TESTS");
+    if (skip_dlsym_tests && strcmp(skip_dlsym_tests, "1") == 0) {
+        printf("Skipping ar_instruction_evaluator error handling tests (AGERUN_SKIP_DLSYM_TESTS=1)\n");
         return 0;
-    #endif
-#endif
-#if defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__)
-    printf("Skipping ar_instruction_evaluator error handling tests (sanitizer detected)\n");
-    return 0;
-#endif
+    }
 
     printf("Starting ar_instruction_evaluator error handling tests...\n");
     printf("=======================================================\n");
