@@ -201,7 +201,7 @@ static void test_parse_function_call_instructions(void) {
         ar_instruction__destroy_parsed(own_parsed);
     }
     
-    // Test 4: Method function call
+    // Test 4: Compile function call
     {
         // When parsing a compile function call
         ar_parsed_instruction_t *own_parsed = ar_instruction__parse("compile(\"greet\", \"memory.msg := \\\"Hi\\\"\", \"1.0.0\")", mut_ctx);
@@ -217,7 +217,7 @@ static void test_parse_function_call_instructions(void) {
         
         bool is_function = ar_instruction__get_function_call(own_parsed, &function_name, &args, &arg_count, &result_path);
         assert(is_function == true);
-        assert(strcmp(function_name, "method") == 0);
+        assert(strcmp(function_name, "compile") == 0);
         assert(arg_count == 3);
         assert(strcmp(args[0], "\"greet\"") == 0);
         assert(strcmp(args[1], "\"memory.msg := \\\"Hi\\\"\"") == 0);
@@ -442,7 +442,7 @@ static void test_parse_function_calls_with_assignment(void) {
         
         bool is_function = ar_instruction__get_function_call(own_parsed, &function_name, &args, &arg_count, &result_path);
         assert(is_function == true);
-        assert(strcmp(function_name, "method") == 0);
+        assert(strcmp(function_name, "compile") == 0);
         assert(arg_count == 3);
         assert(result_path != NULL);
         assert(strcmp(result_path, "created") == 0);

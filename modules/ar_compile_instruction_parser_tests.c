@@ -57,10 +57,10 @@ static void test_compile_instruction_parser__simple_parsing(void) {
  * Test method parsing with assignment
  */
 static void test_compile_instruction_parser__with_assignment(void) {
-    printf("Testing method parsing with assignment...\n");
+    printf("Testing compile parsing with assignment...\n");
     
-    // Given a method call with assignment
-    const char *instruction = "memory.method_ref := method(\"calculate\", \"memory.result := 42\", \"2.0.0\")";
+    // Given a compile call with assignment
+    const char *instruction = "memory.method_ref := compile(\"calculate\", \"memory.result := 42\", \"2.0.0\")";
     
     // When parsing with result path
     ar_compile_instruction_parser_t *own_parser = ar_compile_instruction_parser__create(NULL);
@@ -99,7 +99,7 @@ static void test_compile_instruction_parser__with_assignment(void) {
  * Test method parsing with complex code containing nested quotes
  */
 static void test_compile_instruction_parser__complex_code(void) {
-    printf("Testing method parsing with complex code...\n");
+    printf("Testing compile parsing with complex code...\n");
     
     // Given a method with complex code
     const char *instruction = "compile(\"process\", \"memory.output := build(\\\"Result: {value}\\\", memory.data)\", \"1.0.0\")";
@@ -133,12 +133,12 @@ static void test_compile_instruction_parser__complex_code(void) {
  * Test method parsing with whitespace variations
  */
 static void test_compile_instruction_parser__whitespace_handling(void) {
-    printf("Testing method parsing with whitespace...\n");
+    printf("Testing compile parsing with whitespace...\n");
     
     // Given a method call with extra whitespace and a log instance
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
-    const char *instruction = "  method  ( \"test\" , \"memory.x := 1\" , \"1.0.0\" )  ";
+    const char *instruction = "  compile  ( \"test\" , \"memory.x := 1\" , \"1.0.0\" )  ";
     
     // When parsing
     ar_compile_instruction_parser_t *own_parser = ar_compile_instruction_parser__create(log);
@@ -162,7 +162,7 @@ static void test_compile_instruction_parser__whitespace_handling(void) {
  * Test error when wrong function name
  */
 static void test_compile_instruction_parser__wrong_function_name(void) {
-    printf("Testing method parser with wrong function name...\n");
+    printf("Testing compile parser with wrong function name...\n");
     
     // Given a non-compile function call and a log instance
     ar_log_t *log = ar_log__create();
@@ -179,7 +179,7 @@ static void test_compile_instruction_parser__wrong_function_name(void) {
     assert(own_ast == NULL);
     
     assert(ar_log__get_last_error_message(log) != NULL);
-    assert(strstr(ar_log__get_last_error_message(log), "method") != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "compile") != NULL);
     
     ar_compile_instruction_parser__destroy(own_parser);
     ar_log__destroy(log);
@@ -189,7 +189,7 @@ static void test_compile_instruction_parser__wrong_function_name(void) {
  * Test error when wrong number of arguments
  */
 static void test_compile_instruction_parser__wrong_arg_count(void) {
-    printf("Testing method parser with wrong argument count...\n");
+    printf("Testing compile parser with wrong argument count...\n");
     
     // Given a method call with only 2 arguments and a log instance
     ar_log_t *log = ar_log__create();
@@ -216,12 +216,12 @@ static void test_compile_instruction_parser__wrong_arg_count(void) {
  * Test error with malformed syntax
  */
 static void test_compile_instruction_parser__malformed_syntax(void) {
-    printf("Testing method parser with malformed syntax...\n");
+    printf("Testing compile parser with malformed syntax...\n");
     
     // Given a method call missing opening parenthesis and a log instance
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
-    const char *instruction = "method\"test\", \"code\", \"1.0.0\")";
+    const char *instruction = "compile\"test\", \"code\", \"1.0.0\")";
     
     // When parsing
     ar_compile_instruction_parser_t *own_parser = ar_compile_instruction_parser__create(log);
@@ -243,7 +243,7 @@ static void test_compile_instruction_parser__malformed_syntax(void) {
  * Test parser reusability
  */
 static void test_compile_instruction_parser__reusability(void) {
-    printf("Testing method parser reusability...\n");
+    printf("Testing compile parser reusability...\n");
     
     // Given a log instance
     ar_log_t *log = ar_log__create();
@@ -259,7 +259,7 @@ static void test_compile_instruction_parser__reusability(void) {
     assert(ar_log__get_last_error_message(log) == NULL);
     
     // Second parse - should fail
-    const char *instruction2 = "notmethod(\"test\", \"code\", \"1.0.0\")";
+    const char *instruction2 = "notcompile(\"test\", \"code\", \"1.0.0\")";
     ar_instruction_ast_t *own_ast2 = ar_compile_instruction_parser__parse(own_parser, instruction2, NULL);
     assert(own_ast2 == NULL);
     assert(ar_log__get_last_error_message(log) != NULL);
@@ -281,7 +281,7 @@ static void test_compile_instruction_parser__reusability(void) {
  * Test with multiline code
  */
 static void test_compile_instruction_parser__multiline_code(void) {
-    printf("Testing method parser with multiline code...\n");
+    printf("Testing compile parser with multiline code...\n");
     
     // Given a method with code containing newlines and a log instance
     ar_log_t *log = ar_log__create();
@@ -316,7 +316,7 @@ static void test_compile_instruction_parser__multiline_code(void) {
  * Test method parsing with expression ASTs
  */
 static void test_compile_instruction_parser__parse_with_expression_asts(void) {
-    printf("Testing method instruction with expression ASTs...\n");
+    printf("Testing compile instruction with expression ASTs...\n");
     
     // Given a method instruction with string literal arguments and a log instance
     ar_log_t *log = ar_log__create();
@@ -387,7 +387,7 @@ int main(void) {
     // Expression AST integration
     test_compile_instruction_parser__parse_with_expression_asts();
     
-    printf("\nAll method instruction parser tests passed!\n");
+    printf("\nAll compile instruction parser tests passed!\n");
     
     ar_heap__memory_report();
     

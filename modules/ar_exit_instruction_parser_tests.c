@@ -48,12 +48,12 @@ static void test_exit_agent_parser__create_destroy(void) {
 }
 
 /**
- * Test parsing destroy function with integer agent ID
+ * Test parsing exit function with integer agent ID
  */
 static void test_exit_agent_parser__parse_integer_id(void) {
     printf("Testing exit agent parsing with integer ID...\n");
     
-    // Given a destroy function call with integer agent ID and a log instance
+    // Given an exit function call with integer agent ID and a log instance
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     const char *instruction = "exit(123)";
@@ -88,12 +88,12 @@ static void test_exit_agent_parser__parse_integer_id(void) {
 }
 
 /**
- * Test parsing destroy function with memory reference
+ * Test parsing exit function with memory reference
  */
 static void test_exit_agent_parser__parse_memory_reference(void) {
     printf("Testing exit agent parsing with memory reference...\n");
     
-    // Given a destroy function call with memory reference and a log instance
+    // Given an exit function call with memory reference and a log instance
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     const char *instruction = "exit(memory.agent_id)";
@@ -127,15 +127,15 @@ static void test_exit_agent_parser__parse_memory_reference(void) {
 }
 
 /**
- * Test parsing destroy function with assignment
+ * Test parsing exit function with assignment
  */
 static void test_exit_agent_parser__parse_with_assignment(void) {
     printf("Testing exit agent parsing with assignment...\n");
     
-    // Given a destroy function call with assignment and a log instance
+    // Given an exit function call with assignment and a log instance
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
-    const char *instruction = "memory.result := destroy(memory.agent_id)";
+    const char *instruction = "memory.result := exit(memory.agent_id)";
     
     // When creating a parser and parsing the instruction
     ar_exit_instruction_parser_t *own_parser = ar_exit_instruction_parser__create(log);
@@ -180,7 +180,7 @@ static void test_exit_agent_parser__error_handling(void) {
     assert(own_parser != NULL);
     
     // Test 1: Missing parentheses
-    ar_instruction_ast_t *ast = ar_exit_instruction_parser__parse(own_parser, "destroy 123", NULL);
+    ar_instruction_ast_t *ast = ar_exit_instruction_parser__parse(own_parser, "exit 123", NULL);
     assert(ast == NULL);
     assert(ar_log__get_last_error_message(log) != NULL);
     assert(strstr(ar_log__get_last_error_message(log), "Expected '(' after 'exit'") != NULL);
@@ -193,7 +193,7 @@ static void test_exit_agent_parser__error_handling(void) {
     // Test 3: Empty arguments
     ast = ar_exit_instruction_parser__parse(own_parser, "exit()", NULL);
     assert(ast == NULL);
-    assert(strstr(ar_log__get_last_error_message(log), "Failed to parse destroy argument") != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "Failed to parse exit argument") != NULL);
     
     // Test 4: Multiple arguments - should fail because exit() only accepts one argument
     ast = ar_exit_instruction_parser__parse(own_parser, "exit(123, 456)", NULL);
@@ -216,10 +216,10 @@ static void test_exit_agent_parser__error_handling(void) {
 static void test_exit_agent_parser__parse_with_expression_asts(void) {
     printf("Testing exit agent instruction with expression ASTs...\n");
     
-    // Given a destroy instruction with integer literal and memory access arguments, and a log instance
+    // Given an exit instruction with integer literal and memory access arguments, and a log instance
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
-    const char *instruction = "memory.destroyed := destroy(42)";
+    const char *instruction = "memory.destroyed := exit(42)";
     ar_exit_instruction_parser_t *own_parser = ar_exit_instruction_parser__create(log);
     assert(own_parser != NULL);
     
