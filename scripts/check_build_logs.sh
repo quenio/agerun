@@ -102,11 +102,11 @@ if grep -q -E "(Assertion failed|Segmentation fault|Abort trap|core dumped|ERROR
     echo "⚠️  CRITICAL ISSUES DETECTED - Please review the logs above!"
     exit 1
 else
-    # Check if we have memory leaks (warning only, don't fail)
+    # Check if we have memory leaks (treat as error)
     if grep -q -E "Warning: [0-9]+ memory leaks? detected" logs/*.log 2>/dev/null; then
         echo
-        echo "⚠️  Memory leaks detected but build passed - consider fixing these"
-        exit 0
+        echo "⚠️  MEMORY LEAKS DETECTED - These must be fixed!"
+        exit 1
     else
         echo
         echo "✓ All checks passed - no issues detected"
