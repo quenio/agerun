@@ -4,6 +4,21 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-07-29
 
+### ✅ Build System Now Fails on Memory Leaks
+- **Made memory leaks critical build failures**:
+  - `make build` now exits with failure when memory leaks are detected
+  - `make check-logs` also treats memory leaks as errors (exit code 1)
+  - Memory leaks can no longer be ignored or overlooked
+- **Enhanced check-logs utility**:
+  - Added memory leak detection from custom heap tracking
+  - Added runtime error and signal detection
+  - Added valgrind error detection
+  - More precise test failure patterns to avoid false positives
+- **Impact**:
+  - Enforces zero memory leak policy at build time
+  - Prevents memory leaks from reaching main branch
+  - Clear failure messages direct developers to fix leaks
+
 ### ✅ Fixed Calculator and Grade Evaluator Tests
 - **Fixed method test failures**:
   - Calculator and grade evaluator tests were failing due to NULL initial memory

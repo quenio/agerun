@@ -258,6 +258,8 @@ fi
 
 # Determine overall exit status
 exit_status=0
+
+# Check for job failures
 for exitfile in logs/*.log.exitcode; do
     if [ -f "$exitfile" ]; then
         code=$(cat "$exitfile")
@@ -267,21 +269,39 @@ for exitfile in logs/*.log.exitcode; do
     fi
 done
 
+# Memory leaks are critical failures
+if $leak_found; then
+    exit_status=1
+fi
+
 if [ $exit_status -eq 0 ]; then
     echo "Overall status: ✓ SUCCESS"
 else
     echo "Overall status: ✗ FAILURE"
     echo
-    echo "Failed jobs:"
+    echo "Failure reasons:"
+    
+    # List failed jobs
+    failed_jobs=false
     for exitfile in logs/*.log.exitcode; do
         if [ -f "$exitfile" ]; then
             code=$(cat "$exitfile")
             if [ "$code" -ne 0 ]; then
+                if [ "$failed_jobs" = false ]; then
+                    echo "Failed jobs:"
+                    failed_jobs=true
+                fi
                 job=$(basename "$exitfile" .log.exitcode)
                 echo "  - $job"
             fi
         fi
     done
+    
+    # Report memory leaks as failure reason
+    if $leak_found; then
+        echo "Memory leaks detected - these are now critical failures!"
+        echo "Run 'make check-logs' for details"
+    fi
 fi
 
 exit $exit_status
