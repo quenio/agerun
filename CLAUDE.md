@@ -82,6 +82,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **When reading TODO.md**: Check [ ] = incomplete, [x] = complete. Read completion dates. Be explicit - list all components.
 **KB articles need CLAUDE.md references** to be accessible in future sessions ([details](kb/claude-md-reference-requirement.md))
 **Evidence-based debugging**: Always verify with concrete evidence, not assumptions ([details](kb/evidence-based-debugging.md))
+**Build output review**: Review complete command output, not just final status ([details](kb/comprehensive-output-review.md))
 
 **Documentation Standards (MANDATORY)** ([details](kb/documentation-standards-integration.md)):
 - **Real code only**: All examples must use actual AgeRun types/functions ([details](kb/validated-documentation-examples.md))
@@ -240,6 +241,7 @@ grep -r "function_name\|concept" modules/
 - **Const-Correctness**: NEVER cast away const - fix interfaces instead ([details](kb/const-correctness-principle.md))
 - **No Parallel Implementations**: Modify existing code, don't create _v2 versions ([details](kb/no-parallel-implementations-principle.md))
 - **Composition Over Inheritance**: Prefer composition patterns to create flexible, maintainable architectures ([details](kb/composition-over-inheritance-principle.md))
+- **Regression Investigation**: Trace root causes with git history ([details](kb/regression-root-cause-analysis.md))
 
 ### 4. Code Smells Detection and Prevention
 
@@ -410,6 +412,7 @@ Never compile directly with gcc.
 
 **Pre-Commit Checklist** (MANDATORY - NO EXCEPTIONS):
 1. `make clean build` - Fix ALL issues before proceeding (includes doc validation) ([details](kb/build-verification-before-commit.md))
+   - **CRITICAL**: Build must exit with code 0 - verify with `echo $?` ([details](kb/build-system-exit-code-verification.md))
    - **Report build time**: Include duration from output (e.g., "took 1m 3s") ([details](kb/build-time-reporting.md))
    - **Exception**: Type renames only need `make check-naming && make run-tests`
    - **Exception**: Doc-only changes only need `make check-docs`

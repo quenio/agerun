@@ -134,6 +134,9 @@ Each learning file contains:
 - [Just-In-Time KB Reading](just-in-time-kb-reading.md)
 - [Documentation Validation Error Patterns](documentation-validation-error-patterns.md)
 - [Concise Technical Communication](concise-technical-communication.md)
+- [Build System Exit Code Verification](build-system-exit-code-verification.md)
+- [Regression Root Cause Analysis](regression-root-cause-analysis.md)
+- [Comprehensive Output Review](comprehensive-output-review.md)
 
 ### Code Quality & Smells
 - [Code Smell: Long Method](code-smell-long-method.md)

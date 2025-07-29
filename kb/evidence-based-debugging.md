@@ -192,3 +192,6 @@ Before claiming to understand a bug:
 - [User Feedback Debugging Pattern](user-feedback-debugging-pattern.md)
 - [API Behavior Verification](api-behavior-verification.md)
 - [Build Verification Before Commit](build-verification-before-commit.md)
+- [Build System Exit Code Verification](build-system-exit-code-verification.md)
+- [Regression Root Cause Analysis](regression-root-cause-analysis.md)
+- [Comprehensive Output Review](comprehensive-output-review.md)
