@@ -11,6 +11,7 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 **Primary Build Tool**: `make build` - runs everything with minimal output (~20 lines)
 - Use before commits and for quick verification
 - Includes: build, static analysis, all tests, sanitizers, leak check, doc validation
+- **ALWAYS follow with `make check-logs`** to verify no hidden issues in log files
 
 **Individual Commands** (when needed):
 ```bash
@@ -25,6 +26,7 @@ make test_name        # Build/run specific test
 make check-naming     # Check naming conventions
 make check-docs       # Check documentation validity
 make check-all        # Run all code quality checks
+make check-logs       # Check build logs for hidden issues (use after make build)
 make add-newline FILE=<file>  # Add missing newline to file
 ```
 
@@ -33,6 +35,7 @@ make add-newline FILE=<file>  # Add missing newline to file
 **Note**: Always run from repo root. Makefile handles directory changes automatically. Doc-only changes don't require testing. Always pause before build commands to check for custom scripts.
 
 **Build behavior**: `make build` builds from current state (no clean). To build clean, run: `make clean build`
+**IMPORTANT**: Always run `make check-logs` after `make build` or `make clean build` to catch hidden issues!
 
 **Scripts Directory**: All build and utility scripts are located in `/scripts/`. Never run these scripts directly - always use the corresponding make targets. Scripts will fail with an error message if run outside the repository root.
 
@@ -414,6 +417,7 @@ Never compile directly with gcc.
 **Pre-Commit Checklist** (MANDATORY - NO EXCEPTIONS):
 1. `make clean build` - Fix ALL issues before proceeding (includes doc validation) ([details](kb/build-verification-before-commit.md))
    - **CRITICAL**: Build must exit with code 0 - verify with `echo $?` ([details](kb/build-system-exit-code-verification.md))
+   - **NEW REQUIREMENT**: Always follow with `make check-logs` to catch hidden issues! ([details](kb/build-log-verification-requirement.md))
    - **Report build time**: Include duration from output (e.g., "took 1m 3s") ([details](kb/build-time-reporting.md))
    - **Exception**: Type renames only need `make check-naming && make run-tests`
    - **Exception**: Doc-only changes only need `make check-docs`

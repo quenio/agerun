@@ -40,12 +40,23 @@ To verify build system behavior:
 # Check exit code explicitly
 make test; echo "Exit code: $?"
 
+# ALWAYS check logs for hidden issues
+make check-logs
+
 # In CI/CD, always check return values
 if ! make test; then
     echo "Build failed"
     exit 1
 fi
 ```
+
+**NEW REQUIREMENT**: Even with proper exit codes, the build system may hide detailed output in logs. Always run `make check-logs` after any build to catch:
+- Assertion failures
+- Memory errors
+- Test failures with unexpected patterns
+- Crashes or segfaults
+
+This double-verification ensures no issues slip through.
 
 ## Related Patterns
 - [Evidence-Based Debugging](evidence-based-debugging.md)

@@ -136,6 +136,7 @@ Each learning file contains:
 - [Documentation Validation Error Patterns](documentation-validation-error-patterns.md)
 - [Concise Technical Communication](concise-technical-communication.md)
 - [Build System Exit Code Verification](build-system-exit-code-verification.md)
+- [Build Log Verification Requirement](build-log-verification-requirement.md)
 - [Regression Root Cause Analysis](regression-root-cause-analysis.md)
 - [Comprehensive Output Review](comprehensive-output-review.md)
 
