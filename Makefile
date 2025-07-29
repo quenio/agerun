@@ -75,9 +75,16 @@ endif
 # Define Clang-specific flags (will be added when using clang)
 CLANG_FLAGS = -Wno-newline-eof
 
+# Define deployment target on Darwin to ensure consistent versioning
+ifeq ($(UNAME_S),Darwin)
+MACOS_DEPLOYMENT_TARGET = 15.5
+DEPLOYMENT_FLAGS = -mmacosx-version-min=$(MACOS_DEPLOYMENT_TARGET)
+CFLAGS += $(DEPLOYMENT_FLAGS)
+endif
+
 # Define SANITIZER_EXTRA_FLAGS based on OS (for use with sanitizer targets)
 ifeq ($(UNAME_S),Darwin)
-SANITIZER_EXTRA_FLAGS = $(CLANG_FLAGS)
+SANITIZER_EXTRA_FLAGS = $(CLANG_FLAGS) $(DEPLOYMENT_FLAGS)
 else
 SANITIZER_EXTRA_FLAGS =
 endif
