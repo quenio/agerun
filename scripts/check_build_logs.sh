@@ -77,19 +77,39 @@ else
 fi
 echo
 
+# Check for memory leaks from custom heap tracking
+echo "--- Checking for memory leaks ---"
+if grep -q -E "Warning: [0-9]+ memory leaks? detected" logs/*.log 2>/dev/null; then
+    echo "⚠️  MEMORY LEAKS FOUND:"
+    grep -n -E "Warning: [0-9]+ memory leaks? detected" logs/*.log | head -20
+    echo
+    echo "Note: These are from AgeRun's custom heap tracking, not AddressSanitizer."
+    echo "Check the referenced memory_report_*.log files for details."
+else
+    echo "✓ No memory leaks detected"
+fi
+echo
+
 # Summary with exit code
 echo "=== Summary ==="
 echo "Log files are in: logs/"
 echo "To view a specific log: less logs/<logname>.log"
 echo "To search logs: grep -r 'pattern' logs/"
 
-# Exit with error if any issues found
+# Exit with error if any issues found (note: memory leaks don't fail the build currently)
 if grep -q -E "(Assertion failed|Segmentation fault|Abort trap|core dumped|ERROR: AddressSanitizer|ERROR: LeakSanitizer|ERROR: UndefinedBehaviorSanitizer|WARNING: ThreadSanitizer|runtime error|SIGABRT|SIGSEGV)" logs/*.log 2>/dev/null; then
     echo
-    echo "⚠️  ISSUES DETECTED - Please review the logs above!"
+    echo "⚠️  CRITICAL ISSUES DETECTED - Please review the logs above!"
     exit 1
 else
-    echo
-    echo "✓ All checks passed - no issues detected"
-    exit 0
+    # Check if we have memory leaks (warning only, don't fail)
+    if grep -q -E "Warning: [0-9]+ memory leaks? detected" logs/*.log 2>/dev/null; then
+        echo
+        echo "⚠️  Memory leaks detected but build passed - consider fixing these"
+        exit 0
+    else
+        echo
+        echo "✓ All checks passed - no issues detected"
+        exit 0
+    fi
 fi
