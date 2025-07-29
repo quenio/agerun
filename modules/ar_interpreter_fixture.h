@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "ar_interpreter.h"
-#include "ar_instruction.h"
 #include "ar_data.h"
 #include "ar_method.h"
 
@@ -45,6 +44,14 @@ void ar_interpreter_fixture__destroy(ar_interpreter_fixture_t *own_fixture);
  * @note Ownership: Returns a borrowed reference; fixture owns the interpreter
  */
 ar_interpreter_t* ar_interpreter_fixture__get_interpreter(const ar_interpreter_fixture_t *ref_fixture);
+
+/**
+ * Gets the log managed by the fixture
+ * @param ref_fixture The fixture to query
+ * @return The log instance (borrowed reference)
+ * @note Ownership: Returns a borrowed reference; fixture owns the log
+ */
+ar_log_t* ar_interpreter_fixture__get_log(const ar_interpreter_fixture_t *ref_fixture);
 
 /**
  * Creates a test agent with the given method

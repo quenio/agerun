@@ -146,6 +146,16 @@ ar_interpreter_t* ar_interpreter_fixture__get_interpreter(const ar_interpreter_f
 }
 
 /**
+ * Gets the log managed by the fixture
+ */
+ar_log_t* ar_interpreter_fixture__get_log(const ar_interpreter_fixture_t *ref_fixture) {
+    if (!ref_fixture) {
+        return NULL;
+    }
+    return ref_fixture->own_log;
+}
+
+/**
  * Creates a test agent with the given method
  */
 int64_t ar_interpreter_fixture__create_agent(
@@ -242,10 +252,20 @@ int64_t ar_interpreter_fixture__execute_with_message(
     ar_methodology__register_method(own_temp_method);
     // Ownership transferred to methodology
     
+    // Create a default context for the agent
+    ar_data_t *own_default_context = ar_data__create_map();
+    if (!own_default_context) {
+        ar_methodology__unregister_method(method_name, "1.0.0");
+        return 0;
+    }
+    
     // Create a temporary agent with this method
-    int64_t temp_agent_id = ar_agency__create_agent(method_name, "1.0.0", NULL);
+    int64_t temp_agent_id = ar_agency__create_agent(method_name, "1.0.0", own_default_context);
+    // Ownership of context transferred to agency
+    
     if (temp_agent_id == 0) {
         // Unregister the method since agent creation failed
+        ar_data__destroy(own_default_context);
         ar_methodology__unregister_method(method_name, "1.0.0");
         return 0;
     }

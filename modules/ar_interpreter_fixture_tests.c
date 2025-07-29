@@ -128,6 +128,12 @@ static void test_fixture_execute_instruction(void) {
     );
     
     // Then it should succeed (returns non-zero agent ID)
+    if (temp_agent_id == 0) {
+        const char *error = ar_log__get_last_error_message(ar_interpreter_fixture__get_log(own_fixture));
+        if (error) {
+            fprintf(stderr, "ERROR: Execute instruction failed: %s\n", error);
+        }
+    }
     assert(temp_agent_id > 0);
     
     // And the memory should be updated

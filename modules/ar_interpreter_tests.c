@@ -19,12 +19,11 @@
 // Forward declarations
 static void test_interpreter_create_destroy(void);
 static void test_interpreter_execute_method(void);
-// static void test_interpreter_execute_instruction(void);
 static void test_interpreter_error_logging(void);
-// static void test_simple_instructions(void);
-// static void test_condition_instructions(void);
-// static void test_method_function(void);
-// static void test_parse_function(void);
+static void test_simple_instructions(void);
+static void test_condition_instructions(void);
+static void test_compile_function(void);
+static void test_parse_function(void);
 
 int main(void) {
     printf("=== AgeRun Interpreter Tests ===\n");
@@ -53,14 +52,13 @@ int main(void) {
     // Run tests
     test_interpreter_create_destroy();
     test_interpreter_execute_method();
-    // test_interpreter_execute_instruction();  // Commented out - instruction execution removed
     test_interpreter_error_logging();
     
-    // Migrated execution tests - commented out as they depend on instruction execution
-    // test_simple_instructions();
-    // test_condition_instructions();
-    // test_method_function();
-    // test_parse_function();
+    // Migrated execution tests - now using fixture
+    test_simple_instructions();
+    test_condition_instructions();
+    test_compile_function();
+    test_parse_function();
     
     // Cleanup
     ar_system__shutdown();
@@ -164,47 +162,7 @@ static void test_interpreter_error_logging(void) {
     printf("Interpreter error logging test passed!\n");
 }
 
-#if 0  // Commented out - instruction execution removed from interpreter
-static void test_interpreter_execute_instruction(void) {
-    printf("Testing interpreter execute instruction...\n");
-    
-    // Given a fixture
-    ar_interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_execute_instruction");
-    assert(own_fixture != NULL);
-    
-    // And an agent
-    int64_t agent_id = ar_interpreter_fixture__create_agent(
-        own_fixture,
-        "test_calc",
-        "memory.x := 5",
-        "1.0.0"
-    );
-    assert(agent_id > 0);
-    
-    // When we execute a single instruction
-    int64_t temp_agent_id = ar_interpreter_fixture__execute_instruction(
-        own_fixture,
-        "memory.y := 10"
-    );
-    
-    // Then it should succeed (returns non-zero agent ID)
-    assert(temp_agent_id > 0);
-    
-    // And the memory should be updated
-    ar_data_t *mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, temp_agent_id);
-    ar_data_t *ref_y = ar_data__get_map_data(mut_memory, "y");
-    assert(ref_y != NULL);
-    assert(ar_data__get_type(ref_y) == AR_DATA_TYPE__INTEGER);
-    assert(ar_data__get_integer(ref_y) == 10);
-    ar_interpreter_fixture__destroy_temp_agent(own_fixture, temp_agent_id);
-    
-    // Clean up
-    ar_interpreter_fixture__destroy(own_fixture);
-    
-    printf("Interpreter execute instruction test passed!\n");
-}
 
-// Migrated tests from instruction_tests.c
 static void test_simple_instructions(void) {
     printf("Testing simple instructions...\n");
     
@@ -265,20 +223,20 @@ static void test_condition_instructions(void) {
     assert(strcmp(ar_data__get_string(ref_result), "no") == 0);
     ar_interpreter_fixture__destroy_temp_agent(own_fixture, temp_agent_id);
     
-    // Test if with string condition
-    temp_agent_id = ar_interpreter_fixture__execute_instruction(own_fixture, "memory.result := if(\"test\", 1, 0)");
+    // Test if with expression condition (non-zero)
+    temp_agent_id = ar_interpreter_fixture__execute_instruction(own_fixture, "memory.result := if(5, \"yes\", \"no\")");
     assert(temp_agent_id > 0);
     mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, temp_agent_id);
     ref_result = ar_data__get_map_data(mut_memory, "result");
-    assert(ar_data__get_integer(ref_result) == 1);
+    assert(strcmp(ar_data__get_string(ref_result), "yes") == 0);
     ar_interpreter_fixture__destroy_temp_agent(own_fixture, temp_agent_id);
     
-    // Test if with empty string condition
-    temp_agent_id = ar_interpreter_fixture__execute_instruction(own_fixture, "memory.result := if(\"\", 1, 0)");
+    // Test if with calculated condition
+    temp_agent_id = ar_interpreter_fixture__execute_instruction(own_fixture, "memory.result := if(2 + 2, 100, 200)");
     assert(temp_agent_id > 0);
     mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, temp_agent_id);
     ref_result = ar_data__get_map_data(mut_memory, "result");
-    assert(ar_data__get_integer(ref_result) == 0);
+    assert(ar_data__get_integer(ref_result) == 100);
     ar_interpreter_fixture__destroy_temp_agent(own_fixture, temp_agent_id);
     
     // Clean up
@@ -287,17 +245,17 @@ static void test_condition_instructions(void) {
     printf("Condition instructions test passed!\n");
 }
 
-static void test_method_function(void) {
-    printf("Testing method function...\n");
+static void test_compile_function(void) {
+    printf("Testing compile function...\n");
     
     // Given a fixture
-    ar_interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_method_func");
+    ar_interpreter_fixture_t *own_fixture = ar_interpreter_fixture__create("test_compile_func");
     assert(own_fixture != NULL);
     
-    // Create a method dynamically
+    // Create a method dynamically using compile
     int64_t temp_agent_id = ar_interpreter_fixture__execute_instruction(
         own_fixture, 
-        "memory.result := method(\"dynamic\", \"memory.x := 99\", \"2.0.0\")"
+        "memory.result := compile(\"dynamic\", \"memory.x := 99\", \"2.0.0\")"
     );
     assert(temp_agent_id > 0);
     
@@ -312,10 +270,10 @@ static void test_method_function(void) {
     assert(strcmp(ar_method__get_name(ref_method), "dynamic") == 0);
     assert(strcmp(ar_method__get_version(ref_method), "2.0.0") == 0);
     
-    // Test creating method with integer version
+    // Test creating method with string version
     temp_agent_id = ar_interpreter_fixture__execute_instruction(
         own_fixture, 
-        "memory.result := method(\"versioned\", \"memory.y := 88\", 3)"
+        "memory.result := compile(\"versioned\", \"memory.y := 88\", \"3.0.0\")"
     );
     assert(temp_agent_id > 0);
     
@@ -330,7 +288,7 @@ static void test_method_function(void) {
     // Clean up
     ar_interpreter_fixture__destroy(own_fixture);
     
-    printf("Method function test passed!\n");
+    printf("Compile function test passed!\n");
 }
 
 static void test_parse_function(void) {
@@ -379,7 +337,6 @@ static void test_parse_function(void) {
     
     printf("Parse function test passed!\n");
 }
-#endif  // End of commented out instruction tests
 
 
 
