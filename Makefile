@@ -300,14 +300,18 @@ sanitize-tests:
 		echo "Running test: $$test with Address + Undefined Behavior Sanitizers"; \
 		case "$$test" in \
 			*Tests) \
-				if ! AGERUN_SKIP_DLSYM_TESTS=1 ./$$test; then \
-					echo "ERROR: Test $$test failed with status $$?"; \
+				AGERUN_SKIP_DLSYM_TESTS=1 ./$$test; \
+				exitcode=$$?; \
+				if [ $$exitcode -ne 0 ]; then \
+					echo "ERROR: Test $$test failed with status $$exitcode"; \
 					failed=1; \
 				fi; \
 				;; \
 			*) \
-				if ! AGERUN_SKIP_DLSYM_TESTS=1 AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; then \
-					echo "ERROR: Test $$test failed with status $$?"; \
+				AGERUN_SKIP_DLSYM_TESTS=1 AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; \
+				exitcode=$$?; \
+				if [ $$exitcode -ne 0 ]; then \
+					echo "ERROR: Test $$test failed with status $$exitcode"; \
 					failed=1; \
 				fi; \
 				;; \
@@ -328,14 +332,18 @@ tsan-tests:
 		echo "Running test: $$test with Thread Sanitizer"; \
 		case "$$test" in \
 			*Tests) \
-				if ! AGERUN_SKIP_DLSYM_TESTS=1 ./$$test; then \
-					echo "ERROR: Test $$test failed with status $$?"; \
+				AGERUN_SKIP_DLSYM_TESTS=1 ./$$test; \
+				exitcode=$$?; \
+				if [ $$exitcode -ne 0 ]; then \
+					echo "ERROR: Test $$test failed with status $$exitcode"; \
 					failed=1; \
 				fi; \
 				;; \
 			*) \
-				if ! AGERUN_SKIP_DLSYM_TESTS=1 AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; then \
-					echo "ERROR: Test $$test failed with status $$?"; \
+				AGERUN_SKIP_DLSYM_TESTS=1 AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; \
+				exitcode=$$?; \
+				if [ $$exitcode -ne 0 ]; then \
+					echo "ERROR: Test $$test failed with status $$exitcode"; \
 					failed=1; \
 				fi; \
 				;; \
