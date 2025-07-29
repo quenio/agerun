@@ -98,6 +98,9 @@ Each learning file contains:
 - [String Parsing Quote Tracking](string-parsing-quote-tracking.md)
 - [Makefile POSIX Shell Compatibility](makefile-posix-shell-compatibility.md)
 - [Zig Test Build Integration](zig-test-build-integration.md)
+- [CI Debugging Artifact Upload](ci-debugging-artifact-upload.md)
+- [Makefile Filtered Variables Pattern](makefile-filtered-variables-pattern.md)
+- [Sanitizer Test Exclusion Pattern](sanitizer-test-exclusion-pattern.md)
 - [Zig Static Analysis Tools](zig-static-analysis-tools.md)
 
 ### Development Practices

@@ -67,3 +67,4 @@ git diff Makefile
 
 ## Related Patterns
 - [Zig Build Flag Configuration](zig-build-flag-configuration.md)
+- [Makefile Filtered Variables Pattern](makefile-filtered-variables-pattern.md)

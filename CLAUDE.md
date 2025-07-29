@@ -129,6 +129,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - Individual test reports: `bin/run-tests/memory_report_<test_name>.log` ([details](kb/memory-leak-detection-workflow.md))
 - Complete verification: `grep "Actual memory leaks:" bin/run-tests/memory_report_*.log | grep -v "0 (0 bytes)"`
 - Always run `make sanitize-tests 2>&1` before committing
+- Tests using dlsym are automatically excluded from sanitizer builds ([details](kb/sanitizer-test-exclusion-pattern.md))
 - Debug strategy: Check report → Trace source → Verify ownership → Fix naming → Add cleanup ([details](kb/memory-debugging-comprehensive-guide.md))
 - Environment variables: `ASAN_OPTIONS=halt_on_error=0` (continue on error), `detect_leaks=1` (complex leaks)
 - Wake messages: Process with `ar_system__process_next_message()` after agent creation ([details](kb/agent-wake-message-processing.md))
@@ -362,6 +363,7 @@ cd bin  # Wrong - avoid relative paths
 
 **Debug Tools**: Memory (`make sanitize-tests 2>&1`), static analysis, crashes (lldb), patterns testing ([details](kb/development-debug-tools.md))
 **Command Output**: Always use `2>&1` to capture stderr when debugging - warnings and errors often go to stderr ([details](kb/stderr-redirection-debugging.md))
+**CI Debugging**: Use artifact upload for CI-specific failures ([details](kb/ci-debugging-artifact-upload.md))
 
 **Expression Ownership** (CRITICAL):
 - References (`memory.x`): Don't destroy - borrowed from memory/context
@@ -402,6 +404,7 @@ Never compile directly with gcc.
 - Pattern rules compile object files - update these directly for consistent flags (not target-specific vars)
 - **Pattern rule updates**: Change all 6 targets when updating Zig flags ([details](kb/makefile-pattern-rule-management.md))
 - **POSIX shell only**: Use `case` not `[[ ]]` - Make uses sh, not bash ([details](kb/makefile-posix-shell-compatibility.md))
+- **Filtered variables**: Use `filter-out` for conditional compilation ([details](kb/makefile-filtered-variables-pattern.md))
 - Example: `make ar_string_tests 2>&1` will:
   1. Rebuild any changed modules
   2. Rebuild the test

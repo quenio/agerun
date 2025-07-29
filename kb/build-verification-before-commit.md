@@ -39,3 +39,4 @@ This is especially important after the build system issue discovered on 2025-07-
 - Integration failures often reveal missed dependencies
 - Comprehensive verification catches edge cases
 - CI/CD relies on clean builds from main branch
+- [CI Debugging Artifact Upload](ci-debugging-artifact-upload.md)
