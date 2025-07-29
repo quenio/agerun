@@ -69,7 +69,23 @@ static void test_calculator_add(void) {
     printf("SUCCESS: Calculator add operation: 5 + 3 = 8\n");
     
     // Clean up
+    // Get the agent's context before destroying it (we created it, we must destroy it)
+    const ar_data_t *ref_context = ar_agency__get_agent_context(calc_agent);
+    
     ar_agency__destroy_agent(calc_agent);
+    
+    // Process any remaining messages (including sleep messages)
+    while (ar_system__process_next_message()) {
+        // Keep processing
+    }
+    
+    // Destroy the context we created for this agent
+    if (ref_context) {
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wcast-qual"
+        ar_data__destroy((ar_data_t*)ref_context);  // We created it, we destroy it
+        #pragma GCC diagnostic pop
+    }
     
     // Check for memory leaks
     assert(ar_method_fixture__check_memory(own_fixture));
@@ -141,7 +157,23 @@ static void test_calculator_multiply(void) {
     printf("SUCCESS: Calculator multiply operation: 5 * 2 = 10\n");
     
     // Clean up
+    // Get the agent's context before destroying it (we created it, we must destroy it)
+    const ar_data_t *ref_context = ar_agency__get_agent_context(calc_agent);
+    
     ar_agency__destroy_agent(calc_agent);
+    
+    // Process any remaining messages (including sleep messages)
+    while (ar_system__process_next_message()) {
+        // Keep processing
+    }
+    
+    // Destroy the context we created for this agent
+    if (ref_context) {
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wcast-qual"
+        ar_data__destroy((ar_data_t*)ref_context);  // We created it, we destroy it
+        #pragma GCC diagnostic pop
+    }
     
     // Check for memory leaks
     assert(ar_method_fixture__check_memory(own_fixture));
@@ -214,7 +246,23 @@ static void test_calculator_subtract(void) {
     assert(subtract_result == 3);
     
     // Clean up
+    // Get the agent's context before destroying it (we created it, we must destroy it)
+    const ar_data_t *ref_context = ar_agency__get_agent_context(calc_agent);
+    
     ar_agency__destroy_agent(calc_agent);
+    
+    // Process any remaining messages (including sleep messages)
+    while (ar_system__process_next_message()) {
+        // Keep processing
+    }
+    
+    // Destroy the context we created for this agent
+    if (ref_context) {
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wcast-qual"
+        ar_data__destroy((ar_data_t*)ref_context);  // We created it, we destroy it
+        #pragma GCC diagnostic pop
+    }
     
     // Check for memory leaks
     assert(ar_method_fixture__check_memory(own_fixture));
@@ -289,7 +337,23 @@ static void test_calculator_divide(void) {
     assert(divide_result == 5);
     
     // Clean up
+    // Get the agent's context before destroying it (we created it, we must destroy it)
+    const ar_data_t *ref_context = ar_agency__get_agent_context(calc_agent);
+    
     ar_agency__destroy_agent(calc_agent);
+    
+    // Process any remaining messages (including sleep messages)
+    while (ar_system__process_next_message()) {
+        // Keep processing
+    }
+    
+    // Destroy the context we created for this agent
+    if (ref_context) {
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wcast-qual"
+        ar_data__destroy((ar_data_t*)ref_context);  // We created it, we destroy it
+        #pragma GCC diagnostic pop
+    }
     
     // Check for memory leaks
     assert(ar_method_fixture__check_memory(own_fixture));
@@ -362,7 +426,23 @@ static void test_calculator_unknown_operation(void) {
     assert(unknown_result == 0);
     
     // Clean up
+    // Get the agent's context before destroying it (we created it, we must destroy it)
+    const ar_data_t *ref_context = ar_agency__get_agent_context(calc_agent);
+    
     ar_agency__destroy_agent(calc_agent);
+    
+    // Process any remaining messages (including sleep messages)
+    while (ar_system__process_next_message()) {
+        // Keep processing
+    }
+    
+    // Destroy the context we created for this agent
+    if (ref_context) {
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wcast-qual"
+        ar_data__destroy((ar_data_t*)ref_context);  // We created it, we destroy it
+        #pragma GCC diagnostic pop
+    }
     
     // Check for memory leaks
     assert(ar_method_fixture__check_memory(own_fixture));

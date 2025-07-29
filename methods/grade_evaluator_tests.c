@@ -157,6 +157,25 @@ static void test_grade_evaluator_grades(void) {
     printf("Grade for 65: %s\n", ar_data__get_string(grade));
     assert(strcmp(ar_data__get_string(grade), "F") == 0);
     
+    // Clean up agent explicitly
+    // Get the agent's context before destroying it (we created it, we must destroy it)
+    const ar_data_t *ref_context = ar_agency__get_agent_context(evaluator_agent);
+    
+    ar_agency__destroy_agent(evaluator_agent);
+    
+    // Process any remaining messages (including sleep messages)
+    while (ar_system__process_next_message()) {
+        // Keep processing
+    }
+    
+    // Destroy the context we created for this agent
+    if (ref_context) {
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wcast-qual"
+        ar_data__destroy((ar_data_t*)ref_context);  // We created it, we destroy it
+        #pragma GCC diagnostic pop
+    }
+    
     // Check for memory leaks
     assert(ar_method_fixture__check_memory(own_fixture));
     
@@ -278,6 +297,25 @@ static void test_grade_evaluator_status(void) {
     assert(result != NULL && ar_data__get_type(result) == AR_DATA_TYPE__STRING);
     printf("Result for unknown type: %s\n", ar_data__get_string(result));
     assert(strcmp(ar_data__get_string(result), "unknown") == 0);
+    
+    // Clean up agent explicitly
+    // Get the agent's context before destroying it (we created it, we must destroy it)
+    const ar_data_t *ref_context = ar_agency__get_agent_context(evaluator_agent);
+    
+    ar_agency__destroy_agent(evaluator_agent);
+    
+    // Process any remaining messages (including sleep messages)
+    while (ar_system__process_next_message()) {
+        // Keep processing
+    }
+    
+    // Destroy the context we created for this agent
+    if (ref_context) {
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wcast-qual"
+        ar_data__destroy((ar_data_t*)ref_context);  // We created it, we destroy it
+        #pragma GCC diagnostic pop
+    }
     
     // Check for memory leaks
     assert(ar_method_fixture__check_memory(own_fixture));
