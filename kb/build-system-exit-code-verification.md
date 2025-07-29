@@ -49,3 +49,4 @@ fi
 
 ## Related Patterns
 - [Evidence-Based Debugging](evidence-based-debugging.md)
+- [Test Diagnostic Output Preservation](test-diagnostic-output-preservation.md)

@@ -57,6 +57,7 @@ Each learning file contains:
 - [Method Test Template](method-test-template.md)
 - [Test Fixture API Adaptation](test-fixture-api-adaptation.md)
 - [Refactoring Systematic Cleanup](refactoring-systematic-cleanup.md)
+- [Test Diagnostic Output Preservation](test-diagnostic-output-preservation.md)
 
 ### Architecture & Design
 - [Opaque Types Pattern](opaque-types-pattern.md)

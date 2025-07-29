@@ -185,6 +185,7 @@ For each new behavior/feature:
 - Process wake messages after agent creation to prevent leaks ([details](kb/agent-wake-message-processing.md))
 - Use fixtures when available, run with `make test_name`
 - Adapt fixtures when APIs change ([details](kb/test-fixture-api-adaptation.md))
+- Keep diagnostic output in tests for debugging ([details](kb/test-diagnostic-output-preservation.md))
 
 **TDD Advanced**: Break large refactoring into sequential cycles, one behavior each ([details](kb/tdd-advanced-large-refactoring.md))
 **API Simplification**: Use TDD for safe API changes ([details](kb/tdd-api-simplification.md))
