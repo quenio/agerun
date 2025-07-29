@@ -28,9 +28,10 @@ echo
 
 # Check for test failures that might not be caught
 echo "--- Checking for test failures ---"
-if grep -q -E "(FAILED|failed|FAIL|fail)" logs/run-tests.log logs/sanitize-tests.log logs/tsan-tests.log 2>/dev/null | grep -v "passed"; then
-    echo "⚠️  POTENTIAL TEST FAILURES:"
-    grep -n -E "(FAILED|failed|FAIL|fail)" logs/run-tests.log logs/sanitize-tests.log logs/tsan-tests.log 2>/dev/null | grep -v "passed" | head -10
+# Look for actual test failure indicators, not just the word "fail" in test output
+if grep -E "(TEST FAILED|Test .* failed|ERROR: Test|FAILED:)" logs/run-tests.log logs/sanitize-tests.log logs/tsan-tests.log 2>/dev/null | grep -q .; then
+    echo "⚠️  TEST FAILURES FOUND:"
+    grep -n -E "(TEST FAILED|Test .* failed|ERROR: Test|FAILED:)" logs/run-tests.log logs/sanitize-tests.log logs/tsan-tests.log 2>/dev/null | head -10
 else
     echo "✓ No test failures found"
 fi
@@ -56,8 +57,39 @@ else
 fi
 echo
 
-# Summary
+# Check for runtime errors and signals
+echo "--- Checking for runtime errors ---"
+if grep -q -E "(runtime error|SIGABRT|SIGSEGV|SIGBUS|SIGILL|SIGFPE)" logs/*.log 2>/dev/null; then
+    echo "⚠️  RUNTIME ERRORS FOUND:"
+    grep -n -E "(runtime error|SIGABRT|SIGSEGV|SIGBUS|SIGILL|SIGFPE)" logs/*.log | head -10
+else
+    echo "✓ No runtime errors found"
+fi
+echo
+
+# Check for valgrind errors (if present)
+echo "--- Checking for valgrind errors ---"
+if grep -q -E "(Invalid read|Invalid write|Conditional jump|Uninitialised value)" logs/*.log 2>/dev/null; then
+    echo "⚠️  VALGRIND ERRORS FOUND:"
+    grep -n -E "(Invalid read|Invalid write|Conditional jump|Uninitialised value)" logs/*.log | head -10
+else
+    echo "✓ No valgrind errors found"
+fi
+echo
+
+# Summary with exit code
 echo "=== Summary ==="
 echo "Log files are in: logs/"
 echo "To view a specific log: less logs/<logname>.log"
 echo "To search logs: grep -r 'pattern' logs/"
+
+# Exit with error if any issues found
+if grep -q -E "(Assertion failed|Segmentation fault|Abort trap|core dumped|ERROR: AddressSanitizer|ERROR: LeakSanitizer|ERROR: UndefinedBehaviorSanitizer|WARNING: ThreadSanitizer|runtime error|SIGABRT|SIGSEGV)" logs/*.log 2>/dev/null; then
+    echo
+    echo "⚠️  ISSUES DETECTED - Please review the logs above!"
+    exit 1
+else
+    echo
+    echo "✓ All checks passed - no issues detected"
+    exit 0
+fi
