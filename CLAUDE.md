@@ -121,6 +121,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - Map iteration: get keys, destroy list & elements; persist with key/type then value
 - Wake/sleep messages: Agents mark ownership, system drops before destroy ([details](kb/ownership-drop-message-passing.md))
 - Ownership patterns: Use `ar_data__claim_or_copy()` & `ar_data__destroy_if_owned()` ([details](kb/ownership-pattern-extraction.md))
+- Temporary resources: Creator destroys contexts since agents store as references ([details](kb/temporary-resource-ownership-pattern.md))
 - API ownership on failure: Verify implementation to understand cleanup requirements ([details](kb/api-ownership-on-failure.md))
 
 **Memory Leak Detection**:

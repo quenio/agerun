@@ -64,6 +64,7 @@ This pattern caused identical leaks (2 allocations, ~41-45 bytes) across 8+ test
 
 ## Related Patterns
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
+- [Temporary Resource Ownership Pattern](temporary-resource-ownership-pattern.md) - Common cause of context leaks
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
 - [Agent Wake Message Processing](agent-wake-message-processing.md)
 - [Stderr Redirection for Debugging](stderr-redirection-debugging.md) - Leak warnings go to stderr

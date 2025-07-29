@@ -71,6 +71,7 @@ Each learning file contains:
 - [Architectural Patterns Hierarchy](architectural-patterns-hierarchy.md)
 - [Dependency Injection Anti-pattern](dependency-injection-anti-pattern.md)
 - [Ownership Pattern Extraction](ownership-pattern-extraction.md)
+- [Temporary Resource Ownership Pattern](temporary-resource-ownership-pattern.md)
 - [Internal vs External Module Pattern](internal-vs-external-module-pattern.md)
 
 ### Parnas Design Principles
