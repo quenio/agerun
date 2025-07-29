@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 /* Agent Definition (moved from header for opaque type) */
 struct ar_agent_s {

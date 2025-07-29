@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <inttypes.h>
 
 /**
  * Interpreter fixture structure (private implementation)
@@ -100,6 +101,10 @@ void ar_interpreter_fixture__destroy(ar_interpreter_fixture_t *own_fixture) {
                 if (own_id_data && ar_data__get_type(own_id_data) == AR_DATA_TYPE__INTEGER) {
                     int64_t agent_id = (int64_t)ar_data__get_integer(own_id_data);
                     ar_agency__destroy_agent(agent_id);
+                    // Process any remaining messages after destroying each agent
+                    while (ar_system__process_next_message()) {
+                        // Keep processing
+                    }
                     ar_data__destroy(own_id_data); // Destroy the integer data object
                 }
             }
@@ -269,6 +274,9 @@ int64_t ar_interpreter_fixture__execute_with_message(
         ar_methodology__unregister_method(method_name, "1.0.0");
         return 0;
     }
+    
+    // Process the wake message
+    ar_system__process_next_message();
     
     // Debug: Check if message is set
     if (ref_message) {
@@ -461,8 +469,27 @@ void ar_interpreter_fixture__destroy_temp_agent(
     const char *method_version = NULL;
     ar_agency__get_agent_method_info(temp_agent_id, &method_name, &method_version);
     
-    // Destroy the agent
+    // Get the agent's context before destroying the agent
+    // The agent doesn't own the context, so we need to destroy it ourselves
+    const ar_data_t *ref_context = ar_agency__get_agent_context(temp_agent_id);
+    
+    // Destroy the agent first
     ar_agency__destroy_agent(temp_agent_id);
+    
+    // Process any remaining messages (including sleep messages)
+    // Need to process all messages since destroy might generate multiple
+    while (ar_system__process_next_message()) {
+        // Keep processing
+    }
+    
+    // Destroy the context that we created for this temporary agent
+    // We can cast away const because we are the ones who created this context
+    if (ref_context) {
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wcast-qual"
+        ar_data__destroy((ar_data_t*)ref_context);  // Cast away const - we own this
+        #pragma GCC diagnostic pop
+    }
     
     // Unregister the temporary method
     if (method_name && method_version) {
