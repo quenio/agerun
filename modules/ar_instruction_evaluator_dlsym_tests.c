@@ -1,10 +1,13 @@
 /**
- * @file ar_instruction_evaluator_error_tests.c
- * @brief Tests error handling and cleanup in ar_instruction_evaluator
+ * @file ar_instruction_evaluator_dlsym_tests.c
+ * @brief Tests error handling and cleanup in ar_instruction_evaluator using dlsym interception
  * 
  * This test verifies that ar_instruction_evaluator (implemented in Zig) properly
  * cleans up all resources when sub-evaluator creation fails at any point.
- * It uses function interception to simulate failures and track cleanup.
+ * It uses dlsym function interception to simulate failures and track cleanup.
+ * 
+ * Note: This test is excluded from sanitizer builds because dlsym interception
+ * conflicts with sanitizer instrumentation.
  */
 
 #include <stdio.h>

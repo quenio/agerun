@@ -263,9 +263,9 @@ METHOD_TEST_BIN_NAMES = $(notdir $(METHOD_TEST_BIN))
 ZIG_TEST_BIN_NAMES = $(notdir $(ZIG_TEST_BIN))
 ALL_TEST_BIN_NAMES = $(TEST_BIN_NAMES) $(METHOD_TEST_BIN_NAMES) $(ZIG_TEST_BIN_NAMES)
 
-# Filtered test sources for sanitizers (exclude *_error_tests.c)
-SANITIZER_TEST_SRC = $(filter-out %_error_tests.c,$(TEST_SRC))
-SANITIZER_METHOD_TEST_SRC = $(filter-out %_error_tests.c,$(METHOD_TEST_SRC))
+# Filtered test sources for sanitizers (exclude *_dlsym_tests.c)
+SANITIZER_TEST_SRC = $(filter-out %_dlsym_tests.c,$(TEST_SRC))
+SANITIZER_METHOD_TEST_SRC = $(filter-out %_dlsym_tests.c,$(METHOD_TEST_SRC))
 
 # Filtered test binaries for sanitizers
 SANITIZER_TEST_BIN_NAMES = $(patsubst modules/%_tests.c,%_tests,$(SANITIZER_TEST_SRC))
