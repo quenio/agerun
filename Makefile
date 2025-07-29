@@ -259,54 +259,84 @@ ALL_TEST_BIN_NAMES = $(TEST_BIN_NAMES) $(METHOD_TEST_BIN_NAMES) $(ZIG_TEST_BIN_N
 run-tests: run_tests_lib
 	$(MAKE) $(RUN_TESTS_TEST_BIN) $(RUN_TESTS_METHOD_TEST_BIN)
 	$(MAKE) $(RUN_TESTS_ZIG_TEST_BIN)
-	@cd $(RUN_TESTS_DIR) && for test in $(ALL_TEST_BIN_NAMES); do \
+	@cd $(RUN_TESTS_DIR) && failed=0 && for test in $(ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
 		echo "Running test: $$test"; \
 		case "$$test" in \
 			*Tests) \
-				./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+				if ! ./$$test; then \
+					echo "ERROR: Test $$test failed with status $$?"; \
+					failed=1; \
+				fi; \
 				;; \
 			*) \
-				AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+				if ! AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; then \
+					echo "ERROR: Test $$test failed with status $$?"; \
+					failed=1; \
+				fi; \
 				;; \
 		esac; \
-	done
+	done; \
+	if [ $$failed -ne 0 ]; then \
+		echo "ERROR: One or more tests failed"; \
+		exit 1; \
+	fi
 
 # Build and run tests with Address + Undefined Behavior Sanitizers
 sanitize-tests:
 	$(MAKE) sanitize_tests_lib
 	$(MAKE) $(SANITIZE_TESTS_TEST_BIN) $(SANITIZE_TESTS_METHOD_TEST_BIN) CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS)" LDFLAGS="$(LDFLAGS) $(SANITIZER_FLAGS)"
 	$(MAKE) $(SANITIZE_TESTS_ZIG_TEST_BIN)
-	@cd $(SANITIZE_TESTS_DIR) && for test in $(ALL_TEST_BIN_NAMES); do \
+	@cd $(SANITIZE_TESTS_DIR) && failed=0 && for test in $(ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
 		echo "Running test: $$test with Address + Undefined Behavior Sanitizers"; \
 		case "$$test" in \
 			*Tests) \
-				./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+				if ! ./$$test; then \
+					echo "ERROR: Test $$test failed with status $$?"; \
+					failed=1; \
+				fi; \
 				;; \
 			*) \
-				AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+				if ! AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; then \
+					echo "ERROR: Test $$test failed with status $$?"; \
+					failed=1; \
+				fi; \
 				;; \
 		esac; \
-	done
+	done; \
+	if [ $$failed -ne 0 ]; then \
+		echo "ERROR: One or more tests failed"; \
+		exit 1; \
+	fi
 
 # Build and run tests with Thread Sanitizer (must run separately from ASan)
 tsan-tests:
 	$(MAKE) tsan_tests_lib
 	$(MAKE) $(TSAN_TESTS_TEST_BIN) $(TSAN_TESTS_METHOD_TEST_BIN) CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS)" LDFLAGS="$(LDFLAGS) $(TSAN_FLAGS)"
 	$(MAKE) $(TSAN_TESTS_ZIG_TEST_BIN)
-	@cd $(TSAN_TESTS_DIR) && for test in $(ALL_TEST_BIN_NAMES); do \
+	@cd $(TSAN_TESTS_DIR) && failed=0 && for test in $(ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
 		echo "Running test: $$test with Thread Sanitizer"; \
 		case "$$test" in \
 			*Tests) \
-				./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+				if ! ./$$test; then \
+					echo "ERROR: Test $$test failed with status $$?"; \
+					failed=1; \
+				fi; \
 				;; \
 			*) \
-				AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test || echo "ERROR: Test $$test failed with status $$?"; \
+				if ! AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; then \
+					echo "ERROR: Test $$test failed with status $$?"; \
+					failed=1; \
+				fi; \
 				;; \
 		esac; \
-	done
+	done; \
+	if [ $$failed -ne 0 ]; then \
+		echo "ERROR: One or more tests failed"; \
+		exit 1; \
+	fi
 
 # Individual test binaries (build in run-tests directory for consistency)
 # Individual test target (without bin/ prefix for convenience)
