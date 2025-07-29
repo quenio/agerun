@@ -29,6 +29,7 @@ help:
 	@echo "  make tsan-exec    - Build and run executable with ThreadSanitizer"
 	@echo ""
 	@echo "Utility targets:"
+	@echo "  make check-logs   - Check build logs for hidden issues"
 	@echo "  make add-newline FILE=<file> - Add newline to end of file if missing"
 
 # Output directories for parallel builds
@@ -567,6 +568,15 @@ build: install-scan-build
 	else \
 		echo "ERROR: scripts/build.sh not found or not executable"; \
 		echo "Make sure the script exists and has execute permissions"; \
+		exit 1; \
+	fi
+
+# Check build logs for hidden issues
+check-logs:
+	@if [ -x ./scripts/check_build_logs.sh ]; then \
+		./scripts/check_build_logs.sh; \
+	else \
+		echo "ERROR: scripts/check_build_logs.sh not found or not executable"; \
 		exit 1; \
 	fi
 
