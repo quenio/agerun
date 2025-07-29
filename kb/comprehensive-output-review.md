@@ -34,17 +34,21 @@ Overall status: ✓ SUCCESS  # This is wrong!
 When reviewing AgeRun build output:
 ```bash
 # Don't just check the end
-make build | tail -10  # BAD: Might miss errors
+make build | tail -10  # BAD: Might miss errors AND stderr
 
-# Search for problems throughout
+# ALWAYS capture stderr with 2>&1
 make build 2>&1 | tee build.log
 grep -E "ERROR:|FAIL:|Abort|Assertion|WARNING:" build.log
 
-# Check specific patterns
+# Check specific patterns (with stderr!)
 make run-tests 2>&1 | grep -c "failed with status"
 make run-tests 2>&1 | grep -c "All.*tests passed"
+
+# Memory leak warnings go to stderr
+make run-tests 2>&1 | grep "memory leaks detected"
 ```
 
 ## Related Patterns
 - [Evidence-Based Debugging](evidence-based-debugging.md)
 - [User Feedback as QA](user-feedback-as-qa.md)
+- [Stderr Redirection for Debugging](stderr-redirection-debugging.md) - Critical for seeing all warnings/errors

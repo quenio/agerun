@@ -39,7 +39,7 @@ ar_data__destroy(own_args);  // Add cleanup
 When leak detected → Check memory report → Trace allocation source → Verify ownership semantics → Fix variable naming → Add proper cleanup
 
 ## Implementation
-1. Run test with `make test_name`
+1. Run test with `make test_name 2>&1` (capture stderr for warnings!)
 2. Check `bin/memory_report_<test_name>.log` for leak details
 3. Examine the allocating function to understand ownership
 4. Review all call sites for proper variable naming (own_/mut_/ref_)
@@ -66,3 +66,4 @@ This pattern caused identical leaks (2 allocations, ~41-45 bytes) across 8+ test
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
 - [Agent Wake Message Processing](agent-wake-message-processing.md)
+- [Stderr Redirection for Debugging](stderr-redirection-debugging.md) - Leak warnings go to stderr

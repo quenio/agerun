@@ -56,7 +56,7 @@ diff <(zig translate-c modules/ar_heap.h) <(zig translate-c -DDEBUG modules/ar_h
 
 ### Build Flag Investigation
 ```bash
-# Extract actual compilation commands
+# Extract actual compilation commands (always capture stderr!)
 make clean
 make build 2>&1 | grep -E "zig|gcc" | head -5
 
@@ -195,3 +195,4 @@ Before claiming to understand a bug:
 - [Build System Exit Code Verification](build-system-exit-code-verification.md)
 - [Regression Root Cause Analysis](regression-root-cause-analysis.md)
 - [Comprehensive Output Review](comprehensive-output-review.md)
+- [Stderr Redirection for Debugging](stderr-redirection-debugging.md) - Always capture stderr for complete output

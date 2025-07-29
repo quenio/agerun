@@ -128,6 +128,7 @@ Each learning file contains:
 - [User Feedback Debugging Pattern](user-feedback-debugging-pattern.md)
 - [Makefile Pattern Rule Management](makefile-pattern-rule-management.md)
 - [Development Debug Tools](development-debug-tools.md)
+- [Stderr Redirection for Debugging](stderr-redirection-debugging.md)
 - [Zig Integration Comprehensive](zig-integration-comprehensive.md)
 - [Zig Struct Modules Pattern](zig-struct-modules-pattern.md)
 - [Zig Struct Module C Dependency Limitation](zig-struct-module-c-dependency-limitation.md)

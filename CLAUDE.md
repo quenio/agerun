@@ -8,21 +8,22 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 
 ## Quick Start
 
-**Primary Build Tool**: `make build` - runs everything with minimal output (~20 lines)
+**Primary Build Tool**: `make build 2>&1` - runs everything with minimal output (~20 lines)
 - Use before commits and for quick verification
 - Includes: build, static analysis, all tests, sanitizers, leak check, doc validation
 - **ALWAYS follow with `make check-logs`** to verify no hidden issues in log files
+- **Note**: Using `2>&1` captures stderr to see warnings/errors immediately
 
 **Individual Commands** (when needed):
 ```bash
 make                  # Shows help with all available targets
 make clean            # Clean all build artifacts
-make analyze-exec     # Static analysis on executable code
-make analyze-tests    # Static analysis on tests
-make run-tests        # Run tests (auto-rebuilds) 
-make sanitize-tests   # Run with ASan
-make run-exec         # Build and run executable
-make test_name        # Build/run specific test
+make analyze-exec 2>&1     # Static analysis on executable code
+make analyze-tests 2>&1    # Static analysis on tests
+make run-tests 2>&1        # Run tests (auto-rebuilds) 
+make sanitize-tests 2>&1   # Run with ASan
+make run-exec 2>&1         # Build and run executable
+make test_name 2>&1        # Build/run specific test
 make check-naming     # Check naming conventions
 make check-docs       # Check documentation validity
 make check-all        # Run all code quality checks
@@ -34,8 +35,8 @@ make add-newline FILE=<file>  # Add missing newline to file
 
 **Note**: Always run from repo root. Makefile handles directory changes automatically. Doc-only changes don't require testing. Always pause before build commands to check for custom scripts.
 
-**Build behavior**: `make build` builds from current state (no clean). To build clean, run: `make clean build`
-**IMPORTANT**: Always run `make check-logs` after `make build` or `make clean build` to catch hidden issues!
+**Build behavior**: `make build 2>&1` builds from current state (no clean). To build clean, run: `make clean build 2>&1`
+**IMPORTANT**: Always run `make check-logs` after `make build 2>&1` or `make clean build 2>&1` to catch hidden issues!
 
 **Scripts Directory**: All build and utility scripts are located in `/scripts/`. Never run these scripts directly - always use the corresponding make targets. Scripts will fail with an error message if run outside the repository root.
 
@@ -126,7 +127,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - Full test suite: Check console for "WARNING: X memory leaks detected"
 - Individual test reports: `bin/run-tests/memory_report_<test_name>.log` ([details](kb/memory-leak-detection-workflow.md))
 - Complete verification: `grep "Actual memory leaks:" bin/run-tests/memory_report_*.log | grep -v "0 (0 bytes)"`
-- Always run `make sanitize-tests` before committing
+- Always run `make sanitize-tests 2>&1` before committing
 - Debug strategy: Check report → Trace source → Verify ownership → Fix naming → Add cleanup ([details](kb/memory-debugging-comprehensive-guide.md))
 - Environment variables: `ASAN_OPTIONS=halt_on_error=0` (continue on error), `detect_leaks=1` (complex leaks)
 - Wake messages: Process with `ar_system__process_next_message()` after agent creation ([details](kb/agent-wake-message-processing.md))
@@ -186,7 +187,7 @@ For each new behavior/feature:
 - Global cleanup: `ar_methodology__cleanup()` & `ar_agency__reset()`
 - Process messages: `while (ar_system__process_next_message());`
 - Process wake messages after agent creation to prevent leaks ([details](kb/agent-wake-message-processing.md))
-- Use fixtures when available, run with `make test_name`
+- Use fixtures when available, run with `make test_name 2>&1`
 - Adapt fixtures when APIs change ([details](kb/test-fixture-api-adaptation.md))
 - Keep diagnostic output in tests for debugging ([details](kb/test-diagnostic-output-preservation.md))
 
@@ -358,7 +359,8 @@ cd bin  # Wrong - avoid relative paths
 - **Parallel builds**: Shared .PHONY deps → hoist to parent target (e.g., install-scan-build → build)
 - **Command updates**: Update Claude commands when new patterns emerge ([details](kb/command-continuous-improvement-pattern.md))
 
-**Debug Tools**: Memory (`make sanitize-tests`), static analysis, crashes (lldb), patterns testing ([details](kb/development-debug-tools.md))
+**Debug Tools**: Memory (`make sanitize-tests 2>&1`), static analysis, crashes (lldb), patterns testing ([details](kb/development-debug-tools.md))
+**Command Output**: Always use `2>&1` to capture stderr when debugging - warnings and errors often go to stderr ([details](kb/stderr-redirection-debugging.md))
 
 **Expression Ownership** (CRITICAL):
 - References (`memory.x`): Don't destroy - borrowed from memory/context
@@ -386,7 +388,7 @@ cd bin  # Wrong - avoid relative paths
 
 Always use make to build tests:
 ```bash
-make test_name  # Build individual test
+make test_name 2>&1  # Build individual test (with stderr)
 ```
 Never compile directly with gcc.
 
@@ -399,7 +401,7 @@ Never compile directly with gcc.
 - Pattern rules compile object files - update these directly for consistent flags (not target-specific vars)
 - **Pattern rule updates**: Change all 6 targets when updating Zig flags ([details](kb/makefile-pattern-rule-management.md))
 - **POSIX shell only**: Use `case` not `[[ ]]` - Make uses sh, not bash ([details](kb/makefile-posix-shell-compatibility.md))
-- Example: `make ar_string_tests` will:
+- Example: `make ar_string_tests 2>&1` will:
   1. Rebuild any changed modules
   2. Rebuild the test
   3. Run the test automatically from the bin directory
@@ -415,11 +417,11 @@ Never compile directly with gcc.
 - **Todo list integrity**: Mark items complete, never remove them - preserves task history
 
 **Pre-Commit Checklist** (MANDATORY - NO EXCEPTIONS):
-1. `make clean build` - Fix ALL issues before proceeding (includes doc validation) ([details](kb/build-verification-before-commit.md))
+1. `make clean build 2>&1` - Fix ALL issues before proceeding (includes doc validation) ([details](kb/build-verification-before-commit.md))
    - **CRITICAL**: Build must exit with code 0 - verify with `echo $?` ([details](kb/build-system-exit-code-verification.md))
    - **NEW REQUIREMENT**: Always follow with `make check-logs` to catch hidden issues! ([details](kb/build-log-verification-requirement.md))
    - **Report build time**: Include duration from output (e.g., "took 1m 3s") ([details](kb/build-time-reporting.md))
-   - **Exception**: Type renames only need `make check-naming && make run-tests`
+   - **Exception**: Type renames only need `make check-naming && make run-tests 2>&1`
    - **Exception**: Doc-only changes only need `make check-docs`
    - **Exception**: Comment-only changes only need `make check-naming`
    - **Exception**: Skip tests if just run successfully (avoid redundant execution)
@@ -579,7 +581,7 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 - **API style**: `init`/`deinit`, `camelCase` functions, allocator as first parameter
 - **Ownership**: Still use `own_`, `mut_`, `ref_` prefixes on ALL fields/variables
 - **Use cases**: Internal tools, Zig-specific features (comptime, error unions, slices)
-- **Build integration**: Tests run via `make run-tests` alongside C tests ([details](kb/zig-test-build-integration.md))
+- **Build integration**: Tests run via `make run-tests 2>&1` alongside C tests ([details](kb/zig-test-build-integration.md))
 - **Static analysis**: Limited to ast-check & fmt; consider zlint for more ([details](kb/zig-static-analysis-tools.md))
 
 ## AgeRun Language Notes

@@ -2,6 +2,7 @@
 #include "ar_system.h"
 #include "ar_method.h"
 #include "ar_methodology.h"
+#include "ar_agency.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -30,6 +31,11 @@ static void test_executable_run(void) {
     
     if (pid == 0) {
         // In the child process
+        
+        // Clean up inherited resources before running the test
+        ar_system__shutdown();
+        ar_methodology__cleanup();
+        ar_agency__reset();
         
         // Given we redirect stdout to avoid cluttering test output
         freopen("/dev/null", "w", stdout);
