@@ -306,7 +306,7 @@ sanitize-tests:
 				fi; \
 				;; \
 			*) \
-				if ! AGERUN_MEMORY_REPORT="memory_report_$$test.log" AGERUN_SKIP_DLSYM_TESTS=1 ./$$test; then \
+				if ! AGERUN_SKIP_DLSYM_TESTS=1 AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; then \
 					echo "ERROR: Test $$test failed with status $$?"; \
 					failed=1; \
 				fi; \
@@ -334,7 +334,7 @@ tsan-tests:
 				fi; \
 				;; \
 			*) \
-				if ! AGERUN_MEMORY_REPORT="memory_report_$$test.log" AGERUN_SKIP_DLSYM_TESTS=1 ./$$test; then \
+				if ! AGERUN_SKIP_DLSYM_TESTS=1 AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; then \
 					echo "ERROR: Test $$test failed with status $$?"; \
 					failed=1; \
 				fi; \
