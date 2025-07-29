@@ -23,8 +23,24 @@ static void test_grade_evaluator_grades(void) {
     // Load and register grade-evaluator method
     assert(ar_method_fixture__load_method(own_fixture, "grade-evaluator", "../../methods/grade-evaluator-1.0.0.method", "1.0.0"));
     
-    // Create grade-evaluator agent
-    int64_t evaluator_agent = ar_agency__create_agent("grade-evaluator", "1.0.0", NULL);
+    // Create initial memory for the agent
+    ar_data_t *own_initial_memory = ar_data__create_map();
+    assert(own_initial_memory != NULL);
+    
+    // Initialize memory fields used by the grade evaluator
+    ar_data__set_map_integer(own_initial_memory, "is_grade", 0);
+    ar_data__set_map_integer(own_initial_memory, "is_status", 0);
+    ar_data__set_map_integer(own_initial_memory, "grade_a", 0);
+    ar_data__set_map_integer(own_initial_memory, "grade_b", 0);
+    ar_data__set_map_integer(own_initial_memory, "grade_c", 0);
+    ar_data__set_map_string(own_initial_memory, "grade", "F");
+    ar_data__set_map_string(own_initial_memory, "status", "");
+    ar_data__set_map_string(own_initial_memory, "result", "");
+    ar_data__set_map_string(own_initial_memory, "type", "");
+    ar_data__set_map_integer(own_initial_memory, "value", 0);
+    
+    // Create grade-evaluator agent with initial memory
+    int64_t evaluator_agent = ar_agency__create_agent("grade-evaluator", "1.0.0", own_initial_memory);
     assert(evaluator_agent > 0);
     
     // Process wake message
@@ -166,8 +182,24 @@ static void test_grade_evaluator_status(void) {
     // Load and register grade-evaluator method
     assert(ar_method_fixture__load_method(own_fixture, "grade-evaluator", "../../methods/grade-evaluator-1.0.0.method", "1.0.0"));
     
-    // Create grade-evaluator agent
-    int64_t evaluator_agent = ar_agency__create_agent("grade-evaluator", "1.0.0", NULL);
+    // Create initial memory for the agent
+    ar_data_t *own_initial_memory = ar_data__create_map();
+    assert(own_initial_memory != NULL);
+    
+    // Initialize memory fields used by the grade evaluator
+    ar_data__set_map_integer(own_initial_memory, "is_grade", 0);
+    ar_data__set_map_integer(own_initial_memory, "is_status", 0);
+    ar_data__set_map_integer(own_initial_memory, "grade_a", 0);
+    ar_data__set_map_integer(own_initial_memory, "grade_b", 0);
+    ar_data__set_map_integer(own_initial_memory, "grade_c", 0);
+    ar_data__set_map_string(own_initial_memory, "grade", "F");
+    ar_data__set_map_string(own_initial_memory, "status", "");
+    ar_data__set_map_string(own_initial_memory, "result", "");
+    ar_data__set_map_string(own_initial_memory, "type", "");
+    ar_data__set_map_integer(own_initial_memory, "value", 0);
+    
+    // Create grade-evaluator agent with initial memory
+    int64_t evaluator_agent = ar_agency__create_agent("grade-evaluator", "1.0.0", own_initial_memory);
     assert(evaluator_agent > 0);
     
     // Process wake message

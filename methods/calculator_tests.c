@@ -23,8 +23,15 @@ static void test_calculator_add(void) {
     // Load and register calculator method
     assert(ar_method_fixture__load_method(own_fixture, "calculator", "../../methods/calculator-1.0.0.method", "1.0.0"));
     
-    // Create calculator agent
-    int64_t calc_agent = ar_agency__create_agent("calculator", "1.0.0", NULL);
+    // Create initial memory for the agent
+    ar_data_t *own_initial_memory = ar_data__create_map();
+    assert(own_initial_memory != NULL);
+    
+    // Initialize memory.result to 0 as per the calculator method
+    ar_data__set_map_integer(own_initial_memory, "result", 0);
+    
+    // Create calculator agent with initial memory
+    int64_t calc_agent = ar_agency__create_agent("calculator", "1.0.0", own_initial_memory);
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
@@ -89,8 +96,15 @@ static void test_calculator_multiply(void) {
     // Load and register calculator method
     assert(ar_method_fixture__load_method(own_fixture, "calculator", "../../methods/calculator-1.0.0.method", "1.0.0"));
     
-    // Create calculator agent
-    int64_t calc_agent = ar_agency__create_agent("calculator", "1.0.0", NULL);
+    // Create initial memory for the agent
+    ar_data_t *own_initial_memory = ar_data__create_map();
+    assert(own_initial_memory != NULL);
+    
+    // Initialize memory.result to 0 as per the calculator method
+    ar_data__set_map_integer(own_initial_memory, "result", 0);
+    
+    // Create calculator agent with initial memory
+    int64_t calc_agent = ar_agency__create_agent("calculator", "1.0.0", own_initial_memory);
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
@@ -154,8 +168,15 @@ static void test_calculator_subtract(void) {
     // Load and register calculator method
     assert(ar_method_fixture__load_method(own_fixture, "calculator", "../../methods/calculator-1.0.0.method", "1.0.0"));
     
-    // Create calculator agent
-    int64_t calc_agent = ar_agency__create_agent("calculator", "1.0.0", NULL);
+    // Create initial memory for the agent
+    ar_data_t *own_initial_memory = ar_data__create_map();
+    assert(own_initial_memory != NULL);
+    
+    // Initialize memory.result to 0 as per the calculator method
+    ar_data__set_map_integer(own_initial_memory, "result", 0);
+    
+    // Create calculator agent with initial memory
+    int64_t calc_agent = ar_agency__create_agent("calculator", "1.0.0", own_initial_memory);
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
@@ -220,8 +241,15 @@ static void test_calculator_divide(void) {
     // Load and register calculator method
     assert(ar_method_fixture__load_method(own_fixture, "calculator", "../../methods/calculator-1.0.0.method", "1.0.0"));
     
-    // Create calculator agent
-    int64_t calc_agent = ar_agency__create_agent("calculator", "1.0.0", NULL);
+    // Create initial memory for the agent
+    ar_data_t *own_initial_memory = ar_data__create_map();
+    assert(own_initial_memory != NULL);
+    
+    // Initialize memory.result to 0 as per the calculator method
+    ar_data__set_map_integer(own_initial_memory, "result", 0);
+    
+    // Create calculator agent with initial memory
+    int64_t calc_agent = ar_agency__create_agent("calculator", "1.0.0", own_initial_memory);
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
@@ -288,8 +316,15 @@ static void test_calculator_unknown_operation(void) {
     // Load and register calculator method
     assert(ar_method_fixture__load_method(own_fixture, "calculator", "../../methods/calculator-1.0.0.method", "1.0.0"));
     
-    // Create calculator agent
-    int64_t calc_agent = ar_agency__create_agent("calculator", "1.0.0", NULL);
+    // Create initial memory for the agent
+    ar_data_t *own_initial_memory = ar_data__create_map();
+    assert(own_initial_memory != NULL);
+    
+    // Initialize memory.result to 0 as per the calculator method
+    ar_data__set_map_integer(own_initial_memory, "result", 0);
+    
+    // Create calculator agent with initial memory
+    int64_t calc_agent = ar_agency__create_agent("calculator", "1.0.0", own_initial_memory);
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     

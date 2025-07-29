@@ -2,6 +2,22 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-07-29
+
+### ✅ Fixed Calculator and Grade Evaluator Tests
+- **Fixed method test failures**:
+  - Calculator and grade evaluator tests were failing due to NULL initial memory
+  - Both methods expect certain memory fields to be initialized before execution
+  - Fixed by providing proper initial memory maps with required fields
+- **Enhanced expression evaluator tests**:
+  - Added comprehensive string comparison tests (equality and inequality)
+  - Verified string comparisons return 1 for equal, 0 for not equal
+  - Confirmed if() instruction correctly processes string comparison results
+- **Impact**:
+  - All tests now passing after proper memory initialization
+  - String comparison in method conditions works as expected
+  - Method tests more accurately reflect real-world agent usage
+
 ## 2025-07-28
 
 ### ✅ CRITICAL: Build System Test Failure Detection Fixed

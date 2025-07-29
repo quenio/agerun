@@ -12,6 +12,12 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] All test targets (run-tests, sanitize-tests, tsan-tests) now exit with non-zero code on failure
 - [x] Build system now correctly reports FAILURE when tests fail
 
+### Test Fixes - String Comparison and Initial Memory (Completed 2025-07-29)
+- [x] Fixed calculator and grade evaluator tests by providing proper initial memory
+- [x] Added comprehensive string comparison tests to expression evaluator
+- [x] Both methods expected initialized memory fields but were receiving NULL
+- [x] All tests now passing after fixing initial memory setup
+
 ### Knowledge Base Enhancement - Phase Completion (Completed 2025-07-28)
 - [x] Created refactoring phase completion checklist; enhanced TDD completion patterns; updated commit command with comprehensive documentation checks; added cross-references throughout KB
 
