@@ -659,6 +659,117 @@ static void test_evaluate_binary_op_nested(void) {
     printf("  ✓ Evaluate nested binary operations\n");
 }
 
+/**
+ * Test evaluating string comparison
+ */
+static void test_evaluate_string_comparison(void) {
+    printf("Testing expression evaluator string comparison...\n");
+    
+    // Given a test fixture
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_string_comparison");
+    assert(own_fixture != NULL);
+    
+    ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    
+    // Test 1: Direct string equality that should return 1
+    {
+        // Create AST for "hello" = "hello"
+        ar_expression_ast_t *own_left = ar_expression_ast__create_literal_string("hello");
+        ar_expression_ast_t *own_right = ar_expression_ast__create_literal_string("hello");
+        ar_expression_ast_t *own_ast = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__EQUAL, own_left, own_right);
+        assert(own_ast != NULL);
+        
+        // When evaluating the comparison
+        ar_data_t *own_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
+        
+        // Then it should return 1 (true)
+        assert(own_result != NULL);
+        assert(ar_data__get_type(own_result) == AR_DATA_TYPE__INTEGER);
+        assert(ar_data__get_integer(own_result) == 1);
+        
+        // Clean up
+        ar_data__destroy(own_result);
+        ar_expression_ast__destroy(own_ast);
+    }
+    
+    // Test 2: String inequality that should return 0
+    {
+        // Create AST for "hello" = "world"
+        ar_expression_ast_t *own_left = ar_expression_ast__create_literal_string("hello");
+        ar_expression_ast_t *own_right = ar_expression_ast__create_literal_string("world");
+        ar_expression_ast_t *own_ast = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__EQUAL, own_left, own_right);
+        assert(own_ast != NULL);
+        
+        // When evaluating the comparison
+        ar_data_t *own_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
+        
+        // Then it should return 0 (false)
+        assert(own_result != NULL);
+        assert(ar_data__get_type(own_result) == AR_DATA_TYPE__INTEGER);
+        assert(ar_data__get_integer(own_result) == 0);
+        
+        // Clean up
+        ar_data__destroy(own_result);
+        ar_expression_ast__destroy(own_ast);
+    }
+    
+    // Test 3: String comparison with memory access (like memory.operation = "add")
+    {
+        // Add operation = "add" to memory
+        ar_data__set_map_string(mut_memory, "operation", "add");
+        
+        // Create AST for memory.operation = "add"
+        const char *path[] = {"operation"};
+        ar_expression_ast_t *own_left = ar_expression_ast__create_memory_access("memory", path, 1);
+        ar_expression_ast_t *own_right = ar_expression_ast__create_literal_string("add");
+        ar_expression_ast_t *own_ast = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__EQUAL, own_left, own_right);
+        assert(own_ast != NULL);
+        
+        // When evaluating the comparison
+        ar_data_t *own_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
+        
+        // Then it should return 1 (true)
+        assert(own_result != NULL);
+        assert(ar_data__get_type(own_result) == AR_DATA_TYPE__INTEGER);
+        assert(ar_data__get_integer(own_result) == 1);
+        
+        // Clean up
+        ar_data__destroy(own_result);
+        ar_expression_ast__destroy(own_ast);
+    }
+    
+    // Test 4: String comparison returning 0
+    {
+        // memory.operation still = "add"
+        
+        // Create AST for memory.operation = "multiply"
+        const char *path[] = {"operation"};
+        ar_expression_ast_t *own_left = ar_expression_ast__create_memory_access("memory", path, 1);
+        ar_expression_ast_t *own_right = ar_expression_ast__create_literal_string("multiply");
+        ar_expression_ast_t *own_ast = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__EQUAL, own_left, own_right);
+        assert(own_ast != NULL);
+        
+        // When evaluating the comparison
+        ar_data_t *own_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
+        
+        // Then it should return 0 (false)
+        assert(own_result != NULL);
+        assert(ar_data__get_type(own_result) == AR_DATA_TYPE__INTEGER);
+        assert(ar_data__get_integer(own_result) == 0);
+        
+        // Clean up
+        ar_data__destroy(own_result);
+        ar_expression_ast__destroy(own_ast);
+    }
+    
+    // Clean up
+    ar_evaluator_fixture__destroy(own_fixture);
+    
+    printf("  ✓ String comparison returns correct integer result\n");
+}
+
 int main(void) {
     printf("\n=== Expression Evaluator Tests ===\n\n");
     
@@ -680,6 +791,7 @@ int main(void) {
     test_evaluate_binary_op_concatenate_strings();
     test_evaluate_handles_int_as_binary_op();
     test_evaluate_binary_op_nested();
+    test_evaluate_string_comparison();
     
     printf("\nAll expression_evaluator tests passed!\n");
     return 0;
