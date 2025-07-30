@@ -78,6 +78,12 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ### Evaluator Dependency Injection Refactoring (Completed 2025-07-15)
 - [x] Refactored instruction and method evaluators to create dependencies internally; simplified APIs to require only log parameter; maintained zero memory leaks; updated documentation
 
+### System Module Responsibility Analysis (Completed 2025-07-30)
+- [x] Analyzed ar_system module identifying 5 distinct responsibilities
+- [x] Created comprehensive refactoring plan following methodology module pattern
+- [x] Documented decomposition into ar_runtime, ar_message_broker, ar_persistence_coordinator
+- [x] Generated detailed analysis report at reports/system-module-responsibility-analysis.md
+
 ### Knowledge Base Enhancement (Completed 2025-07-28)
 - [x] Created internal-vs-external-module-pattern.md documenting module role distinctions
 - [x] Updated user-feedback-as-qa.md with examples from ar_method_resolver implementation
@@ -236,17 +242,65 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 **Estimated Timeline**: 3-5 sessions depending on discoveries during implementation
 
-### 2. HIGH PRIORITY - System Module Refactoring
+### 2. HIGHEST PRIORITY - Agency Module Instantiation & System Module Refactoring
 
-**Rationale**: The system module coordinates many aspects of the runtime. Breaking it into focused modules will improve code organization and testability.
+**Rationale**: The system module coordinates many aspects of the runtime. Breaking it into focused modules will improve code organization and testability. However, this requires making the agency module instantiable first to properly manage dependencies.
+
+**Current State Analysis**: Comprehensive analysis completed 2025-07-30 ([details](reports/system-module-responsibility-analysis.md))
+- Identified 5 distinct responsibilities violating Single Responsibility Principle
+- Module is small (191 lines) but exhibits mixed abstraction levels and feature envy
+- Clear decomposition strategy identified following methodology module pattern
+- **Report Updated**: Architectural analysis refined after identifying agency instantiation prerequisite
+
+**Proposed Decomposition** (Updated after instantiation analysis):
+- **ar_runtime**: System lifecycle management (init/shutdown/state)
+- **ar_message_broker**: Message processing orchestration 
+- **ar_system**: Thin facade maintaining backward compatibility
+- **Note**: Persistence coordination will be handled by agency instances directly, eliminating need for separate coordinator
+
+**Dependencies**: System module refactoring requires agency to be instantiable first
 
 **Tasks**:
-- [ ] Analyze current system module responsibilities
-- [ ] Design focused sub-modules (e.g., message queue, agent lifecycle, system state)
-- [ ] Extract sub-modules following TDD approach
-- [ ] Update all dependent modules
-- [ ] Ensure proper encapsulation and clean interfaces
-- [ ] Verify system behavior remains unchanged
+- [x] Analyze current system module responsibilities (Completed 2025-07-30)
+- [ ] Phase 0: Make ar_agency instantiable (PREREQUISITE)
+  - [ ] Create ar_agency_t opaque type
+  - [ ] Convert global state (g_is_initialized, g_own_registry) to instance fields
+  - [ ] Add methodology instance field to ar_agency_t
+  - [ ] Add create function that accepts ar_methodology_t instance
+  - [ ] Update agency functions to use associated methodology instance
+  - [ ] Add destroy function that properly manages lifecycle
+  - [ ] Maintain backward compatibility with global instance pattern
+  - [ ] Update all tests to use instance-based API
+  - [ ] Verify zero memory leaks
+- [ ] Phase 1: Make ar_system instantiable
+  - [ ] Create ar_system_t opaque type
+  - [ ] Convert global state to instance fields
+  - [ ] Add create function that accepts ar_agency_t instance (which already contains methodology)
+  - [ ] Add destroy function that properly manages lifecycle
+  - [ ] Maintain backward compatibility with global instance pattern
+  - [ ] Update all tests to use instance-based API
+  - [ ] Verify zero memory leaks
+- [ ] Phase 2: Create ar_runtime module
+  - [ ] Design interface for lifecycle management
+  - [ ] Extract init/shutdown logic using TDD
+  - [ ] Manage global state (initialized flag, log)
+- [ ] Phase 3: Create ar_message_broker module
+  - [ ] Design interface for message routing
+  - [ ] Extract message processing loop
+  - [ ] Remove direct agency manipulation
+- [ ] Phase 4: Update persistence handling (No separate coordinator needed)
+  - [ ] Update ar_agency to coordinate its own persistence
+  - [ ] Add save/load methods that handle both agents and methods
+  - [ ] Support custom filenames for multiple instances
+  - [ ] Ensure proper error handling for both stores
+- [ ] Phase 5: Refactor ar_system as facade
+  - [ ] Delegate to new modules
+  - [ ] Ensure backward compatibility
+  - [ ] Verify zero memory leaks
+- [ ] Phase 6: Integration and verification
+  - [ ] Run full test suite with sanitizers
+  - [ ] Update documentation
+  - [ ] Performance comparison
 
 ### 3. System-Wide Integration Testing and Verification
 
