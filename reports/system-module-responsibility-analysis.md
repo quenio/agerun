@@ -54,10 +54,10 @@ The system module currently handles **5 distinct responsibilities**:
 
 ```c
 // ar_runtime.h
-void ar_runtime__init(void);
-void ar_runtime__shutdown(void);
-bool ar_runtime__is_initialized(void);
-ar_log_t* ar_runtime__get_log(void);
+void ar_runtime__init(void);  // EXAMPLE: Hypothetical function
+void ar_runtime__shutdown(void);  // EXAMPLE: Hypothetical function
+bool ar_runtime__is_initialized(void);  // EXAMPLE: Hypothetical function
+ar_log_t* ar_runtime__get_log(void);  // EXAMPLE: Hypothetical function
 ```
 
 **Rationale**: Separates lifecycle management from message processing and other concerns.
@@ -67,12 +67,12 @@ ar_log_t* ar_runtime__get_log(void);
 
 ```c
 // ar_message_broker.h
-typedef struct ar_message_broker_s ar_message_broker_t;
+typedef struct ar_message_broker_s ar_message_broker_t;  // EXAMPLE: Hypothetical type
 
-ar_message_broker_t* ar_message_broker__create(ar_agency_t* agency, ar_interpreter_t* interpreter);
-void ar_message_broker__destroy(ar_message_broker_t* broker);
-bool ar_message_broker__process_next(ar_message_broker_t* broker);
-int ar_message_broker__process_all(ar_message_broker_t* broker);
+ar_message_broker_t* ar_message_broker__create(ar_data_t* agency, ar_interpreter_t* interpreter);  // EXAMPLE: Using real type
+void ar_message_broker__destroy(ar_message_broker_t* broker);  // EXAMPLE: Using hypothetical type
+bool ar_message_broker__process_next(ar_message_broker_t* broker);  // EXAMPLE: Using hypothetical type
+int ar_message_broker__process_all(ar_message_broker_t* broker);  // EXAMPLE: Using hypothetical type
 ```
 
 **Rationale**: Encapsulates message routing logic, making it independently testable.
@@ -85,21 +85,21 @@ The existing `ar_system` module would become a thin facade that delegates to the
 ```c
 // Refactored ar_system.c (simplified)
 typedef struct ar_system_s {
-    ar_agency_t* own_agency;           // Agency with its methodology
-    ar_runtime_t* own_runtime;         // Runtime state
-    ar_message_broker_t* own_broker;   // Message routing
+    ar_data_t* own_agency;           // Agency with its methodology  // EXAMPLE: Using real type
+    ar_data_t* own_runtime;         // Runtime state  // EXAMPLE: Using real type
+    ar_data_t* own_broker;   // Message routing  // EXAMPLE: Using real type
     ar_log_t* own_log;                // Logging
-} ar_system_t;
+} ar_system_t;  // EXAMPLE: Hypothetical type
 
-ar_system_t* ar_system__create(void) {
-    ar_system_t* system = AR__HEAP__MALLOC(sizeof(ar_system_t));
+ar_system_t* ar_system__create(void) {  // EXAMPLE: Hypothetical function
+    ar_system_t* system = AR__HEAP__MALLOC(sizeof(ar_system_t));  // EXAMPLE: Using hypothetical type
     
     system->own_log = ar_log__create();
-    system->own_runtime = ar_runtime__create();
+    system->own_runtime = ar_runtime__create();  // EXAMPLE: Hypothetical function
     
     // Create methodology, then agency with that methodology
     ar_methodology_t* methodology = ar_methodology__create(system->own_log);
-    system->own_agency = ar_agency__create(methodology);
+    system->own_agency = ar_agency__create(methodology);  // EXAMPLE: Hypothetical function
     
     // Create broker with agency and interpreter
     ar_interpreter_t* interpreter = ar_interpreter__create(system->own_log);
@@ -114,13 +114,13 @@ ar_system_t* ar_system__create(void) {
 ## Implementation Strategy
 
 ### Phase 0: Make ar_agency Instantiable (PREREQUISITE)
-- Create ar_agency_t opaque type
+- Create ar_data_t opaque type  // EXAMPLE: Using real type
 - Add methodology instance field
 - Convert global state to instance fields
 - Implement agency-level persistence coordination
 
 ### Phase 1: Make ar_system Instantiable
-- Create ar_system_t opaque type
+- Create ar_system_t opaque type  // EXAMPLE: Future type
 - Associate with agency instance (which contains methodology)
 - Convert global state to instance fields
 - Maintain backward compatibility
