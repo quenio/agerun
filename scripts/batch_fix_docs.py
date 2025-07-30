@@ -134,6 +134,31 @@ def fix_file(filepath, errors, dry_run=False):
     
     changes = []
     
+    # Handle broken links first (by line number) - PRESERVE ORIGINAL LOGIC
+    for line_num, old_path, expected_path in sorted(errors.get('broken_links', []), reverse=True):
+        line_idx = line_num - 1
+        if line_idx < len(lines):
+            old_line = lines[line_idx]
+            # Calculate correct relative path
+            correct_path = calculate_relative_path(filepath, old_path)
+            new_line = old_line.replace(f']({old_path})', f']({correct_path})')
+            if new_line != old_line:
+                lines[line_idx] = new_line
+                changes.append((line_num, 'broken link', old_line.strip(), new_line.strip()))
+    
+    # Handle absolute paths - PRESERVE ORIGINAL LOGIC
+    for line_num, abs_path in sorted(errors.get('absolute_paths', []), reverse=True):
+        line_idx = line_num - 1
+        if line_idx < len(lines):
+            old_line = lines[line_idx]
+            # Convert absolute to relative
+            rel_path = abs_path.lstrip('/')
+            correct_path = calculate_relative_path(filepath, rel_path)
+            new_line = old_line.replace(f']({abs_path})', f']({correct_path})')
+            if new_line != old_line:
+                lines[line_idx] = new_line
+                changes.append((line_num, 'absolute path', old_line.strip(), new_line.strip()))
+    
     # First pass: identify hypothetical types from typedef declarations
     for i, line in enumerate(lines):
         for kind, name in errors.get('non_existent', []):
@@ -146,134 +171,125 @@ def fix_file(filepath, errors, dry_run=False):
                         lines[i] = new_line
                         changes.append((i + 1, 'typedef declaration', line.strip(), new_line.strip()))
     
-    # Second pass: process all types and functions
-    for i, line in enumerate(lines):
-        # Skip lines we've already modified in this run
-        if any(i + 1 == change[0] for change in changes):
-            continue
+    # Handle non-existent functions/types
+    if errors.get('non_existent'):
+        # Create sets for faster lookup - PRESERVE ORIGINAL OPTIMIZATION
+        functions = {name for kind, name in errors['non_existent'] if kind == 'function'}
+        types = {name for kind, name in errors['non_existent'] if kind == 'type'}
+        
+        for i in range(len(lines)):
+            line = lines[i]
             
-        # Process non-existent references
-        for kind, name in errors.get('non_existent', []):
-            if kind == 'function':
-                # Check for function declarations/definitions
-                if re.search(rf'\b{re.escape(name)}\s*\(', line) and '// EXAMPLE:' not in line:
-                    new_line = line.rstrip() + '  // EXAMPLE: Hypothetical function'
-                    lines[i] = new_line
-                    changes.append((i + 1, 'non-existent function', line.strip(), new_line.strip()))
-                    break
+            # Skip if already has a tag
+            if re.search(r'//\s*(EXAMPLE|BAD|ERROR):', line) or re.search(r'/\*\s*(EXAMPLE|BAD|ERROR):', line):
+                continue
+            
+            # For functions - PRESERVE ORIGINAL LOGIC
+            for func in functions:
+                # Look for function declarations or calls
+                pattern = rf'\b{re.escape(func)}\s*\('
+                if re.search(pattern, line):
+                    # Add tag at end of line
+                    if not line.rstrip().endswith('\\'):  # Not a continuation line - PRESERVE CHECK
+                        new_line = line.rstrip() + '  // EXAMPLE: Hypothetical function'
+                        lines[i] = new_line
+                        changes.append((i + 1, 'non-existent function', line.strip(), new_line.strip()))
+                        break
                     
-            elif kind == 'type':
-                # Handle different contexts where types can appear
-                typ = name
-                
-                # First check if we should replace with a real type
-                if typ in TYPE_REPLACEMENTS:
-                    real_type = TYPE_REPLACEMENTS[typ]
-                    new_line = re.sub(rf'\b{re.escape(typ)}\b', real_type, line)
-                    
-                    # Add comment about using real type if not already commented
-                    if not re.search(r'//.*real type|//.*Using real', new_line):
-                        new_line = new_line.rstrip() + '  // EXAMPLE: Using real type'
-                    
-                    lines[i] = new_line
-                    changes.append((i + 1, 'type replacement', line.strip(), new_line.strip()))
-                    break
-                else:
-                    # Handle hypothetical types in various contexts
-                    
-                    # 1. Typedef declarations (already handled in first pass)
-                    if re.search(rf'typedef\s+struct\s+\w+\s+{re.escape(typ)}\s*;', line):
-                        continue  # Already processed
-                    
-                    # 1b. Struct closing brace with type name (e.g., "} ar_type_t;")
-                    elif re.search(rf'}}\s*{re.escape(typ)}\s*;', line):
-                        if '// EXAMPLE:' not in line:
-                            new_line = line.rstrip() + '  // EXAMPLE: Hypothetical type'
-                            lines[i] = new_line
-                            changes.append((i + 1, 'struct closing', line.strip(), new_line.strip()))
-                            break
-                    
-                    # 2. Struct field declarations (e.g., "ar_runtime_t* own_runtime;")
-                    elif re.search(rf'\b{re.escape(typ)}\s*\*?\s+\w+\s*;', line):
-                        if '// EXAMPLE:' not in line:
-                            # Check if the type is known to be hypothetical
-                            if typ in hypothetical_types:
-                                new_line = line.rstrip() + '  // EXAMPLE: Using hypothetical type'
-                            else:
-                                new_line = line.rstrip() + '  // EXAMPLE: Using real type'
-                            lines[i] = new_line
-                            changes.append((i + 1, 'struct field', line.strip(), new_line.strip()))
-                            break
-                    
-                    # 3. Function parameters (e.g., "void func(ar_type_t* param)")
-                    elif re.search(rf'\b{re.escape(typ)}\s*\*?\s+\w+\s*[,)]', line):
-                        if '// EXAMPLE:' not in line:
-                            new_line = line.rstrip() + '  // EXAMPLE: Using hypothetical type'
-                            lines[i] = new_line
-                            changes.append((i + 1, 'function parameter', line.strip(), new_line.strip()))
-                            break
-                    
-                    # 4. sizeof expressions (e.g., "sizeof(ar_type_t)")
-                    elif re.search(rf'sizeof\s*\(\s*{re.escape(typ)}\s*\)', line):
-                        if '// EXAMPLE:' not in line:
-                            new_line = line.rstrip() + '  // EXAMPLE: Using hypothetical type'
-                            lines[i] = new_line
-                            changes.append((i + 1, 'sizeof expression', line.strip(), new_line.strip()))
-                            break
-                    
-                    # 5. Type casts (e.g., "(ar_type_t*)")
-                    elif re.search(rf'\(\s*{re.escape(typ)}\s*\*?\s*\)', line):
-                        if '// EXAMPLE:' not in line:
-                            new_line = line.rstrip() + '  // EXAMPLE: Using hypothetical type'
-                            lines[i] = new_line
-                            changes.append((i + 1, 'type cast', line.strip(), new_line.strip()))
-                            break
-                    
-                    # 6. Variable declarations (e.g., "ar_type_t* var =")
-                    elif re.search(rf'\b{re.escape(typ)}\s*\*?\s+\w+\s*=', line):
-                        if '// EXAMPLE:' not in line:
-                            new_line = line.rstrip() + '  // EXAMPLE: Using hypothetical type'
-                            lines[i] = new_line
-                            changes.append((i + 1, 'variable declaration', line.strip(), new_line.strip()))
-                            break
-                    
-                    # 7. Return types (e.g., "ar_type_t* func()")
-                    elif re.search(rf'^{re.escape(typ)}\s*\*?\s+\w+\s*\(', line):
-                        if '// EXAMPLE:' not in line:
-                            new_line = line.rstrip() + '  // EXAMPLE: Hypothetical function'
-                            lines[i] = new_line
-                            changes.append((i + 1, 'return type', line.strip(), new_line.strip()))
-                            break
-                    
-                    # 8. Type mentions in documentation/comments (e.g., "- Create ar_type_t")
-                    elif re.search(rf'\b{re.escape(typ)}\b', line):
-                        # Only tag if it's not in a code block and not already tagged
-                        if not line.strip().startswith('```') and '// EXAMPLE:' not in line:
-                            # Check if it's a documentation line (starts with -, *, or is plain text)
-                            if re.match(r'^\s*[-*]|\s*[A-Z]', line):
-                                new_line = line.rstrip() + '  // EXAMPLE: Future type'
+            # For types - ENHANCED WITH NEW CONTEXTS
+            for typ in types:
+                # Look for type usage
+                pattern = rf'\b{re.escape(typ)}\b'
+                if re.search(pattern, line):
+                    # First check if we should replace with a real type
+                    if typ in TYPE_REPLACEMENTS:
+                        real_type = TYPE_REPLACEMENTS[typ]
+                        new_line = re.sub(rf'\b{re.escape(typ)}\b', real_type, line)
+                        
+                        # Add comment about using real type if not already commented
+                        if not re.search(r'//.*real type|//.*Using real', new_line):
+                            new_line = new_line.rstrip() + '  // EXAMPLE: Using real type'
+                        
+                        lines[i] = new_line
+                        changes.append((i + 1, 'type replacement', line.strip(), new_line.strip()))
+                        break
+                    else:
+                        # Handle hypothetical types in various contexts
+                        
+                        # 1. Typedef declarations (already handled in first pass)
+                        if re.search(rf'typedef\s+struct\s+\w+\s+{re.escape(typ)}\s*;', line):
+                            continue  # Already processed
+                        
+                        # 1b. Struct closing brace with type name (e.g., "} ar_type_t;")
+                        elif re.search(rf'}}\s*{re.escape(typ)}\s*;', line):
+                            if '// EXAMPLE:' not in line:
+                                new_line = line.rstrip() + '  // EXAMPLE: Hypothetical type'
                                 lines[i] = new_line
-                                changes.append((i + 1, 'documentation mention', line.strip(), new_line.strip()))
+                                changes.append((i + 1, 'struct closing', line.strip(), new_line.strip()))
                                 break
-        
-        # Process broken links
-        for line_num, old_path, expected_path in errors.get('broken_links', []):
-            if i + 1 == line_num:
-                # Replace the old path with the expected path
-                new_line = line.replace(f']({old_path})', f']({expected_path})')
-                if new_line != line:
-                    lines[i] = new_line
-                    changes.append((i + 1, 'broken link', line.strip(), new_line.strip()))
-        
-        # Process absolute paths
-        for line_num, abs_path in errors.get('absolute_paths', []):
-            if i + 1 == line_num:
-                # Calculate relative path
-                rel_path = calculate_relative_path(filepath, abs_path.lstrip('/'))
-                new_line = line.replace(f']({abs_path})', f']({rel_path})')
-                if new_line != line:
-                    lines[i] = new_line
-                    changes.append((i + 1, 'absolute path', line.strip(), new_line.strip()))
+                        
+                        # 2. Struct field declarations (e.g., "ar_runtime_t* own_runtime;")
+                        elif re.search(rf'\b{re.escape(typ)}\s*\*?\s+\w+\s*;', line):
+                            if '// EXAMPLE:' not in line:
+                                # Check if the type is known to be hypothetical
+                                if typ in hypothetical_types:
+                                    new_line = line.rstrip() + '  // EXAMPLE: Using hypothetical type'
+                                else:
+                                    new_line = line.rstrip() + '  // EXAMPLE: Using real type'
+                                lines[i] = new_line
+                                changes.append((i + 1, 'struct field', line.strip(), new_line.strip()))
+                                break
+                        
+                        # 3. Function parameters (e.g., "void func(ar_type_t* param)")
+                        elif re.search(rf'\b{re.escape(typ)}\s*\*?\s+\w+\s*[,)]', line):
+                            if '// EXAMPLE:' not in line:
+                                new_line = line.rstrip() + '  // EXAMPLE: Using hypothetical type'
+                                lines[i] = new_line
+                                changes.append((i + 1, 'function parameter', line.strip(), new_line.strip()))
+                                break
+                        
+                        # 4. sizeof expressions (e.g., "sizeof(ar_type_t)")
+                        elif re.search(rf'sizeof\s*\(\s*{re.escape(typ)}\s*\)', line):
+                            if '// EXAMPLE:' not in line:
+                                new_line = line.rstrip() + '  // EXAMPLE: Using hypothetical type'
+                                lines[i] = new_line
+                                changes.append((i + 1, 'sizeof expression', line.strip(), new_line.strip()))
+                                break
+                        
+                        # 5. Type casts (e.g., "(ar_type_t*)")
+                        elif re.search(rf'\(\s*{re.escape(typ)}\s*\*?\s*\)', line):
+                            if '// EXAMPLE:' not in line:
+                                new_line = line.rstrip() + '  // EXAMPLE: Using hypothetical type'
+                                lines[i] = new_line
+                                changes.append((i + 1, 'type cast', line.strip(), new_line.strip()))
+                                break
+                        
+                        # 6. Variable declarations (e.g., "ar_type_t* var =")
+                        elif re.search(rf'\b{re.escape(typ)}\s*\*?\s+\w+\s*=', line):
+                            if '// EXAMPLE:' not in line:
+                                new_line = line.rstrip() + '  // EXAMPLE: Using hypothetical type'
+                                lines[i] = new_line
+                                changes.append((i + 1, 'variable declaration', line.strip(), new_line.strip()))
+                                break
+                        
+                        # 7. Return types (e.g., "ar_type_t* func()")
+                        elif re.search(rf'^{re.escape(typ)}\s*\*?\s+\w+\s*\(', line):
+                            if '// EXAMPLE:' not in line:
+                                new_line = line.rstrip() + '  // EXAMPLE: Hypothetical function'
+                                lines[i] = new_line
+                                changes.append((i + 1, 'return type', line.strip(), new_line.strip()))
+                                break
+                        
+                        # 8. Type mentions in documentation/comments (e.g., "- Create ar_type_t")
+                        elif re.search(rf'\b{re.escape(typ)}\b', line):
+                            # Only tag if it's not in a code block and not already tagged
+                            if not line.strip().startswith('```') and '// EXAMPLE:' not in line:
+                                # Check if it's a documentation line (starts with -, *, or is plain text)
+                                if re.match(r'^\s*[-*]|\s*[A-Z]', line):
+                                    new_line = line.rstrip() + '  // EXAMPLE: Future type'
+                                    lines[i] = new_line
+                                    changes.append((i + 1, 'documentation mention', line.strip(), new_line.strip()))
+                                    break
     
     if changes:
         if dry_run:
