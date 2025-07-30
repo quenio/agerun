@@ -84,6 +84,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Documented decomposition into ar_runtime, ar_message_broker, ar_persistence_coordinator
 - [x] Generated detailed analysis report at reports/system-module-responsibility-analysis.md
 
+### Knowledge Base Enhancement - Module Refactoring Patterns (Completed 2025-07-30)
+- [x] Created module-instantiation-prerequisites.md documenting dependency analysis patterns
+- [x] Created instance-association-pattern.md for proper instance relationships
+- [x] Created persistence-simplification-through-instantiation.md showing architectural simplification
+- [x] Updated CLAUDE.md with module instantiation guidelines
+- [x] Cross-referenced with existing architecture KB articles
+
 ### Knowledge Base Enhancement (Completed 2025-07-28)
 - [x] Created internal-vs-external-module-pattern.md documenting module role distinctions
 - [x] Updated user-feedback-as-qa.md with examples from ar_method_resolver implementation

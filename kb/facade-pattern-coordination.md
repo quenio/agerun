@@ -66,4 +66,6 @@ bool ar_interpreter__execute_method(ar_interpreter_t *mut_interpreter,
 - Interface segregation
 - Dependency injection
 - Architectural boundaries
+- [Instance Association Pattern](instance-association-pattern.md)
+- [Persistence Simplification Through Instantiation](persistence-simplification-through-instantiation.md)
 - [Module Delegation Error Propagation](module-delegation-error-propagation.md)

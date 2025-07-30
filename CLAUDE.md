@@ -321,6 +321,10 @@ grep -r "function_name\|concept" modules/
 
 **Code Quality**: Functions <50 lines, params ≤5, named constants, remove unused code, validate docs ([details](kb/module-quality-checklist.md))
 
+**Module Instantiation**: Make modules instantiable bottom-up by dependency order ([details](kb/module-instantiation-prerequisites.md))
+- Dependencies become instance fields ([details](kb/instance-association-pattern.md))
+- Can eliminate coordinator modules ([details](kb/persistence-simplification-through-instantiation.md))
+
 ### 7. Method Development
 
 **Requirements**:

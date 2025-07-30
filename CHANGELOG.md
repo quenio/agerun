@@ -22,6 +22,20 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - Better separation of concerns and adherence to Parnas principles
   - Foundation for supporting multiple independent runtime instances
 
+### ✅ Knowledge Base Enhancement - Module Refactoring Patterns
+- **Created new architectural pattern articles**:
+  - Module instantiation prerequisites for dependency analysis
+  - Instance association pattern for proper ownership relationships
+  - Persistence simplification through instantiation pattern
+- **Enhanced documentation**:
+  - Updated CLAUDE.md with module instantiation guidelines
+  - Cross-referenced new articles with existing architecture patterns
+  - All code examples use real AgeRun types with EXAMPLE markers
+- **Impact**:
+  - Future module refactoring will follow established patterns
+  - Clear guidance on making modules instantiable
+  - Documented how proper design can eliminate coordinator modules
+
 ## 2025-07-29
 
 ### ✅ Build System Now Fails on Memory Leaks

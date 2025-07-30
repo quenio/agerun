@@ -200,6 +200,7 @@ static void* _safe_malloc(size_t size);
 - **Minimal Interfaces**: Natural result of focused responsibilities ([details](minimal-interfaces-principle.md))
 - **No Circular Dependencies**: Easier to achieve with clear responsibilities ([details](no-circular-dependencies-principle.md))
 - **Instruction Behavior Simplification**: Applying SRP to instruction design ([details](instruction-behavior-simplification.md))
+- **Persistence Simplification**: How instantiation can eliminate coordinator modules ([details](persistence-simplification-through-instantiation.md))
 
 ## Examples
 
