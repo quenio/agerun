@@ -26,11 +26,13 @@ Run documentation validation and fix any errors found using an iterative approac
 - **Non-existent function/type references**: Adds EXAMPLE tags or replaces with real types
 - **Broken relative markdown links**: Calculates and fixes correct relative paths
 - **Absolute paths**: Converts to relative paths
+- **Additional contexts** (enhanced): Struct fields, function params, sizeof, type casts, variable declarations ([details](../../kb/batch-documentation-fix-enhancement.md))
 
 ## Important notes:
 - Always use `--dry-run` first to preview changes before applying them
 - The script only modifies `.md` files
 - Some complex errors may require manual intervention
+- If the script can't fix all errors, enhance it rather than fixing manually ([details](../../kb/script-enhancement-over-one-off.md))
 
 This validation ensures:
 - All code examples use real AgeRun types ([details](../../kb/validated-documentation-examples.md))

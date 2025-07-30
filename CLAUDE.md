@@ -361,6 +361,7 @@ cd bin  # Wrong - avoid relative paths
 - Scripts should fail with helpful error messages suggesting the make target
 - Document the make target in the Makefile help section
 - NEVER use Makefile variables $(VAR) in bash scripts - causes command substitution errors
+- Test enhanced scripts preserve all original functionality ([details](kb/script-backward-compatibility-testing.md))
 - Build output: quiet success, verbose failure (hide output when working, show full errors)
 - **Parallel builds**: Shared .PHONY deps → hoist to parent target (e.g., install-scan-build → build)
 - **Command updates**: Update Claude commands when new patterns emerge ([details](kb/command-continuous-improvement-pattern.md))

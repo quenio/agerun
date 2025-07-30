@@ -37,10 +37,13 @@ Invest in tool enhancement rather than quick fixes to build systematic capabilit
 - If script doesn't support your case: enhance it first
 - Document new capabilities for future discoverability
 - Test enhancements thoroughly before use
+- Always verify enhanced version preserves original functionality
+- Use comprehensive test cases covering all edge cases
 
 ## Related Patterns
+- [Progressive Tool Enhancement](progressive-tool-enhancement.md)
+- [Script Backward Compatibility Testing](script-backward-compatibility-testing.md)
+- [Batch Documentation Fix Enhancement](batch-documentation-fix-enhancement.md)
 - Tool investment over quick fixes
 - Reusable automation
 - Systematic capability building
-- Technical debt reduction
-- Future-proofing development processes

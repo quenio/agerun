@@ -77,9 +77,12 @@ def check_with_tagging_support():
 - One-off scripts for problems that will recur
 - Platform-specific solutions when cross-platform is feasible
 - Manual processes that could be automated
+- Creating duplicate versions instead of modifying originals
+- Using backup files instead of version control for safety
 
 ## Related Patterns
 - [Automated Batch Documentation Fixes](automated-batch-documentation-fixes.md)
 - [Validated Documentation Examples](validated-documentation-examples.md)
 - [Script Enhancement Over One-Off](script-enhancement-over-one-off.md)
 - [Command Continuous Improvement Pattern](command-continuous-improvement-pattern.md)
+- [Script Backward Compatibility Testing](script-backward-compatibility-testing.md)

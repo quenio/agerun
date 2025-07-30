@@ -93,10 +93,12 @@ Each learning file contains:
 
 ### Tools & Automation
 - [Automated Batch Documentation Fixes](automated-batch-documentation-fixes.md)
+- [Batch Documentation Fix Enhancement](batch-documentation-fix-enhancement.md)
 - [Progressive Tool Enhancement](progressive-tool-enhancement.md)
 - [Command Continuous Improvement Pattern](command-continuous-improvement-pattern.md)
 - [Module Renaming Script Enhancement](module-renaming-script-enhancement.md)
 - [Script Enhancement Over One Off](script-enhancement-over-one-off.md)
+- [Script Backward Compatibility Testing](script-backward-compatibility-testing.md)
 - [Settings File Merging Pattern](settings-file-merging-pattern.md)
 - [String Parsing Quote Tracking](string-parsing-quote-tracking.md)
 - [Makefile POSIX Shell Compatibility](makefile-posix-shell-compatibility.md)

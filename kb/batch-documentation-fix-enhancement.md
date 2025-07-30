@@ -135,6 +135,13 @@ All documentation errors have been fixed! ✓
 - Script handles all code contexts
 - Future errors in same contexts are fixed
 
+## Related Patterns
+
+- [Script Enhancement Over One-Off](script-enhancement-over-one-off.md) - Enhance tools vs manual fixes
+- [Automated Batch Documentation Fixes](automated-batch-documentation-fixes.md) - Original batch fix approach
+- [Progressive Tool Enhancement](progressive-tool-enhancement.md) - Evolving tools with usage
+- [Script Backward Compatibility Testing](script-backward-compatibility-testing.md) - Testing enhanced scripts
+
 ## References
 
 - scripts/batch_fix_docs.py - The enhanced implementation
