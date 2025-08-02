@@ -28,6 +28,19 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - Added usage examples for parallel systems
 - **Impact**: Completes major milestone toward multi-instance runtime support
 
+### 📚 Knowledge Base Articles Created
+- **Instance API Patterns Documentation**:
+  - Updated global-instance-wrapper-anti-pattern.md with successful single global instance pattern
+  - Created instance-api-resource-cleanup-pattern.md documenting ownership responsibility rules
+  - Created null-dependency-fallback-pattern.md for handling NULL dependencies in instance APIs
+  - Added cross-references between related instantiation patterns
+  - Updated CLAUDE.md with references to new module instantiation patterns
+- **Key Learnings Captured**:
+  - Single global instance pattern avoids shared ownership problems
+  - Instance APIs must only clean up owned resources, never borrowed references
+  - NULL dependencies should consistently fallback to global APIs
+  - Proper ownership naming prevents dangerous memory violations
+
 ### ✅ Knowledge Base Enhancement - Anti-Pattern Documentation
 - **Created Global Instance Wrapper Anti-Pattern article**:
   - Documented dangerous shared ownership between global and instance state

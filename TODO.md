@@ -130,6 +130,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Removed old global variables (g_interpreter, g_log, is_initialized)
 - [x] Verified zero memory leaks in all tests
 
+### Knowledge Base Enhancement - Instance API Patterns (Completed 2025-08-02)
+- [x] Updated global-instance-wrapper-anti-pattern.md with successful single global instance pattern
+- [x] Created instance-api-resource-cleanup-pattern.md documenting ownership responsibility
+- [x] Created null-dependency-fallback-pattern.md for handling NULL dependencies
+- [x] Updated kb/README.md index with new articles
+- [x] Added references to CLAUDE.md for module instantiation patterns
+
 ## Critical Compliance Tasks
 
 ### CRITICAL - Evaluator Code Duplication Refactoring (HIGHEST PRIORITY)

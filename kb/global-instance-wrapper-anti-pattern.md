@@ -80,6 +80,7 @@ When migrating from global to instance-based APIs:
 3. **No fake instances** - Don't create wrapper instances that pretend to own global resources
 4. **Clear ownership boundaries** - Use naming conventions (own_ vs ref_) to make ownership explicit
 5. **Instance independence** - Each instance must own its resources independently of global state
+6. **Single global instance pattern** - When needed, use a single g_system that owns everything and delegates
 
 ## Implementation
 To safely migrate modules with shared resources:
@@ -101,6 +102,25 @@ int ar_agency__count_agents(void) {
     // This works because agency's global instance owns its registry
     ar_agency_t *ref_agency = ar_agency__get_global_instance();  // EXAMPLE: Safe delegation
     return ref_agency ? ar_agency__count_agents_with_instance(ref_agency) : 0;
+}
+
+// 4. CORRECT: Single global instance pattern (from ar_system refactoring)
+static ar_data_t *g_system = NULL;  // EXAMPLE: Would be ar_system_t* - owns everything
+
+int64_t ar_system__init(const char *ref_method_name, const char *ref_version) {
+    if (g_system) {
+        printf("Already initialized\n");
+        return 0;
+    }
+    
+    // Create single global instance that owns everything
+    g_system = ar_system__create(NULL);  // EXAMPLE: ar_system__create returns ar_system_t*
+    if (!g_system) {
+        return 0;
+    }
+    
+    // Delegate to instance function
+    return ar_system__init_with_instance(g_system, ref_method_name, ref_version);  // EXAMPLE: Safe delegation
 }
 ```
 

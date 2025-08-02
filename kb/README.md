@@ -79,6 +79,8 @@ Each learning file contains:
 - [Instance Association Pattern](instance-association-pattern.md)
 - [Persistence Simplification Through Instantiation](persistence-simplification-through-instantiation.md)
 - [Global Instance Wrapper Anti-Pattern](global-instance-wrapper-anti-pattern.md)
+- [Instance API Resource Cleanup Pattern](instance-api-resource-cleanup-pattern.md)
+- [NULL Dependency Fallback Pattern](null-dependency-fallback-pattern.md)
 
 ### Parnas Design Principles
 - [Information Hiding Principle](information-hiding-principle.md)
