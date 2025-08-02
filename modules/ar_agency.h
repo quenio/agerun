@@ -323,5 +323,45 @@ bool ar_agency__load_agents_with_instance(ar_agency_t *mut_agency, const char *r
  */
 ar_agent_registry_t* ar_agency__get_registry_with_instance(ar_agency_t *ref_agency);
 
+/**
+ * Get the methodology from an agency instance
+ * @param ref_agency The agency instance (borrowed reference)
+ * @return The methodology instance, or NULL if not available
+ * @note Ownership: Returns a borrowed reference.
+ */
+ar_methodology_t* ar_agency__get_methodology(ar_agency_t *ref_agency);
+
+/**
+ * Get the first agent ID in the agency (instance version)
+ * @param ref_agency The agency instance (borrowed reference)
+ * @return The first agent ID, or 0 if no agents exist
+ */
+int64_t ar_agency__get_first_agent_with_instance(ar_agency_t *ref_agency);
+
+/**
+ * Get the next agent ID after the given one (instance version)
+ * @param ref_agency The agency instance (borrowed reference)
+ * @param current_id The current agent ID
+ * @return The next agent ID, or 0 if no more agents
+ */
+int64_t ar_agency__get_next_agent_with_instance(ar_agency_t *ref_agency, int64_t current_id);
+
+/**
+ * Check if an agent has pending messages (instance version)
+ * @param ref_agency The agency instance (borrowed reference)
+ * @param agent_id The agent ID to check
+ * @return true if the agent has messages, false otherwise
+ */
+bool ar_agency__agent_has_messages_with_instance(ar_agency_t *ref_agency, int64_t agent_id);
+
+/**
+ * Get the next message for an agent (instance version)
+ * @param mut_agency The agency instance (mutable reference)
+ * @param agent_id The agent ID
+ * @return The message data (ownership transferred), or NULL if no messages
+ * @note Ownership: Caller takes ownership of the returned message.
+ */
+ar_data_t* ar_agency__get_agent_message_with_instance(ar_agency_t *mut_agency, int64_t agent_id);
+
 #endif /* AGERUN_AGENCY_H */
 

@@ -41,15 +41,15 @@ The system module acts as a facade that coordinates several subsystems:
 
 ```c
 /**
- * Initializes the AgeRun system.
- * @param initial_method_name Optional method name for initial agent (can be NULL)
- * @param initial_method_version Optional method version for initial agent (can be NULL)
- * @note If both parameters are provided, creates agent ID 1 with specified method
+ * Initializes the global AgeRun system.
+ * @param ref_method_name Optional method name for initial agent (can be NULL)
+ * @param ref_version Optional method version for initial agent (can be NULL)
+ * @return ID of the created initial agent, or 0 on failure
  */
-void ar_system__init(const char *initial_method_name, const char *initial_method_version);
+int64_t ar_system__init(const char *ref_method_name, const char *ref_version);
 
 /**
- * Shuts down the AgeRun system.
+ * Shuts down the global AgeRun system.
  * @note Sends sleep messages to all agents before cleanup
  */
 void ar_system__shutdown(void);
@@ -71,71 +71,163 @@ bool ar_system__process_next_message(void);
 int ar_system__process_all_messages(void);
 ```
 
+### Instance-Based API (New)
+
+The system module now supports creating multiple independent system instances:
+
+```c
+/**
+ * Create a new system instance.
+ * @param ref_agency The agency instance to use (borrowed reference), or NULL for global agency
+ * @return New system instance (ownership transferred), or NULL on failure
+ */
+ar_system_t* ar_system__create(ar_agency_t *ref_agency);
+
+/**
+ * Destroy a system instance.
+ * @param own_system The system to destroy (ownership transferred)
+ */
+void ar_system__destroy(ar_system_t *own_system);
+
+/**
+ * Initialize a system instance.
+ * @param mut_system The system instance to initialize
+ * @param ref_method_name Name of the initial method to run (can be NULL)
+ * @param ref_version Version string of the method (NULL for latest)
+ * @return ID of the created initial agent, or 0 on failure
+ */
+int64_t ar_system__init_with_instance(ar_system_t *mut_system, 
+                                      const char *ref_method_name, 
+                                      const char *ref_version);
+
+/**
+ * Shut down a system instance.
+ * @param mut_system The system instance to shut down
+ */
+void ar_system__shutdown_with_instance(ar_system_t *mut_system);
+
+/**
+ * Process the next pending message in the system instance.
+ * @param mut_system The system instance
+ * @return true if a message was processed, false if no messages
+ */
+bool ar_system__process_next_message_with_instance(ar_system_t *mut_system);
+
+/**
+ * Process all pending messages in the system instance.
+ * @param mut_system The system instance
+ * @return Number of messages processed
+ */
+int ar_system__process_all_messages_with_instance(ar_system_t *mut_system);
+```
+
 
 ## Implementation Details
 
+### Instance-Based Architecture
+
+The system module now supports both global and instance-based operation:
+
+- **Global API**: Uses a single global system instance (`g_system`) that delegates to instance functions
+- **Instance API**: Allows creating multiple independent system instances with their own interpreters and logs
+- **Backward Compatibility**: Global functions now delegate to instance functions through `g_system`
+
+### System Instance Structure
+
+Each system instance contains:
+- `is_initialized`: Tracks initialization state
+- `ref_agency`: Borrowed reference to agency (NULL uses global agency)
+- `own_interpreter`: Owned interpreter instance
+- `own_log`: Owned log instance
+
 ### Initialization Sequence
 
-1. **Load Persistence**: Attempts to load saved agents and methods
-2. **Create Initial Agent**: If specified and no agents exist, creates agent ID 1
-3. **Initialize Interpreter**: Creates the instruction interpreter instance
-4. **Send Wake Messages**: Notifies all agents they are active
+1. **Create Resources**: System creates its own interpreter and log
+2. **Load Persistence**: Attempts to load saved agents and methods
+3. **Create Initial Agent**: If specified, creates initial agent with specified method
+4. **Send Wake Message**: Notifies initial agent it is active
 
 ### Message Processing Loop
 
-The system maintains a central message queue that:
-- Receives messages from agents via `ar_agent__send()`
-- Processes messages in FIFO order
+The system coordinates message processing through the agency:
+- Finds agents with pending messages via agency functions
+- Retrieves messages from agent queues
 - Executes the recipient agent's method with the message
 - Handles any errors gracefully
 
 ### Interpreter Integration
 
-The system owns and manages a single interpreter instance that:
-- Executes method instructions for all agents
+Each system instance owns and manages its own interpreter:
+- Executes method instructions for agents in its agency
 - Maintains its own internal state
-- Is properly cleaned up on shutdown
+- Is properly cleaned up on destroy
 
 ### Shutdown Sequence
 
-1. **Send Sleep Messages**: All active agents receive `__sleep__` messages
-2. **Process Final Messages**: Ensures sleep messages are delivered
-3. **Save State**: Persists current system state
-4. **Cleanup Resources**: Destroys interpreter and marks system uninitialized
+1. **Save Methods**: Persists method definitions to disk
+2. **Save Agents**: Persists agent state to disk
+3. **Reset Agency**: Cleans up all agents (sends sleep messages)
+4. **Mark Uninitialized**: Updates system state
 
 ## Usage Examples
 
-### Basic System Lifecycle
+### Basic System Lifecycle (Global API)
 
 ```c
 // Initialize system with an echo agent
-ar_system__init("echo", "1.0.0");
+int64_t agent_id = ar_system__init("echo", "1.0.0");
 
 // Process all messages
 int processed = ar_system__process_all_messages();
 printf("Processed %d messages\n", processed);
 
-// Save state (handled by modules)
-ar_methodology__save_methods();
-ar_agency__save_agents();
+// Clean shutdown (saves state automatically)
 ar_system__shutdown();
 ```
 
-### Continuous Processing
+### Instance-Based System
 
 ```c
-// Initialize system
-ar_system__init(NULL, NULL);
-// Load saved state (handled by modules)
-ar_methodology__load_methods();
-ar_agency__load_agents();
+// Create a custom agency and system
+ar_agency_t *own_agency = ar_agency__create(NULL);
+ar_system_t *own_system = ar_system__create(own_agency);
 
-// Process until no more messages
-int total = ar_system__process_all_messages();
-printf("Processed %d total messages\n", total);
+// Initialize with a method
+int64_t agent_id = ar_system__init_with_instance(own_system, "worker", "1.0.0");
+
+// Process messages for this instance
+int count = ar_system__process_all_messages_with_instance(own_system);
 
 // Clean shutdown
-ar_system__shutdown();
+ar_system__shutdown_with_instance(own_system);
+ar_system__destroy(own_system);
+ar_agency__destroy(own_agency);
+```
+
+### Parallel Systems
+
+```c
+// Create two independent systems
+ar_agency_t *own_agency1 = ar_agency__create(NULL);
+ar_agency_t *own_agency2 = ar_agency__create(NULL);
+ar_system_t *own_system1 = ar_system__create(own_agency1);
+ar_system_t *own_system2 = ar_system__create(own_agency2);
+
+// Initialize each with different methods
+ar_system__init_with_instance(own_system1, "producer", "1.0.0");
+ar_system__init_with_instance(own_system2, "consumer", "1.0.0");
+
+// Process messages independently
+ar_system__process_all_messages_with_instance(own_system1);
+ar_system__process_all_messages_with_instance(own_system2);
+
+// Clean up both systems
+ar_system__shutdown_with_instance(own_system1);
+ar_system__shutdown_with_instance(own_system2);
+ar_system__destroy(own_system1);
+ar_system__destroy(own_system2);
+ar_agency__destroy(own_agency1);
+ar_agency__destroy(own_agency2);
 ```
 
 ### Message Processing Patterns
@@ -146,25 +238,26 @@ if (ar_system__process_next_message()) {
     printf("Processed one message\n");
 }
 
-// Batch processing with control
-int batch_size = 100;
-int processed = 0;
-for (int i = 0; i < batch_size && ar_system__process_next_message(); i++) {
-    processed++;
+// Instance-based single message
+if (ar_system__process_next_message_with_instance(mut_system)) {
+    printf("Processed one message in instance\n");
 }
 
 // Process all pending
 int all = ar_system__process_all_messages();
+int instance_all = ar_system__process_all_messages_with_instance(mut_system);
 ```
 
 ## Memory Management
 
 The system module follows strict ownership rules:
 
-- **Interpreter Ownership**: The system owns and must destroy the interpreter
+- **System Instance Ownership**: Caller owns system instances created with `ar_system__create()`
+- **Interpreter Ownership**: Each system instance owns and destroys its interpreter
+- **Log Ownership**: Each system instance owns and destroys its log
+- **Agency Reference**: System borrows agency reference (does not own)
 - **No Message Ownership**: Messages are owned by the agent module
-- **No Agent/Method Ownership**: These are managed by agency and methodology
-- **Initialization State**: Tracked by static boolean `_initialized`
+- **Global State**: Single global instance (`g_system`) managed internally
 
 ## Design Principles
 

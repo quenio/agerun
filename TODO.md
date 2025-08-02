@@ -120,6 +120,16 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Added cross-references between related KB articles
 - [x] Updated CLAUDE.md with new KB references
 
+### System Module Instantiation (Completed 2025-08-02)
+- [x] Made ar_system module instantiable with opaque type and instance-based API
+- [x] Implemented single global instance pattern where g_system owns everything
+- [x] Converted global functions to delegate to instance functions through g_system
+- [x] Added create/destroy functions and instance-based versions of all API functions
+- [x] Created comprehensive test for instance-based API (ar_system_instance_tests.c)
+- [x] Updated documentation to describe both global and instance-based APIs
+- [x] Removed old global variables (g_interpreter, g_log, is_initialized)
+- [x] Verified zero memory leaks in all tests
+
 ## Critical Compliance Tasks
 
 ### CRITICAL - Evaluator Code Duplication Refactoring (HIGHEST PRIORITY)
