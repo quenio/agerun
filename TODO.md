@@ -287,65 +287,66 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 **Estimated Timeline**: 3-5 sessions depending on discoveries during implementation
 
-### 2. HIGHEST PRIORITY - Agency Module Instantiation & System Module Refactoring
+### 2. System Module Decomposition (Revised After Instantiation)
 
-**Rationale**: The system module coordinates many aspects of the runtime. Breaking it into focused modules will improve code organization and testability. However, this requires making the agency module instantiable first to properly manage dependencies.
+**Current State**: Both ar_agency and ar_system have been successfully made instantiable (completed 2025-08-02).
+- ar_agency uses methodology as borrowed reference (completed 2025-08-01)
+- ar_system uses single global instance pattern with g_system owning everything (completed 2025-08-02)
+- Full backward compatibility maintained with zero memory leaks
 
-**Current State Analysis**: Comprehensive analysis completed 2025-07-30 ([details](reports/system-module-responsibility-analysis.md))
+**Original Analysis**: Comprehensive analysis completed 2025-07-30 ([details](reports/system-module-responsibility-analysis.md))
 - Identified 5 distinct responsibilities violating Single Responsibility Principle
-- Module is small (191 lines) but exhibits mixed abstraction levels and feature envy
-- Clear decomposition strategy identified following methodology module pattern
-- **Report Updated**: Architectural analysis refined after identifying agency instantiation prerequisite
+- Module remains small (191 lines) but has mixed abstraction levels
 
-**Proposed Decomposition** (Updated after instantiation analysis):
-- **ar_runtime**: System lifecycle management (init/shutdown/state)
-- **ar_message_broker**: Message processing orchestration 
-- **ar_system**: Thin facade maintaining backward compatibility
-- **Note**: Persistence coordination will be handled by agency instances directly, eliminating need for separate coordinator
+**Revised Decomposition Plan**:
+Based on successful instantiation learnings:
+1. **Single global instance pattern works well** - Continue with g_system approach
+2. **Simpler architecture** - Only need ar_runtime and ar_message_broker modules
+3. **No persistence coordinator** - Agency already manages its own persistence
+4. **Clear ownership model** - System owns interpreter/log, borrows agency
 
-**Dependencies**: System module refactoring requires agency to be instantiable first
+**Proposed Architecture**:
+- **ar_runtime**: Lifecycle management (initialization state, startup/shutdown sequences)
+- **ar_message_broker**: Message routing and processing orchestration
+- **ar_system**: Remains as coordinating facade using current instance-based design
 
 **Tasks**:
 - [x] Analyze current system module responsibilities (Completed 2025-07-30)
-- [x] Phase 0: Make ar_agency instantiable (PREREQUISITE) (Completed 2025-08-01)
-  - [x] Create ar_agency_t opaque type
-  - [x] Convert global state (g_is_initialized, g_own_registry) to instance fields
-  - [x] Add methodology instance field to ar_agency_t
-  - [x] Add create function that accepts ar_methodology_t instance
-  - [x] Update agency functions to use associated methodology instance
-  - [x] Add destroy function that properly manages lifecycle
-  - [x] Maintain backward compatibility with global instance pattern
-  - [x] Update all tests to use instance-based API
-  - [x] Verify zero memory leaks
-- [ ] Phase 1: Make ar_system instantiable
-  - [ ] Create ar_system_t opaque type
-  - [ ] Convert global state to instance fields
-  - [ ] Add create function that accepts ar_agency_t instance (which already contains methodology)
-  - [ ] Add destroy function that properly manages lifecycle
-  - [ ] Maintain backward compatibility with global instance pattern
-  - [ ] Update all tests to use instance-based API
-  - [ ] Verify zero memory leaks
+- [x] Phase 0: Make ar_agency instantiable (Completed 2025-08-01)
+- [x] Phase 1: Make ar_system instantiable (Completed 2025-08-02)
+  - [x] Created ar_system_t opaque type with single g_system instance
+  - [x] System owns interpreter/log, borrows agency reference
+  - [x] Converted global functions to delegate through g_system
+  - [x] Maintained full backward compatibility
+  - [x] All tests pass with zero memory leaks
+
+**Remaining Decomposition Tasks**:
 - [ ] Phase 2: Create ar_runtime module
-  - [ ] Design interface for lifecycle management
-  - [ ] Extract init/shutdown logic using TDD
-  - [ ] Manage global state (initialized flag, log)
-- [ ] Phase 3: Create ar_message_broker module
-  - [ ] Design interface for message routing
-  - [ ] Extract message processing loop
-  - [ ] Remove direct agency manipulation
-- [ ] Phase 4: Update persistence handling (No separate coordinator needed)
-  - [ ] Update ar_agency to coordinate its own persistence
-  - [ ] Add save/load methods that handle both agents and methods
-  - [ ] Support custom filenames for multiple instances
-  - [ ] Ensure proper error handling for both stores
-- [ ] Phase 5: Refactor ar_system as facade
-  - [ ] Delegate to new modules
-  - [ ] Ensure backward compatibility
-  - [ ] Verify zero memory leaks
-- [ ] Phase 6: Integration and verification
-  - [ ] Run full test suite with sanitizers
-  - [ ] Update documentation
-  - [ ] Performance comparison
+  - [ ] Design interface: ar_runtime_t opaque type
+  - [ ] Extract initialization state tracking from ar_system
+  - [ ] Move startup/shutdown sequencing logic
+  - [ ] Functions: create/destroy, is_initialized, get_log
+  - [ ] Use TDD: Write ar_runtime_tests.c first
+  - [ ] System will own runtime instance
+- [ ] Phase 3: Create ar_message_broker module  
+  - [ ] Design interface: ar_message_broker_t opaque type
+  - [ ] Extract message processing loop from ar_system
+  - [ ] Move agent iteration and message routing logic
+  - [ ] Functions: create/destroy, process_next, process_all
+  - [ ] Accept agency and interpreter as borrowed references
+  - [ ] Use TDD: Write ar_message_broker_tests.c first
+- [ ] Phase 4: Refactor ar_system as thin facade
+  - [ ] Update ar_system_s to compose runtime and message_broker
+  - [ ] Replace direct implementation with delegation
+  - [ ] Target: ~50-75 lines after refactoring
+  - [ ] Maintain all existing APIs unchanged
+  - [ ] Update ar_system_instance_tests.c as needed
+- [ ] Phase 5: Integration and verification
+  - [ ] Run make clean build 2>&1 with zero failures
+  - [ ] Verify zero memory leaks in all tests
+  - [ ] Update ar_system.md documentation
+  - [ ] Create ar_runtime.md and ar_message_broker.md
+  - [ ] Update module dependency diagram
 
 ### 3. System-Wide Integration Testing and Verification
 

@@ -1,5 +1,7 @@
 # System Module Responsibility Analysis Report
 
+**Updated 2025-08-02**: Added post-instantiation update section reflecting successful refactoring.
+
 ## Executive Summary
 
 The `ar_system` module currently serves as the central coordinator for the AgeRun runtime. While the module is relatively small (191 lines), it exhibits multiple responsibilities that violate the Single Responsibility Principle. This analysis identifies opportunities to decompose the module into focused, single-purpose components that will improve maintainability, testability, and adherence to Parnas design principles.
@@ -203,3 +205,50 @@ While the `ar_system` module is currently small and functional, it violates the 
 **Key Architectural Insight**: By making agency instantiable with an associated methodology instance, we eliminate the need for a separate persistence coordinator. This results in a cleaner, more cohesive design where each component manages its own concerns.
 
 The refactoring follows the successful pattern established with the methodology module decomposition and must be implemented using strict TDD methodology. The prerequisite of making agency instantiable is critical to achieving this improved architecture.
+
+## Post-Instantiation Update (2025-08-02)
+
+### Completed Work
+
+Both prerequisites for the system module decomposition have been successfully completed:
+
+1. **ar_agency made instantiable** (2025-08-01)
+   - Created opaque type with instance-based API
+   - Agency borrows methodology reference rather than owning it
+   - Maintains backward compatibility through global instance pattern
+
+2. **ar_system made instantiable** (2025-08-02)
+   - Implemented single global instance pattern (g_system)
+   - System owns interpreter and log instances
+   - System borrows agency reference (supports NULL for global agency)
+   - Successfully avoided shared ownership problems through careful design
+
+### Key Learnings
+
+1. **Single Global Instance Pattern**: The pattern where a single g_system owns all resources proved more robust than attempting to share ownership between global and instance state.
+
+2. **Ownership Clarity**: Clear ownership semantics (own_ vs ref_) prevented memory management issues. The system owns its interpreter and log but only borrows the agency reference.
+
+3. **NULL Dependency Handling**: Supporting NULL dependencies with fallback to global APIs provides flexibility while maintaining clean interfaces.
+
+### Revised Decomposition Strategy
+
+Based on the successful instantiation, the decomposition strategy has been simplified:
+
+1. **Only 2 new modules needed**:
+   - `ar_runtime`: Lifecycle management extracted from system
+   - `ar_message_broker`: Message routing extracted from system
+
+2. **No persistence coordinator**: Since agency manages its own persistence, this module is unnecessary.
+
+3. **Simpler architecture**: The instance-based design already provides clean separation of concerns.
+
+### Next Steps
+
+The remaining decomposition can proceed with:
+- Extract runtime lifecycle to ar_runtime module
+- Extract message processing to ar_message_broker module  
+- Refactor ar_system as a thin facade (~50-75 lines)
+- Maintain the successful single global instance pattern
+
+The foundation is now solid for completing the decomposition while maintaining the system's stability and backward compatibility.

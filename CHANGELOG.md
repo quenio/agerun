@@ -41,6 +41,22 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - NULL dependencies should consistently fallback to global APIs
   - Proper ownership naming prevents dangerous memory violations
 
+### 📋 System Module Decomposition Tasks Revised
+- **Updated decomposition plan based on instantiation success**:
+  - Simplified from 3 new modules to just 2 (ar_runtime and ar_message_broker)
+  - Eliminated need for persistence coordinator module
+  - Leverages single global instance pattern from successful refactoring
+  - Clear ownership model: system owns runtime/broker, borrows agency
+- **Updated TODO.md with revised phases**:
+  - Phase 2: Create ar_runtime for lifecycle management
+  - Phase 3: Create ar_message_broker for message routing
+  - Phase 4: Refactor ar_system as thin facade (~50-75 lines)
+  - Phase 5: Integration and verification
+- **Updated analysis report**:
+  - Added post-instantiation update section
+  - Documented key learnings and simplified architecture
+  - Confirmed foundation is solid for remaining decomposition
+
 ### ✅ Knowledge Base Enhancement - Anti-Pattern Documentation
 - **Created Global Instance Wrapper Anti-Pattern article**:
   - Documented dangerous shared ownership between global and instance state
