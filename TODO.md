@@ -100,6 +100,12 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Updated documentation to describe both global and instance-based APIs
 - [x] Verified zero memory leaks from agency module (methodology leaks are expected)
 
+### Knowledge Base Enhancement - API Migration Patterns (Completed 2025-08-01)
+- [x] Created test-memory-leak-ownership-analysis.md documenting test lifecycle management
+- [x] Created global-to-instance-api-migration.md documenting backward-compatible migration pattern
+- [x] Updated CLAUDE.md with references to new patterns
+- [x] Cross-referenced with existing instantiation articles
+
 ### Knowledge Base Enhancement (Completed 2025-07-28)
 - [x] Created internal-vs-external-module-pattern.md documenting module role distinctions
 - [x] Updated user-feedback-as-qa.md with examples from ar_method_resolver implementation

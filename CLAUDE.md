@@ -131,6 +131,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - Always run `make sanitize-tests 2>&1` before committing
 - Tests using dlsym are automatically excluded from sanitizer builds ([details](kb/sanitizer-test-exclusion-pattern.md))
 - Debug strategy: Check report → Trace source → Verify ownership → Fix naming → Add cleanup ([details](kb/memory-debugging-comprehensive-guide.md))
+- Test leak analysis: Verify lifecycle management before adding cleanup ([details](kb/test-memory-leak-ownership-analysis.md))
 - Environment variables: `ASAN_OPTIONS=halt_on_error=0` (continue on error), `detect_leaks=1` (complex leaks)
 - Wake messages: Process with `ar_system__process_next_message()` after agent creation ([details](kb/agent-wake-message-processing.md))
 
@@ -324,6 +325,7 @@ grep -r "function_name\|concept" modules/
 **Module Instantiation**: Make modules instantiable bottom-up by dependency order ([details](kb/module-instantiation-prerequisites.md))
 - Dependencies become instance fields ([details](kb/instance-association-pattern.md))
 - Can eliminate coordinator modules ([details](kb/persistence-simplification-through-instantiation.md))
+- Global→instance migration pattern for backward compatibility ([details](kb/global-to-instance-api-migration.md))
 
 ### 7. Method Development
 

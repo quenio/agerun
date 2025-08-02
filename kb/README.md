@@ -26,6 +26,7 @@ Each learning file contains:
 - [Build Time Reporting](build-time-reporting.md)
 - [Documentation Language Migration Updates](documentation-language-migration-updates.md)
 - [Git Push Verification](git-push-verification.md)
+- [Global to Instance API Migration](global-to-instance-api-migration.md)
 - [Knowledge Base Consultation Protocol](knowledge-base-consultation-protocol.md)
 - [Language Instruction Renaming Pattern](language-instruction-renaming-pattern.md)
 - [Red Green Refactor Cycle](red-green-refactor-cycle.md)
@@ -48,6 +49,7 @@ Each learning file contains:
 
 ### Code Quality & Testing
 - [BDD Test Structure](bdd-test-structure.md)
+- [Test Memory Leak Ownership Analysis](test-memory-leak-ownership-analysis.md)
 - [Test Function Naming Accuracy](test-function-naming-accuracy.md)
 - [Code Movement Verification](code-movement-verification.md)
 - [TDD Advanced Large Refactoring](tdd-advanced-large-refactoring.md)

@@ -62,3 +62,4 @@ grep -l "ar_module.h" modules/*.c modules/*.h
 - [Module Delegation Error Propagation](module-delegation-error-propagation.md)
 - [No Circular Dependencies Principle](no-circular-dependencies-principle.md)
 - [Internal vs External Module Pattern](internal-vs-external-module-pattern.md)
+- [Global to Instance API Migration](global-to-instance-api-migration.md)

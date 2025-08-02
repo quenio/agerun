@@ -20,6 +20,15 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - Documented both global and instance-based usage patterns
 - **Impact**: Enables system module refactoring and multi-instance runtime support
 
+### ✅ Knowledge Base Enhancement - API Migration Patterns
+- **Documented key patterns from ar_agency instantiation**:
+  - Created test-memory-leak-ownership-analysis.md for test lifecycle management
+  - Created global-to-instance-api-migration.md for backward-compatible migration
+- **Updated CLAUDE.md with new references**:
+  - Added test leak analysis pattern to Memory Management section
+  - Added global→instance migration to Module Development section
+- **Cross-referenced articles**: Connected new patterns with existing instantiation docs
+
 ## 2025-07-30
 
 ### ✅ Enhanced Documentation Batch Fix Tool
