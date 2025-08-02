@@ -57,6 +57,22 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - Documented key learnings and simplified architecture
   - Confirmed foundation is solid for remaining decomposition
 
+### 📋 Added Global API Removal as Prerequisite Task
+- **New prerequisite identified for cleaner decomposition**:
+  - Remove all global functions from ar_system, ar_agency, ar_methodology
+  - Forces all code to use explicit instance-based APIs
+  - Eliminates hidden global state before decomposition
+  - Makes testing and refactoring more straightforward
+- **Removal order planned**:
+  - ar_system first (fewest dependencies)
+  - ar_agency second (used by system)
+  - ar_methodology last (most widely used)
+- **Impact assessment**:
+  - ~50 files need updates
+  - ar_executable.c needs complete rewrite
+  - All tests must create and manage instances
+  - Estimated 2-3 sessions of work
+
 ### ✅ Knowledge Base Enhancement - Anti-Pattern Documentation
 - **Created Global Instance Wrapper Anti-Pattern article**:
   - Documented dangerous shared ownership between global and instance state

@@ -287,7 +287,56 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 **Estimated Timeline**: 3-5 sessions depending on discoveries during implementation
 
-### 2. System Module Decomposition (Revised After Instantiation)
+### 2. PREREQUISITE - Remove Global APIs from Core Modules
+
+**Rationale**: Before decomposing the system module, removing all global functions and instances will create a cleaner architecture. This forces all code to use instance-based APIs and makes decomposition more straightforward.
+
+**Current State**: All three core modules have both global and instance-based APIs:
+- ar_system: Uses single g_system instance with delegation (8 global functions)
+- ar_agency: Uses g_agency instance with delegation (20+ global functions)
+- ar_methodology: Uses g_methodology instance with delegation (7 global functions)
+
+**Benefits**:
+1. **Cleaner architecture** - No hidden global state
+2. **Explicit dependencies** - All instances must be passed explicitly
+3. **Better testability** - Each test can create isolated instances
+4. **Easier decomposition** - No global state to worry about during refactoring
+
+**Order of Removal** (bottom-up to minimize breaking changes):
+1. **ar_system first** - Has fewest external dependencies
+2. **ar_agency second** - Used by system but not methodology
+3. **ar_methodology last** - Most widely used across codebase
+
+**Tasks**:
+- [ ] Phase 1: Remove global APIs from ar_system
+  - [ ] Remove init/shutdown/process functions from header
+  - [ ] Remove implementations and g_system static variable
+  - [ ] Update ar_executable.c to create and manage instances
+  - [ ] Update ~10 test files to use instance APIs
+  - [ ] Run make clean build 2>&1 and fix all errors
+- [ ] Phase 2: Remove global APIs from ar_agency
+  - [ ] Remove 20+ global functions from header
+  - [ ] Remove implementations and g_agency static variable
+  - [ ] Update ar_executable.c to pass agency instance
+  - [ ] Update ~20 test files to use instance APIs
+  - [ ] Update method test fixtures
+- [ ] Phase 3: Remove global APIs from ar_methodology
+  - [ ] Remove 7 global functions from header
+  - [ ] Remove implementations and g_methodology static variable
+  - [ ] Update ar_executable.c to pass methodology instance
+  - [ ] Update ~15 test files to use instance APIs
+  - [ ] Update all method tests
+- [ ] Phase 4: Cleanup and verification
+  - [ ] Update all module documentation
+  - [ ] Remove global API examples from CLAUDE.md
+  - [ ] Verify zero memory leaks in all tests
+  - [ ] Update README.md with new usage patterns
+
+**Key Challenge**: ar_executable.c needs complete rewrite to manage instances
+**Estimated Impact**: ~50 files need updates
+**Estimated Timeline**: 2-3 sessions
+
+### 3. System Module Decomposition (Depends on Global API Removal)
 
 **Current State**: Both ar_agency and ar_system have been successfully made instantiable (completed 2025-08-02).
 - ar_agency uses methodology as borrowed reference (completed 2025-08-01)
@@ -348,7 +397,7 @@ Based on successful instantiation learnings:
   - [ ] Create ar_runtime.md and ar_message_broker.md
   - [ ] Update module dependency diagram
 
-### 3. System-Wide Integration Testing and Verification
+### 4. System-Wide Integration Testing and Verification
 
 **Rationale**: After completing all evaluator migrations to Zig and frame-based execution implementation, we need comprehensive integration testing to verify the full system works correctly.
 
@@ -378,7 +427,7 @@ Based on successful instantiation learnings:
   - [ ] Memory usage profiling
   - [ ] Comparison of C vs Zig evaluator performance
 
-### 4. Complete C to Zig ABI-Compatible Migration
+### 5. Complete C to Zig ABI-Compatible Migration
 
 **Current Status**: 21/58 modules migrated (36%)
 
