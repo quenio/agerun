@@ -169,8 +169,15 @@ int64_t ar_system__init_with_instance(ar_system_t *mut_system, const char *ref_m
         ar_methodology_t *ref_methodology = ar_agency__get_methodology(mut_system->ref_agency);
         
         // Load methods from file if available
-        if (ref_methodology && !ar_methodology__load_methods_with_instance(ref_methodology, NULL)) {
-            printf("Warning: Could not load methods from file\n");
+        if (ref_methodology) {
+            if (!ar_methodology__load_methods_with_instance(ref_methodology, NULL)) {
+                printf("Warning: Could not load methods from file\n");
+            }
+        } else {
+            // No methodology in agency means we're using global methodology
+            if (!ar_methodology__load_methods()) {
+                printf("Warning: Could not load methods from file\n");
+            }
         }
         
         // Load agents from file if available
@@ -245,6 +252,9 @@ void ar_system__shutdown_with_instance(ar_system_t *mut_system) {
         // Save methods to file
         if (ref_methodology) {
             ar_methodology__save_methods_with_instance(ref_methodology, NULL);
+        } else {
+            // No methodology in agency means we're using global methodology
+            ar_methodology__save_methods();
         }
         
         // Save persistent agents to file
@@ -253,8 +263,10 @@ void ar_system__shutdown_with_instance(ar_system_t *mut_system) {
         // Reset the agency to clean up all agents
         ar_agency__reset_with_instance(mut_system->ref_agency);
         
-        // Note: Methodology cleanup is not the responsibility of the system
-        // The methodology instance is owned by whoever created it
+        // Clean up methodology if we were using the global one
+        if (!ref_methodology) {
+            ar_methodology__cleanup();
+        }
     } else {
         // Use global methodology and agency
         ar_methodology__save_methods();
