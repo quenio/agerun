@@ -253,11 +253,8 @@ void ar_system__shutdown_with_instance(ar_system_t *mut_system) {
         // Reset the agency to clean up all agents
         ar_agency__reset_with_instance(mut_system->ref_agency);
         
-        // Clean up methodology resources
-        if (ref_methodology) {
-            // For now, use global cleanup since there's no instance-based version
-            ar_methodology__cleanup();
-        }
+        // Note: Methodology cleanup is not the responsibility of the system
+        // The methodology instance is owned by whoever created it
     } else {
         // Use global methodology and agency
         ar_methodology__save_methods();
