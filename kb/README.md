@@ -78,6 +78,7 @@ Each learning file contains:
 - [Module Instantiation Prerequisites](module-instantiation-prerequisites.md)
 - [Instance Association Pattern](instance-association-pattern.md)
 - [Persistence Simplification Through Instantiation](persistence-simplification-through-instantiation.md)
+- [Global Instance Wrapper Anti-Pattern](global-instance-wrapper-anti-pattern.md)
 
 ### Parnas Design Principles
 - [Information Hiding Principle](information-hiding-principle.md)

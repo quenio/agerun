@@ -67,3 +67,4 @@ This migration preserves backward compatibility while enabling new use cases:
 ## Related Patterns
 - [Module Instantiation Prerequisites](module-instantiation-prerequisites.md)
 - [Instance Association Pattern](instance-association-pattern.md)
+- [Global Instance Wrapper Anti-Pattern](global-instance-wrapper-anti-pattern.md)

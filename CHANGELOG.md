@@ -2,6 +2,22 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-08-02
+
+### ✅ Knowledge Base Enhancement - Anti-Pattern Documentation
+- **Created Global Instance Wrapper Anti-Pattern article**:
+  - Documented dangerous shared ownership between global and instance state
+  - Showed why wrapper pattern fails when resources are owned by global state
+  - Provided correct patterns for keeping instance and global APIs separate
+  - Used ar_data_t placeholders for hypothetical ar_system_t examples
+- **Updated existing instantiation articles**:
+  - Added cross-references to anti-pattern from migration and prerequisites articles
+  - Enhanced kb/README.md index with new Architecture & Design entry
+- **Updated CLAUDE.md**:
+  - Added warning about avoiding shared ownership in Module Instantiation section
+  - Linked to detailed anti-pattern article for comprehensive understanding
+- **Validation**: All documentation validated with make check-docs using real types
+
 ## 2025-08-01
 
 ### ✅ Agency Module Made Instantiable

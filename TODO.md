@@ -6,6 +6,12 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### Knowledge Base Enhancement - Anti-Pattern Documentation (Completed 2025-08-02)
+- [x] Created Global Instance Wrapper Anti-Pattern article documenting dangerous shared ownership
+- [x] Updated existing instantiation articles with cross-references to the anti-pattern
+- [x] Added warning to CLAUDE.md about avoiding shared ownership between global and instance state
+- [x] Validated all documentation with make check-docs using real AgeRun types
+
 ### Critical Build System Fix (Completed 2025-07-28)
 - [x] Fixed Makefile test targets to properly propagate failures
 - [x] Fixed false positive SUCCESS reporting in build script

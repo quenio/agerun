@@ -326,6 +326,7 @@ grep -r "function_name\|concept" modules/
 - Dependencies become instance fields ([details](kb/instance-association-pattern.md))
 - Can eliminate coordinator modules ([details](kb/persistence-simplification-through-instantiation.md))
 - Global→instance migration pattern for backward compatibility ([details](kb/global-to-instance-api-migration.md))
+- AVOID shared ownership between global/instance ([details](kb/global-instance-wrapper-anti-pattern.md))
 
 ### 7. Method Development
 
