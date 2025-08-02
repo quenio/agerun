@@ -12,6 +12,7 @@
 static void test_agency_count_agents(void);
 static void test_agency_persistence(void);
 static void test_agency_reset(void);
+static void test_agency_instance_api(void);
 
 
 static void test_agency_count_agents(void) {
@@ -208,11 +209,73 @@ int main(void) {
     test_agency_count_agents();
     test_agency_persistence();
     test_agency_reset();
+    test_agency_instance_api();
     
     // Then clean up the system
     ar_system__shutdown();
     
     // And report success
-    printf("All 6 tests passed!\n");
+    printf("All 7 tests passed!\n");
     return 0;
+}
+
+static void test_agency_instance_api(void) {
+    printf("Testing instance-based API...\n");
+    
+    // Create an agency instance
+    ar_agency_t *own_agency = ar_agency__create(NULL); // NULL methodology for backward compatibility
+    assert(own_agency != NULL);
+    
+    // Test count agents with instance
+    int count = ar_agency__count_agents_with_instance(own_agency);
+    assert(count == 0);
+    
+    // Create method and register it
+    const char *method_name = "instance_test_method";
+    const char *instructions = "message -> \"Instance Test\"";
+    ar_method_t *own_method = ar_method__create(method_name, instructions, "1.0.0");
+    assert(own_method != NULL);
+    ar_methodology__register_method(own_method);
+    
+    // Create an agent using instance API
+    int64_t agent_id = ar_agency__create_agent_with_instance(own_agency, method_name, "1.0.0", NULL);
+    assert(agent_id > 0);
+    
+    // Process wake message
+    ar_system__process_next_message();
+    
+    // Verify count increased
+    count = ar_agency__count_agents_with_instance(own_agency);
+    assert(count == 1);
+    
+    // Test send message with instance
+    ar_data_t *own_message = ar_data__create_string("test");
+    bool sent = ar_agency__send_to_agent_with_instance(own_agency, agent_id, own_message);
+    assert(sent);
+    
+    // Process the message
+    ar_system__process_next_message();
+    
+    // Get agent memory
+    const ar_data_t *ref_memory = ar_agency__get_agent_memory_with_instance(own_agency, agent_id);
+    assert(ref_memory != NULL);
+    
+    // Destroy agent
+    bool destroyed = ar_agency__destroy_agent_with_instance(own_agency, agent_id);
+    assert(destroyed);
+    
+    // Process sleep message
+    ar_system__process_next_message();
+    
+    // Verify count decreased
+    count = ar_agency__count_agents_with_instance(own_agency);
+    assert(count == 0);
+    
+    // Clean up
+    ar_agency__destroy(own_agency);
+    
+    // Clean up the method
+    ar_methodology__unregister_method(method_name, "1.0.0");
+    
+    printf("Instance-based API test passed!\n");
 }

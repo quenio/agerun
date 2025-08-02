@@ -2,6 +2,24 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-08-01
+
+### ✅ Agency Module Made Instantiable
+- **Converted ar_agency from global state to instance-based design**:
+  - Created ar_agency_t opaque type with instance fields
+  - Added create/destroy functions for agency lifecycle management
+  - Implemented instance-based versions of all API functions
+  - Maintained backward compatibility with global instance pattern
+  - Agency can now accept methodology instance for future multi-instance support
+- **Testing and Validation**:
+  - Added comprehensive test for instance-based API
+  - Verified all existing tests pass without modification
+  - Confirmed zero memory leaks from agency module itself
+- **Documentation**:
+  - Updated ar_agency.md with instance-based API section
+  - Documented both global and instance-based usage patterns
+- **Impact**: Enables system module refactoring and multi-instance runtime support
+
 ## 2025-07-30
 
 ### ✅ Enhanced Documentation Batch Fix Tool

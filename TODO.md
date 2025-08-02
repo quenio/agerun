@@ -91,6 +91,15 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Updated CLAUDE.md with module instantiation guidelines
 - [x] Cross-referenced with existing architecture KB articles
 
+### Agency Module Instantiation (Completed 2025-08-01)
+- [x] Made ar_agency module instantiable with opaque type and instance-based API
+- [x] Converted global state to instance fields while maintaining backward compatibility
+- [x] Added create/destroy functions and instance-based versions of all API functions
+- [x] Created global instance pattern similar to ar_methodology for seamless migration
+- [x] Added comprehensive test for instance-based API
+- [x] Updated documentation to describe both global and instance-based APIs
+- [x] Verified zero memory leaks from agency module (methodology leaks are expected)
+
 ### Knowledge Base Enhancement (Completed 2025-07-28)
 - [x] Created internal-vs-external-module-pattern.md documenting module role distinctions
 - [x] Updated user-feedback-as-qa.md with examples from ar_method_resolver implementation
@@ -269,16 +278,16 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 **Tasks**:
 - [x] Analyze current system module responsibilities (Completed 2025-07-30)
-- [ ] Phase 0: Make ar_agency instantiable (PREREQUISITE)
-  - [ ] Create ar_agency_t opaque type
-  - [ ] Convert global state (g_is_initialized, g_own_registry) to instance fields
-  - [ ] Add methodology instance field to ar_agency_t
-  - [ ] Add create function that accepts ar_methodology_t instance
-  - [ ] Update agency functions to use associated methodology instance
-  - [ ] Add destroy function that properly manages lifecycle
-  - [ ] Maintain backward compatibility with global instance pattern
-  - [ ] Update all tests to use instance-based API
-  - [ ] Verify zero memory leaks
+- [x] Phase 0: Make ar_agency instantiable (PREREQUISITE) (Completed 2025-08-01)
+  - [x] Create ar_agency_t opaque type
+  - [x] Convert global state (g_is_initialized, g_own_registry) to instance fields
+  - [x] Add methodology instance field to ar_agency_t
+  - [x] Add create function that accepts ar_methodology_t instance
+  - [x] Update agency functions to use associated methodology instance
+  - [x] Add destroy function that properly manages lifecycle
+  - [x] Maintain backward compatibility with global instance pattern
+  - [x] Update all tests to use instance-based API
+  - [x] Verify zero memory leaks
 - [ ] Phase 1: Make ar_system instantiable
   - [ ] Create ar_system_t opaque type
   - [ ] Convert global state to instance fields

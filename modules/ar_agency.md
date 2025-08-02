@@ -10,6 +10,8 @@ The agency module (`ar_agency`) serves as the primary facade for agent managemen
 
 This clean architecture reduced the module from 850+ lines to just 81 lines while maintaining the same public API.
 
+**Note**: The agency module now supports both global and instance-based APIs. The instance-based API allows for multiple independent agency instances, while the global API maintains backward compatibility.
+
 ## Purpose
 
 The agency module provides:
@@ -43,6 +45,24 @@ The agency module follows the facade design pattern:
                    │  agent   │
                    └──────────┘
 ```
+
+## Instance-Based API
+
+The agency module provides an instance-based API for applications that need multiple independent agent registries or want explicit control over the agency lifecycle:
+
+```c
+// Create an agency instance with a methodology instance
+ar_agency_t* own_agency = ar_agency__create(ref_methodology);
+
+// Use instance-based functions
+int count = ar_agency__count_agents_with_instance(own_agency);
+int64_t id = ar_agency__create_agent_with_instance(own_agency, "method", "1.0.0", NULL);
+
+// Clean up when done
+ar_agency__destroy(own_agency);
+```
+
+All global API functions delegate to their instance-based counterparts using an internal global instance for backward compatibility.
 
 ## Key Functions
 

@@ -4,12 +4,85 @@
 #include "ar_agent_registry.h"
 #include "ar_agent_store.h"
 #include "ar_agent_update.h"
+#include "ar_methodology.h"
 #include "ar_heap.h"
 #include <stdio.h>
+
+/* Agency structure */
+struct ar_agency_s {
+    bool is_initialized;
+    ar_agent_registry_t *own_registry;      /* Owned by the agency */
+    ar_methodology_t *ref_methodology;      /* Borrowed reference - may be NULL for now */
+};
 
 /* Global State */
 static bool g_is_initialized = false;
 static ar_agent_registry_t *g_own_registry = NULL; /* Owned by the agency module */
+static ar_agency_t *g_default_agency = NULL; /* Global instance for backward compatibility */
+
+/* Helper to get global instance */
+static ar_agency_t* _get_global_instance(void) {
+    if (!g_default_agency && g_is_initialized && g_own_registry) {
+        // Create wrapper agency instance using existing global registry
+        g_default_agency = AR__HEAP__MALLOC(sizeof(ar_agency_t), "agency global instance");
+        if (g_default_agency) {
+            g_default_agency->is_initialized = true;
+            g_default_agency->own_registry = g_own_registry;
+            g_default_agency->ref_methodology = NULL; // Will use global methodology for now
+        }
+    }
+    return g_default_agency;
+}
+
+/* Instance-based implementation */
+ar_agency_t* ar_agency__create(ar_methodology_t *ref_methodology) {
+    // Allow NULL methodology for backward compatibility - will use global instance
+    
+    ar_agency_t *own_agency = AR__HEAP__MALLOC(sizeof(ar_agency_t), "agency");
+    if (!own_agency) {
+        printf("Error: Failed to allocate memory for agency\n");
+        return NULL;
+    }
+    
+    own_agency->is_initialized = true;
+    own_agency->ref_methodology = ref_methodology;
+    own_agency->own_registry = ar_agent_registry__create();
+    
+    if (!own_agency->own_registry) {
+        printf("Error: Failed to create agent registry\n");
+        AR__HEAP__FREE(own_agency);
+        return NULL;
+    }
+    
+    return own_agency;
+}
+
+void ar_agency__destroy(ar_agency_t *own_agency) {
+    if (!own_agency) {
+        return;
+    }
+    
+    // Destroy all agents
+    if (own_agency->own_registry) {
+        int64_t agent_id = ar_agent_registry__get_first(own_agency->own_registry);
+        while (agent_id != 0) {
+            int64_t next_id = ar_agent_registry__get_next(own_agency->own_registry, agent_id);
+            
+            // Find and destroy the agent
+            ar_agent_t *own_agent = (ar_agent_t*)ar_agent_registry__find_agent(own_agency->own_registry, agent_id);
+            if (own_agent) {
+                ar_agent_registry__unregister_id(own_agency->own_registry, agent_id);
+                ar_agent__destroy(own_agent);
+            }
+            
+            agent_id = next_id;
+        }
+        
+        ar_agent_registry__destroy(own_agency->own_registry);
+    }
+    
+    AR__HEAP__FREE(own_agency);
+}
 
 /* Implementation */
 void ar_agency__set_initialized(bool initialized) {
@@ -24,6 +97,14 @@ void ar_agency__set_initialized(bool initialized) {
             return;
         }
     } else if (!initialized && g_own_registry) {
+        /* Clean up global instance first */
+        if (g_default_agency) {
+            // Don't destroy the registry through the instance since it's shared
+            g_default_agency->own_registry = NULL;
+            AR__HEAP__FREE(g_default_agency);
+            g_default_agency = NULL;
+        }
+        
         /* Destroy the registry when agency is shutdown */
         ar_agent_registry__destroy(g_own_registry);
         g_own_registry = NULL;
@@ -31,41 +112,25 @@ void ar_agency__set_initialized(bool initialized) {
 }
 
 void ar_agency__reset(void) {
-    if (!g_is_initialized || !g_own_registry) {
-        return;
+    ar_agency_t *ref_agency = _get_global_instance();
+    if (ref_agency) {
+        ar_agency__reset_with_instance(ref_agency);
     }
-    
-    // Destroy all agents
-    int64_t agent_id = ar_agent_registry__get_first(g_own_registry);
-    while (agent_id != 0) {
-        int64_t next_id = ar_agent_registry__get_next(g_own_registry, agent_id);
-        ar_agency__destroy_agent(agent_id);
-        agent_id = next_id;
-    }
-    
-    // Clear the registry
-    ar_agent_registry__clear(g_own_registry);
 }
 
 int ar_agency__count_agents(void) {
-    if (!g_is_initialized || !g_own_registry) {
-        return 0;
-    }
-    return ar_agent_registry__count(g_own_registry);
+    ar_agency_t *ref_agency = _get_global_instance();
+    return ref_agency ? ar_agency__count_agents_with_instance(ref_agency) : 0;
 }
 
 bool ar_agency__save_agents(void) {
-    if (!g_is_initialized) {
-        return false;
-    }
-    return ar_agent_store__save();
+    ar_agency_t *ref_agency = _get_global_instance();
+    return ref_agency ? ar_agency__save_agents_with_instance(ref_agency, NULL) : false;
 }
 
 bool ar_agency__load_agents(void) {
-    if (!g_is_initialized) {
-        return false;
-    }
-    return ar_agent_store__load();
+    ar_agency_t *mut_agency = _get_global_instance();
+    return mut_agency ? ar_agency__load_agents_with_instance(mut_agency, NULL) : false;
 }
 
 int ar_agency__update_agent_methods(const ar_method_t *ref_old_method, const ar_method_t *ref_new_method, bool send_lifecycle_events) {
@@ -127,79 +192,18 @@ ar_data_t* ar_agency__get_agent_message(int64_t agent_id) {
 }
 
 int64_t ar_agency__create_agent(const char *ref_method_name, const char *ref_version, const ar_data_t *ref_context) {
-    if (!g_is_initialized || !g_own_registry) {
-        return 0;
-    }
-    
-    // Create the agent using the agent module
-    ar_agent_t *own_agent = ar_agent__create(ref_method_name, ref_version, ref_context);
-    if (!own_agent) {
-        return 0;
-    }
-    
-    // Allocate an ID for the agent
-    int64_t agent_id = ar_agent_registry__allocate_id(g_own_registry);
-    if (agent_id == 0) {
-        ar_agent__destroy(own_agent);
-        return 0;
-    }
-    
-    // Set the agent's ID
-    ar_agent__set_id(own_agent, agent_id);
-    
-    // Register the ID in the registry
-    if (!ar_agent_registry__register_id(g_own_registry, agent_id)) {
-        ar_agent__destroy(own_agent);
-        return 0;
-    }
-    
-    // Track the agent in the registry
-    if (!ar_agent_registry__track_agent(g_own_registry, agent_id, own_agent)) {
-        ar_agent_registry__unregister_id(g_own_registry, agent_id);
-        ar_agent__destroy(own_agent);
-        return 0;
-    }
-    
-    return agent_id;
+    ar_agency_t *mut_agency = _get_global_instance();
+    return mut_agency ? ar_agency__create_agent_with_instance(mut_agency, ref_method_name, ref_version, ref_context) : 0;
 }
 
 bool ar_agency__destroy_agent(int64_t agent_id) {
-    if (!g_is_initialized || !g_own_registry) {
-        return false;
-    }
-    
-    // Find the agent before unregistering
-    ar_agent_t *own_agent = (ar_agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
-    if (!own_agent) {
-        return false;
-    }
-    
-    // Unregister the ID (this also untracks the agent)
-    ar_agent_registry__unregister_id(g_own_registry, agent_id);
-    
-    // Destroy the agent
-    ar_agent__destroy(own_agent);
-    
-    return true;
+    ar_agency_t *mut_agency = _get_global_instance();
+    return mut_agency ? ar_agency__destroy_agent_with_instance(mut_agency, agent_id) : false;
 }
 
 bool ar_agency__send_to_agent(int64_t agent_id, ar_data_t *own_message) {
-    if (!g_is_initialized || !g_own_registry) {
-        if (own_message) {
-            ar_data__destroy(own_message);
-        }
-        return false;
-    }
-    
-    ar_agent_t *mut_agent = (ar_agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
-    if (!mut_agent) {
-        if (own_message) {
-            ar_data__destroy(own_message);
-        }
-        return false;
-    }
-    
-    return ar_agent__send(mut_agent, own_message);
+    ar_agency_t *mut_agency = _get_global_instance();
+    return mut_agency ? ar_agency__send_to_agent_with_instance(mut_agency, agent_id, own_message) : false;
 }
 
 bool ar_agency__agent_exists(int64_t agent_id) {
@@ -211,16 +215,8 @@ bool ar_agency__agent_exists(int64_t agent_id) {
 }
 
 const ar_data_t* ar_agency__get_agent_memory(int64_t agent_id) {
-    if (!g_is_initialized || !g_own_registry) {
-        return NULL;
-    }
-    
-    ar_agent_t *ref_agent = (ar_agent_t*)ar_agent_registry__find_agent(g_own_registry, agent_id);
-    if (!ref_agent) {
-        return NULL;
-    }
-    
-    return ar_agent__get_memory(ref_agent);
+    ar_agency_t *ref_agency = _get_global_instance();
+    return ref_agency ? ar_agency__get_agent_memory_with_instance(ref_agency, agent_id) : NULL;
 }
 
 const ar_data_t* ar_agency__get_agent_context(int64_t agent_id) {
@@ -358,6 +354,156 @@ bool ar_agency__set_agent_id(int64_t old_id, int64_t new_id) {
 
 ar_agent_registry_t* ar_agency__get_registry(void) {
     return g_own_registry;
+}
+
+/* Instance-based API implementation */
+
+int ar_agency__count_agents_with_instance(ar_agency_t *ref_agency) {
+    if (!ref_agency || !ref_agency->is_initialized || !ref_agency->own_registry) {
+        return 0;
+    }
+    return ar_agent_registry__count(ref_agency->own_registry);
+}
+
+int64_t ar_agency__create_agent_with_instance(ar_agency_t *mut_agency, 
+                                               const char *ref_method_name, 
+                                               const char *ref_version, 
+                                               const ar_data_t *ref_context) {
+    if (!mut_agency || !mut_agency->is_initialized || !mut_agency->own_registry) {
+        return 0;
+    }
+    
+    // Create the agent using the agent module
+    ar_agent_t *own_agent = ar_agent__create(ref_method_name, ref_version, ref_context);
+    if (!own_agent) {
+        return 0;
+    }
+    
+    // Allocate an ID for the agent
+    int64_t agent_id = ar_agent_registry__allocate_id(mut_agency->own_registry);
+    if (agent_id == 0) {
+        ar_agent__destroy(own_agent);
+        return 0;
+    }
+    
+    // Set the agent's ID
+    ar_agent__set_id(own_agent, agent_id);
+    
+    // Register the ID in the registry
+    if (!ar_agent_registry__register_id(mut_agency->own_registry, agent_id)) {
+        ar_agent__destroy(own_agent);
+        return 0;
+    }
+    
+    // Track the agent in the registry
+    if (!ar_agent_registry__track_agent(mut_agency->own_registry, agent_id, own_agent)) {
+        ar_agent_registry__unregister_id(mut_agency->own_registry, agent_id);
+        ar_agent__destroy(own_agent);
+        return 0;
+    }
+    
+    return agent_id;
+}
+
+bool ar_agency__destroy_agent_with_instance(ar_agency_t *mut_agency, int64_t agent_id) {
+    if (!mut_agency || !mut_agency->is_initialized || !mut_agency->own_registry) {
+        return false;
+    }
+    
+    // Find the agent before unregistering
+    ar_agent_t *own_agent = (ar_agent_t*)ar_agent_registry__find_agent(mut_agency->own_registry, agent_id);
+    if (!own_agent) {
+        return false;
+    }
+    
+    // Unregister the ID (this also untracks the agent)
+    ar_agent_registry__unregister_id(mut_agency->own_registry, agent_id);
+    
+    // Destroy the agent
+    ar_agent__destroy(own_agent);
+    
+    return true;
+}
+
+bool ar_agency__send_to_agent_with_instance(ar_agency_t *mut_agency, 
+                                             int64_t agent_id, 
+                                             ar_data_t *own_message) {
+    if (!mut_agency || !mut_agency->is_initialized || !mut_agency->own_registry) {
+        if (own_message) {
+            ar_data__destroy(own_message);
+        }
+        return false;
+    }
+    
+    ar_agent_t *mut_agent = (ar_agent_t*)ar_agent_registry__find_agent(mut_agency->own_registry, agent_id);
+    if (!mut_agent) {
+        if (own_message) {
+            ar_data__destroy(own_message);
+        }
+        return false;
+    }
+    
+    return ar_agent__send(mut_agent, own_message);
+}
+
+const ar_data_t* ar_agency__get_agent_memory_with_instance(ar_agency_t *ref_agency, 
+                                                            int64_t agent_id) {
+    if (!ref_agency || !ref_agency->is_initialized || !ref_agency->own_registry) {
+        return NULL;
+    }
+    
+    ar_agent_t *ref_agent = (ar_agent_t*)ar_agent_registry__find_agent(ref_agency->own_registry, agent_id);
+    if (!ref_agent) {
+        return NULL;
+    }
+    
+    return ar_agent__get_memory(ref_agent);
+}
+
+void ar_agency__reset_with_instance(ar_agency_t *mut_agency) {
+    if (!mut_agency || !mut_agency->is_initialized || !mut_agency->own_registry) {
+        return;
+    }
+    
+    // Destroy all agents
+    int64_t agent_id = ar_agent_registry__get_first(mut_agency->own_registry);
+    while (agent_id != 0) {
+        int64_t next_id = ar_agent_registry__get_next(mut_agency->own_registry, agent_id);
+        ar_agency__destroy_agent_with_instance(mut_agency, agent_id);
+        agent_id = next_id;
+    }
+    
+    // Clear the registry
+    ar_agent_registry__clear(mut_agency->own_registry);
+}
+
+bool ar_agency__save_agents_with_instance(ar_agency_t *ref_agency, const char *ref_filename) {
+    if (!ref_agency || !ref_agency->is_initialized) {
+        return false;
+    }
+    
+    // For now, delegate to global ar_agent_store__save
+    // In future, this could support custom filenames
+    (void)ref_filename; // Unused for now
+    return ar_agent_store__save();
+}
+
+bool ar_agency__load_agents_with_instance(ar_agency_t *mut_agency, const char *ref_filename) {
+    if (!mut_agency || !mut_agency->is_initialized) {
+        return false;
+    }
+    
+    // For now, delegate to global ar_agent_store__load
+    // In future, this could support custom filenames
+    (void)ref_filename; // Unused for now
+    return ar_agent_store__load();
+}
+
+ar_agent_registry_t* ar_agency__get_registry_with_instance(ar_agency_t *ref_agency) {
+    if (!ref_agency || !ref_agency->is_initialized) {
+        return NULL;
+    }
+    return ref_agency->own_registry;
 }
 
 /* End of implementation */
