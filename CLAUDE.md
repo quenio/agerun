@@ -265,6 +265,7 @@ grep -r "function_name\|concept" modules/
 **Debug**: `make sanitize-tests 2>&1`, always redirect stderr ([details](kb/development-debug-tools.md))
 **Ownership debugging**: Add logging at transfer points to trace corruption ([details](kb/debug-logging-ownership-tracing.md))
 **Expression ownership**: References=borrowed, new objects=destroy ([details](kb/expression-ownership-rules.md))
+**Test error filtering**: Use context-aware filtering for intentional errors ([details](kb/intentional-test-errors-filtering.md))
 
 ### 9. Error Propagation Pattern
 
