@@ -281,28 +281,32 @@ runtime_errors_found=false
 
 # Check for deep copy support errors
 if grep -q "no deep copy support" logs/*.log 2>/dev/null; then
-    echo "✗ Deep copy support errors detected"
+    echo "✗ Deep copy support errors detected:"
+    grep "no deep copy support" logs/*.log 2>/dev/null | head -3 | sed 's/^/    /'
     runtime_errors_found=true
     exit_status=1
 fi
 
 # Check for unexpected test behaviors
 if grep -q "expected failure" logs/*.log 2>/dev/null; then
-    echo "✗ Tests behaving unexpectedly (expected failures succeeding)"
+    echo "✗ Tests behaving unexpectedly (expected failures succeeding):"
+    grep "expected failure" logs/*.log 2>/dev/null | head -3 | sed 's/^/    /'
     runtime_errors_found=true
     exit_status=1
 fi
 
 # Check for method evaluation failures
 if grep "ERROR: Method evaluation failed" logs/*.log 2>/dev/null | grep -v "test.*expected.*fail" | grep -q .; then
-    echo "✗ Method evaluation failures detected"
+    echo "✗ Method evaluation failures detected:"
+    grep "ERROR: Method evaluation failed" logs/*.log 2>/dev/null | grep -v "test.*expected.*fail" | head -3 | sed 's/^/    /'
     runtime_errors_found=true
     exit_status=1
 fi
 
 # Check for missing AST errors
 if grep -q "ERROR: Method has no AST" logs/*.log 2>/dev/null; then
-    echo "✗ Missing AST errors detected"
+    echo "✗ Missing AST errors detected:"
+    grep "ERROR: Method has no AST" logs/*.log 2>/dev/null | head -3 | sed 's/^/    /'
     runtime_errors_found=true
     exit_status=1
 fi
