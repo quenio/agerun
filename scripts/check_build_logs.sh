@@ -295,8 +295,8 @@ else
     
     # Check test output consistency
     echo "--- Checking test output consistency ---"
-    TESTS_RUN=$(grep -c "^Running test:" logs/run-tests.log 2>/dev/null || echo "0")
-    TESTS_PASSED=$(grep -c "All .* tests passed" logs/run-tests.log 2>/dev/null || echo "0")
+    TESTS_RUN=$(grep -c "^Running test:" logs/run-tests.log 2>/dev/null) || TESTS_RUN="0"
+    TESTS_PASSED=$(grep -c "All .* tests passed" logs/run-tests.log 2>/dev/null) || TESTS_PASSED="0"
     
     if [ "$TESTS_RUN" -gt 0 ] && [ "$TESTS_PASSED" -eq 0 ]; then
         echo "⚠️  INCONSISTENCY: $TESTS_RUN tests ran but no 'All tests passed' messages found"
