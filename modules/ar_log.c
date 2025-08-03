@@ -94,6 +94,17 @@ static void _write_event(FILE *file, ar_event_t *ref_event) {
     }
     
     fprintf(file, "\n");
+    
+#ifdef DEBUG
+    // Also write to stderr in debug mode
+    fprintf(stderr, "[%s] ", ar_event__get_timestamp(ref_event));
+    fprintf(stderr, "%s: ", type_str);
+    fprintf(stderr, "%s", ar_event__get_message(ref_event));
+    if (ar_event__has_position(ref_event)) {
+        fprintf(stderr, " (at position %d)", ar_event__get_position(ref_event));
+    }
+    fprintf(stderr, "\n");
+#endif
 }
 
 // Helper function to flush events to disk

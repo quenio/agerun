@@ -13,6 +13,7 @@ The `ar_log` module provides a buffered event logging system with automatic disk
 - **Event Retrieval**: Get last event of each type for error checking
 - **Persistent Storage**: All events written to "agerun.log" file in append mode
 - **Memory Safe**: Proper ownership management with heap tracking
+- **Debug Mode Output**: When compiled with DEBUG flag, events are also printed to stderr
 
 ## API Documentation
 
@@ -146,6 +147,13 @@ The module uses an internal buffer to collect events before writing to disk:
 - **Automatic Flushing**: When the buffer reaches 10 events, all events are written to disk and the buffer is cleared
 - **FIFO Order**: Events are written in the order they were logged
 - **Buffer Implementation**: Uses `ar_list` for dynamic event storage
+
+### Debug Mode
+
+When the module is compiled with the DEBUG flag (which is the default for all make targets):
+- Events are written to both the log file AND stderr
+- This provides immediate visibility of log events during development
+- The stderr output uses the same format as the log file
 
 ### File Format
 

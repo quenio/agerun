@@ -380,6 +380,7 @@ cd bin  # Wrong - avoid relative paths
 **Debug Tools**: Memory (`make sanitize-tests 2>&1`), static analysis, crashes (lldb), patterns testing ([details](kb/development-debug-tools.md))
 **Command Output**: Always use `2>&1` to capture stderr when debugging - warnings and errors often go to stderr ([details](kb/stderr-redirection-debugging.md))
 **CI Debugging**: Use artifact upload for CI-specific failures ([details](kb/ci-debugging-artifact-upload.md))
+**Log Module Debug Output**: When compiled with DEBUG flag (default for all make targets), ar_log events are printed to stderr in addition to log file
 
 **Expression Ownership** (CRITICAL):
 - References (`memory.x`): Don't destroy - borrowed from memory/context
