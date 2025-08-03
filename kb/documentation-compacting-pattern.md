@@ -43,6 +43,37 @@ Long, detailed documentation in main guidelines creates cognitive overload and m
 - Updated documentation-compacting-pattern.md with critical insights: preserving KB references, create-before-link, bidirectional cross-referencing, single commit strategy
 ```
 
+**Mixed-state document compaction (TODO.md)**:
+```markdown
+// Before:
+### Agency Module Instantiation (Completed 2025-08-01)
+- [x] Made ar_agency module instantiable with opaque type and instance-based API
+- [x] Converted global state to instance fields while maintaining backward compatibility
+- [x] Added create/destroy functions and instance-based versions of all API functions
+- [x] Created global instance pattern similar to ar_methodology for seamless migration
+- [x] Added comprehensive test for instance-based API
+- [x] Updated documentation to describe both global and instance-based APIs
+- [x] Verified zero memory leaks from agency module (methodology leaks are expected)
+
+### 4. Complete Agent Store Load Implementation
+**Rationale**: The agent store save functionality works correctly...
+**Tasks**:
+- [ ] Design load coordination between agency and agent store
+  - [ ] Agency provides method lookup during load operation
+  - [ ] Agent store requests method by name/version from agency
+
+// After:
+### Agency Module Instantiation (Completed 2025-08-01)
+- [x] Made ar_agency module instantiable with opaque type and instance-based API; converted global state to instance fields while maintaining backward compatibility; added create/destroy functions and instance-based versions of all API functions; created global instance pattern similar to ar_methodology for seamless migration; added comprehensive test for instance-based API; updated documentation to describe both global and instance-based APIs; verified zero memory leaks from agency module (methodology leaks are expected)
+
+### 4. Complete Agent Store Load Implementation
+**Rationale**: The agent store save functionality works correctly...
+**Tasks**:
+- [ ] Design load coordination between agency and agent store
+  - [ ] Agency provides method lookup during load operation
+  - [ ] Agent store requests method by name/version from agency
+```
+
 ## Generalization
 **When to compact**:
 - Section exceeds 10-15 lines
@@ -70,28 +101,43 @@ Long, detailed documentation in main guidelines creates cognitive overload and m
 5. Target 40-50% reduction while keeping all information
 6. Example: "Fixed X; resolved Y; updated Z" instead of 3 bullets
 
+**For mixed-state documents (e.g., TODO.md)**:
+1. Apply selective compaction - only compact completed items
+2. Preserve ALL incomplete/active items completely untouched
+3. Keep all sub-items and formatting for active work
+4. Merge completed sub-tasks into parent task description
+5. Expect lower reduction (10-20%) due to preservation needs
+6. Maintain clear state indicators ([x] vs [ ])
+7. See [Selective Compaction Pattern](selective-compaction-pattern.md) for details
+
 **What to preserve inline**:
 - Mandatory requirements (MUST, MANDATORY, CRITICAL)
 - Essential commands (`make` targets, git commands)
 - Key file paths and naming patterns
 - Error prevention rules
 - All historical data in changelogs
+- ALL incomplete/active work items in mixed-state documents
 
 ## Implementation
 1. **Identify verbose sections**: Look for multi-paragraph explanations, long code examples, detailed procedures
-2. **Create kb articles FIRST**: Extract detailed content following standard kb format
+2. **For mixed-state documents**: First categorize content by state (complete vs incomplete)
+3. **Create kb articles FIRST**: Extract detailed content following standard kb format
    - Use EXAMPLE tags for all hypothetical code
    - Validate with `make check-docs` before proceeding
-3. **Preserve existing references**: NEVER remove existing KB links - they are essential
-4. **Compress in main doc**: Reduce to essential points + link
-5. **Update cross-references**: Add references from existing KB articles to new ones
-6. **Single commit**: Commit all related changes together (KB articles + CLAUDE.md)
-7. **Test readability**: Ensure compressed version still actionable without clicking links
+4. **Preserve existing references**: NEVER remove existing KB links - they are essential
+5. **Compress in main doc**: Reduce to essential points + link
+6. **Apply selective compaction**: For mixed-state docs, only compact completed items
+7. **Update cross-references**: Add references from existing KB articles to new ones
+8. **Single commit**: Commit all related changes together (KB articles + doc updates)
+9. **Test readability**: Ensure compressed version still actionable without clicking links
 
-**Target reduction**: Aim for 30-50% reduction while maintaining all critical information
+**Target reduction**: 
+- Reference docs: 30-50% reduction
+- Historical records: 40-50% reduction  
+- Mixed-state docs: 10-20% reduction (due to preservation needs)
 **Link placement**: Add at end of compressed point or inline where context needed
 **Critical rule**: Create and validate KB articles BEFORE adding links to prevent broken references
-**Commit strategy**: Use single commit for KB articles + CLAUDE.md updates to keep changes atomic
+**Commit strategy**: Use single commit for all related changes to keep atomic
 
 ## Related Patterns
 - [Just In Time Knowledge Base Reading](just-in-time-kb-reading.md)
@@ -99,3 +145,4 @@ Long, detailed documentation in main guidelines creates cognitive overload and m
 - [Markdown Link Resolution Patterns](markdown-link-resolution-patterns.md)
 - [Self-Documenting Modifications Pattern](self-documenting-modifications-pattern.md)
 - [Quantitative Documentation Metrics](quantitative-documentation-metrics.md)
+- [Selective Compaction Pattern](selective-compaction-pattern.md)

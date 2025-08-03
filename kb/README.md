@@ -164,6 +164,7 @@ Each learning file contains:
 - [Self-Documenting Modifications Pattern](self-documenting-modifications-pattern.md)
 - [Retroactive Task Documentation](retroactive-task-documentation.md)
 - [Quantitative Documentation Metrics](quantitative-documentation-metrics.md)
+- [Selective Compaction Pattern](selective-compaction-pattern.md)
 - [Concise Technical Communication](concise-technical-communication.md)
 - [Build System Exit Code Verification](build-system-exit-code-verification.md)
 - [Build Log Verification Requirement](build-log-verification-requirement.md)

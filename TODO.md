@@ -6,6 +6,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### TODO.md Selective Compaction Patterns (Completed 2025-08-03 Part 5)
+- [x] Identified selective compaction pattern for mixed-state documents; updated documentation-compacting-pattern.md with TODO.md strategy; created selective-compaction-pattern.md; updated compact-tasks command and CLAUDE.md with references
+
 ### Documentation Patterns from CHANGELOG Compaction (Completed 2025-08-03 Part 4)
 - [x] Identified 4 new documentation patterns from CHANGELOG compaction session; created 3 new KB articles; updated commands and CLAUDE.md with references
 

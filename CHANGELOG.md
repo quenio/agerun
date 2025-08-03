@@ -2,6 +2,15 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-08-03 (Part 5)
+
+### ✅ TODO.md Selective Compaction Patterns
+- Discovered selective compaction pattern for mixed-state documents from TODO.md compaction
+- Updated documentation-compacting-pattern.md with third category for mixed-state documents
+- Created selective-compaction-pattern.md documenting state-based selective processing
+- Updated compact-tasks command and CLAUDE.md with pattern references
+- **Impact**: Provides guidance for handling documents with both active and historical content
+
 ## 2025-08-03 (Part 4)
 
 ### ✅ Documentation Patterns from CHANGELOG Compaction Session
