@@ -60,6 +60,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **KB articles need CLAUDE.md references** to be accessible in future sessions ([details](kb/claude-md-reference-requirement.md))
 **Evidence-based debugging**: Always verify with concrete evidence, not assumptions ([details](kb/evidence-based-debugging.md))
 **Build output review**: Review complete command output, not just final status ([details](kb/comprehensive-output-review.md))
+**Documentation compaction**: Extract verbose content to KB while preserving links ([details](kb/documentation-compacting-pattern.md))
 
 **Documentation Standards (MANDATORY)** ([details](kb/documentation-standards-integration.md)):
 - **Real code only**: All examples must use actual AgeRun types/functions ([details](kb/validated-documentation-examples.md))

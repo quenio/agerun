@@ -117,6 +117,11 @@ For each section being compacted:
 - When background context is relocated
 - When complex explanations are simplified
 
+**Bidirectional cross-referencing (MANDATORY):**
+- For each new KB article created, find related existing articles
+- Update existing articles' "Related Patterns" sections to reference new articles
+- Creates a web of knowledge where patterns are discoverable from any entry point
+
 **Link validation checklist:**
 - [ ] Every compressed section has appropriate links
 - [ ] Links point to articles with extracted content
@@ -166,29 +171,36 @@ After compacting each section:
 
 ### 10. Commit Strategy
 
-**CRITICAL**: Commit kb articles BEFORE updating CLAUDE.md:
+**CRITICAL**: Use SINGLE commit for all related documentation changes:
 
 ```bash
-# First commit: Create ALL required knowledge base articles
-git add kb/
-git commit -m "feat: create knowledge base articles for guideline extraction
+# 1. Create and validate ALL kb articles first
+make check-docs  # Ensure no validation errors
 
-- Created [list all new articles]
-- Enhanced [list updated articles] 
-- Prepared detailed content for CLAUDE.md compaction"
+# 2. Stage all related changes together
+git add kb/ CLAUDE.md TODO.md CHANGELOG.md
 
-# Run validation to ensure no broken links
-make check-docs
+# 3. Single comprehensive commit
+git commit -m "docs: compact guidelines with comprehensive knowledge base articles
 
-# Second commit: Compact CLAUDE.md with verified links
-git add CLAUDE.md  
-git commit -m "docs: compact guidelines with knowledge base links
+- Reduced CLAUDE.md from X to Y lines (Z% reduction)
+- Created N new KB articles extracting verbose content:
+  - article1.md: Brief description
+  - article2.md: Brief description
+- Preserved all existing KB references in CLAUDE.md
+- Added cross-references between new and existing KB articles
+- Updated kb/README.md index with new entries
+- Validated all documentation with make check-docs
 
-- Reduced verbose sections by X%
-- Preserved all critical requirements
-- Added links to detailed kb/ articles (all verified to exist)
-- Improved scanability and actionability"
+Impact: CLAUDE.md is now more scannable and actionable while detailed
+information remains accessible through KB links.
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
+
+**Rationale**: Single commit keeps logically related changes atomic and makes history cleaner
 
 ### 11. Validation
 

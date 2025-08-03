@@ -38,10 +38,13 @@ Long, detailed documentation in main guidelines creates cognitive overload and m
 
 **How to compact**:
 1. Identify core actionable rules (keep these)
-2. Extract examples, details, explanations to kb article
-3. Summarize verbose content in 1-2 lines
-4. Add `([details](kb/article.md))` link // EXAMPLE: Link format
-5. Ensure critical commands/rules remain visible
+2. **PRESERVE ALL EXISTING KB REFERENCES** - they ARE the detailed docs
+3. Create KB articles BEFORE adding any links to them
+4. Extract examples, details, explanations to kb article
+5. Summarize verbose content in 1-2 lines
+6. Add `([details](kb/article.md))` link // EXAMPLE: Link format
+7. Update existing KB articles to reference new ones (bidirectional)
+8. Ensure critical commands/rules remain visible
 
 **What to preserve inline**:
 - Mandatory requirements (MUST, MANDATORY, CRITICAL)
@@ -51,13 +54,19 @@ Long, detailed documentation in main guidelines creates cognitive overload and m
 
 ## Implementation
 1. **Identify verbose sections**: Look for multi-paragraph explanations, long code examples, detailed procedures
-2. **Create kb article**: Extract detailed content following standard kb format
-3. **Compress in main doc**: Reduce to essential points + link
-4. **Validate**: Run `make check-docs` to ensure all references are valid
-5. **Test readability**: Ensure compressed version still actionable without clicking links
+2. **Create kb articles FIRST**: Extract detailed content following standard kb format
+   - Use EXAMPLE tags for all hypothetical code
+   - Validate with `make check-docs` before proceeding
+3. **Preserve existing references**: NEVER remove existing KB links - they are essential
+4. **Compress in main doc**: Reduce to essential points + link
+5. **Update cross-references**: Add references from existing KB articles to new ones
+6. **Single commit**: Commit all related changes together (KB articles + CLAUDE.md)
+7. **Test readability**: Ensure compressed version still actionable without clicking links
 
 **Target reduction**: Aim for 30-50% reduction while maintaining all critical information
 **Link placement**: Add at end of compressed point or inline where context needed
+**Critical rule**: Create and validate KB articles BEFORE adding links to prevent broken references
+**Commit strategy**: Use single commit for KB articles + CLAUDE.md updates to keep changes atomic
 
 ## Related Patterns
 - [Just In Time Knowledge Base Reading](just-in-time-kb-reading.md)
