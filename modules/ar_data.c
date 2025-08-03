@@ -1632,6 +1632,27 @@ size_t ar_data__list_count(const ar_data_t *data) {
     return ar_list__count(list);
 }
 
+ar_data_t** ar_data__list_items(const ar_data_t *ref_data) {
+    if (!ref_data || ref_data->type != AR_DATA_TYPE__LIST) {
+        return NULL;
+    }
+    
+    // Get the list from the data
+    ar_list_t *ref_list = ar_data__get_list(ref_data);
+    if (!ref_list) {
+        return NULL;
+    }
+    
+    // Get items from the underlying list
+    void **items = ar_list__items(ref_list);
+    if (!items) {
+        return NULL;
+    }
+    
+    // Cast the array to ar_data_t**
+    return (ar_data_t**)items;
+}
+
 /**
  * Get all keys from a map data structure
  * @param ref_data Pointer to the map data to retrieve keys from
@@ -1742,4 +1763,142 @@ bool ar_data__set_map_data_if_root_matched(
     bool success = ar_data__set_map_data(mut_map, key, own_value);
     ar_path__destroy(own_path);
     return success;
+}
+
+// Helper function to append to a dynamically growing string
+static void _append_to_buffer(char **mut_buffer, size_t *mut_size, size_t *mut_used, const char *text) {
+    if (!text) return;  // Safety check
+    size_t text_len = strlen(text);
+    size_t needed = *mut_used + text_len + 1;
+    
+    if (needed > *mut_size) {
+        size_t new_size = *mut_size * 2;
+        if (new_size < needed) new_size = needed + 256;
+        
+        char *new_buffer = AR__HEAP__REALLOC(*mut_buffer, new_size, "Buffer expansion for data formatting");
+        if (!new_buffer) return;  // Out of memory
+        
+        *mut_buffer = new_buffer;
+        *mut_size = new_size;
+    }
+    
+    strcpy(*mut_buffer + *mut_used, text);
+    *mut_used += text_len;
+}
+
+// Helper function for ar_data__format_structure
+static void _format_structure_recursive(
+    char **mut_buffer,
+    size_t *mut_size,
+    size_t *mut_used,
+    const ar_data_t *ref_data,
+    int current_depth,
+    int max_depth
+) {
+    if (!ref_data || current_depth > max_depth) {
+        _append_to_buffer(mut_buffer, mut_size, mut_used, "...");
+        return;
+    }
+    
+    ar_data_type_t type = ar_data__get_type(ref_data);
+    
+    switch (type) {
+        case AR_DATA_TYPE__INTEGER: {
+            char buffer[32];
+            snprintf(buffer, sizeof(buffer), "%d", ar_data__get_integer(ref_data));
+            _append_to_buffer(mut_buffer, mut_size, mut_used, buffer);
+            break;
+        }
+        
+        case AR_DATA_TYPE__DOUBLE: {
+            char buffer[64];
+            snprintf(buffer, sizeof(buffer), "%.6g", ar_data__get_double(ref_data));
+            _append_to_buffer(mut_buffer, mut_size, mut_used, buffer);
+            break;
+        }
+        
+        case AR_DATA_TYPE__STRING: {
+            const char *str = ar_data__get_string(ref_data);
+            if (str) {
+                _append_to_buffer(mut_buffer, mut_size, mut_used, "\"");
+                _append_to_buffer(mut_buffer, mut_size, mut_used, str);
+                _append_to_buffer(mut_buffer, mut_size, mut_used, "\"");
+            } else {
+                _append_to_buffer(mut_buffer, mut_size, mut_used, "null");
+            }
+            break;
+        }
+        
+        case AR_DATA_TYPE__LIST: {
+            _append_to_buffer(mut_buffer, mut_size, mut_used, "LIST[");
+            
+            // Get all items from the list
+            ar_data_t **items = ar_data__list_items(ref_data);
+            size_t count = ar_data__list_count(ref_data);
+            
+            if (items) {
+                for (size_t i = 0; i < count; i++) {
+                    if (i > 0) {
+                        _append_to_buffer(mut_buffer, mut_size, mut_used, ", ");
+                    }
+                    _format_structure_recursive(mut_buffer, mut_size, mut_used, items[i], current_depth + 1, max_depth);
+                }
+                AR__HEAP__FREE(items);  // Free the array, not the items
+            }
+            
+            _append_to_buffer(mut_buffer, mut_size, mut_used, "]");
+            break;
+        }
+        
+        case AR_DATA_TYPE__MAP: {
+            _append_to_buffer(mut_buffer, mut_size, mut_used, "MAP{");
+            ar_data_t *own_keys = ar_data__get_map_keys(ref_data);
+            if (own_keys) {
+                ar_data_t **key_items = ar_data__list_items(own_keys);
+                size_t count = ar_data__list_count(own_keys);
+                
+                if (key_items) {
+                    bool first = true;
+                    for (size_t i = 0; i < count; i++) {
+                        const char *key = ar_data__get_string(key_items[i]);
+                        if (key) {
+                            if (!first) {
+                                _append_to_buffer(mut_buffer, mut_size, mut_used, ", ");
+                            }
+                            first = false;
+                            
+                            _append_to_buffer(mut_buffer, mut_size, mut_used, key);
+                            _append_to_buffer(mut_buffer, mut_size, mut_used, ": ");
+                            
+                            const ar_data_t *ref_value = ar_data__get_map_data(ref_data, key);
+                            _format_structure_recursive(mut_buffer, mut_size, mut_used, ref_value, current_depth + 1, max_depth);
+                        }
+                    }
+                    
+                    // Just free the array, not the elements (they're owned by own_keys list)
+                    AR__HEAP__FREE(key_items);
+                }
+                
+                ar_data__destroy(own_keys);
+            }
+            _append_to_buffer(mut_buffer, mut_size, mut_used, "}");
+            break;
+        }
+        
+        default:
+            _append_to_buffer(mut_buffer, mut_size, mut_used, "<unknown>");
+            break;
+    }
+}
+
+char* ar_data__format_structure(const ar_data_t *ref_data, int max_depth) {
+    size_t buffer_size = 256;
+    size_t buffer_used = 0;
+    char *own_buffer = AR__HEAP__MALLOC(buffer_size, "Buffer for data structure formatting");
+    if (!own_buffer) return NULL;
+    
+    own_buffer[0] = '\0';
+    _format_structure_recursive(&own_buffer, &buffer_size, &buffer_used, ref_data, 0, max_depth);
+    
+    return own_buffer;
 }

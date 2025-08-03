@@ -194,4 +194,13 @@ const ar_expression_ast_t* ar_expression_ast__get_left(const ar_expression_ast_t
  */
 const ar_expression_ast_t* ar_expression_ast__get_right(const ar_expression_ast_t *ref_node);
 
+/**
+ * Formats an expression AST as a human-readable path string
+ * @param ref_ast The expression AST to format
+ * @return Newly allocated string representation of the expression
+ * @note Ownership: Caller owns the returned string and must free it
+ * @note Examples: "memory.x", "\"hello\"", "42", "<expression>"
+ */
+char* ar_expression_ast__format_path(const ar_expression_ast_t *ref_ast);
+
 #endif /* AGERUN_EXPRESSION_AST_H */

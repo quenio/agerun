@@ -429,6 +429,15 @@ ar_data_t *ar_data__list_last(const ar_data_t *ref_data);
 size_t ar_data__list_count(const ar_data_t *ref_data);
 
 /**
+ * Get all items from a list as an array
+ * @param ref_data Pointer to the list data
+ * @return Array of ar_data_t pointers, or NULL if data is NULL or not a list
+ * @note Ownership: Caller owns the returned array and must free it, but NOT the items
+ * @note The items themselves remain owned by the list
+ */
+ar_data_t** ar_data__list_items(const ar_data_t *ref_data);
+
+/**
  * Get all keys from a map data structure
  * @param ref_data Pointer to the map data to retrieve keys from
  * @return A list containing string data values for each key, or NULL if data is NULL or not a map
@@ -458,5 +467,15 @@ bool ar_data__set_map_data_if_root_matched(
     const char *ref_full_path,
     ar_data_t *own_value
 );
+
+/**
+ * Format a data structure showing nested contents up to specified depth
+ * @param ref_data The data to format
+ * @param max_depth Maximum depth to display (typically 3)
+ * @return Newly allocated string describing the data structure
+ * @note Ownership: Caller owns the returned string and must free it
+ * @note Shows structure like: MAP{x: LIST[1, 2, MAP{y: "deep"}], z: 42}
+ */
+char* ar_data__format_structure(const ar_data_t *ref_data, int max_depth);
 
 #endif /* AGERUN_DATA_H */

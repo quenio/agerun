@@ -35,6 +35,8 @@ static void test_data_list_contains_only_primitives(void);
 static void test_data_claim_or_copy(void);
 static void test_data_destroy_if_owned(void);
 static void test_data_set_map_data_if_root_matched(void);
+static void test_data_list_items(void);
+static void test_data_format_structure(void);
 
 static void test_data_creation(void) {
     printf("Testing data creation for different types...\n");
@@ -1913,6 +1915,186 @@ static void test_data_destroy_if_owned(void) {
     printf("destroy_if_owned tests passed!\n");
 }
 
+static void test_data_list_items(void) {
+    printf("Testing ar_data__list_items...\n");
+    
+    // Test 1: Empty list
+    {
+        ar_data_t *own_list = ar_data__create_list();
+        assert(own_list != NULL);
+        
+        ar_data_t **items = ar_data__list_items(own_list);
+        size_t count = ar_data__list_count(own_list);
+        
+        assert(count == 0);
+        assert(items == NULL);
+        
+        ar_data__destroy(own_list);
+    }
+    
+    // Test 2: List with multiple items
+    {
+        ar_data_t *own_list = ar_data__create_list();
+        assert(own_list != NULL);
+        
+        // Add various types of data
+        ar_data__list_add_last_integer(own_list, 42);
+        ar_data__list_add_last_string(own_list, "hello");
+        ar_data__list_add_last_double(own_list, 3.14);
+        
+        ar_data_t **items = ar_data__list_items(own_list);
+        size_t count = ar_data__list_count(own_list);
+        
+        assert(count == 3);
+        assert(items != NULL);
+        
+        // Verify items
+        assert(ar_data__get_type(items[0]) == AR_DATA_TYPE__INTEGER);
+        assert(ar_data__get_integer(items[0]) == 42);
+        
+        assert(ar_data__get_type(items[1]) == AR_DATA_TYPE__STRING);
+        assert(strcmp(ar_data__get_string(items[1]), "hello") == 0);
+        
+        assert(ar_data__get_type(items[2]) == AR_DATA_TYPE__DOUBLE);
+        assert(ar_data__get_double(items[2]) == 3.14);
+        
+        // Free the items array (but not the items themselves)
+        AR__HEAP__FREE(items);
+        
+        ar_data__destroy(own_list);
+    }
+    
+    printf("list_items tests passed!\n");
+}
+
+static void test_data_format_structure(void) {
+    printf("Testing ar_data__format_structure...\n");
+    
+    // Test 1: Simple types
+    {
+        printf("Creating integer 42...\n");
+        ar_data_t *own_int = ar_data__create_integer(42);
+        printf("Formatting integer...\n");
+        char *str = ar_data__format_structure(own_int, 3);
+        assert(str != NULL);
+        printf("Integer format result: '%s'\n", str);
+        assert(strcmp(str, "42") == 0);
+        printf("Freeing string...\n");
+        AR__HEAP__FREE(str);
+        printf("Destroying integer data...\n");
+        ar_data__destroy(own_int);
+        printf("Integer test complete.\n");
+        
+        printf("Creating double 3.14...\n");
+        ar_data_t *own_double = ar_data__create_double(3.14);
+        printf("Formatting double...\n");
+        str = ar_data__format_structure(own_double, 3);
+        assert(str != NULL);
+        printf("Double format result: '%s'\n", str);
+        // The output format might vary, let's just check it starts with "3.14"
+        assert(strncmp(str, "3.14", 4) == 0);
+        printf("Freeing string...\n");
+        AR__HEAP__FREE(str);
+        printf("Destroying double data...\n");
+        ar_data__destroy(own_double);
+        printf("Double test complete.\n");
+        
+        printf("Creating string 'hello'...\n");
+        ar_data_t *own_string = ar_data__create_string("hello");
+        printf("Formatting string...\n");
+        char *str2 = ar_data__format_structure(own_string, 3);
+        assert(str2 != NULL);
+        printf("String format result: '%s'\n", str2);
+        assert(strcmp(str2, "\"hello\"") == 0);
+        printf("Freeing string...\n");
+        AR__HEAP__FREE(str2);
+        printf("Destroying string data...\n");
+        ar_data__destroy(own_string);
+        printf("String test complete.\n");
+    }
+    
+    // Test 2: List formatting
+    {
+        printf("Creating list...\n");
+        ar_data_t *own_list = ar_data__create_list();
+        printf("Adding integers to list...\n");
+        ar_data__list_add_last_integer(own_list, 1);
+        ar_data__list_add_last_integer(own_list, 2);
+        ar_data__list_add_last_integer(own_list, 3);
+        
+        printf("Formatting list...\n");
+        char *str = ar_data__format_structure(own_list, 3);
+        assert(str != NULL);
+        printf("List format result: '%s'\n", str);
+        assert(strcmp(str, "LIST[1, 2, 3]") == 0);
+        printf("Freeing string...\n");
+        AR__HEAP__FREE(str);
+        printf("Destroying list...\n");
+        ar_data__destroy(own_list);
+        printf("List test complete.\n");
+    }
+    
+    // Test 3: Map formatting
+    {
+        printf("Creating map...\n");
+        ar_data_t *own_map = ar_data__create_map();
+        printf("Setting map values...\n");
+        ar_data__set_map_integer(own_map, "x", 10);
+        ar_data__set_map_string(own_map, "name", "test");
+        
+        printf("Formatting map...\n");
+        char *str = ar_data__format_structure(own_map, 3);
+        printf("After ar_data__format_structure call, str = %p\n", (void*)str);
+        assert(str != NULL);
+        printf("Map format result: '%s'\n", str);
+        // Note: order might vary, so just check it contains expected parts
+        assert(strstr(str, "MAP{") != NULL);
+        assert(strstr(str, "x: 10") != NULL);
+        assert(strstr(str, "name: \"test\"") != NULL);
+        assert(strstr(str, "}") != NULL);
+        printf("Freeing string...\n");
+        AR__HEAP__FREE(str);
+        printf("Destroying map...\n");
+        ar_data__destroy(own_map);
+        printf("Map test complete.\n");
+    }
+    
+    // Test 4: Nested structures with depth limit
+    {
+        ar_data_t *own_outer_map = ar_data__create_map();
+        ar_data_t *own_inner_list = ar_data__create_list();
+        ar_data_t *own_deep_map = ar_data__create_map();
+        
+        ar_data__set_map_integer(own_deep_map, "value", 999);
+        ar_data__list_add_last_data(own_inner_list, own_deep_map);
+        ar_data__list_add_last_integer(own_inner_list, 42);
+        ar_data__set_map_data(own_outer_map, "items", own_inner_list);
+        
+        // Test with depth 3 - should show all
+        char *str = ar_data__format_structure(own_outer_map, 3);
+        assert(str != NULL);
+        // Just check that it contains the key parts, order might vary
+        assert(strstr(str, "items:") != NULL);
+        assert(strstr(str, "LIST[") != NULL);
+        assert(strstr(str, "value: 999") != NULL);
+        assert(strstr(str, "42") != NULL);
+        AR__HEAP__FREE(str);
+        
+        // Test with depth 1 - should truncate
+        str = ar_data__format_structure(own_outer_map, 1);
+        assert(str != NULL);
+        printf("Depth 1 format result: '%s'\n", str);
+        // At depth 1, we see the map and its immediate values. The list shows but its contents are truncated
+        assert(strstr(str, "items: LIST[") != NULL);
+        assert(strstr(str, "...") != NULL);
+        AR__HEAP__FREE(str);
+        
+        ar_data__destroy(own_outer_map);
+    }
+    
+    printf("format_structure tests passed!\n");
+}
+
 static void test_data_set_map_data_if_root_matched(void) {
     printf("Testing ar_data__set_map_data_if_root_matched...\n");
     
@@ -2040,6 +2222,7 @@ static void test_data_set_map_data_if_root_matched(void) {
 
 int main(void) {
     printf("Starting Data Module Tests...\n");
+    printf("DEBUG: About to start tests\n");
     
     // When we run all data tests
     test_data_creation();
@@ -2098,8 +2281,15 @@ int main(void) {
     // Run set map data if root matched tests
     test_data_set_map_data_if_root_matched();
     
+    // Run list items tests
+    test_data_list_items();
+    
+    printf("DEBUG: About to run format structure tests\n");
+    // Run format structure tests
+    test_data_format_structure();
+    
     // Then all tests should pass
-    printf("All 27 tests passed!\n");
+    printf("All 29 tests passed!\n");
     
     return 0;
 }

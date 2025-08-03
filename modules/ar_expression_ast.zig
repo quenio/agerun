@@ -359,3 +359,78 @@ export fn ar_expression_ast__get_right(ref_node: ?*const c.ar_expression_ast_t) 
     
     return @ptrCast(ref_ast_node.data.binary_op.own_right);
 }
+
+/// Formats an expression AST as a human-readable path string
+pub export fn ar_expression_ast__format_path(ref_ast: ?*const c.ar_expression_ast_t) [*c]u8 {
+    if (ref_ast == null) {
+        return ar_allocator.dupe("unknown", "Expression path for null AST");
+    }
+    
+    const ref_ast_node: *const ar_expression_ast_t = @ptrCast(@alignCast(ref_ast));
+    
+    switch (ref_ast_node.node_type) {
+        c.AR_EXPRESSION_AST_TYPE__LITERAL_INT => {
+            var buffer: [32]u8 = undefined;
+            _ = std.fmt.bufPrintZ(&buffer, "{d}", .{ref_ast_node.data.literal_int.value}) catch return ar_allocator.dupe("error", "Expression path format error");
+            return ar_allocator.dupe(&buffer, "Expression path for int literal");
+        },
+        c.AR_EXPRESSION_AST_TYPE__LITERAL_DOUBLE => {
+            var buffer: [64]u8 = undefined;
+            _ = std.fmt.bufPrintZ(&buffer, "{d:.6}", .{ref_ast_node.data.literal_double.value}) catch return ar_allocator.dupe("error", "Expression path format error");
+            return ar_allocator.dupe(&buffer, "Expression path for double literal");
+        },
+        c.AR_EXPRESSION_AST_TYPE__LITERAL_STRING => {
+            var buffer: [256]u8 = undefined;
+            const str_value = ref_ast_node.data.literal_string.own_value orelse "";
+            _ = std.fmt.bufPrintZ(&buffer, "\"{s}\"", .{str_value}) catch return ar_allocator.dupe("error", "Expression path format error");
+            return ar_allocator.dupe(&buffer, "Expression path for string literal");
+        },
+        c.AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS => {
+            var buffer: [512]u8 = undefined;
+            var offset: usize = 0;
+            
+            // Add base
+            const base = ref_ast_node.data.memory_access.own_base;
+            if (base) |b| {
+                const base_len = std.mem.len(b);
+                if (base_len > 0 and base_len < buffer.len) {
+                    @memcpy(buffer[offset..offset+base_len], b[0..base_len]);
+                    offset += base_len;
+                }
+            }
+            
+            // Add path segments from list
+            const path_list = ref_ast_node.data.memory_access.own_path;
+            if (path_list) |list| {
+                const path_count = c.ar_list__count(list);
+                const path_items = c.ar_list__items(list);
+                
+                if (path_items) |items| {
+                    var i: usize = 0;
+                    while (i < path_count) : (i += 1) {
+                        if (offset < buffer.len - 1) {
+                            buffer[offset] = '.';
+                            offset += 1;
+                        }
+                        const segment = @as([*:0]const u8, @ptrCast(items[i]));
+                        const seg_len = std.mem.len(segment);
+                        if (seg_len > 0 and offset + seg_len < buffer.len) {
+                            @memcpy(buffer[offset..offset+seg_len], segment[0..seg_len]);
+                            offset += seg_len;
+                        }
+                    }
+                    ar_allocator.free(path_items);
+                }
+            }
+            
+            buffer[offset] = 0;
+            return ar_allocator.dupe(&buffer, "Expression path for memory access");
+        },
+        c.AR_EXPRESSION_AST_TYPE__BINARY_OP => {
+            return ar_allocator.dupe("<expression>", "Expression path for binary op");
+        },
+        else => {
+            return ar_allocator.dupe("unknown", "Expression path for unknown type");
+        }
+    }
+}

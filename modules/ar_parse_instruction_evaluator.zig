@@ -7,6 +7,7 @@ const c = @cImport({
     @cInclude("ar_expression_evaluator.h");
     @cInclude("ar_log.h");
     @cInclude("ar_frame.h");
+    @cInclude("ar_heap.h");
     @cInclude("string.h");
     @cInclude("stdlib.h");
 });
@@ -17,6 +18,28 @@ const ar_parse_instruction_evaluator_t = struct {
     ref_log: ?*c.ar_log_t,                              // Borrowed reference to log instance
     ref_expr_evaluator: ?*c.ar_expression_evaluator_t,  // Expression evaluator (borrowed reference)
 };
+
+// Helper function to report nested container error with detailed information
+fn _report_nested_container_error(
+    ref_evaluator: *const ar_parse_instruction_evaluator_t, 
+    ref_ast: ?*const c.ar_expression_ast_t, 
+    param_name: []const u8, 
+    ref_frame: ?*const c.ar_frame_t
+) void {
+    const own_path = c.ar_expression_ast__format_path(ref_ast);
+    defer ar_allocator.free(own_path);
+    
+    // Try to evaluate to see the structure
+    const temp_result = c.ar_expression_evaluator__evaluate(ref_evaluator.ref_expr_evaluator, ref_frame, ref_ast);
+    const own_structure = c.ar_data__format_structure(temp_result, 3);
+    defer if (own_structure) |s| c.AR__HEAP__FREE(s);
+    
+    var buffer: [1024]u8 = undefined;
+    const structure_str = if (own_structure) |s| s else @as([*c]const u8, "null");
+    const msg = std.fmt.bufPrintZ(&buffer, "Cannot parse with nested containers in {s} (expression: {s}, structure: {s})", 
+        .{param_name, own_path, structure_str}) catch undefined;
+    c.ar_log__error(ref_evaluator.ref_log, msg.ptr);
+}
 
 /// Helper function to parse a value string and determine its type
 fn _parse_value_string(value_str: ?[*:0]const u8) ?*c.ar_data_t {
@@ -113,7 +136,7 @@ export fn ar_parse_instruction_evaluator__evaluate(
     // Evaluate template expression AST
     const template_result = c.ar_expression_evaluator__evaluate(ref_evaluator.?.ref_expr_evaluator, ref_frame, ref_template_ast);
     const own_template_data = c.ar_data__claim_or_copy(template_result, ref_evaluator) orelse {
-        c.ar_log__error(ref_evaluator.?.ref_log, "Cannot parse with nested containers in template (no deep copy support)");
+        _report_nested_container_error(ref_evaluator.?, ref_template_ast, "template", ref_frame);
         return false;
     };
     defer c.ar_data__destroy(own_template_data);
@@ -125,7 +148,7 @@ export fn ar_parse_instruction_evaluator__evaluate(
     // Evaluate input expression AST
     const input_result = c.ar_expression_evaluator__evaluate(ref_evaluator.?.ref_expr_evaluator, ref_frame, ref_input_ast);
     const own_input_data = c.ar_data__claim_or_copy(input_result, ref_evaluator) orelse {
-        c.ar_log__error(ref_evaluator.?.ref_log, "Cannot parse with nested containers in input (no deep copy support)");
+        _report_nested_container_error(ref_evaluator.?, ref_input_ast, "input", ref_frame);
         return false;
     };
     defer c.ar_data__destroy(own_input_data);

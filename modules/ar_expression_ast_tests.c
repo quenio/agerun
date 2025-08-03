@@ -322,6 +322,122 @@ static void test_null_node_safety(void) {
     ar_expression_ast__destroy(NULL);
 }
 
+static void test_format_path_literals(void) {
+    printf("Testing format path for literal values...\n");
+    
+    // Test integer literal
+    ar_expression_ast_t *own_int = ar_expression_ast__create_literal_int(42);
+    char *path = ar_expression_ast__format_path(own_int);
+    assert(path != NULL);
+    assert(strcmp(path, "42") == 0);
+    AR__HEAP__FREE(path);
+    ar_expression_ast__destroy(own_int);
+    
+    // Test negative integer
+    own_int = ar_expression_ast__create_literal_int(-100);
+    path = ar_expression_ast__format_path(own_int);
+    assert(path != NULL);
+    assert(strcmp(path, "-100") == 0);
+    AR__HEAP__FREE(path);
+    ar_expression_ast__destroy(own_int);
+    
+    // Test double literal
+    ar_expression_ast_t *own_double = ar_expression_ast__create_literal_double(3.14);
+    path = ar_expression_ast__format_path(own_double);
+    assert(path != NULL);
+    // Just check it starts with "3.14" due to floating point formatting variations
+    assert(strncmp(path, "3.14", 4) == 0);
+    AR__HEAP__FREE(path);
+    ar_expression_ast__destroy(own_double);
+    
+    // Test string literal
+    ar_expression_ast_t *own_string = ar_expression_ast__create_literal_string("hello");
+    path = ar_expression_ast__format_path(own_string);
+    assert(path != NULL);
+    assert(strcmp(path, "\"hello\"") == 0);
+    AR__HEAP__FREE(path);
+    ar_expression_ast__destroy(own_string);
+    
+    // Test empty string
+    own_string = ar_expression_ast__create_literal_string("");
+    path = ar_expression_ast__format_path(own_string);
+    assert(path != NULL);
+    assert(strcmp(path, "\"\"") == 0);
+    AR__HEAP__FREE(path);
+    ar_expression_ast__destroy(own_string);
+    
+    // Test NULL AST
+    path = ar_expression_ast__format_path(NULL);
+    assert(path != NULL);
+    assert(strcmp(path, "unknown") == 0);
+    AR__HEAP__FREE(path);
+}
+
+static void test_format_path_memory_access(void) {
+    printf("Testing format path for memory access...\n");
+    
+    // Test simple memory access
+    ar_expression_ast_t *own_memory = ar_expression_ast__create_memory_access("memory", NULL, 0);
+    char *path = ar_expression_ast__format_path(own_memory);
+    assert(path != NULL);
+    assert(strcmp(path, "memory") == 0);
+    AR__HEAP__FREE(path);
+    ar_expression_ast__destroy(own_memory);
+    
+    // Test memory access with path
+    const char *path_components[] = {"user", "name"};
+    own_memory = ar_expression_ast__create_memory_access("memory", path_components, 2);
+    path = ar_expression_ast__format_path(own_memory);
+    assert(path != NULL);
+    assert(strcmp(path, "memory.user.name") == 0);
+    AR__HEAP__FREE(path);
+    ar_expression_ast__destroy(own_memory);
+    
+    // Test message access
+    const char *msg_path[] = {"sender"};
+    ar_expression_ast_t *own_message = ar_expression_ast__create_memory_access("message", msg_path, 1);
+    path = ar_expression_ast__format_path(own_message);
+    assert(path != NULL);
+    assert(strcmp(path, "message.sender") == 0);
+    AR__HEAP__FREE(path);
+    ar_expression_ast__destroy(own_message);
+    
+    // Test context access
+    const char *ctx_path[] = {"config", "debug", "level"};
+    ar_expression_ast_t *own_context = ar_expression_ast__create_memory_access("context", ctx_path, 3);
+    path = ar_expression_ast__format_path(own_context);
+    assert(path != NULL);
+    assert(strcmp(path, "context.config.debug.level") == 0);
+    AR__HEAP__FREE(path);
+    ar_expression_ast__destroy(own_context);
+}
+
+static void test_format_path_binary_op(void) {
+    printf("Testing format path for binary operations...\n");
+    
+    // Test binary operation formatting
+    ar_expression_ast_t *own_left = ar_expression_ast__create_literal_int(10);
+    ar_expression_ast_t *own_right = ar_expression_ast__create_literal_int(20);
+    ar_expression_ast_t *own_add = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__ADD, own_left, own_right);
+    
+    char *path = ar_expression_ast__format_path(own_add);
+    assert(path != NULL);
+    assert(strcmp(path, "<expression>") == 0);
+    AR__HEAP__FREE(path);
+    ar_expression_ast__destroy(own_add);
+    
+    // Test complex expression
+    own_left = ar_expression_ast__create_memory_access("memory", (const char*[]){"x"}, 1);
+    own_right = ar_expression_ast__create_literal_int(5);
+    ar_expression_ast_t *own_mul = ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__MULTIPLY, own_left, own_right);
+    
+    path = ar_expression_ast__format_path(own_mul);
+    assert(path != NULL);
+    assert(strcmp(path, "<expression>") == 0);
+    AR__HEAP__FREE(path);
+    ar_expression_ast__destroy(own_mul);
+}
+
 int main(void) {
     printf("Running expression AST node tests...\n\n");
     
@@ -340,6 +456,9 @@ int main(void) {
     test_complex_expression_tree();
     test_all_operator_types();
     test_null_node_safety();
+    test_format_path_literals();
+    test_format_path_memory_access();
+    test_format_path_binary_op();
     
     printf("\nAll expression AST node tests passed!\n");
     return 0;
