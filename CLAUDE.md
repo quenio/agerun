@@ -8,37 +8,10 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 
 ## Quick Start
 
-**Primary Build Tool**: `make build 2>&1` - runs everything with minimal output (~20 lines)
-- Use before commits and for quick verification
-- Includes: build, static analysis, all tests, sanitizers, leak check, doc validation
-- **ALWAYS follow with `make check-logs`** to verify no hidden issues in log files
-- **Note**: Using `2>&1` captures stderr to see warnings/errors immediately
-
-**Individual Commands** (when needed):
-```bash
-make                  # Shows help with all available targets
-make clean            # Clean all build artifacts
-make analyze-exec 2>&1     # Static analysis on executable code
-make analyze-tests 2>&1    # Static analysis on tests
-make run-tests 2>&1        # Run tests (auto-rebuilds) 
-make sanitize-tests 2>&1   # Run with ASan
-make run-exec 2>&1         # Build and run executable
-make test_name 2>&1        # Build/run specific test
-make check-naming     # Check naming conventions
-make check-docs       # Check documentation validity
-make check-all        # Run all code quality checks
-make check-logs       # Check build logs for hidden issues (use after make build)
-make add-newline FILE=<file>  # Add missing newline to file
-```
-
-**Makefile Usage Note**: Running `make` without any target shows a helpful list of all available targets. Use this as a guide to discover available commands.
-
-**Note**: Always run from repo root. Makefile handles directory changes automatically. Doc-only changes don't require testing. Always pause before build commands to check for custom scripts.
-
-**Build behavior**: `make build 2>&1` builds from current state (no clean). To build clean, run: `make clean build 2>&1`
-**IMPORTANT**: Always run `make check-logs` after `make build 2>&1` or `make clean build 2>&1` to catch hidden issues!
-
-**Scripts Directory**: All build and utility scripts are located in `/scripts/`. Never run these scripts directly - always use the corresponding make targets. Scripts will fail with an error message if run outside the repository root.
+**Primary**: `make build 2>&1` → `make check-logs` (MANDATORY sequence) ([details](kb/quick-start-commands.md))
+**Clean build**: `make clean build 2>&1` → `make check-logs`  
+**Help**: `make` shows all targets
+**Scripts**: Use make targets, not direct execution from `/scripts/`
 
 ## Git Workflow (CRITICAL)
 
@@ -138,67 +111,14 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 ### 2. Test-Driven Development (MANDATORY)
 
-**Pre-modification Rule**: Run module tests BEFORE changing any module
+**Pre-modification**: Run module tests BEFORE changes
+**Cycle**: Red→Green→Refactor for EACH behavior, NO commits during ([details](kb/red-green-refactor-cycle.md), [cycle details](kb/tdd-cycle-detailed-explanation.md))
+**Complete ALL cycles** → Update docs/TODO/CHANGELOG → Single commit
 
-**Red-Green-Refactor Cycle (ALL THREE PHASES REQUIRED)** ([details](kb/red-green-refactor-cycle.md)):
-
-**CRITICAL**: This is a CYCLE that repeats for each new behavior/feature. NO commits during the cycle!
-
-For each new behavior/feature:
-1. **Red Phase**: Write failing test FIRST
-   - Write test for ONE specific behavior (or modify existing test to fail)
-   - Run test to confirm it ACTUALLY FAILS (comments don't count as failure!)
-   - If you can't create a failing test, document as "consistency fix" not TDD
-   - Do NOT commit
-   
-2. **Green Phase**: Write MINIMUM code to pass
-   - Make the test pass with simplest implementation
-   - Run test to confirm it passes
-   - Check memory report for leaks
-   - Do NOT commit
-   
-3. **Refactor Phase (MANDATORY - DO NOT SKIP)**: Improve while keeping tests green
-   - Look for improvements:
-     - Remove code duplication
-     - Improve naming
-     - Extract helper functions
-     - Simplify complex logic
-     - Apply consistent patterns
-   - Run tests after each change
-   - Even if no refactoring needed, you MUST explicitly state: "Refactor phase: No improvements identified"
-   - Do NOT commit
-
-**REPEAT THE CYCLE** for next behavior/feature
-
-**Only after ALL cycles are complete**:
-- Update documentation
-- Update TODO.md
-- Update CHANGELOG.md
-- THEN commit all changes together
-
-**IMPORTANT**: 
-- The cycle is NOT complete after just Red-Green
-- Refactor phase is MANDATORY, not optional
-- NO commits until ALL TDD cycles for the feature are done
-- One commit per feature, not per cycle
-
-**Example**: Multiple cycles (create/destroy, evaluate, wrapper) → Only then docs/commit
-
-**Test Requirements**:
-- Every module MUST have tests with BDD structure ([details](kb/bdd-test-structure.md))
-- One test per behavior, isolated & fast, zero leaks
-- Names reflect behavior ([details](kb/test-function-naming-accuracy.md))
-- Global cleanup: `ar_methodology__cleanup()` & `ar_agency__reset()`
-- Process messages: `while (ar_system__process_next_message_with_instance(own_system));`
-- Process wake messages after agent creation to prevent leaks ([details](kb/agent-wake-message-processing.md))
-- Use fixtures when available, run with `make test_name 2>&1`
-- Adapt fixtures when APIs change ([details](kb/test-fixture-api-adaptation.md))
-- Keep diagnostic output in tests for debugging ([details](kb/test-diagnostic-output-preservation.md))
-- Simplify tests by reverting to origin when debugging ([details](kb/test-simplification-through-reversion.md))
-- Fork tests must run before system creation ([details](kb/test-execution-order-dependencies.md))
-
-**TDD Advanced**: Break large refactoring into sequential cycles, one behavior each ([details](kb/tdd-advanced-large-refactoring.md))
-**API Simplification**: Use TDD for safe API changes ([details](kb/tdd-api-simplification.md))
+**Test Requirements**: BDD structure, one test per behavior, zero leaks ([details](kb/bdd-test-structure.md))
+**Cleanup**: `ar_methodology__cleanup()` & `ar_agency__reset()`
+**Messages**: Process all including wake messages ([details](kb/agent-wake-message-processing.md))
+**Advanced patterns**: ([details](kb/tdd-advanced-large-refactoring.md), [API changes](kb/tdd-api-simplification.md))
 
 ### 3. Parnas Design Principles (STRICT ENFORCEMENT) ✅
 
@@ -308,32 +228,10 @@ grep -r "function_name\|concept" modules/
 
 ### 6. Module Development
 
-**Core Architecture**:
-- **Parsing vs Evaluation**: Data owner parses (methodology→methods), consumer evaluates (interpreter→ASTs)
-- **Opaque Types**: `typedef struct ar_<module>_s ar_<module>_t;` in header, definition in .c only ([details](kb/opaque-types-pattern.md))
-- **Module Size**: Split at ~850 lines into focused modules (e.g., agency→4 modules)
-- **Internal vs External**: Registries/resolvers=internal, stores=external ([details](kb/internal-vs-external-module-pattern.md))
-- **Parser aliases**: Support all function name variants ([details](kb/parser-function-alias-support.md))
-
-**Key Patterns**:
-- Parse once, evaluate many times (store ASTs, not source)
-- Use dynamic collections (lists/maps), not fixed arrays
-- String-based IDs for reliable persistence
-- Read interface first instead of guessing function names
-- No platform-specific code (`#ifdef __linux__` forbidden)
-- Create public APIs to eliminate duplication across modules
-- Delegation: Pass log through layers for error propagation ([details](kb/module-delegation-error-propagation.md))
-- Simplify instructions to single responsibility ([details](kb/instruction-behavior-simplification.md))
-
-**Code Quality**: Functions <50 lines, params ≤5, named constants, remove unused code, validate docs ([details](kb/module-quality-checklist.md))
-
-**Module Instantiation**: Make modules instantiable bottom-up by dependency order ([details](kb/module-instantiation-prerequisites.md))
-- Dependencies become instance fields ([details](kb/instance-association-pattern.md))
-- Can eliminate coordinator modules ([details](kb/persistence-simplification-through-instantiation.md))
-- Global→instance migration pattern for backward compatibility ([details](kb/global-to-instance-api-migration.md))
-- Single global instance pattern for modules with shared resources ([details](kb/global-instance-wrapper-anti-pattern.md))
-- Instance APIs only clean up owned resources ([details](kb/instance-api-resource-cleanup-pattern.md))
-- NULL dependencies fallback to global APIs ([details](kb/null-dependency-fallback-pattern.md))
+**Architecture**: Owner parses→consumer evaluates, opaque types, ~850 line limit ([details](kb/module-development-patterns.md))
+**Patterns**: Parse once→evaluate many, dynamic collections, string IDs ([details](kb/opaque-types-pattern.md))
+**Quality**: <50 lines/function, ≤5 params, validate docs ([details](kb/module-quality-checklist.md))
+**Instantiation**: Bottom-up by dependencies ([details](kb/module-instantiation-prerequisites.md))
 
 ### 7. Method Development
 
@@ -354,40 +252,11 @@ grep -r "function_name\|concept" modules/
 
 ### 8. Development Practices
 
-**Directory Navigation**: Always use absolute paths ([details](kb/absolute-path-navigation.md))
-```bash
-cd /Users/quenio/Repos/agerun/bin  # Correct
-cd bin  # Wrong - avoid relative paths
-```
-
-**Backup Files**: Never create them - use git instead
-- `git stash` for temporary saves
-- `git diff > changes.patch` for patches
-- If created accidentally: `git reset HEAD <file>`
-
-**Script Development**: All new, reusable Python/Bash scripts should be added under the `./scripts` dir ([details](kb/progressive-tool-enhancement.md))
-- Add directory check to ensure scripts run from repo root
-- Create corresponding make target for user-facing scripts
-- Scripts should fail with helpful error messages suggesting the make target
-- Document the make target in the Makefile help section
-- NEVER use Makefile variables $(VAR) in bash scripts - causes command substitution errors
-- Test enhanced scripts preserve all original functionality ([details](kb/script-backward-compatibility-testing.md))
-- Build output: quiet success, verbose failure (hide output when working, show full errors)
-- **Parallel builds**: Shared .PHONY deps → hoist to parent target (e.g., install-scan-build → build)
-- **Command updates**: Update Claude commands when new patterns emerge ([details](kb/command-continuous-improvement-pattern.md))
-- **Migration scripts**: Create specialized scripts for systematic updates ([details](kb/migration-script-systematic-updates.md))
-
-**Debug Tools**: Memory (`make sanitize-tests 2>&1`), static analysis, crashes (lldb), patterns testing ([details](kb/development-debug-tools.md))
-**Command Output**: Always use `2>&1` to capture stderr when debugging - warnings and errors often go to stderr ([details](kb/stderr-redirection-debugging.md))
-**CI Debugging**: Use artifact upload for CI-specific failures ([details](kb/ci-debugging-artifact-upload.md))
-**Log Module Debug Output**: When compiled with DEBUG flag (default for all make targets), ar_log events are printed to stderr in addition to log file
-
-**Expression Ownership** (CRITICAL):
-- References (`memory.x`): Don't destroy - borrowed from memory/context
-- New objects (`2+3`, `"a"+"b"`): Must destroy - evaluator creates them
-- Self-ownership check: Never let `values_result == mut_memory`
-- Context lifetime: NEVER destroy context or its elements in evaluators
-- Debug ownership: Use `ar_data__take_ownership()` to verify status
+**Navigation**: Use absolute paths only ([details](kb/absolute-path-navigation.md))
+**Backups**: Use git stash/diff, never .bak files
+**Scripts**: Add to `/scripts/` with make targets ([details](kb/progressive-tool-enhancement.md))
+**Debug**: `make sanitize-tests 2>&1`, always redirect stderr ([details](kb/development-debug-tools.md))
+**Expression ownership**: References=borrowed, new objects=destroy ([details](kb/expression-ownership-rules.md))
 
 ### 9. Error Propagation Pattern
 
@@ -438,26 +307,12 @@ Never compile directly with gcc.
 - **Be frank, not polite**: Only confirm correctness when certain - honest disagreement > polite agreement
 - **Todo list integrity**: Mark items complete, never remove them - preserves task history
 
-**Pre-Commit Checklist** (MANDATORY - NO EXCEPTIONS):
-1. `make clean build 2>&1` - Fix ALL issues before proceeding (includes doc validation) ([details](kb/build-verification-before-commit.md))
-   - **CRITICAL**: Build must exit with code 0 - verify with `echo $?` ([details](kb/build-system-exit-code-verification.md))
-   - **NEW REQUIREMENT**: Always follow with `make check-logs` to catch hidden issues! ([details](kb/build-log-verification-requirement.md))
-   - **Report build time**: Include duration from output (e.g., "took 1m 3s") ([details](kb/build-time-reporting.md))
-   - **Exception**: Type renames only need `make check-naming && make run-tests 2>&1`
-   - **Exception**: Doc-only changes only need `make check-docs`
-   - **Exception**: Comment-only changes only need `make check-naming`
-   - **Exception**: Skip tests if just run successfully (avoid redundant execution)
-2. **Update module .md files if interfaces changed** - CRITICAL: Interface changes MUST include docs in same commit; language migrations need dependency tree updates ([details](kb/documentation-language-migration-updates.md))
-   - **Major refactoring**: Use comprehensive checklist for dependency trees, module index ([details](kb/refactoring-phase-completion-checklist.md))
-3. **Review ALL documentation for outdated references** - Refactoring often leaves stale docs
-4. `grep -l "function_name" modules/*.md` - Check docs for any API changes
-   - **Hybrid modules**: Update both ar_io.md AND README.md to note Zig/C split approach
-5. Update TODO.md - Mark completed, add new tasks
-6. Update CHANGELOG.md (NON-NEGOTIABLE)
-7. `git diff` - Verify all changes intentional; check full scope ([details](kb/commit-scope-verification.md))
-8. Check for backup files outside ./bin (*.backup, *.bak, *.tmp)
-9. Remove any log files: `find . -name "*.log" -type f | grep -v bin/ | xargs rm -f`
-10. Only then: `git commit`
+**Pre-Commit Checklist** (MANDATORY): ([details](kb/pre-commit-checklist-detailed.md))
+1. `make clean build 2>&1` → verify exit 0 → `make check-logs` ([details](kb/build-verification-before-commit.md))
+2. Update docs for API changes ([details](kb/documentation-language-migration-updates.md))
+3. Check outdated refs: `grep -l "old_name" modules/*.md`
+4. Update TODO.md & CHANGELOG.md
+5. `git diff` full review → clean temp files → commit
 
 **Remember**: Complete ALL TDD Cycles → Docs → TODO → CHANGELOG → Commit ([details](kb/tdd-feature-completion-before-commit.md))
 
@@ -469,46 +324,10 @@ Never compile directly with gcc.
 
 ### 13. Refactoring Patterns
 
-**Core Principles**:
-- **Preserve behavior**: Tests define expected behavior - fix implementation, not tests
-- **Move code, don't rewrite**: Use diff to verify code is moved, not reimplemented  
-- **Clean state recovery**: If refactoring fails, revert completely rather than debug
-- **Validate changes**: After adding validation, test with intentional errors to ensure no false negatives
-- **Incremental commits**: Commit logical chunks even with remaining issues - note them for future work
-- **Frame migration**: Convert evaluators incrementally; facade manages both patterns during transition
-- **Complete API verification**: `grep -r "old_api_pattern" .` after interface changes - check ALL clients ([details](kb/api-migration-completion-verification.md))
-- **Ownership transitions**: Update naming immediately when changing ref_→own_ ([details](kb/refactoring-ownership-transitions.md))
-- **Dependency injection**: Avoid when 1:1 relationships exist ([details](kb/dependency-injection-anti-pattern.md))
-- **Post-refactoring cleanup**: Remove obsolete modules after major refactoring ([details](kb/module-removal-checklist.md))
-- **Systematic cleanup**: Remove ALL obsolete helpers after refactoring ([details](kb/refactoring-systematic-cleanup.md))
-
-**Bulk Operations Patterns**:
-- **Symbol renaming**: Use `rename_symbols.py` for safe whole-word renaming ([details](kb/script-enhancement-over-one-off.md))
-- **Function renaming**: Follow systematic pattern for codebase-wide function renames ([details](kb/systematic-function-renaming-pattern.md))
-- **Documentation fixes**: Use `batch_fix_docs.py` for large-scale documentation error resolution ([details](kb/automated-batch-documentation-fixes.md))
-- **Documentation fix enhancement**: Enhance script when it can't fix all errors ([details](kb/batch-documentation-fix-enhancement.md))
-- **Instruction renaming**: Follow systematic pattern for language changes ([details](kb/language-instruction-renaming-pattern.md))
-- **Search-and-replace precision**: Avoid unintended changes with careful targeting ([details](kb/search-replace-precision.md))
-
-```bash
-# PREFERRED: Use specialized scripts for bulk operations
-python3 scripts/rename_symbols.py --group <group-name> --live
-python3 scripts/batch_fix_docs.py --dry-run  # Preview changes first
-
-# AVOID sed for bulk renames - error-prone with partial matches
-# If existing scripts don't support your case, enhance them first
-# Script supports both type renaming (TYPE_RENAMES) and module renaming (MODULE_RENAMES) - see kb/module-renaming-script-enhancement.md
-# Only use sed for one-off changes with careful verification
-```
-
-**Code Movement Verification**:
-```bash
-# MANDATORY: Verify code is moved, not rewritten ([details](kb/code-movement-verification.md))
-diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
-```
-
-**Key Patterns**: Module cohesion, code movement verification, test preservation, complete implementations ([details](kb/refactoring-key-patterns.md))
-**Defensive consistency**: Always use defensive APIs even when ownership is "known" ([details](kb/defensive-programming-consistency.md))
+**Principles**: Preserve behavior, move don't rewrite, verify moves ([details](kb/refactoring-patterns-detailed.md))
+**Bulk ops**: Use scripts not sed - `rename_symbols.py`, `batch_fix_docs.py` ([details](kb/script-enhancement-over-one-off.md))
+**Verification**: `diff -u <(sed -n '130,148p' old.c) <(sed -n '11,29p' new.c)` ([details](kb/code-movement-verification.md))
+**Key patterns**: ([details](kb/refactoring-key-patterns.md))
 
 ### 14. Plan Verification and Review ([details](kb/plan-verification-and-review.md))
 
@@ -556,56 +375,11 @@ diff -u <(sed -n '130,148p' original.c) <(sed -n '11,29p' new.c)
 
 ### 16. Leveraging Zig for AgeRun Development
 
-**Zig Documentation Reference**: https://ziglang.org/documentation/0.14.1/
-**C Interop Guide**: https://ziglang.org/documentation/0.14.1/#C - Follow for full C compatibility
-
-**When to Consider Zig**:
-- Performance-critical components requiring zero-cost abstractions
-- Cross-platform modules where C portability becomes complex
-- New modules that would benefit from compile-time safety guarantees
-- Components requiring precise memory layout control
-- Pure computation modules (parsers, validators) - often need no heap
-- Modules with complex error cleanup patterns - use defer ([details](kb/zig-defer-error-cleanup-pattern.md))
-- Evaluator migrations: Start simple→complex for risk reduction ([details](kb/evaluator-migration-priority-strategy.md))
-
-**Key Zig Features for AgeRun**:
-- **Manual Memory Management**: Aligns with AgeRun's ownership model
-- **Compile-time Safety**: Catches errors before runtime
-- **C Interoperability**: Can interface directly with existing AgeRun C modules
-- **No Hidden Control Flow**: Matches AgeRun's explicit design philosophy
-- **Error Handling**: Explicit error unions complement AgeRun's error propagation
-
-**Integration Guidelines**: See comprehensive guide for all details ([details](kb/zig-integration-comprehensive.md))
-
-**Migration Process**: Rename .c→.bak before testing Zig implementation - C takes precedence ([details](kb/c-to-zig-module-migration.md))
-
-**Zig Best Practices** (NEW):
-- **Type Usage**: Use concrete Zig types for your module, C types for others ([details](kb/zig-type-usage-patterns.md))
-- **No unnecessary casts**: Return/accept concrete types to eliminate `@ptrCast`
-- **Direct field access**: Use `param.?.field` instead of creating temporary variables
-- **Const correctness**: Make parameters const if never mutated - update headers too
-- **Skip helper functions**: Direct calls often cleaner than C-style helpers
-- **Verify API behavior**: Read function docs/impl before use ([details](kb/api-behavior-verification.md))
-- **Defer limitations**: Manual cleanup still needed when resource used later
-
-**Zig Integration**: Use ar_allocator, maintain C API, follow ownership conventions ([details](kb/zig-integration-comprehensive.md))
-**Memory allocation**: Always use ar_allocator.free, NEVER ar_heap__free ([details](kb/zig-memory-allocation-with-ar-allocator.md))
-**Ownership with claim_or_copy**: Essential pattern for evaluator migrations ([details](kb/zig-ownership-claim-or-copy-pattern.md))
-**errdefer limitations**: Doesn't work with `orelse return null` - use error unions ([details](kb/zig-errdefer-value-capture-pattern.md))
-**Error path testing**: Create `*_error_tests.c` for complex modules ([details](kb/zig-error-path-testing-pattern.md))
-
-**Zig Struct Modules** (NEW): TitleCase pure Zig modules for internal use ([details](kb/zig-struct-modules-pattern.md))
-- **Purpose**: Internal Zig-only components with idiomatic patterns, NOT for C interop
-- **Naming**: TitleCase (e.g., `DataStore.zig`) vs C-ABI modules (`ar_module.zig`)
-- **Limitation**: Cannot use if module depends on C-ABI ([details](kb/zig-struct-module-c-dependency-limitation.md))
-- **Documentation**: Required `.md` file (e.g., `DataStore.md`) with full API reference
-- **Testing**: `ModuleNameTests.zig` using Zig's `test` keyword infrastructure
-- **No headers**: Import directly with `@import("DataStore.zig")`
-- **API style**: `init`/`deinit`, `camelCase` functions, allocator as first parameter
-- **Ownership**: Still use `own_`, `mut_`, `ref_` prefixes on ALL fields/variables
-- **Use cases**: Internal tools, Zig-specific features (comptime, error unions, slices)
-- **Build integration**: Tests run via `make run-tests 2>&1` alongside C tests ([details](kb/zig-test-build-integration.md))
-- **Static analysis**: Limited to ast-check & fmt; consider zlint for more ([details](kb/zig-static-analysis-tools.md))
+**Docs**: https://ziglang.org/documentation/0.14.1/ (see #C for interop)
+**When**: Performance, cross-platform, safety needs, defer patterns ([details](kb/zig-module-development-guide.md))
+**Migration**: Rename .c→.bak, C takes precedence ([details](kb/c-to-zig-module-migration.md))
+**Best practices**: Concrete types, ar_allocator only, ownership prefixes ([details](kb/zig-integration-comprehensive.md))
+**Struct modules**: TitleCase internal-only modules ([details](kb/zig-struct-modules-pattern.md))
 
 ## AgeRun Language Notes
 

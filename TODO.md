@@ -6,6 +6,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### Documentation Compaction (Completed 2025-08-03)
+- [x] Compacted CLAUDE.md by extracting verbose content to KB articles
+- [x] Created 6 new KB articles: quick-start-commands, tdd-cycle-detailed-explanation, pre-commit-checklist-detailed, module-development-patterns, zig-module-development-guide, refactoring-patterns-detailed
+- [x] Reduced CLAUDE.md size by ~40% while preserving all critical information
+- [x] Added cross-references between new and existing KB articles
+- [x] Validated all documentation with make check-docs
+
 ### Knowledge Base Enhancement - Anti-Pattern Documentation (Completed 2025-08-02)
 - [x] Created Global Instance Wrapper Anti-Pattern article documenting dangerous shared ownership
 - [x] Updated existing instantiation articles with cross-references to the anti-pattern

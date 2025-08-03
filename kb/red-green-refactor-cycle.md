@@ -56,6 +56,7 @@ ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner) {
 ## Related Patterns
 - [TDD Advanced Large Refactoring](tdd-advanced-large-refactoring.md)
 - [Ownership Pattern Extraction](ownership-pattern-extraction.md)
+- [TDD Cycle Detailed Explanation](tdd-cycle-detailed-explanation.md)
 - Test-driven development methodology
 - Incremental feature development
 - Code quality maintenance

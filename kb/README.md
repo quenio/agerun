@@ -39,6 +39,12 @@ Each learning file contains:
 - [Refactoring Phase Completion Checklist](refactoring-phase-completion-checklist.md)
 - [Commit Scope Verification](commit-scope-verification.md)
 - [Architectural Review in Feedback](architectural-review-in-feedback.md)
+- [Quick Start Commands](quick-start-commands.md)
+- [TDD Cycle Detailed Explanation](tdd-cycle-detailed-explanation.md)
+- [Pre-Commit Checklist Detailed](pre-commit-checklist-detailed.md)
+- [Module Development Patterns](module-development-patterns.md)
+- [Zig Module Development Guide](zig-module-development-guide.md)
+- [Refactoring Patterns Detailed](refactoring-patterns-detailed.md)
 
 ### Memory Management
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)

@@ -40,3 +40,8 @@ This is especially important after the build system issue discovered on 2025-07-
 - Comprehensive verification catches edge cases
 - CI/CD relies on clean builds from main branch
 - [CI Debugging Artifact Upload](ci-debugging-artifact-upload.md)
+- [Quick Start Commands](quick-start-commands.md)
+- [Pre-Commit Checklist Detailed](pre-commit-checklist-detailed.md)
+- [Build System Exit Code Verification](build-system-exit-code-verification.md)
+- [Build Time Reporting](build-time-reporting.md)
+- [Build Log Verification Requirement](build-log-verification-requirement.md)

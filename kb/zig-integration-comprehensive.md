@@ -105,3 +105,4 @@ export fn ar_example__destroy(own_module: ?*c.ar_example_t) void {  // EXAMPLE: 
 - [Zig Ownership with claim_or_copy](zig-ownership-claim-or-copy-pattern.md)
 - [Zig errdefer Value Capture Pattern](zig-errdefer-value-capture-pattern.md)
 - [Zig Error Path Testing Pattern](zig-error-path-testing-pattern.md)
+- [Zig Module Development Guide](zig-module-development-guide.md)
