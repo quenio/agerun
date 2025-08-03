@@ -21,6 +21,22 @@ This command guides you through a comprehensive process to:
 
 ## Step 1: Identify New Learnings
 
+**CRITICAL: Think deeply and thoroughly about what was learned in this session.**
+
+Before listing learnings, take time to:
+1. **Review the entire session chronologically** - Don't just skim recent messages
+2. **Look beyond the obvious** - Surface-level fixes often reveal deeper patterns
+3. **Re-examine user feedback** - Critical insights often come from corrections
+4. **Consider what DIDN'T work** - Failed approaches teach valuable lessons
+5. **Ask yourself**: "Is that all I learned? Think harder."
+
+**Deep Analysis Questions**:
+- What architectural patterns emerged from seemingly simple fixes?
+- What debugging strategies proved most effective?
+- What assumptions were challenged by user feedback?
+- What systematic approaches could prevent similar issues?
+- What subtle patterns appeared across multiple files?
+
 Please analyze this session and identify any new learnings, patterns, or insights that emerged. Consider:
 
 1. **Technical discoveries**: New tools, techniques, or patterns discovered
@@ -28,6 +44,11 @@ Please analyze this session and identify any new learnings, patterns, or insight
 3. **Error patterns**: Common mistakes or issues that were encountered
 4. **User feedback**: Important corrections or suggestions from the user
 5. **Tool usage**: New or better ways of using existing tools
+6. **Architectural insights**: Larger patterns revealed through specific work
+7. **Debugging revelations**: Approaches that led to breakthrough solutions
+8. **Testing strategies**: Patterns for simplifying or improving tests
+
+**Remember**: Initial analysis often misses 50% of learnings. After your first pass, review again and ask "What else did I learn that I'm not seeing?"
 
 For each learning, provide:
 - A clear description of what was learned
