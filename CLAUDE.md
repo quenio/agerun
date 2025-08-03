@@ -61,6 +61,9 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Evidence-based debugging**: Always verify with concrete evidence, not assumptions ([details](kb/evidence-based-debugging.md))
 **Build output review**: Review complete command output, not just final status ([details](kb/comprehensive-output-review.md))
 **Documentation compaction**: Extract verbose content to KB while preserving links ([details](kb/documentation-compacting-pattern.md))
+**Quantitative metrics**: Use specific numbers instead of vague descriptions ([details](kb/quantitative-documentation-metrics.md))
+**Self-documenting changes**: Add entries for significant modifications ([details](kb/self-documenting-modifications-pattern.md))
+**Retroactive tracking**: Add completed unplanned tasks to TODO.md ([details](kb/retroactive-task-documentation.md))
 
 **Documentation Standards (MANDATORY)** ([details](kb/documentation-standards-integration.md)):
 - **Real code only**: All examples must use actual AgeRun types/functions ([details](kb/validated-documentation-examples.md))

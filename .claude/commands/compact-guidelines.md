@@ -6,7 +6,7 @@ description: Make CLAUDE.md guidelines more concise by moving details to knowled
 
 ## Objective
 
-Make CLAUDE.md guidelines more concise and actionable by moving detailed explanations, examples, and implementation details to the knowledge base (./kb directory). For the complete compacting technique, see ([details](../../kb/documentation-compacting-pattern.md)).
+Make CLAUDE.md guidelines more concise and actionable by moving detailed explanations, examples, and implementation details to the knowledge base (./kb directory). For the complete compacting technique including document-specific strategies, see ([details](../../kb/documentation-compacting-pattern.md)).
 
 **CRITICAL PRINCIPLE**: Never create broken links. Every kb article you reference MUST either:
 1. Already exist (verify with `ls kb/article-name.md`), OR

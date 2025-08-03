@@ -7,6 +7,7 @@ How to effectively compress verbose documentation by extracting detailed content
 Long, detailed documentation in main guidelines creates cognitive overload and makes it harder to quickly find and follow essential rules. Compacting improves scanability while preserving comprehensive information.
 
 ## Example
+**Reference documentation compaction (CLAUDE.md)**:
 ```markdown
 // Before (in CLAUDE.md - 15 lines):
 **Memory Leak Detection**:
@@ -29,6 +30,19 @@ Long, detailed documentation in main guidelines creates cognitive overload and m
 - Debug strategy: Check report → Trace source → Fix naming → Add cleanup ([details](kb/memory-debugging-comprehensive-guide.md))
 ```
 
+**Historical record compaction (CHANGELOG.md)**:
+```markdown
+// Before (5 lines):
+- Updated documentation-compacting-pattern.md with critical insights
+- Added guidance on preserving existing KB references
+- Documented requirement to create KB articles before adding links
+- Emphasized bidirectional cross-referencing between articles
+- Added single commit strategy for related documentation changes
+
+// After (1 line):
+- Updated documentation-compacting-pattern.md with critical insights: preserving KB references, create-before-link, bidirectional cross-referencing, single commit strategy
+```
+
 ## Generalization
 **When to compact**:
 - Section exceeds 10-15 lines
@@ -36,7 +50,9 @@ Long, detailed documentation in main guidelines creates cognitive overload and m
 - Includes step-by-step procedures
 - Has multiple sub-bullets explaining concepts
 
-**How to compact**:
+**How to compact - Strategy depends on document type**:
+
+**For reference documentation (e.g., CLAUDE.md)**:
 1. Identify core actionable rules (keep these)
 2. **PRESERVE ALL EXISTING KB REFERENCES** - they ARE the detailed docs
 3. Create KB articles BEFORE adding any links to them
@@ -46,11 +62,20 @@ Long, detailed documentation in main guidelines creates cognitive overload and m
 7. Update existing KB articles to reference new ones (bidirectional)
 8. Ensure critical commands/rules remain visible
 
+**For historical records (e.g., CHANGELOG.md)**:
+1. Preserve chronological order - never extract to external files
+2. Combine related bullet points with semicolons
+3. Merge sub-bullets into parent bullet when possible
+4. Keep all dates, metrics, and key transitions inline
+5. Target 40-50% reduction while keeping all information
+6. Example: "Fixed X; resolved Y; updated Z" instead of 3 bullets
+
 **What to preserve inline**:
 - Mandatory requirements (MUST, MANDATORY, CRITICAL)
 - Essential commands (`make` targets, git commands)
 - Key file paths and naming patterns
 - Error prevention rules
+- All historical data in changelogs
 
 ## Implementation
 1. **Identify verbose sections**: Look for multi-paragraph explanations, long code examples, detailed procedures
@@ -72,3 +97,5 @@ Long, detailed documentation in main guidelines creates cognitive overload and m
 - [Just In Time Knowledge Base Reading](just-in-time-kb-reading.md)
 - [Cross-Referencing Knowledge Base](cross-referencing-knowledge-base.md)
 - [Markdown Link Resolution Patterns](markdown-link-resolution-patterns.md)
+- [Self-Documenting Modifications Pattern](self-documenting-modifications-pattern.md)
+- [Quantitative Documentation Metrics](quantitative-documentation-metrics.md)
