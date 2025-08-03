@@ -89,6 +89,61 @@ else
 fi
 echo
 
+# Check for compilation warnings and errors
+echo "--- Checking for compilation warnings/errors ---"
+# Look for compiler warnings and errors from gcc, clang, and zig
+# Exclude known safe patterns from analysis logs
+if grep -E "(warning:|error:|Error:|ERROR:)" logs/*.log 2>/dev/null | \
+   grep -v "logs/analyze-" | \
+   grep -v "No bugs found" | \
+   grep -v "WARNING: .* memory leaks detected" | \
+   grep -v "WARNING: ThreadSanitizer" | \
+   grep -v "ERROR: Test" | \
+   grep -v "ERROR: AddressSanitizer" | \
+   grep -v "ERROR: LeakSanitizer" | \
+   grep -v "ERROR: UndefinedBehaviorSanitizer" | \
+   grep -v "ERROR: Failed to create execution frame" | \
+   grep -v "ERROR: Unknown" | \
+   grep -v "ERROR: Expected" | \
+   grep -v "ERROR: Invalid" | \
+   grep -v "ERROR: Assignment" | \
+   grep -v "ERROR: Agent" | \
+   grep -E "(\.(c|h|zig):[0-9]+:|warning:|error:)" | \
+   grep -q .; then
+    echo "⚠️  COMPILATION WARNINGS/ERRORS FOUND:"
+    grep -n -E "(warning:|error:|Error:|ERROR:)" logs/*.log 2>/dev/null | \
+        grep -v "logs/analyze-" | \
+        grep -v "No bugs found" | \
+        grep -v "WARNING: .* memory leaks detected" | \
+        grep -v "WARNING: ThreadSanitizer" | \
+        grep -v "ERROR: Test" | \
+        grep -v "ERROR: AddressSanitizer" | \
+        grep -v "ERROR: LeakSanitizer" | \
+        grep -v "ERROR: UndefinedBehaviorSanitizer" | \
+        grep -v "ERROR: Failed to create execution frame" | \
+        grep -v "ERROR: Unknown" | \
+        grep -v "ERROR: Expected" | \
+        grep -v "ERROR: Invalid" | \
+        grep -v "ERROR: Assignment" | \
+        grep -v "ERROR: Agent" | \
+        grep -E "(\.(c|h|zig):[0-9]+:|warning:|error:)" | \
+        head -30
+else
+    echo "✓ No compilation warnings/errors found"
+fi
+echo
+
+# Check for linker warnings and errors
+echo "--- Checking for linker warnings/errors ---"
+# Look for ld warnings, undefined symbols, duplicate symbols, etc.
+if grep -E "(ld: warning:|ld: error:|undefined reference|undefined symbol|duplicate symbol|was built for newer.*version.*than being linked|relocation|cannot find -l)" logs/*.log 2>/dev/null | grep -q .; then
+    echo "⚠️  LINKER WARNINGS/ERRORS FOUND:"
+    grep -n -E "(ld: warning:|ld: error:|undefined reference|undefined symbol|duplicate symbol|was built for newer.*version.*than being linked|relocation|cannot find -l)" logs/*.log 2>/dev/null | head -30
+else
+    echo "✓ No linker warnings/errors found"
+fi
+echo
+
 # Check for memory leaks from custom heap tracking
 echo "--- Checking for memory leaks ---"
 if grep -q -E "Warning: [0-9]+ memory leaks? detected" logs/*.log 2>/dev/null; then
@@ -108,20 +163,57 @@ echo "Log files are in: logs/"
 echo "To view a specific log: less logs/<logname>.log"
 echo "To search logs: grep -r 'pattern' logs/"
 
-# Exit with error if any issues found (note: memory leaks don't fail the build currently)
+# Exit with error if any issues found
+CRITICAL_ISSUES=0
+WARNING_ISSUES=0
+
+# Check for critical issues
 if grep -q -E "(Assertion failed|Segmentation fault|Abort trap|core dumped|ERROR: AddressSanitizer|ERROR: LeakSanitizer|ERROR: UndefinedBehaviorSanitizer|WARNING: ThreadSanitizer|runtime error|SIGABRT|SIGSEGV)" logs/*.log 2>/dev/null; then
+    CRITICAL_ISSUES=1
+fi
+
+# Check for memory leaks
+if grep -q -E "Warning: [0-9]+ memory leaks? detected" logs/*.log 2>/dev/null; then
+    CRITICAL_ISSUES=1
+fi
+
+# Check for compilation warnings/errors
+if grep -E "(warning:|error:|Error:|ERROR:)" logs/*.log 2>/dev/null | \
+   grep -v "logs/analyze-" | \
+   grep -v "No bugs found" | \
+   grep -v "WARNING: .* memory leaks detected" | \
+   grep -v "WARNING: ThreadSanitizer" | \
+   grep -v "ERROR: Test" | \
+   grep -v "ERROR: AddressSanitizer" | \
+   grep -v "ERROR: LeakSanitizer" | \
+   grep -v "ERROR: UndefinedBehaviorSanitizer" | \
+   grep -v "ERROR: Failed to create execution frame" | \
+   grep -v "ERROR: Unknown" | \
+   grep -v "ERROR: Expected" | \
+   grep -v "ERROR: Invalid" | \
+   grep -v "ERROR: Assignment" | \
+   grep -v "ERROR: Agent" | \
+   grep -E "(\.(c|h|zig):[0-9]+:|warning:|error:)" | \
+   grep -q .; then
+    WARNING_ISSUES=1
+fi
+
+# Check for linker warnings/errors
+if grep -E "(ld: warning:|ld: error:|undefined reference|undefined symbol|duplicate symbol|was built for newer.*version.*than being linked|relocation|cannot find -l)" logs/*.log 2>/dev/null | grep -q .; then
+    WARNING_ISSUES=1
+fi
+
+# Report results
+if [ $CRITICAL_ISSUES -eq 1 ]; then
     echo
     echo "⚠️  CRITICAL ISSUES DETECTED - Please review the logs above!"
     exit 1
+elif [ $WARNING_ISSUES -eq 1 ]; then
+    echo
+    echo "⚠️  WARNINGS DETECTED - Build succeeded but there are compilation/linking warnings to address!"
+    exit 1
 else
-    # Check if we have memory leaks (treat as error)
-    if grep -q -E "Warning: [0-9]+ memory leaks? detected" logs/*.log 2>/dev/null; then
-        echo
-        echo "⚠️  MEMORY LEAKS DETECTED - These must be fixed!"
-        exit 1
-    else
-        echo
-        echo "✓ All checks passed - no issues detected"
-        exit 0
-    fi
+    echo
+    echo "✓ All checks passed - no issues detected"
+    exit 0
 fi
