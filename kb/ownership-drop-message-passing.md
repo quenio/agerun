@@ -77,3 +77,5 @@ ar_data__destroy(own_data);
 - [Agent Wake Message Processing](agent-wake-message-processing.md)
 - [Error Propagation Pattern](error-propagation-pattern.md)
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)
+- [Ownership Gap Vulnerability](ownership-gap-vulnerability.md)
+- [Message Ownership Flow](message-ownership-flow.md)

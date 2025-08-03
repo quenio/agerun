@@ -99,6 +99,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - Map iteration: get keys, destroy list & elements; persist with key/type then value
 - Wake/sleep messages: Agents mark ownership, system drops before destroy ([details](kb/ownership-drop-message-passing.md))
 - Message ownership flow: System takes ownership after dequeuing from agents ([details](kb/message-ownership-flow.md))
+- Ownership gap vulnerability: Ensure atomic ownership transfer to prevent corruption ([details](kb/ownership-gap-vulnerability.md))
 - Ownership patterns: Use `ar_data__claim_or_copy()` & `ar_data__destroy_if_owned()` ([details](kb/ownership-pattern-extraction.md))
 - Temporary resources: Creator destroys contexts since agents store as references ([details](kb/temporary-resource-ownership-pattern.md))
 - API ownership on failure: Verify implementation to understand cleanup requirements ([details](kb/api-ownership-on-failure.md))
@@ -262,6 +263,7 @@ grep -r "function_name\|concept" modules/
 **Backups**: Use git stash/diff, never .bak files
 **Scripts**: Add to `/scripts/` with make targets ([details](kb/progressive-tool-enhancement.md))
 **Debug**: `make sanitize-tests 2>&1`, always redirect stderr ([details](kb/development-debug-tools.md))
+**Ownership debugging**: Add logging at transfer points to trace corruption ([details](kb/debug-logging-ownership-tracing.md))
 **Expression ownership**: References=borrowed, new objects=destroy ([details](kb/expression-ownership-rules.md))
 
 ### 9. Error Propagation Pattern
@@ -285,7 +287,7 @@ Always use make to build tests:
 ```bash
 make test_name 2>&1  # Build individual test (with stderr)
 ```
-Never compile directly with gcc.
+Never compile directly with gcc or run binaries directly ([details](kb/make-only-test-execution.md)).
 
 **Parallel Build System**: Targets use isolated directories (bin/run-tests/, bin/sanitize-tests/) to enable parallel execution without conflicts.
 

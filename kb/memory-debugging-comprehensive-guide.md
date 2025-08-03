@@ -64,6 +64,37 @@ ar_system__process_next_message_with_instance(own_system);  // Processes and fre
 **Note**: Examples assume `own_system`, `mut_agency`, and other instance variables are available. In practice, these would be created via fixtures or passed as parameters.
 This pattern caused identical leaks (2 allocations, ~41-45 bytes) across 8+ test files.
 
+## Message Type Corruption Debugging
+
+When data mysteriously changes type (e.g., MAP becoming INTEGER 0), this indicates ownership corruption:
+
+```c
+// SYMPTOM: Message type changes during execution
+// DEBUG [SEND]: type=MAP
+// DEBUG [FRAME_CREATE]: type=4 (MAP)  
+// DEBUG [MEMORY_ACCESS]: type=0 (INTEGER), value=0
+
+// Debug strategy:
+// 1. Add logging at every access point
+fprintf(stderr, "DEBUG [LOCATION]: type=%d\n", ar_data__get_type(data));
+
+// 2. Log ownership claims
+if (ar_data__claim_or_copy(data, owner) == data) {
+    fprintf(stderr, "DEBUG: Claimed ownership at %s:%d\n", __FILE__, __LINE__);
+}
+
+// 3. Check for ownership gaps
+// Look for pattern: drop_ownership → time gap → corruption
+// Fix: Ensure immediate take_ownership after drop
+
+// 4. Test components in isolation
+make component1_tests 2>&1  // Verify no corruption
+make component2_tests 2>&1  // Verify no corruption  
+make integration_tests 2>&1  // Then test together
+```
+
+See [Debug Logging for Ownership Tracing](debug-logging-ownership-tracing.md) and [Ownership Gap Vulnerability](ownership-gap-vulnerability.md) for detailed strategies.
+
 ## Related Patterns
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
 - [Temporary Resource Ownership Pattern](temporary-resource-ownership-pattern.md) - Common cause of context leaks

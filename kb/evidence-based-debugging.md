@@ -155,6 +155,31 @@ When integrating new code:
 4. **Isolation**: Create minimal test case
 5. **Comparison**: Diff against known-good state
 
+## Component Isolation Testing
+
+When debugging integration failures, test each component in isolation before testing the integrated system:
+
+1. **Identify Components**: List all components involved in the failure
+2. **Test Individually**: Run each component's tests separately
+3. **Verify No Leaks**: Check memory reports for each component
+4. **Then Integrate**: Only test integration after components pass
+
+```bash
+# Example: Debugging method_creator_tests failure
+# 1. Test expression evaluator alone
+make ar_expression_evaluator_tests 2>&1
+grep "Actual memory leaks:" bin/run-tests/memory_report_ar_expression_evaluator_tests.log
+
+# 2. Test agent alone  
+make ar_agent_tests 2>&1
+grep "Actual memory leaks:" bin/run-tests/memory_report_ar_agent_tests.log
+
+# 3. Only then test integration
+make method_creator_tests 2>&1
+```
+
+This strategy quickly isolates which component has the bug, avoiding wild goose chases through the entire system.
+
 ## Anti-Patterns to Avoid
 
 ### 1. Assumption Cascades

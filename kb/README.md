@@ -25,6 +25,7 @@ Each learning file contains:
 - [Build Verification Before Commit](build-verification-before-commit.md)
 - [Build Time Reporting](build-time-reporting.md)
 - [Documentation Language Migration Updates](documentation-language-migration-updates.md)
+- [Make-Only Test Execution](make-only-test-execution.md)
 - [Git Push Verification](git-push-verification.md)
 - [Global to Instance API Migration](global-to-instance-api-migration.md)
 - [Knowledge Base Consultation Protocol](knowledge-base-consultation-protocol.md)
@@ -53,6 +54,8 @@ Each learning file contains:
 - [Expression Ownership Rules](expression-ownership-rules.md)
 - [Ownership Drop in Message Passing](ownership-drop-message-passing.md)
 - [Message Ownership Flow](message-ownership-flow.md)
+- [Ownership Gap Vulnerability](ownership-gap-vulnerability.md)
+- [Debug Logging for Ownership Tracing](debug-logging-ownership-tracing.md)
 - [Refactoring Ownership Transitions](refactoring-ownership-transitions.md)
 - [API Ownership on Failure](api-ownership-on-failure.md)
 
