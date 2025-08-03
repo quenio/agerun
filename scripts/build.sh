@@ -274,6 +274,43 @@ if $leak_found; then
     exit_status=1
 fi
 
+# Check for runtime errors and warnings that indicate real issues
+echo
+echo "--- Runtime Error Check ---"
+runtime_errors_found=false
+
+# Check for deep copy support errors
+if grep -q "no deep copy support" logs/*.log 2>/dev/null; then
+    echo "✗ Deep copy support errors detected"
+    runtime_errors_found=true
+    exit_status=1
+fi
+
+# Check for unexpected test behaviors
+if grep -q "expected failure" logs/*.log 2>/dev/null; then
+    echo "✗ Tests behaving unexpectedly (expected failures succeeding)"
+    runtime_errors_found=true
+    exit_status=1
+fi
+
+# Check for method evaluation failures
+if grep "ERROR: Method evaluation failed" logs/*.log 2>/dev/null | grep -v "test.*expected.*fail" | grep -q .; then
+    echo "✗ Method evaluation failures detected"
+    runtime_errors_found=true
+    exit_status=1
+fi
+
+# Check for missing AST errors
+if grep -q "ERROR: Method has no AST" logs/*.log 2>/dev/null; then
+    echo "✗ Missing AST errors detected"
+    runtime_errors_found=true
+    exit_status=1
+fi
+
+if [ "$runtime_errors_found" = false ]; then
+    echo "✓ No runtime errors detected"
+fi
+
 if [ $exit_status -eq 0 ]; then
     echo "Overall status: ✓ SUCCESS"
 else
@@ -301,6 +338,12 @@ else
     if $leak_found; then
         echo "Memory leaks detected - these are now critical failures!"
         echo "Run 'make check-logs' for details"
+    fi
+    
+    # Report runtime errors as failure reason
+    if [ "$runtime_errors_found" = true ]; then
+        echo "Runtime errors detected in test output!"
+        echo "Run 'make check-logs' for detailed analysis"
     fi
 fi
 
