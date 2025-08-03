@@ -6,6 +6,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### Message Corruption Fix in Agent-System Communication (Completed 2025-08-03 Part 6)
+- [x] Debugged and fixed critical bug where MAP messages sent to agents were becoming INTEGER 0; identified root cause as improper ownership handling when messages are dequeued; implemented fix in ar_system.c to take ownership after dequeuing; added debug logging throughout message pipeline; verified fix with all tests passing and zero memory leaks
+
 ### TODO.md Selective Compaction Patterns (Completed 2025-08-03 Part 5)
 - [x] Identified selective compaction pattern for mixed-state documents; updated documentation-compacting-pattern.md with TODO.md strategy; created selective-compaction-pattern.md; updated compact-tasks command and CLAUDE.md with references
 

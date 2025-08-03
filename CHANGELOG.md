@@ -2,6 +2,16 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-08-03 (Part 6)
+
+### ✅ Fixed Message Corruption in Agent-System Communication
+- Resolved critical bug where MAP messages sent to agents were becoming INTEGER 0
+- Root cause: Messages became unowned after dequeuing, allowing expression evaluator to claim and destroy them
+- Fix: System now takes ownership of messages after dequeuing from agents (ar_system.c:283)
+- Added comprehensive debug logging to trace message flow through agent/system/interpreter pipeline
+- Enhanced expression evaluator to use claim_or_copy for consistent ownership handling
+- **Impact**: Ensures message integrity throughout the agent communication pipeline, fixing method-creator corruption issues
+
 ## 2025-08-03 (Part 5)
 
 ### ✅ TODO.md Selective Compaction Patterns

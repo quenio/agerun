@@ -52,6 +52,7 @@ Each learning file contains:
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)
 - [Expression Ownership Rules](expression-ownership-rules.md)
 - [Ownership Drop in Message Passing](ownership-drop-message-passing.md)
+- [Message Ownership Flow](message-ownership-flow.md)
 - [Refactoring Ownership Transitions](refactoring-ownership-transitions.md)
 - [API Ownership on Failure](api-ownership-on-failure.md)
 

@@ -98,6 +98,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - Expression ownership: memory.x=reference, arithmetic/strings=new object ([details](kb/expression-ownership-rules.md))
 - Map iteration: get keys, destroy list & elements; persist with key/type then value
 - Wake/sleep messages: Agents mark ownership, system drops before destroy ([details](kb/ownership-drop-message-passing.md))
+- Message ownership flow: System takes ownership after dequeuing from agents ([details](kb/message-ownership-flow.md))
 - Ownership patterns: Use `ar_data__claim_or_copy()` & `ar_data__destroy_if_owned()` ([details](kb/ownership-pattern-extraction.md))
 - Temporary resources: Creator destroys contexts since agents store as references ([details](kb/temporary-resource-ownership-pattern.md))
 - API ownership on failure: Verify implementation to understand cleanup requirements ([details](kb/api-ownership-on-failure.md))
