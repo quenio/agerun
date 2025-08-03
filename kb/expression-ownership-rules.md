@@ -63,3 +63,5 @@ ar_data__destroy(own_keys);  // Destroys the list structure
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)
 - [Expression Evaluator Accessor Extension](expression-evaluator-accessor-extension.md)
 - [Ownership Transfer in Message Passing](ownership-drop-message-passing.md)
+- [Ownership Gap Vulnerability](ownership-gap-vulnerability.md) - How unowned data causes corruption
+- [Debug Logging for Ownership Tracing](debug-logging-ownership-tracing.md) - Debugging ownership issues

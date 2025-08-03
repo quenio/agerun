@@ -223,3 +223,5 @@ Before claiming to understand a bug:
 - [Regression Root Cause Analysis](regression-root-cause-analysis.md)
 - [Comprehensive Output Review](comprehensive-output-review.md)
 - [Stderr Redirection for Debugging](stderr-redirection-debugging.md) - Always capture stderr for complete output
+- [Debug Logging for Ownership Tracing](debug-logging-ownership-tracing.md) - Strategic logging for ownership issues
+- [Make-Only Test Execution](make-only-test-execution.md) - Always use make for testing

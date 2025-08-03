@@ -72,3 +72,5 @@ bool ar_system__process_next_message_with_instance(ar_system_t *mut_system) {
 - [Agent Wake Message Processing](agent-wake-message-processing.md)
 - [Expression Ownership Rules](expression-ownership-rules.md)
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)
+- [Ownership Gap Vulnerability](ownership-gap-vulnerability.md) - Detailed explanation of the gap issue
+- [Debug Logging for Ownership Tracing](debug-logging-ownership-tracing.md) - How to debug these issues
