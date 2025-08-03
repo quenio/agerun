@@ -44,6 +44,4 @@ Invest in tool enhancement rather than quick fixes to build systematic capabilit
 - [Progressive Tool Enhancement](progressive-tool-enhancement.md)
 - [Script Backward Compatibility Testing](script-backward-compatibility-testing.md)
 - [Batch Documentation Fix Enhancement](batch-documentation-fix-enhancement.md)
-- Tool investment over quick fixes
-- Reusable automation
-- Systematic capability building
+- [Migration Script Systematic Updates](migration-script-systematic-updates.md)

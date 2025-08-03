@@ -37,6 +37,7 @@ After completing the checklist above, follow these steps precisely:
    - Keep it concise (1-2 sentences)
    - Check for any sensitive information that shouldn't be committed
    - Ensure the message accurately reflects ALL changes
+   - Verify full scope of architectural changes ([details](../../kb/commit-scope-verification.md))
 
 3. **Execute these commands:**
    - Add all relevant files: `git add -A`

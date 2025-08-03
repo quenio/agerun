@@ -64,6 +64,16 @@ This migration preserves backward compatibility while enabling new use cases:
 - Tests can create isolated instances
 - Future refactoring can eliminate global state gradually
 
+### Completing the Migration
+After establishing instance-based APIs, the final step is migrating all client code:
+1. Update all tests to use instance-based APIs
+2. Create migration scripts for systematic updates
+3. Fix memory leaks revealed by proper instance management
+4. Remove obsolete modules that are no longer needed
+5. Document the architectural transformation
+
+See [Migration Script Systematic Updates](migration-script-systematic-updates.md) for automation strategies.
+
 ## Related Patterns
 - [Module Instantiation Prerequisites](module-instantiation-prerequisites.md)
 - [Instance Association Pattern](instance-association-pattern.md)

@@ -37,6 +37,7 @@ Each learning file contains:
 - [Module Removal Checklist](module-removal-checklist.md)
 - [Evaluator Migration Priority Strategy](evaluator-migration-priority-strategy.md)
 - [Refactoring Phase Completion Checklist](refactoring-phase-completion-checklist.md)
+- [Commit Scope Verification](commit-scope-verification.md)
 
 ### Memory Management
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
@@ -103,6 +104,7 @@ Each learning file contains:
 - [Command Continuous Improvement Pattern](command-continuous-improvement-pattern.md)
 - [Module Renaming Script Enhancement](module-renaming-script-enhancement.md)
 - [Script Enhancement Over One Off](script-enhancement-over-one-off.md)
+- [Migration Script Systematic Updates](migration-script-systematic-updates.md)
 - [Script Backward Compatibility Testing](script-backward-compatibility-testing.md)
 - [Settings File Merging Pattern](settings-file-merging-pattern.md)
 - [String Parsing Quote Tracking](string-parsing-quote-tracking.md)

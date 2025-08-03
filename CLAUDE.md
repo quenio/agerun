@@ -372,6 +372,7 @@ cd bin  # Wrong - avoid relative paths
 - Build output: quiet success, verbose failure (hide output when working, show full errors)
 - **Parallel builds**: Shared .PHONY deps → hoist to parent target (e.g., install-scan-build → build)
 - **Command updates**: Update Claude commands when new patterns emerge ([details](kb/command-continuous-improvement-pattern.md))
+- **Migration scripts**: Create specialized scripts for systematic updates ([details](kb/migration-script-systematic-updates.md))
 
 **Debug Tools**: Memory (`make sanitize-tests 2>&1`), static analysis, crashes (lldb), patterns testing ([details](kb/development-debug-tools.md))
 **Command Output**: Always use `2>&1` to capture stderr when debugging - warnings and errors often go to stderr ([details](kb/stderr-redirection-debugging.md))
@@ -448,7 +449,7 @@ Never compile directly with gcc.
    - **Hybrid modules**: Update both ar_io.md AND README.md to note Zig/C split approach
 5. Update TODO.md - Mark completed, add new tasks
 6. Update CHANGELOG.md (NON-NEGOTIABLE)
-7. `git diff` - Verify all changes intentional
+7. `git diff` - Verify all changes intentional; check full scope ([details](kb/commit-scope-verification.md))
 8. Check for backup files outside ./bin (*.backup, *.bak, *.tmp)
 9. Remove any log files: `find . -name "*.log" -type f | grep -v bin/ | xargs rm -f`
 10. Only then: `git commit`
