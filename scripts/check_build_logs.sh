@@ -30,6 +30,7 @@ echo
 echo "--- Checking for test failures ---"
 # Look for actual test failure indicators, not just the word "fail" in test output
 # Exclude "ERROR: Test error message" which is a legitimate test output pattern
+# Only check test logs, not exec logs (exec logs don't contain test results)
 if grep -E "(TEST FAILED|Test .* failed|ERROR: Test|FAILED:)" logs/run-tests.log logs/sanitize-tests.log logs/tsan-tests.log 2>/dev/null | grep -v "ERROR: Test error message" | grep -q .; then
     echo "⚠️  TEST FAILURES FOUND:"
     grep -n -E "(TEST FAILED|Test .* failed|ERROR: Test|FAILED:)" logs/run-tests.log logs/sanitize-tests.log logs/tsan-tests.log 2>/dev/null | grep -v "ERROR: Test error message" | head -10
@@ -75,6 +76,16 @@ if grep -q -E "(Invalid read|Invalid write|Conditional jump|Uninitialised value)
     grep -n -E "(Invalid read|Invalid write|Conditional jump|Uninitialised value)" logs/*.log | head -10
 else
     echo "✓ No valgrind errors found"
+fi
+echo
+
+# Check for static analysis issues (scan-build)
+echo "--- Checking for static analysis issues ---"
+if grep -q -E "(scan-build: [1-9][0-9]* bug|warning:|error:|ERROR:|WARNING:)" logs/analyze-*.log 2>/dev/null | grep -v "No bugs found"; then
+    echo "⚠️  STATIC ANALYSIS ISSUES FOUND:"
+    grep -n -E "(scan-build: [1-9][0-9]* bug|warning:|error:|ERROR:|WARNING:)" logs/analyze-*.log | grep -v "No bugs found" | head -10
+else
+    echo "✓ No static analysis issues found"
 fi
 echo
 
