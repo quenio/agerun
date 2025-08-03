@@ -2,12 +2,28 @@ Check build logs for hidden issues that might not be caught by the build summary
 
 ## What it does:
 
-This command examines all build log files to detect potential problems that the build script might miss, including:
+This command performs a two-phase analysis of build log files:
+
+### Phase 1: Standard Checks
+Detects known critical issues including:
 - Assertion failures
 - Segmentation faults or crashes
 - Test failures that might not be properly reported
 - Memory errors from sanitizers
 - Thread safety issues
+- Deep copy support errors
+- Method loading warnings
+- Unexpected test behaviors (e.g., tests expecting failure that succeed)
+- Method evaluation failures
+- Missing AST errors
+
+### Phase 2: Deep Analysis (if standard checks pass)
+Performs additional thorough analysis to catch edge cases:
+- Scans for any ERROR/WARNING patterns that might have been missed
+- Verifies test output consistency
+- Checks for suspicious patterns in test-related output
+- Searches for failure indicators (Cannot, Unable to, Failed to)
+- Provides detailed counts and examples of any anomalies found
 
 ## Usage:
 

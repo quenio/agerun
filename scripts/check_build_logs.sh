@@ -238,6 +238,122 @@ elif [ $WARNING_ISSUES -eq 1 ]; then
     exit 1
 else
     echo
-    echo "✓ All checks passed - no issues detected"
-    exit 0
+    echo "✓ All standard checks passed - performing deep analysis..."
+    
+    # Perform additional thorough analysis even when standard checks pass
+    echo
+    echo "=== Deep Log Analysis ==="
+    echo
+    
+    DEEP_ISSUES_FOUND=false
+    
+    # Check for any ERROR: patterns we might have missed
+    echo "--- Scanning for additional ERROR patterns ---"
+    ERROR_COUNT=$(grep -E "ERROR:|Error:" logs/*.log 2>/dev/null | \
+        grep -v "ERROR: Test error message" | \
+        grep -v "ERROR: AddressSanitizer" | \
+        grep -v "ERROR: LeakSanitizer" | \
+        grep -v "ERROR: UndefinedBehaviorSanitizer" | \
+        grep -v "ERROR: ThreadSanitizer" | \
+        wc -l)
+    
+    if [ "$ERROR_COUNT" -gt 0 ]; then
+        echo "⚠️  Found $ERROR_COUNT ERROR messages in logs:"
+        grep -E "ERROR:|Error:" logs/*.log 2>/dev/null | \
+            grep -v "ERROR: Test error message" | \
+            grep -v "ERROR: AddressSanitizer" | \
+            grep -v "ERROR: LeakSanitizer" | \
+            grep -v "ERROR: UndefinedBehaviorSanitizer" | \
+            grep -v "ERROR: ThreadSanitizer" | \
+            head -10 | sed 's/^/    /'
+        DEEP_ISSUES_FOUND=true
+    else
+        echo "✓ No additional ERROR patterns found"
+    fi
+    echo
+    
+    # Check for any WARNING: patterns we might have missed
+    echo "--- Scanning for additional WARNING patterns ---"
+    WARNING_COUNT=$(grep -E "WARNING:|Warning:" logs/*.log 2>/dev/null | \
+        grep -v "WARNING: .* memory leaks detected" | \
+        grep -v "WARNING: ThreadSanitizer" | \
+        grep -v "logs/analyze-" | \
+        wc -l)
+    
+    if [ "$WARNING_COUNT" -gt 0 ]; then
+        echo "⚠️  Found $WARNING_COUNT WARNING messages in logs:"
+        grep -E "WARNING:|Warning:" logs/*.log 2>/dev/null | \
+            grep -v "WARNING: .* memory leaks detected" | \
+            grep -v "WARNING: ThreadSanitizer" | \
+            grep -v "logs/analyze-" | \
+            head -10 | sed 's/^/    /'
+        DEEP_ISSUES_FOUND=true
+    else
+        echo "✓ No additional WARNING patterns found"
+    fi
+    echo
+    
+    # Check test output consistency
+    echo "--- Checking test output consistency ---"
+    TESTS_RUN=$(grep -c "^Running test:" logs/run-tests.log 2>/dev/null || echo "0")
+    TESTS_PASSED=$(grep -c "All .* tests passed" logs/run-tests.log 2>/dev/null || echo "0")
+    
+    if [ "$TESTS_RUN" -gt 0 ] && [ "$TESTS_PASSED" -eq 0 ]; then
+        echo "⚠️  INCONSISTENCY: $TESTS_RUN tests ran but no 'All tests passed' messages found"
+        DEEP_ISSUES_FOUND=true
+    else
+        echo "✓ Test output appears consistent ($TESTS_RUN tests, $TESTS_PASSED pass messages)"
+    fi
+    echo
+    
+    # Check for failed/error patterns in test names
+    echo "--- Checking for suspicious test patterns ---"
+    if grep -E "(FAILED|failed|FAIL|fail|ERROR|error)" logs/*.log 2>/dev/null | \
+       grep -E "(test_|_test|Test)" | \
+       grep -v "test.*failed.*passed" | \
+       grep -v "expected.*fail" | \
+       grep -v "ERROR: Test error message" | \
+       grep -q .; then
+        echo "⚠️  Found suspicious patterns in test-related output:"
+        grep -E "(FAILED|failed|FAIL|fail|ERROR|error)" logs/*.log 2>/dev/null | \
+            grep -E "(test_|_test|Test)" | \
+            grep -v "test.*failed.*passed" | \
+            grep -v "expected.*fail" | \
+            grep -v "ERROR: Test error message" | \
+            head -5 | sed 's/^/    /'
+        DEEP_ISSUES_FOUND=true
+    else
+        echo "✓ No suspicious test patterns found"
+    fi
+    echo
+    
+    # Check for any "Could not" or "Cannot" messages
+    echo "--- Checking for failure indicators ---"
+    if grep -E "(Could not|Cannot|Unable to|Failed to)" logs/*.log 2>/dev/null | \
+       grep -v "Could not load methods from file" | \
+       grep -v "expected" | \
+       grep -q .; then
+        echo "⚠️  Found failure indicators:"
+        grep -E "(Could not|Cannot|Unable to|Failed to)" logs/*.log 2>/dev/null | \
+            grep -v "Could not load methods from file" | \
+            grep -v "expected" | \
+            head -10 | sed 's/^/    /'
+        DEEP_ISSUES_FOUND=true
+    else
+        echo "✓ No unexpected failure indicators found"
+    fi
+    echo
+    
+    # Final deep analysis report
+    echo "=== Deep Analysis Summary ==="
+    if [ "$DEEP_ISSUES_FOUND" = true ]; then
+        echo "⚠️  ADDITIONAL ISSUES FOUND during deep analysis!"
+        echo "These patterns suggest potential problems that weren't caught by standard checks."
+        echo "Please review the specific instances above and determine if they need attention."
+        exit 1
+    else
+        echo "✓ Deep analysis complete - no additional issues detected"
+        echo "The build logs appear clean."
+        exit 0
+    fi
 fi
